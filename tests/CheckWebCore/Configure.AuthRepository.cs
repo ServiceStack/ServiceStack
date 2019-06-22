@@ -1,36 +1,44 @@
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack;
 using ServiceStack.Web;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
-using ServiceStack.Authentication.MongoDb;
-using MongoDB.Driver;
 
-namespace CheckWebCore
+namespace MyApp
 {
-    public class ConfigureMongoDb : IConfigureServices
+    // Custom UserAuth Data Model with extended Metadata properties
+    public class AppUser : UserAuth
     {
-        IConfiguration Configuration { get; }
-        public ConfigureMongoDb(IConfiguration configuration) => Configuration = configuration;
+        public string ProfileUrl { get; set; }
+        public string LastLoginIp { get; set; }
+        public DateTime? LastLoginDate { get; set; }
+    }
 
-        public void Configure(IServiceCollection services)
+    public class AppUserAuthEvents : AuthEvents
+    {
+        public override void OnAuthenticated(IRequest req, IAuthSession session, IServiceBase authService, 
+            IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
-            var mongoClient = new MongoClient();
-            mongoClient.DropDatabase("MyApp");
-            IMongoDatabase mongoDatabase = mongoClient.GetDatabase("MyApp");
-            services.AddSingleton(mongoDatabase);
+            var authRepo = HostContext.AppHost.GetAuthRepository(req);
+            using (authRepo as IDisposable)
+            {
+                var userAuth = (AppUser)authRepo.GetUserAuth(session.UserAuthId);
+                userAuth.ProfileUrl = session.GetProfileUrl();
+                userAuth.LastLoginIp = req.UserHostAddress;
+                userAuth.LastLoginDate = DateTime.UtcNow;
+                authRepo.SaveUserAuth(userAuth);
+            }
         }
-    }    
-    
-    public class ConfigureAuthRepository : IConfigureAppHost, IConfigureServices
+    }
+
+    public class ConfigureAuthRepository : IConfigureAppHost, IConfigureServices, IPreInitPlugin
     {
         public void Configure(IServiceCollection services)
         {
-            services.AddSingleton<IAuthRepository>(c => 
-                new MongoDbAuthRepository(c.Resolve<IMongoDatabase>(), createMissingCollections:true));
+            services.AddSingleton<IAuthRepository>(c =>
+                new InMemoryAuthRepository<AppUser, UserAuthDetails>());
         }
 
         public void Configure(IAppHost appHost)
@@ -38,7 +46,12 @@ namespace CheckWebCore
             var authRepo = appHost.Resolve<IAuthRepository>();
             authRepo.InitSchema();
 
-            CreateUser(authRepo, "admin@email.com", "Admin User", "p@55wOrd", roles:new[]{ RoleNames.Admin });
+            //CreateUser(authRepo, "admin@email.com", "Admin User", "p@55wOrd", roles:new[]{ RoleNames.Admin });
+        }
+
+        public void BeforePluginsLoaded(IAppHost appHost)
+        {
+            appHost.AssertPlugin<AuthFeature>().AuthEvents.Add(new AppUserAuthEvents());
         }
 
         // Add initial Users to the configured Auth Repository
@@ -46,7 +59,7 @@ namespace CheckWebCore
         {
             if (authRepo.GetUserAuthByUserName(email) == null)
             {
-                var newAdmin = new UserAuth { Email = email, DisplayName = name };
+                var newAdmin = new AppUser { Email = email, DisplayName = name };
                 var user = authRepo.CreateUserAuth(newAdmin, password);
                 authRepo.AssignRoles(user, roles);
             }
