@@ -179,11 +179,18 @@ namespace ServiceStack.NativeTypes.Dart
 
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
-        public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types)
-        {
-            return types.OrderTypesByDeps();
-        }
-        
+        public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types.OrderTypesByDeps();
+
+        /// <summary>
+        /// Add Code to top of generated code
+        /// </summary>
+        public static AddCodeDelegate InsertCodeFilter { get; set; }
+
+        /// <summary>
+        /// Add Code to bottom of generated code
+        /// </summary>
+        public static AddCodeDelegate AddCodeFilter { get; set; }
+
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
             var typeNamespaces = new HashSet<string>();
@@ -279,6 +286,10 @@ namespace ServiceStack.NativeTypes.Dart
             
             defaultImports.Each(x => sb.AppendLine($"import '{x}';"));
 
+            var insertCode = InsertCodeFilter?.Invoke(allTypes, Config);
+            if (insertCode != null)
+                sb.AppendLine(insertCode);
+
             existingTypeInfos = new HashSet<string>(IgnoreTypeInfosFor);
             sbTypeInfos = new StringBuilder();
             var dtosName = Config.GlobalNamespace ?? new Uri(Config.BaseUrl).Host;
@@ -344,6 +355,10 @@ namespace ServiceStack.NativeTypes.Dart
                     existingTypes.Add(fullTypeName);
                 }
             }
+
+            var addCode = AddCodeFilter?.Invoke(allTypes, Config);
+            if (addCode != null)
+                sb.AppendLine(addCode);
 
             if (existingTypes.Count > 0)
             {

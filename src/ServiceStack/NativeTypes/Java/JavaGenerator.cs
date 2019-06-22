@@ -88,6 +88,16 @@ namespace ServiceStack.NativeTypes.Java
 
         public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types;
 
+        /// <summary>
+        /// Add Code to top of generated code
+        /// </summary>
+        public static AddCodeDelegate InsertCodeFilter { get; set; }
+
+        /// <summary>
+        /// Add Code to bottom of generated code
+        /// </summary>
+        public static AddCodeDelegate AddCodeFilter { get; set; }
+
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
             var typeNamespaces = new HashSet<string>();
@@ -184,6 +194,10 @@ namespace ServiceStack.NativeTypes.Java
             defaultImports.Each(x => sb.AppendLine("import {0};".Fmt(x)));
             sb.AppendLine();
 
+            var insertCode = InsertCodeFilter?.Invoke(allTypes, Config);
+            if (insertCode != null)
+                sb.AppendLine(insertCode);
+
             sb.AppendLine("public class {0}".Fmt(defaultNamespace.SafeToken()));
             sb.AppendLine("{");
 
@@ -250,6 +264,10 @@ namespace ServiceStack.NativeTypes.Java
 
             sb.AppendLine();
             sb.AppendLine("}");
+
+            var addCode = AddCodeFilter?.Invoke(allTypes, Config);
+            if (addCode != null)
+                sb.AppendLine(addCode);
 
             return StringBuilderCache.ReturnAndFree(sbInner);
         }

@@ -89,15 +89,21 @@ namespace ServiceStack.NativeTypes.TypeScript
         };
         
         public static TypeFilterDelegate TypeFilter { get; set; }
-        public static Func<string, string> DeclarationTypeFilter { get; set; }
+        public static Func<string, string> CookedTypeFilter { get; set; }
+        public static TypeFilterDelegate DeclarationTypeFilter { get; set; }
         public static Func<string, string> ReturnMarkerFilter { get; set; }
 
-        public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
-        public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types)
-        {
-            return types.OrderTypesByDeps();
-        }
+        public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types.OrderTypesByDeps();
+        
+        /// <summary>
+        /// Add Code to top of generated code
+        /// </summary>
+        public static AddCodeDelegate InsertCodeFilter { get; set; }
+
+        /// <summary>
+        /// Add Code to bottom of generated code
+        /// </summary>
 
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
