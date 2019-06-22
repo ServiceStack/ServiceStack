@@ -86,6 +86,16 @@ namespace ServiceStack.NativeTypes.Kotlin
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
         public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types;
+        
+        /// <summary>
+        /// Add Code to top of generated code
+        /// </summary>
+        public static AddCodeDelegate InsertCodeFilter { get; set; }
+
+        /// <summary>
+        /// Add Code to bottom of generated code
+        /// </summary>
+        public static AddCodeDelegate AddCodeFilter { get; set; }
 
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
@@ -179,6 +189,10 @@ namespace ServiceStack.NativeTypes.Kotlin
             defaultImports.Each(x => sb.AppendLine($"import {x}"));
             sb.AppendLine();
 
+            var insertCode = InsertCodeFilter?.Invoke(allTypes, Config);
+            if (insertCode != null)
+                sb.AppendLine(insertCode);
+
             //ServiceStack core interfaces
             foreach (var type in allTypes)
             {
@@ -188,8 +202,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                     if (!existingTypes.Contains(fullTypeName))
                     {
                         MetadataType response = null;
-                        MetadataOperationType operation;
-                        if (requestTypesMap.TryGetValue(type, out operation))
+                        if (requestTypesMap.TryGetValue(type, out var operation))
                         {
                             response = operation.Response;
                         }
@@ -240,6 +253,10 @@ namespace ServiceStack.NativeTypes.Kotlin
                     existingTypes.Add(fullTypeName);
                 }
             }
+
+            var addCode = AddCodeFilter?.Invoke(allTypes, Config);
+            if (addCode != null)
+                sb.AppendLine(addCode);
 
             return StringBuilderCache.ReturnAndFree(sbInner);
         }
