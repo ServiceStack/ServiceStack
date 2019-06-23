@@ -9,6 +9,7 @@ namespace ServiceStack.Script
             var hadCodeBlocks = false;
             var processed = StringBuilderCache.Allocate();
             var inCodeBlock = false;
+            var inMultiLineBlock = false;
             foreach (var line in script.ReadLines())
             {
                 if (line == "```code")
@@ -29,6 +30,22 @@ namespace ServiceStack.Script
                     if (string.IsNullOrEmpty(codeOnly))
                         continue;
 
+                    if (codeOnly.StartsWith("{{") && !codeOnly.EndsWith("}}"))
+                    {
+                        inMultiLineBlock = true;
+                        processed.AppendLine(codeOnly);
+                        continue;
+                    }
+                    if (inMultiLineBlock)
+                    {
+                        if (codeOnly.EndsWith("}}"))
+                        {
+                            inMultiLineBlock = false;
+                        }
+                        processed.AppendLine(codeOnly);
+                        continue;
+                    }
+
                     var codify = "{{" + codeOnly + "}}";
                     processed.AppendLine(codify);
                     continue;
@@ -36,6 +53,10 @@ namespace ServiceStack.Script
                 processed.AppendLine(line);
             }
 
+            if (inMultiLineBlock)
+                throw new SyntaxErrorException("Unterminated '}}' multi-line block not found");
+            if (inCodeBlock)
+                throw new SyntaxErrorException("Unterminated '```code' block, line with '```' not found");
 
             if (hadCodeBlocks)
                 return StringBuilderCache.ReturnAndFree(processed);
