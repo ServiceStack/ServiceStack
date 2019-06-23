@@ -37,6 +37,8 @@ namespace ServiceStack.Script
         public IContainer Container { get; set; } = new SimpleContainer();
         
         public IAppSettings AppSettings { get; set; } = new SimpleAppSettings();
+        
+        public List<Func<string,string>> Preprocessors { get; } = new List<Func<string, string>>();
 
         public List<ScriptMethods> ScriptMethods { get; } = new List<ScriptMethods>();
 
@@ -267,6 +269,7 @@ namespace ServiceStack.Script
         {
             Pages = new SharpPages(this);
             PageFormats.Add(new HtmlPageFormat());
+            Preprocessors.Add(ScriptPreprocessors.TransformCodeBlocks);
             ScriptMethods.Add(new DefaultScripts());
             ScriptMethods.Add(new HtmlScripts());
             Plugins.Add(new DefaultScriptBlocks());
