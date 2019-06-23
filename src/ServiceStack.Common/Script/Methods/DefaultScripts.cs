@@ -589,6 +589,15 @@ namespace ServiceStack.Script
             return value;
         }
 
+        // Shorter Alias for assignTo:
+        public IgnoreResult to(ScriptScopeContext scope, object value, object argExpr)
+        {
+            var varName = GetVarNameFromStringOrArrowExpression(nameof(to), argExpr);
+            
+            scope.ScopedParams[varName] = value;
+            return IgnoreResult.Value;
+        }
+        
         public IgnoreResult assignTo(ScriptScopeContext scope, object value, object argExpr)
         {
             var varName = GetVarNameFromStringOrArrowExpression(nameof(assignTo), argExpr);
@@ -604,6 +613,10 @@ namespace ServiceStack.Script
             scope.PageResult.Args[varName] = value;
             return IgnoreResult.Value;
         }
+
+        // Shorter Alias for assignTo:
+        public Task to(ScriptScopeContext scope, object argExpr) =>
+            assignToArgs(scope, nameof(to), argExpr, scope.ScopedParams);
 
         public Task assignTo(ScriptScopeContext scope, object argExpr) =>
             assignToArgs(scope, nameof(assignTo), argExpr, scope.ScopedParams);
