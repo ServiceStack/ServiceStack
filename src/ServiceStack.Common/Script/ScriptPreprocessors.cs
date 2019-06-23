@@ -30,9 +30,9 @@ namespace ServiceStack.Script
                     if (string.IsNullOrEmpty(codeOnly))
                         continue;
 
-                    if (codeOnly.StartsWith("{{") && !codeOnly.EndsWith("}}"))
+                    if (codeOnly.StartsWith("{{"))
                     {
-                        inMultiLineBlock = true;
+                        inMultiLineBlock = !codeOnly.EndsWith("}}");
                         processed.AppendLine(codeOnly);
                         continue;
                     }

@@ -32,7 +32,7 @@ title: The title
 ```
 
 ```code
-    1 + 1
+    {{ 1 + 1 }}
 
     {{ range(1,5) 
        | where => it.isOdd() 
@@ -66,7 +66,7 @@ title: The title
 
 {{1 + 2 * 3}}
 
-{{1 + 1}}
+{{ 1 + 1 }}
 {{ range(1,5)
 | where => it.isOdd()
 | map => it * it
