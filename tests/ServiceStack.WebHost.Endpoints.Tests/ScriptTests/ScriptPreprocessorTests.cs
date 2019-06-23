@@ -30,6 +30,16 @@ title: The title
 ```code
 1 + 2 * 3
 ```
+
+```code
+    1 + 1
+
+    {{ range(1,5) 
+       | where => it.isOdd() 
+       | map => it * it   
+       | join(',')
+    }}     
+```
 ";
 
         [Test]
@@ -37,7 +47,7 @@ title: The title
         {
             var processed = ScriptPreprocessors.TransformCodeBlocks(CodeBlock);
             processed.Print();
-            Assert.That(processed.Trim(), Is.EqualTo(@"
+            Assert.That(processed.NormalizeNewLines(), Is.EqualTo(@"
 <!--
 title: The title
 -->
@@ -54,7 +64,15 @@ title: The title
 {{/if}}
 {{/each}}
 
-{{1 + 2 * 3}}".Trim()));
+{{1 + 2 * 3}}
+
+{{1 + 1}}
+{{ range(1,5)
+| where => it.isOdd()
+| map => it * it
+| join(',')
+}}
+".NormalizeNewLines()));
         }
         
         [Test]
@@ -67,7 +85,7 @@ title: The title
             var output = new PageResult(script).Result;
             output.Print();
             
-            Assert.That(output.Trim(), Is.EqualTo(@"
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
 # The title
 
 2
@@ -78,7 +96,10 @@ title: The title
 4 is even
 5 is odd
 
-7".Trim()));
+7
+
+2
+1,9,25".NormalizeNewLines()));
         }
     }
 }
