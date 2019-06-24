@@ -154,6 +154,12 @@
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
+    <!-- ServiceStack.Authentication.MongoDb.Core -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Authentication.MongoDb/ServiceStack.Authentication.MongoDb.Core.csproj" Targets="Restore" />
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Authentication.MongoDb/ServiceStack.Authentication.MongoDb.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
     <!-- Copy all *.nupkg to /NuGet -->
     <ItemGroup>
       <NugetPackagesToMove Include="$(BuildSolutionDir)/src/**/bin/$(Configuration)/*.nupkg"/>
