@@ -216,8 +216,7 @@ namespace ServiceStack.Auth
 
         private void LoadUserAuth(IAuthSession session, IUserAuth userAuth)
         {
-            session.PopulateSession(userAuth, 
-                GetUserAuthDetails(session.UserAuthId).ConvertAll(x => (IAuthTokens)x));
+            session.PopulateSession(userAuth, this);
         }
 
         public virtual void DeleteUserAuth(string userAuthId)

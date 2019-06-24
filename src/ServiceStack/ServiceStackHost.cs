@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Funq;
+using ServiceStack.Admin;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
@@ -166,6 +167,7 @@ namespace ServiceStack
                 typeof(ServerEventsUnRegisterService),
                 typeof(MetadataNavService),
                 typeof(ScriptAdminService),
+                typeof(RequestLogsService),
             };
 
             JsConfig.InitStatics();

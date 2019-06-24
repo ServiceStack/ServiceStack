@@ -673,8 +673,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
             public override void Configure(Container container)
             {
-                Plugins.Add(new RequestLogsFeature());
-                
                 // just for testing, create a privateKeyXml on every instance
                 Plugins.Add(new AuthFeature(() => new AuthUserSession(),
                     new IAuthProvider[]

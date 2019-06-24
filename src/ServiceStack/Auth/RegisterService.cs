@@ -122,46 +122,46 @@ namespace ServiceStack.Auth
                 user = registerNewUser
                     ? authRepo.CreateUserAuth(newUserAuth, request.Password)
                     : authRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password);
-            }
 
-            if (request.AutoLogin.GetValueOrDefault())
-            {
-                using (var authService = base.ResolveService<AuthenticateService>())
+                if (request.AutoLogin.GetValueOrDefault())
                 {
-                    var authResponse = authService.Post(
-                        new Authenticate {
-                            provider = CredentialsAuthProvider.Name,
-                            UserName = request.UserName ?? request.Email,
-                            Password = request.Password,
-                            Continue = request.Continue ?? base.Request.GetQueryStringOrForm(Keywords.ReturnUrl)
-                        });
-
-                    if (authResponse is IHttpError)
-                        throw (Exception)authResponse;
-
-                    if (authResponse is AuthenticateResponse typedResponse)
+                    using (var authService = base.ResolveService<AuthenticateService>())
                     {
-                        response = new RegisterResponse
+                        var authResponse = authService.Post(
+                            new Authenticate {
+                                provider = CredentialsAuthProvider.Name,
+                                UserName = request.UserName ?? request.Email,
+                                Password = request.Password,
+                                Continue = request.Continue ?? base.Request.GetQueryStringOrForm(Keywords.ReturnUrl)
+                            });
+
+                        if (authResponse is IHttpError)
+                            throw (Exception)authResponse;
+
+                        if (authResponse is AuthenticateResponse typedResponse)
                         {
-                            SessionId = typedResponse.SessionId,
-                            UserName = typedResponse.UserName,
-                            ReferrerUrl = typedResponse.ReferrerUrl,
-                            UserId = user.Id.ToString(CultureInfo.InvariantCulture),
-                            BearerToken = typedResponse.BearerToken,
-                            RefreshToken = typedResponse.RefreshToken,
-                        };
+                            response = new RegisterResponse
+                            {
+                                SessionId = typedResponse.SessionId,
+                                UserName = typedResponse.UserName,
+                                ReferrerUrl = typedResponse.ReferrerUrl,
+                                UserId = user.Id.ToString(CultureInfo.InvariantCulture),
+                                BearerToken = typedResponse.BearerToken,
+                                RefreshToken = typedResponse.RefreshToken,
+                            };
+                        }
                     }
                 }
-            }
 
-            if (registerNewUser)
-            {
-                session = this.GetSession();
-                if (!request.AutoLogin.GetValueOrDefault())
-                    session.PopulateSession(user, new List<IAuthTokens>());
+                if (registerNewUser)
+                {
+                    session = this.GetSession();
+                    if (!request.AutoLogin.GetValueOrDefault())
+                        session.PopulateSession(user, authRepo);
 
-                session.OnRegistered(Request, session, this);
-                AuthEvents?.OnRegistered(this.Request, session, this);
+                    session.OnRegistered(Request, session, this);
+                    AuthEvents?.OnRegistered(this.Request, session, this);
+                }
             }
 
             if (response == null)

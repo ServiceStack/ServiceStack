@@ -55,7 +55,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         }
 
         [Test]
-        public void Authenticationg_does_return_session_cookies()
+        public void Authenticating_does_return_session_cookies()
         {
             var client = AuthenticateWithAdminUser();
             Assert.That(client.CookieContainer.Count, Is.GreaterThan(0));
