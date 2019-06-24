@@ -40,16 +40,8 @@ namespace ServiceStack.Auth
                 var digestInfo = authService.Request.GetDigestAuth();
                 if (authRepo.TryAuthenticate(digestInfo, PrivateKey, NonceTimeOut, session.Sequence, out var userAuth))
                 {
-
-                    var holdSessionId = session.Id;
-                    session.PopulateWith(userAuth); //overwrites session.Id
-                    session.Id = holdSessionId;
-                    session.IsAuthenticated = true;
                     session.Sequence = digestInfo["nc"];
-                    session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
-                    session.ProviderOAuthAccess = authRepo.GetUserAuthDetails(session.UserAuthId)
-                        .ConvertAll(x => (IAuthTokens)x);
-
+                    session.PopulateSession(userAuth, authRepo);
                     return true;
                 }
                 return false;

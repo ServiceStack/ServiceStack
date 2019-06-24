@@ -307,8 +307,7 @@ namespace ServiceStack.Authentication.RavenDb
         private void LoadUserAuth(IAuthSession session, TUserAuth userAuth)
         {
             UpdateSessionKey(session, userAuth);
-            session.PopulateSession(userAuth,
-                GetUserAuthDetails(session.UserAuthId).ConvertAll(x => (IAuthTokens)x));
+            session.PopulateSession(userAuth, this);
         }
 
         public void DeleteUserAuth(string userAuthId)

@@ -78,7 +78,12 @@ namespace ServiceStack.Auth
                 : userAuth.Permissions;
         }
 
-        public static void PopulateSession(this IAuthSession session, IUserAuth userAuth, List<IAuthTokens> authTokens = null)
+        public static List<IAuthTokens> GetAuthTokens(this IAuthRepository repo, string userAuthId) =>
+            repo != null && userAuthId != null
+                ? repo.GetUserAuthDetails(userAuthId).ConvertAll(x => (IAuthTokens) x)
+                : TypeConstants<IAuthTokens>.EmptyList; 
+
+        public static void PopulateSession(this IAuthSession session, IUserAuth userAuth, IAuthRepository authRepo = null)
         {
             if (userAuth == null)
                 return;
@@ -86,13 +91,20 @@ namespace ServiceStack.Auth
             var holdSessionId = session.Id;
             session.PopulateWith(userAuth);  
             session.Id = holdSessionId;
-            session.UserAuthId = session.UserAuthId ?? userAuth.Id.ToString(CultureInfo.InvariantCulture);
+            session.UserAuthId = session.UserAuthId ??
+                (userAuth.Id != default ? userAuth.Id.ToString(CultureInfo.InvariantCulture) : null);
             session.IsAuthenticated = true;
-            if (authTokens != null)
-                session.ProviderOAuthAccess = authTokens;
+
+            var hadUserAuthId = session.UserAuthId != null;
+            if (hadUserAuthId && authRepo != null)
+                session.ProviderOAuthAccess = authRepo.GetAuthTokens(session.UserAuthId);
             
             var existingPopulator = AutoMappingUtils.GetPopulator(typeof(IAuthSession), typeof(IUserAuth));
             existingPopulator?.Invoke(session, userAuth);
+            
+            //session.UserAuthId could be populated in populator
+            if (!hadUserAuthId && authRepo != null) 
+                session.ProviderOAuthAccess = authRepo.GetAuthTokens(session.UserAuthId);
         }
 
         public static List<IUserAuthDetails> GetUserAuthDetails(this IAuthRepository authRepo, int userAuthId)

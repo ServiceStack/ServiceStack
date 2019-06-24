@@ -62,7 +62,7 @@ namespace ServiceStack.Auth
                     if (IsAccountLocked(authRepo, userAuth))
                         throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(authService.Request));
 
-                    session.PopulateSession(userAuth);
+                    session.PopulateSession(userAuth, authRepo);
 
                     return true;
                 }
@@ -154,7 +154,7 @@ namespace ServiceStack.Auth
                 if (IsAccountLocked(authRepo, userAuth))
                     throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(authService.Request));
 
-                session.PopulateSession(userAuth);
+                session.PopulateSession(userAuth, authRepo);
 
                 session.IsAuthenticated = true;
 
@@ -226,7 +226,7 @@ namespace ServiceStack.Auth
                         authInfo.ForEach((x, y) => tokens.Items[x] = y);
                         session.UserAuthId = authRepo.CreateOrMergeAuthSession(session, tokens).UserAuthId.ToString();
                     }
-
+                    
                     foreach (var oAuthToken in session.GetAuthTokens())
                     {
                         var authProvider = AuthenticateService.GetAuthProvider(oAuthToken.Provider);
