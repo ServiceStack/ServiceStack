@@ -54,6 +54,7 @@
     <RemoveDir Directories="$(SrcDir)/ServiceStack.ProtoBuf/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack.RabbitMq/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack.Server/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.Authentication.MongoDb/obj" />
   </Target>
 
   <Target Name="UpdateVersion">
