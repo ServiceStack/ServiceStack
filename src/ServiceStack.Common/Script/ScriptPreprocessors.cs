@@ -46,8 +46,10 @@ namespace ServiceStack.Script
                         continue;
                     }
 
-                    var codify = "{{" + codeOnly + "}}";
-                    processed.AppendLine(codify);
+                    processed
+                        .Append("{{")
+                        .Append(codeOnly)
+                        .AppendLine("}}");
                     continue;
                 }
                 processed.AppendLine(line);
