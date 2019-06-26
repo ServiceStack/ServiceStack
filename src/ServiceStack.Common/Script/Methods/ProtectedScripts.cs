@@ -25,6 +25,10 @@ namespace ServiceStack.Script
         public GistVirtualFiles vfsGist(string gistId) => new GistVirtualFiles(gistId);
         public GistVirtualFiles vfsGist(string gistId, string accessToken) => new GistVirtualFiles(gistId, accessToken);
 
+        public string osPaths(string path) => Env.IsWindows
+            ? path.Replace('/', '\\')
+            : path.Replace('\\', '/');
+
         public IVirtualFile ResolveFile(string filterName, ScriptScopeContext scope, string virtualPath)
         {
             var file = ResolveFile(scope.Context.VirtualFiles, scope.PageResult.VirtualPath, virtualPath);

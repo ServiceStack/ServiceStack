@@ -48,6 +48,7 @@ namespace ServiceStack
         public bool envIs64BitProcess() => Environment.Is64BitProcess;
         public Version envVersion() => Environment.Version;
         public string[] envLogicalDrives() => Environment.GetLogicalDrives();
+        public char envPathSeparator() => Path.PathSeparator;
 
 #if NETSTANDARD2_0
         public string envFrameworkDescription() => System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription;
