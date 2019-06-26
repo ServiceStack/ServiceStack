@@ -165,6 +165,8 @@ namespace ServiceStack.Host.Handlers
                     r.ContentType = MimeTypes.GetMimeType(file.Name);
                     r.StatusCode = (int)HttpStatusCode.NotModified;
                     r.StatusDescription = HttpStatusCode.NotModified.ToString();
+
+                    ResponseFilter?.Invoke(request, r, file);
                     return;
                 }
 
