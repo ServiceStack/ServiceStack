@@ -664,27 +664,31 @@ namespace ServiceStack.NativeTypes.TypeScript
                 string cooked = null;
                 if (type == "Nullable`1")
                     cooked = "{0}?".Fmt(GenericArg(genericArgs[0]));
-                if (ArrayTypes.Contains(type))
+                else if (ArrayTypes.Contains(type))
                     cooked = "{0}[]".Fmt(GenericArg(genericArgs[0])).StripNullable();
-                if (DictionaryTypes.Contains(type))
+                else if (DictionaryTypes.Contains(type))
+                {
                     cooked = "{{ [index: {0}]: {1}; }}".Fmt(
                         GenericArg(genericArgs[0]),
                         GenericArg(genericArgs[1]));
-
-                var parts = type.Split('`');
-                if (parts.Length > 1)
+                }
+                else
                 {
-                    var args = StringBuilderCacheAlt.Allocate();
-                    foreach (var arg in genericArgs)
+                    var parts = type.Split('`');
+                    if (parts.Length > 1)
                     {
-                        if (args.Length > 0)
-                            args.Append(", ");
+                        var args = StringBuilderCacheAlt.Allocate();
+                        foreach (var arg in genericArgs)
+                        {
+                            if (args.Length > 0)
+                                args.Append(", ");
 
-                        args.Append(GenericArg(arg));
+                            args.Append(GenericArg(arg));
+                        }
+
+                        var typeName = TypeAlias(type);
+                        cooked = "{0}<{1}>".Fmt(typeName, StringBuilderCacheAlt.ReturnAndFree(args));
                     }
-
-                    var typeName = TypeAlias(type);
-                    cooked = "{0}<{1}>".Fmt(typeName, StringBuilderCacheAlt.ReturnAndFree(args));
                 }
 
                 if (cooked != null)
