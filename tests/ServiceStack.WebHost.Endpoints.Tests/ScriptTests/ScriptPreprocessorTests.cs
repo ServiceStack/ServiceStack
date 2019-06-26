@@ -16,6 +16,7 @@ title: The title
 {{ 1 + 1 }}
 
 ```code
+* Odd numbers < 5 *
 #each i in range(1,5)
 
     #if i.isOdd()
@@ -34,11 +35,13 @@ title: The title
 ```code
     {{ 1 + 1 }}
 
-    {{ range(1,5) 
-       | where => it.isOdd() 
-       | map => it * it   
-       | join(',')
-    }}     
+    {{#if debug}}
+        {{ range(1,5) 
+           | where => it.isOdd() 
+           | map => it * it   
+           | join(',')
+        }}
+    {{/if}}
 ```
 ";
 
@@ -56,6 +59,7 @@ title: The title
 
 {{ 1 + 1 }}
 
+{{* Odd numbers < 5 *}}
 {{#each i in range(1,5)}}
 {{#if i.isOdd()}}
 {{`${i} is odd`}}
@@ -67,11 +71,13 @@ title: The title
 {{1 + 2 * 3}}
 
 {{ 1 + 1 }}
+{{#if debug}}
 {{ range(1,5)
 | where => it.isOdd()
 | map => it * it
 | join(',')
 }}
+{{/if}}
 ".NormalizeNewLines()));
         }
         
