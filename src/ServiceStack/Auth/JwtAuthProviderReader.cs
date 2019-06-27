@@ -285,6 +285,7 @@ namespace ServiceStack.Auth
             ExpireRefreshTokensIn = TimeSpan.FromDays(365);
             FallbackAuthKeys = new List<byte[]>();
             FallbackPublicKeys = new List<RSAParameters>();
+            FallbackPrivateKeys = new List<RSAParameters>();
 
             if (appSettings != null)
             {
@@ -339,6 +340,8 @@ namespace ServiceStack.Auth
                 var i = 1;
                 while ((base64Key = appSettings.GetString("jwt.PrivateKeyXml." + i++)) != null)
                 {
+                    FallbackPrivateKeys.Add(base64Key.ToPrivateRSAParameters());
+
                     var publicKey = base64Key.ToPublicRSAParameters();
                     FallbackPublicKeys.Add(publicKey);
                 }
