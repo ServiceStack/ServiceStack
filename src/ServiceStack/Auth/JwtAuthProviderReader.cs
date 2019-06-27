@@ -571,7 +571,7 @@ namespace ServiceStack.Auth
 
                     var calcTag = hmac.ComputeHash(encryptedStream.GetBuffer(), 0, (int) encryptedStream.Length);
 
-                    if (!calcTag.EquivalentTo(sentTag))
+                    if (calcTag.EquivalentTo(sentTag))
                         return true;
                 }
             }
