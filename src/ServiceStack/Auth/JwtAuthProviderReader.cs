@@ -522,7 +522,7 @@ namespace ServiceStack.Auth
             throw new ArgumentException(ErrorMessages.TokenInvalid.Localize(req));
         }
 
-        private bool VerifyJwePayload(IRequest req, string[] parts, out byte[] iv, out byte[] cipherText, out byte[] cryptKey)
+        public bool VerifyJwePayload(IRequest req, string[] parts, out byte[] iv, out byte[] cipherText, out byte[] cryptKey)
         {
             var jweHeaderBase64Url = parts[0];
             var jweEncKeyBase64Url = parts[1];
