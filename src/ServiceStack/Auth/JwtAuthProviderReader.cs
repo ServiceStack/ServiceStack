@@ -501,25 +501,30 @@ namespace ServiceStack.Auth
             }
             if (parts.Length == 5) //Encrypted JWE Token
             {
-                if (VerifyJwePayload(req, parts, out var iv, out var cipherText, out var cryptKey)) 
-                    return null;
-
-                var aes = Aes.Create();
-                aes.KeySize = 128;
-                aes.BlockSize = 128;
-                aes.Mode = CipherMode.CBC;
-                aes.Padding = PaddingMode.PKCS7;
-                using (aes)
-                using (var decryptor = aes.CreateDecryptor(cryptKey, iv))
-                using (var ms = MemoryStreamFactory.GetStream(cipherText))
-                using (var cryptStream = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
-                {
-                    var jwtPayloadBytes = cryptStream.ReadFully();
-                    return JsonObject.Parse(jwtPayloadBytes.FromUtf8Bytes());
-                }
+                return GetVerifiedJwePayload(req, parts);
             }
 
             throw new ArgumentException(ErrorMessages.TokenInvalid.Localize(req));
+        }
+
+        public JsonObject GetVerifiedJwePayload(IRequest req, string[] parts)
+        {
+            if (!VerifyJwePayload(req, parts, out var iv, out var cipherText, out var cryptKey))
+                return null;
+
+            var aes = Aes.Create();
+            aes.KeySize = 128;
+            aes.BlockSize = 128;
+            aes.Mode = CipherMode.CBC;
+            aes.Padding = PaddingMode.PKCS7;
+            using (aes)
+            using (var decryptor = aes.CreateDecryptor(cryptKey, iv))
+            using (var ms = MemoryStreamFactory.GetStream(cipherText))
+            using (var cryptStream = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
+            {
+                var jwtPayloadBytes = cryptStream.ReadFully();
+                return JsonObject.Parse(jwtPayloadBytes.FromUtf8Bytes());
+            }
         }
 
         public bool VerifyJwePayload(IRequest req, string[] parts, out byte[] iv, out byte[] cipherText, out byte[] cryptKey)
