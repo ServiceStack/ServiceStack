@@ -187,7 +187,16 @@ namespace ServiceStack.Auth
         /// </summary>
         public List<RSAParameters> FallbackPublicKeys { get; set; }
 
-        public List<RSAParameters> GetFallbackPublicKeys(IRequest req = null) => req.GetRuntimeConfig(nameof(FallbackPublicKeys), FallbackPublicKeys);
+        public List<RSAParameters> GetFallbackPublicKeys(IRequest req = null) => 
+            req.GetRuntimeConfig(nameof(FallbackPublicKeys), FallbackPublicKeys);
+
+        /// <summary>
+        /// Allow verification using multiple private keys for JWE tokens
+        /// </summary>
+        public List<RSAParameters> FallbackPrivateKeys { get; set; }
+
+        public List<RSAParameters> GetFallbackPrivateKeys(IRequest req = null) => 
+            req.GetRuntimeConfig(nameof(FallbackPrivateKeys), FallbackPrivateKeys);
 
         /// <summary>
         /// How long should JWT Tokens be valid for. (default 14 days)
@@ -489,43 +498,8 @@ namespace ServiceStack.Auth
             }
             if (parts.Length == 5) //Encrypted JWE Token
             {
-                var jweHeaderBase64Url = parts[0];
-                var jweEncKeyBase64Url = parts[1];
-                var ivBase64Url = parts[2];
-                var cipherTextBase64Url = parts[3];
-                var tagBase64Url = parts[4];
-
-                var sentTag = tagBase64Url.FromBase64UrlSafe();
-                var aadBytes = (jweHeaderBase64Url + "." + jweEncKeyBase64Url).ToUtf8Bytes();
-                var iv = ivBase64Url.FromBase64UrlSafe();
-                var cipherText = cipherTextBase64Url.FromBase64UrlSafe();
-
-                var privateKey = GetPrivateKey(req);
-                if (privateKey == null)
-                    throw new Exception("PrivateKey required to decrypt JWE Token");
-
-                var jweEncKey = jweEncKeyBase64Url.FromBase64UrlSafe();
-                var cryptAuthKeys256 = RsaUtils.Decrypt(jweEncKey, privateKey.Value, UseRsaKeyLength);
-
-                var authKey = new byte[128 / 8];
-                var cryptKey = new byte[128 / 8];
-                Buffer.BlockCopy(cryptAuthKeys256, 0, authKey, 0, authKey.Length);
-                Buffer.BlockCopy(cryptAuthKeys256, authKey.Length, cryptKey, 0, cryptKey.Length);
-
-                using (var hmac = new HMACSHA256(authKey))
-                using (var encryptedStream = MemoryStreamFactory.GetStream())
-                using (var writer = new BinaryWriter(encryptedStream))
-                {
-                    writer.Write(aadBytes);
-                    writer.Write(iv);
-                    writer.Write(cipherText);
-                    writer.Flush();
-
-                    var calcTag = hmac.ComputeHash(encryptedStream.GetBuffer(), 0, (int)encryptedStream.Length);
-
-                    if (!calcTag.EquivalentTo(sentTag))
-                        return null;
-                }
+                if (VerifyJwePayload(req, parts, out var iv, out var cipherText, out var cryptKey)) 
+                    return null;
 
                 var aes = Aes.Create();
                 aes.KeySize = 128;
@@ -543,6 +517,61 @@ namespace ServiceStack.Auth
             }
 
             throw new ArgumentException(ErrorMessages.TokenInvalid.Localize(req));
+        }
+
+        private bool VerifyJwePayload(IRequest req, string[] parts, out byte[] iv, out byte[] cipherText, out byte[] cryptKey)
+        {
+            var jweHeaderBase64Url = parts[0];
+            var jweEncKeyBase64Url = parts[1];
+            var ivBase64Url = parts[2];
+            var cipherTextBase64Url = parts[3];
+            var tagBase64Url = parts[4];
+
+            var sentTag = tagBase64Url.FromBase64UrlSafe();
+            var aadBytes = (jweHeaderBase64Url + "." + jweEncKeyBase64Url).ToUtf8Bytes();
+            iv = ivBase64Url.FromBase64UrlSafe();
+            cipherText = cipherTextBase64Url.FromBase64UrlSafe();
+            var jweEncKey = jweEncKeyBase64Url.FromBase64UrlSafe();
+
+            var privateKey = GetPrivateKey(req);
+            if (privateKey == null)
+                throw new Exception("PrivateKey required to decrypt JWE Token");
+            
+            var allPrivateKeys = new List<RSAParameters> {
+                privateKey.Value
+            };
+            allPrivateKeys.AddRange(GetFallbackPrivateKeys(req));
+
+            var authKey = new byte[128 / 8];
+            cryptKey = new byte[128 / 8];
+
+            foreach (var key in allPrivateKeys)
+            {
+                var cryptAuthKeys256 = RsaUtils.Decrypt(jweEncKey, key, UseRsaKeyLength);
+
+                Buffer.BlockCopy(cryptAuthKeys256, 0, authKey, 0, authKey.Length);
+                Buffer.BlockCopy(cryptAuthKeys256, authKey.Length, cryptKey, 0, cryptKey.Length);
+
+                using (var hmac = new HMACSHA256(authKey))
+                using (var encryptedStream = MemoryStreamFactory.GetStream())
+                using (var writer = new BinaryWriter(encryptedStream))
+                {
+                    writer.Write(aadBytes);
+                    writer.Write(iv);
+                    writer.Write(cipherText);
+                    writer.Flush();
+
+                    var calcTag = hmac.ComputeHash(encryptedStream.GetBuffer(), 0, (int) encryptedStream.Length);
+
+                    if (!calcTag.EquivalentTo(sentTag))
+                        return true;
+                }
+            }
+
+            iv = null;
+            cipherText = null;
+            cryptKey = null;
+            return false;
         }
 
         public IAuthSession ConvertJwtToSession(IRequest req, string jwt)

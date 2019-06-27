@@ -21,22 +21,22 @@ namespace ServiceStack
             this.req = req;
         }
 
-        private string SetVerb(object reqeustDto)
+        private string SetVerb(object requestDto)
         {
             var hold = req.GetItem(Keywords.InvokeVerb) as string;
-            if (reqeustDto is IVerb)
+            if (requestDto is IVerb)
             {
-                if (reqeustDto is IGet)
+                if (requestDto is IGet)
                     req.SetItem(Keywords.InvokeVerb, HttpMethods.Get);
-                if (reqeustDto is IPost)
+                if (requestDto is IPost)
                     req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
-                if (reqeustDto is IPut)
+                if (requestDto is IPut)
                     req.SetItem(Keywords.InvokeVerb, HttpMethods.Put);
-                if (reqeustDto is IDelete)
+                if (requestDto is IDelete)
                     req.SetItem(Keywords.InvokeVerb, HttpMethods.Delete);
-                if (reqeustDto is IPatch)
+                if (requestDto is IPatch)
                     req.SetItem(Keywords.InvokeVerb, HttpMethods.Patch);
-                if (reqeustDto is IOptions)
+                if (requestDto is IOptions)
                     req.SetItem(Keywords.InvokeVerb, HttpMethods.Options);
             }
             return hold;
