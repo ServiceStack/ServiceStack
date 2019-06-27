@@ -143,8 +143,8 @@ namespace ServiceStack.Auth
 
             jwtPayload.SetAudience(Audiences);
 
-            var hashAlgoritm = GetHashAlgorithm(req);
-            var refreshToken = CreateJwt(jwtHeader, jwtPayload, hashAlgoritm);
+            var hashAlgorithm = GetHashAlgorithm(req);
+            var refreshToken = CreateJwt(jwtHeader, jwtPayload, hashAlgorithm);
             return refreshToken;
         }
 
