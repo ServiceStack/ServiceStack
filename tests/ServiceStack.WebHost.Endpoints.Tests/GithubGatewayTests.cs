@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Text;
 
@@ -52,6 +53,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var gateway = new GitHubGateway();
             var result = gateway.GetGist(GistId);
+            var gist = (GithubGist)result;
+            Assert.That(gist.Owner.Login, Is.EqualTo("gistlyn"));
+            Assert.That(gist.Owner.Url, Is.EqualTo("https://api.github.com/users/gistlyn"));
+            Assert.That(gist.Owner.Html_Url, Is.EqualTo("https://github.com/gistlyn"));
+
+            var file = gist.Files["main.cs"];
+            Assert.That(file.Filename, Is.EqualTo("main.cs"));
+            Assert.That(file.Type, Is.EqualTo("text/plain"));
+            Assert.That(file.Language, Is.EqualTo("C#"));
+            Assert.That(file.Raw_Url, Does.EndWith("/main.cs"));
+            Assert.That(file.Size, Is.GreaterThan(0));
+            Assert.That(file.Content, Does.Contain("Hello, {name}!"));
+        }
+
+        [Test]
+        public async Task Can_download_public_gist_Async()
+        {
+            var gateway = new GitHubGateway();
+            var result = await gateway.GetGistAsync(GistId);
             var gist = (GithubGist)result;
             Assert.That(gist.Owner.Login, Is.EqualTo("gistlyn"));
             Assert.That(gist.Owner.Url, Is.EqualTo("https://api.github.com/users/gistlyn"));
