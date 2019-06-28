@@ -14,6 +14,7 @@ namespace ServiceStack
     {
         Gist CreateGist(string description, bool isPublic, Dictionary<string, string> gistFiles);
         Gist GetGist(string gistId);
+        Task<Gist> GetGistAsync(string gistId);
         void WriteGistFiles(string gistId, Dictionary<string, string> files);
         void CreateGistFile(string gistId, string filePath, string contents);
         void WriteGistFile(string gistId, string filePath, string contents);
@@ -149,6 +150,21 @@ namespace ServiceStack
 
         public virtual T GetJson<T>(string route) => GetJson(route).FromJson<T>();
 
+        public virtual async Task<string> GetJsonAsync(string route)
+        {
+            var apiUrl = !route.IsUrl()
+                ? BaseUrl.CombineWith(route)
+                : route;
+
+            if (GetJsonFilter != null)
+                return GetJsonFilter(apiUrl);
+
+            return await apiUrl.GetJsonFromUrlAsync(ApplyRequestFilters);
+        }
+
+        public virtual async Task<T> GetJsonAsync<T>(string route) => 
+            (await GetJsonAsync(route)).FromJson<T>();
+
         public virtual IEnumerable<T> StreamJsonCollection<T>(string route)
         {
             List<T> results;
@@ -245,12 +261,22 @@ namespace ServiceStack
 
         public virtual Gist GetGist(string gistId)
         {
-            var result = GetGithubGist(gistId);
-            if (result != null)
-            {
-                result.UserId = result.Owner?.Login;
-            }
-            return result;
+            var response = GetGithubGist(gistId);
+            return PopulateGist(response);
+        }
+
+        public async Task<Gist> GetGistAsync(string gistId)
+        {
+            var response = await GetJsonAsync<GithubGist>($"/gists/{gistId}");
+            return PopulateGist(response);
+        }
+
+        private GithubGist PopulateGist(GithubGist response)
+        {
+            if (response != null)
+                response.UserId = response.Owner?.Login;
+
+            return response;
         }
 
         public virtual Gist CreateGist(string description, bool isPublic, Dictionary<string, string> gistFiles) =>
