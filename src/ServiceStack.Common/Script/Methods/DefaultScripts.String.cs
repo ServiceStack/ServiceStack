@@ -322,5 +322,7 @@ namespace ServiceStack.Script
             return str;            
         }
         
+        public bool isBinary(string fileOrExt) => MimeTypes.IsBinary(MimeTypes.GetMimeType(fileOrExt));
+        public string contentType(string fileOrExt) => MimeTypes.GetMimeType(fileOrExt);
     }
 }
