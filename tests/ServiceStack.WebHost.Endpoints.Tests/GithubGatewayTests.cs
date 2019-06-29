@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using ServiceStack.IO;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -104,6 +106,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             
             gist = gateway.GetGist(GistId);
             Assert.That(gist.Files.TryGetValue(newFile, out file), Is.False);
+        }
+ 
+        [Test]
+        public async Task Does_FetchAllTruncatedFilesAsync()
+        {
+            var gistWithTruncatedFiles = "6f3484ef287c85b118ee6ca3262c1534";
+            var vfs = new GistVirtualFiles(gistWithTruncatedFiles);
+            var gist = await vfs.GetGistAsync();
+            Assert.That(gist.Files.Values.Any(x => x.Truncated && string.IsNullOrEmpty(x.Content)));
+
+            await vfs.LoadAllTruncatedFilesAsync();
+
+            Assert.That(!gist.Files.Values.Any(x => x.Truncated && string.IsNullOrEmpty(x.Content)));
         }
     }
 }

@@ -2,10 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using ServiceStack.Text;
-using ServiceStack.Text.Pools;
 using ServiceStack.VirtualPath;
 
 namespace ServiceStack.IO
@@ -99,6 +97,20 @@ namespace ServiceStack.IO
 
             LastRefresh = DateTime.UtcNow;
             return gistCache = await Gateway.GetGistAsync(GistId);
+        }
+        
+        public async Task LoadAllTruncatedFilesAsync()
+        {
+            var gist = await GetGistAsync();
+
+            var files = gist.Files.Where(x => 
+                string.IsNullOrEmpty(x.Value.Content) && x.Value.Truncated);
+
+            var tasks = files.Select(async x => {
+                x.Value.Content = await x.Value.Raw_Url.GetStringFromUrlAsync();
+            });
+
+            await Task.WhenAll(tasks);
         }
 
         public void ClearGist() => gistCache = null;
