@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using ServiceStack.IO;
 
 namespace ServiceStack.VirtualPath
@@ -96,7 +97,22 @@ namespace ServiceStack.VirtualPath
 
         public override string ToString() => $"[{GetType().Name}: {RootDirectory.RealPath}]";
 
-        public virtual void WriteFiles(Dictionary<string, string> files)
+        public virtual void WriteFiles(Dictionary<string, string> textFiles)
+        {
+            var vfs = this as IVirtualFiles;
+            if (vfs == null)
+                throw new NotSupportedException($"{GetType().Name} does not implement IVirtualFiles");
+            
+            foreach (var entry in textFiles)
+            {
+                vfs.WriteFile(entry.Key, entry.Value);
+            }
+        }
+        
+        protected NotSupportedException CreateContentNotSupportedException(object value) =>
+            new NotSupportedException($"Could not write '{value?.GetType().Name ?? "null"}' value. Only string, byte[], Stream or IVirtualFile content is supported.");
+
+        public virtual void WriteFiles(Dictionary<string, object> files)
         {
             var vfs = this as IVirtualFiles;
             if (vfs == null)
@@ -104,7 +120,18 @@ namespace ServiceStack.VirtualPath
             
             foreach (var entry in files)
             {
-                vfs.WriteFile(entry.Key, entry.Value);
+                if (entry.Value == null)
+                    continue;
+                if (entry.Value is IVirtualFile vfile)
+                    vfs.WriteFile(vfile, entry.Key);
+                else if (entry.Value is string textContents)
+                    vfs.WriteFile(entry.Key, textContents);
+                else if (entry.Value is byte[] binaryContents)
+                    vfs.WriteFile(entry.Key, binaryContents);
+                else if (entry.Value is Stream stream)
+                    vfs.WriteFile(entry.Key, stream);
+                else
+                    throw CreateContentNotSupportedException(entry.Value);
             }
         }
     }

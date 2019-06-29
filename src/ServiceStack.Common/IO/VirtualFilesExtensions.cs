@@ -130,6 +130,14 @@ namespace ServiceStack.IO
             writableFs.WriteFiles(textFiles);
         }
 
+        public static void WriteFiles(this IVirtualPathProvider pathProvider, Dictionary<string, object> files)
+        {
+            if (!(pathProvider is IVirtualFiles writableFs))
+                throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
+
+            writableFs.WriteFiles(files);
+        }
+
         public static void WriteFiles(this IVirtualPathProvider pathProvider, IEnumerable<IVirtualFile> srcFiles, Func<IVirtualFile, string> toPath = null)
         {
             if (!(pathProvider is IVirtualFiles writableFs))

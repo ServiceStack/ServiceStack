@@ -184,6 +184,12 @@ namespace ServiceStack.Script
             return virtualPath;
         }
 
+        public object writeFiles(IVirtualPathProvider vfs, Dictionary<string,object> files)
+        {
+            vfs.WriteFiles(files);
+            return IgnoreResult.Value;
+        }
+
         public object writeTextFiles(IVirtualPathProvider vfs, Dictionary<string,string> textFiles)
         {
             vfs.WriteFiles(textFiles);
@@ -221,6 +227,11 @@ namespace ServiceStack.Script
 
         public string fileTextContents(string virtualPath) => fileTextContents(VirtualFiles,virtualPath);
         public string fileTextContents(IVirtualPathProvider vfs, string virtualPath) => vfs.GetFile(virtualPath)?.ReadAllText();
+        public object fileContents(IVirtualFile file) => file is null ? null
+            : MimeTypes.IsBinary(MimeTypes.GetMimeType(file.Extension))
+                ? file.ReadAllBytes()
+                : (object)file.ReadAllText();
+        
         public string textContents(IVirtualFile file) => file?.ReadAllText();
         public byte[] fileBytesContent(string virtualPath) => fileBytesContent(VirtualFiles, virtualPath);
         public byte[] fileBytesContent(IVirtualPathProvider vfs, string virtualPath) => vfs.GetFile(virtualPath)?.ReadAllBytes();
@@ -228,6 +239,8 @@ namespace ServiceStack.Script
         public string fileHash(string virtualPath) => fileHash(VirtualFiles,virtualPath);
         public string fileHash(IVirtualPathProvider vfs, string virtualPath) => vfs.GetFileHash(virtualPath);
         public string fileHash(IVirtualFile file) => file?.GetFileHash();
+        public bool fileIsBinary(IVirtualFile file) => MimeTypes.IsBinary(MimeTypes.GetMimeType(file.Extension));
+        public string fileContentType(IVirtualFile file) => MimeTypes.GetMimeType(file.Extension);
 
         //alias
         public Task urlContents(ScriptScopeContext scope, string url) => includeUrl(scope, url, null);
