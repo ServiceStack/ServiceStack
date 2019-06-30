@@ -1070,6 +1070,12 @@ namespace ServiceStack.Script
             }
         }
 
+        public PageResult Execute()
+        {
+            var render = Result;
+            return this;
+        }
+
         public PageResult Clone(SharpPage page)
         {
             return new PageResult(page)
