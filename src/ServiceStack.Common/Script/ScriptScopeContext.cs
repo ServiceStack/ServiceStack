@@ -22,6 +22,13 @@ namespace ServiceStack.Script
             OutputStream = outputStream;
         }
 
+        public ScriptScopeContext(ScriptContext context, Dictionary<string, object> scopedParams)
+        {
+            PageResult = new PageResult(context.EmptyPage);
+            OutputStream = null;
+            ScopedParams = scopedParams;
+        }
+
         public static implicit operator Templates.TemplateScopeContext(ScriptScopeContext from)
         {
             return new Templates.TemplateScopeContext(from.PageResult, from.OutputStream, from.ScopedParams);
