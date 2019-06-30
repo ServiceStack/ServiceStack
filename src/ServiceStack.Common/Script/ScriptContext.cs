@@ -572,5 +572,18 @@ namespace ServiceStack.Script
                 throw new NotSupportedException(ErrorNoReturn);
             return pageResult.ReturnValue.Result;
         }
+        
+        public static ScriptScopeContext CreateScope(this ScriptContext context, Dictionary<string, object> args = null, 
+            ScriptMethods functions = null, ScriptBlock blocks = null)
+        {
+            var pageContext = new PageResult(context.EmptyPage);
+            if (functions != null)
+                pageContext.ScriptMethods.Insert(0, functions);
+            if (blocks != null)
+                pageContext.ScriptBlocks.Insert(0, blocks);
+
+            return new ScriptScopeContext(pageContext, null, args);
+        }
+        
     }
 }

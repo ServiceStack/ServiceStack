@@ -75,7 +75,7 @@ namespace ServiceStack
                 context.ScriptMethods.Insert(0, functions);
 
             context.Init();
-            return new ScriptScopeContext(new PageResult(context.OneTimePage("")), null, args);
+            return new ScriptScopeContext(new PageResult(context.EmptyPage), null, args);
         }
 
         public static object eval(string js) => eval(js, CreateScope());
