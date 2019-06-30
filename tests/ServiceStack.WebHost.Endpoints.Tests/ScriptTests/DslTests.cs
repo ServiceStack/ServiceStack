@@ -76,7 +76,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var context = CreateContext();
 
             var person = new PersonContract { Name = "Kurt", Age = 27 };
-            var scope = new ScriptScopeContext(new PageResult(context.EmptyPage), Stream.Null, new Dictionary<string, object> {
+            var scope = new ScriptScopeContext(context, new Dictionary<string, object> {
                 ["target"] = person
             });
 
