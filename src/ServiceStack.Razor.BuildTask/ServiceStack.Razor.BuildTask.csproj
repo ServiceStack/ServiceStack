@@ -3,6 +3,7 @@
     <PackageId>ServiceStack.Razor.BuildTask</PackageId>
     <AssemblyName>ServiceStack.Razor.BuildTask</AssemblyName>
     <TargetFrameworks>net45</TargetFrameworks>
+    <IsTool>true</IsTool>
     <Title>.NET v4.5 only features for ServiceStack</Title>
     <PackageDescription>
       ServiceStack Razor Documentation: http://razor.servicestack.net
