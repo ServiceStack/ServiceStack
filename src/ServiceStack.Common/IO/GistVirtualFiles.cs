@@ -24,7 +24,18 @@ namespace ServiceStack.IO
             this.GistId = gistId;
             this.rootDirectory = new GistVirtualDirectory(this, null, null);
         }
-        
+
+        public GistVirtualFiles(Gist gist) : this(gist.Id) => InitGist(gist);
+
+        public GistVirtualFiles(Gist gist, string accessToken) : this(gist.Id, accessToken) => InitGist(gist);
+        public GistVirtualFiles(Gist gist, IGistGateway gateway) : this(gist.Id, gateway) => InitGist(gist);
+
+        private void InitGist(Gist gist)
+        {
+            gistCache = gist;
+            LastRefresh = gist.Updated_At.GetValueOrDefault(DateTime.UtcNow);
+        }
+
         public DateTime LastRefresh { get; private set; }
         
         public TimeSpan RefreshAfter { get; set; } = TimeSpan.MaxValue;
