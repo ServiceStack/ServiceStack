@@ -64,30 +64,35 @@ namespace ServiceStack
             }
         }
 
-        public virtual string GetSourceZipUrl(string orgNames, string name)
+        public virtual Tuple<string,string> FindRepo(string[] orgs, string name)
         {
-            var orgs = orgNames.Split(';')
-                .Map(x => x.LeftPart(' '));
             foreach (var orgName in orgs)
             {
                 var repoFullName = UnwrapRepoFullName(orgName, name);
                 if (repoFullName == null)
                     continue;
 
-                var json = GetJson($"repos/{repoFullName}/releases");
-                var response = JSON.parse(json);
-
-                if (response is List<object> releases && releases.Count > 0 &&
-                    releases[0] is Dictionary<string, object> release &&
-                    release.TryGetValue("zipball_url", out var zipUrl))
-                {
-                    return (string) zipUrl;
-                }
-
-                return $"https://github.com/{repoFullName}/archive/master.zip";
+                var user = repoFullName.LeftPart('/');
+                var repo = repoFullName.RightPart('/');
+                return Tuple.Create(user, repo);
             }
 
             throw new Exception($"'{name}' was not found in sources: {orgs.Join(", ")}");
+        }
+
+        public virtual string GetSourceZipUrl(string user, string repo)
+        {
+            var json = GetJson($"repos/{user}/{repo}/releases");
+            var response = JSON.parse(json);
+
+            if (response is List<object> releases && releases.Count > 0 &&
+                releases[0] is Dictionary<string, object> release &&
+                release.TryGetValue("zipball_url", out var zipUrl))
+            {
+                return (string) zipUrl;
+            }
+
+            return $"https://github.com/{user}/{repo}/archive/master.zip";
         }
 
         public virtual async Task<List<GithubRepo>> GetSourceReposAsync(string orgName)
