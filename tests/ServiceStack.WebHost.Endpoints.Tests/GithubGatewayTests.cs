@@ -22,7 +22,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var gist = gateway.CreateGithubGist(
                 description: "Hello World Examples",
                 isPublic: true,
-                files: new Dictionary<string, string> {
+                textFiles: new Dictionary<string, string> {
                     ["hello_world_ruby.txt"] = "Run `ruby hello_world.rb` to print Hello World",
                     ["hello_world_python.txt"] = "Run `python hello_world.py` to print Hello World",
                 });

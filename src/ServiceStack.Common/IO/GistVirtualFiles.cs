@@ -201,43 +201,7 @@ namespace ServiceStack.IO
 
         public override void WriteFiles(Dictionary<string, object> files)
         {
-            string ToBase64ThenDispose(Stream stream)
-            {
-                using (stream)
-                    return ToBase64(stream);
-            }
-
-            var gistFiles = new Dictionary<string, string>();
-            foreach (var entry in files)
-            {
-                if (entry.Value == null)
-                    continue;
-
-                var filePath = SanitizePath(entry.Key);
-
-                var base64 = entry.Value is string
-                    ? null
-                    : entry.Value is byte[] bytes
-                        ? ToBase64(bytes)
-                        : entry.Value is Stream stream
-                            ? ToBase64ThenDispose(stream)
-                            : entry.Value is IVirtualFile file &&
-                              MimeTypes.IsBinary(MimeTypes.GetMimeType(file.Extension))
-                                ? ToBase64(file.ReadAllBytes())
-                                : null;
-
-                if (base64 != null)
-                    filePath += "|base64";
-
-                var textContents = base64 ??
-                                   (entry.Value is string text
-                                       ? text
-                                       : throw CreateContentNotSupportedException(entry.Value));
-
-                gistFiles[filePath] = textContents;
-            }
-
-            Gateway.WriteGistFiles(GistId, gistFiles);
+            Gateway.WriteGistFiles(GistId, files);
             ClearGist();
         }
 

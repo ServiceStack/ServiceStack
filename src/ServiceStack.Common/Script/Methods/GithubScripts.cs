@@ -40,10 +40,10 @@ namespace ServiceStack.Script
             gateway.GetOrgRepos(githubOrg);
 
         public GithubGist githubCreateGist(GitHubGateway gateway, string description, Dictionary<string, string> files) => 
-            gateway.CreateGithubGist(description:description, isPublic:true, files:files);
+            gateway.CreateGithubGist(description:description, isPublic:true, textFiles:files);
 
         public GithubGist githubCreatePrivateGist(GitHubGateway gateway, string description, Dictionary<string, string> files) => 
-            gateway.CreateGithubGist(description:description, isPublic:false, files:files);
+            gateway.CreateGithubGist(description:description, isPublic:false, textFiles:files);
 
         public GithubGist githubGist(GitHubGateway gateway, string gistId) =>
             gateway.GetGithubGist(gistId);
