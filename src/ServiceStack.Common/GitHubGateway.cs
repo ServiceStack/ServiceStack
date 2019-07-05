@@ -25,7 +25,6 @@ namespace ServiceStack
     {
         public string UserAgent { get; set; } = nameof(GitHubGateway);
         public string BaseUrl { get; set; } = "https://api.github.com/";
-        public bool UseForkParent { get; set; } = true;
 
         /// <summary>
         /// AccessTokenSecret
@@ -40,18 +39,15 @@ namespace ServiceStack
         public GitHubGateway() {}
         public GitHubGateway(string accessToken) => AccessToken = accessToken;
 
-        public virtual string UnwrapRepoFullName(string orgName, string name)
+        public virtual string UnwrapRepoFullName(string orgName, string name, bool useFork=false)
         {
             try
             {
                 var repo = GetJson<GithubRepo>($"/repos/{orgName}/{name}");
-                if (repo.Fork)
+                if (useFork && repo.Fork)
                 {
-                    if (repo.Fork && UseForkParent)
-                    {
-                        if (repo.Parent != null)
-                            return repo.Parent.Full_Name;
-                    }
+                    if (repo.Parent != null)
+                        return repo.Parent.Full_Name;
                 }
 
                 return repo.Full_Name;
@@ -64,11 +60,11 @@ namespace ServiceStack
             }
         }
 
-        public virtual Tuple<string,string> FindRepo(string[] orgs, string name)
+        public virtual Tuple<string,string> FindRepo(string[] orgs, string name, bool useFork=false)
         {
             foreach (var orgName in orgs)
             {
-                var repoFullName = UnwrapRepoFullName(orgName, name);
+                var repoFullName = UnwrapRepoFullName(orgName, name, useFork);
                 if (repoFullName == null)
                     continue;
 
