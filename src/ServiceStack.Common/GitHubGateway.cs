@@ -133,6 +133,9 @@ namespace ServiceStack
 
             return map.Values.ToList();
         }
+        
+        public virtual GithubRepo GetRepo(string userOrOrg, string repo) =>
+            GetJson<GithubRepo>($"/{userOrOrg}/{repo}");
 
         public virtual List<GithubRepo> GetUserRepos(string githubUser) =>
             StreamJsonCollection<List<GithubRepo>>($"users/{githubUser}/repos").SelectMany(x => x).ToList();
