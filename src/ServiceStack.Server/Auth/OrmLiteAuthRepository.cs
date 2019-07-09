@@ -613,7 +613,9 @@ namespace ServiceStack.Auth
                 
                 var rolesAndPerms = Exec(db =>
                 {
-                    return db.Select<KeyValuePair<string,string>>(db.From<UserAuthRole>().Where(x => x.UserAuthId == int.Parse(userAuthId))); 
+                    return db.Select<KeyValuePair<string,string>>(db.From<UserAuthRole>()
+                        .Where(x => x.UserAuthId == int.Parse(userAuthId))
+                        .Select(x => new { x.Role, x.Permission })); 
                 });
 
                 foreach (var kvp in rolesAndPerms)
