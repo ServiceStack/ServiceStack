@@ -35,6 +35,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             new OrmLiteAuthRepositoryTests().ConfigureAuthRepo(container);
     }
     
+    public class OrmLiteAuthRepositoryQueryDistinctRolesTests : AuthRepositoryQueryTestsBase
+    {
+        public override void ConfigureAuthRepo(Container container)
+        {
+            new OrmLiteAuthRepositoryDistinctRolesTests().ConfigureAuthRepo(container);
+        }
+    }
+    
     [NUnit.Framework.Ignore("Requires RavenDB")]
     public class RavenDbAuthRepositoryQueryTests : AuthRepositoryQueryTestsBase
     {
@@ -49,10 +57,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             new MongoDbAuthRepositoryTests().ConfigureAuthRepo(container);
     }
     
+    [NUnit.Framework.Ignore("Requires DynamoDB")]
+    public class DynamoDbAuthRepositoryQueryTests : AuthRepositoryQueryTestsBase
+    {
+        public override void ConfigureAuthRepo(Container container) => 
+            new DynamoDbAuthRepositoryTests().ConfigureAuthRepo(container);
+    }
+    
     [TestFixture]
     public abstract class AuthRepositoryQueryTestsBase
     {
-        private ServiceStackHost appHost;
+        protected ServiceStackHost appHost;
 
         public abstract void ConfigureAuthRepo(Container container); 
         
@@ -229,13 +244,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(context.EvaluateScript("{{ authRepo.getUserAuths({ skip:1, take:2, orderBy:'Id' }) | map => it.Id | join }}"), Is.EqualTo("2,3"));
 
             Assert.That(context.EvaluateScript("{{ authRepo.searchUserAuths({ query:'gmail.com',orderBy:'Id'}) | map => it.Id | join }}"), Is.EqualTo("1,2,3"));
-            Assert.That(context.EvaluateScript("{{ authRepo.searchUserAuths({ query:'gmail.com',skip:1,take:1}) | map => it.Id | join }}"), Is.EqualTo("2"));
+            Assert.That(context.EvaluateScript("{{ authRepo.searchUserAuths({ query:'gmail.com',skip:1,take:1,orderBy:'Id'}) | map => it.Id | join }}"), Is.EqualTo("2"));
 
             if (!IsRavenDb(appHost.TryResolve<IAuthRepository>()))
             {
                 Assert.That(context.EvaluateScript("{{ authRepo.searchUserAuths({ query:'gmail.com', orderBy:'LastName DESC' }) | map => it.Id | join }}"), Is.EqualTo("1,3,2"));
                 Assert.That(context.EvaluateScript("{{ authRepo.searchUserAuths({ query:'Test', orderBy:'Email' }) | map => it.Id | join }}"), Is.EqualTo("2,1"));
                 Assert.That(context.EvaluateScript("{{ authRepo.searchUserAuths({ query:'Test', orderBy:'Id' }) | map => it.Id | join }}"), Is.EqualTo("1,2"));
+            }
+        }
+ 
+        [Test]
+        public void Can_fetch_roles_and_permissions()
+        {
+            var authRepo = appHost.GetAuthRepository();
+            using (authRepo as IDisposable)
+            {
+                if (authRepo is IManageRoles manageRoles)
+                {
+                    manageRoles.GetRolesAndPermissions("3", 
+                        out var roles, out var permissions);
+                    
+                    Assert.That(roles, Is.EquivalentTo(new[] { "Admin" }));
+                }
             }
         }
     }
