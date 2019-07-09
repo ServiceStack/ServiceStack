@@ -592,6 +592,40 @@ namespace ServiceStack.Auth
             }
         }
 
+        public virtual void GetRolesAndPermissions(string userAuthId, out ICollection<string> roles, out ICollection<string> permissions)
+        {
+            if (!UseDistinctRoleTables)
+            {
+                var userAuth = GetUserAuth(userAuthId);
+                if (userAuth == null)
+                {
+                    roles = permissions = TypeConstants.EmptyStringArray;
+                    return;
+                }
+
+                roles = userAuth.Roles;
+                permissions = userAuth.Permissions;
+            }
+            else
+            {
+                roles = new List<string>();
+                permissions = new List<string>();
+                
+                var rolesAndPerms = Exec(db =>
+                {
+                    return db.Select<KeyValuePair<string,string>>(db.From<UserAuthRole>().Where(x => x.UserAuthId == int.Parse(userAuthId))); 
+                });
+
+                foreach (var kvp in rolesAndPerms)
+                {
+                    if (kvp.Key != null)
+                        roles.Add(kvp.Key);
+                    if (kvp.Value != null)
+                        permissions.Add(kvp.Value);
+                }                
+            }
+        }
+
         public virtual bool HasRole(string userAuthId, string role)
         {
             if (role == null)
