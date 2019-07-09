@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using Amazon.DynamoDBv2;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Auth;
@@ -19,6 +20,7 @@ using Raven.Client;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Queries;
+using ServiceStack.Aws.DynamoDb;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -69,6 +71,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 new OrmLiteAuthRepository<AppUser,AppUserDetails>(c.Resolve<IDbConnectionFactory>()));
         }
     }
+    
+    public class OrmLiteAuthRepositoryDistinctRolesTests : AuthRepositoryTestsBase
+    {
+        public override void ConfigureAuthRepo(Container container)
+        {
+            container.Register<IDbConnectionFactory>(c =>
+                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider) {
+                    AutoDisposeConnection = false,
+                });
+
+            container.Register<IAuthRepository>(c => 
+                new OrmLiteAuthRepository<AppUser,AppUserDetails>(c.Resolve<IDbConnectionFactory>()) {
+                    UseDistinctRoleTables = true,
+                });
+        }
+    }
 
     [NUnit.Framework.Ignore("Requires RavenDB")]
     public class RavenDbAuthRepositoryTests : AuthRepositoryTestsBase
@@ -109,6 +127,36 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             container.AddSingleton(mongoDatabase);
             container.AddSingleton<IAuthRepository>(c => 
                 new MongoDbAuthRepository(c.Resolve<IMongoDatabase>(), createMissingCollections:true));
+        }
+    }
+
+    [NUnit.Framework.Ignore("Requires DynamoDB")]
+    public class DynamoDbAuthRepositoryTests : AuthRepositoryTestsBase
+    {
+        public static IPocoDynamo CreatePocoDynamo()
+        {
+            var dynamoClient = CreateDynamoDbClient();
+            var db = new PocoDynamo(dynamoClient);
+            return db;
+        }
+
+        public static string DynamoDbUrl = Environment.GetEnvironmentVariable("CI_DYNAMODB") 
+            ?? "http://localhost:8000";
+
+        public static AmazonDynamoDBClient CreateDynamoDbClient()
+        {
+            var dynamoClient = new AmazonDynamoDBClient("keyId", "key", new AmazonDynamoDBConfig {
+                ServiceURL = DynamoDbUrl,
+            });
+            return dynamoClient;
+        }
+
+        public override void ConfigureAuthRepo(Container container)
+        {
+            var db = CreatePocoDynamo();
+            container.AddSingleton(db);
+            container.Register<IAuthRepository>(c => 
+                new DynamoDbAuthRepository<AppUser,AppUserDetails>(c.Resolve<IPocoDynamo>()));
         }
     }
     
