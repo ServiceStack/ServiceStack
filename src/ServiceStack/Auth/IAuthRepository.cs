@@ -41,6 +41,7 @@ namespace ServiceStack.Auth
     {
         ICollection<string> GetRoles(string userAuthId);
         ICollection<string> GetPermissions(string userAuthId);
+        void GetRolesAndPermissions(string userAuthId, out ICollection<string> roles, out ICollection<string> permissions);
 
         bool HasRole(string userAuthId, string role);
         bool HasPermission(string userAuthId, string permission);

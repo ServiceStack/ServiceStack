@@ -687,21 +687,39 @@ namespace ServiceStack
                 
                 if (HostContext.HasValidAuthSecret(request))
                     attrs.Add(RoleNames.Admin);
+
+                var roles = authSession.Roles;
+                var permissions = authSession.Permissions;
                 
-                if (authSession.Roles != null)
+                if (roles.IsEmpty() && permissions.IsEmpty())
                 {
-                    foreach (var role in authSession.Roles)
+                    var authRepo = HostContext.AppHost.GetAuthRepository(request);
+                    using (authRepo as IDisposable)
+                    {
+                        if (authRepo is IManageRoles manageRoles)
+                        {
+                            manageRoles.GetRolesAndPermissions(authSession.UserAuthId, out var iroles, out var ipermissions);
+                            roles = iroles.ToList();
+                            permissions = ipermissions.ToList();
+                        }
+                    }
+                }
+                
+                if (roles != null)
+                {
+                    foreach (var role in roles)
                     {
                         attrs.Add("role:" + role);
                     }
                 }
-                if (authSession.Permissions != null)
+                if (permissions != null)
                 {
-                    foreach (var perm in authSession.Permissions)
+                    foreach (var perm in permissions)
                     {
                         attrs.Add("perm:" + perm);
                     }
                 }
+                
                 if (authSession is IAuthSessionExtended extended)
                 {
                     if (extended.Scopes != null)
