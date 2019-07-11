@@ -6,15 +6,15 @@ using ServiceStack.IO;
 
 namespace ServiceStack.Script
 {
-    public class GithubPlugin : IScriptPlugin
+    public class GitHubPlugin : IScriptPlugin
     {
         public void Register(ScriptContext context)
         {
-            context.ScriptMethods.Add(new GithubScripts());
+            context.ScriptMethods.Add(new GitHubScripts());
         }
     }
     
-    public class GithubScripts : ScriptMethods
+    public class GitHubScripts : ScriptMethods
     {
         public GistVirtualFiles gistVirtualFiles(string gistId) => new GistVirtualFiles(gistId);
 
