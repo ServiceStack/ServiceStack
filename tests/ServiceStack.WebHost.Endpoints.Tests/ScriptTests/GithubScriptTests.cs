@@ -10,7 +10,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         public ScriptContext CreateScriptContext()
         {
             return new ScriptContext {
-                Plugins = { new GithubPlugin() },
+                Plugins = { new GitHubPlugin() },
                 ScriptMethods = { new InfoScripts() },
             };
         }
