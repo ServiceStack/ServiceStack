@@ -256,7 +256,7 @@ namespace ServiceStack
     public class NavOptions
     {
         /// <summary>
-        /// Attributes which define this view, e.g:
+        /// User Attributes for conditional rendering, e.g:
         ///  - auth - User is Authenticated
         ///  - role:name - User Role
         ///  - perm:name - User Permission 
@@ -274,6 +274,9 @@ namespace ServiceStack
         /// </summary>
         public string BaseHref { get; set; }
 
+        /// <summary>
+        /// Custom classes applied to different navigation elements (defaults to Bootstrap classes)
+        /// </summary>
         public string NavClass { get; set; } = NavDefaults.NavClass;
         public string NavItemClass { get; set; } = NavDefaults.NavItemClass;
         public string NavLinkClass { get; set; } = NavDefaults.NavLinkClass;
