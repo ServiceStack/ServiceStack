@@ -284,6 +284,17 @@ namespace ServiceStack
         public string ChildNavMenuItemClass { get; set; } = NavDefaults.ChildNavMenuItemClass;
     }
 
+    /// <summary>
+    /// Public API for ViewUtils
+    /// </summary>
+    public static class View
+    {
+        public static List<NavItem> NavItems => ViewUtils.NavItems;
+        public static Dictionary<string, List<NavItem>> NavItemsMap => ViewUtils.NavItemsMap;
+        public static void Load(IAppSettings settings) => ViewUtils.Load(settings);
+
+        public static List<NavItem> GetNavItems(string key) => ViewUtils.GetNavItems(key);
+    }
 
     /// <summary>
     /// Shared Utils shared between different Template Filters and Razor Views/Helpers
