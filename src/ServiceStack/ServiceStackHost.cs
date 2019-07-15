@@ -230,7 +230,7 @@ namespace ServiceStack
                     OnStartupException(ex);
                 }
             }
-            Plugins.ForEach(RunPreConfigure);
+            Plugins.ToList().ForEach(RunPreConfigure);
             configInstances.ForEach(RunPreConfigure);
             
             if (ServiceController == null)
@@ -273,7 +273,7 @@ namespace ServiceStack
                 Plugins.RemoveAll(x => x is RequestInfoFeature);
 
             //Some plugins need to initialize before other plugins are registered.
-            Plugins.ForEach(RunPreInitPlugin);
+            Plugins.ToList().ForEach(RunPreInitPlugin);
             configInstances.ForEach(RunPreInitPlugin);
 
             List<IVirtualPathProvider> pathProviders = null;
