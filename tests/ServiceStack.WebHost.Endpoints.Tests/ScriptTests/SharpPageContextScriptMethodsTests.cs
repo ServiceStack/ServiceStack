@@ -196,7 +196,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         }
 
         [Test]
-        public void Can_repeat_templates_using_forEach()
+        public void Can_repeat_templates_using_writeEach()
         {
             var context = new ScriptContext
             {
@@ -207,15 +207,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 }
             }.Init();
             
-            Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{it}} </li>' | forEach(letters) }} </ul>")).Result,
+            Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{it}} </li>' | writeEach(letters) }} </ul>")).Result,
                 Is.EqualTo("<ul> <li> A </li><li> B </li><li> C </li> </ul>"));
 
-            Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{it}} </li>' | forEach(numbers) }} </ul>")).Result,
+            Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{it}} </li>' | writeEach(numbers) }} </ul>")).Result,
                 Is.EqualTo("<ul> <li> 1 </li><li> 2 </li><li> 3 </li> </ul>"));
         }
 
         [Test]
-        public void Can_use_escaped_chars_in_forEach()
+        public void Can_use_escaped_chars_in_writeEach()
         {
             var context = new ScriptContext
             {
@@ -225,7 +225,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 }
             }.Init();
 
-            var result = context.EvaluateScript("<ul>\n{{ '<li> {{it}} </li>\n' | forEach(letters) }}</ul>");
+            var result = context.EvaluateScript("<ul>\n{{ '<li> {{it}} </li>\n' | writeEach(letters) }}</ul>");
             Assert.That(result.NormalizeNewLines(),
                 Is.EqualTo(@"<ul>
 <li> A </li>
@@ -249,7 +249,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 <html>
 <body>
 <header>
-<ul> {{ '<li> {{it}} </li>' | forEach(numbers) }} </ul>
+<ul> {{ '<li> {{it}} </li>' | writeEach(numbers) }} </ul>
 </header>
 <section>
 {{ page }}
@@ -257,7 +257,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 </body>
 </html>
 ");
-            context.VirtualFiles.WriteFile("page.html", "<ul> {{ '<li> {{it}} </li>' | forEach(letters) }} </ul>");
+            context.VirtualFiles.WriteFile("page.html", "<ul> {{ '<li> {{it}} </li>' | writeEach(letters) }} </ul>");
             
             var result = new PageResult(context.GetPage("page"))
             {
@@ -282,7 +282,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         }
 
         [Test]
-        public void Can_repeat_templates_with_bindings_using_forEach()
+        public void Can_repeat_templates_with_bindings_using_writeEach()
         {
             var context = new ScriptContext
             {
@@ -297,12 +297,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 }
             }.Init();
             
-            Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{ it.Object.Prop }} </li>' | forEach(items) }} </ul>")).Result,
+            Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{ it.Object.Prop }} </li>' | writeEach(items) }} </ul>")).Result,
                 Is.EqualTo("<ul> <li> A </li><li> B </li><li> C </li> </ul>"));
         }
 
         [Test]
-        public void Can_repeat_templates_with_bindings_and_custom_scope_using_forEach()
+        public void Can_repeat_templates_with_bindings_and_custom_scope_using_writeEach()
         {
             var context = new ScriptContext
             {
@@ -317,7 +317,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 }
             }.Init();
             
-            Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{ item.Object.Prop }} </li>' | forEach(items, { it: 'item' } ) }} </ul>")).Result,
+            Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{ item.Object.Prop }} </li>' | writeEach(items, { it: 'item' } ) }} </ul>")).Result,
                 Is.EqualTo("<ul> <li> A </li><li> B </li><li> C </li> </ul>"));
             
             // Equivalent with select:
@@ -338,7 +338,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                     }
                 }.Init();
              
-                Assert.That(new PageResult(context.OneTimePage("{{ ' - {{it}}\n' | forEach(items) | markdown }}")).Result.RemoveAllWhitespace(), 
+                Assert.That(new PageResult(context.OneTimePage("{{ ' - {{it}}\n' | writeEach(items) | markdown }}")).Result.RemoveAllWhitespace(), 
                     Is.EqualTo("<ul><li>foo</li><li>bar</li><li>qux</li></ul>".RemoveAllWhitespace()));
             }
         }
