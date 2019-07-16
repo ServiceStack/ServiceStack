@@ -1938,7 +1938,7 @@ Category: Grains/Cereals, AveragePrice: 20.25
             Assert.That(context.EvaluateScript(@"
 {{ [1.7, 2.3, 1.9, 4.1, 2.9] | assignTo: doubles }}
 {{ doubles 
-   | reduce((accumulator,it) => accumulator * it)
+   | reduce((accumulator,it) => accumulator * it,1)
    | select: Total product of all numbers: { it | format('#.####') }. }} 
 ").NormalizeNewLines(),
                 
