@@ -692,8 +692,8 @@ namespace ServiceStack.Script
             await scope.WritePageAsync(page, codePage, pageParams);
         }
 
-        public Task forEach(ScriptScopeContext scope, object target, object items) => forEach(scope, target, items, null);
-        public async Task forEach(ScriptScopeContext scope, object target, object items, object scopeOptions)
+        public Task writeEach(ScriptScopeContext scope, object target, object items) => writeEach(scope, target, items, null);
+        public async Task writeEach(ScriptScopeContext scope, object target, object items, object scopeOptions)
         {
             if (items is IEnumerable objs)
             {
@@ -709,7 +709,7 @@ namespace ServiceStack.Script
             }
             else if (items != null)
             {
-                throw new ArgumentException($"{nameof(forEach)} in '{scope.Page.VirtualPath}' requires an IEnumerable, but received a '{items.GetType().Name}' instead");
+                throw new ArgumentException($"{nameof(writeEach)} in '{scope.Page.VirtualPath}' requires an IEnumerable, but received a '{items.GetType().Name}' instead");
             }
         }
 

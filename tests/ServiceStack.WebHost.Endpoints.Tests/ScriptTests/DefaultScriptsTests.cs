@@ -687,13 +687,13 @@ result={{ result }}
             Assert.That(result.NormalizeNewLines(), Is.EqualTo("result=2"));
             
             result = new PageResult(context.OneTimePage(@"
-{{ '<li> {{it}} </li>' | forEach(items) | assignTo('result') }}
+{{ '<li> {{it}} </li>' | writeEach(items) | assignTo('result') }}
 <ul>{{ result | raw }}</ul>
 ")).Result;            
             Assert.That(result.NormalizeNewLines(), Is.EqualTo("<ul><li> foo </li><li> bar </li><li> qux </li></ul>"));
             
             result = new PageResult(context.OneTimePage(@"
-{{ ' - {{it}}' | appendLine | forEach(items) | markdown | assignTo('result') }}
+{{ ' - {{it}}' | appendLine | writeEach(items) | markdown | assignTo('result') }}
 <div>{{ result | raw }}</div>
 ")).Result;            
             Assert.That(result.NormalizeNewLines(), Is.EqualTo("<div><ul>\n<li>foo</li>\n<li>bar</li>\n<li>qux</li>\n</ul>\n</div>"));
