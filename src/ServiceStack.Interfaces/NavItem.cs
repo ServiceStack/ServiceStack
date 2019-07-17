@@ -27,14 +27,16 @@ namespace ServiceStack
         /// Emit id="{Id}"
         /// </summary>
         public string Id { get; set; }
+        
         /// <summary>
         /// Override class="{Class}"
         /// </summary>
         public string ClassName { get; set; }
+        
         /// <summary>
-        /// HTML for Icon (if any)
+        /// Icon class (if any)
         /// </summary>
-        public string IconHtml { get; set; } 
+        public string IconClass { get; set; } 
         
         /// <summary>
         /// Only show if NavOptions.Attributes.Contains(Show) 
@@ -50,7 +52,10 @@ namespace ServiceStack
         /// Sub Menu Child NavItems
         /// </summary>
         public List<NavItem> Children { get; set; }
-        
+ 
+        /// <summary>
+        /// Attach additional custom metadata to this NavItem
+        /// </summary>
         public Dictionary<string, string> Meta { get; set; }
     }
 

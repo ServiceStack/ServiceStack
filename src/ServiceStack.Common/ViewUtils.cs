@@ -563,7 +563,8 @@ namespace ServiceStack
                 sb.Append(" id=\"").Append(navItem.Id).Append("\"");
 
             sb.Append(">")
-                .Append(navItem.IconHtml)
+                .Append(!string.IsNullOrEmpty(navItem.IconClass) 
+                    ? $"<i class=\"{navItem.IconClass}\"></i>" : "")
                 .Append(navItem.Label)
                 .AppendLine("</a>");
         }

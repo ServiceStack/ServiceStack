@@ -38,7 +38,7 @@ namespace ServiceStack.Auth
                 Label = "Sign in with Facebook",
                 Id = "btn-" + Name,
                 ClassName = "btn-social btn-facebook",
-                IconHtml = "<i class=\"fab svg-facebook\"></i>",
+                IconClass = "fab svg-facebook",
             };
         }
 
