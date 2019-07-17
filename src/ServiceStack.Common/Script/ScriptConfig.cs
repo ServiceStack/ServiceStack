@@ -8,6 +8,7 @@ namespace ServiceStack.Script
     {
         public static HashSet<string> RemoveNewLineAfterFiltersNamed { get; set; } = new HashSet<string>
         {
+            "to",
             "assignTo",
             "assignToGlobal",
             "assignError",
@@ -19,6 +20,7 @@ namespace ServiceStack.Script
             "appendToGlobal",
             "prependTo",
             "prependToGlobal",
+            "forEach",
             "do",
             "end",
             "throw",
