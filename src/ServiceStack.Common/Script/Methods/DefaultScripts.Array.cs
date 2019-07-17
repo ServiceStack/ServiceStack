@@ -142,22 +142,42 @@ namespace ServiceStack.Script
 
         public List<object> slice(IList list, int begin, int end) => list.Map(x => x).Skip(begin).Take(end - begin).ToList();
 
-        public IgnoreResult forEach(ScriptScopeContext scope, IList array, JsArrowFunctionExpression arrowExpr)
+        public IgnoreResult forEach(ScriptScopeContext scope, object target, JsArrowFunctionExpression arrowExpr)
         {
-            var itemBinding = arrowExpr.Params[0].Name;
-            var indexBinding = arrowExpr.Params.Length > 1 ? arrowExpr.Params[1].Name : ScriptConstants.Index;
-            var arrayBinding = arrowExpr.Params.Length > 2 ? arrowExpr.Params[2].Name : null;
             var token = arrowExpr.Body;
 
-            for (var i = 0; i < array.Count; i++)
+            if (target is IList list)
             {
-                scope.ScopedParams[indexBinding] = i;
-                if (arrayBinding != null)
-                    scope.ScopedParams[arrayBinding] = array;
+                var itemBinding = arrowExpr.Params[0].Name;
+                var indexBinding = arrowExpr.Params.Length > 1 ? arrowExpr.Params[1].Name : ScriptConstants.Index;
+                var arrayBinding = arrowExpr.Params.Length > 2 ? arrowExpr.Params[2].Name : null;
+
+                for (var i = 0; i < list.Count; i++)
+                {
+                    scope.ScopedParams[indexBinding] = i;
+                    if (arrayBinding != null)
+                        scope.ScopedParams[arrayBinding] = list;
                 
-                scope = scope.AddItemToScope(itemBinding, array[i]);
-                token.Evaluate(scope);
+                    scope = scope.AddItemToScope(itemBinding, list[i]);
+                    token.Evaluate(scope);
+                }
             }
+            else if (target is IDictionary d)
+            {
+                if (arrowExpr.Params.Length != 2)
+                    throw new NotSupportedException("Dictionary.forEach requires 2 lambda params");
+                    
+                var keyBinding = arrowExpr.Params[0].Name;
+                var valueBinding = arrowExpr.Params[1].Name;
+
+                foreach (var key in d.Keys)
+                {
+                    scope.ScopedParams[keyBinding] = key;
+                    scope.ScopedParams[valueBinding] = d[key];
+                    token.Evaluate(scope);
+                }
+            }
+            else throw new NotSupportedException("Can only use forEach on Lists or Dictionaries");
 
             return IgnoreResult.Value;
         }
