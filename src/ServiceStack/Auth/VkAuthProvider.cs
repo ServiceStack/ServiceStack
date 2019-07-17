@@ -32,7 +32,7 @@ namespace ServiceStack.Auth {
                 Label = "Sign in with VK",
                 Id = "btn-" + Name,
                 ClassName = "btn-social btn-vk",
-                IconHtml = "<i class=\"fab svg-vk\"></i>",
+                IconClass = "fab svg-vk",
             };
         }
 
