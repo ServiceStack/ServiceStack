@@ -2020,5 +2020,16 @@ dir-file: dir/dir-file.txt
 
             Assert.That(context.EvaluateScript("{{['a', 'b', 'c'].values() | join}}"), Is.EqualTo("a,b,c"));
         }
+
+        [Test]
+        public void Can_use_forEach_on_dictionaries()
+        {
+            var context = new ScriptContext().Init();
+            
+            Assert.That(context.EvaluateScript(
+                "{{ {a:1,b:2,c:3} | to => d }}{{ []  | to => values}}{{d.forEach((key,val) => values.push(val))}}{{values | join}}"),
+                Is.EqualTo("1,2,3"));
+            
+        }
     }
 }
