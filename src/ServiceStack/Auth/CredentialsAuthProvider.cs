@@ -188,7 +188,8 @@ namespace ServiceStack.Auth
 
             if (session is IAuthSessionExtended authSession)
             {
-                var failed = authSession.Validate(authService, session, tokens, authInfo);
+                var failed = authSession.Validate(authService, session, tokens, authInfo)
+                    ?? AuthEvents.Validate(authService, session, tokens, authInfo);
                 if (failed != null)
                 {
                     authService.RemoveSession();
