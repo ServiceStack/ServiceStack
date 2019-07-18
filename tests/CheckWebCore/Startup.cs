@@ -63,14 +63,6 @@ namespace CheckWebCore
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            var AppSettings = new NetCoreAppSettings(Configuration);
-            AppSettings.GetNullableString("servicestack:license");
-            
-            app.UseServiceStack(new AppHost
-            {
-                AppSettings = AppSettings
-            });
         }
     }
     
@@ -91,9 +83,17 @@ namespace CheckWebCore
     }
     
 
-    public class AppHost : AppHostBase
+    public class AppHost : AppHostBase, IConfigureApp
     {
         public AppHost() : base("TestLogin", typeof(MyServices).Assembly) { }
+
+        public void Configure(IApplicationBuilder app)
+        {
+            app.UseServiceStack(new AppHost
+            {
+                AppSettings = new NetCoreAppSettings(Configuration)
+            });
+        }
 
         public override void Configure(IServiceCollection services)
         {
