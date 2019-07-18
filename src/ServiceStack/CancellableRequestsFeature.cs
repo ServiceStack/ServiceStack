@@ -20,8 +20,7 @@ namespace ServiceStack
 
         internal void UnregisterCancellableRequest(string requestTag)
         {
-            ICancellableRequest existing;
-            if (RequestsMap.TryRemove(requestTag, out existing))
+            if (RequestsMap.TryRemove(requestTag, out var existing))
                 existing.Dispose();
         }
 
