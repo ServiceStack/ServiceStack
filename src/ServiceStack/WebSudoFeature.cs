@@ -102,6 +102,9 @@ namespace ServiceStack
 
         }
 
+        public IHttpResult Validate(IServiceBase authService, IAuthSession session, IAuthTokens tokens,
+            Dictionary<string, string> authInfo) => null;
+
         public void OnRegistered(IRequest httpReq, IAuthSession session, IServiceBase registrationService)
         {
 
