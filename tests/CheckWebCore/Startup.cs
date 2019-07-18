@@ -133,6 +133,8 @@ namespace CheckWebCore
             this.CustomErrorHttpHandlers[HttpStatusCode.Forbidden] = new SharpPageHandler("/forbidden");
 
             Svg.Load(RootDirectory.GetDirectory("/assets/svg"));
+            
+            Plugins.Add(new PostmanFeature());
 
 //            TypeScriptGenerator.TypeFilter = (type, args) => {
 //                if (type == "ResponseBase`1" && args[0] == "Dictionary<String,List`1>")
