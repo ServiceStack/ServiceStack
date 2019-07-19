@@ -101,10 +101,10 @@ namespace ServiceStack
                 {
                     authWithRequest.PreAuthenticate(req, req.Response);
                     if (req.Response.IsClosed)
-                        return Task.CompletedTask;
+                        return TypeConstants.EmptyTask;
                 }
             }
-            return Task.CompletedTask;
+            return TypeConstants.EmptyTask;
         }
 
         protected bool DoHtmlRedirectIfConfigured(IRequest req, IResponse res, bool includeRedirectParam = false)
