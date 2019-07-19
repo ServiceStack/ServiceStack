@@ -134,7 +134,7 @@ namespace ServiceStack
                 return true;
             
             var authProviders = AuthenticateService.GetAuthProviders();
-            AuthenticateAttribute.PreAuthenticate(req, authProviders);
+            AuthenticateAttribute.PreAuthenticateAsync(req, authProviders).Wait();
             if (req.Response.IsClosed)
                 return false;
             
