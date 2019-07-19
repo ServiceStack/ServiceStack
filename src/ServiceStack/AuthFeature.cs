@@ -18,6 +18,12 @@ namespace ServiceStack
 
         public Func<string, bool> IsValidUsernameFn { get; set; }
 
+        /// <summary>
+        /// Fired before any [Authenticate] or [Required*] Auth Attribute is validated.
+        /// Return non-null IHttpResult to write to response and short-circuit request.
+        /// </summary>
+        public Func<IRequest, IHttpResult> OnAuthenticateValidate { get; set; }
+
         private readonly Func<IAuthSession> sessionFactory;
         private IAuthProvider[] authProviders;
         public IAuthProvider[] AuthProviders => authProviders;

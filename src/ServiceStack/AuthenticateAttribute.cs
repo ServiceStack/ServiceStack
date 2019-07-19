@@ -69,7 +69,7 @@ namespace ServiceStack
             
             req.PopulateFromRequestIfHasSessionId(requestDto);
 
-            PreAuthenticate(req, authProviders);
+            await PreAuthenticateAsync(req, authProviders);
 
             if (res.IsClosed)
                 return;
@@ -84,8 +84,15 @@ namespace ServiceStack
             }
         }
 
-        internal static void PreAuthenticate(IRequest req, IEnumerable<IAuthProvider> authProviders)
+        internal static Task PreAuthenticateAsync(IRequest req, IEnumerable<IAuthProvider> authProviders)
         {
+            var authValidate = HostContext.GetPlugin<AuthFeature>()?.OnAuthenticateValidate;
+            var ret = authValidate?.Invoke(req);
+            if (ret != null)
+            {
+                return req.Response.WriteToResponse(req, ret);
+            }
+
             //Call before GetSession so Exceptions can bubble
             if (!req.Items.ContainsKey(Keywords.HasPreAuthenticated))
             {
@@ -94,9 +101,10 @@ namespace ServiceStack
                 {
                     authWithRequest.PreAuthenticate(req, req.Response);
                     if (req.Response.IsClosed)
-                        return;
+                        return Task.CompletedTask;
                 }
             }
+            return Task.CompletedTask;
         }
 
         protected bool DoHtmlRedirectIfConfigured(IRequest req, IResponse res, bool includeRedirectParam = false)
