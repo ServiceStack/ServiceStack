@@ -36,6 +36,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    [Route("/head-test/{Id}")]
+    public class HeadTest
+    {
+        public string Id { get; set; }
+    }
+
+    public class HeadTestService : Service
+    {
+        public void Any(HeadTest request)
+        {
+            Response.AddHeader("Id", request.Id);
+            Response.EndRequest();
+        }
+    }
+
     public class UniqueRequestAppHost : AppHostHttpListenerBase
     {
         public UniqueRequestAppHost() : base("Unique Request Tests", typeof(UniqueRequestService).Assembly) {}
@@ -139,6 +154,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(response.Ids, Is.EquivalentTo(new[] { 1, 2, 3 }));
             Assert.That(response.Names, Is.EquivalentTo(new List<string> { "A", "B", "C" }));
+        }
+
+        [Test]
+        public void Does_populate_Head_requests()
+        {
+            var json = BaseUri.CombineWith("json", "reply", nameof(HeadTest))
+                .AddQueryParam("Id", 1)
+                .SendStringToUrl(method:HttpMethods.Head, responseFilter: res => {
+                    Assert.That(res.Headers["Id"], Is.EqualTo("1"));
+                });
+            Assert.That(json, Is.Empty);
         }
     }
 }
