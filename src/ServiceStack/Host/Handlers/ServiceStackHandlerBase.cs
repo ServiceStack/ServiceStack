@@ -164,7 +164,8 @@ namespace ServiceStack.Host.Handlers
             var hasRequestBody = httpReq.ContentType != null && httpReq.ContentLength > 0;
 
             if (!hasRequestBody
-                && (httpMethod == HttpMethods.Get || httpMethod == HttpMethods.Delete || httpMethod == HttpMethods.Options))
+                && (httpMethod == HttpMethods.Get || httpMethod == HttpMethods.Delete || 
+                    httpMethod == HttpMethods.Options || httpMethod == HttpMethods.Head))
             {
                 return KeyValueDataContractDeserializer.Instance.Parse(queryString, operationType).InTask();
             }
