@@ -116,7 +116,7 @@ namespace ServiceStack.Auth
                 if (!registerNewUser && !AllowUpdates)
                     throw new NotSupportedException(ErrorMessages.RegisterUpdatesDisabled.Localize(Request));
                 
-                if (!HostContext.AppHost.GlobalRequestFiltersAsyncArray.Contains(ValidationFilters.RequestFilterAsync)) //Already gets run
+                if (!HostContext.AppHost.GlobalRequestFiltersAsync.Contains(ValidationFilters.RequestFilterAsync)) //Already gets run
                     RegistrationValidator?.ValidateAndThrow(request, registerNewUser ? ApplyTo.Post : ApplyTo.Put);
                 
                 user = registerNewUser
