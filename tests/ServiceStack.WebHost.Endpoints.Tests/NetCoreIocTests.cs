@@ -21,7 +21,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             public AppHost() : base(nameof(NetCoreIocTests), typeof(NetCoreIocTests).Assembly) {}
 
-            public override void ConfigureServices(IServiceCollection services)
+            public override void Configure(IServiceCollection services)
             {
                 services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
                 services.AddSingleton(c => new SingletonDep());
