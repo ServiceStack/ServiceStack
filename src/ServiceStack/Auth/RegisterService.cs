@@ -125,6 +125,7 @@ namespace ServiceStack.Auth
 
                 if (registerNewUser)
                 {
+                    session.PopulateSession(user, authRepo);
                     session.OnRegistered(Request, session, this);
                     AuthEvents?.OnRegistered(this.Request, session, this);
                 }
