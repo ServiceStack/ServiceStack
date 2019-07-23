@@ -115,7 +115,7 @@ namespace ServiceStack.Auth
 
                 if (!registerNewUser && !AllowUpdates)
                     throw new NotSupportedException(ErrorMessages.RegisterUpdatesDisabled.Localize(Request));
-
+                
                 if (!HostContext.AppHost.GlobalRequestFiltersAsyncArray.Contains(ValidationFilters.RequestFilterAsync)) //Already gets run
                     RegistrationValidator?.ValidateAndThrow(request, registerNewUser ? ApplyTo.Post : ApplyTo.Put);
                 
@@ -125,7 +125,7 @@ namespace ServiceStack.Auth
 
                 if (registerNewUser)
                 {
-                    session.PopulateSession(user, authRepo);
+                    session.PopulateSession(user);
                     session.OnRegistered(Request, session, this);
                     AuthEvents?.OnRegistered(this.Request, session, this);
                 }
@@ -164,7 +164,7 @@ namespace ServiceStack.Auth
                 {
                     session = this.GetSession();
                     if (!request.AutoLogin.GetValueOrDefault())
-                        session.PopulateSession(user, authRepo);
+                        session.PopulateSession(user);
                 }
             }
 
