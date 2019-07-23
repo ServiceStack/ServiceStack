@@ -12,7 +12,7 @@ namespace ServiceStack
     public class CorsFeature : IPlugin
     {
         public const string DefaultOrigin = "*";
-        public const string DefaultMethods = "GET, POST, PUT, DELETE, PATCH, OPTIONS";
+        public const string DefaultMethods = "GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD";
         public const string DefaultHeaders = "Content-Type";
 
         private readonly string allowedOrigins;
