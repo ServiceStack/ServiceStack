@@ -159,13 +159,6 @@ namespace ServiceStack.Auth
                         }
                     }
                 }
-
-                if (registerNewUser)
-                {
-                    session = this.GetSession();
-                    if (!request.AutoLogin.GetValueOrDefault())
-                        session.PopulateSession(user);
-                }
             }
 
             if (response == null)
