@@ -20,27 +20,27 @@ using ServiceStack.Validation;
 
 namespace CheckWebCore
 {
-    [Priority(-3)]
-    public class TestConfigureServicesSub1 : IConfigureServices
+    [Priority(-1)]
+    public class MyPreConfigureServices : IConfigureServices
     {
-        public void Configure(IServiceCollection services) => "IConfigureServices(-2)".Print(); // #1
+        public void Configure(IServiceCollection services) => "#1".Print(); // #1
     }
 
-    public class TestConfigureServices : IConfigureServices
+    public class MyConfigureServices : IConfigureServices
     {
-        public void Configure(IServiceCollection services) => "IConfigureServices(0)".Print();  // #4
+        public void Configure(IServiceCollection services) => "#4".Print();  // #4
     }
 
     [Priority(-1)]
-    public class TestStartup : IStartup
+    public class MyStartup : IStartup
     {
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            "IStartup.ConfigureServices(-1)".Print();                                           // #2
+            "#2".Print();                                           // #2
             return null;
         }
 
-        public void Configure(IApplicationBuilder app) => "IStartup.Configure(-1)".Print();     // #7
+        public void Configure(IApplicationBuilder app) => "#6".Print();     // #6
     }
 
     public class Startup : ModularStartup
@@ -51,14 +51,14 @@ namespace CheckWebCore
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public new void ConfigureServices(IServiceCollection services)                              
         {
-            "Startup.ConfigureServices(IServiceCollection services)".Print();                   // #3
+            "#3".Print();                   // #3
             services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)                 
         {
-            "Startup.Configure(IApplicationBuilder app, IHostingEnvironment env)".Print();      // #8
+            "#8".Print();      // #8
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -67,19 +67,19 @@ namespace CheckWebCore
     }
     
     [Priority(1)]
-    public class TestPostConfigureServicesAdd1 : IConfigureServices
+    public class MyPostConfigureServices : IConfigureServices
     {
-        public void Configure(IServiceCollection services) => "IConfigureServices(+1)".Print(); // #5
+        public void Configure(IServiceCollection services) => "#5".Print(); // #5
     }
-    [Priority(1)]
-    public class TestConfigureAppAdd1 : IConfigureApp
+
+    [Priority(-1)]
+    public class MyPreConfigureApp : IConfigureApp
     {
-        public void Configure(IApplicationBuilder app)=> "IConfigureApp(+1)".Print();           // #9
+        public void Configure(IApplicationBuilder app)=> "#7".Print();           // #7
     }
-    [Priority(-2)]
-    public class TestConfigureAppAdd2 : IConfigureApp
+    public class MyConfigureApp : IConfigureApp
     {
-        public void Configure(IApplicationBuilder app)=> "IConfigureApp(-2)".Print();           // #6
+        public void Configure(IApplicationBuilder app)=> "#9".Print();           // #9
     }
     
 
