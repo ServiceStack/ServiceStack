@@ -226,8 +226,14 @@ namespace ServiceStack
 
         protected class Startup
         {
-            public void ConfigureServices(IServiceCollection services) =>
+            public IConfiguration Configuration { get; }
+            public Startup(IConfiguration configuration) => Configuration = configuration;
+
+            public void ConfigureServices(IServiceCollection services)
+            {
+                HostInstance.Configuration = Configuration;
                 HostInstance.Configure(services);
+            }
 
             public virtual void Configure(IApplicationBuilder app, IHostingEnvironment env)
             {
