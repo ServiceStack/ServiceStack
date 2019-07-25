@@ -45,7 +45,10 @@ namespace CheckWebCore
 
     public class Startup : ModularStartup
     {
-        public Startup(IConfiguration configuration) : base(configuration){}
+        public Startup(IConfiguration configuration) : base(configuration)
+        {
+//            IgnoreTypes.Add(typeof(MyStartup));
+        }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
@@ -99,7 +102,7 @@ namespace CheckWebCore
         {
             services.AddSingleton<ICacheClient>(new MemoryCacheClient());
         }
-
+        
         // http://localhost:5000/auth/credentials?username=testman@test.com&&password=!Abc1234
         // Configure your AppHost with the necessary configuration and dependencies your App needs
         public override void Configure(Container container)
