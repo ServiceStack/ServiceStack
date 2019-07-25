@@ -18,8 +18,8 @@ namespace ServiceStack
         public string Href { get; set; }
         
         /// <summary>
-        /// Whether Active class should only be added when paths are exact match
-        /// otherwise checks if ActivePath starts with Path
+        /// Whether NavItem should only be considered active when paths 
+        /// are an exact match otherwise checks if ActivePath starts with Path
         /// </summary>
         public bool? Exact { get; set; }
 
