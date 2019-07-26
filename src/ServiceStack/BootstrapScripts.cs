@@ -60,7 +60,7 @@ namespace ServiceStack
             {
                 if (options.TryGetValue("attributes", out var oAttributes))
                     navOptions.Attributes = ViewUtils.ToStrings(nameof(ToNavOptions), oAttributes).ToHashSet();
-                if (options.TryGetValue("active", out var oActive))
+                if (options.TryGetValue("activePath", out var oActive))
                     navOptions.ActivePath = (string)oActive;
                 if (options.TryGetValue("baseHref", out var oBaseHref))
                     navOptions.BaseHref = (string)oBaseHref;
