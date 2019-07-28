@@ -30,15 +30,12 @@ namespace ServiceStack.Authentication.Neo4j
 
         public void InitSchema()
         {
-            using (var session = driver.Session())
+            WriteTxQuery(tx =>
             {
-                session.WriteTransaction(tx =>
-                {
-                    tx.Run($"CREATE CONSTRAINT ON (u:{IdScopeLabel}) ASSERT u.Scope IS UNIQUE");
-                    tx.Run($"CREATE CONSTRAINT ON (userAuth:{UserAuthLabel}) ASSERT userAuth.Id IS UNIQUE");
-                    tx.Run($"CREATE CONSTRAINT ON (details:{UserAuthDetailsLabel}) ASSERT details.Id IS UNIQUE");
-                });
-            }
+                tx.Run($"CREATE CONSTRAINT ON (u:{IdScopeLabel}) ASSERT u.Scope IS UNIQUE");
+                tx.Run($"CREATE CONSTRAINT ON (userAuth:{UserAuthLabel}) ASSERT userAuth.Id IS UNIQUE");
+                tx.Run($"CREATE CONSTRAINT ON (details:{UserAuthDetailsLabel}) ASSERT details.Id IS UNIQUE");
+            });
         }
 
         public IUserAuth CreateUserAuth(IUserAuth newUser, string password)
@@ -58,24 +55,21 @@ namespace ServiceStack.Authentication.Neo4j
         private void SaveUser(IUserAuth userAuth)
         {
             var query = $@"
-                    MERGE (user:{UserAuthLabel} {{Id: $user.Id}})
-                    SET user = $user";
+                MERGE (user:{UserAuthLabel} {{Id: $user.Id}})
+                SET user = $user";
 
-            using (var session = driver.Session(AccessMode.Write))
+            WriteTxQuery(tx =>
             {
-                session.WriteTransaction(tx =>
+                if (userAuth.Id == default)
+                    userAuth.Id = NextId(tx, UserAuthLabel);
+
+                var parameters = new
                 {
-                    if (userAuth.Id == default)
-                        userAuth.Id = NextId(tx, UserAuthLabel);
+                    user = userAuth.ToObjectDictionary()
+                };
 
-                    var parameters = new Dictionary<string, object>
-                    {
-                        {"user", userAuth.ToObjectDictionary()}
-                    };
-
-                    tx.Run(query, parameters);
-                });
-            }
+                tx.Run(query, parameters);
+            });
         }
 
         private int NextId(ITransaction tx, string scope)
@@ -84,11 +78,8 @@ namespace ServiceStack.Authentication.Neo4j
                 MERGE (n:{IdScopeLabel} {{Scope: $scope}})
                 SET n.Value = COALESCE(n.Value, 0) + 1
                 RETURN n.Value";
-            
-            var parameters = new Dictionary<string, object>
-            {
-                {"scope", scope}
-            };
+
+            var parameters = new { scope };
 
             var result = tx.Run(query, parameters);
 
@@ -98,20 +89,21 @@ namespace ServiceStack.Authentication.Neo4j
 
         private void AssertNoExistingUser(IUserAuth newUser, IUserAuth exceptForExistingUser = null)
         {
+            IUserAuth existingUser;
             if (newUser.UserName != null)
             {
-                var existingUser = GetUserAuthByUserName(newUser.UserName);
+                existingUser = GetUserAuthByUserName(newUser.UserName);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
                     throw new ArgumentException(string.Format(ErrorMessages.UserAlreadyExistsTemplate1, newUser.UserName.SafeInput()));
             }
-            if (newUser.Email != null)
-            {
-                var existingUser = GetUserAuthByUserName(newUser.Email);
-                if (existingUser != null
-                    && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                    throw new ArgumentException(string.Format(ErrorMessages.EmailAlreadyExistsTemplate1, newUser.Email.SafeInput()));
-            }
+
+            if (newUser.Email == null) return;
+            
+            existingUser = GetUserAuthByUserName(newUser.Email);
+            if (existingUser != null
+                && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
+                throw new ArgumentException(string.Format(ErrorMessages.EmailAlreadyExistsTemplate1, newUser.Email.SafeInput()));
         }
 
         public IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser, string password)
@@ -161,20 +153,17 @@ namespace ServiceStack.Authentication.Neo4j
                 MATCH (user:{UserAuthLabel} {{Email: $name}})
                 RETURN user";
 
-            var parameters = new Dictionary<string, object>
+            var parameters = new
             {
-                {"name", userNameOrEmail}
+                name = userNameOrEmail
             };
 
-            using (var session = driver.Session(AccessMode.Read))
-            {
-                var result = session.Run(isEmail ? findByEmailQuery : findByUsernameQuery, parameters)
-                    .SingleOrDefault();
+            var result = ReadQuery(isEmail ? findByEmailQuery : findByUsernameQuery, parameters)
+                .SingleOrDefault();
 
-                var userAuth = ((INode) result?[0])?.Map<UserAuth>();
+            var userAuth = ((INode) result?[0])?.Map<UserAuth>();
 
-                return userAuth;
-            }
+            return userAuth;
         }
 
         public bool TryAuthenticate(string userName, string password, out IUserAuth userAuth)
@@ -198,7 +187,6 @@ namespace ServiceStack.Authentication.Neo4j
 
         public bool TryAuthenticate(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, out IUserAuth userAuth)
         {
-            //userId = null;
             userAuth = GetUserAuthByUserName(digestHeaders["username"]);
             if (userAuth == null)
                 return false;
@@ -237,21 +225,19 @@ namespace ServiceStack.Authentication.Neo4j
                 MATCH (user:{UserAuthLabel} {{Id: $id}})
                 RETURN user";
 
-            var parameters = new Dictionary<string, object>
+            var parameters = new
             {
-                {"id", int.Parse(userAuthId)}
+                id = int.Parse(userAuthId)
             };
 
-            using (var session = driver.Session(AccessMode.Read))
-            {
-                var result = session.Run(query, parameters)
-                    .SingleOrDefault();
+            var result = ReadQuery(query, parameters)
+                .SingleOrDefault();
 
-                var userAuth = ((INode)result?[0])?.Map<UserAuth>();
+            var userAuth = ((INode)result?[0])?.Map<UserAuth>();
 
-                return userAuth;
-            }
+            return userAuth;
         }
+
 
         public void SaveUserAuth(IAuthSession authSession)
         {
@@ -285,15 +271,12 @@ namespace ServiceStack.Authentication.Neo4j
                 OPTIONAL MATCH (user)-[r:{HasUserAuthDetailsRel}]->(details:{UserAuthDetailsLabel})
                 DELETE user, details, r";
 
-            var parameters = new Dictionary<string, object>
+            var parameters = new
             {
-                {"id", int.Parse(userAuthId)}
+                id = int.Parse(userAuthId)
             };
 
-            using (var session = driver.Session(AccessMode.Write))
-            {
-                session.Run(query, parameters);
-            }
+            WriteQuery(query, parameters);
         }
 
         public List<IUserAuthDetails> GetUserAuthDetails(string userAuthId)
@@ -302,32 +285,30 @@ namespace ServiceStack.Authentication.Neo4j
                 MATCH (:{UserAuthLabel} {{Id: $id}})-[:{HasUserAuthDetailsRel}]->(details:{UserAuthDetailsLabel})
                 RETURN details";
 
-            var parameters = new Dictionary<string, object>
+            var parameters = new
             {
-                {"id", int.Parse(userAuthId)}
+                id = int.Parse(userAuthId)
             };
 
-            using (var session = driver.Session(AccessMode.Read))
-            {
-                var results = session.Run(query, parameters);
+            var results = ReadQuery(query, parameters);
 
-                var items = results.Select(
-                    result => ((INode) result[0]).Map<UserAuthDetails>());
+            var items = results.Select(
+                result => ((INode) result[0]).Map<UserAuthDetails>());
 
-                return items.Cast<IUserAuthDetails>().ToList();
-            }
+            return items.Cast<IUserAuthDetails>().ToList();
         }
 
         public IUserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens)
         {
+            IUserAuth userAuth;
             if (!authSession.UserAuthId.IsNullOrEmpty())
             {
-                var userAuth = GetUserAuth(authSession.UserAuthId);
+                userAuth = GetUserAuth(authSession.UserAuthId);
                 if (userAuth != null) return userAuth;
             }
             if (!authSession.UserAuthName.IsNullOrEmpty())
             {
-                var userAuth = GetUserAuthByUserName(authSession.UserAuthName);
+                userAuth = GetUserAuthByUserName(authSession.UserAuthName);
                 if (userAuth != null) return userAuth;
             }
 
@@ -341,21 +322,18 @@ namespace ServiceStack.Authentication.Neo4j
                 MATCH (userAuth:{UserAuthLabel})-[:{HasUserAuthDetailsRel}]->(details:{UserAuthDetailsLabel})
                 RETURN DISTINCT userAuth";
 
-            var parameters = new Dictionary<string, object>
+            var parameters = new
             {
-                {"userId", tokens.UserId},
-                {"provider", tokens.Provider}
+                userId = tokens.UserId,
+                provider = tokens.Provider
             };
 
-            using (var session = driver.Session(AccessMode.Read))
-            {
-                var result = session.Run(query, parameters)
-                    .SingleOrDefault();
+            var result = ReadQuery(query, parameters)
+                .SingleOrDefault();
 
-                var userAuth = ((INode)result?[0])?.Map<UserAuth>();
+            userAuth = ((INode)result?[0])?.Map<UserAuth>();
 
-                return userAuth;
-            }
+            return userAuth;
         }
 
         public IUserAuthDetails CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
@@ -365,21 +343,16 @@ namespace ServiceStack.Authentication.Neo4j
                 WHERE details.Provider = $provider AND details.UserId = $userId
                 RETURN details";
 
-            var parameters = new Dictionary<string, object>
+            var parameters = new
             {
-                {"userId", tokens.UserId},
-                {"provider", tokens.Provider}
+                userId = tokens.UserId,
+                provider = tokens.Provider
             };
 
-            UserAuthDetails userAuthDetails;
+            var result = ReadQuery(query, parameters)
+                .SingleOrDefault();
 
-            using (var session = driver.Session(AccessMode.Read))
-            {
-                var result = session.Run(query, parameters)
-                    .SingleOrDefault();
-
-                userAuthDetails = ((INode)result?[0])?.Map<UserAuthDetails>();
-            }
+            var userAuthDetails = ((INode)result?[0])?.Map<UserAuthDetails>();
 
             if (userAuthDetails == null)
             {
@@ -413,23 +386,20 @@ namespace ServiceStack.Authentication.Neo4j
                 WITH details
                 MATCH (user:{UserAuthLabel} {{Id: $id}})
                 MERGE (user)-[:{HasUserAuthDetailsRel}]->(details)";
-
-            using (var session = driver.Session(AccessMode.Write))
+            
+            WriteTxQuery(tx =>
             {
-                session.WriteTransaction(tx =>
+                if (userAuthDetails.Id == default)
+                    userAuthDetails.Id = NextId(tx, UserAuthDetailsLabel);
+
+                var detailsParameters = new
                 {
-                    if (userAuthDetails.Id == default)
-                        userAuthDetails.Id = NextId(tx, UserAuthDetailsLabel);
+                    details = userAuthDetails.ToObjectDictionary(),
+                    id = userAuth.Id
+                };
 
-                    var detailsParameters = new Dictionary<string, object>
-                    {
-                        {"details", userAuthDetails.ToObjectDictionary()},
-                        {"id", userAuth.Id}
-                    };
-
-                    tx.Run(detailsQuery, detailsParameters);
-                });
-            }
+                tx.Run(detailsQuery, detailsParameters);
+            });
 
             return userAuthDetails;
         }
@@ -446,22 +416,16 @@ namespace ServiceStack.Authentication.Neo4j
                 MATCH (u:{IdScopeLabel})
                 DELETE u";
 
-            using (var session = driver.Session(AccessMode.Write))
+            WriteTxQuery(tx =>
             {
-                session.WriteTransaction(tx =>
-                {
-                    tx.Run(userAuthQuery);
-                    tx.Run(idScopeQuery);
-                });
-            }
+                tx.Run(userAuthQuery);
+                tx.Run(idScopeQuery);
+            });
         }
 
         public void InitApiKeySchema()
         {
-            using (var session = driver.Session())
-            {
-                session.Run($"CREATE CONSTRAINT ON (apiKey:{ApiKeyLabel}) ASSERT apiKey.Id IS UNIQUE");
-            }
+            WriteQuery($"CREATE CONSTRAINT ON (apiKey:{ApiKeyLabel}) ASSERT apiKey.Id IS UNIQUE");
         }
 
         public bool ApiKeyExists(string apiKey)
@@ -473,18 +437,15 @@ namespace ServiceStack.Authentication.Neo4j
                 MATCH (apiKey:{ApiKeyLabel} {{Id: $id}})
                 RETURN user IS NOT NULL";
 
-            var parameters = new Dictionary<string, object>
+            var parameters = new
             {
-                {"id", apiKey}
+                id = apiKey
             };
 
-            using (var session = driver.Session(AccessMode.Read))
-            {
-                var result = session.Run(query, parameters)
-                    .SingleOrDefault();
+            var result = ReadQuery(query, parameters)
+                .SingleOrDefault();
 
-                return result?[0].As<bool>() ?? false;
-            }
+            return result?[0].As<bool>() ?? false;
         }
 
         public ApiKey GetApiKey(string apiKey)
@@ -496,18 +457,15 @@ namespace ServiceStack.Authentication.Neo4j
                 MATCH (apiKey:{ApiKeyLabel} {{Id: $id}})
                 RETURN apiKey";
 
-            var parameters = new Dictionary<string, object>
+            var parameters = new
             {
-                {"id", apiKey}
+                id = apiKey
             };
 
-            using (var session = driver.Session(AccessMode.Read))
-            {
-                var result = session.Run(query, parameters)
-                    .SingleOrDefault();
+            var result = ReadQuery(query, parameters)
+                .SingleOrDefault();
 
-                return ((INode)result?[0])?.Map<ApiKey>();
-            }
+            return ((INode)result?[0])?.Map<ApiKey>();
         }
 
         public List<ApiKey> GetUserApiKeys(string userId)
@@ -517,23 +475,20 @@ namespace ServiceStack.Authentication.Neo4j
                 WHERE apiKey.CancelledDate Is null AND (apiKey.ExpiryDate IS null OR apiKey.ExpiryDate >= $expiry)
                 RETURN apiKey";
 
-            var parameters = new Dictionary<string, object>
+            var parameters = new
             {
-                {"id", int.Parse(userId)},
-                {"expiry", DateTime.UtcNow}
+                id = int.Parse(userId),
+                expiry = DateTime.UtcNow
             };
 
-            using (var session = driver.Session(AccessMode.Read))
-            {
-                var results = session.Run(query, parameters);
+            var results = ReadQuery(query, parameters);
 
-                var items = results.Select(
-                    result => ((INode)result[0]).Map<ApiKey>());
+            var items = results.Select(
+                result => ((INode)result[0]).Map<ApiKey>());
 
-                var itemList = items.ToList();
+            var itemList = items.ToList();
 
-                return itemList;
-            }
+            return itemList;
         }
 
         public void StoreAll(IEnumerable<ApiKey> apiKeys)
@@ -546,14 +501,35 @@ namespace ServiceStack.Authentication.Neo4j
                 MATCH (userAuth:{UserAuthLabel} {{Id: toInteger(key.UserAuthId)}})
                 MERGE (userAuth)-[:{HasApiKeyRel}]->(apiKey)";
 
-            var parameters = new Dictionary<string, object>
+            var parameters = new
             {
-                {"keys", apiKeys.Select(p => p.ToObjectDictionary())}
+                keys = apiKeys.Select(p => p.ToObjectDictionary())
             };
 
-            using (var session = driver.Session(AccessMode.Write))
+            WriteQuery(query, parameters);
+        }
+
+        private IStatementResult ReadQuery(string statement, object parameters = null)
+        {
+            using (var session = driver.Session())
             {
-                session.Run(query, parameters);
+                return session.ReadTransaction(tx => tx.Run(statement, parameters));
+            }
+        }
+        
+        private void WriteQuery(string statement, object parameters = null)
+        {
+            using (var session = driver.Session())
+            {
+                session.WriteTransaction(tx => tx.Run(statement, parameters));
+            }
+        }
+        
+        private void WriteTxQuery(Action<ITransaction> action)
+        {
+            using (var session = driver.Session())
+            {
+                session.WriteTransaction(action);
             }
         }
     }
