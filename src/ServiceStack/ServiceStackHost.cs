@@ -939,6 +939,18 @@ namespace ServiceStack
             {
                 Log.Error("Error when Disposing Request Context", ex);
             }
+            finally
+            {
+                if (request != null)
+                {
+                    // Release Buffered Streams immediately
+                    if (request.UseBufferedStream && request.InputStream is MemoryStream inputMs)
+                        inputMs.Dispose();
+                    var res = request.Response;
+                    if (res != null && res.UseBufferedStream && res.OutputStream is MemoryStream outputMs)
+                        outputMs.Dispose();
+                }
+            }
         }
 
         /// <summary>
