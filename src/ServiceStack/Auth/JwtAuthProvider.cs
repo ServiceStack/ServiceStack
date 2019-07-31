@@ -395,6 +395,9 @@ namespace ServiceStack.Auth
                 throw new ArgumentException(ex.Message);
             }
 
+            if (jwtPayload == null)
+                throw new ArgumentException(ErrorMessages.TokenInvalid.Localize(Request));
+
             jwtAuthProvider.AssertJwtPayloadIsValid(jwtPayload);
 
             if (jwtAuthProvider.ValidateRefreshToken != null && !jwtAuthProvider.ValidateRefreshToken(jwtPayload, Request))
