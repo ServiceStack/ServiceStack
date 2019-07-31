@@ -945,10 +945,22 @@ namespace ServiceStack
                 {
                     // Release Buffered Streams immediately
                     if (request.UseBufferedStream && request.InputStream is MemoryStream inputMs)
+                    {
                         inputMs.Dispose();
+                    }
                     var res = request.Response;
                     if (res != null && res.UseBufferedStream && res.OutputStream is MemoryStream outputMs)
-                        outputMs.Dispose();
+                    {
+                        try 
+                        { 
+                            res.Flush();
+                            outputMs.Dispose();
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error("Error disposing Response Buffered OutputStream", ex);
+                        }
+                    }
                 }
             }
         }
