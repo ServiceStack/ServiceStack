@@ -28,18 +28,22 @@ namespace ServiceStack
     {
         Tuple<string,string> FindRepo(string[] orgs, string name, bool useFork=false);
         string GetSourceZipUrl(string user, string repo);
+        Task<string> GetSourceZipUrlAsync(string user, string repo);
         Task<List<GithubRepo>> GetSourceReposAsync(string orgName);
         Task<List<GithubRepo>> GetUserAndOrgReposAsync(string githubOrgOrUser);
         GithubRepo GetRepo(string userOrOrg, string repo);
+        Task<GithubRepo> GetRepoAsync(string userOrOrg, string repo);
         List<GithubRepo> GetUserRepos(string githubUser);
+        Task<List<GithubRepo>> GetUserReposAsync(string githubUser);
         List<GithubRepo> GetOrgRepos(string githubOrg);
-        void DownloadFile(string downloadUrl, string fileName);
+        Task<List<GithubRepo>> GetOrgReposAsync(string githubOrg);
         string GetJson(string route);
         T GetJson<T>(string route);
         Task<string> GetJsonAsync(string route);
         Task<T> GetJsonAsync<T>(string route);
         IEnumerable<T> StreamJsonCollection<T>(string route);
         Task<List<T>> GetJsonCollectionAsync<T>(string route);
+        void DownloadFile(string downloadUrl, string fileName);
     }
 
     public class GitHubGateway : IGistGateway, IGitHubGateway
@@ -97,9 +101,14 @@ namespace ServiceStack
             throw new Exception($"'{name}' was not found in sources: {orgs.Join(", ")}");
         }
 
-        public virtual string GetSourceZipUrl(string user, string repo)
+        public virtual string GetSourceZipUrl(string user, string repo) => 
+            GetSourceZipUrl(user, repo, GetJson($"repos/{user}/{repo}/releases"));
+
+        public virtual async Task<string> GetSourceZipUrlAsync(string user, string repo) => 
+            GetSourceZipUrl(user, repo, await GetJsonAsync($"repos/{user}/{repo}/releases"));
+
+        private static string GetSourceZipUrl(string user, string repo, string json)
         {
-            var json = GetJson($"repos/{user}/{repo}/releases");
             var response = JSON.parse(json);
 
             if (response is List<object> releases && releases.Count > 0 &&
@@ -155,11 +164,20 @@ namespace ServiceStack
         public virtual GithubRepo GetRepo(string userOrOrg, string repo) =>
             GetJson<GithubRepo>($"/{userOrOrg}/{repo}");
 
+        public virtual Task<GithubRepo> GetRepoAsync(string userOrOrg, string repo) =>
+            GetJsonAsync<GithubRepo>($"/{userOrOrg}/{repo}");
+
         public virtual List<GithubRepo> GetUserRepos(string githubUser) =>
             StreamJsonCollection<List<GithubRepo>>($"users/{githubUser}/repos").SelectMany(x => x).ToList();
 
+        public virtual async Task<List<GithubRepo>> GetUserReposAsync(string githubUser) =>
+            (await GetJsonCollectionAsync<List<GithubRepo>>($"users/{githubUser}/repos")).SelectMany(x => x).ToList();
+
         public virtual List<GithubRepo> GetOrgRepos(string githubOrg) =>
             StreamJsonCollection<List<GithubRepo>>($"orgs/{githubOrg}/repos").SelectMany(x => x).ToList();
+        
+        public virtual async Task<List<GithubRepo>> GetOrgReposAsync(string githubOrg) =>
+            (await GetJsonCollectionAsync<List<GithubRepo>>($"orgs/{githubOrg}/repos")).SelectMany(x => x).ToList();
         
         public virtual string GetJson(string route)
         {
