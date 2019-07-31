@@ -23,8 +23,26 @@ namespace ServiceStack
         void WriteGistFile(string gistId, string filePath, string contents);
         void DeleteGistFiles(string gistId, params string[] filePaths);
     }
-    
-    public class GitHubGateway : IGistGateway
+
+    public interface IGitHubGateway : IGistGateway 
+    {
+        Tuple<string,string> FindRepo(string[] orgs, string name, bool useFork=false);
+        string GetSourceZipUrl(string user, string repo);
+        Task<List<GithubRepo>> GetSourceReposAsync(string orgName);
+        Task<List<GithubRepo>> GetUserAndOrgReposAsync(string githubOrgOrUser);
+        GithubRepo GetRepo(string userOrOrg, string repo);
+        List<GithubRepo> GetUserRepos(string githubUser);
+        List<GithubRepo> GetOrgRepos(string githubOrg);
+        void DownloadFile(string downloadUrl, string fileName);
+        string GetJson(string route);
+        T GetJson<T>(string route);
+        Task<string> GetJsonAsync(string route);
+        Task<T> GetJsonAsync<T>(string route);
+        IEnumerable<T> StreamJsonCollection<T>(string route);
+        Task<List<T>> GetJsonCollectionAsync<T>(string route);
+    }
+
+    public class GitHubGateway : IGistGateway, IGitHubGateway
     {
         public string UserAgent { get; set; } = nameof(GitHubGateway);
         public string BaseUrl { get; set; } = "https://api.github.com/";
