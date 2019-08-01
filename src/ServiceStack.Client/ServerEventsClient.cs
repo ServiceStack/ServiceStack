@@ -167,6 +167,7 @@ namespace ServiceStack
 
         public Action<WebRequest> EventStreamRequestFilter { get; set; }
         public Action<WebRequest> HeartbeatRequestFilter { get; set; }
+        public Action<WebRequest> UnRegisterRequestFilter { get; set; }
 
         readonly Dictionary<string, List<Action<ServerEventMessage>>> listeners =
             new Dictionary<string, List<Action<ServerEventMessage>>>();
@@ -764,6 +765,8 @@ namespace ServiceStack
 
                         if (log.IsDebugEnabled)
                             log.Debug("[SSE-CLIENT] Unregistering...");
+                        
+                        UnRegisterRequestFilter?.Invoke(req);
                     });
                 } catch (Exception) {}
             }
