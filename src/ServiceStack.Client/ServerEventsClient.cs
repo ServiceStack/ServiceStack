@@ -169,6 +169,9 @@ namespace ServiceStack
         public Action<WebRequest> HeartbeatRequestFilter { get; set; }
         public Action<WebRequest> UnRegisterRequestFilter { get; set; }
 
+        /// <summary>
+        /// Apply Request Filter to all ServerEventClient Requests
+        /// </summary>
         public Action<WebRequest> AllRequestFilters { get; set; }
 
         readonly Dictionary<string, List<Action<ServerEventMessage>>> listeners =

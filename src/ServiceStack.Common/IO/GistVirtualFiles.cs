@@ -72,8 +72,7 @@ namespace ServiceStack.IO
                 if (entry.Key == filePath)
                 {
                     var bytesMemory = MemoryProvider.Instance.ToUtf8(text.AsSpan());
-                    //TODO: replace with MemoryProvider.Instance.ToMemoryStream()
-                    stream = MemoryStreamFactory.GetStream(bytesMemory.ToArray());
+                    stream = MemoryProvider.Instance.ToMemoryStream(bytesMemory.Span); 
                     return true;
                 }
 
