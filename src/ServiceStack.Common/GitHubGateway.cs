@@ -375,11 +375,13 @@ namespace ServiceStack
             return sanitizedPath?.Replace('/', '\\');
         }
 
+        internal static string ToBase64(ReadOnlyMemory<byte> bytes) => MemoryProvider.Instance.ToBase64(bytes);
+
         internal static string ToBase64(byte[] bytes) => Convert.ToBase64String(bytes);
         internal static string ToBase64(Stream stream)
         {
             var base64 = stream is MemoryStream ms
-                ? Convert.ToBase64String(ms.GetBuffer(), 0, (int) ms.Length)
+                ? MemoryProvider.Instance.ToBase64(ms.GetBufferAsMemory())
                 : Convert.ToBase64String(stream.ReadFully());
             return base64;
         }
@@ -400,10 +402,12 @@ namespace ServiceStack
 
                 var filePath = SanitizePath(entry.Key);
 
-                var base64 = entry.Value is string
+                var base64 = entry.Value is string || entry.Value is ReadOnlyMemory<char>
                     ? null
                     : entry.Value is byte[] bytes
                         ? ToBase64(bytes)
+                        : entry.Value is ReadOnlyMemory<byte> romBytes
+                        ? ToBase64(romBytes)
                         : entry.Value is Stream stream
                             ? ToBase64ThenDispose(stream)
                             : entry.Value is IVirtualFile file &&
@@ -417,7 +421,9 @@ namespace ServiceStack
                 var textContents = base64 ??
                    (entry.Value is string text
                        ? text
-                       : throw CreateContentNotSupportedException(entry.Value));
+                       : entry.Value is ReadOnlyMemory<char> romChar 
+                           ? romChar.ToString()
+                           : throw CreateContentNotSupportedException(entry.Value));
 
                 gistFiles[filePath] = textContents;
             }
