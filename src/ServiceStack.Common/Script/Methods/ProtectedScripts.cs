@@ -88,9 +88,6 @@ namespace ServiceStack.Script
             return null;
         }
 
-        //alias
-        public Task fileContents(ScriptScopeContext scope, string virtualPath) => includeFile(scope, virtualPath);
-
         public async Task includeFile(ScriptScopeContext scope, string virtualPath)
         {
             var file = ResolveFile(nameof(includeFile), scope, virtualPath);
@@ -174,8 +171,12 @@ namespace ServiceStack.Script
         {
             if (contents is string s)
                 vfs.WriteFile(virtualPath, s);
+            else if (contents is ReadOnlyMemory<char> romChar)
+                vfs.WriteFile(virtualPath, romChar.ToString());
             else if (contents is byte[] bytes)
                 vfs.WriteFile(virtualPath, bytes);
+            else if (contents is ReadOnlyMemory<byte> romBytes)
+                vfs.WriteFile(virtualPath, romBytes.ToArray());
             else if (contents is Stream stream)
                 vfs.WriteFile(virtualPath, stream);
             else
@@ -227,10 +228,20 @@ namespace ServiceStack.Script
 
         public string fileTextContents(string virtualPath) => fileTextContents(VirtualFiles,virtualPath);
         public string fileTextContents(IVirtualPathProvider vfs, string virtualPath) => vfs.GetFile(virtualPath)?.ReadAllText();
-        public object fileContents(IVirtualFile file) => file is null ? null
-            : MimeTypes.IsBinary(MimeTypes.GetMimeType(file.Extension))
-                ? file.ReadAllBytes()
-                : (object)file.ReadAllText();
+
+        public object fileContents(IVirtualPathProvider vfs, string virtualPath) =>
+            fileContents(vfs.GetFile(virtualPath));
+
+        // string virtual filePath or IVirtualFile 
+        public object fileContents(object file) => file is null
+            ? null
+            : file is string path
+                ? fileContents(VirtualFiles, path)
+                : file is IVirtualFile ifile
+                    ? MimeTypes.IsBinary(MimeTypes.GetMimeType(ifile.Extension))
+                        ? ifile.ReadAllBytes()
+                        : (object) ifile.ReadAllText()
+                : throw new NotSupportedException(nameof(fileContents) + " expects string virtualPath or IVirtualFile but was " + file.GetType().Name);
         
         public string textContents(IVirtualFile file) => file?.ReadAllText();
         public byte[] fileBytesContent(string virtualPath) => fileBytesContent(VirtualFiles, virtualPath);
