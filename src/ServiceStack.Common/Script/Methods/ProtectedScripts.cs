@@ -211,7 +211,7 @@ namespace ServiceStack.Script
         public string fileTextContents(IVirtualPathProvider vfs, string virtualPath) => vfs.GetFile(virtualPath)?.ReadAllText();
 
         public object fileContents(IVirtualPathProvider vfs, string virtualPath) =>
-            fileContents(vfs.GetFile(virtualPath));
+            vfs.GetFile(virtualPath).GetContents();
 
         // string virtual filePath or IVirtualFile 
         public object fileContents(object file) => file is null
