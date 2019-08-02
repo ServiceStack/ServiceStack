@@ -423,6 +423,15 @@ namespace ServiceStack.IO
             return Stream.CopyToNewMemoryStream();
         }
 
+        public override object GetContents()
+        {
+            return Text != null 
+                ? (object) Text.AsMemory() 
+                : (Stream is MemoryStream ms
+                    ? ms.GetBufferAsMemory()
+                    : Stream?.CopyToNewMemoryStream().GetBufferAsMemory());
+        }
+
         public override void Refresh()
         {
             var elapsed = DateTime.UtcNow - PathProvider.LastRefresh;

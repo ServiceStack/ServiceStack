@@ -395,6 +395,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             pathProvider.DeleteFiles(new[]{ "original.bin", "a/b/c/original.bin" });
         }
+
+        [Test]
+        public void GetContents_of_Binary_File_returns_ReadOnlyMemory_byte()
+        {
+            var pathProvider = GetPathProvider();
+
+            var bytes = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            
+            pathProvider.WriteFile("original.bin", new ReadOnlyMemory<byte>(bytes));
+            
+            var contents = (ReadOnlyMemory<byte>) pathProvider.GetFile("original.bin").GetContents();
+            
+            Assert.That(contents.Span.SequenceEqual(bytes.AsSpan()));
+        }
+
+        [Test]
+        public void GetContents_of_Text_File_returns_ReadOnlyMemory_char()
+        {
+            var pathProvider = GetPathProvider();
+
+            var text = "abcdef";
+            
+            pathProvider.WriteFile("original.txt", text.AsMemory());
+            
+            var contents = (ReadOnlyMemory<char>) pathProvider.GetFile("original.txt").GetContents();
+            
+            Assert.That(contents.Span.SequenceEqual(text.AsSpan()));
+        }
        
         public void AssertContents(IVirtualDirectory dir,
             string[] expectedFilePaths, string[] expectedDirPaths)
