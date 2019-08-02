@@ -47,6 +47,14 @@ namespace ServiceStack.IO
             }
         }
 
+        public static void WriteFile(this IVirtualPathProvider pathProvider, string filePath, object contents)
+        {
+            if (!(pathProvider is IVirtualFiles writableFs))
+                throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
+
+            writableFs.WriteFile(filePath, contents);
+        }
+
         public static void AppendFile(this IVirtualPathProvider pathProvider, string filePath, string textContents)
         {
             if (!(pathProvider is IVirtualFiles writableFs))
@@ -72,6 +80,14 @@ namespace ServiceStack.IO
             {
                 writableFs.AppendFile(filePath, ms);
             }
+        }
+
+        public static void AppendFile(this IVirtualPathProvider pathProvider, string filePath, object contents)
+        {
+            if (!(pathProvider is IVirtualFiles writableFs))
+                throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
+
+            writableFs.AppendFile(filePath, contents);
         }
 
         public static void WriteFile(this IVirtualPathProvider pathProvider, IVirtualFile file, string filePath = null)

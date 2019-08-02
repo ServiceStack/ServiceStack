@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using ServiceStack.IO;
+using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 
 namespace ServiceStack.VirtualPath
@@ -24,6 +25,7 @@ namespace ServiceStack.VirtualPath
         public virtual string RealPath => GetRealPathToRoot();
         public virtual bool IsDirectory => false;
         public abstract DateTime LastModified { get; }
+        
         public abstract long Length { get; }
 
         protected AbstractVirtualFileBase(IVirtualPathProvider owningProvider, IVirtualDirectory directory)
@@ -63,6 +65,18 @@ namespace ServiceStack.VirtualPath
         }
 
         public abstract Stream OpenRead();
+
+        public virtual object GetContents()
+        {
+            using (var stream = OpenRead())
+            {
+                var romBytes = stream.ReadFullyAsMemory();
+                if (MimeTypes.IsBinary(MimeTypes.GetMimeType(Extension)))
+                    return romBytes;
+
+                return MemoryProvider.Instance.FromUtf8(romBytes.Span);
+            }
+        }
 
         protected virtual string GetVirtualPathToRoot()
         {
