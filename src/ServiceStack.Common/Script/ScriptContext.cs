@@ -321,13 +321,29 @@ namespace ServiceStack.Script
                 return this;
             HasInit = true;
 
-            if (ScriptMethods.Count > 0)
+            if (InsertScriptMethods.Count > 0)
                 ScriptMethods.InsertRange(0, InsertScriptMethods);
-            if (ScriptBlocks.Count > 0)
+            if (InsertScriptBlocks.Count > 0)
                 ScriptBlocks.InsertRange(0, InsertScriptBlocks);
-            if (Plugins.Count > 0)
+            if (InsertPlugins.Count > 0)
                 Plugins.InsertRange(0, InsertPlugins);
-
+            
+            foreach (var assembly in ScanAssemblies.Safe())
+            {
+                foreach (var type in assembly.GetTypes())
+                {
+                    if (typeof(IScriptPlugin).IsAssignableFrom(type))
+                    {
+                        if (Plugins.All(x => x.GetType() != type))
+                        {
+                            Container.AddSingleton(type);
+                            var plugin = (IScriptPlugin)Container.Resolve(type);
+                            Plugins.Add(plugin);
+                        }
+                    }
+                }
+            }
+            
             Args[ScriptConstants.Debug] = DebugMode;
             
             Container.AddSingleton(() => this);
@@ -405,8 +421,8 @@ namespace ServiceStack.Script
                     if (ScriptMethods.All(x => x?.GetType() != type))
                     {
                         Container.AddSingleton(type);
-                        var filter = (ScriptMethods)Container.Resolve(type);
-                        ScriptMethods.Add(filter);
+                        var method = (ScriptMethods)Container.Resolve(type);
+                        ScriptMethods.Add(method);
                     }
                 }
                 else if (typeof(ScriptBlock).IsAssignableFrom(type))
