@@ -73,8 +73,16 @@ namespace ServiceStack.IO
                 text = file.Content;
                 if (entry.Key == filePath)
                 {
-                    var bytesMemory = MemoryProvider.Instance.ToUtf8(text.AsSpan());
-                    stream = MemoryProvider.Instance.ToMemoryStream(bytesMemory.Span); 
+                    if (filePath.EndsWith(Base64Modifier))
+                    {
+                        stream = MemoryStreamFactory.GetStream(Convert.FromBase64String(text));
+                        text = null;
+                    }
+                    else
+                    {
+                        var bytesMemory = MemoryProvider.Instance.ToUtf8(text.AsSpan());
+                        stream = MemoryProvider.Instance.ToMemoryStream(bytesMemory.Span); 
+                    }
                     return true;
                 }
 
