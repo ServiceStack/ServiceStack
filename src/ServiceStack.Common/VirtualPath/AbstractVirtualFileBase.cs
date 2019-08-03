@@ -16,7 +16,7 @@ namespace ServiceStack.VirtualPath
 
         public IVirtualPathProvider VirtualPathProvider { get; set; }
 
-        public string Extension => Name.LastRightPart('.');
+        public virtual string Extension => Name.LastRightPart('.');
 
         public IVirtualDirectory Directory { get; set; }
 

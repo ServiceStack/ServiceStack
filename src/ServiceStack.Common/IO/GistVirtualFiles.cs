@@ -52,9 +52,11 @@ namespace ServiceStack.IO
 
         public static bool IsDirSep(char c) => c == '\\' || c == '/';
 
+        public const string Base64Modifier = "|base64";
+
         public static bool GetGistContents(string filePath, Gist gist, out string text, out MemoryStream stream)
         {
-            var base64FilePath = filePath + "|base64";
+            var base64FilePath = filePath + Base64Modifier;
             foreach (var entry in gist.Files)
             {
                 var file = entry.Value;
@@ -214,7 +216,7 @@ namespace ServiceStack.IO
         public void WriteFile(string virtualPath, Stream stream)
         {
             var base64 = ToBase64(stream);
-            var filePath = SanitizePath(virtualPath) + "|base64";
+            var filePath = SanitizePath(virtualPath) + Base64Modifier;
             Gateway.WriteGistFile(GistId, filePath, base64);
             ClearGist();
         }
@@ -248,7 +250,7 @@ namespace ServiceStack.IO
         public string ResolveGistFileName(string filePath)
         {
             var gist = GetGist();
-            var baseFilePath = filePath + "|base64";
+            var baseFilePath = filePath + Base64Modifier;
             foreach (var entry in gist.Files)
             {
                 if (entry.Key == filePath || entry.Key == baseFilePath)
@@ -378,6 +380,8 @@ namespace ServiceStack.IO
         public IGistGateway Client => PathProvider.Gateway;
 
         public string GistId => PathProvider.GistId;
+
+        public override string Extension => Name.LastRightPart('.').LeftPart('|');
 
         public GistVirtualFile(GistVirtualFiles pathProvider, IVirtualDirectory directory)
             : base(pathProvider, directory)
