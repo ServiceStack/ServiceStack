@@ -127,12 +127,12 @@ namespace ServiceStack.Host
                 .ToList();
         }
 
-        public Operation GetOperation(Type operationType)
+        public Operation GetOperation(Type requestType)
         {
-            if (operationType == null)
+            if (requestType == null)
                 return null;
 
-            OperationsMap.TryGetValue(operationType, out var op);
+            OperationsMap.TryGetValue(requestType, out var op);
             return op;
         }
 

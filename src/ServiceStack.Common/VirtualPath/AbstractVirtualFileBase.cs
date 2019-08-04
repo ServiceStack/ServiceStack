@@ -153,6 +153,14 @@ namespace ServiceStack
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static FileSystemVirtualFiles GetFileSystemVirtualFiles(this IVirtualPathProvider vfs) =>
             vfs.GetVirtualFileSource<FileSystemVirtualFiles>();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GistVirtualFiles GetGistVirtualFiles(this IVirtualPathProvider vfs) =>
+            vfs.GetVirtualFileSource<GistVirtualFiles>();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ResourceVirtualFiles GetResourceVirtualFiles(this IVirtualPathProvider vfs) =>
+            vfs.GetVirtualFileSource<ResourceVirtualFiles>();
     }
     
 }
