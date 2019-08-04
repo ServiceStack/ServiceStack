@@ -11,7 +11,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         {
             return new ScriptContext {
                 Plugins = { new GitHubPlugin() },
-                ScriptMethods = { new InfoScripts() },
+                ScriptMethods = { new InfoScripts(), new ProtectedScripts(), },
             };
         }
         
@@ -63,6 +63,21 @@ gateway.githubGist(gistId) | to => gist
 ```");
  
             output.Print();
+        }
+
+        [Test]
+        public void Can_write_binary_files_with_gist()
+        {
+            var context = CreateScriptContext().Init();
+            
+            var output = context.EvaluateScript(@"
+```code
+vfsGist('cc8e3a6decc0c9acd419085f8b60cd98') | to => gistFs
+vfsFileSystem('C:\\src\\mix\\wip') | to => fs
+fs.writeFile('northwind.sqlite', gistFs.file('northwind.readonly.sqlite'))
+```");
+
+            
         }
     }
 }
