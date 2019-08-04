@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using ServiceStack.IO;
 using ServiceStack.Text;
+using ServiceStack.VirtualPath;
 
 namespace ServiceStack.IO
 {
@@ -47,6 +48,22 @@ namespace ServiceStack.IO
             }
         }
 
+        public static void WriteFile(this IVirtualPathProvider pathProvider, string filePath, ReadOnlyMemory<char> text)
+        {
+            if (!(pathProvider is AbstractVirtualPathProviderBase writableFs))
+                throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
+
+            writableFs.WriteFile(filePath, text);
+        }
+
+        public static void WriteFile(this IVirtualPathProvider pathProvider, string filePath, ReadOnlyMemory<byte> bytes)
+        {
+            if (!(pathProvider is AbstractVirtualPathProviderBase writableFs))
+                throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
+
+            writableFs.WriteFile(filePath, bytes);
+        }
+
         public static void WriteFile(this IVirtualPathProvider pathProvider, string filePath, object contents)
         {
             if (!(pathProvider is IVirtualFiles writableFs))
@@ -88,6 +105,22 @@ namespace ServiceStack.IO
                 throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
 
             writableFs.AppendFile(filePath, contents);
+        }
+
+        public static void AppendFile(this IVirtualPathProvider pathProvider, string filePath, ReadOnlyMemory<char> text)
+        {
+            if (!(pathProvider is AbstractVirtualPathProviderBase writableFs))
+                throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
+
+            writableFs.AppendFile(filePath, text);
+        }
+
+        public static void AppendFile(this IVirtualPathProvider pathProvider, string filePath, ReadOnlyMemory<byte> bytes)
+        {
+            if (!(pathProvider is AbstractVirtualPathProviderBase writableFs))
+                throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
+
+            writableFs.AppendFile(filePath, bytes);
         }
 
         public static void WriteFile(this IVirtualPathProvider pathProvider, IVirtualFile file, string filePath = null)
