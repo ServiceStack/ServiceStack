@@ -124,6 +124,11 @@ namespace ServiceStack
         /// </summary>
         public static MemoryVirtualFiles MemoryVirtualFiles => AssertAppHost().VirtualFileSources.GetMemoryVirtualFiles();
 
+        /// <summary>
+        /// The GistVirtualFiles provider in VirtualFileSources (if any)
+        /// </summary>
+        public static GistVirtualFiles GistVirtualFiles => AssertAppHost().VirtualFileSources.GetGistVirtualFiles();
+
         public static ICacheClient Cache => TryResolve<ICacheClient>();
 
         public static MemoryCacheClient LocalCache => TryResolve<MemoryCacheClient>();
