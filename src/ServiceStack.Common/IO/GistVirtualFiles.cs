@@ -66,7 +66,7 @@ namespace ServiceStack.IO
             catch (Exception ex)
             {
                 throw new Exception(
-                    $"Could not convert Base 64 contents of '{path}', length: {base64String.Length}, BOM:{base64String[0] == 65279}, starting with: {base64String.SafeSubstring(50)}",
+                    $"Could not convert Base 64 contents of '{path}', length: {base64String.Length}, starting with: {base64String.SafeSubstring(50)}",
                     ex);
             }
         }
@@ -81,7 +81,8 @@ namespace ServiceStack.IO
                 if (!isMatch)
                     continue;
 
-                if (string.IsNullOrEmpty(file.Content) && file.Truncated)
+                // GitHub can truncate Gist and return partial content
+                if ((string.IsNullOrEmpty(file.Content) || file.Content.Length < file.Size) && file.Truncated)
                 {
                     file.Content = file.Raw_Url.GetStringFromUrl(
                         requestFilter: req => req.UserAgent = nameof(GitHubGateway));
@@ -141,7 +142,7 @@ namespace ServiceStack.IO
             var gist = await GetGistAsync();
 
             var files = gist.Files.Where(x => 
-                string.IsNullOrEmpty(x.Value.Content) && x.Value.Truncated);
+                (string.IsNullOrEmpty(x.Value.Content) || x.Value.Content.Length < x.Value.Size) && x.Value.Truncated);
 
             var tasks = files.Select(async x => {
                 x.Value.Content = await x.Value.Raw_Url.GetStringFromUrlAsync();
