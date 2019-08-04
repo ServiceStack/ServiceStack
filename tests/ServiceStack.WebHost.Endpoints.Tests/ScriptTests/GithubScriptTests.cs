@@ -1,10 +1,11 @@
+using System.IO;
 using NUnit.Framework;
 using ServiceStack.Script;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 {
-    [Ignore("Integration Tests")]
+//    [Ignore("Integration Tests")]
     public class GithubScriptTests
     {
         public ScriptContext CreateScriptContext()
@@ -63,21 +64,6 @@ gateway.githubGist(gistId) | to => gist
 ```");
  
             output.Print();
-        }
-
-        [Test]
-        public void Can_write_binary_files_with_gist()
-        {
-            var context = CreateScriptContext().Init();
-            
-            var output = context.EvaluateScript(@"
-```code
-vfsGist('cc8e3a6decc0c9acd419085f8b60cd98') | to => gistFs
-vfsFileSystem('C:\\src\\mix\\wip') | to => fs
-fs.writeFile('northwind.sqlite', gistFs.file('northwind.readonly.sqlite'))
-```");
-
-            
         }
     }
 }

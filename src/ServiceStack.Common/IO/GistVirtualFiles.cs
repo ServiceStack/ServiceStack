@@ -54,6 +54,23 @@ namespace ServiceStack.IO
 
         public const string Base64Modifier = "|base64";
 
+        private static byte[] FromBase64String(string path, string base64String)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(base64String))
+                    return TypeConstants.EmptyByteArray;
+                
+                return Convert.FromBase64String(base64String);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(
+                    $"Could not convert Base 64 contents of '{path}', length: {base64String.Length}, BOM:{base64String[0] == 65279}, starting with: {base64String.SafeSubstring(50)}",
+                    ex);
+            }
+        }
+
         public static bool GetGistContents(string filePath, Gist gist, out string text, out MemoryStream stream)
         {
             var base64FilePath = filePath + Base64Modifier;
@@ -75,7 +92,7 @@ namespace ServiceStack.IO
                 {
                     if (filePath.EndsWith(Base64Modifier))
                     {
-                        stream = MemoryStreamFactory.GetStream(Convert.FromBase64String(text));
+                        stream = MemoryStreamFactory.GetStream(FromBase64String(entry.Key, text));
                         text = null;
                     }
                     else
@@ -88,7 +105,7 @@ namespace ServiceStack.IO
 
                 if (entry.Key == base64FilePath)
                 {
-                    stream = MemoryStreamFactory.GetStream(Convert.FromBase64String(text));
+                    stream = MemoryStreamFactory.GetStream(FromBase64String(entry.Key, text));
                     text = null;
                     return true;
                 }
