@@ -5,7 +5,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 {
-//    [Ignore("Integration Tests")]
+    [Ignore("Integration Tests")]
     public class GithubScriptTests
     {
         public ScriptContext CreateScriptContext()
