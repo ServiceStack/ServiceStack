@@ -210,28 +210,31 @@
         if (errorMsg) {
             var isCheck = this.type === "checkbox" || this.type === "radio" || hasClass(this, 'form-check');
             var elFormCheck = isCheck ? parent(this,'form-check') : null;
+            var elInputGroup = parent(this,'input-group');
             if (!isCheck)
                 addClass(this, 'is-invalid');
             else
                 addClass(elFormCheck || this.parentElement, 'is-invalid form-control');
 
             var elNext = this.nextElementSibling;
-            var elLast = elNext && (elNext.getAttribute('for') === this.id || elNext.tagName === "SMALL")
-                ? (isCheck ? elFormCheck || elNext.parentElement : elNext)
-                : this;
+            var elLast = elInputGroup ? elInputGroup.lastElementChild : 
+                (elNext && (elNext.getAttribute('for') === this.id || elNext.tagName === "SMALL")
+                    ? (isCheck ? elFormCheck || elNext.parentElement : elNext)
+                    : this);
             var elError = elLast.nextElementSibling && hasClass(elLast.nextElementSibling, 'invalid-feedback')
                 ? elLast.nextElementSibling
-                : $.ss.createElement("div", { insertAfter:elLast }, { className: 'invalid-feedback' });
+                : (elInputGroup && elInputGroup.querySelector('.invalid-feedback')) 
+                  || $.ss.createElement("div", { insertAfter:elLast }, { className: 'invalid-feedback' });
             elError.innerHTML = errorMsg;
         }
     };
     function parent(el,cls) {
-        while (!hasClass(el,cls))
+        while (el && !hasClass(el,cls))
             el = el.parentElement;
         return el;
     }
     function hasClass(el, cls) {
-        return (" " + el.className + " ").replace(/[\n\t\r]/g, " ").indexOf(" " + cls + " ") > -1;
+        return el && (" " + el.className + " ").replace(/[\n\t\r]/g, " ").indexOf(" " + cls + " ") > -1;
     }
     function addClass(el, cls) {
         if (!hasClass(el, cls)) el.className = (el.className + " " + cls).trim();
