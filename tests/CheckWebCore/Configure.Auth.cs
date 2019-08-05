@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MyApp;
 using ServiceStack;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
@@ -43,7 +44,7 @@ namespace CheckWebCore
 
             var authRepo = appHost.TryResolve<IAuthRepository>();
 
-            var newAdmin = new UserAuth {Email = "admin@email.com", DisplayName = "Admin User"};
+            var newAdmin = new AppUser {Email = "admin@email.com", DisplayName = "Admin User"};
             var user = authRepo.CreateUserAuth(newAdmin, "p@55wOrd");
             authRepo.AssignRoles(user, new List<string> {"Admin"});
         }
