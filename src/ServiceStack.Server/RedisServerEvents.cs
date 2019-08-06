@@ -188,7 +188,7 @@ namespace ServiceStack
 
         string HandleSerialize(object o)
         {
-            return (string)o; //Already a seiralized JSON string
+            return (string)o; //Already a serialized JSON string
         }
 
         public void NotifyAll(string selector, object message)
