@@ -813,6 +813,13 @@ namespace ServiceStack.Script
                                 LastFilterError = null;
                                 LastFilterStackTrace = null;
                             }
+                            if (filterParams.TryGetValue(ScriptConstants.IfErrorReturn, out object ifErrorReturn))
+                            {
+                                SkipFilterExecution = false;
+                                LastFilterError = null;
+                                LastFilterStackTrace = null;
+                                return ifErrorReturn;
+                            }
                         }
 
                         if (errorBinding == null)
@@ -1061,6 +1068,12 @@ namespace ServiceStack.Script
                     throw e.UnwrapIfSingleException();
                 }
             }
+        }
+
+        public PageResult Execute()
+        {
+            var render = Result;
+            return this;
         }
 
         public PageResult Clone(SharpPage page)

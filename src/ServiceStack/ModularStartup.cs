@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -13,231 +14,234 @@ namespace ServiceStack
     using Microsoft.Extensions.DependencyInjection;
 
     /// <summary>
-    ///  Configure Startup Type and which Assemblies to Scan to find "no touch" Startup configuration classes executed in the following order:
-    /// 
-    ///  Configure Services:
-    ///  - IPreConfigureServices.Configure(services)
-    ///  - IStartup.ConfigureServices(services)
-    ///  - StartupType.ConfigureServices(services)
-    ///  - IPostConfigureServices.Configure(services)
-    ///
-    ///  Configure App:
-    ///  - IPreConfigureApp.Configure(app)
-    ///  - IStartup.Configure(app)
-    ///  - StartupType.Configure(app)
-    ///  - IPostConfigureApp.Configure(app)
+    /// Implement to register your App's dependencies in a "no-touch" Startup configuration class 
     /// </summary>
-    public static class ModularStartupConfig
+    public interface IConfigureServices 
     {
-        /// <summary>
-        /// No Startup Class and scan for Modular Startup classes in current Executing Assembly. 
-        /// </summary>
-        public static void Init() => Init(null, Assembly.GetExecutingAssembly());
-        
-        /// <summary>
-        /// Use StartupType and scan for Modular Startup classes in StartupType Assembly.
-        /// </summary>
-        /// <param name="startupType"></param>
-        public static void Init(Type startupType) => Init(startupType, new[] { startupType.Assembly });
-        /// <summary>
-        /// Use StartupType and scan for Modular Startup classes in specified Assembly.
-        /// </summary>
-        /// <param name="startupType"></param>
-        public static void Init(Type startupType, Assembly assembly) => Init(startupType, new[] { assembly });
-        /// <summary>
-        /// Use StartupType and scan for Modular Startup classes in specified Assemblies.
-        /// </summary>
-        /// <param name="startupType"></param>
-        public static void Init(Type startupType, Assembly[] assemblies)
-        {
-            StartupType = startupType;
-            ScanAssemblies = () => assemblies;
-        }
-        
-        internal static Type StartupType { get; set; }
-        
-        public static Func<Assembly[]> ScanAssemblies { get; set; }
+        void Configure(IServiceCollection services);
     }
     
+    /// <summary>
+    /// Implement to register your App's features in a "no-touch" Startup configuration class 
+    /// </summary>
+    public interface IConfigureApp
+    {
+        void Configure(IApplicationBuilder app);
+    }
 
-    public interface IPreConfigureServices 
+    /// <summary>
+    /// Implement to have configuration injected in your "no-touch" Startup configuration class as an
+    /// alternative for constructor injection.
+    /// </summary>
+    public interface IRequireConfiguration
     {
-        void Configure(IServiceCollection services);
-    }
-    public interface IPostConfigureServices
-    {
-        void Configure(IServiceCollection services);
-    }
-    
-    public interface IPreConfigureApp
-    {
-        void Configure(IApplicationBuilder app);
-    }
-    public interface IPostConfigureApp
-    {
-        void Configure(IApplicationBuilder app);
+        IConfiguration Configuration { get; set; }
     }
 
 
     /// <summary>
-    /// Execute "no touch" Startup configuration classes.
+    /// Execute "no touch" IStartup, IConfigureServices and IConfigureApp Startup configuration classes.
+    /// 
+    /// The "no touch" Startup configuration classes are executed in the following order:
+    /// 
+    ///  Configure Services:
+    ///  Priority &lt; 0:
+    ///  - IConfigureServices.Configure(services), IStartup.ConfigureServices(services)
+    /// 
+    ///  - this.ConfigureServices(services)
+    /// 
+    ///  Priority &gt;= 0: (no [Priority] == 0)
+    ///  - IConfigureServices.Configure(services), IStartup.ConfigureServices(services)
+    ///
+    ///  Configure App:
+    ///  Priority &lt; 0:
+    ///  - IConfigureApp.Configure(app), IStartup.Configure(app)
+    /// 
+    ///  - this.Configure(app)
+    /// 
+    ///  Priority &gt;= 0: (no [Priority] == 0)
+    ///  - IConfigureApp.Configure(app), IStartup.Configure(app)
     /// </summary>
-    public class ModularStartup : IStartup
+    public abstract class ModularStartup : IStartup
     {
-        private readonly IConfiguration configuration;
-        public ModularStartup(IConfiguration configuration) => this.configuration = configuration;
-        public ModularStartup(){}
+        /// <summary>
+        /// Which Startup Types not to load 
+        /// </summary>
+        public List<Type> IgnoreTypes { get; set; } = new List<Type>();
+        
+        public List<Assembly> ScanAssemblies { get; }
 
-        private object startupInstance;
-        private List<object> instances;
+        public IConfiguration Configuration { get; }
+        
+        public Func<IEnumerable<Type>> TypeResolver { get; }
+
+        /// <summary>
+        /// Scan Types in Assemblies for Startup configuration classes
+        /// </summary>
+        protected ModularStartup(IConfiguration configuration, params Assembly[] assemblies)
+        {
+            Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            ScanAssemblies = new List<Assembly>(assemblies) { GetType().Assembly };
+            TypeResolver = () => ScanAssemblies.Distinct().SelectMany(x => x.GetTypes());
+        }
+
+        /// <summary>
+        /// Manually specify Types of Startup configuration classes 
+        /// </summary>
+        protected ModularStartup(IConfiguration configuration, Type[] types)
+        {
+            Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            TypeResolver = types.Distinct;
+        }
+
+        /// <summary>
+        /// Use a custom Type Resolver function to return Types of Startup configuration classes
+        /// </summary>
+        protected ModularStartup(IConfiguration configuration, Func<IEnumerable<Type>> typesResolver)
+        {
+            Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            TypeResolver = typesResolver ?? throw new ArgumentNullException(nameof(typesResolver));
+        }
 
         public object CreateStartupInstance(Type type)
         {
             var ctorConfiguration = type.GetConstructor(new[] { typeof(IConfiguration) });
-            if (ctorConfiguration == null) 
-                return type.CreateInstance();
-            
-            var activator = ctorConfiguration.GetActivator();
-            return activator.Invoke(configuration);
-        }
-
-        public List<object> GetInstances()
-        {
-            if (instances == null)
+            if (ctorConfiguration != null)
             {
-                var types = ModularStartupConfig.ScanAssemblies().SelectMany(x => x.GetTypes()).Where(x =>
-                    x != typeof(ModularStartup) && (
+                var activator = ctorConfiguration.GetActivator();
+                return activator.Invoke(Configuration);
+            }
+
+            var instance = type.CreateInstance();
+            if (instance is IRequireConfiguration requiresConfig)
+                requiresConfig.Configuration = Configuration;
+            return instance;
+        }
+        
+        /// <summary>
+        /// Whether to load the Startup Type or not, allows all Startup Types not in IgnoreTypes by default
+        /// </summary>
+        public virtual bool LoadType(Type startupType) => !IgnoreTypes.Contains(startupType);
+
+        private List<Tuple<object,int>> priorityInstances;
+        public List<Tuple<object,int>> GetPriorityInstances()
+        {
+            if (priorityInstances == null)
+            {
+                var types = TypeResolver().Where(x =>
+                    !typeof(ModularStartup).IsAssignableFrom(x) // exclude self
+                    && (
                         x.HasInterface(typeof(IStartup)) ||
-                        x.HasInterface(typeof(IPreConfigureServices)) ||
-                        x.HasInterface(typeof(IPostConfigureServices)) ||
-                        x.HasInterface(typeof(IPreConfigureApp)) ||
-                        x.HasInterface(typeof(IPostConfigureApp))
-                    ));
+                        x.HasInterface(typeof(IConfigureServices)) ||
+                        x.HasInterface(typeof(IConfigureApp)))
+                    && LoadType(x)
+                );
 
-                if (ModularStartupConfig.StartupType != null)
-                {
-                    startupInstance = CreateStartupInstance(ModularStartupConfig.StartupType);                    
-                }
-                
-                instances = new List<object>();
-
+                priorityInstances = new List<Tuple<object,int>>();
                 foreach (var type in types)
                 {
                     var instance = CreateStartupInstance(type);
-                    instances.Add(instance);
+                    priorityInstances.Add(new Tuple<object, int>(instance, type.FirstAttribute<PriorityAttribute>()?.Value ?? 0));
                 }
                 
+                priorityInstances.Sort((x,y) => x.Item2.CompareTo(y.Item2));
             }
-            return instances;
+            return priorityInstances;
         }
 
-        public IServiceProvider ConfigureServices(IServiceCollection services)
+        public virtual IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            var preServices = GetInstances().Where(x => x is IPreConfigureServices).OrderByPriority();
-            foreach (IPreConfigureServices startup in preServices)
+            void RunConfigure(object instance)
             {
-                startup.Configure(services);
+                if (instance is IConfigureServices config)
+                    config.Configure(services);
+                else if (instance is IStartup startup)
+                    startup.ConfigureServices(services);
             }
             
-            var startupServices = GetInstances().Where(x => x is IStartup).OrderByPriority();
-            foreach (IStartup startup in startupServices)
+            var startupConfigs = GetPriorityInstances();
+
+            var preStartupConfigs = startupConfigs.PriorityBelowZero();
+            preStartupConfigs.ForEach(RunConfigure);
+
+            // Execute TStartup Instance ConfigureServices(services)
+            var mi = GetType().GetMethod(nameof(ConfigureServices));
+            if (mi != null)
             {
-                startup.ConfigureServices(services);
+                mi.Invoke(this, new object[] { services });
             }
 
-            if (startupInstance != null)
-            {
-                // Execute TStartup Instance ConfigureServices(services)
-                var mi = startupInstance.GetType().GetMethod(nameof(ConfigureServices));
-                if (mi != null)
-                {
-                    mi.Invoke(startupInstance, new object[] { services });
-                }
-            }
-
-            var postServices = GetInstances().Where(x => x is IPostConfigureServices).OrderByPriority();
-            foreach (IPostConfigureServices startup in postServices)
-            {
-                startup.Configure(services);
-            }
+            var postStartupConfigs = startupConfigs.PriorityZeroOrAbove();
+            postStartupConfigs.ForEach(RunConfigure);
 
             return services.BuildServiceProvider();
         }
 
-        public void Configure(IApplicationBuilder app)
+        public virtual void Configure(IApplicationBuilder app)
         {
-            var preServices = GetInstances().Where(x => x is IPreConfigureApp).OrderByPriority();
-            foreach (IPreConfigureApp startup in preServices)
+            void RunConfigure(object instance)
             {
-                startup.Configure(app);
+                if (instance is IConfigureApp config)
+                    config.Configure(app);
+                else if (instance is IStartup startup)
+                    startup.Configure(app);
             }
             
-            var startupServices = GetInstances().Where(x => x is IStartup).OrderByPriority();
-            foreach (IStartup startup in startupServices)
-            {
-                startup.Configure(app);
-            }
+            var startupConfigs = GetPriorityInstances();
 
-            if (startupInstance != null)
+            var preStartupConfigs = startupConfigs.PriorityBelowZero();
+            preStartupConfigs.ForEach(RunConfigure);
+
+            // Execute TStartup Instance Configure(app) - can have var args
+            var mi = GetType().GetMethods().Where(x => 
+                    x.DeclaringType != typeof(ModularStartup) && // exclude self
+                    x.Name == nameof(Configure) &&
+                    x.GetParameters().Length > 0 &&
+                    x.GetParameters()[0].ParameterType ==
+                    typeof(IApplicationBuilder))
+                .OrderBy(x => x.GetParameters().Length)
+                .FirstOrDefault();            
+            if (mi != null)
             {
-                // Execute TStartup Instance Configure(app) - can have var args
-                var mi = startupInstance.GetType().GetMethods().Where(x => 
-                        x.Name == nameof(Configure) &&
-                        x.GetParameters().Length > 0 &&
-                        x.GetParameters()[0].ParameterType ==
-                        typeof(IApplicationBuilder))
-                    .OrderBy(x => x.GetParameters().Length)
-                    .FirstOrDefault();            
-                if (mi != null)
+                var args = new List<object>();
+                foreach (var pi in mi.GetParameters())
                 {
-                    var args = new List<object>();
-                    foreach (var pi in mi.GetParameters())
+                    if (pi.ParameterType == typeof(IApplicationBuilder))
                     {
-                        if (pi.ParameterType == typeof(IApplicationBuilder))
-                        {
-                            args.Add(app);
-                        }
-                        else if (pi.ParameterType == typeof(IConfiguration))
-                        {
-                            args.Add(configuration);
-                        }
-                        else
-                        {
-                            args.Add(app.ApplicationServices.GetRequiredService(pi.ParameterType));
-                        }
+                        args.Add(app);
                     }
-                
-                    mi.Invoke(startupInstance, args.ToArray());
+                    else if (pi.ParameterType == typeof(IConfiguration))
+                    {
+                        args.Add(Configuration);
+                    }
+                    else
+                    {
+                        args.Add(app.ApplicationServices.GetRequiredService(pi.ParameterType));
+                    }
                 }
+                
+                mi.Invoke(this, args.ToArray());
             }
             
-            var postServices = GetInstances().Where(x => x is IPostConfigureApp).OrderByPriority();
-            foreach (IPostConfigureApp startup in postServices)
-            {
-                startup.Configure(app);
-            }
+            var postStartupConfigs = startupConfigs.PriorityZeroOrAbove();
+            postStartupConfigs.ForEach(RunConfigure);
         }
-
     }
 #endif
 
     public static class ModularExtensions
     {
-        public static List<object> OrderByPriority(this IEnumerable<object> instances)
-        {
-            var list = instances.ToList();
-            if (!list.Any(x => x.GetType().HasAttribute<PriorityAttribute>()))
-                return list;
-                
-            var priorityMap = new Dictionary<object, int>();
-            foreach (var o in list)
-            {
-                priorityMap[o] = o.GetType().FirstAttribute<PriorityAttribute>()?.Value ?? 0;
-            }
-            
-            list.Sort((x,y) => priorityMap[x].CompareTo(priorityMap[y]));
-            return list;
-        }
+        public static List<Tuple<object, int>> WithPriority(this IEnumerable<object> instances) => 
+            instances.Select(o => new Tuple<object, int>(o, o.GetType().FirstAttribute<PriorityAttribute>()?.Value ?? 0)).ToList();
+
+        public static List<object> PriorityOrdered(this List<Tuple<object, int>> instances) =>
+            instances.OrderBy(x => x.Item2).Map(x => x.Item1);
+
+        public static List<object> PriorityBelowZero(this List<Tuple<object, int>> instances) =>
+            instances.Where(x => x.Item2 < 0).OrderBy(x => x.Item2).Map(x => x.Item1);
+
+        public static List<object> PriorityZeroOrAbove(this List<Tuple<object, int>> instances) =>
+            instances.Where(x => x.Item2 >= 0).OrderBy(x => x.Item2).Map(x => x.Item1);
     }
 }
 

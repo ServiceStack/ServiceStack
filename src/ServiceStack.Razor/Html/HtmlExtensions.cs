@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Web;
 using ServiceStack.Web;
 
@@ -66,6 +67,9 @@ namespace ServiceStack.Html
 
         public static string ErrorResponse(this HtmlHelper html, string fieldName) =>
             ViewUtils.ErrorResponse(html.GetErrorStatus(), fieldName);
+        
+        public static string UserProfileUrl(this HtmlHelper html) =>
+            html.GetRequest().GetSession().GetProfileUrl();
 
 
         /// <summary>
@@ -122,5 +126,49 @@ namespace ServiceStack.Html
             ViewUtils.FormControl(html.GetRequest(), inputAttrs.ToObjectDictionary(), tagName, inputOptions).ToHtmlString();
         public static HtmlString FormControl(this HtmlHelper html, Dictionary<string, object> inputAttrs, string tagName, InputOptions inputOptions) =>
             ViewUtils.FormControl(html.GetRequest(), inputAttrs, tagName, inputOptions).ToHtmlString();
+
+        
+        public static List<NavItem> GetNavItems(this HtmlHelper html) => ViewUtils.NavItems;
+        public static List<NavItem> GetNavItems(this HtmlHelper html, string key) => ViewUtils.GetNavItems(key);
+
+        public static HtmlString Nav(this HtmlHelper html) => html.Nav(ViewUtils.NavItems, null);
+        public static HtmlString Nav(this HtmlHelper html, NavOptions options) => html.Nav(ViewUtils.NavItems, options);
+        public static HtmlString Nav(this HtmlHelper html, List<NavItem> navItems) => html.Nav(navItems, null);
+        public static HtmlString Nav(this HtmlHelper html, List<NavItem> navItems, NavOptions options) =>
+            ViewUtils.Nav(navItems, options.ForNav().WithDefaults(html.GetRequest())).ToHtmlString();
+
+        public static HtmlString NavBar(this HtmlHelper html) => html.NavBar(ViewUtils.NavItems, null);
+        public static HtmlString NavBar(this HtmlHelper html, NavOptions options) => html.NavBar(ViewUtils.NavItems, options);
+        public static HtmlString NavBar(this HtmlHelper html, List<NavItem> navItems) => html.NavBar(navItems, null);
+        public static HtmlString NavBar(this HtmlHelper html, List<NavItem> navItems, NavOptions options) =>
+            ViewUtils.Nav(navItems, options.ForNavbar().WithDefaults(html.GetRequest())).ToHtmlString();
+
+        public static HtmlString NavLink(this HtmlHelper html, NavItem navItem) => html.NavLink(navItem, null);
+        public static HtmlString NavLink(this HtmlHelper html, NavItem navItem, NavOptions options) =>
+            ViewUtils.NavLink(navItem, options.ForNavLink().WithDefaults(html.GetRequest())).ToHtmlString();
+
+        public static HtmlString NavButtonGroup(this HtmlHelper html) => html.NavButtonGroup(ViewUtils.NavItems, null);
+        public static HtmlString NavButtonGroup(this HtmlHelper html, NavOptions options) => html.NavButtonGroup(ViewUtils.NavItems, options);
+        public static HtmlString NavButtonGroup(this HtmlHelper html, List<NavItem> navItems) => html.NavButtonGroup(navItems, null);
+        public static HtmlString NavButtonGroup(this HtmlHelper html, List<NavItem> navItems, NavOptions options) =>
+            ViewUtils.NavButtonGroup(navItems, options.ForNavButtonGroup().WithDefaults(html.GetRequest())).ToHtmlString();
+
+        public static HtmlString CssIncludes(this HtmlHelper html, params string[] cssFiles) =>
+            ViewUtils.CssIncludes(HostContext.VirtualFileSources, cssFiles.ToList()).ToHtmlString();
+        public static HtmlString JsIncludes(this HtmlHelper html, params string[] jsFiles) =>
+            ViewUtils.CssIncludes(HostContext.VirtualFileSources, jsFiles.ToList()).ToHtmlString();
+
+        public static HtmlString SvgImage(this HtmlHelper html, string name) => Svg.GetImage(name).ToHtmlString();
+        public static HtmlString SvgImage(this HtmlHelper html, string name, string fillColor) => Svg.GetImage(name, fillColor).ToHtmlString();
+
+        public static HtmlString SvgDataUri(this HtmlHelper html, string name) => Svg.GetDataUri(name).ToHtmlString();
+        public static HtmlString SvgDataUri(this HtmlHelper html, string name, string fillColor) => Svg.GetDataUri(name, fillColor).ToHtmlString();
+
+        public static HtmlString SvgBackgroundImageCss(this HtmlHelper html, string name) => Svg.GetBackgroundImageCss(name).ToHtmlString();
+        public static HtmlString SvgBackgroundImageCss(this HtmlHelper html, string name, string fillColor) => Svg.GetBackgroundImageCss(name, fillColor).ToHtmlString();
+        public static HtmlString SvgInBackgroundImageCss(this HtmlHelper html, string svg) => Svg.InBackgroundImageCss(svg).ToHtmlString();
+
+        public static HtmlString SvgFill(this HtmlHelper html, string svg, string color) => Svg.Fill(svg, color).ToHtmlString();
+        public static string SvgBaseUrl(this HtmlHelper html) => html.GetRequest().ResolveAbsoluteUrl(HostContext.AssertPlugin<SvgFeature>().RoutePath);
     }
 }

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
@@ -29,6 +30,7 @@ using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Platforms;
 using ServiceStack.Redis;
+using ServiceStack.Script;
 using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 using ServiceStack.Text;
@@ -146,7 +148,7 @@ namespace ServiceStack.Mvc
 
         public ViewEngineResult GetRoutingPage(string pathInfo, out Dictionary<string, object> routingArgs)
         {
-            // Sync with TemplatePagesFeature GetRoutingPage()
+            // Sync with SharpPagesFeature GetRoutingPage()
 
             var path = pathInfo.Trim('/');
 
@@ -229,6 +231,8 @@ namespace ServiceStack.Mvc
                             {
                                 if (file.Name.IndexOf("layout", StringComparison.OrdinalIgnoreCase) >= 0 ||
                                     file.Name.IndexOf("partial", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                    file.Name.IndexOf("viewimports", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                    file.Name.IndexOf("viewstart", StringComparison.OrdinalIgnoreCase) >= 0 ||
                                     file.Name.StartsWith("_init"))                                
                                     continue;
                             }
@@ -434,6 +438,10 @@ namespace ServiceStack.Mvc
             catch (StopExecutionException) { }
             catch (Exception ex)
             {
+                ex = ex.UnwrapIfSingleException();
+                if (ex is StopExecutionException)
+                    return;
+                
                 req.Items[RenderException] = ex;
                 //Can't set HTTP Headers which are already written at this point
                 await req.Response.WriteErrorBody(ex);
@@ -463,6 +471,9 @@ namespace ServiceStack.Mvc
 
         public override async Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
         {
+            if (HostContext.ApplyCustomHandlerRequestFilters(req, res))
+                return;
+
             var format = HostContext.GetPlugin<RazorFormat>();
             try
             {
@@ -605,7 +616,7 @@ namespace ServiceStack.Mvc
                 var partialPath = dir.CombineWith(partial) + ".md";
                 partialPath = partialPath.TrimPrefixes("/");
 
-                var markdownPaths = new[]
+                var viewPaths = new[]
                 {
                     partialPath,
                     $"wwwroot/{partialPath}",
@@ -613,7 +624,7 @@ namespace ServiceStack.Mvc
                     $"Views/{partial}.md",
                 };
 
-                foreach (var path in markdownPaths)
+                foreach (var path in viewPaths)
                 {
                     var file = HostContext.AppHost.VirtualFiles.GetFile(path);
                     if (file != null)
@@ -711,6 +722,15 @@ namespace ServiceStack.Mvc
         public static string ErrorResponse(this IHtmlHelper html, string fieldName) =>
             ViewUtils.ErrorResponse(html.GetErrorStatus(), fieldName);
 
+        public static bool IsDebug(this IHtmlHelper html) => HostContext.DebugMode;
+
+        public static IAuthSession GetSession(this IHtmlHelper html) => html.GetRequest().GetSession();
+
+        public static bool IsAuthenticated(this IHtmlHelper html) =>
+            html.GetSession().IsAuthenticated;
+        public static string UserProfileUrl(this IHtmlHelper html) =>
+            html.GetSession().GetProfileUrl();
+
 
         /// <summary>
         /// Alias for ServiceStack Html.ValidationSummary() with comma-delimited field names 
@@ -801,6 +821,157 @@ namespace ServiceStack.Mvc
         public static HtmlString HtmlDump(this IHtmlHelper html, object target) => ViewUtils.HtmlDump(target).ToHtmlString();
         public static HtmlString HtmlDump(this IHtmlHelper html, object target, HtmlDumpOptions options) => 
             ViewUtils.HtmlDump(target,options).ToHtmlString();
+
+        public static List<NavItem> GetNavItems(this IHtmlHelper html) => ViewUtils.NavItems;
+        public static List<NavItem> GetNavItems(this IHtmlHelper html, string key) => ViewUtils.GetNavItems(key);
+
+        public static HtmlString Nav(this IHtmlHelper html) => html.Nav(ViewUtils.NavItems, null);
+        public static HtmlString Nav(this IHtmlHelper html, NavOptions options) => html.Nav(ViewUtils.NavItems, options);
+        public static HtmlString Nav(this IHtmlHelper html, List<NavItem> navItems) => html.Nav(navItems, null);
+        public static HtmlString Nav(this IHtmlHelper html, List<NavItem> navItems, NavOptions options) =>
+            ViewUtils.Nav(navItems, options.ForNav().WithDefaults(html.GetRequest())).ToHtmlString();
+
+        public static HtmlString Navbar(this IHtmlHelper html) => html.Navbar(ViewUtils.NavItems, null);
+        public static HtmlString Navbar(this IHtmlHelper html, NavOptions options) => html.Navbar(ViewUtils.NavItems, options);
+        public static HtmlString Navbar(this IHtmlHelper html, List<NavItem> navItems) => html.Navbar(navItems, null);
+        public static HtmlString Navbar(this IHtmlHelper html, List<NavItem> navItems, NavOptions options) =>
+            ViewUtils.Nav(navItems, options.ForNavbar().WithDefaults(html.GetRequest())).ToHtmlString();
+
+        public static HtmlString NavLink(this IHtmlHelper html, NavItem navItem) => html.NavLink(navItem, null);
+        public static HtmlString NavLink(this IHtmlHelper html, NavItem navItem, NavOptions options) =>
+            ViewUtils.NavLink(navItem, options.ForNavLink().WithDefaults(html.GetRequest())).ToHtmlString();
+
+        public static HtmlString NavButtonGroup(this IHtmlHelper html) => html.NavButtonGroup(ViewUtils.NavItems, null);
+        public static HtmlString NavButtonGroup(this IHtmlHelper html, NavOptions options) => html.NavButtonGroup(ViewUtils.NavItems, options);
+        public static HtmlString NavButtonGroup(this IHtmlHelper html, List<NavItem> navItems) => html.NavButtonGroup(navItems, null);
+        public static HtmlString NavButtonGroup(this IHtmlHelper html, List<NavItem> navItems, NavOptions options) =>
+            ViewUtils.NavButtonGroup(navItems, options.ForNavButtonGroup().WithDefaults(html.GetRequest())).ToHtmlString();
+
+        public static HtmlString CssIncludes(this IHtmlHelper html, params string[] cssFiles) =>
+            ViewUtils.CssIncludes(HostContext.VirtualFileSources, cssFiles.ToList()).ToHtmlString();
+        public static HtmlString JsIncludes(this IHtmlHelper html, params string[] jsFiles) =>
+            ViewUtils.CssIncludes(HostContext.VirtualFileSources, jsFiles.ToList()).ToHtmlString();
+
+        public static HtmlString SvgImage(this IHtmlHelper html, string name) => Svg.GetImage(name).ToHtmlString();
+        public static HtmlString SvgImage(this IHtmlHelper html, string name, string fillColor) => Svg.GetImage(name, fillColor).ToHtmlString();
+
+        public static HtmlString SvgDataUri(this IHtmlHelper html, string name) => Svg.GetDataUri(name).ToHtmlString();
+        public static HtmlString SvgDataUri(this IHtmlHelper html, string name, string fillColor) => Svg.GetDataUri(name, fillColor).ToHtmlString();
+
+        public static HtmlString SvgBackgroundImageCss(this IHtmlHelper html, string name) => Svg.GetBackgroundImageCss(name).ToHtmlString();
+        public static HtmlString SvgBackgroundImageCss(this IHtmlHelper html, string name, string fillColor) => Svg.GetBackgroundImageCss(name, fillColor).ToHtmlString();
+        public static HtmlString SvgInBackgroundImageCss(this IHtmlHelper html, string svg) => Svg.InBackgroundImageCss(svg).ToHtmlString();
+        
+        public static HtmlString SvgFill(this IHtmlHelper html, string svg, string color) => Svg.Fill(svg, color).ToHtmlString();
+
+        public static string SvgBaseUrl(this IHtmlHelper html) => html.GetRequest().ResolveAbsoluteUrl(HostContext.AssertPlugin<SvgFeature>().RoutePath);
+        
+
+        /* HTML Helpers for MVC Pages which don't inherit ServiceStack.Razor View Pages */
+        
+        public static HtmlString GetAbsoluteUrl(this IHtmlHelper html, string virtualPath) => 
+            new HtmlString(HostContext.AppHost.ResolveAbsoluteUrl(virtualPath, html.GetRequest()));
+        public static IServiceGateway Gateway(this IHtmlHelper html) =>
+            HostContext.AppHost.GetServiceGateway(html.GetRequest());
+
+        public static void RedirectIfNotAuthenticated(this IHtmlHelper html, string redirect = null) =>
+            html.GetRequest().RedirectIfNotAuthenticated(redirect);
+
+        internal static void RedirectIfNotAuthenticated(this IRequest req, string redirect = null)
+        {
+            if (req.GetSession().IsAuthenticated)
+                return;
+
+            redirect = redirect
+               ?? AuthenticateService.HtmlRedirect
+               ?? HostContext.Config.DefaultRedirectPath
+               ?? HostContext.Config.WebHostUrl
+               ?? "/";
+            AuthenticateAttribute.DoHtmlRedirect(redirect, req, req.Response, includeRedirectParam: true);
+            throw new StopExecutionException();
+        }
+        
+        private static HtmlString WaitStopAsync(Func<Task> fn)
+        {
+            fn().Wait();
+            return HtmlString.Empty;
+        }
+
+        public static Task RedirectToAsync(this IHtmlHelper html, string path) => html.GetRequest().RedirectToAsync(path);
+        
+        internal static async Task RedirectToAsync(this IRequest req, string path)
+        {
+            var result = new HttpResult(null, null, HttpStatusCode.Redirect) {
+                Headers = {
+                    [HttpHeaders.Location] = path.FirstCharEquals('~')
+                        ? req.ResolveAbsoluteUrl(path)
+                        : path
+                }
+            };
+            await req.Response.WriteToResponse(req, result);
+            throw new StopExecutionException();
+        }
+
+        public static HtmlString RedirectTo(this IHtmlHelper html, string path) => WaitStopAsync(() => 
+            html.GetRequest().RedirectToAsync(path));
+
+        internal static HtmlString RedirectTo(this IRequest req, string path) => WaitStopAsync(() => 
+            req.RedirectToAsync(path));
+
+        public static HtmlString AssertRole(this IHtmlHelper html, string role, string message = null, string redirect = null) =>
+            WaitStopAsync(() => html.GetRequest().AssertRoleAsync(role:role, message:message, redirect:redirect));
+        internal static HtmlString AssertRole(this IRequest req, string role, string message = null, string redirect = null) =>
+            WaitStopAsync(() => req.AssertRoleAsync(role:role, message:message, redirect:redirect));
+
+        public static Task AssertRoleAsync(this IHtmlHelper html, string role, string message = null, string redirect = null) =>
+            html.GetRequest().AssertRoleAsync(role:role, message:message, redirect:redirect);
+        internal static async Task AssertRoleAsync(this IRequest req, string role, string message = null, string redirect = null)
+        {
+            var session = req.GetSession();
+            if (!session.IsAuthenticated)
+            {
+                req.RedirectIfNotAuthenticated(redirect);
+                return;
+            }
+
+            if (!session.HasRole(role, req.TryResolve<IAuthRepository>()))
+            {
+                if (redirect != null)
+                    await req.RedirectToAsync(redirect);
+                        
+                var error = new HttpError(HttpStatusCode.Forbidden, message ?? ErrorMessages.InvalidRole.Localize(req));
+                await req.Response.WriteToResponse(req, error);
+                throw new StopExecutionException();
+            }
+        }
+
+        public static HtmlString AssertPermission(this IHtmlHelper html, string permission, string message = null, string redirect = null) =>
+            WaitStopAsync(() => html.GetRequest().AssertPermissionAsync(permission:permission, message:message, redirect:redirect));
+        internal static HtmlString AssertPermission(this IRequest req, string permission, string message = null, string redirect = null) =>
+            WaitStopAsync(() => req.AssertPermissionAsync(permission:permission, message:message, redirect:redirect));
+
+        public static Task AssertPermissionAsync(this IHtmlHelper html, string permission, string message = null, string redirect = null) =>
+            html.GetRequest().AssertPermissionAsync(permission:permission, message:message, redirect:redirect);
+        
+        internal static async Task AssertPermissionAsync(this IRequest req, string permission, string message = null, string redirect = null)
+        {
+            var session = req.GetSession();
+            if (!session.IsAuthenticated)
+            {
+                req.RedirectIfNotAuthenticated(redirect);
+                return;
+            }
+
+            if (!session.HasPermission(permission, req.TryResolve<IAuthRepository>()))
+            {
+                if (redirect != null)
+                    await req.RedirectToAsync(redirect);
+                        
+                var error = new HttpError(HttpStatusCode.Forbidden, message ?? ErrorMessages.InvalidPermission.Localize(req));
+                await req.Response.WriteToResponse(req, error);
+                throw new StopExecutionException();
+            }
+        }
     }
 
     public abstract class ViewPage : ViewPage<object>
@@ -946,20 +1117,6 @@ namespace ServiceStack.Mvc
 
         public virtual void EndServiceStackRequest() => HostContext.AppHost.OnEndRequest(Request);
 
-        public void RedirectIfNotAuthenticated(string redirectUrl = null)
-        {
-            if (IsAuthenticated)
-                return;
-
-            redirectUrl = redirectUrl
-                ?? AuthenticateService.HtmlRedirect
-                ?? HostContext.Config.DefaultRedirectPath
-                ?? HostContext.Config.WebHostUrl
-                ?? "/";
-            AuthenticateAttribute.DoHtmlRedirect(redirectUrl, Request, Response, includeRedirectParam: true);
-            throw new StopExecutionException();
-        }
-
         public bool RenderErrorIfAny()
         {
             var html = GetErrorHtml(GetErrorStatus());
@@ -985,10 +1142,29 @@ namespace ServiceStack.Mvc
                        responseStatus.ErrorCode + ": " +
                        responseStatus.Message + @"
                     </h4>" +
-                   stackTrace +
-               "</div>";
+                       stackTrace +
+                       "</div>";
             return html;
         }
+
+
+        public void RedirectIfNotAuthenticated(string redirect = null) => Request.RedirectIfNotAuthenticated(redirect);
+
+        public Task RedirectToAsync(string path) => Request.RedirectToAsync(path);
+
+        public HtmlString RedirectTo(string path) => Request.RedirectTo(path);
+
+        public HtmlString AssertRole(string role, string message = null, string redirect = null) =>
+            Request.AssertRole(role: role, message: message, redirect: redirect);
+
+        public Task AssertRoleAsync(string role, string message = null, string redirect = null) =>
+            Request.AssertRoleAsync(role: role, message: message, redirect: redirect);
+
+        public HtmlString AssertPermission(string permission, string message = null, string redirect = null) =>
+            Request.AssertPermission(permission: permission, message: message, redirect: redirect);
+
+        public Task AssertPermissionAsync(string permission, string message = null, string redirect = null) =>
+            Request.AssertPermissionAsync(permission: permission, message: message, redirect: redirect);
     }
 }
 

@@ -43,6 +43,14 @@ namespace ServiceStack.Auth
                     "https://www.googleapis.com/auth/userinfo.email"
                 };
             }
+
+            NavItem = new NavItem {
+                Href = "/auth/" + Name,
+                Label = "Sign in with Google",
+                Id = "btn-" + Name,
+                ClassName = "btn-social btn-google",
+                IconClass = "fab svg-google",
+            };
         }
 
         public virtual bool OnVerifyAccessToken(string accessToken)

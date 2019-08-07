@@ -190,7 +190,7 @@ namespace ServiceStack
                     { "displayName", displayName },
                     { "channels", string.Join(",", channels) },
                     { "createdAt", now.ToUnixTimeMs().ToString() },
-                    { AuthMetadataProvider.ProfileUrlKey, session.GetProfileUrl() ?? AuthMetadataProvider.DefaultNoProfileImgUrl },
+                    { AuthMetadataProvider.ProfileUrlKey, session.GetProfileUrl() ?? Svg.GetDataUri(Svg.Icons.DefaultProfile) },
                 },
                 ServerArgs = new Dictionary<string, string>(),
             };

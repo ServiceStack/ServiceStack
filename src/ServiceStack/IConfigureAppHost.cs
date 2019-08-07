@@ -6,7 +6,7 @@ namespace ServiceStack
     /// </summary>
     public interface IPreConfigureAppHost
     {
-        void Configure(IAppHost appHost);
+        void PreConfigure(IAppHost appHost);
     }
 
     /// <summary>
@@ -19,11 +19,10 @@ namespace ServiceStack
     }
 
     /// <summary>
-    /// Run "no-touch" Startup logic after AppHost.Configure() is run.
-    /// Only classes in AppHost or Service Assemblies are discovered and run.
+    /// Run "no-touch" Startup logic after the AppHost has been initialized
     /// </summary>
-    public interface IPostConfigureAppHost
+    public interface IAfterInitAppHost
     {
-        void Configure(IAppHost appHost);
+        void AfterInit(IAppHost appHost);
     }
 }

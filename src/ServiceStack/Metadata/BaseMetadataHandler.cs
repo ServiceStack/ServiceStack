@@ -169,7 +169,48 @@ namespace ServiceStack.Metadata
 
         private void AppendType(StringBuilder sb, Operation op, MetadataType metadataType)
         {
-            if (metadataType.Properties.IsEmpty()) return;
+            if (metadataType.IsEnum == true)
+            {
+                sb.Append("<table class='enum'>");
+                sb.Append($"<caption><b>{ConvertToHtml(metadataType.DisplayType ?? metadataType.Name)}</b> Enum:</caption>");
+
+                var hasEnumValues = !metadataType.EnumValues.IsEmpty();
+                if (hasEnumValues)
+                {
+                    sb.Append("<thead><tr>");
+                    sb.Append("<th>Name</th>");
+                    sb.Append("<th>Value</th>");
+                    sb.Append("</tr></thead>");
+                }
+                
+                sb.Append("<tbody>");
+
+                for (var i = 0; i < metadataType.EnumNames.Count; i++)
+                {
+                    sb.Append("<tr>");
+                    if (hasEnumValues)
+                    {
+                        sb.Append("<td>")
+                          .Append(metadataType.EnumNames[i])
+                          .Append("</td><td>")
+                          .Append(metadataType.EnumValues[i])
+                          .Append("</td>");
+                    }
+                    else
+                    {
+                        sb.Append("<td>")
+                          .Append(metadataType.EnumNames[i])
+                          .Append("</td>");
+                    }
+                    sb.Append("</tr>");
+                }
+                
+                sb.Append("</tbody>");
+                sb.Append("</table>");
+                return;
+            }
+            if (metadataType.Properties.IsEmpty()) 
+                return;
             
             sb.Append("<table class='params'>");
             sb.Append($"<caption><b>{ConvertToHtml(metadataType.DisplayType ?? metadataType.Name)}</b> Parameters:</caption>");

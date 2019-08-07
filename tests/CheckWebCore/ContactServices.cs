@@ -258,9 +258,7 @@ namespace CheckWebCore
         /// </summary>
         public class ContactServiceFilters : ScriptMethods
         {
-            internal readonly List<KeyValuePair<string, string>> MenuItems =
-                HostContext.AppSettings.GetKeyValuePairs("Menu");
-            public List<KeyValuePair<string, string>> menuItems() => MenuItems;
+            public List<NavItem> menuItems() => ViewUtils.GetNavItems("Menu");
 
             static Dictionary<string, string> Colors = new Dictionary<string, string>
             {
@@ -291,7 +289,7 @@ namespace CheckWebCore
         public static Dictionary<string, string> ContactColors(this IHtmlHelper html) => Instance.contactColors();
         public static List<KeyValuePair<string, string>> ContactTitles(this IHtmlHelper html) => Instance.contactTitles();
         public static List<string> ContactGenres(this IHtmlHelper html) => Instance.contactGenres();
-        public static List<KeyValuePair<string, string>> MenuItems(this IHtmlHelper html) => Instance.MenuItems;
+        public static List<NavItem> MenuItems(this IHtmlHelper html) => ViewUtils.GetNavItems("Menu");
     }
 
     public class ContactsHostConfig : IConfigureAppHost

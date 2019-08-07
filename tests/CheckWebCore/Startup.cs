@@ -12,95 +12,97 @@ using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Host;
 using ServiceStack.Mvc;
+using ServiceStack.NativeTypes.TypeScript;
 using ServiceStack.Text;
 using ServiceStack.Validation;
 
 namespace CheckWebCore
 {
-    public class TestPreConfigureServices : IPreConfigureServices
-    {
-        public void Configure(IServiceCollection services) => "IPreConfigureServices".Print(); 
-    }
     [Priority(-1)]
-    public class TestPreConfigureServicesSub1 : IPreConfigureServices
+    public class MyPreConfigureServices : IConfigureServices
     {
-        public void Configure(IServiceCollection services) => "IPreConfigureServices(-1)".Print(); 
+        public void Configure(IServiceCollection services) => "#1".Print(); // #1
     }
 
-    public class TestStartup : IStartup
+    public class MyConfigureServices : IConfigureServices
+    {
+        public void Configure(IServiceCollection services) => "#4".Print();  // #4
+    }
+
+    [Priority(-1)]
+    public class MyStartup : IStartup
     {
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            "IStartup.ConfigureServices()".Print(); // #2
+            "#2".Print();                                           // #2
             return null;
         }
 
-        public void Configure(IApplicationBuilder app) => "IStartup.Configure()".Print(); // #6
+        public void Configure(IApplicationBuilder app) => "#6".Print();     // #6
     }
 
-    public class Startup
+    public class Startup : ModularStartup
     {
-        public IConfiguration Configuration { get; }
-        public Startup(IConfiguration configuration) => Configuration = configuration;
+        public Startup(IConfiguration configuration) : base(configuration)
+        {
+//            IgnoreTypes.Add(typeof(MyStartup));
+        }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
-        public void ConfigureServices(IServiceCollection services) // #3
+        public new void ConfigureServices(IServiceCollection services)                              
         {
-            "Startup.ConfigureServices(IServiceCollection services)".Print();
+            "#3".Print();                   // #3
             services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env) // #7
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)                 
         {
-            "Startup.Configure(IApplicationBuilder app, IHostingEnvironment env)".Print();
+            "#8".Print();      // #8
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            var AppSettings = new NetCoreAppSettings(Configuration);
-            AppSettings.GetNullableString("servicestack:license");
-            
-            app.UseServiceStack(new AppHost
-            {
-                AppSettings = AppSettings
-            });
         }
     }
     
     [Priority(1)]
-    public class TestPostConfigureServicesAdd1 : IPostConfigureServices
+    public class MyPostConfigureServices : IConfigureServices
     {
-        public void Configure(IServiceCollection services) => "IPostConfigureServices(+1)".Print(); // #4
+        public void Configure(IServiceCollection services) => "#5".Print(); // #5
     }
-    public class TestPostConfigureServices : IPostConfigureServices
+
+    [Priority(-1)]
+    public class MyPreConfigureApp : IConfigureApp
     {
-        public void Configure(IServiceCollection services) => "IPostConfigureServices".Print(); // #4
+        public void Configure(IApplicationBuilder app)=> "#7".Print();           // #7
     }
-    [Priority(1)]
-    public class TestPreConfigureAppAdd1 : IPreConfigureApp
+    public class MyConfigureApp : IConfigureApp
     {
-        public void Configure(IApplicationBuilder app)=> "IPreConfigureApp(+1)".Print(); // #5
-    }
-    [Priority(2)]
-    public class TestPreConfigureAppAdd2 : IPreConfigureApp
-    {
-        public void Configure(IApplicationBuilder app)=> "IPreConfigureApp(+2)".Print(); // #5
-    }
-    public class TestPostConfigureApp : IPostConfigureApp
-    {
-        public void Configure(IApplicationBuilder app)=> "IPostConfigureApp".Print(); // #8
+        public void Configure(IApplicationBuilder app)=> "#9".Print();           // #9
     }
     
 
-    public class AppHost : AppHostBase
+    public class AppHost : AppHostBase, IConfigureApp
     {
         public AppHost() : base("TestLogin", typeof(MyServices).Assembly) { }
 
+        public void Configure(IApplicationBuilder app)
+        {
+            app.UseServiceStack(new AppHost
+            {
+                AppSettings = new NetCoreAppSettings(Configuration)
+            });
+        }
 
+        public override void Configure(IServiceCollection services)
+        {
+            services.AddSingleton<ICacheClient>(new MemoryCacheClient());
+        }
+        
         // http://localhost:5000/auth/credentials?username=testman@test.com&&password=!Abc1234
         // Configure your AppHost with the necessary configuration and dependencies your App needs
         public override void Configure(Container container)
@@ -123,9 +125,32 @@ namespace CheckWebCore
                 UseSecureCookies = true,
             });
 
-            container.Register<ICacheClient>(new MemoryCacheClient());
+            var cache = container.Resolve<ICacheClient>();
             
             Plugins.Add(new ValidationFeature());
+
+//            Svg.CssFillColor["svg-auth"] = "#ccc";
+            Svg.CssFillColor["svg-icons"] = "#e33";
+
+            this.CustomErrorHttpHandlers[HttpStatusCode.NotFound] = new RazorHandler("/notfound");
+            this.CustomErrorHttpHandlers[HttpStatusCode.Forbidden] = new SharpPageHandler("/forbidden");
+
+            Svg.Load(RootDirectory.GetDirectory("/assets/svg"));
+            
+            Plugins.Add(new PostmanFeature());
+
+//            TypeScriptGenerator.TypeFilter = (type, args) => {
+//                if (type == "ResponseBase`1" && args[0] == "Dictionary<String,List`1>")
+//                    return "ResponseBase<Map<string,Array<any>>>";
+//                return null;
+//            };
+
+//            TypeScriptGenerator.DeclarationTypeFilter = (type, args) => {
+//                return null;
+//            };
+
+
+            //GetPlugin<SvgFeature>().ValidateFn = req => Config.DebugMode; // only allow in DebugMode
         }
     }
     
@@ -146,6 +171,7 @@ namespace CheckWebCore
     public class HelloResponse
     {
         public string Result { get; set; }
+        public ResponseStatus ResponseStatus { get; set; }
     }
 
     [Route("/testauth")]
@@ -156,10 +182,47 @@ namespace CheckWebCore
     
     [Route("/throw")]
     public class Throw {}
+    
+    [Route("/api/data/import/{Month}", "POST")]
+    public class ImportData : IReturn<ImportDataResponse>
+    {
+        public string Month { get; set; }
+    }
+
+    public class ImportDataResponse : IHasResponseStatus
+    {
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    public class ResponseBase<T>
+    {
+        public T Result { get; set; }
+    }
+    public class Campaign : IReturn<ResponseBase<Dictionary<string, List<object>>>>
+    {
+        public int Id { get; set; }
+    }
+    public class DataEvent
+    {
+        public int Id { get; set; }
+    }
+
+    public class Dummy
+    {
+        public Campaign Campaign { get; set; }
+        public DataEvent DataEvent { get; set; }
+        public ExtendsDictionary ExtendsDictionary { get; set; }
+    }
+   
+    public class ExtendsDictionary : Dictionary<Guid, string> {
+    }
 
     //    [Authenticate]
     public class MyServices : Service
     {
+        public object Any(Dummy request) => request;
+        public object Any(Campaign request) => request;
+        
         //Return index.html for unmatched requests so routing is handled on client
         public object Any(FallbackForClientRoutes request) => 
             Request.GetPageResult("/");
@@ -178,5 +241,27 @@ namespace CheckWebCore
         public object Any(Throw request) => HttpError.Conflict("Conflict message");
 //        public object Any(Throw request) => new HttpResult
 //            {StatusCode = HttpStatusCode.Conflict, Response = "Error message"};
+
+        [Authenticate]
+        public object Post(ImportData request)
+        {
+            if (Request.Files == null || Request.Files.Length <= 0)
+            {
+                throw new Exception("No import file was received by the server");
+            }
+
+            // This is always coming through as null
+            if (request.Month == null)
+            {
+                throw new Exception("No month was received by the server");
+            }
+
+            var file = (HttpFile)Request.Files[0];
+            var month = request.Month.Replace('-', '/');
+
+            //ImportData(month, file);
+
+            return new ImportDataResponse();
+        }
     }
 }

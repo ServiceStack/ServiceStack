@@ -45,7 +45,7 @@ namespace ServiceStack.Api.Swagger
             AnyRouteVerbs = new List<string> { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
         }
 
-        public void Configure(IAppHost appHost)
+        public void BeforePluginsLoaded(IAppHost appHost)
         {
             appHost.Config.EmbeddedResourceSources.Add(typeof(SwaggerFeature).Assembly);
         }

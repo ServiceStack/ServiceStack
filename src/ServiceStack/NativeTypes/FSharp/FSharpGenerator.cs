@@ -27,12 +27,21 @@ namespace ServiceStack.NativeTypes.FSharp
         {
         };
 
+        public static TypeFilterDelegate TypeFilter { get; set; }
+
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
-        public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types)
-        {
-            return types.OrderTypesByDeps();
-        }
+        public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types.OrderTypesByDeps();
+
+        /// <summary>
+        /// Add Code to top of generated code
+        /// </summary>
+        public static AddCodeDelegate InsertCodeFilter { get; set; }
+
+        /// <summary>
+        /// Add Code to bottom of generated code
+        /// </summary>
+        public static AddCodeDelegate AddCodeFilter { get; set; }
 
         public string GetCode(MetadataTypes metadata, IRequest request)
         {
@@ -109,6 +118,10 @@ namespace ServiceStack.NativeTypes.FSharp
             if (Config.AddGeneratedCodeAttributes)
                 sb.AppendLine("open System.CodeDom.Compiler");
 
+            var insertCode = InsertCodeFilter?.Invoke(allTypes, Config);
+            if (insertCode != null)
+                sb.AppendLine(insertCode);
+
             foreach (var type in orderedTypes)
             {
                 var fullTypeName = type.GetFullName();
@@ -169,6 +182,10 @@ namespace ServiceStack.NativeTypes.FSharp
                     existingTypes.Add(fullTypeName);
                 }
             }
+
+            var addCode = AddCodeFilter?.Invoke(allTypes, Config);
+            if (addCode != null)
+                sb.AppendLine(addCode);
 
             sb.AppendLine();
 
@@ -398,6 +415,10 @@ namespace ServiceStack.NativeTypes.FSharp
 
         public string Type(string type, string[] genericArgs)
         {
+            var useType = TypeFilter?.Invoke(type, genericArgs);
+            if (useType != null)
+                return useType;
+
             if (genericArgs != null)
             {
                 var parts = type.Split('`');

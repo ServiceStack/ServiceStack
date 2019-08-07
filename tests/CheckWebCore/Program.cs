@@ -16,13 +16,12 @@ namespace CheckWebCore
     {
         public static void Main(string[] args)
         {
-            ModularStartupConfig.Init(typeof(Startup));
             BuildWebHost(args).Run();
         }
 
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseStartup<ModularStartup>()
+                .UseStartup<Startup>()
                 .Build();
     }
 }

@@ -23,8 +23,8 @@ namespace ServiceStack.Razor
 
         public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
-            HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes);
-            if (httpRes.IsClosed) return;
+            if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
+                return;
 
             httpRes.ContentType = MimeTypes.Html;
             if (RazorFormat == null)

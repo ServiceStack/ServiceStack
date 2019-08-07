@@ -57,6 +57,8 @@ namespace ServiceStack.NativeTypes.Swift
             {"Stream", "Data"},
         }.ToConcurrentDictionary();
 
+        public static TypeFilterDelegate TypeFilter { get; set; }
+
         public static HashSet<string> OverrideInitForBaseClasses = new HashSet<string> {
             "NSObject"
         };
@@ -64,6 +66,16 @@ namespace ServiceStack.NativeTypes.Swift
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
         public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types;
+        
+        /// <summary>
+        /// Add Code to top of generated code
+        /// </summary>
+        public static AddCodeDelegate InsertCodeFilter { get; set; }
+
+        /// <summary>
+        /// Add Code to bottom of generated code
+        /// </summary>
+        public static AddCodeDelegate AddCodeFilter { get; set; }
 
         public string GetCode(MetadataTypes metadata, IRequest request)
         {
@@ -141,6 +153,10 @@ namespace ServiceStack.NativeTypes.Swift
 
             defaultImports.Each(x => sb.AppendLine($"import {x}"));
 
+            var insertCode = InsertCodeFilter?.Invoke(allTypes, Config);
+            if (insertCode != null)
+                sb.AppendLine(insertCode);
+
             //ServiceStack core interfaces
             foreach (var type in allTypes)
             {
@@ -207,6 +223,10 @@ namespace ServiceStack.NativeTypes.Swift
                 sb.AppendLine();
                 sb.AppendLine(sbExt.ToString());
             }
+
+            var addCode = AddCodeFilter?.Invoke(allTypes, Config);
+            if (addCode != null)
+                sb.AppendLine(addCode);
 
             return StringBuilderCache.ReturnAndFree(sbInner);
         }
@@ -816,6 +836,10 @@ namespace ServiceStack.NativeTypes.Swift
 
         public string Type(string type, string[] genericArgs)
         {
+            var useType = TypeFilter?.Invoke(type, genericArgs);
+            if (useType != null)
+                return useType;
+
             if (!genericArgs.IsEmpty())
             {
                 if (type == "Nullable`1")

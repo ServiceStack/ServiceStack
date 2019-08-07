@@ -20,6 +20,7 @@ namespace ServiceStack.Common.Tests.OAuth
         public override IUserAuthRepository CreateAuthRepo()
         {
             var inMemoryRepo = new InMemoryAuthRepository();
+            inMemoryRepo.Clear();
             InitTest(inMemoryRepo);
             return inMemoryRepo;
         }
@@ -30,7 +31,9 @@ namespace ServiceStack.Common.Tests.OAuth
         public override IUserAuthRepository CreateAuthRepo()
         {
             var appSettings = new AppSettings();
-            var redisRepo = new RedisAuthRepository(new BasicRedisClientManager(new string[] { appSettings.GetString("Redis.Host") ?? "localhost" }));
+            var redisRepo = new RedisAuthRepository(
+                new BasicRedisClientManager(appSettings.GetString("Redis.Host") ?? "localhost"));
+            redisRepo.Clear();
             InitTest(redisRepo);
             return redisRepo;
         }
@@ -44,6 +47,7 @@ namespace ServiceStack.Common.Tests.OAuth
             var db = new PocoDynamo(TestsConfig.CreateDynamoDBClient());
             db.DeleteAllTables();
             var dynamoDbRepo = new DynamoDbAuthRepository(db);
+            dynamoDbRepo.Clear();
             InitTest(dynamoDbRepo);
             dynamoDbRepo.InitSchema();
             return dynamoDbRepo;
@@ -58,6 +62,7 @@ namespace ServiceStack.Common.Tests.OAuth
                 TestsConfig.SqlServerConnString, 
                 SqlServerDialect.Provider);
             var sqlServerRepo = new OrmLiteAuthRepository(sqlServerFactory);
+            try { sqlServerRepo.Clear(); } catch {}
             sqlServerRepo.InitSchema();
             InitTest(sqlServerRepo);
             return sqlServerRepo;

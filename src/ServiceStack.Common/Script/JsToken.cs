@@ -147,6 +147,21 @@ namespace ServiceStack.Script
             index >= 0 && index < literal.Length ? literal[index] : default(char);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int CountPrecedingOccurrences(this ReadOnlySpan<char> literal, int index, char c)
+        {
+            var total = 0;
+            while (index > 0)
+            {
+                if (!literal.SafeCharEquals(index, c))
+                    break;
+
+                total++;
+                index--;
+            }
+            return total;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool SafeCharEquals(this ReadOnlySpan<char> literal, int index, char c) =>
             index >= 0 && index < literal.Length && literal[index] == c;
 
@@ -557,7 +572,8 @@ namespace ServiceStack.Script
             for (var i = 0; i < literal.Length; i++)
             {
                 var c = literal[i];
-                if (c != '$' || literal.SafeGetChar(i-1) == '\\' || literal.SafeGetChar(i+1) != '{')
+                var isExpr = c == '$' && literal.CountPrecedingOccurrences(i - 1, '\\') % 2 != 1 && literal.SafeGetChar(i + 1) == '{'; 
+                if (!isExpr)
                     continue;
 
                 var lastChunk = literal.Slice(lastPos, i - lastPos);

@@ -37,10 +37,9 @@ namespace ServiceStack.Auth
         
         public Func<IAuthRepository, IUserAuth, IAuthTokens, bool> AccountLockedValidator { get; set; }
 
-        public static string UrlFilter(AuthProvider provider, string url)
-        {
-            return url;
-        }
+        public static string UrlFilter(AuthProvider provider, string url) => url;
+
+        public NavItem NavItem { get; set; }
 
         protected AuthProvider()
         {
@@ -107,7 +106,7 @@ namespace ServiceStack.Auth
             }
 
             if (service.Request.ResponseContentType == MimeTypes.Html && !string.IsNullOrEmpty(referrerUrl))
-                return service.Redirect(LogoutUrlFilter(this, referrerUrl.SetParam("s", "-1")));
+                return service.Redirect(LogoutUrlFilter(this, referrerUrl));
 
             return new AuthenticateResponse();
         }
@@ -143,7 +142,8 @@ namespace ServiceStack.Auth
 
             if (session is IAuthSessionExtended authSession)
             {
-                var failed = authSession.Validate(authService, session, tokens, authInfo);
+                var failed = authSession.Validate(authService, session, tokens, authInfo)
+                    ?? AuthEvents.Validate(authService, session, tokens, authInfo);
                 if (failed != null)
                 {
                     authService.RemoveSession();
@@ -234,6 +234,8 @@ namespace ServiceStack.Auth
 
             return null;
         }
+
+        public virtual NavItem GetNavItem() => null;
 
         protected virtual IAuthRepository GetAuthRepository(IRequest req)
         {
@@ -404,21 +406,7 @@ namespace ServiceStack.Auth
 
             return referrerUrl;
         }
-
-        public void PopulateSession(IUserAuthRepository authRepo, IUserAuth userAuth, IAuthSession session)
-        {
-            if (authRepo == null)
-                return;
-
-            var holdSessionId = session.Id;
-            session.PopulateWith(userAuth); //overwrites session.Id
-            session.Id = holdSessionId;
-            session.IsAuthenticated = true;
-            session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
-            session.ProviderOAuthAccess = authRepo.GetUserAuthDetails(session.UserAuthId)
-                .ConvertAll(x => (IAuthTokens)x);
-        }
-
+        
         protected virtual object ConvertToClientError(object failedResult, bool isHtml)
         {
             if (!isHtml)

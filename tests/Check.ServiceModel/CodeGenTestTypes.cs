@@ -110,6 +110,26 @@ namespace Check.ServiceModel.Operations
         public EnumStyle EnumStyle { get; set; }
     }
 
+    public class HelloWithEnumList
+    {
+        public List<EnumType> EnumProp { get; set; }
+        public List<EnumWithValues> EnumWithValues { get; set; }
+        public List<EnumType?> NullableEnumProp { get; set; }
+
+        public List<EnumFlags> EnumFlags { get; set; }
+        public List<EnumStyle> EnumStyle { get; set; }
+    }
+
+    public class HelloWithEnumMap
+    {
+        public Dictionary<EnumType,EnumType> EnumProp { get; set; }
+        public Dictionary<EnumWithValues,EnumWithValues> EnumWithValues { get; set; }
+        public Dictionary<EnumType?,EnumType?> NullableEnumProp { get; set; }
+
+        public Dictionary<EnumFlags,EnumFlags> EnumFlags { get; set; }
+        public Dictionary<EnumStyle,EnumStyle> EnumStyle { get; set; }
+    }
+
     public enum EnumType
     {
         Value1,
@@ -118,17 +138,22 @@ namespace Check.ServiceModel.Operations
 
     public enum EnumWithValues
     {
+        None = 0,
+        [EnumMember(Value = "Value 1")]
         Value1 = 1,
-        Value2 = 2
+        [Description("Value 2")]
+        Value2 = 2,
     }
 
     [Flags]
     public enum EnumFlags
     {
         Value0 = 0,
+        [EnumMember(Value = "Value 1")]
         Value1 = 1,
+        [Description("Value 2")]
         Value2 = 2,
-        Value3 = 3,
+        Value3 = 4,
         Value123 = Value1 | Value2 | Value3,
     }
 

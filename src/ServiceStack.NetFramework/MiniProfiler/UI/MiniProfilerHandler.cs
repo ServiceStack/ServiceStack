@@ -124,6 +124,9 @@ namespace ServiceStack.MiniProfiler.UI
 
 	    public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
 		{
+			if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
+				return TypeConstants.EmptyTask;
+
 			var path = httpReq.PathInfo;
 
 			string output;

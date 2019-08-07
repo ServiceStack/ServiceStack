@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using ServiceStack.IO;
+using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 
 namespace ServiceStack.VirtualPath
@@ -15,7 +16,7 @@ namespace ServiceStack.VirtualPath
 
         public IVirtualPathProvider VirtualPathProvider { get; set; }
 
-        public string Extension => Name.LastRightPart('.');
+        public virtual string Extension => Name.LastRightPart('.');
 
         public IVirtualDirectory Directory { get; set; }
 
@@ -24,6 +25,7 @@ namespace ServiceStack.VirtualPath
         public virtual string RealPath => GetRealPathToRoot();
         public virtual bool IsDirectory => false;
         public abstract DateTime LastModified { get; }
+        
         public abstract long Length { get; }
 
         protected AbstractVirtualFileBase(IVirtualPathProvider owningProvider, IVirtualDirectory directory)
@@ -63,6 +65,18 @@ namespace ServiceStack.VirtualPath
         }
 
         public abstract Stream OpenRead();
+
+        public virtual object GetContents()
+        {
+            using (var stream = OpenRead())
+            {
+                var romBytes = stream.ReadFullyAsMemory();
+                if (MimeTypes.IsBinary(MimeTypes.GetMimeType(Extension)))
+                    return romBytes;
+
+                return MemoryProvider.Instance.FromUtf8(romBytes.Span);
+            }
+        }
 
         protected virtual string GetVirtualPathToRoot()
         {
@@ -139,6 +153,14 @@ namespace ServiceStack
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static FileSystemVirtualFiles GetFileSystemVirtualFiles(this IVirtualPathProvider vfs) =>
             vfs.GetVirtualFileSource<FileSystemVirtualFiles>();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GistVirtualFiles GetGistVirtualFiles(this IVirtualPathProvider vfs) =>
+            vfs.GetVirtualFileSource<GistVirtualFiles>();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ResourceVirtualFiles GetResourceVirtualFiles(this IVirtualPathProvider vfs) =>
+            vfs.GetVirtualFileSource<ResourceVirtualFiles>();
     }
     
 }

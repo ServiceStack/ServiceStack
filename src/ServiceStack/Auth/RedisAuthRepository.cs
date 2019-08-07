@@ -13,7 +13,7 @@ namespace ServiceStack.Auth
         public RedisAuthRepository(IRedisClientManagerFacade factory) : base(factory) { }
     }
 
-    public class RedisAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IClearable, IManageApiKeys, ICustomUserAuth
+    public class RedisAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IClearable, IManageApiKeys, ICustomUserAuth, IQueryUserAuth
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
@@ -216,8 +216,7 @@ namespace ServiceStack.Auth
 
         private void LoadUserAuth(IAuthSession session, IUserAuth userAuth)
         {
-            session.PopulateSession(userAuth, 
-                GetUserAuthDetails(session.UserAuthId).ConvertAll(x => (IAuthTokens)x));
+            session.PopulateSession(userAuth, this);
         }
 
         public virtual void DeleteUserAuth(string userAuthId)
@@ -447,7 +446,7 @@ namespace ServiceStack.Auth
                 {
                     var userAuthId = long.Parse(apiKey.UserAuthId);
                     redis.Store(apiKey);
-                    redis.AddItemToSet(IndexUserAuthAndApiKeyIdsSet(userAuthId), apiKey.Id.ToString());
+                    redis.AddItemToSet(IndexUserAuthAndApiKeyIdsSet(userAuthId), apiKey.Id);
                 }
             }
         }
@@ -463,5 +462,41 @@ namespace ServiceStack.Auth
         {
             return (IUserAuthDetails)typeof(TUserAuthDetails).CreateInstance();
         }
+
+        public List<IUserAuth> GetUserAuths(string orderBy = null, int? skip = null, int? take = null)
+        {
+            using (var redis = factory.GetClient())
+            {
+                if (orderBy == null && (skip != null || take != null))
+                    return QueryUserAuths(redis.As<IUserAuth>().GetAll(skip, take));
+
+                return QueryUserAuths(redis.As<IUserAuth>().GetAll(), orderBy: orderBy, skip: skip, take: take);
+            }
+        }
+
+        public List<IUserAuth> SearchUserAuths(string query, string orderBy = null, int? skip = null, int? take = null)
+        {
+            using (var redis = factory.GetClient())
+            {
+                var results = redis.As<IUserAuth>().GetAll();
+                return QueryUserAuths(results, query: query, orderBy: orderBy, skip: skip, take: take);
+            }
+        }
+
+        public virtual List<IUserAuth> QueryUserAuths(List<IUserAuth> results, string query = null,
+            string orderBy = null, int? skip = null, int? take = null)
+        {
+            var to = !string.IsNullOrEmpty(query)
+                ? results.Where(x => 
+                    x.UserName?.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    x.PrimaryEmail?.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    x.Email?.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    x.DisplayName?.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    x.Company?.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
+                : results.AsEnumerable();
+
+            return to.SortAndPage(orderBy, skip, take).ToList();
+        }
     }
+    
 }

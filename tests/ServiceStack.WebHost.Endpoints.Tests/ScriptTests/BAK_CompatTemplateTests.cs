@@ -742,7 +742,7 @@ The Content");
                 }
             }.Init();
 
-            var page = context.OneTimePage("");
+            var page = context.EmptyPage;
             new PageResult(page) { Layout = "custom-layout" };
             new PageResult(page) {
                 TemplateFilters = {new MyFilter()}

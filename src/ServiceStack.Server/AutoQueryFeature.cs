@@ -42,6 +42,7 @@ namespace ServiceStack
         public bool OrderByPrimaryKeyOnPagedQuery { get; set; }
         public string UseNamedConnection { get; set; }
         public Type AutoQueryServiceBaseType { get; set; }
+        public QueryFilterDelegate GlobalQueryFilter { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
         public List<Action<QueryDbFilterContext>> ResponseFilters { get; set; }
         public Action<Type, TypeBuilder, MethodBuilder, ILGenerator> GenerateServiceFilter { get; set; }
@@ -157,6 +158,7 @@ namespace ServiceStack
                     EnableUntypedQueries = EnableUntypedQueries,
                     EnableSqlFilters = EnableRawSqlFilters,
                     OrderByPrimaryKeyOnLimitQuery = OrderByPrimaryKeyOnPagedQuery,
+                    GlobalQueryFilter = GlobalQueryFilter,
                     QueryFilters = QueryFilters,
                     ResponseFilters = ResponseFilters,
                     StartsWithConventions = StartsWithConventions,
@@ -430,6 +432,7 @@ namespace ServiceStack
 
         public string UseNamedConnection { get; set; }
         public virtual IDbConnection Db { get; set; }
+        public QueryFilterDelegate GlobalQueryFilter { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
         public List<Action<QueryDbFilterContext>> ResponseFilters { get; set; }
 
@@ -483,6 +486,8 @@ namespace ServiceStack
 
         public SqlExpression<From> Filter<From>(ISqlExpression q, IQueryDb dto, IRequest req)
         {
+            GlobalQueryFilter?.Invoke(q, dto, req);
+
             if (QueryFilters == null)
                 return (SqlExpression<From>)q;
 
@@ -502,6 +507,8 @@ namespace ServiceStack
 
         public ISqlExpression Filter(ISqlExpression q, IQueryDb dto, IRequest req)
         {
+            GlobalQueryFilter?.Invoke(q, dto, req);
+
             if (QueryFilters == null)
                 return q;
 

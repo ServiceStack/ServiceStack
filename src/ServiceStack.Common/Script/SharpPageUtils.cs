@@ -164,6 +164,8 @@ namespace ServiceStack.Script
                 if (firstChar == '*') //comment
                 {
                     lastPos = text.IndexOf("*}}", varStartPos) + 3;
+                    if (text.Span.SafeCharEquals(lastPos,'\r')) lastPos++;
+                    if (text.Span.SafeCharEquals(lastPos,'\n')) lastPos++;
                 }
                 else if (firstChar == '#') //block statement
                 {

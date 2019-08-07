@@ -78,8 +78,7 @@ namespace ServiceStack.Authentication.NHibernate
 
         private void LoadUserAuth(IAuthSession session, UserAuth userAuth)
         {
-            session.PopulateSession(userAuth,
-                GetUserAuthDetails(session.UserAuthId).ConvertAll(x => (IAuthTokens)x));
+            session.PopulateSession(userAuth, this);
         }
 
         public bool TryAuthenticate(string userName, string password, out IUserAuth userAuth)

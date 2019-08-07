@@ -5,6 +5,8 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
+using ServiceStack.Configuration;
 using ServiceStack.IO;
 using ServiceStack.Script;
 using ServiceStack.Text;
@@ -81,6 +83,10 @@ namespace ServiceStack
         /// Whether to call AMD define for CommonJS modules
         /// </summary>
         public bool RegisterModuleInAmd { get; set; }
+        /// <summary>
+        /// Whether to wrap JS scripts in an Immediately-Invoked Function Expression
+        /// </summary>
+        public bool IIFE { get; set; }
     }
 
     public class TextDumpOptions
@@ -174,6 +180,124 @@ namespace ServiceStack
         PascalCase,
         CamelCase,
     }
+    
+    /// <summary>
+    /// Generic collection of Nav Links
+    /// </summary>
+    public static class NavDefaults
+    {
+        public static string NavClass { get; set; } = "nav";
+        public static string NavItemClass { get; set; } = "nav-item";
+        public static string NavLinkClass { get; set; } = "nav-link";
+        
+        public static string ChildNavItemClass { get; set; } = "nav-item dropdown";
+        public static string ChildNavLinkClass { get; set; } = "nav-link dropdown-toggle";
+        public static string ChildNavMenuClass { get; set; } = "dropdown-menu";
+        public static string ChildNavMenuItemClass { get; set; } = "dropdown-item";
+        
+        public static NavOptions Create() => new NavOptions {
+            NavClass = NavClass,
+            NavItemClass = NavItemClass,
+            NavLinkClass = NavLinkClass,
+            ChildNavItemClass = ChildNavItemClass,
+            ChildNavLinkClass = ChildNavLinkClass,
+            ChildNavMenuClass = ChildNavMenuClass,
+            ChildNavMenuItemClass = ChildNavMenuItemClass,
+        };
+        public static NavOptions ForNav(this NavOptions options) => options; //Already uses NavDefaults
+        public static NavOptions OverrideDefaults(NavOptions targets, NavOptions source)
+        {
+            if (targets == null)
+                return source;
+            if (targets.NavClass == NavClass && source.NavClass != null)
+                targets.NavClass = source.NavClass;
+            if (targets.NavItemClass == NavItemClass && source.NavItemClass != null)
+                targets.NavItemClass = source.NavItemClass;
+            if (targets.NavLinkClass == NavLinkClass && source.NavLinkClass != null)
+                targets.NavLinkClass = source.NavLinkClass;
+            if (targets.ChildNavItemClass == ChildNavItemClass && source.ChildNavItemClass != null)
+                targets.ChildNavItemClass = source.ChildNavItemClass;
+            if (targets.ChildNavLinkClass == ChildNavLinkClass && source.ChildNavLinkClass != null)
+                targets.ChildNavLinkClass = source.ChildNavLinkClass;
+            if (targets.ChildNavMenuClass == ChildNavMenuClass && source.ChildNavMenuClass != null)
+                targets.ChildNavMenuClass = source.ChildNavMenuClass;
+            if (targets.ChildNavMenuItemClass == ChildNavMenuItemClass && source.ChildNavMenuItemClass != null)
+                targets.ChildNavMenuItemClass = source.ChildNavMenuItemClass;
+            return targets;
+        }
+    }
+    /// <summary>
+    /// Single NavLink List Item
+    /// </summary>
+    public static class NavLinkDefaults
+    {
+        public static NavOptions ForNavLink(this NavOptions options) => options; //Already uses NavDefaults
+    }
+    /// <summary>
+    /// Navigation Bar Menu Items
+    /// </summary>
+    public static class NavbarDefaults
+    {
+        public static string NavClass { get; set; } = "navbar-nav";
+        public static NavOptions Create() => new NavOptions { NavClass = NavClass };
+        public static NavOptions ForNavbar(this NavOptions options) => NavDefaults.OverrideDefaults(options, Create());
+    }
+    /// <summary>
+    /// Collection of Link Buttons (e.g. used to render /auth buttons)
+    /// </summary>
+    public static class NavButtonGroupDefaults
+    {
+        public static string NavClass { get; set; } = "btn-group";
+        public static string NavItemClass { get; set; } = "btn btn-primary";
+        public static NavOptions Create() => new NavOptions { NavClass = NavClass, NavItemClass = NavItemClass };
+        public static NavOptions ForNavButtonGroup(this NavOptions options) => NavDefaults.OverrideDefaults(options, Create());
+    }
+    
+    public class NavOptions
+    {
+        /// <summary>
+        /// User Attributes for conditional rendering, e.g:
+        ///  - auth - User is Authenticated
+        ///  - role:name - User Role
+        ///  - perm:name - User Permission 
+        /// </summary>
+        public HashSet<string> Attributes { get; set; }
+        
+        /// <summary>
+        /// Path Info that should set as active 
+        /// </summary>
+        public string ActivePath { get; set; }
+        
+        
+        /// <summary>
+        /// Prefix to include before NavItem.Path (if any)
+        /// </summary>
+        public string BaseHref { get; set; }
+
+        /// <summary>
+        /// Custom classes applied to different navigation elements (defaults to Bootstrap classes)
+        /// </summary>
+        public string NavClass { get; set; } = NavDefaults.NavClass;
+        public string NavItemClass { get; set; } = NavDefaults.NavItemClass;
+        public string NavLinkClass { get; set; } = NavDefaults.NavLinkClass;
+        
+        public string ChildNavItemClass { get; set; } = NavDefaults.ChildNavItemClass;
+        public string ChildNavLinkClass { get; set; } = NavDefaults.ChildNavLinkClass;
+        public string ChildNavMenuClass { get; set; } = NavDefaults.ChildNavMenuClass;
+        public string ChildNavMenuItemClass { get; set; } = NavDefaults.ChildNavMenuItemClass;
+    }
+
+    /// <summary>
+    /// Public API for ViewUtils
+    /// </summary>
+    public static class View
+    {
+        public static List<NavItem> NavItems => ViewUtils.NavItems;
+        public static Dictionary<string, List<NavItem>> NavItemsMap => ViewUtils.NavItemsMap;
+        public static void Load(IAppSettings settings) => ViewUtils.Load(settings);
+
+        public static List<NavItem> GetNavItems(string key) => ViewUtils.GetNavItems(key);
+    }
 
     /// <summary>
     /// Shared Utils shared between different Template Filters and Razor Views/Helpers
@@ -182,7 +306,270 @@ namespace ServiceStack
     {
         internal static readonly DefaultScripts DefaultScripts = new DefaultScripts();
         private static readonly HtmlScripts HtmlScripts = new HtmlScripts();
+
+        public static string NavItemsKey { get; set; } = "NavItems";
+        public static string NavItemsMapKey { get; set; } = "NavItemsMap";
         
+        public static void Load(IAppSettings settings)
+        {
+            var navItems = settings?.Get<List<NavItem>>(NavItemsKey);
+            if (navItems != null)
+            {
+                NavItems.AddRange(navItems);
+            }
+
+            var navItemsMap = settings?.Get<Dictionary<string, List<NavItem>>>(NavItemsMapKey);
+            if (navItemsMap != null)
+            {
+                foreach (var entry in navItemsMap)
+                {
+                    NavItemsMap[entry.Key] = entry.Value;
+                }
+            }
+        }
+
+        public static bool ShowNav(this NavItem navItem, HashSet<string> attributes)
+        {
+            if (attributes.IsEmpty())
+                return navItem.Show == null;
+            if (navItem.Show != null && !attributes.Contains(navItem.Show))
+                return false;
+            if (navItem.Hide != null && attributes.Contains(navItem.Hide))
+                return false;
+            return true;
+        }
+
+        public static List<NavItem> NavItems { get; } = new List<NavItem>();
+        public static Dictionary<string, List<NavItem>> NavItemsMap { get; } = new Dictionary<string, List<NavItem>>();
+
+        public static List<NavItem> GetNavItems(string key) => NavItemsMap.TryGetValue(key, out var navItems)
+            ? navItems
+            : TypeConstants<NavItem>.EmptyList;
+
+        public static string CssIncludes(IVirtualPathProvider vfs, List<string> cssFiles)
+        {
+            if (vfs == null || cssFiles == null || cssFiles.Count == 0)
+                return null;
+            
+            
+            var sb = StringBuilderCache.Allocate();
+            sb.AppendLine("<style>");
+
+            foreach (var cssFile in cssFiles)
+            {
+                var virtualPath = !cssFile.StartsWith("/")
+                    ? "/css/" + cssFile + ".css"
+                    : cssFile;
+                
+                var file = vfs.GetFile(virtualPath.TrimStart('/'));
+                if (file == null)
+                    continue;
+
+                using (var reader = file.OpenText())
+                {
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        sb.AppendLine(line);
+                    }
+                }
+            }
+            
+            sb.AppendLine("</style>");
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+        
+        public static string JsIncludes(IVirtualPathProvider vfs, List<string> jsFiles)
+        {
+            if (vfs == null || jsFiles == null || jsFiles.Count == 0)
+                return null;
+            
+            
+            var sb = StringBuilderCache.Allocate();
+            sb.AppendLine("<script>");
+
+            foreach (var jsFile in jsFiles)
+            {
+                var virtualPath = !jsFile.StartsWith("/")
+                    ? "/js/" + jsFile + ".js"
+                    : jsFile;
+                
+                var file = vfs.GetFile(virtualPath.TrimStart('/'));
+                if (file == null)
+                    continue;
+
+                using (var reader = file.OpenText())
+                {
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        sb.AppendLine(line);
+                    }
+                }
+            }
+            
+            sb.AppendLine("</script>");
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+        
+        public static string Nav(List<NavItem> navItems, NavOptions options)
+        {
+            if (navItems.IsEmpty())
+                return string.Empty;
+            
+            var sb = StringBuilderCache.Allocate();
+            sb.Append("<div class=\"")
+                .Append(options.NavClass)
+                .AppendLine("\">");
+
+            foreach (var navItem in navItems)
+            {
+                NavLink(sb, navItem, options);
+            }
+
+            sb.AppendLine("</div>");
+            return sb.ToString();
+        }
+
+        public static string NavLink(NavItem navItem, NavOptions options)
+        {
+            var sb = StringBuilderCache.Allocate();
+            NavLink(sb, navItem, options);
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+
+        static string ActiveClass(NavItem navItem, string activePath) => 
+            navItem.Href != null && (navItem.Exact == true || activePath.Length <= 1 
+                ? activePath?.TrimEnd('/').EqualsIgnoreCase(navItem.Href?.TrimEnd('/')) == true
+                : activePath.TrimEnd('/').StartsWithIgnoreCase(navItem.Href?.TrimEnd('/')))
+                    ? " active"
+                    : "";
+        
+        public static void NavLink(StringBuilder sb, NavItem navItem, NavOptions options)
+        {
+            if (!navItem.ShowNav(options.Attributes))
+                return;
+            
+            var hasChildren = navItem.Children?.Count > 0;
+            var navItemCls = hasChildren
+                ? options.ChildNavItemClass
+                : options.NavItemClass;
+            var navLinkCls = hasChildren
+                ? options.ChildNavLinkClass
+                : options.NavLinkClass;
+            var id = navItem.Id;
+            if (hasChildren && id == null)
+                id = navItem.Label.SafeVarName() + "MenuLink";
+
+            sb.Append("<li class=\"")
+                .Append(navItem.ClassName).Append(navItem.ClassName != null ? " " : "")
+                .Append(navItemCls)
+                .AppendLine("\">");
+                
+            sb.Append("  <a href=\"")
+                .Append(options.BaseHref?.TrimEnd('/'))
+                .Append(navItem.Href)
+                .Append("\"");
+
+            sb.Append(" class=\"")
+                .Append(navLinkCls).Append(ActiveClass(navItem,options.ActivePath))
+                .Append("\"");
+
+            if (id != null)
+                sb.Append(" id=\"").Append(id).Append("\"");
+
+            if (hasChildren)
+            {
+                sb.Append(" role=\"button\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\"");
+            }
+            
+            sb.Append(">")
+                .Append(navItem.Label)
+                .AppendLine("</a>");
+
+            if (hasChildren)
+            {
+                sb.Append("  <div class=\"")
+                    .Append(options.ChildNavMenuClass)
+                    .Append("\" aria-labelledby=\"").Append(id).AppendLine("\">");
+
+                foreach (var childNav in navItem.Children)
+                {
+                    if (childNav.Label == "-")
+                    {
+                        sb.AppendLine("    <div class=\"dropdown-divider\"></div>");
+                    }
+                    else
+                    {
+                        sb.Append("    <a class=\"")
+                            .Append(options.ChildNavMenuItemClass)
+                            .Append(ActiveClass(childNav,options.ActivePath))
+                            .Append("\"")
+                            .Append(" href=\"")
+                            .Append(childNav.Href)
+                            .Append("\">")
+                            .Append(childNav.Label)
+                            .AppendLine("</a>");
+                    }
+                }
+                sb.AppendLine("</div");
+            }
+
+            sb.Append("</lI>");
+        }
+
+        public static string NavButtonGroup(List<NavItem> navItems, NavOptions options)
+        {
+            if (navItems.IsEmpty())
+                return string.Empty;
+            
+            var sb = StringBuilderCache.Allocate();
+            sb.Append("<div class=\"")
+                .Append(options.NavClass)
+                .AppendLine("\">");
+
+            foreach (var navItem in navItems)
+            {
+                NavLinkButton(sb, navItem, options);
+            }
+
+            sb.AppendLine("</div>");
+            return sb.ToString();
+        }
+
+        public static string NavButtonGroup(NavItem navItem, NavOptions options)
+        {
+            var sb = StringBuilderCache.Allocate();
+            NavLinkButton(sb, navItem, options);
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+        
+        public static void NavLinkButton(StringBuilder sb, NavItem navItem, NavOptions options)
+        {
+            if (!navItem.ShowNav(options.Attributes))
+                return;
+            
+            sb.Append("<a href=\"")
+                .Append(options.BaseHref?.TrimEnd('/'))
+                .Append(navItem.Href)
+                .Append("\"");
+
+            sb.Append(" class=\"")
+                .Append(navItem.ClassName).Append(navItem.ClassName != null ? " " : "")
+                .Append(options.NavItemClass).Append(ActiveClass(navItem, options.ActivePath))
+                .Append("\"");
+
+            if (navItem.Id != null)
+                sb.Append(" id=\"").Append(navItem.Id).Append("\"");
+
+            sb.Append(">")
+                .Append(!string.IsNullOrEmpty(navItem.IconClass) 
+                    ? $"<i class=\"{navItem.IconClass}\"></i>" : "")
+                .Append(navItem.Label)
+                .AppendLine("</a>");
+        }
+        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNull(object test) => test == null || test == JsNull.Value;
         
@@ -407,12 +794,25 @@ namespace ServiceStack
             }
             return to;
         }
-        public static List<string> ToStringList(IEnumerable target) => target is List<string> l ? l
-            : target is string s 
+        
+        public static List<string> SplitStringList(IEnumerable strings) => strings is null
+            ? TypeConstants.EmptyStringList
+            : strings is List<string> strList
+                ? strList
+                : strings is IEnumerable<string> strEnum
+                    ? strEnum.ToList()
+                    : strings is IEnumerable<object> objEnum
+                        ? objEnum.Map(x => x.AsString())
+                        : strings is string strFields
+                            ? strFields.Split(',').Map(x => x.Trim())
+                            : throw new NotSupportedException($"Cannot convert '{strings.GetType().Name}' to List<string>");
+        
+        public static List<string> ToStringList(IEnumerable strings) => strings is List<string> l ? l
+            : strings is string s 
             ? new List<string> { s } 
-            : target is IEnumerable<string> e
+            : strings is IEnumerable<string> e
             ? new List<string>(e)
-            : target.Map(x => x.AsString());
+            : strings.Map(x => x.AsString());
 
         public static string FormControl(IRequest req, Dictionary<string,object> args, string tagName, InputOptions inputOptions)
         {
@@ -689,28 +1089,41 @@ namespace ServiceStack
 
         public static IEnumerable<IVirtualFile> GetBundleFiles(string filterName, IVirtualPathProvider webVfs, IVirtualPathProvider contentVfs, IEnumerable<string> virtualPaths, string assetExt)
         {
+            var excludeFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            
             foreach (var source in virtualPaths)
             {
                 ResolveVfsAndSource(filterName, webVfs, contentVfs, source, out var vfs, out var virtualPath);
-                
-                var file = vfs.GetFile(virtualPath);
-                if (file != null)
+
+                if (virtualPath.StartsWith("!"))
                 {
-                    yield return file;
+                    excludeFiles.Add(virtualPath.Substring(1).TrimStart('/'));
                     continue;
                 }
-
+                
                 var dir = vfs.GetDirectory(virtualPath);
                 if (dir != null)
                 {
-                    var files = dir.GetFiles();
+                    var files = dir.GetAllFiles();
                     foreach (var dirFile in files)
                     {
                         if (!assetExt.EqualsIgnoreCase(dirFile.Extension))
                             continue;
+                        if (excludeFiles.Contains(dirFile.VirtualPath))
+                            continue;
                         
                         yield return dirFile;
                     }
+                    continue;
+                }
+
+                var file = vfs.GetFile(virtualPath);
+                if (file != null)
+                {
+                    if (excludeFiles.Contains(file.VirtualPath))
+                        continue;
+                    
+                    yield return file;
                 }
                 else throw new NotSupportedException($"Could not find resource at virtual path '{source}' in '{filterName}'");
             }
@@ -862,6 +1275,8 @@ namespace ServiceStack
                             existing.Contains(file.VirtualPath))
                             continue;
 
+                        if (options.IIFE) sb.AppendLine("(function(){");
+                        
                         if (options.Minify && !file.Name.EndsWith(minExt))
                         {
                             string minified;
@@ -882,6 +1297,8 @@ namespace ServiceStack
                             sb.AppendLine(src);
                         }
     
+                        if (options.IIFE) sb.AppendLine("})();");
+                        
                         // Also define ES6 module in AMD's define(), required by /js/ss-require.js
                         if (options.RegisterModuleInAmd && assetExt == "js")
                         {

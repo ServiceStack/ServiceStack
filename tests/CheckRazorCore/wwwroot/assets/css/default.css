@@ -1,0 +1,38 @@
+body {
+    padding-top: 54px;
+}
+@media (min-width: 992px) {
+    body {
+        padding-top: 56px;
+    }
+}
+span[data-click] {
+    color: #007bff;
+    cursor: pointer;
+}
+span[data-click]:hover {
+    text-decoration: underline;
+}
+.quicklist span {
+    display: block;
+    margin-left: 1em;
+}
+
+form {
+    padding: 10px;
+}
+table form {
+    padding: 0;
+}
+table#results button {
+    margin: 5px;
+}
+table#results td:first-child {
+    padding: 2px 10px;
+}
+
+.form-check.form-control {
+    padding-left: 1.75rem;
+}
+
+

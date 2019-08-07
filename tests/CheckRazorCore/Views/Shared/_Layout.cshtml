@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>@ViewBag.Title</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    @Html.CssIncludes("bootstrap","default")
+</head>
+<body>
+    @if (DebugMode) {
+        <script>@Html.IncludeFile("js/hot-fileloader.js")</script>
+    }
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a title="ServiceStack WebApp Starter" class="navbar-brand" href="/" style="width:220px;">
+                <img src="/assets/img/logo.png" width="42" height="32" class="d-inline-block align-top" alt="" style="float:left;margin:0 10px 0 0">
+                <h3>MyApp</h3>
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          @Html.Navbar()
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container mt-5">
+      <div class="row">
+        <div class="col-lg-12">
+          <h1 class="mt-5">@ViewBag.Title</h1>
+          @RenderBody()
+        </div>
+      </div>
+    </div>
+
+    <h4 style="position:absolute; bottom: 20px; width: 100%; text-align: center">
+      <a href="http://razor.netcore.io">Learn about ServiceStack Razor</a>
+    </h4>
+
+    <script>
+        var exports = window;
+        var IMPORT = {
+            jquery: '$'
+        };
+        window.require = function(name) {
+            var w = IMPORT[name];
+            if (w) return typeof w == "function" ? w() : typeof w == 'string' ? exports[w] : w;
+            return exports[name] || exports;
+        };
+    </script>
+
+    @{
+        var min = DebugMode ? "" : "[hash].min";
+    }
+
+    @Html.BundleJs(new BundleOptions {
+        Sources = {
+            "content:/src/source.js",
+            "content:/src/components/",
+            "/assets/js/jquery.min.js",
+            "/assets/js/popper.min.js",
+            "/assets/js/",
+            "/js/ss-utils.js",
+            "/lib/@servicestack/client/index.js",
+            "/dtos.js"    
+        },
+        Minify = !DebugMode,
+        Cache = !DebugMode,
+        SaveToDisk = !DebugMode,
+        OutputTo = $"/js/bundle{min}.js",
+    })
+
+    @RenderSection("scripts", required: false)
+
+</body>
+</html>

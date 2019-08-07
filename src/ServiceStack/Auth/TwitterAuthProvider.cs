@@ -22,16 +22,18 @@ namespace ServiceStack.Auth
             : base(appSettings, Realm, Name)
         {
             this.AuthorizeUrl = appSettings.Get("oauth.twitter.AuthorizeUrl", DefaultAuthorizeUrl);
+
+            NavItem = new NavItem {
+                Href = "/auth/" + Name,
+                Label = "Sign in with Twitter",
+                Id = "btn-" + Name,
+                ClassName = "btn-social btn-twitter",
+                IconClass = "fab svg-twitter",
+            };
         }
 
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
-            if (string.IsNullOrEmpty(ConsumerKey))
-                throw new Exception("oauth.twitter.ConsumerKey is required");
-
-            if (string.IsNullOrEmpty(ConsumerSecret))
-                throw new Exception("oauth.twitter.ConsumerSecret is required");
-            
             var tokens = Init(authService, ref session, request);
 
             //Transferring AccessToken/Secret from Mobile/Desktop App to Server

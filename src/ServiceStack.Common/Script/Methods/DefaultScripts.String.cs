@@ -82,7 +82,7 @@ namespace ServiceStack.Script
         public string timeFormat(TimeSpan timeValue) => timeValue.ToString((string)Context.Args[ScriptConstants.DefaultTimeFormat]);
         public string timeFormat(TimeSpan timeValue, string format) => timeValue.ToString(format);
 
-        public string splitCase(string text) => text.SplitCamelCase().Replace('_', ' ');
+        public string splitCase(string text) => text.SplitCamelCase().Replace('_', ' ').Replace("  ", " ");
         public string humanize(string text) => splitCase(text).ToTitleCase();
         public string titleCase(string text) => text.ToTitleCase();
         public string pascalCase(string text) => text.ToPascalCase();
@@ -124,10 +124,6 @@ namespace ServiceStack.Script
         public string lastLeftPart(string text, string needle) => text.LastLeftPart(needle);
         public string lastRightPart(string text, string needle) => text.LastRightPart(needle);
 
-        public int indexOf(string text, string needle) => text.IndexOf(needle, (StringComparison)Context.Args[ScriptConstants.DefaultStringComparison]);
-        public int indexOf(string text, string needle, int startIndex) => text.IndexOf(needle, startIndex, (StringComparison)Context.Args[ScriptConstants.DefaultStringComparison]);
-        public int lastIndexOf(string text, string needle) => text.LastIndexOf(needle, (StringComparison)Context.Args[ScriptConstants.DefaultStringComparison]);
-        public int lastIndexOf(string text, string needle, int startIndex) => text.LastIndexOf(needle, startIndex, (StringComparison)Context.Args[ScriptConstants.DefaultStringComparison]);
 
         public int compareTo(string text, string other) => string.Compare(text, other, (StringComparison)Context.Args[ScriptConstants.DefaultStringComparison]);
 
@@ -170,8 +166,18 @@ namespace ServiceStack.Script
         public Dictionary<string, string> parseKeyValueText(string target) => target?.ParseKeyValueText();
         public Dictionary<string, string> parseKeyValueText(string target, string delimiter) => target?.ParseKeyValueText(delimiter);
 
-        public ICollection keys(IDictionary target) => target.Keys;
-        public ICollection values(IDictionary target) => target.Values;
+        public ICollection keys(object target) => 
+            target is IDictionary d 
+                ? d.Keys
+                : target is IList l
+                    ? times(l.Count)
+                    : throw new NotSupportedException($"{target.GetType().Name} is not supported");
+        public ICollection values(object target) => 
+            target is IDictionary d 
+                ? d.Values
+                : target is IList l
+                    ? l
+                    : throw new NotSupportedException($"{target.GetType().Name} is not supported");
 
         public string addPath(string target, string pathToAppend) => target.AppendPath(pathToAppend);
         public string addPaths(string target, IEnumerable pathsToAppend) =>
@@ -247,9 +253,20 @@ namespace ServiceStack.Script
             }
         }
 
+        static string jsonOrNull(object x)
+        {
+            if (x != null)
+            {
+                var json = x.ToJson();
+                if (!string.IsNullOrEmpty(json))
+                    return json;
+            }
+            return "null";
+        }
+        
         //Filters
-        public IRawString json(object value) => serialize(value, null, x => x.ToJson() ?? "null");
-        public IRawString json(object value, string jsconfig) => serialize(value, jsconfig, x => x.ToJson() ?? "null");
+        public IRawString json(object value) => serialize(value, null, jsonOrNull);
+        public IRawString json(object value, string jsconfig) => serialize(value, jsconfig, jsonOrNull);
         public IRawString jsv(object value) => serialize(value, null, x => x.ToJsv() ?? "");
         public IRawString jsv(object value, string jsconfig) => serialize(value, jsconfig, x => x.ToJsv() ?? "");
         public IRawString csv(object value) => (value.AssertNoCircularDeps().ToCsv() ?? "").ToRawString();
@@ -311,5 +328,7 @@ namespace ServiceStack.Script
             return str;            
         }
         
+        public bool isBinary(string fileOrExt) => MimeTypes.IsBinary(MimeTypes.GetMimeType(fileOrExt));
+        public string contentType(string fileOrExt) => MimeTypes.GetMimeType(fileOrExt);
     }
 }

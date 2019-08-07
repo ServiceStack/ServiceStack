@@ -233,6 +233,34 @@ includeFile = {{ 'file.txt' | includeFile }}
                 var ignore = new PageResult(context.GetPage("page")).Result; });
         }
 
+        [Test]
+        public void Can_write_and_read_Contents_API()
+        {
+            var text = "abcdef";
+            var bytes = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            
+            var context = new ScriptContext
+            {
+                ScriptMethods = { new ProtectedScripts() },
+                Args = {
+                    [nameof(text)] = text,
+                    [nameof(bytes)] = bytes,
+                }
+            }.Init();
+
+            var textContents = (ReadOnlyMemory<char>) context.Evaluate(@"
+{{ vfsMemory | to => memFs }}
+{{ memFs.writeFile('/dir/file.txt', text) }}
+{{ memFs.fileContents('/dir/file.txt') | return }}");
+            Assert.That(textContents.Span.SequenceEqual(text.AsSpan()));
+
+            var byteContents = (ReadOnlyMemory<byte>) context.Evaluate(@"
+{{ vfsMemory | to => memFs }}
+{{ memFs.writeFile('/dir/file.bin', bytes) }}
+{{ memFs.fileContents('/dir/file.bin') | return }}");
+            Assert.That(byteContents.Span.SequenceEqual(bytes));
+        }
+
         #if NET45
         [Test]
         public void Does_use_dollar_as_currency_symbol_when_InvariantCulture()

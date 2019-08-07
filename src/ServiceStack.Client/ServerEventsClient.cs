@@ -167,6 +167,12 @@ namespace ServiceStack
 
         public Action<WebRequest> EventStreamRequestFilter { get; set; }
         public Action<WebRequest> HeartbeatRequestFilter { get; set; }
+        public Action<WebRequest> UnRegisterRequestFilter { get; set; }
+
+        /// <summary>
+        /// Apply Request Filter to all ServerEventClient Requests
+        /// </summary>
+        public Action<WebRequest> AllRequestFilters { get; set; }
 
         readonly Dictionary<string, List<Action<ServerEventMessage>>> listeners =
             new Dictionary<string, List<Action<ServerEventMessage>>>();
@@ -206,6 +212,12 @@ namespace ServiceStack
                 httpReq.AllowReadStreamBuffering = false;
 
                 EventStreamRequestFilter?.Invoke(httpReq);
+                if (AllRequestFilters != null)
+                {
+                    AllRequestFilters(httpReq);
+                    if (ServiceClient is ServiceClientBase scb)
+                        scb.RequestFilter = AllRequestFilters;
+                }
 
                 response = (HttpWebResponse)PclExport.Instance.GetResponse(httpReq);
                 var stream = response.ResponseStream();
@@ -323,6 +335,7 @@ namespace ServiceStack
                         req.CookieContainer = hold.CookieContainer;
 
                     HeartbeatRequestFilter?.Invoke(req);
+                    AllRequestFilters?.Invoke(req);
 
                     if (log.IsDebugEnabled)
                         log.Debug("[SSE-CLIENT] Sending Heartbeat...");
@@ -764,6 +777,9 @@ namespace ServiceStack
 
                         if (log.IsDebugEnabled)
                             log.Debug("[SSE-CLIENT] Unregistering...");
+                        
+                        UnRegisterRequestFilter?.Invoke(req);
+                        AllRequestFilters?.Invoke(req);
                     });
                 } catch (Exception) {}
             }

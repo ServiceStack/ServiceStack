@@ -35,6 +35,14 @@ namespace ServiceStack.Auth
                     "r_basicprofile"
                 };
             }
+
+            NavItem = new NavItem {
+                Href = "/auth/" + Name,
+                Label = "Sign in with LinkedIn",
+                Id = "btn-" + Name,
+                ClassName = "btn-social btn-linkedin",
+                IconClass = "fab svg-linkedin",
+            };
         }
 
         protected override Dictionary<string, string> CreateAuthInfo(string accessToken)

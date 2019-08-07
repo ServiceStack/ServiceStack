@@ -2,8 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using ServiceStack.DataAnnotations;
 using ServiceStack.IO;
@@ -16,10 +18,17 @@ namespace ServiceStack.Script
     
     public class ProtectedScripts : ScriptMethods
     {
-        public MemoryVirtualFiles memoryVirtualFiles() => new MemoryVirtualFiles();
+        public MemoryVirtualFiles vfsMemory() => new MemoryVirtualFiles();
 
-        public FileSystemVirtualFiles fileSystemVirtualFiles(string dirPath) => new FileSystemVirtualFiles(dirPath);
+        public FileSystemVirtualFiles vfsFileSystem(string dirPath) => new FileSystemVirtualFiles(dirPath);
         
+        public GistVirtualFiles vfsGist(string gistId) => new GistVirtualFiles(gistId);
+        public GistVirtualFiles vfsGist(string gistId, string accessToken) => new GistVirtualFiles(gistId, accessToken);
+
+        public string osPaths(string path) => Env.IsWindows
+            ? path.Replace('/', '\\')
+            : path.Replace('\\', '/');
+
         public IVirtualFile ResolveFile(string filterName, ScriptScopeContext scope, string virtualPath)
         {
             var file = ResolveFile(scope.Context.VirtualFiles, scope.PageResult.VirtualPath, virtualPath);
@@ -78,9 +87,6 @@ namespace ServiceStack.Script
 
             return null;
         }
-
-        //alias
-        public Task fileContents(ScriptScopeContext scope, string virtualPath) => includeFile(scope, virtualPath);
 
         public async Task includeFile(ScriptScopeContext scope, string virtualPath)
         {
@@ -163,29 +169,26 @@ namespace ServiceStack.Script
         public string writeFile(string virtualPath, object contents) => writeFile(VirtualFiles, virtualPath, contents);
         public string writeFile(IVirtualPathProvider vfs, string virtualPath, object contents)
         {
-            if (contents is string s)
-                vfs.WriteFile(virtualPath, s);
-            else if (contents is byte[] bytes)
-                vfs.WriteFile(virtualPath, bytes);
-            else if (contents is Stream stream)
-                vfs.WriteFile(virtualPath, stream);
-            else
-                return null;
-
+            vfs.WriteFile(virtualPath, contents);
             return virtualPath;
+        }
+
+        public object writeFiles(IVirtualPathProvider vfs, Dictionary<string,object> files)
+        {
+            vfs.WriteFiles(files);
+            return IgnoreResult.Value;
+        }
+
+        public object writeTextFiles(IVirtualPathProvider vfs, Dictionary<string,string> textFiles)
+        {
+            vfs.WriteFiles(textFiles);
+            return IgnoreResult.Value;
         }
 
         public string appendToFile(string virtualPath, object contents) => appendToFile(VirtualFiles, virtualPath, contents);
         public string appendToFile(IVirtualPathProvider vfs, string virtualPath, object contents)
         {
-            if (contents is string s)
-                vfs.AppendFile(virtualPath, s);
-            else if (contents is byte[] bytes)
-                vfs.AppendFile(virtualPath, bytes);
-            else if (contents is Stream stream)
-                vfs.AppendFile(virtualPath, stream);
-            else
-                return null;
+            vfs.AppendFile(virtualPath, contents);
 
             return virtualPath;
         }
@@ -206,10 +209,28 @@ namespace ServiceStack.Script
 
         public string fileTextContents(string virtualPath) => fileTextContents(VirtualFiles,virtualPath);
         public string fileTextContents(IVirtualPathProvider vfs, string virtualPath) => vfs.GetFile(virtualPath)?.ReadAllText();
+
+        public object fileContents(IVirtualPathProvider vfs, string virtualPath) =>
+            vfs.GetFile(virtualPath).GetContents();
+
+        // string virtual filePath or IVirtualFile 
+        public object fileContents(object file) => file is null
+            ? null
+            : file is string path
+                ? fileContents(VirtualFiles, path)
+                : file is IVirtualFile ifile
+                    ? ifile.GetContents()
+                : throw new NotSupportedException(nameof(fileContents) + " expects string virtualPath or IVirtualFile but was " + file.GetType().Name);
+        
+        public string textContents(IVirtualFile file) => file?.ReadAllText();
         public byte[] fileBytesContent(string virtualPath) => fileBytesContent(VirtualFiles, virtualPath);
         public byte[] fileBytesContent(IVirtualPathProvider vfs, string virtualPath) => vfs.GetFile(virtualPath)?.ReadAllBytes();
+        public byte[] bytesContent(IVirtualFile file) => file?.ReadAllBytes();
         public string fileHash(string virtualPath) => fileHash(VirtualFiles,virtualPath);
         public string fileHash(IVirtualPathProvider vfs, string virtualPath) => vfs.GetFileHash(virtualPath);
+        public string fileHash(IVirtualFile file) => file?.GetFileHash();
+        public bool fileIsBinary(IVirtualFile file) => MimeTypes.IsBinary(MimeTypes.GetMimeType(file.Extension));
+        public string fileContentType(IVirtualFile file) => MimeTypes.GetMimeType(file.Extension);
 
         //alias
         public Task urlContents(ScriptScopeContext scope, string url) => includeUrl(scope, url, null);
@@ -473,5 +494,107 @@ namespace ServiceStack.Script
             cacheClear(scope, "all");
             return scope.Context.InvalidateCachesBefore = DateTime.UtcNow;
         }
+
+        public string sh(ScriptScopeContext scope, string arguments) => sh(scope, arguments, null);
+        public string sh(ScriptScopeContext scope, string arguments, Dictionary<string, object> options)
+        {
+            if (string.IsNullOrEmpty(arguments))
+                return null;
+            
+            if (options == null)
+                options = new Dictionary<string, object>();
+
+            if (Env.IsWindows)
+            {
+                options["arguments"] = "/C " + arguments;
+                return proc(scope, "cmd.exe", options);
+            }
+            else
+            {
+                var escapedArgs = arguments.Replace("\"", "\\\"");
+                options["arguments"] = $"-c \"{escapedArgs}\"";
+                return proc(scope, "/bin/bash", options);
+            }
+        }
+        
+        public string proc(ScriptScopeContext scope, string fileName) => proc(scope, fileName, null);
+        public string proc(ScriptScopeContext scope, string fileName, Dictionary<string, object> options)
+        {
+            var process = new Process
+            {
+                StartInfo =
+                {
+                    FileName = fileName,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                }
+            };
+
+            if (options.TryGetValue("arguments", out var oArguments))
+                process.StartInfo.Arguments = oArguments.AsString();
+            
+            if (options.TryGetValue("dir", out var oWorkDir))
+                process.StartInfo.WorkingDirectory = oWorkDir.AsString();
+
+            try 
+            { 
+                using (process)
+                {
+                    process.StartInfo.RedirectStandardError = true;
+                    process.Start();
+
+                    var output = process.StandardOutput.ReadToEnd();
+                    var error = process.StandardError.ReadToEnd();
+
+                    process.WaitForExit();
+                    process.Close();
+
+                    if (!string.IsNullOrEmpty(error))
+                        throw new Exception($"`{fileName} {process.StartInfo.Arguments}` command failed: " + error);
+
+                    return output;
+                }            
+            }
+            catch (Exception ex)
+            {
+                throw new StopFilterExecutionException(scope, options, ex);
+            }
+        }
+
+        public string exePath(string exeName)
+        {
+            try
+            {
+                var p = new Process
+                {
+                    StartInfo =
+                    {
+                        UseShellExecute = false,
+                        FileName = Env.IsWindows 
+                            ? "where"  //Win 7/Server 2003+
+                            : "which", //macOS / Linux
+                        Arguments = exeName,
+                        RedirectStandardOutput = true
+                    }
+                };
+                p.Start();
+                var output = p.StandardOutput.ReadToEnd();
+                p.WaitForExit();
+
+                if (p.ExitCode == 0)
+                {
+                    // just return first match
+                    var fullPath = output.Substring(0, output.IndexOf(Environment.NewLine, StringComparison.Ordinal));
+                    if (!string.IsNullOrEmpty(fullPath))
+                    {
+                        return fullPath;
+                    }
+                }
+            }
+            catch {}               
+            return null;
+        }
+        
     }
 }

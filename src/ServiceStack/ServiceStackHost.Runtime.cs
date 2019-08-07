@@ -568,6 +568,9 @@ namespace ServiceStack
         public virtual void OnSaveSession(IRequest httpReq, IAuthSession session, TimeSpan? expiresIn = null)
         {
             if (httpReq == null) return;
+                        
+            if (session.FromToken) // Don't persist Sessions populated from tokens 
+                return; 
 
             var sessionKey = SessionFeature.GetSessionKey(session.Id ?? httpReq.GetOrCreateSessionId());
             session.LastModified = DateTime.UtcNow;

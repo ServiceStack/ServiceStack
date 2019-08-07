@@ -15,7 +15,7 @@ namespace ServiceStack
     /// </summary>
     public interface IPreInitPlugin
     {
-        void Configure(IAppHost appHost);
+        void BeforePluginsLoaded(IAppHost appHost);
     }
 
     /// <summary>

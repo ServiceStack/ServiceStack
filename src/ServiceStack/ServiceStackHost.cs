@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Funq;
+using ServiceStack.Admin;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
@@ -31,6 +32,7 @@ using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 using ServiceStack.Redis;
+using ServiceStack.Script;
 using static System.String;
 
 namespace ServiceStack
@@ -148,6 +150,7 @@ namespace ServiceStack
                 new HttpCacheFeature(),
                 new RequestInfoFeature(),
                 new SpanFormats(),
+                new SvgFeature(),
             };
             ExcludeAutoRegisteringServiceTypes = new HashSet<Type> {
                 typeof(AuthenticateService),
@@ -162,6 +165,9 @@ namespace ServiceStack
                 typeof(MetadataDebugService),
                 typeof(ServerEventsSubscribersService),
                 typeof(ServerEventsUnRegisterService),
+                typeof(MetadataNavService),
+                typeof(ScriptAdminService),
+                typeof(RequestLogsService),
             };
 
             JsConfig.InitStatics();
@@ -201,13 +207,32 @@ namespace ServiceStack
             var scanAssemblies = new List<Assembly>(ServiceAssemblies);
             scanAssemblies.AddIfNotExists(GetType().Assembly);
             var scanTypes = scanAssemblies.SelectMany(x => x.GetTypes())
-                .Where(x => x.HasInterface(typeof(IPreConfigureAppHost)) ||
-                            x.HasInterface(typeof(IConfigureAppHost)) ||
-                            x.HasInterface(typeof(IPostConfigureAppHost)))
+                .Where(x => (x.HasInterface(typeof(IPreConfigureAppHost))
+                             || x.HasInterface(typeof(IConfigureAppHost))
+                             || x.HasInterface(typeof(IAfterInitAppHost))))
                 .ToArray();
             
-            RunConfigureAppHosts(scanTypes.Where(x => x.HasInterface(typeof(IPreConfigureAppHost))));
+            var startupConfigs = scanTypes.Where(x => !x.HasInterface(typeof(IPlugin)))
+                .Select(x => x.CreateInstance()).WithPriority();
+            var configInstances = startupConfigs.PriorityOrdered();
+            var preStartupConfigs = startupConfigs.PriorityBelowZero();
+            var postStartupConfigs = startupConfigs.PriorityZeroOrAbove();
 
+            void RunPreConfigure(object instance)
+            {
+                try
+                {
+                    if (instance is IPreConfigureAppHost preConfigureAppHost)
+                        preConfigureAppHost.PreConfigure(this);
+                }
+                catch (Exception ex)
+                {
+                    OnStartupException(ex);
+                }
+            }
+            Plugins.ToList().ForEach(RunPreConfigure);
+            configInstances.ForEach(RunPreConfigure);
+            
             if (ServiceController == null)
                 ServiceController = CreateServiceController(ServiceAssemblies.ToArray());
 
@@ -220,13 +245,26 @@ namespace ServiceStack
             OnBeforeInit();
             ServiceController.Init();
 
-            RunConfigureAppHosts(scanTypes.Where(x => x.HasInterface(typeof(IConfigureAppHost))));
+            void RunConfigure(object instance)
+            {
+                try
+                {
+                    if (instance is IConfigureAppHost configureAppHost)
+                        configureAppHost.Configure(this);
+                }
+                catch (Exception ex)
+                {
+                    OnStartupException(ex);
+                }
+            }
+            preStartupConfigs.ForEach(RunConfigure);
             BeforeConfigure.Each(fn => fn(this));
 
             Configure(Container);
 
             AfterConfigure.Each(fn => fn(this));
-            RunConfigureAppHosts(scanTypes.Where(x => x.HasInterface(typeof(IPostConfigureAppHost))));
+
+            postStartupConfigs.ForEach(RunConfigure);
 
             if (Config.StrictMode == null && Config.DebugMode)
                 Config.StrictMode = true;
@@ -234,7 +272,9 @@ namespace ServiceStack
             if (!Config.DebugMode)
                 Plugins.RemoveAll(x => x is RequestInfoFeature);
 
-            ConfigurePlugins();
+            //Some plugins need to initialize before other plugins are registered.
+            Plugins.ToList().ForEach(RunPreInitPlugin);
+            configInstances.ForEach(RunPreInitPlugin);
 
             List<IVirtualPathProvider> pathProviders = null;
             if (VirtualFileSources == null)
@@ -251,6 +291,8 @@ namespace ServiceStack
                     ?? GetVirtualFileSources().FirstOrDefault(x => x is FileSystemVirtualFiles) as IVirtualFiles;
 
             OnAfterInit();
+            
+            configInstances.ForEach(RunPostInitPlugin);
 
             PopulateArrayFilters();
 
@@ -262,6 +304,9 @@ namespace ServiceStack
             {
                 callback(this);
             }
+            
+            Plugins.ForEach(RunAfterInitAppHost);
+            configInstances.ForEach(RunAfterInitAppHost);
 
             ReadyAt = DateTime.UtcNow;
 
@@ -514,8 +559,13 @@ namespace ServiceStack
         /// </summary>
         public IVirtualPathProvider VirtualFileSources { get; set; }
 
+        /// <summary>
+        /// FileSystem VFS for WebRoot
+        /// </summary>
         public IVirtualDirectory RootDirectory =>
-            (VirtualFileSources.GetFileSystemVirtualFiles() ?? VirtualFileSources).RootDirectory;
+            (VirtualFileSources.GetFileSystemVirtualFiles() 
+             ?? VirtualFileSources
+             ?? new FileSystemVirtualFiles(GetWebRootPath())).RootDirectory;
 
         public IVirtualDirectory ContentRootDirectory => VirtualFiles.RootDirectory;
         
@@ -614,7 +664,7 @@ namespace ServiceStack
 
         public virtual void OnStartupException(Exception ex)
         {
-            if (Config.StrictMode == true)
+            if (Config.StrictMode == true || Config.DebugMode)
                 throw ex;
 
             this.StartUpErrors.Add(DtoUtils.CreateErrorResponse(null, ex).GetResponseStatus());
@@ -792,44 +842,42 @@ namespace ServiceStack
             });
         }
 
-        private void RunConfigureAppHosts(IEnumerable<Type> configureAppHosts)
+        private void RunPreInitPlugin(object instance)
         {
-            var instances = configureAppHosts.Select(x => x.CreateInstance()).OrderByPriority();
-            
-            foreach (var instance in instances)
+            try
             {
-                try
-                {
-                    if (instance is IPreConfigureAppHost preConfigureAppHost)
-                        preConfigureAppHost.Configure(this);
-                    else if (instance is IConfigureAppHost configureAppHost)
-                        configureAppHost.Configure(this);
-                    else if (instance is IPostConfigureAppHost postConfigureAppHost)
-                        postConfigureAppHost.Configure(this);
-                }
-                catch (Exception ex)
-                {
-                    OnStartupException(ex);
-                }
+                if (instance is IPreInitPlugin prePlugin)
+                    prePlugin.BeforePluginsLoaded(this);
+            }
+            catch (Exception ex)
+            {
+                OnStartupException(ex);
             }
         }
 
-        private void ConfigurePlugins()
+        private void RunPostInitPlugin(object instance)
         {
-            //Some plugins need to initialize before other plugins are registered.
-            foreach (var plugin in Plugins)
+            try
             {
-                if (plugin is IPreInitPlugin preInitPlugin)
-                {
-                    try
-                    {
-                        preInitPlugin.Configure(this);
-                    }
-                    catch (Exception ex)
-                    {
-                        OnStartupException(ex);
-                    }
-                }
+                if (instance is IPostInitPlugin postPlugin)
+                    postPlugin.AfterPluginsLoaded(this);
+            }
+            catch (Exception ex)
+            {
+                OnStartupException(ex);
+            }
+        }
+
+        private void RunAfterInitAppHost(object instance)
+        {
+            try
+            {
+                if (instance is IAfterInitAppHost prePlugin)
+                    prePlugin.AfterInit(this);
+            }
+            catch (Exception ex)
+            {
+                OnStartupException(ex);
             }
         }
 
@@ -845,20 +893,7 @@ namespace ServiceStack
 
             Config.PreferredContentTypesArray = Config.PreferredContentTypes.ToArray();
 
-            foreach (var plugin in Plugins)
-            {
-                if (plugin is IPostInitPlugin preInitPlugin)
-                {
-                    try
-                    {
-                        preInitPlugin.AfterPluginsLoaded(this);
-                    }
-                    catch (Exception ex)
-                    {
-                        OnStartupException(ex);
-                    }
-                }
-            }
+            Plugins.ForEach(RunPostInitPlugin);
 
             ServiceController.AfterInit();
         }
@@ -903,6 +938,30 @@ namespace ServiceStack
             catch (Exception ex)
             {
                 Log.Error("Error when Disposing Request Context", ex);
+            }
+            finally
+            {
+                if (request != null)
+                {
+                    // Release Buffered Streams immediately
+                    if (request.UseBufferedStream && request.InputStream is MemoryStream inputMs)
+                    {
+                        inputMs.Dispose();
+                    }
+                    var res = request.Response;
+                    if (res != null && res.UseBufferedStream && res.OutputStream is MemoryStream outputMs)
+                    {
+                        try 
+                        { 
+                            res.Flush();
+                            outputMs.Dispose();
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error("Error disposing Response Buffered OutputStream", ex);
+                        }
+                    }
+                }
             }
         }
 
@@ -1153,7 +1212,8 @@ namespace ServiceStack
                 ? pathInfo.Substring(1)
                 : pathInfo;
 
-            var normalizedPathInfo = pathNoPrefix.StartsWith(mode)
+            var normalizedPathInfo = pathNoPrefix == mode || 
+                 (pathNoPrefix.StartsWith(mode) && pathNoPrefix.Length > mode.Length && pathNoPrefix[mode.Length] == '/')
                 ? pathNoPrefix.Substring(mode.Length)
                 : pathInfo;
 

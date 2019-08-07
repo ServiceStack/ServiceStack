@@ -181,6 +181,26 @@ namespace ServiceStack.Script
         public override string Tag => "strong";
         public override string Suffix => "";
     }
+    public class ScriptScriptBlock : ScriptHtmlBlock
+    {
+        public override string Tag => "script";
+        public override string Suffix => "";
+    }
+    public class ScriptStyleBlock : ScriptHtmlBlock
+    {
+        public override string Tag => "style";
+        public override string Suffix => "";
+    }
+    public class ScriptLinkBlock : ScriptHtmlBlock
+    {
+        public override string Tag => "link";
+        public override string Suffix => "";
+    }
+    public class ScriptMetaBlock : ScriptHtmlBlock
+    {
+        public override string Tag => "meta";
+        public override string Suffix => "";
+    }
 
     public abstract class ScriptHtmlBlock : ScriptBlock
     {
@@ -334,6 +354,10 @@ namespace ServiceStack.Script
                 new ScriptBBlock(), 
                 new ScriptIBlock(), 
                 new ScriptStrongBlock(), 
+                new ScriptScriptBlock(),
+                new ScriptStyleBlock(), 
+                new ScriptLinkBlock(), 
+                new ScriptMetaBlock(), 
             });
         }
     }

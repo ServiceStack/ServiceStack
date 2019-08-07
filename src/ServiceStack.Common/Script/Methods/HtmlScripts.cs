@@ -79,7 +79,7 @@ namespace ServiceStack.Script
                             else
                             {
                                 var htmlValue = HtmlDump(value, options);
-                                sbRows.Append(htmlValue.ToRawString());
+                                sbRows.Append(htmlValue.AsString());
                             }
 
                             sbRows.Append("</td>");
@@ -213,7 +213,7 @@ namespace ServiceStack.Script
                                     else
                                     {
                                         var body = HtmlDump(kvp.Value, options);
-                                        sb.Append(body.ToRawString());
+                                        sb.Append(body.AsString());
                                     }
                                     sb.Append("</td>");
                                     sb.Append("</tr>");
@@ -256,7 +256,7 @@ namespace ServiceStack.Script
                                     {
                                         sb.Append("<td>");
                                         var body = HtmlDump(o, options);
-                                        sb.Append(body.ToRawString());
+                                        sb.Append(body.AsString());
                                         sb.Append("</td>");
                                     }
 

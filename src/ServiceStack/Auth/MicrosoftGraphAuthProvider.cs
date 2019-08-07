@@ -70,6 +70,14 @@ namespace ServiceStack.Auth
                     "User.Read",
                 };
             }
+
+            NavItem = new NavItem {
+                Href = "/auth/" + Name,
+                Label = "Sign in with Microsoft",
+                Id = "btn-" + Name,
+                ClassName = "btn-social btn-microsoft",
+                IconClass = "fab svg-microsoft",
+            };
         }
 
         protected override string GetAccessTokenJson(string code)

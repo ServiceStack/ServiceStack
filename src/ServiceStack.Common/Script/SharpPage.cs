@@ -67,6 +67,11 @@ namespace ServiceStack.Script
                 contents = await stream.ReadToEndAsync();
             }
 
+            foreach (var preprocessor in Context.Preprocessors)
+            {
+                contents = preprocessor(contents);
+            }
+
             var lastModified = File.LastModified;
             var fileContents = contents.AsMemory();
             var pageVars = new Dictionary<string, object>();

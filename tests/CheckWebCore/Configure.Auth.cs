@@ -1,4 +1,7 @@
 using System.Collections.Generic;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using MyApp;
 using ServiceStack;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
@@ -11,6 +14,9 @@ namespace CheckWebCore
     /// </summary>
     public class ConfigureAuth : IConfigureAppHost
     {
+        private IConfiguration configuration;
+        public ConfigureAuth(IConfiguration configuration) => this.configuration = configuration;
+
         public void Configure(IAppHost appHost)
         {
             var AppSettings = appHost.AppSettings;
@@ -23,10 +29,12 @@ namespace CheckWebCore
                         RequireSecureConnection = false,
                     }, 
                     new CredentialsAuthProvider(), //HTML Form post of UserName/Password credentials
-                    new FacebookAuthProvider(AppSettings),
                     new TwitterAuthProvider(AppSettings),
                     new GithubAuthProvider(AppSettings), 
+                    new GoogleAuthProvider(AppSettings),
+                    new FacebookAuthProvider(AppSettings),
                     new MicrosoftGraphAuthProvider(AppSettings), 
+//                    new LinkedInAuthProvider(AppSettings), 
                 }));
 
             appHost.Plugins.Add(new RegistrationFeature());
@@ -34,12 +42,9 @@ namespace CheckWebCore
             //override the default registration validation with your own custom implementation
             appHost.RegisterAs<CustomRegistrationValidator, IValidator<Register>>();
 
-            var userRep = new InMemoryAuthRepository();
-            appHost.Register<IAuthRepository>(userRep);
+            var authRepo = appHost.TryResolve<IAuthRepository>();
 
-            var authRepo = userRep;
-
-            var newAdmin = new UserAuth {Email = "admin@email.com", DisplayName = "Admin User"};
+            var newAdmin = new AppUser {Email = "admin@email.com", DisplayName = "Admin User"};
             var user = authRepo.CreateUserAuth(newAdmin, "p@55wOrd");
             authRepo.AssignRoles(user, new List<string> {"Admin"});
         }

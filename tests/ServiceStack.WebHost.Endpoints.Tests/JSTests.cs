@@ -48,6 +48,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 { "a", new List<object> { "eulav___", "eulav___", "eulav___" } }
             }));
+            
+            Assert.That(JS.eval("3.itemsOf(arg.reverse().padRight(8, '_'))", scope), Is.EqualTo(new List<object> { "eulav___", "eulav___", "eulav___" }));
         }
 
     }

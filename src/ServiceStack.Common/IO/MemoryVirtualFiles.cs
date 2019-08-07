@@ -401,6 +401,13 @@ namespace ServiceStack.IO
             return MemoryStreamFactory.GetStream(ByteContents);
         }
 
+        public override object GetContents()
+        {
+            return TextContents != null 
+                ? (object) TextContents.AsMemory() 
+                : ByteContents != null ? new ReadOnlyMemory<byte>(ByteContents) : null;
+        }
+        
         public override void Refresh()
         {
             if (base.VirtualPathProvider.GetFile(VirtualPath) is InMemoryVirtualFile file && !ReferenceEquals(file, this))

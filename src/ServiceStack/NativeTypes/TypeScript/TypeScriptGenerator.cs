@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using ServiceStack.Text;
@@ -88,13 +87,30 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"List", "[]"},
             {"Uint8Array", "new Uint8Array(0)"},
         };
+        
+        public static TypeFilterDelegate TypeFilter { get; set; }
+        public static Func<string, string> CookedTypeFilter { get; set; }
+        public static TypeFilterDelegate DeclarationTypeFilter { get; set; }
+        public static Func<string, string> CookedDeclarationTypeFilter { get; set; }
+        public static Func<string, string> ReturnMarkerFilter { get; set; }
 
-        public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
+        public static Func<List<MetadataType>, List<MetadataType>> FilterTypes { get; set; } = DefaultFilterTypes;
 
-        public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types)
-        {
-            return types.OrderTypesByDeps();
-        }
+        public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types.OrderTypesByDeps();
+        
+        /// <summary>
+        /// Add Code to top of generated code
+        /// </summary>
+        public static AddCodeDelegate InsertCodeFilter { get; set; }
+
+        /// <summary>
+        /// Add Code to bottom of generated code
+        /// </summary>
+        public static AddCodeDelegate AddCodeFilter { get; set; }
+
+        public string DictionaryDeclaration { get; set; } = "export class Dictionary<T> { [Key: string]: T; }";
+        
+        public HashSet<string> AddedDeclarations { get; set; } = new HashSet<string>();
 
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
@@ -179,6 +195,10 @@ namespace ServiceStack.NativeTypes.TypeScript
                 sb = sb.Indent();
             }
 
+            var insertCode = InsertCodeFilter?.Invoke(allTypes, Config);
+            if (insertCode != null)
+                sb.AppendLine(insertCode);
+
             //ServiceStack core interfaces
             foreach (var type in allTypes)
             {
@@ -239,6 +259,10 @@ namespace ServiceStack.NativeTypes.TypeScript
                     existingTypes.Add(fullTypeName);
                 }
             }
+
+            var addCode = AddCodeFilter?.Invoke(allTypes, Config);
+            if (addCode != null)
+                sb.AppendLine(addCode);
 
             if (!string.IsNullOrEmpty(globalNamespace))
             {
@@ -331,7 +355,16 @@ namespace ServiceStack.NativeTypes.TypeScript
 
                 //: BaseClass, Interfaces
                 if (type.Inherits != null)
-                    extends.Add(Type(type.Inherits).InDeclarationType());
+                {
+                    extends.Add(DeclarationType(type.Inherits.Name, type.Inherits.GenericArgs, out var addDeclaration));
+
+                    if (addDeclaration != null && !AddedDeclarations.Contains(addDeclaration))
+                    {
+                        AddedDeclarations.Add(addDeclaration);
+                        sb.AppendLine(addDeclaration);
+                        sb.AppendLine();
+                    }
+                }
 
                 string responseTypeExpression = null;
 
@@ -402,16 +435,6 @@ namespace ServiceStack.NativeTypes.TypeScript
 
                 sb = sb.Indent();
 
-                if (EmitPartialConstructors && Config.ExportAsTypes && isClass)
-                {
-                    var callSuper = type.Inherits != null 
-                        ? !extend.StartsWith(" extends Array<") 
-                            ? "super(init); " 
-                            : "super(); "
-                        : "";
-                    sb.AppendLine($"public constructor(init?:Partial<{typeName}>) {{ {callSuper}(<any>Object).assign(this, init); }}");
-                }
-
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
                 if (addVersionInfo)
                 {
@@ -434,6 +457,17 @@ namespace ServiceStack.NativeTypes.TypeScript
                 AddProperties(sb, type,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
                         && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
+
+                if (EmitPartialConstructors && Config.ExportAsTypes && isClass)
+                {
+                    sb.AppendLine();
+                    var callSuper = type.Inherits != null 
+                        ? !(extend.StartsWith(" extends Array<") || extend.StartsWith(" extends Dictionary<"))
+                            ? "super(init); " 
+                            : "super(); "
+                        : "";
+                    sb.AppendLine($"public constructor(init?: Partial<{typeName}>) {{ {callSuper}(Object as any).assign(this, init); }}");
+                }
 
                 if (Config.ExportAsTypes && responseTypeExpression != null)
                 {
@@ -554,11 +588,6 @@ namespace ServiceStack.NativeTypes.TypeScript
             return value;
         }
 
-        public string Type(MetadataTypeName typeName)
-        {
-            return Type(typeName.Name, typeName.GenericArgs);
-        }
-
         public static HashSet<string> ArrayTypes = new HashSet<string>
         {
             "List`1",
@@ -580,35 +609,90 @@ namespace ServiceStack.NativeTypes.TypeScript
             "IDictionary",
             "IOrderedDictionary",
         };
+        
+        public string Type(MetadataTypeName typeName) => Type(typeName.Name, typeName.GenericArgs);
+
+        public string DeclarationType(string type, string[] genericArgs, out string addDeclaration)
+        {
+            addDeclaration = null;
+            var useType = DeclarationTypeFilter?.Invoke(type, genericArgs);
+            if (useType != null)
+                return useType;
+
+            string cooked = null;
+
+            if (genericArgs != null)
+            {
+                if (ArrayTypes.Contains(type))
+                {
+                    cooked = "Array<{0}>".Fmt(GenericArg(genericArgs[0])).StripNullable();
+                }
+                if (DictionaryTypes.Contains(type))
+                {
+                    addDeclaration = DictionaryDeclaration;
+                    cooked = "Dictionary<{0}>".Fmt(GenericArg(genericArgs[1])); //Key Type always string
+                }
+            }
+            
+            if (cooked == null)
+                cooked = Type(type, genericArgs);
+            
+            useType = CookedDeclarationTypeFilter?.Invoke(cooked);
+            if (useType != null)
+                return useType;
+            
+            //TypeScript doesn't support short-hand Dictionary notation or has a Generic Dictionary Type
+            if (cooked.StartsWith("{"))
+                return "any";
+
+            //TypeScript doesn't support short-hand T[] notation in extension list 
+            //E.g. need to use `extends Array<Type>` instead of `extends Type[]`
+            var arrParts = cooked.SplitOnFirst('[');
+            return arrParts.Length > 1 
+                ? "Array<{0}>".Fmt(arrParts[0]) 
+                : cooked;
+        }
 
         public string Type(string type, string[] genericArgs)
         {
+            var useType = TypeFilter?.Invoke(type, genericArgs);
+            if (useType != null)
+                return useType;
+            
             if (genericArgs != null)
             {
+                string cooked = null;
                 if (type == "Nullable`1")
-                    return "{0}?".Fmt(GenericArg(genericArgs[0]));
-                if (ArrayTypes.Contains(type))
-                    return "{0}[]".Fmt(GenericArg(genericArgs[0])).StripNullable();
-                if (DictionaryTypes.Contains(type))
-                    return "{{ [index:{0}]: {1}; }}".Fmt(
+                    cooked = "{0}?".Fmt(GenericArg(genericArgs[0]));
+                else if (ArrayTypes.Contains(type))
+                    cooked = "{0}[]".Fmt(GenericArg(genericArgs[0])).StripNullable();
+                else if (DictionaryTypes.Contains(type))
+                {
+                    cooked = "{{ [index: {0}]: {1}; }}".Fmt(
                         GenericArg(genericArgs[0]),
                         GenericArg(genericArgs[1]));
-
-                var parts = type.Split('`');
-                if (parts.Length > 1)
-                {
-                    var args = StringBuilderCacheAlt.Allocate();
-                    foreach (var arg in genericArgs)
-                    {
-                        if (args.Length > 0)
-                            args.Append(", ");
-
-                        args.Append(GenericArg(arg));
-                    }
-
-                    var typeName = TypeAlias(type);
-                    return "{0}<{1}>".Fmt(typeName, StringBuilderCacheAlt.ReturnAndFree(args));
                 }
+                else
+                {
+                    var parts = type.Split('`');
+                    if (parts.Length > 1)
+                    {
+                        var args = StringBuilderCacheAlt.Allocate();
+                        foreach (var arg in genericArgs)
+                        {
+                            if (args.Length > 0)
+                                args.Append(", ");
+
+                            args.Append(GenericArg(arg));
+                        }
+
+                        var typeName = TypeAlias(type);
+                        cooked = "{0}<{1}>".Fmt(typeName, StringBuilderCacheAlt.ReturnAndFree(args));
+                    }
+                }
+
+                if (cooked != null)
+                    return CookedTypeFilter?.Invoke(cooked) ?? cooked;
             }
             else
             {
@@ -630,7 +714,8 @@ namespace ServiceStack.NativeTypes.TypeScript
 
             TypeAliases.TryGetValue(type, out var typeAlias);
 
-            return typeAlias ?? NameOnly(type);
+            var cooked = typeAlias ?? NameOnly(type);
+            return CookedTypeFilter?.Invoke(cooked) ?? cooked;
         }
 
         public string NameOnly(string type)
@@ -750,6 +835,11 @@ namespace ServiceStack.NativeTypes.TypeScript
                 sb.Append(ConvertFromCSharp(node.Children[0]));
                 sb.Append("[]");
             }
+            else if (node.Text == "List`1")
+            {
+                var type = node.Children.Count > 0 ? node.Children[0].Text : "any";
+                sb.Append(type).Append("[]");
+            }
             else if (node.Text == "Dictionary")
             {
                 sb.Append("{ [index:");
@@ -786,24 +876,21 @@ namespace ServiceStack.NativeTypes.TypeScript
 
     public static class TypeScriptGeneratorExtensions
     {
-        public static string InDeclarationType(this string type)
-        {
-            //TypeScript doesn't support short-hand Dictionary notation or has a Generic Dictionary Type
-            if (type.StartsWith("{"))
-                return "any";
-
-            //TypeScript doesn't support short-hand T[] notation in extension list 
-            //E.g. need to use `extends Array<Type>` instead of `extends Type[]`
-            var arrParts = type.SplitOnFirst('[');
-            return arrParts.Length > 1 
-                ? "Array<{0}>".Fmt(arrParts[0]) 
-                : type;
-        }
-
         public static string InReturnMarker(this string type)
         {
+            var useType = TypeScriptGenerator.ReturnMarkerFilter?.Invoke(type);
+            if (useType != null)
+                return useType;
+            
             if (type.StartsWith("{"))
                 return "any";
+
+            var pos = type.IndexOf("<{", StringComparison.Ordinal);
+            if (pos >= 0)
+            {
+                var ret = type.LeftPart("<{") + "<any>" + type.LastRightPart("}>");
+                return ret;
+            }
             
             //Note: can only implement using Array short-hand notation: IReturn<Type[]>
 

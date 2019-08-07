@@ -687,13 +687,13 @@ result={{ result }}
             Assert.That(result.NormalizeNewLines(), Is.EqualTo("result=2"));
             
             result = new PageResult(context.OneTimePage(@"
-{{ '<li> {{it}} </li>' | forEach(items) | assignTo('result') }}
+{{ '<li> {{it}} </li>' | selectEach(items) | assignTo('result') }}
 <ul>{{ result | raw }}</ul>
 ")).Result;            
             Assert.That(result.NormalizeNewLines(), Is.EqualTo("<ul><li> foo </li><li> bar </li><li> qux </li></ul>"));
             
             result = new PageResult(context.OneTimePage(@"
-{{ ' - {{it}}' | appendLine | forEach(items) | markdown | assignTo('result') }}
+{{ ' - {{it}}' | appendLine | selectEach(items) | markdown | assignTo('result') }}
 <div>{{ result | raw }}</div>
 ")).Result;            
             Assert.That(result.NormalizeNewLines(), Is.EqualTo("<div><ul>\n<li>foo</li>\n<li>bar</li>\n<li>qux</li>\n</ul>\n</div>"));
@@ -1899,5 +1899,137 @@ dir-file: dir/dir-file.txt
                 Is.EqualTo("<table class=\"table-bordered\"><caption>E</caption></table>".NormalizeNewLines()));
         }
 
+        [Test]
+        public void Can_use_array_methods()
+        {
+            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array
+            var context = new ScriptContext {
+                Args = {
+                    ["fruits"] = new List<object> { "Apple", "Banana" }
+                }
+            }.Init();
+
+            Assert.That(context.EvaluateScript("{{fruits[0]}}"), Is.EqualTo("Apple"));
+            Assert.That(context.EvaluateScript("{{fruits[fruits.Count - 1]}}"), Is.EqualTo("Banana"));
+            Assert.That(context.EvaluateScript("{{ [] | to => result}}{{fruits.forEach((item,index) => result.push(`${item} ${index}`))}}{{result | join}}"), 
+                Is.EqualTo("Apple 0,Banana 1"));
+            Assert.That(context.EvaluateScript("{{#each fruits}}{{`${it} ${index},`}}{{/each}}"), 
+                Is.EqualTo("Apple 0,Banana 1,"));
+            Assert.That(context.EvaluateScript("{{fruits.push('Orange')}} => {{fruits | join}}"), 
+                Is.EqualTo("3 => Apple,Banana,Orange"));
+            Assert.That(context.EvaluateScript("{{fruits.pop()}}"), 
+                Is.EqualTo("Orange"));
+            Assert.That(context.EvaluateScript("{{fruits.shift()}}"), 
+                Is.EqualTo("Apple"));
+            Assert.That(context.EvaluateScript("{{fruits.unshift('Strawberry')}} => {{fruits | join}}"), 
+                Is.EqualTo("2 => Strawberry,Banana"));
+            Assert.That(context.EvaluateScript("{{fruits.push('Mango')}} : {{fruits.indexOf('Banana')}}"), 
+                Is.EqualTo("3 : 1"));
+            Assert.That(context.EvaluateScript("{{fruits.indexOf('Banana')}}"), 
+                Is.EqualTo("1"));
+            Assert.That(context.EvaluateScript("{{fruits.splice(fruits.indexOf('Banana'),1) | join}} : {{fruits | join}}"), 
+                Is.EqualTo("Banana : Strawberry,Mango"));
+            Assert.That(context.EvaluateScript("{{fruits.Count}} : {{fruits.slice().push('Pear')}} : {{fruits.Count}}"), 
+                Is.EqualTo("2 : 3 : 2"));
+        }
+
+        [Test]
+        public void Can_use_array_splice()
+        {
+            var context = new ScriptContext {
+                Args = {
+                    ["vegetables"] = new List<object> { "Cabbage", "Turnip", "Radish", "Carrot" }
+                }
+            }.Init();
+
+            
+            Assert.That(context.EvaluateScript("{{vegetables.splice(1,2) | join}} : {{ vegetables | join }}"), 
+                Is.EqualTo("Turnip,Radish : Cabbage,Carrot"));
+        }
+
+        [Test]
+        public void Can_use_other_array_methods()
+        {
+            var context = new ScriptContext().Init();
+
+            Assert.That(context.EvaluateScript("{{['a', 'b', 'c'].concat(['d', 'e', 'f']) | join}}"),
+                Is.EqualTo("a,b,c,d,e,f"));
+
+            Assert.That(context.EvaluateScript("{{[1, 30, 39, 29, 10, 13].every(x => x < 40)}}"),
+                Is.EqualTo("True"));
+
+            Assert.That(context.EvaluateScript("{{['spray', 'limit', 'elite', 'exuberant', 'destruction', 'present'].filter(word => word.Length > 6) | join}}"),
+                Is.EqualTo("exuberant,destruction,present"));
+            
+            Assert.That(context.EvaluateScript("{{[5, 12, 8, 130, 44].find(x => x > 10) | join}}"),
+                Is.EqualTo("12"));
+            
+            Assert.That(context.EvaluateScript("{{[5, 12, 8, 130, 44].findIndex(x => x > 13) | join}}"),
+                Is.EqualTo("3"));
+            
+            Assert.That(context.EvaluateScript("{{[1, 2, [3, 4, [5, 6]]].flat() | join}}"),
+                Is.EqualTo("1,2,3,4,5,6"));
+            
+            Assert.That(context.EvaluateScript("{{[1, 2, 3, 4].flatMap(x => [x * 2]) | join}}"),
+                Is.EqualTo("2,4,6,8"));
+            
+            Assert.That(context.EvaluateScript("{{[1, 2, 3].includes(2)}}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateScript("{{['cat', 'dog', 'bat'].includes('cat')}}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateScript("{{['cat', 'dog', 'bat'].includes('at')}}"), Is.EqualTo("False"));
+            
+            Assert.That(context.EvaluateScript("{{['ant', 'bison', 'camel', 'duck', 'bison'].indexOf('bison')}}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateScript("{{['ant', 'bison', 'camel', 'duck', 'bison'].indexOf('bison',2)}}"), Is.EqualTo("4"));
+            Assert.That(context.EvaluateScript("{{['ant', 'bison', 'camel', 'duck', 'bison'].indexOf('giraffe')}}"), Is.EqualTo("-1"));
+            
+            Assert.That(context.EvaluateScript("{{['Fire', 'Air', 'Water'].join()}}"), Is.EqualTo("Fire,Air,Water"));
+            Assert.That(context.EvaluateScript("{{['Fire', 'Air', 'Water'].join('')}}"), Is.EqualTo("FireAirWater"));
+            Assert.That(context.EvaluateScript("{{['Fire', 'Air', 'Water'].join('-')}}"), Is.EqualTo("Fire-Air-Water"));
+
+            Assert.That(context.EvaluateScript("{{['a', 'b', 'c'].keys() | join}}"), Is.EqualTo("0,1,2"));
+            
+            Assert.That(context.EvaluateScript("{{['Dodo', 'Tiger', 'Penguin', 'Dodo'].lastIndexOf('Dodo')}}"), Is.EqualTo("3"));
+            Assert.That(context.EvaluateScript("{{['Dodo', 'Tiger', 'Penguin', 'Dodo'].lastIndexOf('Tiger')}}"), Is.EqualTo("1"));
+
+            Assert.That(context.EvaluateScript("{{[1, 4, 9, 16].map(x => x * 2) | join}}"), Is.EqualTo("2,8,18,32"));
+            
+            Assert.That(context.EvaluateScript("{{['broccoli', 'cauliflower', 'cabbage', 'kale', 'tomato'].pop()}}"), Is.EqualTo("tomato"));
+            
+            Assert.That(context.EvaluateScript("{{['pigs', 'goats', 'sheep'].push('cows')}}"), Is.EqualTo("4"));
+            
+            Assert.That(context.EvaluateScript("{{[1, 2, 3, 4].reduce((accumulator, currentValue) => accumulator + currentValue)}}"), Is.EqualTo("10"));
+            Assert.That(context.EvaluateScript("{{[1, 2, 3, 4].reduce((accumulator, currentValue) => accumulator + currentValue, 5)}}"), Is.EqualTo("15"));
+            
+            Assert.That(context.EvaluateScript("{{['one', 'two', 'three'].reverse() | join}}"), Is.EqualTo("three,two,one"));
+            
+            Assert.That(context.EvaluateScript("{{[1, 2, 3].shift()}}"), Is.EqualTo("1"));
+            
+            Assert.That(context.EvaluateScript("{{['ant', 'bison', 'camel', 'duck', 'elephant'] | to => animals}}{{animals.slice(2) | join}}"), Is.EqualTo("camel,duck,elephant"));
+            Assert.That(context.EvaluateScript("{{['ant', 'bison', 'camel', 'duck', 'elephant'] | to => animals}}{{animals.slice(2,4) | join}}"), Is.EqualTo("camel,duck"));
+            Assert.That(context.EvaluateScript("{{['ant', 'bison', 'camel', 'duck', 'elephant'] | to => animals}}{{animals.slice(1,5) | join}}"), Is.EqualTo("bison,camel,duck,elephant"));
+
+            Assert.That(context.EvaluateScript("{{[1, 2, 3, 4, 5].some(x => x % 2 == 0)}}"), Is.EqualTo("True"));
+
+            Assert.That(context.EvaluateScript("{{['March', 'Jan', 'Feb', 'Dec'].sort() | join}}"), Is.EqualTo("Dec,Feb,Jan,March"));
+            Assert.That(context.EvaluateScript("{{[1, 30, 4, 21, 100000].sort() | join}}"), Is.EqualTo("1,4,21,30,100000"));
+
+            Assert.That(context.EvaluateScript(
+                "{{['Jan', 'March', 'April', 'June'] | to => months}}{{months.splice(1,0,['Feb']) | end}}{{months | join}}"), 
+                Is.EqualTo("Jan,Feb,March,April,June"));
+            
+            Assert.That(context.EvaluateScript("{{[1, 2, 3] | to => array}}{{array.unshift([4,5])}} : {{array | join}}"), Is.EqualTo("5 : 4,5,1,2,3"));
+
+            Assert.That(context.EvaluateScript("{{['a', 'b', 'c'].values() | join}}"), Is.EqualTo("a,b,c"));
+        }
+
+        [Test]
+        public void Can_use_forEach_on_dictionaries()
+        {
+            var context = new ScriptContext().Init();
+            
+            Assert.That(context.EvaluateScript(
+                "{{ {a:1,b:2,c:3} | to => d }}{{ []  | to => values}}{{d.forEach((key,val) => values.push(val))}}{{values | join}}"),
+                Is.EqualTo("1,2,3"));
+            
+        }
     }
 }

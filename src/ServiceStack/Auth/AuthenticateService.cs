@@ -224,6 +224,8 @@ namespace ServiceStack.Auth
                     ?? this.Request.GetHeader(HttpHeaders.Referer)
                     ?? authProvider.CallbackUrl;
 
+                var manageRoles = AuthRepository as IManageRoles;
+
                 var alreadyAuthenticated = response == null;
                 response = response ?? new AuthenticateResponse {
                     UserId = session.UserAuthId,
@@ -237,6 +239,19 @@ namespace ServiceStack.Auth
 
                 if (response is AuthenticateResponse authResponse)
                 {
+                    authResponse.ProfileUrl = authResponse.ProfileUrl ?? session.GetProfileUrl();
+                    
+                    var authFeature = HostContext.GetPlugin<AuthFeature>();
+                    if (authFeature?.IncludeRolesInAuthenticateResponse == true)
+                    {
+                        authResponse.Roles = authResponse.Roles ?? (manageRoles != null
+                             ? manageRoles.GetRoles(session.UserAuthId)?.ToList()
+                             : session.Roles);
+                        authResponse.Permissions = authResponse.Permissions ?? (manageRoles != null
+                            ? manageRoles.GetPermissions(session.UserAuthId)?.ToList()
+                            : session.Permissions);
+                    }
+
                     var authCtx = new AuthFilterContext {
                         AuthService = this,
                         AuthProvider = authProvider,

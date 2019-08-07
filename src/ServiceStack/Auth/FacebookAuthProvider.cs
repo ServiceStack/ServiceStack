@@ -32,6 +32,14 @@ namespace ServiceStack.Auth
             this.AppSecret = appSettings.GetString("oauth.facebook.AppSecret");
             this.Permissions = appSettings.Get("oauth.facebook.Permissions", TypeConstants.EmptyStringArray);
             this.Fields = appSettings.Get("oauth.facebook.Fields", DefaultFields);
+
+            NavItem = new NavItem {
+                Href = "/auth/" + Name,
+                Label = "Sign in with Facebook",
+                Id = "btn-" + Name,
+                ClassName = "btn-social btn-facebook",
+                IconClass = "fab svg-facebook",
+            };
         }
 
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
@@ -163,5 +171,6 @@ namespace ServiceStack.Auth
             userSession.LastName = tokens.LastName ?? userSession.LastName;
             userSession.PrimaryEmail = tokens.Email ?? userSession.PrimaryEmail ?? userSession.Email;
         }
+        
     }
 }

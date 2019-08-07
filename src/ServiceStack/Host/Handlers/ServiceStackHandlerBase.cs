@@ -164,7 +164,8 @@ namespace ServiceStack.Host.Handlers
             var hasRequestBody = httpReq.ContentType != null && httpReq.ContentLength > 0;
 
             if (!hasRequestBody
-                && (httpMethod == HttpMethods.Get || httpMethod == HttpMethods.Delete || httpMethod == HttpMethods.Options))
+                && (httpMethod == HttpMethods.Get || httpMethod == HttpMethods.Delete || 
+                    httpMethod == HttpMethods.Options || httpMethod == HttpMethods.Head))
             {
                 return KeyValueDataContractDeserializer.Instance.Parse(queryString, operationType).InTask();
             }
@@ -172,6 +173,11 @@ namespace ServiceStack.Host.Handlers
             var isFormData = httpReq.HasAnyOfContentTypes(MimeTypes.FormUrlEncoded, MimeTypes.MultiPartFormData);
             if (isFormData)
             {
+                if (queryString.Count > 0)
+                {
+                    var instance = KeyValueDataContractDeserializer.Instance.Parse(queryString, operationType);
+                    return KeyValueDataContractDeserializer.Instance.Populate(instance, httpReq.FormData, operationType).InTask();
+                }
                 return KeyValueDataContractDeserializer.Instance.Parse(httpReq.FormData, operationType).InTask();
             }
 

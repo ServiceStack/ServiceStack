@@ -16,6 +16,38 @@ namespace ServiceStack
         public IConfiguration Configuration { get; }
         public NetCoreAppSettings(IConfiguration configuration) => Configuration = configuration;
 
+        static object GetValue(IConfigurationSection section)
+        {
+            if (section == null)
+                return null;
+            if (section.Value != null)
+                return section.Value;
+            
+            var children = section.GetChildren();
+            var first = children.FirstOrDefault();
+            if (first == null)
+                return null;
+            
+            if (first.Key == "0")
+            {
+                var to = children.Select(GetValue).ToList();
+                if (to.Count > 0)
+                    return to;
+            }
+            else
+            {
+                var to = new Dictionary<string, object>();
+                foreach (var child in children)
+                {
+                    to[child.Key] = GetValue(child);
+                }
+                if (to.Count > 0)
+                    return to;
+            }
+            
+            return null;
+        }
+
         private static T Bind<T>(IConfigurationSection config)
         {
             try
@@ -26,7 +58,7 @@ namespace ServiceStack
                 if (typeof(T).HasInterface(typeof(IEnumerable))
                     && !typeof(T).HasInterface(typeof(IDictionary)))
                 {
-                    var values = config.GetChildren().Map(x => x.Value);
+                    var values = config.GetChildren().Map(GetValue);
                     return values.ConvertTo<T>();
                 }
             }

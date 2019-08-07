@@ -7,16 +7,22 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    {{#if debug}}<script>{{ '/js/hot-loader.js' | includeFile }}</script>{{/if}}
     
     {{#noop}}
     {{ false | assignTo: debug }}
     {{/noop}}
     
     {{ (debug ? '' : '[hash].min') | assignTo: min }}
-    {{ ['/assets/css/'] | bundleCss({ minify:!debug, cache:!debug, disk:!debug, out:`/css/bundle${min}.css` }) }}
+
+    {{ ['!/assets/css/default.css','/assets/css/','/css/buttons.css','/css/svg-auth.css','/css/svg-icons.css']
+       | bundleCss({ disk:!debug, out:`/css/lib.bundle${min}.css` }) }}
+
+    {{ ['/assets/css/default.css']
+       | bundleCss({ minify:!debug, cache:!debug, disk:!debug, out:`/css/bundle${min}.css` }) }}
+
 </head>
 <body>
+    <i hidden>{{ '/js/hot-fileloader.js' | ifDebugIncludeScript }}</i>
 
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
@@ -29,7 +35,8 @@
                 aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
-          {{ 'menu' | partial }}
+          {{* 'menu' | partial *}}
+          {{ navbar }}
         </div>
     </nav>
 
@@ -60,26 +67,28 @@
         };
     </script>
 
-    {{#noop}}
-        <script src="/assets/js/jquery.min.js"></script>
-        <script src="/assets/js/bootstrap.min.js"></script>
-        <script src="/assets/js/default.js"></script>
-        <script src="/js/ss-utils.js"></script>
-        <script src="/lib/@servicestack/client/index.js"></script>
-        <script src="/dtos.js"></script>
-    {{/noop}}
-    
-    {{ ['content:/src/source.js',
+    {{ [
+        '!/assets/js/dtos.js',
+        '!/assets/js/default.js',
+        'content:/src/source.js',
         'content:/src/components/',
         '/assets/js/jquery.min.js',
+        '/assets/js/popper.min.js',
         '/assets/js/',
-        '/js/ss-utils.js',
         '/lib/@servicestack/client/index.js',
-        '/dtos.js',
+    ] | bundleJs({ minify:!debug, cache:!debug, disk:!debug, out:`/js/lib.bundle${min}.js` }) }}
+
+
+    {{ [
+        '/assets/js/dtos.js',
+        '/assets/js/default.js',
     ] | bundleJs({ minify:!debug, cache:!debug, disk:!debug, out:`/js/bundle${min}.js` }) }}
-    
+
+    <script src="/js/ss-utils.js"></script>
 
     {{ scripts | raw }}
+
+    <div>Copyright &copy; {{ now | dateFormat('yyyy') }}</div>
 
 </body>
 </html>

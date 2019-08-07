@@ -199,7 +199,9 @@ namespace ServiceStack.Script
             
             var accumulator = scopedParams.TryGetValue("initialValue", out object initialValue)
                 ? initialValue.ConvertTo<double>()
-                : 1;
+                : !(scopeOptions is IDictionary) 
+                    ? scopeOptions.ConvertTo<double>() 
+                    : 0;
 
             var i = 0;
             foreach (var item in items)
@@ -394,6 +396,8 @@ namespace ServiceStack.Script
 
             return null;
         }
+
+        public object last(ScriptScopeContext scope, object target) => target.AssertEnumerable(nameof(last)).LastOrDefault();
 
         public bool any(ScriptScopeContext scope, object target) => target.AssertEnumerable(nameof(any)).Any();
         public bool any(ScriptScopeContext scope, object target, object expression) => any(scope, target, expression, null);

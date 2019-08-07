@@ -82,9 +82,21 @@ namespace ServiceStack.NativeTypes.Java
             {"Stream", "InputStream"},
         }.ToConcurrentDictionary();
 
+        public static TypeFilterDelegate TypeFilter { get; set; }
+
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
         public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types;
+
+        /// <summary>
+        /// Add Code to top of generated code
+        /// </summary>
+        public static AddCodeDelegate InsertCodeFilter { get; set; }
+
+        /// <summary>
+        /// Add Code to bottom of generated code
+        /// </summary>
+        public static AddCodeDelegate AddCodeFilter { get; set; }
 
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
@@ -182,6 +194,10 @@ namespace ServiceStack.NativeTypes.Java
             defaultImports.Each(x => sb.AppendLine("import {0};".Fmt(x)));
             sb.AppendLine();
 
+            var insertCode = InsertCodeFilter?.Invoke(allTypes, Config);
+            if (insertCode != null)
+                sb.AppendLine(insertCode);
+
             sb.AppendLine("public class {0}".Fmt(defaultNamespace.SafeToken()));
             sb.AppendLine("{");
 
@@ -248,6 +264,10 @@ namespace ServiceStack.NativeTypes.Java
 
             sb.AppendLine();
             sb.AppendLine("}");
+
+            var addCode = AddCodeFilter?.Invoke(allTypes, Config);
+            if (addCode != null)
+                sb.AppendLine(addCode);
 
             return StringBuilderCache.ReturnAndFree(sbInner);
         }
@@ -579,6 +599,10 @@ namespace ServiceStack.NativeTypes.Java
 
         public string Type(string type, string[] genericArgs)
         {
+            var useType = TypeFilter?.Invoke(type, genericArgs);
+            if (useType != null)
+                return useType;
+
             if (genericArgs != null)
             {
                 if (type == "Nullable`1")

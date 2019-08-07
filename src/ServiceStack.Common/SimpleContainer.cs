@@ -113,6 +113,15 @@ namespace ServiceStack
 
     public static class ContainerExtensions
     {
+        public static T Resolve<T>(this IResolver container)
+        {
+            var ret = container.TryResolve<T>();
+            if (ret == null)
+                throw new Exception($"Error trying to resolve Service '{typeof(T).Name}' or one of its autowired dependencies.");
+                
+            return ret;
+        }
+
         public static T Resolve<T>(this IContainer container) =>
             (T)container.Resolve(typeof(T));
 

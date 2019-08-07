@@ -33,7 +33,13 @@ namespace ServiceStack.Host
             if (pos < 0)
                 return null;
 
-            return auth.Substring(0, pos).EqualsIgnoreCase("Bearer") ? auth.Substring(pos + 1) : null;
+            var ret = auth.StartsWith("Bearer", StringComparison.OrdinalIgnoreCase) 
+                ? auth.Substring(pos + 1) 
+                : null;
+            if (!string.IsNullOrEmpty(ret))
+                return ret;
+
+            return null;
         }
 
         public static string GetBasicAuth(this IRequest httpReq)

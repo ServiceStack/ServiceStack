@@ -157,7 +157,7 @@ namespace ServiceStack.Auth
         }
     }
 
-    public abstract class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IRequiresSchema, IClearable, IManageRoles, IManageApiKeys, ICustomUserAuth
+    public abstract class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IRequiresSchema, IClearable, IManageRoles, IManageApiKeys, ICustomUserAuth, IQueryUserAuth
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
@@ -321,6 +321,38 @@ namespace ServiceStack.Auth
             
             return userAuth;
         }
+
+        public List<IUserAuth> GetUserAuths(string orderBy = null, int? skip = null, int? take = null)
+        {
+            return Exec(db => {
+                var q = db.From<TUserAuth>();
+                if (orderBy != null)
+                    q.OrderBy(orderBy);
+                if (skip != null || take != null)
+                    q.Limit(skip, take);
+                return db.Select(q).ConvertAll(x => (IUserAuth)x);
+            });
+        }
+
+        public List<IUserAuth> SearchUserAuths(string query, string orderBy = null, int? skip = null, int? take = null)
+        {
+            return Exec(db => {
+                var q = db.From<TUserAuth>();
+                if (!string.IsNullOrEmpty(query))
+                {
+                    q.Where(x => x.UserName.Contains(query) ||
+                                 x.PrimaryEmail.Contains(query) ||
+                                 x.Email.Contains(query) ||
+                                 x.DisplayName.Contains(query) ||
+                                 x.Company.Contains(query));
+                }
+                if (orderBy != null)
+                    q.OrderBy(orderBy);
+                if (skip != null || take != null)
+                    q.Limit(skip, take);
+                return db.Select(q).ConvertAll(x => (IUserAuth)x);
+            });
+        }
         
         public virtual bool TryAuthenticate(string userName, string password, out IUserAuth userAuth)
         {
@@ -386,8 +418,7 @@ namespace ServiceStack.Auth
 
         private void LoadUserAuth(IAuthSession session, IUserAuth userAuth)
         {
-            session.PopulateSession(userAuth,
-                GetUserAuthDetails(session.UserAuthId).ConvertAll(x => (IAuthTokens)x));
+            session.PopulateSession(userAuth, this);
         }
 
         public virtual IUserAuth GetUserAuth(string userAuthId)
@@ -558,6 +589,42 @@ namespace ServiceStack.Auth
                 {
                     return db.Select<UserAuthRole>(q => q.UserAuthId == int.Parse(userAuthId) && q.Permission != null).ConvertAll(x => x.Permission);
                 });
+            }
+        }
+
+        public virtual void GetRolesAndPermissions(string userAuthId, out ICollection<string> roles, out ICollection<string> permissions)
+        {
+            if (!UseDistinctRoleTables)
+            {
+                var userAuth = GetUserAuth(userAuthId);
+                if (userAuth == null)
+                {
+                    roles = permissions = TypeConstants.EmptyStringArray;
+                    return;
+                }
+
+                roles = userAuth.Roles;
+                permissions = userAuth.Permissions;
+            }
+            else
+            {
+                roles = new List<string>();
+                permissions = new List<string>();
+                
+                var rolesAndPerms = Exec(db =>
+                {
+                    return db.KeyValuePairs<string,string>(db.From<UserAuthRole>()
+                        .Where(x => x.UserAuthId == int.Parse(userAuthId))
+                        .Select(x => new { x.Role, x.Permission })); 
+                });
+
+                foreach (var kvp in rolesAndPerms)
+                {
+                    if (kvp.Key != null)
+                        roles.Add(kvp.Key);
+                    if (kvp.Value != null)
+                        permissions.Add(kvp.Value);
+                }                
             }
         }
 

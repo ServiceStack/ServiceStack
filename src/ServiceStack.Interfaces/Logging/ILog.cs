@@ -33,6 +33,7 @@ namespace ServiceStack.Logging
         /// </summary>
         /// <param name="format">The format.</param>
         /// <param name="args">The args.</param>
+        [JetBrains.Annotations.StringFormatMethod("format")]
         void DebugFormat(string format, params object[] args);
 
         /// <summary>
@@ -53,6 +54,7 @@ namespace ServiceStack.Logging
         /// </summary>
         /// <param name="format">The format.</param>
         /// <param name="args">The args.</param>
+        [JetBrains.Annotations.StringFormatMethod("format")]
         void ErrorFormat(string format, params object[] args);
 
         /// <summary>
@@ -73,6 +75,7 @@ namespace ServiceStack.Logging
         /// </summary>
         /// <param name="format">The format.</param>
         /// <param name="args">The args.</param>
+        [JetBrains.Annotations.StringFormatMethod("format")]
         void FatalFormat(string format, params object[] args);
 
         /// <summary>
@@ -93,6 +96,7 @@ namespace ServiceStack.Logging
         /// </summary>
         /// <param name="format">The format.</param>
         /// <param name="args">The args.</param>
+        [JetBrains.Annotations.StringFormatMethod("format")]
         void InfoFormat(string format, params object[] args);
 
         /// <summary>
@@ -113,6 +117,7 @@ namespace ServiceStack.Logging
         /// </summary>
         /// <param name="format">The format.</param>
         /// <param name="args">The args.</param>
+        [JetBrains.Annotations.StringFormatMethod("format")]
         void WarnFormat(string format, params object[] args);
     }
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Script;
 using ServiceStack.Text;
@@ -191,5 +192,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 Is.EqualTo("<option  test=\"val\">"));
         }
 
+        [Test]
+        public void Does_htmlDump_singleRow()
+        {
+            var context = new ScriptContext {
+                Args = {
+                    ["rows"] = new List<Dictionary<string, object>> {
+                        new Dictionary<string, object> {
+                            ["Id"] = 1,
+                            ["Name"] = "foo",
+                            ["None"] = DBNull.Value,
+                        }
+                    }
+                }
+            }.Init();
+
+            var output = context.EvaluateScript("{{ rows | htmlDump }}");
+//            output.Print();
+            Assert.That(output, Does.Contain(
+                "<tr><th>Id</th><td>1</td></tr><tr><th>Name</th><td>foo</td></tr><tr><th>None</th><td></td></tr>"));
+        }
     }
 }

@@ -258,7 +258,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             Password = Password,
         };
 
-        protected virtual IJsonServiceClient GetClientWithRefreshToken(string refreshToken = null, string accessToken = null)
+        protected virtual IJsonServiceClient GetClientWithRefreshToken(string refreshToken = null, string accessToken = null, bool useTokenCookie = false)
         {
             if (refreshToken == null)
             {
@@ -268,15 +268,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             var client = GetClient();
             if (client is JsonServiceClient serviceClient)
             {
-                serviceClient.BearerToken = accessToken;
                 serviceClient.RefreshToken = refreshToken;
+                if (useTokenCookie)
+                    serviceClient.UseTokenCookie = true;
+                else
+                    serviceClient.BearerToken = accessToken;
                 return serviceClient;
             }
 
             if (client is JsonHttpClient httpClient)
             {
-                httpClient.BearerToken = accessToken;
                 httpClient.RefreshToken = refreshToken;
+                if (useTokenCookie)
+                    httpClient.UseTokenCookie = true;
+                else
+                    httpClient.BearerToken = accessToken;
                 return httpClient;
             }
 
@@ -435,6 +441,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         public void Can_Auto_reconnect_with_just_RefreshToken()
         {
             var client = GetClientWithRefreshToken();
+
+            var request = new Secured { Name = "test" };
+            var response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+        }
+
+        [Test]
+        public void Can_Auto_reconnect_with_just_RefreshToken_with_UseTokenCookie()
+        {
+            var client = GetClientWithRefreshToken(useTokenCookie:true);
 
             var request = new Secured { Name = "test" };
             var response = client.Send(request);
@@ -654,8 +673,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
             public override void Configure(Container container)
             {
-                Plugins.Add(new RequestLogsFeature());
-                
                 // just for testing, create a privateKeyXml on every instance
                 Plugins.Add(new AuthFeature(() => new AuthUserSession(),
                     new IAuthProvider[]

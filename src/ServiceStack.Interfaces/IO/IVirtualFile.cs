@@ -14,6 +14,12 @@ namespace ServiceStack.IO
         StreamReader OpenText();
         string ReadAllText();
 
+        /// <summary>
+        /// Returns ReadOnlyMemory&lt;byte&gt; for binary files or
+        /// ReadOnlyMemory&lt;char&gt; for text files   
+        /// </summary>
+        object GetContents();
+
         long Length { get; }
 
         /// <summary>

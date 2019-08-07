@@ -6,23 +6,24 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" />
-    <PackageReference Include="System.Runtime" Version="4.3.0" />
+    <PackageReference Include="System.Runtime" Version="4.3.1" />
     <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
     <PackageReference Include="System.Reflection.Emit.LightWeight" Version="4.3.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
-    <PackageReference Include="System.Memory" Version="4.5.2" />
+    <PackageReference Include="System.Memory" Version="4.5.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Authentication.MongoDb\ServiceStack.Authentication.MongoDb.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Mvc\ServiceStack.Mvc.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
-    <PackageReference Include="ServiceStack.Text" Version="5.5.1" />
+    <PackageReference Include="ServiceStack.Text" Version="5.6.0" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="wwwroot\assets\svg\app" />
     <Folder Include="wwwroot\css" />
-    <Folder Include="wwwroot\js" />
   </ItemGroup>
 </Project>

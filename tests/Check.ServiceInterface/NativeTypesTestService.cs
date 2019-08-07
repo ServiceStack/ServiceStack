@@ -67,6 +67,10 @@ namespace Check.ServiceInterface
             return request;
         }
 
+        public object Any(HelloWithEnumList request) => request;
+
+        public object Any(HelloWithEnumMap request) => request;
+
         public object Any(HelloExternal request)
         {
             return request;

@@ -40,9 +40,9 @@ namespace ServiceStack.Script
             return to;
         }
 
-        public object times(int count) => AssertWithinMaxQuota(count).Times().ToList();
-        public object range(int count) => Enumerable.Range(0, AssertWithinMaxQuota(count));
-        public object range(int start, int count) => Enumerable.Range(start, AssertWithinMaxQuota(count));
+        public List<int> times(int count) => AssertWithinMaxQuota(count).Times().ToList();
+        public IEnumerable<int> range(int count) => Enumerable.Range(0, AssertWithinMaxQuota(count));
+        public IEnumerable<int> range(int start, int count) => Enumerable.Range(start, AssertWithinMaxQuota(count));
 
         public bool isEven(int value) => value % 2 == 0;
         public bool isOdd(int value) => !isEven(value);
@@ -193,6 +193,9 @@ namespace ServiceStack.Script
         public object onlyIfAny(ScriptScopeContext scope, object target, object expression) => !any(scope, target, expression) ? StopExecution.Value : target;
         public object onlyIfAll(ScriptScopeContext scope, object target, object expression) => !all(scope, target, expression) ? StopExecution.Value : target;
         public object onlyWhere(ScriptScopeContext scope, object target, object expression) => onlyWhere(scope, target, expression, null);
+
+        public object onlyIfDebug(object returnTarget) => !Context.DebugMode ? StopExecution.Value : returnTarget;
+        public object endIfDebug(object returnTarget) => Context.DebugMode ? StopExecution.Value : returnTarget;
 
         public object onlyWhere(ScriptScopeContext scope, object target, object expression, object scopeOptions)
         {
@@ -489,6 +492,20 @@ namespace ServiceStack.Script
             return collection;
         }
 
+        /// <summary>
+        /// Puts value in dictionary at key  
+        /// </summary>
+        /// <returns>value</returns>
+        public object putItem(IDictionary dictionary, object key, object value)
+        {
+            if (dictionary == null)
+                return null;
+
+            dictionary[key] = value;
+
+            return value;
+        }
+
         private static bool TryAddToCollection(object collection, object value)
         {
             if (collection is IList l)
@@ -576,6 +593,15 @@ namespace ServiceStack.Script
             return value;
         }
 
+        // Shorter Alias for assignTo:
+        public IgnoreResult to(ScriptScopeContext scope, object value, object argExpr)
+        {
+            var varName = GetVarNameFromStringOrArrowExpression(nameof(to), argExpr);
+            
+            scope.ScopedParams[varName] = value;
+            return IgnoreResult.Value;
+        }
+        
         public IgnoreResult assignTo(ScriptScopeContext scope, object value, object argExpr)
         {
             var varName = GetVarNameFromStringOrArrowExpression(nameof(assignTo), argExpr);
@@ -591,6 +617,10 @@ namespace ServiceStack.Script
             scope.PageResult.Args[varName] = value;
             return IgnoreResult.Value;
         }
+
+        // Shorter Alias for assignTo:
+        public Task to(ScriptScopeContext scope, object argExpr) =>
+            assignToArgs(scope, nameof(to), argExpr, scope.ScopedParams);
 
         public Task assignTo(ScriptScopeContext scope, object argExpr) =>
             assignToArgs(scope, nameof(assignTo), argExpr, scope.ScopedParams);
@@ -666,8 +696,8 @@ namespace ServiceStack.Script
             await scope.WritePageAsync(page, codePage, pageParams);
         }
 
-        public Task forEach(ScriptScopeContext scope, object target, object items) => forEach(scope, target, items, null);
-        public async Task forEach(ScriptScopeContext scope, object target, object items, object scopeOptions)
+        public Task selectEach(ScriptScopeContext scope, object target, object items) => selectEach(scope, target, items, null);
+        public async Task selectEach(ScriptScopeContext scope, object target, object items, object scopeOptions)
         {
             if (items is IEnumerable objs)
             {
@@ -683,11 +713,12 @@ namespace ServiceStack.Script
             }
             else if (items != null)
             {
-                throw new ArgumentException($"{nameof(forEach)} in '{scope.Page.VirtualPath}' requires an IEnumerable, but received a '{items.GetType().Name}' instead");
+                throw new ArgumentException($"{nameof(selectEach)} in '{scope.Page.VirtualPath}' requires an IEnumerable, but received a '{items.GetType().Name}' instead");
             }
         }
 
         public string toString(object target) => target?.ToString();
+        public string asString(object target) => target.AsString();
         public List<object> toList(IEnumerable target) => target.Map(x => x);
         public List<string> toStringList(IEnumerable target) => ViewUtils.ToStringList(target);
         public object[] toArray(IEnumerable target) => target.Map(x => x).ToArray();
@@ -798,17 +829,9 @@ namespace ServiceStack.Script
             return to;
         }
         
-        public List<string> toVarNames(object names) => names is null
-            ? TypeConstants.EmptyStringList
-            : names is List<string> strList
-                ? strList
-                : names is IEnumerable<string> strEnum
-                    ? strEnum.ToList()
-                    : names is IEnumerable<object> objEnum
-                        ? objEnum.Map(x => x.AsString())
-                        : names is string strFields
-                            ? strFields.Split(',').Map(x => x.Trim())
-                            : throw new NotSupportedException($"Cannot convert '{names.GetType().Name}' to List<string>");
+        public List<string> splitStringList(IEnumerable strings) => ViewUtils.SplitStringList(strings);
+
+        public List<string> toVarNames(IEnumerable names) => ViewUtils.SplitStringList(names);
 
         public int AssertWithinMaxQuota(int value)
         {

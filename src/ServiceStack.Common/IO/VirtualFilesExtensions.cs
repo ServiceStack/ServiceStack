@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using ServiceStack.IO;
 using ServiceStack.Text;
+using ServiceStack.VirtualPath;
 
 namespace ServiceStack.IO
 {
@@ -47,6 +48,30 @@ namespace ServiceStack.IO
             }
         }
 
+        public static void WriteFile(this IVirtualPathProvider pathProvider, string filePath, ReadOnlyMemory<char> text)
+        {
+            if (!(pathProvider is AbstractVirtualPathProviderBase writableFs))
+                throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
+
+            writableFs.WriteFile(filePath, text);
+        }
+
+        public static void WriteFile(this IVirtualPathProvider pathProvider, string filePath, ReadOnlyMemory<byte> bytes)
+        {
+            if (!(pathProvider is AbstractVirtualPathProviderBase writableFs))
+                throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
+
+            writableFs.WriteFile(filePath, bytes);
+        }
+
+        public static void WriteFile(this IVirtualPathProvider pathProvider, string filePath, object contents)
+        {
+            if (!(pathProvider is IVirtualFiles writableFs))
+                throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
+
+            writableFs.WriteFile(filePath, contents);
+        }
+
         public static void AppendFile(this IVirtualPathProvider pathProvider, string filePath, string textContents)
         {
             if (!(pathProvider is IVirtualFiles writableFs))
@@ -72,6 +97,30 @@ namespace ServiceStack.IO
             {
                 writableFs.AppendFile(filePath, ms);
             }
+        }
+
+        public static void AppendFile(this IVirtualPathProvider pathProvider, string filePath, object contents)
+        {
+            if (!(pathProvider is IVirtualFiles writableFs))
+                throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
+
+            writableFs.AppendFile(filePath, contents);
+        }
+
+        public static void AppendFile(this IVirtualPathProvider pathProvider, string filePath, ReadOnlyMemory<char> text)
+        {
+            if (!(pathProvider is AbstractVirtualPathProviderBase writableFs))
+                throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
+
+            writableFs.AppendFile(filePath, text);
+        }
+
+        public static void AppendFile(this IVirtualPathProvider pathProvider, string filePath, ReadOnlyMemory<byte> bytes)
+        {
+            if (!(pathProvider is AbstractVirtualPathProviderBase writableFs))
+                throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
+
+            writableFs.AppendFile(filePath, bytes);
         }
 
         public static void WriteFile(this IVirtualPathProvider pathProvider, IVirtualFile file, string filePath = null)
@@ -130,6 +179,14 @@ namespace ServiceStack.IO
             writableFs.WriteFiles(textFiles);
         }
 
+        public static void WriteFiles(this IVirtualPathProvider pathProvider, Dictionary<string, object> files)
+        {
+            if (!(pathProvider is IVirtualFiles writableFs))
+                throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
+
+            writableFs.WriteFiles(files);
+        }
+
         public static void WriteFiles(this IVirtualPathProvider pathProvider, IEnumerable<IVirtualFile> srcFiles, Func<IVirtualFile, string> toPath = null)
         {
             if (!(pathProvider is IVirtualFiles writableFs))
@@ -156,14 +213,46 @@ namespace ServiceStack.IO
 
     public static class VirtualDirectoryExtensions
     {
+        /// <summary>
+        /// Get only files in this directory
+        /// </summary>
+        /// <param name="dir"></param>
+        /// <returns></returns>
         public static IEnumerable<IVirtualFile> GetFiles(this IVirtualDirectory dir)
         {
             return dir.Files;
         }
 
+        /// <summary>
+        /// Get only sub directories in this directory
+        /// </summary>
+        /// <param name="dir"></param>
+        /// <returns></returns>
         public static IEnumerable<IVirtualDirectory> GetDirectories(this IVirtualDirectory dir)
         {
             return dir.Directories;
         }
+        
+        /// <summary>
+        /// Get All Files in current and all sub directories
+        /// </summary>
+        /// <param name="dir"></param>
+        /// <returns></returns>
+        public static IEnumerable<IVirtualFile> GetAllFiles(this IVirtualDirectory dir)
+        {
+            foreach (var subDir in dir.GetDirectories())
+            {
+                foreach (var file in subDir.GetAllFiles())
+                {
+                    yield return file;
+                }
+            }
+
+            foreach (var file in dir.Files)
+            {
+                yield return file;
+            }
+        }
+
     }
 }

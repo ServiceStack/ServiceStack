@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -6,11 +7,34 @@ namespace ServiceStack.Auth
 {
     public interface IAuthEvents
     {
+        /// <summary>
+        /// Fired when a new Session is created
+        /// </summary>
+        /// <param name="httpReq"></param>
+        void OnCreated(IRequest httpReq, IAuthSession session);
+
+        /// <summary>
+        /// Called when the user is registered or on the first OAuth login 
+        /// </summary>
         void OnRegistered(IRequest httpReq, IAuthSession session, IServiceBase registrationService);
+
+        /// <summary>
+        /// Override with Custom Validation logic to Assert if User is allowed to Authenticate. 
+        /// Returning a non-null response invalidates Authentication with IHttpResult response returned to client.
+        /// </summary>
+        IHttpResult Validate(IServiceBase authService, IAuthSession session, IAuthTokens tokens,
+            Dictionary<string, string> authInfo);
+        
+        /// <summary>
+        /// Called after the user has successfully authenticated 
+        /// </summary>
         void OnAuthenticated(IRequest httpReq, IAuthSession session, IServiceBase authService, 
             IAuthTokens tokens, Dictionary<string, string> authInfo);
+        
+        /// <summary>
+        /// Fired before the session is removed after the /auth/logout Service is called
+        /// </summary>
         void OnLogout(IRequest httpReq, IAuthSession session, IServiceBase authService);
-        void OnCreated(IRequest httpReq, IAuthSession session);
     }
 
     /// <summary>
@@ -18,6 +42,9 @@ namespace ServiceStack.Auth
     /// </summary>
     public class AuthEvents : IAuthEvents
     {
+        public virtual IHttpResult Validate(IServiceBase authService, IAuthSession session, IAuthTokens tokens,
+            Dictionary<string, string> authInfo) => null;
+
         public virtual void OnRegistered(IRequest httpReq, IAuthSession session, IServiceBase registrationService) {}
         public virtual void OnAuthenticated(IRequest httpReq, IAuthSession session, IServiceBase authService, 
                                             IAuthTokens tokens, Dictionary<string, string> authInfo) {}
@@ -33,6 +60,17 @@ namespace ServiceStack.Auth
         }
 
         public List<IAuthEvents> ChildEvents { get; private set; }
+
+        public IHttpResult Validate(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
+        {
+            foreach (var authEvent in ChildEvents)
+            {
+                var ret = authEvent.Validate(authService, session, tokens, authInfo);
+                if (ret != null)
+                    return ret;
+            }
+            return null;
+        }
 
         public void OnRegistered(IRequest httpReq, IAuthSession session, IServiceBase registrationService)
         {

@@ -28,6 +28,14 @@ namespace ServiceStack.Auth
             ApplicationId = appSettings.GetString("oauth.Yandex.AppId");
             ApplicationPassword = appSettings.GetString("oauth.Yandex.AppPassword");
             AccessTokenUrl = TokenUrl;
+
+            NavItem = new NavItem {
+                Href = "/auth/" + Name,
+                Label = "Sign in with Yandex",
+                Id = "btn-" + Name,
+                ClassName = "btn-social btn-yandex",
+                IconClass = "fab svg-yandex",
+            };
         }
 
         public string ApplicationId { get; set; }

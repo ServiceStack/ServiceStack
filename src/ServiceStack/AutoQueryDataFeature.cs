@@ -83,6 +83,7 @@ namespace ServiceStack
         public bool EnableAutoQueryViewer { get; set; }
         public bool OrderByPrimaryKeyOnPagedQuery { get; set; }
         public Type AutoQueryServiceBaseType { get; set; }
+        public QueryDataFilterDelegate GlobalQueryFilter { get; set; }
         public Dictionary<Type, QueryDataFilterDelegate> QueryFilters { get; set; }
         public List<Action<QueryDataFilterContext>> ResponseFilters { get; set; }
         public Action<TypeBuilder, MethodBuilder, Type> GenerateServiceFilter { get; set; }
@@ -221,6 +222,7 @@ namespace ServiceStack
                     IncludeTotal = IncludeTotal,
                     EnableUntypedQueries = EnableUntypedQueries,
                     OrderByPrimaryKeyOnLimitQuery = OrderByPrimaryKeyOnPagedQuery,
+                    GlobalQueryFilter = GlobalQueryFilter,
                     QueryFilters = QueryFilters,
                     ResponseFilters = ResponseFilters,
                     StartsWithConventions = StartsWithConventions,
@@ -674,6 +676,7 @@ namespace ServiceStack
         public Dictionary<string, QueryDataField> EndsWithConventions { get; set; }
 
         public virtual IQueryDataSource Db { get; set; }
+        public QueryDataFilterDelegate GlobalQueryFilter { get; set; }
         public Dictionary<Type, QueryDataFilterDelegate> QueryFilters { get; set; }
         public List<Action<QueryDataFilterContext>> ResponseFilters { get; set; }
 
@@ -724,6 +727,8 @@ namespace ServiceStack
 
         public DataQuery<From> Filter<From>(IDataQuery q, IQueryData dto, IRequest req)
         {
+            GlobalQueryFilter?.Invoke(q, dto, req);
+
             if (QueryFilters == null)
                 return (DataQuery<From>)q;
 
@@ -743,6 +748,8 @@ namespace ServiceStack
 
         public IDataQuery Filter(IDataQuery q, IQueryData dto, IRequest req)
         {
+            GlobalQueryFilter?.Invoke(q, dto, req);
+
             if (QueryFilters == null)
                 return q;
 

@@ -226,18 +226,23 @@ Monthly Savings: <b>$2,500.00</b>".NormalizeNewLines()));
             AssertProduct(results[1], product2);
         }
 
-        [Test]
-        public void Can_use_GetTableNames_with_textDump()
+        private static ScriptContext CreateDbContext()
         {
-            var context = new ScriptContext
-            {
-                ScriptMethods = { new DbScriptsAsync() },
+            var context = new ScriptContext {
+                ScriptMethods = {new DbScriptsAsync()},
             };
-            
+
             var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteOrmLiteDialectProvider.Instance);
             context.Container.AddSingleton<IDbConnectionFactory>(() => dbFactory);
             context.Init();
-            
+            return context;
+        }
+
+        [Test]
+        public void Can_use_GetTableNames_with_textDump()
+        {
+            var context = CreateDbContext();
+
             using (var db = context.Container.Resolve<IDbConnectionFactory>().Open())
             {
                 db.DropAndCreateTable<Customer>();
@@ -252,6 +257,15 @@ Monthly Savings: <b>$2,500.00</b>".NormalizeNewLines()));
             
             output = context.EvaluateScript("{{ dbTableNamesWithRowCounts | textDump({ caption:'Tables' }) }}");
             Assert.That(output.NormalizeNewLines(), Is.EqualTo("| Tables      ||\n|----------|---|\n| Product  | 3 |\n| Customer | 1 |"));
+        }
+
+        [Test]
+        public void Can_catch_dbSelect_exceptions()
+        {
+            var context = CreateDbContext();
+
+            var output = context.EvaluateScript("{{ `SELECT * FROM Unknown` | dbSelect(null, { ifErrorReturn: 'No Table' }) }}");
+            Assert.That(output, Is.EqualTo("No Table"));
         }
 
     }

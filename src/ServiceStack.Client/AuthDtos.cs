@@ -33,8 +33,9 @@ namespace ServiceStack
 
         [DataMember(Order = 17)] public string AccessToken { get; set; }
         [DataMember(Order = 18)] public string AccessTokenSecret { get; set; }
+        [DataMember(Order = 19)] public string scope { get; set; }
 
-        [DataMember(Order = 19)] public Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 20)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]
@@ -52,9 +53,12 @@ namespace ServiceStack
         [DataMember(Order = 5)] public string ReferrerUrl { get; set; }
         [DataMember(Order = 6)] public string BearerToken { get; set; }
         [DataMember(Order = 7)] public string RefreshToken { get; set; }
+        [DataMember(Order = 8)] public string ProfileUrl { get; set; }
+        [DataMember(Order = 9)] public List<string> Roles { get; set; } 
+        [DataMember(Order = 10)] public List<string> Permissions { get; set; } 
 
-        [DataMember(Order = 8)] public ResponseStatus ResponseStatus { get; set; }
-        [DataMember(Order = 9)] public Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 11)] public ResponseStatus ResponseStatus { get; set; }
+        [DataMember(Order = 12)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]
@@ -294,7 +298,8 @@ namespace ServiceStack
     {
         [DataMember(Order = 1)]
         public string RefreshToken { get; set; }
-        [DataMember(Order = 2)] public Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 2)] public bool? UseTokenCookie { get; set; }
+        [DataMember(Order = 3)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]
@@ -304,7 +309,27 @@ namespace ServiceStack
         public string AccessToken { get; set; }
 
         [DataMember(Order = 2)] public Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 3)] public ResponseStatus ResponseStatus { get; set; }
+    }
+    
+    [ExcludeMetadata]
+    [Route("/metadata/nav")]
+    [DataContract]
+    public class GetNavItems : IReturn<GetNavItemsResponse> {}
+
+    [DataContract]
+    public class GetNavItemsResponse : IMeta
+    {
+        [DataMember(Order = 1)]
+        public string BaseUrl { get; set; }
+        [DataMember(Order = 2)]
+        public List<NavItem> Results { get; set; }
         [DataMember(Order = 3)]
+        public Dictionary<string, List<NavItem>> NavItemsMap { get; set; }
+        [DataMember(Order = 4)]
+        public Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 5)]
         public ResponseStatus ResponseStatus { get; set; }
     }
+
 }

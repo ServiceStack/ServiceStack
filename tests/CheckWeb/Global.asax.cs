@@ -76,10 +76,10 @@ namespace CheckWeb
             container.Register<IServiceClient>(c =>
                 new JsonServiceClient("http://localhost:55799/"));
 
-            Plugins.Add(new TemplatePagesFeature
+            Plugins.Add(new SharpPagesFeature
             {
                 MetadataDebugAdminRole = RoleNames.AllowAnyUser, 
-                TemplatesAdminRole = RoleNames.AllowAnon,
+                ScriptAdminRole = RoleNames.AllowAnon,
             });
 
             //ProxyFetureTests
@@ -162,7 +162,7 @@ namespace CheckWeb
 
             dbFactory.RegisterConnection("pgsql",
                 new OrmLiteConnectionFactory(
-                    Environment.GetEnvironmentVariable("MSSQL_CONNECTION") ?? 
+                    Environment.GetEnvironmentVariable("PGSQL_CONNECTION") ?? 
                     "Server=localhost;Port=5432;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200",
                     PostgreSqlDialect.Provider));
 

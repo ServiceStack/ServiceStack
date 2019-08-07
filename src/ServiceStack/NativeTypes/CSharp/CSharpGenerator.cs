@@ -40,9 +40,21 @@ namespace ServiceStack.NativeTypes.CSharp
             { "Decimal", "decimal" },    
         };
 
+        public static TypeFilterDelegate TypeFilter { get; set; }
+
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
         public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types;
+
+        /// <summary>
+        /// Add Code to top of generated code
+        /// </summary>
+        public static AddCodeDelegate InsertCodeFilter { get; set; }
+
+        /// <summary>
+        /// Add Code to bottom of generated code
+        /// </summary>
+        public static AddCodeDelegate AddCodeFilter { get; set; }
 
         public string GetCode(MetadataTypes metadata, IRequest request)
         {
@@ -136,8 +148,13 @@ namespace ServiceStack.NativeTypes.CSharp
 
             var orderedTypes = allTypes
                 .OrderBy(x => x.Namespace)
-                .ThenBy(x => x.Name);
+                .ThenBy(x => x.Name)
+                .ToList();
 
+            var insertCode = InsertCodeFilter?.Invoke(orderedTypes, Config);
+            if (insertCode != null)
+                sb.AppendLine(insertCode);
+            
             foreach (var type in orderedTypes)
             {
                 var fullTypeName = type.GetFullName();
@@ -194,6 +211,10 @@ namespace ServiceStack.NativeTypes.CSharp
                     existingTypes.Add(fullTypeName);
                 }
             }
+
+            var addCode = AddCodeFilter?.Invoke(orderedTypes, Config);
+            if (addCode != null)
+                sb.AppendLine(addCode);
 
             if (lastNS != null)
                 sb.AppendLine("}");
@@ -464,6 +485,10 @@ namespace ServiceStack.NativeTypes.CSharp
 
         public string Type(string type, string[] genericArgs, bool includeNested=false)
         {
+            var useType = TypeFilter?.Invoke(type, genericArgs);
+            if (useType != null)
+                return useType;
+
             if (genericArgs != null)
             {
                 if (type == "Nullable`1")

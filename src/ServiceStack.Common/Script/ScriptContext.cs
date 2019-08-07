@@ -37,6 +37,8 @@ namespace ServiceStack.Script
         public IContainer Container { get; set; } = new SimpleContainer();
         
         public IAppSettings AppSettings { get; set; } = new SimpleAppSettings();
+        
+        public List<Func<string,string>> Preprocessors { get; } = new List<Func<string, string>>();
 
         public List<ScriptMethods> ScriptMethods { get; } = new List<ScriptMethods>();
 
@@ -267,6 +269,7 @@ namespace ServiceStack.Script
         {
             Pages = new SharpPages(this);
             PageFormats.Add(new HtmlPageFormat());
+            Preprocessors.Add(ScriptPreprocessors.TransformCodeBlocks);
             ScriptMethods.Add(new DefaultScripts());
             ScriptMethods.Add(new HtmlScripts());
             Plugins.Add(new DefaultScriptBlocks());
@@ -318,13 +321,29 @@ namespace ServiceStack.Script
                 return this;
             HasInit = true;
 
-            if (ScriptMethods.Count > 0)
+            if (InsertScriptMethods.Count > 0)
                 ScriptMethods.InsertRange(0, InsertScriptMethods);
-            if (ScriptBlocks.Count > 0)
+            if (InsertScriptBlocks.Count > 0)
                 ScriptBlocks.InsertRange(0, InsertScriptBlocks);
-            if (Plugins.Count > 0)
+            if (InsertPlugins.Count > 0)
                 Plugins.InsertRange(0, InsertPlugins);
-
+            
+            foreach (var assembly in ScanAssemblies.Safe())
+            {
+                foreach (var type in assembly.GetTypes())
+                {
+                    if (typeof(IScriptPlugin).IsAssignableFrom(type))
+                    {
+                        if (Plugins.All(x => x.GetType() != type))
+                        {
+                            Container.AddSingleton(type);
+                            var plugin = (IScriptPlugin)Container.Resolve(type);
+                            Plugins.Add(plugin);
+                        }
+                    }
+                }
+            }
+            
             Args[ScriptConstants.Debug] = DebugMode;
             
             Container.AddSingleton(() => this);
@@ -402,8 +421,8 @@ namespace ServiceStack.Script
                     if (ScriptMethods.All(x => x?.GetType() != type))
                     {
                         Container.AddSingleton(type);
-                        var filter = (ScriptMethods)Container.Resolve(type);
-                        ScriptMethods.Add(filter);
+                        var method = (ScriptMethods)Container.Resolve(type);
+                        ScriptMethods.Add(method);
                     }
                 }
                 else if (typeof(ScriptBlock).IsAssignableFrom(type))
@@ -569,5 +588,18 @@ namespace ServiceStack.Script
                 throw new NotSupportedException(ErrorNoReturn);
             return pageResult.ReturnValue.Result;
         }
+        
+        public static ScriptScopeContext CreateScope(this ScriptContext context, Dictionary<string, object> args = null, 
+            ScriptMethods functions = null, ScriptBlock blocks = null)
+        {
+            var pageContext = new PageResult(context.EmptyPage);
+            if (functions != null)
+                pageContext.ScriptMethods.Insert(0, functions);
+            if (blocks != null)
+                pageContext.ScriptBlocks.Insert(0, blocks);
+
+            return new ScriptScopeContext(pageContext, null, args);
+        }
+        
     }
 }

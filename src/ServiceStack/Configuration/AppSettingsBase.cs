@@ -193,5 +193,18 @@ namespace ServiceStack.Configuration
             var value = settings.GetString(name);
             return value;
         }
+
+        public static string GetConnectionString(this IAppSettings appSettings, string name)
+        {
+#if NETSTANDARD2_0
+            return appSettings is NetCoreAppSettings config
+                ? config.GetConnectionString(name)
+                : appSettings.GetString("ConnectionStrings:" + name);
+#else
+            return System.Configuration.ConfigurationManager.ConnectionStrings[name]?.ConnectionString;
+#endif
+        }
+
+        
     }
 }

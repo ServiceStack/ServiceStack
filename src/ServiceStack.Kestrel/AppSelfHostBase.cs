@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Host.NetCore;
 using ServiceStack.IO;
@@ -19,8 +20,10 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public abstract class AppSelfHostBase : ServiceStackHost
+    public abstract class AppSelfHostBase : ServiceStackHost, IConfigureServices, IRequireConfiguration
     {
+        public IConfiguration Configuration { get; set; }
+        
         protected AppSelfHostBase(string serviceName, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices) 
         {
@@ -212,7 +215,7 @@ namespace ServiceStack
         /// <summary>
         /// Override to Configure .NET Core dependencies
         /// </summary>
-        public virtual void ConfigureServices(IServiceCollection services) {}
+        public virtual void Configure(IServiceCollection services) {}
 
         /// <summary>
         /// Override to Confgiure .NET Core App
@@ -223,8 +226,14 @@ namespace ServiceStack
 
         protected class Startup
         {
-            public void ConfigureServices(IServiceCollection services) =>
-                HostInstance.ConfigureServices(services);
+            public IConfiguration Configuration { get; }
+            public Startup(IConfiguration configuration) => Configuration = configuration;
+
+            public void ConfigureServices(IServiceCollection services)
+            {
+                HostInstance.Configuration = Configuration;
+                HostInstance.Configure(services);
+            }
 
             public virtual void Configure(IApplicationBuilder app, IHostingEnvironment env)
             {

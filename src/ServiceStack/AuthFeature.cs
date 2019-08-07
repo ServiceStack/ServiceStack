@@ -18,15 +18,23 @@ namespace ServiceStack
 
         public Func<string, bool> IsValidUsernameFn { get; set; }
 
+        /// <summary>
+        /// Fired before any [Authenticate] or [Required*] Auth Attribute is validated.
+        /// Return non-null IHttpResult to write to response and short-circuit request.
+        /// </summary>
+        public Func<IRequest, IHttpResult> OnAuthenticateValidate { get; set; }
+
         private readonly Func<IAuthSession> sessionFactory;
         private IAuthProvider[] authProviders;
         public IAuthProvider[] AuthProviders => authProviders;
 
         public Dictionary<Type, string[]> ServiceRoutes { get; set; }
 
-        public List<IPlugin> RegisterPlugins { get; set; }
+        public List<IPlugin> RegisterPlugins { get; set; } = new List<IPlugin> {
+            new SessionFeature()
+        };
 
-        public List<IAuthEvents> AuthEvents { get; set; }
+        public List<IAuthEvents> AuthEvents { get; set; } = new List<IAuthEvents>();
 
         /// <summary>
         /// Login path to redirect to
@@ -41,7 +49,7 @@ namespace ServiceStack
         /// <summary>
         /// What queryString param to capture redirect param on
         /// </summary>
-        public string HtmlRedirectReturnParam { get; set; }
+        public string HtmlRedirectReturnParam { get; set; } = LocalizedStrings.Redirect;
 
         /// <summary>
         /// Whether to only capture return path or absolute URL (default)
@@ -50,15 +58,15 @@ namespace ServiceStack
 
         public string HtmlLogoutRedirect { get; set; }
 
-        public bool IncludeAuthMetadataProvider { get; set; }
+        public bool IncludeAuthMetadataProvider { get; set; } = true;
 
-        public bool ValidateUniqueEmails { get; set; }
+        public bool ValidateUniqueEmails { get; set; } = true;
 
         public bool ValidateUniqueUserNames { get; set; }
 
-        public bool DeleteSessionCookiesOnLogout { get; set; }
+        public bool DeleteSessionCookiesOnLogout { get; set; } = true;
 
-        public bool GenerateNewSessionCookiesOnAuthentication { get; set; }
+        public bool GenerateNewSessionCookiesOnAuthentication { get; set; } = true;
         
         /// <summary>
         /// Whether to Create Digest Auth MD5 Hash when Creating/Updating Users.
@@ -76,6 +84,8 @@ namespace ServiceStack
         public TimeSpan? PermanentSessionExpiry { get; set; }
 
         public int? MaxLoginAttempts { get; set; }
+
+        public bool IncludeRolesInAuthenticateResponse { get; set; } = true;
 
         /// <summary>
         /// Allow or deny all GET Authenticate Requests
@@ -126,12 +136,25 @@ namespace ServiceStack
             }
         }
 
+        string Localize(string s) => HostContext.AppHost?.ResolveLocalizedString(s, null) ?? s;
+
+        /// <summary>
+        /// Remove /authenticate and /authenticate/{provider} routes
+        /// </summary>
+        /// <returns></returns>
+        public AuthFeature RemoveAuthenticateAliasRoutes()
+        {
+            ServiceRoutes[typeof(AuthenticateService)] = new[] {
+                "/" + Localize(LocalizedStrings.Auth),
+                "/" + Localize(LocalizedStrings.Auth) + "/{provider}",
+            };
+            return this;
+        }
+        
         public AuthFeature(Func<IAuthSession> sessionFactory, IAuthProvider[] authProviders, string htmlRedirect = null)
         {
             this.sessionFactory = sessionFactory;
             this.authProviders = authProviders;
-
-            string Localize(string s) => HostContext.AppHost?.ResolveLocalizedString(s, null) ?? s;
 
             ServiceRoutes = new Dictionary<Type, string[]> {
                 { typeof(AuthenticateService), new[]
@@ -145,18 +168,7 @@ namespace ServiceStack
                 { typeof(UnAssignRolesService), new[]{ "/" + Localize(LocalizedStrings.UnassignRoles) } },
             };
 
-            RegisterPlugins = new List<IPlugin> {
-                new SessionFeature()
-            };
-
-            AuthEvents = new List<IAuthEvents>();
-
             this.HtmlRedirect = htmlRedirect ?? "~/" + Localize(LocalizedStrings.Login);
-            this.HtmlRedirectReturnParam = LocalizedStrings.Redirect;
-            this.IncludeAuthMetadataProvider = true;
-            this.ValidateUniqueEmails = true;
-            this.DeleteSessionCookiesOnLogout = true;
-            this.GenerateNewSessionCookiesOnAuthentication = true;
             this.CreateDigestAuthHashes = authProviders.Any(x => x is DigestAuthProvider);
         }
 
@@ -213,6 +225,12 @@ namespace ServiceStack
             AuthenticateService.HtmlRedirectReturnParam = HtmlRedirectReturnParam;
             AuthenticateService.HtmlRedirectReturnPathOnly = HtmlRedirectReturnPathOnly;            
             AuthenticateService.AuthResponseDecorator = AuthResponseDecorator;
+
+            var authNavItems = AuthProviders.Select(x => (x as AuthProvider)?.NavItem).Where(x => x != null);
+            if (!ViewUtils.NavItemsMap.TryGetValue("auth", out var navItems))
+                ViewUtils.NavItemsMap["auth"] = navItems = new List<NavItem>();
+
+            navItems.AddRange(authNavItems);
         }
 
         public void AfterPluginsLoaded(IAppHost appHost)

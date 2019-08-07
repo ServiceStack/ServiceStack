@@ -18,7 +18,8 @@ namespace ServiceStack.Script
 
         public const string Debug = "debug";
         public const string AssignError = "assignError";
-        public const string CatchError = "catchError"; //assigns error and continues
+        public const string CatchError = "catchError";     //assigns error and continues
+        public const string IfErrorReturn = "ifErrorReturn"; //returns error and continues
         public const string HtmlEncode = "htmlencode";
         public const string Model = "model";
         public const string Page = "page";
@@ -32,6 +33,7 @@ namespace ServiceStack.Script
         public const string PathArgs = "PathArgs";
         public const string AssetsBase = "assetsBase";
         public const string Format = "format";
+        public const string BaseUrl = "BaseUrl";
 
         public static IRawString EmptyRawString { get; } = new RawString("");
         public static IRawString TrueRawString { get; } = new RawString("true");

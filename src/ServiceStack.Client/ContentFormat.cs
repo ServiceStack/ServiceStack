@@ -77,91 +77,12 @@ namespace ServiceStack
                 : realContentType;
         }
 
-        //lowercases and trims left part of content-type prior ';'
-        public static string GetRealContentType(string contentType)
-        {
-            if (contentType == null)
-                return null;
+        public static string GetRealContentType(string contentType) => MimeTypes.GetRealContentType(contentType);
 
-            int start = -1, end = -1;
+        public static bool MatchesContentType(this string contentType, string matchesContentType) =>
+            MimeTypes.MatchesContentType(contentType, matchesContentType);
 
-            for(int i=0; i < contentType.Length; i++)
-            {
-                if (!char.IsWhiteSpace(contentType[i]))
-                {
-                    if (contentType[i] == ';')
-                        break;
-                    if (start == -1)
-                    {
-                        start = i;
-                    }
-                    end = i;
-                }
-            }
-
-            return start != -1 
-                    ? contentType.Substring(start, end - start + 1).ToLowerInvariant()
-                    :  null;
-        }
-
-        //Compares two string from start to ';' char, case-insensitive,
-        //ignoring (trimming) spaces at start and end
-        public static bool MatchesContentType(this string contentType, string matchesContentType)
-        {
-            if (contentType == null || matchesContentType == null)
-                return false;
-            
-            int start = -1, matchStart = -1, matchEnd = -1;
-
-            for (var i=0; i < contentType.Length; i++)
-            {
-                if (char.IsWhiteSpace(contentType[i])) 
-                    continue;
-                start = i;
-                break;
-            }
-
-            for (var i=0; i < matchesContentType.Length; i++)
-            {
-                if (char.IsWhiteSpace(matchesContentType[i])) 
-                    continue;
-                if (matchesContentType[i] == ';')
-                    break;
-                if (matchStart == -1)
-                    matchStart = i;
-                matchEnd = i;
-            }
-            
-            return start != -1 && matchStart != -1 && matchEnd != -1
-                  && string.Compare(contentType, start,
-                        matchesContentType, matchStart, matchEnd - matchStart + 1,
-                        StringComparison.OrdinalIgnoreCase) == 0;
-        }
-
-        public static bool IsBinary(this string contentType)
-        {
-            var realContentType = GetRealContentType(contentType);
-            switch (realContentType)
-            {
-                case MimeTypes.ProtoBuf:
-                case MimeTypes.MsgPack:
-                case MimeTypes.Binary:
-                case MimeTypes.Bson:
-                case MimeTypes.Wire:
-                    return true;
-            }
-
-            var primaryType = realContentType.LeftPart('/');
-            switch (primaryType)
-            {
-                case "image":
-                case "audio":
-                case "video":
-                    return true;
-            }
-
-            return false;
-        }
+        public static bool IsBinary(this string contentType) => MimeTypes.IsBinary(contentType);
 
         public static Feature ToFeature(this string contentType)
         {
