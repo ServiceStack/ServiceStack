@@ -24,6 +24,11 @@ namespace ServiceStack
         /// </summary>
         public Func<IRequest, IHttpResult> OnAuthenticateValidate { get; set; }
 
+        /// <summary>
+        /// Custom Validation Function in AuthenticateService 
+        /// </summary>
+        public ValidateFn ValidateFn { get; set; }
+
         private readonly Func<IAuthSession> sessionFactory;
         private IAuthProvider[] authProviders;
         public IAuthProvider[] AuthProviders => authProviders;
@@ -225,6 +230,8 @@ namespace ServiceStack
             AuthenticateService.HtmlRedirectReturnParam = HtmlRedirectReturnParam;
             AuthenticateService.HtmlRedirectReturnPathOnly = HtmlRedirectReturnPathOnly;            
             AuthenticateService.AuthResponseDecorator = AuthResponseDecorator;
+            if (ValidateFn != null)
+                AuthenticateService.ValidateFn = ValidateFn;
 
             var authNavItems = AuthProviders.Select(x => (x as AuthProvider)?.NavItem).Where(x => x != null);
             if (!ViewUtils.NavItemsMap.TryGetValue("auth", out var navItems))
