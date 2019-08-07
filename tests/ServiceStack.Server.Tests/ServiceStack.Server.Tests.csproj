@@ -36,10 +36,10 @@
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.RabbitMq\ServiceStack.RabbitMq.csproj" />
     <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.Redis" Version="5.6.0" />
-    <PackageReference Include="ServiceStack.OrmLite.Sqlite" Version="5.6.0" />
-    <PackageReference Include="ServiceStack.OrmLite.SqlServer" Version="5.6.0" />
-    <PackageReference Include="ServiceStack.Aws" Version="5.6.0" />
+    <PackageReference Include="ServiceStack.Redis" Version="5.6.1" />
+    <PackageReference Include="ServiceStack.OrmLite.Sqlite" Version="5.6.1" />
+    <PackageReference Include="ServiceStack.OrmLite.SqlServer" Version="5.6.1" />
+    <PackageReference Include="ServiceStack.Aws" Version="5.6.1" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
     <Reference Include="System.Xml" />
