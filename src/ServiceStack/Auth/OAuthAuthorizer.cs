@@ -202,10 +202,8 @@ namespace ServiceStack.Auth
         }
 
         // Invoked after the user has authorized us
-        //
-        // TODO: this should return the stream error for invalid passwords instead of
-        // just true/false.
-        public bool AcquireAccessToken()
+        // TODO: this should return the stream error for invalid passwords instead of just true/false.
+        public bool AcquireAccessToken(string requestTokenSecret, string authorizationToken, string authorizationVerifier)
         {
             var headers = new Dictionary<string, string>() {
                 { "oauth_consumer_key", provider.ConsumerKey },
@@ -216,8 +214,8 @@ namespace ServiceStack.Auth
             var content = "";
             if (xAuthUsername == null)
             {
-                headers.Add("oauth_token", OAuthUtils.PercentEncode(AuthorizationToken));
-                headers.Add("oauth_verifier", OAuthUtils.PercentEncode(AuthorizationVerifier));
+                headers.Add("oauth_token", OAuthUtils.PercentEncode(authorizationToken));
+                headers.Add("oauth_verifier", OAuthUtils.PercentEncode(authorizationVerifier));
             }
             else
             {
@@ -228,7 +226,7 @@ namespace ServiceStack.Auth
             }
 
             string signature = MakeSignature("POST", provider.AccessTokenUrl, headers);
-            string compositeSigningKey = MakeSigningKey(provider.ConsumerSecret, RequestTokenSecret);
+            string compositeSigningKey = MakeSigningKey(provider.ConsumerSecret, requestTokenSecret);
             string oauth_signature = MakeOAuthSignature(compositeSigningKey, signature);
 
             headers.Add("oauth_signature", OAuthUtils.PercentEncode(oauth_signature));
@@ -257,16 +255,15 @@ namespace ServiceStack.Auth
                     return true;
                 }
             }
-            catch (WebException e)
+            catch (WebException ex)
             {
-                var x = e.Response.ResponseStream();
-                Console.WriteLine(x.ReadToEnd());
-                Console.WriteLine(e);
+                var x = ex.Response.ResponseStream();
+                log.Error(x.ReadToEnd(), ex);
                 // fallthrough for errors
             }
             return false;
         }
-
+        
         public static string AuthorizeRequest(OAuthProvider provider, string oauthToken, string oauthTokenSecret,
             string method, Uri uri, string data)
         {
