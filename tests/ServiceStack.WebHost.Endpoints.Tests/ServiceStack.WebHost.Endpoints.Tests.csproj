@@ -30,6 +30,7 @@
     <ProjectReference Include="..\..\src\ServiceStack.Api.Swagger\ServiceStack.Api.Swagger.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.csproj" />
     <ProjectReference Include="..\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj" />
+    
     <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
     <PackageReference Include="ServiceStack.Redis" Version="$(Version)" />
     <PackageReference Include="ServiceStack.OrmLite" Version="$(Version)" />
