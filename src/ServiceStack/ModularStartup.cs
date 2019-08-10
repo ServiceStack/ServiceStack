@@ -64,6 +64,7 @@ namespace ServiceStack
     /// </summary>
     public abstract class ModularStartup : IStartup
     {
+        public static ModularStartup Instance { get; protected set;  } 
         /// <summary>
         /// Which Startup Types not to load 
         /// </summary>
@@ -74,12 +75,15 @@ namespace ServiceStack
         public IConfiguration Configuration { get; }
         
         public Func<IEnumerable<Type>> TypeResolver { get; }
+        
+        public List<object> LoadedConfigurations { get; set; } = new List<object>();
 
         /// <summary>
         /// Scan Types in Assemblies for Startup configuration classes
         /// </summary>
         protected ModularStartup(IConfiguration configuration, params Assembly[] assemblies)
         {
+            Instance = this;
             Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             ScanAssemblies = new List<Assembly>(assemblies) { GetType().Assembly };
             TypeResolver = () => ScanAssemblies.Distinct().SelectMany(x => x.GetTypes());
@@ -154,9 +158,15 @@ namespace ServiceStack
             void RunConfigure(object instance)
             {
                 if (instance is IConfigureServices config)
+                {
                     config.Configure(services);
+                    LoadedConfigurations.Add(instance);
+                }
                 else if (instance is IStartup startup)
+                {
                     startup.ConfigureServices(services);
+                    LoadedConfigurations.Add(instance);
+                }
             }
             
             var startupConfigs = GetPriorityInstances();
@@ -182,9 +192,15 @@ namespace ServiceStack
             void RunConfigure(object instance)
             {
                 if (instance is IConfigureApp config)
+                {
                     config.Configure(app);
+                    LoadedConfigurations.Add(instance);
+                }
                 else if (instance is IStartup startup)
+                {
                     startup.Configure(app);
+                    LoadedConfigurations.Add(instance);
+                }
             }
             
             var startupConfigs = GetPriorityInstances();
