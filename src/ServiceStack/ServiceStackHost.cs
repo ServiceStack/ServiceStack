@@ -567,7 +567,9 @@ namespace ServiceStack
              ?? VirtualFileSources
              ?? new FileSystemVirtualFiles(GetWebRootPath())).RootDirectory;
 
-        public IVirtualDirectory ContentRootDirectory => VirtualFiles.RootDirectory;
+        public IVirtualDirectory ContentRootDirectory => 
+            VirtualFiles?.RootDirectory
+            ?? new FileSystemVirtualFiles(MapProjectPath("~/")).RootDirectory;
         
         public List<IVirtualPathProvider> InsertVirtualFileSources { get; set; }
         
