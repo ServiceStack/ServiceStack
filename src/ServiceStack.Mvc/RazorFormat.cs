@@ -918,6 +918,11 @@ namespace ServiceStack.Mvc
         internal static HtmlString RedirectTo(this IRequest req, string path) => WaitStopAsync(() => 
             req.RedirectToAsync(path));
 
+        public static bool HasRole(this IHtmlHelper html, string role) => 
+            html.GetRequest().GetSession().HasRole(role, html.GetRequest().TryResolve<IAuthRepository>());
+        public static bool HasPermission(this IHtmlHelper html, string permission) => 
+            html.GetRequest().GetSession().HasPermission(permission, html.GetRequest().TryResolve<IAuthRepository>());
+
         public static HtmlString AssertRole(this IHtmlHelper html, string role, string message = null, string redirect = null) =>
             WaitStopAsync(() => html.GetRequest().AssertRoleAsync(role:role, message:message, redirect:redirect));
         internal static HtmlString AssertRole(this IRequest req, string role, string message = null, string redirect = null) =>
