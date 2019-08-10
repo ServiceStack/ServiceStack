@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using ServiceStack.Web;
@@ -152,10 +153,10 @@ namespace ServiceStack.Html
         public static HtmlString Nav(this HtmlHelper html, List<NavItem> navItems, NavOptions options) =>
             ViewUtils.Nav(navItems, options.ForNav().WithDefaults(html.GetRequest())).ToHtmlString();
 
-        public static HtmlString NavBar(this HtmlHelper html) => html.NavBar(ViewUtils.NavItems, null);
-        public static HtmlString NavBar(this HtmlHelper html, NavOptions options) => html.NavBar(ViewUtils.NavItems, options);
-        public static HtmlString NavBar(this HtmlHelper html, List<NavItem> navItems) => html.NavBar(navItems, null);
-        public static HtmlString NavBar(this HtmlHelper html, List<NavItem> navItems, NavOptions options) =>
+        public static HtmlString Navbar(this HtmlHelper html) => html.Navbar(ViewUtils.NavItems, null);
+        public static HtmlString Navbar(this HtmlHelper html, NavOptions options) => html.Navbar(ViewUtils.NavItems, options);
+        public static HtmlString Navbar(this HtmlHelper html, List<NavItem> navItems) => html.Navbar(navItems, null);
+        public static HtmlString Navbar(this HtmlHelper html, List<NavItem> navItems, NavOptions options) =>
             ViewUtils.Nav(navItems, options.ForNavbar().WithDefaults(html.GetRequest())).ToHtmlString();
 
         public static HtmlString NavLink(this HtmlHelper html, NavItem navItem) => html.NavLink(navItem, null);
