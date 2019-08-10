@@ -428,6 +428,8 @@ namespace ServiceStack.Razor
 
         private string layout;
 
+        protected virtual IAuthSession UserSession => GetSession();
+
         public virtual IAuthSession GetSession(bool reload = false)
         {
             var req = this.Request;

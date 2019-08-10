@@ -127,6 +127,21 @@ namespace ServiceStack.Html
         public static HtmlString FormControl(this HtmlHelper html, Dictionary<string, object> inputAttrs, string tagName, InputOptions inputOptions) =>
             ViewUtils.FormControl(html.GetRequest(), inputAttrs, tagName, inputOptions).ToHtmlString();
 
+        public static HtmlString BundleJs(this HtmlHelper html, BundleOptions options) => ViewUtils.BundleJs(
+            nameof(BundleJs), HostContext.VirtualFileSources, HostContext.VirtualFiles, Minifiers.JavaScript, options).ToHtmlString();
+
+        public static HtmlString BundleCss(this HtmlHelper html, BundleOptions options) => ViewUtils.BundleCss(
+            nameof(BundleCss), HostContext.VirtualFileSources, HostContext.VirtualFiles, Minifiers.Css, options).ToHtmlString();
+
+        public static HtmlString BundleHtml(this HtmlHelper html, BundleOptions options) => ViewUtils.BundleHtml(
+            nameof(BundleHtml), HostContext.VirtualFileSources, HostContext.VirtualFiles, Minifiers.Html, options).ToHtmlString();
+
+        public static string TextDump(this HtmlHelper  html, object target) => target.TextDump();
+        public static string TextDump(this HtmlHelper  html, object target, TextDumpOptions options) => target.TextDump(options);
+
+        public static HtmlString HtmlDump(this HtmlHelper  html, object target) => ViewUtils.HtmlDump(target).ToHtmlString();
+        public static HtmlString HtmlDump(this HtmlHelper  html, object target, HtmlDumpOptions options) => 
+            ViewUtils.HtmlDump(target,options).ToHtmlString();
         
         public static List<NavItem> GetNavItems(this HtmlHelper html) => ViewUtils.NavItems;
         public static List<NavItem> GetNavItems(this HtmlHelper html, string key) => ViewUtils.GetNavItems(key);
