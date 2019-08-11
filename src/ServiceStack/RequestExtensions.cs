@@ -4,7 +4,6 @@ using System.IO.Compression;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
@@ -267,7 +266,7 @@ namespace ServiceStack
             if (disposable == null)
                 return;
 #if NETSTANDARD2_0
-            var netcoreReq = (HttpRequest) request.OriginalRequest;
+            var netcoreReq = (Microsoft.AspNetCore.Http.HttpRequest) request.OriginalRequest;
             netcoreReq.HttpContext.Response.RegisterForDispose(disposable);
 #else
             // IDisposable's in IRequest.Items are disposed in AppHost.OnEndRequest()
