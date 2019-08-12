@@ -9,8 +9,8 @@ namespace ServiceStack.NetCore
     public class NetCoreLogFactory : ILogFactory
     {
         // In test/web watch projects the App can be disposed, disposing the ILoggerFactory 
-        // and invalidating all LogFactory instances. Use FactoryFn to fetch latest ILoggerFactory 
-        internal static Func<ILoggerFactory> FactoryFn { get; set; }
+        // and invalidating all LogFactory instances so try FallbackLoggerFactory which holds the latest ILoggerFactory 
+        public static ILoggerFactory FallbackLoggerFactory { get; set; }
 
         ILoggerFactory loggerFactory;
         private bool debugEnabled;
@@ -27,11 +27,18 @@ namespace ServiceStack.NetCore
             {
                 return new NetCoreLog(loggerFactory.CreateLogger(type), debugEnabled);
             }
-            catch (ObjectDisposedException e)
+            catch (ObjectDisposedException)
             {
-                if (FactoryFn == null) throw;
-                loggerFactory = FactoryFn();
-                return new NetCoreLog(loggerFactory.CreateLogger(type), debugEnabled);
+                if (FallbackLoggerFactory == null) throw;
+                try
+                {
+                    loggerFactory = FallbackLoggerFactory;
+                    return new NetCoreLog(loggerFactory.CreateLogger(type), debugEnabled);
+                }
+                catch (ObjectDisposedException)
+                {
+                    return new NullDebugLogger(type);
+                }
             }
         }
 
@@ -41,11 +48,18 @@ namespace ServiceStack.NetCore
             {
                 return new NetCoreLog(loggerFactory.CreateLogger(typeName), debugEnabled);
             }
-            catch (ObjectDisposedException e)
+            catch (ObjectDisposedException)
             {
-                if (FactoryFn == null) throw;
-                loggerFactory = FactoryFn();
-                return new NetCoreLog(loggerFactory.CreateLogger(typeName), debugEnabled);
+                if (FallbackLoggerFactory == null) throw;
+                try
+                {
+                    loggerFactory = FallbackLoggerFactory;
+                    return new NetCoreLog(loggerFactory.CreateLogger(typeName), debugEnabled);
+                }
+                catch (ObjectDisposedException)
+                {
+                    return new NullDebugLogger(typeName);
+                }
             }
         }
     }
