@@ -8,6 +8,10 @@ namespace ServiceStack.NetCore
 {
     public class NetCoreLogFactory : ILogFactory
     {
+        // In test/web watch projects the App can be disposed, disposing the ILoggerFactory 
+        // and invalidating all LogFactory instances. Use FactoryFn to fetch latest ILoggerFactory 
+        internal static Func<ILoggerFactory> FactoryFn { get; set; }
+
         ILoggerFactory loggerFactory;
         private bool debugEnabled;
 
@@ -19,12 +23,30 @@ namespace ServiceStack.NetCore
 
         public ILog GetLogger(Type type)
         {
-            return new NetCoreLog(loggerFactory.CreateLogger(type), debugEnabled);
+            try
+            {
+                return new NetCoreLog(loggerFactory.CreateLogger(type), debugEnabled);
+            }
+            catch (ObjectDisposedException e)
+            {
+                if (FactoryFn == null) throw;
+                loggerFactory = FactoryFn();
+                return new NetCoreLog(loggerFactory.CreateLogger(type), debugEnabled);
+            }
         }
 
         public ILog GetLogger(string typeName)
         {
-            return new NetCoreLog(loggerFactory.CreateLogger(typeName), debugEnabled);
+            try
+            {
+                return new NetCoreLog(loggerFactory.CreateLogger(typeName), debugEnabled);
+            }
+            catch (ObjectDisposedException e)
+            {
+                if (FactoryFn == null) throw;
+                loggerFactory = FactoryFn();
+                return new NetCoreLog(loggerFactory.CreateLogger(typeName), debugEnabled);
+            }
         }
     }
 
