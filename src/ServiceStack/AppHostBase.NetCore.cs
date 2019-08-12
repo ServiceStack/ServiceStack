@@ -50,6 +50,7 @@ namespace ServiceStack
             var logFactory = app.ApplicationServices.GetService<ILoggerFactory>();
             if (logFactory != null)
             {
+                NetCoreLogFactory.FactoryFn = () => app.ApplicationServices.GetService<ILoggerFactory>();
                 LogManager.LogFactory = new NetCoreLogFactory(logFactory);
             }
 
