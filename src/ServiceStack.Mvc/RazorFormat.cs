@@ -1104,7 +1104,7 @@ namespace ServiceStack.Mvc
 
         public virtual bool IsAuthenticated => ServiceStackProvider.IsAuthenticated;
 
-        protected virtual IAuthSession GetSession(bool reload = true) => ServiceStackProvider.GetSession(reload);
+        protected virtual IAuthSession GetSession(bool reload = false) => ServiceStackProvider.GetSession(reload);
 
         protected virtual IAuthSession UserSession => GetSession();
 
