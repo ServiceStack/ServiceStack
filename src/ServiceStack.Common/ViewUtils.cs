@@ -896,12 +896,14 @@ namespace ServiceStack
             var values = options.Values;
             var isSingleCheck = isCheck && values == null;
 
+            object oValue = null;
             string formValue = null;
             var isGet = req.Verb == HttpMethods.Get;
             var preserveValue = options.PreserveValue;
             if (preserveValue)
             {
-                formValue = FormValue(req, name);
+                var strValue = args.TryGetValue("value", out oValue) ? oValue as string : null;
+                formValue = FormValue(req, name, strValue);
                 if (!isGet || !string.IsNullOrEmpty(formValue)) //only override value if POST or GET queryString has value
                 {
                     if (!isCheck)
@@ -925,7 +927,7 @@ namespace ServiceStack
             className = HtmlScripts.htmlAddClass(className, inputClass);
 
             if (size != null)
-                className = HtmlScripts.htmlAddClass(className, inputClass + "-" + size);
+                className = HtmlScripts.htmlAddClass(className, (notInput || isCheck ? inputClass : "input") + "-" + size);
 
             var errorMsg = ErrorResponse(GetErrorStatus(req), name);
             if (errorMsg != null)
@@ -949,7 +951,7 @@ namespace ServiceStack
                 labelHtml = HtmlScripts.htmlLabel(labelArgs).AsString();
             }
 
-            var value = (args.TryGetValue("value", out var oValue)
+            var value = (args.TryGetValue("value", out oValue)
                     ? oValue as string
                     : null)
                 ?? (oValue?.GetType().IsValueType == true
