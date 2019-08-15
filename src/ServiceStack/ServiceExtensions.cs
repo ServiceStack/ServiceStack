@@ -155,10 +155,8 @@ namespace ServiceStack
             }
 
             httpReq.Items.TryGetValue(Keywords.Session, out var oSession);
-            var session = oSession as IAuthSession;
-
-            if (!reload || session?.FromToken == true) // can't reload FromToken sessions from cache
-                return session;
+            if (reload && (oSession as IAuthSession)?.FromToken != true) // can't reload FromToken sessions from cache
+                oSession = null;
 
             if (oSession == null && !httpReq.Items.ContainsKey(Keywords.HasPreAuthenticated))
             {
@@ -175,7 +173,7 @@ namespace ServiceStack
             }
 
             var sessionId = httpReq.GetSessionId();
-            session = oSession as IAuthSession;
+            var session = oSession as IAuthSession;
             if (session != null)
                 session = HostContext.AppHost.OnSessionFilter(httpReq, session, sessionId);
             if (session != null)
