@@ -753,6 +753,18 @@ namespace ServiceStack.Mvc
         public static HtmlString ValidationSummary(this IHtmlHelper html, ICollection<string> exceptFields, object divAttrs) =>
             ViewUtils.ValidationSummary(html.GetErrorStatus(), exceptFields, divAttrs.ToObjectDictionary()).ToHtmlString();
 
+        public static HtmlString ValidationSuccess(this IHtmlHelper html, string message) => html.ValidationSuccess(message, null);
+        public static HtmlString ValidationSuccess(this IHtmlHelper html, string message, Dictionary<string,object> divAttrs)
+        {
+            var errorStatus = html.GetErrorStatus();
+            if (message == null 
+                || errorStatus != null
+                || html.GetRequest().Verb == HttpMethods.Get)
+                return null; 
+
+            return ViewUtils.ValidationSuccess(message, divAttrs).ToHtmlString();
+        }
+
         public static HtmlString HiddenInputs(this IHtmlHelper html, IEnumerable<KeyValuePair<string, string>> kvps) =>
             ViewUtils.HtmlHiddenInputs(kvps.ToObjectDictionary()).ToHtmlString();
         public static HtmlString HiddenInputs(this IHtmlHelper html, IEnumerable<KeyValuePair<string, object>> kvps) =>

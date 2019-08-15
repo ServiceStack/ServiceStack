@@ -721,11 +721,25 @@ namespace ServiceStack
                 divAttrs = new Dictionary<string, object>();
             
             if (!divAttrs.ContainsKey("class") && !divAttrs.ContainsKey("className"))
-                divAttrs["class"] = "alert alert-danger";
+                divAttrs["class"] = ValidationSummaryCssClassNames;
             
             return HtmlScripts.htmlDiv(errorSummaryMsg, divAttrs).ToRawString();
         }
+        
+        public static string ValidationSummaryCssClassNames = "alert alert-danger";
+        public static string ValidationSuccessCssClassNames = "alert alert-success";
 
+        public static string ValidationSuccess(string message, Dictionary<string,object> divAttrs)
+        {
+            if (divAttrs == null)
+                divAttrs = new Dictionary<string, object>();
+            
+            if (!divAttrs.ContainsKey("class") && !divAttrs.ContainsKey("className"))
+                divAttrs["class"] = ValidationSuccessCssClassNames;
+            
+            return HtmlScripts.htmlDiv(message, divAttrs).ToRawString();
+        }
+        
         public static string ErrorResponseExcept(ResponseStatus errorStatus, string fieldNames) =>
             ErrorResponseExcept(errorStatus, ToVarNames(fieldNames));
         public static string ErrorResponseExcept(ResponseStatus errorStatus, ICollection<string> fieldNames)

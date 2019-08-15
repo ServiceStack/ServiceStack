@@ -36,6 +36,22 @@ namespace ServiceStack
             return Context.HtmlMethods.htmlDiv(errorSummaryMsg, divAttrs);
         }
 
+        public IRawString ValidationSuccess(ScriptScopeContext scope, string message) => ValidationSuccess(scope, message, null);
+        public IRawString ValidationSuccess(ScriptScopeContext scope, string message, Dictionary<string,object> divAttrs)
+        {
+            var ssFilters = Context.GetServiceStackFilters();
+            if (ssFilters == null)
+                return null;
+
+            var errorStatus = ssFilters.getErrorStatus(scope);
+            if (message == null 
+                || errorStatus != null
+                || ssFilters.req(scope).Verb == HttpMethods.Get)
+                return null; 
+
+            return ViewUtils.ValidationSuccess(message, divAttrs).ToRawString();
+        }
+        
         public IRawString formTextarea(ScriptScopeContext scope, object args) => formTextarea(scope, args, null);
         public IRawString formTextarea(ScriptScopeContext scope, object inputAttrs, object inputOptions) =>
             formControl(scope, inputAttrs, "textarea", inputOptions);
