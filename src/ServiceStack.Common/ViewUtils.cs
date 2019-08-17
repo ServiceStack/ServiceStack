@@ -19,27 +19,57 @@ namespace ServiceStack
     /// </summary>
     public class InputOptions
     {
+        /// <summary>
+        /// Display the Control inline 
+        /// </summary>
         public bool Inline { get; set; }
         
+        /// <summary>
+        /// Label for the control
+        /// </summary>
         public string Label { get; set; }
         
+        /// <summary>
+        /// Class for Label
+        /// </summary>
         public string LabelClass { get; set; }
         
+        /// <summary>
+        /// Override the class on the error message (default: invalid-feedback)
+        /// </summary>
         public string ErrorClass { get; set; }
 
+        /// <summary>
+        /// Small Help Text displayed with the control
+        /// </summary>
         public string Help { get; set; }
         
+        /// <summary>
+        /// Bootstrap Size of the Control: sm, lg
+        /// </summary>
         public string Size { get; set; }
         
+        /// <summary>
+        /// Multiple Value Data Source for Checkboxes, Radio boxes and Select Controls 
+        /// </summary>
         public object Values { get; set; }
 
+        /// <summary>
+        /// Typed setter of Multi Input Values
+        /// </summary>
         public IEnumerable<KeyValuePair<string, string>> InputValues
         {
             set => Values = value;
         }
 
+        /// <summary>
+        /// Whether to preserve value state after post back
+        /// </summary>
         public bool PreserveValue { get; set; } = true;
 
+        /// <summary>
+        /// Whether to show Error Message associated with this control
+        /// </summary>
         public bool ShowErrors { get; set; } = true;
     }
 
