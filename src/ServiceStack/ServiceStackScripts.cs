@@ -38,6 +38,8 @@ namespace ServiceStack
         public object resolveUrl(ScriptScopeContext scope, string virtualPath) =>
             req(scope).ResolveAbsoluteUrl(virtualPath);
 
+        public string serviceUrl(ScriptScopeContext scope, string requestName) => 
+            serviceUrl(scope, requestName, null, HttpMethods.Get);
         public string serviceUrl(ScriptScopeContext scope, string requestName, Dictionary<string, object> properties) =>
             serviceUrl(scope, requestName, properties, HttpMethods.Get);
         public string serviceUrl(ScriptScopeContext scope, string requestName, Dictionary<string, object> properties, string httpMethod)
@@ -54,6 +56,9 @@ namespace ServiceStack
         
         private static object ToRequestDto(Type requestType, object dto)
         {
+            if (dto == null)
+                return requestType.CreateInstance();
+            
             var requestDto = dto.GetType() == requestType
                 ? dto
                 : dto is Dictionary<string, object> objDictionary
