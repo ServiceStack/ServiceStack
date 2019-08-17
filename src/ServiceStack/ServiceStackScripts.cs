@@ -37,7 +37,40 @@ namespace ServiceStack
 
         public object resolveUrl(ScriptScopeContext scope, string virtualPath) =>
             req(scope).ResolveAbsoluteUrl(virtualPath);
+
+        public string serviceUrl(ScriptScopeContext scope, string requestName, Dictionary<string, object> properties) =>
+            serviceUrl(scope, requestName, properties, HttpMethods.Get);
+        public string serviceUrl(ScriptScopeContext scope, string requestName, Dictionary<string, object> properties, string httpMethod)
+        {
+            if (requestName == null)
+                throw new ArgumentNullException(nameof(requestName));
+
+            var requestType = AssertRequestType(requestName);
+            var requestDto = ToRequestDto(requestType, properties);
+
+            var url = requestDto.ToUrl(httpMethod);
+            return url;
+        }
         
+        private static object ToRequestDto(Type requestType, object dto)
+        {
+            var requestDto = dto.GetType() == requestType
+                ? dto
+                : dto is Dictionary<string, object> objDictionary
+                    ? objDictionary.FromObjectDictionary(requestType)
+                    : dto.ConvertTo(requestType);
+            return requestDto;
+        }
+
+        private Type AssertRequestType(string requestName)
+        {
+            var requestType = appHost.Metadata.GetOperationType(requestName);
+            if (requestType == null)
+                throw new ArgumentException("Request DTO not found: " + requestName);
+            
+            return requestType;
+        }
+
         public object execService(ScriptScopeContext scope, string requestName) => 
             sendToGateway(scope, TypeConstants.EmptyObjectDictionary, requestName, null);
 
@@ -58,17 +91,11 @@ namespace ServiceStack
                     throw new ArgumentNullException(nameof(dto));
                 
                 var gateway = appHost.GetServiceGateway(req(scope));
-                var requestType = appHost.Metadata.GetOperationType(requestName);
-                if (requestType == null)
-                    throw new ArgumentException("Request DTO not found: " + requestName);
+                var requestType = AssertRequestType(requestName);
 
                 var responseType = appHost.Metadata.GetResponseTypeByRequest(requestType);
 
-                var requestDto = dto.GetType() == requestType
-                    ? dto
-                    : dto is Dictionary<string, object> objDictionary
-                        ? objDictionary.FromObjectDictionary(requestType)
-                        : dto.ConvertTo(requestType);
+                var requestDto = ToRequestDto(requestType, dto);
 
                 var response = gateway.Send(responseType, requestDto);
                 return response;
