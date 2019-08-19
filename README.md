@@ -1,6 +1,6 @@
 Follow [@ServiceStack](https://twitter.com/servicestack) or [view the docs](https://docs.servicestack.net), use [StackOverflow](http://stackoverflow.com/questions/ask) or the [Customer Forums](https://forums.servicestack.net/) for support.
 
-> View the [Release Notes](https://servicestack.net/release-notes) for latest features or see [servicestack.net/features](https://servicestack.net/features) for an overview.
+> View the [Release Notes](https://docs.servicestack.net/release-notes-history) for latest features or see [servicestack.net/features](https://servicestack.net/features) for an overview.
 
 ### Simple, Fast, Versatile and full-featured Services Framework
 
