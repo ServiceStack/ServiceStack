@@ -46,6 +46,12 @@ namespace ServiceStack.Script
                         continue;
                     }
 
+                    if (codeOnly.StartsWith("*") && !codeOnly.EndsWith("*"))
+                    {
+                        processed.AppendLine(codeOnly.Substring(1));
+                        continue;
+                    }
+
                     processed
                         .Append("{{")
                         .Append(codeOnly)
