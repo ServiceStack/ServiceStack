@@ -76,7 +76,22 @@ namespace ServiceStack
                 },
             };
         }
+        
 
+        public void ExportAttribute<T>(Func<Attribute, MetadataAttribute> converter) =>
+            ExportAttribute(typeof(T), converter);
+        
+        public void ExportAttribute(Type attributeType, Func<Attribute, MetadataAttribute> converter)
+        {
+            MetadataTypesConfig.ExportAttributes.Add(attributeType);
+            MetadataTypesGenerator.AttributeConverters[attributeType] = converter;
+        }
+
+        public MetadataTypesGenerator GetGenerator() =>
+            (HostContext.TryResolve<INativeTypesMetadata>() ??
+             new NativeTypesMetadata(HostContext.AppHost.Metadata, MetadataTypesConfig))
+            .GetGenerator();
+        
         public void Register(IAppHost appHost)
         {
             appHost.Register<INativeTypesMetadata>(

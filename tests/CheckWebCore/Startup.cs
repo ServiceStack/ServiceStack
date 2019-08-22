@@ -140,6 +140,12 @@ namespace CheckWebCore
             
             Plugins.Add(new PostmanFeature());
 
+            GetPlugin<NativeTypesFeature>()
+                .ExportAttribute<BindableAttribute>(attr => {
+                    var metaAttr = GetPlugin<NativeTypesFeature>().GetGenerator().ToMetadataAttribute(attr);
+                    return metaAttr;
+                });
+            
             GetPlugin<NativeTypesFeature>().MetadataTypesConfig
                 .ExportAttributes.Add(typeof(BindableAttribute));
 

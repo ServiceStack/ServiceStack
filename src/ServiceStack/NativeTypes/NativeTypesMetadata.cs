@@ -79,10 +79,12 @@ namespace ServiceStack.NativeTypes
 
         public MetadataTypes GetMetadataTypes(IRequest req, MetadataTypesConfig config = null, Func<Operation, bool> predicate = null)
         {
-            return GetMetadataTypesGenerator(config).GetMetadataTypes(req, predicate);
+            return GetGenerator(config).GetMetadataTypes(req, predicate);
         }
+        
+        public MetadataTypesGenerator GetGenerator() => new MetadataTypesGenerator(meta, defaults);
 
-        internal MetadataTypesGenerator GetMetadataTypesGenerator(MetadataTypesConfig config)
+        public MetadataTypesGenerator GetGenerator(MetadataTypesConfig config)
         {
             return new MetadataTypesGenerator(meta, config ?? defaults);
         }
@@ -561,15 +563,6 @@ namespace ServiceStack.NativeTypes
 
             return to.Count == 0 ? null : to;
         }
-
-        public void ExportAttribute<T>(Func<Attribute, MetadataAttribute> converter) =>
-            ExportAttribute(typeof(T), converter);
-        
-        public void ExportAttribute(Type attributeType, Func<Attribute, MetadataAttribute> converter)
-        {
-            config.ExportAttributes.Add(attributeType);
-            AttributeConverters[attributeType] = converter;
-        }
         
         public static Dictionary<Type, Func<Attribute, MetadataAttribute>> AttributeConverters { get; } = 
             new Dictionary<Type, Func<Attribute, MetadataAttribute>>();
@@ -578,18 +571,22 @@ namespace ServiceStack.NativeTypes
         {
             if (AttributeConverters.TryGetValue(attr.GetType(), out var converter))
                 return converter(attr);
-            
+
+            return ToMetadataAttribute(attr);
+        }
+
+        public MetadataAttribute ToMetadataAttribute(Attribute attr)
+        {
             var firstCtor = attr.GetType().GetConstructors()
                 //.OrderBy(x => x.GetParameters().Length)
                 .FirstOrDefault();
-            var metaAttr = new MetadataAttribute
-            {
+            var metaAttr = new MetadataAttribute {
                 Name = attr.GetType().Name.Replace("Attribute", ""),
                 ConstructorArgs = firstCtor != null
                     ? firstCtor.GetParameters().ToList().ConvertAll(ToProperty)
                     : null,
             };
-            
+
             var ignoreDefaultValues = new Dictionary<string, object>();
             try
             {
@@ -599,7 +596,7 @@ namespace ServiceStack.NativeTypes
                     ignoreDefaultValues[pi.Name] = pi.GetValue(defaultAttr);
                 }
             }
-            catch {}
+            catch { }
 
             var attrProps = Properties(attr);
             metaAttr.Args = attrProps
@@ -619,6 +616,7 @@ namespace ServiceStack.NativeTypes
                         arg.Value = value;
                     }
                 }
+
                 metaAttr.ConstructorArgs.RemoveAll(x => x.Value == null);
                 if (metaAttr.ConstructorArgs.Count == 0)
                     metaAttr.ConstructorArgs = null;
