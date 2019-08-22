@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Net;
-using Funq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -17,6 +17,7 @@ using ServiceStack.Mvc;
 using ServiceStack.NativeTypes.TypeScript;
 using ServiceStack.Text;
 using ServiceStack.Validation;
+using Container = Funq.Container;
 
 namespace CheckWebCore
 {
@@ -138,6 +139,9 @@ namespace CheckWebCore
             Svg.Load(RootDirectory.GetDirectory("/assets/svg"));
             
             Plugins.Add(new PostmanFeature());
+
+            GetPlugin<NativeTypesFeature>().MetadataTypesConfig
+                .ExportAttributes.Add(typeof(BindableAttribute));
 
 //            TypeScriptGenerator.TypeFilter = (type, args) => {
 //                if (type == "ResponseBase`1" && args[0] == "Dictionary<String,List`1>")
