@@ -114,6 +114,8 @@ namespace ServiceStack.NativeTypes
         MetadataTypesConfig GetConfig(NativeTypesBase req);
 
         MetadataTypes GetMetadataTypes(IRequest req, MetadataTypesConfig config = null, Func<Operation, bool> predicate = null);
+
+        MetadataTypesGenerator GetGenerator();
     }
 
 
@@ -241,7 +243,7 @@ namespace ServiceStack.NativeTypes
                 metadataTypes.Types.RemoveAll(x => ignoreDartLibraryTypes.Contains(x.Name));
             }
             
-            var generator = ((NativeTypesMetadata) NativeTypesMetadata).GetMetadataTypesGenerator(typesConfig);
+            var generator = ((NativeTypesMetadata) NativeTypesMetadata).GetGenerator(typesConfig);
     
             var dart = new DartGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
             return dart;
@@ -328,7 +330,7 @@ namespace ServiceStack.NativeTypes
             if (typesConfig.AddServiceStackTypes)
             {
                 //IReturn markers are metadata properties that are not included as normal interfaces
-                var generator = ((NativeTypesMetadata) NativeTypesMetadata).GetMetadataTypesGenerator(typesConfig);
+                var generator = ((NativeTypesMetadata) NativeTypesMetadata).GetGenerator(typesConfig);
 
                 var allTypes = metadataTypes.GetAllTypesOrdered();
                 var allTypeNames = allTypes.Select(x => x.Name).ToHashSet();

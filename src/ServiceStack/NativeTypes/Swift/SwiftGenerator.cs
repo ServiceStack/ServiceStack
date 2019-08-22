@@ -782,10 +782,9 @@ namespace ServiceStack.NativeTypes.Swift
 
         MetadataType CreateType(Type type)
         {
-            var nativeTypes = HostContext.TryResolve<INativeTypesMetadata>() as NativeTypesMetadata;
-            if (nativeTypes != null)
+            if (HostContext.TryResolve<INativeTypesMetadata>() is NativeTypesMetadata nativeTypes)
             {
-                var typesGenerator = nativeTypes.GetMetadataTypesGenerator(Config);
+                var typesGenerator = nativeTypes.GetGenerator(Config);
                 return typesGenerator.ToType(type);
             }
 
