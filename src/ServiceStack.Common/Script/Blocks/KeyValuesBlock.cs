@@ -21,18 +21,13 @@ namespace ServiceStack.Script
         
         public override Task WriteAsync(ScriptScopeContext scope, PageBlockFragment block, CancellationToken ct)
         {
-            var literal = block.Argument.Span.ParseJsExpression(out var token);
-            if (token == null)
-                throw new NotSupportedException("'keyvalues' block requires the identifier to sign to");
-
-            if (!(token is JsIdentifier identifier))
-                throw new NotSupportedException($"'keyvalues' block expected identifier but was {token.DebugToken()}");
+            var literal = block.Argument.Span.ParseVarName(out var name);
 
             var delimiter = " ";
             literal = literal.AdvancePastWhitespace();
             if (literal.Length > 0)
             {
-                literal = literal.ParseJsToken(out token);
+                literal = literal.ParseJsToken(out var token);
                 if (!(token is JsLiteral litToken))
                     throw new NotSupportedException($"'keyvalues' block expected string delimiter but was {token.DebugToken()}");
                 delimiter = litToken.Value.ToString();
@@ -40,7 +35,7 @@ namespace ServiceStack.Script
             
             var strFragment = (PageStringFragment)block.Body[0];
             var strDict = strFragment.ValueString.Trim().ParseKeyValueText(delimiter);
-            scope.PageResult.Args[identifier.Name] = strDict;
+            scope.PageResult.Args[name.ToString()] = strDict;
 
             return TypeConstants.EmptyTask;
         }

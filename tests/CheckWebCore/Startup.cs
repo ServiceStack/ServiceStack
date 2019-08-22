@@ -140,14 +140,13 @@ namespace CheckWebCore
             
             Plugins.Add(new PostmanFeature());
 
-            GetPlugin<NativeTypesFeature>()
+            var nativeTypesFeature = GetPlugin<NativeTypesFeature>();
+            nativeTypesFeature
                 .ExportAttribute<BindableAttribute>(attr => {
-                    var metaAttr = GetPlugin<NativeTypesFeature>().GetGenerator().ToMetadataAttribute(attr);
+                    var metaAttr = nativeTypesFeature.GetGenerator().ToMetadataAttribute(attr);
                     return metaAttr;
                 });
             
-            GetPlugin<NativeTypesFeature>().MetadataTypesConfig
-                .ExportAttributes.Add(typeof(BindableAttribute));
 
 //            TypeScriptGenerator.TypeFilter = (type, args) => {
 //                if (type == "ResponseBase`1" && args[0] == "Dictionary<String,List`1>")
