@@ -551,7 +551,7 @@ namespace ServiceStack.NativeTypes
 
             return to.Count == 0 ? null : to;
         }
-
+        
         public List<MetadataAttribute> ToAttributes(IEnumerable<Attribute> attrs)
         {
             var to = attrs
@@ -562,8 +562,23 @@ namespace ServiceStack.NativeTypes
             return to.Count == 0 ? null : to;
         }
 
+        public void ExportAttribute<T>(Func<Attribute, MetadataAttribute> converter) =>
+            ExportAttribute(typeof(T), converter);
+        
+        public void ExportAttribute(Type attributeType, Func<Attribute, MetadataAttribute> converter)
+        {
+            config.ExportAttributes.Add(attributeType);
+            AttributeConverters[attributeType] = converter;
+        }
+        
+        public static Dictionary<Type, Func<Attribute, MetadataAttribute>> AttributeConverters { get; } = 
+            new Dictionary<Type, Func<Attribute, MetadataAttribute>>();
+
         public MetadataAttribute ToAttribute(Attribute attr)
         {
+            if (AttributeConverters.TryGetValue(attr.GetType(), out var converter))
+                return converter(attr);
+            
             var firstCtor = attr.GetType().GetConstructors()
                 //.OrderBy(x => x.GetParameters().Length)
                 .FirstOrDefault();
@@ -573,13 +588,27 @@ namespace ServiceStack.NativeTypes
                 ConstructorArgs = firstCtor != null
                     ? firstCtor.GetParameters().ToList().ConvertAll(ToProperty)
                     : null,
-                Args = NonDefaultProperties(attr),
             };
+            
+            var ignoreDefaultValues = new Dictionary<string, object>();
+            try
+            {
+                var defaultAttr = attr.GetType().GetDefaultValue();
+                foreach (var pi in attr.GetType().GetPublicProperties())
+                {
+                    ignoreDefaultValues[pi.Name] = pi.GetValue(defaultAttr);
+                }
+            }
+            catch {}
+
+            var attrProps = Properties(attr);
+            metaAttr.Args = attrProps
+                .Select(x => ToProperty(x, attr, ignoreDefaultValues))
+                .Where(x => x.Value != null && x.ReadOnly != true).ToList();
 
             //Populate ctor Arg values from matching properties
             var argValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            metaAttr.Args.Each(x => argValues[x.Name] = x.Value);
-            metaAttr.Args.RemoveAll(x => x.ReadOnly == true);
+            attrProps.Each(x => argValues[x.Name] = PropertyValue(x, attr));
 
             if (metaAttr.ConstructorArgs != null)
             {
@@ -597,7 +626,7 @@ namespace ServiceStack.NativeTypes
 
             //Only emit ctor args or property args
             if (metaAttr.ConstructorArgs == null
-                || metaAttr.ConstructorArgs.Count != metaAttr.Args.Count)
+                || metaAttr.ConstructorArgs.Count <= metaAttr.Args.Count)
             {
                 metaAttr.ConstructorArgs = null;
             }
@@ -609,17 +638,25 @@ namespace ServiceStack.NativeTypes
             return metaAttr;
         }
 
+        public List<PropertyInfo> Properties(Attribute attr)
+        {
+            return attr.GetType().GetPublicProperties()
+                .Where(property => property.Name != "TypeId")
+                .OrderBy(property => property.Name)
+                .ToList();
+        }
+
         public List<MetadataPropertyType> NonDefaultProperties(Attribute attr)
         {
             return attr.GetType().GetPublicProperties()
                 .Select(pi => ToProperty(pi, attr))
                 .Where(property => property.Name != "TypeId"
-                    && property.Value != null)
+                                   && property.Value != null)
                 .OrderBy(property => property.Name)
                 .ToList();
         }
 
-        public MetadataPropertyType ToProperty(PropertyInfo pi, object instance = null)
+        public MetadataPropertyType ToProperty(PropertyInfo pi, object instance = null, Dictionary<string, object> ignoreValues = null)
         {
             var genericArgs = pi.PropertyType.IsGenericType
                 ? pi.PropertyType.GetGenericArguments().Select(x => x.ExpandTypeName()).ToArray()
@@ -659,37 +696,44 @@ namespace ServiceStack.NativeTypes
 
             if (instance != null)
             {
-                try
-                {
-                    var value = pi.GetValue(instance, null);
-                    if (value != null
-                        && !value.Equals(pi.PropertyType.GetDefaultValue()))
-                    {
-                        if (pi.PropertyType.IsEnum)
-                        {
-                            property.Value = "{0}.{1}".Fmt(pi.PropertyType.Name, value);
-                        }
-                        else if (pi.PropertyType == typeof(Type))
-                        {
-                            var type = (Type)value;
-                            property.Value = $"typeof({type.FullName})";
-                        }
-                        else
-                        {
-                            var strValue = value as string;
-                            property.Value = strValue ?? value.ToJson();
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    log.Warn($"Could not get value for property '{pi.PropertyType}.{pi.Name}'", ex);
-                }
+                var ignoreValue = ignoreValues != null && ignoreValues.TryGetValue(pi.Name, out var oValue)
+                    ? oValue
+                    : pi.PropertyType.GetDefaultValue();
+                property.Value = PropertyValue(pi, instance, ignoreValue);
 
                 if (pi.GetSetMethod() == null) //ReadOnly is bool? to minimize serialization
                     property.ReadOnly = true;
             }
             return property;
+        }
+
+        public static string PropertyValue(PropertyInfo pi, object instance, object ignoreIfValue=null)
+        {
+            try
+            {
+                var value = pi.GetValue(instance, null);
+                if (value != null && !value.Equals(ignoreIfValue))
+                {
+                    if (pi.PropertyType.IsEnum)
+                    {
+                        return "{0}.{1}".Fmt(pi.PropertyType.Name, value);
+                    }
+                    if (pi.PropertyType == typeof(Type))
+                    {
+                        var type = (Type) value;
+                        return $"typeof({type.FullName})";
+                    }
+
+                    var strValue = value as string;
+                    return strValue ?? value.ToJson();
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Warn($"Could not get value for property '{pi.PropertyType}.{pi.Name}'", ex);
+            }
+
+            return null;
         }
 
         public MetadataPropertyType ToProperty(ParameterInfo pi)

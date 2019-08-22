@@ -7,10 +7,9 @@ using System.Globalization;
 using System.Threading;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using ServiceStack;
-using ServiceStack.DataAnnotations;
 using ServiceStack.FluentValidation;
 using ServiceStack.Script;
-using ServiceStack.Text;
+using ServiceStack.DataAnnotations;
 
 namespace CheckWebCore
 {
@@ -73,6 +72,7 @@ namespace CheckWebCore
             public ResponseStatus ResponseStatus { get; set; }
         }
 
+        [System.ComponentModel.Bindable(true)]
         [Route("/contacts/{Id}", "POST PUT")]
         public class UpdateContact : IReturn<UpdateContactResponse>
         {
@@ -101,6 +101,7 @@ namespace CheckWebCore
 
         namespace Types
         {
+            [System.ComponentModel.Bindable(false)]
             public class Contact // DTO
             {
                 public int Id { get; set; }
