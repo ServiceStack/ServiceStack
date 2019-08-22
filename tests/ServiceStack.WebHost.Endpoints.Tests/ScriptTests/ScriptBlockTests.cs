@@ -939,5 +939,83 @@ partialArg in page scope is <b>from page</b>"));
             Assert.That(output.NormalizeNewLines(), Is.EqualTo(js));
         }
 
+        [Test]
+        public void Does_parse_keyvalues()
+        {
+            var context = new ScriptContext().Init();
+
+            var result = context.Evaluate(@"
+                {{#keyvalues dict}}
+                    Apples   2
+                    Oranges  3                    
+                {{/keyvalues}}{{dict|return}}");
+            
+            Assert.That(result, Is.EquivalentTo(new Dictionary<string, string> {
+                {"Apples","2"},
+                {"Oranges","3"},
+            }));
+        }
+
+        [Test]
+        public void Does_parse_keyvalues_with_delimiter()
+        {
+            var context = new ScriptContext().Init();
+
+            var result = context.Evaluate(@"
+                {{#keyvalues dict ':'}}
+                    Grape Fruit:  2
+                    Rock Melon:   3                    
+                {{/keyvalues}}{{dict|return}}");
+            
+            Assert.That(result, Is.EquivalentTo(new Dictionary<string, string> {
+                {"Grape Fruit","2"},
+                {"Rock Melon","3"},
+            }));
+        }
+
+        [Test]
+        public void Does_parse_keyvalues_in_code_blocks()
+        {
+            var context = new ScriptContext().Init();
+
+            var result = context.Evaluate(@"
+```code
+#keyvalues dict ':'
+  * Apples:       2
+  * Oranges:      3                    
+  * Grape Fruit:  2
+  * Rock Melon:   3                    
+/keyvalues
+dict | return
+```");
+                
+            Assert.That(result, Is.EquivalentTo(new Dictionary<string, string> {
+                {"Apples","2"},
+                {"Oranges","3"},
+                {"Grape Fruit","2"},
+                {"Rock Melon","3"},
+            }));
+        }
+ 
+        [Test]
+        public void Does_parse_csv()
+        {
+            var context = new ScriptContext().Init();
+
+            var result = context.Evaluate(@"
+                {{#csv list}}
+                    Apples,2,2
+                    Oranges,3,3                   
+                    Grape Fruit,2,2
+                    Rock Melon,3,3                 
+                {{/csv}}{{list|return}}");
+            
+            Assert.That(result, Is.EquivalentTo(new List<List<string>> {
+                new List<string> { "Apples", "2", "2" },
+                new List<string> { "Oranges", "3", "3" },
+                new List<string> { "Grape Fruit", "2", "2" },
+                new List<string> { "Rock Melon", "3", "3" },
+            }));
+        }
     }
 }
