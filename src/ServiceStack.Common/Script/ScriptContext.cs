@@ -489,8 +489,8 @@ namespace ServiceStack.Script
     public static class ScriptContextUtils
     {
         public static string ErrorNoReturn = "Script did not return a value. Use EvaluateScript() to return script output instead";
-        
-        private static string GetPageResultOutput(PageResult pageResult)
+
+        public static string GetPageResultOutput(PageResult pageResult)
         {
             try
             {

@@ -86,6 +86,7 @@ namespace ServiceStack.Script
                 new NoopScriptBlock(),
                 new KeyValuesBlock(),
                 new CsvBlock(),
+                new FunctionBlock(), 
             });
         }
     }
