@@ -8,7 +8,7 @@ namespace ServiceStack.Script
 {
     /// <summary>
     /// Define a reusable
-    /// Usage: {{#function add(a, b) }}
+    /// Usage: {{#function calc(a, b) }}
     ///           a * b | to => c
     ///           a + b + c | return
     ///        {{/function}}
@@ -59,22 +59,6 @@ namespace ServiceStack.Script
             scope.PageResult.Args[invokerCtx.Item1] = invokerCtx.Item2;
 
             return TypeConstants.EmptyTask;
-        }
-
-        public class FunctionContext
-        {
-            public string Name { get; }
-            public List<string> Args { get; }
-            public string OriginalSource { get; }
-            public SharpPage Body { get; }
-
-            public FunctionContext(string originalSource, string name, List<string> args, SharpPage body)
-            {
-                Name = name;
-                Args = args;
-                OriginalSource = originalSource;
-                Body = body;
-            }
         }
     }
 }
