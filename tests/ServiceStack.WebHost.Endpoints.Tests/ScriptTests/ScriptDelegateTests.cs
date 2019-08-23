@@ -55,5 +55,30 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             
             Assert.That(result, Is.EqualTo("3"));
         }
+
+        [Test]
+        public void Can_use_function_block_to_create_delegate_and_invoke_it()
+        {
+            var context = new ScriptContext().Init();
+
+            var result = context.EvaluateScript("{{#function hi}}'hello' | return{{/function}}{{ hi() }}");
+
+            Assert.That(result, Is.EqualTo("hello"));
+        }
+ 
+        [Test]
+        public void Can_use_function_block_to_create_delegate_with_multiple_args_and_invoke_it()
+        {
+            var context = new ScriptContext().Init();
+
+            var result = context.Evaluate(@"
+                {{#function add(a,b) }}
+                    a * b | to => c
+                    a + b + c | return
+                {{/function}}
+                {{ add(1,2) | return }}");
+
+            Assert.That(result, Is.EqualTo(5));
+        }
     }
 }

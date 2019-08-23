@@ -58,6 +58,11 @@ namespace ServiceStack.Script
                     var target = !fn.Method.IsStatic
                         ? fn.Method.DeclaringType.CreateInstance()
                         : null;
+
+                    if (fn is MethodInvoker argInvoker)
+                    {
+                        return argInvoker(target);
+                    }
                     
                     var ret = fn.InvokeMethod(target);
                     return ret;
@@ -105,6 +110,7 @@ namespace ServiceStack.Script
                 }
 
                 name = ResolveMethodName(Callee);
+                var expr = Callee as JsMemberExpression; 
                     
                 var argFn = scope.GetValue(name);
                 if (argFn is Delegate fn)
@@ -113,14 +119,14 @@ namespace ServiceStack.Script
                         ? fn.Method.DeclaringType.CreateInstance()
                         : null;
                     
-                    var argFnInvoker = fn.Method.GetInvoker();
+                    var argFnInvoker = argFn as MethodInvoker ?? fn.Method.GetInvoker();
                     var fnArgValues = EvaluateArgumentValues(scope, Arguments);
 
-                    if (Callee is JsMemberExpression argFnExpr)
+                    if (expr != null)
                     {
                         if (fnArgValues.Count < fn.Method.GetParameters().Length)
                         {
-                            var targetValue = argFnExpr.Object.Evaluate(scope);
+                            var targetValue = expr.Object.Evaluate(scope);
                             if (targetValue == StopExecution.Value)
                                 return targetValue;
                         
@@ -132,7 +138,7 @@ namespace ServiceStack.Script
                     return ret;
                 }
 
-                if (Callee is JsMemberExpression expr)
+                if (expr != null)
                 {
                     invoker = result.GetFilterInvoker(name, fnArgValuesCount + 1, out filter);
                     if (invoker != null)
