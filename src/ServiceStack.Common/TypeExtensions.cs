@@ -145,7 +145,9 @@ namespace ServiceStack
                 exprArgs[i] = Expression.Call(convertParam, paramAccessorExp);
             }
             
-            var methodCall = Expression.Call(Expression.TypeAs(paramInstance, method.DeclaringType), method, exprArgs);
+            var methodCall = !method.IsStatic 
+                ? Expression.Call(Expression.TypeAs(paramInstance, method.DeclaringType), method, exprArgs)
+                : Expression.Call(method, exprArgs);
 
             var convertToMethod = typeof(TypeExtensions).GetStaticMethod(nameof(ConvertToObject));
             var convertReturn = convertToMethod.MakeGenericMethod(method.ReturnType);
