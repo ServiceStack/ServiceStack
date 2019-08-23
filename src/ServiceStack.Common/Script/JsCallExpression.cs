@@ -23,16 +23,23 @@ namespace ServiceStack.Script
        
         public override object Evaluate(ScriptScopeContext scope)
         {
-            string ResolveMethodName(JsMemberExpression expr)
+            string ResolveMethodName(JsToken token)
             {
-                if (!expr.Computed) 
-                    return JsObjectExpression.GetKey(expr.Property);
+                if (token is JsIdentifier identifier)
+                    return identifier.Name;
+
+                if (token is JsMemberExpression expr)
+                {
+                    if (!expr.Computed) 
+                        return JsObjectExpression.GetKey(expr.Property);
                 
-                var propValue = expr.Property.Evaluate(scope);
-                var s = propValue as string;
-                if (s == null)
-                    throw new NotSupportedException($"Expected string method name but was '{propValue?.GetType().Name ?? "null"}'");
-                return s;
+                    var propValue = expr.Property.Evaluate(scope);
+                    if (!(propValue is string s))
+                        throw new NotSupportedException($"Expected string method name but was '{propValue?.GetType().Name ?? "null"}'");
+                    return s;
+                }
+
+                return null;
             }
 
             MethodInvoker invoker;
@@ -43,10 +50,21 @@ namespace ServiceStack.Script
 
             if (Arguments.Length == 0)
             {
+                name = ResolveMethodName(Callee);
+                    
+                var argFn = scope.GetValue(name);
+                if (argFn is Delegate fn)
+                {
+                    var target = !fn.Method.IsStatic
+                        ? fn.Method.DeclaringType.CreateInstance()
+                        : null;
+                    
+                    var ret = fn.InvokeMethod(target);
+                    return ret;
+                }
+                
                 if (Callee is JsMemberExpression expr)
                 {
-                    name = ResolveMethodName(expr);
-                    
                     invoker = result.GetFilterInvoker(name, 1, out filter);
                     if (invoker != null)
                     {
@@ -69,8 +87,8 @@ namespace ServiceStack.Script
                         return value;
                     }
                 }
-                
-                value = Callee.Evaluate(scope); 
+
+                value = Callee.Evaluate(scope);
                 return value;
             }
             else
@@ -86,10 +104,36 @@ namespace ServiceStack.Script
                     }
                 }
 
+                name = ResolveMethodName(Callee);
+                    
+                var argFn = scope.GetValue(name);
+                if (argFn is Delegate fn)
+                {
+                    var target = !fn.Method.IsStatic
+                        ? fn.Method.DeclaringType.CreateInstance()
+                        : null;
+                    
+                    var argFnInvoker = fn.Method.GetInvoker();
+                    var fnArgValues = EvaluateArgumentValues(scope, Arguments);
+
+                    if (Callee is JsMemberExpression argFnExpr)
+                    {
+                        if (fnArgValues.Count < fn.Method.GetParameters().Length)
+                        {
+                            var targetValue = argFnExpr.Object.Evaluate(scope);
+                            if (targetValue == StopExecution.Value)
+                                return targetValue;
+                        
+                            fnArgValues.Insert(0, targetValue);
+                        }
+                    }
+                    
+                    var ret = argFnInvoker(target, fnArgValues.ToArray());
+                    return ret;
+                }
+
                 if (Callee is JsMemberExpression expr)
                 {
-                    name = ResolveMethodName(expr);
-                    
                     invoker = result.GetFilterInvoker(name, fnArgValuesCount + 1, out filter);
                     if (invoker != null)
                     {

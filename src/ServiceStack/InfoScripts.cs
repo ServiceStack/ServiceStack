@@ -35,6 +35,8 @@ namespace ServiceStack
 
         public string envCurrentDirectory() => Environment.CurrentDirectory;
         public bool envIsWindows() => Env.IsWindows;
+        public bool isWin() => Env.IsWindows;
+        public bool isUnix() => !Env.IsWindows;
         public bool envIsLinux() => Env.IsLinux;
         public bool envIsOSX() => Env.IsOSX;
         public IDictionary envVariables() => Environment.GetEnvironmentVariables();
