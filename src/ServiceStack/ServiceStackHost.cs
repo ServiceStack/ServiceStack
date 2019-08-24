@@ -874,8 +874,8 @@ namespace ServiceStack
         {
             try
             {
-                if (instance is IAfterInitAppHost prePlugin)
-                    prePlugin.AfterInit(this);
+                if (instance is IAfterInitAppHost afterPlugin)
+                    afterPlugin.AfterInit(this);
             }
             catch (Exception ex)
             {
