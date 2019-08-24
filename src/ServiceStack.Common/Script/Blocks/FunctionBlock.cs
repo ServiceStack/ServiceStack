@@ -21,6 +21,7 @@ namespace ServiceStack.Script
         {
             var invokerCtx = (Tuple<string,MethodInvoker>)scope.Context.CacheMemory.GetOrAdd(block.Argument, key => {
                 var literal = block.Argument.Span.ParseVarName(out var name);
+                var strName = name.ToString();
                 literal = literal.AdvancePastWhitespace();
 
                 literal = literal.AdvancePastWhitespace();
@@ -33,27 +34,51 @@ namespace ServiceStack.Script
 
                 var strFragment = (PageStringFragment) block.Body[0];
 
-                var script = ScriptPreprocessors.TransformCodeBlocks($"```code\n{strFragment.ValueString}\n```");
+                var script = ScriptPreprocessors.TransformStatementBody(strFragment.ValueString);
                 var parsedScript = scope.Context.OneTimePage(script);
 
-                MethodInvoker invoker = (instance, paramValues) => {
-                    var pageResult = new PageResult(parsedScript);
+                MethodInvoker invoker = null;
 
-                    var len = Math.Min(paramValues.Length, args.Count);
-                    for (int i = 0; i < len; i++)
+                // Allow recursion by initializing lazy Delegate
+                object LazyInvoker(object instance, object[] paramValues)
+                {
+                    if (invoker == null) 
+                        throw new NotSupportedException($"Uninitialized function '{strName}'");
+
+                    return invoker(instance, paramValues);
+                }
+
+                invoker = (instance, paramValues) => {
+                    scope.PageResult.StackDepth++;
+                    try
                     {
-                        var paramValue = paramValues[i];
-                        pageResult.Args[args[i]] = paramValue;
-                    }
+                        var pageResult = new PageResult(parsedScript) {
+                            Args = {
+                                [strName] = (MethodInvoker) LazyInvoker
+                            },
+                            StackDepth = scope.PageResult.StackDepth
+                        };
+
+                        var len = Math.Min(paramValues.Length, args.Count);
+                        for (int i = 0; i < len; i++)
+                        {
+                            var paramValue = paramValues[i];
+                            pageResult.Args[args[i]] = paramValue;
+                        }
                     
-                    var discard = ScriptContextUtils.GetPageResultOutput(pageResult);
-                    if (pageResult.ReturnValue == null)
-                        throw new NotSupportedException(ScriptContextUtils.ErrorNoReturn);
+                        var discard = ScriptContextUtils.GetPageResultOutput(pageResult);
+                        if (pageResult.ReturnValue == null)
+                            throw new NotSupportedException(ScriptContextUtils.ErrorNoReturn);
             
-                    return pageResult.ReturnValue.Result;
+                        return pageResult.ReturnValue.Result;
+                    }
+                    finally
+                    {
+                        scope.PageResult.StackDepth--;
+                    }
                 };
                 
-                return Tuple.Create(name.ToString(), invoker);
+                return Tuple.Create(strName, invoker);
             });
 
             scope.PageResult.Args[invokerCtx.Item1] = invokerCtx.Item2;

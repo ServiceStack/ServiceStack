@@ -20,7 +20,7 @@ namespace ServiceStack.Script
         private string nameString;
         public string Name => nameString ?? (nameString = Callee is JsIdentifier identifier ? identifier.Name : null);
 
-       
+
         public override object Evaluate(ScriptScopeContext scope)
         {
             string ResolveMethodName(JsToken token)
@@ -30,9 +30,9 @@ namespace ServiceStack.Script
 
                 if (token is JsMemberExpression expr)
                 {
-                    if (!expr.Computed) 
+                    if (!expr.Computed)
                         return JsObjectExpression.GetKey(expr.Property);
-                
+
                     var propValue = expr.Property.Evaluate(scope);
                     if (!(propValue is string s))
                         throw new NotSupportedException($"Expected string method name but was '{propValue?.GetType().Name ?? "null"}'");
@@ -42,16 +42,19 @@ namespace ServiceStack.Script
                 return null;
             }
 
+
             MethodInvoker invoker;
             ScriptMethods filter;
             object value;
-            string name;
+
+            var name = ResolveMethodName(Callee);
             var result = scope.PageResult;
+
+            if (result.StackDepth > ScriptConfig.MaxStackDepth)
+                throw new NotSupportedException("Exceeded MaxStackDepth of " + ScriptConfig.MaxStackDepth);
 
             if (Arguments.Length == 0)
             {
-                name = ResolveMethodName(Callee);
-                    
                 var argFn = scope.GetValue(name);
                 if (argFn is Delegate fn)
                 {
@@ -63,17 +66,17 @@ namespace ServiceStack.Script
                     {
                         return argInvoker(target);
                     }
-                    
+
                     var ret = fn.InvokeMethod(target);
                     return ret;
                 }
-                
+
                 if (Callee is JsMemberExpression expr)
                 {
                     invoker = result.GetFilterInvoker(name, 1, out filter);
                     if (invoker != null)
                     {
-                        var targetValue = expr.Object.Evaluate(scope);                        
+                        var targetValue = expr.Object.Evaluate(scope);
                         if (targetValue == StopExecution.Value)
                             return targetValue;
 
@@ -100,7 +103,7 @@ namespace ServiceStack.Script
             {
                 var fnArgValuesCount = Arguments.Length;
                 foreach (var arg in Arguments)
-                {                    
+                {
                     if (arg is JsSpreadElement) // ...[1,2] Arguments.Length = 1 / fnArgValues.Length = 2
                     {
                         var expandedArgs = EvaluateArgumentValues(scope, Arguments);
@@ -109,16 +112,15 @@ namespace ServiceStack.Script
                     }
                 }
 
-                name = ResolveMethodName(Callee);
-                var expr = Callee as JsMemberExpression; 
-                    
+                var expr = Callee as JsMemberExpression;
+
                 var argFn = scope.GetValue(name);
                 if (argFn is Delegate fn)
                 {
                     var target = !fn.Method.IsStatic
                         ? fn.Method.DeclaringType.CreateInstance()
                         : null;
-                    
+
                     var argFnInvoker = argFn as MethodInvoker ?? fn.Method.GetInvoker();
                     var fnArgValues = EvaluateArgumentValues(scope, Arguments);
 
@@ -129,11 +131,11 @@ namespace ServiceStack.Script
                             var targetValue = expr.Object.Evaluate(scope);
                             if (targetValue == StopExecution.Value)
                                 return targetValue;
-                        
+
                             fnArgValues.Insert(0, targetValue);
                         }
                     }
-                    
+
                     var ret = argFnInvoker(target, fnArgValues.ToArray());
                     return ret;
                 }
@@ -146,14 +148,14 @@ namespace ServiceStack.Script
                         var targetValue = expr.Object.Evaluate(scope);
                         if (targetValue == StopExecution.Value)
                             return targetValue;
-                        
-                        var fnArgValues = EvaluateArgumentValues(scope, Arguments);   
+
+                        var fnArgValues = EvaluateArgumentValues(scope, Arguments);
                         fnArgValues.Insert(0, targetValue);
-                        
+
                         value = result.InvokeFilter(invoker, filter, fnArgValues.ToArray(), name);
                         return value;
                     }
-                    
+
                     invoker = result.GetContextFilterInvoker(name, fnArgValuesCount + 2, out filter);
                     if (invoker != null)
                     {
@@ -161,8 +163,8 @@ namespace ServiceStack.Script
                         if (targetValue == StopExecution.Value)
                             return targetValue;
 
-                        var fnArgValues = EvaluateArgumentValues(scope, Arguments); 
-                        fnArgValues.InsertRange(0, new[]{ scope, targetValue });
+                        var fnArgValues = EvaluateArgumentValues(scope, Arguments);
+                        fnArgValues.InsertRange(0, new[] { scope, targetValue });
                         value = result.InvokeFilter(invoker, filter, fnArgValues.ToArray(), name);
                         return value;
                     }
@@ -174,7 +176,7 @@ namespace ServiceStack.Script
                     invoker = result.GetFilterInvoker(name, fnArgValuesCount, out filter);
                     if (invoker != null)
                     {
-                        var fnArgValues = EvaluateArgumentValues(scope, Arguments); 
+                        var fnArgValues = EvaluateArgumentValues(scope, Arguments);
                         value = result.InvokeFilter(invoker, filter, fnArgValues.ToArray(), name);
                         return value;
                     }
@@ -227,6 +229,7 @@ namespace ServiceStack.Script
                     sb.Append(',');
                 sb.Append(arg.ToRawString());
             }
+
             return $"{Callee.ToRawString()}({StringBuilderCacheAlt.ReturnAndFree(sb)})";
         }
 

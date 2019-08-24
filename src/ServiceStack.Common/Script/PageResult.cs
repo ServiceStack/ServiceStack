@@ -148,6 +148,11 @@ namespace ServiceStack.Script
         /// </summary>
         public ReturnValue ReturnValue { get; set; }
         
+        /// <summary>
+        /// The Current StackDepth
+        /// </summary>
+        public int StackDepth { get; internal set; }
+        
         private readonly Stack<string> stackTrace = new Stack<string>();
 
         private PageResult(PageFormat format)
