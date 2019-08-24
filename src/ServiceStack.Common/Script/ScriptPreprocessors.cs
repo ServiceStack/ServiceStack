@@ -73,5 +73,10 @@ namespace ServiceStack.Script
             StringBuilderCache.Free(processed);
             return script;
         }
+
+        public static string TransformStatementBody(string body)
+        {
+            return TransformCodeBlocks("```code\n" + body + "\n```");
+        }
     }
 }

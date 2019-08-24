@@ -75,6 +75,8 @@ namespace ServiceStack.Script
         };
 
         public static int MaxQuota { get; set; } = 10000;
+
+        public static int MaxStackDepth { get; set; } = 25;
         public static CultureInfo DefaultCulture { get; set; } //Uses CurrentCulture by default
         public static string DefaultDateFormat { get; set; }  = "yyyy-MM-dd";
         public static string DefaultDateTimeFormat { get; set; } = "u";
