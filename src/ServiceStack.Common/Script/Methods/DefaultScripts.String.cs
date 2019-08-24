@@ -166,6 +166,9 @@ namespace ServiceStack.Script
         public Dictionary<string, string> parseKeyValueText(string target) => target?.ParseKeyValueText();
         public Dictionary<string, string> parseKeyValueText(string target, string delimiter) => target?.ParseKeyValueText(delimiter);
 
+        public IEnumerable<KeyValuePair<string,string>> parseAsKeyValues(string target) => target?.ParseAsKeyValues();
+        public IEnumerable<KeyValuePair<string,string>> parseAsKeyValues(string target, string delimiter) => target?.ParseAsKeyValues(delimiter);
+
         public ICollection keys(object target) => 
             target is IDictionary d 
                 ? d.Keys

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using ServiceStack.Text;
 
 namespace ServiceStack.Configuration
 {
@@ -34,6 +35,12 @@ namespace ServiceStack.Configuration
 
                 Map[key] = textValue;
             }
+        }
+
+        public DictionarySettings(IEnumerable<KeyValuePair<string, string>> map)
+            : base(new DictionaryWrapper(map.ToStringDictionary()))
+        {
+            instance = (DictionaryWrapper)settings;
         }
 
         public DictionarySettings(Dictionary<string, string> map=null)
