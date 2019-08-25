@@ -135,13 +135,13 @@ namespace ServiceStack.Common.Tests.ServiceClient.Web
         [Test]
         public void Can_SplitGenericArgs()
         {
-            var args = MetadataExtensions.SplitGenericArgs("String,Int64,Boolean");
+            var args = StringUtils.SplitGenericArgs("String,Int64,Boolean");
             Assert.That(args, Is.EquivalentTo(new[] {"String", "Int64", "Boolean"}));
 
-            args = MetadataExtensions.SplitGenericArgs("List<Dictionary<String,Dictionary<String,Poco>>>");
+            args = StringUtils.SplitGenericArgs("List<Dictionary<String,Dictionary<String,Poco>>>");
             Assert.That(args, Is.EquivalentTo(new[] { "List<Dictionary<String,Dictionary<String,Poco>>>" }));
 
-            args = MetadataExtensions.SplitGenericArgs("String,List<Dictionary<String,Dictionary<String,Poco>>>,Int64");
+            args = StringUtils.SplitGenericArgs("String,List<Dictionary<String,Dictionary<String,Poco>>>,Int64");
             Assert.That(args, Is.EquivalentTo(new[] { "String", "List<Dictionary<String,Dictionary<String,Poco>>>", "Int64" }));
         }
 

@@ -787,18 +787,6 @@ namespace ServiceStack.NativeTypes
         public bool IsNestedType { get; set; }
     }
 
-    public class TextNode
-    {
-        public TextNode()
-        {
-            Children = new List<TextNode>();
-        }
-
-        public string Text { get; set; }
-
-        public List<TextNode> Children { get; set; }
-    }
-
     public static class MetadataExtensions
     {
         public static MetadataTypeName ToMetadataTypeName(this MetadataType type)
@@ -891,73 +879,6 @@ namespace ServiceStack.NativeTypes
             return namespaces;
         }
 
-        static char[] blockChars = new[] { '<', '>' };
-        public static TextNode ParseTypeIntoNodes(this string typeDef)
-        {
-            if (string.IsNullOrEmpty(typeDef))
-                return null;
-
-            var node = new TextNode();
-            var lastBlockPos = typeDef.IndexOf('<');
-
-            if (lastBlockPos >= 0)
-            {
-                node.Text = typeDef.Substring(0, lastBlockPos).Trim();
-
-                var blockStartingPos = new Stack<int>();
-                blockStartingPos.Push(lastBlockPos);
-
-                while (lastBlockPos != -1 || blockStartingPos.Count == 0)
-                {
-                    var nextPos = typeDef.IndexOfAny(blockChars, lastBlockPos + 1);
-                    if (nextPos == -1)
-                        break;
-
-                    var blockChar = typeDef.Substring(nextPos, 1);
-
-                    if (blockChar == "<")
-                    {
-                        blockStartingPos.Push(nextPos);
-                    }
-                    else
-                    {
-                        var startPos = blockStartingPos.Pop();
-                        if (blockStartingPos.Count == 0)
-                        {
-                            var endPos = nextPos;
-                            var childBlock = typeDef.Substring(startPos + 1, endPos - startPos - 1);
-
-                            var args = SplitGenericArgs(childBlock);
-                            foreach (var arg in args)
-                            {
-                                if (arg.IndexOfAny(blockChars) >= 0)
-                                {
-                                    var childNode = ParseTypeIntoNodes(arg);
-                                    if (childNode != null)
-                                    {
-                                        node.Children.Add(childNode);
-                                    }
-                                }
-                                else
-                                {
-                                    node.Children.Add(new TextNode { Text = arg.Trim() });
-                                }
-                            }
-
-                        }
-                    }
-
-                    lastBlockPos = nextPos;
-                }
-            }
-            else
-            {
-                node.Text = typeDef.Trim();
-            }
-
-            return node;
-        }
-
         public static string ToPrettyName(this Type type)
         {
             if (!type.IsGenericType)
@@ -969,49 +890,6 @@ namespace ServiceStack.NativeTypes
                 type.GetGenericArguments()
                     .Select(ToPrettyName).ToArray());
             return genericTypeName + "<" + genericArgs + ">";
-        }
-
-        public static List<string> SplitGenericArgs(string argList)
-        {
-            var to = new List<string>();
-            if (string.IsNullOrEmpty(argList))
-                return to;
-
-            var lastPos = 0;
-            var blockCount = 0;
-            for (var i = 0; i < argList.Length; i++)
-            {
-                var argChar = argList[i];
-                switch (argChar)
-                {
-                    case ',':
-                        if (blockCount == 0)
-                        {
-                            var arg = argList.Substring(lastPos, i - lastPos);
-                            to.Add(arg);
-                            lastPos = i + 1;
-                        }
-                        break;
-                    case '<':
-                        blockCount++;
-                        break;
-                    case '>':
-                        blockCount--;
-                        break;
-                }
-            }
-
-            if (lastPos > 0)
-            {
-                var arg = argList.Substring(lastPos);
-                to.Add(arg);
-            }
-            else
-            {
-                to.Add(argList);
-            }
-
-            return to;
         }
 
         public static void RemoveIgnoredTypesForNet(this MetadataTypes metadata, MetadataTypesConfig config)
