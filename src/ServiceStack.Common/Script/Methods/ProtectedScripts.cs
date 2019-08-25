@@ -4,7 +4,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using ServiceStack.DataAnnotations;
@@ -18,6 +20,418 @@ namespace ServiceStack.Script
     
     public class ProtectedScripts : ScriptMethods
     {
+        public object @new(string typeName)
+        {
+            var type = nonGenericType(typeName);
+            return type != null 
+                ? create(type) 
+                : null;
+        }
+
+        public object @new(string typeName, List<object> constructorArgs)
+        {
+            var type = nonGenericType(typeName);
+            return type != null 
+                ? create(type, constructorArgs) 
+                : null;
+        }
+
+        public object set(object instance, Dictionary<string, object> args)
+        {
+            args.PopulateInstance(instance);
+            return instance;
+        }
+
+        public Type nonGenericType(string typeName)
+        {
+            var type = @typeof(typeName);
+            if (type == null)
+                return null;
+            
+            if (type.IsGenericType)
+            {
+                var genericTypes = typeGenericTypes(typeName);
+                var cookedType = type.MakeGenericType(genericTypes);
+                return cookedType;
+            }
+            
+            return type;
+        }
+
+        private Type[] typeGenericTypes(string typeName)
+        {
+            return typeGenericTypes(typeGenericArgs(typeName));
+        }
+
+        private Type[] typeGenericTypes(List<string> genericArgs)
+        {
+            var genericTypes = new List<Type>();
+            foreach (var genericArg in genericArgs)
+            {
+                var genericType = nonGenericType(genericArg);
+                genericTypes.Add(genericType);
+            }
+
+            return genericTypes.ToArray();
+        }
+
+        private static List<string> typeGenericArgs(string typeName)
+        {
+            var argList = typeName.RightPart('<');
+            argList = argList.Substring(0, argList.Length - 1);
+            var splitArgs = StringUtils.SplitGenericArgs(argList);
+            return splitArgs;
+        }
+
+        public object create(Type type) => type.CreateInstance();
+
+        public object create(Type type, List<object> constructorArgs)
+        {
+            var key = callKey(type, "<new>", constructorArgs);
+
+            var activator = (ObjectActivator) Context.Cache.GetOrAdd(key, k => {
+                var argsCount = constructorArgs?.Count ?? 0;
+                
+                var args = constructorArgs;
+                var ctors = type.GetConstructors()
+                    .Where(x => x.GetParameters().Length == argsCount).ToArray();
+
+                if (ctors.Length == 0)
+                {
+                    var argTypes = string.Join(",", args.Select(x => x?.GetType().Name ?? "null"));
+                    throw new NotSupportedException($"Constructor {Context.DefaultMethods.typeQualifiedName(type)}({argTypes}) does not exist");
+                }
+
+                ConstructorInfo targetCtor = null;
+                if (ctors.Length > 1)
+                {
+                    var candidates = 0;
+                    foreach (var ctor in ctors)
+                    {
+                        var match = true;
+
+                        var ctorParams = ctor.GetParameters();
+                        if (args != null)
+                        {
+                            for (var i = 0; i < args.Count; i++)
+                            {
+                                var arg = args[i];
+                                if (arg == null)
+                                    continue;
+
+                                match = ctorParams[i].ParameterType == arg.GetType();
+                                if (!match)
+                                    break;
+                            }
+                        }
+
+                        if (match)
+                        {
+                            targetCtor = ctor;
+                            candidates++;
+                        }
+                    }
+
+                    if (targetCtor == null || candidates != 1)
+                    {
+                        var argTypes = args != null ? string.Join(",", args.Select(x => x?.GetType().Name ?? "null")) : "";
+                        throw new NotSupportedException($"Could not resolve ambiguous constructor {Context.DefaultMethods.typeQualifiedName(type)}({argTypes})");
+                    }
+                }
+                else targetCtor = ctors[0];
+
+                return targetCtor.GetActivator();
+            });
+
+            return activator(constructorArgs?.ToArray() ?? TypeConstants.EmptyObjectArray);
+        }
+
+        public Type @typeof(string typeName)
+        {
+            var key = "type::" + typeName;
+
+            var resolvedType = (Type) Context.Cache.GetOrAdd(key, k => {
+
+                var isGeneric = typeName.IndexOf('<') >= 0;
+
+                if (isGeneric)
+                {
+                    var splitArgs = typeGenericArgs(typeName);
+                    typeName = typeName.LeftPart('<') + '`' + splitArgs.Count;
+                }
+                
+                if (typeName.IndexOf('.') >= 0)
+                {
+                    if (Context.ScriptTypeQualifiedNameMap.TryGetValue(typeName, out var type))
+                        return type;
+
+                    if (Context.AllowScriptingOfAllTypes)
+                    {
+                        type = AssemblyUtils.FindType(typeName);
+                        if (type != null)
+                            return type;
+                    }
+                }
+                else
+                {
+                    switch (typeName)
+                    {
+                        case "bool":
+                            return typeof(bool);
+                        case "byte":
+                            return typeof(byte);
+                        case "sbyte":
+                            return typeof(sbyte);
+                        case "char":
+                            return typeof(char);
+                        case "decimal":
+                            return typeof(decimal);
+                        case "double":
+                            return typeof(double);
+                        case "float":
+                            return typeof(float);
+                        case "int":
+                            return typeof(int);
+                        case "uint":
+                            return typeof(uint);
+                        case "long":
+                            return typeof(long);
+                        case "ulong":
+                            return typeof(ulong);
+                        case "object":
+                            return typeof(object);
+                        case "short":
+                            return typeof(short);
+                        case "ushort":
+                            return typeof(ushort);
+                        case "string":
+                            return typeof(string);
+                    }
+
+                    if (Context.ScriptTypeNameMap.TryGetValue(typeName, out var type))
+                        return type;
+                }
+
+                foreach (var ns in Context.ScriptNamespaces)
+                {
+                    var lookupType = ns + "." + typeName;
+                    if (Context.ScriptTypeQualifiedNameMap.TryGetValue(lookupType, out var type))
+                        return type;
+                    
+                    if (Context.AllowScriptingOfAllTypes)
+                    {
+                        type = AssemblyUtils.FindType(lookupType);
+                        if (type != null)
+                            return type;
+                    }
+                }
+
+                return null;
+            });
+
+            return resolvedType;
+        }
+
+        public object call(object instance, string name) => call(instance, name, null);
+
+        internal string callKey(Type type, string name, List<object> args)
+        {
+            var sb = StringBuilderCache.Allocate()
+                .Append("call::")
+                .Append(type.Namespace)
+                .Append('.')
+                .Append(type.Name)
+                .Append('.')
+                .Append(name);
+
+            if (type.GenericTypeArguments.Length > 0)
+            {
+                sb.Append('<');
+                for (var i = 0; i < type.GenericTypeArguments.Length; i++)
+                {
+                    if (i > 0)
+                        sb.Append(',');
+                    var genericArg = type.GenericTypeArguments[i];
+                    sb.Append(Context.DefaultMethods.typeQualifiedName(genericArg));
+                }
+                sb.Append('>');
+            }
+            
+            sb.Append('(');
+
+            if (args != null)
+            {
+                for (var i = 0; i < args.Count; i++)
+                {
+                    if (i > 0)
+                        sb.Append(',');
+                    var argType = args[i]?.GetType();
+                    sb.Append(argType == null ? "null" : argType.Namespace + '.' + argType.Name);
+                }
+            }
+            sb.Append(')');
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+
+        public object call(object instance, string name, List<object> args)
+        {
+            if (instance == null)
+                throw new ArgumentNullException(nameof(instance));
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+            
+            var type = instance.GetType();
+
+            var key = callKey(type, name, args);
+
+            var invoker = (Delegate)Context.Cache.GetOrAdd(key, k => {
+                var argTypes = args?.Select(x => x?.GetType()).ToArray();
+                var targetMethod = ResolveMethod(type, name, argTypes, argTypes?.Length ?? 0);
+                if (targetMethod.IsStatic)
+                    throw new NotSupportedException($"Cannot call static method {instance.GetType().Name}.{targetMethod.Name}");
+                
+                return targetMethod.GetInvokerDelegate();
+            });
+
+            if (invoker is MethodInvoker methodInvoker)
+            {
+                var ret = methodInvoker(instance, args?.ToArray() ?? TypeConstants.EmptyObjectArray);
+                return ret;
+            }
+            if (invoker is ActionInvoker actionInvoker)
+            {
+                actionInvoker(instance, args?.ToArray() ?? TypeConstants.EmptyObjectArray);
+                return IgnoreResult.Value;
+            }
+
+            throw new NotSupportedException($"Cannot call {invoker.GetType().Name} methods");
+        }
+
+        private MethodInfo ResolveMethod(Type type, string methodName, Type[] argTypes, int? argsCount = 0)
+        {
+            var isGeneric = methodName.IndexOf('<') >= 0;
+            var name = isGeneric ? methodName.LeftPart('<') : methodName;
+
+            var genericArgs = isGeneric
+                ? typeGenericArgs(name)
+                : TypeConstants.EmptyStringList;
+            var genericArgsCount = genericArgs.Count;
+
+            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)
+                .Where(x => x.Name == name && (argsCount == null || x.GetParameters().Length == argsCount.Value) 
+                    && ((genericArgs.Count == 0 && !x.IsGenericMethod) || (x.IsGenericMethod && x.GetGenericArguments().Length == genericArgsCount)))
+                .ToArray();
+
+            if (methods.Length == 0)
+                throw new NotSupportedException(
+                    $"Method {Context.DefaultMethods.typeQualifiedName(type)}.{name} does not exist");
+
+            MethodInfo targetMethod = null;
+            if (methods.Length > 1)
+            {
+                var candidates = 0;
+                foreach (var method in methods)
+                {
+                    var match = true;
+
+                    var methodParams = method.GetParameters();
+                    if (argTypes != null)
+                    {
+                        for (var i = 0; i < argTypes.Length; i++)
+                        {
+                            var argType = argTypes[i];
+                            if (argType == null)
+                                continue;
+
+                            match = methodParams[i].ParameterType == argType;
+                            if (!match)
+                                break;
+                        }
+                    }
+
+                    if (match)
+                    {
+                        targetMethod = method;
+                        candidates++;
+                    }
+                }
+
+                if (targetMethod == null || candidates != 1)
+                {
+                    var argTypesList = argTypes != null ? string.Join(",", argTypes.Select(x => x?.Name ?? "null")) : "";
+                    throw new NotSupportedException(
+                        $"Could not resolve ambiguous method {Context.DefaultMethods.typeQualifiedName(type)}.{name}({argTypesList})");
+                }
+            }
+            else targetMethod = methods[0];
+
+            if (targetMethod.IsGenericMethod)
+            {
+                var genericTypes = typeGenericTypes(methodName);
+                targetMethod = targetMethod.MakeGenericMethod(genericTypes);
+            }
+
+            return targetMethod;
+        }
+
+        public Delegate Function(string qualifiedMethodName)
+        {
+            if (qualifiedMethodName.IndexOf('.') == -1)
+                throw new NotSupportedException($"Invalid Function Name '{qualifiedMethodName}', " +
+                    $"format: <type>.<method>(<arg-types>), e.g. Console.WriteLine(string)");
+
+            var name = qualifiedMethodName;
+            var hasArgsList = name.IndexOf('(') >= 0;
+            var argList = hasArgsList 
+                ? name.LastRightPart('(')
+                : null;
+            argList = argList?.Substring(0, argList.Length - 1);
+
+            name = name.LastLeftPart('(');
+
+            var lastGenericPos = name.LastIndexOf('>');
+            var lastSepPos = name.LastIndexOf('.');
+
+            int pos = -1;
+            if (lastSepPos > lastGenericPos)
+            {
+                pos = lastSepPos;
+            }
+            else
+            {
+                var genericPos = name.IndexOf('<');
+                pos = genericPos >= 0
+                    ? name.LastIndexOf('.', genericPos)
+                    : name.LastIndexOf('.');
+
+                if (pos == -1)
+                    pos = name.IndexOf(">.", StringComparison.Ordinal) + 1;
+            }
+
+            if (pos == -1)
+                throw new NotSupportedException($"Could not parse Function Name '{qualifiedMethodName}', " +
+                    $"format: <type>.<method>(<arg-types>), e.g. Console.WriteLine(string)");
+
+
+            var typeName = name.Substring(0, pos);
+            var methodName = name.Substring(pos + 1);
+
+            var argTypes = hasArgsList
+                ? typeGenericTypes(StringUtils.SplitGenericArgs(argList))
+                : null;
+
+
+            var type = nonGenericType(typeName);
+            if (type == null)
+                throw new NotSupportedException($"Could not resolve Type '{typeName}'. " +
+                    $"Use ScriptContext.ScriptAssemblies or ScriptContext.AllowScriptingOfAllTypes+ScriptNamespaces to increase Type resolution");
+            
+            var method = ResolveMethod(type, methodName, argTypes, argTypes?.Length);
+
+            var invoker = method.GetInvokerDelegate();
+            return invoker;
+        }
+        
         public MemoryVirtualFiles vfsMemory() => new MemoryVirtualFiles();
 
         public FileSystemVirtualFiles vfsFileSystem(string dirPath) => new FileSystemVirtualFiles(dirPath);

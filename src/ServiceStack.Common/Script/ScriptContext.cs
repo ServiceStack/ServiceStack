@@ -30,9 +30,44 @@ namespace ServiceStack.Script
 
         public PageFormat GetFormat(string extension) => PageFormats.FirstOrDefault(x => x.Extension == extension);
 
+        /// <summary>
+        /// Scan Types and auto-register any Script Methods, Blocks and Code Pages
+        /// </summary>
         public List<Type> ScanTypes { get; set; } = new List<Type>();
 
+        /// <summary>
+        /// Scan Assemblies and auto-register any Script Methods, Blocks and Code Pages
+        /// </summary>
         public List<Assembly> ScanAssemblies { get; set; } = new List<Assembly>();
+
+        /// <summary>
+        /// Allow scripting of Types from specified Assemblies
+        /// </summary>
+        public List<Assembly> ScriptAssemblies { get; set; } = new List<Assembly>();
+        
+        /// <summary>
+        /// Allow scripting of the specified Types
+        /// </summary>
+        public List<Type> ScriptTypes { get; set; } = new List<Type>();
+        
+        /// <summary>
+        /// Lookup Namespaces for resolving Types in Scripts
+        /// </summary>
+        public List<string> ScriptNamespaces { get; set; } = new List<string>();
+        
+        /// <summary>
+        /// Allow scripting of all Types in loaded Assemblies 
+        /// </summary>
+        public bool AllowScriptingOfAllTypes { get; set; }
+
+        /// <summary>
+        /// Register short Type name accessible from scripts. (Advanced, use ScriptAssemblies/ScriptTypes first)
+        /// </summary>
+        public Dictionary<string, Type> ScriptTypeNameMap { get; } = new Dictionary<string, Type>(); 
+        /// <summary>
+        /// Register long qualified Type name accessible from scripts. (Advanced, use ScriptAssemblies/ScriptTypes first)
+        /// </summary>
+        public Dictionary<string, Type> ScriptTypeQualifiedNameMap { get; } = new Dictionary<string, Type>(); 
 
         public IContainer Container { get; set; } = new SimpleContainer();
         
@@ -383,6 +418,24 @@ namespace ServiceStack.Script
             {
                 InitBlock(block);
                 blocksMap[block.Name] = block;
+            }
+
+            ScriptNamespaces = ScriptNamespaces.Distinct().ToList();
+            
+            var allTypes = new List<Type>(ScriptTypes);
+            foreach (var asm in ScriptAssemblies)
+            {
+                allTypes.AddRange(asm.GetTypes());
+            }
+
+            foreach (var type in allTypes)
+            {
+                if (!ScriptTypeNameMap.ContainsKey(type.Name))
+                    ScriptTypeNameMap[type.Name] = type;
+
+                var qualifiedName = DefaultMethods.typeQualifiedName(type);
+                if (!ScriptTypeQualifiedNameMap.ContainsKey(qualifiedName))
+                    ScriptTypeQualifiedNameMap[qualifiedName] = type;
             }
 
             var afterPlugins = Plugins.OfType<IScriptPluginAfter>();
