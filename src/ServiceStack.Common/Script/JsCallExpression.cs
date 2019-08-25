@@ -23,17 +23,70 @@ namespace ServiceStack.Script
 
         public override object Evaluate(ScriptScopeContext scope)
         {
+            object InvokeDelegate(Delegate fn, JsMemberExpression memberExpr, List<object> fnArgValues)
+            {
+                try 
+                { 
+                    var target = memberExpr?.Object.Evaluate(scope);
+                    if (memberExpr != null && target == StopExecution.Value)
+                        return target;
+
+                    if (fn is MethodInvoker methodInvoker)
+                    {
+                        if (memberExpr == null)
+                        {
+                            target = fnArgValues[0];
+                            fnArgValues.RemoveAt(0);
+                        }
+                        
+                        return methodInvoker(target, fnArgValues.ToArray());
+                    }
+                    if (fn is ActionInvoker actionInvoker)
+                    {
+                        if (memberExpr == null)
+                        {
+                            target = fnArgValues[0];
+                            fnArgValues.RemoveAt(0);
+                        }
+                        
+                        actionInvoker(target, fnArgValues.ToArray());
+                        return IgnoreResult.Value;
+                    }
+                    if (fn is StaticMethodInvoker staticMethodInvoker)
+                    {
+                        if (memberExpr != null)
+                            fnArgValues.Insert(0, target);
+                        return staticMethodInvoker(fnArgValues.ToArray());
+                    }
+                    if (fn is StaticActionInvoker staticActionInvoker)
+                    {
+                        if (memberExpr != null)
+                            fnArgValues.Insert(0, target);
+
+                        staticActionInvoker(fnArgValues.ToArray());
+                        return IgnoreResult.Value;
+                    }
+
+                    var delegateInvoker = fn.Method.GetInvokerDelegate();
+                    return InvokeDelegate(delegateInvoker, memberExpr, fnArgValues);
+                }
+                catch (Exception e)
+                {
+                    throw;
+                }
+            }
+
             string ResolveMethodName(JsToken token)
             {
                 if (token is JsIdentifier identifier)
                     return identifier.Name;
 
-                if (token is JsMemberExpression expr)
+                if (token is JsMemberExpression memberExpr)
                 {
-                    if (!expr.Computed)
-                        return JsObjectExpression.GetKey(expr.Property);
+                    if (!memberExpr.Computed)
+                        return JsObjectExpression.GetKey(memberExpr.Property);
 
-                    var propValue = expr.Property.Evaluate(scope);
+                    var propValue = memberExpr.Property.Evaluate(scope);
                     if (!(propValue is string s))
                         throw new NotSupportedException($"Expected string method name but was '{propValue?.GetType().Name ?? "null"}'");
                     return s;
@@ -53,25 +106,18 @@ namespace ServiceStack.Script
             if (result.StackDepth > ScriptConfig.MaxStackDepth)
                 throw new NotSupportedException("Exceeded MaxStackDepth of " + ScriptConfig.MaxStackDepth);
 
+            var expr = Callee as JsMemberExpression;
+
             if (Arguments.Length == 0)
             {
-                var argFn = scope.GetValue(name);
+                var argFn = ResolveDelegate(scope, name);
                 if (argFn is Delegate fn)
                 {
-                    var target = !fn.Method.IsStatic
-                        ? fn.Method.DeclaringType.CreateInstance()
-                        : null;
-
-                    if (fn is MethodInvoker argInvoker)
-                    {
-                        return argInvoker(target);
-                    }
-
-                    var ret = fn.InvokeMethod(target);
+                    var ret = InvokeDelegate(fn, expr, new List<object>());
                     return ret;
                 }
 
-                if (Callee is JsMemberExpression expr)
+                if (expr != null)
                 {
                     invoker = result.GetFilterInvoker(name, 1, out filter);
                     if (invoker != null)
@@ -112,31 +158,13 @@ namespace ServiceStack.Script
                     }
                 }
 
-                var expr = Callee as JsMemberExpression;
+                object argFn = null;
+                argFn = ResolveDelegate(scope, name);
 
-                var argFn = scope.GetValue(name);
                 if (argFn is Delegate fn)
                 {
-                    var target = !fn.Method.IsStatic
-                        ? fn.Method.DeclaringType.CreateInstance()
-                        : null;
-
-                    var argFnInvoker = argFn as MethodInvoker ?? fn.Method.GetInvoker();
                     var fnArgValues = EvaluateArgumentValues(scope, Arguments);
-
-                    if (expr != null)
-                    {
-                        if (fnArgValues.Count < fn.Method.GetParameters().Length)
-                        {
-                            var targetValue = expr.Object.Evaluate(scope);
-                            if (targetValue == StopExecution.Value)
-                                return targetValue;
-
-                            fnArgValues.Insert(0, targetValue);
-                        }
-                    }
-
-                    var ret = argFnInvoker(target, fnArgValues.ToArray());
+                    var ret = InvokeDelegate(fn, expr, fnArgValues);
                     return ret;
                 }
 
@@ -193,6 +221,19 @@ namespace ServiceStack.Script
 
                 throw new NotSupportedException(result.CreateMissingFilterErrorMessage(name.LeftPart('(')));
             }
+        }
+
+        private object ResolveDelegate(ScriptScopeContext scope, string name)
+        {
+            if (name == null)
+            {
+                if (Callee is JsCallExpression)
+                    return Callee.Evaluate(scope);
+            }
+            else
+                return scope.GetValue(name);
+
+            return null;
         }
 
         public static List<object> EvaluateArgumentValues(ScriptScopeContext scope, JsToken[] args)

@@ -1119,6 +1119,12 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
         public static ScriptContext InitForSharpPages(this ScriptContext context, IAppHost appHost)
         {
             context.Container = appHost.GetContainer();
+            context.AllowScriptingOfAllTypes = true;
+            context.ScriptNamespaces.AddRange(new [] {
+                "System",
+                "System.Collections.Generic",
+                "ServiceStack",
+            });
             context.ScriptMethods.Add(new ProtectedScripts());
             context.ScriptMethods.Add(new InfoScripts());
             context.ScriptMethods.Add(new ServiceStackScripts());
