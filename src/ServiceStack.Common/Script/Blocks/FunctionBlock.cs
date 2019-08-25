@@ -18,7 +18,7 @@ namespace ServiceStack.Script
 
         public override Task WriteAsync(ScriptScopeContext scope, PageBlockFragment block, CancellationToken token)
         {
-            var invokerCtx = (Tuple<string,MethodInvoker>)scope.Context.CacheMemory.GetOrAdd(block.Argument, key => {
+            var invokerCtx = (Tuple<string,StaticMethodInvoker>)scope.Context.CacheMemory.GetOrAdd(block.Argument, key => {
                 var literal = block.Argument.Span.ParseVarName(out var name);
                 var strName = name.ToString();
                 literal = literal.AdvancePastWhitespace();
@@ -36,7 +36,7 @@ namespace ServiceStack.Script
                 var script = ScriptPreprocessors.TransformStatementBody(strFragment.ValueString);
                 var parsedScript = scope.Context.OneTimePage(script);
 
-                MethodInvoker invoker = null;
+                StaticMethodInvoker invoker = null;
 
                 // Allow recursion by initializing lazy Delegate
                 object LazyInvoker(object instance, object[] paramValues)
@@ -47,7 +47,7 @@ namespace ServiceStack.Script
                     return invoker(instance, paramValues);
                 }
 
-                invoker = (instance, paramValues) => {
+                invoker = (paramValues) => {
                     scope.PageResult.StackDepth++;
                     try
                     {
