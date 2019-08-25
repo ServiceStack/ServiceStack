@@ -43,8 +43,6 @@ namespace ServiceStack.Mvc
 
         public static string DefaultLayout { get; set; } = "_Layout";
 
-        public IVirtualPathProvider VirtualFileSources { get; set; }
-
         public List<string> ViewLocations { get; set; }
 
         public string PagesPath { get; set; } = "~/Views/Pages";

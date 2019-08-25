@@ -25,7 +25,6 @@ using ServiceStack.IO;
 using ServiceStack.MiniProfiler;
 using ServiceStack.MiniProfiler.Data;
 using ServiceStack.NativeTypes.CSharp;
-using ServiceStack.OrmLite;
 using ServiceStack.ProtoBuf;
 using ServiceStack.Razor;
 using ServiceStack.Text;
@@ -123,57 +122,57 @@ namespace CheckWeb
 
             Plugins.Add(new DynamicallyRegisteredPlugin());
 
-            container.Register<IDbConnectionFactory>(
-                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
-            //container.Register<IDbConnectionFactory>(
-            //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=test;", SqlServerDialect.Provider));
-
-            using (var db = container.Resolve<IDbConnectionFactory>().Open())
-            {
-                db.DropAndCreateTable<Rockstar>();
-                db.InsertAll(GetRockstars());
-
-                db.DropAndCreateTable<AllTypes>();
-                db.Insert(new AllTypes
-                {
-                    Id = 1,
-                    Int = 2,
-                    Long = 3,
-                    Float = 1.1f,
-                    Double = 2.2,
-                    Decimal = 3.3m,
-                    DateTime = DateTime.Now,
-                    Guid = Guid.NewGuid(),
-                    TimeSpan = TimeSpan.FromMilliseconds(1),
-                    String = "String"
-                });
-            }
-
-            Plugins.Add(new MiniProfilerFeature());
-
-            var dbFactory = (OrmLiteConnectionFactory)container.Resolve<IDbConnectionFactory>();
-            dbFactory.RegisterConnection("SqlServer",
-                new OrmLiteConnectionFactory(
-                    "Server=localhost;Database=test;User Id=test;Password=test;",
-                    SqlServerDialect.Provider)
-                {
-                    ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
-                });
-
-            dbFactory.RegisterConnection("pgsql",
-                new OrmLiteConnectionFactory(
-                    Environment.GetEnvironmentVariable("PGSQL_CONNECTION") ?? 
-                    "Server=localhost;Port=5432;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200",
-                    PostgreSqlDialect.Provider));
-
-            using (var db = dbFactory.OpenDbConnection("pgsql"))
-            {
-                db.DropAndCreateTable<Rockstar>();
-                db.DropAndCreateTable<PgRockstar>();
-
-                db.Insert(new Rockstar { Id = 1, FirstName = "PostgreSQL", LastName = "Connection", Age = 1 });
-                db.Insert(new PgRockstar { Id = 1, FirstName = "PostgreSQL", LastName = "Named Connection", Age = 1 });
-            }
+//            container.Register<IDbConnectionFactory>(
+//                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
+//            //container.Register<IDbConnectionFactory>(
+//            //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=test;", SqlServerDialect.Provider));
+//
+//            using (var db = container.Resolve<IDbConnectionFactory>().Open())
+//            {
+//                db.DropAndCreateTable<Rockstar>();
+//                db.InsertAll(GetRockstars());
+//
+//                db.DropAndCreateTable<AllTypes>();
+//                db.Insert(new AllTypes
+//                {
+//                    Id = 1,
+//                    Int = 2,
+//                    Long = 3,
+//                    Float = 1.1f,
+//                    Double = 2.2,
+//                    Decimal = 3.3m,
+//                    DateTime = DateTime.Now,
+//                    Guid = Guid.NewGuid(),
+//                    TimeSpan = TimeSpan.FromMilliseconds(1),
+//                    String = "String"
+//                });
+//            }
+//
+//            Plugins.Add(new MiniProfilerFeature());
+//
+//            var dbFactory = (OrmLiteConnectionFactory)container.Resolve<IDbConnectionFactory>();
+//            dbFactory.RegisterConnection("SqlServer",
+//                new OrmLiteConnectionFactory(
+//                    "Server=localhost;Database=test;User Id=test;Password=test;",
+//                    SqlServerDialect.Provider)
+//                {
+//                    ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
+//                });
+//
+//            dbFactory.RegisterConnection("pgsql",
+//                new OrmLiteConnectionFactory(
+//                    Environment.GetEnvironmentVariable("PGSQL_CONNECTION") ?? 
+//                    "Server=localhost;Port=5432;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200",
+//                    PostgreSqlDialect.Provider));
+//
+//            using (var db = dbFactory.OpenDbConnection("pgsql"))
+//            {
+//                db.DropAndCreateTable<Rockstar>();
+//                db.DropAndCreateTable<PgRockstar>();
+//
+//                db.Insert(new Rockstar { Id = 1, FirstName = "PostgreSQL", LastName = "Connection", Age = 1 });
+//                db.Insert(new PgRockstar { Id = 1, FirstName = "PostgreSQL", LastName = "Named Connection", Age = 1 });
+//            }
 
             //this.GlobalHtmlErrorHttpHandler = new RazorHandler("GlobalErrorHandler.cshtml");
 
@@ -262,24 +261,24 @@ namespace CheckWeb
                         AuthKey = Convert.FromBase64String("3n/aJNQHPx0cLu/2dN3jWf0GSYL35QlMqgz+LH3hUyA="),
                         RequireSecureConnection = false,
                     },
-                    new ApiKeyAuthProvider(AppSettings),
+//                    new ApiKeyAuthProvider(AppSettings),
                     new BasicAuthProvider(AppSettings),
                 }));
 
             Plugins.Add(new RegistrationFeature());
 
-            var authRepo = new OrmLiteAuthRepository(container.Resolve<IDbConnectionFactory>());
-            container.Register<IAuthRepository>(c => authRepo);
-            authRepo.InitSchema();
-
-            authRepo.CreateUserAuth(new UserAuth
-            {
-                UserName = "test",
-                DisplayName = "Credentials",
-                FirstName = "First",
-                LastName = "Last",
-                FullName = "First Last",
-            }, "test");
+//            var authRepo = new OrmLiteAuthRepository(container.Resolve<IDbConnectionFactory>());
+//            container.Register<IAuthRepository>(c => authRepo);
+//            authRepo.InitSchema();
+//
+//            authRepo.CreateUserAuth(new UserAuth
+//            {
+//                UserName = "test",
+//                DisplayName = "Credentials",
+//                FirstName = "First",
+//                LastName = "Last",
+//                FullName = "First Last",
+//            }, "test");
         }
 
         /// <summary>
