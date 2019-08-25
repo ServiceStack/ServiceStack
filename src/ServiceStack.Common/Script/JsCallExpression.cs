@@ -20,62 +20,66 @@ namespace ServiceStack.Script
         private string nameString;
         public string Name => nameString ?? (nameString = Callee is JsIdentifier identifier ? identifier.Name : null);
 
+        public static object InvokeDelegate(Delegate fn, object target, bool isMemberExpr, List<object> fnArgValues)
+        {
+            try 
+            { 
+                if (fn is MethodInvoker methodInvoker)
+                {
+                    if (target == null && !isMemberExpr && fnArgValues.Count > 0)
+                    {
+                        target = fnArgValues[0];
+                        fnArgValues.RemoveAt(0);
+                    }
+
+                    return methodInvoker(target, fnArgValues.ToArray());
+                }
+                if (fn is ActionInvoker actionInvoker)
+                {
+                    if (target == null && !isMemberExpr && fnArgValues.Count > 0)
+                    {
+                        target = fnArgValues[0];
+                        fnArgValues.RemoveAt(0);
+                    }
+                    
+                    actionInvoker(target, fnArgValues.ToArray());
+                    return IgnoreResult.Value;
+                }
+                if (fn is StaticMethodInvoker staticMethodInvoker)
+                {
+                    if (isMemberExpr)
+                        fnArgValues.Insert(0, target);
+                    
+                    return staticMethodInvoker(fnArgValues.ToArray());
+                }
+                if (fn is StaticActionInvoker staticActionInvoker)
+                {
+                    if (isMemberExpr)
+                        fnArgValues.Insert(0, target);
+
+                    staticActionInvoker(fnArgValues.ToArray());
+                    return IgnoreResult.Value;
+                }
+
+                var delegateInvoker = fn.Method.GetInvokerDelegate();
+
+                if (target != null && isMemberExpr)
+                {
+                    fnArgValues.Insert(0, target);
+                }
+                
+                return InvokeDelegate(delegateInvoker, 
+                    fn.Method.DeclaringType.CreateInstance(), 
+                    isMemberExpr, fnArgValues);
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
+        }
 
         public override object Evaluate(ScriptScopeContext scope)
         {
-            object InvokeDelegate(Delegate fn, JsMemberExpression memberExpr, List<object> fnArgValues)
-            {
-                try 
-                { 
-                    var target = memberExpr?.Object.Evaluate(scope);
-                    if (memberExpr != null && target == StopExecution.Value)
-                        return target;
-
-                    if (fn is MethodInvoker methodInvoker)
-                    {
-                        if (memberExpr == null)
-                        {
-                            target = fnArgValues[0];
-                            fnArgValues.RemoveAt(0);
-                        }
-                        
-                        return methodInvoker(target, fnArgValues.ToArray());
-                    }
-                    if (fn is ActionInvoker actionInvoker)
-                    {
-                        if (memberExpr == null)
-                        {
-                            target = fnArgValues[0];
-                            fnArgValues.RemoveAt(0);
-                        }
-                        
-                        actionInvoker(target, fnArgValues.ToArray());
-                        return IgnoreResult.Value;
-                    }
-                    if (fn is StaticMethodInvoker staticMethodInvoker)
-                    {
-                        if (memberExpr != null)
-                            fnArgValues.Insert(0, target);
-                        return staticMethodInvoker(fnArgValues.ToArray());
-                    }
-                    if (fn is StaticActionInvoker staticActionInvoker)
-                    {
-                        if (memberExpr != null)
-                            fnArgValues.Insert(0, target);
-
-                        staticActionInvoker(fnArgValues.ToArray());
-                        return IgnoreResult.Value;
-                    }
-
-                    var delegateInvoker = fn.Method.GetInvokerDelegate();
-                    return InvokeDelegate(delegateInvoker, memberExpr, fnArgValues);
-                }
-                catch (Exception e)
-                {
-                    throw;
-                }
-            }
-
             string ResolveMethodName(JsToken token)
             {
                 if (token is JsIdentifier identifier)
@@ -113,7 +117,7 @@ namespace ServiceStack.Script
                 var argFn = ResolveDelegate(scope, name);
                 if (argFn is Delegate fn)
                 {
-                    var ret = InvokeDelegate(fn, expr, new List<object>());
+                    var ret = InvokeDelegate(fn, expr?.Object.Evaluate(scope), expr != null, new List<object>());
                     return ret;
                 }
 
@@ -164,7 +168,7 @@ namespace ServiceStack.Script
                 if (argFn is Delegate fn)
                 {
                     var fnArgValues = EvaluateArgumentValues(scope, Arguments);
-                    var ret = InvokeDelegate(fn, expr, fnArgValues);
+                    var ret = InvokeDelegate(fn, expr?.Object.Evaluate(scope), expr != null, fnArgValues);
                     return ret;
                 }
 
