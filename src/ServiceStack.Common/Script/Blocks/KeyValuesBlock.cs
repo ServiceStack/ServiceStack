@@ -6,13 +6,14 @@ using ServiceStack.Text;
 namespace ServiceStack.Script
 {
     /// <summary>
-    /// Parse text contents into Key/Value string dictionary and assign to identifier
+    /// Parse text contents into a list of string Key/Value pairs and assign to specified identifier
     /// Usage: {{#keyvalues list}}
     ///          Apples  2
     ///          Oranges 3
     ///        {{/keyvalues}}
     ///        {{#keyvalues list ':'}}
     ///          Grape Fruit:  2
+    ///          Rock Melon:   3
     ///        {{/keyvalues}}
     /// </summary>
     public class KeyValuesBlock : ScriptBlock
@@ -29,7 +30,7 @@ namespace ServiceStack.Script
             {
                 literal = literal.ParseJsToken(out var token);
                 if (!(token is JsLiteral litToken))
-                    throw new NotSupportedException($"'keyvalues' block expected string delimiter but was {token.DebugToken()}");
+                    throw new NotSupportedException($"#keyvalues expected string delimiter but was {token.DebugToken()}");
                 delimiter = litToken.Value.ToString();
             }
             
