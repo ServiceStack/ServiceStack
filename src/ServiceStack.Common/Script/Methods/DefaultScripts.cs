@@ -853,36 +853,8 @@ namespace ServiceStack.Script
         }
 
         public IRawString typeName(object target) => (target?.GetType().Name ?? "null").ToRawString();
-        public string typeQualifiedName(Type type)
-        {
-            if (type == null)
-                throw new ArgumentNullException(nameof(type));
-
-            var sb = StringBuilderCache.Allocate();
-            sb.Append(type.Namespace).Append('.');
-            
-            if (type.GenericTypeArguments.Length > 0)
-            {
-                sb.Append(type.Name.LeftPart('`'))
-                  .Append('<');
-
-                var i = 0;
-                foreach (var arg in type.GenericTypeArguments)
-                {
-                    if (i++ > 0)
-                        sb.Append(',');
-                    
-                    sb.Append(typeQualifiedName(arg));
-                }
-                sb.Append('>');
-            }
-            else
-            {
-                sb.Append(type.Name);
-            }
-
-            return StringBuilderCache.ReturnAndFree(sb);
-        }
+        public IRawString typeFullName(object target) => 
+            (target != null ? Context.ProtectedMethods.typeQualifiedName(target.GetType()) : "null").ToRawString();
 
         public IEnumerable of(ScriptScopeContext scope, IEnumerable target, object scopeOptions)
         {
