@@ -14,8 +14,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
     <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+    <ProjectReference Include="..\ServiceStack\ServiceStack.Source.csproj" />
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.Source.csproj" />
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.Source.csproj" />
     <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
