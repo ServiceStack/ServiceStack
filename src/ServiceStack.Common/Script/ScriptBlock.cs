@@ -96,7 +96,7 @@ namespace ServiceStack.Script
         public void Register(ScriptContext context)
         {
             context.ScriptBlocks.AddRange(new ScriptBlock[] {
-                new EvalScriptBlock(), // evalTemplate filter has same functionality and is registered by default 
+                new EvalScriptBlock(), // evalScript has same functionality and is registered by default 
             });
         }
     }

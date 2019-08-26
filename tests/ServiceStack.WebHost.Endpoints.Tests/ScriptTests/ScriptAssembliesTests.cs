@@ -8,9 +8,9 @@ using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 {
-    public class IntTuple
+    public class Ints
     {
-        public IntTuple(int a, int b)
+        public Ints(int a, int b)
         {
             A = a;
             B = b;
@@ -73,8 +73,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 ScriptMethods = {
                     new ProtectedScripts()
                 },
-                ScriptAssemblies = {
-                    typeof(DynamicInt).Assembly,
+                ScriptTypes = {
+                    typeof(DynamicInt),
                 }
             };
 
@@ -96,12 +96,31 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             
             Assert.That(result, Is.EqualTo(nameof(DynamicInt)));
             
-            result = context.EvaluateScript("{{ 'ServiceStack.WebHost.Endpoints.Tests.ScriptTests.IntTuple'.typeof().Name }}");
+            result = context.EvaluateScript("{{ 'ServiceStack.WebHost.Endpoints.Tests.ScriptTests.Ints'.typeof().Name }}");
             Assert.That(result, Is.Empty);
             
             context = CreateContext(c => c.AllowScriptingOfAllTypes = true).Init();
-            result = context.EvaluateScript("{{ 'ServiceStack.WebHost.Endpoints.Tests.ScriptTests.IntTuple'.typeof().Name }}");
-            Assert.That(result, Is.EqualTo(nameof(IntTuple)));
+            result = context.EvaluateScript("{{ 'ServiceStack.WebHost.Endpoints.Tests.ScriptTests.Ints'.typeof().Name }}");
+            Assert.That(result, Is.EqualTo(nameof(Ints)));
+        }
+
+        [Test]
+        public void typeof_returns_correct_types()
+        {
+            var context = CreateContext(c => {
+                c.AllowScriptingOfAllTypes = true;
+                c.ScriptNamespaces.Add("System");
+                c.ScriptNamespaces.Add("System.Collections.Generic");
+            }).Init();
+            
+            Assert.That(context.Evaluate<Type>("{{ typeof('int') | return}}"), Is.EqualTo(typeof(int)));
+            Assert.That(context.Evaluate<Type>("{{ typeof('Int32') | return}}"), Is.EqualTo(typeof(Int32)));
+            Assert.That(context.Evaluate<Type>("{{ typeof('List<>') | return}}"), Is.EqualTo(typeof(List<>)));
+            Assert.That(context.Evaluate<Type>("{{ typeof('Dictionary<,>') | return}}"), Is.EqualTo(typeof(Dictionary<,>)));
+            Assert.That(context.Evaluate<Type>("{{ typeof('List<string>') | return}}"), Is.EqualTo(typeof(List<string>)));
+            Assert.That(context.Evaluate<Type>("{{ typeof('Dictionary<string,int>') | return}}"), Is.EqualTo(typeof(Dictionary<string,int>)));
+            Assert.That(context.Evaluate<Type>("{{ typeof('Dictionary<String,Int32>') | return}}"), Is.EqualTo(typeof(Dictionary<string,int>)));
+            Assert.That(context.Evaluate<Type>("{{ typeof('Dictionary<String,ServiceStack.WebHost.Endpoints.Tests.ScriptTests.Ints>') | return}}"), Is.EqualTo(typeof(Dictionary<string,Ints>)));
         }
 
         [Test]
@@ -126,17 +145,58 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         }
 
         [Test]
+        public void Can_create_Type_from_registered_Script_Assembly_from_Constructor_ObjectActivator()
+        {
+            var context = CreateContext(c => {
+                c.AllowScriptingOfAllTypes = true;
+                c.ScriptNamespaces.Add("System");
+            }).Init();
+
+            var result = context.Evaluate<object>(
+                @"{{ Constructor('DynamicInt()') | to => ctor }}{{ ctor() | return }}");
+            Assert.That(result.GetType(), Is.EqualTo(typeof(DynamicInt)));
+
+            result = context.Evaluate<object>(
+                @"{{ Constructor('DynamicInt()')() | return }}");
+            Assert.That(result.GetType(), Is.EqualTo(typeof(DynamicInt)));
+            
+            result = context.Evaluate<object>(
+                @"{{ Constructor('DateTime(int,int,int)')(2001,1,1) | return }}");
+            Assert.That(result, Is.EqualTo(new DateTime(2001,1,1)));
+            
+            result = context.Evaluate<object>(
+                @"{{ Constructor('DateTime(int,int,int)') | to => newDate }}{{ newDate(2001,1,1) | return }}");
+            Assert.That(result, Is.EqualTo(new DateTime(2001,1,1)));
+            
+            result = context.Evaluate<object>(
+                @"{{ Constructor('DateTime(int,int,int)') | to => newDate }}{{ 2001.newDate(1,1) | return }}");
+            Assert.That(result, Is.EqualTo(new DateTime(2001,1,1)));
+         
+            result = context.Evaluate<object>(
+                @"{{ Constructor('Tuple<string,int>(System.String,System.Int32)') | to => tuple }}{{ tuple('A',1) | to => pair }}{{ `${pair.Item1}=${pair.Item2}` | return }}");
+            Assert.That(result, Is.EqualTo("A=1"));
+         
+            result = context.Evaluate<object>(
+                @"{{ Constructor('System.Collections.Generic.KeyValuePair<string,int>(System.String,System.Int32)')('A',1) | to => kvp }}{{ `${kvp.Key}=${kvp.Value}` | return }}");
+            Assert.That(result, Is.EqualTo("A=1"));
+            
+            result = context.Evaluate<object>(
+                @"{{ Constructor('System.Collections.Generic.KeyValuePair<char,double>(char,double)')('A',1) | to => kvp }}{{ `${kvp.Key}=${kvp.Value}` | return }}");
+            Assert.That(result, Is.EqualTo("A=1"));
+        }
+
+        [Test]
         public void Can_call_generic_methods()
         {
-            var context = CreateContext(c => c.ScriptAssemblies.Add(typeof(IntTuple).Assembly)).Init();
+            var context = CreateContext(c => c.ScriptAssemblies.Add(typeof(Ints).Assembly)).Init();
 
             var result = context.Evaluate<string>(
-                "{{ 'IntTuple'.new([1,2]).call('GenericMethod<string>') | return }}");
+                "{{ 'Ints'.new([1,2]).call('GenericMethod<string>') | return }}");
             
             Assert.That(result, Is.EqualTo("String 3"));
 
             result = context.Evaluate<string>(
-                "{{ 'IntTuple'.new([1,2]).call('GenericMethod<string>',['arg']) | return }}");
+                "{{ 'Ints'.new([1,2]).call('GenericMethod<string>',['arg']) | return }}");
             
             Assert.That(result, Is.EqualTo("String arg 3"));
         }
@@ -144,16 +204,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         [Test]
         public void Can_create_type_with_constructor_arguments()
         {
-            var context = CreateContext(c => c.ScriptAssemblies.Add(typeof(IntTuple).Assembly)).Init();
+            var context = CreateContext(c => c.ScriptAssemblies.Add(typeof(Ints).Assembly)).Init();
             
             var result = context.Evaluate<int>(
-                "{{ 'IntTuple'.new([1,2]).call('GetTotal') | return }}");
-            
+                "{{ 'Ints'.new([1,2]).call('GetTotal') | return }}");
             Assert.That(result, Is.EqualTo(3));
             
             result = context.Evaluate<int>(
-                "{{ 'IntTuple'.new([1,2]).set({ C:3, D:4 }).call('GetTotal') | return }}");
+                "{{ 'Ints'.new([1,2]).set({ C:3, D:4 }).call('GetTotal') | return }}");
+            Assert.That(result, Is.EqualTo(10));
             
+            result = context.Evaluate<int>(
+                "{{ Constructor('Ints(int,int)')(1,2).set({ C:3, D:4 }).call('GetTotal') | return }}");
+            Assert.That(result, Is.EqualTo(10));
+            
+            result = context.Evaluate<int>(
+                "{{ Function('Ints.GetTotal') | to => total}}" +
+                "{{ Constructor('Ints(int,int)') | to => tuple}}" +
+                "{{ tuple(1,2).set({ C:3, D:4 }).total() | return }}");
             Assert.That(result, Is.EqualTo(10));
         }
 
@@ -177,8 +245,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var context = CreateContext(c => c.AllowScriptingOfAllTypes = true).Init();
 
             var result = context.Evaluate(
-                "{{ 'ServiceStack.WebHost.Endpoints.Tests.ScriptTests.IntTuple'.new() | return}}");
-            Assert.That(result as IntTuple, Is.Not.Null);
+                "{{ 'ServiceStack.WebHost.Endpoints.Tests.ScriptTests.Ints'.new() | return}}");
+            Assert.That(result as Ints, Is.Not.Null);
+        }
+
+        [Test]
+        public void Script_Types_Use_Case()
+        {
+            var context = CreateContext().Init();
+
+            var result = context.EvaluateScript("{{ 'DateTime'.new() }}");
+            
+            result.Print();
         }
 
         [Test]
@@ -218,7 +296,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 c.AllowScriptingOfAllTypes = true;
                 c.ScriptNamespaces.Add(typeof(GenericStaticLog<>).Namespace);
             }).Init();
-
+            
             string result = null;
             
             GenericStaticLog<string>.Clear();
@@ -267,7 +345,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 {{ log(o,'param.') }}
                 {{ Function('InstanceLog.AllLogs') | to => allLogs }}{{ o.allLogs() | return }}");
             Assert.That(result, Is.EqualTo("instance Int32 arg.instance Int32 param."));
-          
         }
     }
 }

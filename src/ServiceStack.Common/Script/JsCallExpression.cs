@@ -60,6 +60,13 @@ namespace ServiceStack.Script
                     staticActionInvoker(fnArgValues.ToArray());
                     return IgnoreResult.Value;
                 }
+                if (fn is ObjectActivator activator)
+                {
+                    if (isMemberExpr)
+                        fnArgValues.Insert(0, target);
+
+                    return activator(fnArgValues.ToArray());
+                }
 
                 var delegateInvoker = fn.Method.GetInvokerDelegate();
 

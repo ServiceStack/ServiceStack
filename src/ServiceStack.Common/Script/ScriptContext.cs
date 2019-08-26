@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.IO;
-using ServiceStack.Script;
 using ServiceStack.Text;
 
 namespace ServiceStack.Script
