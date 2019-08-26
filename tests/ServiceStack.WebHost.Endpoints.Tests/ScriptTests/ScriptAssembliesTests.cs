@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using Funq;
 using NUnit.Framework;
@@ -24,6 +25,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         public string GenericMethod<T>() => typeof(T).Name + " " + GetTotal();
 
         public string GenericMethod<T>(T value) => typeof(T).Name + $" {value} " + GetTotal();
+    }
+
+    public class Adder
+    {
+        public string String { get; set; }
+        public double Double { get; set; }
+
+        public Adder(string str) => String = str;
+        public Adder(double num) => Double = num;
+
+        public string Add(string str) => String += str;
+        public double Add(double num) => Double += num;
+        
+        public override string ToString() => String != null ? $"string: {String}" : $"double: {Double}";
     }
 
     public class StaticLog
@@ -143,6 +158,66 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             result = context.EvaluateScript(
                 @"{{ typeof('DynamicInt').createInstance() | to => d }}{{ d.call('add', [3, 4]) }}");
             Assert.That(result, Is.EqualTo("7"));
+        }
+
+        [Test]
+        public void Cant_create_instances_from_ambiguous_constructors()
+        {
+            var context = CreateContext(c => c.ScriptTypes.Add(typeof(Adder))).Init();
+
+            object result = null;
+
+            try 
+            { 
+                result = context.Evaluate("{{ 'Adder'.new([1]) }}");
+                Assert.Fail("Should throw");
+            }
+            catch (ScriptException e)
+            {
+                Assert.That(e.InnerException.InnerException.GetType(), Is.EqualTo(typeof(NotSupportedException)));
+            }
+            
+            result = context.Evaluate("{{ 'Adder'.new([1.toString()]) | to => o }}{{ o.String | return }}");
+            Assert.That(result, Is.EqualTo("1"));
+            
+            result = context.Evaluate("{{ 'Adder'.new([1.toDouble()]) | to => o }}{{ o.Double | return }}");
+            Assert.That(result, Is.EqualTo(1.0d));
+            
+            result = context.Evaluate("{{ Constructor('Adder(string)')(1) | to => o }}{{ o.String | return }}");
+            Assert.That(result, Is.EqualTo("1"));
+            
+            result = context.Evaluate("{{ Constructor('Adder(double)')(1) | to => o }}{{ o.Double | return }}");
+            Assert.That(result, Is.EqualTo(1.0d));
+        }
+
+        [Test]
+        public void Can_call_ambiguous_methods()
+        {
+            var context = CreateContext(c => c.ScriptTypes.Add(typeof(Adder))).Init();
+
+            object result = null;
+
+            try 
+            { 
+                result = context.Evaluate("{{ 'Adder'.new(['1']) | to => o }}{{ o.call('Add',[1]) }}{{ o.String | return }}");
+                Assert.Fail("Should throw");
+            }
+            catch (ScriptException e)
+            {
+                Assert.That(e.InnerException.InnerException.GetType(), Is.EqualTo(typeof(NotSupportedException)));
+            }
+            
+            result = context.Evaluate("{{ 'Adder'.new(['1']) | to => o }}{{ o.call('Add',['1']) }}{{ o.String | return }}");
+            Assert.That(result, Is.EqualTo("11"));
+            
+            result = context.Evaluate("{{ 'Adder'.new([1.0]) | to => o }}{{ o.call('Add',[1.0]) }}{{ o.Double | return }}");
+            Assert.That(result, Is.EqualTo(2.0d));
+            
+            result = context.Evaluate("{{ Constructor('Adder(string)')(1) | to => o }}{{ Function('Adder.Add(string)') | to => adder }}{{ o.adder(1) | return }}");
+            Assert.That(result, Is.EqualTo("11"));
+            
+            result = context.Evaluate("{{ Constructor('Adder(double)')(1) | to => o }}{{ Function('Adder.Add(double)') | to => adder }}{{ o.adder(1) | return }}");
+            Assert.That(result, Is.EqualTo(2.0d));
         }
 
         [Test]
