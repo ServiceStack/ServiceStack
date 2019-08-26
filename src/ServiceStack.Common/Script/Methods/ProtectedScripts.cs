@@ -24,7 +24,7 @@ namespace ServiceStack.Script
         {
             var type = @typeof(typeName);
             return type != null 
-                ? create(type) 
+                ? createInstance(type) 
                 : null;
         }
 
@@ -32,7 +32,7 @@ namespace ServiceStack.Script
         {
             var type = @typeof(typeName);
             return type != null 
-                ? create(type, constructorArgs) 
+                ? createInstance(type, constructorArgs) 
                 : null;
         }
 
@@ -67,9 +67,9 @@ namespace ServiceStack.Script
             return splitArgs;
         }
 
-        public object create(Type type) => type.CreateInstance();
+        public object createInstance(Type type) => type.CreateInstance();
 
-        public object create(Type type, List<object> constructorArgs)
+        public object createInstance(Type type, List<object> constructorArgs)
         {
             var key = callKey(type, "<new>", constructorArgs);
 

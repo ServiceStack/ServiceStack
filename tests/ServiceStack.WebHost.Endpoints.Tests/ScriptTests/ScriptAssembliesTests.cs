@@ -130,18 +130,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
             var result = context.EvaluateScript(
                 @"{{ 'DynamicInt'.new() | to => d }}{{ d.call('add', [1, 2]) }}");
-            
             Assert.That(result, Is.EqualTo("3"));
 
             result = context.EvaluateScript(
                 @"{{ 'DynamicInt'.new() | to => d }}{{ d.call('add', [3, 4]) }}");
-            
             Assert.That(result, Is.EqualTo("7"));
 
             result = context.EvaluateScript(
                 @"{{ 'ServiceStack.DynamicInt'.new() | to => d }}{{ d.call('add', [5, 6]) }}");
-            
             Assert.That(result, Is.EqualTo("11"));
+            
+            result = context.EvaluateScript(
+                @"{{ typeof('DynamicInt').createInstance() | to => d }}{{ d.call('add', [3, 4]) }}");
+            Assert.That(result, Is.EqualTo("7"));
         }
 
         [Test]
@@ -192,12 +193,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
             var result = context.Evaluate<string>(
                 "{{ 'Ints'.new([1,2]).call('GenericMethod<string>') | return }}");
-            
             Assert.That(result, Is.EqualTo("String 3"));
 
             result = context.Evaluate<string>(
                 "{{ 'Ints'.new([1,2]).call('GenericMethod<string>',['arg']) | return }}");
-            
+            Assert.That(result, Is.EqualTo("String arg 3"));
+
+            result = context.Evaluate<string>(
+                "{{ typeof('Ints').createInstance([1,2]).call('GenericMethod<string>',['arg']) | return }}");
             Assert.That(result, Is.EqualTo("String arg 3"));
         }
 
@@ -208,6 +211,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             
             var result = context.Evaluate<int>(
                 "{{ 'Ints'.new([1,2]).call('GetTotal') | return }}");
+            Assert.That(result, Is.EqualTo(3));
+            
+            result = context.Evaluate<int>(
+                "{{ typeof('Ints').createInstance([1,2]).call('GetTotal') | return }}");
             Assert.That(result, Is.EqualTo(3));
             
             result = context.Evaluate<int>(
@@ -235,7 +242,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
             var result = context.EvaluateScript(
                 "{{ 'KeyValuePair<string,int>'.new(['A',1]) | to => kvp }}{{ kvp.Key }}={{ kvp.Value }}");
-            
+            Assert.That(result, Is.EqualTo("A=1"));
+
+            result = context.EvaluateScript(
+                "{{ typeof('KeyValuePair<string,int>').createInstance(['A',1]) | to => kvp }}{{ kvp.Key }}={{ kvp.Value }}");
             Assert.That(result, Is.EqualTo("A=1"));
         }
 
