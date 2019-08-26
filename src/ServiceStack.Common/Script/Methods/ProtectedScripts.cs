@@ -22,7 +22,7 @@ namespace ServiceStack.Script
     {
         public object @new(string typeName)
         {
-            var type = nonGenericType(typeName);
+            var type = @typeof(typeName);
             return type != null 
                 ? create(type) 
                 : null;
@@ -30,7 +30,7 @@ namespace ServiceStack.Script
 
         public object @new(string typeName, List<object> constructorArgs)
         {
-            var type = nonGenericType(typeName);
+            var type = @typeof(typeName);
             return type != null 
                 ? create(type, constructorArgs) 
                 : null;
@@ -40,22 +40,6 @@ namespace ServiceStack.Script
         {
             args.PopulateInstance(instance);
             return instance;
-        }
-
-        public Type nonGenericType(string typeName)
-        {
-            var type = @typeof(typeName);
-            if (type == null)
-                return null;
-            
-            if (type.IsGenericType)
-            {
-                var genericTypes = typeGenericTypes(typeName);
-                var cookedType = type.MakeGenericType(genericTypes);
-                return cookedType;
-            }
-            
-            return type;
         }
 
         private Type[] typeGenericTypes(string typeName)
@@ -68,7 +52,7 @@ namespace ServiceStack.Script
             var genericTypes = new List<Type>();
             foreach (var genericArg in genericArgs)
             {
-                var genericType = nonGenericType(genericArg);
+                var genericType = @typeof(genericArg);
                 genericTypes.Add(genericType);
             }
 
@@ -90,86 +74,113 @@ namespace ServiceStack.Script
             var key = callKey(type, "<new>", constructorArgs);
 
             var activator = (ObjectActivator) Context.Cache.GetOrAdd(key, k => {
-                var argsCount = constructorArgs?.Count ?? 0;
                 
                 var args = constructorArgs;
-                var ctors = type.GetConstructors()
-                    .Where(x => x.GetParameters().Length == argsCount).ToArray();
-
-                if (ctors.Length == 0)
-                {
-                    var argTypes = string.Join(",", args.Select(x => x?.GetType().Name ?? "null"));
-                    throw new NotSupportedException($"Constructor {Context.DefaultMethods.typeQualifiedName(type)}({argTypes}) does not exist");
-                }
-
-                ConstructorInfo targetCtor = null;
-                if (ctors.Length > 1)
-                {
-                    var candidates = 0;
-                    foreach (var ctor in ctors)
-                    {
-                        var match = true;
-
-                        var ctorParams = ctor.GetParameters();
-                        if (args != null)
-                        {
-                            for (var i = 0; i < args.Count; i++)
-                            {
-                                var arg = args[i];
-                                if (arg == null)
-                                    continue;
-
-                                match = ctorParams[i].ParameterType == arg.GetType();
-                                if (!match)
-                                    break;
-                            }
-                        }
-
-                        if (match)
-                        {
-                            targetCtor = ctor;
-                            candidates++;
-                        }
-                    }
-
-                    if (targetCtor == null || candidates != 1)
-                    {
-                        var argTypes = args != null ? string.Join(",", args.Select(x => x?.GetType().Name ?? "null")) : "";
-                        throw new NotSupportedException($"Could not resolve ambiguous constructor {Context.DefaultMethods.typeQualifiedName(type)}({argTypes})");
-                    }
-                }
-                else targetCtor = ctors[0];
-
-                return targetCtor.GetActivator();
+                var argTypes = args?.Select(x => x?.GetType()).ToArray() ?? TypeConstants.EmptyTypeArray;
+                
+                var ctorInfo = ResolveConstructor(type, argTypes);
+                return ctorInfo.GetActivator();
             });
 
             return activator(constructorArgs?.ToArray() ?? TypeConstants.EmptyObjectArray);
         }
 
+        private ConstructorInfo ResolveConstructor(Type type, Type[] argTypes)
+        {
+            var argsCount = argTypes.Length;
+            var ctors = type.GetConstructors()
+                .Where(x => x.GetParameters().Length == argsCount).ToArray();
+
+            if (ctors.Length == 0)
+            {
+                var argTypesList = string.Join(",", argTypes.Select(x => x?.Name ?? "null"));
+                throw new NotSupportedException(
+                    $"Constructor {Context.DefaultMethods.typeQualifiedName(type)}({argTypesList}) does not exist");
+            }
+
+            ConstructorInfo targetCtor = null;
+            if (ctors.Length > 1)
+            {
+                var candidates = 0;
+                foreach (var ctor in ctors)
+                {
+                    var match = true;
+
+                    var ctorParams = ctor.GetParameters();
+                    for (var i = 0; i < argTypes.Length; i++)
+                    {
+                        var argType = argTypes[i];
+                        if (argType == null)
+                            continue;
+
+                        match = ctorParams[i].ParameterType == argType;
+                        if (!match)
+                            break;
+                    }
+
+                    if (match)
+                    {
+                        targetCtor = ctor;
+                        candidates++;
+                    }
+                }
+
+                if (targetCtor == null || candidates != 1)
+                {
+                    var argTypesList = string.Join(",", argTypes.Select(x => x?.Name ?? "null"));
+                    throw new NotSupportedException(
+                        $"Could not resolve ambiguous constructor {Context.DefaultMethods.typeQualifiedName(type)}({argTypesList})");
+                }
+            }
+            else targetCtor = ctors[0];
+
+            return targetCtor;
+        }
+
+        /// <summary>
+        /// Returns Type from type name syntax of .NET's typeof() 
+        /// </summary>
         public Type @typeof(string typeName)
         {
-            var key = "type::" + typeName;
+            var key = "type:" + typeName;
+
+            Type cookGenericType(Type type, List<string> genericArgs)
+            {
+                if (type.IsGenericType)
+                {
+                    var isGenericDefinition = genericArgs != null && genericArgs.All(x => x == "");
+                    if (!isGenericDefinition)
+                    {
+                        var genericTypes = typeGenericTypes(genericArgs);
+                        var cookedType = type.MakeGenericType(genericTypes);
+                        return cookedType;
+                    }
+                }
+            
+                return type;
+            }
 
             var resolvedType = (Type) Context.Cache.GetOrAdd(key, k => {
 
                 var isGeneric = typeName.IndexOf('<') >= 0;
+                List<string> genericArgs = null;
 
                 if (isGeneric)
                 {
-                    var splitArgs = typeGenericArgs(typeName);
-                    typeName = typeName.LeftPart('<') + '`' + splitArgs.Count;
+                    genericArgs = typeGenericArgs(typeName);
+                    typeName = typeName.LeftPart('<') + '`' + Math.Max(genericArgs.Count, 1);
                 }
-                
+
                 if (typeName.IndexOf('.') >= 0)
                 {
                     if (Context.ScriptTypeQualifiedNameMap.TryGetValue(typeName, out var type))
-                        return type;
+                        return cookGenericType(type, genericArgs);
 
                     if (Context.AllowScriptingOfAllTypes)
                     {
                         type = AssemblyUtils.FindType(typeName);
                         if (type != null)
-                            return type;
+                            return cookGenericType(type, genericArgs);
                     }
                 }
                 else
@@ -209,20 +220,20 @@ namespace ServiceStack.Script
                     }
 
                     if (Context.ScriptTypeNameMap.TryGetValue(typeName, out var type))
-                        return type;
+                        return cookGenericType(type, genericArgs);
                 }
 
                 foreach (var ns in Context.ScriptNamespaces)
                 {
                     var lookupType = ns + "." + typeName;
                     if (Context.ScriptTypeQualifiedNameMap.TryGetValue(lookupType, out var type))
-                        return type;
+                        return cookGenericType(type, genericArgs);
                     
                     if (Context.AllowScriptingOfAllTypes)
                     {
                         type = AssemblyUtils.FindType(lookupType);
                         if (type != null)
-                            return type;
+                            return cookGenericType(type, genericArgs);
                     }
                 }
 
@@ -237,7 +248,7 @@ namespace ServiceStack.Script
         internal string callKey(Type type, string name, List<object> args)
         {
             var sb = StringBuilderCache.Allocate()
-                .Append("call::")
+                .Append("call:")
                 .Append(type.Namespace)
                 .Append('.')
                 .Append(type.Name)
@@ -374,61 +385,109 @@ namespace ServiceStack.Script
             return targetMethod;
         }
 
+        /// <summary>
+        /// Qualified Constructor Name Examples:
+        ///  - Type()
+        ///  - Type(string)
+        ///  - GenericType&lt;string&lt;(System.Int32)
+        ///  - Namespace.Type()
+        /// </summary>
+        public ObjectActivator Constructor(string qualifiedConstructorName)
+        {
+            if (qualifiedConstructorName.IndexOf('(') == -1)
+                throw new NotSupportedException($"Invalid Constructor Name '{qualifiedConstructorName}', " +
+                    $"format: <type>(<arg-types>), e.g. Uri(String), see: https://sharpscript.net/docs/script-net");
+            
+            var name = qualifiedConstructorName;
+
+            var activator = (ObjectActivator) Context.Cache.GetOrAdd(nameof(Constructor) + ":" + name, k => {
+                var argList = name.LastRightPart('(');
+                argList = argList?.Substring(0, argList.Length - 1);
+                var argTypes = typeGenericTypes(StringUtils.SplitGenericArgs(argList));
+
+                name = name.LastLeftPart('(');
+
+                var type = @typeof(name);
+                if (type == null)
+                    throw new NotSupportedException($"Could not resolve Type '{name}'. " +
+                                                    $"Use ScriptContext.ScriptAssemblies or ScriptContext.AllowScriptingOfAllTypes+ScriptNamespaces to increase Type resolution");
+
+                var ctor = ResolveConstructor(type, argTypes);
+
+                return ctor.GetActivator();
+            });
+            
+            return activator;
+        }
+
+        /// <summary>
+        /// Qualified Method Name Examples:
+        ///  - Console.WriteLine(string)
+        ///  - Type.StaticMethod
+        ///  - Type.InstanceMethod
+        ///  - GenericType&lt;string&lt;.Method
+        ///  - GenericType&lt;string&lt;.GenericMethod&lt;System.Int32&lt;
+        ///  - Namespace.Type.Method
+        /// </summary>
         public Delegate Function(string qualifiedMethodName)
         {
             if (qualifiedMethodName.IndexOf('.') == -1)
                 throw new NotSupportedException($"Invalid Function Name '{qualifiedMethodName}', " +
-                    $"format: <type>.<method>(<arg-types>), e.g. Console.WriteLine(string)");
+                    $"format: <type>.<method>(<arg-types>), e.g. Console.WriteLine(string), see: https://sharpscript.net/docs/script-net");
 
             var name = qualifiedMethodName;
-            var hasArgsList = name.IndexOf('(') >= 0;
-            var argList = hasArgsList 
-                ? name.LastRightPart('(')
-                : null;
-            argList = argList?.Substring(0, argList.Length - 1);
 
-            name = name.LastLeftPart('(');
+            var invoker = (Delegate) Context.Cache.GetOrAdd(nameof(Function) + ":" + name, k => {
+                var hasArgsList = name.IndexOf('(') >= 0;
+                var argList = hasArgsList 
+                    ? name.LastRightPart('(')
+                    : null;
+                argList = argList?.Substring(0, argList.Length - 1);
 
-            var lastGenericPos = name.LastIndexOf('>');
-            var lastSepPos = name.LastIndexOf('.');
+                name = name.LastLeftPart('(');
 
-            int pos = -1;
-            if (lastSepPos > lastGenericPos)
-            {
-                pos = lastSepPos;
-            }
-            else
-            {
-                var genericPos = name.IndexOf('<');
-                pos = genericPos >= 0
-                    ? name.LastIndexOf('.', genericPos)
-                    : name.LastIndexOf('.');
+                var lastGenericPos = name.LastIndexOf('>');
+                var lastSepPos = name.LastIndexOf('.');
+
+                int pos = -1;
+                if (lastSepPos > lastGenericPos)
+                {
+                    pos = lastSepPos;
+                }
+                else
+                {
+                    var genericPos = name.IndexOf('<');
+                    pos = genericPos >= 0
+                        ? name.LastIndexOf('.', genericPos)
+                        : name.LastIndexOf('.');
+
+                    if (pos == -1)
+                        pos = name.IndexOf(">.", StringComparison.Ordinal) + 1;
+                }
 
                 if (pos == -1)
-                    pos = name.IndexOf(">.", StringComparison.Ordinal) + 1;
-            }
-
-            if (pos == -1)
-                throw new NotSupportedException($"Could not parse Function Name '{qualifiedMethodName}', " +
-                    $"format: <type>.<method>(<arg-types>), e.g. Console.WriteLine(string)");
+                    throw new NotSupportedException($"Could not parse Function Name '{name}', " +
+                        $"format: <type>.<method>(<arg-types>), e.g. Console.WriteLine(string)");
 
 
-            var typeName = name.Substring(0, pos);
-            var methodName = name.Substring(pos + 1);
+                var typeName = name.Substring(0, pos);
+                var methodName = name.Substring(pos + 1);
 
-            var argTypes = hasArgsList
-                ? typeGenericTypes(StringUtils.SplitGenericArgs(argList))
-                : null;
+                var argTypes = hasArgsList
+                    ? typeGenericTypes(StringUtils.SplitGenericArgs(argList))
+                    : null;
 
 
-            var type = nonGenericType(typeName);
-            if (type == null)
-                throw new NotSupportedException($"Could not resolve Type '{typeName}'. " +
-                    $"Use ScriptContext.ScriptAssemblies or ScriptContext.AllowScriptingOfAllTypes+ScriptNamespaces to increase Type resolution");
-            
-            var method = ResolveMethod(type, methodName, argTypes, argTypes?.Length);
+                var type = @typeof(typeName);
+                if (type == null)
+                    throw new NotSupportedException($"Could not resolve Type '{typeName}'. " +
+                        $"Use ScriptContext.ScriptAssemblies or ScriptContext.AllowScriptingOfAllTypes+ScriptNamespaces to increase Type resolution");
+                
+                var method = ResolveMethod(type, methodName, argTypes, argTypes?.Length);
 
-            var invoker = method.GetInvokerDelegate();
+                return method.GetInvokerDelegate();
+            });
+
             return invoker;
         }
         

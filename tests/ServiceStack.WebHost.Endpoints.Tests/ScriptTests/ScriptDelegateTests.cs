@@ -31,19 +31,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         [Test]
         public void Can_call_delegates_with_args_as_function()
         {
-            var context = new ScriptContext().Init();
-
             Func<int, int, int> add = (a, b) => a + b;
 
-            var result = context.EvaluateScript("{{ fn(1,2) }}", new ObjectDictionary {
-                ["fn"] = add
-            });
+            var context = new ScriptContext {
+                Args = {
+                    ["fn"] = add
+                }
+            }.Init();
+
+            var result = context.EvaluateScript("{{ fn(1,2) }}");
 
             Assert.That(result, Is.EqualTo("3"));
 
-            result = context.EvaluateScript("{{ 1.fn(2) }}", new ObjectDictionary {
-                ["fn"] = add
-            });
+            result = context.EvaluateScript("{{ 1.fn(2) }}");
 
             Assert.That(result, Is.EqualTo("3"));
         }
