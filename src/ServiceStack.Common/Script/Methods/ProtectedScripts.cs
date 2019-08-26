@@ -95,7 +95,7 @@ namespace ServiceStack.Script
             {
                 var argTypesList = string.Join(",", argTypes.Select(x => x?.Name ?? "null"));
                 throw new NotSupportedException(
-                    $"Constructor {Context.DefaultMethods.typeQualifiedName(type)}({argTypesList}) does not exist");
+                    $"Constructor {typeQualifiedName(type)}({argTypesList}) does not exist");
             }
 
             ConstructorInfo targetCtor = null;
@@ -129,12 +129,45 @@ namespace ServiceStack.Script
                 {
                     var argTypesList = string.Join(",", argTypes.Select(x => x?.Name ?? "null"));
                     throw new NotSupportedException(
-                        $"Could not resolve ambiguous constructor {Context.DefaultMethods.typeQualifiedName(type)}({argTypesList})");
+                        $"Could not resolve ambiguous constructor {typeQualifiedName(type)}({argTypesList})");
                 }
             }
             else targetCtor = ctors[0];
 
             return targetCtor;
+        }
+
+        public Type getType(object instance) => instance?.GetType();
+
+        public string typeQualifiedName(Type type)
+        {
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
+
+            var sb = StringBuilderCache.Allocate();
+            sb.Append(type.Namespace).Append('.');
+            
+            if (type.GenericTypeArguments.Length > 0)
+            {
+                sb.Append(type.Name.LeftPart('`'))
+                    .Append('<');
+
+                var i = 0;
+                foreach (var arg in type.GenericTypeArguments)
+                {
+                    if (i++ > 0)
+                        sb.Append(',');
+                    
+                    sb.Append(typeQualifiedName(arg));
+                }
+                sb.Append('>');
+            }
+            else
+            {
+                sb.Append(type.Name);
+            }
+
+            return StringBuilderCache.ReturnAndFree(sb);
         }
 
         /// <summary>
@@ -263,7 +296,7 @@ namespace ServiceStack.Script
                     if (i > 0)
                         sb.Append(',');
                     var genericArg = type.GenericTypeArguments[i];
-                    sb.Append(Context.DefaultMethods.typeQualifiedName(genericArg));
+                    sb.Append(typeQualifiedName(genericArg));
                 }
                 sb.Append('>');
             }
@@ -335,7 +368,7 @@ namespace ServiceStack.Script
 
             if (methods.Length == 0)
                 throw new NotSupportedException(
-                    $"Method {Context.DefaultMethods.typeQualifiedName(type)}.{name} does not exist");
+                    $"Method {typeQualifiedName(type)}.{name} does not exist");
 
             MethodInfo targetMethod = null;
             if (methods.Length > 1)
@@ -371,7 +404,7 @@ namespace ServiceStack.Script
                 {
                     var argTypesList = argTypes != null ? string.Join(",", argTypes.Select(x => x?.Name ?? "null")) : "";
                     throw new NotSupportedException(
-                        $"Could not resolve ambiguous method {Context.DefaultMethods.typeQualifiedName(type)}.{name}({argTypesList})");
+                        $"Could not resolve ambiguous method {typeQualifiedName(type)}.{name}({argTypesList})");
                 }
             }
             else targetMethod = methods[0];

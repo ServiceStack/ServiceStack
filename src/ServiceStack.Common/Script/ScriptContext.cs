@@ -432,7 +432,7 @@ namespace ServiceStack.Script
                 if (!ScriptTypeNameMap.ContainsKey(type.Name))
                     ScriptTypeNameMap[type.Name] = type;
 
-                var qualifiedName = DefaultMethods.typeQualifiedName(type);
+                var qualifiedName = ProtectedMethods.typeQualifiedName(type);
                 if (!ScriptTypeQualifiedNameMap.ContainsKey(qualifiedName))
                     ScriptTypeQualifiedNameMap[qualifiedName] = type;
             }
