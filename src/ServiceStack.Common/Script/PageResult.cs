@@ -680,8 +680,11 @@ namespace ServiceStack.Script
                     var contextBlockInvoker = invoker == null && contextFilterInvoker == null
                         ? GetContextBlockInvoker(filterName, 2 + fnArgsLength, out filter)
                         : null;
+                    var delegateInvoker = invoker == null && contextFilterInvoker == null && contextBlockInvoker == null
+                        ? GetValue(filterName, scope) as Delegate
+                        : null;
 
-                    if (invoker == null && contextFilterInvoker == null && contextBlockInvoker == null)
+                    if (invoker == null && contextFilterInvoker == null && contextBlockInvoker == null && delegateInvoker == null)
                     {
                         if (i == 0)
                             return null; // ignore on server (i.e. assume it's on client) if first filter is missing  
@@ -693,7 +696,11 @@ namespace ServiceStack.Script
                     if (value is Task<object> valueObjectTask)
                         value = await valueObjectTask;
 
-                    if (invoker != null)
+                    if (delegateInvoker != null)
+                    {
+                        value = JsCallExpression.InvokeDelegate(delegateInvoker, value, true, fnArgValues);
+                    }
+                    else if (invoker != null)
                     {
                         fnArgValues.Insert(0, value);
                         var args = fnArgValues.ToArray();
