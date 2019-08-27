@@ -20,6 +20,8 @@ namespace ServiceStack.Script
     
     public class ProtectedScripts : ScriptMethods
     {
+        public static readonly ProtectedScripts Instance = new ProtectedScripts();
+        
         public object @new(string typeName)
         {
             var type = @typeof(typeName);
@@ -67,11 +69,11 @@ namespace ServiceStack.Script
             return splitArgs;
         }
 
-        public object createInstance(Type type) => type.CreateInstance();
+        public object createInstance(Type type) => AssertCanCreateType(type).CreateInstance();
 
         public object createInstance(Type type, List<object> constructorArgs)
         {
-            var key = callKey(type, "<new>", constructorArgs);
+            var key = callKey(AssertCanCreateType(type), "<new>", constructorArgs);
 
             var activator = (ObjectActivator) Context.Cache.GetOrAdd(key, k => {
                 
@@ -83,6 +85,17 @@ namespace ServiceStack.Script
             });
 
             return activator(constructorArgs?.ToArray() ?? TypeConstants.EmptyObjectArray);
+        }
+
+        private Type AssertCanCreateType(Type type)
+        {
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
+
+            if (!type.IsPublic && !Context.AllowScriptingOfAllTypes)
+                throw new NotSupportedException(
+                    "Can only create instances of non public Types when AllowScriptingOfAllTypes=true");
+            return type;
         }
 
         private ConstructorInfo ResolveConstructor(Type type, Type[] argTypes)

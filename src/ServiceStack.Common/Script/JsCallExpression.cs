@@ -74,9 +74,16 @@ namespace ServiceStack.Script
                 {
                     fnArgValues.Insert(0, target);
                 }
+
+                var isStaticDelegate = delegateInvoker is StaticMethodInvoker || delegateInvoker is StaticActionInvoker;
+                target = isStaticDelegate
+                    ? null
+                    : fn.Method.DeclaringType.CreateInstance();
+                if (isStaticDelegate)
+                    isMemberExpr = false;
                 
                 return InvokeDelegate(delegateInvoker, 
-                    fn.Method.DeclaringType.CreateInstance(), 
+                    target, 
                     isMemberExpr, fnArgValues);
             }
             catch (Exception e)

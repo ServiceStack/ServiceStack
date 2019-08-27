@@ -80,6 +80,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
         public void Clear() => sb.Clear();
     }
+
+    internal class InternalType
+    {
+        public InternalType() { }
+        public InternalType(int num) {}
+    }
     
     public class ScriptAssembliesTests
     {
@@ -117,6 +123,45 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             context = CreateContext(c => c.AllowScriptingOfAllTypes = true).Init();
             result = context.EvaluateScript("{{ 'ServiceStack.WebHost.Endpoints.Tests.ScriptTests.Ints'.typeof().Name }}");
             Assert.That(result, Is.EqualTo(nameof(Ints)));
+        }
+
+        [Test]
+        public void Does_not_allow_creating_instances_of_public_types()
+        {
+            var context = CreateContext(c => {
+                c.ScriptTypes.Add(typeof(InternalType));
+            }).Init();
+
+            try
+            {
+                context.Evaluate("{{ 'InternalType'.new() | return }}");
+                Assert.Fail("Should throw");
+            }
+            catch (Exception e)
+            {
+                Assert.That(e.InnerException.InnerException.GetType(), Is.EqualTo(typeof(NotSupportedException)));
+            }
+
+            try
+            {
+                context.Evaluate("{{ 'InternalType'.new(1) | return }}");
+                Assert.Fail("Should throw");
+            }
+            catch (Exception e)
+            {
+                Assert.That(e.InnerException.InnerException.GetType(), Is.EqualTo(typeof(NotSupportedException)));
+            }
+            
+            context = CreateContext(c => {
+                c.ScriptTypes.Add(typeof(InternalType));
+                c.AllowScriptingOfAllTypes = true; 
+            }).Init();
+            
+            var result = context.Evaluate("{{ 'InternalType'.new() | return }}");
+            Assert.That(result.GetType(), Is.EqualTo(typeof(InternalType)));
+
+            result = context.Evaluate("{{ 'InternalType'.new(1) | return }}");
+            Assert.That(result.GetType(), Is.EqualTo(typeof(InternalType)));
         }
 
         [Test]
