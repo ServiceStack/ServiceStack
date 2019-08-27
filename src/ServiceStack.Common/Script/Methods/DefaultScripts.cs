@@ -14,7 +14,7 @@ namespace ServiceStack.Script
     
     public partial class DefaultScripts : ScriptMethods
     {
-        public static DefaultScripts Instance = new DefaultScripts();
+        public static readonly DefaultScripts Instance = new DefaultScripts();
 
         // methods without arguments can be used in bindings, e.g. {{ now | dateFormat }}
         public DateTime now() => DateTime.Now;

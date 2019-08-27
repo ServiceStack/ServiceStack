@@ -4,6 +4,18 @@ using ServiceStack.Script;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 {
+    public class ClassTypeName
+    {
+        private readonly string fullTypeName;
+        public ClassTypeName(object instance)
+        {
+            fullTypeName = ProtectedScripts.Instance.typeQualifiedName(instance.GetType());
+        }
+
+        public override string ToString() => fullTypeName;
+    }
+
+
     public class ScriptDelegateTests
     {
         static string Hi() => "static fn";
@@ -131,5 +143,47 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                     throw;
             }
         }
+        
+        static string staticTypeName(object o) => ProtectedScripts.Instance.typeQualifiedName(o.GetType());
+
+        [Test]
+        public void Can_call_Delegates_in_filter_expression()
+        {
+            Func<object, string> typeName = o => 
+                ProtectedScripts.Instance.typeQualifiedName(o.GetType());
+            
+            var context = new ScriptContext {
+                Args = {
+                    ["fn"] = typeName,
+                    ["staticfn"] = (Func<object, string>) staticTypeName,
+                },
+                ScriptMethods = { new ProtectedScripts() },
+                AllowScriptingOfAllTypes = true
+            }.Init();
+            
+
+            string result = null;
+            result = context.Evaluate<string>(@"
+                {{#function info(o) }}
+                    o | getType | typeQualifiedName | return
+                {{/function}}
+                {{ 'System.Text.StringBuilder'.new() | info | return }}");
+            Assert.That(result, Is.EqualTo("System.Text.StringBuilder"));
+
+            result = context.Evaluate<string>( 
+                "{{ 'System.Text.StringBuilder'.new() | fn | return }}");
+            Assert.That(result, Is.EqualTo("System.Text.StringBuilder"));
+
+            result = context.Evaluate<string>( 
+                "{{ 'System.Text.StringBuilder'.new() | staticfn | return }}");
+            Assert.That(result, Is.EqualTo("System.Text.StringBuilder"));
+
+            result = context.Evaluate<string>( 
+                @"
+                {{ Constructor('ServiceStack.WebHost.Endpoints.Tests.ScriptTests.ClassTypeName(string)') | to => ctorfn }}
+                {{ 'System.Text.StringBuilder'.new() | ctorfn | toString | return }}");
+            Assert.That(result, Is.EqualTo("System.Text.StringBuilder"));
+        }
+
     }
 }
