@@ -903,7 +903,7 @@ partialArg in page scope is <b>from page</b>"));
             var output = context.EvaluateScript("{{#minifyjs}}" + js + "{{/minifyjs}}");
             Assert.That(output.NormalizeNewLines(), Is.EqualTo(minified));
 
-            Assert.That(context.Cache["minifyjs::" + js].ToString().NormalizeNewLines(), Is.EqualTo(minified));
+            Assert.That(context.Cache["minifyjs:" + js].ToString().NormalizeNewLines(), Is.EqualTo(minified));
             output = context.EvaluateScript("{{#minifyjs}}" + js + "{{/minifyjs}}"); 
             Assert.That(output.NormalizeNewLines(), Is.EqualTo(minified));
             
@@ -915,8 +915,8 @@ partialArg in page scope is <b>from page</b>"));
             output = context.EvaluateScript("{{#minifyjs appendTo scripts}}" + js + "{{/minifyjs}} | {{#minifyjs appendTo scripts}}" + js2 + "{{/minifyjs}} | {{scripts}}");
             Assert.That(output.NormalizeNewLines(), Is.EqualTo($"|  | \n{minified}\n{minified2}"));
             
-            Assert.That(context.Cache["minifyjs::" + js].ToString().NormalizeNewLines(), Is.EqualTo(minified));
-            Assert.That(context.Cache["minifyjs::" + js2].ToString().NormalizeNewLines(), Is.EqualTo(minified2));
+            Assert.That(context.Cache["minifyjs:" + js].ToString().NormalizeNewLines(), Is.EqualTo(minified));
+            Assert.That(context.Cache["minifyjs:" + js2].ToString().NormalizeNewLines(), Is.EqualTo(minified2));
             
             output = context.EvaluateScript("{{#minifyjs appendTo scripts}}" + js + "{{/minifyjs}} | {{#minifyjs appendTo scripts}}" + js2 + "{{/minifyjs}} | {{scripts}}");
             Assert.That(output.NormalizeNewLines(), Is.EqualTo($"|  | \n{minified}\n{minified2}"));

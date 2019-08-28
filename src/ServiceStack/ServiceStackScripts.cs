@@ -624,7 +624,7 @@ namespace ServiceStack
             
             var cachedStrings = allocatedStringsCache.GetOrAdd(contents, c => {
                     var str = c.ToString();
-                    return Tuple.Create(GetType().Name + ":" + Name + ":" + str, str); //cache allocated key + string
+                    return Tuple.Create(Name + ":" + str, str); //cache allocated key + string
                 });
 
             var minified = (ReadOnlyMemory<char>) Context.Cache.GetOrAdd(cachedStrings.Item1, k => 
