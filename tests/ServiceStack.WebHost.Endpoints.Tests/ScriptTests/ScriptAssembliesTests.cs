@@ -340,7 +340,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(result, Is.EqualTo(3));
             
             result = context.Evaluate<int>(
-                "{{ 'Ints'.new([1,2]).set({ C:3, D:4 }).call('GetTotal') | return }}");
+                "{{ 'Ints'.new([1,2]).set({ C:3, D:4.0 }).call('GetTotal') | return }}");
+            Assert.That(result, Is.EqualTo(10));
+            
+            result = context.Evaluate<int>(
+                "{{ 'Ints'.new([1,2]).set({ C:3 }).set({ D:4.0 }).call('GetTotal') | return }}");
             Assert.That(result, Is.EqualTo(10));
             
             result = context.Evaluate<int>(
@@ -389,8 +393,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 c.ScriptNamespaces.Add(typeof(DateTime).Namespace);
                 c.ScriptNamespaces.Add(typeof(Adder).Namespace);
             }).Init();
+            //var url = new Uri();
 
             object result = null;
+            result = context.Evaluate("{{ 'Uri'.new(['http://host.org']) | return }}");
+            Assert.That(result, Is.EqualTo(new Uri("http://host.org")));
+            result = context.Evaluate("{{ Constructor('Uri(string)')('http://host.org') | return }}");
+            Assert.That(result, Is.EqualTo(new Uri("http://host.org")));
+            result = context.Evaluate("{{ Constructor('Uri(string)') | to => url }}{{ url('http://host.org') | return }}");
+            Assert.That(result, Is.EqualTo(new Uri("http://host.org")));
+            result = context.Evaluate("{{ Constructor('Uri(string)') | to => url }}{{ 'http://host.org'.url() | return }}");
+            Assert.That(result, Is.EqualTo(new Uri("http://host.org")));
+            result = context.Evaluate("{{ Constructor('Uri(string)') | to => url }}{{ 'http://host.org' | url | return }}");
+            Assert.That(result, Is.EqualTo(new Uri("http://host.org")));
+
             result = context.Evaluate("{{ 'DateTime'.new() | return }}");
             Assert.That(result.GetType(), Is.EqualTo(typeof(DateTime)));
 
