@@ -47,6 +47,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
         public static void Log(string message) => sb.Append(message);
 
+        public static void Log<T>(string message) => sb.Append(typeof(T).Name + " " + message);
+
         public static string AllLogs() => sb.ToString();
 
         public static void Clear() => sb.Clear();
@@ -382,11 +384,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         [Test]
         public void Script_Types_Use_Case()
         {
-            var context = CreateContext().Init();
+            var context = CreateContext(c => {
+                c.AllowScriptingOfAllTypes = true;
+                c.ScriptNamespaces.Add(typeof(DateTime).Namespace);
+                c.ScriptNamespaces.Add(typeof(Adder).Namespace);
+            }).Init();
 
-            var result = context.EvaluateScript("{{ 'DateTime'.new() }}");
+            object result = null;
+            result = context.Evaluate("{{ 'DateTime'.new() | return }}");
+            Assert.That(result.GetType(), Is.EqualTo(typeof(DateTime)));
+
+            result = context.Evaluate("{{ Constructor('Adder(double)') | to => doubleAdder }}{{ doubleAdder(1) | return }}");
+            Assert.That(((Adder) result).Double, Is.EqualTo(1.0d));
+            result = context.Evaluate("{{ Constructor('Adder(double)') | to => doubleAdder }}{{ 1.doubleAdder() | return }}");
+            Assert.That(((Adder) result).Double, Is.EqualTo(1.0d));
+            result = context.Evaluate("{{ Constructor('Adder(double)') | to => doubleAdder }}{{ 1 | doubleAdder | return }}");
+            Assert.That(((Adder) result).Double, Is.EqualTo(1.0d));
             
-            result.Print();
+            result = context.Evaluate("{{ 'Ints'.new([1,2]) | to => o }}{{ o.call('GenericMethod<int>') | return }}");
+            Assert.That((string) result, Is.EqualTo("Int32 3"));
+            result = context.Evaluate("{{ 'Ints'.new([1,2]) | to => o }}{{ o.call('GenericMethod<int>',[1]) | return }}");
+            Assert.That((string) result, Is.EqualTo("Int32 1 3"));
         }
 
         [Test]
@@ -404,17 +422,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 {{ writeln('static method') }}
                 {{ 'ext method'.writeln() }}");
 
-            StaticLog.Clear();
-            
-            result = context.Evaluate<string>(@"{{ Function('StaticLog.Log') | to => log }}
+            result = context.Evaluate<string>(@"{{ Function('StaticLog.Clear')() }}
+                {{ Function('StaticLog.Log') | to => log }}
                 {{ log('arg.') }}
                 {{ 'ext.'.log() }}
                 {{ Function('StaticLog.AllLogs') | to => allLogs }}{{ allLogs() | return }}");
             Assert.That(result, Is.EqualTo("arg.ext."));
-
-            StaticLog.Clear();
             
-            result = context.Evaluate<string>(@"{{ Function('StaticLog.Log')('iife') }}
+            result = context.Evaluate<string>(@"{{ Function('StaticLog.Clear')() }}
+                {{ Function('StaticLog.Log<int>') | to => log }}
+                {{ log('arg.') }}
+                {{ 'ext.'.log() }}
+                {{ Function('StaticLog.AllLogs') | to => allLogs }}{{ allLogs() | return }}");
+            Assert.That(result, Is.EqualTo("Int32 arg.Int32 ext."));
+
+            result = context.Evaluate<string>(@"{{ Function('StaticLog.Clear')() }}
+                {{ Function('StaticLog.Log')('iife') }}
                 {{ Function('StaticLog.AllLogs')() | return }}");
             Assert.That(result, Is.EqualTo("iife"));
         }
@@ -429,23 +452,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             
             string result = null;
             
-            GenericStaticLog<string>.Clear();
-            
-            result = context.Evaluate<string>(@"{{ Function('GenericStaticLog<string>.Log(string)') | to => log }}
+            result = context.Evaluate<string>(@"{{ Function('GenericStaticLog<string>.Clear()')() }}
+                {{ Function('GenericStaticLog<string>.Log(string)') | to => log }}
                 {{ log('arg.') }}
                 {{ 'ext.'.log() }}
                 {{ Function('GenericStaticLog<string>.AllLogs') | to => allLogs }}{{ allLogs() | return }}");
             Assert.That(result, Is.EqualTo("String arg.String ext."));
 
-            GenericStaticLog<string>.Clear();
-            
-            result = context.Evaluate<string>(@"{{ Function('GenericStaticLog<string>.Log(string)')('iife') }}
+            result = context.Evaluate<string>(@"{{ Function('GenericStaticLog<string>.Clear()')() }}
+                {{ Function('GenericStaticLog<string>.Log(string)')('iife') }}
                 {{ Function('GenericStaticLog<string>.AllLogs')() | return }}");
             Assert.That(result, Is.EqualTo("String iife"));
             
-            GenericStaticLog<string>.Clear();
-            
-            result = context.Evaluate<string>(@"{{ Function('GenericStaticLog<string>.Log<int>(string)') | to => log }}
+            result = context.Evaluate<string>(@"{{ Function('GenericStaticLog<string>.Clear()')() }}
+                {{ Function('GenericStaticLog<string>.Log<int>') | to => log }}
+                {{ Function('GenericStaticLog<string>.Log<int>(string)') | to => log }}
                 {{ log('arg.') }}
                 {{ 'ext.'.log() }}
                 {{ Function('GenericStaticLog<string>.AllLogs') | to => allLogs }}{{ allLogs() | return }}");
