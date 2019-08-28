@@ -614,28 +614,31 @@ namespace ServiceStack
         public abstract ICompressor Minifier { get; }
         
         //reduce string allocation of block contents at runtime
-        ConcurrentDictionary<ReadOnlyMemory<char>, string[]> AllocatedStringsCache = new ConcurrentDictionary<ReadOnlyMemory<char>, string[]>();
+        readonly ConcurrentDictionary<ReadOnlyMemory<char>, Tuple<string,string>> allocatedStringsCache = 
+            new ConcurrentDictionary<ReadOnlyMemory<char>, Tuple<string,string>>();
 
         public ReadOnlyMemory<char> GetMinifiedOutputCache(ReadOnlyMemory<char> contents)
         {
             if (Context.DebugMode)
                 return contents;
             
-            var cachedStrings = AllocatedStringsCache.GetOrAdd(contents, c => {
+            var cachedStrings = allocatedStringsCache.GetOrAdd(contents, c => {
                     var str = c.ToString();
-                    return new[] { Name + "::" + str, str }; //cache allocated key + string
+                    return Tuple.Create(GetType().Name + ":" + Name + ":" + str, str); //cache allocated key + string
                 });
+
+            var minified = (ReadOnlyMemory<char>) Context.Cache.GetOrAdd(cachedStrings.Item1, k => 
+                Minifier.Compress(cachedStrings.Item2).AsMemory());
             
-            if (Context.Cache.TryGetValue(cachedStrings[0], out var oMinified))
-                return (ReadOnlyMemory<char>)oMinified;
-            
-            var minified = Minifier.Compress(cachedStrings[1]).AsMemory();
-            Context.Cache[cachedStrings[0]] = minified;
+            Context.Cache[cachedStrings.Item1] = minified;
             return minified;
         }
         
         public override async Task WriteAsync(ScriptScopeContext scope, PageBlockFragment block, CancellationToken token)
         {
+            if (block.Body.Length == 0)
+                return;
+            
             var strFragment = (PageStringFragment)block.Body[0];
 
             if (!block.Argument.IsNullOrWhiteSpace())

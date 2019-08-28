@@ -847,7 +847,10 @@ partialArg in page scope is <b>from page</b>"));
                 DebugMode = false,
             }.Init();
 
-            var output = context.EvaluateScript("{{#minifyjs}}var a = 1; var b = 2;{{/minifyjs}}");
+            var output = context.EvaluateScript("{{#minifyjs}}{{/minifyjs}} {{#minifyjs}} \n{{/minifyjs}}");
+            Assert.That(output.Trim(), Is.EqualTo(""));
+            
+            output = context.EvaluateScript("{{#minifyjs}}var a = 1; var b = 2;{{/minifyjs}}");
             Assert.That(output.Trim(), Is.EqualTo("var a=1;var b=2;"));
             
             output = context.EvaluateScript("{{#minifyjs appendTo scripts}}var a = 1; var b = 2;{{/minifyjs}} | {{#minifyjs appendTo scripts}}function fn ( a ) { }{{/minifyjs}} | {{scripts}}");
