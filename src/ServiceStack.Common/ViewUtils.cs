@@ -1259,13 +1259,24 @@ namespace ServiceStack
                         if (existingBundleTag == null)
                         {
                             // use existing bundle if file with matching hash pattern is found
-                            var fileSearchPath = outFilePath.Replace("[hash]", ".*");
-                            var fileMatch = webVfs.GetAllMatchingFiles(fileSearchPath).FirstOrDefault();
-                            if (fileMatch != null)
+                            var outDirPath = outFilePath.LastLeftPart('/');
+                            var outFileName = outFilePath.LastRightPart('/');
+                            var outGlobFile = outFileName.Replace("[hash]", ".*");
+
+                            // use glob search to avoid unnecessary file scans
+                            var outDir = webVfs.GetDirectory(outDirPath);
+                            if (outDir != null)
                             {
-                                outHtmlTag = htmlTagFmt.Replace("{0}", "/" + fileMatch.VirtualPath);
-                                memFs.WriteFile(outFilePath, outHtmlTag); //cache lookup
-                                return outHtmlTag;
+                                var outDirFiles = outDir.GetFiles();
+                                foreach (var file in outDirFiles)
+                                {
+                                    if (file.Name.Glob(outGlobFile))
+                                    {
+                                        outHtmlTag = htmlTagFmt.Replace("{0}", "/" + file.VirtualPath);
+                                        memFs.WriteFile(outFilePath, outHtmlTag); //cache lookup
+                                        return outHtmlTag;
+                                    }
+                                }
                             }
                         }
                         else
