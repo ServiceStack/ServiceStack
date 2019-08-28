@@ -924,6 +924,14 @@ namespace ServiceStack
         {
             try
             {
+                if (request != null)
+                {
+                    if (request.Items.ContainsKey(nameof(OnEndRequest)))
+                        return;
+
+                    request.Items[nameof(OnEndRequest)] = bool.TrueString;
+                }
+                
                 var disposables = RequestContext.Instance.Items.Values;
                 foreach (var item in disposables)
                 {
