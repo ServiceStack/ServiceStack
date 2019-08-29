@@ -159,6 +159,9 @@ namespace ServiceStack.Script
                     to.Add(new PageStringFragment(block));
                 
                 var varStartPos = pos + 2;
+                
+                if (varStartPos >= text.Span.Length)
+                    throw new SyntaxErrorException($"Unterminated '{{{{' expression, near '{text.Slice(lastPos).DebugLiteral()}'");
 
                 var firstChar = text.Span[varStartPos];
                 if (firstChar == '*') //comment
