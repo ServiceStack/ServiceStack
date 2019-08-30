@@ -193,7 +193,7 @@ namespace ServiceStack.Script
             
             var key = "type:" + typeName;
 
-            Type cookGenericType(Type type, List<string> genericArgs)
+            Type cookType(Type type, List<string> genericArgs, bool isArray)
             {
                 if (type.IsGenericType)
                 {
@@ -201,9 +201,13 @@ namespace ServiceStack.Script
                     if (!isGenericDefinition)
                     {
                         var genericTypes = typeGenericTypes(genericArgs);
-                        var cookedType = type.MakeGenericType(genericTypes);
-                        return cookedType;
+                        type = type.MakeGenericType(genericTypes);
                     }
+                }
+
+                if (isArray)
+                {
+                    type = type.MakeArrayType();
                 }
             
                 return type;
@@ -211,6 +215,12 @@ namespace ServiceStack.Script
             
             Type onlyTypeOf(string _typeName)
             {
+                var isArray = _typeName.EndsWith("[]");
+                if (isArray)
+                {
+                    _typeName = _typeName.Substring(0, _typeName.Length - 2);
+                }
+
                 var isGeneric = _typeName.IndexOf('<') >= 0;
                 List<string> genericArgs = null;
 
@@ -223,13 +233,13 @@ namespace ServiceStack.Script
                 if (_typeName.IndexOf('.') >= 0)
                 {
                     if (Context.ScriptTypeQualifiedNameMap.TryGetValue(_typeName, out var type))
-                        return cookGenericType(type, genericArgs);
+                        return cookType(type, genericArgs, isArray);
 
                     if (Context.AllowScriptingOfAllTypes)
                     {
                         type = AssemblyUtils.FindType(_typeName);
                         if (type != null)
-                            return cookGenericType(type, genericArgs);
+                            return cookType(type, genericArgs, isArray);
                     }
                 }
                 else
@@ -237,52 +247,52 @@ namespace ServiceStack.Script
                     switch (_typeName)
                     {
                         case "bool":
-                            return typeof(bool);
+                            return !isArray ? typeof(bool) : typeof(bool[]);
                         case "byte":
-                            return typeof(byte);
+                            return !isArray ? typeof(byte) : typeof(byte[]);
                         case "sbyte":
-                            return typeof(sbyte);
+                            return !isArray ? typeof(sbyte) : typeof(sbyte[]);
                         case "char":
-                            return typeof(char);
+                            return !isArray ? typeof(char) : typeof(char[]);
                         case "decimal":
-                            return typeof(decimal);
+                            return !isArray ? typeof(decimal) : typeof(decimal[]);
                         case "double":
-                            return typeof(double);
+                            return !isArray ? typeof(double) : typeof(double[]);
                         case "float":
-                            return typeof(float);
+                            return !isArray ? typeof(float) : typeof(float[]);
                         case "int":
-                            return typeof(int);
+                            return !isArray ? typeof(int) : typeof(int[]);
                         case "uint":
-                            return typeof(uint);
+                            return !isArray ? typeof(uint) : typeof(uint[]);
                         case "long":
-                            return typeof(long);
+                            return !isArray ? typeof(long) : typeof(long[]);
                         case "ulong":
-                            return typeof(ulong);
+                            return !isArray ? typeof(ulong) : typeof(ulong[]);
                         case "object":
-                            return typeof(object);
+                            return !isArray ? typeof(object) : typeof(object[]);
                         case "short":
-                            return typeof(short);
+                            return !isArray ? typeof(short) : typeof(short[]);
                         case "ushort":
-                            return typeof(ushort);
+                            return !isArray ? typeof(ushort) : typeof(ushort[]);
                         case "string":
-                            return typeof(string);
+                            return !isArray ? typeof(string) : typeof(string[]);
                     }
 
                     if (Context.ScriptTypeNameMap.TryGetValue(_typeName, out var type))
-                        return cookGenericType(type, genericArgs);
+                        return cookType(type, genericArgs, isArray);
                 }
 
                 foreach (var ns in Context.ScriptNamespaces)
                 {
                     var lookupType = ns + "." + _typeName;
                     if (Context.ScriptTypeQualifiedNameMap.TryGetValue(lookupType, out var type))
-                        return cookGenericType(type, genericArgs);
+                        return cookType(type, genericArgs, isArray);
                     
                     if (Context.AllowScriptingOfAllTypes)
                     {
                         type = AssemblyUtils.FindType(lookupType);
                         if (type != null)
-                            return cookGenericType(type, genericArgs);
+                            return cookType(type, genericArgs, isArray);
                     }
                 }
 
