@@ -54,14 +54,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         public static void Clear() => sb.Clear();
         
         public static string Prop { get; } = "StaticLog.Prop";
+        public static string Field = "StaticLog.Field";
+        public const string Const = "StaticLog.Const";
+
+        public string InstanceProp { get; } = "StaticLog.InstanceProp";
+        public string InstanceField = "StaticLog.InstanceField";
 
         public class Inner1
         {
             public static string Prop1 { get; } = "StaticLog.Inner1.Prop1";
+            public static string Field1 = "StaticLog.Inner1.Field1";
+            public const string Const1 = "StaticLog.Inner1.Const1";
+
+            public string InstanceProp1 { get; } = "StaticLog.Inner1.InstanceProp1";
+            public string InstanceField1 = "StaticLog.Inner1.InstanceField1";
 
             public static class Inner2
             {
                 public static string Prop2 { get; } = "StaticLog.Inner1.Inner2.Prop2";
+                public static string Field2 = "StaticLog.Inner1.Inner2.Field2";
+                public const string Const2 = "StaticLog.Inner1.Inner2.Const2";
             }
         }
     }
@@ -541,14 +553,39 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             }).Init();
             
             string result = null;
+
             result = context.Evaluate<string>(@"{{ Function('StaticLog.Prop')() | return }}");
             Assert.That(result, Is.EqualTo("StaticLog.Prop"));
+            result = context.Evaluate<string>(@"{{ Function('StaticLog.Field')() | return }}");
+            Assert.That(result, Is.EqualTo("StaticLog.Field"));
+            result = context.Evaluate<string>(@"{{ Function('StaticLog.Const')() | return }}");
+            Assert.That(result, Is.EqualTo("StaticLog.Const"));
             
             result = context.Evaluate<string>(@"{{ Function('StaticLog.Inner1.Prop1')() | return }}");
             Assert.That(result, Is.EqualTo("StaticLog.Inner1.Prop1"));
+            result = context.Evaluate<string>(@"{{ Function('StaticLog.Inner1.Field1')() | return }}");
+            Assert.That(result, Is.EqualTo("StaticLog.Inner1.Field1"));
+            result = context.Evaluate<string>(@"{{ Function('StaticLog.Inner1.Const1')() | return }}");
+            Assert.That(result, Is.EqualTo("StaticLog.Inner1.Const1"));
             
             result = context.Evaluate<string>(@"{{ Function('StaticLog.Inner1.Inner2.Prop2')() | return }}");
             Assert.That(result, Is.EqualTo("StaticLog.Inner1.Inner2.Prop2"));
+            result = context.Evaluate<string>(@"{{ Function('StaticLog.Inner1.Inner2.Field2')() | return }}");
+            Assert.That(result, Is.EqualTo("StaticLog.Inner1.Inner2.Field2"));
+            result = context.Evaluate<string>(@"{{ Function('StaticLog.Inner1.Inner2.Const2')() | return }}");
+            Assert.That(result, Is.EqualTo("StaticLog.Inner1.Inner2.Const2"));
+            
+            context.Args["o"] = new StaticLog();
+            context.Args["o1"] = new StaticLog.Inner1();
+            result = context.Evaluate<string>(@"{{ Function('StaticLog.InstanceProp')(o) | return }}");
+            Assert.That(result, Is.EqualTo("StaticLog.InstanceProp"));
+            result = context.Evaluate<string>(@"{{ Function('StaticLog.InstanceField')(o) | return }}");
+            Assert.That(result, Is.EqualTo("StaticLog.InstanceField"));
+            
+            result = context.Evaluate<string>(@"{{ Function('StaticLog.Inner1.InstanceProp1')(o1) | return }}");
+            Assert.That(result, Is.EqualTo("StaticLog.Inner1.InstanceProp1"));
+            result = context.Evaluate<string>(@"{{ Function('StaticLog.Inner1.InstanceField1')(o1) | return }}");
+            Assert.That(result, Is.EqualTo("StaticLog.Inner1.InstanceField1"));
         }
     }
 }
