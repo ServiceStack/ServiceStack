@@ -12,7 +12,7 @@ namespace ServiceStack.Script
     ///           a + b + c | return
     ///        {{/function}}
     /// </summary>
-    public class FunctionBlock : ScriptBlock
+    public class FunctionScriptBlock : ScriptBlock
     {
         public override string Name => "function";
 

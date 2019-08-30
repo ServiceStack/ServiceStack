@@ -15,7 +15,7 @@ namespace ServiceStack.Script
     ///          Oranges,3
     ///        {{/csv}}
     /// </summary>
-    public class CsvBlock : ScriptBlock
+    public class CsvScriptBlock : ScriptBlock
     {
         public override string Name => "csv";
         
