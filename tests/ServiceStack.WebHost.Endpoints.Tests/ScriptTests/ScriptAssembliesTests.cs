@@ -213,6 +213,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(context.Evaluate<Type>("{{ typeof('StaticLog+Inner1+Inner2') | return}}"), Is.EqualTo(typeof(StaticLog.Inner1.Inner2)));
             Assert.That(context.Evaluate<Type>("{{ typeof('StaticLog.Inner1') | return}}"), Is.EqualTo(typeof(StaticLog.Inner1)));
             Assert.That(context.Evaluate<Type>("{{ typeof('StaticLog.Inner1.Inner2') | return}}"), Is.EqualTo(typeof(StaticLog.Inner1.Inner2)));
+
+            Assert.That(context.Evaluate<Type>("{{ typeof('string[]') | return}}"), Is.EqualTo(typeof(string[])));
+            Assert.That(context.Evaluate<Type>("{{ typeof('List<string>[]') | return}}"), Is.EqualTo(typeof(List<string>[])));
+            Assert.That(context.Evaluate<Type>("{{ typeof('Dictionary<String, System.Int32>[]') | return}}"), Is.EqualTo(typeof(Dictionary<String, System.Int32>[])));
         }
 
         [Test]
