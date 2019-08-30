@@ -208,33 +208,33 @@ namespace ServiceStack.Script
             
                 return type;
             }
-
-            var resolvedType = (Type) Context.Cache.GetOrAdd(key, k => {
-
-                var isGeneric = typeName.IndexOf('<') >= 0;
+            
+            Type onlyTypeOf(string _typeName)
+            {
+                var isGeneric = _typeName.IndexOf('<') >= 0;
                 List<string> genericArgs = null;
 
                 if (isGeneric)
                 {
-                    genericArgs = typeGenericArgs(typeName);
-                    typeName = typeName.LeftPart('<') + '`' + Math.Max(genericArgs.Count, 1);
+                    genericArgs = typeGenericArgs(_typeName);
+                    _typeName = _typeName.LeftPart('<') + '`' + Math.Max(genericArgs.Count, 1);
                 }
 
-                if (typeName.IndexOf('.') >= 0)
+                if (_typeName.IndexOf('.') >= 0)
                 {
-                    if (Context.ScriptTypeQualifiedNameMap.TryGetValue(typeName, out var type))
+                    if (Context.ScriptTypeQualifiedNameMap.TryGetValue(_typeName, out var type))
                         return cookGenericType(type, genericArgs);
 
                     if (Context.AllowScriptingOfAllTypes)
                     {
-                        type = AssemblyUtils.FindType(typeName);
+                        type = AssemblyUtils.FindType(_typeName);
                         if (type != null)
                             return cookGenericType(type, genericArgs);
                     }
                 }
                 else
                 {
-                    switch (typeName)
+                    switch (_typeName)
                     {
                         case "bool":
                             return typeof(bool);
@@ -268,13 +268,13 @@ namespace ServiceStack.Script
                             return typeof(string);
                     }
 
-                    if (Context.ScriptTypeNameMap.TryGetValue(typeName, out var type))
+                    if (Context.ScriptTypeNameMap.TryGetValue(_typeName, out var type))
                         return cookGenericType(type, genericArgs);
                 }
 
                 foreach (var ns in Context.ScriptNamespaces)
                 {
-                    var lookupType = ns + "." + typeName;
+                    var lookupType = ns + "." + _typeName;
                     if (Context.ScriptTypeQualifiedNameMap.TryGetValue(lookupType, out var type))
                         return cookGenericType(type, genericArgs);
                     
@@ -286,31 +286,43 @@ namespace ServiceStack.Script
                     }
                 }
 
+                return null;
+            }
+
+            var resolvedType = (Type) Context.Cache.GetOrAdd(key, k => {
+
+                var type = onlyTypeOf(typeName);
+                if (type != null)
+                    return type;
+
                 var parts = typeName.Split('.');
-                var nameBuilder = "";
-                for (var i = 0; i < parts.Length; i++)
+                if (parts.Length > 1)
                 {
-                    try
+                    var nameBuilder = "";
+                    for (var i = 0; i < parts.Length; i++)
                     {
-                        if (i > 0)
-                            nameBuilder += '.';
-                        
-                        nameBuilder += parts[i];
-                        var parentType = @typeof(nameBuilder);
-                        if (parentType != null)
+                        try
                         {
-                            var nestedTypeName = parts[++i];
-                            var nestedType = parentType.GetNestedType(nestedTypeName);
-                            i++;
-                            while (i < parts.Length)
+                            if (i > 0)
+                                nameBuilder += '.';
+                            
+                            nameBuilder += parts[i];
+                            var parentType = onlyTypeOf(nameBuilder);
+                            if (parentType != null)
                             {
-                                nestedTypeName = parts[i++];
-                                nestedType = nestedType.GetNestedType(nestedTypeName);
+                                var nestedTypeName = parts[++i];
+                                var nestedType = parentType.GetNestedType(nestedTypeName);
+                                i++;
+                                while (i < parts.Length)
+                                {
+                                    nestedTypeName = parts[i++];
+                                    nestedType = nestedType.GetNestedType(nestedTypeName);
+                                }
+                                return nestedType;
                             }
-                            return nestedType;
                         }
+                        catch { }
                     }
-                    catch { }
                 }
 
                 return null;
@@ -373,7 +385,9 @@ namespace ServiceStack.Script
 
             var invoker = (Delegate)Context.Cache.GetOrAdd(key, k => {
                 var argTypes = args?.Select(x => x?.GetType()).ToArray();
-                var targetMethod = ResolveMethod(type, name, argTypes, argTypes?.Length ?? 0);
+                var targetMethod = ResolveMethod(type, name, argTypes, argTypes?.Length ?? 0, out var fn);
+                if (targetMethod == null)
+                    throw new NotSupportedException($"Method {instance.GetType().Name}.{name} does not exist");
                 if (targetMethod.IsStatic)
                     throw new NotSupportedException($"Cannot call static method {instance.GetType().Name}.{targetMethod.Name}");
                 
@@ -394,8 +408,9 @@ namespace ServiceStack.Script
             throw new NotSupportedException($"Cannot call {invoker.GetType().Name} methods");
         }
 
-        private MethodInfo ResolveMethod(Type type, string methodName, Type[] argTypes, int? argsCount = 0)
+        private MethodInfo ResolveMethod(Type type, string methodName, Type[] argTypes, int? argsCount, out Delegate invokerDelegate)
         {
+            invokerDelegate = null;
             var isGeneric = methodName.IndexOf('<') >= 0;
             var name = isGeneric ? methodName.LeftPart('<') : methodName;
 
@@ -423,6 +438,23 @@ namespace ServiceStack.Script
                         {
                             throw new NotSupportedException(
                                 $"Property {typeQualifiedName(type)}.{name} does not have a getter");
+                        }
+                    }
+                    else
+                    {
+                        var field = type.GetField(name,BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+                        if (field != null)
+                        {
+                            if (field.IsStatic)
+                            {
+                                invokerDelegate = (StaticMethodInvoker) ((args) => field.GetValue(null));
+                                return null;
+                            }
+                            else
+                            {
+                                invokerDelegate = (MethodInvoker) ((instance, args) => field.GetValue(instance));
+                                return null;
+                            }
                         }
                     }
                 }
@@ -582,9 +614,8 @@ namespace ServiceStack.Script
                     throw new NotSupportedException($"Could not resolve Type '{typeName}'. " +
                         $"Use ScriptContext.ScriptAssemblies or ScriptContext.AllowScriptingOfAllTypes+ScriptNamespaces to increase Type resolution");
                 
-                var method = ResolveMethod(type, methodName, argTypes, argTypes?.Length);
-
-                return method.GetInvokerDelegate();
+                var method = ResolveMethod(type, methodName, argTypes, argTypes?.Length, out var fn);
+                return fn ?? method.GetInvokerDelegate();
             });
 
             return invoker;
