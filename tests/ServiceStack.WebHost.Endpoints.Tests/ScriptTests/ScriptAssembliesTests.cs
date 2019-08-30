@@ -52,6 +52,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         public static string AllLogs() => sb.ToString();
 
         public static void Clear() => sb.Clear();
+        
+        public static string Prop { get; } = "StaticLog.Prop";
+
+        public class Inner1
+        {
+            public static string Prop1 { get; } = "StaticLog.Inner1.Prop1";
+
+            public static class Inner2
+            {
+                public static string Prop2 { get; } = "StaticLog.Inner1.Inner2.Prop2";
+            }
+        }
     }
 
     public class GenericStaticLog<T>
@@ -173,8 +185,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 c.AllowScriptingOfAllTypes = true;
                 c.ScriptNamespaces.Add("System");
                 c.ScriptNamespaces.Add("System.Collections.Generic");
+                c.ScriptNamespaces.Add(typeof(StaticLog).Namespace);
             }).Init();
-            
+
             Assert.That(context.Evaluate<Type>("{{ typeof('int') | return}}"), Is.EqualTo(typeof(int)));
             Assert.That(context.Evaluate<Type>("{{ typeof('Int32') | return}}"), Is.EqualTo(typeof(Int32)));
             Assert.That(context.Evaluate<Type>("{{ typeof('List<>') | return}}"), Is.EqualTo(typeof(List<>)));
@@ -183,6 +196,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(context.Evaluate<Type>("{{ typeof('Dictionary<string,int>') | return}}"), Is.EqualTo(typeof(Dictionary<string,int>)));
             Assert.That(context.Evaluate<Type>("{{ typeof('Dictionary<String,Int32>') | return}}"), Is.EqualTo(typeof(Dictionary<string,int>)));
             Assert.That(context.Evaluate<Type>("{{ typeof('Dictionary<String,ServiceStack.WebHost.Endpoints.Tests.ScriptTests.Ints>') | return}}"), Is.EqualTo(typeof(Dictionary<string,Ints>)));
+            
+            Assert.That(context.Evaluate<Type>("{{ typeof('StaticLog+Inner1') | return}}"), Is.EqualTo(typeof(StaticLog.Inner1)));
+            Assert.That(context.Evaluate<Type>("{{ typeof('StaticLog+Inner1+Inner2') | return}}"), Is.EqualTo(typeof(StaticLog.Inner1.Inner2)));
+            Assert.That(context.Evaluate<Type>("{{ typeof('StaticLog.Inner1') | return}}"), Is.EqualTo(typeof(StaticLog.Inner1)));
+            Assert.That(context.Evaluate<Type>("{{ typeof('StaticLog.Inner1.Inner2') | return}}"), Is.EqualTo(typeof(StaticLog.Inner1.Inner2)));
         }
 
         [Test]
@@ -512,6 +530,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 {{ log(o,'param.') }}
                 {{ Function('InstanceLog.AllLogs') | to => allLogs }}{{ o.allLogs() | return }}");
             Assert.That(result, Is.EqualTo("instance Int32 arg.instance Int32 param."));
+        }
+
+        [Test]
+        public void Can_get_inner_class_properties()
+        {
+            var context = CreateContext(c => {
+                c.AllowScriptingOfAllTypes = true;
+                c.ScriptNamespaces.Add(typeof(StaticLog).Namespace);
+            }).Init();
+            
+            string result = null;
+            result = context.Evaluate<string>(@"{{ Function('StaticLog.Prop')() | return }}");
+            Assert.That(result, Is.EqualTo("StaticLog.Prop"));
+            
+            result = context.Evaluate<string>(@"{{ Function('StaticLog.Inner1.Prop1')() | return }}");
+            Assert.That(result, Is.EqualTo("StaticLog.Inner1.Prop1"));
+            
+            result = context.Evaluate<string>(@"{{ Function('StaticLog.Inner1.Inner2.Prop2')() | return }}");
+            Assert.That(result, Is.EqualTo("StaticLog.Inner1.Inner2.Prop2"));
         }
     }
 }

@@ -188,6 +188,9 @@ namespace ServiceStack.Script
         /// </summary>
         public Type @typeof(string typeName)
         {
+            if (string.IsNullOrEmpty(typeName))
+                return null;
+            
             var key = "type:" + typeName;
 
             Type cookGenericType(Type type, List<string> genericArgs)
@@ -281,6 +284,33 @@ namespace ServiceStack.Script
                         if (type != null)
                             return cookGenericType(type, genericArgs);
                     }
+                }
+
+                var parts = typeName.Split('.');
+                var nameBuilder = "";
+                for (var i = 0; i < parts.Length; i++)
+                {
+                    try
+                    {
+                        if (i > 0)
+                            nameBuilder += '.';
+                        
+                        nameBuilder += parts[i];
+                        var parentType = @typeof(nameBuilder);
+                        if (parentType != null)
+                        {
+                            var nestedTypeName = parts[++i];
+                            var nestedType = parentType.GetNestedType(nestedTypeName);
+                            i++;
+                            while (i < parts.Length)
+                            {
+                                nestedTypeName = parts[i++];
+                                nestedType = nestedType.GetNestedType(nestedTypeName);
+                            }
+                            return nestedType;
+                        }
+                    }
+                    catch { }
                 }
 
                 return null;
@@ -379,48 +409,71 @@ namespace ServiceStack.Script
                     && ((genericArgs.Count == 0 && !x.IsGenericMethod) || (x.IsGenericMethod && x.GetGenericArguments().Length == genericArgsCount)))
                 .ToArray();
 
-            if (methods.Length == 0)
-                throw new NotSupportedException(
-                    $"Method {typeQualifiedName(type)}.{name} does not exist");
-
             MethodInfo targetMethod = null;
-            if (methods.Length > 1)
+            if (methods.Length == 0)
             {
-                var candidates = 0;
-                foreach (var method in methods)
+                if ((argTypes?.Length ?? 0) == 0)
                 {
-                    var match = true;
+                    var prop = type.GetProperty(name,BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
 
-                    var methodParams = method.GetParameters();
-                    if (argTypes != null)
+                    if (prop != null)
                     {
-                        for (var i = 0; i < argTypes.Length; i++)
+                        targetMethod = prop.GetMethod;
+                        if (targetMethod == null)
                         {
-                            var argType = argTypes[i];
-                            if (argType == null)
-                                continue;
+                            throw new NotSupportedException(
+                                $"Property {typeQualifiedName(type)}.{name} does not have a getter");
+                        }
+                    }
+                }
 
-                            match = methodParams[i].ParameterType == argType;
-                            if (!match)
-                                break;
+                if (targetMethod == null)
+                {
+                    throw new NotSupportedException(
+                        $"Method {typeQualifiedName(type)}.{name} does not exist");
+                }
+            }
+
+            if (targetMethod == null)
+            {
+                if (methods.Length > 1)
+                {
+                    var candidates = 0;
+                    foreach (var method in methods)
+                    {
+                        var match = true;
+
+                        var methodParams = method.GetParameters();
+                        if (argTypes != null)
+                        {
+                            for (var i = 0; i < argTypes.Length; i++)
+                            {
+                                var argType = argTypes[i];
+                                if (argType == null)
+                                    continue;
+
+                                match = methodParams[i].ParameterType == argType;
+                                if (!match)
+                                    break;
+                            }
+                        }
+
+                        if (match)
+                        {
+                            targetMethod = method;
+                            candidates++;
                         }
                     }
 
-                    if (match)
+                    if (targetMethod == null || candidates != 1)
                     {
-                        targetMethod = method;
-                        candidates++;
+                        var argTypesList = argTypes != null ? string.Join(",", argTypes.Select(x => x?.Name ?? "null")) : "";
+                        throw new NotSupportedException(
+                            $"Could not resolve ambiguous method {typeQualifiedName(type)}.{name}({argTypesList})");
                     }
                 }
-
-                if (targetMethod == null || candidates != 1)
-                {
-                    var argTypesList = argTypes != null ? string.Join(",", argTypes.Select(x => x?.Name ?? "null")) : "";
-                    throw new NotSupportedException(
-                        $"Could not resolve ambiguous method {typeQualifiedName(type)}.{name}({argTypesList})");
-                }
+                else targetMethod = methods[0];
             }
-            else targetMethod = methods[0];
 
             if (targetMethod.IsGenericMethod)
             {
