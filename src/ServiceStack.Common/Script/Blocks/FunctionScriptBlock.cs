@@ -39,13 +39,12 @@ namespace ServiceStack.Script
                 StaticMethodInvoker invoker = null;
 
                 // Allow recursion by initializing lazy Delegate
-                object LazyInvoker(object instance, object[] paramValues)
-                {
-                    if (invoker == null) 
+                MethodInvoker LazyInvoker = (instance, paramValues) => {
+                    if (invoker == null)
                         throw new NotSupportedException($"Uninitialized function '{strName}'");
 
                     return invoker(instance, paramValues);
-                }
+                };
 
                 invoker = (paramValues) => {
                     scope.PageResult.StackDepth++;
@@ -53,7 +52,7 @@ namespace ServiceStack.Script
                     {
                         var pageResult = new PageResult(parsedScript) {
                             Args = {
-                                [strName] = (MethodInvoker) LazyInvoker
+                                [strName] = LazyInvoker
                             },
                             StackDepth = scope.PageResult.StackDepth
                         };
