@@ -552,6 +552,18 @@ namespace ServiceStack.Script
         }
 
         /// <summary>
+        /// Shorter Alias for Constructor
+        /// </summary>
+        /// <returns></returns>
+        public Delegate C(string qualifiedMethodName) => Constructor(qualifiedMethodName);
+
+        /// <summary>
+        /// Shorter Alias for Function
+        /// </summary>
+        /// <returns></returns>
+        public Delegate F(string qualifiedMethodName) => Function(qualifiedMethodName);
+
+        /// <summary>
         /// Qualified Method Name Examples:
         ///  - Console.WriteLine(string)
         ///  - Type.StaticMethod
