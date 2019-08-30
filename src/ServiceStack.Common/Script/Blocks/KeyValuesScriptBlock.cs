@@ -16,7 +16,7 @@ namespace ServiceStack.Script
     ///          Rock Melon:   3
     ///        {{/keyvalues}}
     /// </summary>
-    public class KeyValuesBlock : ScriptBlock
+    public class KeyValuesScriptBlock : ScriptBlock
     {
         public override string Name => "keyvalues";
         
