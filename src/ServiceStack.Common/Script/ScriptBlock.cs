@@ -87,6 +87,7 @@ namespace ServiceStack.Script
                 new KeyValuesScriptBlock(),
                 new CsvScriptBlock(),
                 new FunctionScriptBlock(), 
+                new WhileScriptBlock(),
             });
         }
     }

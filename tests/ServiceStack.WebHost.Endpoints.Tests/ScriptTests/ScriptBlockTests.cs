@@ -1020,5 +1020,35 @@ dict | return
                 new List<string> { "Rock Melon", "3", "3" },
             }));
         }
+
+        [Test]
+        public void Can_use_while_block()
+        {
+            var context = new ScriptContext().Init();
+
+            var result = context.EvaluateScript(@"
+```code
+3 | to => times
+#while times > 0
+    times 
+    times - 1 | to => times
+/while
+```");
+            
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo("3\n2\n1"));
+            
+            result = context.EvaluateScript(@"
+```code
+0 | to => times
+#while times > 0
+    times 
+    times - 1 | to => times
+else
+    `times == 0`
+/while
+```");
+            
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo("times == 0"));
+        }
     }
 }
