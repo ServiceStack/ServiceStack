@@ -36,7 +36,7 @@ namespace ServiceStack.Script
             }
             
             var strFragment = (PageStringFragment)block.Body[0];
-            var strDict = strFragment.ValueString.Trim().ParseAsKeyValues(delimiter);
+            var strDict = Context.DefaultMethods.parseKeyValues(strFragment.ValueString, delimiter);
             scope.PageResult.Args[name.ToString()] = strDict;
 
             return TypeConstants.EmptyTask;
