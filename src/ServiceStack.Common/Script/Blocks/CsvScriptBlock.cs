@@ -25,13 +25,8 @@ namespace ServiceStack.Script
             var literal = block.Argument.ParseVarName(out var name);
             
             var strFragment = (PageStringFragment)block.Body[0];
-            var trimmedBody = StringBuilderCache.Allocate();
-            foreach (var line in strFragment.ValueString.ReadLines())
-            {
-                trimmedBody.AppendLine(line.Trim());
-            }
-            var strList = trimmedBody.ToString().FromCsv<List<List<string>>>();
-            scope.PageResult.Args[name.ToString()] = strList;
+            var csvList = Context.DefaultMethods.parseCsv(strFragment.ValueString);
+            scope.PageResult.Args[name.ToString()] = csvList;
 
             return TypeConstants.EmptyTask;
         }
