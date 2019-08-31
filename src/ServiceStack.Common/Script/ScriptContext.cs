@@ -11,6 +11,11 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Script
 {
+    public interface IConfigureScriptContext
+    {
+        void Configure(ScriptContext context);
+    }
+    
     public partial class ScriptContext : IDisposable
     {
         public List<PageFormat> PageFormats { get; set; } = new List<PageFormat>();
@@ -153,6 +158,27 @@ namespace ServiceStack.Script
         /// </summary>
         public bool SkipExecutingFiltersIfError { get; set; }
 
+        /// <summary>
+        /// Limit Max iterations (default 10000)
+        /// </summary>
+        public int MaxQuota { get; set; } = 10000;
+
+        /// <summary>
+        /// Limit Recursion Max StackDepth (default 25)
+        /// </summary>
+        public int MaxStackDepth { get; set; } = 25;
+        
+        public HashSet<string> RemoveNewLineAfterFiltersNamed { get; set; } = new HashSet<string>
+        {
+        };
+        
+        public HashSet<string> OnlyEvaluateFiltersWhenSkippingPageFilterExecution { get; set; } = new HashSet<string>
+        {
+        };
+        
+        public HashSet<string> DontEvaluateBlocksNamed { get; set; } = new HashSet<string> {
+        };
+        
         public Func<PageVariableFragment, ReadOnlyMemory<byte>> OnUnhandledExpression { get; set; }
 
         public SharpPage GetPage(string virtualPath)
@@ -312,7 +338,6 @@ namespace ServiceStack.Script
             FilterTransformers["end"] = stream => (TypeConstants.EmptyByteArray.InMemoryStream() as Stream).InTask();
             FilterTransformers["buffer"] = stream => stream.InTask();
             
-            Args[nameof(ScriptConfig.MaxQuota)] = ScriptConfig.MaxQuota;
             Args[nameof(ScriptConfig.DefaultCulture)] = ScriptConfig.CreateCulture();
             Args[nameof(ScriptConfig.DefaultDateFormat)] = ScriptConfig.DefaultDateFormat;
             Args[nameof(ScriptConfig.DefaultDateTimeFormat)] = ScriptConfig.DefaultDateTimeFormat;
@@ -453,6 +478,11 @@ namespace ServiceStack.Script
                 method.Context = this;
             if (method.Pages == null)
                 method.Pages = Pages;
+
+            if (method is IConfigureScriptContext init)
+            {
+                init.Configure(this);
+            }
         }
 
         internal void InitBlock(ScriptBlock block)
@@ -462,6 +492,11 @@ namespace ServiceStack.Script
                 block.Context = this;
             if (block.Pages == null)
                 block.Pages = Pages;
+
+            if (block is IConfigureScriptContext init)
+            {
+                init.Configure(this);
+            }
         }
 
         public ScriptContext ScanType(Type type)

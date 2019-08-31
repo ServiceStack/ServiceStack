@@ -6,8 +6,37 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Script
 {
-    public abstract class ScriptBlock
+    public abstract class ScriptBlock : IConfigureScriptContext
     {
+        /// <summary>
+        /// How to Parse the Block's Body Contents 
+        /// </summary>
+        public enum BodyStyle
+        {
+            /// <summary>
+            /// Default. Parse Body's Template Expressions
+            /// </summary>
+            Template,
+
+            /// <summary>
+            /// Ignore Body Content and Parse Body as Raw Text
+            /// </summary>
+            Verbatim,
+            
+            /// <summary>
+            /// Parse Body as Code Statement Blocks
+            /// </summary>
+            CodeBlock,
+        }
+
+        public virtual BodyStyle ParseBody => BodyStyle.Template;
+        
+        public void Configure(ScriptContext context)
+        {
+            if (ParseBody == BodyStyle.Verbatim)
+                context.DontEvaluateBlocksNamed.Add(Name);
+        }
+
         public ScriptContext Context { get; set; }
         public ISharpPages Pages { get; set; }
         public abstract string Name { get; }
@@ -64,12 +93,13 @@ namespace ServiceStack.Script
 
         protected int AssertWithinMaxQuota(int value)
         {
-            var maxQuota = (int)Context.Args[nameof(ScriptConfig.MaxQuota)];
+            var maxQuota = Context.MaxQuota;
             if (value > maxQuota)
                 throw new NotSupportedException($"{value} exceeds Max Quota of {maxQuota}. \nMaxQuota can be changed in `Context.Args[nameof(TemplateConfig.MaxQuota)]` or globally in `TemplateConfig.MaxQuota`.");
 
             return value;
         }
+
     }
 
     public class DefaultScriptBlocks : IScriptPlugin

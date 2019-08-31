@@ -126,15 +126,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
             Assert.That(result, Is.EqualTo(55));
 
-            Assert.That(ScriptConfig.MaxStackDepth, Is.EqualTo(25));
+            Assert.That(context.MaxStackDepth, Is.EqualTo(25));
 
-            result = context.Evaluate<int>(template(ScriptConfig.MaxStackDepth - 1));
+            result = context.Evaluate<int>(template(context.MaxStackDepth - 1));
 
             Assert.That(result, Is.EqualTo(46368));
 
             try
             {
-                result = context.Evaluate<int>(template(ScriptConfig.MaxStackDepth + 1));
+                result = context.Evaluate<int>(template(context.MaxStackDepth + 1));
                 Assert.Fail("Should throw");
             }
             catch (ScriptException e)

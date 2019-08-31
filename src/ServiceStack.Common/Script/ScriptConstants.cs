@@ -2,7 +2,6 @@ namespace ServiceStack.Script
 {
     public static class ScriptConstants
     {
-        public const string MaxQuota = nameof(ScriptConfig.MaxQuota);
         public const string DefaultCulture = nameof(ScriptConfig.DefaultCulture);
         public const string DefaultDateFormat = nameof(ScriptConfig.DefaultDateFormat);
         public const string DefaultDateTimeFormat = nameof(ScriptConfig.DefaultDateTimeFormat);

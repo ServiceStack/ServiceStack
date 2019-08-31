@@ -19,6 +19,7 @@ namespace ServiceStack.Script
     public class KeyValuesScriptBlock : ScriptBlock
     {
         public override string Name => "keyvalues";
+        public override BodyStyle ParseBody => BodyStyle.Verbatim;
         
         public override Task WriteAsync(ScriptScopeContext scope, PageBlockFragment block, CancellationToken ct)
         {

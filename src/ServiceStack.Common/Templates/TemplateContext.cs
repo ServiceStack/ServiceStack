@@ -136,7 +136,6 @@ namespace ServiceStack.Templates
     [Obsolete("Use ScriptConstants")]
     public static class TemplateConstants
     {
-        public const string MaxQuota = ScriptConstants.MaxQuota;
         public const string DefaultCulture = ScriptConstants.DefaultCulture;
         public const string DefaultDateFormat = ScriptConstants.DefaultDateFormat;
         public const string DefaultDateTimeFormat = ScriptConstants.DefaultDateTimeFormat;
@@ -175,12 +174,8 @@ namespace ServiceStack.Templates
     [Obsolete("Use ScriptConfig")]
     public static class TemplateConfig
     {
-        public static HashSet<string> RemoveNewLineAfterFiltersNamed => ScriptConfig.RemoveNewLineAfterFiltersNamed;
-        public static HashSet<string> OnlyEvaluateFiltersWhenSkippingPageFilterExecution =>
-            ScriptConfig.OnlyEvaluateFiltersWhenSkippingPageFilterExecution;
         public static HashSet<Type> FatalExceptions => ScriptConfig.FatalExceptions;
         public static HashSet<Type> CaptureAndEvaluateExceptionsToNull => ScriptConfig.CaptureAndEvaluateExceptionsToNull;
-        public static HashSet<string> DontEvaluateBlocksNamed => ScriptConfig.DontEvaluateBlocksNamed;
         public static int MaxQuota { get; set; } = 10000;
         public static CultureInfo DefaultCulture => ScriptConfig.DefaultCulture;
         public static string DefaultDateFormat => ScriptConfig.DefaultDateFormat;

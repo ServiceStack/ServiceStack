@@ -121,8 +121,8 @@ namespace ServiceStack.Script
             var name = ResolveMethodName(Callee);
             var result = scope.PageResult;
 
-            if (result.StackDepth > ScriptConfig.MaxStackDepth)
-                throw new NotSupportedException("Exceeded MaxStackDepth of " + ScriptConfig.MaxStackDepth);
+            if (result.StackDepth > scope.Context.MaxStackDepth)
+                throw new NotSupportedException("Exceeded MaxStackDepth of " + scope.Context.MaxStackDepth);
 
             var expr = Callee as JsMemberExpression;
 

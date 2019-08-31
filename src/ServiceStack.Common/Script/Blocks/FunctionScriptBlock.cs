@@ -16,6 +16,8 @@ namespace ServiceStack.Script
     {
         public override string Name => "function";
 
+        public override BodyStyle ParseBody => BodyStyle.CodeBlock;
+
         public override Task WriteAsync(ScriptScopeContext scope, PageBlockFragment block, CancellationToken token)
         {
             var invokerCtx = (Tuple<string,StaticMethodInvoker>)scope.Context.CacheMemory.GetOrAdd(block.Argument, key => {

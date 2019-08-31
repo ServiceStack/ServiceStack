@@ -357,9 +357,9 @@ namespace ServiceStack.Script
         public bool ShouldSkipFilterExecution(PageVariableFragment var)
         {
             return HaltExecution || SkipFilterExecution && (var.Binding != null 
-               ? !ScriptConfig.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Contains(var.Binding)
+               ? !Context.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Contains(var.Binding)
                : var.InitialExpression?.Name == null || 
-                 !ScriptConfig.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Contains(var.InitialExpression.Name));
+                 !Context.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Contains(var.InitialExpression.Name));
         }
 
         public bool ShouldSkipFilterExecution(PageBlockFragment var)
