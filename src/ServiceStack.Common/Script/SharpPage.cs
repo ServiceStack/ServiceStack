@@ -116,7 +116,7 @@ namespace ServiceStack.Script
             var pageFragments = pageVars.TryGetValue("ignore", out object ignore) 
                     && ("page".Equals(ignore.ToString()) || "template".Equals(ignore.ToString()))
                 ? new List<PageFragment> { new PageStringFragment(bodyContents) } 
-                : SharpPageUtils.ParseTemplatePage(bodyContents);
+                : Context.ParseTemplatePage(bodyContents);
 
             foreach (var fragment in pageFragments)
             {

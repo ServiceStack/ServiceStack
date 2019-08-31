@@ -10,8 +10,20 @@ namespace ServiceStack.Script
 {
     // ReSharper disable InconsistentNaming
     
-    public class HtmlScripts : ScriptMethods
+    public class HtmlScripts : ScriptMethods, IConfigureScriptContext
     {
+        
+        public static List<string> EvaluateWhenSkippingFilterExecution = new List<string> {
+            nameof(htmlError),
+            nameof(htmlErrorMessage),
+            nameof(htmlErrorDebug),
+        };
+
+        public void Configure(ScriptContext context)
+        {
+            EvaluateWhenSkippingFilterExecution.Each(name => context.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Add(name));
+        }
+
         public IRawString htmlList(IEnumerable target) => HtmlList(target, new HtmlDumpOptions { Defaults = Context.DefaultMethods }).ToRawString();
         public IRawString htmlList(IEnumerable target, Dictionary<string, object> options) => 
             HtmlList(target, HtmlDumpOptions.Parse(options, Context.DefaultMethods)).ToRawString();

@@ -23,15 +23,15 @@ namespace ServiceStack.Script
     {
         public static List<PageFragment> ParseTemplatePage(string text)
         {
-            return ParseTemplatePage(text.AsMemory());
+            return new ScriptContext().Init().ParseTemplatePage(text.AsMemory());
         }
 
-        private const char FilterSep = '|';
+        internal const char FilterSep = '|';
 
         // {{#name}}  {{else if a=b}}  {{else}}  {{/name}}
         //          ^
         // returns    ^                         ^
-        static ReadOnlyMemory<char> ParseStatementBody(this ReadOnlyMemory<char> literal, ReadOnlyMemory<char> blockName, out List<PageFragment> body)
+        static ReadOnlyMemory<char> ParseStatementBody(this ReadOnlyMemory<char> literal, ScriptContext context, ReadOnlyMemory<char> blockName, out List<PageFragment> body)
         {
             var inStatements = 0;
             var pos = 0;
@@ -58,7 +58,7 @@ namespace ServiceStack.Script
                         literal.Slice(pos + 2 + 1).ParseVarName(out var name);
                         if (name.EqualsOrdinal(blockName))
                         {
-                            body = ParseTemplatePage(literal.Slice(0, pos).TrimFirstNewLine());
+                            body = ParseTemplatePage(context, literal.Slice(0, pos).TrimFirstNewLine());
                             return literal.Slice(pos);
                         }
                     }
@@ -69,7 +69,7 @@ namespace ServiceStack.Script
                 {
                     if (inStatements == 0)
                     {
-                        body = ParseTemplatePage(literal.Slice(0, pos).TrimFirstNewLine());
+                        body = ParseTemplatePage(context, literal.Slice(0, pos).TrimFirstNewLine());
                         return literal.Slice(pos);
                     }
                 }
@@ -81,7 +81,7 @@ namespace ServiceStack.Script
         //   {{else if a=b}}  {{else}}  {{/name}}
         //  ^
         // returns           ^         ^
-        static ReadOnlyMemory<char> ParseElseStatement(this ReadOnlyMemory<char> literal, string blockName, out PageElseBlock statement)
+        static ReadOnlyMemory<char> ParseElseStatement(this ReadOnlyMemory<char> literal, ScriptContext context, string blockName, out PageElseBlock statement)
         {
             var inStatements = 0;
             var pos = 0;
@@ -108,7 +108,7 @@ namespace ServiceStack.Script
                         literal.Slice(pos + 2 + 1).ParseVarName(out var name);
                         if (name.EqualsOrdinal(blockName))
                         {
-                            var body = ParseTemplatePage(literal.Slice(statementPos, pos - statementPos).TrimFirstNewLine());
+                            var body = ParseTemplatePage(context, literal.Slice(statementPos, pos - statementPos).TrimFirstNewLine());
                             statement = new PageElseBlock(elseExpr, body);
                             return literal.Slice(pos);
                         }
@@ -123,7 +123,7 @@ namespace ServiceStack.Script
                         if (statementPos >= 0)
                         {
                             var bodyText = literal.Slice(statementPos, pos - statementPos).TrimFirstNewLine();
-                            var body = ParseTemplatePage(bodyText);
+                            var body = context.ParseTemplatePage(bodyText);
                             statement = new PageElseBlock(elseExpr, body);
                             return literal.Slice(pos);
                         }
@@ -143,7 +143,7 @@ namespace ServiceStack.Script
             }
         }
 
-        public static List<PageFragment> ParseTemplatePage(ReadOnlyMemory<char> text)
+        public static List<PageFragment> ParseTemplatePage(this ScriptContext context, ReadOnlyMemory<char> text)
         {
             var to = new List<PageFragment>();
 
@@ -176,6 +176,7 @@ namespace ServiceStack.Script
                     literal = literal.ParseVarName(out var blockNameSpan);
 
                     var blockName = blockNameSpan.ToString();
+                    var endBlock = "{{/" + blockName + "}}";
                     var endExprPos = literal.IndexOf("}}");
                     if (endExprPos == -1)
                         throw new SyntaxErrorException($"Unterminated '{blockName}' block expression, near '{literal.DebugLiteral()}'" );
@@ -183,14 +184,14 @@ namespace ServiceStack.Script
                     var blockExpr = literal.Slice(0, endExprPos).Trim();
                     literal = literal.Advance(endExprPos + 2);
 
-                    if (!ScriptConfig.DontEvaluateBlocksNamed.Contains(blockName))
+                    if (!context.DontEvaluateBlocksNamed.Contains(blockName))
                     {
-                        literal = literal.ParseStatementBody(blockNameSpan, out var body);
+                        literal = literal.ParseStatementBody(context, blockNameSpan, out var body);
                         var elseStatements = new List<PageElseBlock>();
 
                         while (literal.StartsWith("{{else"))
                         {
-                            literal = literal.ParseElseStatement(blockName, out var elseStatement);
+                            literal = literal.ParseElseStatement(context, blockName, out var elseStatement);
                             elseStatements.Add(elseStatement);
                         }
 
@@ -208,7 +209,6 @@ namespace ServiceStack.Script
                     }
                     else
                     {
-                        var endBlock = "{{/" + blockName + "}}";
                         var endBlockPos = literal.IndexOf(endBlock);
                         if (endBlockPos == -1)
                             throw new SyntaxErrorException($"Unterminated end block '{endBlock}'");
@@ -292,7 +292,7 @@ namespace ServiceStack.Script
                         var lastExpr = varFragment.FilterExpressions?.LastOrDefault();
                         var filterName = lastExpr?.Name ??
                                          varFragment?.InitialExpression?.Name ?? varFragment.Binding;
-                        if (filterName != null && ScriptConfig.RemoveNewLineAfterFiltersNamed.Contains(filterName))
+                        if (filterName != null && context.RemoveNewLineAfterFiltersNamed.Contains(filterName))
                         {
                             lastPos += newLineLen;
                         }

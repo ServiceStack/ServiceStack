@@ -18,7 +18,8 @@ namespace ServiceStack.Script
     public class CsvScriptBlock : ScriptBlock
     {
         public override string Name => "csv";
-        
+        public override BodyStyle ParseBody => BodyStyle.Verbatim;
+
         public override Task WriteAsync(ScriptScopeContext scope, PageBlockFragment block, CancellationToken ct)
         {
             var literal = block.Argument.ParseVarName(out var name);

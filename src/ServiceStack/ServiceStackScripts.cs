@@ -20,8 +20,17 @@ namespace ServiceStack
     [Obsolete("Use ServiceStackScripts")]
     public class TemplateServiceStackFilters : ServiceStackScripts {}
     
-    public partial class ServiceStackScripts : ScriptMethods
+    public partial class ServiceStackScripts : ScriptMethods, IConfigureScriptContext
     {
+        public static List<string> RemoveNewLinesFor { get; } = new List<string> {
+            nameof(publishToGateway),
+        };
+
+        public void Configure(ScriptContext context)
+        {
+            RemoveNewLinesFor.Each(name => context.RemoveNewLineAfterFiltersNamed.Add(name));
+        }
+        
         public static ILog Log = LogManager.GetLogger(typeof(ServiceStackScripts));
         
         private ServiceStackHost appHost => HostContext.AppHost;

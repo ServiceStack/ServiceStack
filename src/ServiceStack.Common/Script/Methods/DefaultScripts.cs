@@ -12,9 +12,56 @@ namespace ServiceStack.Script
 {
     // ReSharper disable InconsistentNaming
     
-    public partial class DefaultScripts : ScriptMethods
+    public partial class DefaultScripts : ScriptMethods, IConfigureScriptContext
     {
         public static readonly DefaultScripts Instance = new DefaultScripts();
+        
+        public static List<string> RemoveNewLinesFor { get; } = new List<string> {
+            nameof(to),
+            nameof(assignTo),
+            nameof(assignToGlobal),
+            nameof(assignError),
+            nameof(addTo),
+            nameof(addToGlobal),
+            nameof(addToStart),
+            nameof(addToStartGlobal),
+            nameof(appendTo),
+            nameof(appendToGlobal),
+            nameof(prependTo),
+            nameof(prependToGlobal),
+            nameof(forEach),
+            nameof(@do),
+            nameof(end),
+            nameof(@throw),
+            nameof(ifthrow),
+            nameof(throwIf),
+            nameof(throwIf),
+            nameof(ifThrowArgumentException),
+            nameof(ifThrowArgumentNullException),
+            nameof(throwArgumentNullExceptionIf),
+            nameof(throwArgumentException),
+            nameof(throwArgumentNullException),
+            nameof(throwNotSupportedException),
+            nameof(throwNotImplementedException),
+            nameof(throwUnauthorizedAccessException),
+            nameof(throwFileNotFoundException),
+            nameof(throwOptimisticConcurrencyException),
+            nameof(throwNotSupportedException),
+            nameof(ifError),
+            nameof(skipExecutingFiltersOnError),
+            nameof(continueExecutingFiltersOnError),
+        };
+        
+        public static List<string> EvaluateWhenSkippingFilterExecution = new List<string> {
+            nameof(ifError),
+            nameof(lastError),
+        };
+
+        public void Configure(ScriptContext context)
+        {
+            RemoveNewLinesFor.Each(name => context.RemoveNewLineAfterFiltersNamed.Add(name));
+            EvaluateWhenSkippingFilterExecution.Each(name => context.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Add(name));
+        }
 
         // methods without arguments can be used in bindings, e.g. {{ now | dateFormat }}
         public DateTime now() => DateTime.Now;
@@ -836,7 +883,7 @@ namespace ServiceStack.Script
 
         public int AssertWithinMaxQuota(int value)
         {
-            var maxQuota = (int)Context.Args[ScriptConstants.MaxQuota];
+            var maxQuota = Context.MaxQuota;
             if (value > maxQuota)
                 throw new NotSupportedException($"{value} exceeds Max Quota of {maxQuota}");
 
@@ -1379,7 +1426,7 @@ namespace ServiceStack.Script
                 return result;
             }
         }
-   }
+    }
 
     public partial class DefaultScripts //Methods named after common keywords breaks intelli-sense when trying to use them        
     {

@@ -6,54 +6,6 @@ namespace ServiceStack.Script
 {
     public static class ScriptConfig
     {
-        public static HashSet<string> RemoveNewLineAfterFiltersNamed { get; set; } = new HashSet<string>
-        {
-            "to",
-            "assignTo",
-            "assignToGlobal",
-            "assignError",
-            "addTo",
-            "addToGlobal",
-            "addToStart",
-            "addToStartGlobal",
-            "appendTo",
-            "appendToGlobal",
-            "prependTo",
-            "prependToGlobal",
-            "forEach",
-            "do",
-            "end",
-            "throw",
-            "ifthrow",
-            "throwIf",
-            "throwIf",
-            "ifThrowArgumentException",
-            "ifThrowArgumentNullException",
-            "throwArgumentNullExceptionIf",
-            "throwArgumentException",
-            "throwArgumentNullException",
-            "throwNotSupportedException",
-            "throwNotImplementedException",
-            "throwUnauthorizedAccessException",
-            "throwFileNotFoundException",
-            "throwOptimisticConcurrencyException",
-            "throwNotSupportedException",
-            "ifError",
-            "ifErrorFmt",
-            "skipExecutingFiltersOnError",
-            "continueExecutingFiltersOnError",
-            "publishToGateway",
-        };
-        
-        public static HashSet<string> OnlyEvaluateFiltersWhenSkippingPageFilterExecution { get; set; } = new HashSet<string>
-        {
-            "ifError",
-            "lastError",
-            "htmlError",
-            "htmlErrorMessage",
-            "htmlErrorDebug",
-        };
-        
         /// <summary>
         /// Rethrow fatal exceptions thrown on incorrect API usage    
         /// </summary>
@@ -69,14 +21,6 @@ namespace ServiceStack.Script
             typeof(NullReferenceException),
             typeof(ArgumentNullException),
         };
-        
-        public static HashSet<string> DontEvaluateBlocksNamed { get; set; } = new HashSet<string> {
-            "raw"
-        };
-
-        public static int MaxQuota { get; set; } = 10000;
-
-        public static int MaxStackDepth { get; set; } = 25;
         public static CultureInfo DefaultCulture { get; set; } //Uses CurrentCulture by default
         public static string DefaultDateFormat { get; set; }  = "yyyy-MM-dd";
         public static string DefaultDateTimeFormat { get; set; } = "u";
