@@ -649,6 +649,26 @@ namespace ServiceStack.Script
             args.Each((x,y) => pageResult.Args[x] = y);
             return await GetPageResultOutputAsync(pageResult);
         }
+        
+        private static PageResult GetCodePageResult(ScriptContext context, string code, Dictionary<string, object> args)
+        {
+            var page = context.Pages.OneTimePage(code, context.PageFormats.First().Extension,p => p.EvaluateAsCode = true);
+            var pageResult = new PageResult(page);
+            args.Each((x, y) => pageResult.Args[x] = y);
+            return pageResult;
+        }
+
+        public static string RenderCode(this ScriptContext context, string code, Dictionary<string, object> args=null)
+        {
+            var pageResult = GetCodePageResult(context, code, args);
+            return GetPageResultOutput(pageResult);
+        }
+
+        public static async Task<string> RenderCodeAsync(this ScriptContext context, string code, Dictionary<string, object> args=null)
+        {
+            var pageResult = GetCodePageResult(context, code, args);
+            return await GetPageResultOutputAsync(pageResult);
+        }
 
         public static JsBlockStatement ParseCode(this ScriptContext context, string code) =>
             context.ParseCode(code.AsMemory());

@@ -54,14 +54,33 @@ namespace ServiceStack.Script
             await scope.PageResult.WriteFragmentsAsync(scope, body, callTrace, cancel);
         }
 
+        protected virtual async Task WriteAsync(ScriptScopeContext scope, JsStatement[] body, string callTrace, CancellationToken cancel)
+        {
+            await scope.PageResult.WriteStatementsAsync(scope, body, scope.OutputStream, callTrace, cancel);
+        }
+
         protected virtual async Task WriteBodyAsync(ScriptScopeContext scope, PageBlockFragment fragment, CancellationToken token)
         {
-            await WriteAsync(scope, fragment.Body, GetCallTrace(fragment), token);
+            if (fragment.Body != null)
+            {
+                await WriteAsync(scope, fragment.Body, GetCallTrace(fragment), token);
+            }
+            else if (fragment.BodyStatement?.Statements != null)
+            {
+                await WriteAsync(scope, fragment.BodyStatement.Statements, GetCallTrace(fragment), token);
+            }
         }
 
         protected virtual async Task WriteElseAsync(ScriptScopeContext scope, PageElseBlock fragment, CancellationToken token)
         {
-            await WriteAsync(scope, fragment.Body, GetElseCallTrace(fragment), token);
+            if (fragment.Body != null)
+            {
+                await WriteAsync(scope, fragment.Body, GetElseCallTrace(fragment), token);
+            }
+            else if (fragment.BodyStatement?.Statements != null)
+            {
+                await WriteAsync(scope, fragment.BodyStatement.Statements, GetElseCallTrace(fragment), token);
+            }
         }
 
         protected async Task WriteElseAsync(ScriptScopeContext scope, PageElseBlock[] elseBlocks, CancellationToken cancel)

@@ -294,29 +294,7 @@ namespace ServiceStack.Script
                     if (HaltExecution)
                         break;
 
-                    if (fragment is PageStringFragment str)
-                    {
-                        await outputStream.WriteAsync(str.ValueUtf8, token);
-                    }
-                    else if (fragment is PageVariableFragment var && !ShouldSkipFilterExecution(var))
-                    {
-                        if (var.Binding?.Equals(ScriptConstants.Page) == true)
-                        {
-                            await WritePageAsync(Page, CodePage, pageScope, token);
-
-                            if (HaltExecution)
-                                HaltExecution = false; //break out of page but continue evaluating layout
-                        }
-                        else
-                        {
-                            await WriteVarAsync(pageScope, var, token);
-                        }
-                    }
-                    else if (fragment is PageBlockFragment blockFragment && !ShouldSkipFilterExecution(blockFragment))
-                    {
-                        var block = GetBlock(blockFragment.Name);
-                        await block.WriteAsync(pageScope, blockFragment, token);
-                    }
+                    await WritePageFragmentAsync(fragment, pageScope, outputStream, token);
                 }
 
                 stackTrace.Pop();
@@ -324,6 +302,96 @@ namespace ServiceStack.Script
             else
             {
                 await WritePageAsync(Page, CodePage, pageScope, token);
+            }
+        }
+
+        private async Task WritePageFragmentAsync(PageFragment fragment, ScriptScopeContext scope,
+            Stream outputStream, CancellationToken token)
+        {
+            if (fragment is PageStringFragment str)
+            {
+                await outputStream.WriteAsync(str.ValueUtf8, token);
+            }
+            else if (fragment is PageVariableFragment var && !ShouldSkipFilterExecution(var))
+            {
+                if (var.Binding?.Equals(ScriptConstants.Page) == true)
+                {
+                    await WritePageAsync(Page, CodePage, scope, token);
+
+                    if (HaltExecution)
+                        HaltExecution = false; //break out of page but continue evaluating layout
+                }
+                else
+                {
+                    await WriteVarAsync(scope, var, token);
+                }
+            }
+            else if (fragment is PageBlockFragment blockFragment && !ShouldSkipFilterExecution(blockFragment))
+            {
+                var block = GetBlock(blockFragment.Name);
+                await block.WriteAsync(scope, blockFragment, token);
+            }
+            else if (fragment is PageJsBlockStatementFragment blockFragmentStatements && !ShouldSkipFilterExecution())
+            {
+                var blockStatements = blockFragmentStatements.Block.Statements;
+                await WriteStatementsAsync(scope, blockStatements, outputStream, token);
+            }
+        }
+
+        public Task WriteStatementsAsync(ScriptScopeContext scope,
+            IEnumerable<JsStatement> blockStatements, Stream outputStream, string callTrace, CancellationToken token)
+        {
+            try
+            {
+                stackTrace.Push(callTrace);
+                return WriteStatementsAsync(scope, blockStatements, outputStream, token);
+            }
+            finally
+            {
+                
+                stackTrace.Pop();
+            }
+        }
+        
+        public async Task WriteStatementsAsync(ScriptScopeContext scope,
+            IEnumerable<JsStatement> blockStatements, Stream outputStream, CancellationToken token)
+        {
+            foreach (var statement in blockStatements)
+            {
+                if (ShouldSkipFilterExecution())
+                    break;
+
+                if (statement is JsExpressionStatement exprStatement)
+                {
+                    var result = exprStatement.Expression.Evaluate(scope);
+                    await WriteValueAsync(result, scope, token);
+                }
+                else if (statement is JsFilterExpressionStatement filterStatement)
+                {
+                    await WritePageFragmentAsync(filterStatement.FilterExpression, scope, outputStream, token);
+                }
+                else if (statement is JsBlockStatement blockStatement)
+                {
+                    await WriteStatementsAsync(scope, blockStatement.Statements, outputStream, token);
+                }
+                else if (statement is JsPageBlockFragmentStatement pageFragmentStatement)
+                {
+                    await WritePageFragmentAsync(pageFragmentStatement.Block, scope, outputStream, token);
+                }
+            }
+        }
+
+        private async Task WriteValueAsync(object result, ScriptScopeContext scope, CancellationToken token)
+        {
+            var value = UnwrapValue(result);
+            if (value != null)
+            {
+                var strValue = Format.EncodeValue(value);
+                if (!string.IsNullOrEmpty(strValue))
+                {
+                    var bytes = strValue.ToUtf8Bytes();
+                    await scope.OutputStream.WriteAsync(bytes, token);
+                }
             }
         }
 
@@ -349,6 +417,11 @@ namespace ServiceStack.Script
                     var block = GetBlock(blockFragment.Name);
                     await block.WriteAsync(scope, blockFragment, token);
                 }
+                else if (fragment is PageJsBlockStatementFragment blockFragmentStatements && !ShouldSkipFilterExecution())
+                {
+                    var blockStatements = blockFragmentStatements.Block.Statements;
+                    await WriteStatementsAsync(scope, blockStatements, scope.OutputStream, token);
+                }
             }
             
             stackTrace.Pop();
@@ -362,10 +435,8 @@ namespace ServiceStack.Script
                  !Context.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Contains(var.InitialExpression.Name));
         }
 
-        public bool ShouldSkipFilterExecution(PageBlockFragment var)
-        {
-            return HaltExecution || SkipFilterExecution;
-        }
+        public bool ShouldSkipFilterExecution(PageBlockFragment var) => HaltExecution || SkipFilterExecution;
+        public bool ShouldSkipFilterExecution() => HaltExecution || SkipFilterExecution;
 
         public ScriptContext Context => Page?.Context ?? CodePage.Context;
         public PageFormat Format => Page?.Format ?? CodePage.Format;
@@ -864,6 +935,11 @@ namespace ServiceStack.Script
                 }
             }
 
+            return UnwrapValue(value);
+        }
+
+        private static object UnwrapValue(object value)
+        {
             if (value == null || value == JsNull.Value || value == StopExecution.Value)
                 return string.Empty; // treat as empty value if evaluated to null
 

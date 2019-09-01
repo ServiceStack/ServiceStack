@@ -229,55 +229,31 @@ namespace ServiceStack.Script
         }
     }
 
-//    public class PageStatementFragment : PageFragment
-//    {
-//        public JsStatement Statement { get; }
-//        public PageStatementFragment(JsStatement statement)
-//        {
-//            Statement = statement;
-//        }
-//
-//        protected bool Equals(PageStatementFragment other)
-//        {
-//            return Equals(Statement, other.Statement);
-//        }
-//
-//        public override bool Equals(object obj)
-//        {
-//            if (ReferenceEquals(null, obj)) return false;
-//            if (ReferenceEquals(this, obj)) return true;
-//            if (obj.GetType() != this.GetType()) return false;
-//            return Equals((PageStatementFragment) obj);
-//        }
-//
-//        public override int GetHashCode()
-//        {
-//            return (Statement != null ? Statement.GetHashCode() : 0);
-//        }
-//    }
-    
-//    public class PageStatementsFragment : PageFragment
-//    {
-//        public JsStatement[] Statements { get; }
-//        public PageStatementsFragment(JsStatement[] statements) => Statements = statements;
-//        public PageStatementsFragment(JsStatement statement) => Statements = new[]{ statement };
-//
-//        protected bool Equals(PageStatementsFragment other)
-//        {
-//            return Statements.EquivalentTo(other.Statements);
-//        }
-//
-//        public override bool Equals(object obj)
-//        {
-//            if (ReferenceEquals(null, obj)) return false;
-//            if (ReferenceEquals(this, obj)) return true;
-//            if (obj.GetType() != this.GetType()) return false;
-//            return Equals((PageStatementsFragment) obj);
-//        }
-//
-//        public override int GetHashCode()
-//        {
-//            return (Statements != null ? Statements.GetHashCode() : 0);
-//        }
-//    }
+    public class PageJsBlockStatementFragment : PageFragment
+    {
+        public JsBlockStatement Block { get; }
+        public PageJsBlockStatementFragment(JsBlockStatement statement)
+        {
+            Block = statement;
+        }
+
+        protected bool Equals(PageJsBlockStatementFragment other)
+        {
+            return Equals(Block, other.Block);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((PageJsBlockStatementFragment) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return (Block != null ? Block.GetHashCode() : 0);
+        }
+    }
+
 }

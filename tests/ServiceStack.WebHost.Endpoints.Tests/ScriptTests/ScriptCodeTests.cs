@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Script;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 {
@@ -104,7 +105,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
             JsStatement[] expr;
             expr = new[] {
-                new PageBlockFragmentStatement(
+                new JsPageBlockFragmentStatement(
                     new PageBlockFragment("1", "if", "true",
                         new JsBlockStatement(new JsExpressionStatement(new JsLiteral(1)))
                     )
@@ -116,9 +117,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(ParseCode(" \n #if true \n \n 1 \n \n /if \n "), Is.EqualTo(expr));
 
             expr = new[] {
-                new PageBlockFragmentStatement(new PageBlockFragment("1", "if", "true",
+                new JsPageBlockFragmentStatement(new PageBlockFragment("1", "if", "true",
                     new JsBlockStatement(
-                        new PageBlockFragmentStatement(
+                        new JsPageBlockFragmentStatement(
                             new PageBlockFragment("1", "if", "a > b",
                                 new JsBlockStatement(new JsExpressionStatement(new JsLiteral(1)))
                             )
@@ -130,9 +131,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(ParseCode("#if true \n \n #if a > b \n \n 1 \n \n /if \n \n /if \n \n "), Is.EqualTo(expr));
 
             expr = new[] {
-                new PageBlockFragmentStatement(new PageBlockFragment("1", "if", "true",
+                new JsPageBlockFragmentStatement(new PageBlockFragment("1", "if", "true",
                     new JsBlockStatement(
-                        new PageBlockFragmentStatement(
+                        new JsPageBlockFragmentStatement(
                             new PageBlockFragment("1", "if", "a > b",
                                 new JsBlockStatement(new JsExpressionStatement(new JsLiteral(1))),
                                 new List<PageElseBlock> {
@@ -149,6 +150,30 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
             Assert.That(ParseCode("#if true\n#if a > b\n1\nelse\n2\n/if\nelse\n'3'\n/if"), Is.EqualTo(expr));
             Assert.That(ParseCode("#if true \n \n #if a > b \n \n 1 \n \n else \n \n 2 \n \n /if \n \n else \n \n '3' \n \n /if \n \n "), Is.EqualTo(expr));
+            
+            expr = new[] {
+                new JsPageBlockFragmentStatement(new PageBlockFragment("", "if", "a > 1",
+                    new JsBlockStatement(
+                        new JsExpressionStatement(new JsLiteral("a > 1"))
+                    ),
+                    new List<PageElseBlock> {
+                        new PageElseBlock("", 
+                            new JsBlockStatement(
+                                new JsExpressionStatement(new JsLiteral("a <= 1"))
+                            )
+                        )
+                    }
+                ))
+            };
+            
+            // Tests \r\n on Windows
+            Assert.That(ParseCode(@"
+#if a > 1
+'a > 1'
+else
+'a <= 1'
+/if
+"), Is.EqualTo(expr));
         }
 
         [Test]
@@ -164,7 +189,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
  
             JsStatement[] expr;
             expr = new[] {
-                new PageBlockFragmentStatement(
+                new JsPageBlockFragmentStatement(
                     new PageBlockFragment("", "raw", "",
                         new List<PageFragment> { new PageStringFragment("1\n2") }
                     )
@@ -174,7 +199,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(ParseCode(" \n #raw\n1\n2\n/raw \n "), Is.EqualTo(expr));
             
             expr = new[] {
-                new PageBlockFragmentStatement(
+                new JsPageBlockFragmentStatement(
                     new PageBlockFragment("", "raw", "",
                         new List<PageFragment> { new PageStringFragment(" \n 1\n2 \n ") }
                     )
@@ -182,6 +207,46 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             };
             Assert.That(ParseCode("#raw \n \n 1\n2 \n \n /raw"), Is.EqualTo(expr));
             Assert.That(ParseCode(" \n #raw \n \n 1\n2 \n \n /raw \n "), Is.EqualTo(expr));
+            
+            expr = new[] {
+                new JsPageBlockFragmentStatement(
+                    new PageBlockFragment("", "raw", "a > b",
+                        new List<PageFragment> { new PageStringFragment(" \n 1\n2 \n ") }
+                    )
+                )
+            };
+            Assert.That(ParseCode("#raw a > b\n \n 1\n2 \n \n /raw"), Is.EqualTo(expr));
+            Assert.That(ParseCode(" \n #raw a > b  \n \n 1\n2 \n \n /raw \n "), Is.EqualTo(expr));
+        }
+
+        [Test]
+        public void Can_Evaluate_code()
+        {
+            var context = new ScriptContext().Init();
+
+            string result = null;
+
+            var code = @"
+#if a > 1
+    `${a} > 1`
+else
+    `${a} <= 1`
+/if
+";
+
+            result = context.RenderCode(code, new Dictionary<string, object> { ["a"] = 2 });
+            Assert.That(result.Trim(), Is.EqualTo("2 &gt; 1"));
+
+            code = @"
+#if a > 1
+    `${a} > 1` | raw
+else
+    `${a} <= 1` | raw
+/if
+";
+
+            result = context.RenderCode(code, new Dictionary<string, object> { ["a"] = 1 });
+            Assert.That(result.Trim(), Is.EqualTo("1 <= 1"));
         }
     }
 }

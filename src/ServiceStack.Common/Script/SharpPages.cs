@@ -12,6 +12,7 @@ namespace ServiceStack.Script
         SharpPage GetPage(string virtualPath);
         SharpPage TryGetPage(string path);
         SharpPage OneTimePage(string contents, string ext);
+        SharpPage OneTimePage(string contents, string ext, Action<SharpPage> init);
         
         SharpPage ResolveLayoutPage(SharpCodePage page, string layout);
         SharpCodePage GetCodePage(string virtualPath);
@@ -193,7 +194,9 @@ namespace ServiceStack.Script
         private static readonly MemoryVirtualFiles TempFiles = new MemoryVirtualFiles();
         private static readonly InMemoryVirtualDirectory TempDir = new InMemoryVirtualDirectory(TempFiles, ScriptConstants.TempFilePath);
 
-        public virtual SharpPage OneTimePage(string contents, string ext)
+        public virtual SharpPage OneTimePage(string contents, string ext) => OneTimePage(contents, ext, init: null);
+        
+        public SharpPage OneTimePage(string contents, string ext, Action<SharpPage> init)
         {
             var memFile = new InMemoryVirtualFile(TempFiles, TempDir)
             {
@@ -204,6 +207,8 @@ namespace ServiceStack.Script
             var page = new SharpPage(Context, memFile);
             try
             {
+                init?.Invoke(page);
+
                 page.Init().Wait(); // Safe as Memory Files are non-blocking
                 return page;
             }
@@ -212,7 +217,7 @@ namespace ServiceStack.Script
                 throw e.UnwrapIfSingleException();
             }
         }
-        
+
         public DateTime GetLastModified(SharpPage page)
         {
             if (page == null)
