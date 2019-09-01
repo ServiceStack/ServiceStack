@@ -113,6 +113,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         public InternalType(int num) {}
     }
     
+    public interface ICursor {}
+    public class Cursor : ICursor {}
+
+    public class ContentResolver
+    {
+        public ICursor Query(
+            Uri uri,
+            string[] projection,
+            string selection,
+            string[] selectionArgs,
+            string sortOrder)
+        {
+            return new Cursor();
+        }
+    }
+    
     public class ScriptAssembliesTests
     {
         private static ScriptContext CreateContext() =>
@@ -590,6 +606,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(result, Is.EqualTo("StaticLog.Inner1.InstanceProp1"));
             result = context.Evaluate<string>(@"{{ Function('StaticLog.Inner1.InstanceField1')(o1) | return }}");
             Assert.That(result, Is.EqualTo("StaticLog.Inner1.InstanceField1"));
+        }
+
+        [Test]
+        public void Can_call_ContentResolver_Query_on_instance()
+        {
+            var context = CreateContext(c => {
+                c.AllowScriptingOfAllTypes = true;
+                c.ScriptNamespaces.Add("System");
+                c.ScriptNamespaces.Add(typeof(ContentResolver).Namespace);
+            }).Init();
+
+            var result = context.Evaluate(@"{{ F('ContentResolver.Query(Uri,string[],string,string[],string)') | to => Query }} 
+                    {{ MainActivity.Query('http://host.org',['A'],'B',['C'],'D') | return }}", 
+                new Dictionary<string, object> {
+                    ["MainActivity"] = new ContentResolver()
+                });
+            
+            Assert.That(result is ICursor);
         }
     }
 }

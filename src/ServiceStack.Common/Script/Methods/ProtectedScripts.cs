@@ -626,10 +626,17 @@ namespace ServiceStack.Script
                 var typeName = name.Substring(0, pos);
                 var methodName = name.Substring(pos + 1);
 
-                var argTypes = hasArgsList
-                    ? typeGenericTypes(StringUtils.SplitGenericArgs(argList))
-                    : null;
-
+                Type[] argTypes = null;
+                if (hasArgsList)
+                {
+                    var splitArgs = StringUtils.SplitGenericArgs(argList);
+                    argTypes = typeGenericTypes(splitArgs);
+                    for (var i = 0; i < argTypes.Length; i++)
+                    {
+                        if (argTypes[i] == null)
+                            throw new NotSupportedException($"Could not resolve Argument Type '{splitArgs[i]}' for '{name}'");
+                    }
+                }
 
                 var type = @typeof(typeName);
                 if (type == null)
