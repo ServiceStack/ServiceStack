@@ -650,6 +650,15 @@ namespace ServiceStack.Script
             return await GetPageResultOutputAsync(pageResult);
         }
 
+        public static JsBlockStatement ParseCode(this ScriptContext context, string code) =>
+            context.ParseCode(code.AsMemory());
+
+        public static JsBlockStatement ParseCode(this ScriptContext context, ReadOnlyMemory<char> code)
+        {
+            var statements = context.ParseCodeStatements(code);
+            return new JsBlockStatement(statements);
+        }
+        
         public static T Evaluate<T>(this ScriptContext context, string script, Dictionary<string, object> args = null) =>
             context.Evaluate(script, args).ConvertTo<T>();
         

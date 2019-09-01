@@ -15,12 +15,12 @@ namespace ServiceStack.Script
         
         public JsToken Expression { get; }
         
-        public string Binding { get; set; }
+        public string Binding { get; }
         
         public object InitialValue { get; }
         public JsCallExpression InitialExpression { get; }
         
-        public JsCallExpression[] FilterExpressions { get; set; }
+        public JsCallExpression[] FilterExpressions { get; }
 
         public PageVariableFragment(ReadOnlyMemory<char> originalText, JsToken expr, List<JsCallExpression> filterCommands)
         {
@@ -53,6 +53,32 @@ namespace ServiceStack.Script
             
             return Expression.Evaluate(scope);
         }
+
+        protected bool Equals(PageVariableFragment other)
+        {
+            return OriginalText.Span.SequenceEqual(other.OriginalText.Span) 
+                   && Equals(Expression, other.Expression)
+                   && FilterExpressions.EquivalentTo(other.FilterExpressions);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((PageVariableFragment) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = OriginalText.GetHashCode();
+                hashCode = (hashCode * 397) ^ (Expression != null ? Expression.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (FilterExpressions != null ? FilterExpressions.GetHashCode() : 0);
+                return hashCode;
+            }
+        }
     }
 
     public class PageStringFragment : PageFragment
@@ -65,9 +91,25 @@ namespace ServiceStack.Script
         private ReadOnlyMemory<byte> valueUtf8;
         public ReadOnlyMemory<byte> ValueUtf8 => valueUtf8.IsEmpty ? (valueUtf8 = Value.ToUtf8()) : valueUtf8;
 
-        public PageStringFragment(ReadOnlyMemory<char> value)
+        public PageStringFragment(string value) : this(value.AsMemory()) {}
+        public PageStringFragment(ReadOnlyMemory<char> value) => Value = value;
+
+        protected bool Equals(PageStringFragment other)
         {
-            Value = value;
+            return Value.Span.SequenceEqual(other.Value.Span);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((PageStringFragment) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return Value.GetHashCode();
         }
     }
 
@@ -81,8 +123,25 @@ namespace ServiceStack.Script
         public string ArgumentString => argumentString ?? (argumentString = Argument.ToString());
 
         public PageFragment[] Body { get; }
+        public JsBlockStatement BodyStatement { get; }
         public PageElseBlock[] ElseBlocks { get; }
 
+        public PageBlockFragment(string originalText, string name, string argument,
+            JsBlockStatement body, List<PageElseBlock> elseStatements=null) 
+            : this (originalText.AsMemory(), name, argument.AsMemory(), body, elseStatements) {}
+        public PageBlockFragment(ReadOnlyMemory<char> originalText, string name, ReadOnlyMemory<char> argument,
+            JsBlockStatement body, List<PageElseBlock> elseStatements=null)
+        {
+            OriginalText = originalText;
+            Name = name;
+            Argument = argument;
+            BodyStatement = body;
+            ElseBlocks = elseStatements?.ToArray() ?? TypeConstants<PageElseBlock>.EmptyArray;
+        }
+        
+        public PageBlockFragment(string originalText, string name, string argument,
+            List<PageFragment> body, List<PageElseBlock> elseStatements=null) 
+            : this (originalText.AsMemory(), name, argument.AsMemory(), body, elseStatements) {}
         public PageBlockFragment(ReadOnlyMemory<char> originalText, string name, ReadOnlyMemory<char> argument, 
             List<PageFragment> body, List<PageElseBlock> elseStatements=null)
         {
@@ -92,17 +151,133 @@ namespace ServiceStack.Script
             Body = body.ToArray();
             ElseBlocks = elseStatements?.ToArray() ?? TypeConstants<PageElseBlock>.EmptyArray;
         }
+
+        protected bool Equals(PageBlockFragment other)
+        {
+            return Name == other.Name && 
+                   Argument.Span.SequenceEqual(other.Argument.Span) && 
+                   Body.EquivalentTo(other.Body) && 
+                   ElseBlocks.EquivalentTo(other.ElseBlocks);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((PageBlockFragment) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (Name != null ? Name.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ Argument.GetHashCode();
+                hashCode = (hashCode * 397) ^ (Body != null ? Body.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (ElseBlocks != null ? ElseBlocks.GetHashCode() : 0);
+                return hashCode;
+            }
+        }
     }
 
     public class PageElseBlock : PageFragment
     {
         public ReadOnlyMemory<char> Argument { get; }
         public PageFragment[] Body { get; }
+        public JsBlockStatement BodyStatement { get; }
 
         public PageElseBlock(ReadOnlyMemory<char> argument, List<PageFragment> body)
         {
             Argument = argument;
             Body = body.ToArray();
         }
+
+        public PageElseBlock(ReadOnlyMemory<char> argument, JsBlockStatement bodyStatement)
+        {
+            Argument = argument;
+            BodyStatement = bodyStatement;
+        }
+
+        public PageElseBlock(string argument, JsBlockStatement bodyStatement) 
+            : this(argument.AsMemory(), bodyStatement) {}
+
+        protected bool Equals(PageElseBlock other)
+        {
+            return Argument.Span.SequenceEqual(other.Argument.Span) &&
+                   Body.EquivalentTo(other.Body) &&
+                   Equals(BodyStatement, other.BodyStatement);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((PageElseBlock) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = Argument.GetHashCode();
+                hashCode = (hashCode * 397) ^ (Body != null ? Body.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (BodyStatement != null ? BodyStatement.GetHashCode() : 0);
+                return hashCode;
+            }
+        }
     }
+
+//    public class PageStatementFragment : PageFragment
+//    {
+//        public JsStatement Statement { get; }
+//        public PageStatementFragment(JsStatement statement)
+//        {
+//            Statement = statement;
+//        }
+//
+//        protected bool Equals(PageStatementFragment other)
+//        {
+//            return Equals(Statement, other.Statement);
+//        }
+//
+//        public override bool Equals(object obj)
+//        {
+//            if (ReferenceEquals(null, obj)) return false;
+//            if (ReferenceEquals(this, obj)) return true;
+//            if (obj.GetType() != this.GetType()) return false;
+//            return Equals((PageStatementFragment) obj);
+//        }
+//
+//        public override int GetHashCode()
+//        {
+//            return (Statement != null ? Statement.GetHashCode() : 0);
+//        }
+//    }
+    
+//    public class PageStatementsFragment : PageFragment
+//    {
+//        public JsStatement[] Statements { get; }
+//        public PageStatementsFragment(JsStatement[] statements) => Statements = statements;
+//        public PageStatementsFragment(JsStatement statement) => Statements = new[]{ statement };
+//
+//        protected bool Equals(PageStatementsFragment other)
+//        {
+//            return Statements.EquivalentTo(other.Statements);
+//        }
+//
+//        public override bool Equals(object obj)
+//        {
+//            if (ReferenceEquals(null, obj)) return false;
+//            if (ReferenceEquals(this, obj)) return true;
+//            if (obj.GetType() != this.GetType()) return false;
+//            return Equals((PageStatementsFragment) obj);
+//        }
+//
+//        public override int GetHashCode()
+//        {
+//            return (Statements != null ? Statements.GetHashCode() : 0);
+//        }
+//    }
 }

@@ -31,7 +31,7 @@ namespace ServiceStack.Script
         // {{#name}}  {{else if a=b}}  {{else}}  {{/name}}
         //          ^
         // returns    ^                         ^
-        static ReadOnlyMemory<char> ParseStatementBody(this ReadOnlyMemory<char> literal, ScriptContext context, ReadOnlyMemory<char> blockName, out List<PageFragment> body)
+        static ReadOnlyMemory<char> ParseTemplateBody(this ReadOnlyMemory<char> literal, ScriptContext context, ReadOnlyMemory<char> blockName, out List<PageFragment> body)
         {
             var inStatements = 0;
             var pos = 0;
@@ -81,7 +81,7 @@ namespace ServiceStack.Script
         //   {{else if a=b}}  {{else}}  {{/name}}
         //  ^
         // returns           ^         ^
-        static ReadOnlyMemory<char> ParseElseStatement(this ReadOnlyMemory<char> literal, ScriptContext context, string blockName, out PageElseBlock statement)
+        static ReadOnlyMemory<char> ParseTemplateElseBlock(this ReadOnlyMemory<char> literal, ScriptContext context, string blockName, out PageElseBlock statement)
         {
             var inStatements = 0;
             var pos = 0;
@@ -186,12 +186,12 @@ namespace ServiceStack.Script
 
                     if (!context.DontEvaluateBlocksNamed.Contains(blockName))
                     {
-                        literal = literal.ParseStatementBody(context, blockNameSpan, out var body);
+                        literal = literal.ParseTemplateBody(context, blockNameSpan, out var body);
                         var elseStatements = new List<PageElseBlock>();
 
                         while (literal.StartsWith("{{else"))
                         {
-                            literal = literal.ParseElseStatement(context, blockName, out var elseStatement);
+                            literal = literal.ParseTemplateElseBlock(context, blockName, out var elseStatement);
                             elseStatements.Add(elseStatement);
                         }
 

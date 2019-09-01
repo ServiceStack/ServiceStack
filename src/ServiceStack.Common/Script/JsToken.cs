@@ -221,7 +221,7 @@ namespace ServiceStack.Script
         }
 
         /// <summary>
-        /// Evaulate if result can be async, if so converts async result to Task&lt;object&gt; otherwise wraps result in a Task
+        /// Evaluate if result can be async, if so converts async result to Task&lt;object&gt; otherwise wraps result in a Task
         /// </summary>
         public static async Task<bool> EvaluateToBoolAsync(this JsToken token, ScriptScopeContext scope)
         {
@@ -233,7 +233,7 @@ namespace ServiceStack.Script
         }
 
         /// <summary>
-        /// Evaulate if result can be async, if so converts async result to Task&lt;object&gt; otherwise wraps result in a Task
+        /// Evaluate if result can be async, if so converts async result to Task&lt;object&gt; otherwise wraps result in a Task
         /// </summary>
         public static bool EvaluateToBool(this JsToken token, ScriptScopeContext scope, out bool? result, out Task<bool> asyncResult)
         {
@@ -256,7 +256,7 @@ namespace ServiceStack.Script
         }
 
         /// <summary>
-        /// Evaulate if result can be async, if so converts async result to Task&lt;object&gt; otherwise wraps result in a Task
+        /// Evaluate if result can be async, if so converts async result to Task&lt;object&gt; otherwise wraps result in a Task
         /// </summary>
         public static Task<object> EvaluateAsync(this JsToken token, ScriptScopeContext scope)
         {
