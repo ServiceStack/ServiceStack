@@ -679,6 +679,7 @@ namespace ServiceStack.Script
             return new JsBlockStatement(statements);
         }
         
+        
         public static T Evaluate<T>(this ScriptContext context, string script, Dictionary<string, object> args = null) =>
             context.Evaluate(script, args).ConvertTo<T>();
         
@@ -704,6 +705,32 @@ namespace ServiceStack.Script
                 throw new NotSupportedException(ErrorNoReturn);
             return pageResult.ReturnValue.Result;
         }
+        
+        
+        public static T EvaluateCode<T>(this ScriptContext context, string code, Dictionary<string, object> args = null) =>
+            context.EvaluateCode(code, args).ConvertTo<T>();
+        
+        public static object EvaluateCode(this ScriptContext context, string code, Dictionary<string, object> args=null)
+        {
+            var pageResult = GetCodePageResult(context, code, args);
+            var discard = GetPageResultOutput(pageResult);
+            if (pageResult.ReturnValue == null)
+                throw new NotSupportedException(ErrorNoReturn);
+            return pageResult.ReturnValue.Result;
+        }
+
+        public static async Task<T> EvaluateCodeAsync<T>(this ScriptContext context, string code, Dictionary<string, object> args = null) =>
+            (await context.EvaluateCodeAsync(code, args)).ConvertTo<T>();
+        
+        public static async Task<object> EvaluateCodeAsync(this ScriptContext context, string code, Dictionary<string, object> args=null)
+        {
+            var pageResult = GetCodePageResult(context, code, args);
+            var discard = await GetPageResultOutputAsync(pageResult);
+            if (pageResult.ReturnValue == null)
+                throw new NotSupportedException(ErrorNoReturn);
+            return pageResult.ReturnValue.Result;
+        }
+
         
         public static ScriptScopeContext CreateScope(this ScriptContext context, Dictionary<string, object> args = null, 
             ScriptMethods functions = null, ScriptBlock blocks = null)
