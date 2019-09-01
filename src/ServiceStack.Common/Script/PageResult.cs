@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Text;
@@ -363,12 +364,25 @@ namespace ServiceStack.Script
 
                 if (statement is JsExpressionStatement exprStatement)
                 {
-                    var result = exprStatement.Expression.Evaluate(scope);
-                    await WriteValueAsync(result, scope, token);
+                    var value = exprStatement.Expression.Evaluate(scope);
+                    if (value != null && value != JsNull.Value && value != StopExecution.Value && value != IgnoreResult.Value)
+                    {
+                        var strValue = Format.EncodeValue(value);
+                        if (!string.IsNullOrEmpty(strValue))
+                        {
+                            var bytes = strValue.ToUtf8Bytes();
+                            await scope.OutputStream.WriteAsync(bytes, token);
+                        }
+                        await scope.OutputStream.WriteAsync(JsTokenUtils.NewLineUtf8, token);
+                    }
                 }
                 else if (statement is JsFilterExpressionStatement filterStatement)
                 {
                     await WritePageFragmentAsync(filterStatement.FilterExpression, scope, outputStream, token);
+                    if (!Context.RemoveNewLineAfterFiltersNamed.Contains(filterStatement.FilterExpression.LastFilterName))
+                    {
+                        await scope.OutputStream.WriteAsync(JsTokenUtils.NewLineUtf8, token);
+                    }
                 }
                 else if (statement is JsBlockStatement blockStatement)
                 {
@@ -377,20 +391,6 @@ namespace ServiceStack.Script
                 else if (statement is JsPageBlockFragmentStatement pageFragmentStatement)
                 {
                     await WritePageFragmentAsync(pageFragmentStatement.Block, scope, outputStream, token);
-                }
-            }
-        }
-
-        private async Task WriteValueAsync(object result, ScriptScopeContext scope, CancellationToken token)
-        {
-            var value = UnwrapValue(result);
-            if (value != null)
-            {
-                var strValue = Format.EncodeValue(value);
-                if (!string.IsNullOrEmpty(strValue))
-                {
-                    var bytes = strValue.ToUtf8Bytes();
-                    await scope.OutputStream.WriteAsync(bytes, token);
                 }
             }
         }

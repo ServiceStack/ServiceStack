@@ -46,10 +46,13 @@ namespace ServiceStack.Script
         private static readonly byte[] ValidVarNameChars;
         private static readonly byte[] OperatorChars;
         private static readonly byte[] ExpressionTerminatorChars;
+        public static readonly byte[] NewLineUtf8;
+
         private const byte True = 1;
         
         static JsTokenUtils()
         {
+            NewLineUtf8 = new byte[] { 10 }; // UTF8.GetBytes("\n");
             var n = new byte['e' + 1];
             n['0'] = n['1'] = n['2'] = n['3'] = n['4'] = n['5'] = n['6'] = n['7'] = n['8'] = n['9'] = n['.'] = True;
             ValidNumericChars = n;
