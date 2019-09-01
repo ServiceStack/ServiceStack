@@ -69,19 +69,19 @@ namespace ServiceStack.Script
         public override int GetHashCode() => (Expression != null ? Expression.GetHashCode() : 0);
     }
 
-    public class PageBlockFragmentStatement : JsStatement
+    public class JsPageBlockFragmentStatement : JsStatement
     {
         public PageBlockFragment Block { get; }
-        public PageBlockFragmentStatement(PageBlockFragment block) => Block = block;
+        public JsPageBlockFragmentStatement(PageBlockFragment block) => Block = block;
 
-        protected bool Equals(PageBlockFragmentStatement other) => Equals(Block, other.Block);
+        protected bool Equals(JsPageBlockFragmentStatement other) => Equals(Block, other.Block);
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((PageBlockFragmentStatement) obj);
+            return Equals((JsPageBlockFragmentStatement) obj);
         }
 
         public override int GetHashCode() => (Block != null ? Block.GetHashCode() : 0);

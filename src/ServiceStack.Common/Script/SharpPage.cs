@@ -9,6 +9,10 @@ namespace ServiceStack.Script
 {
     public class SharpPage
     {
+        /// <summary>
+        /// Whether to evaluate as Template block or code block
+        /// </summary>
+        public bool EvaluateAsCode { get; set; }
         public IVirtualFile File { get; }
         public ReadOnlyMemory<char> FileContents { get; private set; }
         public ReadOnlyMemory<char> BodyContents { get; private set; }
@@ -116,7 +120,9 @@ namespace ServiceStack.Script
             var pageFragments = pageVars.TryGetValue("ignore", out object ignore) 
                     && ("page".Equals(ignore.ToString()) || "template".Equals(ignore.ToString()))
                 ? new List<PageFragment> { new PageStringFragment(bodyContents) } 
-                : Context.ParseTemplatePage(bodyContents);
+                : EvaluateAsCode 
+                    ? new List<PageFragment> { new PageJsBlockStatementFragment(Context.ParseCode(bodyContents)) }
+                    : Context.ParseTemplatePage(bodyContents);
 
             foreach (var fragment in pageFragments)
             {

@@ -166,6 +166,12 @@ namespace ServiceStack.Script
 
             bool inComments = false;
             int startExpressionPos = -1;
+
+            // parsing assumes only \n
+            if (code.IndexOf('\r') >= 0)
+            {
+                code = code.ToString().Replace("\r", "").AsMemory();
+            }
             
             var cursorPos = 0;
             while (code.TryReadLine(out var line, ref cursorPos))
@@ -221,7 +227,7 @@ namespace ServiceStack.Script
                     
                         var originalText = code.Slice(startPos, code.Length - afterBlock.Length - startPos);
 
-                        ret.Add(new PageBlockFragmentStatement(
+                        ret.Add(new JsPageBlockFragmentStatement(
                             new PageBlockFragment(
                                 originalText,
                                 blockName.ToString(),
@@ -238,7 +244,7 @@ namespace ServiceStack.Script
                         
                         var originalText = code.Slice(startPos, code.Length - afterBlock.Length - startPos);
 
-                        ret.Add(new PageBlockFragmentStatement(
+                        ret.Add(new JsPageBlockFragmentStatement(
                             new PageBlockFragment(
                                 originalText,
                                 blockName.ToString(),
