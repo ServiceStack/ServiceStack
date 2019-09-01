@@ -21,6 +21,8 @@ namespace ServiceStack.Script
         public JsCallExpression InitialExpression { get; }
         
         public JsCallExpression[] FilterExpressions { get; }
+        
+        internal string LastFilterName { get; }
 
         public PageVariableFragment(ReadOnlyMemory<char> originalText, JsToken expr, List<JsCallExpression> filterCommands)
         {
@@ -43,6 +45,11 @@ namespace ServiceStack.Script
             else if (expr is JsIdentifier initialBinding)
             {
                 Binding = initialBinding.Name;
+            }
+
+            if (FilterExpressions.Length > 0)
+            {
+                LastFilterName = FilterExpressions[FilterExpressions.Length - 1].Name;
             }
         }
 

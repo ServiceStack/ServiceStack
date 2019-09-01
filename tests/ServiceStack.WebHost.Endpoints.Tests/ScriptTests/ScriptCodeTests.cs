@@ -247,6 +247,35 @@ else
 
             result = context.RenderCode(code, new Dictionary<string, object> { ["a"] = 1 });
             Assert.That(result.Trim(), Is.EqualTo("1 <= 1"));
+
+            code = @"
+range(5) | map => it + 1 | to => nums
+#each a in nums
+    #if a > 2
+        #if a.isOdd() 
+            `${a} > 2 and odd` | raw
+        else
+            `${a} > 2 and even` | raw
+        /if
+    else
+        #if a.isOdd() 
+            `${a} <= 2 and odd` | raw
+        else
+            `${a} <= 2 and even` | raw
+        /if
+    /if
+/each
+";
+
+            result = context.RenderCode(code);
+            result.Print();
+            Assert.That(result, Is.EqualTo(@"1 <= 2 and odd
+2 <= 2 and even
+3 > 2 and odd
+4 > 2 and even
+5 > 2 and odd
+".Replace("\r\n","\n")));
         }
+        
     }
 }
