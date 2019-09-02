@@ -693,6 +693,52 @@ text | markdown
                 }), 
                 Is.EqualTo("Person \npoco is 27 years old\n"));
         }
+
+        [Test]
+        public void Can_use_multi_line_comments_in_code_statements()
+        {
+            var context = new ScriptContext().Init();
+
+            var output = context.RenderCode(@"
+`some`
+
+{{* this is
+    a multi-line
+    comment *}}
+
+`text`");
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo("some\ntext"));
+
+            output = context.RenderCode(@"
+`some`
+
+    {{* 
+        this is
+        a multi-line
+        comment 
+    *}}
+
+`text`");
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo("some\ntext"));
+
+            output = context.RenderCode(@"
+`some`
+
+    {{* 
+        this is
+        a {{ multi-line }}
+{{        comment }} }}
+    *}}
+
+`text`");
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo("some\ntext"));
+
+            output = context.RenderCode(@"
+                `some`
+                {{* this is a single-line comment *}}
+                `text`");
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo("some\ntext"));
+        }
         
     }
 }
