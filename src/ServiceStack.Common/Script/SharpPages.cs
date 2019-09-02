@@ -119,9 +119,9 @@ namespace ServiceStack.Script
 
         public virtual SharpPage TryGetPage(string path)
         {
-            var santizePath = path.Replace('\\','/').TrimPrefixes("/").LastLeftPart('.');
+            var sanitizePath = path.Replace('\\','/').TrimPrefixes("/").LastLeftPart('.');
 
-            if (pageMap.TryGetValue(santizePath, out SharpPage page)) 
+            if (pageMap.TryGetValue(sanitizePath, out SharpPage page)) 
                 return page;
 
             return null;
@@ -191,8 +191,11 @@ namespace ServiceStack.Script
             return null; 
         }
 
-        private static readonly MemoryVirtualFiles TempFiles = new MemoryVirtualFiles();
-        private static readonly InMemoryVirtualDirectory TempDir = new InMemoryVirtualDirectory(TempFiles, ScriptConstants.TempFilePath);
+        private static MemoryVirtualFiles tempFiles;
+        internal static MemoryVirtualFiles TempFiles => tempFiles ?? (tempFiles = new MemoryVirtualFiles());
+        private static readonly InMemoryVirtualDirectory tempDir;
+        internal static readonly InMemoryVirtualDirectory TempDir = tempDir ?? 
+            (tempDir = new InMemoryVirtualDirectory(TempFiles, ScriptConstants.TempFilePath));
 
         public virtual SharpPage OneTimePage(string contents, string ext) => OneTimePage(contents, ext, init: null);
         

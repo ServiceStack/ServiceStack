@@ -168,16 +168,12 @@ namespace ServiceStack.Script
         /// </summary>
         public int MaxStackDepth { get; set; } = 25;
         
-        public HashSet<string> RemoveNewLineAfterFiltersNamed { get; set; } = new HashSet<string>
-        {
-        };
+        public HashSet<string> RemoveNewLineAfterFiltersNamed { get; set; } = new HashSet<string>();
+        public HashSet<string> OnlyEvaluateFiltersWhenSkippingPageFilterExecution { get; set; } = new HashSet<string>();
         
-        public HashSet<string> OnlyEvaluateFiltersWhenSkippingPageFilterExecution { get; set; } = new HashSet<string>
-        {
-        };
-        
-        public HashSet<string> DontEvaluateBlocksNamed { get; set; } = new HashSet<string> {
-        };
+        public HashSet<string> ParseAsVerbatimBlock { get; set; } = new HashSet<string>();
+        public HashSet<string> ParseAsCodeBlock { get; set; } = new HashSet<string>();
+        public HashSet<string> ParseAsTemplateBlock { get; set; } = new HashSet<string>();
         
         public Func<PageVariableFragment, ReadOnlyMemory<byte>> OnUnhandledExpression { get; set; }
 
@@ -277,6 +273,14 @@ namespace ServiceStack.Script
         private SharpPage emptyPage;
         public SharpPage EmptyPage => emptyPage ?? (emptyPage = OneTimePage("")); 
 
+        
+        private static InMemoryVirtualFile emptyFile;
+        public InMemoryVirtualFile EmptyFile =>
+            emptyFile ?? (emptyFile = new InMemoryVirtualFile(SharpPages.TempFiles, SharpPages.TempDir) {
+                FilePath = "empty", TextContents = ""
+            }); 
+
+        
         public SharpPage OneTimePage(string contents, string ext=null) 
             => Pages.OneTimePage(contents, ext ?? PageFormats.First().Extension);
 
@@ -577,6 +581,56 @@ namespace ServiceStack.Script
     {
         public static string ErrorNoReturn = "Script did not return a value. Use EvaluateScript() to return script output instead";
 
+        static bool ShouldRethrow(Exception e) =>
+            e is ScriptException; 
+
+        private static Exception HandleException(Exception e, PageResult pageResult)
+        {
+            var underlyingEx = e.UnwrapIfSingleException();
+            if (underlyingEx is ScriptException)
+                return underlyingEx;
+            
+            pageResult.LastFilterError = underlyingEx;
+            return new ScriptException(pageResult);
+        }
+
+        public static bool EvaluateResult(this PageResult pageResult, out object returnValue)
+        {
+            try
+            {
+                pageResult.WriteToAsync(Stream.Null).Wait();
+                if (pageResult.LastFilterError != null)
+                    throw new ScriptException(pageResult);
+
+                returnValue = pageResult.ReturnValue?.Result;
+                return pageResult.ReturnValue != null;
+            }
+            catch (Exception e)
+            {
+                if (ShouldRethrow(e))
+                    throw;
+                throw HandleException(e, pageResult);
+            }
+        }
+
+        public static async Task<Tuple<bool, object>> EvaluateResultAsync(this PageResult pageResult)
+        {
+            try
+            {
+                await pageResult.WriteToAsync(Stream.Null);
+                if (pageResult.LastFilterError != null)
+                    throw new ScriptException(pageResult);
+
+                return new Tuple<bool, object>(pageResult.ReturnValue != null, pageResult.ReturnValue?.Result);
+            }
+            catch (Exception e)
+            {
+                if (ShouldRethrow(e))
+                    throw;
+                throw HandleException(e, pageResult);
+            }
+        }
+
         public static string GetPageResultOutput(PageResult pageResult)
         {
             try
@@ -586,14 +640,11 @@ namespace ServiceStack.Script
                     throw new ScriptException(pageResult);
                 return output;
             }
-            catch (ScriptException e)
-            {
-                throw;
-            }
             catch (Exception e)
             {
-                pageResult.LastFilterError = e;
-                throw new ScriptException(pageResult);
+                if (ShouldRethrow(e))
+                    throw;
+                throw HandleException(e, pageResult);
             }
         }
 
@@ -606,14 +657,11 @@ namespace ServiceStack.Script
                     throw new ScriptException(pageResult);
                 return output;
             }
-            catch (ScriptException e)
-            {
-                throw;
-            }
             catch (Exception e)
             {
-                pageResult.LastFilterError = e;
-                throw new ScriptException(pageResult);
+                if (ShouldRethrow(e))
+                    throw;
+                throw HandleException(e, pageResult);
             }
         }
 
@@ -687,10 +735,11 @@ namespace ServiceStack.Script
         {
             var pageResult = new PageResult(context.OneTimePage(script));
             args.Each((x,y) => pageResult.Args[x] = y);
-            var discard = GetPageResultOutput(pageResult);
-            if (pageResult.ReturnValue == null)
+
+            if (!EvaluateResult(pageResult, out var returnValue))
                 throw new NotSupportedException(ErrorNoReturn);
-            return pageResult.ReturnValue.Result;
+            
+            return returnValue;
         }
 
         public static async Task<T> EvaluateAsync<T>(this ScriptContext context, string script, Dictionary<string, object> args = null) =>
@@ -700,10 +749,12 @@ namespace ServiceStack.Script
         {
             var pageResult = new PageResult(context.OneTimePage(script));
             args.Each((x,y) => pageResult.Args[x] = y);
-            var discard = await GetPageResultOutputAsync(pageResult);
-            if (pageResult.ReturnValue == null)
+
+            var ret = await pageResult.EvaluateResultAsync();
+            if (!ret.Item1)
                 throw new NotSupportedException(ErrorNoReturn);
-            return pageResult.ReturnValue.Result;
+            
+            return ret.Item2;
         }
         
         
@@ -713,10 +764,11 @@ namespace ServiceStack.Script
         public static object EvaluateCode(this ScriptContext context, string code, Dictionary<string, object> args=null)
         {
             var pageResult = GetCodePageResult(context, code, args);
-            var discard = GetPageResultOutput(pageResult);
-            if (pageResult.ReturnValue == null)
+
+            if (!EvaluateResult(pageResult, out var returnValue))
                 throw new NotSupportedException(ErrorNoReturn);
-            return pageResult.ReturnValue.Result;
+            
+            return returnValue;
         }
 
         public static async Task<T> EvaluateCodeAsync<T>(this ScriptContext context, string code, Dictionary<string, object> args = null) =>
@@ -725,10 +777,12 @@ namespace ServiceStack.Script
         public static async Task<object> EvaluateCodeAsync(this ScriptContext context, string code, Dictionary<string, object> args=null)
         {
             var pageResult = GetCodePageResult(context, code, args);
-            var discard = await GetPageResultOutputAsync(pageResult);
-            if (pageResult.ReturnValue == null)
+
+            var ret = await pageResult.EvaluateResultAsync();
+            if (!ret.Item1)
                 throw new NotSupportedException(ErrorNoReturn);
-            return pageResult.ReturnValue.Result;
+            
+            return ret.Item2;
         }
 
         

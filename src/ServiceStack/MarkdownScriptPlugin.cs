@@ -23,7 +23,7 @@ namespace ServiceStack
             
             context.ScriptMethods.Add(new MarkdownScriptMethods());
 
-            context.DontEvaluateBlocksNamed.Add("markdown");
+            context.ParseAsVerbatimBlock.Add("markdown");
             
             context.ScriptBlocks.Add(new MarkdownScriptBlock());
         }

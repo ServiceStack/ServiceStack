@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using NUnit.Framework;
+using ServiceStack.Logging;
 using ServiceStack.Script;
 using ServiceStack.Text;
 
@@ -7,6 +8,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 {
     public class ScriptCodeTests
     {
+        static ScriptCodeTests() => LogManager.LogFactory = new ConsoleLogFactory();
+
+        [OneTimeTearDown]
+        public void OneTimeTearDown() => LogManager.LogFactory = null;
+        
         [Test]
         public void Can_parse_single_and_multi_line_code_statements()
         {
@@ -233,7 +239,6 @@ else
     `${a} <= 1`
 /if
 ";
-
             result = context.RenderCode(code, new Dictionary<string, object> { ["a"] = 2 });
             Assert.That(result.Trim(), Is.EqualTo("2 &gt; 1"));
 
@@ -267,15 +272,70 @@ range(5) | map => it + 1 | to => nums
 /each
 ";
 
-            result = context.RenderCode(code);
-            result.Print();
-            Assert.That(result, Is.EqualTo(@"1 <= 2 and odd
+            result = context.RenderCode(code); 
+            var expected = @"1 <= 2 and odd
 2 <= 2 and even
 3 > 2 and odd
 4 > 2 and even
 5 > 2 and odd
-".Replace("\r\n","\n")));
-        }
-        
+".Replace("\r\n","\n");
+            Assert.That(result, Is.EqualTo(expected));
+            
+            code = @"
+#function testValue(a) 
+    #if a > 2
+        #if a.isOdd() 
+            `${a} > 2 and odd` | return
+        else
+            `${a} > 2 and even` | return
+        /if
+    else
+        #if a.isOdd() 
+            `${a} <= 2 and odd` | return
+        else
+            `${a} <= 2 and even` | return
+        /if
+    /if
+/function
+
+range(5) | map => it + 1 | to => nums
+#each nums
+    it.testValue() | raw
+/each
+";
+            
+            result = context.RenderCode(code);
+            Assert.That(result, Is.EqualTo(expected));
+            
+            code = @"
+#function testValue(a) 
+    return (a > 2 ? (a.isOdd() ? `${a} > 2 and odd`  : `${a} > 2 and even`) : (a.isOdd() ? `${a} <= 2 and odd` : `${a} <= 2 and even`)) 
+/function
+
+range(5) | map => it + 1 | to => nums
+#each nums
+    it.testValue() | raw
+/each
+";
+            
+            result = context.RenderCode(code);
+            Assert.That(result, Is.EqualTo(expected));
+            
+//            code = @"
+//#function testValue(a) 
+//    {{ return (a > 2 
+//        ? (a.isOdd() ? `${a} > 2 and odd`  : `${a} > 2 and even`) 
+//        : (a.isOdd() ? `${a} <= 2 and odd` : `${a} <= 2 and even`)) }} 
+///function
+//
+//range(5) | map => it + 1 | to => nums
+//#each nums
+//    it.testValue() | raw
+///each
+//";
+//            
+//            result = context.RenderCode(code);
+//            Assert.That(result, Is.EqualTo(expected));
+       }
     }
 }

@@ -132,6 +132,7 @@ namespace ServiceStack.Script
         public PageFragment[] Body { get; }
         public JsBlockStatement BodyStatement { get; }
         public PageElseBlock[] ElseBlocks { get; }
+        public List<PageFragment> BodyFragments { get; }
 
         public PageBlockFragment(string originalText, string name, string argument,
             JsBlockStatement body, List<PageElseBlock> elseStatements=null) 
@@ -143,6 +144,7 @@ namespace ServiceStack.Script
             Name = name;
             Argument = argument;
             BodyStatement = body;
+            BodyFragments = new List<PageFragment> { new PageJsBlockStatementFragment(body) };
             ElseBlocks = elseStatements?.ToArray() ?? TypeConstants<PageElseBlock>.EmptyArray;
         }
         
@@ -155,6 +157,7 @@ namespace ServiceStack.Script
             OriginalText = originalText;
             Name = name;
             Argument = argument;
+            BodyFragments = body;
             Body = body.ToArray();
             ElseBlocks = elseStatements?.ToArray() ?? TypeConstants<PageElseBlock>.EmptyArray;
         }
@@ -200,10 +203,10 @@ namespace ServiceStack.Script
             Body = body.ToArray();
         }
 
-        public PageElseBlock(ReadOnlyMemory<char> argument, JsBlockStatement bodyStatement)
+        public PageElseBlock(ReadOnlyMemory<char> argument, JsBlockStatement body)
         {
             Argument = argument;
-            BodyStatement = bodyStatement;
+            BodyStatement = body;
         }
 
         public PageElseBlock(string argument, JsBlockStatement bodyStatement) 

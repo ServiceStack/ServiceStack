@@ -22,7 +22,9 @@ namespace ServiceStack.Script
 
         public static object InvokeDelegate(Delegate fn, object target, bool isMemberExpr, List<object> fnArgValues)
         {
-            try 
+#if DEBUG            
+            try
+#endif            
             { 
                 if (fn is MethodInvoker methodInvoker)
                 {
@@ -86,10 +88,14 @@ namespace ServiceStack.Script
                     target, 
                     isMemberExpr, fnArgValues);
             }
+#if DEBUG            
             catch (Exception e)
             {
+                var ex = e.GetInnerMostException().UnwrapIfSingleException().GetInnerMostException();
+                Logging.LogManager.GetLogger(typeof(JsCallExpression)).Error(ex.Message + "\n" + ex.StackTrace, ex);
                 throw;
             }
+#endif            
         }
 
         public override object Evaluate(ScriptScopeContext scope)
@@ -122,7 +128,7 @@ namespace ServiceStack.Script
             var result = scope.PageResult;
 
             if (result.StackDepth > scope.Context.MaxStackDepth)
-                throw new NotSupportedException("Exceeded MaxStackDepth of " + scope.Context.MaxStackDepth);
+                throw new StackOverflowException("Exceeded MaxStackDepth of " + scope.Context.MaxStackDepth);
 
             var expr = Callee as JsMemberExpression;
 
