@@ -10,6 +10,7 @@ namespace ServiceStack.Script
     public class NoopScriptBlock : ScriptBlock
     {
         public override string Name => "noop";
+        public override BodyStyle ParseBody => BodyStyle.Verbatim;
 
         public override Task WriteAsync(ScriptScopeContext scope, PageBlockFragment block, CancellationToken token) => 
             TypeConstants.EmptyTask;
