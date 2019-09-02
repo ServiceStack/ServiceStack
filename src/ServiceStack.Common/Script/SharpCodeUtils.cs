@@ -228,10 +228,21 @@ namespace ServiceStack.Script
                     // multi-line end
                     if (line.EndsWith("}}"))
                     {
-                        var exprStr = code.Slice(startExpressionPos,  cursorPos - startExpressionPos - rightIndent - delim - 1).Trim();
-                        var afterExpr = exprStr.Span.ParseExpression(out var expr, out var filters);
+                        if (code.Span.SafeCharEquals(startExpressionPos, '*'))
+                        {
+                            if (!line.EndsWith("*}}")) // not a closing block comment, continue
+                                continue;
+                            
+                            // ignore multi-line comment
+                        }
+                        else
+                        {
+                            var exprStr = code.Slice(startExpressionPos,  cursorPos - startExpressionPos - rightIndent - delim - 1).Trim();
+                            var afterExpr = exprStr.Span.ParseExpression(out var expr, out var filters);
                         
-                        to.AddExpression(exprStr, expr, filters);
+                            to.AddExpression(exprStr, expr, filters);
+                        }
+                        
                         startExpressionPos = -1;
                     }
                     continue;
@@ -250,7 +261,7 @@ namespace ServiceStack.Script
                     }
                     
                     // multi-line start
-                    startExpressionPos = cursorPos - lineLength + leftIndent + delim;
+                    startExpressionPos = cursorPos - lineLength - 1 + leftIndent + delim;
                     continue;
                 }
                 else
