@@ -266,7 +266,7 @@ namespace ServiceStack.Script
                     // multi-line end
                     if (line.EndsWith("}}"))
                     {
-                        var exprStr = code.Slice(startExpressionPos,  cursorPos - startExpressionPos - leftIndent - rightIndent - delim).Trim();
+                        var exprStr = code.Slice(startExpressionPos,  cursorPos - startExpressionPos - rightIndent - delim - 1).Trim();
                         var afterExpr = exprStr.Span.ParseExpression(out var expr, out var filters);
                         
                         to.AddExpression(exprStr, expr, filters);

@@ -65,6 +65,37 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             };
             Assert.That(ParseCode("1 + 2\n \n {{ \n  `\n3\n*\n4\n` \n }} \n {{ \n ` 5 \n / \n 6 ` \n  }} \n  "),
                 Is.EqualTo(expr));
+            
+            expr = new[] {
+                new JsExpressionStatement(
+                    new JsConditionalExpression(
+                        new JsBinaryExpression(new JsIdentifier("a"), JsGreaterThan.Operator, new JsLiteral(2)),
+                        new JsConditionalExpression(
+                            new JsCallExpression(new JsMemberExpression(new JsIdentifier("a"), new JsIdentifier("isOdd"))),
+                            new JsLiteral("a > 2 and odd"), 
+                            new JsLiteral("a > 2 and even") 
+                        ),
+                        new JsConditionalExpression(
+                            new JsCallExpression(new JsMemberExpression(new JsIdentifier("a"), new JsIdentifier("isOdd"))),
+                            new JsLiteral("a <= 2 and odd"), 
+                            new JsLiteral("a <= 2 and even") 
+                        )
+                    )
+                ),
+            };
+            
+            Assert.That(ParseCode(@"{{ (a > 2 
+                ? (a.isOdd() ? 'a > 2 and odd'  : 'a > 2 and even') 
+                : (a.isOdd() ? 'a <= 2 and odd' : 'a <= 2 and even')) }}"), Is.EqualTo(expr));
+
+            Assert.That(ParseCode(@"  {{ 
+(a > 2 
+ ? 
+(a.isOdd() ? 'a > 2 and odd'  : 'a > 2 and even') 
+ : 
+(a.isOdd() ? 'a <= 2 and odd' : 'a <= 2 and even')) 
+}}  
+"), Is.EqualTo(expr));
         }
 
         [Test]
@@ -231,101 +262,72 @@ else
             var context = new ScriptContext().Init();
 
             string result = null;
-
-            var code = @"
-#if a > 1
-    `${a} > 1`
-else
-    `${a} <= 1`
-/if
-";
-            result = context.RenderCode(code, new Dictionary<string, object> { ["a"] = 2 });
-            Assert.That(result.Trim(), Is.EqualTo("2 &gt; 1"));
-
-            code = @"
-#if a > 1
-    `${a} > 1` | raw
-else
-    `${a} <= 1` | raw
-/if
-";
-
-            result = context.RenderCode(code, new Dictionary<string, object> { ["a"] = 1 });
-            Assert.That(result.Trim(), Is.EqualTo("1 <= 1"));
-
-            code = @"
-range(5) | map => it + 1 | to => nums
-#each a in nums
-    #if a > 2
-        #if a.isOdd() 
-            `${a} > 2 and odd` | raw
-        else
-            `${a} > 2 and even` | raw
-        /if
-    else
-        #if a.isOdd() 
-            `${a} <= 2 and odd` | raw
-        else
-            `${a} <= 2 and even` | raw
-        /if
-    /if
-/each
-";
-
-            result = context.RenderCode(code); 
+            string code = null;
             var expected = @"1 <= 2 and odd
 2 <= 2 and even
 3 > 2 and odd
 4 > 2 and even
 5 > 2 and odd
 ".Replace("\r\n","\n");
-            Assert.That(result, Is.EqualTo(expected));
-            
-            code = @"
-#function testValue(a) 
-    #if a > 2
-        #if a.isOdd() 
-            `${a} > 2 and odd` | return
-        else
-            `${a} > 2 and even` | return
-        /if
-    else
-        #if a.isOdd() 
-            `${a} <= 2 and odd` | return
-        else
-            `${a} <= 2 and even` | return
-        /if
-    /if
-/function
-
-range(5) | map => it + 1 | to => nums
-#each nums
-    it.testValue() | raw
-/each
-";
-            
-            result = context.RenderCode(code);
-            Assert.That(result, Is.EqualTo(expected));
-            
-            code = @"
-#function testValue(a) 
-    return (a > 2 ? (a.isOdd() ? `${a} > 2 and odd`  : `${a} > 2 and even`) : (a.isOdd() ? `${a} <= 2 and odd` : `${a} <= 2 and even`)) 
-/function
-
-range(5) | map => it + 1 | to => nums
-#each nums
-    it.testValue() | raw
-/each
-";
-            
-            result = context.RenderCode(code);
-            Assert.That(result, Is.EqualTo(expected));
             
 //            code = @"
+//#if a > 1
+//    `${a} > 1`
+//else
+//    `${a} <= 1`
+///if
+//";
+//            result = context.RenderCode(code, new Dictionary<string, object> { ["a"] = 2 });
+//            Assert.That(result.Trim(), Is.EqualTo("2 &gt; 1"));
+//
+//            code = @"
+//#if a > 1
+//    `${a} > 1` | raw
+//else
+//    `${a} <= 1` | raw
+///if
+//";
+//
+//            result = context.RenderCode(code, new Dictionary<string, object> { ["a"] = 1 });
+//            Assert.That(result.Trim(), Is.EqualTo("1 <= 1"));
+//
+//            code = @"
+//range(5) | map => it + 1 | to => nums
+//#each a in nums
+//    #if a > 2
+//        #if a.isOdd() 
+//            `${a} > 2 and odd` | raw
+//        else
+//            `${a} > 2 and even` | raw
+//        /if
+//    else
+//        #if a.isOdd() 
+//            `${a} <= 2 and odd` | raw
+//        else
+//            `${a} <= 2 and even` | raw
+//        /if
+//    /if
+///each
+//";
+//
+//            result = context.RenderCode(code); 
+//            Assert.That(result, Is.EqualTo(expected));
+//            
+//            code = @"
 //#function testValue(a) 
-//    {{ return (a > 2 
-//        ? (a.isOdd() ? `${a} > 2 and odd`  : `${a} > 2 and even`) 
-//        : (a.isOdd() ? `${a} <= 2 and odd` : `${a} <= 2 and even`)) }} 
+//    #if a > 2
+//        #if a.isOdd() 
+//            `${a} > 2 and odd` | return
+//        else
+//            `${a} > 2 and even` | return
+//        /if
+//    else
+//        #if a.isOdd() 
+//            `${a} <= 2 and odd` | return
+//        else
+//            `${a} <= 2 and even` | return
+//        /if
+//    /if
 ///function
 //
 //range(5) | map => it + 1 | to => nums
@@ -336,6 +338,36 @@ range(5) | map => it + 1 | to => nums
 //            
 //            result = context.RenderCode(code);
 //            Assert.That(result, Is.EqualTo(expected));
+//            
+//            code = @"
+//#function testValue(a) 
+//    return (a > 2 ? (a.isOdd() ? `${a} > 2 and odd`  : `${a} > 2 and even`) : (a.isOdd() ? `${a} <= 2 and odd` : `${a} <= 2 and even`)) 
+///function
+//
+//range(5) | map => it + 1 | to => nums
+//#each nums
+//    it.testValue() | raw
+///each
+//";
+//            
+//            result = context.RenderCode(code);
+//            Assert.That(result, Is.EqualTo(expected));
+            
+            code = @"
+#function testValue(a) 
+    {{ return (a > 2 
+        ? (a.isOdd() ? `${a} > 2 and odd`  : `${a} > 2 and even`) 
+        : (a.isOdd() ? `${a} <= 2 and odd` : `${a} <= 2 and even`)) }} 
+/function
+
+range(5) | map => it + 1 | to => nums
+#each nums
+    it.testValue() | raw
+/each
+";
+            
+            result = context.RenderCode(code);
+            Assert.That(result, Is.EqualTo(expected));
        }
     }
 }
