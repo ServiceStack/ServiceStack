@@ -587,6 +587,12 @@ namespace ServiceStack.Script
         private static Exception HandleException(Exception e, PageResult pageResult)
         {
             var underlyingEx = e.UnwrapIfSingleException();
+            
+#if DEBUG
+            var logEx = underlyingEx.GetInnerMostException();
+            Logging.LogManager.GetLogger(typeof(ScriptContextUtils)).Error(logEx.Message + "\n" + logEx.StackTrace, logEx);
+#endif
+            
             if (underlyingEx is ScriptException)
                 return underlyingEx;
             
@@ -665,8 +671,19 @@ namespace ServiceStack.Script
             }
         }
 
+        /// <summary>
+        /// Alias for EvaluateScript 
+        /// </summary>
+        public static string RenderTemplate(this ScriptContext context, string script, out ScriptException error) => 
+            context.RenderTemplate(script, null, out error);
         public static string EvaluateScript(this ScriptContext context, string script, out ScriptException error) => 
             context.EvaluateScript(script, null, out error);
+
+        /// <summary>
+        /// Alias for EvaluateScript 
+        /// </summary>
+        public static string RenderTemplate(this ScriptContext context, string script, Dictionary<string, object> args, out ScriptException error) =>
+            context.EvaluateScript(script, args, out error);
         public static string EvaluateScript(this ScriptContext context, string script, Dictionary<string, object> args, out ScriptException error)
         {
             var pageResult = new PageResult(context.OneTimePage(script));
@@ -683,14 +700,24 @@ namespace ServiceStack.Script
                 return null;
             }
         }
-        
+
+        /// <summary>
+        /// Alias for EvaluateScript 
+        /// </summary>
+        public static string RenderTemplate(this ScriptContext context, string script, Dictionary<string, object> args = null) =>
+            context.EvaluateScript(script, args);
         public static string EvaluateScript(this ScriptContext context, string script, Dictionary<string, object> args=null)
         {
             var pageResult = new PageResult(context.OneTimePage(script));
             args.Each((x,y) => pageResult.Args[x] = y);
             return GetPageResultOutput(pageResult);
         }
-        
+
+        /// <summary>
+        /// Alias for EvaluateScript 
+        /// </summary>
+        public static Task<string> RenderTemplateAsync(this ScriptContext context, string script, Dictionary<string, object> args = null) =>
+            context.EvaluateScriptAsync(script, args);
         public static async Task<string> EvaluateScriptAsync(this ScriptContext context, string script, Dictionary<string, object> args=null)
         {
             var pageResult = new PageResult(context.OneTimePage(script));
