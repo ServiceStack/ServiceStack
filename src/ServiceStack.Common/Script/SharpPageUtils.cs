@@ -31,7 +31,7 @@ namespace ServiceStack.Script
         // {{#name}}  {{else if a=b}}  {{else}}  {{/name}}
         //          ^
         // returns    ^                         ^
-        static ReadOnlyMemory<char> ParseTemplateBody(this ReadOnlyMemory<char> literal, ReadOnlyMemory<char> blockName, out ReadOnlyMemory<char> body)
+        public static ReadOnlyMemory<char> ParseTemplateBody(this ReadOnlyMemory<char> literal, ReadOnlyMemory<char> blockName, out ReadOnlyMemory<char> body)
         {
             var inStatements = 0;
             var pos = 0;
@@ -81,7 +81,7 @@ namespace ServiceStack.Script
         //   {{else if a=b}}  {{else}}  {{/name}}
         //  ^
         // returns           ^         ^
-        static ReadOnlyMemory<char> ParseTemplateElseBlock(this ReadOnlyMemory<char> literal, string blockName, 
+        public static ReadOnlyMemory<char> ParseTemplateElseBlock(this ReadOnlyMemory<char> literal, string blockName, 
             out ReadOnlyMemory<char> elseArgument, out ReadOnlyMemory<char> elseBody)
         {
             var inStatements = 0;
@@ -171,71 +171,14 @@ namespace ServiceStack.Script
                 else if (firstChar == '#') //block statement
                 {
                     var literal = text.Slice(varStartPos + 1);
-                    literal = literal.ParseVarName(out var blockNameSpan);
 
-                    var blockName = blockNameSpan.ToString();
-                    var endBlock = "{{/" + blockName + "}}";
-                    var endExprPos = literal.IndexOf("}}");
-                    if (endExprPos == -1)
-                        throw new SyntaxErrorException($"Unterminated '{blockName}' block expression, near '{literal.DebugLiteral()}'" );
+                    literal = literal.ParseTemplateScriptBlock(context, out var blockFragment);
 
-                    var blockExpr = literal.Slice(0, endExprPos).Trim();
-                    literal = literal.Advance(endExprPos + 2);
-
-                    if (context.ParseAsVerbatimBlock.Contains(blockName))
-                    {
-                        var endBlockPos = literal.IndexOf(endBlock);
-                        if (endBlockPos == -1)
-                            throw new SyntaxErrorException($"Unterminated end block '{endBlock}'");
-
-                        var blockBody = literal.Slice(0, endBlockPos);
-                        literal = literal.Advance(endBlockPos + endBlock.Length).TrimFirstNewLine();
-
-                        var length = text.Length - pos - literal.Length;
-                        var originalText = text.Slice(pos, length);
-                        lastPos = pos + length;
-
-                        var body = new List<PageFragment> {new PageStringFragment(blockBody)};
-                        var statement = new PageBlockFragment(originalText, blockName, blockExpr, body);
-                        to.Add(statement);
-                    }
-                    else
-                    {
-                        var parseAsCode = context.ParseAsCodeBlock.Contains(blockName);
-                        
-                        literal = literal.ParseTemplateBody(blockNameSpan, out var bodyText);
-                        List<PageFragment> bodyFragments = null;
-                        JsBlockStatement bodyStatements = null;
-
-                        if (!parseAsCode)
-                            bodyFragments = context.ParseTemplate(bodyText);
-                        else
-                            bodyStatements = context.ParseCode(bodyText);
-                        
-                        var elseBlocks = new List<PageElseBlock>();
-                        while (literal.StartsWith("{{else"))
-                        {
-                            literal = literal.ParseTemplateElseBlock(blockName, out var elseArgument,  out var elseBody);
-
-                            var elseBlock = !parseAsCode
-                                ? new PageElseBlock(elseArgument, context.ParseTemplate(elseBody))
-                                : new PageElseBlock(elseArgument, context.ParseCode(elseBody));
-                            elseBlocks.Add(elseBlock);
-                        }
-
-                        literal = literal.Advance(2 + 1 + blockName.Length + 2);
-
-                        //remove new line after partial block end tag
-                        literal = literal.TrimFirstNewLine();
-
-                        var length = text.Length - pos - literal.Length;
-                        var originalText = text.Slice(pos, length);
-                        lastPos = pos + length;
-
-                        to.Add(!parseAsCode
-                            ? new PageBlockFragment(originalText, blockName, blockExpr, bodyFragments, elseBlocks)
-                            : new PageBlockFragment(originalText, blockName, blockExpr, bodyStatements, elseBlocks));
-                    }
+                    var length = text.Length - pos - literal.Length;
+                    blockFragment.OriginalText = text.Slice(pos, length);
+                    lastPos = pos + length;
+                    
+                    to.Add(blockFragment);
                 }
                 else
                 {
@@ -319,6 +262,73 @@ namespace ServiceStack.Script
             }
 
             return to;
+        }
+
+        // {{#if ...}}
+        //    ^
+        public static ReadOnlyMemory<char> ParseTemplateScriptBlock(this ReadOnlyMemory<char> literal, ScriptContext context, out PageBlockFragment blockFragment)
+        {
+            literal = literal.ParseVarName(out var blockNameSpan);
+
+            PageBlockFragment statement;
+            var blockName = blockNameSpan.ToString();
+            var endBlock = "{{/" + blockName + "}}";
+            var endExprPos = literal.IndexOf("}}");
+            if (endExprPos == -1)
+                throw new SyntaxErrorException($"Unterminated '{blockName}' block expression, near '{literal.DebugLiteral()}'" );
+
+            var blockExpr = literal.Slice(0, endExprPos).Trim();
+            literal = literal.Advance(endExprPos + 2);
+
+            if (context.ParseAsVerbatimBlock.Contains(blockName))
+            {
+                var endBlockPos = literal.IndexOf(endBlock);
+                if (endBlockPos == -1)
+                    throw new SyntaxErrorException($"Unterminated end block '{endBlock}'");
+
+                var blockBody = literal.Slice(0, endBlockPos);
+                literal = literal.Advance(endBlockPos + endBlock.Length).TrimFirstNewLine();
+
+                var body = new List<PageFragment> {new PageStringFragment(blockBody)};
+                blockFragment = new PageBlockFragment(blockName, blockExpr, body);
+
+                return literal;
+            }
+            else
+            {
+                var parseAsCode = context.ParseAsCodeBlock.Contains(blockName);
+                
+                literal = literal.ParseTemplateBody(blockNameSpan, out var bodyText);
+                List<PageFragment> bodyFragments = null;
+                JsBlockStatement bodyStatements = null;
+
+                if (!parseAsCode)
+                    bodyFragments = context.ParseTemplate(bodyText);
+                else
+                    bodyStatements = context.ParseCode(bodyText);
+                
+                var elseBlocks = new List<PageElseBlock>();
+                while (literal.StartsWith("{{else"))
+                {
+                    literal = literal.ParseTemplateElseBlock(blockName, out var elseArgument,  out var elseBody);
+
+                    var elseBlock = !parseAsCode
+                        ? new PageElseBlock(elseArgument, context.ParseTemplate(elseBody))
+                        : new PageElseBlock(elseArgument, context.ParseCode(elseBody));
+                    elseBlocks.Add(elseBlock);
+                }
+
+                literal = literal.Advance(2 + 1 + blockName.Length + 2);
+
+                //remove new line after partial block end tag
+                literal = literal.TrimFirstNewLine();
+
+                blockFragment = !parseAsCode
+                    ? new PageBlockFragment(blockName, blockExpr, bodyFragments, elseBlocks)
+                    : new PageBlockFragment(blockName, blockExpr, bodyStatements, elseBlocks);
+
+                return literal;
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
