@@ -17,6 +17,7 @@ namespace ServiceStack.Script
     public class PartialScriptBlock : ScriptBlock
     {
         public override string Name => "partial";
+        public override BodyStyle ParseBody => BodyStyle.Template;
 
         public override Task WriteAsync(ScriptScopeContext scope, PageBlockFragment block, CancellationToken token)
         {
