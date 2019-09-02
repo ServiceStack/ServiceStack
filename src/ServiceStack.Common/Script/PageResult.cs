@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -1153,7 +1154,13 @@ namespace ServiceStack.Script
                 }
                 catch (AggregateException e)
                 {
-                    throw e.UnwrapIfSingleException();
+                    var ex = e.UnwrapIfSingleException();
+                    if (Context.DebugMode)
+                    {
+                        var logEx = ex.GetInnerMostException();
+                        LogManager.GetLogger(typeof(PageResult)).Error(ex.Message + "\n" + logEx.StackTrace, logEx);
+                    }
+                    throw ex;
                 }
             }
         }

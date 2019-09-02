@@ -14,6 +14,7 @@ namespace ServiceStack.Script
             typeof(NotSupportedException),
             typeof(System.Reflection.TargetInvocationException),
             typeof(NotImplementedException),
+            typeof(StackOverflowException),
         };
         
         public static HashSet<Type> CaptureAndEvaluateExceptionsToNull { get; set; } = new HashSet<Type>

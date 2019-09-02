@@ -64,12 +64,13 @@ namespace ServiceStack.Script
         //  else
         //  ^
         //  /block
-        static ReadOnlyMemory<char> ParseCodeElseBlock(this ReadOnlyMemory<char> literal, ScriptContext context, ReadOnlyMemory<char> blockName, out PageElseBlock statement)
+        internal static ReadOnlyMemory<char> ParseCodeElseBlock(this ReadOnlyMemory<char> literal, ReadOnlyMemory<char> blockName, 
+            out ReadOnlyMemory<char> elseArgument, out ReadOnlyMemory<char> elseBody)
         {
             var inStatements = 0;
-            statement = null;
             var statementPos = -1;
-            var elseExpr = default(ReadOnlyMemory<char>);
+            elseBody = default;
+            elseArgument = default;
             
             var cursorPos = 0;
             while (literal.TryReadLine(out var line, ref cursorPos))
@@ -92,8 +93,7 @@ namespace ServiceStack.Script
                         line.Slice(1).ParseVarName(out var name);
                         if (name.EqualsOrdinal(blockName))
                         {
-                            var body = context.ParseCodeStatements(literal.Slice(statementPos, cursorPos - statementPos - lineLength - 1).Trim());
-                            statement = new PageElseBlock(elseExpr, new JsBlockStatement(body));
+                            elseBody = literal.Slice(statementPos, cursorPos - statementPos - lineLength - 1).Trim();
                             return literal.Slice(cursorPos);
                         }
                     }
@@ -106,14 +106,12 @@ namespace ServiceStack.Script
                     {
                         if (statementPos >= 0)
                         {
-                            var bodyText = literal.Slice(statementPos, cursorPos - statementPos).Trim();
-                            var body = context.ParseCodeStatements(bodyText);
-                            statement = new PageElseBlock(elseExpr, new JsBlockStatement(body));
+                            elseBody = literal.Slice(statementPos, cursorPos - statementPos).Trim();
                             return literal.Slice(cursorPos);
                         }
 
                         statementPos = cursorPos - lineLength + 4;
-                        elseExpr = line.Slice(4).Trim();
+                        elseArgument = line.Slice(4).Trim();
                     }
                 }
             }
@@ -162,7 +160,7 @@ namespace ServiceStack.Script
 
         internal static JsStatement[] ParseCodeStatements(this ScriptContext context, ReadOnlyMemory<char> code)
         {
-            var ret = new List<JsStatement>();
+            var to = new List<JsStatement>();
 
             bool inComments = false;
             int startExpressionPos = -1;
@@ -209,31 +207,19 @@ namespace ServiceStack.Script
 
                     ReadOnlyMemory<char> afterBlock;
 
-                    if (!context.DontEvaluateBlocksNamed.Contains(blockName.ToString()))
+                    if (context.ParseAsVerbatimBlock.Contains(blockName.ToString()))
                     {
                         var exprStr = code.Slice(cursorPos);
                         afterBlock = exprStr.ParseCodeBody(blockName, out var blockBody);
-                        var blockStatements = context.ParseCodeStatements(blockBody);
 
-                        var elseStatements = new List<PageElseBlock>();
-
-                        afterBlock = afterBlock.AdvancePastWhitespace();
-                        while (afterBlock.StartsWith("else"))
-                        {
-                            afterBlock = afterBlock.ParseCodeElseBlock(context, blockName, out var elseStatement);
-                            elseStatements.Add(elseStatement);
-                            afterBlock = afterBlock.AdvancePastWhitespace();
-                        }
-                    
                         var originalText = code.Slice(startPos, code.Length - afterBlock.Length - startPos);
 
-                        ret.Add(new JsPageBlockFragmentStatement(
+                        to.Add(new JsPageBlockFragmentStatement(
                             new PageBlockFragment(
                                 originalText,
                                 blockName.ToString(),
                                 argument,
-                                new JsBlockStatement(blockStatements),
-                                elseStatements
+                                new List<PageFragment> {new PageStringFragment(blockBody)}
                             )
                         ));
                     }
@@ -241,19 +227,34 @@ namespace ServiceStack.Script
                     {
                         var exprStr = code.Slice(cursorPos);
                         afterBlock = exprStr.ParseCodeBody(blockName, out var blockBody);
-                        
+
+                        var elseBlocks = new List<PageElseBlock>();
+
+                        afterBlock = afterBlock.AdvancePastWhitespace();
+                        while (afterBlock.StartsWith("else"))
+                        {
+                            afterBlock = afterBlock.ParseCodeElseBlock(blockName, out var elseArgument,  out var elseBody);
+                            
+                            var elseBlock = new PageElseBlock(elseArgument, new JsBlockStatement(context.ParseCodeStatements(elseBody)));
+                            elseBlocks.Add(elseBlock);
+
+                            afterBlock = afterBlock.AdvancePastWhitespace();
+                        }
+
                         var originalText = code.Slice(startPos, code.Length - afterBlock.Length - startPos);
 
-                        ret.Add(new JsPageBlockFragmentStatement(
+                        var blockStatements = context.ParseCodeStatements(blockBody);
+                        to.Add(new JsPageBlockFragmentStatement(
                             new PageBlockFragment(
                                 originalText,
                                 blockName.ToString(),
                                 argument,
-                                new List<PageFragment> { new PageStringFragment(blockBody) }
+                                new JsBlockStatement(blockStatements),
+                                elseBlocks
                             )
                         ));
                     }
-                    
+
                     cursorPos = code.Length - afterBlock.Length;
                     continue;
                 }
@@ -268,7 +269,7 @@ namespace ServiceStack.Script
                         var exprStr = code.Slice(startExpressionPos,  cursorPos - startExpressionPos - leftIndent - rightIndent - delim).Trim();
                         var afterExpr = exprStr.Span.ParseExpression(out var expr, out var filters);
                         
-                        ret.AddExpression(exprStr, expr, filters);
+                        to.AddExpression(exprStr, expr, filters);
                         startExpressionPos = -1;
                     }
                     
@@ -283,7 +284,7 @@ namespace ServiceStack.Script
                         var exprStr = code.Slice(cursorPos - lineLength + leftIndent + delim, lineLength - leftIndent - delim - delim).Trim();
                         var afterExpr = exprStr.Span.ParseExpression(out var expr, out var filters);
                         
-                        ret.AddExpression(exprStr, expr, filters);
+                        to.AddExpression(exprStr, expr, filters);
                         continue;
                     }
                     
@@ -300,11 +301,11 @@ namespace ServiceStack.Script
                     if (!afterExpr.IsEmpty)
                         throw new SyntaxErrorException($"Unexpected syntax after expression: {afterExpr.ToString()}, near {line.DebugLiteral()}");
                     
-                    ret.AddExpression(line, expr, filters);
+                    to.AddExpression(line, expr, filters);
                 }
             }
 
-            return ret.ToArray();
+            return to.ToArray();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

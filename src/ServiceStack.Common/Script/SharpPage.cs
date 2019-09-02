@@ -23,6 +23,8 @@ namespace ServiceStack.Script
         public DateTime LastModifiedCheck { get; private set; }
         public bool HasInit { get; private set; }
         public bool IsLayout { get; private set; }
+        
+        public bool IsImmutable { get; private set; }
 
         public ScriptContext Context { get; }
         public PageFormat Format { get; }
@@ -41,8 +43,22 @@ namespace ServiceStack.Script
                 throw new ArgumentException($"File with extension '{File.Extension}' is not a registered PageFormat in Context.PageFormats", nameof(file));
         }
 
+        public SharpPage(ScriptContext context, List<PageFragment> body)
+        {
+            Context = context ?? throw new ArgumentNullException(nameof(context));
+            PageFragments = body ?? throw new ArgumentNullException(nameof(body));
+            Format = Context.PageFormats[0];
+            Args = TypeConstants.EmptyObjectDictionary;
+            File = context.EmptyFile;
+            HasInit = true;
+            IsImmutable = true;
+        }
+
         public virtual async Task<SharpPage> Init()
         {
+            if (IsImmutable)
+                return this;
+            
             if (HasInit)
             {
                 var skipCheck = !Context.DebugMode &&
@@ -65,6 +81,9 @@ namespace ServiceStack.Script
 
         public async Task<SharpPage> Load()
         {
+            if (IsImmutable)
+                return this;
+            
             string contents;
             using (var stream = File.OpenRead())
             {
@@ -122,7 +141,7 @@ namespace ServiceStack.Script
                 ? new List<PageFragment> { new PageStringFragment(bodyContents) } 
                 : EvaluateAsCode 
                     ? new List<PageFragment> { new PageJsBlockStatementFragment(Context.ParseCode(bodyContents)) }
-                    : Context.ParseTemplatePage(bodyContents);
+                    : Context.ParseTemplate(bodyContents);
 
             foreach (var fragment in pageFragments)
             {

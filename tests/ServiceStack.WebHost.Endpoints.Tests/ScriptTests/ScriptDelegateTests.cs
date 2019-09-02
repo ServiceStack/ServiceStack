@@ -1,6 +1,7 @@
 using System;
 using NUnit.Framework;
 using ServiceStack.Script;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 {
@@ -139,7 +140,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             }
             catch (ScriptException e)
             {
-                if (!(e.InnerException is NotSupportedException))
+                e.GetType().Name.Print();
+                e.Message.Print();
+                if (!(e.InnerException is StackOverflowException))
                     throw;
             }
         }

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Text;
@@ -26,17 +28,16 @@ namespace ServiceStack.Script
                 literal = literal.AdvancePastWhitespace();
 
                 literal = literal.AdvancePastWhitespace();
-                var args = TypeConstants.EmptyStringList;
+                var args = TypeConstants.EmptyStringArray;
                 if (!literal.IsEmpty)
                 {
                     literal = literal.ParseArgumentsList(out var argIdentifiers);
-                    args = argIdentifiers.Map(x => x.Name);
+                    args = new string[argIdentifiers.Count];
+                    for (var i = 0; i < argIdentifiers.Count; i++)
+                    {
+                        args[i] = argIdentifiers[i].Name;
+                    }
                 }
-
-                var strFragment = (PageStringFragment) block.Body[0];
-
-                var script = ScriptPreprocessors.TransformStatementBody(strFragment.ValueString);
-                var parsedScript = scope.Context.OneTimePage(script);
 
                 StaticMethodInvoker invoker = null;
 
@@ -52,25 +53,25 @@ namespace ServiceStack.Script
                     scope.PageResult.StackDepth++;
                     try
                     {
-                        var pageResult = new PageResult(parsedScript) {
+                        var page = new SharpPage(Context, block.BodyFragments);
+                        var pageResult = new PageResult(page) {
                             Args = {
                                 [strName] = LazyInvoker
                             },
                             StackDepth = scope.PageResult.StackDepth
                         };
 
-                        var len = Math.Min(paramValues.Length, args.Count);
+                        var len = Math.Min(paramValues.Length, args.Length);
                         for (int i = 0; i < len; i++)
                         {
                             var paramValue = paramValues[i];
                             pageResult.Args[args[i]] = paramValue;
                         }
-                    
-                        var discard = ScriptContextUtils.GetPageResultOutput(pageResult);
-                        if (pageResult.ReturnValue == null)
-                            throw new NotSupportedException(ScriptContextUtils.ErrorNoReturn);
-            
-                        return pageResult.ReturnValue.Result;
+
+                        if (pageResult.EvaluateResult(out var returnValue))
+                            return returnValue;
+
+                        return IgnoreResult.Value;
                     }
                     finally
                     {
