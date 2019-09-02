@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Logging;
@@ -369,5 +370,71 @@ range(5) | map => it + 1 | to => nums
             result = context.RenderCode(code);
             Assert.That(result, Is.EqualTo(expected));
        }
+
+        [Test]
+        public void Can_evaluate_template_code_in_code_blocks()
+        {
+            var context = new ScriptContext().Init();
+
+            string result = null;
+            string code = null;
+
+            result = context.RenderCode(@"
+{{#if a > 1}}
+    {{a}} > 1
+{{else}}
+    {{a}} <= 1
+{{/if}}
+", new Dictionary<string, object> { ["a"] = 1 });
+            Assert.That(result.Trim(), Is.EqualTo("1 <= 1"));
+
+            result = context.RenderCode(@"
+                {{#if a > 1}}
+                    {{a}} > 1
+                {{else}}
+                    {{a}} <= 1
+                {{/if}}", new Dictionary<string, object> { ["a"] = 1 });
+            Assert.That(result.Trim(), Is.EqualTo("1 <= 1"));
+
+            result = context.RenderCode(@"
+{{#if a > 1}}
+    {{a}} > 1
+{{else}}
+    {{a}} <= 1
+{{/if}}
+
+#if a.isOdd()
+    ` and is odd`
+else
+    ` and is even`
+/if
+", new Dictionary<string, object> { ["a"] = 1 });
+            Assert.That(result.Trim(), Is.EqualTo("1 <= 1\n and is odd"));
+        }
+
+        [Test]
+        public void Cannot_evaluate_Template_only_blocks_in_code_blocks()
+        {
+            var context = new ScriptContext().Init();
+            try 
+            { 
+                context.RenderCode(@"
+#capture out
+    {{#each range(3)}}
+        - {{it}}
+    {{/each}}
+/capture
+");
+                
+                Assert.Fail("Should throw");
+            }
+            catch (ScriptException e)
+            {
+                e.Message.Print();
+                if (e.InnerException.GetType() != typeof(NotSupportedException))
+                    throw;
+            }
+        }
+
     }
 }

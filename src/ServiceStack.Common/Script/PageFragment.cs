@@ -122,7 +122,7 @@ namespace ServiceStack.Script
 
     public class PageBlockFragment : PageFragment
     {
-        public ReadOnlyMemory<char> OriginalText { get; }
+        public ReadOnlyMemory<char> OriginalText { get; internal set; }
         public string Name { get; }
 
         public ReadOnlyMemory<char> Argument { get; }
@@ -137,6 +137,9 @@ namespace ServiceStack.Script
         public PageBlockFragment(string originalText, string name, string argument,
             JsBlockStatement body, List<PageElseBlock> elseStatements=null) 
             : this (originalText.AsMemory(), name, argument.AsMemory(), body, elseStatements) {}
+        public PageBlockFragment(string name, ReadOnlyMemory<char> argument, 
+            JsBlockStatement body, List<PageElseBlock> elseStatements=null)
+            : this(default, name, argument, body, elseStatements) {}
         public PageBlockFragment(ReadOnlyMemory<char> originalText, string name, ReadOnlyMemory<char> argument,
             JsBlockStatement body, List<PageElseBlock> elseStatements=null)
         {
@@ -151,6 +154,9 @@ namespace ServiceStack.Script
         public PageBlockFragment(string originalText, string name, string argument,
             List<PageFragment> body, List<PageElseBlock> elseStatements=null) 
             : this (originalText.AsMemory(), name, argument.AsMemory(), body, elseStatements) {}
+        public PageBlockFragment(string name, ReadOnlyMemory<char> argument, 
+            List<PageFragment> body, List<PageElseBlock> elseStatements=null)
+            : this(default, name, argument, body, elseStatements) {}
         public PageBlockFragment(ReadOnlyMemory<char> originalText, string name, ReadOnlyMemory<char> argument, 
             List<PageFragment> body, List<PageElseBlock> elseStatements=null)
         {

@@ -700,10 +700,20 @@ namespace ServiceStack.Script
         
         private static PageResult GetCodePageResult(ScriptContext context, string code, Dictionary<string, object> args)
         {
-            var page = context.Pages.OneTimePage(code, context.PageFormats.First().Extension,p => p.EvaluateAsCode = true);
-            var pageResult = new PageResult(page);
-            args.Each((x, y) => pageResult.Args[x] = y);
-            return pageResult;
+            PageResult pageResult = null;
+            try
+            {
+                var page = context.Pages.OneTimePage(code, context.PageFormats.First().Extension,p => p.EvaluateAsCode = true);
+                pageResult = new PageResult(page);
+                args.Each((x, y) => pageResult.Args[x] = y);
+                return pageResult;
+            }
+            catch (Exception e)
+            {
+                if (ShouldRethrow(e))
+                    throw;
+                throw HandleException(e, pageResult ?? new PageResult(context.EmptyPage));
+            }
         }
 
         public static string RenderCode(this ScriptContext context, string code, Dictionary<string, object> args=null)

@@ -198,64 +198,33 @@ namespace ServiceStack.Script
                     continue;
                 }
 
-                // block statement
+                // template block statement
+                if (firstChar == '{' && line.Span.SafeCharEquals(1, '{') && line.Span.SafeCharEquals(2, '#'))
+                {
+                    var fromLineStart = code.Slice(cursorPos - lineLength - 1 + leftIndent);
+                    var literal = fromLineStart.Slice(3);
+
+                    literal = literal.ParseTemplateScriptBlock(context, out var blockFragment);
+                    blockFragment.OriginalText = code.Slice(cursorPos - lineLength - 1, code.Length - literal.Length - 1);
+                    to.Add(new JsPageBlockFragmentStatement(blockFragment));
+
+                    cursorPos = code.Length - literal.Length;
+                    continue;
+                }
+                
+                // code block statement
                 if (firstChar == '#') 
                 {
-                    var literal = line.Slice(1).ParseVarName(out var blockName);
-                    var argument = literal.Trim();
-                    var startPos = cursorPos - lineLength - 1;
+                    var fromLineStart = code.Slice(cursorPos - lineLength - 1 + leftIndent);
+                    var literal = fromLineStart.Slice(1);
 
-                    ReadOnlyMemory<char> afterBlock;
+                    literal = literal.ParseCodeScriptBlock(context, out var blockFragment);
+                    to.Add(new JsPageBlockFragmentStatement(blockFragment));
+                    
+                    var startPos = cursorPos - lineLength;
+                    blockFragment.OriginalText = code.Slice(startPos, code.Length - literal.Length - startPos);
 
-                    if (context.ParseAsVerbatimBlock.Contains(blockName.ToString()))
-                    {
-                        var exprStr = code.Slice(cursorPos);
-                        afterBlock = exprStr.ParseCodeBody(blockName, out var blockBody);
-
-                        var originalText = code.Slice(startPos, code.Length - afterBlock.Length - startPos);
-
-                        to.Add(new JsPageBlockFragmentStatement(
-                            new PageBlockFragment(
-                                originalText,
-                                blockName.ToString(),
-                                argument,
-                                new List<PageFragment> {new PageStringFragment(blockBody)}
-                            )
-                        ));
-                    }
-                    else
-                    {
-                        var exprStr = code.Slice(cursorPos);
-                        afterBlock = exprStr.ParseCodeBody(blockName, out var blockBody);
-
-                        var elseBlocks = new List<PageElseBlock>();
-
-                        afterBlock = afterBlock.AdvancePastWhitespace();
-                        while (afterBlock.StartsWith("else"))
-                        {
-                            afterBlock = afterBlock.ParseCodeElseBlock(blockName, out var elseArgument,  out var elseBody);
-                            
-                            var elseBlock = new PageElseBlock(elseArgument, new JsBlockStatement(context.ParseCodeStatements(elseBody)));
-                            elseBlocks.Add(elseBlock);
-
-                            afterBlock = afterBlock.AdvancePastWhitespace();
-                        }
-
-                        var originalText = code.Slice(startPos, code.Length - afterBlock.Length - startPos);
-
-                        var blockStatements = context.ParseCodeStatements(blockBody);
-                        to.Add(new JsPageBlockFragmentStatement(
-                            new PageBlockFragment(
-                                originalText,
-                                blockName.ToString(),
-                                argument,
-                                new JsBlockStatement(blockStatements),
-                                elseBlocks
-                            )
-                        ));
-                    }
-
-                    cursorPos = code.Length - afterBlock.Length;
+                    cursorPos = code.Length - literal.Length;
                     continue;
                 }
 
@@ -272,7 +241,6 @@ namespace ServiceStack.Script
                         to.AddExpression(exprStr, expr, filters);
                         startExpressionPos = -1;
                     }
-                    
                     continue;
                 }
 
@@ -307,6 +275,65 @@ namespace ServiceStack.Script
 
             return to.ToArray();
         }
+        
+        // #if ...
+        //  ^
+        public static ReadOnlyMemory<char> ParseCodeScriptBlock(this ReadOnlyMemory<char> literal, ScriptContext context, 
+            out PageBlockFragment blockFragment)
+        {
+            literal = literal.ParseVarName(out var blockName);
+            var endArgumentPos = literal.IndexOf('\n');
+            var argument = literal.Slice(0, endArgumentPos).Trim();
+
+            literal = literal.Slice(endArgumentPos + 1);
+
+            ReadOnlyMemory<char> afterBlock;
+
+            var blockNameString = blockName.ToString();
+            if (context.ParseAsTemplateBlock.Contains(blockNameString))
+                throw new NotSupportedException("Must use '{{" + blockNameString + "}} ... {{/" + blockNameString + "}}'"
+                                                + $" Template Syntax to use Template-only `#{blockNameString}` in Code Statements");
+            
+            if (context.ParseAsVerbatimBlock.Contains(blockNameString))
+            {
+                literal = literal.ParseCodeBody(blockName, out var blockBody);
+
+                blockFragment = new PageBlockFragment(
+                    blockName.ToString(),
+                    argument,
+                    new List<PageFragment> {new PageStringFragment(blockBody)}
+                );
+            }
+            else
+            {
+                literal = literal.ParseCodeBody(blockName, out var blockBody);
+
+                var elseBlocks = new List<PageElseBlock>();
+
+                literal = literal.AdvancePastWhitespace();
+                while (literal.StartsWith("else"))
+                {
+                    literal = literal.ParseCodeElseBlock(blockName, out var elseArgument,  out var elseBody);
+                    
+                    var elseBlock = new PageElseBlock(elseArgument, new JsBlockStatement(context.ParseCodeStatements(elseBody)));
+                    elseBlocks.Add(elseBlock);
+
+                    literal = literal.AdvancePastWhitespace();
+                }
+
+
+                var blockStatements = context.ParseCodeStatements(blockBody);
+                blockFragment = new PageBlockFragment(
+                    blockName.ToString(),
+                    argument,
+                    new JsBlockStatement(blockStatements),
+                    elseBlocks
+                );
+            }
+
+            return literal;
+        }
+        
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void AddExpression(this List<JsStatement> ret, ReadOnlyMemory<char> originalText,

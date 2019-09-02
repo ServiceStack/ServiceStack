@@ -14,7 +14,7 @@ namespace ServiceStack.Script
         public enum BodyStyle
         {
             /// <summary>
-            /// Context Sensitive. Parse as Code in Code Blocks, otherwise as Template Expressions
+            /// Context Sensitive. Parse as Code in Code Blocks, otherwise Template Expressions in Template Blocks
             /// </summary>
             Default,
             
@@ -34,7 +34,7 @@ namespace ServiceStack.Script
             Verbatim,
         }
 
-        public virtual BodyStyle ParseBody => BodyStyle.Template;
+        public virtual BodyStyle ParseBody => BodyStyle.Default;
         
         public void Configure(ScriptContext context)
         {
@@ -42,6 +42,8 @@ namespace ServiceStack.Script
                 context.ParseAsVerbatimBlock.Add(Name);
             else if (ParseBody == BodyStyle.CodeBlock)
                 context.ParseAsCodeBlock.Add(Name);
+            else if (ParseBody == BodyStyle.Template)
+                context.ParseAsTemplateBlock.Add(Name);
         }
 
         public ScriptContext Context { get; set; }
