@@ -415,7 +415,10 @@ else
         [Test]
         public void Cannot_evaluate_Template_only_blocks_in_code_blocks()
         {
-            var context = new ScriptContext().Init();
+            var context = new ScriptContext {
+                Plugins = { new MarkdownScriptPlugin() }
+            }.Init();
+            
             try 
             { 
                 context.RenderCode(@"
@@ -434,6 +437,164 @@ else
                 if (e.InnerException.GetType() != typeof(NotSupportedException))
                     throw;
             }
+        }
+
+        [Test]
+        public void Can_execute_existing_Script_Blocks_in_Code_Statements()
+        {
+            var context = new ScriptContext {
+                DebugMode = true,
+                Plugins = {
+                    new MarkdownScriptPlugin(),
+                }
+            }.Init();
+
+            string output = null;
+            object result = null;
+            
+            output = context.RenderCode(@"
+                #noop
+                    #each range(3)
+                        ` - ${it + 1}`
+                    /each
+                /noop
+            ");
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@""));
+            
+            output = context.RenderCode(@"
+                #each range(3)
+                    ` - ${it + 1}`
+                /each
+            ");
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
+ - 1
+ - 2
+ - 3".NormalizeNewLines()));
+            
+
+            output = context.RenderCode(@"
+* comment *
+
+{{#capture text}}
+## Title
+{{/capture}}
+
+{{#capture appendTo text}}
+{{#each range(3)}}
+  - {{it + 1}}
+{{/each}}
+{{/capture}}
+
+text | markdown
+");
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
+<h2>Title</h2>
+<ul>
+<li>1</li>
+<li>2</li>
+<li>3</li>
+</ul>".NormalizeNewLines()));
+            
+            result = context.EvaluateCode(@"
+                #keyvalues dict ':'
+                    Apples:       2
+                    Oranges:      3                    
+                    Grape Fruit:  2
+                    Rock Melon:   3                    
+                /keyvalues
+                dict | return
+            ");
+                
+            Assert.That(result, Is.EquivalentTo(new Dictionary<string, string> {
+                {"Apples","2"},
+                {"Oranges","3"},
+                {"Grape Fruit","2"},
+                {"Rock Melon","3"},
+            }));
+            
+            result = context.EvaluateCode(@"
+                #csv list
+                    Apples,2,2
+                    Oranges,3,3                   
+                    Grape Fruit,2,2
+                    Rock Melon,3,3                 
+                /csv
+                list | return");
+
+            Assert.That(result, Is.EquivalentTo(new List<List<string>> {
+                new List<string> { "Apples", "2", "2" },
+                new List<string> { "Oranges", "3", "3" },
+                new List<string> { "Grape Fruit", "2", "2" },
+                new List<string> { "Rock Melon", "3", "3" },
+            }));
+
+            output = context.RenderCode(@"
+{{#ul {if:hasAccess, each:items, where:'Age >= 2', class:['nav', !disclaimerAccepted?'blur':''], id:`ul-${id}`} }}
+    {{#li {class: {alt:isOdd(index), active:Name==highlight} }}
+        {{Name}}
+    {{/li}}
+{{else}}
+    <div>no items</div>
+{{/ul}}", new Dictionary<string, object> {
+                ["items"] = new[] {new Person("foo", 1), new Person("bar", 2), new Person("baz", 3)},
+                ["id"] = "menu",
+                ["disclaimerAccepted"] = false,
+                ["hasAccess"] = true,
+                ["highlight"] = "baz",
+                ["digits"] = new[] { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" },
+            });
+            
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
+<ul class=""nav blur"" id=""ul-menu"">
+    <li>
+        bar
+    </li>
+    <li class=""alt active"">
+        baz
+    </li>
+</ul>".NormalizeNewLines()));
+            
+
+            output = context.RenderCode(@"
+{{#partial content}}
+ - List Item
+{{/partial}}
+
+'<h1>Title</h1>' | raw
+'content' | partial | markdown");
+         
+            Assert.That(output.RemoveNewLines(), Is.EqualTo(@"<h1>Title</h1><ul><li>List Item</li></ul>".RemoveNewLines()));
+
+            output = context.RenderCode(@"
+{{#raw content}}
+{{ - List Item }}
+{{/raw}}
+
+'# Title'
+'{{ - List Item }}'");
+         
+            Assert.That(output.RemoveNewLines(), Is.EqualTo(@"# Title{{ - List Item }}".RemoveNewLines()));
+            
+            
+            output = context.RenderCode(@"
+3 | to => times
+{{#while times > 0}}
+{{times}} time{{times == 1 ? '' : 's'}}
+{{times - 1 | to => times}}
+{{/while}}
+");
+            
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo("3 times\n2 times\n1 time"));
+            
+            Assert.That(context.RenderCode(@"'Person '
+{{#with person}}
+{{Name}} is {{Age}} years old
+{{/with}}".NormalizeNewLines(), 
+                    new Dictionary<string, object> {
+                        ["person"] = new Person { Name = "poco", Age = 27 },
+                    }), 
+                Is.EqualTo("Person \npoco is 27 years old\n"));
+            
         }
 
     }

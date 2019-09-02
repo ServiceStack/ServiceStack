@@ -1155,11 +1155,6 @@ namespace ServiceStack.Script
                 catch (AggregateException e)
                 {
                     var ex = e.UnwrapIfSingleException();
-                    if (Context.DebugMode)
-                    {
-                        var logEx = ex.GetInnerMostException();
-                        LogManager.GetLogger(typeof(PageResult)).Error(ex.Message + "\n" + logEx.StackTrace, logEx);
-                    }
                     throw ex;
                 }
             }

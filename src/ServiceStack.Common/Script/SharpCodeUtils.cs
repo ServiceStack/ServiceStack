@@ -162,7 +162,6 @@ namespace ServiceStack.Script
         {
             var to = new List<JsStatement>();
 
-            bool inComments = false;
             int startExpressionPos = -1;
 
             // parsing assumes only \n
@@ -186,16 +185,10 @@ namespace ServiceStack.Script
                 var firstChar = line.Span[0];
 
                 // comments
-                if (firstChar == '*' || inComments)
+                if (firstChar == '*')
                 {
                     if (line.EndsWith("*"))
-                    {
-                        inComments = false;
                         continue;
-                    }
-
-                    inComments = true;
-                    continue;
                 }
 
                 // template block statement
@@ -205,7 +198,7 @@ namespace ServiceStack.Script
                     var literal = fromLineStart.Slice(3);
 
                     literal = literal.ParseTemplateScriptBlock(context, out var blockFragment);
-                    blockFragment.OriginalText = code.Slice(cursorPos - lineLength - 1, code.Length - literal.Length - 1);
+                    blockFragment.OriginalText = fromLineStart.Slice(fromLineStart.Length - literal.Length);
                     to.Add(new JsPageBlockFragmentStatement(blockFragment));
 
                     cursorPos = code.Length - literal.Length;
@@ -222,7 +215,7 @@ namespace ServiceStack.Script
                     to.Add(new JsPageBlockFragmentStatement(blockFragment));
                     
                     var startPos = cursorPos - lineLength;
-                    blockFragment.OriginalText = code.Slice(startPos, code.Length - literal.Length - startPos);
+                    blockFragment.OriginalText = fromLineStart.Slice(fromLineStart.Length - literal.Length);
 
                     cursorPos = code.Length - literal.Length;
                     continue;
