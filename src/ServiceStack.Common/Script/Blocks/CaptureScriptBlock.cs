@@ -17,6 +17,7 @@ namespace ServiceStack.Script
     public class CaptureScriptBlock : ScriptBlock
     {
         public override string Name => "capture";
+        public override BodyStyle ParseBody => BodyStyle.Template;
 
         internal struct Tuple
         {
