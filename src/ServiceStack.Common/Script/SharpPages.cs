@@ -208,17 +208,22 @@ namespace ServiceStack.Script
             };
             
             var page = new SharpPage(Context, memFile);
+            // Preserve StackTrace when debugging
+#if !DEBUG
             try
+#endif
             {
                 init?.Invoke(page);
 
                 page.Init().Wait(); // Safe as Memory Files are non-blocking
                 return page;
             }
+#if !DEBUG
             catch (AggregateException e)
             {
                 throw e.UnwrapIfSingleException();
             }
+#endif
         }
 
         public DateTime GetLastModified(SharpPage page)

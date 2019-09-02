@@ -10,11 +10,22 @@ namespace ServiceStack.Script
     /// Special block which evaluates the rendered body as a ServiceStack Template
     ///
     /// Usages: {{#eval}}emit {{evaluateBodyOfArg}} at {{now}} {{/eval}}
-    ///         {{#eval {scopeArg:1} }}emit {{evaluateBodyOfArg}} at {{now}} with {{scopeArg}} {{/eval}}
-    ///         {{#eval {htmlDecode:true} }}emit htmldecoded {{evaluateBodyOfArg}} at {{now}} {{/eval}}
-    ///         {{#eval {use:{filters:'TemplateServiceStackFilters',plugins:['MarkdownTemplatePlugin'],context:true} }}
+    /// 
+    ///         {{#eval {scopeArg:1} }}
+    ///             emit {{evaluateBodyOfArg}} at {{now}} with {{scopeArg}}
+    ///         {{/eval}}
+    /// 
+    ///         {{#eval {htmlDecode:true} }}
+    ///             emit htmldecoded {{evaluateBodyOfArg}} at {{now}}
+    ///         {{/eval}}
+    /// 
+    ///         {{#eval {use:{methods:'ServiceStackScripts',plugins:['MarkdownScriptPlugin']} }}
     ///              emit {{evaluateBodyOfArg}} at {{now}} in new context
     ///         {{/eval}}
+    /// 
+    ///         {{#eval { use:{context:true} } }}
+    ///              emit {{evaluateBodyOfArg}} in host context
+    ///         {{/eval}} 
     /// </summary>
     public class EvalScriptBlock : ScriptBlock
     {
