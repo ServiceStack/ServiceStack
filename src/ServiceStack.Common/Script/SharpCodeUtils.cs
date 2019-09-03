@@ -12,6 +12,10 @@ namespace ServiceStack.Script
                 ? literal.Slice(0, cursorPos - lineLength - 1)
                 : literal.Slice(0, cursorPos - lineLength - 2);
         
+        //  #block arg\n  
+        //              ^
+        //  else
+        //  /block
         internal static ReadOnlyMemory<char> ParseCodeBody(this ReadOnlyMemory<char> literal, ReadOnlyMemory<char> blockName, out ReadOnlyMemory<char> body)
         {
             var inStatements = 0;

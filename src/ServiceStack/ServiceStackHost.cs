@@ -168,6 +168,7 @@ namespace ServiceStack
                 typeof(MetadataNavService),
                 typeof(ScriptAdminService),
                 typeof(RequestLogsService),
+                typeof(AutoQueryMetadataService),
             };
 
             JsConfig.InitStatics();
