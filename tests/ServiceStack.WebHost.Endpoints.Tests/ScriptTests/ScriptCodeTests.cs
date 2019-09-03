@@ -409,7 +409,7 @@ else
     ` and is even`
 /if
 ", new Dictionary<string, object> { ["a"] = 1 });
-            Assert.That(result.Trim(), Is.EqualTo("1 <= 1\n and is odd"));
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo("1 <= 1\n and is odd"));
         }
 
         [Test]
@@ -692,6 +692,106 @@ text | markdown
                     ["person"] = new Person { Name = "poco", Age = 27 },
                 }), 
                 Is.EqualTo("Person \npoco is 27 years old\n"));
+        }
+
+
+        [Test]
+        public void Can_execute_existing_Script_Blocks_in_Code_Statements_in_Code_Syntax_only_LF()
+        {
+            var context = new ScriptContext {
+                DebugMode = true,
+                Plugins = {
+                    new MarkdownScriptPlugin(),
+                }
+            }.Init();
+
+            string output = null;
+            object result = null;
+            
+            output = context.RenderCode(@"
+                #noop
+                    #each range(3)
+                    ` - ${it + 1}`
+                    /each
+                /noop
+            ".Replace("\r",""));
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@""));
+            
+            output = context.RenderCode(@"
+                #each range(3)
+                    ` - ${it + 1}`
+                /each".Replace("\r",""));
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
+ - 1
+ - 2
+ - 3".NormalizeNewLines()));
+            
+            // Capture requires Template Syntax
+            
+            result = context.EvaluateCode(@"
+                #keyvalues dict ':'
+                    Apples:       2
+                    Oranges:      3                    
+                    Grape Fruit:  2
+                    Rock Melon:   3                    
+                /keyvalues
+                dict | return
+            ".Replace("\r",""));
+            Assert.That(result, Is.EquivalentTo(new Dictionary<string, string> {
+                {"Apples","2"},
+                {"Oranges","3"},
+                {"Grape Fruit","2"},
+                {"Rock Melon","3"},
+            }));
+            
+            result = context.EvaluateCode(@"
+                #csv list
+                    Apples,2,2
+                    Oranges,3,3                   
+                    Grape Fruit,2,2
+                    Rock Melon,3,3                 
+                /csv
+                list | return".Replace("\r",""));
+
+            Assert.That(result, Is.EquivalentTo(new List<List<string>> {
+                new List<string> { "Apples", "2", "2" },
+                new List<string> { "Oranges", "3", "3" },
+                new List<string> { "Grape Fruit", "2", "2" },
+                new List<string> { "Rock Melon", "3", "3" },
+            }));
+
+            // HTML Scripts requires Template Syntax
+            
+            // Partial requires Template Syntax
+
+            output = context.RenderCode(@"
+#raw content
+{{ - List Item }}
+/raw
+
+'# Title'
+'{{ - List Item }}'".Replace("\r",""));
+         
+            Assert.That(output.RemoveNewLines(), Is.EqualTo(@"# Title{{ - List Item }}".RemoveNewLines()));
+            
+            
+            output = context.RenderCode(@"
+                3 | to => times
+                #while times > 0
+                    `${times} time${times == 1 ? '' : 's'}`
+                    times - 1 | to => times
+                /while".Replace("\r",""));
+            
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo("3 times\n2 times\n1 time"));
+            
+            Assert.That(context.RenderCode(@"'Person '
+                    #with person
+                        `${Name} is ${Age} years old`
+                    /with".Replace("\r",""), 
+                    new Dictionary<string, object> {
+                    ["person"] = new Person { Name = "poco", Age = 27 },
+                }).NormalizeNewLines(), 
+                Is.EqualTo("Person \npoco is 27 years old"));
         }
 
         [Test]

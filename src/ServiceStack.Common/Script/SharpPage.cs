@@ -141,7 +141,7 @@ namespace ServiceStack.Script
                 ? new List<PageFragment> { new PageStringFragment(bodyContents) } 
                 : EvaluateAsCode 
                     ? new List<PageFragment> { new PageJsBlockStatementFragment(Context.ParseCode(bodyContents)) }
-                    : Context.ParseTemplate(bodyContents);
+                    : Context.ParseScript(bodyContents);
 
             foreach (var fragment in pageFragments)
             {

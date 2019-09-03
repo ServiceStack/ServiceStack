@@ -173,6 +173,18 @@ namespace ServiceStack.Script
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsEnd(this char c) => c == default(char);
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ReadOnlyMemory<char> Chop(this ReadOnlyMemory<char> literal, char c) => 
+            literal.IsEmpty || literal.Span[literal.Length -1] != c 
+                ? literal
+                : literal.Slice(0, literal.Length - 1);
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ReadOnlySpan<char> Chop(this ReadOnlySpan<char> literal, char c) => 
+            literal.IsEmpty || literal[literal.Length -1] != c 
+                ? literal
+                : literal.Slice(0, literal.Length - 1);
 
         // Remove `Js` prefix
         public static string ToJsAstType(this Type type) => type.Name.Substring(2);

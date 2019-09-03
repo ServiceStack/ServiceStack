@@ -21,7 +21,7 @@ namespace ServiceStack.Script
 
     public static class SharpPageUtils
     {
-        public static List<PageFragment> ParseTemplatePage(string text)
+        public static List<PageFragment> ParseTemplate(string text)
         {
             return new ScriptContext().Init().ParseTemplate(text.AsMemory());
         }
@@ -139,6 +139,66 @@ namespace ServiceStack.Script
 
                 pos += 2;
             }
+        }
+        
+        public static List<PageFragment> ParseScript(this ScriptContext context, ReadOnlyMemory<char> text)
+        {
+            var to = new List<PageFragment>();
+            ScriptLanguage scriptLanguage = null;
+            int startBlockPos = -1;
+            var cursorPos = 0;
+            var lastBlockPos = 0;
+            
+            const int delim = 3; // '```'.length
+
+            while (text.TryReadLine(out var line, ref cursorPos))
+            {
+                var lineLength = line.Length;
+                line = line.AdvancePastWhitespace();
+                var leftIndent = lineLength - line.Length;
+
+                if (line.StartsWith("```"))
+                {
+                    if (startBlockPos >= 0 && line.Slice(delim).AdvancePastWhitespace().IsEmpty) //is end block
+                    {
+                        var prevBlock = text.Slice(lastBlockPos, startBlockPos - lastBlockPos - 1);
+                        var templateFragments = context.DefaultScriptLanguage.Parse(context, prevBlock);
+                        to.AddRange(templateFragments);
+
+                        var blockBody = text.ToPreviousLine(cursorPos, lineLength).Slice(startBlockPos)
+                            .Slice(startBlockPos + delim).AdvancePastChar('\n');
+                        var modifiers = line.Advance(delim).AdvancePastWhitespace();
+                        var blockFragments = scriptLanguage.Parse(context, blockBody, modifiers);
+                        to.AddRange(blockFragments);
+
+                        startBlockPos = -1;
+                        scriptLanguage = null;
+                        lastBlockPos = cursorPos;
+                        continue;
+                    }
+
+                    if (line.SafeGetChar(delim + 1).IsValidVarNameChar())
+                    {
+                        line = line.Slice(delim).ParseVarName(out var blockNameSpan);
+
+                        var blockName = blockNameSpan.ToString();
+                        scriptLanguage = context.GetScriptLanguage(blockName);
+                        if (scriptLanguage == null)
+                            continue;
+
+                        startBlockPos = cursorPos - lineLength - 1 + leftIndent;
+                    }
+                }
+            }
+
+            var remainingBlock = text.Slice(lastBlockPos);
+            if (!remainingBlock.IsEmpty)
+            {
+                var templateFragments = context.DefaultScriptLanguage.Parse(context, remainingBlock);
+                to.AddRange(templateFragments);
+            }
+            
+            return to;
         }
 
         public static List<PageFragment> ParseTemplate(this ScriptContext context, ReadOnlyMemory<char> text)

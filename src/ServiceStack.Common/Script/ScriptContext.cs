@@ -78,6 +78,10 @@ namespace ServiceStack.Script
         public IAppSettings AppSettings { get; set; } = new SimpleAppSettings();
         
         public List<Func<string,string>> Preprocessors { get; } = new List<Func<string, string>>();
+        
+        public ScriptLanguage DefaultScriptLanguage { get; set; }
+
+        public List<ScriptLanguage> ScriptLanguages { get; } = new List<ScriptLanguage>(); 
 
         public List<ScriptMethods> ScriptMethods { get; } = new List<ScriptMethods>();
 
@@ -96,6 +100,9 @@ namespace ServiceStack.Script
         public Dictionary<string, Type> CodePages { get; } = new Dictionary<string, Type>();
         
         public HashSet<string> ExcludeFiltersNamed { get; } = new HashSet<string>();
+
+        private readonly Dictionary<string, ScriptLanguage> scriptLanguagesMap = new Dictionary<string, ScriptLanguage>(); 
+        public ScriptLanguage GetScriptLanguage(string name) => scriptLanguagesMap.TryGetValue(name, out var block) ? block : null;
 
         private readonly Dictionary<string, ScriptBlock> blocksMap = new Dictionary<string, ScriptBlock>(); 
         public ScriptBlock GetBlock(string name) => blocksMap.TryGetValue(name, out var block) ? block : null;
@@ -333,7 +340,6 @@ namespace ServiceStack.Script
         {
             Pages = new SharpPages(this);
             PageFormats.Add(new HtmlPageFormat());
-            Preprocessors.Add(ScriptPreprocessors.TransformCodeBlocks);
             ScriptMethods.Add(new DefaultScripts());
             ScriptMethods.Add(new HtmlScripts());
             Plugins.Add(new DefaultScriptBlocks());
@@ -341,6 +347,10 @@ namespace ServiceStack.Script
             FilterTransformers[ScriptConstants.HtmlEncode] = HtmlPageFormat.HtmlEncodeTransformer;
             FilterTransformers["end"] = stream => (TypeConstants.EmptyByteArray.InMemoryStream() as Stream).InTask();
             FilterTransformers["buffer"] = stream => stream.InTask();
+            
+            DefaultScriptLanguage = TemplateScriptLanguage.Instance;
+            ScriptLanguages.Add(CodeScriptLanguage.Instance);
+            ScriptLanguages.Add(TemplateScriptLanguage.Instance);
             
             Args[nameof(ScriptConfig.DefaultCulture)] = ScriptConfig.CreateCulture();
             Args[nameof(ScriptConfig.DefaultDateFormat)] = ScriptConfig.DefaultDateFormat;
@@ -446,6 +456,11 @@ namespace ServiceStack.Script
             {
                 InitBlock(block);
                 blocksMap[block.Name] = block;
+            }
+
+            foreach (var blockProcessor in ScriptLanguages)
+            {
+                scriptLanguagesMap[blockProcessor.Name] = blockProcessor;
             }
 
             ScriptNamespaces = ScriptNamespaces.Distinct().ToList();
