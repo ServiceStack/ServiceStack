@@ -296,7 +296,7 @@ namespace ServiceStack.Script
                     if (HaltExecution)
                         break;
 
-                    await WritePageFragmentAsync(fragment, pageScope, outputStream, token);
+                    await WritePageFragmentAsync(pageScope, fragment, outputStream, token);
                 }
 
                 stackTrace.Pop();
@@ -307,7 +307,8 @@ namespace ServiceStack.Script
             }
         }
 
-        private async Task WritePageFragmentAsync(PageFragment fragment, ScriptScopeContext scope,
+        public async Task WritePageFragmentAsync(ScriptScopeContext scope,
+            PageFragment fragment,
             Stream outputStream, CancellationToken token)
         {
             if (fragment is PageStringFragment str)
@@ -379,7 +380,7 @@ namespace ServiceStack.Script
                 }
                 else if (statement is JsFilterExpressionStatement filterStatement)
                 {
-                    await WritePageFragmentAsync(filterStatement.FilterExpression, scope, outputStream, token);
+                    await WritePageFragmentAsync(scope, filterStatement.FilterExpression, outputStream, token);
                     if (!Context.RemoveNewLineAfterFiltersNamed.Contains(filterStatement.FilterExpression.LastFilterName))
                     {
                         await scope.OutputStream.WriteAsync(JsTokenUtils.NewLineUtf8, token);
@@ -391,7 +392,7 @@ namespace ServiceStack.Script
                 }
                 else if (statement is JsPageBlockFragmentStatement pageFragmentStatement)
                 {
-                    await WritePageFragmentAsync(pageFragmentStatement.Block, scope, outputStream, token);
+                    await WritePageFragmentAsync(scope, pageFragmentStatement.Block, outputStream, token);
                 }
             }
         }

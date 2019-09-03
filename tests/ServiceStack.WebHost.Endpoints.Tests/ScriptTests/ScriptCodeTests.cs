@@ -864,6 +864,22 @@ text | markdown
                 `text`");
             Assert.That(output.NormalizeNewLines(), Is.EqualTo("some\ntext"));
         }
-        
+
+        [Test]
+        public void Can_execute_code_statements_quietly()
+        {
+            var context = new ScriptContext().Init();
+
+            string template (string block) => "```" + block + @"
+                3 | to => times
+                #while times > 0
+                    `${times} time${times == 1 ? '' : 's'}`
+                    times - 1 | to => times
+                /while
+                ```
+remaining={{times}}"; 
+            
+        }
+
     }
 }

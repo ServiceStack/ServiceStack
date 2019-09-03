@@ -8,14 +8,18 @@ namespace ServiceStack.Script
     public static class SharpCodeUtils
     {
         // cursorPos is after CRLF except at end where its at last char
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ReadOnlyMemory<char> ToPreviousLine(this ReadOnlyMemory<char> literal, int cursorPos, int lineLength)
         {
-            var CLRF = literal.Span.SafeCharEquals(cursorPos - 2, '\r');
-            var ret = literal.Slice(0, cursorPos - lineLength -
-               (cursorPos == literal.Length ? 0 : (CLRF ? 2 : 1)) -
-               (CLRF ? 2 : 1));
+            var ret = literal.Slice(0, cursorPos - lineLength);
+            while (!ret.Span.SafeCharEquals(ret.Length - 1, '\n'))
+            {
+                ret = ret.Slice(0, ret.Length - 1);
+
+                if (ret.Length == 0) // no previous line, so return empty string
+                    return default;
+            }
             
             return ret;
         }
@@ -34,10 +38,14 @@ namespace ServiceStack.Script
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ReadOnlyMemory<char> ToLineStart(this ReadOnlyMemory<char> literal, int cursorPos, int lineLength, int statementPos)
         {
-            var CLRF = literal.Span.SafeCharEquals(cursorPos - 2, '\r');
-            var ret = literal.Slice(statementPos, cursorPos - statementPos - lineLength -
-               (cursorPos == literal.Length ? 0 : (CLRF ? 2 : 1)) -
-               (CLRF ? 2 : 1));
+            var ret = literal.Slice(statementPos, cursorPos - statementPos - lineLength);
+            while (!ret.Span.SafeCharEquals(ret.Length - 1, '\n'))
+            {
+                ret = ret.Slice(0, ret.Length - 1);
+
+                if (ret.Length == 0) // no previous line, so return empty string
+                    return default;
+            }
             
             return ret;
         }
@@ -333,6 +341,7 @@ namespace ServiceStack.Script
             if (context.ParseAsVerbatimBlock.Contains(blockNameString))
             {
                 literal = literal.ParseCodeBody(blockName, out var blockBody);
+                blockBody = blockBody.ChopNewLine();
 
                 blockFragment = new PageBlockFragment(
                     blockName.ToString(),
