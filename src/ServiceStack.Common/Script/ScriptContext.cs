@@ -83,6 +83,8 @@ namespace ServiceStack.Script
 
         public List<ScriptLanguage> ScriptLanguages { get; } = new List<ScriptLanguage>(); 
 
+        internal ScriptLanguage[] ScriptLanguagesArray { get; private set; } 
+
         public List<ScriptMethods> ScriptMethods { get; } = new List<ScriptMethods>();
 
         /// <summary>
@@ -458,7 +460,8 @@ namespace ServiceStack.Script
                 blocksMap[block.Name] = block;
             }
 
-            foreach (var blockProcessor in ScriptLanguages)
+            ScriptLanguagesArray = ScriptLanguages.Distinct().ToArray();
+            foreach (var blockProcessor in ScriptLanguagesArray)
             {
                 scriptLanguagesMap[blockProcessor.Name] = blockProcessor;
             }

@@ -145,6 +145,8 @@ namespace ServiceStack.Script
         {
             var to = new List<PageFragment>();
             ScriptLanguage scriptLanguage = null;
+            ReadOnlyMemory<char> modifiers = default;
+            ReadOnlyMemory<char> prevBlock = default;
             int startBlockPos = -1;
             var cursorPos = 0;
             var lastBlockPos = 0;
@@ -161,18 +163,17 @@ namespace ServiceStack.Script
                 {
                     if (startBlockPos >= 0 && line.Slice(delim).AdvancePastWhitespace().IsEmpty) //is end block
                     {
-                        var prevBlock = text.Slice(lastBlockPos, startBlockPos - lastBlockPos - 1);
                         var templateFragments = context.DefaultScriptLanguage.Parse(context, prevBlock);
                         to.AddRange(templateFragments);
 
-                        var blockBody = text.ToPreviousLine(cursorPos, lineLength).Slice(startBlockPos)
-                            .Slice(startBlockPos + delim).AdvancePastChar('\n');
-                        var modifiers = line.Advance(delim).AdvancePastWhitespace();
+                        var blockBody = text.ToLineStart(cursorPos, lineLength, startBlockPos);
                         var blockFragments = scriptLanguage.Parse(context, blockBody, modifiers);
                         to.AddRange(blockFragments);
 
+                        prevBlock = default;
                         startBlockPos = -1;
                         scriptLanguage = null;
+                        modifiers = null;
                         lastBlockPos = cursorPos;
                         continue;
                     }
@@ -186,7 +187,9 @@ namespace ServiceStack.Script
                         if (scriptLanguage == null)
                             continue;
 
-                        startBlockPos = cursorPos - lineLength - 1 + leftIndent;
+                        modifiers = line.AdvancePastChar('|');
+                        prevBlock = text.ToPreviousLine(cursorPos, lineLength);
+                        startBlockPos = cursorPos;
                     }
                 }
             }
