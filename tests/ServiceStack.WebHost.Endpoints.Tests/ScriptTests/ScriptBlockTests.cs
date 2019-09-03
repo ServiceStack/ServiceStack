@@ -15,7 +15,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         [Test]
         public void Does_parse_template_with_Block_Statement()
         {
-            var fragments = SharpPageUtils.ParseTemplatePage("BEFORE {{#bold}} Hi, {{name}}! {{/bold}} AFTER");
+            var fragments = SharpPageUtils.ParseTemplate("BEFORE {{#bold}} Hi, {{name}}! {{/bold}} AFTER");
             
             Assert.That(fragments.Count, Is.EqualTo(3));
             Assert.That(((PageStringFragment)fragments[0]).Value.ToString(), Is.EqualTo("BEFORE "));
@@ -35,7 +35,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         [Test]
         public void Does_parse_template_with_if_else_statement()
         {
-            var fragments = SharpPageUtils.ParseTemplatePage("BEFORE {{#if a < b}}YES{{else}}NO{{/if}} AFTER");
+            var fragments = SharpPageUtils.ParseTemplate("BEFORE {{#if a < b}}YES{{else}}NO{{/if}} AFTER");
             
             Assert.That(fragments.Count, Is.EqualTo(3));
             Assert.That(((PageStringFragment)fragments[0]).Value.ToString(), Is.EqualTo("BEFORE "));
@@ -55,7 +55,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         [Test]
         public void Does_parse_template_with_if_and_else_if_statement()
         {
-            var fragments = SharpPageUtils.ParseTemplatePage("BEFORE {{#if a < b}}YES{{else if c < d}}NO{{else}}MAYBE{{/if}} AFTER");
+            var fragments = SharpPageUtils.ParseTemplate("BEFORE {{#if a < b}}YES{{else if c < d}}NO{{else}}MAYBE{{/if}} AFTER");
             
             Assert.That(fragments.Count, Is.EqualTo(3));
             Assert.That(((PageStringFragment)fragments[0]).Value.ToString(), Is.EqualTo("BEFORE "));
@@ -78,7 +78,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         [Test]
         public void Does_parse_template_with_nested_Block_Statement()
         {
-            var fragments = SharpPageUtils.ParseTemplatePage("BEFORE {{#bold}} Hi, {{#bold}}{{name}}{{/bold}}! {{/bold}} AFTER");
+            var fragments = SharpPageUtils.ParseTemplate("BEFORE {{#bold}} Hi, {{#bold}}{{name}}{{/bold}}! {{/bold}} AFTER");
             
             Assert.That(fragments.Count, Is.EqualTo(3));
             Assert.That(((PageStringFragment)fragments[0]).Value.ToString(), Is.EqualTo("BEFORE "));
@@ -102,7 +102,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         [Test]
         public void Does_parse_Raw_block_body_as_string()
         {
-            var fragments = SharpPageUtils.ParseTemplatePage("BEFORE {{#raw}} Hi, {{ {{ name }} }} {{/raw}} AFTER");
+            var fragments = SharpPageUtils.ParseTemplate("BEFORE {{#raw}} Hi, {{ {{ name }} }} {{/raw}} AFTER");
             
             Assert.That(fragments.Count, Is.EqualTo(3));
             Assert.That(((PageStringFragment)fragments[0]).Value.ToString(), Is.EqualTo("BEFORE "));
@@ -984,6 +984,32 @@ partialArg in page scope is <b>from page</b>"));
             var result = context.Evaluate(@"
 ```code
 #keyvalues dict ':'
+  Apples:       2
+  Oranges:      3                    
+  Grape Fruit:  2
+  Rock Melon:   3                    
+/keyvalues
+dict | return
+```");
+                
+            Assert.That(result, Is.EquivalentTo(new Dictionary<string, string> {
+                {"Apples","2"},
+                {"Oranges","3"},
+                {"Grape Fruit","2"},
+                {"Rock Melon","3"},
+            }));
+        }
+
+        [Test]
+        public void Does_parse_keyvalues_in_code_blocks_with_code_preprocessor()
+        {
+            var context = new ScriptContext {
+                Preprocessors = { ScriptPreprocessors.TransformCodeBlocks }
+            }.Init();
+
+            var result = context.Evaluate(@"
+```code
+#keyvalues dict ':'
   * Apples:       2
   * Oranges:      3                    
   * Grape Fruit:  2
@@ -1025,6 +1051,68 @@ dict | return
         public void Can_use_while_block()
         {
             var context = new ScriptContext().Init();
+
+            var result = context.EvaluateScript(@"
+```code
+3 | to => times
+#while times > 0
+    times 
+    times - 1 | to => times
+/while
+```");
+            
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo("3\n2\n1"));
+            
+            result = context.EvaluateScript(@"
+```code
+0 | to => times
+#while times > 0
+    times 
+    times - 1 | to => times
+else
+    `times == 0`
+/while
+```");
+            
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo("times == 0"));
+        }
+
+        [Test]
+        public void Can_use_while_block_single_new_line()
+        {
+            var context = new ScriptContext().Init();
+
+            var result = context.EvaluateScript(@"
+```code
+3 | to => times
+#while times > 0
+    times 
+    times - 1 | to => times
+/while
+```".Replace("\r",""));
+            
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo("3\n2\n1"));
+            
+            result = context.EvaluateScript(@"
+```code
+0 | to => times
+#while times > 0
+    times 
+    times - 1 | to => times
+else
+    `times == 0`
+/while
+```".Replace("\r",""));
+            
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo("times == 0"));
+        }
+
+        [Test]
+        public void Can_use_while_block_with_code_preprocessor()
+        {
+            var context = new ScriptContext {
+                Preprocessors = { ScriptPreprocessors.TransformCodeBlocks }
+            }.Init();
 
             var result = context.EvaluateScript(@"
 ```code

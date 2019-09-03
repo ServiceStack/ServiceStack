@@ -7,11 +7,41 @@ namespace ServiceStack.Script
 {
     public static class SharpCodeUtils
     {
-        static ReadOnlyMemory<char> ToPreviousLine(this ReadOnlyMemory<char> literal, int cursorPos, int lineLength) =>
-            cursorPos == literal.Length // cursorPos is after CRLF except at end where its at last char
-                ? literal.Slice(0, cursorPos - lineLength - 1)
-                : literal.Slice(0, cursorPos - lineLength - 2);
+        // cursorPos is after CRLF except at end where its at last char
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static ReadOnlyMemory<char> ToPreviousLine(this ReadOnlyMemory<char> literal, int cursorPos, int lineLength)
+        {
+            var CLRF = literal.Span.SafeCharEquals(cursorPos - 2, '\r');
+            var ret = literal.Slice(0, cursorPos - lineLength -
+               (cursorPos == literal.Length ? 0 : (CLRF ? 2 : 1)) -
+               (CLRF ? 2 : 1));
+            
+            return ret;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static ReadOnlyMemory<char> ToLineStart(this ReadOnlyMemory<char> literal, int cursorPos, int lineLength)
+        {
+            var CLRF = literal.Span.SafeCharEquals(cursorPos - 2, '\r');
+            var ret = literal.Slice(cursorPos - lineLength -
+                 (cursorPos == literal.Length ? 0 : 1) -
+                 (CLRF ? 1 : 0));
+            
+            return ret;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static ReadOnlyMemory<char> ToLineStart(this ReadOnlyMemory<char> literal, int cursorPos, int lineLength, int statementPos)
+        {
+            var CLRF = literal.Span.SafeCharEquals(cursorPos - 2, '\r');
+            var ret = literal.Slice(statementPos, cursorPos - statementPos - lineLength -
+               (cursorPos == literal.Length ? 0 : (CLRF ? 2 : 1)) -
+               (CLRF ? 2 : 1));
+            
+            return ret;
+        }
+
         //  #block arg\n  
         //              ^
         //  else
@@ -44,7 +74,8 @@ namespace ServiceStack.Script
                         if (name.EqualsOrdinal(blockName))
                         {
                             body = literal.ToPreviousLine(cursorPos, lineLength);
-                            return literal.Slice(cursorPos);
+                            var ret = literal.Slice(cursorPos);
+                            return ret;
                         }
                     }
 
@@ -55,7 +86,8 @@ namespace ServiceStack.Script
                     if (inStatements == 0)
                     {
                         body = literal.ToPreviousLine(cursorPos, lineLength);
-                        return literal.Slice(cursorPos - lineLength - 1);
+                        var ret = literal.ToLineStart(cursorPos, lineLength);
+                        return ret;
                     }
                 }
             }
@@ -97,8 +129,10 @@ namespace ServiceStack.Script
                         line.Slice(1).ParseVarName(out var name);
                         if (name.EqualsOrdinal(blockName))
                         {
-                            elseBody = literal.Slice(statementPos, cursorPos - statementPos - lineLength - 1).Trim();
-                            return literal.Slice(cursorPos);
+                            elseBody = literal.ToLineStart(cursorPos, lineLength, statementPos);
+                            elseBody = elseBody.Trim();
+                            var ret = literal.Slice(cursorPos);
+                            return ret;
                         }
                     }
 
@@ -111,7 +145,8 @@ namespace ServiceStack.Script
                         if (statementPos >= 0)
                         {
                             elseBody = literal.Slice(statementPos, cursorPos - statementPos).Trim();
-                            return literal.Slice(cursorPos);
+                            var ret = literal.Slice(cursorPos);
+                            return ret;
                         }
 
                         statementPos = cursorPos - lineLength + 4;
@@ -167,12 +202,6 @@ namespace ServiceStack.Script
             var to = new List<JsStatement>();
 
             int startExpressionPos = -1;
-
-            // parsing assumes only \n
-            if (code.IndexOf('\r') >= 0)
-            {
-                code = code.ToString().Replace("\r", "").AsMemory();
-            }
             
             var cursorPos = 0;
             while (code.TryReadLine(out var line, ref cursorPos))
@@ -198,11 +227,11 @@ namespace ServiceStack.Script
                 // template block statement
                 if (firstChar == '{' && line.Span.SafeCharEquals(1, '{') && line.Span.SafeCharEquals(2, '#'))
                 {
-                    var fromLineStart = code.Slice(cursorPos - lineLength - 1 + leftIndent);
+                    var fromLineStart = code.ToLineStart(cursorPos, lineLength).AdvancePastWhitespace();
                     var literal = fromLineStart.Slice(3);
 
                     literal = literal.ParseTemplateScriptBlock(context, out var blockFragment);
-                    blockFragment.OriginalText = fromLineStart.Slice(fromLineStart.Length - literal.Length);
+                    blockFragment.OriginalText = fromLineStart.Slice(0, fromLineStart.Length - literal.Length);
                     to.Add(new JsPageBlockFragmentStatement(blockFragment));
 
                     cursorPos = code.Length - literal.Length;
@@ -212,14 +241,13 @@ namespace ServiceStack.Script
                 // code block statement
                 if (firstChar == '#') 
                 {
-                    var fromLineStart = code.Slice(cursorPos - lineLength - 1 + leftIndent);
+                    var fromLineStart = code.ToLineStart(cursorPos, lineLength).AdvancePastWhitespace();
                     var literal = fromLineStart.Slice(1);
 
                     literal = literal.ParseCodeScriptBlock(context, out var blockFragment);
                     to.Add(new JsPageBlockFragmentStatement(blockFragment));
                     
-                    var startPos = cursorPos - lineLength;
-                    blockFragment.OriginalText = fromLineStart.Slice(fromLineStart.Length - literal.Length);
+                    blockFragment.OriginalText = fromLineStart.Slice(0, fromLineStart.Length - literal.Length);
 
                     cursorPos = code.Length - literal.Length;
                     continue;
@@ -241,7 +269,8 @@ namespace ServiceStack.Script
                         }
                         else
                         {
-                            var exprStr = code.Slice(startExpressionPos,  cursorPos - startExpressionPos - rightIndent - delim - 1).Trim();
+                            var CRLF = code.Span.SafeCharEquals(cursorPos - 2, '\r') ? 2 : 1;
+                            var exprStr = code.Slice(startExpressionPos,  cursorPos - startExpressionPos - rightIndent - delim - CRLF).Trim();
                             var afterExpr = exprStr.Span.ParseExpression(out var expr, out var filters);
                         
                             to.AddExpression(exprStr, expr, filters);
@@ -265,7 +294,8 @@ namespace ServiceStack.Script
                     }
                     
                     // multi-line start
-                    startExpressionPos = cursorPos - lineLength - 1 + leftIndent + delim;
+                    var CRLF = code.Span.SafeCharEquals(cursorPos - 2, '\r') ? 2 : 1;
+                    startExpressionPos = cursorPos - lineLength - CRLF + leftIndent + delim;
                     continue;
                 }
                 else
@@ -294,8 +324,6 @@ namespace ServiceStack.Script
             var argument = literal.Slice(0, endArgumentPos).Trim();
 
             literal = literal.Slice(endArgumentPos + 1);
-
-            ReadOnlyMemory<char> afterBlock;
 
             var blockNameString = blockName.ToString();
             if (context.ParseAsTemplateBlock.Contains(blockNameString))
