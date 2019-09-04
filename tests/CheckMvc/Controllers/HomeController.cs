@@ -31,7 +31,7 @@ namespace CheckMvc.Controllers
             return new HomeViewModel
             {
                 Name = name,
-                Counter = Redis.IncrementValue("counter:" + name),
+                //Counter = Redis.IncrementValue("counter:" + name),
                 Json = new TestObj
                 {
                     Id = 1,

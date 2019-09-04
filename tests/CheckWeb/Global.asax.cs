@@ -444,7 +444,7 @@ namespace CheckWeb
     {
         public string Result { get; set; }
     }
-
+    
     public class ViewServices : Service
     {
         public object Get(ViewRequest request)
