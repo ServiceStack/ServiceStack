@@ -181,7 +181,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             }
             catch (Exception e)
             {
-                Assert.That(e.InnerException.InnerException.GetType(), Is.EqualTo(typeof(NotSupportedException)));
+                Assert.That(e.InnerException.GetType(), Is.EqualTo(typeof(NotSupportedException)));
             }
 
             try
@@ -191,7 +191,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             }
             catch (Exception e)
             {
-                Assert.That(e.InnerException.InnerException.GetType(), Is.EqualTo(typeof(NotSupportedException)));
+                Assert.That(e.InnerException.GetType(), Is.EqualTo(typeof(NotSupportedException)));
             }
             
             context = CreateContext(c => {
@@ -271,7 +271,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             }
             catch (ScriptException e)
             {
-                Assert.That(e.InnerException.InnerException.GetType(), Is.EqualTo(typeof(NotSupportedException)));
+                Assert.That(e.InnerException.GetType(), Is.EqualTo(typeof(NotSupportedException)));
             }
             
             result = context.Evaluate("{{ 'Adder'.new([1.toString()]) | to => o }}{{ o.String | return }}");
@@ -301,7 +301,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             }
             catch (ScriptException e)
             {
-                Assert.That(e.InnerException.InnerException.GetType(), Is.EqualTo(typeof(NotSupportedException)));
+                Assert.That(e.InnerException.GetType(), Is.EqualTo(typeof(NotSupportedException)));
             }
             
             result = context.Evaluate("{{ 'Adder'.new(['1']) | to => o }}{{ o.call('Add',['1']) }}{{ o.String | return }}");
