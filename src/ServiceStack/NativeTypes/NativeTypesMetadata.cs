@@ -402,6 +402,7 @@ namespace ServiceStack.NativeTypes
             {
                 metaType.EnumNames = new List<string>();
                 metaType.EnumValues = new List<string>();
+                metaType.EnumMemberValues = new List<string>();
 
                 var isDefaultLayout = true;
                 var isIntEnum = JsConfig.TreatEnumAsInteger || type.IsEnumFlags();
@@ -410,36 +411,37 @@ namespace ServiceStack.NativeTypes
                 {
                     var name = names[i];
                     metaType.EnumNames.Add(name);
+                    metaType.EnumMemberValues.Add(name);
 
                     var enumMember = GetEnumMember(type, name);
 
                     var value = enumMember.GetRawConstantValue();
                     var enumValue = Convert.ToInt64(value).ToString();
-
-                    if (isIntEnum)
-                    {
-                        metaType.EnumValues.Add(enumValue);
-                    }
-                    else
-                    {
-                        var enumMemberValue = enumMember.FirstAttribute<EnumMemberAttribute>()?.Value;
-                        if (enumMemberValue != null)
-                        {
-                            isDefaultLayout = false;
-                            metaType.EnumValues.Add(enumMemberValue);
-                        }
-                        else
-                        {
-                            metaType.EnumValues.Add(name);
-                        }
-                    }
+                    metaType.EnumValues.Add(enumValue);
+                    
+                    var enumMemberValue = enumMember.FirstAttribute<EnumMemberAttribute>()?.Value;
+                    if (enumMemberValue != null)
+                        metaType.EnumMemberValues[i] = enumMemberValue;
 
                     if (enumValue != i.ToString())
                         isDefaultLayout = false;
                 }
 
-                if (isDefaultLayout)
+                if (!isIntEnum && isDefaultLayout)
                     metaType.EnumValues = null;
+
+                var requiresMemberValues = false;
+                for (int i = 0; i < metaType.EnumNames.Count; i++)
+                {
+                    if (metaType.EnumNames[i] != metaType.EnumMemberValues[i])
+                    {
+                        requiresMemberValues = true;
+                        break;
+                    }
+                }
+
+                if (!requiresMemberValues)
+                    metaType.EnumMemberValues = null;
             }
 
             var innerTypes = type.GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic);
@@ -448,7 +450,7 @@ namespace ServiceStack.NativeTypes
                 if (metaType.InnerTypes == null)
                     metaType.InnerTypes = new List<MetadataTypeName>();
 
-                metaType.InnerTypes.Add(new MetadataTypeName
+                metaType.InnerTypes.Add(new MetadataTypeName    
                 {
                     Name = innerType.GetOperationName(),
                     Namespace = innerType.Namespace,
