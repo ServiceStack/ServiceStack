@@ -310,16 +310,12 @@ namespace ServiceStack.NativeTypes.TypeScript
                             var name = type.EnumNames[i];
                             var value = type.EnumValues?[i];
 
-                            if (isIntEnum)
-                            {
-                                sb.AppendLine(value == null //Enum Value's are not impacted by JS Style
-                                    ? $"{name},"
-                                    : $"{name} = {value},");
-                            }
-                            else
-                            {
-                                sb.AppendLine($"{name} = '{value ?? name}',");
-                            }
+                            if (type.EnumMemberValues != null && type.EnumMemberValues[i] != name)
+                                value = $"'{type.EnumMemberValues[i]}'";
+
+                            sb.AppendLine(value == null 
+                                ? $"{name} = '{name}',"
+                                : $"{name} = {value},");
                         }
                     }
 
