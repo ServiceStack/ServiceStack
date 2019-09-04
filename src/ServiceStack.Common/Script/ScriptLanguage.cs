@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ServiceStack.Script
 {
@@ -10,33 +12,9 @@ namespace ServiceStack.Script
         public abstract List<PageFragment> Parse(ScriptContext context, ReadOnlyMemory<char> body, ReadOnlyMemory<char> modifiers);
         
         public List<PageFragment> Parse(ScriptContext context, ReadOnlyMemory<char> body) => Parse(context, body, default);
-    }
 
-    public class TemplateScriptLanguage : ScriptLanguage
-    {
-        public static ScriptLanguage Instance = new TemplateScriptLanguage();
-        
-        public override string Name => "template";
-        
-        public override List<PageFragment> Parse(ScriptContext context, ReadOnlyMemory<char> body, ReadOnlyMemory<char> modifiers)
-        {
-            var pageFragments = context.ParseTemplate(body);
-            return pageFragments;
-        }
-    }
+        public virtual Task<bool> WritePageFragmentAsync(ScriptScopeContext scope, PageFragment fragment, CancellationToken token) => TypeConstants.FalseTask;
 
-    public class CodeScriptLanguage : ScriptLanguage
-    {
-        public static ScriptLanguage Instance = new CodeScriptLanguage();
-        
-        public override string Name => "code";
-
-        public override List<PageFragment> Parse(ScriptContext context, ReadOnlyMemory<char> body, ReadOnlyMemory<char> modifiers)
-        {
-            var statements = context.ParseCodeStatements(body);
-            
-            return new List<PageFragment> { new PageJsBlockStatementFragment(new JsBlockStatement(statements)) };
-        }
+        public virtual Task<bool> WriteStatementAsync(ScriptScopeContext scope, JsStatement statement, CancellationToken token) => TypeConstants.FalseTask;
     }
-    
 }

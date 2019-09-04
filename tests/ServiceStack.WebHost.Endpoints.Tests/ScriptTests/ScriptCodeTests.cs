@@ -879,6 +879,15 @@ text | markdown
                 ```
 remaining={{times}}"; 
             
+            Assert.That(context.EvaluateScript(template("code")).NormalizeNewLines(), 
+                Is.EqualTo("3 times\n2 times\n1 time\nremaining=0"));
+            
+            Assert.That(context.EvaluateScript(template("code|quiet")).NormalizeNewLines(), 
+                Is.EqualTo("remaining=0"));
+            Assert.That(context.EvaluateScript(template("code|q")).NormalizeNewLines(), 
+                Is.EqualTo("remaining=0"));
+            Assert.That(context.EvaluateScript(template("code|silent")).NormalizeNewLines(), 
+                Is.EqualTo("remaining=0"));
         }
 
     }
