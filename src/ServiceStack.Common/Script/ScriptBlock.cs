@@ -65,7 +65,7 @@ namespace ServiceStack.Script
 
         protected virtual async Task WriteAsync(ScriptScopeContext scope, JsStatement[] body, string callTrace, CancellationToken cancel)
         {
-            await scope.PageResult.WriteStatementsAsync(scope, body, scope.OutputStream, callTrace, cancel);
+            await scope.PageResult.WriteStatementsAsync(scope, body, callTrace, cancel);
         }
 
         protected virtual async Task WriteBodyAsync(ScriptScopeContext scope, PageBlockFragment fragment, CancellationToken token)

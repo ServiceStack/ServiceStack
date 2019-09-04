@@ -248,6 +248,9 @@ namespace ServiceStack.Script
     public class PageJsBlockStatementFragment : PageFragment
     {
         public JsBlockStatement Block { get; }
+        
+        public bool Quiet { get; set; }
+        
         public PageJsBlockStatementFragment(JsBlockStatement statement)
         {
             Block = statement;
