@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.IO;
@@ -292,6 +293,9 @@ namespace ServiceStack.Script
         
         public SharpPage OneTimePage(string contents, string ext=null) 
             => Pages.OneTimePage(contents, ext ?? PageFormats.First().Extension);
+
+        public SharpPage CodeBlock(string code) 
+            => Pages.OneTimePage(code, PageFormats.First().Extension,p => p.EvaluateAsCode = true);
 
         public SharpCodePage GetCodePage(string virtualPath)
         {
@@ -605,6 +609,10 @@ namespace ServiceStack.Script
         private static Exception HandleException(Exception e, PageResult pageResult)
         {
             var underlyingEx = e.UnwrapIfSingleException();
+            if (underlyingEx is StopFilterExecutionException se)
+                underlyingEx = se.InnerException;
+            if (underlyingEx is TargetInvocationException te)
+                underlyingEx = te.InnerException;
             
 #if DEBUG
             var logEx = underlyingEx.GetInnerMostException();
@@ -613,7 +621,7 @@ namespace ServiceStack.Script
             
             if (underlyingEx is ScriptException)
                 return underlyingEx;
-            
+
             pageResult.LastFilterError = underlyingEx;
             return new ScriptException(pageResult);
         }
@@ -655,14 +663,45 @@ namespace ServiceStack.Script
             }
         }
 
-        public static string GetPageResultOutput(PageResult pageResult)
+        public static async Task RenderAsync(this PageResult pageResult, Stream stream, CancellationToken token = default)
         {
-            try
+            if (pageResult.ResultOutput != null)
             {
-                var output = pageResult.Result;
-                if (pageResult.LastFilterError != null)
-                    throw new ScriptException(pageResult);
-                return output;
+                await stream.WriteAsync(MemoryProvider.Instance.ToUtf8Bytes(pageResult.ResultOutput.AsSpan()), token: token);
+                return;
+            }
+
+            await pageResult.Init();
+            await pageResult.WriteToAsync(stream, token);
+            if (pageResult.LastFilterError != null)
+                throw new ScriptException(pageResult);
+        }
+
+        public static void RenderToStream(this PageResult pageResult, Stream stream)
+        {
+            try 
+            { 
+                try
+                {
+                    if (pageResult.ResultOutput != null)
+                    {
+                        if (pageResult.LastFilterError != null)
+                            throw new ScriptException(pageResult);
+
+                        stream.WriteAsync(MemoryProvider.Instance.ToUtf8Bytes(pageResult.ResultOutput.AsSpan())).Wait();
+                        return;
+                    }
+
+                    pageResult.Init().Wait();
+                    pageResult.WriteToAsync(stream).Wait();
+                    if (pageResult.LastFilterError != null)
+                        throw new ScriptException(pageResult);
+                }
+                catch (AggregateException e)
+                {
+                    var ex = e.UnwrapIfSingleException();
+                    throw ex;
+                }
             }
             catch (Exception e)
             {
@@ -672,14 +711,35 @@ namespace ServiceStack.Script
             }
         }
 
-        private static async Task<string> GetPageResultOutputAsync(PageResult pageResult)
+        public static string EvaluateScript(this PageResult pageResult)
         {
             try
             {
-                var output = await pageResult.RenderToStringAsync();
-                if (pageResult.LastFilterError != null)
-                    throw new ScriptException(pageResult);
-                return output;
+                using (var ms = MemoryStreamFactory.GetStream())
+                {
+                    pageResult.RenderToStream(ms);
+                    var output = ms.ReadToEnd();
+                    return output;
+                }
+            }
+            catch (Exception e)
+            {
+                if (ShouldRethrow(e))
+                    throw;
+                throw HandleException(e, pageResult);
+            }
+        }
+
+        public static async Task<string> EvaluateScriptAsync(this PageResult pageResult, CancellationToken token = default)
+        {
+            try
+            {
+                using (var ms = MemoryStreamFactory.GetStream())
+                {
+                    await RenderAsync(pageResult, ms, token);
+                    var output = ms.ReadToEnd();
+                    return output;
+                }
             }
             catch (Exception e)
             {
@@ -728,7 +788,7 @@ namespace ServiceStack.Script
         {
             var pageResult = new PageResult(context.OneTimePage(script));
             args.Each((x,y) => pageResult.Args[x] = y);
-            return GetPageResultOutput(pageResult);
+            return EvaluateScript(pageResult);
         }
 
         /// <summary>
@@ -740,7 +800,7 @@ namespace ServiceStack.Script
         {
             var pageResult = new PageResult(context.OneTimePage(script));
             args.Each((x,y) => pageResult.Args[x] = y);
-            return await GetPageResultOutputAsync(pageResult);
+            return await EvaluateScriptAsync(pageResult);
         }
         
         private static PageResult GetCodePageResult(ScriptContext context, string code, Dictionary<string, object> args)
@@ -764,13 +824,13 @@ namespace ServiceStack.Script
         public static string RenderCode(this ScriptContext context, string code, Dictionary<string, object> args=null)
         {
             var pageResult = GetCodePageResult(context, code, args);
-            return GetPageResultOutput(pageResult);
+            return EvaluateScript(pageResult);
         }
 
         public static async Task<string> RenderCodeAsync(this ScriptContext context, string code, Dictionary<string, object> args=null)
         {
             var pageResult = GetCodePageResult(context, code, args);
-            return await GetPageResultOutputAsync(pageResult);
+            return await EvaluateScriptAsync(pageResult);
         }
 
         public static JsBlockStatement ParseCode(this ScriptContext context, string code) =>
