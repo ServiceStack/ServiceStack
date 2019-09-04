@@ -1150,7 +1150,7 @@ namespace ServiceStack.Script
                         return resultOutput;
     
                     Init().Wait();
-                    resultOutput = SharpPagesExtensions.RenderToStringAsync(this).Result;
+                    resultOutput = this.RenderToStringAsync().Result;
                     return resultOutput;
                 }
                 catch (AggregateException e)

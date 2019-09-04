@@ -34,6 +34,9 @@ namespace ServiceStack
                 : this.GetResolver().TryResolve<T>();
         }
 
+        public T GetPlugin<T>() where T : class, IPlugin  => GetResolver()?.TryResolve<T>() ?? HostContext.GetPlugin<T>();
+        public T AssertPlugin<T>() where T : class, IPlugin  => GetResolver()?.TryResolve<T>() ?? HostContext.AssertPlugin<T>();
+
         public virtual T ResolveService<T>()
         {
             var service = TryResolve<T>();
