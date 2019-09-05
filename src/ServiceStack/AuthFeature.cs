@@ -29,7 +29,7 @@ namespace ServiceStack
         /// </summary>
         public ValidateFn ValidateFn { get; set; }
 
-        public Action<IRequest, string> ValidateRedirectLink { get; set; } = NoExternalRedirects;
+        public Action<IRequest, string> ValidateRedirectLinks { get; set; } = NoExternalRedirects;
 
         public static void AllowAllRedirects(IRequest req, string redirect) {}
         public static void NoExternalRedirects(IRequest req, string redirect)
