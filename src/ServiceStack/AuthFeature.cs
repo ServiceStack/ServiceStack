@@ -29,6 +29,24 @@ namespace ServiceStack
         /// </summary>
         public ValidateFn ValidateFn { get; set; }
 
+        public Action<IRequest, string> ValidateRedirectLink { get; set; } = NoExternalRedirects;
+
+        public static void AllowAllRedirects(IRequest req, string redirect) {}
+        public static void NoExternalRedirects(IRequest req, string redirect)
+        {
+            redirect = redirect.Trim();
+            if (string.IsNullOrEmpty(redirect))
+                return;
+
+            if (redirect.StartsWith("//") || redirect.IndexOf("://", StringComparison.Ordinal) >= 0)
+            {
+                if (redirect.StartsWith(req.GetBaseUrl()))
+                    return;
+                
+                throw new ArgumentException(ErrorMessages.NoExternalRedirects, nameof(Authenticate.Continue));
+            }
+        }
+
         private readonly Func<IAuthSession> sessionFactory;
         private IAuthProvider[] authProviders;
         public IAuthProvider[] AuthProviders => authProviders;

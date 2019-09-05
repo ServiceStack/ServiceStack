@@ -62,6 +62,7 @@
     {
         //Auth Errors
         public static string UnknownAuthProviderFmt = "No configuration was added for OAuth provider '{0}'";
+        public static string NoExternalRedirects = "External Redirects are not permitted";
 
         public static string InvalidBasicAuthCredentials = "Invalid BasicAuth Credentials";
         public static string WindowsAuthFailed = "Windows Auth Failed";
