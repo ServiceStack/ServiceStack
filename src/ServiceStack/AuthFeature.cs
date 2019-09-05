@@ -34,7 +34,7 @@ namespace ServiceStack
         public static void AllowAllRedirects(IRequest req, string redirect) {}
         public static void NoExternalRedirects(IRequest req, string redirect)
         {
-            redirect = redirect.Trim();
+            redirect = redirect?.Trim();
             if (string.IsNullOrEmpty(redirect))
                 return;
 
