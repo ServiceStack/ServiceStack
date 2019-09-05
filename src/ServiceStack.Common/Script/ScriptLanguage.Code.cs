@@ -7,9 +7,14 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Script 
 {
-    public class CodeScriptLanguage : ScriptLanguage
+    
+    /// <summary>
+    /// Inverse of the #Script Language Template Syntax where each line is a statement
+    /// i.e. in contrast to #Script's default where text contains embedded template expressions {{ ... }} 
+    /// </summary>
+    public class ScriptCode : ScriptLanguage
     {
-        public static ScriptLanguage Instance = new CodeScriptLanguage();
+        public static readonly ScriptLanguage Language = new ScriptCode();
         
         public override string Name => "code";
 
@@ -86,5 +91,81 @@ namespace ServiceStack.Script
             
             return true;
         }
+    }
+
+    public static class CodeScriptLanguageUtils
+    {
+        [Obsolete("Use CodeSharpPage")]
+        public static SharpPage CodeBlock(this ScriptContext context, string code) => context.CodeSharpPage(code);
+
+        public static SharpPage CodeSharpPage(this ScriptContext context, string code) 
+            => context.Pages.OneTimePage(code, context.PageFormats[0].Extension,p => p.ScriptLanguage = ScriptCode.Language);
+
+        private static PageResult GetCodePageResult(ScriptContext context, string code, Dictionary<string, object> args)
+        {
+            PageResult pageResult = null;
+            try
+            {
+                var page = context.CodeSharpPage(code);
+                pageResult = new PageResult(page);
+                args.Each((x, y) => pageResult.Args[x] = y);
+                return pageResult;
+            }
+            catch (Exception e)
+            {
+                if (ScriptContextUtils.ShouldRethrow(e))
+                    throw;
+                throw ScriptContextUtils.HandleException(e, pageResult ?? new PageResult(context.EmptyPage));
+            }
+        }
+
+        public static string RenderCode(this ScriptContext context, string code, Dictionary<string, object> args=null)
+        {
+            var pageResult = GetCodePageResult(context, code, args);
+            return pageResult.EvaluateScript();
+        }
+
+        public static async Task<string> RenderCodeAsync(this ScriptContext context, string code, Dictionary<string, object> args=null)
+        {
+            var pageResult = GetCodePageResult(context, code, args);
+            return await pageResult.EvaluateScriptAsync();
+        }
+
+        public static JsBlockStatement ParseCode(this ScriptContext context, string code) =>
+            context.ParseCode(code.AsMemory());
+
+        public static JsBlockStatement ParseCode(this ScriptContext context, ReadOnlyMemory<char> code)
+        {
+            var statements = context.ParseCodeStatements(code);
+            return new JsBlockStatement(statements);
+        }
+
+        public static T EvaluateCode<T>(this ScriptContext context, string code, Dictionary<string, object> args = null) =>
+            context.EvaluateCode(code, args).ConvertTo<T>();
+        
+        public static object EvaluateCode(this ScriptContext context, string code, Dictionary<string, object> args=null)
+        {
+            var pageResult = GetCodePageResult(context, code, args);
+
+            if (!pageResult.EvaluateResult(out var returnValue))
+                throw new NotSupportedException(ScriptContextUtils.ErrorNoReturn);
+            
+            return returnValue;
+        }
+
+        public static async Task<T> EvaluateCodeAsync<T>(this ScriptContext context, string code, Dictionary<string, object> args = null) =>
+            (await context.EvaluateCodeAsync(code, args)).ConvertTo<T>();
+        
+        public static async Task<object> EvaluateCodeAsync(this ScriptContext context, string code, Dictionary<string, object> args=null)
+        {
+            var pageResult = GetCodePageResult(context, code, args);
+
+            var ret = await pageResult.EvaluateResultAsync();
+            if (!ret.Item1)
+                throw new NotSupportedException(ScriptContextUtils.ErrorNoReturn);
+            
+            return ret.Item2;
+        }
+        
     }
 }

@@ -1063,7 +1063,7 @@ namespace ServiceStack.Script
             nameof(ScriptContext.Cache),
             nameof(ScriptContext.CacheMemory),
             nameof(ScriptContext.ExpiringCache),
-            nameof(SharpPageUtils.BinderCache),
+            nameof(ScriptTemplateUtils.BinderCache),
             nameof(ScriptContext.JsTokenCache),
             nameof(ScriptContext.AssignExpressionCache),
             nameof(ScriptContext.PathMappings),
@@ -1079,8 +1079,8 @@ namespace ServiceStack.Script
                     return Context.CacheMemory;
                 case nameof(ScriptContext.ExpiringCache):
                     return Context.ExpiringCache;
-                case nameof(SharpPageUtils.BinderCache):
-                    return SharpPageUtils.BinderCache;
+                case nameof(ScriptTemplateUtils.BinderCache):
+                    return ScriptTemplateUtils.BinderCache;
                 case nameof(ScriptContext.JsTokenCache):
                     return Context.JsTokenCache;
                 case nameof(ScriptContext.AssignExpressionCache):

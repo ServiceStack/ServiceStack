@@ -12,7 +12,7 @@ namespace ServiceStack.Script
         /// <summary>
         /// Whether to evaluate as Template block or code block
         /// </summary>
-        public bool EvaluateAsCode { get; set; }
+        public ScriptLanguage ScriptLanguage { get; set; }
         public IVirtualFile File { get; }
         public ReadOnlyMemory<char> FileContents { get; private set; }
         public ReadOnlyMemory<char> BodyContents { get; private set; }
@@ -36,6 +36,7 @@ namespace ServiceStack.Script
         public SharpPage(ScriptContext context, IVirtualFile file, PageFormat format=null)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
+            ScriptLanguage = context.DefaultScriptLanguage;
             File = file ?? throw new ArgumentNullException(nameof(file));
             
             Format = format ?? Context.GetFormat(File.Extension);
@@ -48,6 +49,7 @@ namespace ServiceStack.Script
             Context = context ?? throw new ArgumentNullException(nameof(context));
             PageFragments = body ?? throw new ArgumentNullException(nameof(body));
             Format = Context.PageFormats[0];
+            ScriptLanguage = context.DefaultScriptLanguage;
             Args = TypeConstants.EmptyObjectDictionary;
             File = context.EmptyFile;
             HasInit = true;
@@ -139,9 +141,7 @@ namespace ServiceStack.Script
             var pageFragments = pageVars.TryGetValue("ignore", out object ignore) 
                     && ("page".Equals(ignore.ToString()) || "template".Equals(ignore.ToString()))
                 ? new List<PageFragment> { new PageStringFragment(bodyContents) } 
-                : EvaluateAsCode 
-                    ? new List<PageFragment> { new PageJsBlockStatementFragment(Context.ParseCode(bodyContents)) }
-                    : Context.ParseScript(bodyContents);
+                : ScriptLanguage.Parse(Context, bodyContents);
 
             foreach (var fragment in pageFragments)
             {

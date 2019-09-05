@@ -15,7 +15,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         [Test]
         public void Does_parse_template_with_Block_Statement()
         {
-            var fragments = SharpPageUtils.ParseTemplate("BEFORE {{#bold}} Hi, {{name}}! {{/bold}} AFTER");
+            var fragments = ScriptTemplateUtils.ParseTemplate("BEFORE {{#bold}} Hi, {{name}}! {{/bold}} AFTER");
             
             Assert.That(fragments.Count, Is.EqualTo(3));
             Assert.That(((PageStringFragment)fragments[0]).Value.ToString(), Is.EqualTo("BEFORE "));
@@ -35,7 +35,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         [Test]
         public void Does_parse_template_with_if_else_statement()
         {
-            var fragments = SharpPageUtils.ParseTemplate("BEFORE {{#if a < b}}YES{{else}}NO{{/if}} AFTER");
+            var fragments = ScriptTemplateUtils.ParseTemplate("BEFORE {{#if a < b}}YES{{else}}NO{{/if}} AFTER");
             
             Assert.That(fragments.Count, Is.EqualTo(3));
             Assert.That(((PageStringFragment)fragments[0]).Value.ToString(), Is.EqualTo("BEFORE "));
@@ -55,7 +55,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         [Test]
         public void Does_parse_template_with_if_and_else_if_statement()
         {
-            var fragments = SharpPageUtils.ParseTemplate("BEFORE {{#if a < b}}YES{{else if c < d}}NO{{else}}MAYBE{{/if}} AFTER");
+            var fragments = ScriptTemplateUtils.ParseTemplate("BEFORE {{#if a < b}}YES{{else if c < d}}NO{{else}}MAYBE{{/if}} AFTER");
             
             Assert.That(fragments.Count, Is.EqualTo(3));
             Assert.That(((PageStringFragment)fragments[0]).Value.ToString(), Is.EqualTo("BEFORE "));
@@ -78,7 +78,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         [Test]
         public void Does_parse_template_with_nested_Block_Statement()
         {
-            var fragments = SharpPageUtils.ParseTemplate("BEFORE {{#bold}} Hi, {{#bold}}{{name}}{{/bold}}! {{/bold}} AFTER");
+            var fragments = ScriptTemplateUtils.ParseTemplate("BEFORE {{#bold}} Hi, {{#bold}}{{name}}{{/bold}}! {{/bold}} AFTER");
             
             Assert.That(fragments.Count, Is.EqualTo(3));
             Assert.That(((PageStringFragment)fragments[0]).Value.ToString(), Is.EqualTo("BEFORE "));
@@ -102,7 +102,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         [Test]
         public void Does_parse_Raw_block_body_as_string()
         {
-            var fragments = SharpPageUtils.ParseTemplate("BEFORE {{#raw}} Hi, {{ {{ name }} }} {{/raw}} AFTER");
+            var fragments = ScriptTemplateUtils.ParseTemplate("BEFORE {{#raw}} Hi, {{ {{ name }} }} {{/raw}} AFTER");
             
             Assert.That(fragments.Count, Is.EqualTo(3));
             Assert.That(((PageStringFragment)fragments[0]).Value.ToString(), Is.EqualTo("BEFORE "));
