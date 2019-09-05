@@ -174,6 +174,8 @@ namespace ServiceStack.Auth
                 if (validationResponse != null) return validationResponse;
             }
 
+            var authFeature = GetPlugin<AuthFeature>();
+
             if (request.RememberMe.HasValue)
             {
                 var opt = request.RememberMe.GetValueOrDefault(false)
@@ -224,6 +226,12 @@ namespace ServiceStack.Auth
                     ?? this.Request.GetHeader(HttpHeaders.Referer)
                     ?? authProvider.CallbackUrl;
 
+                if (authFeature != null)
+                {
+                    if (!string.IsNullOrEmpty(request.Continue))
+                        authFeature.ValidateRedirectLink(Request, referrerUrl);
+                }
+
                 var manageRoles = AuthRepository as IManageRoles;
 
                 var alreadyAuthenticated = response == null;
@@ -241,7 +249,6 @@ namespace ServiceStack.Auth
                 {
                     authResponse.ProfileUrl = authResponse.ProfileUrl ?? session.GetProfileUrl();
                     
-                    var authFeature = HostContext.GetPlugin<AuthFeature>();
                     if (authFeature?.IncludeRolesInAuthenticateResponse == true)
                     {
                         authResponse.Roles = authResponse.Roles ?? (manageRoles != null
@@ -362,7 +369,7 @@ namespace ServiceStack.Auth
             if (request.provider == null && request.UserName == null)
                 return null; //Just return sessionInfo if no provider or username is given
 
-            var authFeature = HostContext.GetPlugin<AuthFeature>();
+            var authFeature = GetPlugin<AuthFeature>();
             var generateNewCookies = (authFeature == null || authFeature.GenerateNewSessionCookiesOnAuthentication)
                 && request.oauth_token == null && request.State == null; //keep existing session during OAuth flow
 
