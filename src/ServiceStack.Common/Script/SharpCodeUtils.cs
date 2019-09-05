@@ -173,7 +173,7 @@ namespace ServiceStack.Script
 
 
             literal = literal.AdvancePastWhitespace();
-            if (literal.FirstCharEquals(SharpPageUtils.FilterSep))
+            if (literal.FirstCharEquals(ScriptTemplateUtils.FilterSep))
             {
                 filters = new List<JsCallExpression>();
                 literal = literal.Advance(1);
@@ -189,7 +189,7 @@ namespace ServiceStack.Script
                     if (literal.IsNullOrEmpty())
                         return literal;
 
-                    if (!literal.FirstCharEquals(SharpPageUtils.FilterSep))
+                    if (!literal.FirstCharEquals(ScriptTemplateUtils.FilterSep))
                         throw new SyntaxErrorException(
                             $"Expected filter separator '|' but was {literal.DebugFirstChar()}");
 

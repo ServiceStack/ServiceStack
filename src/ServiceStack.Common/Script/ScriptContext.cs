@@ -294,9 +294,6 @@ namespace ServiceStack.Script
         public SharpPage OneTimePage(string contents, string ext=null) 
             => Pages.OneTimePage(contents, ext ?? PageFormats.First().Extension);
 
-        public SharpPage CodeBlock(string code) 
-            => Pages.OneTimePage(code, PageFormats.First().Extension,p => p.EvaluateAsCode = true);
-
         public SharpCodePage GetCodePage(string virtualPath)
         {
             var sanitizePath = virtualPath.Replace('\\','/').TrimPrefixes("/").LastLeftPart('.');
@@ -354,9 +351,9 @@ namespace ServiceStack.Script
             FilterTransformers["end"] = stream => (TypeConstants.EmptyByteArray.InMemoryStream() as Stream).InTask();
             FilterTransformers["buffer"] = stream => stream.InTask();
             
-            DefaultScriptLanguage = TemplateScriptLanguage.Instance;
-            ScriptLanguages.Add(CodeScriptLanguage.Instance);
-            ScriptLanguages.Add(TemplateScriptLanguage.Instance);
+            DefaultScriptLanguage = SharpScript.Language;
+            ScriptLanguages.Add(ScriptTemplate.Language);
+            ScriptLanguages.Add(ScriptCode.Language);
             
             Args[nameof(ScriptConfig.DefaultCulture)] = ScriptConfig.CreateCulture();
             Args[nameof(ScriptConfig.DefaultDateFormat)] = ScriptConfig.DefaultDateFormat;
@@ -576,7 +573,7 @@ namespace ServiceStack.Script
             if (AssignExpressionCache.TryGetValue(key, out var fn))
                 return fn;
 
-            AssignExpressionCache[key] = fn = SharpPageUtils.CompileAssign(targetType, expression);
+            AssignExpressionCache[key] = fn = ScriptTemplateUtils.CompileAssign(targetType, expression);
 
             return fn;
         }
@@ -603,10 +600,10 @@ namespace ServiceStack.Script
     {
         public static string ErrorNoReturn = "Script did not return a value. Use EvaluateScript() to return script output instead";
 
-        static bool ShouldRethrow(Exception e) =>
-            e is ScriptException; 
+        public static bool ShouldRethrow(Exception e) =>
+            e is ScriptException;
 
-        private static Exception HandleException(Exception e, PageResult pageResult)
+        public static Exception HandleException(Exception e, PageResult pageResult)
         {
             var underlyingEx = e.UnwrapIfSingleException();
             if (underlyingEx is StopFilterExecutionException se)
@@ -749,158 +746,6 @@ namespace ServiceStack.Script
             }
         }
 
-        /// <summary>
-        /// Alias for EvaluateScript 
-        /// </summary>
-        public static string RenderTemplate(this ScriptContext context, string script, out ScriptException error) => 
-            context.RenderTemplate(script, null, out error);
-        public static string EvaluateScript(this ScriptContext context, string script, out ScriptException error) => 
-            context.EvaluateScript(script, null, out error);
-
-        /// <summary>
-        /// Alias for EvaluateScript 
-        /// </summary>
-        public static string RenderTemplate(this ScriptContext context, string script, Dictionary<string, object> args, out ScriptException error) =>
-            context.EvaluateScript(script, args, out error);
-        public static string EvaluateScript(this ScriptContext context, string script, Dictionary<string, object> args, out ScriptException error)
-        {
-            var pageResult = new PageResult(context.OneTimePage(script));
-            args.Each((x,y) => pageResult.Args[x] = y);
-            try { 
-                var output = pageResult.Result;
-                error = pageResult.LastFilterError != null ? new ScriptException(pageResult) : null;
-                return output;
-            }
-            catch (Exception e)
-            {
-                pageResult.LastFilterError = e;
-                error = new ScriptException(pageResult);
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Alias for EvaluateScript 
-        /// </summary>
-        public static string RenderTemplate(this ScriptContext context, string script, Dictionary<string, object> args = null) =>
-            context.EvaluateScript(script, args);
-        public static string EvaluateScript(this ScriptContext context, string script, Dictionary<string, object> args=null)
-        {
-            var pageResult = new PageResult(context.OneTimePage(script));
-            args.Each((x,y) => pageResult.Args[x] = y);
-            return EvaluateScript(pageResult);
-        }
-
-        /// <summary>
-        /// Alias for EvaluateScript 
-        /// </summary>
-        public static Task<string> RenderTemplateAsync(this ScriptContext context, string script, Dictionary<string, object> args = null) =>
-            context.EvaluateScriptAsync(script, args);
-        public static async Task<string> EvaluateScriptAsync(this ScriptContext context, string script, Dictionary<string, object> args=null)
-        {
-            var pageResult = new PageResult(context.OneTimePage(script));
-            args.Each((x,y) => pageResult.Args[x] = y);
-            return await EvaluateScriptAsync(pageResult);
-        }
-        
-        private static PageResult GetCodePageResult(ScriptContext context, string code, Dictionary<string, object> args)
-        {
-            PageResult pageResult = null;
-            try
-            {
-                var page = context.Pages.OneTimePage(code, context.PageFormats.First().Extension,p => p.EvaluateAsCode = true);
-                pageResult = new PageResult(page);
-                args.Each((x, y) => pageResult.Args[x] = y);
-                return pageResult;
-            }
-            catch (Exception e)
-            {
-                if (ShouldRethrow(e))
-                    throw;
-                throw HandleException(e, pageResult ?? new PageResult(context.EmptyPage));
-            }
-        }
-
-        public static string RenderCode(this ScriptContext context, string code, Dictionary<string, object> args=null)
-        {
-            var pageResult = GetCodePageResult(context, code, args);
-            return EvaluateScript(pageResult);
-        }
-
-        public static async Task<string> RenderCodeAsync(this ScriptContext context, string code, Dictionary<string, object> args=null)
-        {
-            var pageResult = GetCodePageResult(context, code, args);
-            return await EvaluateScriptAsync(pageResult);
-        }
-
-        public static JsBlockStatement ParseCode(this ScriptContext context, string code) =>
-            context.ParseCode(code.AsMemory());
-
-        public static JsBlockStatement ParseCode(this ScriptContext context, ReadOnlyMemory<char> code)
-        {
-            var statements = context.ParseCodeStatements(code);
-            return new JsBlockStatement(statements);
-        }
-        
-        
-        public static T Evaluate<T>(this ScriptContext context, string script, Dictionary<string, object> args = null) =>
-            context.Evaluate(script, args).ConvertTo<T>();
-        
-        public static object Evaluate(this ScriptContext context, string script, Dictionary<string, object> args=null)
-        {
-            var pageResult = new PageResult(context.OneTimePage(script));
-            args.Each((x,y) => pageResult.Args[x] = y);
-
-            if (!EvaluateResult(pageResult, out var returnValue))
-                throw new NotSupportedException(ErrorNoReturn);
-            
-            return returnValue;
-        }
-
-        public static async Task<T> EvaluateAsync<T>(this ScriptContext context, string script, Dictionary<string, object> args = null) =>
-            (await context.EvaluateAsync(script, args)).ConvertTo<T>();
-        
-        public static async Task<object> EvaluateAsync(this ScriptContext context, string script, Dictionary<string, object> args=null)
-        {
-            var pageResult = new PageResult(context.OneTimePage(script));
-            args.Each((x,y) => pageResult.Args[x] = y);
-
-            var ret = await pageResult.EvaluateResultAsync();
-            if (!ret.Item1)
-                throw new NotSupportedException(ErrorNoReturn);
-            
-            return ret.Item2;
-        }
-        
-        
-        public static T EvaluateCode<T>(this ScriptContext context, string code, Dictionary<string, object> args = null) =>
-            context.EvaluateCode(code, args).ConvertTo<T>();
-        
-        public static object EvaluateCode(this ScriptContext context, string code, Dictionary<string, object> args=null)
-        {
-            var pageResult = GetCodePageResult(context, code, args);
-
-            if (!EvaluateResult(pageResult, out var returnValue))
-                throw new NotSupportedException(ErrorNoReturn);
-            
-            return returnValue;
-        }
-
-        public static async Task<T> EvaluateCodeAsync<T>(this ScriptContext context, string code, Dictionary<string, object> args = null) =>
-            (await context.EvaluateCodeAsync(code, args)).ConvertTo<T>();
-        
-        public static async Task<object> EvaluateCodeAsync(this ScriptContext context, string code, Dictionary<string, object> args=null)
-        {
-            var pageResult = GetCodePageResult(context, code, args);
-
-            var ret = await pageResult.EvaluateResultAsync();
-            if (!ret.Item1)
-                throw new NotSupportedException(ErrorNoReturn);
-            
-            return ret.Item2;
-        }
-
-        
         public static ScriptScopeContext CreateScope(this ScriptContext context, Dictionary<string, object> args = null, 
             ScriptMethods functions = null, ScriptBlock blocks = null)
         {
@@ -912,6 +757,5 @@ namespace ServiceStack.Script
 
             return new ScriptScopeContext(pageContext, null, args);
         }
-        
     }
 }
