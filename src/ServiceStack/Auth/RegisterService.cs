@@ -101,7 +101,7 @@ namespace ServiceStack.Auth
                 }
 
                 if (!string.IsNullOrEmpty(request.Continue))
-                    authFeature.ValidateRedirectLink(Request, request.Continue);
+                    authFeature.ValidateRedirectLinks(Request, request.Continue);
             }
             
             var validateResponse = ValidateFn?.Invoke(this, HttpMethods.Post, request);

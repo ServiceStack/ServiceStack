@@ -229,7 +229,7 @@ namespace ServiceStack.Auth
                 if (authFeature != null)
                 {
                     if (!string.IsNullOrEmpty(request.Continue))
-                        authFeature.ValidateRedirectLink(Request, referrerUrl);
+                        authFeature.ValidateRedirectLinks(Request, referrerUrl);
                 }
 
                 var manageRoles = AuthRepository as IManageRoles;
