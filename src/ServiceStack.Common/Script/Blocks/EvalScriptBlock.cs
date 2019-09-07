@@ -30,7 +30,7 @@ namespace ServiceStack.Script
     public class EvalScriptBlock : ScriptBlock
     {
         public override string Name => "eval";
-        public override BodyStyle ParseBody => BodyStyle.Template;
+        public override ScriptLanguage Body => ScriptTemplate.Language;
         
         public override async Task WriteAsync(ScriptScopeContext scope, PageBlockFragment block, CancellationToken token)
         {

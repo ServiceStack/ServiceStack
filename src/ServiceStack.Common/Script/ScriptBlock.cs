@@ -9,41 +9,14 @@ namespace ServiceStack.Script
     public abstract class ScriptBlock : IConfigureScriptContext
     {
         /// <summary>
-        /// How to Parse the Block's Body Contents 
+        /// Parse Body using Specified Language. Uses host language if unspecified.
         /// </summary>
-        public enum BodyStyle
-        {
-            /// <summary>
-            /// Context Sensitive. Parse as Code in Code Blocks, otherwise Template Expressions in Template Blocks
-            /// </summary>
-            Default,
-            
-            /// <summary>
-            /// Parse Body as Template Expressions
-            /// </summary>
-            Template,
-            
-            /// <summary>
-            /// Parse Body as Code Statement Blocks
-            /// </summary>
-            CodeBlock,
-
-            /// <summary>
-            /// Ignore Parsing Body and treat Body as Raw Text
-            /// </summary>
-            Verbatim,
-        }
-
-        public virtual BodyStyle ParseBody => BodyStyle.Default;
+        public virtual ScriptLanguage Body { get; }
         
         public void Configure(ScriptContext context)
         {
-            if (ParseBody == BodyStyle.Verbatim)
-                context.ParseAsVerbatimBlock.Add(Name);
-            else if (ParseBody == BodyStyle.CodeBlock)
-                context.ParseAsCodeBlock.Add(Name);
-            else if (ParseBody == BodyStyle.Template)
-                context.ParseAsTemplateBlock.Add(Name);
+            if (Body != null)
+                context.ParseAsLanguage[Name] = Body;
         }
 
         public ScriptContext Context { get; set; }
@@ -70,26 +43,12 @@ namespace ServiceStack.Script
 
         protected virtual async Task WriteBodyAsync(ScriptScopeContext scope, PageBlockFragment fragment, CancellationToken token)
         {
-            if (fragment.Body != null)
-            {
-                await WriteAsync(scope, fragment.Body, GetCallTrace(fragment), token);
-            }
-            else if (fragment.BodyStatement?.Statements != null)
-            {
-                await WriteAsync(scope, fragment.BodyStatement.Statements, GetCallTrace(fragment), token);
-            }
+            await WriteAsync(scope, fragment.Body, GetCallTrace(fragment), token);
         }
 
         protected virtual async Task WriteElseAsync(ScriptScopeContext scope, PageElseBlock fragment, CancellationToken token)
         {
-            if (fragment.Body != null)
-            {
-                await WriteAsync(scope, fragment.Body, GetElseCallTrace(fragment), token);
-            }
-            else if (fragment.BodyStatement?.Statements != null)
-            {
-                await WriteAsync(scope, fragment.BodyStatement.Statements, GetElseCallTrace(fragment), token);
-            }
+            await WriteAsync(scope, fragment.Body, GetElseCallTrace(fragment), token);
         }
 
         protected async Task WriteElseAsync(ScriptScopeContext scope, PageElseBlock[] elseBlocks, CancellationToken cancel)

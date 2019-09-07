@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ServiceStack.Text;
 
 namespace ServiceStack.Script
@@ -130,40 +131,28 @@ namespace ServiceStack.Script
         public string ArgumentString => argumentString ?? (argumentString = Argument.ToString());
 
         public PageFragment[] Body { get; }
-        public JsBlockStatement BodyStatement { get; }
         public PageElseBlock[] ElseBlocks { get; }
-        public List<PageFragment> BodyFragments { get; }
 
         public PageBlockFragment(string originalText, string name, string argument,
-            JsBlockStatement body, List<PageElseBlock> elseStatements=null) 
-            : this (originalText.AsMemory(), name, argument.AsMemory(), body, elseStatements) {}
-        public PageBlockFragment(string name, ReadOnlyMemory<char> argument, 
-            JsBlockStatement body, List<PageElseBlock> elseStatements=null)
-            : this(default, name, argument, body, elseStatements) {}
-        public PageBlockFragment(ReadOnlyMemory<char> originalText, string name, ReadOnlyMemory<char> argument,
-            JsBlockStatement body, List<PageElseBlock> elseStatements=null)
-        {
-            OriginalText = originalText;
-            Name = name;
-            Argument = argument;
-            BodyStatement = body;
-            BodyFragments = new List<PageFragment> { new PageJsBlockStatementFragment(body) };
-            ElseBlocks = elseStatements?.ToArray() ?? TypeConstants<PageElseBlock>.EmptyArray;
-        }
-        
+            JsStatement body, IEnumerable<PageElseBlock> elseStatements=null) 
+            : this (originalText.AsMemory(), name, argument.AsMemory(), new PageFragment[]{ new PageJsBlockStatementFragment(new JsBlockStatement(body)) }, elseStatements) {}
+        public PageBlockFragment(string originalText, string name, string argument,
+            JsBlockStatement body, IEnumerable<PageElseBlock> elseStatements=null) 
+            : this (originalText.AsMemory(), name, argument.AsMemory(), new PageFragment[]{ new PageJsBlockStatementFragment(body) }, elseStatements) {}
+
         public PageBlockFragment(string originalText, string name, string argument,
             List<PageFragment> body, List<PageElseBlock> elseStatements=null) 
             : this (originalText.AsMemory(), name, argument.AsMemory(), body, elseStatements) {}
         public PageBlockFragment(string name, ReadOnlyMemory<char> argument, 
             List<PageFragment> body, List<PageElseBlock> elseStatements=null)
             : this(default, name, argument, body, elseStatements) {}
+        
         public PageBlockFragment(ReadOnlyMemory<char> originalText, string name, ReadOnlyMemory<char> argument, 
-            List<PageFragment> body, List<PageElseBlock> elseStatements=null)
+            IEnumerable<PageFragment> body, IEnumerable<PageElseBlock> elseStatements=null)
         {
             OriginalText = originalText;
             Name = name;
             Argument = argument;
-            BodyFragments = body;
             Body = body.ToArray();
             ElseBlocks = elseStatements?.ToArray() ?? TypeConstants<PageElseBlock>.EmptyArray;
         }
@@ -201,28 +190,23 @@ namespace ServiceStack.Script
     {
         public ReadOnlyMemory<char> Argument { get; }
         public PageFragment[] Body { get; }
-        public JsBlockStatement BodyStatement { get; }
 
-        public PageElseBlock(ReadOnlyMemory<char> argument, List<PageFragment> body)
+        public PageElseBlock(string argument, List<PageFragment> body) : this(argument.AsMemory(), body) {}
+        public PageElseBlock(string argument, JsStatement statement) 
+            : this(argument, new JsBlockStatement(statement)) {}
+        public PageElseBlock(string argument, JsBlockStatement block) 
+            : this(argument.AsMemory(), new PageFragment[]{ new PageJsBlockStatementFragment(block) }) {}
+        public PageElseBlock(ReadOnlyMemory<char> argument, IEnumerable<PageFragment> body) : this(argument, body.ToArray()) {}
+        public PageElseBlock(ReadOnlyMemory<char> argument, PageFragment[] body)
         {
             Argument = argument;
-            Body = body.ToArray();
+            Body = body;
         }
-
-        public PageElseBlock(ReadOnlyMemory<char> argument, JsBlockStatement body)
-        {
-            Argument = argument;
-            BodyStatement = body;
-        }
-
-        public PageElseBlock(string argument, JsBlockStatement bodyStatement) 
-            : this(argument.AsMemory(), bodyStatement) {}
 
         protected bool Equals(PageElseBlock other)
         {
             return Argument.Span.SequenceEqual(other.Argument.Span) &&
-                   Body.EquivalentTo(other.Body) &&
-                   Equals(BodyStatement, other.BodyStatement);
+                   Body.EquivalentTo(other.Body);
         }
 
         public override bool Equals(object obj)
@@ -239,7 +223,6 @@ namespace ServiceStack.Script
             {
                 var hashCode = Argument.GetHashCode();
                 hashCode = (hashCode * 397) ^ (Body != null ? Body.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (BodyStatement != null ? BodyStatement.GetHashCode() : 0);
                 return hashCode;
             }
         }

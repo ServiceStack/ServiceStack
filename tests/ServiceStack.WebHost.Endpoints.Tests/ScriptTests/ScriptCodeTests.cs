@@ -413,30 +413,24 @@ else
         }
 
         [Test]
-        public void Cannot_evaluate_Template_only_blocks_in_code_blocks()
+        public void Can_evaluate_Template_only_blocks_in_code_blocks()
         {
             var context = new ScriptContext {
                 Plugins = { new MarkdownScriptPlugin() }
             }.Init();
             
-            try 
-            { 
-                context.RenderCode(@"
+            var output = context.RenderCode(@"
 #capture out
-    {{#each range(3)}}
-        - {{it}}
-    {{/each}}
+{{#each range(3)}}
+ - {{it + 1}}
+{{/each}}
 /capture
+out
 ");
-                
-                Assert.Fail("Should throw");
-            }
-            catch (ScriptException e)
-            {
-                e.Message.Print();
-                if (e.InnerException.GetType() != typeof(NotSupportedException))
-                    throw;
-            }
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
+ - 1
+ - 2
+ - 3".NormalizeNewLines()));
         }
 
         [Test]

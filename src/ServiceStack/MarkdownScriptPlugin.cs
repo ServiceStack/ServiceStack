@@ -52,7 +52,7 @@ namespace ServiceStack
     public class MarkdownScriptBlock : ScriptBlock
     {
         public override string Name => "markdown";
-        public override BodyStyle ParseBody => BodyStyle.Verbatim;
+        public override ScriptLanguage Body => ScriptVerbatim.Language;
 
         public override async Task WriteAsync(ScriptScopeContext scope, PageBlockFragment block, CancellationToken token)
         {
