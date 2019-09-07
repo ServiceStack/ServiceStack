@@ -17,8 +17,7 @@ namespace ServiceStack.Script
     public class FunctionScriptBlock : ScriptBlock
     {
         public override string Name => "function";
-
-        public override BodyStyle ParseBody => BodyStyle.CodeBlock;
+        public override ScriptLanguage Body => ScriptCode.Language;
 
         public override Task WriteAsync(ScriptScopeContext scope, PageBlockFragment block, CancellationToken token)
         {
@@ -53,7 +52,7 @@ namespace ServiceStack.Script
                     scope.PageResult.StackDepth++;
                     try
                     {
-                        var page = new SharpPage(Context, block.BodyFragments);
+                        var page = new SharpPage(Context, block.Body);
                         var pageResult = new PageResult(page) {
                             Args = {
                                 [strName] = LazyInvoker

@@ -478,58 +478,46 @@ namespace ServiceStack.Script
             if (endExprPos == -1)
                 throw new SyntaxErrorException($"Unterminated '{blockName}' block expression, near '{literal.DebugLiteral()}'" );
 
-            var blockExpr = literal.Slice(0, endExprPos).Trim();
+            var argument = literal.Slice(0, endExprPos).Trim();
             literal = literal.Advance(endExprPos + 2);
 
-            if (context.ParseAsVerbatimBlock.Contains(blockName))
+            var language = context.ParseAsLanguage.TryGetValue(blockName, out var lang)
+                ? lang
+                : ScriptTemplate.Language;
+            
+            if (language.Name == ScriptVerbatim.Language.Name)
             {
                 var endBlockPos = literal.IndexOf(endBlock);
                 if (endBlockPos == -1)
                     throw new SyntaxErrorException($"Unterminated end block '{endBlock}'");
 
-                var blockBody = literal.Slice(0, endBlockPos);
+                var body = literal.Slice(0, endBlockPos);
                 literal = literal.Advance(endBlockPos + endBlock.Length).TrimFirstNewLine();
 
-                var body = new List<PageFragment> {new PageStringFragment(blockBody)};
-                blockFragment = new PageBlockFragment(blockName, blockExpr, body);
-
+                blockFragment = language.ParseVerbatimBlock(blockName, argument, body);
                 return literal;
             }
-            else
+
+            literal = literal.ParseTemplateBody(blockNameSpan, out var bodyText);
+            var bodyFragments = language.Parse(context, bodyText);
+                
+            var elseBlocks = new List<PageElseBlock>();
+            while (literal.StartsWith("{{else"))
             {
-                var parseAsCode = context.ParseAsCodeBlock.Contains(blockName);
-                
-                literal = literal.ParseTemplateBody(blockNameSpan, out var bodyText);
-                List<PageFragment> bodyFragments = null;
-                JsBlockStatement bodyStatements = null;
+                literal = literal.ParseTemplateElseBlock(blockName, out var elseArgument,  out var elseBody);
 
-                if (!parseAsCode)
-                    bodyFragments = context.ParseTemplate(bodyText);
-                else
-                    bodyStatements = context.ParseCode(bodyText);
-                
-                var elseBlocks = new List<PageElseBlock>();
-                while (literal.StartsWith("{{else"))
-                {
-                    literal = literal.ParseTemplateElseBlock(blockName, out var elseArgument,  out var elseBody);
-
-                    var elseBlock = !parseAsCode
-                        ? new PageElseBlock(elseArgument, context.ParseTemplate(elseBody))
-                        : new PageElseBlock(elseArgument, context.ParseCode(elseBody));
-                    elseBlocks.Add(elseBlock);
-                }
-
-                literal = literal.Advance(2 + 1 + blockName.Length + 2);
-
-                //remove new line after partial block end tag
-                literal = literal.TrimFirstNewLine();
-
-                blockFragment = !parseAsCode
-                    ? new PageBlockFragment(blockName, blockExpr, bodyFragments, elseBlocks)
-                    : new PageBlockFragment(blockName, blockExpr, bodyStatements, elseBlocks);
-
-                return literal;
+                var elseBlock = new PageElseBlock(elseArgument, language.Parse(context, elseBody));
+                elseBlocks.Add(elseBlock);
             }
+
+            literal = literal.Advance(2 + 1 + blockName.Length + 2);
+
+            //remove new line after partial block end tag
+            literal = literal.TrimFirstNewLine();
+
+            blockFragment = new PageBlockFragment(blockName, argument, bodyFragments, elseBlocks);
+
+            return literal;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -736,7 +724,7 @@ namespace ServiceStack.Script
         private static Expression CreateStringIndexExpression(Expression body, JsToken binding, ParameterExpression scope,
             Expression valueExpr, ref Type currType)
         {
-            body = Expression.Call(body, typeof(string).GetMethod("ToCharArray", Type.EmptyTypes));
+            body = Expression.Call(body, typeof(string).GetMethod(nameof(string.ToCharArray), Type.EmptyTypes));
             currType = typeof(char[]);
 
             if (binding != null)

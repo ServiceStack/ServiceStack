@@ -298,7 +298,7 @@ title: We encode < & >
             
             var page = await CreatePage(file).Init();
 
-            Assert.That(page.PageFragments.Count, Is.EqualTo(5));
+            Assert.That(page.PageFragments.Length, Is.EqualTo(5));
             var strFragment1 = (PageStringFragment)page.PageFragments[0];
             var varFragment2 = (PageVariableFragment)page.PageFragments[1];
             var strFragment3 = (PageStringFragment)page.PageFragments[2];

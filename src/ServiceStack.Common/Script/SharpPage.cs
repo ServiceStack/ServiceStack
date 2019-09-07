@@ -18,7 +18,7 @@ namespace ServiceStack.Script
         public ReadOnlyMemory<char> BodyContents { get; private set; }
         public Dictionary<string, object> Args { get; protected set; }
         public SharpPage LayoutPage { get; set; }
-        public List<PageFragment> PageFragments { get; set; }
+        public PageFragment[] PageFragments { get; set; }
         public DateTime LastModified { get; set; }
         public DateTime LastModifiedCheck { get; private set; }
         public bool HasInit { get; private set; }
@@ -44,7 +44,7 @@ namespace ServiceStack.Script
                 throw new ArgumentException($"File with extension '{File.Extension}' is not a registered PageFormat in Context.PageFormats", nameof(file));
         }
 
-        public SharpPage(ScriptContext context, List<PageFragment> body)
+        public SharpPage(ScriptContext context, PageFragment[] body)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
             PageFragments = body ?? throw new ArgumentNullException(nameof(body));
@@ -159,7 +159,7 @@ namespace ServiceStack.Script
                 FileContents = fileContents;
                 Args = pageVars;
                 BodyContents = bodyContents;
-                PageFragments = pageFragments;
+                PageFragments = pageFragments.ToArray();
 
                 HasInit = true;
                 LayoutPage = Format.ResolveLayout(this);
@@ -203,7 +203,7 @@ namespace ServiceStack.Script
         public SharpPartialPage(ScriptContext context, string name, IEnumerable<PageFragment> body, string format, Dictionary<string,object> args=null)
             : base(context, CreateFile(name, format), context.GetFormat(format))
         {
-            PageFragments = body.ToList();
+            PageFragments = body.ToArray();
             Args = args ?? new Dictionary<string, object>();
         }
 

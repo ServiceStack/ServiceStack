@@ -393,27 +393,10 @@ namespace ServiceStack.Script
             if (firstChar == '\'' || firstChar == '"' || firstChar == '`' || firstChar == '′')
             {
                 var quoteChar = firstChar;
-                i = 1;
-                var hasEscapeChar = false;
-                
-                while (i < literal.Length)
-                {
-                    c = literal[i];
-                    if (c == quoteChar)
-                    {
-                        if (!literal.SafeCharEquals(i - 1,'\\') ||
-                            (literal.SafeCharEquals(i - 2,'\\') && !literal.SafeCharEquals(i - 3,'\\')))
-                            break;
-                    }
-                    
-                    i++;
-                    if (!hasEscapeChar)
-                        hasEscapeChar = c == '\\';
-                }
-
-                if (i >= literal.Length || literal[i] != quoteChar)
+                i = literal.IndexOfQuotedString(quoteChar, out var hasEscapeChar);
+                if (i == -1)
                     throw new SyntaxErrorException($"Unterminated string literal: {literal.ToString()}");
-
+                
                 var rawString = literal.Slice(1, i - 1);
 
                 if (quoteChar == '`')
@@ -587,6 +570,34 @@ namespace ServiceStack.Script
 
             token = node;
             return literal;
+        }
+
+        public static int IndexOfQuotedString(this ReadOnlySpan<char> literal, char quoteChar, out bool hasEscapeChars)
+        {
+            int i;
+            char c;
+            i = 1;
+            hasEscapeChars = false;
+
+            while (i < literal.Length)
+            {
+                c = literal[i];
+                if (c == quoteChar)
+                {
+                    if (!literal.SafeCharEquals(i - 1, '\\') ||
+                        (literal.SafeCharEquals(i - 2, '\\') && !literal.SafeCharEquals(i - 3, '\\')))
+                        break;
+                }
+
+                i++;
+                if (!hasEscapeChars)
+                    hasEscapeChars = c == '\\';
+            }
+
+            if (i >= literal.Length || literal[i] != quoteChar)
+                return -1;
+            
+            return i;
         }
 
         public static ReadOnlySpan<char> ParseArgumentsList(this ReadOnlySpan<char> literal, out List<JsIdentifier> args)

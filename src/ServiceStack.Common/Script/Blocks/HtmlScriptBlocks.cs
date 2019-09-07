@@ -205,7 +205,7 @@ namespace ServiceStack.Script
     public abstract class ScriptHtmlBlock : ScriptBlock
     {
         public override string Name => Tag;
-        public override BodyStyle ParseBody => BodyStyle.Template;
+        public override ScriptLanguage Body => ScriptTemplate.Language;
             
         public abstract string Tag { get; }
 
