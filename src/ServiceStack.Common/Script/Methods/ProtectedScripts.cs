@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using ServiceStack.DataAnnotations;
 using ServiceStack.IO;
@@ -366,6 +367,19 @@ namespace ServiceStack.Script
                 sb.Append('>');
             }
             
+            appendArgTypes(sb, args);
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+
+        static string argTypesString(List<object> args)
+        {
+            var sb = StringBuilderCache.Allocate();
+            appendArgTypes(sb, args);
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+
+        private static void appendArgTypes(StringBuilder sb, List<object> args)
+        {
             sb.Append('(');
 
             if (args != null)
@@ -378,8 +392,8 @@ namespace ServiceStack.Script
                     sb.Append(argType == null ? "null" : argType.Namespace + '.' + argType.Name);
                 }
             }
+
             sb.Append(')');
-            return StringBuilderCache.ReturnAndFree(sb);
         }
 
         public object call(object instance, string name, List<object> args)
@@ -396,12 +410,10 @@ namespace ServiceStack.Script
             var invoker = (Delegate)Context.Cache.GetOrAdd(key, k => {
                 var argTypes = args?.Select(x => x?.GetType()).ToArray();
                 var targetMethod = ResolveMethod(type, name, argTypes, argTypes?.Length ?? 0, out var fn);
-                if (targetMethod == null)
-                    throw new NotSupportedException($"Method {instance.GetType().Name}.{name} does not exist");
-                if (targetMethod.IsStatic)
+                if (targetMethod != null && targetMethod.IsStatic)
                     throw new NotSupportedException($"Cannot call static method {instance.GetType().Name}.{targetMethod.Name}");
                 
-                return targetMethod.GetInvokerDelegate();
+                return fn ?? targetMethod.GetInvokerDelegate();
             });
 
             if (invoker is MethodInvoker methodInvoker)
@@ -523,6 +535,9 @@ namespace ServiceStack.Script
                 targetMethod = targetMethod.MakeGenericMethod(genericTypes);
             }
 
+            if (targetMethod == null)
+                throw new NotSupportedException(MethodNotExists($"{type.Name}.{name}"));
+
             return targetMethod;
         }
 
@@ -550,8 +565,7 @@ namespace ServiceStack.Script
 
                 var type = @typeof(name);
                 if (type == null)
-                    throw new NotSupportedException($"Could not resolve Type '{name}'. " +
-                                                    $"Use ScriptContext.ScriptAssemblies or ScriptContext.AllowScriptingOfAllTypes+ScriptNamespaces to increase Type resolution");
+                    throw new NotSupportedException(TypeNotFoundErrorMessage(name));
 
                 var ctor = ResolveConstructor(type, argTypes);
 
@@ -574,6 +588,12 @@ namespace ServiceStack.Script
         public Delegate F(string qualifiedMethodName) => Function(qualifiedMethodName);
 
         /// <summary>
+        /// Shorter Alias for Function(name,args)
+        /// </summary>
+        /// <returns></returns>
+        public Delegate F(string qualifiedMethodName, List<object> args) => Function(qualifiedMethodName, args);
+
+        /// <summary>
         /// Qualified Method Name Examples:
         ///  - Console.WriteLine(string)
         ///  - Type.StaticMethod
@@ -588,67 +608,96 @@ namespace ServiceStack.Script
                 throw new NotSupportedException($"Invalid Function Name '{qualifiedMethodName}', " +
                     $"format: <type>.<method>(<arg-types>), e.g. Console.WriteLine(string), see: https://sharpscript.net/docs/script-net");
 
-            var name = qualifiedMethodName;
-
-            var invoker = (Delegate) Context.Cache.GetOrAdd(nameof(Function) + ":" + name, k => {
-                var hasArgsList = name.IndexOf('(') >= 0;
-                var argList = hasArgsList 
-                    ? name.LastRightPart('(')
-                    : null;
-                argList = argList?.Substring(0, argList.Length - 1);
-
-                name = name.LastLeftPart('(');
-
-                var lastGenericPos = name.LastIndexOf('>');
-                var lastSepPos = name.LastIndexOf('.');
-
-                int pos = -1;
-                if (lastSepPos > lastGenericPos)
-                {
-                    pos = lastSepPos;
-                }
-                else
-                {
-                    var genericPos = name.IndexOf('<');
-                    pos = genericPos >= 0
-                        ? name.LastIndexOf('.', genericPos)
-                        : name.LastIndexOf('.');
-
-                    if (pos == -1)
-                        pos = name.IndexOf(">.", StringComparison.Ordinal) + 1;
-                }
-
-                if (pos == -1)
-                    throw new NotSupportedException($"Could not parse Function Name '{name}', " +
-                        $"format: <type>.<method>(<arg-types>), e.g. Console.WriteLine(string)");
-
-
-                var typeName = name.Substring(0, pos);
-                var methodName = name.Substring(pos + 1);
-
-                Type[] argTypes = null;
-                if (hasArgsList)
-                {
-                    var splitArgs = StringUtils.SplitGenericArgs(argList);
-                    argTypes = typeGenericTypes(splitArgs);
-                    for (var i = 0; i < argTypes.Length; i++)
-                    {
-                        if (argTypes[i] == null)
-                            throw new NotSupportedException($"Could not resolve Argument Type '{splitArgs[i]}' for '{name}'");
-                    }
-                }
-
-                var type = @typeof(typeName);
-                if (type == null)
-                    throw new NotSupportedException($"Could not resolve Type '{typeName}'. " +
-                        $"Use ScriptContext.ScriptAssemblies or ScriptContext.AllowScriptingOfAllTypes+ScriptNamespaces to increase Type resolution");
-                
-                var method = ResolveMethod(type, methodName, argTypes, argTypes?.Length, out var fn);
-                return fn ?? method.GetInvokerDelegate();
-            });
+            var invoker = (Delegate) Context.Cache.GetOrAdd(nameof(Function) + ":" + qualifiedMethodName, k => 
+                ResolveFunction(qualifiedMethodName));
 
             return invoker;
         }
+
+        /// <summary>
+        /// Resolve Function from qualified type name, when args Type list are unspecified fallback to use args to resolve ambiguous methods
+        /// 
+        /// Qualified Method Name Examples:
+        ///  - Console.WriteLine ['string']
+        ///  - Type.StaticMethod
+        ///  - Type.InstanceMethod
+        ///  - GenericType&lt;string&lt;.Method
+        ///  - GenericType&lt;string&lt;.GenericMethod&lt;System.Int32&lt;
+        ///  - Namespace.Type.Method
+        /// </summary>
+        public Delegate Function(string qualifiedMethodName, List<object> args)
+        {
+            if (qualifiedMethodName.IndexOf('.') == -1)
+                throw new NotSupportedException($"Invalid Function Name '{qualifiedMethodName}', " +
+                                                $"format: <type>.<method>(<arg-types>), e.g. Console.WriteLine(string), see: https://sharpscript.net/docs/script-net");
+
+            var key = nameof(Function) + ":" + qualifiedMethodName + argTypesString(args);
+            var invoker = (Delegate)Context.Cache.GetOrAdd(key, k => 
+                ResolveFunction(qualifiedMethodName, args?.Select(x => x?.GetType()).ToArray()));
+
+            return invoker;
+        }
+
+        private Delegate ResolveFunction(string name, Type[] argTypes=null)
+        {
+            var hasArgsList = name.IndexOf('(') >= 0;
+            var argList = hasArgsList
+                ? name.LastRightPart('(')
+                : null;
+            argList = argList?.Substring(0, argList.Length - 1);
+
+            name = name.LastLeftPart('(');
+
+            var lastGenericPos = name.LastIndexOf('>');
+            var lastSepPos = name.LastIndexOf('.');
+
+            int pos = -1;
+            if (lastSepPos > lastGenericPos)
+            {
+                pos = lastSepPos;
+            }
+            else
+            {
+                var genericPos = name.IndexOf('<');
+                pos = genericPos >= 0
+                    ? name.LastIndexOf('.', genericPos)
+                    : name.LastIndexOf('.');
+
+                if (pos == -1)
+                    pos = name.IndexOf(">.", StringComparison.Ordinal) + 1;
+            }
+
+            if (pos == -1)
+                throw new NotSupportedException($"Could not parse Function Name '{name}', " +
+                                                $"format: <type>.<method>(<arg-types>), e.g. Console.WriteLine(string)");
+
+
+            var typeName = name.Substring(0, pos);
+            var methodName = name.Substring(pos + 1);
+
+            if (hasArgsList)
+            {
+                var splitArgs = StringUtils.SplitGenericArgs(argList);
+                argTypes = typeGenericTypes(splitArgs);
+                for (var i = 0; i < argTypes.Length; i++)
+                {
+                    if (argTypes[i] == null)
+                        throw new NotSupportedException($"Could not resolve Argument Type '{splitArgs[i]}' for '{name}'");
+                }
+            }
+
+            var type = @typeof(typeName);
+            if (type == null)
+                throw new NotSupportedException(TypeNotFoundErrorMessage(typeName));
+
+            var method = ResolveMethod(type, methodName, argTypes, argTypes?.Length, out var fn);
+            return fn ?? method.GetInvokerDelegate();
+        }
+
+        static string MethodNotExists(string methodName) => $"Method {methodName} does not exist"; 
+
+        public static string TypeNotFoundErrorMessage(string typeName) => $"Could not resolve Type '{typeName}'. " +
+            $"Use ScriptContext.ScriptAssemblies or ScriptContext.AllowScriptingOfAllTypes+ScriptNamespaces to increase Type resolution";
         
         public MemoryVirtualFiles vfsMemory() => new MemoryVirtualFiles();
 

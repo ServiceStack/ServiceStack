@@ -22,6 +22,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         public int D { get; set; }
         public int GetTotal() => A + B + C + D;
 
+        public int AddA(int a) => A += a; 
+
         public string GenericMethod<T>() => typeof(T).Name + " " + GetTotal();
 
         public string GenericMethod<T>(T value) => typeof(T).Name + $" {value} " + GetTotal();

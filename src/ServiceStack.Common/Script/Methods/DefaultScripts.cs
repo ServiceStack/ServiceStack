@@ -1439,11 +1439,7 @@ namespace ServiceStack.Script
         
         public StopExecution @return(ScriptScopeContext scope) => @return(scope, null, null);
         public StopExecution @return(ScriptScopeContext scope, object returnValue) => @return(scope, returnValue, null);
-        public StopExecution @return(ScriptScopeContext scope, object returnValue, Dictionary<string, object> returnArgs)
-        {
-            scope.PageResult.ReturnValue = new ReturnValue(returnValue, returnArgs); 
-            scope.PageResult.HaltExecution = true;
-            return StopExecution.Value;
-        }
+        public StopExecution @return(ScriptScopeContext scope, object returnValue, Dictionary<string, object> returnArgs) =>
+            scope.ReturnValue(returnValue, returnArgs);
     }
 }

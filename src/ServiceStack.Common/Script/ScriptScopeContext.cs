@@ -47,9 +47,34 @@ namespace ServiceStack.Script
 
     public static class ScriptScopeContextUtils
     {
-        public static object GetValue(this ScriptScopeContext scope, string name)
+        public static StopExecution ReturnValue(this ScriptScopeContext scope, object returnValue, Dictionary<string, object> returnArgs=null)
         {
-            return scope.PageResult.GetValue(name, scope);
+            scope.PageResult.ReturnValue = new ReturnValue(returnValue, returnArgs); 
+            scope.PageResult.HaltExecution = true;
+            return StopExecution.Value;
+        }
+
+        public static object GetValue(this ScriptScopeContext scope, string name) => scope.PageResult.GetValue(name, scope);
+        public static bool TryGetValue(this ScriptScopeContext scope, string name, out object value) => 
+            scope.PageResult.TryGetValue(name, scope, out value);
+
+        public static bool TryGetMethod(this ScriptScopeContext scope, string name, int fnArgValuesCount, out Delegate fn, out ScriptMethods scriptMethod, out bool requiresScope)
+        {
+            scriptMethod = null;
+            requiresScope = false;
+            var result = scope.PageResult;
+            
+            fn = scope.GetValue(name) as Delegate;
+            if (fn == null)
+                fn = result.GetFilterInvoker(name, fnArgValuesCount, out scriptMethod);
+            
+            if (fn == null)
+            {
+                fn = result.GetContextFilterInvoker(name, fnArgValuesCount + 1, out scriptMethod);
+                requiresScope = true;
+            }
+            
+            return fn != null;
         }
 
         public static object EvaluateExpression(this ScriptScopeContext scope, string expr) //used in test only

@@ -94,7 +94,7 @@ namespace ServiceStack.Script
         }
     }
 
-    public static class CodeScriptLanguageUtils
+    public static class ScriptCodeUtils
     {
         [Obsolete("Use CodeSharpPage")]
         public static SharpPage CodeBlock(this ScriptContext context, string code) => context.CodeSharpPage(code);
@@ -336,7 +336,7 @@ namespace ServiceStack.Script
         // cursorPos is after CRLF except at end where its at last char
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static ReadOnlyMemory<char> ToPreviousLine(this ReadOnlyMemory<char> literal, int cursorPos, int lineLength)
+        internal static ReadOnlyMemory<char> FromStartToPreviousLine(this ReadOnlyMemory<char> literal, int cursorPos, int lineLength)
         {
             var ret = literal.Slice(0, cursorPos - lineLength);
             while (!ret.Span.SafeCharEquals(ret.Length - 1, '\n'))
@@ -407,7 +407,7 @@ namespace ServiceStack.Script
                         line.Slice(1).ParseVarName(out var name);
                         if (name.EqualsOrdinal(blockName))
                         {
-                            body = literal.ToPreviousLine(cursorPos, lineLength);
+                            body = literal.FromStartToPreviousLine(cursorPos, lineLength);
                             var ret = literal.Slice(cursorPos);
                             return ret;
                         }
@@ -419,7 +419,7 @@ namespace ServiceStack.Script
                 {
                     if (inStatements == 0)
                     {
-                        body = literal.ToPreviousLine(cursorPos, lineLength);
+                        body = literal.FromStartToPreviousLine(cursorPos, lineLength);
                         var ret = literal.ToLineStart(cursorPos, lineLength);
                         return ret;
                     }

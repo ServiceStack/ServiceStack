@@ -401,6 +401,14 @@ namespace ServiceStack.Script
             }
             Args[ScriptConstants.Model] = Model ?? JsNull.Value;
 
+            foreach (var scriptLanguage in Context.ScriptLanguages)
+            {
+                if (scriptLanguage is IConfigurePageResult configurePageResult)
+                {
+                    configurePageResult.Configure(this);
+                }
+            }
+
             foreach (var filter in ScriptMethods)
             {
                 Context.InitMethod(filter);
@@ -429,7 +437,7 @@ namespace ServiceStack.Script
                     ? Context.Pages.ResolveLayoutPage(Page, Layout)
                     : Context.Pages.ResolveLayoutPage(CodePage, Layout);
             }
-
+            
             hasInit = true;
 
             return this;
@@ -1048,14 +1056,15 @@ namespace ServiceStack.Script
             return value;
         }
 
-        internal object GetValue(string name, ScriptScopeContext scope)
+        internal bool TryGetValue(string name, ScriptScopeContext scope, out object value)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
 
             MethodInvoker invoker;
+            var ret = true;
 
-            var value = scope.ScopedParams != null && scope.ScopedParams.TryGetValue(name, out object obj)
+            value = scope.ScopedParams != null && scope.ScopedParams.TryGetValue(name, out object obj)
                 ? obj
                 : Args.TryGetValue(name, out obj)
                     ? obj
@@ -1070,8 +1079,14 @@ namespace ServiceStack.Script
                                     : (invoker = GetFilterAsBinding(name, out ScriptMethods filter)) != null
                                         ? InvokeFilter(invoker, filter, new object[0], name)
                                         : (invoker = GetContextFilterAsBinding(name, out filter)) != null
-                                             ? InvokeFilter(invoker, filter, new object[]{ scope }, name)
-                                             : null;
+                                            ? InvokeFilter(invoker, filter, new object[]{ scope }, name)
+                                            : ((ret = false) ? (object)null : null);
+            return ret;
+        }
+        
+        internal object GetValue(string name, ScriptScopeContext scope)
+        {
+            TryGetValue(name, scope, out var value);
             return value;
         }
 

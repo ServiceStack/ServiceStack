@@ -76,18 +76,24 @@ namespace ServiceStack.Script
     public static class ScriptTemplateUtils
     {
         /// <summary>
+        /// Render #Script output to string
+        /// </summary>
+        public static string RenderScript(this ScriptContext context, string script, out ScriptException error) => 
+            context.RenderScript(script, null, out error);
+        /// <summary>
         /// Alias for EvaluateScript 
         /// </summary>
-        public static string RenderTemplate(this ScriptContext context, string script, out ScriptException error) => 
-            context.RenderTemplate(script, null, out error);
         public static string EvaluateScript(this ScriptContext context, string script, out ScriptException error) => 
             context.EvaluateScript(script, null, out error);
 
         /// <summary>
-        /// Alias for EvaluateScript 
+        /// Render #Script output to string
         /// </summary>
-        public static string RenderTemplate(this ScriptContext context, string script, Dictionary<string, object> args, out ScriptException error) =>
+        public static string RenderScript(this ScriptContext context, string script, Dictionary<string, object> args, out ScriptException error) =>
             context.EvaluateScript(script, args, out error);
+        /// <summary>
+        /// Alias for RenderScript 
+        /// </summary>
         public static string EvaluateScript(this ScriptContext context, string script, Dictionary<string, object> args, out ScriptException error)
         {
             var pageResult = new PageResult(context.OneTimePage(script));
@@ -106,10 +112,13 @@ namespace ServiceStack.Script
         }
 
         /// <summary>
-        /// Alias for EvaluateScript 
+        /// Render #Script output to string
         /// </summary>
-        public static string RenderTemplate(this ScriptContext context, string script, Dictionary<string, object> args = null) =>
+        public static string RenderScript(this ScriptContext context, string script, Dictionary<string, object> args = null) =>
             context.EvaluateScript(script, args);
+        /// <summary>
+        /// Alias for RenderScript 
+        /// </summary>
         public static string EvaluateScript(this ScriptContext context, string script, Dictionary<string, object> args=null)
         {
             var pageResult = new PageResult(context.OneTimePage(script));
@@ -118,10 +127,13 @@ namespace ServiceStack.Script
         }
 
         /// <summary>
-        /// Alias for EvaluateScript 
+        /// Render #Script output to string asynchronously
         /// </summary>
-        public static Task<string> RenderTemplateAsync(this ScriptContext context, string script, Dictionary<string, object> args = null) =>
+        public static Task<string> RenderScriptAsync(this ScriptContext context, string script, Dictionary<string, object> args = null) =>
             context.EvaluateScriptAsync(script, args);
+        /// <summary>
+        /// Alias for RenderScriptAsync 
+        /// </summary>
         public static async Task<string> EvaluateScriptAsync(this ScriptContext context, string script, Dictionary<string, object> args=null)
         {
             var pageResult = new PageResult(context.OneTimePage(script));
@@ -129,9 +141,15 @@ namespace ServiceStack.Script
             return await pageResult.EvaluateScriptAsync();
         }
         
+        /// <summary>
+        /// Evaluate #Script and convert returned value to T 
+        /// </summary>
         public static T Evaluate<T>(this ScriptContext context, string script, Dictionary<string, object> args = null) =>
             context.Evaluate(script, args).ConvertTo<T>();
         
+        /// <summary>
+        /// Evaluate #Script and return value 
+        /// </summary>
         public static object Evaluate(this ScriptContext context, string script, Dictionary<string, object> args=null)
         {
             var pageResult = new PageResult(context.OneTimePage(script));
@@ -143,9 +161,15 @@ namespace ServiceStack.Script
             return returnValue;
         }
 
+        /// <summary>
+        /// Evaluate #Script and convert returned value to T asynchronously
+        /// </summary>
         public static async Task<T> EvaluateAsync<T>(this ScriptContext context, string script, Dictionary<string, object> args = null) =>
             (await context.EvaluateAsync(script, args)).ConvertTo<T>();
         
+        /// <summary>
+        /// Evaluate #Script and convert returned value to T asynchronously
+        /// </summary>
         public static async Task<object> EvaluateAsync(this ScriptContext context, string script, Dictionary<string, object> args=null)
         {
             var pageResult = new PageResult(context.OneTimePage(script));
@@ -295,7 +319,6 @@ namespace ServiceStack.Script
             {
                 var lineLength = line.Length;
                 line = line.AdvancePastWhitespace();
-                var leftIndent = lineLength - line.Length;
 
                 if (line.StartsWith("```"))
                 {
@@ -326,7 +349,8 @@ namespace ServiceStack.Script
                             continue;
 
                         modifiers = line.AdvancePastChar('|');
-                        prevBlock = text.ToPreviousLine(cursorPos, lineLength);
+                        var delimLen = text.Span.SafeCharEquals(cursorPos - 2, '\r') ? 2 : 1;
+                        prevBlock = text.Slice(lastBlockPos, cursorPos - lastBlockPos - lineLength - delimLen);
                         startBlockPos = cursorPos;
                     }
                 }

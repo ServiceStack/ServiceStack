@@ -16,6 +16,11 @@ namespace ServiceStack.Script
     {
         void Configure(ScriptContext context);
     }
+
+    public interface IConfigurePageResult
+    {
+        void Configure(PageResult pageResult);
+    }
     
     public partial class ScriptContext : IDisposable
     {
@@ -198,6 +203,10 @@ namespace ServiceStack.Script
 
         public DefaultScripts DefaultMethods => ScriptMethods.FirstOrDefault(x => x is DefaultScripts) as DefaultScripts;
         public ProtectedScripts ProtectedMethods => ScriptMethods.FirstOrDefault(x => x is ProtectedScripts) as ProtectedScripts;
+
+        public ProtectedScripts AssertProtectedMethods() => ProtectedMethods ?? 
+            throw new NotSupportedException("ScriptContext is not configured with ProtectedScripts");
+        
         public HtmlScripts HtmlMethods => ScriptMethods.FirstOrDefault(x => x is HtmlScripts) as HtmlScripts;
 
         public void GetPage(string fromVirtualPath, string virtualPath, out SharpPage page, out SharpCodePage codePage)
@@ -462,9 +471,12 @@ namespace ServiceStack.Script
             }
 
             ScriptLanguagesArray = ScriptLanguages.Distinct().ToArray();
-            foreach (var blockProcessor in ScriptLanguagesArray)
+            foreach (var scriptLanguage in ScriptLanguagesArray)
             {
-                scriptLanguagesMap[blockProcessor.Name] = blockProcessor;
+                scriptLanguagesMap[scriptLanguage.Name] = scriptLanguage;
+                
+                if (scriptLanguage is IConfigureScriptContext init)
+                    init.Configure(this);
             }
 
             ScriptNamespaces = ScriptNamespaces.Distinct().ToList();
@@ -503,9 +515,7 @@ namespace ServiceStack.Script
                 method.Pages = Pages;
 
             if (method is IConfigureScriptContext init)
-            {
                 init.Configure(this);
-            }
         }
 
         internal void InitBlock(ScriptBlock block)
@@ -517,9 +527,7 @@ namespace ServiceStack.Script
                 block.Pages = Pages;
 
             if (block is IConfigureScriptContext init)
-            {
                 init.Configure(this);
-            }
         }
 
         public ScriptContext ScanType(Type type)
