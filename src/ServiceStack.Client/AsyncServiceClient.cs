@@ -164,7 +164,7 @@ namespace ServiceStack
             }
 
             var webReq = this.CreateHttpWebRequest(requestUri);
-            if (webReq != null) webReq.Proxy = Proxy;
+            if (webReq != null && Proxy != null) webReq.Proxy = Proxy;
 
             var timedOut = false;
             ITimer timer = null;
