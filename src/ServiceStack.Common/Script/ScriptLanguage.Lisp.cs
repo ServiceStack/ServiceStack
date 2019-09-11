@@ -92,6 +92,8 @@ namespace ServiceStack.Script
             if (statement is LispStatements lispStatement)
             {
                 var lispCtx = scope.PageResult.GetLispInterpreter();
+                page.ResetIterations();
+                
                 foreach (var sExpr in lispStatement.SExpressions)
                 {
                     var value = lispCtx.Eval(sExpr, new Lisp.Cell(scope, null));
@@ -1106,6 +1108,7 @@ namespace ServiceStack.Script
                         scope = envScope;
                         if (scope.PageResult.HaltExecution)
                             return null;
+                        scope.PageResult.AssertNextIteration();
                     }
                     
                     for (;;)

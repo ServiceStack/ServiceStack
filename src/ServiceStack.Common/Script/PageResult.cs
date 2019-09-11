@@ -155,6 +155,19 @@ namespace ServiceStack.Script
         /// </summary>
         public int StackDepth { get; internal set; }
         
+        /// <summary>
+        /// Can be used to track Iterations
+        /// </summary>
+        public long Iterations { get; private set; }
+
+        public void AssertNextIteration()
+        {
+            if (Iterations++ >= Context.MaxIterations)
+                throw new NotSupportedException($"{Iterations} exceeds Max Iterations of {Context.MaxIterations}. \nMaxIterations can be changed in `ScriptContext.MaxIterations`.");
+        }
+
+        public void ResetIterations() => Iterations = 0;
+        
         private readonly Stack<string> stackTrace = new Stack<string>();
 
         private PageResult(PageFormat format)

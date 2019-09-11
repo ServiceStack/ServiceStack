@@ -885,7 +885,7 @@ namespace ServiceStack.Script
         {
             var maxQuota = Context.MaxQuota;
             if (value > maxQuota)
-                throw new NotSupportedException($"{value} exceeds Max Quota of {maxQuota}");
+                throw new NotSupportedException($"{value} exceeds Max Quota of {maxQuota}. \nMaxQuota can be changed in `ScriptContext.MaxQuota`.");
 
             return value;
         }

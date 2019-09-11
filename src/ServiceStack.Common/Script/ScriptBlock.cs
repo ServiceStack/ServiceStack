@@ -78,14 +78,7 @@ namespace ServiceStack.Script
         protected bool CanExportScopeArgs(object element) => 
             element != null && !(element is string) && (element.GetType().IsClass || element.GetType().Name == "KeyValuePair`2");
 
-        protected int AssertWithinMaxQuota(int value)
-        {
-            var maxQuota = Context.MaxQuota;
-            if (value > maxQuota)
-                throw new NotSupportedException($"{value} exceeds Max Quota of {maxQuota}. \nMaxQuota can be changed in `Context.Args[nameof(TemplateConfig.MaxQuota)]` or globally in `TemplateConfig.MaxQuota`.");
-
-            return value;
-        }
+        protected int AssertWithinMaxQuota(int value) => Context.DefaultMethods.AssertWithinMaxQuota(value);
 
     }
 

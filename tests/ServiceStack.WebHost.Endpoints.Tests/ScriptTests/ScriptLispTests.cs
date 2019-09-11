@@ -206,7 +206,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         1
       (+ (fib (- n 1))
          (fib (- n 2)))))
-  (print (fib 15)))
+  (print (fib 10)))
 ;; --------------------------------
 )))
 ";
@@ -218,7 +218,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 var sExpressions = Lisp.Parse(lisp);
                 var x = lispCtx.Eval(sExpressions);
                 $"{x}".Print();
-                Assert.That((int)x, Is.EqualTo(987));
+                Assert.That((int)x, Is.EqualTo(89));
             }
             catch (Exception e)
             {
@@ -611,6 +611,76 @@ C
             
             Assert.That(context.RenderLisp(@"10 (/write ""A"") 20").Replace("\r",""), 
                 Is.EqualTo("10\nA20\n"));
+        }
+
+        [Test]
+        public void Does_limit_max_iterations()
+        {
+            var context = LispScriptContext();
+
+            // Context.MaxIterations = 1000000 but LISP Eval can be called 10x+ for evaluating 1 op
+            context.RenderLisp(@"(dotimes (i 90000) (print i))");
+
+            // Count resets per LISP Statement Block
+            context.EvaluateScript(@"
+```lisp
+(dotimes (i 90000) (print i))
+```
+
+```lisp
+(dotimes (i 90000) (print i))
+```
+");
+
+            try
+            {
+                context.RenderLisp("(dotimes (i 100001) (print i))");
+                Assert.Fail("Should Throw");
+            }
+            catch (ScriptException e)
+            {
+                Console.WriteLine(e);
+                Assert.That(e.InnerException is NotSupportedException);
+            }
+
+            try
+            {
+                context.EvaluateScript(@"
+                    ```lisp
+                    (dotimes (i 100001) (print i))
+                    ```
+                    ");
+                Assert.Fail("Should Throw");
+            }
+            catch (ScriptException e)
+            {
+                Console.WriteLine(e);
+                Assert.That(e.InnerException is NotSupportedException);
+            }
+
+            try
+            {
+                context.RenderLisp(@"
+                    (dotimes (i 10000) (print i))
+                    (dotimes (i 10000) (print i))
+                    (dotimes (i 10000) (print i))
+                    (dotimes (i 10000) (print i))
+                    (dotimes (i 10000) (print i))
+                    (dotimes (i 10000) (print i))
+                    (dotimes (i 10000) (print i))
+                    (dotimes (i 10000) (print i))
+                    (dotimes (i 10000) (print i))
+                    (dotimes (i 10000) (print i))
+                    (dotimes (i 10000) (print i))
+                    (dotimes (i 1) (print i))
+                ");
+                Assert.Fail("Should Throw");
+            }
+            catch (ScriptException e)
+            {
+                Console.WriteLine(e);
+                Assert.That(e.InnerException is NotSupportedException);
+            }
         }
     }
     
