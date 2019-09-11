@@ -270,6 +270,12 @@ namespace ServiceStack.Script
         
     }
 
+    internal static class Utils
+    {
+        internal static object lispBool(this bool t) => t ? Lisp.TRUE : null;
+        internal static object fromLisp(this object o) => o == Lisp.TRUE ? true : o;
+    }
+
     /// <summary>
     ///  A Lisp interpreter written in C# 7
     /// </summary><remarks>
@@ -768,7 +774,7 @@ namespace ServiceStack.Script
                         : a[0] is Cell c 
                             ? EvalArgs(c, I)
                             : a[0];
-                    scope.ReturnValue(ret == TRUE ? true : ret);
+                    scope.ReturnValue(ret.fromLisp());
                     return null;
                 });
                 
@@ -825,17 +831,23 @@ namespace ServiceStack.Script
                 Def("to-list", 1, (a) => toList(a[0] as IEnumerable));
                 Def("to-array", 1, (a) => toList(a[0] as IEnumerable).ToArray());
 
-                Def("doseq", 2, (I, a) => {
-                    var seq = a[1];
-                    if (seq == null)
-                        return null;
-                    if (!(seq is IEnumerable e))
-                        throw new NotSupportedException($"{seq.GetType().Name} is not IEnumerable");
-
-                    foreach (var item in e)
-                    {
-                        e.ToString().Print();
-                    }
+                Def("enumerator", 1, (a) => {
+                    if (!(a[0] is IEnumerable e))
+                        throw new NotSupportedException($"{a[0]?.GetType().Name ?? "null"} is not IEnumerable");
+                    return e.GetEnumerator();
+                });
+                Def("enumeratorNext", 1, (a) => {
+                    if (!(a[0] is IEnumerator e))
+                        throw new NotSupportedException($"{a[0]?.GetType().Name ?? "null"} is not IEnumerator");
+                    return e.MoveNext().lispBool();
+                });
+                Def("enumeratorCurrent", 1, (a) => {
+                    if (!(a[0] is IEnumerator e))
+                        throw new NotSupportedException($"{a[0]?.GetType().Name ?? "null"} is not IEnumerator");
+                    return e.Current;
+                });
+                Def("dispose", 1, (a) => {
+                    using (a[0] as IDisposable) {}
                     return null;
                 });
 
@@ -2186,15 +2198,16 @@ namespace ServiceStack.Script
     (defun identity (x) x)
 
     (setq
-        first car
+        first  car
         second cadr
-        third caddr
-        next cdr
-        rest cdr
-        skip nthcdr
+        third  caddr
+        next   cdr
+        rest   cdr
+        skip   nthcdr
+        skip2  cddr
 
-        = eql
-        null not
+        =      eql
+        null   not
         setcar rplaca
         setcdr rplacd)
 
@@ -2353,6 +2366,17 @@ namespace ServiceStack.Script
              (setq ,name (+ ,name 1)))
            ,@(if (cddr spec)
                  `(,(caddr spec))))))
+
+    (defmacro doseq (spec &rest body) ; (doseq (name seq [result]) body...)
+      (let ( (name (first spec)) 
+             (seq (second spec)) 
+             (enum (gensym))  )
+        `(let ( (,name) (,enum (enumerator ,seq)) )
+           (while (enumeratorNext ,enum)
+             (setq ,name (enumeratorCurrent ,enum))
+             ,@body)
+           (dispose ,enum)
+           )))
 
     (setq
         atom?  atom
