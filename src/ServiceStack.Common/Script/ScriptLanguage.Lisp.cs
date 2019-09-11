@@ -157,6 +157,29 @@ namespace ServiceStack.Script
         public override int GetHashCode() => (LispStatements != null ? LispStatements.GetHashCode() : 0);
     }
     
+
+    /// <summary>Exception in evaluation</summary>
+    public class LispEvalException: Exception 
+    {
+        /// <summary>Stack trace of Lisp evaluation</summary>
+        public List<string> Trace { get; } = new List<string>();
+
+        /// <summary>Construct with a base message, cause, and
+        /// a flag whether to quote strings in the cause.</summary>
+        public LispEvalException(string msg, object x, bool quoteString=true)
+            : base(msg + ": " + Lisp.Str(x, quoteString)) {}
+
+        /// <summary>Return a string representation which contains
+        /// the message and the stack trace.</summary>
+        public override string ToString()
+        {
+            var sb = StringBuilderCache.Allocate().Append($"EvalException: {Message}");
+            foreach (var line in Trace)
+                sb.Append($"\n\t{line}");
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+    }
+
     public static class ScriptLispUtils
     {
         internal static Lisp.Interpreter GetLispInterpreter(this PageResult pageResult)
@@ -251,13 +274,34 @@ namespace ServiceStack.Script
     /// </remarks>
     public static class Lisp
     {
-        private static readonly Interpreter GlobalInterpreter;
+        private static Interpreter GlobalInterpreter;
 
         static Lisp()
         {
+            Reset();
+        }
+
+        /// <summary>
+        /// Reset Global Symbols back to default
+        /// </summary>
+        public static void Reset()
+        {
             //Create and cache pre-loaded global symbol table once.
             GlobalInterpreter = new Interpreter();
-            Run(GlobalInterpreter, new Reader(Prelude.AsMemory())); 
+            Run(GlobalInterpreter, new Reader(InitScript.AsMemory()));
+        }
+
+        /// <summary>
+        /// Load Lisp into Global Symbols, a new CreateInterpreter() starts with a copy of global symbols
+        /// </summary>
+        public static void Import(string lisp) => Import(lisp.AsMemory());
+
+        /// <summary>
+        /// Load Lisp into Global Symbols, a new CreateInterpreter() starts with a copy of global symbols
+        /// </summary>
+        public static void Import(ReadOnlyMemory<char> lisp)
+        {
+            Run(GlobalInterpreter, new Reader(lisp));
         }
         
         public static void Init() {} // Force running static initializers
@@ -436,7 +480,7 @@ namespace ServiceStack.Script
                 if (k is Cell c)
                     return c;
                 else
-                    throw new EvalException("proper list expected", x);
+                    throw new LispEvalException("proper list expected", x);
             }
         }
 
@@ -470,7 +514,7 @@ namespace ServiceStack.Script
                     arg = CdrCell(arg);
                 }
                 if (i != n || (arg != null && !HasRest))
-                    throw new EvalException("arity not matched", this);
+                    throw new LispEvalException("arity not matched", this);
                 if (HasRest)
                     frame[n] = arg;
                 return frame;
@@ -605,10 +649,10 @@ namespace ServiceStack.Script
                 EvalFrame(frame, interp, interpEnv);
                 try {
                     return Body(frame, interpEnv);
-                } catch (EvalException) {
+                } catch (LispEvalException) {
                     throw;
                 } catch (Exception ex) {
-                    throw new EvalException($"{ex} -- {Name}", frame);
+                    throw new LispEvalException($"{ex} -- {Name}", frame);
                 }
             }
         }
@@ -648,29 +692,8 @@ namespace ServiceStack.Script
         }
 
 
-        /// <summary>Exception in evaluation</summary>
-        public class EvalException: Exception {
-            /// <summary>Stack trace of Lisp evaluation</summary>
-            public List<string> Trace { get; } = new List<string>();
-
-            /// <summary>Construct with a base message, cause, and
-            /// a flag whether to quote strings in the cause.</summary>
-            public EvalException(string msg, object x, bool quoteString=true)
-                : base(msg + ": " + Str(x, quoteString)) {}
-
-            /// <summary>Return a string representation which contains
-            /// the message and the stack trace.</summary>
-            public override string ToString() {
-                var sb = new StringBuilder($"EvalException: {Message}", 0);
-                foreach (string line in Trace)
-                    sb.Append($"\n\t{line}");
-                return sb.ToString();
-            }
-        }
-
-
-        // Exception which indicates on absense of a variable
-        sealed class NotVariableException: EvalException {
+        // Exception which indicates on absence of a variable
+        sealed class NotVariableException: LispEvalException {
             public NotVariableException(object x): base("variable expected", x) {}
         }
 
@@ -726,7 +749,7 @@ namespace ServiceStack.Script
                             return ret;
                         };
                     default:
-                        throw new EvalException("not applicable", f);
+                        throw new LispEvalException("not applicable", f);
                 }
             }
 
@@ -1174,7 +1197,7 @@ namespace ServiceStack.Script
                                     throw new NotSupportedException(ProtectedScripts.TypeNotFoundErrorMessage(typeName));
                                 }
                             }
-                            throw new EvalException("void variable", x);
+                            throw new LispEvalException("void variable", x);
                         case Cell xcell:
                             var fn = xcell.Car;
                             Cell arg = CdrCell(xcell);
@@ -1182,7 +1205,7 @@ namespace ServiceStack.Script
                                 if (fn == QUOTE) {
                                     if (arg != null && arg.Cdr == null)
                                         return arg.Car;
-                                    throw new EvalException("bad quote", x);
+                                    throw new LispEvalException("bad quote", x);
                                 } else if (fn == PROGN) {
                                     x = EvalProgN(arg, env);
                                 } else if (fn == COND) {
@@ -1195,16 +1218,16 @@ namespace ServiceStack.Script
                                     return Compile(arg, env, Closure.Make);
                                 } else if (fn == MACRO) {
                                     if (env != null && !hasScope)
-                                        throw new EvalException("nested macro", x);
+                                        throw new LispEvalException("nested macro", x);
                                     return Compile(arg, null, Macro.Make);
                                 } else if (fn == QUASIQUOTE) {
                                     if (arg != null && arg.Cdr == null)
                                         x = QqExpand(arg.Car);
                                     else
-                                        throw new EvalException ("bad quasiquote",
+                                        throw new LispEvalException ("bad quasiquote",
                                                                  x);
                                 } else {
-                                    throw new EvalException("bad keyword", fn);
+                                    throw new LispEvalException("bad keyword", fn);
                                 }
                             } else { // Application of a function
                                 if (fn is Sym fnsym) 
@@ -1269,7 +1292,7 @@ namespace ServiceStack.Script
                                         }
                                     }
                                     if (fn == null) 
-                                        throw new EvalException("undefined", fnsym); 
+                                        throw new LispEvalException("undefined", fnsym); 
                                 } else {
                                     fn = Eval(fn, env);
                                 }
@@ -1288,7 +1311,7 @@ namespace ServiceStack.Script
                                     var ret = JsCallExpression.InvokeDelegate(fnDel, null, isMemberExpr: false, scriptMethodArgs);
                                     return ret;
                                 default:
-                                    throw new EvalException("not applicable", fn);
+                                    throw new LispEvalException("not applicable", fn);
                                 }
                             }
                             break;
@@ -1298,7 +1321,7 @@ namespace ServiceStack.Script
                             return x; // numbers, strings, null etc.
                         }
                     }
-                } catch (EvalException ex) {
+                } catch (LispEvalException ex) {
                     if (ex.Trace.Count < 10)
                         ex.Trace.Add(Str(x));
                     throw ex;
@@ -1354,7 +1377,7 @@ namespace ServiceStack.Script
                                     return EvalProgN(body, env);
                             }
                         } else {
-                            throw new EvalException("cond test expected", clause);
+                            throw new LispEvalException("cond test expected", clause);
                         }
                     }
                 }
@@ -1367,10 +1390,10 @@ namespace ServiceStack.Script
                 for (; j != null; j = CdrCell(j)) {
                     var lval = j.Car;
                     if (lval == TRUE)
-                        throw new EvalException("not assignable", lval);
+                        throw new LispEvalException("not assignable", lval);
                     j = CdrCell(j);
                     if (j == null)
-                        throw new EvalException("right value expected", lval);
+                        throw new LispEvalException("right value expected", lval);
                     result = Eval(j.Car, env);
                     switch (lval) {
                     case Arg arg:
@@ -1394,10 +1417,10 @@ namespace ServiceStack.Script
                 for (; j != null; j = CdrCell(j)) {
                     var lval = j.Car;
                     if (lval == TRUE)
-                        throw new EvalException("not assignable", lval);
+                        throw new LispEvalException("not assignable", lval);
                     j = CdrCell(j);
                     if (j == null)
-                        throw new EvalException("right value expected", lval);
+                        throw new LispEvalException("right value expected", lval);
                     result = Eval(j.Car, env);
                     switch (lval) {
                         case Arg arg:
@@ -1416,7 +1439,7 @@ namespace ServiceStack.Script
             // Compile a Lisp list (macro ...) or (lambda ...).
             DefinedFunc Compile(Cell arg, Cell env, FuncFactory make) {
                 if (arg == null)
-                    throw new EvalException("arglist and body expected", arg);
+                    throw new LispEvalException("arglist and body expected", arg);
                 var table = new Dictionary<Sym, Arg>();
                 bool hasRest = MakeArgTable(arg.Car, table);
                 int arity = table.Count;
@@ -1439,7 +1462,7 @@ namespace ServiceStack.Script
                             var z = QqExpand(d.Car);
                             return ExpandMacros(z, count, env);
                         }
-                        throw new EvalException("bad quasiquote", cell);
+                        throw new LispEvalException("bad quasiquote", cell);
                     } else {
                         if (k is Sym sym)
                             k = Globals.ContainsKey(sym) ? Globals[sym] : null;
@@ -1466,7 +1489,7 @@ namespace ServiceStack.Script
                         Cell d = CdrCell(cell);
                         return Compile(d, null, Lambda.Make);
                     } else if (k == MACRO) {
-                        throw new EvalException("nested macro", cell);
+                        throw new LispEvalException("nested macro", cell);
                     } else {
                         return MapCar(cell, CompileInners);
                     }
@@ -1488,7 +1511,7 @@ namespace ServiceStack.Script
                 for (; argcell != null; argcell = CdrCell(argcell)) {
                     var j = argcell.Car;
                     if (hasRest)
-                        throw new EvalException("2nd rest", j);
+                        throw new LispEvalException("2nd rest", j);
                     if (j == REST) { // &rest var
                         argcell = CdrCell(argcell);
                         if (argcell == null)
@@ -1507,15 +1530,15 @@ namespace ServiceStack.Script
                             throw new NotVariableException(j);
                     }
                     if (sym == TRUE)
-                        throw new EvalException("not assignable", sym);
+                        throw new LispEvalException("not assignable", sym);
                     if (table.ContainsKey(sym))
-                        throw new EvalException("duplicated argument name", sym);
+                        throw new LispEvalException("duplicated argument name", sym);
                     table[sym] = new Arg(0, offset, sym);
                     offset++;
                 }
                 return hasRest;
             } else {
-                throw new EvalException("arglist expected", arg);
+                throw new LispEvalException("arglist expected", arg);
             }
         }
 
@@ -1735,7 +1758,7 @@ namespace ServiceStack.Script
                 }
                 catch (FormatException ex)
                 {
-                    throw new EvalException("syntax error",
+                    throw new LispEvalException("syntax error",
                         $"{ex.Message} -- {LineNo}: {Line.ToString()}",
                         false);
                 }
@@ -2030,7 +2053,9 @@ namespace ServiceStack.Script
     //    }
 
         /// <summary>Lisp initialization script</summary>
-        public static readonly string Prelude = @"
+        public static string InitScript = Prelude;
+    
+        public const string Prelude = @"
     (setq defmacro
           (macro (name args &rest body)
                  `(progn (setq ,name (macro ,args ,@body))

@@ -753,6 +753,43 @@ C
             Assert.That(context.RenderScript(@"1 + 1 = {|lisp  (+ 1 1)  |}, 3 + 4 = {{ 3 + 4 }}.").NormalizeNewLines(), 
                 Is.EqualTo("1 + 1 = {|lisp  (+ 1 1)  |}, 3 + 4 = 7."));
         }
+
+        [Test]
+        public void Can_import_into_global_symbols()
+        {
+            var SExprs = Lisp.Parse("(fib 10)");
+
+            var lispCtx = Lisp.CreateInterpreter();
+
+            try 
+            {
+                lispCtx.Eval(SExprs);
+                Assert.Fail("should throw");
+            }
+            catch (LispEvalException e) {}
+            
+            Lisp.Import(@"
+(defun fib (n)
+  (if (< n 2)
+      1
+    (+ (fib (- n 1))
+       (fib (- n 2)) )
+  ))
+");
+            lispCtx = Lisp.CreateInterpreter();
+            
+            Assert.That(lispCtx.Eval(SExprs), Is.EqualTo(89));
+
+            Lisp.Reset();
+            
+            lispCtx = Lisp.CreateInterpreter();
+            try 
+            {
+                lispCtx.Eval(SExprs);
+                Assert.Fail("should throw");
+            }
+            catch (LispEvalException e) {}
+        }
     }
     
 }
