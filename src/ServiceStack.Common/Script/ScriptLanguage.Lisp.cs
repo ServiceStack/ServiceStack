@@ -1738,7 +1738,6 @@ namespace ServiceStack.Script
         /// <summary>Reader of Lisp expressions</summary>
         public class Reader
         {
-            readonly TextReader TReader;
             object Token;
 
             IEnumerator<string> Tokens = ((IEnumerable<string>) TypeConstants.EmptyStringArray).GetEnumerator();
@@ -1747,14 +1746,6 @@ namespace ServiceStack.Script
 
             /// <summary>Token of "End Of File"</summary>
             public static object EOF = new Sym("#EOF");
-
-            /// <summary>Construct a Lisp reader.</summary>
-            /// <param name="tr">Text reader from which Lisp expressions will
-            /// be read</param>
-            public Reader(TextReader tr)
-            {
-                TReader = tr;
-            }
 
             private ReadOnlyMemory<char> source = default;
             public Reader(ReadOnlyMemory<char> source) => this.source = source;
@@ -2032,13 +2023,19 @@ namespace ServiceStack.Script
         public static void RunREPL(Interpreter interp, TextReader input = null) {
             if (input == null)
                 input = Console.In;
-            var reader = new Reader(input);
+
+            var reader = new Reader(input.ReadToEnd().AsMemory());
             for (;;) {
                 interp.COut.Write("> ");
                 try {
                     var sExp = reader.Read();
                     if (sExp == Reader.EOF)
-                        return;
+                    {
+                        var inputBytes = input.ReadToEnd();
+                        if (inputBytes.Length == 0)
+                            return;
+                        reader = new Reader(inputBytes.AsMemory());
+                    }
                     var x = interp.Eval(sExp, null);
                     interp.COut.WriteLine(Str(x));
                 } catch (Exception ex) {
@@ -2047,22 +2044,12 @@ namespace ServiceStack.Script
             }
         }
 
-    //    static int Main(string[] args) {
-    //        var interp = MakeInterp();
-    //        if (args.Length == 0) {
-    //            args = new string[] {"-"};
-    //        }
-    //        foreach (var fileName in args) {
-    //            if (fileName == "-") {
-    //                RunREPL(interp);
-    //                interp.COut.WriteLine("Goodbye");
-    //            } else {
-    //                var input = new StreamReader(fileName);
-    //                Run(interp, input);
-    //            }
-    //        }
-    //        return 0;
-    //    }
+        static int MainREPL(string[] args=null) {
+            var interp = CreateInterpreter();
+            RunREPL(interp);
+            interp.COut.WriteLine("Goodbye");
+            return 0;
+        }
 
         /// <summary>Lisp initialization script</summary>
         public static string InitScript = Prelude;
