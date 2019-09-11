@@ -606,8 +606,8 @@ C
         {
             var context = LispScriptContext();
             
-            Assert.That(context.RenderLisp(@"10 (let () (print ""A"")(princ '(1 2 3)) (terpri) nil) 20").NormalizeNewLines(), 
-                Is.EqualTo("10\n\"A\"\n(1 2 3)\n20"));
+            Assert.That(context.RenderLisp(@"10 (let () (println ""A"")(print '(1 2 3)) (terpri) nil) 20").NormalizeNewLines(), 
+                Is.EqualTo("10\nA\n(1 2 3)\n20"));
             
             Assert.That(context.RenderLisp(@"10 (/write ""A"") 20").Replace("\r",""), 
                 Is.EqualTo("10\nA20\n"));
