@@ -156,17 +156,17 @@ namespace ServiceStack.Script
         public int StackDepth { get; internal set; }
         
         /// <summary>
-        /// Can be used to track Iterations
+        /// Can be used to track number of Evaluations
         /// </summary>
-        public long Iterations { get; private set; }
+        public long Evaluations { get; private set; }
 
-        public void AssertNextIteration()
+        public void AssertNextEvaluation()
         {
-            if (Iterations++ >= Context.MaxIterations)
-                throw new NotSupportedException($"{Iterations} exceeds Max Iterations of {Context.MaxIterations}. \nMaxIterations can be changed in `ScriptContext.MaxIterations`.");
+            if (Evaluations++ >= Context.MaxEvaluations)
+                throw new NotSupportedException($"{Evaluations} exceeds Max Evaluations of {Context.MaxEvaluations}. \nMaxEvaluations can be changed in `ScriptContext.MaxEvaluations`.");
         }
 
-        public void ResetIterations() => Iterations = 0;
+        public void ResetIterations() => Evaluations = 0;
         
         private readonly Stack<string> stackTrace = new Stack<string>();
 

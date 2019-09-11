@@ -174,14 +174,14 @@ namespace ServiceStack.Script
         public bool SkipExecutingFiltersIfError { get; set; }
 
         /// <summary>
-        /// Limit Max Times for Heavy Operations like Script Blocks (default 10000)
+        /// Limit Max Iterations for Heavy Operations like rendering a Script Block (default 10K)
         /// </summary>
         public int MaxQuota { get; set; } = 10000;
 
         /// <summary>
-        /// Limit Max iterations for micro ops like evaluating 1x AST (default 1M)
+        /// Limit Max number for micro ops like evaluating an AST instruction (default 1M)
         /// </summary>
-        public long MaxIterations { get; set; } = 1000000;
+        public long MaxEvaluations { get; set; } = 1000000;
 
         /// <summary>
         /// Limit Recursion Max StackDepth (default 25)

@@ -639,7 +639,6 @@ C
             }
             catch (ScriptException e)
             {
-                Console.WriteLine(e);
                 Assert.That(e.InnerException is NotSupportedException);
             }
 
@@ -654,7 +653,6 @@ C
             }
             catch (ScriptException e)
             {
-                Console.WriteLine(e);
                 Assert.That(e.InnerException is NotSupportedException);
             }
 
@@ -677,6 +675,36 @@ C
                 Assert.Fail("Should Throw");
             }
             catch (ScriptException e)
+            {
+                Assert.That(e.InnerException is NotSupportedException);
+            }
+
+            // 23 Max =~ 92735 iterations
+            context.RenderLisp(@"
+                    (defun fib (n)
+                      (if (< n 2)
+                          1
+                        (+ (fib (- n 1))
+                           (fib (- n 2)) )
+                      ))
+                    (fib 23)
+                    ");
+
+            try
+            {
+                // 24 Max =~ 150049 iterations
+                context.RenderLisp(@"
+                    (defun fib (n)
+                      (if (< n 2)
+                          1
+                        (+ (fib (- n 1))
+                           (fib (- n 2)) )
+                      ))
+                    (fib 24)
+                    ");
+                Assert.Fail("Should Throw");
+            }
+            catch (Exception e)
             {
                 Console.WriteLine(e);
                 Assert.That(e.InnerException is NotSupportedException);

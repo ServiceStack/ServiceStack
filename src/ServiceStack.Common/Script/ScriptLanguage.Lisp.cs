@@ -1108,7 +1108,7 @@ namespace ServiceStack.Script
                         scope = envScope;
                         if (scope.PageResult.HaltExecution)
                             return null;
-                        scope.PageResult.AssertNextIteration();
+                        scope.PageResult.AssertNextEvaluation();
                     }
                     
                     for (;;)
