@@ -1426,6 +1426,28 @@ namespace ServiceStack.Script
                 return result;
             }
         }
+
+        public IgnoreResult write(ScriptScopeContext scope, object value)
+        {
+            if (value != null)
+            {
+                var s = value.ToString();
+                var bytes = MemoryProvider.Instance.ToUtf8(s.AsSpan());
+                MemoryProvider.Instance.WriteAsync(scope.OutputStream, bytes).Wait();
+            }
+            return IgnoreResult.Value;
+        }
+
+        public IgnoreResult writeln(ScriptScopeContext scope, object value)
+        {
+            if (value != null)
+            {
+                var s = $"{value}\n";
+                var bytes = MemoryProvider.Instance.ToUtf8(s.AsSpan());
+                MemoryProvider.Instance.WriteAsync(scope.OutputStream, bytes).Wait();
+            }
+            return IgnoreResult.Value;
+        }
     }
 
     public partial class DefaultScripts //Methods named after common keywords breaks intelli-sense when trying to use them        

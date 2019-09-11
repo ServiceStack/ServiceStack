@@ -165,15 +165,15 @@ namespace ServiceStack.Script
             return (Lisp.Interpreter) oInterp;
         }
         
-        public static SharpPage LispSharpPage(this ScriptContext context, string code) 
-            => context.Pages.OneTimePage(code, context.PageFormats[0].Extension,p => p.ScriptLanguage = ScriptLisp.Language);
+        public static SharpPage LispSharpPage(this ScriptContext context, string lisp) 
+            => context.Pages.OneTimePage(lisp, context.PageFormats[0].Extension,p => p.ScriptLanguage = ScriptLisp.Language);
 
-        private static PageResult GetLispPageResult(ScriptContext context, string code, Dictionary<string, object> args)
+        private static PageResult GetLispPageResult(ScriptContext context, string lisp, Dictionary<string, object> args)
         {
             PageResult pageResult = null;
             try
             {
-                var page = context.LispSharpPage(code);
+                var page = context.LispSharpPage(lisp);
                 pageResult = new PageResult(page);
                 args.Each((x, y) => pageResult.Args[x] = y);
                 return pageResult;
@@ -186,9 +186,9 @@ namespace ServiceStack.Script
             }
         }
 
-        public static string RenderLisp(this ScriptContext context, string code, Dictionary<string, object> args=null)
+        public static string RenderLisp(this ScriptContext context, string lisp, Dictionary<string, object> args=null)
         {
-            var pageResult = GetLispPageResult(context, code, args);
+            var pageResult = GetLispPageResult(context, lisp, args);
             return pageResult.EvaluateScript();
         }
 
@@ -198,8 +198,8 @@ namespace ServiceStack.Script
             return await pageResult.EvaluateScriptAsync();
         }
 
-        public static LispStatements ParseLisp(this ScriptContext context, string code) =>
-            context.ParseLisp(code.AsMemory());
+        public static LispStatements ParseLisp(this ScriptContext context, string lisp) =>
+            context.ParseLisp(lisp.AsMemory());
 
         public static LispStatements ParseLisp(this ScriptContext context, ReadOnlyMemory<char> lisp)
         {
@@ -210,9 +210,9 @@ namespace ServiceStack.Script
         public static T EvaluateLisp<T>(this ScriptContext context, string lisp, Dictionary<string, object> args = null) =>
             context.EvaluateLisp(lisp, args).ConvertTo<T>();
         
-        public static object EvaluateLisp(this ScriptContext context, string code, Dictionary<string, object> args=null)
+        public static object EvaluateLisp(this ScriptContext context, string lisp, Dictionary<string, object> args=null)
         {
-            var pageResult = GetLispPageResult(context, code, args);
+            var pageResult = GetLispPageResult(context, lisp, args);
 
             if (!pageResult.EvaluateResult(out var returnValue))
                 throw new NotSupportedException(ScriptContextUtils.ErrorNoReturn);
@@ -564,7 +564,7 @@ namespace ServiceStack.Script
             public Cell MakeEnv(Interpreter interp, Cell arg, Cell interpEnv) {
                 object[] frame = MakeFrame(arg);
                 EvalFrame(frame, interp, interpEnv);
-                return new Cell(frame, Env); // Prepend the frame to this Env.
+                return new Cell(frame, Env ?? interpEnv); // Prepend the frame to this Env.
             }
 
             public static DefinedFunc Make(int carity, Cell body, Cell env) =>
@@ -1013,16 +1013,34 @@ namespace ServiceStack.Script
                         : new Random().Next(0, (int)d);
                 });
                 Def("zerop", 1, a => (double)a[0] == 0d ? TRUE : null);
-                
 
-                Def("prin1", 1, a => {
-                        COut.Write(Str(a[0], true)); return a[0];
+                void print(string s, Cell env)
+                {
+                    var scope = env.GetScope();
+                    if (scope != null)
+                        scope.Value.Context.DefaultMethods.write(scope.Value, s);
+                    else
+                        COut.Write(s);
+                }
+                Def("print", 1, (a, env) => {
+                    var scope = env.GetScope();
+                    if (scope != null)
+                        scope.Value.Context.DefaultMethods.writeln(scope.Value, Str(a[0], true));
+                    else
+                        COut.WriteLine(Str(a[0], true));
+                    return a[0];
+                });
+                Def("prin1", 1, (a, env) => {
+                        print(Str(a[0], true), env); 
+                        return a[0];
                     });
-                Def("princ", 1, a => {
-                        COut.Write(Str(a[0], false)); return a[0];
+                Def("princ", 1, (a, env) => {
+                        print(Str(a[0], false), env); 
+                        return a[0];
                     });
-                Def("terpri", 0, a => {
-                        COut.WriteLine(); return TRUE;
+                Def("terpri", 0, (a, env) => {
+                        print("\n", env); 
+                        return TRUE;
                     });
 
                 var gensymCounterSym = Sym.New("*gensym-counter*");
@@ -1264,7 +1282,6 @@ namespace ServiceStack.Script
                                     var ret = JsCallExpression.InvokeDelegate(fnDel, null, isMemberExpr: false, scriptMethodArgs);
                                     return ret;
                                 default:
-                                    "HERE".Print();
                                     throw new EvalException("not applicable", fn);
                                 }
                             }
@@ -2130,7 +2147,6 @@ namespace ServiceStack.Script
     (defun cdddr (x) (cdr (cdr (cdr x))))
     (defun not (x) (eq x nil))
     (defun cons? (x) (not (atom x)))
-    (defun print (x) (prin1 x) (terpri) x)
     (defun identity (x) x)
 
     (setq

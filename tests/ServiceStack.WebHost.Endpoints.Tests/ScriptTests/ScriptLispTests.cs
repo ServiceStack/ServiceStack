@@ -600,6 +600,18 @@ C
 
             Assert.That(render(@"(defmacro 2+ (n) `(+ ,n 2)) (sum (map 2+ '(1 2 3)))"), Is.EqualTo("12"));
         }
+ 
+        [Test]
+        public void Does_print_to_Output_Stream()
+        {
+            var context = LispScriptContext();
+            
+            Assert.That(context.RenderLisp(@"10 (let () (print ""A"")(princ '(1 2 3)) (terpri) nil) 20").NormalizeNewLines(), 
+                Is.EqualTo("10\n\"A\"\n(1 2 3)\n20"));
+            
+            Assert.That(context.RenderLisp(@"10 (/write ""A"") 20").Replace("\r",""), 
+                Is.EqualTo("10\nA20\n"));
+        }
     }
     
 }
