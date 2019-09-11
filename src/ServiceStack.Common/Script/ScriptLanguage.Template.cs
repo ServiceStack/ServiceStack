@@ -414,6 +414,13 @@ namespace ServiceStack.Script
                         var langExprFragment = lang.Parse(context, exprStr);
                         to.AddRange(langExprFragment);
                     }
+                    else
+                    {
+                        var nextLastPos = text.IndexOf("|}", varStartPos) + 2;
+                        block = text.Slice(pos, nextLastPos - pos);
+                        if (!block.IsNullOrEmpty())
+                            to.Add(new PageStringFragment(block));
+                    }
 
                     lastPos = text.IndexOf("|}", varStartPos) + 2;
                     continue;

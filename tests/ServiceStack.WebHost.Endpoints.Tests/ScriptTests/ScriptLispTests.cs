@@ -743,6 +743,15 @@ C
 |}.").NormalizeNewLines(), 
                 Is.EqualTo("fib(10) = \n89\n."));
             
+            // no LISP configured
+            context = new ScriptContext().Init();  
+            
+            Assert.That(context.RenderScript(@"1 + 1 = {|lisp  (+ 1 1)  |}.").NormalizeNewLines(), 
+                Is.EqualTo("1 + 1 = {|lisp  (+ 1 1)  |}."));
+            Assert.That(context.RenderScript(@"1 + 1 = {|lisp  (+ 1 1)  |}, 3 + 4 = {|lisp  (+ 3 4)  |}.").NormalizeNewLines(), 
+                Is.EqualTo("1 + 1 = {|lisp  (+ 1 1)  |}, 3 + 4 = {|lisp  (+ 3 4)  |}."));
+            Assert.That(context.RenderScript(@"1 + 1 = {|lisp  (+ 1 1)  |}, 3 + 4 = {{ 3 + 4 }}.").NormalizeNewLines(), 
+                Is.EqualTo("1 + 1 = {|lisp  (+ 1 1)  |}, 3 + 4 = 7."));
         }
     }
     
