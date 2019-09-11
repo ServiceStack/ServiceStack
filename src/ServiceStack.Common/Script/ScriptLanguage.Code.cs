@@ -61,7 +61,7 @@ namespace ServiceStack.Script
             if (statement is JsExpressionStatement exprStatement)
             {
                 var value = exprStatement.Expression.Evaluate(scope);
-                if (value != null && value != JsNull.Value && value != StopExecution.Value && value != IgnoreResult.Value)
+                if (value != null && !ReferenceEquals(value, JsNull.Value) && value != StopExecution.Value && value != IgnoreResult.Value)
                 {
                     var strValue = page.Format.EncodeValue(value);
                     if (!string.IsNullOrEmpty(strValue))

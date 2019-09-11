@@ -470,7 +470,7 @@ B
 ```
 
 C
-").NormalizeNewLines(), Is.EqualTo("A\n\n\nB\n\n9\n\nC"));
+").NormalizeNewLines(), Is.EqualTo("A\n\n\nB\n\n9\nC"));
         }
 
         [Test]
@@ -709,6 +709,40 @@ C
                 Console.WriteLine(e);
                 Assert.That(e.InnerException is NotSupportedException);
             }
+        }
+
+        [Test]
+        public void Can_embed_lisp_expressions_in_Script()
+        {
+            var context = LispScriptContext();
+            
+            Assert.That(context.RenderScript(@"1 + 1 = {|lisp  (+ 1 1)  |}.").NormalizeNewLines(), 
+                Is.EqualTo("1 + 1 = 2."));
+            Assert.That(context.RenderScript(@"1 + 1 = {|lisp  (+ 1 1)  |}, 3 + 4 = {|lisp  (+ 3 4)  |}.").NormalizeNewLines(), 
+                Is.EqualTo("1 + 1 = 2, 3 + 4 = 7."));
+            Assert.That(context.RenderScript(@"1 + 1 = {|lisp  (+ 1 1)  |}, 3 + 4 = {{ 3 + 4 }}.").NormalizeNewLines(), 
+                Is.EqualTo("1 + 1 = 2, 3 + 4 = 7."));
+            
+            Assert.That(context.RenderScript(@"1 + 1 = {|code  1 + 1  |}.").NormalizeNewLines(), 
+                Is.EqualTo("1 + 1 = 2\n.")); //every code expression statement is printed with a new line
+            Assert.That(context.RenderScript(@"1 + 1 = {{  1 + 1  }}.").NormalizeNewLines(), 
+                Is.EqualTo("1 + 1 = 2."));   // but not for template expressions 
+            
+            Assert.That(context.RenderScript(@"fib(10) = 
+{|lisp  
+
+(defun fib (n)
+  (if (< n 2)
+      1
+    (+ (fib (- n 1))
+       (fib (- n 2)) )
+  ))
+
+(fib 10)
+
+|}.").NormalizeNewLines(), 
+                Is.EqualTo("fib(10) = \n89\n."));
+            
         }
     }
     

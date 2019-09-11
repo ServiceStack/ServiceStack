@@ -375,7 +375,19 @@ namespace ServiceStack.Script
             
             int pos;
             var lastPos = 0;
-            while ((pos = text.IndexOf("{{", lastPos)) != -1)
+
+            int nextPos()
+            {
+                var c1 = text.IndexOf("{{", lastPos);
+                var c2 = text.IndexOf("{|", lastPos);
+
+                if (c2 == -1)
+                    return c1;
+                
+                return c1 == -1 ? c2 : c1 < c2 ? c1 : c2;
+            }
+            
+            while ((pos = nextPos()) != -1)
             {
                 var block = text.Slice(lastPos, pos - lastPos);
                 if (!block.IsNullOrEmpty())
@@ -385,6 +397,27 @@ namespace ServiceStack.Script
                 
                 if (varStartPos >= text.Span.Length)
                     throw new SyntaxErrorException($"Unterminated '{{{{' expression, near '{text.Slice(lastPos).DebugLiteral()}'");
+
+                if (text.Span.SafeCharEquals(varStartPos - 1, '|')) // lang expression syntax {|lang ... |} https://flow.org/en/docs/types/objects/#toc-exact-object-types
+                {
+                    var literal = text.Slice(varStartPos);
+                    literal = literal.ParseVarName(out var langSpan);
+                    
+                    var lang = context.GetScriptLanguage(langSpan.ToString());
+                    if (lang != null)
+                    {
+                        var endPos = literal.IndexOf("|}");
+                        if (endPos == -1)
+                            throw new SyntaxErrorException($"Unterminated '|}}' expression, near '{text.Slice(varStartPos).DebugLiteral()}'");
+
+                        var exprStr = literal.Slice(0, endPos);
+                        var langExprFragment = lang.Parse(context, exprStr);
+                        to.AddRange(langExprFragment);
+                    }
+
+                    lastPos = text.IndexOf("|}", varStartPos) + 2;
+                    continue;
+                }
 
                 var firstChar = text.Span[varStartPos];
                 if (firstChar == '*') //comment

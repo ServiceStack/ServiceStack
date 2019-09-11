@@ -93,6 +93,8 @@ namespace ServiceStack.Script
             {
                 var lispCtx = scope.PageResult.GetLispInterpreter();
                 page.ResetIterations();
+
+                var len = lispStatement.SExpressions.Length;
                 
                 foreach (var sExpr in lispStatement.SExpressions)
                 {
@@ -108,7 +110,9 @@ namespace ServiceStack.Script
                             var bytes = strValue.ToUtf8Bytes();
                             await scope.OutputStream.WriteAsync(bytes, token);
                         }
-                        await scope.OutputStream.WriteAsync(JsTokenUtils.NewLineUtf8, token);
+                        
+                        if (len > 1) // don't emit new lines for single expressions
+                            await scope.OutputStream.WriteAsync(JsTokenUtils.NewLineUtf8, token);
                     }
                 }
             }
@@ -243,7 +247,6 @@ namespace ServiceStack.Script
     /// </summary><remarks>
     ///  This is ported from Nuka Lisp in Dart
     ///  (https://github.com/nukata/lisp-in-dart) except for bignum.
-    ///  Its sole numeric type is <c>double</c> in C#.
     ///  It is named after ex-Nukata Town in Japan.
     /// </remarks>
     public static class Lisp
