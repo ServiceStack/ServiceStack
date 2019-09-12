@@ -314,6 +314,11 @@ namespace ServiceStack.Script
         {
             Run(GlobalInterpreter, new Reader(lisp));
         }
+
+        public static void Set(string symbolName, object value)
+        {
+            GlobalInterpreter.Globals[Sym.New(symbolName)] = value;
+        }
         
         public static void Init() {} // Force running static initializers
 
@@ -690,11 +695,23 @@ namespace ServiceStack.Script
         }
 
         //------------------------------------------------------------------
+        public static Cell ToCons(IEnumerable seq)
+        {
+            if (!(seq is IEnumerable e)) 
+                return null;
+                
+            Cell j = null;
+            foreach (var item in e.Cast<object>().Reverse())
+            {
+                j = new Cell(item, j);
+            }
+            return j;
+        }
 
         /// <summary>Core of the Lisp interpreter</summary>
         public class Interpreter {
             /// <summary>Table of the global values of symbols</summary>
-            protected readonly Dictionary<Sym, object> Globals =
+            internal readonly Dictionary<Sym, object> Globals =
                 new Dictionary<Sym, object>();
 
             /// <summary>Standard out</summary>
@@ -749,19 +766,6 @@ namespace ServiceStack.Script
                 ? new List<object>()
                 : seq.Cast<object>().ToList();
 
-            Cell toCons(IEnumerable seq)
-            {
-                if (!(seq is IEnumerable e)) 
-                    return null;
-                
-                Cell j = null;
-                foreach (var item in e)
-                {
-                    j = new Cell(item, j);
-                }
-                return j;
-            }
-                
             public void InitGlobals()
             {
                 Globals[TRUE] = TRUE;
@@ -826,10 +830,22 @@ namespace ServiceStack.Script
                     throw new NotSupportedException($"new requires Type Name or Type but was {a[0]?.GetType().Name ?? "null"}");
                 });
 
-                Def("to-cons", 1, (a) => a[0] == null ? null : a[0] is IEnumerable e ? toCons(e)
+                Def("to-cons", 1, (a) => a[0] == null ? null : a[0] is IEnumerable e ? ToCons(e)
                     : throw new NotSupportedException($"{a[0]?.GetType().Name ?? "null"} is not IEnumerable"));
                 Def("to-list", 1, (a) => toList(a[0] as IEnumerable));
                 Def("to-array", 1, (a) => toList(a[0] as IEnumerable).ToArray());
+
+                Def("nth", 2, (a) => {
+                    if (a[0] == null)
+                        return null;
+                    if (!(a[1] is int i))
+                        throw new NotSupportedException($"{a[0]?.GetType().Name ?? "null"} is not IEnumerable");
+                    if (a[0] is IList c)
+                        return c[i];
+                    if (!(a[0] is IEnumerable e))
+                        throw new NotSupportedException($"{a[0]?.GetType().Name ?? "null"} is not IEnumerable");
+                    return e.Cast<object>().ElementAt(i);
+                });
 
                 Def("enumerator", 1, (a) => {
                     if (!(a[0] is IEnumerable e))
@@ -894,7 +910,8 @@ namespace ServiceStack.Script
                     });
 
                 Def("string", 1, a => $"{a[0]}");
-                Def("string-downcase", 1, a => (a[0] is string s) ? s.ToLower() : a[0] != null ? throw new Exception("not a string") : "");
+                Def("string-downcase", 1, a => 
+                    (a[0] is string s) ? s.ToLower() : a[0] != null ? throw new Exception("not a string") : "");
                 Def("string-upcase", 1, a => (a[0] is string s) ? s.ToUpper() : a[0] != null ? throw new Exception("not a string") : "");
                 Def("string?", 1, a => (a[0] is string) ? TRUE : null);
                 Def("number?", 1, a => (DynamicNumber.IsNumber(a[0]?.GetType())) ? TRUE : null);
@@ -1062,16 +1079,25 @@ namespace ServiceStack.Script
                     else
                         COut.Write(s);
                 }
-                Def("print", 1, (I, a) => {
-                    print(I, Str(a[0], false)); 
-                    return a[0];
+                Def("print", -1, (I, a) => {
+                    var c = (Cell) a[0];
+                    foreach (var x in c)
+                    {
+                        print(I, Str(x, false)); 
+                    }
+                    return a[a.Length -1];
                 });
-                Def("println", 1, (I, a) => {
-                    if (I.Scope != null)
-                        I.Scope.Value.Context.DefaultMethods.writeln(I.Scope.Value, Str(a[0], false));
-                    else
-                        COut.WriteLine(Str(a[0], true));
-                    return a[0];
+                Def("println", -1, (I, a) => {
+                    var c = (Cell) a[0];
+                    foreach (var x in c)
+                    {
+                        if (I.Scope != null)
+                            I.Scope.Value.Context.DefaultMethods.write(I.Scope.Value, Str(x, false));
+                        else
+                            COut.WriteLine(Str(a[0], true));
+                    }
+                    print(I, "\n"); 
+                    return a[a.Length -1];
                 });
                 Def("prin1", 1, (I, a) => {
                         print(I, Str(a[0], true)); 
@@ -2205,6 +2231,8 @@ namespace ServiceStack.Script
         rest   cdr
         skip   nthcdr
         skip2  cddr
+        inc    1+
+        dec    1-
 
         =      eql
         null   not
@@ -2314,6 +2342,9 @@ namespace ServiceStack.Script
                      (if (and (cons? e) (equal key (car e)))
                          e
                        (assoc key (cdr alist)))))))
+
+    (defun assoc-key (k L) (first (assoc k L)))
+    (defun assoc-value (k L) (second (assoc k L)))
 
     (defun _nreverse (x prev)
       (let ((next (cdr x)))
