@@ -217,7 +217,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
                 var sExpressions = Lisp.Parse(lisp);
                 var x = lispCtx.Eval(sExpressions);
-                $"{x}".Print();
                 Assert.That((int)x, Is.EqualTo(89));
             }
             catch (Exception e)

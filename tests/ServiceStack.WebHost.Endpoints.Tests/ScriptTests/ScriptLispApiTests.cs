@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Script;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 {
@@ -23,6 +25,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         private ScriptContext context;
 
         string render(string lisp) => context.RenderLisp(lisp).NormalizeNewLines();
+        void print(string lisp) => render(lisp).Print();
         object eval(string lisp) => context.EvaluateLisp($"(return {lisp})");
 
         [Test]
@@ -56,6 +59,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         public void LISP_doseq()
         {
             Assert.That(render(@"(doseq (x nums3) (println x))"), Is.EqualTo("0\n1\n2"));
+        }
+ 
+        [Test]
+        public void LISP_map_literals()
+        {
+            var expected = new Dictionary<string, object> {
+                {"a", 1},
+                {"b", 2},
+                {"c", 3},
+            };
+            Assert.That(eval("(new-map '(a 1) '(b 2) '(c 3) )"), Is.EqualTo(expected));
+            Assert.That(eval("{ :a 1 :b 2 :c 3 }"), Is.EqualTo(expected));
+            Assert.That(eval("{ :a 1, :b 2, :c 3 }"), Is.EqualTo(expected));
+
+            Assert.That(eval("{ :a 1  :b { :b1 10 :b2 20 }  :c 3 }"), Is.EqualTo(new Dictionary<string, object> {
+                {"a", 1},
+                {"b", new Dictionary<string, object> {
+                    {"b1", 10},
+                    {"b2", 20},
+                }},
+                {"c", 3},
+            }));
         }
     }
 }

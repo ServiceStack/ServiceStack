@@ -274,6 +274,11 @@ namespace ServiceStack.Script
     {
         internal static object lispBool(this bool t) => t ? Lisp.TRUE : null;
         internal static object fromLisp(this object o) => o == Lisp.TRUE ? true : o;
+        internal static object lastArg(this object[] a)
+        {
+            var last = a[a.Length - 1];
+            return last is Lisp.Cell lastCell ? lastCell.Car : last;
+        }
     }
 
     /// <summary>
@@ -437,6 +442,9 @@ namespace ServiceStack.Script
                 => New(name, s => new Keyword(s));
         }
 
+        /// <summary>The symbol of <c>t</c></summary>
+        public static readonly Sym TRUE = Sym.New("t");
+
         static readonly Sym COND = Keyword.New("cond");
         static readonly Sym LAMBDA = Keyword.New("lambda");
         static readonly Sym FN = Keyword.New("fn");
@@ -462,9 +470,10 @@ namespace ServiceStack.Script
         static readonly Sym UNQUOTE = Sym.New("unquote");
         static readonly Sym UNQUOTE_SPLICING = Sym.New("unquote-splicing");
 
-        /// <summary>The symbol of <c>t</c></summary>
-        public static readonly Sym TRUE = Sym.New("t");
-
+        static readonly Sym LEFT_BRACE = Sym.New("{");
+        static readonly Sym RIGHT_BRACE = Sym.New("}");
+        static readonly Sym COLON = Sym.New(":");
+        static readonly Sym NEWMAP = Sym.New("new-map");
 
         //------------------------------------------------------------------
 
@@ -829,11 +838,13 @@ namespace ServiceStack.Script
                     }
                     throw new NotSupportedException($"new requires Type Name or Type but was {a[0]?.GetType().Name ?? "null"}");
                 });
+                
+                Def("new-map", -1, (I, a) => EvalMapArgs(a[0] as Cell, I));
 
-                Def("to-cons", 1, (a) => a[0] == null ? null : a[0] is IEnumerable e ? ToCons(e)
+                Def("to-cons", 1, a => a[0] == null ? null : a[0] is IEnumerable e ? ToCons(e)
                     : throw new NotSupportedException($"{a[0]?.GetType().Name ?? "null"} is not IEnumerable"));
-                Def("to-list", 1, (a) => toList(a[0] as IEnumerable));
-                Def("to-array", 1, (a) => toList(a[0] as IEnumerable).ToArray());
+                Def("to-list", 1, a => toList(a[0] as IEnumerable));
+                Def("to-array", 1, a => toList(a[0] as IEnumerable).ToArray());
 
                 Def("nth", 2, (a) => {
                     if (a[0] == null)
@@ -847,22 +858,22 @@ namespace ServiceStack.Script
                     return e.Cast<object>().ElementAt(i);
                 });
 
-                Def("enumerator", 1, (a) => {
+                Def("enumerator", 1, a => {
                     if (!(a[0] is IEnumerable e))
                         throw new NotSupportedException($"{a[0]?.GetType().Name ?? "null"} is not IEnumerable");
                     return e.GetEnumerator();
                 });
-                Def("enumeratorNext", 1, (a) => {
+                Def("enumeratorNext", 1, a => {
                     if (!(a[0] is IEnumerator e))
                         throw new NotSupportedException($"{a[0]?.GetType().Name ?? "null"} is not IEnumerator");
                     return e.MoveNext().lispBool();
                 });
-                Def("enumeratorCurrent", 1, (a) => {
+                Def("enumeratorCurrent", 1, a => {
                     if (!(a[0] is IEnumerator e))
                         throw new NotSupportedException($"{a[0]?.GetType().Name ?? "null"} is not IEnumerator");
                     return e.Current;
                 });
-                Def("dispose", 1, (a) => {
+                Def("dispose", 1, a => {
                     using (a[0] as IDisposable) {}
                     return null;
                 });
@@ -1085,7 +1096,7 @@ namespace ServiceStack.Script
                     {
                         print(I, Str(x, false)); 
                     }
-                    return a[a.Length -1];
+                    return a.lastArg();
                 });
                 Def("println", -1, (I, a) => {
                     var c = (Cell) a[0];
@@ -1097,7 +1108,7 @@ namespace ServiceStack.Script
                             COut.WriteLine(Str(a[0], true));
                     }
                     print(I, "\n"); 
-                    return a[a.Length -1];
+                    return a.lastArg();
                 });
                 Def("prin1", 1, (I, a) => {
                         print(I, Str(a[0], true)); 
@@ -1217,6 +1228,13 @@ namespace ServiceStack.Script
                                         return JsCallExpression.InvokeDelegate(fnDel, scriptMethod, isMemberExpr: false, scriptMethodArgs);
                                     });
                                 }
+                                if (symName[0] == ':')
+                                {
+                                    return (StaticMethodInvoker) (a => {
+                                        var ret = scope.Context.DefaultMethods.get(a[0], symName.Substring(1));
+                                        return ret;
+                                    });
+                                }
                                 if (symName[0] == '.')
                                 {
                                     return (StaticMethodInvoker) (a => {
@@ -1304,6 +1322,15 @@ namespace ServiceStack.Script
                                             scriptMethodArgs.AddRange(fnArgs);
 
                                             var ret = JsCallExpression.InvokeDelegate(fnDel, scriptMethod, isMemberExpr: false, scriptMethodArgs);
+                                            return ret;
+                                        }
+                                        if (fnName[0] == ':')
+                                        {
+                                            if (fnArgs.Length != 1)
+                                                throw new NotSupportedException(":index access requires 1 instance target");
+                                                
+                                            var target = fnArgs[0];
+                                            var ret = scope.Context.DefaultMethods.get(target, fnName.Substring(1));
                                             return ret;
                                         }
                                         if (fnName[0] == '.') // member method https://clojure.org/reference/java_interop#_member_access
@@ -1399,6 +1426,43 @@ namespace ServiceStack.Script
                 return frame;
             }
 
+            public static Dictionary<string, object> EvalMapArgs(Cell arg, Interpreter interp, Cell env=null)
+            {
+                if (arg == null)
+                    return TypeConstants.EmptyObjectDictionary;
+                
+                var to = new Dictionary<string, object>();
+                var n = arg.Length;
+                var frame = new object[n];
+
+                int i;
+                for (i = 0; i < n && arg != null; i++) {
+                    // Set the list of fixed arguments.
+                    frame[i] = arg.Car;
+                    arg = CdrCell(arg);
+                }
+
+                for (i = 0; i < n; i++)
+                {
+                    if (!(frame[i] is Cell c))
+                        throw new LispEvalException("Expected Cell Key/Value Pair", frame[i]);
+
+                    var key = c.Car is Sym sym
+                        ? sym.Name
+                        : c.Car is string s
+                            ? s
+                            : throw new LispEvalException("Map Key ", c.Car);
+
+                    if (!(c.Cdr is Cell v))
+                        throw new LispEvalException("Expected Cell Value", c.Cdr);
+                    
+                    var value = interp.Eval(v.Car, env);
+                    to.Add(key, value);
+                }
+                
+                return to;
+            }
+
             // (progn E1 ... En) => Evaluate E1, ... except for En and return it.
             object EvalProgN(Cell j, Cell env) {
                 if (j == null)
@@ -1478,6 +1542,31 @@ namespace ServiceStack.Script
                             break;
                         case Sym sym when !(sym is Keyword):
                             scope.PageResult.Args[sym.Name] = result;
+                            break;
+                        default:
+                            throw new NotVariableException(lval);
+                    }
+                }
+                return null;
+            }
+
+            // { :k1 v1 :k2 v2 } => Evaluate Object Dictionary (comma separators optional)
+            object EvalMap(Cell j, Cell env) {
+                object result = null;
+                for (; j != null; j = CdrCell(j)) {
+                    var lval = j.Car;
+                    if (lval == TRUE)
+                        throw new LispEvalException("not assignable", lval);
+                    j = CdrCell(j);
+                    if (j == null)
+                        throw new LispEvalException("right value expected", lval);
+                    result = Eval(j.Car, env);
+                    switch (lval) {
+                        case Arg arg:
+                            arg.SetValue(result, env);
+                            break;
+                        case Sym sym when !(sym is Keyword):
+                            Scope.Value.PageResult.Args[sym.Name] = result;
                             break;
                         default:
                             throw new NotVariableException(lval);
@@ -1841,6 +1930,15 @@ namespace ServiceStack.Script
                     return new Cell(UNQUOTE_SPLICING,
                         new Cell(ParseExpression(), null));
                 }
+                else if (Token == LEFT_BRACE)
+                {
+                    // { :a 1 :b 2 :c 3 }    => (new-map '("a" 1) '("b" 2) '("c" 3) )
+                    // { "a" 1 "b" 2 "c" 3 } => (new-map '("a" 1) '("b" 2) '("c" 3) )
+                    ReadToken();
+
+                    var sExpr = ParseMapBody();
+                    return new Cell(NEWMAP, sExpr);
+                }
                 else if (Token == DOT || Token == RIGHT_PAREN)
                 {
                     throw new FormatException($"unexpected {Token}");
@@ -1851,16 +1949,45 @@ namespace ServiceStack.Script
                 }
             }
 
+            Cell ParseMapBody()
+            {
+                if (Token == EOF)
+                    throw new FormatException("unexpected EOF");
+                else if (Token == RIGHT_BRACE)
+                    return null;
+                else
+                {
+                    var symKey = ParseExpression();
+
+                    var keyString = symKey is Sym sym
+                        ? (sym.Name[0] == ':' ? sym.Name.Substring(1) : throw new LispEvalException("Expected Key Symbol with ':' prefix", symKey))
+                        : symKey is string s
+                            ? s
+                            : throw new LispEvalException("Expected Key Symbol or String", symKey);
+
+                    ReadToken();
+
+                    var e2 = ParseExpression();
+
+                    ReadToken();
+
+                    if (Token == COMMA)
+                        ReadToken();
+
+                    var e3 = ParseMapBody();
+
+                    return new Cell(
+                        new Cell(LIST, new Cell(keyString, new Cell(e2, null))), 
+                        e3);
+                }
+            }
+
             Cell ParseListBody()
             {
                 if (Token == EOF)
-                {
                     throw new FormatException("unexpected EOF");
-                }
                 else if (Token == RIGHT_PAREN)
-                {
                     return null;
-                }
                 else
                 {
                     var e1 = ParseExpression();
@@ -1885,7 +2012,11 @@ namespace ServiceStack.Script
             }
 
             private IEnumerator<object> TokenObjects;
-            private static char[] TokenDelims = {'"', ',', '(', ')', '`', '\'', '~'};
+            private static char[] TokenDelims = {
+                '"', ',', '(', ')', '`', '\'', '~', 
+                '{','}',  //clojure map
+                '#',      //clojure fn
+            };
 
             static void AddToken(List<object> tokens, string s)
             {

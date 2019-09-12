@@ -37,6 +37,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         string render(string lisp) => context.RenderLisp(lisp).NormalizeNewLines();
 
         void print(string lisp) => render(lisp).Print();
+        object eval(string lisp) => context.EvaluateLisp($"(return {lisp})");
 
         [Test]
         public void Linq01() 
@@ -284,7 +285,98 @@ The digit two is even
 The digit zero is even
 ".NormalizeNewLines()));
         }
-        
+
+        [Test]
+        public void Linq11()
+        {
+            Assert.That(render(@"
+(defn linq11 ()
+  (let ( (product-infos
+            (map (fn (x) {
+                    :ProductName (.ProductName x)
+                    :Category    (.Category x)
+                    :Price       (.UnitPrice x) 
+                 }) 
+            products-list)) )
+    (println ""Product Info:"")
+    (doseq (p product-infos)
+        (println (:ProductName p) "" is in the category "" (:Category p) "" and costs "" (:Price p)) )
+  ))
+(linq11)"), 
+                
+                Does.StartWith(@"
+Product Info:
+Chai is in the category Beverages and costs 18
+Chang is in the category Beverages and costs 19
+Aniseed Syrup is in the category Condiments and costs 10
+Chef Anton's Cajun Seasoning is in the category Condiments and costs 22
+Chef Anton's Gumbo Mix is in the category Condiments and costs 21.35
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq11_expanded()
+        {
+            Assert.That(render(@"
+(defn linq11 ()
+  (let ( (product-infos
+            (map (fn (x) (new-map
+                    (list ""ProductName"" (.ProductName x))
+                    (list ""Category""    (.Category x))
+                    (list ""Price""       (.UnitPrice x)) 
+                )) 
+            products-list)) )
+    (println ""Product Info:"")
+    (doseq (p product-infos)
+      (println (:ProductName p) "" is in the category "" (:Category p) "" and costs "" (:Price p)))
+  ))
+(linq11)"), 
+                
+                Does.StartWith(@"
+Product Info:
+Chai is in the category Beverages and costs 18
+Chang is in the category Beverages and costs 19
+Aniseed Syrup is in the category Condiments and costs 10
+Chef Anton's Cajun Seasoning is in the category Condiments and costs 22
+Chef Anton's Gumbo Mix is in the category Condiments and costs 21.35
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void test()
+        {
+//            print("(fn (x) (.ProductName x))");
+//            print(@"(fn (x) (new-map (list ""ProductName"" (.ProductName x)) ))");
+        }
+
+        [Test]
+        public void Linq11_classic_lisp()
+        {
+            Assert.That(render(@"
+(defn linq11 ()
+  (let ( (product-infos
+            (map (fn (p) `(
+                    (ProductName ,(.ProductName p))
+                    (Category    ,(.Category p))
+                    (Price       ,(.UnitPrice p)) 
+                )) 
+            products-list)) )
+    (println ""Product Info:"")
+    (doseq (p product-infos)
+      (println (assoc-value 'ProductName p) "" is in the category "" (assoc-value 'Category p) 
+               "" and costs "" (assoc-value 'Price p)))
+  ))
+(linq11)"), 
+                
+                Does.StartWith(@"
+Product Info:
+Chai is in the category Beverages and costs 18
+Chang is in the category Beverages and costs 19
+Aniseed Syrup is in the category Condiments and costs 10
+Chef Anton's Cajun Seasoning is in the category Condiments and costs 22
+Chef Anton's Gumbo Mix is in the category Condiments and costs 21.35
+".NormalizeNewLines()));
+        }
         
     }
 }
