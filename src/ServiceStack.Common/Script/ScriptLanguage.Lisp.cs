@@ -363,6 +363,15 @@ namespace ServiceStack.Script
                     yield return j.Car;
                 } while ((j = CdrCell(j)) != null);
             }
+
+            public void Walk(Action<Cell> fn)
+            {
+                fn(this);
+                if (Car is Cell l)
+                    l.Walk(fn);
+                if (Cdr is Cell r)
+                    r.Walk(fn);
+            }
         }
 
 
@@ -472,9 +481,11 @@ namespace ServiceStack.Script
 
         static readonly Sym LEFT_BRACE = Sym.New("{");
         static readonly Sym RIGHT_BRACE = Sym.New("}");
-        static readonly Sym COLON = Sym.New(":");
+        static readonly Sym HASH = Sym.New("#");
+        static readonly Sym PERCENT = Sym.New("%");
         static readonly Sym NEWMAP = Sym.New("new-map");
-
+        static readonly Sym ARG = Sym.New("_a");
+
         //------------------------------------------------------------------
 
         // Get cdr of list x as a Cell or null.
@@ -1938,6 +1949,24 @@ namespace ServiceStack.Script
 
                     var sExpr = ParseMapBody();
                     return new Cell(NEWMAP, sExpr);
+                }
+                else if (Token == HASH) // #(+ 1 %) Clojure's anonymous function syntax https://clojure.org/guides/weird_characters#_anonymous_function
+                {
+                    ReadToken(); // #
+                    // (a b c)
+                    ReadToken(); // (
+                    var body = ParseListBody();
+
+                    body.Walk(c => {
+                        if (c.Car == PERCENT)
+                            c.Car = ARG;
+                        if (c.Cdr == PERCENT)
+                            c.Cdr = ARG;
+                    });
+                    
+                    // #(* 2 %) => (fn . ((_a . null) . ((* . (2 . (_a . null))) . null)))
+                    
+                    return new Cell(FN, new Cell(new Cell(ARG, null), new Cell(body, null)));
                 }
                 else if (Token == DOT || Token == RIGHT_PAREN)
                 {

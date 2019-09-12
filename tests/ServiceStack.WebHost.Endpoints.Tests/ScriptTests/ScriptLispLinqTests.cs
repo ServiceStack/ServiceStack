@@ -36,7 +36,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
         string render(string lisp) => context.RenderLisp(lisp).NormalizeNewLines();
 
-        void print(string lisp) => render(lisp).Print();
+        void print(string lisp)
+        {
+            "expr: ".Print();
+            Lisp.Parse(lisp).Each(x => Lisp.Str(x).Print());
+            "result: ".Print();
+            eval(lisp).PrintDump();
+        }
+
         object eval(string lisp) => context.EvaluateLisp($"(return {lisp})");
 
         [Test]
@@ -45,7 +52,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(render(@"
 (defn linq01 ()
     (setq numbers '(5 4 1 3 9 8 6 7 2 0))
-    (let ((low-numbers (filter (fn (%) (< % 5)) numbers)))
+    (let ((low-numbers (filter #(< % 5) numbers)))
         (println ""Numbers < 5:"")
         (dolist (n low-numbers)
             (println n))))
@@ -67,7 +74,7 @@ Numbers < 5:
             Assert.That(render(@"
 (defn linq02 ()
     (let ( (sold-out-products 
-               (filter (fn (p) (= 0 (.UnitsInStock p))) products-list)) )
+               (filter #(= 0 (.UnitsInStock %)) products-list)) )
         (println ""Sold out products:"")
         (doseq (p sold-out-products)
             (println (.ProductName p) "" is sold out"") )
@@ -90,10 +97,9 @@ Perth Pasties is sold out
             Assert.That(render(@"
 (defn linq03 ()
   (let ( (expensive-in-stock-products
-            (filter (fn (p) 
-                (and
-                     (> (.UnitsInStock p) 0)
-                     (> (.UnitPrice p) 3)) )
+            (filter #(and
+                     (> (.UnitsInStock %) 0)
+                     (> (.UnitPrice %) 3))
              products-list)
          ))
     (println ""In-stock products that cost more than 3.00:"")
@@ -117,7 +123,7 @@ Grandma's Boysenberry Spread is in stock and costs more than 3.00
         {
             Assert.That(render(@"
 (defn linq04 ()
-    (let ( (wa-customers (filter (fn (x) (= (.Region x) ""WA"")) customers-list)) )
+    (let ( (wa-customers (filter #(= (.Region %) ""WA"") customers-list)) )
         (println ""Customers from Washington and their orders:"")
         (doseq (c wa-customers)
             (println ""Customer "" (.CustomerId c) "": "" (.CompanyName c) "": "")
@@ -145,7 +151,7 @@ Customer TRAIH: Trail's Head Gourmet Provisioners:
 (defn linq05 ()
 (let ( (digits '(""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""))
        (i 0) (short-digits) )
-    (setq short-digits (filter (fn (digit) (if (> (1- (incf i)) (/count digit)) digit)) digits))
+    (setq short-digits (filter #(if (> (1- (incf i)) (/count %)) %) digits))
     (println ""Short digits:"")
     (doseq (d short-digits)
       (println ""The word "" d "" is shorter than its value""))))
@@ -192,7 +198,7 @@ Numbers + 1:
         {
             Assert.That(render(@"
 (defn linq07 ()
-  (let ( (product-names (map (fn (x) (.ProductName x)) products-list)) )
+  (let ( (product-names (map #(.ProductName %) products-list)) )
     (println ""Product Names:"")
     (doseq (x product-names) (println x))))
 (linq07)"), 
@@ -215,7 +221,7 @@ Chef Anton's Gumbo Mix
   (let ( (numbers '(5 4 1 3 9 8 6 7 2 0))
          (strings '(""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine"")) 
          (text-nums) )
-      (setq text-nums (map (fn (n) (nth strings n)) numbers))
+      (setq text-nums (map #(nth strings %) numbers))
       (println ""Number strings:"")
       (doseq (n text-nums) (println n))
   ))
@@ -244,6 +250,27 @@ zero
   (let ( (words '(""aPPLE"" ""BlUeBeRrY"" ""cHeRry""))
          (upper-lower-words) )
     (setq upper-lower-words
+        (map (fn (w) { :lower (lower-case w) :upper (upper-case w) } ) words) )
+    (doseq (ul upper-lower-words)
+        (println ""Uppercase: "" (:upper ul) "", Lowercase: "" (:lower ul)))
+  ))
+(linq09)"), 
+                
+                Does.StartWith(@"
+Uppercase: APPLE, Lowercase: apple
+Uppercase: BLUEBERRY, Lowercase: blueberry
+Uppercase: CHERRY, Lowercase: cherry
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq09_classic_lisp()
+        {
+            Assert.That(render(@"
+(defn linq09 ()
+  (let ( (words '(""aPPLE"" ""BlUeBeRrY"" ""cHeRry""))
+         (upper-lower-words) )
+    (setq upper-lower-words
         (map (fn (w) `( (lower ,(lower-case w)) (upper ,(upper-case w)) )) words) )
     (doseq (ul upper-lower-words)
         (println ""Uppercase: "" (assoc-value 'upper ul) "", Lowercase: "" (assoc-value 'lower ul)))
@@ -266,9 +293,9 @@ Uppercase: CHERRY, Lowercase: cherry
          (strings '(""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""))
          (digit-odd-evens) )
       (setq digit-odd-evens 
-          (map (fn(n) `( (digit ,(nth strings n)) (even ,(even? n)) ) ) numbers))
+          (map (fn(n) { :digit (nth strings n) :even (even? n) } ) numbers))
       (doseq (d digit-odd-evens)
-          (println ""The digit "" (assoc-value 'digit d) "" is "" (if (assoc-value 'even d) ""even"" ""odd"")))
+          (println ""The digit "" (:digit d) "" is "" (if (:even d) ""even"" ""odd"")))
   ))
 (linq10)"), 
                 
@@ -315,7 +342,7 @@ Chef Anton's Gumbo Mix is in the category Condiments and costs 21.35
         }
 
         [Test]
-        public void Linq11_expanded()
+        public void Linq11_expanded_form()
         {
             Assert.That(render(@"
 (defn linq11 ()
@@ -340,13 +367,6 @@ Aniseed Syrup is in the category Condiments and costs 10
 Chef Anton's Cajun Seasoning is in the category Condiments and costs 22
 Chef Anton's Gumbo Mix is in the category Condiments and costs 21.35
 ".NormalizeNewLines()));
-        }
-
-        [Test]
-        public void test()
-        {
-//            print("(fn (x) (.ProductName x))");
-//            print(@"(fn (x) (new-map (list ""ProductName"" (.ProductName x)) ))");
         }
 
         [Test]
@@ -376,6 +396,15 @@ Aniseed Syrup is in the category Condiments and costs 10
 Chef Anton's Cajun Seasoning is in the category Condiments and costs 22
 Chef Anton's Gumbo Mix is in the category Condiments and costs 21.35
 ".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void test()
+        {
+//            print("(map (fn (_a) (* 2 _a)) (range 10))");
+//            print("(map #(* 2 %) (range 10))");
+//            print("(fn (x) (.ProductName x))");
+//            print(@"(fn (x) (new-map (list ""ProductName"" (.ProductName x)) ))");
         }
         
     }
