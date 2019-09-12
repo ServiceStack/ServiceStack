@@ -910,8 +910,21 @@ namespace ServiceStack.Script
                 });
 
                 Def("str", 1, a => Str(a[0]));
-                Def("car", 1, a => (a[0] as Cell)?.Car);
-                Def("cdr", 1, a => (a[0] as Cell)?.Cdr);
+                
+                Def("car", 1, a => a[0] == null ? null : a[0] is Cell c 
+                    ? c.Car 
+                        : a[0] is IList l
+                            ? (l.Count > 0 ? l[0] : null)
+                            : a[0] is IEnumerable e
+                                ? EnumerableUtils.FirstOrDefault(e)
+                                : throw new LispEvalException("car requires Cell or IEnumerable", a[0]));
+                
+                Def("cdr", 1, a => a[0] == null ? null : a[0] is Cell c 
+                    ? c.Cdr 
+                        : a[0] is IEnumerable e
+                            ? EnumerableUtils.Skip(e, 1)
+                            : throw new LispEvalException("cdr requires Cell or IEnumerable", a[0]));
+                
                 Def("cons", 2, a => new Cell(a[0], a[1]));
                 Def("atom", 1, a => (a[0] is Cell) ? null : TRUE);
                 Def("eq", 2, a => (a[0] == a[1]) ? TRUE : null);
@@ -1121,6 +1134,51 @@ namespace ServiceStack.Script
                     print(I, "\n"); 
                     return a.lastArg();
                 });
+                
+                // html encoded versions
+                Def("pr", -1, (I, a) => {
+                    var c = (Cell) a[0];
+                    var defaultScripts = I.AssertScope().Context.DefaultMethods;
+                    foreach (var x in c)
+                    {
+                        print(I, defaultScripts.htmlEncode(Str(x, false)));
+                    }
+                    return a.lastArg();
+                });
+                Def("prn", -1, (I, a) => {
+                    var c = (Cell) a[0];
+                    var defaultScripts = I.AssertScope().Context.DefaultMethods;
+                    foreach (var x in c)
+                    {
+                        defaultScripts.write(I.AssertScope(), defaultScripts.htmlEncode(Str(x, false)));
+                    }
+                    print(I, "\n"); 
+                    return a.lastArg();
+                });
+                Def("dump", -1, (I, a) => {
+                    var c = (Cell) a[0];
+                    var defaultScripts = I.AssertScope().Context.DefaultMethods;
+                    foreach (var x in c)
+                    {
+                        defaultScripts.write(I.AssertScope(), defaultScripts.dump(x).ToRawString());
+                    }
+                    print(I, "\n"); 
+                    return a.lastArg();
+                });
+                Def("dump-inline", -1, (I, a) => {
+                    var c = (Cell) a[0];
+                    var defaultScripts = I.AssertScope().Context.DefaultMethods;
+                    foreach (var x in c)
+                    {
+                        defaultScripts.write(I.AssertScope(), defaultScripts.jsv(x).ToRawString());
+                    }
+                    print(I, "\n"); 
+                    return a.lastArg();
+                });
+
+                Def("debug", 0, a =>
+                    Globals.Keys.Aggregate((Cell) null, (x, y) => new Cell(y, x)));
+                
                 Def("prin1", 1, (I, a) => {
                         print(I, Str(a[0], true)); 
                         return a[0];
@@ -1153,8 +1211,6 @@ namespace ServiceStack.Script
                         Environment.Exit(DynamicInt.Instance.Convert(a[0]));
                         return null;
                     });
-                Def("dump", 0, a =>
-                    Globals.Keys.Aggregate((Cell) null, (x, y) => new Cell(y, x)));
 
                 Globals[Sym.New("*version*")] =
                     new Cell(1.2d,

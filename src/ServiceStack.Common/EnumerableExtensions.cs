@@ -5,6 +5,48 @@ using System.Linq;
 
 namespace ServiceStack
 {
+    public static class EnumerableUtils
+    {
+        public static object FirstOrDefault(IEnumerable items)
+        {
+            foreach (var item in items)
+            {
+                return item;
+            }
+            return null;
+        }
+
+        public static List<object> Skip(IEnumerable items, int count)
+        {
+            var to = new List<object>();
+            int i = 0;
+            foreach (var item in items)
+            {
+                if (count > i++)
+                    continue;
+
+                to.Add(item);
+            }
+            return to;
+        }
+
+        public static List<object> Take(IEnumerable items, int count)
+        {
+            var to = new List<object>();
+            int i = 0;
+            foreach (var item in items)
+            {
+                if (count > i++)
+                {
+                    to.Add(item);
+                    continue;
+                }
+                return to;
+            }
+            return to;
+        }
+    }
+    
     public static class EnumerableExtensions
     {
         public static bool IsEmpty<T>(this ICollection<T> collection) => collection == null || collection.Count == 0;
@@ -70,7 +112,7 @@ namespace ServiceStack
             }
             return list;
         }
-
+        
         public static List<object> ToObjects<T>(this IEnumerable<T> items)
         {
             var to = new List<object>();
