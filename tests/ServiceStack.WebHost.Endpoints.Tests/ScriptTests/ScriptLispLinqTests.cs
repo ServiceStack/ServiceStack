@@ -406,6 +406,59 @@ Chef Anton's Gumbo Mix is in the category Condiments and costs 21.35
 //            print("(fn (x) (.ProductName x))");
 //            print(@"(fn (x) (new-map (list ""ProductName"" (.ProductName x)) ))");
         }
+
+        [Test]
+        public void Linq12()
+        {
+            Assert.That(render(@"
+(defn linq12 ()
+  (let ( (numbers '(5 4 1 3 9 8 6 7 2 0))
+         (i 0) (nums-in-place) )
+    (setq nums-in-place (map (fn (n) { :num n :in-place (= n (1- (incf i))) }) numbers))
+    (println ""Number: In-place?"")
+    (doseq (n nums-in-place)
+        (println (:num n) "": "" (if (:in-place n) 'true 'false)) )
+  ))
+(linq12)"), 
+                
+                Does.StartWith(@"
+Number: In-place?
+5: false
+4: false
+1: false
+3: true
+9: false
+8: false
+6: true
+7: true
+2: false
+0: false
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq13()
+        {
+            Assert.That(render(@"
+(defn linq13 ()
+    (let ( (numbers '(5 4 1 3 9 8 6 7 2 0))
+           (digits  '(""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine"")) 
+           (low-nums) )
+      (setq low-nums (map #(nth digits %) (filter #(< % 5) numbers)))
+      (println ""Numbers < 5:"")
+      (doseq (n low-nums) (println n))
+    ))
+(linq13)"), 
+                
+                Does.StartWith(@"
+Numbers < 5:
+four
+one
+three
+two
+zero
+".NormalizeNewLines()));
+        }
         
     }
 }
