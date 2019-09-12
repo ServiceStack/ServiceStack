@@ -2306,341 +2306,374 @@ namespace ServiceStack.Script
         }
 
         /// <summary>Lisp initialization script</summary>
-        public static string InitScript = Prelude;
+        public static string InitScript = Prelude + LispCore + Extensions;
     
         public const string Prelude = @"
-    (setq defmacro
-          (macro (name args &rest body)
-                 `(progn (setq ,name (macro ,args ,@body))
-                         ',name)))
+(setq defmacro
+      (macro (name args &rest body)
+             `(progn (setq ,name (macro ,args ,@body))
+                     ',name)))
 
-    (defmacro defun (name args &rest body)
-      `(progn (setq ,name (lambda ,args ,@body))
-              ',name))
+(defmacro defun (name args &rest body)
+  `(progn (setq ,name (lambda ,args ,@body))
+          ',name))
 
-    (defmacro def (k v) 
-        (list 'progn (list 'setq k v) ))
+(defun caar (x) (car (car x)))
+(defun cadr (x) (car (cdr x)))
+(defun cdar (x) (cdr (car x)))
+(defun cddr (x) (cdr (cdr x)))
+(defun caaar (x) (car (car (car x))))
+(defun caadr (x) (car (car (cdr x))))
+(defun cadar (x) (car (cdr (car x))))
+(defun caddr (x) (car (cdr (cdr x))))
+(defun cdaar (x) (cdr (car (car x))))
+(defun cdadr (x) (cdr (car (cdr x))))
+(defun cddar (x) (cdr (cdr (car x))))
+(defun cdddr (x) (cdr (cdr (cdr x))))
+(defun not (x) (eq x nil))
+(defun cons? (x) (not (atom x)))
+(defun identity (x) x)
 
-    (defmacro when (condition &rest body)
-      `(if ,condition (progn ,@body)))
-    (defmacro unless (condition &rest body)
-      `(if (not ,condition) (progn ,@body)))
+(setq
+=      eql
+null   not
+setcar rplaca
+setcdr rplacd)
 
-    (defmacro incf (elem &rest num)
-      (cond
-        ((not num) 
-            `(setq ,elem (+ 1 ,elem)) )
-        (t `(setq ,elem (+ ,@num ,elem))) ))
-    (defmacro decf (elem &rest num)
-      (cond
-        ((not num) 
-            `(setq ,elem (- ,elem 1)) )
-        (t `(setq ,elem (- ,elem ,@num))) ))
-    (defun 1+ (n) (+ n 1))
-    (defun 1- (n) (- n 1))
+(defun > (x y) (< y x))
+(defun >= (x y) (not (< x y)))
+(defun <= (x y) (not (< y x)))
+(defun /= (x y) (not (= x y)))
 
-    (defmacro push-end (e L)              ; JS [].push
-      `(setq ,L (append ,L (list ,e))) )
-    (defmacro push (e L)                  ; JS [].unshift
-      `(setq ,L (cons ,e ,L)))
-    (defmacro pop (L)                     ; JS [].shift
-      `(let ( (v (first ,L)) )
-          (setq ,L (rest ,L)) 
-        v))
+(defun equal (x y)
+  (cond ((atom x) (eql x y))
+        ((atom y) nil)
+        ((equal (car x) (car y)) (equal (cdr x) (cdr y)))))
 
-    (defun nthcdr (n L)
-      (if (zero? n)
-          L
-          (nthcdr (- n 1) (cdr L))))
+(defmacro if (test then &rest else)
+  `(cond (,test ,then)
+         ,@(cond (else `((t ,@else))))))
 
-    (defun butlast (L)
-        (reverse (nthcdr 1 (reverse L))))
-    (defun nbutlast (L)
-        (nreverse (nthcdr 1 (nreverse L))))
-    (defun take (n L)
-        (reverse (nthcdr (max (- (length L) n) 0) (reverse L))))
+(defmacro when (test &rest body)
+  `(cond (,test ,@body)))
 
-    (defun remove-if (f L)
-      (mapcan (fn (e) (if (f e) (list e) nil)) L) )
+(defmacro let (args &rest body)
+  ((lambda (vars vals)
+     (defun vars (x)
+       (cond (x (cons (if (atom (car x))
+                          (car x)
+                        (caar x))
+                      (vars (cdr x))))))
+     (defun vals (x)
+       (cond (x (cons (if (atom (car x))
+                          nil
+                        (cadar x))
+                      (vals (cdr x))))))
+     `((lambda ,(vars args) ,@body) ,@(vals args)))
+   nil nil))
 
-    (defun some (f L)
-        (let ((to nil))
-          (while (and L (not (setq to (f (pop L))))))
-          to))
+(defmacro letrec (args &rest body)      ; (letrec ((v e) ...) body...)
+  (let (vars setqs)
+    (defun vars (x)
+      (cond (x (cons (caar x)
+                     (vars (cdr x))))))
+    (defun sets (x)
+      (cond (x (cons `(setq ,(caar x) ,(cadar x))
+                     (sets (cdr x))))))
+    `(let ,(vars args) ,@(sets args) ,@body)))
 
-    (defun every (f L)
-        (let ((to nil))
-          (while (and L (setq to (f (pop L)))))
-          to))
+(defun _append (x y)
+  (if (null x)
+      y
+    (cons (car x) (_append (cdr x) y))))
+(defmacro append (x &rest y)
+  (if (null y)
+      x
+    `(_append ,x (append ,@y))))
 
-    (defun reverse (L)
-      (let ((to '()))
-        (dolist (e L to)
-          (push e to))))
+(defmacro and (x &rest y)
+  (if (null y)
+      x
+    `(cond (,x (and ,@y)))))
 
-    (defun flatten (L)
-        (if (null L)
-            nil
-            (if (atom (first L))
-                (cons (first L) (flatten (rest L)))
-                (append (flatten (first L)) (flatten (rest L))))))  
+(defun mapcar (f x)
+  (and x (cons (f (car x)) (mapcar f (cdr x)))))
 
-    (defun elt (L n)
-        (if (>= n (length L)) (error ""index out of range""))
-        (let ((l L))
-            (dotimes (i n)
-                (setq l (rest l))
-            )
-        (first l)))
+(defmacro or (x &rest y)
+  (if (null y)
+      x
+    `(cond (,x)
+           ((or ,@y)))))
 
-    (defun range (n)
-        (let ( (to '()) )  
-            (dotimes (i n)
-                (push-end i to))
-            to))
+(defun listp (x)
+  (or (null x) (cons? x)))    ; NB (list? (lambda (x) (+ x 1))) => nil
 
-    (defun set-difference (L1 L2)
-      (if L2
-            (let ((res nil))
-              (dolist (e L1)
-                (unless (member e L2)
-                  (push e res)))
-              res)
-          L1))
+(defun memq (key x)
+  (cond ((null x) nil)
+        ((eq key (car x)) x)
+        (t (memq key (cdr x)))))
 
-    (defun union (L1 L2)
-      (if L2
-            (let ((res nil))
-              (dolist (e L1)
-                (unless (member e res)
-                  (push e res)))
-              (dolist (e L2)
-                (unless (member e res)
-                  (push e res)))
-              res)
-          L1))
+(defun member (key x)
+  (cond ((null x) nil)
+        ((equal key (car x)) x)
+        (t (member key (cdr x)))))
 
-    (defun even? (n) (= (% n 2) 0))
-    (defun odd? (n) (= (% n 2) 1))
+(defun assq (key alist)
+  (cond (alist (let ((e (car alist)))
+                 (if (and (cons? e) (eq key (car e)))
+                     e
+                   (assq key (cdr alist)))))))
 
-    (defun caar (x) (car (car x)))
-    (defun cadr (x) (car (cdr x)))
-    (defun cdar (x) (cdr (car x)))
-    (defun cddr (x) (cdr (cdr x)))
-    (defun caaar (x) (car (car (car x))))
-    (defun caadr (x) (car (car (cdr x))))
-    (defun cadar (x) (car (cdr (car x))))
-    (defun caddr (x) (car (cdr (cdr x))))
-    (defun cdaar (x) (cdr (car (car x))))
-    (defun cdadr (x) (cdr (car (cdr x))))
-    (defun cddar (x) (cdr (cdr (car x))))
-    (defun cdddr (x) (cdr (cdr (cdr x))))
-    (defun not (x) (eq x nil))
-    (defun cons? (x) (not (atom x)))
-    (defun identity (x) x)
+(defun assoc (key alist)
+  (cond (alist (let ((e (car alist)))
+                 (if (and (cons? e) (equal key (car e)))
+                     e
+                   (assoc key (cdr alist)))))))
 
-    (setq
-        first  car
-        second cadr
-        third  caddr
-        next   cdr
-        rest   cdr
-        skip   nthcdr
-        skip2  cddr
-        inc    1+
-        dec    1-
+(defun _nreverse (x prev)
+  (let ((next (cdr x)))
+    (setcdr x prev)
+    (if (null next)
+        x
+      (_nreverse next x))))
+(defun nreverse (list)            ; (nreverse '(a b c d)) => (d c b a)
+  (cond (list (_nreverse list nil))))
 
-        =      eql
-        null   not
-        setcar rplaca
-        setcdr rplacd)
+(defun last (list)
+  (if (atom (cdr list))
+      list
+    (last (cdr list))))
 
-    (defun > (x y) (< y x))
-    (defun >= (x y) (not (< x y)))
-    (defun <= (x y) (not (< y x)))
-    (defun /= (x y) (not (= x y)))
+(defun nconc (&rest lists)
+  (if (null (cdr lists))
+      (car lists)
+    (if (null (car lists))
+        (apply nconc (cdr lists))
+      (setcdr (last (car lists))
+              (apply nconc (cdr lists)))
+      (car lists))))
 
-    (defun equal (x y)
-      (cond ((atom x) (eql x y))
-            ((atom y) nil)
-            ((equal (car x) (car y)) (equal (cdr x) (cdr y)))))
+(defmacro while (test &rest body)
+  (let ((loop (gensym)))
+    `(letrec ((,loop (lambda () (cond (,test ,@body (,loop))))))
+       (,loop))))
 
-    (defmacro if (test then &rest else)
-      `(cond (,test ,then)
-             ,@(cond (else `((t ,@else))))))
+(defmacro dolist (spec &rest body) ; (dolist (name list [result]) body...)
+  (let ((name (car spec))
+        (list (gensym)))
+    `(let (,name
+           (,list ,(cadr spec)))
+       (while ,list
+         (setq ,name (car ,list))
+         ,@body
+         (setq ,list (cdr ,list)))
+       ,@(if (cddr spec)
+             `((setq ,name nil)
+               ,(caddr spec))))))
 
-    (defmacro when (test &rest body)
-      `(cond (,test ,@body)))
-
-    (defmacro let (args &rest body)
-      ((lambda (vars vals)
-         (defun vars (x)
-           (cond (x (cons (if (atom (car x))
-                              (car x)
-                            (caar x))
-                          (vars (cdr x))))))
-         (defun vals (x)
-           (cond (x (cons (if (atom (car x))
-                              nil
-                            (cadar x))
-                          (vals (cdr x))))))
-         `((lambda ,(vars args) ,@body) ,@(vals args)))
-       nil nil))
-
-    (defmacro letrec (args &rest body)      ; (letrec ((v e) ...) body...)
-      (let (vars setqs)
-        (defun vars (x)
-          (cond (x (cons (caar x)
-                         (vars (cdr x))))))
-        (defun sets (x)
-          (cond (x (cons `(setq ,(caar x) ,(cadar x))
-                         (sets (cdr x))))))
-        `(let ,(vars args) ,@(sets args) ,@body)))
-
-    (defun _append (x y)
-      (if (null x)
-          y
-        (cons (car x) (_append (cdr x) y))))
-    (defmacro append (x &rest y)
-      (if (null y)
-          x
-        `(_append ,x (append ,@y))))
-
-    (defmacro and (x &rest y)
-      (if (null y)
-          x
-        `(cond (,x (and ,@y)))))
-
-    (defun reduce (f L &rest IV)
-        (let ((acc (cond (IV (first IV))
-                         (t (f)) )))
-            (if (end? L)
-                acc
-                (reduce f (cdr L)  (f acc (car L))) 
-            )))
-
-    (defun mapcar (f x)
-      (and x (cons (f (car x)) (mapcar f (cdr x)))))
-
-    (defun mapcan (f L)
-      (apply nconc (mapcar f L)))
-
-    (defun mapc (f L)
-      (mapcar f L) L)
-
-    (defmacro or (x &rest y)
-      (if (null y)
-          x
-        `(cond (,x)
-               ((or ,@y)))))
-
-    (defun listp (x)
-      (or (null x) (cons? x)))    ; NB (list? (lambda (x) (+ x 1))) => nil
-
-    (defun memq (key x)
-      (cond ((null x) nil)
-            ((eq key (car x)) x)
-            (t (memq key (cdr x)))))
-
-    (defun member (key x)
-      (cond ((null x) nil)
-            ((equal key (car x)) x)
-            (t (member key (cdr x)))))
-
-    (defun assq (key alist)
-      (cond (alist (let ((e (car alist)))
-                     (if (and (cons? e) (eq key (car e)))
-                         e
-                       (assq key (cdr alist)))))))
-
-    (defun assoc (key alist)
-      (cond (alist (let ((e (car alist)))
-                     (if (and (cons? e) (equal key (car e)))
-                         e
-                       (assoc key (cdr alist)))))))
-
-    (defun assoc-key (k L) (first (assoc k L)))
-    (defun assoc-value (k L) (second (assoc k L)))
-
-    (defun _nreverse (x prev)
-      (let ((next (cdr x)))
-        (setcdr x prev)
-        (if (null next)
-            x
-          (_nreverse next x))))
-    (defun nreverse (list)            ; (nreverse '(a b c d)) => (d c b a)
-      (cond (list (_nreverse list nil))))
-
-    (defun last (list)
-      (if (atom (cdr list))
-          list
-        (last (cdr list))))
-
-    (defun nconc (&rest lists)
-      (if (null (cdr lists))
-          (car lists)
-        (if (null (car lists))
-            (apply nconc (cdr lists))
-          (setcdr (last (car lists))
-                  (apply nconc (cdr lists)))
-          (car lists))))
-
-    (defmacro while (test &rest body)
-      (let ((loop (gensym)))
-        `(letrec ((,loop (lambda () (cond (,test ,@body (,loop))))))
-           (,loop))))
-
-    (defmacro dolist (spec &rest body) ; (dolist (name list [result]) body...)
-      (let ((name (car spec))
-            (list (gensym)))
-        `(let (,name
-               (,list ,(cadr spec)))
-           (while ,list
-             (setq ,name (car ,list))
-             ,@body
-             (setq ,list (cdr ,list)))
-           ,@(if (cddr spec)
-                 `((setq ,name nil)
-                   ,(caddr spec))))))
-
-    (defmacro dotimes (spec &rest body) ; (dotimes (name count [result]) body...)
-      (let ((name (car spec))
-            (count (gensym)))
-        `(let ((,name 0)
-               (,count ,(cadr spec)))
-           (while (< ,name ,count)
-             ,@body
-             (setq ,name (+ ,name 1)))
-           ,@(if (cddr spec)
-                 `(,(caddr spec))))))
-
-    (defmacro doseq (spec &rest body) ; (doseq (name seq [result]) body...)
-      (let ( (name (first spec)) 
-             (seq (second spec)) 
-             (enum (gensym))  )
-        `(let ( (,name) (,enum (enumerator ,seq)) )
-           (while (enumeratorNext ,enum)
-             (setq ,name (enumeratorCurrent ,enum))
-             ,@body)
-           (dispose ,enum)
-           )))
-
-    (setq
-        atom?  atom
-        cons?  consp
-        list?  listp
-        end?   endp
-        zero?  zerop
-        all    every
-        any    some
-        lower-case string-downcase 
-        upper-case string-upcase
-
-        ; clojure
-        defn   defun
-        filter remove-if
-    )
+(defmacro dotimes (spec &rest body) ; (dotimes (name count [result]) body...)
+  (let ((name (car spec))
+        (count (gensym)))
+    `(let ((,name 0)
+           (,count ,(cadr spec)))
+       (while (< ,name ,count)
+         ,@body
+         (setq ,name (+ ,name 1)))
+       ,@(if (cddr spec)
+             `(,(caddr spec))))))
     ";
-        
+
+        /// <summary>
+        /// Lisp Common Utils 
+        /// </summary>
+        public const string LispCore = @"
+(defmacro def (k v) 
+    (list 'progn (list 'setq k v) ))
+
+(defmacro incf (elem &rest num)
+  (cond
+    ((not num) 
+        `(setq ,elem (+ 1 ,elem)) )
+    (t `(setq ,elem (+ ,@num ,elem))) ))
+
+(defmacro decf (elem &rest num)
+  (cond
+    ((not num) 
+        `(setq ,elem (- ,elem 1)) )
+    (t `(setq ,elem (- ,elem ,@num))) ))
+
+(defun 1+ (n) (+ n 1))
+(defun 1- (n) (- n 1))
+
+(defun mapcan (f L)
+  (apply nconc (mapcar f L)))
+
+(defun mapc (f L)
+  (mapcar f L) L)
+
+(defmacro when (condition &rest body)
+  `(if ,condition (progn ,@body)))
+(defmacro unless (condition &rest body)
+  `(if (not ,condition) (progn ,@body)))
+
+(defmacro push-end (e L)              ; JS [].push
+  `(setq ,L (append ,L (list ,e))) )
+(defmacro push (e L)                  ; JS [].unshift
+  `(setq ,L (cons ,e ,L)))
+(defmacro pop (L)                     ; JS [].shift
+  `(let ( (v (first ,L)) )
+      (setq ,L (rest ,L)) 
+    v))
+
+(defun reduce (f L &rest IV)
+(let ((acc (cond (IV (first IV))
+                 (t (f)) )))
+    (if (end? L)
+        acc
+        (reduce f (cdr L)  (f acc (car L))) 
+    )))
+
+(defun zip (f L1 L2)
+  (let ( (to) ) 
+    (dolist (a L1) 
+      (dolist (b L2)
+        (push (f a b) to)))
+    (nreverse to)
+  ))
+
+(defun nthcdr (n L)
+  (if (zero? n)
+      L
+      (nthcdr (- n 1) (cdr L))))
+
+(defun butlast (L)
+    (reverse (nthcdr 1 (reverse L))))
+(defun nbutlast (L)
+    (nreverse (nthcdr 1 (nreverse L))))
+(defun take (n L)
+    (reverse (nthcdr (max (- (length L) n) 0) (reverse L))))
+
+(defun remove-if (f L)
+  (mapcan (fn (e) (if (f e) (list e) nil)) L) )
+
+(defun some (f L)
+    (let ((to nil))
+      (while (and L (not (setq to (f (pop L))))))
+      to))
+
+(defun every (f L)
+    (let ((to nil))
+      (while (and L (setq to (f (pop L)))))
+      to))
+
+(defun reverse (L)
+  (let ((to '()))
+    (dolist (e L to)
+      (push e to))))
+
+(defun flatten (L)
+  (mapcan
+     (fn (a)
+         (cond
+           ((atom a) (list a))
+           (t (flatten a))))
+     L))
+
+(defun elt (L n)
+    (if (>= n (length L)) (error ""index out of range""))
+    (let ((l L))
+        (dotimes (i n)
+            (setq l (rest l))
+        )
+    (first l)))
+
+(defun range (n)
+    (let ( (to '()) )  
+        (dotimes (i n)
+            (push-end i to))
+        to))
+
+(defun set-difference (L1 L2)
+  (if L2
+        (let ((res nil))
+          (dolist (e L1)
+            (unless (member e L2)
+              (push e res)))
+          res)
+      L1))
+
+(defun union (L1 L2)
+  (if L2
+        (let ((res nil))
+          (dolist (e L1)
+            (unless (member e res)
+              (push e res)))
+          (dolist (e L2)
+            (unless (member e res)
+              (push e res)))
+          res)
+      L1))
+";
+
+        /// <summary>
+        /// Popular Clojure + nicer UX Utils
+        /// </summary>
+        public const string Extensions = @"
+
+(defmacro doseq (spec &rest body) ; (doseq (name seq [result]) body...)
+  (let ( (name (first spec)) 
+         (seq (second spec)) 
+         (enum (gensym))  )
+    `(let ( (,name) (,enum (enumerator ,seq)) )
+       (while (enumeratorNext ,enum)
+         (setq ,name (enumeratorCurrent ,enum))
+         ,@body)
+       (dispose ,enum)
+)))
+
+(defun assoc-key (k L) (first (assoc k L)))
+(defun assoc-value (k L) (second (assoc k L)))
+
+(defun even? (n) (= (% n 2) 0))
+(defun odd? (n) (= (% n 2) 1))
+
+(defun flatmap (f L)
+  (/flatten (map f L)))
+
+(defun map-index (f L)
+  (let ((i -1))
+    (map (fn(x) (f x (incf i) )) L) ))
+
+(defun filter-index (f L)
+  (let ( (i -1) )
+    (filter (fn (x) (f x (incf i) )) L) ))
+
+(setq
+    first  car
+    second cadr
+    third  caddr
+    next   cdr
+    rest   cdr
+    skip   nthcdr
+    skip2  cddr
+    inc    1+
+    dec    1-
+
+    atom?  atom
+    cons?  consp
+    list?  listp
+    end?   endp
+    zero?  zerop
+    all    every
+    any    some
+    lower-case string-downcase 
+    upper-case string-upcase
+
+    ; clojure
+    defn   defun
+    filter remove-if
+)
+";
+
     }
 }

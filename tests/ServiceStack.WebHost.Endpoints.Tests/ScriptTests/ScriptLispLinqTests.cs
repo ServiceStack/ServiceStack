@@ -44,7 +44,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             eval(lisp).PrintDump();
         }
 
-        object eval(string lisp) => context.EvaluateLisp($"(return {lisp})");
+        object eval(string lisp) => context.EvaluateLisp($"(return (let () {lisp} ))");
 
         [Test]
         public void Linq01() 
@@ -149,12 +149,13 @@ Customer TRAIH: Trail's Head Gourmet Provisioners:
         {
             Assert.That(render(@"
 (defn linq05 ()
-(let ( (digits '(""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""))
-       (i 0) (short-digits) )
-    (setq short-digits (filter #(if (> (1- (incf i)) (/count %)) %) digits))
-    (println ""Short digits:"")
-    (doseq (d short-digits)
-      (println ""The word "" d "" is shorter than its value""))))
+    (let ( (digits '(""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""))
+           (short-digits) )
+        (setq short-digits (filter-index (fn (x i) (> i (length x))) digits) )
+        (println ""Short digits:"")
+        (doseq (d short-digits)
+          (println ""The word "" d "" is shorter than its value""))
+    ))
 (linq05)"), 
                 
                 Does.StartWith(@"
@@ -399,15 +400,6 @@ Chef Anton's Gumbo Mix is in the category Condiments and costs 21.35
         }
 
         [Test]
-        public void test()
-        {
-//            print("(map (fn (_a) (* 2 _a)) (range 10))");
-//            print("(map #(* 2 %) (range 10))");
-//            print("(fn (x) (.ProductName x))");
-//            print(@"(fn (x) (new-map (list ""ProductName"" (.ProductName x)) ))");
-        }
-
-        [Test]
         public void Linq12()
         {
             Assert.That(render(@"
@@ -458,6 +450,84 @@ three
 two
 zero
 ".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq14()
+        {
+            Assert.That(render(@"
+(defn linq14 ()
+  (let ( (numbers-a '(0 2 4 5 6 8 9))
+         (numbers-b '(1 3 5 7 8)) 
+         (pairs) )    
+    (setq pairs (filter #(< (:a %) (:b %)) 
+                    (zip (fn (a b) { :a a, :b b }) numbers-a numbers-b)))        
+    (println ""Pairs where a < b:"")
+    (doseq (pair pairs)
+      (println (:a pair) "" is less than "" (:b pair)))
+  ))
+(linq14)"), 
+                
+                Does.StartWith(@"
+Pairs where a < b:
+0 is less than 1
+0 is less than 3
+0 is less than 5
+0 is less than 7
+0 is less than 8
+2 is less than 3
+2 is less than 5
+2 is less than 7
+2 is less than 8
+4 is less than 5
+4 is less than 7
+4 is less than 8
+5 is less than 7
+5 is less than 8
+6 is less than 7
+6 is less than 8
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq15()
+        {
+            Assert.That(render(@"
+(defn linq15 ()
+  (let ( (orders 
+            (flatmap (fn (c)
+              (map (fn (o) {
+                :customer-id (.CustomerId c) 
+                :order-id    (.OrderId o) 
+                :total       (.Total o)
+              }) (.Orders c))
+             ) customers-list)) )
+    (doseq (o orders) (dump-inline o))
+  ))
+(linq15)"), 
+                
+                Does.StartWith(@"
+{customer-id:ALFKI,order-id:10643,total:814.5}
+{customer-id:ALFKI,order-id:10692,total:878}
+{customer-id:ALFKI,order-id:10702,total:330}
+{customer-id:ALFKI,order-id:10835,total:845.8}
+{customer-id:ALFKI,order-id:10952,total:471.2}
+{customer-id:ALFKI,order-id:11011,total:933.5}
+{customer-id:ANATR,order-id:10308,total:88.8}
+{customer-id:ANATR,order-id:10625,total:479.75}
+{customer-id:ANATR,order-id:10759,total:320}
+{customer-id:ANATR,order-id:10926,total:514.4}
+{customer-id:ANTON,order-id:10365,total:403.2}
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void test()
+        {
+//            print("(setq numbers-a '(1 2 3)) (setq numbers-b '(3 4 5)) (zip (fn (a b) { :a a :b b }) numbers-a numbers-b)");
+//            print("(map #(* 2 %) (range 10))");
+//            print("(fn (x) (.ProductName x))");
+//            print(@"(fn (x) (new-map (list ""ProductName"" (.ProductName x)) ))");
         }
         
     }
