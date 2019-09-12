@@ -806,7 +806,7 @@ namespace ServiceStack.Script
                     var scope = I.AssertScope();
                     var args = EvalArgs(a[0] as Cell, I);
                     if (!(args[0] is string fnName)) 
-                        throw new NotSupportedException($"F requires Function Reference but was {a[0]?.GetType().Name ?? "null"}");
+                        throw new LispEvalException($"F requires a string Function Reference", args[0]);
 
                     var fnArgs = new List<object>();
                     for (var i=1; i<args.Length; i++)
@@ -820,7 +820,7 @@ namespace ServiceStack.Script
                     var scope = I.AssertScope();
                     var args = EvalArgs(a[0] as Cell, I);
                     if (!(args[0] is string fnName)) 
-                        throw new NotSupportedException($"C requires Constructor Reference but was {a[0]?.GetType().Name ?? "null"}");
+                        throw new LispEvalException($"C requires a string Constructor Reference", args[0]);
 
                     var fn = scope.Context.AssertProtectedMethods().C(fnName);
                     var fnArgs = new List<object>();
@@ -847,13 +847,13 @@ namespace ServiceStack.Script
                         var ret = scope.Context.AssertProtectedMethods().createInstance(type, fnArgs);
                         return ret;
                     }
-                    throw new NotSupportedException($"new requires Type Name or Type but was {a[0]?.GetType().Name ?? "null"}");
+                    throw new LispEvalException("new requires Type Name or Type", a[0]);
                 });
                 
                 Def("new-map", -1, (I, a) => EvalMapArgs(a[0] as Cell, I));
 
                 Def("to-cons", 1, a => a[0] == null ? null : a[0] is IEnumerable e ? ToCons(e)
-                    : throw new NotSupportedException($"{a[0]?.GetType().Name ?? "null"} is not IEnumerable"));
+                    : throw new LispEvalException("not IEnumerable", a[0]));
                 Def("to-list", 1, a => toList(a[0] as IEnumerable));
                 Def("to-array", 1, a => toList(a[0] as IEnumerable).ToArray());
 
@@ -861,27 +861,27 @@ namespace ServiceStack.Script
                     if (a[0] == null)
                         return null;
                     if (!(a[1] is int i))
-                        throw new NotSupportedException($"{a[0]?.GetType().Name ?? "null"} is not IEnumerable");
+                        throw new LispEvalException("not IEnumerable", a[1]);
                     if (a[0] is IList c)
                         return c[i];
                     if (!(a[0] is IEnumerable e))
-                        throw new NotSupportedException($"{a[0]?.GetType().Name ?? "null"} is not IEnumerable");
+                        throw new LispEvalException("not IEnumerable", a[0]);
                     return e.Cast<object>().ElementAt(i);
                 });
 
                 Def("enumerator", 1, a => {
                     if (!(a[0] is IEnumerable e))
-                        throw new NotSupportedException($"{a[0]?.GetType().Name ?? "null"} is not IEnumerable");
+                        throw new LispEvalException("not IEnumerable", a[0]);
                     return e.GetEnumerator();
                 });
                 Def("enumeratorNext", 1, a => {
                     if (!(a[0] is IEnumerator e))
-                        throw new NotSupportedException($"{a[0]?.GetType().Name ?? "null"} is not IEnumerator");
+                        throw new LispEvalException("not IEnumerable", a[0]);
                     return e.MoveNext().lispBool();
                 });
                 Def("enumeratorCurrent", 1, a => {
                     if (!(a[0] is IEnumerator e))
-                        throw new NotSupportedException($"{a[0]?.GetType().Name ?? "null"} is not IEnumerator");
+                        throw new LispEvalException("not IEnumerable", a[0]);
                     return e.Current;
                 });
                 Def("dispose", 1, a => {
@@ -896,7 +896,7 @@ namespace ServiceStack.Script
                     var fn = resolveFn(a[0], I);
                     if (seq is IEnumerable e)
                         return e.Map(fn);
-                    throw new NotSupportedException($"{seq.GetType().Name} is not IEnumerable");
+                    throw new LispEvalException("not IEnumerable", seq);
                 });
                 
                 Def("sum", 1, a => {
@@ -947,13 +947,18 @@ namespace ServiceStack.Script
                 Def("string", 1, a => $"{a[0]}");
                 Def("string-downcase", 1, a => 
                     (a[0] is string s) ? s.ToLower() : a[0] != null ? throw new Exception("not a string") : "");
-                Def("string-upcase", 1, a => (a[0] is string s) ? s.ToUpper() : a[0] != null ? throw new Exception("not a string") : "");
+                Def("string-upcase", 1, a => (a[0] is string s) ? s.ToUpper() : a[0] != null ? throw new LispEvalException("not a string", a[0]) : "");
                 Def("string?", 1, a => (a[0] is string) ? TRUE : null);
                 Def("number?", 1, a => (DynamicNumber.IsNumber(a[0]?.GetType())) ? TRUE : null);
                 Def("eql", 2, a => ((a[0] == null) ? ((a[1] == null) ?
                                                       TRUE : null) :
                                     a[0].Equals(a[1]) ? TRUE : null));
-                Def("<", 2, a => (DynamicNumber.CompareTo(a[0], a[1]) < 0) ? TRUE : null);
+                Def("<", 2, a => a[0] == null || a[1] == null ? a[0] == a[1] 
+                    : DynamicNumber.IsNumber(a[0].GetType())
+                    ? (object) (DynamicNumber.CompareTo(a[0], a[1]) < 0 ? TRUE : null)
+                    : a[0] is IComparable c
+                        ? c.CompareTo(a[1]) 
+                        : throw new LispEvalException("not IComparable", a[0]));
                 Def("%", 2, a => 
                     DynamicNumber.Mod(a[0], a[1]));
                 Def("mod", 2, a => {
@@ -978,7 +983,7 @@ namespace ServiceStack.Script
                                         (Cell) a[2],
                                         DynamicNumber.Div));
                 
-                Def("count", 1, a => (a[0] is IEnumerable e) ? e.Map(x => x).Count() : throw new Exception("not an IEnumerable"));
+                Def("count", 1, a => (a[0] is IEnumerable e) ? e.Map(x => x).Count() : throw new LispEvalException("not an IEnumerable", a[0]));
 
                 Def("remove", 2, a => {
                     var oNeedle = a[0];
@@ -1008,7 +1013,7 @@ namespace ServiceStack.Script
                         return to; 
                     }
                     
-                    throw new Exception("not an IEnumerable");
+                    throw new LispEvalException("not IEnumerable", a[1]);
                 });
 
                 Def("subseq", -2, a => {
@@ -1076,7 +1081,7 @@ namespace ServiceStack.Script
                         return FoldL(b, c, (i, j) => Math.Max(i, (byte)j));
                     if (first is float f)
                         return FoldL(f, c, (i, j) => Math.Max(i, (float)j));
-                    throw new NotSupportedException("Not supported integer type: " + c.Car.GetType().Name);
+                    throw new LispEvalException("not a number", first);
                 });
 
                 Def("min", -1, a => {
@@ -1096,7 +1101,7 @@ namespace ServiceStack.Script
                         return FoldL(b, c, (i, j) => Math.Min(i, (byte)j));
                     if (first is float f)
                         return FoldL(f, c, (i, j) => Math.Min(i, (float)j));
-                    throw new NotSupportedException("Not supported integer type: " + c.Car.GetType().Name);
+                    throw new LispEvalException("not a number", first);
                 });
 
                 Def("random", 1, a => {
