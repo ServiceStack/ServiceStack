@@ -2031,5 +2031,13 @@ dir-file: dir/dir-file.txt
                 Is.EqualTo("1,2,3"));
             
         }
+
+        [Test]
+        public void Can_flatMap()
+        {
+            var context = new ScriptContext().Init();
+            Assert.That(context.Evaluate("{{ flatten([[1,2],[3,4]]) | return }}"), Is.EqualTo(new[]{ 1, 2, 3, 4 }));
+        }
+
     }
 }

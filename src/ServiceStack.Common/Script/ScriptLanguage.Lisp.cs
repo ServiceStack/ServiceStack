@@ -911,19 +911,8 @@ namespace ServiceStack.Script
 
                 Def("str", 1, a => Str(a[0]));
                 
-                Def("car", 1, a => a[0] == null ? null : a[0] is Cell c 
-                    ? c.Car 
-                        : a[0] is IList l
-                            ? (l.Count > 0 ? l[0] : null)
-                            : a[0] is IEnumerable e
-                                ? EnumerableUtils.FirstOrDefault(e)
-                                : throw new LispEvalException("car requires Cell or IEnumerable", a[0]));
-                
-                Def("cdr", 1, a => a[0] == null ? null : a[0] is Cell c 
-                    ? c.Cdr 
-                        : a[0] is IEnumerable e
-                            ? EnumerableUtils.Skip(e, 1)
-                            : throw new LispEvalException("cdr requires Cell or IEnumerable", a[0]));
+                Def("car", 1, a => (a[0] as Cell)?.Car);
+                Def("cdr", 1, a => (a[0] as Cell)?.Cdr);
                 
                 Def("cons", 2, a => new Cell(a[0], a[1]));
                 Def("atom", 1, a => (a[0] is Cell) ? null : TRUE);
@@ -957,8 +946,9 @@ namespace ServiceStack.Script
                     : DynamicNumber.IsNumber(a[0].GetType())
                     ? (object) (DynamicNumber.CompareTo(a[0], a[1]) < 0 ? TRUE : null)
                     : a[0] is IComparable c
-                        ? c.CompareTo(a[1]) 
+                        ? c.CompareTo(a[1]) < 0
                         : throw new LispEvalException("not IComparable", a[0]));
+
                 Def("%", 2, a => 
                     DynamicNumber.Mod(a[0], a[1]));
                 Def("mod", 2, a => {
@@ -1402,6 +1392,8 @@ namespace ServiceStack.Script
                                                 throw new NotSupportedException(":index access requires 1 instance target");
                                                 
                                             var target = fnArgs[0];
+                                            if (target == null)
+                                                return null;
                                             var ret = scope.Context.DefaultMethods.get(target, fnName.Substring(1));
                                             return ret;
                                         }
@@ -1411,10 +1403,12 @@ namespace ServiceStack.Script
                                                 throw new NotSupportedException(".memberAccess requires an instance target");
                                                 
                                             var target = fnArgs[0];
+                                            if (target == null)
+                                                return null;
                                             var methodArgs = new List<object>();
                                             for (var i=1; i<fnArgs.Length; i++)
                                                 methodArgs.Add(fnArgs[i]);
-
+                                            
                                             var ret = scope.Context.AssertProtectedMethods().call(target, fnName.Substring(1), methodArgs);
                                             return ret;
                                         }
@@ -1555,7 +1549,8 @@ namespace ServiceStack.Script
                     if (clause != null) {
                         if (clause is Cell k) {
                             var result = Eval(k.Car, env);
-                            if (result != null) { // If the condition holds
+                            var f = result is bool b && !b;
+                            if (result != null && !f) { // If the condition holds //DB: added false check
                                 Cell body = CdrCell(k);
                                 if (body == null)
                                     return QqQuote(result);

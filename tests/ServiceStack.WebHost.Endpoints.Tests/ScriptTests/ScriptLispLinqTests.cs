@@ -13,6 +13,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var context = new ScriptContext
             {
                 ScriptLanguages = { ScriptLisp.Language },
+                AllowScriptingOfAllTypes = true,
+                ScriptNamespaces = {
+                    "System"
+                },
                 ScriptMethods = {
                     new ProtectedScripts(),
                 },
@@ -522,8 +526,39 @@ Pairs where a < b:
         }
 
         [Test]
+        public void Linq16()
+        {
+            Assert.That(render(@"
+(defn linq16 ()
+  (let ( 
+    (orders
+        (flatmap (fn (c) 
+            (flatmap (fn (o) 
+                (if (> (.OrderDate o) (DateTime. 1998 1 1) )
+                {
+                    :customer-id (.CustomerId c) 
+                    :order-id    (.OrderId o) 
+                    :order-date  (.OrderDate o)
+                })) (.Orders c) )
+        ) customers-list) 
+    ))
+    (doseq (o orders) (dump-inline o))
+  ))
+(linq16)"), 
+                
+                Does.StartWith(@"
+{customer-id:ALFKI,order-id:10952,order-date:1998-03-16}
+{customer-id:ALFKI,order-id:11011,order-date:1998-04-09}
+{customer-id:ANATR,order-id:10926,order-date:1998-03-04}
+{customer-id:ANTON,order-id:10856,order-date:1998-01-28}
+".NormalizeNewLines()));
+        }
+
+        [Test]
         public void test()
         {
+//            print(@"");
+
 //            print("(setq numbers-a '(1 2 3)) (setq numbers-b '(3 4 5)) (zip (fn (a b) { :a a :b b }) numbers-a numbers-b)");
 //            print("(map #(* 2 %) (range 10))");
 //            print("(fn (x) (.ProductName x))");

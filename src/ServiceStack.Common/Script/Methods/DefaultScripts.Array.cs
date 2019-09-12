@@ -214,6 +214,7 @@ namespace ServiceStack.Script
             where(scope, list, expression, null).ToList();
 
         public List<object> flat(IList list) => flatten(list);
+        public List<object> flat(IList list, int depth) => flatten(list, depth);
 
         public List<object> flatMap(ScriptScopeContext scope, IList list, JsArrowFunctionExpression expression) => 
             flat((IList)map(scope, list, expression, null));

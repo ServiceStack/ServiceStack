@@ -271,17 +271,26 @@ namespace ServiceStack.Script
             return to;
         }
 
-        public List<object> flatten(object target)
+        public List<object> flatten(object target) => flatten(target, 1);
+        public List<object> flatten(object target, int depth)
         {
             var to = new List<object>();
+            _flatten(to, target, depth);
+            return to;
+        }
 
+        private void _flatten(List<object> to, object target, int depth)
+        {
             if (target != null)
             {
                 if (!(target is string) && !(target is IDictionary) && target is IEnumerable objs)
                 {
                     foreach (var o in objs)
                     {
-                        to.AddRange(flatten(o));
+                        if (depth > 0)
+                            _flatten(to, o, depth - 1);
+                        else
+                            to.Add(o);
                     }
                 }
                 else
@@ -289,8 +298,6 @@ namespace ServiceStack.Script
                     to.Add(target);
                 }
             }
-
-            return to;
         }
 
         public object let(ScriptScopeContext scope, object target, object scopeBindings) //from filter
