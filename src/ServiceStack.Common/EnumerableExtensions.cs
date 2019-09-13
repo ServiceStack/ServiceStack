@@ -45,6 +45,23 @@ namespace ServiceStack
             }
             return to;
         }
+
+        public static int Count(IEnumerable items)
+        {
+            return items is ICollection c
+                ? c.Count
+                : items.Cast<object>().Count();
+        }
+
+        public static List<object> ToList(IEnumerable items)
+        {
+            var to = new List<object>();
+            foreach (var item in items)
+            {
+                to.Add(item);
+            }
+            return to;
+        }
     }
     
     public static class EnumerableExtensions

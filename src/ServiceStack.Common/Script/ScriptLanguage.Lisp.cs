@@ -285,6 +285,17 @@ namespace ServiceStack.Script
                 return e;
             throw new LispEvalException("not IEnumerable", a);
         }
+
+        internal static int compareTo(this object a, object b)
+        {
+            return a == null || b == null
+                ? (a == b ? 0 : a == null ? -1 : 1)
+                : DynamicNumber.IsNumber(a.GetType())
+                    ? DynamicNumber.CompareTo(a, b)
+                    : a is IComparable c
+                        ? (int) c.CompareTo(b)
+                        : throw new LispEvalException("not IComparable", a);
+        }
     }
 
     /// <summary>
@@ -775,7 +786,8 @@ namespace ServiceStack.Script
                         };
                         break;
                     case BuiltInFunc fnbulitin:
-                        return x => fnbulitin.Body(interp, new[] {new Cell(x, null)});
+//                        return x => fnbulitin.Body(interp, new[] {new Cell(x, null)});
+                        return x => fnbulitin.Body(interp, new[] {x});
                     case Delegate fnDel:
                         return x => 
                         {
@@ -895,7 +907,23 @@ namespace ServiceStack.Script
 
                 Def("map", 2, (I, a) => a[1]?.assertEnumerable().Map(resolveFn(a[0], I)));
 
-                //Def("map", 2, (I, a) => a[1]?.assertEnumerable().Map(resolveFn(a[0], I)));
+                Def("sort", 1, (I, a) => {
+                    var arr = a[0].assertEnumerable().Cast<object>().ToArray();
+                    Array.Sort(arr, (x,y) => x.compareTo(y));
+                    return arr;
+                });
+
+                Def("sort-by", -2, (I, a) => {
+
+                    var keyFn = resolveFn(a[0], I);
+                    var arr = EnumerableUtils.ToList((a[1] is Cell c ? c.Car : a[1]).assertEnumerable()).ToArray();
+                    Array.Sort(arr, (x,y) => {
+                        var xVal = keyFn(x);
+                        var yVal = keyFn(y);
+                        return xVal.compareTo(yVal);
+                    });
+                    return arr;
+                });
 
                 Def("sum", 1, a => {
                     object acc = 0;
@@ -945,12 +973,7 @@ namespace ServiceStack.Script
                 Def("eql", 2, a => ((a[0] == null) ? ((a[1] == null) ?
                                                       TRUE : null) :
                                     a[0].Equals(a[1]) ? TRUE : null));
-                Def("<", 2, a => a[0] == null || a[1] == null ? a[0] == a[1] 
-                    : DynamicNumber.IsNumber(a[0].GetType())
-                    ? (object) (DynamicNumber.CompareTo(a[0], a[1]) < 0 ? TRUE : null)
-                    : a[0] is IComparable c
-                        ? c.CompareTo(a[1]) < 0
-                        : throw new LispEvalException("not IComparable", a[0]));
+                Def("<", 2, a => a[0].compareTo(a[1]) < 0 ? TRUE : null);
 
                 Def("%", 2, a => 
                     DynamicNumber.Mod(a[0], a[1]));
@@ -976,7 +999,7 @@ namespace ServiceStack.Script
                                         (Cell) a[2],
                                         DynamicNumber.Div));
                 
-                Def("count", 1, a => (a[0] is IEnumerable e) ? e.Map(x => x).Count() : throw new LispEvalException("not an IEnumerable", a[0]));
+                Def("count", 1, a => EnumerableUtils.Count(a[0].assertEnumerable()));
 
                 Def("remove", 2, a => {
                     var oNeedle = a[0];

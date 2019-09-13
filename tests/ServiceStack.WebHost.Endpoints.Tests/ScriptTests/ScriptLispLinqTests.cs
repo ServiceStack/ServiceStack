@@ -859,6 +859,67 @@ All elements starting from first element less than its position:
         }
 
         [Test]
+        public void Linq28()
+        {
+            Assert.That(render(@"
+(defn linq28 ()
+  (let ( (words '(""cherry"" ""apple"" ""blueberry""))
+         (sorted-words) )
+    (setq sorted-words (sort words))
+    (println ""The sorted list of words:"")
+    (doseq (w sorted-words) (println w))
+  ))
+(linq28)"), 
+                
+                Does.StartWith(@"
+The sorted list of words:
+apple
+blueberry
+cherry
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq29()
+        {
+            Assert.That(render(@"
+(defn linq29 ()
+  (let ( (words '(""cherry"" ""apple"" ""blueberry""))
+         (sorted-words) )
+    (setq sorted-words (sort-by count words))
+    (println ""The sorted list of words (by length):"")
+    (doseq (w sorted-words) (println w))
+  ))
+(linq29)"), 
+                
+                Does.StartWith(@"
+The sorted list of words (by length):
+apple
+cherry
+blueberry
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq30()
+        {
+            Assert.That(render(@"
+(defn linq30 ()
+  (let ( (sorted-products (sort-by .ProductName products-list)) )
+    (doseq (p sorted-products) (dump-inline p))
+  ))
+(linq30)"), 
+                
+                Does.StartWith(@"
+{UnitsInStock:0,ProductName:Alice Mutton,UnitPrice:39,Category:Meat/Poultry,ProductId:17}
+{UnitsInStock:13,ProductName:Aniseed Syrup,UnitPrice:10,Category:Condiments,ProductId:3}
+{UnitsInStock:123,ProductName:Boston Crab Meat,UnitPrice:18.4,Category:Seafood,ProductId:40}
+{UnitsInStock:19,ProductName:Camembert Pierrot,UnitPrice:34,Category:Dairy Products,ProductId:60}
+{UnitsInStock:42,ProductName:Carnarvon Tigers,UnitPrice:62.5,Category:Seafood,ProductId:18}
+".NormalizeNewLines()));
+        }
+
+        [Test]
         public void test()
         {
 //            print("(setq i 0)(setq numbers '(5 4 1 3 9 8 6 7 2 0)) (skip-while #(>= % (incf+ i)) numbers)");
