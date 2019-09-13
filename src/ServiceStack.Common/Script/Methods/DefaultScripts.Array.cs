@@ -219,6 +219,9 @@ namespace ServiceStack.Script
         public List<object> flatMap(ScriptScopeContext scope, IList list, JsArrowFunctionExpression expression) => 
             flat((IList)map(scope, list, expression, null));
 
+        public List<object> flatMap(ScriptScopeContext scope, IList list, JsArrowFunctionExpression expression, int depth) => 
+            flat((IList)map(scope, list, expression, null), depth);
+
         public bool includes(IList list, object item) =>
             includes(list, item, 0);
 

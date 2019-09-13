@@ -1405,17 +1405,17 @@ dir-file: dir/dir-file.txt
                 }
             }.Init();
 
-            Assert.That(context.Evaluate<List<object>>("{{ nestedInts | flatten | return }}"), 
+            Assert.That(context.Evaluate<List<object>>("{{ nestedInts | flat | return }}"), 
                 Is.EquivalentTo(new[]{ 1,2,3,4,5,6 }));
-            Assert.That(context.Evaluate<List<object>>("{{ nestedInts2 | flatten | return }}"), 
+            Assert.That(context.Evaluate<List<object>>("{{ nestedInts2 | flatAll | return }}"), 
                 Is.EquivalentTo(new[]{ 1,2,3,4,5,6 }));
             
-            Assert.That(context.Evaluate<List<object>>("{{ nestedStrings | flatten | return }}"), 
+            Assert.That(context.Evaluate<List<object>>("{{ nestedStrings | flat | return }}"), 
                 Is.EquivalentTo(new[]{ "A","B","C","D","E","F" }));
-            Assert.That(context.Evaluate<List<object>>("{{ nestedStrings2 | flatten | return }}"), 
+            Assert.That(context.Evaluate<List<object>>("{{ nestedStrings2 | flatAll | return }}"), 
                 Is.EquivalentTo(new[]{ "A","B","C","D","E","F" }));
 
-            Assert.That(context.Evaluate<List<object>>("{{ [ [1,2,[3], [4,[5,6]] ] ] | flatten | return }}"), 
+            Assert.That(context.Evaluate<List<object>>("{{ [ [1,2,[3], [4,[5,6]] ] ] | flatAll | return }}"), 
                 Is.EquivalentTo(new[]{ 1,2,3,4,5,6 }));
         }
 
@@ -1967,7 +1967,7 @@ dir-file: dir/dir-file.txt
             Assert.That(context.EvaluateScript("{{[5, 12, 8, 130, 44].findIndex(x => x > 13) | join}}"),
                 Is.EqualTo("3"));
             
-            Assert.That(context.EvaluateScript("{{[1, 2, [3, 4, [5, 6]]].flat() | join}}"),
+            Assert.That(context.EvaluateScript("{{[1, 2, [3, 4, [5, 6]]].flat(2) | join}}"),
                 Is.EqualTo("1,2,3,4,5,6"));
             
             Assert.That(context.EvaluateScript("{{[1, 2, 3, 4].flatMap(x => [x * 2]) | join}}"),

@@ -793,8 +793,8 @@ First numbers less than 6:
             Assert.That(render(@"
 (defn linq25 ()
   (let ( (numbers '(5 4 1 3 9 8 6 7 2 0) )
-         (i) (first-small-numbers) )
-    (setq first-small-numbers (take-while #(>= % (incf+ i)) numbers) )
+         (i 0) (first-small-numbers) )
+    (setq first-small-numbers (take-while #(>= % (f++ i)) numbers) )
     (println ""First numbers not less than their position:"")
     (doseq (n first-small-numbers) (println n))
   ))
@@ -838,8 +838,8 @@ All elements starting from first element divisible by 3:
             Assert.That(render(@"
 (defn linq27 ()
   (let ( (numbers '(5 4 1 3 9 8 6 7 2 0))
-         (i) (later-numbers) )
-    (setq later-numbers (skip-while #(>= % (incf+ i)) numbers))
+         (i 0) (later-numbers) )
+    (setq later-numbers (skip-while #(>= % (f++ i)) numbers))
     (println ""All elements starting from first element less than its position:"")
     (doseq (n later-numbers) (println n))
   ))
@@ -861,8 +861,8 @@ All elements starting from first element less than its position:
         [Test]
         public void test()
         {
-            print("(setq numbers '(5 4 1 3 9 8 6 7 2 0)) (map-index cons numbers)");
-            print(@"(setq numbers '(5 4 1 3 9 8 6 7 2 0)) (take-while (fn (c) (>= (1st c) (2nd c))) (mapcar-index cons numbers))");
+//            print("(setq i 0)(setq numbers '(5 4 1 3 9 8 6 7 2 0)) (skip-while #(>= % (incf+ i)) numbers)");
+//            print(@"(setq numbers '(5 4 1 3 9 8 6 7 2 0)) (take-while (fn (c) (>= (1st c) (2nd c))) (mapcar-index cons numbers))");
 
 //            print("(setq numbers-a '(1 2 3)) (setq numbers-b '(3 4 5)) (zip (fn (a b) { :a a :b b }) numbers-a numbers-b)");
 //            print("(map #(* 2 %) (range 10))");

@@ -271,6 +271,8 @@ namespace ServiceStack.Script
             return to;
         }
 
+        public List<object> flatAll(object target) => flatten(target, int.MaxValue);
+
         public List<object> flatten(object target) => flatten(target, 1);
         public List<object> flatten(object target, int depth)
         {
