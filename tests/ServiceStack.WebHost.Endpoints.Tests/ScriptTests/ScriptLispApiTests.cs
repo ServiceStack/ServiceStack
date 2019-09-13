@@ -82,5 +82,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 {"c", 3},
             }));
         }
+
+        [Test]
+        public void Can_clojure_fn_data_list_args()
+        {
+            Assert.That(render(@"(defn f [] 0)(f)"), Is.EqualTo("0"));
+            Assert.That(render(@"(defn f [a] a)(f 1)"), Is.EqualTo("1"));
+            Assert.That(render(@"(defn f [a b] (+ a b))(f 1 2)"), Is.EqualTo("3"));
+            Assert.That(render(@"(defn f [a b c] (+ a b c))(f 1 2 3)"), Is.EqualTo("6"));
+            Assert.That(render(@"((fn [a b c] (+ a b c)) 1 2 3)"), Is.EqualTo("6"));
+        }
     }
 }

@@ -56,11 +56,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         public void Linq01() 
         {
             Assert.That(render(@"
-(defn linq01 ()
+(defn linq01 []
     (setq numbers [5 4 1 3 9 8 6 7 2 0])
     (let ((low-numbers (filter #(< % 5) numbers)))
         (println ""Numbers < 5:"")
-        (dolist (n low-numbers)
+        (doseq (n low-numbers)
             (println n))))
 (linq01)"), 
                 
@@ -78,7 +78,7 @@ Numbers < 5:
         public void Linq02()
         {
             Assert.That(render(@"
-(defn linq02 ()
+(defn linq02 []
     (let ( (sold-out-products 
                (filter #(= 0 (.UnitsInStock %)) products-list)) )
         (println ""Sold out products:"")
@@ -101,7 +101,7 @@ Perth Pasties is sold out
         public void Linq03()
         {
             Assert.That(render(@"
-(defn linq03 ()
+(defn linq03 []
   (let ( (expensive-in-stock-products
             (filter #(and
                      (> (.UnitsInStock %) 0)
@@ -128,7 +128,7 @@ Grandma's Boysenberry Spread is in stock and costs more than 3.00
         public void Linq04()
         {
             Assert.That(render(@"
-(defn linq04 ()
+(defn linq04 []
     (let ( (wa-customers (filter #(= (.Region %) ""WA"") customers-list)) )
         (println ""Customers from Washington and their orders:"")
         (doseq (c wa-customers)
@@ -154,10 +154,10 @@ Customer TRAIH: Trail's Head Gourmet Provisioners:
         public void Linq05()
         {
             Assert.That(render(@"
-(defn linq05 ()
+(defn linq05 []
     (let ( (digits [""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""])
            (short-digits) )
-        (setq short-digits (filter-index (fn (x i) (> i (length x))) digits) )
+        (setq short-digits (filter-index (fn [x i] (> i (length x))) digits) )
         (println ""Short digits:"")
         (doseq (d short-digits)
           (println ""The word "" d "" is shorter than its value""))
@@ -178,7 +178,7 @@ The word nine is shorter than its value
         public void Linq06()
         {
             Assert.That(render(@"
-(defn linq06 ()
+(defn linq06 []
   (let ( (numbers [5 4 1 3 9 8 6 7 2 0]) (nums-plus-one) )
     (setq nums-plus-one (map inc numbers))
     (println ""Numbers + 1:"")
@@ -204,7 +204,7 @@ Numbers + 1:
         public void Linq07()
         {
             Assert.That(render(@"
-(defn linq07 ()
+(defn linq07 []
   (let ( (product-names (map #(.ProductName %) products-list)) )
     (println ""Product Names:"")
     (doseq (x product-names) (println x))))
@@ -224,7 +224,7 @@ Chef Anton's Gumbo Mix
         public void Linq08()
         {
             Assert.That(render(@"
-(defn linq08 ()
+(defn linq08 []
   (let ( (numbers [5 4 1 3 9 8 6 7 2 0])
          (strings [""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""]) 
          (text-nums) )
@@ -253,11 +253,11 @@ zero
         public void Linq09()
         {
             Assert.That(render(@"
-(defn linq09 ()
+(defn linq09 []
   (let ( (words [""aPPLE"" ""BlUeBeRrY"" ""cHeRry""])
          (upper-lower-words) )
     (setq upper-lower-words
-        (map (fn (w) { :lower (lower-case w) :upper (upper-case w) } ) words) )
+        (map (fn [w] { :lower (lower-case w) :upper (upper-case w) } ) words) )
     (doseq (ul upper-lower-words)
         (println ""Uppercase: "" (:upper ul) "", Lowercase: "" (:lower ul)))
   ))
@@ -274,11 +274,11 @@ Uppercase: CHERRY, Lowercase: cherry
         public void Linq09_classic_lisp()
         {
             Assert.That(render(@"
-(defn linq09 ()
+(defn linq09 []
   (let ( (words [""aPPLE"" ""BlUeBeRrY"" ""cHeRry""])
          (upper-lower-words) )
     (setq upper-lower-words
-        (map (fn (w) `( (lower ,(lower-case w)) (upper ,(upper-case w)) )) words) )
+        (map (fn [w] `( (lower ,(lower-case w)) (upper ,(upper-case w)) )) words) )
     (doseq (ul upper-lower-words)
         (println ""Uppercase: "" (assoc-value 'upper ul) "", Lowercase: "" (assoc-value 'lower ul)))
   ))
@@ -295,12 +295,12 @@ Uppercase: CHERRY, Lowercase: cherry
         public void Linq10()
         {
             Assert.That(render(@"
-(defn linq10 ()
+(defn linq10 []
   (let ( (numbers [5 4 1 3 9 8 6 7 2 0])
          (strings [""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""])
          (digit-odd-evens) )
       (setq digit-odd-evens 
-          (map (fn(n) { :digit (nth strings n) :even (even? n) } ) numbers))
+          (map (fn [n] { :digit (nth strings n) :even (even? n) } ) numbers))
       (doseq (d digit-odd-evens)
           (println ""The digit "" (:digit d) "" is "" (if (:even d) ""even"" ""odd"")))
   ))
@@ -324,9 +324,9 @@ The digit zero is even
         public void Linq11()
         {
             Assert.That(render(@"
-(defn linq11 ()
+(defn linq11 []
   (let ( (product-infos
-            (map (fn (x) {
+            (map (fn [x] {
                     :ProductName (.ProductName x)
                     :Category    (.Category x)
                     :Price       (.UnitPrice x) 
@@ -352,9 +352,9 @@ Chef Anton's Gumbo Mix is in the category Condiments and costs 21.35
         public void Linq11_expanded_form()
         {
             Assert.That(render(@"
-(defn linq11 ()
+(defn linq11 []
   (let ( (product-infos
-            (map (fn (x) (new-map
+            (map (fn [x] (new-map
                     (list ""ProductName"" (.ProductName x))
                     (list ""Category""    (.Category x))
                     (list ""Price""       (.UnitPrice x)) 
@@ -380,9 +380,9 @@ Chef Anton's Gumbo Mix is in the category Condiments and costs 21.35
         public void Linq11_classic_lisp()
         {
             Assert.That(render(@"
-(defn linq11 ()
+(defn linq11 []
   (let ( (product-infos
-            (map (fn (p) `(
+            (map (fn [p] `(
                     (ProductName ,(.ProductName p))
                     (Category    ,(.Category p))
                     (Price       ,(.UnitPrice p)) 
@@ -409,10 +409,10 @@ Chef Anton's Gumbo Mix is in the category Condiments and costs 21.35
         public void Linq12()
         {
             Assert.That(render(@"
-(defn linq12 ()
+(defn linq12 []
   (let ( (numbers [5 4 1 3 9 8 6 7 2 0])
          (i 0) (nums-in-place) )
-    (setq nums-in-place (map (fn (n) { :num n :in-place (= n (1- (incf i))) }) numbers))
+    (setq nums-in-place (map (fn [n] { :num n :in-place (= n (1- (incf i))) }) numbers))
     (println ""Number: In-place?"")
     (doseq (n nums-in-place)
         (println (:num n) "": "" (if (:in-place n) 'true 'false)) )
@@ -438,7 +438,7 @@ Number: In-place?
         public void Linq13()
         {
             Assert.That(render(@"
-(defn linq13 ()
+(defn linq13 []
     (let ( (numbers [5 4 1 3 9 8 6 7 2 0])
            (digits  [""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""]) 
            (low-nums) )
@@ -462,12 +462,12 @@ zero
         public void Linq14()
         {
             Assert.That(render(@"
-(defn linq14 ()
+(defn linq14 []
   (let ( (numbers-a [0 2 4 5 6 8 9])
          (numbers-b [1 3 5 7 8]) 
          (pairs) )    
     (setq pairs (filter #(< (:a %) (:b %)) 
-                    (zip (fn (a b) { :a a, :b b }) numbers-a numbers-b)))        
+                    (zip (fn [a b] { :a a, :b b }) numbers-a numbers-b)))        
     (println ""Pairs where a < b:"")
     (doseq (pair pairs)
       (println (:a pair) "" is less than "" (:b pair)))
@@ -499,10 +499,10 @@ Pairs where a < b:
         public void Linq15()
         {
             Assert.That(render(@"
-(defn linq15 ()
+(defn linq15 []
   (let ( (orders 
-            (flatmap (fn (c)
-              (map (fn (o) {
+            (flatmap (fn [c]
+              (map (fn [o] {
                 :customer-id (.CustomerId c) 
                 :order-id    (.OrderId o) 
                 :total       (.Total o)
@@ -531,10 +531,10 @@ Pairs where a < b:
         public void Linq16()
         {
             Assert.That(render(@"
-(defn linq16 ()
+(defn linq16 []
   (let ( 
-        (orders (flatmap (fn (c) 
-                    (flatmap (fn (o) 
+        (orders (flatmap (fn [c] 
+                    (flatmap (fn [o] 
                         (if (> (.OrderDate o) (DateTime. 1998 1 1) )
                         {
                             :customer-id (.CustomerId c) 
@@ -559,10 +559,10 @@ Pairs where a < b:
         public void Linq17()
         {
             Assert.That(render(@"
-(defn linq17 ()
+(defn linq17 []
   (let ( 
-        (orders (flatmap (fn (c) 
-                    (flatmap (fn (o) 
+        (orders (flatmap (fn [c] 
+                    (flatmap (fn [o] 
                         (if (>= (:total o) 2000)
                         {
                             :customer-id (.CustomerId c) 
@@ -587,11 +587,11 @@ Pairs where a < b:
         public void Linq18()
         {
             Assert.That(render(@"
-(defn linq18 ()
+(defn linq18 []
   (let ( (cutoff-date (DateTime. 1997 1 1))
          (orders) )
-    (setq orders (flatmap (fn (c) 
-          (flatmap (fn (o) 
+    (setq orders (flatmap (fn [c] 
+          (flatmap (fn [o] 
               (if (>= (.OrderDate o) cutoff-date)
               {
                   :customer-id (.CustomerId c) 
@@ -627,10 +627,10 @@ Pairs where a < b:
         public void Linq19()
         {
             Assert.That(render(@"
-(defn linq19 ()
+(defn linq19 []
   (let ( (customer-orders 
             (map 
-                (fn (x) (str ""Customer #"" (:i x) "" has an order with OrderID "" (.OrderId (:o x)))) 
+                (fn [x] (str ""Customer #"" (:i x) "" has an order with OrderID "" (.OrderId (:o x)))) 
                 (/flatten (map-index (fn (c i) (map (fn (o) { :o o :i (1+ i) }) (.Orders c))) customers-list)) 
             )) )
     (doseq (x customer-orders) (println x))
@@ -655,9 +655,9 @@ Customer #2 has an order with OrderID 10926
         public void Linq20()
         {
             Assert.That(render(@"
-(defn linq20 ()
+(defn linq20 []
   (let ( (numbers [5 4 1 3 9 8 6 7 2 0])
-        (first-3-numbers)) 
+         (first-3-numbers) ) 
     (setq first-3-numbers (take 3 numbers))
     (println ""First 3 numbers:"")
     (doseq (n first-3-numbers) (println n))
@@ -676,12 +676,12 @@ First 3 numbers:
         public void Linq21()
         {
             Assert.That(render(@"
-(defn linq21 ()
+(defn linq21 []
   (let ( (first-3-wa-orders) )
     (setq first-3-wa-orders 
       (take 3 
-        (flatmap (fn (c) 
-          (flatmap (fn (o) 
+        (flatmap (fn [c] 
+          (flatmap (fn [o] 
               {
                   :customer-id (.CustomerId c) 
                   :order-id    (.OrderId o) 
@@ -705,7 +705,7 @@ First 3 orders in WA:
         public void Linq22()
         {
             Assert.That(render(@"
-(defn linq22 ()
+(defn linq22 []
   (let ( (numbers [5 4 1 3 9 8 6 7 2 0]) 
          (all-but-first-4-numbers) )
         (setq all-but-first-4-numbers (skip 4 numbers))
@@ -729,11 +729,11 @@ All but first 4 numbers:
         public void Linq23()
         {
             Assert.That(render(@"
-(defn linq23 ()
+(defn linq23 []
   (let ( (all-but-first-2-orders
       (skip 2 
-        (flatmap (fn (c) 
-          (flatmap (fn (o) 
+        (flatmap (fn [c] 
+          (flatmap (fn [o] 
               {
                   :customer-id (.CustomerId c) 
                   :order-id    (.OrderId o) 
@@ -771,7 +771,7 @@ All but first 2 orders in WA:
         public void Linq24()
         {
             Assert.That(render(@"
-(defn linq24 ()
+(defn linq24 []
   (let ( (numbers [5 4 1 3 9 8 6 7 2 0])
          (first-numbers-less-than-6) )
     (setq first-numbers-less-than-6 (take-while #(< % 6) numbers))
@@ -793,7 +793,7 @@ First numbers less than 6:
         public void Linq25()
         {
             Assert.That(render(@"
-(defn linq25 ()
+(defn linq25 []
   (let ( (numbers [5 4 1 3 9 8 6 7 2 0] )
          (i 0) (first-small-numbers) )
     (setq first-small-numbers (take-while #(>= % (f++ i)) numbers) )
@@ -813,7 +813,7 @@ First numbers not less than their position:
         public void Linq26()
         {
             Assert.That(render(@"
-(defn linq26 ()
+(defn linq26 []
   (let ( (numbers [5 4 1 3 9 8 6 7 2 0])
          (all-but-first-3-numbers) )
     (setq all-but-first-3-numbers (skip-while #(not= (mod % 3) 0) numbers))
@@ -838,7 +838,7 @@ All elements starting from first element divisible by 3:
         public void Linq27()
         {
             Assert.That(render(@"
-(defn linq27 ()
+(defn linq27 []
   (let ( (numbers [5 4 1 3 9 8 6 7 2 0])
          (i 0) (later-numbers) )
     (setq later-numbers (skip-while #(>= % (f++ i)) numbers))
@@ -864,7 +864,7 @@ All elements starting from first element less than its position:
         public void Linq28()
         {
             Assert.That(render(@"
-(defn linq28 ()
+(defn linq28 []
   (let ( (words [""cherry"" ""apple"" ""blueberry""])
          (sorted-words) )
     (setq sorted-words (sort words))
@@ -885,7 +885,7 @@ cherry
         public void Linq29()
         {
             Assert.That(render(@"
-(defn linq29 ()
+(defn linq29 []
   (let ( (words [""cherry"" ""apple"" ""blueberry""])
          (sorted-words) )
     (setq sorted-words (sort-by count words))
@@ -906,7 +906,7 @@ blueberry
         public void Linq30()
         {
             Assert.That(render(@"
-(defn linq30 ()
+(defn linq30 []
   (let ( (sorted-products (sort-by .ProductName products-list)) )
     (doseq (p sorted-products) (dump-inline p))
   ))
@@ -925,7 +925,7 @@ blueberry
         public void Linq31()
         {
             Assert.That(render(@"
-(defn linq31 ()
+(defn linq31 []
   (let ( (words [""aPPLE"" ""AbAcUs"" ""bRaNcH"" ""BlUeBeRrY"" ""ClOvEr"" ""cHeRry""])
          (sorted-words) )
     (setq sorted-words (sort-by identity (CaseInsensitiveComparer.) words))
@@ -944,9 +944,55 @@ ClOvEr
         }
 
         [Test]
+        public void Linq32()
+        {
+            Assert.That(render(@"
+(defn linq32 []
+  (let ( (dbls [1.7 2.3 1.9 4.1 2.9])
+         (sorted-doubles) )
+    (setq sorted-doubles (/reverse (sort dbls)))
+    (println ""The doubles from highest to lowest:"")
+    (doseq (d sorted-doubles) (println d))
+  ))
+(linq32)"), 
+                
+                Does.StartWith(@"
+The doubles from highest to lowest:
+4.1
+2.9
+2.3
+1.9
+1.7
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq33()
+        {
+            Assert.That(render(@"
+(defn linq32 []
+  (let ( (dbls [1.7 2.3 1.9 4.1 2.9])
+         (sorted-doubles) )
+    (setq sorted-doubles (/reverse (sort dbls)))
+    (println ""The doubles from highest to lowest:"")
+    (doseq (d sorted-doubles) (println d))
+  ))
+(linq32)"), 
+                
+                Does.StartWith(@"
+The doubles from highest to lowest:
+4.1
+2.9
+2.3
+1.9
+1.7
+".NormalizeNewLines()));
+        }
+
+        [Test]
         public void test()
         {
-            print(@"(setq words [""aPPLE"" ""AbAcUs"" ""bRaNcH"" ""BlUeBeRrY"" ""ClOvEr"" ""cHeRry""])(sort-by identity (CaseInsensitiveComparer.) words)");
+//            print(@"(doseq [x [1 2 3]] (println x))");
 //            print(@"(setq numbers '(5 4 1 3 9 8 6 7 2 0)) (take-while (fn (c) (>= (1st c) (2nd c))) (mapcar-index cons numbers))");
 
 //            print("(setq numbers-a '(1 2 3)) (setq numbers-b '(3 4 5)) (zip (fn (a b) { :a a :b b }) numbers-a numbers-b)");

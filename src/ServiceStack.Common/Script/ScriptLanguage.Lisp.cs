@@ -296,6 +296,13 @@ namespace ServiceStack.Script
                         ? (int) c.CompareTo(b)
                         : throw new LispEvalException("not IComparable", a);
         }
+
+        public static Lisp.Cell unwrapDataListArgs(this Lisp.Cell arg)
+        {
+            if (arg.Car is Lisp.Cell c && c.Car == Lisp.LIST) // allow clojure data list [] for fn args list by unwrapping (list ...) => ...
+                arg.Car = c.Cdr;
+            return arg;
+        }
     }
 
     /// <summary>
@@ -491,7 +498,7 @@ namespace ServiceStack.Script
 
         static readonly Sym APPEND = Sym.New("append");
         static readonly Sym CONS = Sym.New("cons");
-        static readonly Sym LIST = Sym.New("list");
+        internal static readonly Sym LIST = Sym.New("list");
         static readonly Sym REST = Sym.New("&rest");
         static readonly Sym UNQUOTE = Sym.New("unquote");
         static readonly Sym UNQUOTE_SPLICING = Sym.New("unquote-splicing");
@@ -1389,7 +1396,7 @@ namespace ServiceStack.Script
                                 } else if (fn == EXPORT) {
                                     return EvalExport(arg, env, scope);
                                 } else if (fn == LAMBDA || fn == FN) {
-                                    return Compile(arg, env, Closure.Make);
+                                    return Compile(arg.unwrapDataListArgs(), env, Closure.Make);
                                 } else if (fn == MACRO) {
                                     if (env != null)
                                         throw new LispEvalException("nested macro", x);
@@ -1736,7 +1743,7 @@ namespace ServiceStack.Script
                     if (k == QUOTE) {
                         return cell;
                     } else if (k == LAMBDA || k == FN) {
-                        Cell d = CdrCell(cell);
+                        Cell d = CdrCell(cell).unwrapDataListArgs();
                         return Compile(d, null, Lambda.Make);
                     } else if (k == MACRO) {
                         throw new LispEvalException("nested macro", cell);
@@ -2518,13 +2525,13 @@ setcdr rplacd)
     (if (null next)
         x
       (_nreverse next x))))
-(defun nreverse (list)            ; (nreverse '(a b c d)) => (d c b a)
-  (cond (list (_nreverse list nil))))
+(defun nreverse (L)            ; (nreverse '(a b c d)) => (d c b a)
+  (cond (L (_nreverse L nil))))
 
-(defun last (list)
-  (if (atom (cdr list))
-      list
-    (last (cdr list))))
+(defun last (L)
+  (if (atom (cdr L))
+      L
+    (last (cdr L))))
 
 (defun nconc (&rest lists)
   (if (null (cdr lists))
@@ -2653,7 +2660,7 @@ setcdr rplacd)
 
 (defun flatten (L)
   (mapcan
-     (fn (a)
+     (fn [a]
          (cond
            ((atom a) (list a))
            (t (flatten a))))
@@ -2699,6 +2706,10 @@ setcdr rplacd)
         /// Popular Clojure + nicer UX Utils
         /// </summary>
         public const string Extensions = @"
+
+(defmacro defn (name args &rest body)
+  `(progn (setq ,name (lambda ,args ,@body))
+          ',name))
 
 (defmacro dolist-while (spec f &rest body) ; (dolist-while (name list pred [result]) body...)
   (let ((name (car spec))
@@ -2754,11 +2765,11 @@ setcdr rplacd)
 
 (defun map-index (f L)
   (let ( (i -1) )
-    (map (fn(x) (f x (incf i) )) L) ))
+    (map (fn [x] (f x (incf i) )) L) ))
 
 (defun filter-index (f L)
   (let ( (i -1) )
-    (filter (fn (x) (f x (incf i) )) L) ))
+    (filter (fn [x] (f x (incf i) )) L) ))
 
 (setq
     first  car
