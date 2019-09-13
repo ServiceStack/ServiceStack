@@ -531,22 +531,21 @@ Pairs where a < b:
             Assert.That(render(@"
 (defn linq16 ()
   (let ( 
-    (orders
-        (flatmap (fn (c) 
-            (flatmap (fn (o) 
-                (if (> (.OrderDate o) (DateTime. 1998 1 1) )
-                {
-                    :customer-id (.CustomerId c) 
-                    :order-id    (.OrderId o) 
-                    :order-date  (.OrderDate o)
-                })) (.Orders c) )
-        ) customers-list) 
-    ))
+        (orders (flatmap (fn (c) 
+                    (flatmap (fn (o) 
+                        (if (> (.OrderDate o) (DateTime. 1998 1 1) )
+                        {
+                            :customer-id (.CustomerId c) 
+                            :order-id    (.OrderId o) 
+                            :order-date  (.OrderDate o)
+                        })) (.Orders c) )
+                ) customers-list)  ))
     (doseq (o orders) (dump-inline o))
   ))
 (linq16)"), 
                 
                 Does.StartWith(@"
+{customer-id:ALFKI,order-id:10835,order-date:1998-01-15}
 {customer-id:ALFKI,order-id:10952,order-date:1998-03-16}
 {customer-id:ALFKI,order-id:11011,order-date:1998-04-09}
 {customer-id:ANATR,order-id:10926,order-date:1998-03-04}
@@ -555,9 +554,315 @@ Pairs where a < b:
         }
 
         [Test]
+        public void Linq17()
+        {
+            Assert.That(render(@"
+(defn linq17 ()
+  (let ( 
+        (orders (flatmap (fn (c) 
+                    (flatmap (fn (o) 
+                        (if (>= (:total o) 2000)
+                        {
+                            :customer-id (.CustomerId c) 
+                            :order-id    (.OrderId o) 
+                            :total       (.Total o)
+                        })) (.Orders c) )
+                ) customers-list) ))
+    (doseq (o orders) (dump-inline o))
+  ))
+(linq17)"), 
+                
+                Does.StartWith(@"
+{customer-id:ANTON,order-id:10573,total:2082}
+{customer-id:AROUT,order-id:10558,total:2142.9}
+{customer-id:AROUT,order-id:10953,total:4441.25}
+{customer-id:BERGS,order-id:10384,total:2222.4}
+{customer-id:BERGS,order-id:10524,total:3192.65}
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq18()
+        {
+            Assert.That(render(@"
+(defn linq18 ()
+  (let ( (cutoff-date (DateTime. 1997 1 1))
+         (orders) )
+    (setq orders (flatmap (fn (c) 
+          (flatmap (fn (o) 
+              (if (>= (.OrderDate o) cutoff-date)
+              {
+                  :customer-id (.CustomerId c) 
+                  :order-id    (.OrderId o) 
+              })) (.Orders c) )
+      ) (filter #(= (.Region %) ""WA"") customers-list) ) )
+    (doseq (o orders) (dump-inline o))
+  ))
+(linq18)"), 
+                
+                Does.StartWith(@"
+{customer-id:LAZYK,order-id:10482}
+{customer-id:LAZYK,order-id:10545}
+{customer-id:TRAIH,order-id:10574}
+{customer-id:TRAIH,order-id:10577}
+{customer-id:TRAIH,order-id:10822}
+{customer-id:WHITC,order-id:10469}
+{customer-id:WHITC,order-id:10483}
+{customer-id:WHITC,order-id:10504}
+{customer-id:WHITC,order-id:10596}
+{customer-id:WHITC,order-id:10693}
+{customer-id:WHITC,order-id:10696}
+{customer-id:WHITC,order-id:10723}
+{customer-id:WHITC,order-id:10740}
+{customer-id:WHITC,order-id:10861}
+{customer-id:WHITC,order-id:10904}
+{customer-id:WHITC,order-id:11032}
+{customer-id:WHITC,order-id:11066}
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq19()
+        {
+            Assert.That(render(@"
+(defn linq19 ()
+  (let ( (customer-orders 
+            (map 
+                (fn (x) (str ""Customer #"" (:i x) "" has an order with OrderID "" (.OrderId (:o x)))) 
+                (/flatten (map-index (fn (c i) (map (fn (o) { :o o :i (1+ i) }) (.Orders c))) customers-list)) 
+            )) )
+    (doseq (x customer-orders) (println x))
+  ))
+(linq19)"), 
+                
+                Does.StartWith(@"
+Customer #1 has an order with OrderID 10643
+Customer #1 has an order with OrderID 10692
+Customer #1 has an order with OrderID 10702
+Customer #1 has an order with OrderID 10835
+Customer #1 has an order with OrderID 10952
+Customer #1 has an order with OrderID 11011
+Customer #2 has an order with OrderID 10308
+Customer #2 has an order with OrderID 10625
+Customer #2 has an order with OrderID 10759
+Customer #2 has an order with OrderID 10926
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq20()
+        {
+            Assert.That(render(@"
+(defn linq20 ()
+  (let ( (numbers '(5 4 1 3 9 8 6 7 2 0))
+        (first-3-numbers)) 
+    (setq first-3-numbers (take 3 numbers))
+    (println ""First 3 numbers:"")
+    (doseq (n first-3-numbers) (println n))
+  ))
+(linq20)"), 
+                
+                Does.StartWith(@"
+First 3 numbers:
+5
+4
+1
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq21()
+        {
+            Assert.That(render(@"
+(defn linq21 ()
+  (let ( (first-3-wa-orders) )
+    (setq first-3-wa-orders 
+      (take 3 
+        (flatmap (fn (c) 
+          (flatmap (fn (o) 
+              {
+                  :customer-id (.CustomerId c) 
+                  :order-id    (.OrderId o) 
+                  :order-date  (.OrderDate o)
+              }) (.Orders c) )
+        ) (filter #(= (.Region %) ""WA"") customers-list) )) )
+    (println ""First 3 orders in WA:"")
+    (doseq (x first-3-wa-orders) (dump-inline x))
+  ))
+(linq21)"), 
+                
+                Does.StartWith(@"
+First 3 orders in WA:
+{customer-id:LAZYK,order-id:10482,order-date:1997-03-21}
+{customer-id:LAZYK,order-id:10545,order-date:1997-05-22}
+{customer-id:TRAIH,order-id:10574,order-date:1997-06-19}
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq22()
+        {
+            Assert.That(render(@"
+(defn linq22 ()
+  (let ( (numbers '(5 4 1 3 9 8 6 7 2 0)) 
+         (all-but-first-4-numbers) )
+        (setq all-but-first-4-numbers (skip 4 numbers))
+    (println ""All but first 4 numbers:"")
+    (doseq (n all-but-first-4-numbers) (println n))
+  ))
+(linq22)"), 
+                
+                Does.StartWith(@"
+All but first 4 numbers:
+9
+8
+6
+7
+2
+0
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq23()
+        {
+            Assert.That(render(@"
+(defn linq23 ()
+  (let ( (all-but-first-2-orders
+      (skip 2 
+        (flatmap (fn (c) 
+          (flatmap (fn (o) 
+              {
+                  :customer-id (.CustomerId c) 
+                  :order-id    (.OrderId o) 
+                  :order-date  (.OrderDate o)
+              }) (.Orders c) )
+        ) (filter #(= (.Region %) ""WA"") customers-list) )) ))
+    (println ""All but first 2 orders in WA:"")
+    (doseq (o all-but-first-2-orders) (dump-inline o))
+  ))
+(linq23)"), 
+                
+                Does.StartWith(@"
+All but first 2 orders in WA:
+{customer-id:TRAIH,order-id:10574,order-date:1997-06-19}
+{customer-id:TRAIH,order-id:10577,order-date:1997-06-23}
+{customer-id:TRAIH,order-id:10822,order-date:1998-01-08}
+{customer-id:WHITC,order-id:10269,order-date:1996-07-31}
+{customer-id:WHITC,order-id:10344,order-date:1996-11-01}
+{customer-id:WHITC,order-id:10469,order-date:1997-03-10}
+{customer-id:WHITC,order-id:10483,order-date:1997-03-24}
+{customer-id:WHITC,order-id:10504,order-date:1997-04-11}
+{customer-id:WHITC,order-id:10596,order-date:1997-07-11}
+{customer-id:WHITC,order-id:10693,order-date:1997-10-06}
+{customer-id:WHITC,order-id:10696,order-date:1997-10-08}
+{customer-id:WHITC,order-id:10723,order-date:1997-10-30}
+{customer-id:WHITC,order-id:10740,order-date:1997-11-13}
+{customer-id:WHITC,order-id:10861,order-date:1998-01-30}
+{customer-id:WHITC,order-id:10904,order-date:1998-02-24}
+{customer-id:WHITC,order-id:11032,order-date:1998-04-17}
+{customer-id:WHITC,order-id:11066,order-date:1998-05-01}
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq24()
+        {
+            Assert.That(render(@"
+(defn linq24 ()
+  (let ( (numbers '(5 4 1 3 9 8 6 7 2 0))
+         (first-numbers-less-than-6) )
+    (setq first-numbers-less-than-6 (take-while #(< % 6) numbers))
+    (println ""First numbers less than 6:"")
+    (doseq (n first-numbers-less-than-6) (println n))
+  ))
+(linq24)"), 
+                
+                Does.StartWith(@"
+First numbers less than 6:
+5
+4
+1
+3
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq25()
+        {
+            Assert.That(render(@"
+(defn linq25 ()
+  (let ( (numbers '(5 4 1 3 9 8 6 7 2 0) )
+         (i) (first-small-numbers) )
+    (setq first-small-numbers (take-while #(>= % (incf+ i)) numbers) )
+    (println ""First numbers not less than their position:"")
+    (doseq (n first-small-numbers) (println n))
+  ))
+(linq25)"), 
+                
+                Does.StartWith(@"
+First numbers not less than their position:
+5
+4
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq26()
+        {
+            Assert.That(render(@"
+(defn linq26 ()
+  (let ( (numbers '(5 4 1 3 9 8 6 7 2 0))
+         (all-but-first-3-numbers) )
+    (setq all-but-first-3-numbers (skip-while #(not= (mod % 3) 0) numbers))
+    (println ""All elements starting from first element divisible by 3:"")
+    (doseq (n all-but-first-3-numbers) (println n))
+  ))
+(linq26)"), 
+                
+                Does.StartWith(@"
+All elements starting from first element divisible by 3:
+3
+9
+8
+6
+7
+2
+0
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq27()
+        {
+            Assert.That(render(@"
+(defn linq27 ()
+  (let ( (numbers '(5 4 1 3 9 8 6 7 2 0))
+         (i) (later-numbers) )
+    (setq later-numbers (skip-while #(>= % (incf+ i)) numbers))
+    (println ""All elements starting from first element less than its position:"")
+    (doseq (n later-numbers) (println n))
+  ))
+(linq27)"), 
+                
+                Does.StartWith(@"
+All elements starting from first element less than its position:
+1
+3
+9
+8
+6
+7
+2
+0
+".NormalizeNewLines()));
+        }
+
+        [Test]
         public void test()
         {
-//            print(@"");
+            print("(setq numbers '(5 4 1 3 9 8 6 7 2 0)) (map-index cons numbers)");
+            print(@"(setq numbers '(5 4 1 3 9 8 6 7 2 0)) (take-while (fn (c) (>= (1st c) (2nd c))) (mapcar-index cons numbers))");
 
 //            print("(setq numbers-a '(1 2 3)) (setq numbers-b '(3 4 5)) (zip (fn (a b) { :a a :b b }) numbers-a numbers-b)");
 //            print("(map #(* 2 %) (range 10))");

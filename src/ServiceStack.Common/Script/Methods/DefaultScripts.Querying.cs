@@ -711,8 +711,18 @@ namespace ServiceStack.Script
                 if (memberFn != null)
                     return memberFn(target);
             }
+            else if (DynamicNumber.IsNumber(key.GetType()))
+            {
+                var indexerMethod = target.GetType().GetInstanceMethod("get_Item");
+                if (indexerMethod != null)
+                {
+                    var fn = indexerMethod.GetInvoker();
+                    var ret = fn(target, key);
+                    return ret ?? JsNull.Value;
+                }
+            }
 
-            throw new NotSupportedException($"'{nameof(get)}' expects a collection but received a '{target.GetType().Name}'");
+            throw new NotSupportedException($"Unknown key '{key}' on '{target.GetType().Name}'");
         }
     }
 }

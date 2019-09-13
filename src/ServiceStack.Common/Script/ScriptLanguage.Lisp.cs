@@ -279,6 +279,12 @@ namespace ServiceStack.Script
             var last = a[a.Length - 1];
             return last is Lisp.Cell lastCell ? lastCell.Car : last;
         }
+        internal static IEnumerable assertEnumerable(this object a)
+        {
+            if (a is IEnumerable e)
+                return e;
+            throw new LispEvalException("not IEnumerable", a);
+        }
     }
 
     /// <summary>
@@ -790,6 +796,8 @@ namespace ServiceStack.Script
             {
                 Globals[TRUE] = TRUE;
                 Def("error", 1, a => throw new Exception(((string)a[0])));
+
+                Def("not", 1, a => a[0] == null || a[0] is false);
                 
                 Def("return", 1, (I, a) => {
                     var scope = I.AssertScope();
@@ -861,27 +869,23 @@ namespace ServiceStack.Script
                     if (a[0] == null)
                         return null;
                     if (!(a[1] is int i))
-                        throw new LispEvalException("not IEnumerable", a[1]);
+                        throw new LispEvalException("not integer", a[1]);
                     if (a[0] is IList c)
                         return c[i];
-                    if (!(a[0] is IEnumerable e))
-                        throw new LispEvalException("not IEnumerable", a[0]);
-                    return e.Cast<object>().ElementAt(i);
+                    return a[0].assertEnumerable().Cast<object>().ElementAt(i);
                 });
 
-                Def("enumerator", 1, a => {
-                    if (!(a[0] is IEnumerable e))
-                        throw new LispEvalException("not IEnumerable", a[0]);
-                    return e.GetEnumerator();
-                });
+                Def("skip", 2, a => EnumerableUtils.Skip(a[1].assertEnumerable(), DynamicInt.Instance.Convert(a[0])));
+                Def("take", 2, a => EnumerableUtils.Take(a[1].assertEnumerable(), DynamicInt.Instance.Convert(a[0])));
+                Def("enumerator", 1, a => a[0] == null ? TypeConstants.EmptyObjectArray.GetEnumerator() : a[0].assertEnumerable().GetEnumerator());
                 Def("enumeratorNext", 1, a => {
                     if (!(a[0] is IEnumerator e))
-                        throw new LispEvalException("not IEnumerable", a[0]);
+                        throw new LispEvalException("not IEnumerator", a[0]);
                     return e.MoveNext().lispBool();
                 });
                 Def("enumeratorCurrent", 1, a => {
                     if (!(a[0] is IEnumerator e))
-                        throw new LispEvalException("not IEnumerable", a[0]);
+                        throw new LispEvalException("not IEnumerator", a[0]);
                     return e.Current;
                 });
                 Def("dispose", 1, a => {
@@ -889,27 +893,26 @@ namespace ServiceStack.Script
                     return null;
                 });
 
-                Def("map", 2, (I, a) => {
-                    var seq = a[1];
-                    if (seq == null)
-                        return null;
-                    var fn = resolveFn(a[0], I);
-                    if (seq is IEnumerable e)
-                        return e.Map(fn);
-                    throw new LispEvalException("not IEnumerable", seq);
-                });
-                
+                Def("map", 2, (I, a) => a[1]?.assertEnumerable().Map(resolveFn(a[0], I)));
+
+                //Def("map", 2, (I, a) => a[1]?.assertEnumerable().Map(resolveFn(a[0], I)));
+
                 Def("sum", 1, a => {
-                    var seq = (IEnumerable) a[0];
                     object acc = 0;
-                    foreach (var num in seq)
-                    {
+                    foreach (var num in a[0].assertEnumerable())
                         acc = DynamicNumber.Add(acc, num);
-                    }
                     return acc;
                 });
 
-                Def("str", 1, a => Str(a[0]));
+                Def("str", -1, a => {
+                    var sb = StringBuilderCache.Allocate();
+                    var c = (Cell) a[0];
+                    foreach (var x in c)
+                    {
+                        sb.Append(Str(x, false));
+                    }
+                    return StringBuilderCache.ReturnAndFree(sb);
+                });
                 
                 Def("car", 1, a => (a[0] as Cell)?.Car);
                 Def("cdr", 1, a => (a[0] as Cell)?.Cdr);
@@ -1100,7 +1103,7 @@ namespace ServiceStack.Script
                         ? new Random().NextDouble() * d
                         : new Random().Next(0, (int)d);
                 });
-                Def("zerop", 1, a => (double)a[0] == 0d ? TRUE : null);
+                Def("zerop", 1, a => DynamicDouble.Instance.Convert(a[0]) == 0d ? TRUE : null);
 
                 void print(Interpreter I, string s)
                 {
@@ -2330,7 +2333,7 @@ namespace ServiceStack.Script
 (defun cdadr (x) (cdr (car (cdr x))))
 (defun cddar (x) (cdr (cdr (car x))))
 (defun cdddr (x) (cdr (cdr (cdr x))))
-(defun not (x) (eq x nil))
+;(defun not (x) (eq x nil)) ; replaced with native: null || false
 (defun cons? (x) (not (atom x)))
 (defun identity (x) x)
 
@@ -2344,6 +2347,7 @@ setcdr rplacd)
 (defun >= (x y) (not (< x y)))
 (defun <= (x y) (not (< y x)))
 (defun /= (x y) (not (= x y)))
+(defun not= (x y) (not (= x y)))
 
 (defun equal (x y)
   (cond ((atom x) (eql x y))
@@ -2550,8 +2554,6 @@ setcdr rplacd)
     (reverse (nthcdr 1 (reverse L))))
 (defun nbutlast (L)
     (nreverse (nthcdr 1 (nreverse L))))
-(defun take (n L)
-    (reverse (nthcdr (max (- (length L) n) 0) (reverse L))))
 
 (defun remove-if (f L)
   (mapcan (fn (e) (if (f e) (list e) nil)) L) )
@@ -2620,6 +2622,19 @@ setcdr rplacd)
         /// </summary>
         public const string Extensions = @"
 
+(defmacro dolist-while (spec f &rest body) ; (dolist-while (name list pred [result]) body...)
+  (let ((name (car spec))
+        (list (gensym)))
+    `(let (,name
+           (,list ,(cadr spec)))
+       (while (and ,list (,f (car ,list)))
+         (setq ,name (car ,list))
+         ,@body
+         (setq ,list (cdr ,list)))
+       ,@(if (cddr spec)
+             `((setq ,name nil)
+               ,(caddr spec))))))
+
 (defmacro doseq (spec &rest body) ; (doseq (name seq [result]) body...)
   (let ( (name (first spec)) 
          (seq (second spec)) 
@@ -2631,6 +2646,25 @@ setcdr rplacd)
        (dispose ,enum)
 )))
 
+(defmacro incf+ (elem)
+  `(setq ,elem (+ 1 ,elem)) `,elem)
+
+(defun skip-while (f L)
+  (let ( (to) (go) ) 
+    (dolist (e L)
+      (if (and (not go) (not (f e))) (setq go t)) 
+      (if go (push e to))
+    )
+    (nreverse to)
+  ))
+
+(defun take-while (f L)
+  (let ( (to) ) 
+    (dolist-while (e L) #(f %)
+      (push e to))
+    (nreverse to)
+  ))
+
 (defun assoc-key (k L) (first (assoc k L)))
 (defun assoc-value (k L) (second (assoc k L)))
 
@@ -2641,7 +2675,7 @@ setcdr rplacd)
   (/flatten (map f L)))
 
 (defun map-index (f L)
-  (let ((i -1))
+  (let ( (i -1) )
     (map (fn(x) (f x (incf i) )) L) ))
 
 (defun filter-index (f L)
@@ -2650,11 +2684,13 @@ setcdr rplacd)
 
 (setq
     first  car
+    1st    car
     second cadr
+    2nd    cadr
     third  caddr
+    3rd    caddr
     next   cdr
     rest   cdr
-    skip   nthcdr
     skip2  cddr
     inc    1+
     dec    1-
