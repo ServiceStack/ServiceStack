@@ -911,11 +911,11 @@ blueberry
 (linq30)"), 
                 
                 Does.StartWith(@"
-{UnitsInStock:0,ProductName:Alice Mutton,UnitPrice:39,Category:Meat/Poultry,ProductId:17}
-{UnitsInStock:13,ProductName:Aniseed Syrup,UnitPrice:10,Category:Condiments,ProductId:3}
-{UnitsInStock:123,ProductName:Boston Crab Meat,UnitPrice:18.4,Category:Seafood,ProductId:40}
-{UnitsInStock:19,ProductName:Camembert Pierrot,UnitPrice:34,Category:Dairy Products,ProductId:60}
-{UnitsInStock:42,ProductName:Carnarvon Tigers,UnitPrice:62.5,Category:Seafood,ProductId:18}
+{ProductId:17,ProductName:Alice Mutton,Category:Meat/Poultry,UnitPrice:39,UnitsInStock:0}
+{ProductId:3,ProductName:Aniseed Syrup,Category:Condiments,UnitPrice:10,UnitsInStock:13}
+{ProductId:40,ProductName:Boston Crab Meat,Category:Seafood,UnitPrice:18.4,UnitsInStock:123}
+{ProductId:60,ProductName:Camembert Pierrot,Category:Dairy Products,UnitPrice:34,UnitsInStock:19}
+{ProductId:18,ProductName:Carnarvon Tigers,Category:Seafood,UnitPrice:62.5,UnitsInStock:42}
 ".NormalizeNewLines()));
         }
 
