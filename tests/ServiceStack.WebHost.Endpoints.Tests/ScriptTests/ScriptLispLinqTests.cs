@@ -15,7 +15,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 ScriptLanguages = { ScriptLisp.Language },
                 AllowScriptingOfAllTypes = true,
                 ScriptNamespaces = {
-                    "System"
+                    "System",
+                    typeof(CaseInsensitiveComparer).Namespace, //System.Collections
+                    typeof(AnagramEqualityComparer).Namespace,
                 },
                 ScriptMethods = {
                     new ProtectedScripts(),
@@ -26,7 +28,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                     ["products"] = QueryData.Products,
                     ["customers"] = QueryData.Customers,
                     ["comparer"] = new CaseInsensitiveComparer(),
-                    ["anagramComparer"] = new QueryFilterTests.AnagramEqualityComparer(),
+                    ["anagramComparer"] = new AnagramEqualityComparer(),
                 }
             };
             Lisp.Set("products-list", Lisp.ToCons(QueryData.Products));
@@ -55,7 +57,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         {
             Assert.That(render(@"
 (defn linq01 ()
-    (setq numbers '(5 4 1 3 9 8 6 7 2 0))
+    (setq numbers [5 4 1 3 9 8 6 7 2 0])
     (let ((low-numbers (filter #(< % 5) numbers)))
         (println ""Numbers < 5:"")
         (dolist (n low-numbers)
@@ -153,7 +155,7 @@ Customer TRAIH: Trail's Head Gourmet Provisioners:
         {
             Assert.That(render(@"
 (defn linq05 ()
-    (let ( (digits '(""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""))
+    (let ( (digits [""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""])
            (short-digits) )
         (setq short-digits (filter-index (fn (x i) (> i (length x))) digits) )
         (println ""Short digits:"")
@@ -177,7 +179,7 @@ The word nine is shorter than its value
         {
             Assert.That(render(@"
 (defn linq06 ()
-  (let ( (numbers '(5 4 1 3 9 8 6 7 2 0)) (nums-plus-one) )
+  (let ( (numbers [5 4 1 3 9 8 6 7 2 0]) (nums-plus-one) )
     (setq nums-plus-one (map inc numbers))
     (println ""Numbers + 1:"")
         (doseq (n nums-plus-one) (println n))))
@@ -223,8 +225,8 @@ Chef Anton's Gumbo Mix
         {
             Assert.That(render(@"
 (defn linq08 ()
-  (let ( (numbers '(5 4 1 3 9 8 6 7 2 0))
-         (strings '(""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine"")) 
+  (let ( (numbers [5 4 1 3 9 8 6 7 2 0])
+         (strings [""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""]) 
          (text-nums) )
       (setq text-nums (map #(nth strings %) numbers))
       (println ""Number strings:"")
@@ -252,7 +254,7 @@ zero
         {
             Assert.That(render(@"
 (defn linq09 ()
-  (let ( (words '(""aPPLE"" ""BlUeBeRrY"" ""cHeRry""))
+  (let ( (words [""aPPLE"" ""BlUeBeRrY"" ""cHeRry""])
          (upper-lower-words) )
     (setq upper-lower-words
         (map (fn (w) { :lower (lower-case w) :upper (upper-case w) } ) words) )
@@ -273,7 +275,7 @@ Uppercase: CHERRY, Lowercase: cherry
         {
             Assert.That(render(@"
 (defn linq09 ()
-  (let ( (words '(""aPPLE"" ""BlUeBeRrY"" ""cHeRry""))
+  (let ( (words [""aPPLE"" ""BlUeBeRrY"" ""cHeRry""])
          (upper-lower-words) )
     (setq upper-lower-words
         (map (fn (w) `( (lower ,(lower-case w)) (upper ,(upper-case w)) )) words) )
@@ -294,8 +296,8 @@ Uppercase: CHERRY, Lowercase: cherry
         {
             Assert.That(render(@"
 (defn linq10 ()
-  (let ( (numbers '(5 4 1 3 9 8 6 7 2 0))
-         (strings '(""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""))
+  (let ( (numbers [5 4 1 3 9 8 6 7 2 0])
+         (strings [""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""])
          (digit-odd-evens) )
       (setq digit-odd-evens 
           (map (fn(n) { :digit (nth strings n) :even (even? n) } ) numbers))
@@ -408,7 +410,7 @@ Chef Anton's Gumbo Mix is in the category Condiments and costs 21.35
         {
             Assert.That(render(@"
 (defn linq12 ()
-  (let ( (numbers '(5 4 1 3 9 8 6 7 2 0))
+  (let ( (numbers [5 4 1 3 9 8 6 7 2 0])
          (i 0) (nums-in-place) )
     (setq nums-in-place (map (fn (n) { :num n :in-place (= n (1- (incf i))) }) numbers))
     (println ""Number: In-place?"")
@@ -437,8 +439,8 @@ Number: In-place?
         {
             Assert.That(render(@"
 (defn linq13 ()
-    (let ( (numbers '(5 4 1 3 9 8 6 7 2 0))
-           (digits  '(""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine"")) 
+    (let ( (numbers [5 4 1 3 9 8 6 7 2 0])
+           (digits  [""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""]) 
            (low-nums) )
       (setq low-nums (map #(nth digits %) (filter #(< % 5) numbers)))
       (println ""Numbers < 5:"")
@@ -461,8 +463,8 @@ zero
         {
             Assert.That(render(@"
 (defn linq14 ()
-  (let ( (numbers-a '(0 2 4 5 6 8 9))
-         (numbers-b '(1 3 5 7 8)) 
+  (let ( (numbers-a [0 2 4 5 6 8 9])
+         (numbers-b [1 3 5 7 8]) 
          (pairs) )    
     (setq pairs (filter #(< (:a %) (:b %)) 
                     (zip (fn (a b) { :a a, :b b }) numbers-a numbers-b)))        
@@ -654,7 +656,7 @@ Customer #2 has an order with OrderID 10926
         {
             Assert.That(render(@"
 (defn linq20 ()
-  (let ( (numbers '(5 4 1 3 9 8 6 7 2 0))
+  (let ( (numbers [5 4 1 3 9 8 6 7 2 0])
         (first-3-numbers)) 
     (setq first-3-numbers (take 3 numbers))
     (println ""First 3 numbers:"")
@@ -704,7 +706,7 @@ First 3 orders in WA:
         {
             Assert.That(render(@"
 (defn linq22 ()
-  (let ( (numbers '(5 4 1 3 9 8 6 7 2 0)) 
+  (let ( (numbers [5 4 1 3 9 8 6 7 2 0]) 
          (all-but-first-4-numbers) )
         (setq all-but-first-4-numbers (skip 4 numbers))
     (println ""All but first 4 numbers:"")
@@ -770,7 +772,7 @@ All but first 2 orders in WA:
         {
             Assert.That(render(@"
 (defn linq24 ()
-  (let ( (numbers '(5 4 1 3 9 8 6 7 2 0))
+  (let ( (numbers [5 4 1 3 9 8 6 7 2 0])
          (first-numbers-less-than-6) )
     (setq first-numbers-less-than-6 (take-while #(< % 6) numbers))
     (println ""First numbers less than 6:"")
@@ -792,7 +794,7 @@ First numbers less than 6:
         {
             Assert.That(render(@"
 (defn linq25 ()
-  (let ( (numbers '(5 4 1 3 9 8 6 7 2 0) )
+  (let ( (numbers [5 4 1 3 9 8 6 7 2 0] )
          (i 0) (first-small-numbers) )
     (setq first-small-numbers (take-while #(>= % (f++ i)) numbers) )
     (println ""First numbers not less than their position:"")
@@ -812,7 +814,7 @@ First numbers not less than their position:
         {
             Assert.That(render(@"
 (defn linq26 ()
-  (let ( (numbers '(5 4 1 3 9 8 6 7 2 0))
+  (let ( (numbers [5 4 1 3 9 8 6 7 2 0])
          (all-but-first-3-numbers) )
     (setq all-but-first-3-numbers (skip-while #(not= (mod % 3) 0) numbers))
     (println ""All elements starting from first element divisible by 3:"")
@@ -837,7 +839,7 @@ All elements starting from first element divisible by 3:
         {
             Assert.That(render(@"
 (defn linq27 ()
-  (let ( (numbers '(5 4 1 3 9 8 6 7 2 0))
+  (let ( (numbers [5 4 1 3 9 8 6 7 2 0])
          (i 0) (later-numbers) )
     (setq later-numbers (skip-while #(>= % (f++ i)) numbers))
     (println ""All elements starting from first element less than its position:"")
@@ -863,7 +865,7 @@ All elements starting from first element less than its position:
         {
             Assert.That(render(@"
 (defn linq28 ()
-  (let ( (words '(""cherry"" ""apple"" ""blueberry""))
+  (let ( (words [""cherry"" ""apple"" ""blueberry""])
          (sorted-words) )
     (setq sorted-words (sort words))
     (println ""The sorted list of words:"")
@@ -884,7 +886,7 @@ cherry
         {
             Assert.That(render(@"
 (defn linq29 ()
-  (let ( (words '(""cherry"" ""apple"" ""blueberry""))
+  (let ( (words [""cherry"" ""apple"" ""blueberry""])
          (sorted-words) )
     (setq sorted-words (sort-by count words))
     (println ""The sorted list of words (by length):"")

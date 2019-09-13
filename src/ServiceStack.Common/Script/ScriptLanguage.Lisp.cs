@@ -503,6 +503,9 @@ namespace ServiceStack.Script
         static readonly Sym NEWMAP = Sym.New("new-map");
         static readonly Sym ARG = Sym.New("_a");
 
+        static readonly Sym LEFT_BRACKET = Sym.New("[");
+        static readonly Sym RIGHT_BRACKET = Sym.New("]");
+
         //------------------------------------------------------------------
 
         // Get cdr of list x as a Cell or null.
@@ -803,6 +806,13 @@ namespace ServiceStack.Script
             List<object> toList(IEnumerable seq) => seq == null
                 ? new List<object>()
                 : seq.Cast<object>().ToList();
+
+            class ObjectComparer : IComparer<object>
+            {
+                private readonly IComparer comparer;
+                public ObjectComparer(IComparer comparer) => this.comparer = comparer;
+                public int Compare(object x, object y) => comparer.Compare(x, y);
+            }
 
             public void InitGlobals()
             {
@@ -1995,6 +2005,13 @@ namespace ServiceStack.Script
                     ReadToken();
                     return ParseListBody();
                 }
+                if (Token == LEFT_BRACKET)
+                {
+                    // [a b c] => (list a b c)
+                    ReadToken();
+                    var sExpr = ParseDataListBody();
+                    return new Cell(LIST, sExpr);
+                }
                 else if (Token == SINGLE_QUOTE)
                 {
                     // 'a => (quote a)
@@ -2093,6 +2110,35 @@ namespace ServiceStack.Script
                 }
             }
 
+            Cell ParseDataListBody()
+            {
+                if (Token == EOF)
+                    throw new FormatException("unexpected EOF");
+                else if (Token == RIGHT_BRACKET)
+                    return null;
+                else
+                {
+                    var e1 = ParseExpression();
+                    ReadToken();
+                    object e2;
+                    if (Token == DOT)
+                    {
+                        // (a . b)
+                        ReadToken();
+                        e2 = ParseExpression();
+                        ReadToken();
+                        if (Token != RIGHT_BRACKET)
+                            throw new FormatException($"\")\" expected: {Token}");
+                    }
+                    else
+                    {
+                        e2 = ParseDataListBody();
+                    }
+
+                    return new Cell(e1, e2);
+                }
+            }
+
             Cell ParseListBody()
             {
                 if (Token == EOF)
@@ -2127,6 +2173,7 @@ namespace ServiceStack.Script
                 '"', ',', '(', ')', '`', '\'', '~', 
                 '{','}',  //clojure map
                 '#',      //clojure fn
+                '[',']',  //clojure data list [e1 e2] => (list e1 e2)
             };
 
             static void AddToken(List<object> tokens, string s)
