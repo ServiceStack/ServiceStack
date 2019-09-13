@@ -922,9 +922,31 @@ blueberry
         }
 
         [Test]
+        public void Linq31()
+        {
+            Assert.That(render(@"
+(defn linq31 ()
+  (let ( (words [""aPPLE"" ""AbAcUs"" ""bRaNcH"" ""BlUeBeRrY"" ""ClOvEr"" ""cHeRry""])
+         (sorted-words) )
+    (setq sorted-words (sort-by identity (CaseInsensitiveComparer.) words))
+    (doseq (w sorted-words) (println w))
+  ))
+(linq31)"), 
+                
+                Does.StartWith(@"
+AbAcUs
+aPPLE
+BlUeBeRrY
+bRaNcH
+cHeRry
+ClOvEr
+".NormalizeNewLines()));
+        }
+
+        [Test]
         public void test()
         {
-//            print("(setq i 0)(setq numbers '(5 4 1 3 9 8 6 7 2 0)) (skip-while #(>= % (incf+ i)) numbers)");
+            print(@"(setq words [""aPPLE"" ""AbAcUs"" ""bRaNcH"" ""BlUeBeRrY"" ""ClOvEr"" ""cHeRry""])(sort-by identity (CaseInsensitiveComparer.) words)");
 //            print(@"(setq numbers '(5 4 1 3 9 8 6 7 2 0)) (take-while (fn (c) (>= (1st c) (2nd c))) (mapcar-index cons numbers))");
 
 //            print("(setq numbers-a '(1 2 3)) (setq numbers-b '(3 4 5)) (zip (fn (a b) { :a a :b b }) numbers-a numbers-b)");

@@ -926,13 +926,21 @@ namespace ServiceStack.Script
                 Def("sort-by", -2, (I, a) => {
 
                     var keyFn = resolveFn(a[0], I);
-                    var arr = EnumerableUtils.ToList((a[1] is Cell c ? c.Car : a[1]).assertEnumerable()).ToArray();
-                    Array.Sort(arr, (x,y) => {
-                        var xVal = keyFn(x);
-                        var yVal = keyFn(y);
-                        return xVal.compareTo(yVal);
-                    });
-                    return arr;
+                    var varArgs = EnumerableUtils.ToList(a[1].assertEnumerable());
+                    if (varArgs.Count == 1) // (sort-by keyfn list)
+                    {
+                        var arr = EnumerableUtils.ToList(varArgs[0].assertEnumerable()).ToArray();
+                        Array.Sort(arr, (x,y) => keyFn(x).compareTo(keyFn(y)));
+                        return arr;
+                    }
+                    else // (sort-by keyfn comparer list)
+                    {
+                        if (!(varArgs[0] is IComparer comparer))
+                            throw new LispEvalException("not IComparable", varArgs[1]);
+
+                        var results = EnumerableUtils.ToList(varArgs[1].assertEnumerable()).OrderBy(keyFn, new ObjectComparer(comparer));
+                        return results;
+                    }
                 });
 
                 Def("sum", 1, a => {

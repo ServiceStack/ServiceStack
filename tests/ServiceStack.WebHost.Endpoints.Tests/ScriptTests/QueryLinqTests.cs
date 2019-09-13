@@ -7,6 +7,18 @@ using ServiceStack.Script;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 {
+    public class AnagramEqualityComparer : IEqualityComparer<string> 
+    {
+        public bool Equals(string x, string y) => GetCanonicalString(x) == GetCanonicalString(y);
+        public int GetHashCode(string obj) => GetCanonicalString(obj).GetHashCode();
+        private string GetCanonicalString(string word) 
+        {
+            var wordChars = word.ToCharArray();
+            Array.Sort(wordChars);
+            return new string(wordChars);
+        }
+    }
+        
     public class QueryFilterTests
     {
         private static ScriptContext CreateContext()
@@ -1086,18 +1098,6 @@ Condiments:
 ".NormalizeNewLines()));
         }
  
-        public class AnagramEqualityComparer : IEqualityComparer<string> 
-        {
-            public bool Equals(string x, string y) => GetCanonicalString(x) == GetCanonicalString(y);
-            public int GetHashCode(string obj) => GetCanonicalString(obj).GetHashCode();
-            private string GetCanonicalString(string word) 
-            {
-                var wordChars = word.ToCharArray();
-                Array.Sort(wordChars);
-                return new string(wordChars);
-            }
-        }
-        
         [Test]
         public void Linq44()
         { 
