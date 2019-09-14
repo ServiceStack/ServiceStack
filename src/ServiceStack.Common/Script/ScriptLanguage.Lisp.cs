@@ -323,6 +323,8 @@ namespace ServiceStack.Script
     /// </remarks>
     public static class Lisp
     {
+        public static bool AllowLoadingRemoteScripts { get; set; } = true;
+
         private static Interpreter GlobalInterpreter;
 
         static Lisp()
@@ -831,7 +833,7 @@ namespace ServiceStack.Script
                 public ObjectComparer(IComparer comparer) => this.comparer = comparer;
                 public int Compare(object x, object y) => comparer.Compare(x, y);
             }
-
+            
             /// <summary>
             /// Load examples:
             ///   - file.l
@@ -844,6 +846,9 @@ namespace ServiceStack.Script
             {
                 if (path.StartsWith("gist:"))
                 {
+                    if (!AllowLoadingRemoteScripts)
+                        throw new NotSupportedException($"Lisp.AllowLoadingRemoteScripts has been disabled");
+                    
                     scope.Context.AssertProtectedMethods();
                     
                     var gistId = path.RightPart(':');
@@ -882,6 +887,9 @@ namespace ServiceStack.Script
                 var isUrl = path.IndexOf("://", StringComparison.Ordinal) >= 0;
                 if (isUrl)
                 {
+                    if (!AllowLoadingRemoteScripts)
+                        throw new NotSupportedException($"Lisp.AllowLoadingRemoteScripts has been disabled");
+                    
                     scope.Context.AssertProtectedMethods();
                     
                     if (!path.StartsWith("https://"))

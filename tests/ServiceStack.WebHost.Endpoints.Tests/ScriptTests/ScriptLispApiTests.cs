@@ -206,9 +206,11 @@ id 1
             // https://gist.github.com/gistlyn/2f14d629ba1852ee55865607f1fa2c3e
         }
 
-        // [Test] // skip integration test
+        //[Test] // skip integration test
         public void Can_load_scripts_from_gist_and_url()
         {
+//            Lisp.AllowLoadingRemoteScripts = false; // uncomment to prevent loading remote scripts
+
             var context = new ScriptContext {
                 ScriptLanguages = { ScriptLisp.Language },
                 ScriptMethods = { new ProtectedScripts() },
