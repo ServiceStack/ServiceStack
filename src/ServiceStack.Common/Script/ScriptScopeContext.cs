@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Text;
 
 namespace ServiceStack.Script
 {
@@ -71,7 +72,30 @@ namespace ServiceStack.Script
             if (fn == null)
             {
                 fn = result.GetContextFilterInvoker(name, fnArgValuesCount + 1, out scriptMethod);
-                requiresScope = true;
+                if (fn == null)
+                {
+                    var contextFilter = result.GetContextBlockInvoker(name, fnArgValuesCount + 1, out scriptMethod);
+                    if (contextFilter != null)
+                    {
+                        // Other languages require captured output of Context Blocks
+                        var filter = scriptMethod;
+                        fn = (StaticMethodInvoker) (args => {
+                            var ctxScope = (ScriptScopeContext) args[0];
+                            using (var ms = MemoryStreamFactory.GetStream())
+                            {
+                                args[0] = ctxScope.ScopeWithStream(ms);
+                                var task = (Task) contextFilter(filter, args);
+                                task.Wait();
+                                var discard = task.GetResult();
+
+                                var ret = MemoryProvider.Instance.FromUtf8(ms.GetBufferAsMemory().Span);
+                                return ret.ToString();
+                            }
+                        });
+                    }
+                }
+                if (fn != null)
+                    requiresScope = true;
             }
             
             return fn != null;

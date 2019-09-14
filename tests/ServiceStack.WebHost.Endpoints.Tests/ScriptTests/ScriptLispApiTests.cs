@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Reflection;
+using Funq;
 using NUnit.Framework;
 using ServiceStack.Script;
 using ServiceStack.Text;
@@ -84,7 +86,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         }
 
         [Test]
-        public void Can_clojure_fn_data_list_args()
+        public void LISP_can_clojure_fn_data_list_args()
         {
             Assert.That(render(@"(defn f [] 0)(f)"), Is.EqualTo("0"));
             Assert.That(render(@"(defn f [a] a)(f 1)"), Is.EqualTo("1"));
@@ -92,5 +94,48 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(render(@"(defn f [a b c] (+ a b c))(f 1 2 3)"), Is.EqualTo("6"));
             Assert.That(render(@"((fn [a b c] (+ a b c)) 1 2 3)"), Is.EqualTo("6"));
         }
+
+        [Test]
+        public void LISP_can_call_xml_ContextBlockFilter()
+        {
+            var obj = eval(@"(/xml { :a 1 } )");
+            Assert.That(obj, Does.Contain("<Key>a</Key>"));
+        }
     }
+    
+/* If LISP integration tests are needed in future
+    public class ScriptListAppHostTests
+    {
+        private ServiceStackHost appHost;
+
+        class AppHost : AppSelfHostBase
+        {
+            public AppHost() : base(nameof(ScriptListAppHostTests), typeof(ScriptListAppHostTests).Assembly) { }
+            public override void Configure(Container container)
+            {
+                Plugins.Add(new SharpPagesFeature {
+                    ScriptLanguages = { ScriptLisp.Language },
+                });
+            }
+        }
+
+        public ScriptListAppHostTests()
+        {
+            appHost = new AppHost().Init(); 
+        }
+
+        [OneTimeTearDown]
+        public void OneTimeTearDown() => appHost.Dispose();
+ 
+        string render(string lisp) => appHost.GetPlugin<SharpPagesFeature>().RenderLisp(lisp).NormalizeNewLines();
+        object eval(string lisp) => appHost.GetPlugin<SharpPagesFeature>().EvaluateLisp($"(return {lisp})");
+
+//        [Test]
+        public void Can_call_urlContents()
+        {
+            var output = render(@"(/urlContents ""https://api.github.com/repos/ServiceStack/ServiceStack"" { :userAgent ""#Script"" } )");
+            output.Print();
+        }
+    }
+*/
 }
