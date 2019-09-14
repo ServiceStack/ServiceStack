@@ -1448,6 +1448,14 @@ namespace ServiceStack.Script
             }
             return IgnoreResult.Value;
         }
+
+        public object unwrap(object value)
+        {
+            if (value is Task t)
+                return t.GetResult();
+
+            return value;
+        }
     }
 
     public partial class DefaultScripts //Methods named after common keywords breaks intelli-sense when trying to use them        

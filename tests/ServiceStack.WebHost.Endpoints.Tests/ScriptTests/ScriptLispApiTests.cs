@@ -2,6 +2,9 @@ using System.Collections.Generic;
 using System.Reflection;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Data;
+using ServiceStack.IO;
+using ServiceStack.OrmLite;
 using ServiceStack.Script;
 using ServiceStack.Text;
 
@@ -139,6 +142,41 @@ id 1
 
 ))"), Is.EqualTo(1));
             
+        }
+
+        [Test]
+        public void LISP_string_format()
+        {
+            Assert.That(render(@"(/fmt ""{0} + {1} = {2}"" 1 2 (+ 1 2))"), 
+                Is.EqualTo("1 + 2 = 3"));
+        }
+
+        [Test]
+        public void Can_access_db()
+        {
+            var context = new ScriptContext {
+                ScriptLanguages = { ScriptLisp.Language },
+                ScriptMethods = {
+                    new DbScriptsAsync()
+                }
+            };
+            context.Container.AddSingleton<IDbConnectionFactory>(() => 
+                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
+            context.Init();
+
+            using (var db = context.Container.Resolve<IDbConnectionFactory>().Open())
+            {
+                db.CreateTable<Person>();
+                
+                db.InsertAll(new [] {
+                    new Person("A", 1), 
+                    new Person("B", 2), 
+                });
+            }
+
+            var result = context.EvaluateLisp(
+                @"(return (map (fn [p] (:Name p)) (/dbSelect ""select Name, Age from Person"")))");
+            Assert.That(result, Is.EqualTo(new[] { "A", "B" }));
         }
 
     }

@@ -305,6 +305,13 @@ namespace ServiceStack.Script
                 arg.Car = c.Cdr;
             return arg;
         }
+
+        internal static object unwrapScriptValue(this object o)
+        {
+            if (o is Task t)
+                o = t.GetResult();
+            return ScriptLanguage.UnwrapValue(o);
+        }
     }
 
     /// <summary>
@@ -807,7 +814,7 @@ namespace ServiceStack.Script
                         {
                             var scriptMethodArgs = new List<object>(EvalArgs(new Cell(x, null), interp));
                             var ret = JsCallExpression.InvokeDelegate(fnDel, null, isMemberExpr: false, scriptMethodArgs);
-                            return ret;
+                            return ret.unwrapScriptValue();
                         };
                     default:
                         throw new LispEvalException("not applicable", f);
@@ -854,7 +861,7 @@ namespace ServiceStack.Script
                         fnArgs.Add(args[i]);
                     var fn = scope.Context.AssertProtectedMethods().F(fnName, fnArgs);
                     var ret = JsCallExpression.InvokeDelegate(fn, null, isMemberExpr: false, fnArgs);
-                    return ret;
+                    return ret.unwrapScriptValue();
                 });
                 
                 Def("C", -1, (I, a) => {
@@ -1342,14 +1349,14 @@ namespace ServiceStack.Script
                                             ? new List<object> {scope}
                                             : new List<object>();
                                         scriptMethodArgs.AddRange(a);
-                                        return JsCallExpression.InvokeDelegate(fnDel, scriptMethod, isMemberExpr: false, scriptMethodArgs);
+                                        return JsCallExpression.InvokeDelegate(fnDel, scriptMethod, isMemberExpr: false, scriptMethodArgs).unwrapScriptValue();
                                     });
                                 }
                                 if (symName[0] == ':')
                                 {
                                     return (StaticMethodInvoker) (a => {
                                         var ret = scope.Context.DefaultMethods.get(a[0], symName.Substring(1));
-                                        return ret;
+                                        return ret.unwrapScriptValue();
                                     });
                                 }
                                 if (symName[0] == '.')
@@ -1357,7 +1364,7 @@ namespace ServiceStack.Script
                                     return (StaticMethodInvoker) (a => {
                                         
                                         var ret = scope.Context.AssertProtectedMethods().call(a[0], symName.Substring(1).Replace('+',','), TypeConstants.EmptyObjectList);
-                                        return ret;
+                                        return ret.unwrapScriptValue();
                                     });
                                 }
                                 if (symName.IndexOf('/') >= 0)
@@ -1367,7 +1374,7 @@ namespace ServiceStack.Script
                                     if (fnNet != null)
                                     {
                                         return (StaticMethodInvoker) (a => 
-                                            JsCallExpression.InvokeDelegate(fnNet, null, isMemberExpr: false, new List<object>(a)));
+                                            JsCallExpression.InvokeDelegate(fnNet, null, isMemberExpr: false, new List<object>(a)).unwrapScriptValue());
                                     }
                                 }
                                 else if (symName[symName.Length - 1] == '.') // constructor (Type. arg) https://clojure.org/reference/java_interop#_the_dot_special_form
@@ -1377,7 +1384,7 @@ namespace ServiceStack.Script
                                     if (fnCtor != null)
                                     {
                                         return (StaticMethodInvoker) (a => 
-                                            JsCallExpression.InvokeDelegate(fnCtor, null, isMemberExpr: false, new List<object>(a)));
+                                            JsCallExpression.InvokeDelegate(fnCtor, null, isMemberExpr: false, new List<object>(a)).unwrapScriptValue());
                                     }
                                     throw new NotSupportedException(ProtectedScripts.TypeNotFoundErrorMessage(typeName));
                                 }
@@ -1453,7 +1460,7 @@ namespace ServiceStack.Script
                                             scriptMethodArgs.AddRange(fnArgs);
 
                                             var ret = JsCallExpression.InvokeDelegate(fnDel, scriptMethod, isMemberExpr: false, scriptMethodArgs);
-                                            return ret;
+                                            return ret.unwrapScriptValue();
                                         }
                                         if (isScriptMethod)
                                             throw new NotSupportedException($"Could not resolve #Script method '{fnName.Substring(1)}'");
@@ -1467,7 +1474,7 @@ namespace ServiceStack.Script
                                             if (target == null)
                                                 return null;
                                             var ret = scope.Context.DefaultMethods.get(target, fnName.Substring(1));
-                                            return ret;
+                                            return ret.unwrapScriptValue();
                                         }
                                         if (fnName[0] == '.') // member method https://clojure.org/reference/java_interop#_member_access
                                         {
@@ -1482,7 +1489,7 @@ namespace ServiceStack.Script
                                                 methodArgs.Add(fnArgs[i]);
                                             
                                             var ret = scope.Context.AssertProtectedMethods().call(target, fnName.Substring(1), methodArgs);
-                                            return ret;
+                                            return ret.unwrapScriptValue();
                                         }
                                         if (fnName.IndexOf('/') >= 0) // static method https://clojure.org/reference/java_interop#_member_access
                                         {
@@ -1493,7 +1500,7 @@ namespace ServiceStack.Script
                                             if (fnNet != null)
                                             {
                                                 var ret = JsCallExpression.InvokeDelegate(fnNet, null, isMemberExpr: false, fnArgsList);
-                                                return ret;
+                                                return ret.unwrapScriptValue();
                                             }
                                         }
                                         else if (fnName[fnName.Length - 1] == '.') // constructor (Type. arg) https://clojure.org/reference/java_interop#_the_dot_special_form
@@ -1524,7 +1531,7 @@ namespace ServiceStack.Script
                                 case Delegate fnDel:
                                     var scriptMethodArgs = new List<object>(EvalArgs(arg, this, env));
                                     var ret = JsCallExpression.InvokeDelegate(fnDel, null, isMemberExpr: false, scriptMethodArgs);
-                                    return ret;
+                                    return ret.unwrapScriptValue();
                                 default:
                                     throw new LispEvalException("not applicable", fn);
                                 }
