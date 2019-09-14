@@ -104,7 +104,8 @@ namespace ServiceStack.Script
             var pos = 0;
             var bodyContents = fileContents;
             fileContents.AdvancePastWhitespace().TryReadLine(out ReadOnlyMemory<char> line, ref pos);
-            if (line.StartsWith(Format.ArgsPrefix))
+            var lineComment = ScriptLanguage.LineComment;
+            if (line.StartsWith(Format.ArgsPrefix) || (lineComment != null && line.StartsWith(lineComment + Format.ArgsPrefix)))
             {
                 while (fileContents.TryReadLine(out line, ref pos))
                 {
@@ -112,8 +113,11 @@ namespace ServiceStack.Script
                         continue;
 
 
-                    if (line.StartsWith(Format.ArgsSuffix))
+                    if (line.StartsWith(Format.ArgsSuffix) || (lineComment != null && line.StartsWith(lineComment + Format.ArgsSuffix)))
                         break;
+
+                    if (lineComment != null && line.StartsWith(lineComment))
+                        line = line.Slice(lineComment.Length).TrimStart();
 
                     var colonPos = line.IndexOf(':');
                     var spacePos = line.IndexOf(' ');
@@ -125,7 +129,8 @@ namespace ServiceStack.Script
                     
                     line.SplitOnFirst(sep, out var first, out var last);
 
-                    pageVars[first.Trim().ToString()] = !last.IsEmpty ? last.Trim().ToString() : "";
+                    var key = first.Trim().ToString();
+                    pageVars[key] = !last.IsEmpty ? last.Trim().ToString() : "";
                 }
                 
                 //When page has variables body starts from first non whitespace after variables end  

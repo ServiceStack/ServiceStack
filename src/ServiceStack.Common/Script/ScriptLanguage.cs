@@ -11,6 +11,8 @@ namespace ServiceStack.Script
         
         public abstract string Name { get; }
 
+        public virtual string LineComment => null; 
+
         public List<PageFragment> Parse(ScriptContext context, ReadOnlyMemory<char> body) => Parse(context, body, default);
 
         public abstract List<PageFragment> Parse(ScriptContext context, ReadOnlyMemory<char> body, ReadOnlyMemory<char> modifiers);

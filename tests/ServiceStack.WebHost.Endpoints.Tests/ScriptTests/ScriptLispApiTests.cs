@@ -113,6 +113,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(eval(@"(setq id 2)(setq id2 3)(if (bound? id id2) 1 -1)"), Is.EqualTo(1));
         }
 
+        [Test]
+        public void Can_access_page_vars()
+        {
+            Assert.That(context.EvaluateLisp(@"<!--
+id 1
+-->
+
+(return (let () 
+    (if (bound? id) 1 -1)
+
+))"), Is.EqualTo(1));
+            
+        }
+
+        [Test]
+        public void Can_access_page_vars_with_line_comment_prefix()
+        {
+            Assert.That(context.EvaluateLisp(@";<!--
+; id 1
+;-->
+
+(return (let () 
+    (if (bound? id) 1 -1)
+
+))"), Is.EqualTo(1));
+            
+        }
+
     }
     
 /* If LISP integration tests are needed in future

@@ -50,6 +50,8 @@ namespace ServiceStack.Script
         public static ScriptLanguage Language = new ScriptLisp();
         
         public override string Name => "lisp";
+        
+        public override string LineComment => ";";
 
         public void Configure(ScriptContext context) => Lisp.Init();
 
