@@ -179,6 +179,53 @@ id 1
             Assert.That(result, Is.EqualTo(new[] { "A", "B" }));
         }
 
+        [Test]
+        public void Can_load_scripts()
+        {
+            var context = new ScriptContext {
+                ScriptLanguages = { ScriptLisp.Language },
+                ScriptMethods = { new ProtectedScripts() },
+            }.Init();
+            
+            context.VirtualFiles.WriteFile("lib1.l", "(defn lib-calc [a b] (+ a b))");
+            context.VirtualFiles.WriteFile("/dir/lib2.l", "(defn lib-calc [a b] (* a b))");
+
+            object result;
+            
+            result = context.EvaluateLisp(@"(load 'lib1)(return (lib-calc 4 5))");
+            Assert.That(result, Is.EqualTo(9));
+            
+            result = context.EvaluateLisp(@"(load ""lib1.l"")(return (lib-calc 4 5))");
+            Assert.That(result, Is.EqualTo(9));
+            
+            result = context.EvaluateLisp(@"(load ""/dir/lib2.l"")(return (lib-calc 4 5))");
+            Assert.That(result, Is.EqualTo(20));
+            result = context.EvaluateLisp(@"(load 'lib1)(load ""/dir/lib2.l"")(return (lib-calc 4 5))");
+            Assert.That(result, Is.EqualTo(20));
+            
+            // https://gist.github.com/gistlyn/2f14d629ba1852ee55865607f1fa2c3e
+        }
+
+        // [Test] // skip integration test
+        public void Can_load_scripts_from_gist_and_url()
+        {
+            var context = new ScriptContext {
+                ScriptLanguages = { ScriptLisp.Language },
+                ScriptMethods = { new ProtectedScripts() },
+            }.Init();
+            
+            object result;
+
+            result = context.EvaluateLisp(@"(load ""gist:2f14d629ba1852ee55865607f1fa2c3e/lib1.l"")(return (lib-calc 4 5))");
+            Assert.That(result, Is.EqualTo(9));
+
+            // imports all gist files and overwrites symbols where last symbol wins
+            result = context.EvaluateLisp(@"(load ""gist:2f14d629ba1852ee55865607f1fa2c3e"")(return (lib-calc 4 5))");
+            Assert.That(result, Is.EqualTo(20));
+            
+            result = context.EvaluateLisp(@"(load ""https://gist.githubusercontent.com/gistlyn/2f14d629ba1852ee55865607f1fa2c3e/raw/95cbc5d071d9db3a96866c1a583056dd87ab5f69/lib1.l"")(return (lib-calc 4 5))");
+            Assert.That(result, Is.EqualTo(9));
+        }
     }
     
 /* If LISP integration tests are needed in future

@@ -922,19 +922,7 @@ namespace ServiceStack.Script
         {
             var scopedParams = scope.AssertOptions(nameof(includeUrl), options);
 
-            var webReq = (HttpWebRequest)WebRequest.Create(url);
-            var dataType = scopedParams.TryGetValue("dataType", out object value)
-                ? ConvertDataTypeToContentType((string)value)
-                : null;
-
-            if (scopedParams.TryGetValue("method", out value))
-                webReq.Method = (string)value;
-            if (scopedParams.TryGetValue("contentType", out value) || dataType != null)
-                webReq.ContentType = (string)value ?? dataType;            
-            if (scopedParams.TryGetValue("accept", out value) || dataType != null) 
-                webReq.Accept = (string)value ?? dataType;            
-            if (scopedParams.TryGetValue("userAgent", out value))
-                PclExport.Instance.SetUserAgent(webReq, (string)value);
+            var webReq = initWebRequest(url, scopedParams);
 
             if (scopedParams.TryRemove("data", out object data))
             {
@@ -955,6 +943,73 @@ namespace ServiceStack.Script
             using (var stream = webRes.GetResponseStream())
             {
                 await stream.CopyToAsync(scope.OutputStream);
+            }
+        }
+
+        private static HttpWebRequest initWebRequest(string url, Dictionary<string, object> scopedParams)
+        {
+            var webReq = (HttpWebRequest) WebRequest.Create(url);
+            var dataType = scopedParams.TryGetValue("dataType", out object value)
+                ? ConvertDataTypeToContentType((string) value)
+                : null;
+
+            if (scopedParams.TryGetValue("method", out value))
+                webReq.Method = (string) value;
+            if (scopedParams.TryGetValue("contentType", out value) || dataType != null)
+                webReq.ContentType = (string) value ?? dataType;
+            if (scopedParams.TryGetValue("accept", out value) || dataType != null)
+                webReq.Accept = (string) value ?? dataType;
+            if (scopedParams.TryGetValue("userAgent", out value))
+                PclExport.Instance.SetUserAgent(webReq, (string) value);
+            return webReq;
+        }
+
+        private static HttpWebRequest postWebRequestSync(string url, Dictionary<string, object> scopedParams)
+        {
+            var webReq = initWebRequest(url, scopedParams);
+
+            if (scopedParams.TryRemove("data", out object data))
+            {
+                if (webReq.Method == null)
+                    webReq.Method = HttpMethods.Post;
+
+                if (webReq.ContentType == null)
+                    webReq.ContentType = MimeTypes.FormUrlEncoded;
+
+                var body = ConvertDataToString(data, webReq.ContentType);
+                using (var stream = webReq.GetRequestStream())
+                {
+                    var utf8 = MemoryProvider.Instance.ToUtf8(body.AsSpan()).ToArray();
+                    stream.Write(utf8, 0, utf8.Length);
+                }
+            }
+
+            return webReq;
+        }
+
+        public string urlTextContents(ScriptScopeContext scope, string url, object options)
+        {
+            var scopedParams = scope.AssertOptions(nameof(urlTextContents), options);
+            var webReq = postWebRequestSync(url, scopedParams);
+
+            using (var webRes = webReq.GetResponse())
+            using (var stream = webRes.GetResponseStream())
+            {
+                var ret = stream.ReadToEnd();
+                return ret;
+            }
+        }
+
+        public ReadOnlyMemory<byte> urlBytesContents(ScriptScopeContext scope, string url, object options)
+        {
+            var scopedParams = scope.AssertOptions(nameof(urlTextContents), options);
+            var webReq = postWebRequestSync(url, scopedParams);
+
+            using (var webRes = webReq.GetResponse())
+            using (var stream = webRes.GetResponseStream())
+            {
+                var ret = stream.ReadFullyAsMemory();
+                return ret;
             }
         }
 

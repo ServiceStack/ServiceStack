@@ -832,9 +832,115 @@ namespace ServiceStack.Script
                 public int Compare(object x, object y) => comparer.Compare(x, y);
             }
 
+            /// <summary>
+            /// Load examples:
+            ///   - file.l
+            ///   - virtual/path/file.l
+            ///   - gist:{gist-id}
+            ///   - gist:{gist-id}/single-file.l
+            ///   - https://mydomain.org/file.l
+            /// </summary>
+            static ReadOnlyMemory<char> lispContents(ScriptScopeContext scope, string path)
+            {
+                if (path.StartsWith("gist:"))
+                {
+                    scope.Context.AssertProtectedMethods();
+                    
+                    var gistId = path.RightPart(':');
+                    var specificFile = gistId.IndexOf('/') >= 0
+                        ? gistId.RightPart('/')
+                        : null;
+                    gistId = gistId.LeftPart('/');
+                    
+                    var gateway = new GitHubGateway();
+                    var gist = gateway.GetGist(gistId);
+                    
+                    bool isTruncated(GistFile f) => (string.IsNullOrEmpty(f.Content) || f.Content.Length < f.Size) && f.Truncated;
+
+                    if (specificFile != null)
+                    {
+                        if (!gist.Files.TryGetValue(specificFile, out var gistFile))
+                            throw new NotSupportedException($"File '{specificFile}' does not exist in gist '{gistId}'");
+                        if (isTruncated(gistFile))
+                            return gistFile.Raw_Url.GetStringFromUrl(requestFilter: req => req.UserAgent = "#Script " + nameof(Lisp)).AsMemory();
+
+                        return gistFile.Content.AsMemory();
+                    }
+
+                    var sb = StringBuilderCache.Allocate();
+                    foreach (var entry in gist.Files)
+                    {
+                        if (isTruncated(entry.Value))
+                            sb.AppendLine(entry.Value.Raw_Url.GetStringFromUrl(requestFilter: req => req.UserAgent = "#Script " + nameof(Lisp)));
+                        else
+                            sb.AppendLine(entry.Value.Content);
+                    }
+
+                    return StringBuilderCache.ReturnAndFree(sb).AsMemory();
+                }
+                
+                var isUrl = path.IndexOf("://", StringComparison.Ordinal) >= 0;
+                if (isUrl)
+                {
+                    scope.Context.AssertProtectedMethods();
+                    
+                    if (!path.StartsWith("https://"))
+                        throw new NotSupportedException("https:// is required for loading remote scripts");
+
+                    var textContents = path.GetStringFromUrl(requestFilter: req => req.UserAgent = "#Script " + nameof(Lisp));
+                    return textContents.AsMemory();
+                }
+                        
+                var file = scope.Context.VirtualFiles.GetFile(path);
+                if (file == null)
+                    throw new NotSupportedException($"File does not exist '{path}'");
+
+                var lisp = file.GetContents();
+                var span = lisp is ReadOnlyMemory<char> rom
+                    ? rom
+                    : lisp is string lstr
+                        ? lstr.AsMemory()
+                        : file.ReadAllText().AsMemory();
+                return span;
+            }
+
             public void InitGlobals()
             {
                 Globals[TRUE] = TRUE;
+
+                Def("load", 1, (I, a) => {
+                    var scope = I.AssertScope();
+
+                    var path = a[0] is string s
+                        ? s
+                        : a[0] is Sym sym
+                            ? sym.Name + ".l"
+                            : throw new LispEvalException("not a string or symbol name", a[0]);
+
+                    var cacheKey = nameof(Lisp) + ":load:" + path;
+                    var importSymbols = (Dictionary<Sym, object>) scope.Context.Cache.GetOrAdd(cacheKey, k => {
+
+                        var span = lispContents(scope, path);
+                        var interp = new Interpreter(I); // start from copy of these symbols
+                        Run(interp, new Reader(span));
+
+                        var globals = GlobalInterpreter.Globals;  // only cache + import new symbols not in Global Interpreter
+                        var newSymbols = new Dictionary<Sym, object>();
+                        foreach (var entry in interp.Globals)
+                        {
+                            if (!globals.ContainsKey(entry.Key))
+                                newSymbols[entry.Key] = entry.Value;
+                        }
+                        return newSymbols;
+                    });
+
+                    foreach (var importSymbol in importSymbols)
+                    {
+                        I.Globals[importSymbol.Key] = importSymbol.Value;
+                    }
+                    return null;
+                });
+
                 Def("error", 1, a => throw new Exception(((string)a[0])));
 
                 Def("not", 1, a => a[0] == null || a[0] is false);
