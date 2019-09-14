@@ -182,7 +182,7 @@ namespace ServiceStack.Script
 
     public static class ScriptLispUtils
     {
-        internal static Lisp.Interpreter GetLispInterpreter(this PageResult pageResult, ScriptScopeContext scope)
+        public static Lisp.Interpreter GetLispInterpreter(this PageResult pageResult, ScriptScopeContext scope)
         {
             if (!pageResult.Args.TryGetValue(nameof(ScriptLisp), out var oInterp))
             {
@@ -251,7 +251,7 @@ namespace ServiceStack.Script
             if (!pageResult.EvaluateResult(out var returnValue))
                 throw new NotSupportedException(ScriptContextUtils.ErrorNoReturn);
             
-            return returnValue;
+            return ScriptLanguage.UnwrapValue(returnValue);
         }
 
         public static async Task<T> EvaluateLispAsync<T>(this ScriptContext context, string lisp, Dictionary<string, object> args = null) =>
@@ -265,7 +265,7 @@ namespace ServiceStack.Script
             if (!ret.Item1)
                 throw new NotSupportedException(ScriptContextUtils.ErrorNoReturn);
             
-            return ret.Item2;
+            return ScriptLanguage.UnwrapValue(ret.Item2);
         }
         
     }
@@ -1437,6 +1437,9 @@ namespace ServiceStack.Script
                                             var ret = JsCallExpression.InvokeDelegate(fnDel, scriptMethod, isMemberExpr: false, scriptMethodArgs);
                                             return ret;
                                         }
+                                        if (isScriptMethod)
+                                            throw new NotSupportedException($"Could not resolve #Script method '{fnName.Substring(1)}'");
+                                        
                                         if (fnName[0] == ':')
                                         {
                                             if (fnArgs.Length != 1)
@@ -2361,36 +2364,61 @@ namespace ServiceStack.Script
         //------------------------------------------------------------------
 
         /// <summary>Run Read-Eval-Print Loop.</summary>
-        /// <remarks>Exceptions are handled here and not thrown.</remarks>
-        public static void RunREPL(Interpreter interp, TextReader input = null) {
-            if (input == null)
-                input = Console.In;
-
-            var reader = new Reader(input.ReadToEnd().AsMemory());
-            for (;;) {
-                interp.COut.Write("> ");
-                try {
-                    var sExp = reader.Read();
-                    if (sExp == Reader.EOF)
+        /// <remarks>This never ends, use Ctrl+C to Exit. Exceptions are handled here and not thrown.</remarks>
+        public static void RunRepl(ScriptContext context)
+        {
+            //remove sandbox restrictions
+            context.MaxQuota = int.MaxValue;
+            context.MaxEvaluations = long.MaxValue;
+            
+            var interp = CreateInterpreter();
+            
+            var sw = new StreamWriter(Console.OpenStandardOutput()) {
+                AutoFlush = true
+            };
+            Console.SetOut(sw);
+            using (sw)
+            {
+                var input = Console.In;
+                for (;;) {
+                    interp.COut.Write("> ");
+                    try
                     {
-                        var inputBytes = input.ReadToEnd();
-                        if (inputBytes.Length == 0)
-                            return;
-                        reader = new Reader(inputBytes.AsMemory());
+                        var sb = new StringBuilder();
+                        sb.AppendLine(Console.ReadLine());
+                        
+                        while (input.Peek() != -1)
+                        {
+                            sb.AppendLine(input.ReadLine());
+                        }
+                        
+                        object sExp = null;
+                        var returnResult = $"(return (let () {sb} ))"; 
+                        var page = new PageResult(context.LispSharpPage(returnResult)) {
+                            Args = {[nameof(ScriptLisp)] = interp}
+                        };
+                        interp.Scope = new ScriptScopeContext(page, sw.BaseStream, new Dictionary<string, object>());
+                        
+                        var output = page.EvaluateScript();
+                        if (page.ReturnValue != null)
+                        {
+                            var ret = ScriptLanguage.UnwrapValue(page.ReturnValue.Result);
+                            if (ret == null)
+                                Console.WriteLine(output);
+                            else if (ret is Cell c)
+                                Console.WriteLine(Str(c));
+                            else if (ret is Sym sym)
+                                Console.WriteLine(Str(sym));
+                            else if (ret is string s)
+                                Console.WriteLine(s);
+                            else
+                                Console.WriteLine(ret.ToJsv());
+                        }
+                    } catch (Exception ex) {
+                        interp.COut.WriteLine(ex.InnerException ?? ex);
                     }
-                    var x = interp.Eval(sExp, null);
-                    interp.COut.WriteLine(Str(x));
-                } catch (Exception ex) {
-                    interp.COut.WriteLine(ex);
                 }
             }
-        }
-
-        static int MainREPL(string[] args=null) {
-            var interp = CreateInterpreter();
-            RunREPL(interp);
-            interp.COut.WriteLine("Goodbye");
-            return 0;
         }
 
         /// <summary>Lisp initialization script</summary>

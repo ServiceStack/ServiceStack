@@ -25,6 +25,15 @@ namespace ServiceStack.Script
             var blockFragment = new PageBlockFragment(blockName, argument, bodyFragment);
             return blockFragment;
         }
+
+        public static object UnwrapValue(object value)
+        {
+            if (value == null || value == JsNull.Value || value == StopExecution.Value || value == IgnoreResult.Value)
+                return null;
+            if (value is IRawString rs)
+                return rs.ToRawString();
+            return value;
+        }
     }
 
     public sealed class ScriptVerbatim : ScriptLanguage

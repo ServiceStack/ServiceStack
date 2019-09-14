@@ -151,7 +151,7 @@ namespace ServiceStack.Script
             if (!pageResult.EvaluateResult(out var returnValue))
                 throw new NotSupportedException(ScriptContextUtils.ErrorNoReturn);
             
-            return returnValue;
+            return ScriptLanguage.UnwrapValue(returnValue);
         }
 
         public static async Task<T> EvaluateCodeAsync<T>(this ScriptContext context, string code, Dictionary<string, object> args = null) =>
@@ -165,7 +165,7 @@ namespace ServiceStack.Script
             if (!ret.Item1)
                 throw new NotSupportedException(ScriptContextUtils.ErrorNoReturn);
             
-            return ret.Item2;
+            return ScriptLanguage.UnwrapValue(ret.Item2);
         }
         
 

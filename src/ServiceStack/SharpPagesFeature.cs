@@ -1122,6 +1122,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
             context.AllowScriptingOfAllTypes = true;
             context.ScriptNamespaces.AddRange(new [] {
                 "System",
+                "System.Collections",
                 "System.Collections.Generic",
                 "ServiceStack",
             });
