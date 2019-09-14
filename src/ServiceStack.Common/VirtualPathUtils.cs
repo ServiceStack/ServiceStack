@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using ServiceStack.IO;
 
@@ -98,6 +99,13 @@ namespace ServiceStack
 #elif NET45
             System.Threading.Thread.Sleep(nextTryMs);
 #endif
+        }
+
+        public static string SafeFileName(string uri)
+        {
+            var invalidFileNameChars = new HashSet<char>(Path.GetInvalidFileNameChars()) { ':' };
+            var safeFileName = new string(uri.Where(c => !invalidFileNameChars.Contains(c)).ToArray());
+            return safeFileName;
         }
     }
 }

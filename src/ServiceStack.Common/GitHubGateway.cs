@@ -7,6 +7,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using ServiceStack.IO;
+using ServiceStack.Script;
 using ServiceStack.Text;
 
 namespace ServiceStack
@@ -49,7 +50,8 @@ namespace ServiceStack
     public class GitHubGateway : IGistGateway, IGitHubGateway
     {
         public string UserAgent { get; set; } = nameof(GitHubGateway);
-        public string BaseUrl { get; set; } = "https://api.github.com/";
+        public const string ApiBaseUrl = "https://api.github.com/";
+        public string BaseUrl { get; set; } = ApiBaseUrl;
 
         /// <summary>
         /// AccessTokenSecret
@@ -631,4 +633,171 @@ namespace ServiceStack
     {
         public static bool IsUrl(this string gistId) => gistId.IndexOf("://", StringComparison.Ordinal) >= 0;
     }
+    
+    public class GistLink
+    {
+        public string Name { get; set; }
+        public string Url { get; set; }
+        public string User { get; set; }
+        public string To { get; set; }
+        public string Description { get; set; }
+
+        public string[] Tags { get; set; }
+
+        public string GistId { get; set; }
+
+        public string Repo { get; set; }
+        
+        public Dictionary<string,object> Modifiers { get; set; }
+
+        public string ToTagsString() => Tags == null ? "" : $"[" + string.Join(",", Tags) + "]";
+
+        public string ToListItem()
+        {
+            var sb = new StringBuilder(" - [")
+                .Append(Name)
+                .Append("](")
+                .Append(Url)
+                .Append(") {")
+                .Append(!string.IsNullOrEmpty(To) ? "to:" + To.ToJson() : "")
+                .Append("} `")
+                .Append(Tags != null ? string.Join(",", Tags) : "")
+                .Append("` ")
+                .Append(Description);
+
+            return sb.ToString();
+        }
+
+        public static string RenderLinks(List<GistLink> links)
+        {
+            var sb = new StringBuilder();
+            foreach (var link in links)
+            {
+                sb.AppendLine(link.ToListItem());
+            }
+            return sb.ToString();
+        }
+
+        public static List<GistLink> Parse(string md)
+        {
+            var to = new List<GistLink>();
+
+            if (!string.IsNullOrEmpty(md))
+            {
+                foreach (var strLine in md.ReadLines())
+                {
+                    var line = strLine.AsSpan();
+                    if (!line.TrimStart().StartsWith("- ["))
+                        continue;
+
+                    line.SplitOnFirst('[', out _, out var startName);
+                    startName.SplitOnFirst(']', out var name, out var endName);
+                    endName.SplitOnFirst('(', out _, out var startUrl);
+                    startUrl.SplitOnFirst(')', out var url, out var endUrl);
+
+                    var afterModifiers = endUrl.ParseJsToken(out var token);
+                    
+                    var modifiers = new Dictionary<string, object>();
+                    if (token is JsObjectExpression obj)
+                    {
+                        foreach (var jsProperty in obj.Properties)
+                        {
+                            if (jsProperty.Key is JsIdentifier id)
+                            {
+                                modifiers[id.Name] = (jsProperty.Value as JsLiteral)?.Value;
+                            }
+                        }
+                    }
+
+                    var toPath = modifiers.TryGetValue("to", out var oValue)
+                        ? oValue.ToString()
+                        : null;
+
+                    string tags = null;
+                    afterModifiers = afterModifiers.TrimStart();
+                    if (afterModifiers.StartsWith("`"))
+                    {
+                        afterModifiers = afterModifiers.Advance(1);
+                        var pos = afterModifiers.IndexOf('`');
+                        if (pos >= 0)
+                        {
+                            tags = afterModifiers.Substring(0, pos);
+                            afterModifiers = afterModifiers.Advance(pos + 1);
+                        }
+                    }
+
+                    if (name == null || url == null)
+                        continue;
+
+                    var link = new GistLink
+                    {
+                        Name = name.ToString(),
+                        Url = url.ToString(),
+                        Modifiers = modifiers,
+                        To = toPath,
+                        Description = afterModifiers.Trim().ToString(),
+                        User = url.Substring("https://".Length).RightPart('/').LeftPart('/'),
+                        Tags = tags?.Split(',').Map(x => x.Trim()).ToArray(),
+                    };
+
+                    if (TryParseGitHubUrl(link.Url, out var gistId, out var user, out var repo))
+                    {
+                        link.GistId = gistId;
+                        if (user != null)
+                        {
+                            link.User = user;
+                            link.Repo = repo;
+                        }
+                    }
+
+                    if (link.User == "gistlyn" || link.User == "mythz")
+                        link.User = "ServiceStack";
+
+                    to.Add(link);
+                }
+            }
+
+            return to;
+        }
+
+        public static bool TryParseGitHubUrl(string url, out string gistId, out string user, out string repo)
+        {
+            gistId = user = repo = null;
+
+            if (url.StartsWith("https://gist.github.com"))
+            {
+                gistId = url.LastRightPart('/');
+                return true;
+            }
+
+            if (url.StartsWith("https://github.com/"))
+            {
+                var pathInfo = url.Substring("https://github.com/".Length);
+                user = pathInfo.LeftPart('/');
+                repo = pathInfo.RightPart('/').LeftPart('/');
+                return true;
+            }
+
+            return false;
+        }
+
+        public static GistLink Get(List<GistLink> links, string gistAlias)
+        {
+            var sanitizedAlias = gistAlias.Replace("-", "");
+            var gistLink = links.FirstOrDefault(x => x.Name.Replace("-", "").EqualsIgnoreCase(sanitizedAlias));
+            return gistLink;
+        }
+
+        public bool MatchesTag(string tagName)
+        {
+            if (Tags == null)
+                return false;
+
+            var searchTags = tagName.Split(',').Map(x => x.Trim());
+            return searchTags.Count == 1
+                ? Tags.Any(x => x.EqualsIgnoreCase(tagName))
+                : Tags.Any(x => searchTags.Any(x.EqualsIgnoreCase));
+        }
+    }
+    
 }

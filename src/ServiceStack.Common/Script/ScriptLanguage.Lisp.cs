@@ -40,6 +40,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.IO;
 using ServiceStack.Text;
 using ServiceStack.Text.Json;
 
@@ -323,7 +324,20 @@ namespace ServiceStack.Script
     /// </remarks>
     public static class Lisp
     {
+        /// <summary>
+        /// Allow loading of remote scripts
+        ///  - https://example.org/lib.l
+        ///  - gist:{gist-id}
+        ///  - gist:{gist-id}/file.l
+        ///  - index:{name}
+        ///  - index:{name}/file.l
+        /// </summary>
         public static bool AllowLoadingRemoteScripts { get; set; } = true;
+
+        /// <summary>
+        /// Gist where to resolve `index:{name}` references from
+        /// </summary>
+        public static string IndexGistId { get; set; } = "3624b0373904cfb2fc7bb3c2cb9dc1a3";
 
         private static Interpreter GlobalInterpreter;
 
@@ -833,84 +847,189 @@ namespace ServiceStack.Script
                 public ObjectComparer(IComparer comparer) => this.comparer = comparer;
                 public int Compare(object x, object y) => comparer.Compare(x, y);
             }
-            
+
+            static ReadOnlyMemory<char> DownloadCachedUrl(ScriptScopeContext scope, string url, string cachePrefix, bool force=false)
+            {
+                var cachedContents = GetCachedContents(scope, url, cachePrefix, out var vfsCache, out var cachedPath);
+                if (!force && cachedContents != null) 
+                    return cachedContents.Value;
+
+                var text = url.GetStringFromUrl(requestFilter: req => req.UserAgent = "#Script " + nameof(Lisp));
+                WriteCacheFile(scope, vfsCache, cachedPath, text.AsMemory());
+                return text.AsMemory();
+            }
+
+            /// <summary>
+            /// Cache final output from load reference 
+            /// </summary>
+            private static ReadOnlyMemory<char> WriteCacheFile(ScriptScopeContext scope, IVirtualPathProvider vfsCache, string cachedPath, ReadOnlyMemory<char> text)
+            {
+                if (vfsCache is IVirtualFiles vfsWrite)
+                {
+                    try
+                    {
+                        vfsWrite.WriteFile(cachedPath, text);
+                    }
+                    catch (Exception e)
+                    {
+                        scope.Context.Log.Error($"Could not write cached file '{cachedPath}'", e);
+                    }
+                }
+                return text;
+            }
+
+            private static ReadOnlyMemory<char>? GetCachedContents(ScriptScopeContext scope, string url, string cachePrefix, out IVirtualPathProvider vfsCache, out string cachedPath)
+            {
+                vfsCache = scope.Context.CacheFiles ?? scope.Context.VirtualFiles;
+                var fileName = VirtualPathUtils.SafeFileName(url);
+                cachedPath = $".lisp/{cachePrefix}{fileName}";
+                var cachedFile = vfsCache.GetFile(cachedPath);
+                return cachedFile?.GetTextContentsAsMemory();
+            }
+
+            private static GithubGist DownloadCachedGist(ScriptScopeContext scope, string gistId, bool force=false)
+            {
+                var gistUrl = GitHubGateway.ApiBaseUrl.CombineWith($"gists/{gistId}");
+                var gistJson = DownloadCachedUrl(scope, gistUrl, "gist_", force);
+                var gist = JsonSerializer.DeserializeFromSpan<GithubGist>(gistJson.Span);
+                return gist;
+            }
+
+            private static string GetGistContents(ScriptScopeContext scope, GistFile gistFile) => IsTruncated(gistFile)
+                ? DownloadCachedUrl(scope, gistFile.Raw_Url, "gist_file_").ToString()
+                : gistFile.Content;
+
             /// <summary>
             /// Load examples:
             ///   - file.l
             ///   - virtual/path/file.l
+            ///   - index:lib-calc
+            ///   - index:lib-calc/lib1.l
             ///   - gist:{gist-id}
             ///   - gist:{gist-id}/single-file.l
             ///   - https://mydomain.org/file.l
             /// </summary>
             static ReadOnlyMemory<char> lispContents(ScriptScopeContext scope, string path)
             {
-                if (path.StartsWith("gist:"))
+                var isUrl = path.IndexOf("://", StringComparison.Ordinal) >= 0;
+                if (path.StartsWith("index:") || path.StartsWith("gist:") || isUrl)
                 {
                     if (!AllowLoadingRemoteScripts)
                         throw new NotSupportedException($"Lisp.AllowLoadingRemoteScripts has been disabled");
-                    
                     scope.Context.AssertProtectedMethods();
-                    
-                    var gistId = path.RightPart(':');
-                    var specificFile = gistId.IndexOf('/') >= 0
-                        ? gistId.RightPart('/')
-                        : null;
-                    gistId = gistId.LeftPart('/');
-                    
-                    var gateway = new GitHubGateway();
-                    var gist = gateway.GetGist(gistId);
-                    
-                    bool isTruncated(GistFile f) => (string.IsNullOrEmpty(f.Content) || f.Content.Length < f.Size) && f.Truncated;
 
-                    if (specificFile != null)
+                    if (isUrl)
                     {
-                        if (!gist.Files.TryGetValue(specificFile, out var gistFile))
-                            throw new NotSupportedException($"File '{specificFile}' does not exist in gist '{gistId}'");
-                        if (isTruncated(gistFile))
-                            return gistFile.Raw_Url.GetStringFromUrl(requestFilter: req => req.UserAgent = "#Script " + nameof(Lisp)).AsMemory();
+                        if (!path.StartsWith("https://"))
+                            throw new NotSupportedException("https:// is required for loading remote scripts");
 
-                        return gistFile.Content.AsMemory();
+                        var textContents = DownloadCachedUrl(scope, path, "url_");
+                        return textContents;
                     }
 
-                    var sb = StringBuilderCache.Allocate();
-                    foreach (var entry in gist.Files)
+                    if (path.StartsWith("gist:"))
                     {
-                        if (isTruncated(entry.Value))
-                            sb.AppendLine(entry.Value.Raw_Url.GetStringFromUrl(requestFilter: req => req.UserAgent = "#Script " + nameof(Lisp)));
-                        else
-                            sb.AppendLine(entry.Value.Content);
+                        var cachedContents = GetCachedContents(scope, path, "gist_", out var vfsCache, out var cachedPath);
+                        if (cachedContents != null)
+                            return cachedContents.Value;
+                        
+                        var gistId = path.RightPart(':');
+                        var specificFile = gistId.IndexOf('/') >= 0
+                            ? gistId.RightPart('/')
+                            : null;
+                        gistId = gistId.LeftPart('/');
+
+                        var gist = DownloadCachedGist(scope, gistId);
+
+                        if (specificFile != null)
+                        {
+                            if (!gist.Files.TryGetValue(specificFile, out var gistFile))
+                                throw new NotSupportedException($"File '{specificFile}' does not exist in gist '{gistId}'");
+
+                            var contents = GetGistContents(scope, gistFile);
+                            return WriteCacheFile(scope, vfsCache, cachedPath, contents.AsMemory());
+                        }
+
+                        var sb = StringBuilderCache.Allocate();
+                        foreach (var entry in gist.Files)
+                        {
+                            var contents = GetGistContents(scope, entry.Value);
+                            sb.AppendLine(contents);
+                        }
+                        return WriteCacheFile(scope, vfsCache, cachedPath, StringBuilderCache.ReturnAndFree(sb).AsMemory());
                     }
 
-                    return StringBuilderCache.ReturnAndFree(sb).AsMemory();
+                    if (path.StartsWith("index:"))
+                    {
+                        var cachedContents = GetCachedContents(scope, path, "index_", out var vfsCache, out var cachedPath);
+                        if (cachedContents != null)
+                            return cachedContents.Value;
+                        
+                        if (IndexGistId == null)
+                            throw new NotSupportedException("IndexGistId is unspecified");
+
+                        var indexName = path.RightPart(':');
+                        indexName = path.RightPart(':');
+                        var specificFile = indexName.IndexOf('/') >= 0
+                            ? indexName.RightPart('/')
+                            : null;
+                        indexName = indexName.LeftPart('/');
+                        
+                        var gistIndex = DownloadCachedGist(scope, IndexGistId);
+                        if (!gistIndex.Files.TryGetValue("index.md", out var indexGistFile))
+                            throw new NotSupportedException($"IndexGistId '{IndexGistId}' does not contain index.md");
+
+                        var indexGistContents = GetGistContents(scope, indexGistFile);
+                        var indexLinks = GistLink.Parse(indexGistContents);
+                        var indexLink = indexLinks.FirstOrDefault(x => x.Name == indexName);
+
+                        // If can't find named link index.md could be stale, re-download and cache
+                        if (indexLink == null)
+                        {
+                            gistIndex = DownloadCachedGist(scope, IndexGistId, force:true);
+                            if (!gistIndex.Files.TryGetValue("index.md", out indexGistFile))
+                                throw new NotSupportedException($"IndexGistId '{IndexGistId}' does not contain index.md");
+                            indexLinks = GistLink.Parse(indexGistContents);
+                            indexLink = indexLinks.FirstOrDefault(x => x.Name == indexName);
+                            
+                            if (indexLink == null)
+                                throw new NotSupportedException($"Could not resolve '{indexName}' from Gist Index '{IndexGistId}'");
+                        }
+
+                        if (!indexLink.Url.StartsWith("https://gist.github.com/"))
+                            throw new NotSupportedException($"{indexName} '{indexLink.Url}' is not a Gist URL");
+
+                        var gistId = indexLink.Url.LastRightPart('/');
+                        var gist = DownloadCachedGist(scope, gistId);
+                        
+                        if (specificFile != null)
+                        {
+                            if (!gist.Files.TryGetValue(specificFile, out var gistFile))
+                                throw new NotSupportedException($"File '{specificFile}' does not exist in gist '{gistId}'");
+
+                            var contents = GetGistContents(scope, gistFile);
+                            return WriteCacheFile(scope, vfsCache, cachedPath, contents.AsMemory());
+                        }
+
+                        var sb = StringBuilderCache.Allocate();
+                        foreach (var entry in gist.Files)
+                        {
+                            var contents = GetGistContents(scope, entry.Value);
+                            sb.AppendLine(contents);
+                        }
+                        return WriteCacheFile(scope, vfsCache, cachedPath, StringBuilderCache.ReturnAndFree(sb).AsMemory());
+                    }
                 }
                 
-                var isUrl = path.IndexOf("://", StringComparison.Ordinal) >= 0;
-                if (isUrl)
-                {
-                    if (!AllowLoadingRemoteScripts)
-                        throw new NotSupportedException($"Lisp.AllowLoadingRemoteScripts has been disabled");
-                    
-                    scope.Context.AssertProtectedMethods();
-                    
-                    if (!path.StartsWith("https://"))
-                        throw new NotSupportedException("https:// is required for loading remote scripts");
-
-                    var textContents = path.GetStringFromUrl(requestFilter: req => req.UserAgent = "#Script " + nameof(Lisp));
-                    return textContents.AsMemory();
-                }
-                        
                 var file = scope.Context.VirtualFiles.GetFile(path);
                 if (file == null)
                     throw new NotSupportedException($"File does not exist '{path}'");
 
-                var lisp = file.GetContents();
-                var span = lisp is ReadOnlyMemory<char> rom
-                    ? rom
-                    : lisp is string lstr
-                        ? lstr.AsMemory()
-                        : file.ReadAllText().AsMemory();
-                return span;
+                var lisp = file.GetTextContentsAsMemory();
+                return lisp;
             }
+
+            private static bool IsTruncated(GistFile f) => (string.IsNullOrEmpty(f.Content) || f.Content.Length < f.Size) && f.Truncated;
 
             public void InitGlobals()
             {
@@ -926,6 +1045,7 @@ namespace ServiceStack.Script
                             : throw new LispEvalException("not a string or symbol name", a[0]);
 
                     var cacheKey = nameof(Lisp) + ":load:" + path;
+                    scope.Context.Cache.TryRemove(cacheKey, out _);
                     var importSymbols = (Dictionary<Sym, object>) scope.Context.Cache.GetOrAdd(cacheKey, k => {
 
                         var span = lispContents(scope, path);

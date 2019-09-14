@@ -71,6 +71,17 @@ namespace ServiceStack.IO
             }
         }
 
+        public static bool GetGistTextContents(string filePath, Gist gist, out string text)
+        {
+            if (GetGistContents(filePath, gist, out text, out var bytesContent))
+            {
+                if (text == null)
+                    text = MemoryProvider.Instance.FromUtf8(bytesContent.GetBufferAsMemory().Span).ToString();
+                return true;
+            }
+            return false;
+        }
+        
         public static bool GetGistContents(string filePath, Gist gist, out string text, out MemoryStream stream)
         {
             var base64FilePath = filePath + Base64Modifier;

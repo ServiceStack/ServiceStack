@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.IO;
+using ServiceStack.Logging;
 using ServiceStack.Text;
 
 namespace ServiceStack.Script
@@ -33,7 +34,12 @@ namespace ServiceStack.Script
         public ISharpPages Pages { get; set; }
 
         public IVirtualPathProvider VirtualFiles { get; set; } = new MemoryVirtualFiles();
-        
+
+        /// <summary>
+        /// Where to store cached files, if unspecified falls back to configured VirtualFiles if it implements IVirtualFiles (i.e. writable)  
+        /// </summary>
+        public IVirtualFiles CacheFiles { get; set; }
+
         public Dictionary<string, object> Args { get; } = new Dictionary<string, object>();
 
         public bool DebugMode { get; set; } = true;
@@ -187,6 +193,9 @@ namespace ServiceStack.Script
         /// Limit Recursion Max StackDepth (default 25)
         /// </summary>
         public int MaxStackDepth { get; set; } = 25;
+
+        private ILog log;
+        public ILog Log => log ?? (log = LogManager.GetLogger(GetType()));
         
         public HashSet<string> RemoveNewLineAfterFiltersNamed { get; set; } = new HashSet<string>();
         public HashSet<string> OnlyEvaluateFiltersWhenSkippingPageFilterExecution { get; set; } = new HashSet<string>();

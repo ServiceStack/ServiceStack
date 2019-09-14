@@ -206,7 +206,7 @@ id 1
             // https://gist.github.com/gistlyn/2f14d629ba1852ee55865607f1fa2c3e
         }
 
-        //[Test] // skip integration test
+//        [Test] // skip integration test
         public void Can_load_scripts_from_gist_and_url()
         {
 //            Lisp.AllowLoadingRemoteScripts = false; // uncomment to prevent loading remote scripts
@@ -216,6 +216,13 @@ id 1
                 ScriptMethods = { new ProtectedScripts() },
             }.Init();
             
+
+            LoadLispTests(context);
+            LoadLispTests(context); // load twice to check it's using cached downloaded assets
+        }
+
+        private static void LoadLispTests(ScriptContext context)
+        {
             object result;
 
             result = context.EvaluateLisp(@"(load ""gist:2f14d629ba1852ee55865607f1fa2c3e/lib1.l"")(return (lib-calc 4 5))");
@@ -224,9 +231,18 @@ id 1
             // imports all gist files and overwrites symbols where last symbol wins
             result = context.EvaluateLisp(@"(load ""gist:2f14d629ba1852ee55865607f1fa2c3e"")(return (lib-calc 4 5))");
             Assert.That(result, Is.EqualTo(20));
-            
-            result = context.EvaluateLisp(@"(load ""https://gist.githubusercontent.com/gistlyn/2f14d629ba1852ee55865607f1fa2c3e/raw/95cbc5d071d9db3a96866c1a583056dd87ab5f69/lib1.l"")(return (lib-calc 4 5))");
+
+            result = context.EvaluateLisp(
+                @"(load ""https://gist.githubusercontent.com/gistlyn/2f14d629ba1852ee55865607f1fa2c3e/raw/95cbc5d071d9db3a96866c1a583056dd87ab5f69/lib1.l"")(return (lib-calc 4 5))");
             Assert.That(result, Is.EqualTo(9));
+
+            // import single file from index.md
+            result = context.EvaluateLisp(@"(load ""index:lib-calc/lib1.l"")(return (lib-calc 4 5))");
+            Assert.That(result, Is.EqualTo(9));
+
+            // imports all gist files and overwrites symbols where last symbol wins
+            result = context.EvaluateLisp(@"(load ""index:lib-calc"")(return (lib-calc 4 5))");
+            Assert.That(result, Is.EqualTo(20));
         }
     }
     
