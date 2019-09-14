@@ -1194,6 +1194,26 @@ namespace ServiceStack.Script
                         return results;
                     }
                 });
+                
+                Def("order-by", 2, (I, a) => {
+                    var keyFns = EnumerableUtils.ToList(a[0].assertEnumerable());
+                    
+                    var list = a[1].assertEnumerable().Cast<object>();
+                    if (keyFns.Count == 0)
+                        return list;
+
+                    var keyFn1 = resolveFn(keyFns[0], I);
+                    var seq = list.OrderBy(x => keyFn1(x));
+
+                    for (var i = 1; i < keyFns.Count; i++)
+                    {
+                        var keyFn = keyFns[i];
+                        var fn = resolveFn(keyFn, I);
+                        seq = seq.ThenBy(x => fn(x));
+                    }
+
+                    return EnumerableUtils.ToList(seq);
+                });
 
                 Def("sum", 1, a => {
                     object acc = 0;

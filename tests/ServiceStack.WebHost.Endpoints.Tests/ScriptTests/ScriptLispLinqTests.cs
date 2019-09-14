@@ -970,14 +970,14 @@ The doubles from highest to lowest:
         public void linq33()
         {
             Assert.That(render(@"
-(defn linq32 []
+(defn linq33 []
   (let ( (dbls [1.7 2.3 1.9 4.1 2.9])
          (sorted-doubles) )
     (setq sorted-doubles (/reverse (sort dbls)))
     (println ""The doubles from highest to lowest:"")
     (doseq (d sorted-doubles) (println d))
   ))
-(linq32)"), 
+(linq33)"), 
                 
                 Does.StartWith(@"
 The doubles from highest to lowest:
@@ -990,9 +990,104 @@ The doubles from highest to lowest:
         }
 
         [Test]
+        public void linq34()
+        {
+            Assert.That(render(@"
+(defn linq34 []
+  (let ( (words [""aPPLE"" ""AbAcUs"" ""bRaNcH"" ""BlUeBeRrY"" ""ClOvEr"" ""cHeRry""])
+         (sorted-words) )
+    (setq sorted-words (/reverse (sort-by identity (CaseInsensitiveComparer.) words)))
+    (doseq (w sorted-words) (println w))
+  ))
+(linq34)"), 
+                
+                Does.StartWith(@"
+ClOvEr
+cHeRry
+bRaNcH
+BlUeBeRrY
+aPPLE
+AbAcUs
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq35()
+        {
+            Assert.That(render(@"
+(defn linq35 []
+  (let ( (digits [""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""]) 
+         (i 0) (sorted-digits) )
+    (setq sorted-digits (sort-by #(count %) (sort-by (fn [d] d) digits)))
+    (println ""Sorted digits:"")
+    (doseq (d sorted-digits) (println d))
+  ))
+(linq35)"), 
+                
+                Does.StartWith(@"
+Sorted digits:
+one
+six
+two
+five
+four
+nine
+zero
+eight
+seven
+three
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq36()
+        {
+            Assert.That(render(@"
+(defn linq36 []
+  (let ( (words [""aPPLE"" ""AbAcUs"" ""bRaNcH"" ""BlUeBeRrY"" ""ClOvEr"" ""cHeRry""]) 
+         (sorted-words) )
+    (setq sorted-words (sort-by #(count %) (sort-by identity (CaseInsensitiveComparer.) words)))
+    (doseq (w sorted-words) (println w))
+  ))
+(linq36)"), 
+                
+                Does.StartWith(@"
+aPPLE
+AbAcUs
+bRaNcH
+cHeRry
+ClOvEr
+BlUeBeRrY
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq37()
+        {
+            Assert.That(render(@"
+(defn linq37 []
+  (let ( (sorted-products (order-by [#(:Category %) #(* -1 (:UnitPrice %))] products-list)) )
+    (doseq (p sorted-products) (dump-inline p))
+  ))
+(linq37)"), 
+                
+                Does.StartWith(@"
+{ProductId:38,ProductName:Côte de Blaye,Category:Beverages,UnitPrice:263.5,UnitsInStock:17}
+{ProductId:43,ProductName:Ipoh Coffee,Category:Beverages,UnitPrice:46,UnitsInStock:17}
+{ProductId:2,ProductName:Chang,Category:Beverages,UnitPrice:19,UnitsInStock:17}
+{ProductId:1,ProductName:Chai,Category:Beverages,UnitPrice:18,UnitsInStock:39}
+{ProductId:35,ProductName:Steeleye Stout,Category:Beverages,UnitPrice:18,UnitsInStock:20}
+{ProductId:39,ProductName:Chartreuse verte,Category:Beverages,UnitPrice:18,UnitsInStock:69}
+{ProductId:76,ProductName:Lakkalikööri,Category:Beverages,UnitPrice:18,UnitsInStock:57}
+{ProductId:70,ProductName:Outback Lager,Category:Beverages,UnitPrice:15,UnitsInStock:15}
+{ProductId:34,ProductName:Sasquatch Ale,Category:Beverages,UnitPrice:14,UnitsInStock:111}
+".NormalizeNewLines()));
+        }
+
+        [Test]
         public void test()
         {
-//            print(@"(doseq [x [1 2 3]] (println x))");
+            print(@"(setq words [""aPPLE"" ""AbAcUs"" ""bRaNcH"" ""BlUeBeRrY"" ""ClOvEr"" ""cHeRry""]) (/reverse (sort-by identity (CaseInsensitiveComparer.) words))");
 //            print(@"(setq numbers '(5 4 1 3 9 8 6 7 2 0)) (take-while (fn (c) (>= (1st c) (2nd c))) (mapcar-index cons numbers))");
 
 //            print("(setq numbers-a '(1 2 3)) (setq numbers-b '(3 4 5)) (zip (fn (a b) { :a a :b b }) numbers-a numbers-b)");
