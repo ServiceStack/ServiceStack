@@ -28,7 +28,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
         string render(string lisp) => context.RenderLisp(lisp).NormalizeNewLines();
         void print(string lisp) => render(lisp).Print();
-        object eval(string lisp) => context.EvaluateLisp($"(return {lisp})");
+        object eval(string lisp) => context.EvaluateLisp($"(return (let () {lisp}))");
 
         [Test]
         public void LISP_even()
@@ -101,6 +101,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var obj = eval(@"(/xml { :a 1 } )");
             Assert.That(obj, Does.Contain("<Key>a</Key>"));
         }
+
+        [Test]
+        public void LISP_test_void_variable()
+        {
+            Assert.That(eval(@"(if (bound? id) 1 -1)"), Is.EqualTo(-1));
+            Assert.That(eval(@"(setq id 2)(if (bound? id) 1 -1)"), Is.EqualTo(1));
+
+            Assert.That(eval(@"(if (bound? id id2) 1 -1)"), Is.EqualTo(-1));
+            Assert.That(eval(@"(setq id 2)(if (bound? id id2) 1 -1)"), Is.EqualTo(-1));
+            Assert.That(eval(@"(setq id 2)(setq id2 3)(if (bound? id id2) 1 -1)"), Is.EqualTo(1));
+        }
+
     }
     
 /* If LISP integration tests are needed in future

@@ -487,6 +487,8 @@ namespace ServiceStack.Script
         static readonly Sym QUOTE = Keyword.New("quote");
         static readonly Sym SETQ = Keyword.New("setq");
         static readonly Sym EXPORT = Keyword.New("export");
+        
+        static readonly Sym BOUND = Sym.New("bound?");
 
         static readonly Sym BACK_QUOTE = Sym.New("`");
         static readonly Sym COMMAND_AT = Sym.New(",@");
@@ -1413,6 +1415,20 @@ namespace ServiceStack.Script
                             } else { // Application of a function
                                 if (fn is Sym fnsym) 
                                 {
+                                    if (fnsym == BOUND)
+                                    {
+                                        foreach (var name in arg)
+                                        {
+                                            if (!(name is Sym checksym))
+                                                throw new LispEvalException("not Sym", name);
+
+                                            var ret = Globals.ContainsKey(checksym) || hasScope && scope.TryGetValue(checksym.Name, out _);
+                                            if (!ret)
+                                                return null;
+                                        }
+                                        return TRUE;
+                                    }
+                                    
                                     // Expand fn = Eval(fn, env) here for speed.
                                     if (Globals.TryGetValue(fnsym, out value))
                                     {
