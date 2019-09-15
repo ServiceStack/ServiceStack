@@ -1358,6 +1358,7 @@ namespace ServiceStack.Script
             return to;
         }
 
+        public object merge(object sources) => merge(new Dictionary<string, object>(), sources);
         public object merge(IDictionary<string, object> target, object sources)
         {
             var srcArray = sources is IDictionary<string, object> d

@@ -365,7 +365,7 @@ namespace ServiceStack.Script
 
                 return TextDump(target.ToObjectDictionary(), options);
             }
-            finally 
+            finally
             {
                 options.Depth = depth;
             }

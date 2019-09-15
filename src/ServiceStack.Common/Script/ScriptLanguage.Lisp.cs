@@ -1211,8 +1211,9 @@ namespace ServiceStack.Script
 
                 Def("to-cons", 1, a => a[0] == null ? null : a[0] is IEnumerable e ? ToCons(e)
                     : throw new LispEvalException("not IEnumerable", a[0]));
-                Def("to-list", 1, a => toList(a[0] as IEnumerable));
                 Def("to-array", 1, a => toList(a[0] as IEnumerable).ToArray());
+                Def("to-list", 1, a => toList(a[0] as IEnumerable));
+                Def("to-dictionary", 2, (I, a) => EnumerableUtils.ToList(a[1].assertEnumerable()).ToDictionary(resolve1ArgFn(a[0], I)));
 
                 Def("nth", 2, (a) => {
                     if (a[0] == null)
@@ -1562,7 +1563,7 @@ namespace ServiceStack.Script
                     {
                         print(I, Str(x, false)); 
                     }
-                    return a.lastArg();
+                    return I.Scope != null ? null : a.lastArg();
                 });
                 Def("println", -1, (I, a) => {
                     var c = (Cell) a[0];
@@ -1574,29 +1575,29 @@ namespace ServiceStack.Script
                             COut.WriteLine(Str(a[0], true));
                     }
                     print(I, "\n"); 
-                    return a.lastArg();
+                    return I.Scope != null ? null : a.lastArg();
                 });
                 
-                // html encoded versions
+                // html encodes
                 Def("pr", -1, (I, a) => {
                     var c = (Cell) a[0];
-                    var defaultScripts = I.AssertScope().Context.DefaultMethods;
                     foreach (var x in c)
-                    {
-                        print(I, defaultScripts.htmlEncode(Str(x, false)));
-                    }
-                    return a.lastArg();
+                        print(I, I.Scope.Value.Context.DefaultMethods.htmlEncode(Str(x, false))); 
+                    return I.Scope != null ? null : a.lastArg();
                 });
                 Def("prn", -1, (I, a) => {
                     var c = (Cell) a[0];
-                    var defaultScripts = I.AssertScope().Context.DefaultMethods;
                     foreach (var x in c)
                     {
-                        defaultScripts.write(I.AssertScope(), defaultScripts.htmlEncode(Str(x, false)));
+                        if (I.Scope != null)
+                            I.Scope.Value.Context.DefaultMethods.write(I.Scope.Value, I.Scope.Value.Context.DefaultMethods.htmlEncode(Str(x, false)));
+                        else
+                            COut.WriteLine(Str(a[0], true));
                     }
                     print(I, "\n"); 
-                    return a.lastArg();
+                    return I.Scope != null ? null : a.lastArg();
                 });
+                
                 Def("dump", -1, (I, a) => {
                     var c = (Cell) a[0];
                     var defaultScripts = I.AssertScope().Context.DefaultMethods;
@@ -1853,13 +1854,16 @@ namespace ServiceStack.Script
                                         
                                         if (fnName[0] == ':')
                                         {
-                                            if (fnArgs.Length != 1)
-                                                throw new NotSupportedException(":index access requires 1 instance target");
+                                            var name = fnArgs.Length == 1
+                                                ? fnName.Substring(1)
+                                                : fnArgs.Length == 2 && fnArgs[0] is string s
+                                                  ? s
+                                                  : throw new NotSupportedException(":index access requires 1 instance target or a string key");      
                                                 
-                                            var target = fnArgs[0];
+                                            var target = fnArgs[fnArgs.Length - 1];
                                             if (target == null)
                                                 return null;
-                                            var ret = scope.Context.DefaultMethods.get(target, fnName.Substring(1));
+                                            var ret = scope.Context.DefaultMethods.get(target, name);
                                             return ret.unwrapScriptValue();
                                         }
                                         if (fnName[0] == '.') // member method https://clojure.org/reference/java_interop#_member_access

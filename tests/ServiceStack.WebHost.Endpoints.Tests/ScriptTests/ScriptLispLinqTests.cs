@@ -1613,9 +1613,90 @@ Z
         }
 
         [Test]
+        public void linq54()
+        {
+            Assert.That(render(@"
+(defn linq54 []
+  (let ( (dbls [1.7 2.3 1.9 4.1 2.9])
+         (sorted-doubles) )
+    (setq sorted-doubles (/reverse (sort dbls)))
+    (println ""Every other double from highest to lowest:"")
+    (doseq (d (/step sorted-doubles { :by 2 })) (println d))
+  ))
+(linq54)"), 
+                
+                Does.StartWith(@"
+Every other double from highest to lowest:
+4.1
+2.3
+1.7
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq55()
+        {
+            Assert.That(render(@"
+(defn linq55 []
+  (let ( (words [""cherry"" ""apple"" ""blueberry""]) 
+         (sorted-words) )
+    (setq sorted-words (to-list (sort words)))
+    (println ""The sorted word list:"")
+    (doseq (w sorted-words) (println w))
+  ))
+(linq55)"), 
+                
+                Does.StartWith(@"
+The sorted word list:
+apple
+blueberry
+cherry
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq56()
+        {
+            Assert.That(render(@"
+(defn linq56 []
+  (let ( (sorted-records [{:name ""Alice"", :score 50}
+                          {:name ""Bob"",   :score 40}
+                          {:name ""Cathy"", :score 45}]) 
+          (sorted-records-dict) )
+    (setq sorted-records-dict (to-dictionary #(:name %) sorted-records))
+    (println ""Bob's score: "" (:score (:""Bob"" sorted-records-dict)))
+  ))
+(linq56)"), 
+                
+                Does.StartWith(@"
+Bob's score: 40
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq57()
+        {
+            Assert.That(render(@"
+(defn linq57 []
+  (let ( (numbers [nil 1.0 ""two"" 3 ""four"" 5 ""six"" 7.0]) 
+         (dbls) )
+    (setq dbls (/of numbers { :type ""Double"" }))
+    (println ""Numbers stored as doubles:"")
+    (doseq (d dbls) (println d))
+  ))
+(linq57)"), 
+                
+                Does.StartWith(@"
+Numbers stored as doubles:
+1
+7
+".NormalizeNewLines()));
+        }
+
+        [Test]
         public void test()
         {
-            print(@"(map #(nth (.ProductName %) 0) products-list)");
+//            print(@"(map #(nth (.ProductName %) 0) products-list)");
 //            print(@"(setq numbers '(5 4 1 3 9 8 6 7 2 0)) (take-while (fn (c) (>= (1st c) (2nd c))) (mapcar-index cons numbers))");
 
 //            print("(setq numbers-a '(1 2 3)) (setq numbers-b '(3 4 5)) (zip (fn (a b) { :a a :b b }) numbers-a numbers-b)");
