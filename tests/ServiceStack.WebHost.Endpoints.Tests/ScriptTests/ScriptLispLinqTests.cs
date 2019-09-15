@@ -1108,9 +1108,31 @@ BlUeBeRrY
         }
 
         [Test]
+        public void linq39()
+        {
+            Assert.That(render(@"
+(defn linq39 []
+  (let ( (digits [""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""])
+         (sorted-digits) )
+    (setq sorted-digits (/reverse (filter #(= (nth % 1) (nth ""i"" 0)) digits)) )
+    (println ""A backwards list of the digits with a second character of 'i':"")
+    (doseq (d sorted-digits) (println d))
+  ))
+(linq39)"), 
+                
+                Does.StartWith(@"
+A backwards list of the digits with a second character of 'i':
+nine
+eight
+six
+five
+".NormalizeNewLines()));
+        }
+
+        [Test]
         public void test()
         {
-            print(@"(setq words [""aPPLE"" ""AbAcUs"" ""bRaNcH"" ""BlUeBeRrY"" ""ClOvEr"" ""cHeRry""]) (/reverse (sort-by identity (CaseInsensitiveComparer.) words))");
+            print(@"(setq digits [""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""]) (filter #(= (nth % 1) (nth ""i"" 0)) digits)");
 //            print(@"(setq numbers '(5 4 1 3 9 8 6 7 2 0)) (take-while (fn (c) (>= (1st c) (2nd c))) (mapcar-index cons numbers))");
 
 //            print("(setq numbers-a '(1 2 3)) (setq numbers-b '(3 4 5)) (zip (fn (a b) { :a a :b b }) numbers-a numbers-b)");
