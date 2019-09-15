@@ -89,6 +89,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         }
 
         [Test]
+        public void Lisp_data_list()
+        {
+            Assert.That(eval(@"(sum [1 2 3 4])"), Is.EqualTo(10));
+            Assert.That(eval(@"(sum [1, 2, 3, 4])"), Is.EqualTo(10));
+        }
+
+        [Test]
         public void LISP_can_clojure_fn_data_list_args()
         {
             Assert.That(render(@"(defn f [] 0)(f)"), Is.EqualTo("0"));

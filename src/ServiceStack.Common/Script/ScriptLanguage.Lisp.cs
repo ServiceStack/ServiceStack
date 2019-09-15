@@ -2549,6 +2549,10 @@ namespace ServiceStack.Script
                 {
                     var e1 = ParseExpression();
                     ReadToken();
+                    
+                    if (Token == COMMA)
+                        ReadToken();
+                    
                     object e2;
                     if (Token == DOT)
                     {
