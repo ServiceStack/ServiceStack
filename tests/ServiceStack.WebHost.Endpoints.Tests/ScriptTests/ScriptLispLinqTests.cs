@@ -996,7 +996,7 @@ The doubles from highest to lowest:
 (defn linq34 []
   (let ( (words [""aPPLE"" ""AbAcUs"" ""bRaNcH"" ""BlUeBeRrY"" ""ClOvEr"" ""cHeRry""])
          (sorted-words) )
-    (setq sorted-words (/reverse (sort-by identity (CaseInsensitiveComparer.) words)))
+    (setq sorted-words (order-by [{ :comparer (CaseInsensitiveComparer.) :desc true }] words))
     (doseq (w sorted-words) (println w))
   ))
 (linq34)"), 
@@ -1018,7 +1018,7 @@ AbAcUs
 (defn linq35 []
   (let ( (digits [""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""]) 
          (i 0) (sorted-digits) )
-    (setq sorted-digits (sort-by #(count %) (sort-by (fn [d] d) digits)))
+    (setq sorted-digits (order-by [#(count %) identity] digits ))
     (println ""Sorted digits:"")
     (doseq (d sorted-digits) (println d))
   ))
@@ -1046,7 +1046,7 @@ three
 (defn linq36 []
   (let ( (words [""aPPLE"" ""AbAcUs"" ""bRaNcH"" ""BlUeBeRrY"" ""ClOvEr"" ""cHeRry""]) 
          (sorted-words) )
-    (setq sorted-words (sort-by #(count %) (sort-by identity (CaseInsensitiveComparer.) words)))
+    (setq sorted-words (order-by [#(count %) { :comparer (CaseInsensitiveComparer.) }] words))
     (doseq (w sorted-words) (println w))
   ))
 (linq36)"), 
@@ -1066,7 +1066,7 @@ BlUeBeRrY
         {
             Assert.That(render(@"
 (defn linq37 []
-  (let ( (sorted-products (order-by [#(:Category %) #(* -1 (:UnitPrice %))] products-list)) )
+  (let ( (sorted-products (order-by [#(:Category %) { :key #(:UnitPrice %) :desc true } ] products-list)) )
     (doseq (p sorted-products) (dump-inline p))
   ))
 (linq37)"), 
@@ -1081,6 +1081,29 @@ BlUeBeRrY
 {ProductId:76,ProductName:Lakkalikööri,Category:Beverages,UnitPrice:18,UnitsInStock:57}
 {ProductId:70,ProductName:Outback Lager,Category:Beverages,UnitPrice:15,UnitsInStock:15}
 {ProductId:34,ProductName:Sasquatch Ale,Category:Beverages,UnitPrice:14,UnitsInStock:111}
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq38()
+        {
+            Assert.That(render(@"
+(defn linq38 []
+  (let ( (words [""aPPLE"" ""AbAcUs"" ""bRaNcH"" ""BlUeBeRrY"" ""ClOvEr"" ""cHeRry""]) 
+         (sorted-words) )
+  
+    (setq sorted-words (order-by [#(count %) { :comparer (CaseInsensitiveComparer.) :desc true }] words))
+    (doseq (w sorted-words) (println w))
+  ))
+(linq38)"), 
+                
+                Does.StartWith(@"
+aPPLE
+ClOvEr
+cHeRry
+bRaNcH
+AbAcUs
+BlUeBeRrY
 ".NormalizeNewLines()));
         }
 

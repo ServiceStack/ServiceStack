@@ -502,6 +502,8 @@ namespace ServiceStack.Script
 
         /// <summary>The symbol of <c>t</c></summary>
         public static readonly Sym TRUE = Sym.New("t");
+        public static readonly Sym BOOL_TRUE = Sym.New("true");
+        public static readonly Sym BOOL_FALSE = Sym.New("false");
 
         static readonly Sym COND = Keyword.New("cond");
         static readonly Sym LAMBDA = Keyword.New("lambda");
@@ -806,35 +808,40 @@ namespace ServiceStack.Script
             {
                 switch (f) {
                     case Closure fnclosure:
-                        return x => 
-                        {
-                            var env = fnclosure.MakeEnv(interp, new Cell(x, null), null);
-                            var ret = interp.EvalProgN(fnclosure.Body, env);
-                            ret = interp.Eval(ret, env);
-                            return ret;
-                        };
-                        break;
+                        return x => interp.invoke(fnclosure, x);
                     case Macro fnmacro:
-                        return x => 
-                        {
-                            var ret = fnmacro.ExpandWith(interp, new Cell(x, null));
-                            ret = interp.Eval(ret, null);
-                            return ret;
-                        };
-                        break;
+                        return x => interp.invoke(fnmacro, x);
                     case BuiltInFunc fnbulitin:
-//                        return x => fnbulitin.Body(interp, new[] {new Cell(x, null)});
-                        return x => fnbulitin.Body(interp, new[] {x});
-                    case Delegate fnDel:
-                        return x => 
-                        {
-                            var scriptMethodArgs = new List<object>(EvalArgs(new Cell(x, null), interp));
-                            var ret = JsCallExpression.InvokeDelegate(fnDel, null, isMemberExpr: false, scriptMethodArgs);
-                            return ret.unwrapScriptValue();
-                        };
+                        return x => interp.invoke(fnbulitin, x);
+                    case Delegate fndel:
+                        return x => interp.invoke(fndel, x);
                     default:
                         throw new LispEvalException("not applicable", f);
                 }
+            }
+
+            object invoke(Closure fnclosure, params object[] args)
+            {
+                var env = fnclosure.MakeEnv(this, ToCons(args), null);
+                var ret = EvalProgN(fnclosure.Body, env);
+                ret = Eval(ret, env);
+                return ret;
+            }
+
+            object invoke(Macro fnmacro, params object[] args)
+            {
+                var ret = fnmacro.ExpandWith(this, ToCons(args));
+                ret = Eval(ret, null);
+                return ret;
+            }
+
+            object invoke(BuiltInFunc fnbulitin, params object[] args) => fnbulitin.Body(this, args);
+
+            object invoke(Delegate fndel, params object[] args)
+            {
+                var scriptMethodArgs = new List<object>(EvalArgs(ToCons(args), this));
+                var ret = JsCallExpression.InvokeDelegate(fndel, null, isMemberExpr: false, scriptMethodArgs);
+                return ret.unwrapScriptValue();
             }
 
             List<object> toList(IEnumerable seq) => seq == null
@@ -846,6 +853,47 @@ namespace ServiceStack.Script
                 private readonly IComparer comparer;
                 public ObjectComparer(IComparer comparer) => this.comparer = comparer;
                 public int Compare(object x, object y) => comparer.Compare(x, y);
+
+                public static IComparer<object> GetComparer(object x, Lisp.Interpreter I)
+                {
+                    if (x is IComparer<object> objComparer)
+                        return objComparer;
+                    if (x is IComparer comparer)
+                        return new ObjectComparer(comparer);
+                    if (x is Func<object, object, int> fn)
+                        return new FnComparer(fn);
+                    if (x is Closure fnclosure)
+                        return new FnComparer(I, fnclosure);
+                    if (x is Macro fnmacro)
+                        return new FnComparer(I, fnmacro);
+                    if (x is Delegate fndel)
+                        return new FnComparer(fndel);
+                    throw new LispEvalException("Not a IComparer", x);
+                }
+            }
+
+            class FnComparer : IComparer, IComparer<object>
+            {
+                private Interpreter I;
+                private Closure fnclosure;
+                private Macro fnmacro;
+                private Delegate fndel;
+                private Func<object, object, int> fn;
+
+                public FnComparer(Interpreter i) => I = i;
+                public FnComparer(Interpreter I, Closure fnclosure) : this(I) => this.fnclosure = fnclosure;
+                public FnComparer(Interpreter I, Macro fnmacro) : this(I) => this.fnmacro = fnmacro;
+                public FnComparer(Func<object, object, int> fn) => this.fn = fn;
+                public FnComparer(Delegate fndel) => this.fndel = fndel;
+
+                public int Compare(object x, object y) =>
+                    fnclosure != null
+                        ? DynamicInt.Instance.Convert(I.invoke(fnclosure, x, y))
+                        : fnmacro != null
+                            ? DynamicInt.Instance.Convert(I.invoke(fnclosure, x, y))
+                            : fn != null
+                                ? fn(x, y)
+                                : DynamicInt.Instance.Convert(I.invoke(fndel, x, y));
             }
 
             static ReadOnlyMemory<char> DownloadCachedUrl(ScriptScopeContext scope, string url, string cachePrefix, bool force=false)
@@ -1033,7 +1081,8 @@ namespace ServiceStack.Script
 
             public void InitGlobals()
             {
-                Globals[TRUE] = TRUE;
+                Globals[TRUE] = Globals[BOOL_TRUE] = TRUE;
+                Globals[BOOL_FALSE] = null;
 
                 Def("load", 1, (I, a) => {
                     var scope = I.AssertScope();
@@ -1202,14 +1251,39 @@ namespace ServiceStack.Script
                     if (keyFns.Count == 0)
                         return list;
 
-                    var keyFn1 = resolveFn(keyFns[0], I);
-                    var seq = list.OrderBy(x => keyFn1(x));
+                    IOrderedEnumerable<object> seq = null;
 
-                    for (var i = 1; i < keyFns.Count; i++)
+                    for (var i = 0; i < keyFns.Count; i++)
                     {
                         var keyFn = keyFns[i];
-                        var fn = resolveFn(keyFn, I);
-                        seq = seq.ThenBy(x => fn(x));
+                        if (keyFn is Dictionary<string, object> obj)
+                        {
+                            var fn = obj.TryGetValue("key", out var oKey)
+                                ? resolveFn(oKey, I)
+                                : x => x;
+                            var comparer = obj.TryGetValue("comparer", out var oComparer)
+                                ? ObjectComparer.GetComparer(oComparer, I)
+                                : Comparer<object>.Default;
+                            var desc = obj.TryGetValue("desc", out var oDesc) 
+                                && oDesc != null && (oDesc == TRUE || (bool) oDesc);
+                            
+                            if (seq == null)
+                                seq = desc 
+                                    ? list.OrderByDescending(fn, comparer)
+                                    : list.OrderBy(fn, comparer);
+                            else
+                                seq = desc
+                                    ? seq.ThenByDescending(fn, comparer)
+                                    : seq.ThenBy(fn, comparer); 
+                        }
+                        else
+                        {
+                            var fn = resolveFn(keyFn, I);
+                            if (seq == null)
+                                seq = list.OrderBy(fn);
+                            else
+                                seq = seq.ThenBy(fn);
+                        }
                     }
 
                     return EnumerableUtils.ToList(seq);
