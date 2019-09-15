@@ -177,7 +177,9 @@ namespace ServiceStack
 
             var exprArgs = CreateInvokerParamExpressions(method, paramArgs);
             
-            var methodCall = Expression.Call(Expression.TypeAs(paramInstance, method.DeclaringType), method, exprArgs);
+            var methodCall = method.DeclaringType.IsValueType 
+                ? Expression.Call(Expression.Convert(paramInstance, method.DeclaringType), method, exprArgs)
+                : Expression.Call(Expression.TypeAs(paramInstance, method.DeclaringType), method, exprArgs);
 
             var convertToMethod = typeof(TypeExtensions).GetStaticMethod(nameof(ConvertToObject));
             var convertReturn = convertToMethod.MakeGenericMethod(method.ReturnType);
@@ -223,7 +225,9 @@ namespace ServiceStack
 
             var exprArgs = CreateInvokerParamExpressions(method, paramArgs);
             
-            var methodCall = Expression.Call(Expression.TypeAs(paramInstance, method.DeclaringType), method, exprArgs);
+            var methodCall = method.DeclaringType.IsValueType 
+                ? Expression.Call(Expression.Convert(paramInstance, method.DeclaringType), method, exprArgs)
+                : Expression.Call(Expression.TypeAs(paramInstance, method.DeclaringType), method, exprArgs);
 
             var lambda = Expression.Lambda(typeof(ActionInvoker), 
                 methodCall, 
