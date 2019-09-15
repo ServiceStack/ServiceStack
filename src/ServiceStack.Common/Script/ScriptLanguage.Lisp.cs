@@ -3134,11 +3134,14 @@ setcdr rplacd)
         )
     (first l)))
 
-(defun range (n)
-    (let ( (to '()) )  
-        (dotimes (i n)
-            (push-end i to))
-        to))
+(defun range (&rest args)
+    (let ( (to '()) )
+        (cond 
+            ((= (length args) 1) (dotimes (i (car args))
+                (push i to)))
+            ((= (length args) 2) (dotimes (i (- (cadr args) (car args)))
+                (push (+ i (car args)) to))))
+    (nreverse to)))
 
 (defun set-difference (L1 L2)
   (if L2

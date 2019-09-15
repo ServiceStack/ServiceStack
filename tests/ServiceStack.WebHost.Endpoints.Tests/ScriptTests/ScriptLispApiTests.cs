@@ -55,6 +55,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         }
 
         [Test]
+        public void LISP_range()
+        {
+            Assert.That(eval(@"(range 5)"), Is.EqualTo(new[] {0, 1, 2, 3, 4}));
+            Assert.That(eval(@"(range 10 15)"), Is.EqualTo(new[] {10, 11, 12, 13, 14}));
+        }
+
+        [Test]
         public void LISP_filter()
         {
             Assert.That(eval(@"(filter   even? (range 10))"), Is.EqualTo(new[] {0, 2, 4, 6, 8}));

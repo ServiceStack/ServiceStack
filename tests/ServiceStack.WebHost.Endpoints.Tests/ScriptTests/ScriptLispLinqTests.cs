@@ -1711,6 +1711,119 @@ Numbers stored as doubles:
         }
 
         [Test]
+        public void linq59()
+        {
+            Assert.That(render(@"
+(defn linq59 []
+  (let ( (strings [""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""]) 
+         (starts-with-o) )
+    (setq starts-with-o (first (filter #(/startsWith % ""o"") strings)))
+    (println ""A string starting with 'o': "" starts-with-o)
+  ))
+(linq59)"),
+
+                Does.StartWith(@"
+A string starting with 'o': one
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq61()
+        {
+            Assert.That(render(@"
+(defn linq61 []
+  (let ( (numbers []) (first-num-or-default) )
+    (setq first-num-or-default (or (first numbers) 0))
+    (println first-num-or-default)
+  ))
+(linq61)"),
+
+                Does.StartWith(@"
+0
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq62()
+        {
+            Assert.That(render(@"
+(defn linq62 []
+  (let ( (product-789 (first (filter #(= (.ProductId %) 789) products-list) )) )
+    (println ""Product 789 exists: "" (not= product-789 nil))
+  ))
+(linq62)"),
+
+                Does.StartWith(@"
+Product 789 exists: False
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq64()
+        {
+            Assert.That(render(@"
+(defn linq64 []
+  (let ( (numbers [5 4 1 3 9 8 6 7 2 0]) (fourth-low-num) )
+    (setq fourth-low-num (nth (filter #(> % 5) numbers) 1))
+    (println ""Second number > 5: "" fourth-low-num)
+  ))
+(linq64)"),
+
+                Does.StartWith(@"
+Second number > 5: 8
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq65()
+        {
+            Assert.That(render(@"
+(defn linq65 []
+  (let ( (numbers (map (fn [n] { :number n :odd-even (if (odd? n) ""odd"" ""even"") }) (range 100 151))) )
+    (doseq (n numbers) 
+      (println ""The number "" (:number n) "" is "" (:odd-even n)))
+  ))
+(linq65)"),
+
+                Does.StartWith(@"
+The number 100 is even
+The number 101 is odd
+The number 102 is even
+The number 103 is odd
+The number 104 is even
+The number 105 is odd
+The number 106 is even
+The number 107 is odd
+The number 108 is even
+The number 109 is odd
+The number 110 is even
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq66()
+        {
+            Assert.That(render(@"
+(defn linq66 []
+  (let ( (numbers (/repeat 7 10)) )
+    (doseq (n numbers) (println n))))
+(linq66)"),
+
+                Does.StartWith(@"
+7
+7
+7
+7
+7
+7
+7
+7
+7
+7
+".NormalizeNewLines()));
+        }
+
+        [Test]
         public void test()
         {
 //            print(@"(map #(nth (.ProductName %) 0) products-list)");
