@@ -1389,9 +1389,233 @@ apple
         }
 
         [Test]
+        public void linq46()
+        {
+            Assert.That(render(@"
+(defn linq46 []
+  (let ( (factors-of-300 [2, 2, 3, 5, 5])
+         (unique-factors) )
+    (setq unique-factors (/distinct factors-of-300))
+    (println ""Prime factors of 300:"")
+    (doseq (n unique-factors) (println n))
+  ))
+(linq46)"), 
+                
+                Does.StartWith(@"
+Prime factors of 300:
+2
+3
+5
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq47()
+        {
+            Assert.That(render(@"
+(defn linq47 []
+  (let ( (category-names (/distinct (map .Category products-list))) )
+    (println ""Category names:"")
+    (doseq (c category-names) (println c))
+  ))
+(linq47)"), 
+                
+                Does.StartWith(@"
+Category names:
+Beverages
+Condiments
+Produce
+Meat/Poultry
+Seafood
+Dairy Products
+Confections
+Grains/Cereals
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq48()
+        {
+            Assert.That(render(@"
+(defn linq48 []
+  (let ( (numbers-a [0 2 4 5 6 8 9]) 
+         (numbers-b [1 3 5 7 8])
+         (unique-numbers) )
+        
+    (setq unique-numbers (/union numbers-a numbers-b))
+    (println ""Unique numbers from both arrays:"")
+    (doseq (n unique-numbers) (println n))
+  ))
+(linq48)"), 
+                
+                Does.StartWith(@"
+Unique numbers from both arrays:
+0
+2
+4
+5
+6
+8
+9
+1
+3
+7
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq49()
+        {
+            Assert.That(render(@"
+(defn linq49 []
+  (let ( (product-first-chars  (map #(nth (.ProductName %) 0) products-list))
+         (customer-first-chars (map #(nth (.CompanyName %) 0) customers-list))
+         (unique-first-chars) )
+        
+    (setq unique-first-chars (/union product-first-chars customer-first-chars))
+    (println ""Unique first letters from Product names and Customer names:"")
+    (doseq (x unique-first-chars) (println x))
+  ))
+(linq49)"), 
+                
+                Does.StartWith(@"
+Unique first letters from Product names and Customer names:
+C
+A
+G
+U
+N
+M
+I
+Q
+K
+T
+P
+S
+R
+B
+J
+Z
+V
+F
+E
+W
+L
+O
+D
+H
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq50()
+        {
+            Assert.That(render(@"
+(defn linq50 []
+  (let ( (numbers-a [0 2 4 5 6 8 9])
+         (numbers-b [1 3 5 7 8]) )
+    (setq common-numbers (intersect numbers-a numbers-b))
+    (println ""Common numbers shared by both arrays:"")
+    (doseq (n common-numbers) (println n))
+  ))
+(linq50)"), 
+                
+                Does.StartWith(@"
+Common numbers shared by both arrays:
+5
+8
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq51()
+        {
+            Assert.That(render(@"
+(defn linq51 []
+  (let ( (product-first-chars  (map #(nth (.ProductName %) 0) products-list))
+         (customer-first-chars (map #(nth (.CompanyName %) 0) customers-list))
+         (common-first-chars) )
+    (setq common-first-chars (intersect product-first-chars customer-first-chars))
+    (println ""Common first letters from Product names and Customer names:"")
+    (doseq (x common-first-chars) (println x))
+  ))
+(linq51)"), 
+                
+                Does.StartWith(@"
+Common first letters from Product names and Customer names:
+C
+A
+G
+N
+M
+I
+Q
+K
+T
+P
+S
+R
+B
+V
+F
+E
+W
+L
+O
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq52()
+        {
+            Assert.That(render(@"
+(defn linq52 []
+  (let ( (numbers-a [0 2 4 5 6 8 9])
+         (numbers-b [1 3 5 7 8]) 
+         (a-only-numbers) )
+    (setq a-only-numbers (/except numbers-a numbers-b))
+    (println ""Numbers in first array but not second array:"")
+    (doseq (n a-only-numbers) (println n))
+  ))
+(linq52)"), 
+                
+                Does.StartWith(@"
+Numbers in first array but not second array:
+0
+2
+4
+6
+9
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq53()
+        {
+            Assert.That(render(@"
+(defn linq53 []
+  (let ( (product-first-chars  (map #(nth (.ProductName %) 0) products-list))
+         (customer-first-chars (map #(nth (.CompanyName %) 0) customers-list))
+         (product-only-first-chars) )
+
+    (setq product-only-first-chars (/except product-first-chars customer-first-chars))
+    (println ""First letters from Product names, but not from Customer names:"")
+    (doseq (x  product-only-first-chars) (println x))
+  ))
+(linq53)"), 
+                
+                Does.StartWith(@"
+First letters from Product names, but not from Customer names:
+U
+J
+Z
+".NormalizeNewLines()));
+        }
+
+        [Test]
         public void test()
         {
-            print(@"(setq digits [""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""]) (filter #(= (nth % 1) (nth ""i"" 0)) digits)");
+            print(@"(map #(nth (.ProductName %) 0) products-list)");
 //            print(@"(setq numbers '(5 4 1 3 9 8 6 7 2 0)) (take-while (fn (c) (>= (1st c) (2nd c))) (mapcar-index cons numbers))");
 
 //            print("(setq numbers-a '(1 2 3)) (setq numbers-b '(3 4 5)) (zip (fn (a b) { :a a :b b }) numbers-a numbers-b)");
