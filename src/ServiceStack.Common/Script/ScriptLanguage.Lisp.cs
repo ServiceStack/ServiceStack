@@ -284,6 +284,8 @@ namespace ServiceStack.Script
         }
         internal static IEnumerable assertEnumerable(this object a)
         {
+            if (a == null)
+                return TypeConstants.EmptyObjectArray;
             if (a is IEnumerable e)
                 return e;
             throw new LispEvalException("not IEnumerable", a);
@@ -804,7 +806,7 @@ namespace ServiceStack.Script
                 Globals = new Dictionary<Sym, object>(globalInterp.Globals); // copy existing globals
             }
 
-            Func<object, object> resolveFn(object f, Interpreter interp)
+            Func<object, object> resolve1ArgFn(object f, Interpreter interp)
             {
                 switch (f) {
                     case Closure fnclosure:
@@ -854,14 +856,16 @@ namespace ServiceStack.Script
                 public ObjectComparer(IComparer comparer) => this.comparer = comparer;
                 public int Compare(object x, object y) => comparer.Compare(x, y);
 
-                public static IComparer<object> GetComparer(object x, Lisp.Interpreter I)
+                public static IComparer<object> GetComparer(object x, Interpreter I)
                 {
                     if (x is IComparer<object> objComparer)
                         return objComparer;
                     if (x is IComparer comparer)
                         return new ObjectComparer(comparer);
-                    if (x is Func<object, object, int> fn)
-                        return new FnComparer(fn);
+                    if (x is Func<object, object, int> fnCompareTo)
+                        return new FnComparer(fnCompareTo);
+                    if (x is Func<object, object, bool> fnEquals)
+                        return new FnComparer(fnEquals);
                     if (x is Closure fnclosure)
                         return new FnComparer(I, fnclosure);
                     if (x is Macro fnmacro)
@@ -870,20 +874,31 @@ namespace ServiceStack.Script
                         return new FnComparer(fndel);
                     throw new LispEvalException("Not a IComparer", x);
                 }
+
+                public static IEqualityComparer<object> GetEqualityComparer(object x, Interpreter I)
+                {
+                    if (x is IEqualityComparer<object> objComparer)
+                        return objComparer;
+                    if (x is Func<object, object, bool> fnEquals)
+                        return new FnComparer(fnEquals);
+                    return (IEqualityComparer<object>) GetComparer(x, I);
+                }
             }
 
-            class FnComparer : IComparer, IComparer<object>
+            class FnComparer : IComparer, IComparer<object>, IEqualityComparer<object>
             {
                 private Interpreter I;
-                private Closure fnclosure;
-                private Macro fnmacro;
-                private Delegate fndel;
-                private Func<object, object, int> fn;
+                private readonly Closure fnclosure;
+                private readonly Macro fnmacro;
+                private readonly Delegate fndel;
+                private readonly Func<object, object, int> fnCompareTo;
+                private readonly Func<object, object, bool> fnCompareEquals;
 
                 public FnComparer(Interpreter i) => I = i;
                 public FnComparer(Interpreter I, Closure fnclosure) : this(I) => this.fnclosure = fnclosure;
                 public FnComparer(Interpreter I, Macro fnmacro) : this(I) => this.fnmacro = fnmacro;
-                public FnComparer(Func<object, object, int> fn) => this.fn = fn;
+                public FnComparer(Func<object, object, int> fn) => this.fnCompareTo = fn;
+                public FnComparer(Func<object, object, bool> fnCompareEquals) => this.fnCompareEquals = fnCompareEquals;
                 public FnComparer(Delegate fndel) => this.fndel = fndel;
 
                 public int Compare(object x, object y) =>
@@ -891,9 +906,20 @@ namespace ServiceStack.Script
                         ? DynamicInt.Instance.Convert(I.invoke(fnclosure, x, y))
                         : fnmacro != null
                             ? DynamicInt.Instance.Convert(I.invoke(fnclosure, x, y))
-                            : fn != null
-                                ? fn(x, y)
+                            : fnCompareTo != null
+                                ? fnCompareTo(x, y)
                                 : DynamicInt.Instance.Convert(I.invoke(fndel, x, y));
+
+                public bool Equals(object x, object y) =>
+                    fnclosure != null
+                        ? I.invoke(fnclosure, x, y).ConvertTo<bool>()
+                        : fnmacro != null
+                            ? I.invoke(fnclosure, x, y).ConvertTo<bool>()
+                            : fnCompareEquals != null
+                                ? fnCompareEquals(x, y)
+                                : I.invoke(fndel, x, y).ConvertTo<bool>();
+
+                public int GetHashCode(object obj) => obj.GetHashCode();
             }
 
             static ReadOnlyMemory<char> DownloadCachedUrl(ScriptScopeContext scope, string url, string cachePrefix, bool force=false)
@@ -1216,7 +1242,7 @@ namespace ServiceStack.Script
                     return null;
                 });
 
-                Def("map", 2, (I, a) => a[1]?.assertEnumerable().Map(resolveFn(a[0], I)));
+                Def("map", 2, (I, a) => a[1]?.assertEnumerable().Map(resolve1ArgFn(a[0], I)));
 
                 Def("sort", 1, (I, a) => {
                     var arr = a[0].assertEnumerable().Cast<object>().ToArray();
@@ -1226,13 +1252,13 @@ namespace ServiceStack.Script
 
                 Def("sort-by", -2, (I, a) => {
 
-                    var keyFn = resolveFn(a[0], I);
+                    var keyFn = resolve1ArgFn(a[0], I);
                     var varArgs = EnumerableUtils.ToList(a[1].assertEnumerable());
                     if (varArgs.Count == 1) // (sort-by keyfn list)
                     {
-                        var arr = EnumerableUtils.ToList(varArgs[0].assertEnumerable()).ToArray();
-                        Array.Sort(arr, (x,y) => keyFn(x).compareTo(keyFn(y)));
-                        return arr;
+                        var list = EnumerableUtils.ToList(varArgs[0].assertEnumerable()).ToArray();
+                        Array.Sort(list, (x,y) => keyFn(x).compareTo(keyFn(y)));
+                        return list;
                     }
                     else // (sort-by keyfn comparer list)
                     {
@@ -1259,7 +1285,7 @@ namespace ServiceStack.Script
                         if (keyFn is Dictionary<string, object> obj)
                         {
                             var fn = obj.TryGetValue("key", out var oKey)
-                                ? resolveFn(oKey, I)
+                                ? resolve1ArgFn(oKey, I)
                                 : x => x;
                             var comparer = obj.TryGetValue("comparer", out var oComparer)
                                 ? ObjectComparer.GetComparer(oComparer, I)
@@ -1278,7 +1304,7 @@ namespace ServiceStack.Script
                         }
                         else
                         {
-                            var fn = resolveFn(keyFn, I);
+                            var fn = resolve1ArgFn(keyFn, I);
                             if (seq == null)
                                 seq = list.OrderBy(fn);
                             else
@@ -1289,6 +1315,37 @@ namespace ServiceStack.Script
                     return EnumerableUtils.ToList(seq);
                 });
 
+                Def("group-by", -2, (I, a) => {
+                    
+                    var keyFn = resolve1ArgFn(a[0], I);
+                    var varArgs = EnumerableUtils.ToList(a[1].assertEnumerable());
+
+                    if (varArgs.Count == 1) // (group-by #(mod % 5) numbers)
+                    {
+                        var list = EnumerableUtils.ToList(varArgs[0].assertEnumerable());
+                        var ret = list.GroupBy(keyFn);
+                        return ret;
+                    }
+                    if (varArgs.Count == 2 && varArgs[0] is Dictionary<string, object> obj)
+                    {
+                        var mapFn = obj.TryGetValue("map", out var oKey)
+                            ? resolve1ArgFn(oKey, I)
+                            : x => x;
+                        var comparer = obj.TryGetValue("comparer", out var oComparer)
+                            ? ObjectComparer.GetEqualityComparer(oComparer, I)
+                            : EqualityComparer<object>.Default;
+                        
+                        var list = EnumerableUtils.ToList(varArgs[1].assertEnumerable());
+                        var ret = list.GroupBy(
+                            keyFn, 
+                            mapFn, 
+                            comparer);
+                        return ret;
+                    }
+                    
+                    throw new LispEvalException("syntax: (group-by keyFn list) (group-by keyFn { :map mapFn :comparer comparer } list)", varArgs.Last());
+                });
+                
                 Def("sum", 1, a => {
                     object acc = 0;
                     foreach (var num in a[0].assertEnumerable())
@@ -1730,7 +1787,8 @@ namespace ServiceStack.Script
                                     x = EvalProgN(arg, env);
                                 } else if (fn == COND) {
                                     x = EvalCond(arg, env);
-                                } else if (fn == SETQ) {
+                                } else if (fn == 
+                                           SETQ) {
                                     return EvalSetQ(arg, env);
                                 } else if (fn == EXPORT) {
                                     return EvalExport(arg, env, scope);

@@ -695,7 +695,7 @@ namespace ServiceStack.Script
                     ? l[index]
                     : null;
             }
-            else if (target is IEnumerable e)
+            else if (target is IEnumerable e && DynamicNumber.IsNumber(key.GetType())) // IGrouping<TKey,TElement> is IEnumerable & can ref 'Key' property
             {
                 var index = key.ConvertTo<int>();
                 var i = 0;

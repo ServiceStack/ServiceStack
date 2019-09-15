@@ -918,7 +918,13 @@ blueberry
 {ProductId:40,ProductName:Boston Crab Meat,Category:Seafood,UnitPrice:18.4,UnitsInStock:123}
 {ProductId:60,ProductName:Camembert Pierrot,Category:Dairy Products,UnitPrice:34,UnitsInStock:19}
 {ProductId:18,ProductName:Carnarvon Tigers,Category:Seafood,UnitPrice:62.5,UnitsInStock:42}
-".NormalizeNewLines()));
+".NormalizeNewLines()).Or.StartsWith(@"
+{UnitsInStock:0,ProductName:Alice Mutton,UnitPrice:39,Category:Meat/Poultry,ProductId:17}
+{UnitsInStock:13,ProductName:Aniseed Syrup,UnitPrice:10,Category:Condiments,ProductId:3}
+{UnitsInStock:123,ProductName:Boston Crab Meat,UnitPrice:18.4,Category:Seafood,ProductId:40}
+{UnitsInStock:19,ProductName:Camembert Pierrot,UnitPrice:34,Category:Dairy Products,ProductId:60}
+{UnitsInStock:42,ProductName:Carnarvon Tigers,UnitPrice:62.5,Category:Seafood,ProductId:18}
+".NormalizeNewLines())); // different ordering in .NET Core 
         }
 
         [Test]
@@ -1081,7 +1087,17 @@ BlUeBeRrY
 {ProductId:76,ProductName:Lakkalikööri,Category:Beverages,UnitPrice:18,UnitsInStock:57}
 {ProductId:70,ProductName:Outback Lager,Category:Beverages,UnitPrice:15,UnitsInStock:15}
 {ProductId:34,ProductName:Sasquatch Ale,Category:Beverages,UnitPrice:14,UnitsInStock:111}
-".NormalizeNewLines()));
+".NormalizeNewLines()).Or.StartsWith(@"
+{UnitsInStock:17,ProductName:Côte de Blaye,UnitPrice:263.5,Category:Beverages,ProductId:38}
+{UnitsInStock:17,ProductName:Ipoh Coffee,UnitPrice:46,Category:Beverages,ProductId:43}
+{UnitsInStock:17,ProductName:Chang,UnitPrice:19,Category:Beverages,ProductId:2}
+{UnitsInStock:39,ProductName:Chai,UnitPrice:18,Category:Beverages,ProductId:1}
+{UnitsInStock:20,ProductName:Steeleye Stout,UnitPrice:18,Category:Beverages,ProductId:35}
+{UnitsInStock:69,ProductName:Chartreuse verte,UnitPrice:18,Category:Beverages,ProductId:39}
+{UnitsInStock:57,ProductName:Lakkalikööri,UnitPrice:18,Category:Beverages,ProductId:76}
+{UnitsInStock:15,ProductName:Outback Lager,UnitPrice:15,Category:Beverages,ProductId:70}
+{UnitsInStock:111,ProductName:Sasquatch Ale,UnitPrice:14,Category:Beverages,ProductId:34}
+".NormalizeNewLines())); // different ordering in .NET Core 
         }
 
         [Test]
@@ -1126,6 +1142,249 @@ nine
 eight
 six
 five
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq40()
+        {
+            Assert.That(render(@"
+(defn linq40 []
+  (let ( (numbers [5 4 1 3 9 8 6 7 2 0]) 
+         (number-groups) )
+    (setq number-groups 
+        (map (fn [g] { :remainder (.Key g) :numbers g }) (group-by #(mod % 5) numbers)))
+    (doseq (g number-groups)
+        (println ""Numbers with a remainder of "" (:remainder g) "" when divided by 5:"")
+        (doseq (n (:numbers g)) (println n)))
+  ))
+(linq40)"), 
+                
+                Does.StartWith(@"
+Numbers with a remainder of 0 when divided by 5:
+5
+0
+Numbers with a remainder of 4 when divided by 5:
+4
+9
+Numbers with a remainder of 1 when divided by 5:
+1
+6
+Numbers with a remainder of 3 when divided by 5:
+3
+8
+Numbers with a remainder of 2 when divided by 5:
+7
+2
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq41()
+        {
+            Assert.That(render(@"
+(defn linq41 []
+  (let ( (words [""blueberry"" ""chimpanzee"" ""abacus"" ""banana"" ""apple"" ""cheese""])
+         (word-groups) )
+    (setq word-groups 
+        (map (fn [g] {:first-letter (.Key g) :words g}) (group-by #(nth % 0) words) ))
+    (doseq (g word-groups)
+        (println ""Words that start with the letter: "" (:first-letter g))
+        (doseq (w (:words g)) (println w)))
+  ))
+(linq41)"), 
+                
+                Does.StartWith(@"
+Words that start with the letter: b
+blueberry
+banana
+Words that start with the letter: c
+chimpanzee
+cheese
+Words that start with the letter: a
+abacus
+apple
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq42()
+        {
+            Assert.That(render(@"
+(defn linq42 []
+  (let ( (order-groups 
+      (map (fn [g] {:category (.Key g), :products g}) (group-by #(:category %) products-list))) )
+    (doseq (x order-groups) (dump-inline x))
+  ))
+(linq42)"), 
+                
+                Does.StartWith(@"
+{category:Beverages,products:[{ProductId:1,ProductName:Chai,Category:Beverages,UnitPrice:18,UnitsInStock:39},{ProductId:2,ProductName:Chang,Category:Beverages,UnitPrice:19,UnitsInStock:17},{ProductId:24,ProductName:Guaraná Fantástica,Category:Beverages,UnitPrice:4.5,UnitsInStock:20},{ProductId:34,ProductName:Sasquatch Ale,Category:Beverages,UnitPrice:14,UnitsInStock:111},{ProductId:35,ProductName:Steeleye Stout,Category:Beverages,UnitPrice:18,UnitsInStock:20},{ProductId:38,ProductName:Côte de Blaye,Category:Beverages,UnitPrice:263.5,UnitsInStock:17},{ProductId:39,ProductName:Chartreuse verte,Category:Beverages,UnitPrice:18,UnitsInStock:69},{ProductId:43,ProductName:Ipoh Coffee,Category:Beverages,UnitPrice:46,UnitsInStock:17},{ProductId:67,ProductName:Laughing Lumberjack Lager,Category:Beverages,UnitPrice:14,UnitsInStock:52},{ProductId:70,ProductName:Outback Lager,Category:Beverages,UnitPrice:15,UnitsInStock:15},{ProductId:75,ProductName:Rhönbräu Klosterbier,Category:Beverages,UnitPrice:7.75,UnitsInStock:125},{ProductId:76,ProductName:Lakkalikööri,Category:Beverages,UnitPrice:18,UnitsInStock:57}]}
+".NormalizeNewLines()).Or.StartsWith(@"
+{category:Beverages,products:[{UnitsInStock:39,ProductName:Chai,UnitPrice:18,Category:Beverages,ProductId:1},{UnitsInStock:17,ProductName:Chang,UnitPrice:19,Category:Beverages,ProductId:2},{UnitsInStock:20,ProductName:Guaraná Fantástica,UnitPrice:4.5,Category:Beverages,ProductId:24},{UnitsInStock:111,ProductName:Sasquatch Ale,UnitPrice:14,Category:Beverages,ProductId:34},{UnitsInStock:20,ProductName:Steeleye Stout,UnitPrice:18,Category:Beverages,ProductId:35},{UnitsInStock:17,ProductName:Côte de Blaye,UnitPrice:263.5,Category:Beverages,ProductId:38},{UnitsInStock:69,ProductName:Chartreuse verte,UnitPrice:18,Category:Beverages,ProductId:39},{UnitsInStock:17,ProductName:Ipoh Coffee,UnitPrice:46,Category:Beverages,ProductId:43},{UnitsInStock:52,ProductName:Laughing Lumberjack Lager,UnitPrice:14,Category:Beverages,ProductId:67},{UnitsInStock:15,ProductName:Outback Lager,UnitPrice:15,Category:Beverages,ProductId:70},{UnitsInStock:125,ProductName:Rhönbräu Klosterbier,UnitPrice:7.75,Category:Beverages,ProductId:75},{UnitsInStock:57,ProductName:Lakkalikööri,UnitPrice:18,Category:Beverages,ProductId:76}]}
+".NormalizeNewLines())); // different ordering in .NET Core 
+        }
+
+        [Test]
+        public void linq43()
+        {
+            Assert.That(render(@"
+(defn linq43 []
+  (let ( (customer-order-groups
+      (map (fn [c] {
+        :company-name (.CompanyName c)
+        :year-groups  (map (fn [yg] {
+                :year (.Key yg)
+                :month-groups (map (fn [mg] {
+                        :month  (.Key mg)
+                        :orders mg
+                    }) (group-by #(.Month (.OrderDate %)) yg))
+            }) (group-by (fn [o] (.Year (.OrderDate o))) (.Orders c)))
+      }) customers-list)) )
+    (dump customer-order-groups)
+  ))
+(linq43)"), 
+                
+                Does.StartWith(@"
+[
+	{
+		company-name: Alfreds Futterkiste,
+		year-groups: 
+		[
+			{
+				year: 1997,
+				month-groups: 
+				[
+					{
+						month: 8,
+						orders: 
+						[
+							{
+								OrderId: 10643,
+								OrderDate: 1997-08-25,
+								Total: 814.5
+							}
+						]
+					},
+					{
+						month: 10,
+						orders: 
+						[
+							{
+								OrderId: 10692,
+								OrderDate: 1997-10-03,
+								Total: 878
+							},
+							{
+								OrderId: 10702,
+								OrderDate: 1997-10-13,
+								Total: 330
+							}
+						]
+					}
+				]
+			},
+			{
+				year: 1998,
+				month-groups: 
+				[
+					{
+						month: 1,
+						orders: 
+						[
+							{
+								OrderId: 10835,
+								OrderDate: 1998-01-15,
+								Total: 845.8
+							}
+						]
+					},
+					{
+						month: 3,
+						orders: 
+						[
+							{
+								OrderId: 10952,
+								OrderDate: 1998-03-16,
+								Total: 471.2
+							}
+						]
+					},
+					{
+						month: 4,
+						orders: 
+						[
+							{
+								OrderId: 11011,
+								OrderDate: 1998-04-09,
+								Total: 933.5
+							}
+						]
+					}
+				]
+			}
+		]
+	},
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq44()
+        {
+            Assert.That(render(@"
+(defn linq44 []
+  (let ( (anagrams [""from   "" "" salt"" "" earn "" ""  last   "" "" near "" "" form  ""]) 
+         (order-groups) )
+        
+    (setq order-groups (group-by #(.Trim %) { :comparer (AnagramEqualityComparer.) } anagrams))
+    (doseq (x order-groups) (dump-inline x))
+  ))
+(linq44)"), 
+                
+                Does.StartWith(@"
+[from   , form  ]
+[ salt,  last   ]
+[ earn , near ]
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq44_inline()
+        {
+            Assert.That(render(@"
+(defn linq44 []
+  (let ( (anagrams [""from   "" "" salt"" "" earn "" ""  last   "" "" near "" "" form  ""]) 
+         (order-groups) )
+        
+    (setq order-groups (group-by #((/C ""String(char[])"") (sort (.ToCharArray (.Trim %)))) anagrams))
+    (doseq (x order-groups) (dump-inline x))
+  ))
+(linq44)"), 
+                
+                Does.StartWith(@"
+[from   , form  ]
+[ salt,  last   ]
+[ earn , near ]
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq45()
+        {
+            Assert.That(render(@"
+(defn linq45 []
+  (let ( (anagrams [""from   "" "" salt"" "" earn "" ""  last   "" "" near "" "" form  ""]) 
+         (order-groups) )
+        
+    (setq order-groups (group-by #(.Trim %) { :comparer (AnagramEqualityComparer.) :map #(upper %) } anagrams))
+    (doseq (x order-groups) (dump-inline x))
+  ))
+(linq45)"), 
+                
+                Does.StartWith(@"
+[FROM   , FORM  ]
+[ SALT,  LAST   ]
+[ EARN , NEAR ]
 ".NormalizeNewLines()));
         }
 
