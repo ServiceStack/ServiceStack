@@ -1694,6 +1694,23 @@ Numbers stored as doubles:
         }
 
         [Test]
+        public void linq58()
+        {
+            Assert.That(render(@"
+(defn linq58 []
+  (let ( (product-12 (first (filter #(= (.ProductId %) 12) products-list)) ) )
+    (dump-inline product-12)
+  ))
+(linq58)"), 
+                
+                Does.StartWith(@"
+{ProductId:12,ProductName:Queso Manchego La Pastora,Category:Dairy Products,UnitPrice:38,UnitsInStock:86}
+".NormalizeNewLines()).Or.StartsWith(@"
+{UnitsInStock:86,ProductName:Queso Manchego La Pastora,UnitPrice:38,Category:Dairy Products,ProductId:12}
+".NormalizeNewLines())); // different ordering in .NET Core 
+        }
+
+        [Test]
         public void test()
         {
 //            print(@"(map #(nth (.ProductName %) 0) products-list)");

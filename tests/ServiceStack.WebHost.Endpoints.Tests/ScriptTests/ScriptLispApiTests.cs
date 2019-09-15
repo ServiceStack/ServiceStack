@@ -57,7 +57,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         [Test]
         public void LISP_filter()
         {
-            Assert.That(eval(@"(filter even? (range 10))"), Is.EqualTo(new[] {0, 2, 4, 6, 8}));
+            Assert.That(eval(@"(filter   even? (range 10))"), Is.EqualTo(new[] {0, 2, 4, 6, 8}));
+            Assert.That(eval(@"(/filter  even? (to-list (range 10)))"), Is.EqualTo(new[] {0, 2, 4, 6, 8}));
+            Assert.That(eval(@"(where    even? (to-list (range 10)))"), Is.EqualTo(new[] {0, 2, 4, 6, 8}));
+            Assert.That(eval(@"(where    even? (range 10))"), Is.EqualTo(new[] {0, 2, 4, 6, 8}));
         }
 
         [Test]
@@ -121,6 +124,44 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(eval(@"(if (bound? id id2) 1 -1)"), Is.EqualTo(-1));
             Assert.That(eval(@"(setq id 2)(if (bound? id id2) 1 -1)"), Is.EqualTo(-1));
             Assert.That(eval(@"(setq id 2)(setq id2 3)(if (bound? id id2) 1 -1)"), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void LISP_first()
+        {
+            Assert.That(eval(@"(first [10 20 30])"), Is.EqualTo(10));
+            Assert.That(eval(@"(first (to-list [10 20 30]))"), Is.EqualTo(10));
+            Assert.That(eval(@"(1st [10 20 30])"), Is.EqualTo(10));
+        }
+
+        [Test]
+        public void LISP_second()
+        {
+            Assert.That(eval(@"(second [10 20 30])"), Is.EqualTo(20));
+            Assert.That(eval(@"(second (to-list [10 20 30]))"), Is.EqualTo(20));
+            Assert.That(eval(@"(second [10])"), Is.Null);
+            Assert.That(eval(@"(second (to-list [10]))"), Is.Null);
+            Assert.That(eval(@"(2nd [10 20 30])"), Is.EqualTo(20));
+        }
+
+        [Test]
+        public void LISP_third()
+        {
+            Assert.That(eval(@"(third [10 20 30])"), Is.EqualTo(30));
+            Assert.That(eval(@"(third (to-list [10 20 30]))"), Is.EqualTo(30));
+            Assert.That(eval(@"(third [10])"), Is.Null);
+            Assert.That(eval(@"(third (to-list [10]))"), Is.Null);
+            Assert.That(eval(@"(3rd [10 20 30])"), Is.EqualTo(30));
+        }
+
+        [Test]
+        public void LISP_rest()
+        {
+            Assert.That(eval(@"(rest [10 20 30])"), Is.EqualTo(new[]{ 20, 30 }));
+            Assert.That(eval(@"(rest (to-list [10 20 30]))"), Is.EqualTo(new[]{ 20, 30 }));
+            Assert.That(eval(@"(rest [10])"), Is.Null);
+            Assert.That(eval(@"(rest (to-list [10]))"), Is.Null);
+            Assert.That(eval(@"(next [10 20 30])"), Is.EqualTo(new[]{ 20, 30 }));
         }
 
         [Test]

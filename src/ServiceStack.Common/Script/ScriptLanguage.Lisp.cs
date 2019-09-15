@@ -786,6 +786,8 @@ namespace ServiceStack.Script
             return j;
         }
 
+        static bool isTrue(object test) => test != null && !(test is bool b && !b);
+
         /// <summary>Core of the Lisp interpreter</summary>
         public class Interpreter {
             /// <summary>Table of the global values of symbols</summary>
@@ -820,6 +822,12 @@ namespace ServiceStack.Script
                     default:
                         throw new LispEvalException("not applicable", f);
                 }
+            }
+
+            Func<object, bool> resolvePredicate(object f, Interpreter interp)
+            {
+                var fn = resolve1ArgFn(f, interp);
+                return x => isTrue(fn(x));
             }
 
             object invoke(Closure fnclosure, params object[] args)
@@ -1225,6 +1233,10 @@ namespace ServiceStack.Script
                     return a[0].assertEnumerable().Cast<object>().ElementAt(i);
                 });
 
+                Def("first", 1, a => EnumerableUtils.FirstOrDefault(a[0].assertEnumerable()));
+                Def("second", 1, a => EnumerableUtils.ElementAt(a[0].assertEnumerable(), 1));
+                Def("third", 1, a => EnumerableUtils.ElementAt(a[0].assertEnumerable(), 2));
+                Def("rest", 1, body: a => a[0] is Cell c ? c.Cdr : EnumerableUtils.NullIfEmpty(EnumerableUtils.Skip(a[0].assertEnumerable(), 1)));
                 Def("skip", 2, a => EnumerableUtils.Skip(a[1].assertEnumerable(), DynamicInt.Instance.Convert(a[0])));
                 Def("take", 2, a => EnumerableUtils.Take(a[1].assertEnumerable(), DynamicInt.Instance.Convert(a[0])));
                 Def("enumerator", 1, a => a[0] == null ? TypeConstants.EmptyObjectArray.GetEnumerator() : a[0].assertEnumerable().GetEnumerator());
@@ -1244,6 +1256,7 @@ namespace ServiceStack.Script
                 });
 
                 Def("map", 2, (I, a) => a[1]?.assertEnumerable().Map(resolve1ArgFn(a[0], I)));
+                Def("where", 2, (I, a) => EnumerableUtils.ToList(a[1]?.assertEnumerable()).Where(resolvePredicate(a[0], I)).ToList());
 
                 Def("sort", 1, (I, a) => {
                     var arr = a[0].assertEnumerable().Cast<object>().ToArray();
@@ -3219,17 +3232,13 @@ setcdr rplacd)
     (filter (fn [x] (f x (incf i) )) L) ))
 
 (setq
-    first  car
-    1st    car
-    second cadr
-    2nd    cadr
-    third  caddr
-    3rd    caddr
-    next   cdr
-    rest   cdr
-    skip2  cddr
-    inc    1+
-    dec    1-
+    1st     first
+    2nd     second
+    3rd     third
+    next    rest
+    inc     1+
+    dec     1-
+    /filter where
 
     atom?  atom
     cons?  consp

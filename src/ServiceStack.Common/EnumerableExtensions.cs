@@ -16,6 +16,15 @@ namespace ServiceStack
             return null;
         }
 
+        public static object ElementAt(IEnumerable items, int index)
+        {
+            var i = 0;
+            foreach (var item in items)
+                if (i++ == index)
+                    return item;
+            return null;
+        }
+
         public static List<object> Skip(IEnumerable items, int count)
         {
             var to = new List<object>();
@@ -61,6 +70,13 @@ namespace ServiceStack
                 to.Add(item);
             }
             return to;
+        }
+
+        public static IEnumerable NullIfEmpty(IEnumerable items)
+        {
+            foreach (var item in items)
+                return items;
+            return null;
         }
     }
     
