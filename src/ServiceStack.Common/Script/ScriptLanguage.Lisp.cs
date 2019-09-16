@@ -1560,46 +1560,16 @@ namespace ServiceStack.Script
                         DynamicLong.Instance.Convert(i) ^ DynamicLong.Instance.Convert(j)) 
                     : -1);
                 
-                Def("max", -1, a => {
-                    var c = (Cell) a[0];
-                    var first = c.Car;
-                    if (first is int iVal) 
-                        return FoldL(iVal, c, (i, j) => Math.Max(i, (int)j));
-                    if (first is double d) 
-                        return FoldL(d, c, (i, j) => Math.Max(i, (double)j));
-                    if (first is long l)
-                        return FoldL(l, c, (i, j) => Math.Max(i, (long)j));
-                    if (first is decimal dec)
-                        return FoldL(dec, c, (i, j) => Math.Max(i, (decimal)j));
-                    if (first is ulong u)
-                        return FoldL(u, c, (i, j) => Math.Max(i, (ulong)j));
-                    if (first is byte b)
-                        return FoldL(b, c, (i, j) => Math.Max(i, (byte)j));
-                    if (first is float f)
-                        return FoldL(f, c, (i, j) => Math.Max(i, (float)j));
-                    throw new LispEvalException("not a number", first);
-                });
-
                 Def("min", -1, a => {
-                    var c = (Cell) a[0];
-                    var first = c.Car;
-                    if (first is int iVal) 
-                        return FoldL(iVal, c, (i, j) => Math.Min(i, (int)j));
-                    if (first is double d) 
-                        return FoldL(d, c, (i, j) => Math.Min(i, (double)j));
-                    if (first is long l)
-                        return FoldL(l, c, (i, j) => Math.Min(i, (long)j));
-                    if (first is decimal dec)
-                        return FoldL(dec, c, (i, j) => Math.Min(i, (decimal)j));
-                    if (first is ulong u)
-                        return FoldL(u, c, (i, j) => Math.Min(i, (ulong)j));
-                    if (first is byte b)
-                        return FoldL(b, c, (i, j) => Math.Min(i, (byte)j));
-                    if (first is float f)
-                        return FoldL(f, c, (i, j) => Math.Min(i, (float)j));
-                    throw new LispEvalException("not a number", first);
+                    var e = a[0] as IEnumerable ?? a;
+                    var rest = EnumerableUtils.SplitOnFirst(e, out var first);
+                    return FoldL(first, rest, DynamicNumber.Min);
                 });
-
+                Def("max", -1, a => {
+                    var e = a[0] as IEnumerable ?? a;
+                    var rest = EnumerableUtils.SplitOnFirst(e, out var first);
+                    return FoldL(first, rest, DynamicNumber.Max);
+                });
                 Def("average", -1, a => {
                     var e = a[0] is Cell c ? (c.Car is Cell ca ? ca : c) : a[0] as IEnumerable ?? a;
                     var rest = EnumerableUtils.SplitOnFirst(e, out var first);

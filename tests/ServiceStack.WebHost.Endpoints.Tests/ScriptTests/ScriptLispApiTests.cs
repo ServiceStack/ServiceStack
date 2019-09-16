@@ -245,6 +245,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         }
 
         [Test]
+        public void LISP_min()
+        {
+            Assert.That(eval(@"(min 10 20)"), Is.EqualTo(10));
+            Assert.That(eval(@"(min 30 10 20)"), Is.EqualTo(10));
+            Assert.That(eval(@"(apply min [5 4 3 9 8 6 7 2])"), Is.EqualTo(2));
+            Assert.That(eval(@"(apply min (to-list [5 4 3 9 8 6 7 2]))"), Is.EqualTo(2));
+        }
+
+        [Test]
+        public void LISP_max()
+        {
+            Assert.That(eval(@"(max 10 20)"), Is.EqualTo(20));
+            Assert.That(eval(@"(max 30 10 20)"), Is.EqualTo(30));
+            Assert.That(eval(@"(apply max [5 4 3 9 8 6 7 2])"), Is.EqualTo(9));
+            Assert.That(eval(@"(apply max (to-list [5 4 3 9 8 6 7 2]))"), Is.EqualTo(9));
+        }
+
+        [Test]
         public void Can_access_page_vars()
         {
             Assert.That(context.EvaluateLisp(@"<!--
