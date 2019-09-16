@@ -61,12 +61,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(eval(@"(range 10 15)"), Is.EqualTo(new[] {10, 11, 12, 13, 14}));
         }
 
-        [Test]
+        [Test] //filter only works with cons cells
         public void LISP_filter()
         {
+            Assert.That(eval(@"(filter #(<= % 3) [5 4 1 3 9 8 6 7 2 0])"), Is.EqualTo(new[] { 1, 3, 2, 0 }));
+            Assert.That(eval(@"(filter #(<= % 3) [-5 -4 -1 -3 -9 -8 -6 -7 -2 -0])"), Is.EqualTo(new[] { -5, -4, -1, -3, -9, -8, -6, -7, -2, 0 }));
+            Assert.That(eval(@"(filter #(<= % 3) (to-cons (map #(- %) [5 4 1 3 9 8 6 7 2 0])))"), Is.EqualTo(new[] { -5, -4, -1, -3, -9, -8, -6, -7, -2, 0 }));
             Assert.That(eval(@"(filter   even? (range 10))"), Is.EqualTo(new[] {0, 2, 4, 6, 8}));
-            Assert.That(eval(@"(where    even? (to-list (range 10)))"), Is.EqualTo(new[] {0, 2, 4, 6, 8}));
-            Assert.That(eval(@"(where    even? (range 10))"), Is.EqualTo(new[] {0, 2, 4, 6, 8}));
+        }
+
+        [Test] //filter works with both IEnumerable + Cells
+        public void LISP_where()
+        {
+            Assert.That(eval(@"(where #(<= % 3) [5 4 1 3 9 8 6 7 2 0])"), Is.EqualTo(new[] { 1, 3, 2, 0 }));
+            Assert.That(eval(@"(where #(<= % 3) [-5 -4 -1 -3 -9 -8 -6 -7 -2 -0])"), Is.EqualTo(new[] { -5, -4, -1, -3, -9, -8, -6, -7, -2, 0 }));
+            Assert.That(eval(@"(where #(<= % 3) (to-cons (map #(- %) [5 4 1 3 9 8 6 7 2 0])))"), Is.EqualTo(new[] { -5, -4, -1, -3, -9, -8, -6, -7, -2, 0 }));
+            Assert.That(eval(@"(where   even? (range 10))"), Is.EqualTo(new[] {0, 2, 4, 6, 8}));
         }
 
         [Test]
@@ -217,6 +227,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(eval(@"(rest [10])"), Is.Null);
             Assert.That(eval(@"(rest (to-list [10]))"), Is.Null);
             Assert.That(eval(@"(next [10 20 30])"), Is.EqualTo(new[]{ 20, 30 }));
+        }
+
+        [Test]
+        public void LISP_flatten()
+        {
+            Assert.That(eval(@"(flatten [1 2 3])"), Is.EqualTo(new[]{ 1, 2, 3 }));
+            Assert.That(eval(@"(flatten (to-list [1 2 3]))"), Is.EqualTo(new[]{ 1, 2, 3 }));
+            Assert.That(eval(@"(flatten [1 2 [3 4] 5 [6 [7 [8 9]]]])"), Is.EqualTo(new[]{ 1, 2, 3, 4, 5, 6, 7, 8, 9 }));
+            Assert.That(eval(@"(flatten (to-list [1 2 [3 4] 5 [6 [7 [8 9]]]]))"), Is.EqualTo(new[]{ 1, 2, 3, 4, 5, 6, 7, 8, 9 }));
+
+            object reval(string s) => eval(s.Replace("'", "\""));
+            Assert.That(reval(@"(flatten ['A' 'B' 'C'])"), Is.EqualTo(new[]{ "A", "B", "C" }));
+            Assert.That(reval(@"(flatten (to-list ['A' 'B' 'C']))"), Is.EqualTo(new[]{ "A", "B", "C" }));
+            Assert.That(reval(@"(flatten ['A' 'B' ['C' 'D'] 'E' ['F' ['G' ['H' 'I']]]])"), Is.EqualTo(new[]{ "A", "B", "C", "D", "E", "F", "G", "H", "I" }));
+            Assert.That(reval(@"(flatten (to-list ['A' 'B' ['C' 'D'] 'E' ['F' ['G' ['H' 'I']]]]))"), Is.EqualTo(new[]{ "A", "B", "C", "D", "E", "F", "G", "H", "I"  }));
         }
 
         [Test]

@@ -1296,6 +1296,8 @@ namespace ServiceStack.Script
                         return list.Aggregate(seed, fn);
                     }
                 });
+                
+                Def("flatten", -1, (I,a) => I.AssertScope().Context.DefaultMethods.flatten(a[0] as IEnumerable ?? a));
 
                 Def("sort", 1, (I, a) => {
                     var arr = a[0].assertEnumerable().Cast<object>().ToArray();
@@ -2855,7 +2857,7 @@ namespace ServiceStack.Script
             context.MaxQuota = int.MaxValue;
             context.MaxEvaluations = long.MaxValue;
             
-            var interp = CreateInterpreter();
+            var interp = Lisp.CreateInterpreter();
             
             var sw = new StreamWriter(Console.OpenStandardOutput()) {
                 AutoFlush = true
@@ -2863,18 +2865,18 @@ namespace ServiceStack.Script
             Console.SetOut(sw);
             using (sw)
             {
-                var input = Console.In;
                 for (;;) {
                     interp.COut.Write("> ");
                     try
                     {
                         var sb = new StringBuilder();
+
                         sb.AppendLine(Console.ReadLine());
-                        
-                        while (input.Peek() != -1)
-                        {
-                            sb.AppendLine(input.ReadLine());
-                        }
+                        while (Console.KeyAvailable) 
+                            sb.AppendLine(Console.ReadLine());
+
+                        if (sb.ToString().Trim().Length == 0)
+                            continue;
                         
                         object sExp = null;
                         var returnResult = $"(return (let () {sb} ))"; 
@@ -2886,19 +2888,23 @@ namespace ServiceStack.Script
                         var output = page.EvaluateScript();
                         if (page.ReturnValue != null)
                         {
-                            var ret = ScriptLanguage.UnwrapValue(page.ReturnValue.Result);
-                            if (ret == null)
+                            var ret = page.ReturnValue.Result;
+                            if (ret == null || ret == IgnoreResult.Value || ret == JsNull.Value || ret == StopExecution.Value)
                                 Console.WriteLine(output);
                             else if (ret is Cell c)
                                 Console.WriteLine(Str(c));
                             else if (ret is Sym sym)
                                 Console.WriteLine(Str(sym));
+                            else if (ret is IRawString rs)
+                                Console.WriteLine(rs.ToRawString());
                             else if (ret is string s)
                                 Console.WriteLine(s);
                             else
                                 Console.WriteLine(ret.ToJsv());
                         }
-                    } catch (Exception ex) {
+                    } 
+                    catch (Exception ex) 
+                    {
                         interp.COut.WriteLine(ex.InnerException ?? ex);
                     }
                 }
@@ -3162,14 +3168,6 @@ setcdr rplacd)
     (dolist (e L to)
       (push e to))))
 
-(defun flatten (L)
-  (mapcan
-     (fn [a]
-         (cond
-           ((atom a) (list a))
-           (t (flatten a))))
-     L))
-
 (defun elt (L n)
     (if (>= n (length L)) (error ""index out of range""))
     (let ((l L))
@@ -3268,7 +3266,7 @@ setcdr rplacd)
 (defun odd? (n) (= (% n 2) 1))
 
 (defun flatmap (f L)
-  (/flatten (map f L)))
+  (flatten (map f L)))
 
 (defun map-index (f L)
   (let ( (i -1) )

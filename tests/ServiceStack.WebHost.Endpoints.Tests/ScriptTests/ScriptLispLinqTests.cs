@@ -2423,9 +2423,197 @@ Ending balance: 20
         }
         
         [Test]
+        public void linq94()
+        {
+            Assert.That(render(@"
+(defn linq94 []
+  (let ( (numbers-a [0 2 4 5 6 8 9])
+         (numbers-b [1 3 5 7 8]) )
+    (setq all-numbers (flatten [numbers-a numbers-b]))
+    (println ""All numbers from both arrays:"")
+    (doseq (n all-numbers) (println n))
+  ))
+(linq94)"), 
+                
+                Does.StartWith(@"
+All numbers from both arrays:
+0
+2
+4
+5
+6
+8
+9
+1
+3
+5
+7
+8
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void linq95()
+        {
+            Assert.That(render(@"
+(defn linq95 []
+  (let ( (customer-names (map .CompanyName customers-list))
+         (product-names  (map .ProductName products-list))
+         (all-names) )
+    (setq all-names (flatten [customer-names product-names]))
+    (println ""Customer and product names:"")
+    (doseq (x all-names) (println x))
+  ))
+(linq95)"), 
+                
+                Does.StartWith(@"
+Customer and product names:
+Alfreds Futterkiste
+Ana Trujillo Emparedados y helados
+Antonio Moreno Taquería
+Around the Horn
+Berglunds snabbköp
+Blauer See Delikatessen
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void linq96()
+        {
+            Assert.That(render(@"
+(defn linq96 []
+  (let ( (words-a [""cherry"" ""apple"" ""blueberry""]) 
+         (words-b [""cherry"" ""apple"" ""blueberry""]) )
+        
+    (setq match (/sequenceEquals words-a words-b))
+    (println ""The sequences match: "" match)
+  ))
+(linq96)"), 
+                
+                Does.StartWith(@"
+The sequences match: True
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void linq97()
+        {
+            Assert.That(render(@"
+(defn linq97 []
+  (let ( (words-a [""cherry"" ""apple"" ""blueberry""]) 
+         (words-b [""apple"" ""blueberry"" ""cherry""]) )
+        
+    (setq match (/sequenceEquals words-a words-b))
+    (println ""The sequences match: "" match)
+  ))
+(linq97)"), 
+                
+                Does.StartWith(@"
+The sequences match: False
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void linq99()
+        {
+            Assert.That(render(@"
+(defn linq99 []
+  (let ( (numbers [5 4 1 3 9 8 6 7 2 0])
+         (i 0) )
+    (setq q (map #(it (fn [] (f++ i))) numbers))
+    (doseq (v q) (println ""v = "" (v) "", i = "" i))
+  ))
+(linq99)"), 
+                
+                Does.StartWith(@"
+v = 0, i = 1
+v = 1, i = 2
+v = 2, i = 3
+v = 3, i = 4
+v = 4, i = 5
+v = 5, i = 6
+v = 6, i = 7
+v = 7, i = 8
+v = 8, i = 9
+v = 9, i = 10
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void linq100()
+        {
+            Assert.That(render(@"
+(defn linq100 []
+  (let ( (numbers [5 4 1 3 9 8 6 7 2 0])
+         (i 0) )
+    (setq q (map #(it (f++ i)) numbers))
+    (doseq (v q) (println ""v = "" v "", i = "" i))
+  ))
+(linq100)"), 
+                
+                Does.StartWith(@"
+v = 0, i = 10
+v = 1, i = 10
+v = 2, i = 10
+v = 3, i = 10
+v = 4, i = 10
+v = 5, i = 10
+v = 6, i = 10
+v = 7, i = 10
+v = 8, i = 10
+v = 9, i = 10
+".NormalizeNewLines()));
+        }
+                
+        [Test]
+        public void linq101()
+        {
+            Assert.That(render(@"
+(defn linq101 []
+  (let ( (numbers [5 4 1 3 9 8 6 7 2 0]) )
+ 
+    (defn low-numbers []
+      (where #(<= % 3) numbers))
+
+    (println ""First run numbers <= 3:"")
+    (doseq (n (low-numbers)) (println n))
+
+    (setq numbers (map #(- %) numbers))
+    
+    (println ""Second run numbers <= 3"")
+    (doseq (n (low-numbers)) (println n))
+  ))
+(linq101)"), 
+                
+                Does.StartWith(@"
+First run numbers <= 3:
+1
+3
+2
+0
+Second run numbers <= 3
+-5
+-4
+-1
+-3
+-9
+-8
+-6
+-7
+-2
+0
+".NormalizeNewLines()));
+        }
+        
+        [Test]
         public void test()
         {
-//            print(@"(group-by #(.Category %) products-list)");
+            print("(where #(<= % 3) [-5 -4 1])");
+            print(@"(setq numbers [5 4 1 3 9 8 6 7 2 0])
+    (defn low-numbers []
+      (where #(<= % 3) (map #(- %) numbers)))
+    (low-numbers)");
+            
 //            print(@"(setq numbers '(5 4 1 3 9 8 6 7 2 0)) (take-while (fn (c) (>= (1st c) (2nd c))) (mapcar-index cons numbers))");
 
 //            print("(setq numbers-a '(1 2 3)) (setq numbers-b '(3 4 5)) (zip (fn (a b) { :a a :b b }) numbers-a numbers-b)");

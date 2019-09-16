@@ -72,6 +72,8 @@ namespace ServiceStack.Script
             throw new NotSupportedException($"'{nameof(contains)}' requires a string or IEnumerable but received a '{target.GetType()?.Name}' instead");
         }
 
+        public bool sequenceEquals(IEnumerable a, IEnumerable b) => a.Cast<object>().SequenceEqual(b.Cast<object>());
+
         public IEnumerable<object> take(ScriptScopeContext scope, IEnumerable<object> original, object countOrBinding) =>
             original.Take(scope.GetValueOrEvaluateBinding<int>(countOrBinding));
 
@@ -271,9 +273,7 @@ namespace ServiceStack.Script
             return to;
         }
 
-        public List<object> flatAll(object target) => flatten(target, int.MaxValue);
-
-        public List<object> flatten(object target) => flatten(target, 1);
+        public List<object> flatten(object target) => flatten(target, int.MaxValue);
         public List<object> flatten(object target, int depth)
         {
             var to = new List<object>();
