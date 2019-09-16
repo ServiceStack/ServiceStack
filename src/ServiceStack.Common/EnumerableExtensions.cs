@@ -39,6 +39,23 @@ namespace ServiceStack
             return to;
         }
 
+        public static List<object> SplitOnFirst(IEnumerable items, out object first)
+        {
+            var to = new List<object>();
+            int i = 0;
+            first = null;
+            foreach (var item in items)
+            {
+                if (i++ < 1)
+                {
+                    first = item;
+                    continue;
+                }
+                to.Add(item);
+            }
+            return to;
+        }
+
         public static List<object> Take(IEnumerable items, int count)
         {
             var to = new List<object>();

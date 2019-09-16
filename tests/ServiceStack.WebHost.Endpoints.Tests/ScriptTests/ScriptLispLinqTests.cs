@@ -205,7 +205,7 @@ Numbers + 1:
         {
             Assert.That(render(@"
 (defn linq07 []
-  (let ( (product-names (map #(.ProductName %) products-list)) )
+  (let ( (product-names (map .ProductName products-list)) )
     (println ""Product Names:"")
     (doseq (x product-names) (println x))))
 (linq07)"), 
@@ -1072,7 +1072,7 @@ BlUeBeRrY
         {
             Assert.That(render(@"
 (defn linq37 []
-  (let ( (sorted-products (order-by [#(:Category %) { :key #(:UnitPrice %) :desc true } ] products-list)) )
+  (let ( (sorted-products (order-by [ #(.Category %) { :key #(.UnitPrice %) :desc true } ] products-list)) )
     (doseq (p sorted-products) (dump-inline p))
   ))
 (linq37)"), 
@@ -1108,7 +1108,7 @@ BlUeBeRrY
   (let ( (words [""aPPLE"" ""AbAcUs"" ""bRaNcH"" ""BlUeBeRrY"" ""ClOvEr"" ""cHeRry""]) 
          (sorted-words) )
   
-    (setq sorted-words (order-by [#(count %) { :comparer (CaseInsensitiveComparer.) :desc true }] words))
+    (setq sorted-words (order-by [ #(count %) { :comparer (CaseInsensitiveComparer.) :desc true } ] words))
     (doseq (w sorted-words) (println w))
   ))
 (linq38)"), 
@@ -1213,7 +1213,7 @@ apple
             Assert.That(render(@"
 (defn linq42 []
   (let ( (order-groups 
-      (map (fn [g] {:category (.Key g), :products g}) (group-by #(:category %) products-list))) )
+      (map (fn [g] {:category (.Key g), :products g}) (group-by :category products-list))) )
     (doseq (x order-groups) (dump-inline x))
   ))
 (linq42)"), 
@@ -1335,8 +1335,7 @@ apple
 (defn linq44 []
   (let ( (anagrams [""from   "" "" salt"" "" earn "" ""  last   "" "" near "" "" form  ""]) 
          (order-groups) )
-        
-    (setq order-groups (group-by #(.Trim %) { :comparer (AnagramEqualityComparer.) } anagrams))
+    (setq order-groups (group-by .Trim { :comparer (AnagramEqualityComparer.) } anagrams))
     (doseq (x order-groups) (dump-inline x))
   ))
 (linq44)"), 
@@ -1355,7 +1354,6 @@ apple
 (defn linq44 []
   (let ( (anagrams [""from   "" "" salt"" "" earn "" ""  last   "" "" near "" "" form  ""]) 
          (order-groups) )
-        
     (setq order-groups (group-by #((/C ""String(char[])"") (sort (.ToCharArray (.Trim %)))) anagrams))
     (doseq (x order-groups) (dump-inline x))
   ))
@@ -1375,8 +1373,7 @@ apple
 (defn linq45 []
   (let ( (anagrams [""from   "" "" salt"" "" earn "" ""  last   "" "" near "" "" form  ""]) 
          (order-groups) )
-        
-    (setq order-groups (group-by #(.Trim %) { :comparer (AnagramEqualityComparer.) :map #(upper %) } anagrams))
+    (setq order-groups (group-by .Trim { :comparer (AnagramEqualityComparer.) :map upper-case } anagrams))
     (doseq (x order-groups) (dump-inline x))
   ))
 (linq45)"), 
@@ -1663,7 +1660,7 @@ cherry
                           {:name ""Bob"",   :score 40}
                           {:name ""Cathy"", :score 45}]) 
           (sorted-records-dict) )
-    (setq sorted-records-dict (to-dictionary #(:name %) sorted-records))
+    (setq sorted-records-dict (to-dictionary :name sorted-records))
     (println ""Bob's score: "" (:score (:""Bob"" sorted-records-dict)))
   ))
 (linq56)"), 
@@ -1779,7 +1776,10 @@ Second number > 5: 8
         {
             Assert.That(render(@"
 (defn linq65 []
-  (let ( (numbers (map (fn [n] { :number n :odd-even (if (odd? n) ""odd"" ""even"") }) (range 100 151))) )
+  (let ( (numbers (map (fn [n] { 
+            :number n 
+            :odd-even (if (odd? n) ""odd"" ""even"") 
+        }) (range 100 151))) )
     (doseq (n numbers) 
       (println ""The number "" (:number n) "" is "" (:odd-even n)))
   ))
@@ -1824,9 +1824,268 @@ The number 110 is even
         }
 
         [Test]
+        public void linq67()
+        {
+            Assert.That(render(@"
+(defn linq67 []
+  (let ( (words [""believe"" ""relief"" ""receipt"" ""field""]) 
+         (i-after-e) )
+    (setq i-after-e (any? #(.Contains % ""ie"") words))
+    (println ""There is a word that contains in the list that contains 'ei': "" i-after-e)
+  ))
+(linq67)"),
+
+                Does.StartWith(@"
+There is a word that contains in the list that contains 'ei': True
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq69()
+        {
+            Assert.That(render(@"
+(defn linq69 []
+  (let ( (product-groups  
+            (map #(identity { :category (.Key %), :products % })
+                (where #(any? (fn [p] (= (.UnitsInStock p) 0)) %) 
+                    (group-by .Category products-list)))) )
+    (dump product-groups)
+  ))
+(linq69)"),
+
+                Does.StartWith(@"[
+	{
+		category: Condiments,
+		products: 
+		[
+			{
+				ProductId: 3,
+				ProductName: Aniseed Syrup,
+				Category: Condiments,
+				UnitPrice: 10,
+				UnitsInStock: 13
+			},
+			{
+				ProductId: 4,
+				ProductName: Chef Anton's Cajun Seasoning,
+				Category: Condiments,
+				UnitPrice: 22,
+				UnitsInStock: 53
+			},
+			{
+				ProductId: 5,
+				ProductName: Chef Anton's Gumbo Mix,
+				Category: Condiments,
+				UnitPrice: 21.35,
+				UnitsInStock: 0
+			},
+".NormalizeNewLines()).Or.StartsWith(@"[
+	{
+		category: Condiments,
+		products: 
+		[
+			{
+				UnitsInStock: 13,
+				ProductName: Aniseed Syrup,
+				UnitPrice: 10,
+				Category: Condiments,
+				ProductId: 3
+			},".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq70()
+        {
+            Assert.That(render(@"
+(defn linq70 []
+  (let ( (numbers [1 11 3 19 41 65 19])
+         (only-odd) )
+    (setq only-odd (all? odd? numbers))
+    (println ""The list contains only odd numbers: "" only-odd)
+  ))
+(linq70)"),
+
+                Does.StartWith(@"
+The list contains only odd numbers: True
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq72()
+        {
+            Assert.That(render(@"
+(defn linq72 []
+  (let ( (product-groups  
+            (map #(identity { :category (.Key %), :products % })
+                (where #(all? (fn [p] (> (.UnitsInStock p) 0)) %) 
+                    (group-by .Category products-list)))) )
+    (dump product-groups)
+  ))
+(linq72)"),
+
+                Does.StartWith(@"[
+	{
+		category: Beverages,
+		products: 
+		[
+			{
+				ProductId: 1,
+				ProductName: Chai,
+				Category: Beverages,
+				UnitPrice: 18,
+				UnitsInStock: 39
+			},
+			{
+				ProductId: 2,
+				ProductName: Chang,
+				Category: Beverages,
+				UnitPrice: 19,
+				UnitsInStock: 17
+			},
+			{
+				ProductId: 24,
+				ProductName: Guaraná Fantástica,
+				Category: Beverages,
+				UnitPrice: 4.5,
+				UnitsInStock: 20
+			},
+".NormalizeNewLines()).Or.StartsWith(@"[
+	{
+		category: Beverages,
+		products: 
+		[
+			{
+				UnitsInStock: 39,
+				ProductName: Chai,
+				UnitPrice: 18,
+				Category: Beverages,
+				ProductId: 1
+			},".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq73()
+        {
+            Assert.That(render(@"
+(defn linq73 []
+  (let ( (factors-of-300 [2 2 3 5 5]) 
+         (unique-factors) )
+    (setq unique-factors (count (/distinct factors-of-300)))
+    (println ""There are "" unique-factors "" unique factors of 300."")
+  ))
+(linq73)"),
+
+                Does.StartWith(@"
+There are 3 unique factors of 300.
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq74()
+        {
+            Assert.That(render(@"
+(defn linq74 []
+  (let ( (numbers [4 5 1 3 9 0 6 7 2 0])
+         (odd-numbers) )
+    (setq odd-numbers (count (where odd? numbers)) )
+    (println ""There are "" odd-numbers "" odd numbers in the list."")
+  ))
+(linq74)"),
+
+                Does.StartWith(@"
+There are 5 odd numbers in the list.
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void linq76()
+        {
+            Assert.That(render(@"
+(defn linq76 []
+  (let ( (order-counts 
+          (map #(identity { 
+                :customer-id (.CustomerId %) 
+                :order-count (count (.Orders %)) 
+             }) customers-list)) )
+  (doseq (x order-counts) (dump-inline x))
+))
+(linq76)"),
+
+                Does.StartWith(@"
+{customer-id:ALFKI,order-count:6}
+{customer-id:ANATR,order-count:4}
+{customer-id:ANTON,order-count:7}
+{customer-id:AROUT,order-count:13}
+{customer-id:BERGS,order-count:18}
+{customer-id:BLAUS,order-count:7}
+{customer-id:BLONP,order-count:11}
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void linq77()
+        {
+            Assert.That(render(@"
+(defn linq77 []
+  (let ( (category-counts
+            (map #(identity {
+                  :category (.Key %)
+                  :product-count (count %)
+              })
+            (group-by .Category products-list))) )
+    (doseq (x category-counts) (dump-inline x))
+  ))
+(linq77)"),
+
+                Does.StartWith(@"
+{category:Beverages,product-count:12}
+{category:Condiments,product-count:12}
+{category:Produce,product-count:5}
+{category:Meat/Poultry,product-count:6}
+{category:Seafood,product-count:12}
+{category:Dairy Products,product-count:10}
+{category:Confections,product-count:13}
+{category:Grains/Cereals,product-count:7}
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void linq78()
+        {
+            Assert.That(render(@"
+(defn linq78 []
+  (let ( (numbers [5 4 1 3 9 8 6 7 2 0]) )
+    (setq num-sum (reduce + numbers))
+    (println ""The sum of the numbers is "" num-sum)
+  ))
+(linq78)"),
+
+                Does.StartWith(@"
+The sum of the numbers is 45
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void linq79()
+        {
+            Assert.That(render(@"
+(defn linq79 []
+  (let ( (words [""cherry"", ""apple"", ""blueberry""]) 
+         (total-chars) )
+    (setq total-chars (reduce + (map count words)))
+    (println ""There are a total of "" total-chars "" characters in these words."")
+  ))
+(linq79)"),
+
+                Does.StartWith(@"
+There are a total of 20 characters in these words.
+".NormalizeNewLines()));
+        }
+        
+        [Test]
         public void test()
         {
-//            print(@"(map #(nth (.ProductName %) 0) products-list)");
+//            print(@"(group-by #(.Category %) products-list)");
 //            print(@"(setq numbers '(5 4 1 3 9 8 6 7 2 0)) (take-while (fn (c) (>= (1st c) (2nd c))) (mapcar-index cons numbers))");
 
 //            print("(setq numbers-a '(1 2 3)) (setq numbers-b '(3 4 5)) (zip (fn (a b) { :a a :b b }) numbers-a numbers-b)");

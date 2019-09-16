@@ -71,6 +71,55 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         }
 
         [Test]
+        public void LISP_add()
+        {
+            Assert.That(eval(@"(+ 1)"), Is.EqualTo(1));
+            Assert.That(eval(@"(+ 1 2 3 4)"), Is.EqualTo(10));
+        }
+
+        [Test]
+        public void LISP_multiply()
+        {
+            Assert.That(eval(@"(* 1)"), Is.EqualTo(1));
+            Assert.That(eval(@"(* 1 2 3 4)"), Is.EqualTo(24));
+        }
+
+        [Test]
+        public void LISP_subtract_minus()
+        {
+            Assert.That(eval(@"(- 10 1 2 3 4)"), Is.EqualTo(0));
+            Assert.That(eval(@"(- 10)"), Is.EqualTo(-10));
+            Assert.That(eval(@"-10"), Is.EqualTo(-10));
+        }
+
+        [Test]
+        public void LISP_divide()
+        {
+            Assert.That(eval(@"(/ 6 2)"), Is.EqualTo(3));
+            Assert.That(eval(@"(/ 5 2)"), Is.EqualTo(2));
+            Assert.That(eval(@"(/ 5.0 2)"), Is.EqualTo(2.5));
+            Assert.That(eval(@"(/ 5 2.0)"), Is.EqualTo(2.5));
+            Assert.That(eval(@"(/ 5.0 2.0)"), Is.EqualTo(2.5));
+            Assert.That(eval(@"(/ 4.0)"), Is.EqualTo(0.25));
+            Assert.That(eval(@"(/ 4)"), Is.EqualTo(0));
+            Assert.That(eval(@"(/ 25 3 2)"), Is.EqualTo(4));
+            Assert.That(eval(@"(/ -17 6)"), Is.EqualTo(-2));
+        }
+
+        [Test]
+        public void LISP_reduce()
+        {
+            Assert.That(eval(@"(reduce + [1 2 3])"), Is.EqualTo(6));
+            Assert.That(eval(@"(reduce + (to-list [1 2 3]))"), Is.EqualTo(6));
+            Assert.That(eval(@"(reduce * [2 3 4])"), Is.EqualTo(24));
+            Assert.That(eval(@"(reduce * (to-list [2 3 4]))"), Is.EqualTo(24));
+            Assert.That(eval(@"(reduce - [10 1 2 3])"), Is.EqualTo(4));
+            Assert.That(eval(@"(reduce - (to-list [10 1 2 3]))"), Is.EqualTo(4));
+            Assert.That(eval(@"(reduce / [10 1 2])"), Is.EqualTo(5));
+            Assert.That(eval(@"(reduce / (to-list [10 1 2]))"), Is.EqualTo(5));
+        }
+
+        [Test]
         public void LISP_doseq()
         {
             Assert.That(render(@"(doseq (x nums3) (println x))"), Is.EqualTo("0\n1\n2"));

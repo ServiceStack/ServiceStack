@@ -447,6 +447,13 @@ namespace ServiceStack.Script
             }
             return x;
         }
+        
+        // Supports both Cell + IEnumerable
+        static T FoldL<T> (T x, IEnumerable j, Func<T, object, T> fn) {
+            foreach (var e in j)
+                x = fn(x, e);
+            return x;
+        }
 
         /// <summary>Lisp symbol</summary>
         public class Sym {
@@ -819,6 +826,22 @@ namespace ServiceStack.Script
                         return x => interp.invoke(fnbulitin, x);
                     case Delegate fndel:
                         return x => interp.invoke(fndel, x);
+                    default:
+                        throw new LispEvalException("not applicable", f);
+                }
+            }
+
+            Func<object, object, object> resolve2ArgFn(object f, Interpreter interp)
+            {
+                switch (f) {
+                    case Closure fnclosure:
+                        return (x,y) => interp.invoke(fnclosure, x,y);
+                    case Macro fnmacro:
+                        return (x,y) => interp.invoke(fnmacro, x, y);
+                    case BuiltInFunc fnbulitin:
+                        return (x,y) => interp.invoke(fnbulitin, x, y);
+                    case Delegate fndel:
+                        return (x,y) => interp.invoke(fndel, x, y);
                     default:
                         throw new LispEvalException("not applicable", f);
                 }
@@ -1258,6 +1281,22 @@ namespace ServiceStack.Script
                 Def("map", 2, (I, a) => a[1]?.assertEnumerable().Map(resolve1ArgFn(a[0], I)));
                 Def("where", 2, (I, a) => EnumerableUtils.ToList(a[1]?.assertEnumerable()).Where(resolvePredicate(a[0], I)).ToList());
 
+                Def("reduce", -2, (I, a) => {
+                    var fn = resolve2ArgFn(a[0], I);
+                    var varArgs = EnumerableUtils.ToList(a[1].assertEnumerable());
+                    if (varArgs.Count == 1) // (reduce fn L)
+                    {
+                        var list = EnumerableUtils.ToList(varArgs[0].assertEnumerable());
+                        return list.Aggregate(fn);
+                    }
+                    else // (reduce fn L seed)
+                    {
+                        var list = EnumerableUtils.ToList(varArgs[0].assertEnumerable());
+                        var seed = varArgs[1];
+                        return list.Aggregate(seed, fn);
+                    }
+                });
+
                 Def("sort", 1, (I, a) => {
                     var arr = a[0].assertEnumerable().Cast<object>().ToArray();
                     Array.Sort(arr, (x,y) => x.compareTo(y));
@@ -1265,7 +1304,6 @@ namespace ServiceStack.Script
                 });
 
                 Def("sort-by", -2, (I, a) => {
-
                     var keyFn = resolve1ArgFn(a[0], I);
                     var varArgs = EnumerableUtils.ToList(a[1].assertEnumerable());
                     if (varArgs.Count == 1) // (sort-by keyfn list)
@@ -1388,7 +1426,9 @@ namespace ServiceStack.Script
                 Def("consp", 1, a => a[0] is Cell c ? TRUE : null);
                 Def("endp", 1, a => (a[0] is Cell c) 
                     ? (c.Car == null ? TRUE : null)
-                    : a[0] == null ? TRUE : throw new ArgumentException("not a valid list"));
+                    : a[0] == null 
+                        ? TRUE 
+                        : EnumerableUtils.FirstOrDefault(a[0].assertEnumerable()) == null ? TRUE : null);
 
                 Def("list", -1, a => a[0]);
                 Def("rplaca", 2, a => { ((Cell) a[0]).Car = a[1]; return a[1]; });
@@ -1410,8 +1450,7 @@ namespace ServiceStack.Script
                                     a[0].Equals(a[1]) ? TRUE : null));
                 Def("<", 2, a => a[0].compareTo(a[1]) < 0 ? TRUE : null);
 
-                Def("%", 2, a => 
-                    DynamicNumber.Mod(a[0], a[1]));
+                Def("%", 2, a =>  DynamicNumber.Mod(a[0], a[1]));
                 Def("mod", 2, a => {
                         var x = a[0];
                         var y = a[1];
@@ -1421,18 +1460,22 @@ namespace ServiceStack.Script
                         return DynamicNumber.Mod(x, y);
                     });
 
-                Def("+", -1, a => FoldL((object)0, (Cell) a[0], DynamicNumber.Add));
-                Def("*", -1, a => FoldL((object)1, (Cell) a[0], DynamicNumber.Mul));
-                Def("-", -2, a => {
-                        var x = a[0];
-                        var y = (Cell) a[1];
-                        if (y == null)
-                            return DynamicNumber.Mul(x,-1);
-                        return FoldL(x, y, DynamicNumber.Sub);
-                    });
-                Def("/", -3, a => FoldL(DynamicNumber.Div(a[0], a[1]),
-                                        (Cell) a[2],
-                                        DynamicNumber.Div));
+                Def("+", -1, a => FoldL((object)0, a[0] as IEnumerable ?? a, DynamicNumber.Add));
+                Def("*", -1, a => FoldL((object)1, a[0] as IEnumerable ?? a, DynamicNumber.Mul));
+                Def("-", -1, a => {
+                    var e = a[0] as IEnumerable ?? a;
+                    var rest = EnumerableUtils.SplitOnFirst(e, out var first);
+                    if (rest.Count == 0)
+                        return DynamicNumber.Mul(first,-1);
+                    return FoldL(first, rest, DynamicNumber.Sub);
+                });
+                Def("/", -1, a => {
+                    var e = a[0] as IEnumerable ?? a;
+                    var rest = EnumerableUtils.SplitOnFirst(e, out var first);
+                    if (rest.Count == 0)
+                        return DynamicNumber.Div(1, first);
+                    return FoldL(first, rest, DynamicNumber.Div);
+                });
                 
                 Def("count", 1, a => EnumerableUtils.Count(a[0].assertEnumerable()));
 
@@ -1619,7 +1662,7 @@ namespace ServiceStack.Script
                         defaultScripts.write(I.AssertScope(), defaultScripts.dump(x).ToRawString());
                     }
                     print(I, "\n"); 
-                    return a.lastArg();
+                    return null;
                 });
                 Def("dump-inline", -1, (I, a) => {
                     var c = (Cell) a[0];
@@ -1629,7 +1672,7 @@ namespace ServiceStack.Script
                         defaultScripts.write(I.AssertScope(), defaultScripts.jsv(x).ToRawString());
                     }
                     print(I, "\n"); 
-                    return a.lastArg();
+                    return null;
                 });
 
                 Def("debug", 0, a =>
@@ -2760,6 +2803,7 @@ namespace ServiceStack.Script
                 bf.Append('"');
                 return bf.ToString();
             case Sym sym:
+                if (sym == TRUE) return bool.TrueString;
                 return (sym.IsInterned) ? sym.Name : $"#:{x}";
             default:
                 return x.ToString();
@@ -3074,14 +3118,6 @@ setcdr rplacd)
       (setq ,L (rest ,L)) 
     v))
 
-(defun reduce (f L &rest IV)
-(let ((acc (cond (IV (first IV))
-                 (t (f)) )))
-    (if (end? L)
-        acc
-        (reduce f (cdr L)  (f acc (car L))) 
-    )))
-
 (defun zip (f L1 L2)
   (let ( (to) ) 
     (dolist (a L1) 
@@ -3241,15 +3277,16 @@ setcdr rplacd)
     next    rest
     inc     1+
     dec     1-
-    /filter where
 
     atom?  atom
     cons?  consp
     list?  listp
     end?   endp
     zero?  zerop
-    all    every
-    any    some
+    every? every
+    some?  some
+    all?   every
+    any?   some
     lower-case string-downcase 
     upper-case string-upcase
 
