@@ -934,7 +934,7 @@ blueberry
 (defn linq31 []
   (let ( (words [""aPPLE"" ""AbAcUs"" ""bRaNcH"" ""BlUeBeRrY"" ""ClOvEr"" ""cHeRry""])
          (sorted-words) )
-    (setq sorted-words (sort-by identity (CaseInsensitiveComparer.) words))
+    (setq sorted-words (sort-by it (CaseInsensitiveComparer.) words))
     (doseq (w sorted-words) (println w))
   ))
 (linq31)"), 
@@ -1024,7 +1024,7 @@ AbAcUs
 (defn linq35 []
   (let ( (digits [""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""]) 
          (i 0) (sorted-digits) )
-    (setq sorted-digits (order-by [#(count %) identity] digits ))
+    (setq sorted-digits (order-by [#(count %) it] digits ))
     (println ""Sorted digits:"")
     (doseq (d sorted-digits) (println d))
   ))
@@ -1846,7 +1846,7 @@ There is a word that contains in the list that contains 'ei': True
             Assert.That(render(@"
 (defn linq69 []
   (let ( (product-groups  
-            (map #(identity { :category (.Key %), :products % })
+            (map #(it { :category (.Key %), :products % })
                 (where #(any? (fn [p] (= (.UnitsInStock p) 0)) %) 
                     (group-by .Category products-list)))) )
     (dump product-groups)
@@ -1916,7 +1916,7 @@ The list contains only odd numbers: True
             Assert.That(render(@"
 (defn linq72 []
   (let ( (product-groups  
-            (map #(identity { :category (.Key %), :products % })
+            (map #(it { :category (.Key %), :products % })
                 (where #(all? (fn [p] (> (.UnitsInStock p) 0)) %) 
                     (group-by .Category products-list)))) )
     (dump product-groups)
@@ -2003,7 +2003,7 @@ There are 5 odd numbers in the list.
             Assert.That(render(@"
 (defn linq76 []
   (let ( (order-counts 
-          (map #(identity { 
+          (map #(it { 
                 :customer-id (.CustomerId %) 
                 :order-count (count (.Orders %)) 
              }) customers-list)) )
@@ -2028,7 +2028,7 @@ There are 5 odd numbers in the list.
             Assert.That(render(@"
 (defn linq77 []
   (let ( (category-counts
-            (map #(identity {
+            (map #(it {
                   :category (.Key %)
                   :product-count (count %)
               })
@@ -2079,6 +2079,346 @@ The sum of the numbers is 45
 
                 Does.StartWith(@"
 There are a total of 20 characters in these words.
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void linq80()
+        {
+            Assert.That(render(@"
+(defn linq80 []
+  (let ( (categories
+             (map #(it {
+                  :category (.Key %)
+                  :total-units-in-stock (sum (map .UnitsInStock %))
+                })
+                (group-by .Category products-list))) )
+    (doseq (x categories) (dump-inline x))
+  ))
+(linq80)"),
+
+                Does.StartWith(@"
+{category:Beverages,total-units-in-stock:559}
+{category:Condiments,total-units-in-stock:507}
+{category:Produce,total-units-in-stock:100}
+{category:Meat/Poultry,total-units-in-stock:165}
+{category:Seafood,total-units-in-stock:701}
+{category:Dairy Products,total-units-in-stock:393}
+{category:Confections,total-units-in-stock:386}
+{category:Grains/Cereals,total-units-in-stock:308}
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void linq81()
+        {
+            Assert.That(render(@"
+(defn linq81 []
+  (let ( (numbers [5 4 1 3 9 8 6 7 2 0]) 
+         (min-num) )
+    (setq min-num (apply min numbers))
+    (println ""The minimum number is "" min-num)
+  ))
+(linq81)"),
+
+                Does.StartWith(@"
+The minimum number is 0
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void linq82()
+        {
+            Assert.That(render(@"
+(defn linq82 []
+  (let ( (words [""cherry"", ""apple"", ""blueberry""])
+         (shortest-word) )
+    (setq shortest-word (apply min (map count words)))
+    (println ""The shortest word is "" shortest-word "" characters long."")
+  ))
+(linq82)"),
+
+                Does.StartWith(@"
+The shortest word is 5 characters long.
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void linq83()
+        {
+            Assert.That(render(@"
+(defn linq83 []
+  (let ( (categories
+             (map #(it {
+                  :category (.Key %)
+                  :cheapest-price (apply min (map .UnitPrice %))
+                })
+              (group-by .Category products-list))) )
+    (doseq (x categories) (dump-inline x))
+  ))
+(linq83)"),
+
+                Does.StartWith(@"
+{category:Beverages,cheapest-price:4.5}
+{category:Condiments,cheapest-price:10}
+{category:Produce,cheapest-price:10}
+{category:Meat/Poultry,cheapest-price:7.45}
+{category:Seafood,cheapest-price:6}
+{category:Dairy Products,cheapest-price:2.5}
+{category:Confections,cheapest-price:9.2}
+{category:Grains/Cereals,cheapest-price:7}
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void linq84()
+        {
+            Assert.That(render(@"
+(defn linq84 []
+  (let ( (categories
+            (map (fn [g] (
+                let ( (min-price (apply min (map .UnitPrice g))) )
+                    {
+                      :category (.Key g)
+                      :cheapest-products (where #(= (.UnitPrice %) min-price) g) 
+                    }))
+                (group-by .Category products-list))) )
+    (doseq (x categories) (dump-inline x))
+  ))
+(linq84)"),
+
+                Does.StartWith(@"
+{category:Beverages,cheapest-products:[{ProductId:24,ProductName:Guaraná Fantástica,Category:Beverages,UnitPrice:4.5,UnitsInStock:20}]}
+{category:Condiments,cheapest-products:[{ProductId:3,ProductName:Aniseed Syrup,Category:Condiments,UnitPrice:10,UnitsInStock:13}]}
+{category:Produce,cheapest-products:[{ProductId:74,ProductName:Longlife Tofu,Category:Produce,UnitPrice:10,UnitsInStock:4}]}
+{category:Meat/Poultry,cheapest-products:[{ProductId:54,ProductName:Tourtière,Category:Meat/Poultry,UnitPrice:7.45,UnitsInStock:21}]}
+{category:Seafood,cheapest-products:[{ProductId:13,ProductName:Konbu,Category:Seafood,UnitPrice:6,UnitsInStock:24}]}
+{category:Dairy Products,cheapest-products:[{ProductId:33,ProductName:Geitost,Category:Dairy Products,UnitPrice:2.5,UnitsInStock:112}]}
+{category:Confections,cheapest-products:[{ProductId:19,ProductName:Teatime Chocolate Biscuits,Category:Confections,UnitPrice:9.2,UnitsInStock:25}]}
+{category:Grains/Cereals,cheapest-products:[{ProductId:52,ProductName:Filo Mix,Category:Grains/Cereals,UnitPrice:7,UnitsInStock:38}]}
+".NormalizeNewLines()).Or.StartsWith(@"
+{category:Beverages,cheapest-products:[{UnitsInStock:20,ProductName:Guaraná Fantástica,UnitPrice:4.5,Category:Beverages,ProductId:24}]}
+{category:Condiments,cheapest-products:[{UnitsInStock:13,ProductName:Aniseed Syrup,UnitPrice:10,Category:Condiments,ProductId:3}]}
+{category:Produce,cheapest-products:[{UnitsInStock:4,ProductName:Longlife Tofu,UnitPrice:10,Category:Produce,ProductId:74}]}
+{category:Meat/Poultry,cheapest-products:[{UnitsInStock:21,ProductName:Tourtière,UnitPrice:7.45,Category:Meat/Poultry,ProductId:54}]}
+{category:Seafood,cheapest-products:[{UnitsInStock:24,ProductName:Konbu,UnitPrice:6,Category:Seafood,ProductId:13}]}
+{category:Dairy Products,cheapest-products:[{UnitsInStock:112,ProductName:Geitost,UnitPrice:2.5,Category:Dairy Products,ProductId:33}]}
+{category:Confections,cheapest-products:[{UnitsInStock:25,ProductName:Teatime Chocolate Biscuits,UnitPrice:9.2,Category:Confections,ProductId:19}]}
+{category:Grains/Cereals,cheapest-products:[{UnitsInStock:38,ProductName:Filo Mix,UnitPrice:7,Category:Grains/Cereals,ProductId:52}]}
+".NormalizeNewLines()).Or.StartsWith(@"
+{category:Beverages,cheapest-products:[{Category:Beverages,UnitPrice:4.5,ProductId:24,ProductName:Guaraná Fantástica,UnitsInStock:20}]}
+{category:Condiments,cheapest-products:[{Category:Condiments,UnitPrice:10,ProductId:3,ProductName:Aniseed Syrup,UnitsInStock:13}]}
+{category:Produce,cheapest-products:[{Category:Produce,UnitPrice:10,ProductId:74,ProductName:Longlife Tofu,UnitsInStock:4}]}
+{category:Meat/Poultry,cheapest-products:[{Category:Meat/Poultry,UnitPrice:7.45,ProductId:54,ProductName:Tourtière,UnitsInStock:21}]}
+{category:Seafood,cheapest-products:[{Category:Seafood,UnitPrice:6,ProductId:13,ProductName:Konbu,UnitsInStock:24}]}
+{category:Dairy Products,cheapest-products:[{Category:Dairy Products,UnitPrice:2.5,ProductId:33,ProductName:Geitost,UnitsInStock:112}]}
+{category:Confections,cheapest-products:[{Category:Confections,UnitPrice:9.2,ProductId:19,ProductName:Teatime Chocolate Biscuits,UnitsInStock:25}]}
+{category:Grains/Cereals,cheapest-products:[{Category:Grains/Cereals,UnitPrice:7,ProductId:52,ProductName:Filo Mix,UnitsInStock:38}]}
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void linq85()
+        {
+            Assert.That(render(@"
+(defn linq85 []
+  (let ( (numbers [5 4 1 3 9 8 6 7 2 0]) 
+         (max-num) )
+    (setq max-num (apply max numbers))
+    (println ""The maximum number is "" max-num)
+  ))
+(linq85)"),
+
+                Does.StartWith(@"
+The maximum number is 9
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void linq86()
+        {
+            Assert.That(render(@"
+(defn linq82 []
+  (let ( (words [""cherry"", ""apple"", ""blueberry""])
+         (shortest-word) )
+    (setq longest-word (apply max (map count words)))
+    (println ""The longest word is "" longest-word "" characters long."")
+  ))
+(linq82)"),
+
+                Does.StartWith(@"
+The longest word is 9 characters long.
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void linq87()
+        {
+            Assert.That(render(@"
+(defn linq87 []
+  (let ( (categories
+             (map #(it {
+                  :category (.Key %)
+                  :most-expensive-price (apply max (map .UnitPrice %))
+                })
+              (group-by .Category products-list))) )
+    (doseq (x categories) (dump-inline x))
+  ))
+(linq87)"),
+
+                Does.StartWith(@"
+{category:Beverages,most-expensive-price:263.5}
+{category:Condiments,most-expensive-price:43.9}
+{category:Produce,most-expensive-price:53}
+{category:Meat/Poultry,most-expensive-price:123.79}
+{category:Seafood,most-expensive-price:62.5}
+{category:Dairy Products,most-expensive-price:55}
+{category:Confections,most-expensive-price:81}
+{category:Grains/Cereals,most-expensive-price:38}
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void linq88()
+        {
+            Assert.That(render(@"
+(defn linq88 []
+  (let ( (categories
+            (map (fn [g] (
+                let ( (max-price (apply max (map .UnitPrice g))) )
+                    {
+                      :category (.Key g)
+                      :most-expensive-products (where #(= (.UnitPrice %) max-price) g) 
+                    }))
+                (group-by .Category products-list))) )
+    (doseq (x categories) (dump-inline x))
+  ))
+(linq88)"),
+
+                Does.StartWith(@"
+{category:Beverages,most-expensive-products:[{Category:Beverages,UnitPrice:263.5,ProductId:38,ProductName:Côte de Blaye,UnitsInStock:17}]}
+{category:Condiments,most-expensive-products:[{Category:Condiments,UnitPrice:43.9,ProductId:63,ProductName:Vegie-spread,UnitsInStock:24}]}
+{category:Produce,most-expensive-products:[{Category:Produce,UnitPrice:53,ProductId:51,ProductName:Manjimup Dried Apples,UnitsInStock:20}]}
+{category:Meat/Poultry,most-expensive-products:[{Category:Meat/Poultry,UnitPrice:123.79,ProductId:29,ProductName:Thüringer Rostbratwurst,UnitsInStock:0}]}
+{category:Seafood,most-expensive-products:[{Category:Seafood,UnitPrice:62.5,ProductId:18,ProductName:Carnarvon Tigers,UnitsInStock:42}]}
+{category:Dairy Products,most-expensive-products:[{Category:Dairy Products,UnitPrice:55,ProductId:59,ProductName:Raclette Courdavault,UnitsInStock:79}]}
+{category:Confections,most-expensive-products:[{Category:Confections,UnitPrice:81,ProductId:20,ProductName:Sir Rodney's Marmalade,UnitsInStock:40}]}
+{category:Grains/Cereals,most-expensive-products:[{Category:Grains/Cereals,UnitPrice:38,ProductId:56,ProductName:Gnocchi di nonna Alice,UnitsInStock:21}]}
+".NormalizeNewLines()).Or.StartsWith(@"
+{category:Beverages,most-expensive-products:[{UnitsInStock:17,ProductName:Côte de Blaye,UnitPrice:263.5,Category:Beverages,ProductId:38}]}
+{category:Condiments,most-expensive-products:[{UnitsInStock:24,ProductName:Vegie-spread,UnitPrice:43.9,Category:Condiments,ProductId:63}]}
+{category:Produce,most-expensive-products:[{UnitsInStock:20,ProductName:Manjimup Dried Apples,UnitPrice:53,Category:Produce,ProductId:51}]}
+{category:Meat/Poultry,most-expensive-products:[{UnitsInStock:0,ProductName:Thüringer Rostbratwurst,UnitPrice:123.79,Category:Meat/Poultry,ProductId:29}]}
+{category:Seafood,most-expensive-products:[{UnitsInStock:42,ProductName:Carnarvon Tigers,UnitPrice:62.5,Category:Seafood,ProductId:18}]}
+{category:Dairy Products,most-expensive-products:[{UnitsInStock:79,ProductName:Raclette Courdavault,UnitPrice:55,Category:Dairy Products,ProductId:59}]}
+{category:Confections,most-expensive-products:[{UnitsInStock:40,ProductName:Sir Rodney's Marmalade,UnitPrice:81,Category:Confections,ProductId:20}]}
+{category:Grains/Cereals,most-expensive-products:[{UnitsInStock:21,ProductName:Gnocchi di nonna Alice,UnitPrice:38,Category:Grains/Cereals,ProductId:56}]}
+".NormalizeNewLines()).Or.StartsWith(@"
+{category:Beverages,most-expensive-products:[{ProductId:38,ProductName:Côte de Blaye,Category:Beverages,UnitPrice:263.5,UnitsInStock:17}]}
+{category:Condiments,most-expensive-products:[{ProductId:63,ProductName:Vegie-spread,Category:Condiments,UnitPrice:43.9,UnitsInStock:24}]}
+{category:Produce,most-expensive-products:[{ProductId:51,ProductName:Manjimup Dried Apples,Category:Produce,UnitPrice:53,UnitsInStock:20}]}
+{category:Meat/Poultry,most-expensive-products:[{ProductId:29,ProductName:Thüringer Rostbratwurst,Category:Meat/Poultry,UnitPrice:123.79,UnitsInStock:0}]}
+{category:Seafood,most-expensive-products:[{ProductId:18,ProductName:Carnarvon Tigers,Category:Seafood,UnitPrice:62.5,UnitsInStock:42}]}
+{category:Dairy Products,most-expensive-products:[{ProductId:59,ProductName:Raclette Courdavault,Category:Dairy Products,UnitPrice:55,UnitsInStock:79}]}
+{category:Confections,most-expensive-products:[{ProductId:20,ProductName:Sir Rodney's Marmalade,Category:Confections,UnitPrice:81,UnitsInStock:40}]}
+{category:Grains/Cereals,most-expensive-products:[{ProductId:56,ProductName:Gnocchi di nonna Alice,Category:Grains/Cereals,UnitPrice:38,UnitsInStock:21}]}
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void linq89()
+        {
+            Assert.That(render(@"
+(defn linq89 []
+  (let ( (numbers [5 4 1 3 9 8 6 7 2 0]) 
+         (avg) )
+    (setq avg (average numbers))
+    (println ""The average number is "" avg)
+  ))
+(linq89)"),
+
+                Does.StartWith(@"
+The average number is 4.5
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void linq90()
+        {
+            Assert.That(render(@"
+(defn linq90 []
+  (let ( (words [""cherry"", ""apple"", ""blueberry""])
+         (average-length) )
+    (setq average-length (apply average (map count words)))
+    (println ""The average word length is "" average-length "" characters."")
+  ))
+(linq90)"),
+
+                Does.StartWith(@"
+The average word length is 6.66666666666667 characters.
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void linq91()
+        {
+            Assert.That(render(@"
+(defn linq87 []
+  (let ( (categories
+             (map #(it {
+                  :category (.Key %)
+                  :average-price (apply average (map .UnitPrice %))
+                })
+              (group-by .Category products-list))) )
+    (doseq (x categories) (dump-inline x))
+  ))
+(linq87)"),
+
+                Does.StartWith(@"
+{category:Beverages,average-price:37.9791666666667}
+{category:Condiments,average-price:23.0625}
+{category:Produce,average-price:32.37}
+{category:Meat/Poultry,average-price:54.0066666666667}
+{category:Seafood,average-price:20.6825}
+{category:Dairy Products,average-price:28.73}
+{category:Confections,average-price:25.16}
+{category:Grains/Cereals,average-price:20.25}
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq92()
+        {
+            Assert.That(render(@"
+(defn linq92 []
+  (let ( (dbls [1.7 2.3 1.9 4.1 2.9]) 
+         (product) )
+    (setq product (reduce * dbls))
+    (println ""Total product of all numbers: "" product)
+  ))
+(linq92)"), 
+                
+                Does.StartWith(@"
+Total product of all numbers: 88.33081
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void linq93()
+        {
+            Assert.That(render(@"
+(defn linq93 []
+  (let ( (start-balance 100)
+         (attempted-withdrawls [20 10 40 50 10 70 30])
+         (end-balance) )
+    (setq end-balance (reduce (fn [balance withdrawl] (if (> balance withdrawl) (- balance withdrawl) balance)) 
+                       attempted-withdrawls start-balance))
+    (println ""Ending balance: "" end-balance)
+  ))
+(linq93)"), 
+                
+                Does.StartWith(@"
+Ending balance: 20
 ".NormalizeNewLines()));
         }
         

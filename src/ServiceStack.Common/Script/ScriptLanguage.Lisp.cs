@@ -1598,6 +1598,13 @@ namespace ServiceStack.Script
                     throw new LispEvalException("not a number", first);
                 });
 
+                Def("average", -1, a => {
+                    var e = a[0] is Cell c ? (c.Car is Cell ca ? ca : c) : a[0] as IEnumerable ?? a;
+                    var rest = EnumerableUtils.SplitOnFirst(e, out var first);
+                    var ret = FoldL(first, rest, DynamicNumber.Add);
+                    return DynamicDouble.Instance.div(ret, rest.Count + 1);
+                });
+
                 Def("random", 1, a => {
                     var d = (double)a[0];
                     return d % 1 > 0
@@ -1703,8 +1710,9 @@ namespace ServiceStack.Script
                 Def("intern", 1, a => Sym.New((string) a[0]));
                 Def("symbol-name", 1, a => ((Sym) a[0]).Name);
 
-                Def("apply", 2, a =>
-                    Eval(new Cell(a[0], MapCar((Cell) a[1], QqQuote)), null));
+                Def("apply", 2, a => a[1] is Cell c 
+                    ? Eval(new Cell(a[0], MapCar(c, QqQuote)), null)
+                    : Eval(new Cell(a[0], MapCar(ToCons(a[1].assertEnumerable()), QqQuote)), null));
 
                 Def("exit", 1, a => {
                         Environment.Exit(DynamicInt.Instance.Convert(a[0]));
@@ -3277,16 +3285,16 @@ setcdr rplacd)
     next    rest
     inc     1+
     dec     1-
-
-    atom?  atom
-    cons?  consp
-    list?  listp
-    end?   endp
-    zero?  zerop
-    every? every
-    some?  some
-    all?   every
-    any?   some
+    it      identity
+    atom?   atom
+    cons?   consp
+    list?   listp
+    end?    endp
+    zero?   zerop
+    every?  every
+    some?   some
+    all?    every
+    any?    some
     lower-case string-downcase 
     upper-case string-upcase
 

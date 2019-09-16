@@ -65,7 +65,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         public void LISP_filter()
         {
             Assert.That(eval(@"(filter   even? (range 10))"), Is.EqualTo(new[] {0, 2, 4, 6, 8}));
-            Assert.That(eval(@"(/filter  even? (to-list (range 10)))"), Is.EqualTo(new[] {0, 2, 4, 6, 8}));
             Assert.That(eval(@"(where    even? (to-list (range 10)))"), Is.EqualTo(new[] {0, 2, 4, 6, 8}));
             Assert.That(eval(@"(where    even? (range 10))"), Is.EqualTo(new[] {0, 2, 4, 6, 8}));
         }
