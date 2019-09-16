@@ -1407,15 +1407,15 @@ dir-file: dir/dir-file.txt
 
             Assert.That(context.Evaluate<List<object>>("{{ nestedInts | flat | return }}"), 
                 Is.EquivalentTo(new[]{ 1,2,3,4,5,6 }));
-            Assert.That(context.Evaluate<List<object>>("{{ nestedInts2 | flatAll | return }}"), 
+            Assert.That(context.Evaluate<List<object>>("{{ nestedInts2 | flatten | return }}"), 
                 Is.EquivalentTo(new[]{ 1,2,3,4,5,6 }));
             
             Assert.That(context.Evaluate<List<object>>("{{ nestedStrings | flat | return }}"), 
                 Is.EquivalentTo(new[]{ "A","B","C","D","E","F" }));
-            Assert.That(context.Evaluate<List<object>>("{{ nestedStrings2 | flatAll | return }}"), 
+            Assert.That(context.Evaluate<List<object>>("{{ nestedStrings2 | flatten | return }}"), 
                 Is.EquivalentTo(new[]{ "A","B","C","D","E","F" }));
 
-            Assert.That(context.Evaluate<List<object>>("{{ [ [1,2,[3], [4,[5,6]] ] ] | flatAll | return }}"), 
+            Assert.That(context.Evaluate<List<object>>("{{ [ [1,2,[3], [4,[5,6]] ] ] | flatten | return }}"), 
                 Is.EquivalentTo(new[]{ 1,2,3,4,5,6 }));
         }
 
