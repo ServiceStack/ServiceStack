@@ -2858,15 +2858,13 @@ namespace ServiceStack.Script
                         var output = page.EvaluateScript();
                         if (page.ReturnValue != null)
                         {
-                            var ret = page.ReturnValue.Result;
-                            if (ret == null || ret == IgnoreResult.Value || ret == JsNull.Value || ret == StopExecution.Value)
+                            var ret = ScriptLanguage.UnwrapValue(page.ReturnValue.Result);
+                            if (ret == null)
                                 Console.WriteLine(output);
                             else if (ret is Cell c)
                                 Console.WriteLine(Str(c));
                             else if (ret is Sym sym)
                                 Console.WriteLine(Str(sym));
-                            else if (ret is IRawString rs)
-                                Console.WriteLine(rs.ToRawString());
                             else if (ret is string s)
                                 Console.WriteLine(s);
                             else
