@@ -133,6 +133,7 @@ namespace ServiceStack.Auth
         {
             InitSchema = true;
             RequireSecureConnection = true;
+            AllowInHttpParams = false;
             Environments = DefaultEnvironments;
             KeyTypes = DefaultTypes;
             KeySizeBytes = DefaultKeySizeBytes;
@@ -142,6 +143,7 @@ namespace ServiceStack.Auth
             {
                 InitSchema = appSettings.Get("apikey.InitSchema", true);
                 RequireSecureConnection = appSettings.Get("apikey.RequireSecureConnection", true);
+                AllowInHttpParams = appSettings.Get("apikey.AllowInHttpParams", false);
 
                 var env = appSettings.GetString("apikey.Environments");
                 if (env != null)
