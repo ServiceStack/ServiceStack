@@ -2509,7 +2509,7 @@ The sequences match: True
 (linq97)"), 
                 
                 Does.StartWith(@"
-The sequences match: False
+The sequences match: nil
 ".NormalizeNewLines()));
         }
         
