@@ -500,30 +500,28 @@ Pairs where a < b:
         {
             Assert.That(render(@"
 (defn linq15 []
-  (let ( (orders 
-            (flatmap (fn [c]
-              (map (fn [o] {
-                :customer-id (.CustomerId c) 
-                :order-id    (.OrderId o) 
-                :total       (.Total o)
-              }) (.Orders c))
-             ) customers-list)) )
+  (let ( (orders (flatmap (fn [c]
+                    (map (fn [o] {
+                        :customer-id (.CustomerId c) 
+                        :order-id    (.OrderId o) 
+                        :total       (.Total o)
+                    }) (where #(< (.Total %) 500) (.Orders c)) ))
+                customers-list)) )
     (doseq (o orders) (dump-inline o))
   ))
 (linq15)"), 
                 
                 Does.StartWith(@"
-{customer-id:ALFKI,order-id:10643,total:814.5}
-{customer-id:ALFKI,order-id:10692,total:878}
 {customer-id:ALFKI,order-id:10702,total:330}
-{customer-id:ALFKI,order-id:10835,total:845.8}
 {customer-id:ALFKI,order-id:10952,total:471.2}
-{customer-id:ALFKI,order-id:11011,total:933.5}
 {customer-id:ANATR,order-id:10308,total:88.8}
 {customer-id:ANATR,order-id:10625,total:479.75}
 {customer-id:ANATR,order-id:10759,total:320}
-{customer-id:ANATR,order-id:10926,total:514.4}
 {customer-id:ANTON,order-id:10365,total:403.2}
+{customer-id:ANTON,order-id:10682,total:375.5}
+{customer-id:AROUT,order-id:10355,total:480}
+{customer-id:AROUT,order-id:10453,total:407.7}
+{customer-id:AROUT,order-id:10741,total:228}
 ".NormalizeNewLines()));
         }
 
@@ -535,8 +533,7 @@ Pairs where a < b:
   (let ( 
         (orders (flatmap (fn [c] 
                     (flatmap (fn [o] 
-                        (if (> (.OrderDate o) (DateTime. 1998 1 1) )
-                        {
+                        (if (> (.OrderDate o) (DateTime. 1998 1 1)) {
                             :customer-id (.CustomerId c) 
                             :order-id    (.OrderId o) 
                             :order-date  (.OrderDate o)

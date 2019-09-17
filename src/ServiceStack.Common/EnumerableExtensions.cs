@@ -9,6 +9,8 @@ namespace ServiceStack
     {
         public static object FirstOrDefault(IEnumerable items)
         {
+            if (items == null)
+                return null;
             foreach (var item in items)
             {
                 return item;
@@ -18,6 +20,8 @@ namespace ServiceStack
 
         public static object ElementAt(IEnumerable items, int index)
         {
+            if (items == null)
+                return null;
             var i = 0;
             foreach (var item in items)
                 if (i++ == index)
@@ -27,6 +31,8 @@ namespace ServiceStack
 
         public static List<object> Skip(IEnumerable items, int count)
         {
+            if (items == null)
+                return TypeConstants.EmptyObjectList;
             var to = new List<object>();
             int i = 0;
             foreach (var item in items)
@@ -41,9 +47,11 @@ namespace ServiceStack
 
         public static List<object> SplitOnFirst(IEnumerable items, out object first)
         {
+            first = null;
+            if (items == null)
+                return TypeConstants.EmptyObjectList;
             var to = new List<object>();
             int i = 0;
-            first = null;
             foreach (var item in items)
             {
                 if (i++ < 1)
@@ -58,6 +66,8 @@ namespace ServiceStack
 
         public static List<object> Take(IEnumerable items, int count)
         {
+            if (items == null)
+                return TypeConstants.EmptyObjectList;
             var to = new List<object>();
             int i = 0;
             foreach (var item in items)
@@ -74,6 +84,8 @@ namespace ServiceStack
 
         public static int Count(IEnumerable items)
         {
+            if (items == null)
+                return 0;
             return items is ICollection c
                 ? c.Count
                 : items.Cast<object>().Count();
@@ -81,6 +93,8 @@ namespace ServiceStack
 
         public static List<object> ToList(IEnumerable items)
         {
+            if (items == null)
+                return TypeConstants.EmptyObjectList;
             var to = new List<object>();
             foreach (var item in items)
             {
@@ -91,8 +105,11 @@ namespace ServiceStack
 
         public static IEnumerable NullIfEmpty(IEnumerable items)
         {
-            foreach (var item in items)
-                return items;
+            if (items != null)
+            {
+                foreach (var item in items)
+                    return items;
+            }
             return null;
         }
     }
