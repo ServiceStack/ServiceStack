@@ -142,6 +142,7 @@ namespace ServiceStack.Auth
             {
                 InitSchema = appSettings.Get("apikey.InitSchema", true);
                 RequireSecureConnection = appSettings.Get("apikey.RequireSecureConnection", true);
+                AllowInHttpParams = appSettings.Get("apikey.AllowInHttpParams", false);
 
                 var env = appSettings.GetString("apikey.Environments");
                 if (env != null)
