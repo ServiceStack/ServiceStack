@@ -271,27 +271,6 @@ Uppercase: CHERRY, Lowercase: cherry
         }
 
         [Test]
-        public void Linq09_classic_lisp()
-        {
-            Assert.That(render(@"
-(defn linq09 []
-  (let ( (words [""aPPLE"" ""BlUeBeRrY"" ""cHeRry""])
-         (upper-lower-words) )
-    (setq upper-lower-words
-        (map (fn [w] `( (lower ,(lower-case w)) (upper ,(upper-case w)) )) words) )
-    (doseq (ul upper-lower-words)
-        (println ""Uppercase: "" (assoc-value 'upper ul) "", Lowercase: "" (assoc-value 'lower ul)))
-  ))
-(linq09)"), 
-                
-                Does.StartWith(@"
-Uppercase: APPLE, Lowercase: apple
-Uppercase: BLUEBERRY, Lowercase: blueberry
-Uppercase: CHERRY, Lowercase: cherry
-".NormalizeNewLines()));
-        }
-
-        [Test]
         public void Linq10()
         {
             Assert.That(render(@"
@@ -317,6 +296,27 @@ The digit six is even
 The digit seven is odd
 The digit two is even
 The digit zero is even
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq09_classic_lisp()
+        {
+            Assert.That(render(@"
+(defn linq09 []
+  (let ( (words [""aPPLE"" ""BlUeBeRrY"" ""cHeRry""])
+         (upper-lower-words) )
+    (setq upper-lower-words
+        (map (fn [w] `( (lower ,(lower-case w)) (upper ,(upper-case w)) )) words) )
+    (doseq (ul upper-lower-words)
+        (println ""Uppercase: "" (assoc-value 'upper ul) "", Lowercase: "" (assoc-value 'lower ul)))
+  ))
+(linq09)"), 
+                
+                Does.StartWith(@"
+Uppercase: APPLE, Lowercase: apple
+Uppercase: BLUEBERRY, Lowercase: blueberry
+Uppercase: CHERRY, Lowercase: cherry
 ".NormalizeNewLines()));
         }
 
@@ -412,7 +412,7 @@ Chef Anton's Gumbo Mix is in the category Condiments and costs 21.35
 (defn linq12 []
   (let ( (numbers [5 4 1 3 9 8 6 7 2 0])
          (i 0) (nums-in-place) )
-    (setq nums-in-place (map (fn [n] { :num n :in-place (= n (1- (incf i))) }) numbers))
+    (setq nums-in-place (map (fn [n] { :num n :in-place (= n (f++ i)) }) numbers))
     (println ""Number: In-place?"")
     (doseq (n nums-in-place)
         (println (:num n) "": "" (if (:in-place n) 'true 'false)) )

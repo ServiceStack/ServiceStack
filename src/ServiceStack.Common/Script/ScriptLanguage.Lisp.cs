@@ -1639,12 +1639,13 @@ namespace ServiceStack.Script
                 });
                 Def("zerop", 1, a => DynamicDouble.Instance.Convert(a[0]) == 0d ? TRUE : null);
 
-                void print(Interpreter I, string s)
+                object print(Interpreter I, string s)
                 {
                     if (I.Scope != null)
                         I.Scope.Value.Context.DefaultMethods.write(I.Scope.Value, s);
                     else
                         COut.Write(s);
+                    return null;
                 }
                 Def("print", -1, (I, a) => {
                     var c = (Cell) a[0];
@@ -1680,7 +1681,10 @@ namespace ServiceStack.Script
                     print(I, "\n"); 
                     return I.Scope != null ? null : a.lastArg();
                 });
-                
+
+                Def("htmldump", 1, (I, a) => print(I, I.AssertScope().Context.HtmlMethods.htmlDump(a[0]).ToRawString()));
+                Def("textdump", 1, (I, a) => print(I, I.AssertScope().Context.DefaultMethods.textDump(a[0]).ToRawString()));
+
                 // html encodes
                 Def("pr", -1, (I, a) => {
                     var c = (Cell) a[0];
