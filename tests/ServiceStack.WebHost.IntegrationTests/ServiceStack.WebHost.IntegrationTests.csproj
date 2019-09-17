@@ -238,6 +238,7 @@
     <Compile Include="Services\CookiesService.cs" />
     <Compile Include="Services\CustomPathServices.cs" />
     <Compile Include="Services\CustomRouteService.cs" />
+    <Compile Include="Services\SessionTest.cs" />
     <Compile Include="Services\TemplateService.cs" />
     <Compile Include="Services\VerbOnlyService.cs" />
     <Compile Include="Shared\IocService.cs" />

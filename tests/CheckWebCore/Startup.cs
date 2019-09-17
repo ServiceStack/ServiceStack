@@ -112,7 +112,7 @@ namespace CheckWebCore
             Plugins.Add(new SharpPagesFeature()); 
             
             Plugins.Add(new LispReplTcpServer {
-                RequireAuthSecret = true,
+//                RequireAuthSecret = true,
                 AllowScriptingOfAllTypes = true,
             });
 
