@@ -1150,10 +1150,10 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                 ? request.GetRequestParams().ToObjectDictionary()
                 : new Dictionary<string, object>();
             
-            to["RawUrl"] = request.RawUrl;
+            to[nameof(IRequest.RawUrl)] = request.RawUrl;
             to[ScriptConstants.PathInfo] = request.OriginalPathInfo;
-            to["AbsoluteUri"] = request.AbsoluteUri;
-            to["Verb"] = to["Method"] = request.Verb;
+            to[nameof(IRequest.AbsoluteUri)] = request.AbsoluteUri;
+            to[nameof(IRequest.Verb)] = to["Method"] = request.Verb;
 
             foreach (var item in request.Items)
             {
@@ -1178,16 +1178,49 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
             return HostContext.AssertPlugin<SharpPagesFeature>().GetPage(virtualPath);
         }
 
+        private static Uri createUri(string url)
+        {
+            try
+            {
+                return new Uri(url);
+            }
+            catch {}
+            return null;
+        }
+
+        public static Dictionary<string, object> CreateRequestArgs(Dictionary<string, object> args)
+        {
+            string getValue(string name) => args != null && args.TryGetValue(name, out var oValue)
+                ? oValue?.ToString()
+                : null;
+            
+            var baseUrl = getValue(ScriptConstants.BaseUrl) ?? "http://localhost/";
+            var method = getValue(nameof(IRequest.Verb)) ?? HttpMethods.Get;
+            return SetRequestArgs(args, new BasicHttpRequest {
+                RawUrl = baseUrl,
+                AbsoluteUri = getValue(nameof(IRequest.AbsoluteUri)) ?? baseUrl,
+                PathInfo = getValue(nameof(IRequest.PathInfo)) ?? "/", 
+                Verb = method,
+                HttpMethod = method,
+                UrlReferrer = createUri(getValue(nameof(IRequest.UrlReferrer))),
+            });
+        }
+        
         public static PageResult BindRequest(this PageResult result, IRequest request)
         {
-            result.Args["Request"] = request;
-            result.Args[nameof(request.RawUrl)] = request.RawUrl;
-            result.Args[ScriptConstants.PathInfo] = request.OriginalPathInfo;
-            result.Args[nameof(request.AbsoluteUri)] = request.AbsoluteUri;
-            result.Args[nameof(request.Verb)] = result.Args["Method"] = request.Verb;
-            result.Args[ScriptConstants.BaseUrl] = request.GetBaseUrl();
-
+            SetRequestArgs(result.Args, request);
             return result;
+        }
+
+        public static Dictionary<string, object> SetRequestArgs(Dictionary<string, object> args, IRequest request)
+        {
+            args["Request"] = request;
+            args[nameof(request.RawUrl)] = request.RawUrl;
+            args[ScriptConstants.PathInfo] = request.OriginalPathInfo;
+            args[nameof(request.AbsoluteUri)] = request.AbsoluteUri;
+            args[nameof(request.Verb)] = args["Method"] = request.Verb;
+            args[ScriptConstants.BaseUrl] = request.GetBaseUrl();
+            return args;
         }
 
         public static PageResult GetPageResult(this IRequest request, string virtualPath, Dictionary<string,object> args=null)

@@ -110,6 +110,10 @@ namespace CheckWebCore
         {
             // enable server-side rendering, see: https://sharpscript.net
             Plugins.Add(new SharpPagesFeature()); 
+            
+            Plugins.Add(new LispReplTcpServer {
+                AllowScriptingOfAllTypes = true
+            });
 
             if (Config.DebugMode)
             {

@@ -76,7 +76,6 @@ namespace ServiceStack.Script
 
         public override async Task<bool> WritePageFragmentAsync(ScriptScopeContext scope, PageFragment fragment, CancellationToken token)
         {
-            var page = scope.PageResult;
             if (fragment is PageLispStatementFragment blockFragment)
             {
                 if (blockFragment.Quiet && scope.OutputStream != Stream.Null)
@@ -513,6 +512,7 @@ namespace ServiceStack.Script
         public static readonly Sym TRUE = Sym.New("t");
         public static readonly Sym BOOL_TRUE = Sym.New("true");
         public static readonly Sym BOOL_FALSE = Sym.New("false");
+        static readonly Sym VERBOSE = Sym.New("verbose");
 
         static readonly Sym COND = Keyword.New("cond");
         static readonly Sym LAMBDA = Keyword.New("lambda");
@@ -796,10 +796,10 @@ namespace ServiceStack.Script
         static bool isTrue(object test) => test != null && !(test is bool b && !b);
 
         /// <summary>Core of the Lisp interpreter</summary>
-        public class Interpreter {
+        public class Interpreter 
+        {
             /// <summary>Table of the global values of symbols</summary>
-            internal readonly Dictionary<Sym, object> Globals =
-                new Dictionary<Sym, object>();
+            internal readonly Dictionary<Sym, object> Globals = new Dictionary<Sym, object>();
 
             /// <summary>Standard out</summary>
             public TextWriter COut { get; set; } = Console.Out;
@@ -813,6 +813,39 @@ namespace ServiceStack.Script
             public Interpreter(Interpreter globalInterp)
             {
                 Globals = new Dictionary<Sym, object>(globalInterp.Globals); // copy existing globals
+            }
+
+            public string ReplEval(ScriptContext context, Stream outputStream, string lisp, Dictionary<string, object> args=null)
+            {
+                var returnResult = $"(return (let () {lisp} ))";
+                var page = new PageResult(context.LispSharpPage(returnResult)) {
+                    Args = {
+                        [nameof(ScriptLisp)] = this
+                    }
+                };
+                args?.Each(x => page.Args[x.Key] = x.Value);
+                
+                this.Scope = new ScriptScopeContext(page, outputStream, args);
+
+                var output = page.EvaluateScript();
+                if (page.ReturnValue != null)
+                {
+                    var ret = ScriptLanguage.UnwrapValue(page.ReturnValue.Result);
+                    if (ret == null)
+                        return output;
+                    if (ret is Cell c)
+                        return Str(c);
+                    if (ret is Sym sym)
+                        return Str(sym);
+                    if (ret is string s)
+                        return s;
+                    
+                    if (Globals.TryGetValue(VERBOSE, out var verbose) && isTrue(verbose))
+                        return ret.Dump();
+                    
+                    return ret.ToSafeJsv();
+                }
+                return output;
             }
 
             Func<object, object> resolve1ArgFn(object f, Interpreter interp)
@@ -1512,6 +1545,19 @@ namespace ServiceStack.Script
                     throw new LispEvalException("not IEnumerable", a[1]);
                 });
 
+                Def("glob", 2, (I, a) => {
+                    var search = a[0];
+                    if (!(search is string pattern))
+                        throw new LispEvalException("syntax: (glob <search> <list>)", a[0]);
+                    var to = new List<object>();
+                    foreach (var item in a[1].assertEnumerable())
+                    {
+                        if (item.ToString().Glob(pattern))
+                            to.Add(item);
+                    }
+                    return to;
+                });
+
                 Def("subseq", -2, a => {
                     var c = (Cell) a[1];
                     var startPos = c.Car != null ? DynamicInt.Instance.Convert(c.Car) : 0;
@@ -1613,6 +1659,20 @@ namespace ServiceStack.Script
                     return I.Scope != null ? null : a.lastArg();
                 });
                 
+                // println with spaces
+                Def("printlns", -1, (I, a) => {
+                    var c = (Cell) a[0];
+                    foreach (var x in c)
+                    {
+                        if (I.Scope != null)
+                            I.Scope.Value.Context.DefaultMethods.write(I.Scope.Value, Str(x, false) + " ");
+                        else
+                            COut.WriteLine(Str(a[0] + " ", true));
+                    }
+                    print(I, "\n"); 
+                    return I.Scope != null ? null : a.lastArg();
+                });
+                
                 // html encodes
                 Def("pr", -1, (I, a) => {
                     var c = (Cell) a[0];
@@ -1656,6 +1716,11 @@ namespace ServiceStack.Script
 
                 Def("debug", 0, a =>
                     Globals.Keys.Aggregate((Cell) null, (x, y) => new Cell(y, x)));
+                
+                Def("symbols", 0, a => 
+                    Globals.Keys.Map(x => x.Name).OrderBy(x => x));
+                Def("show-symbols", 0, a => 
+                    Globals.Keys.Map(x => x.Name).OrderBy(x => x).Join("\n"));
                 
                 Def("prin1", 1, (I, a) => {
                         print(I, Str(a[0], true)); 
@@ -2827,7 +2892,7 @@ namespace ServiceStack.Script
             context.MaxQuota = int.MaxValue;
             context.MaxEvaluations = long.MaxValue;
             
-            var interp = Lisp.CreateInterpreter();
+            var interp = CreateInterpreter();
             
             var sw = new StreamWriter(Console.OpenStandardOutput()) {
                 AutoFlush = true
@@ -2847,29 +2912,9 @@ namespace ServiceStack.Script
 
                         if (sb.ToString().Trim().Length == 0)
                             continue;
-                        
-                        object sExp = null;
-                        var returnResult = $"(return (let () {sb} ))"; 
-                        var page = new PageResult(context.LispSharpPage(returnResult)) {
-                            Args = {[nameof(ScriptLisp)] = interp}
-                        };
-                        interp.Scope = new ScriptScopeContext(page, sw.BaseStream, new Dictionary<string, object>());
-                        
-                        var output = page.EvaluateScript();
-                        if (page.ReturnValue != null)
-                        {
-                            var ret = ScriptLanguage.UnwrapValue(page.ReturnValue.Result);
-                            if (ret == null)
-                                Console.WriteLine(output);
-                            else if (ret is Cell c)
-                                Console.WriteLine(Str(c));
-                            else if (ret is Sym sym)
-                                Console.WriteLine(Str(sym));
-                            else if (ret is string s)
-                                Console.WriteLine(s);
-                            else
-                                Console.WriteLine(ret.ToJsv());
-                        }
+
+                        var response = interp.ReplEval(context, sw.BaseStream, sb.ToString());
+                        Console.WriteLine(response);
                     } 
                     catch (Exception ex) 
                     {
@@ -3244,6 +3289,8 @@ setcdr rplacd)
   (let ( (i -1) )
     (filter (fn [x] (f x (incf i) )) L) ))
 
+(defn globln [a L] (/joinln (glob a L)))
+
 (setq
     1st     first
     2nd     second
@@ -3261,6 +3308,7 @@ setcdr rplacd)
     some?   some
     all?    every
     any?    some
+    prs     printlns
     lower-case string-downcase 
     upper-case string-upcase
 

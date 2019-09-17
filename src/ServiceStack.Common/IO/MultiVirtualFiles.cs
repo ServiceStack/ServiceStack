@@ -60,6 +60,12 @@ namespace ServiceStack.IO
                 .Distinct();
         }
 
+        public override IEnumerable<IVirtualFile> GetAllFiles()
+        {
+            return ChildProviders.SelectMany(x => x.GetAllFiles())
+                .Distinct();
+        }
+        
         public override IEnumerable<IVirtualFile> GetRootFiles()
         {
             return ChildProviders.SelectMany(x => x.GetRootFiles());

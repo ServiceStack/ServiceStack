@@ -1162,6 +1162,21 @@ namespace ServiceStack.Script
                 await scope.OutputStream.WriteAsync(bytes);
             }
         }
+
+        public List<ScriptMethodInfo> scriptMethods(ScriptScopeContext scope)
+        {
+            var methods = scope.Context.ScriptMethods.SelectMany(x => ScriptMethodInfo.GetScriptMethods(x.GetType()))
+                .OrderBy(x => x.Name)
+                .ThenBy(x => x.ParamCount)
+                .ToList();
+            return methods;
+        }
+
+        public List<string> scriptMethodNames(ScriptScopeContext scope) => scriptMethods(scope)
+            .Map(x => x.Name);
+
+        public List<string> scriptMethodSignatures(ScriptScopeContext scope) => scriptMethods(scope)
+            .Map(x => x.DisplaySignature);
         
         static readonly string[] AllCacheNames = {
             nameof(ScriptContext.Cache),
@@ -1331,6 +1346,5 @@ namespace ServiceStack.Script
             catch {}               
             return null;
         }
-        
     }
 }

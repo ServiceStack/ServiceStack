@@ -1433,8 +1433,7 @@ namespace ServiceStack.Script
             if (value != null)
             {
                 var s = value.ToString();
-                var bytes = MemoryProvider.Instance.ToUtf8(s.AsSpan());
-                MemoryProvider.Instance.WriteAsync(scope.OutputStream, bytes).Wait();
+                MemoryProvider.Instance.Write(scope.OutputStream, s.AsMemory());
             }
             return IgnoreResult.Value;
         }
@@ -1444,8 +1443,7 @@ namespace ServiceStack.Script
             if (value != null)
             {
                 var s = $"{value}\n";
-                var bytes = MemoryProvider.Instance.ToUtf8(s.AsSpan());
-                MemoryProvider.Instance.WriteAsync(scope.OutputStream, bytes).Wait();
+                MemoryProvider.Instance.Write(scope.OutputStream, s.AsMemory());
             }
             return IgnoreResult.Value;
         }
