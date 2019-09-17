@@ -35,6 +35,11 @@ namespace ServiceStack
         public ScriptContext ScriptContext { get; set; }
         
         /// <summary>
+        /// Whether to Require Config.AdminAuthSecret to Access REPL
+        /// </summary>
+        public bool RequireAuthSecret { get; set; }
+        
+        /// <summary>
         /// Allow scripting of Types from specified Assemblies
         /// </summary>
         public List<Assembly> ScriptAssemblies { get; set; } = new List<Assembly>();
@@ -72,7 +77,11 @@ namespace ServiceStack
                 ScriptContext.ScriptNamespaces.AddRange(ScriptNamespaces);
         }
 
-        public void Register(IAppHost appHost) {}
+        public void Register(IAppHost appHost)
+        {
+            if (RequireAuthSecret && string.IsNullOrEmpty(appHost.Config.AdminAuthSecret))
+                throw new NotSupportedException($"LISP REPL requires AuthSecret but Config.AdminAuthSecret is not configured");
+        }
 
         public void AfterInit(IAppHost appHost) => Start();
 
@@ -181,28 +190,99 @@ namespace ServiceStack
                 {
                     var interp = Lisp.CreateInterpreter();
 
+                    var CMD_CLEAR = "\u001B[2J";
                     var sb = new StringBuilder();
                     var networkStream = client.GetStream();
                     var remoteUrl = $"tcp://{remoteIp}";
+                    void write(string msg) => MemoryProvider.Instance.Write(networkStream, msg.AsMemory());
                     
                     using (var reader = new StreamReader(networkStream, Encoding.UTF8)) 
                     {
-                        MemoryProvider.Instance.Write(networkStream, 
-                            $"\nWelcome to #Script Lisp! The Server time is: {DateTime.Now.ToShortTimeString()}\n\n".AsMemory());
+                        string line;
+                        if (RequireAuthSecret)
+                        {
+                            MemoryProvider.Instance.Write(networkStream, 
+                                $"Authentication required:\n> ".AsMemory());
+
+                            line = reader.ReadLine();
+                            var authSuccess = !string.IsNullOrEmpty(line) && line == HostContext.Config.AdminAuthSecret; 
+                            if (!authSuccess)
+                            {
+                                write($"Authentication failed.\n\n");
+                                client.Close();
+                                return;
+                            }
+
+                            write(CMD_CLEAR);
+                        }
                         
+                        MemoryProvider.Instance.Write(networkStream, 
+                            $"\nWelcome to #Script Lisp! The Server time is: {DateTime.Now.ToShortTimeString()}, type ? for help.\n\n".AsMemory());
+
                         while (true)
                         {
                             if (listener == null)
                                 return;
-                            
-                            MemoryProvider.Instance.Write(networkStream, "> ".AsMemory());
+prompt:
+                            write("> ");
 
                             sb.Clear();
 
-                            string line;
                             while ((line = reader.ReadLine()) != null)
                             {
+                                if (line == "quit")
+                                {
+                                    write($"Goodbye.\n\n");
+                                    client.Close();
+                                    return;
+                                }
+                                if (line == "verbose")
+                                {
+                                    var toggle = interp.GetSymbolValue("verbose") is bool v && v
+                                        ? null
+                                        : Lisp.TRUE;
+
+                                    interp.SetSymbolValue("verbose", toggle);
+                                    var mode = toggle != null ? "on" : "off";
+                                    write($"verbose mode {mode}\n\n");
+                                    goto prompt;
+                                }
+                                if (line == "mode")
+                                {
+                                    var toggle = interp.GetSymbolValue("immediate-mode") is bool v && v
+                                        ? null
+                                        : Lisp.TRUE;
+
+                                    interp.SetSymbolValue("immediate-mode", toggle);
+                                    var mode = toggle != null ? "on" : "off";
+                                    write($"immediate line mode {mode}\n\n");
+                                    goto prompt;
+                                }
+                                if (line == "clear")
+                                {
+                                    write(CMD_CLEAR);
+                                    goto prompt;
+                                }
+                                if (line == "?")
+                                {
+                                    var usage = @"
+ ; verbose - change output to indent complex responses
+ ; mode    - change line mode to evaluate on <enter>
+ ; clear   - clear screen
+ ; quit    - exit session
+
+Learn more about #Script Lisp at: https://sharpscript.net/lisp
+
+";
+                                    write(usage);
+                                    goto prompt;
+                                }
+                                
                                 sb.AppendLine(line);
+                                
+                                if (interp.GetSymbolValue("immediate-mode") is bool b && b)
+                                    break;
+                                
                                 if (line == "") // evaluate on empty new line
                                     break;
                             }
@@ -214,10 +294,7 @@ namespace ServiceStack
                             string output = null;
                             try
                             {
-                                var requestArgs = SharpPagesFeatureExtensions.CreateRequestArgs(new Dictionary<string, object> {
-                                    [ScriptConstants.BaseUrl] = $"tcp://{localIp}:{port}/",
-                                    [nameof(IRequest.UrlReferrer)] = remoteUrl,
-                                });
+                                var requestArgs = CreateBasicRequest(remoteUrl);
                                 output = interp.ReplEval(ScriptContext, networkStream, lisp, requestArgs);
                             }
                             catch (Exception e)
@@ -241,6 +318,15 @@ namespace ServiceStack
                 if (Log.IsDebugEnabled)
                     Log.Debug($"{remoteIp} connection was disconnected. " + ex.Message);
             }
+        }
+
+        private Dictionary<string, object> CreateBasicRequest(string remoteUrl)
+        {
+            var requestArgs = SharpPagesFeatureExtensions.CreateRequestArgs(new Dictionary<string, object> {
+                [ScriptConstants.BaseUrl] = $"tcp://{localIp}:{port}/",
+                [nameof(IRequest.UrlReferrer)] = remoteUrl,
+            });
+            return requestArgs;
         }
     }
 }

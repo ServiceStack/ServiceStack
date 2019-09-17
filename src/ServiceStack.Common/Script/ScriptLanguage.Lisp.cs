@@ -312,6 +312,8 @@ namespace ServiceStack.Script
         {
             if (o is Task t)
                 o = t.GetResult();
+            if (o is bool b)
+                return b ? Lisp.TRUE : null;
             return ScriptLanguage.UnwrapValue(o);
         }
     }
@@ -800,6 +802,12 @@ namespace ServiceStack.Script
         {
             /// <summary>Table of the global values of symbols</summary>
             internal readonly Dictionary<Sym, object> Globals = new Dictionary<Sym, object>();
+
+            public object GetSymbolValue(string name) => Globals.TryGetValue(Sym.New(name), out var value)
+                ? value.fromLisp()
+                : null;
+
+            public void SetSymbolValue(string name, object value) => Globals[Sym.New(name)] = value.unwrapScriptValue();
 
             /// <summary>Standard out</summary>
             public TextWriter COut { get; set; } = Console.Out;

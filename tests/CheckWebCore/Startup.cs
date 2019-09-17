@@ -112,7 +112,8 @@ namespace CheckWebCore
             Plugins.Add(new SharpPagesFeature()); 
             
             Plugins.Add(new LispReplTcpServer {
-                AllowScriptingOfAllTypes = true
+                RequireAuthSecret = true,
+                AllowScriptingOfAllTypes = true,
             });
 
             if (Config.DebugMode)
@@ -128,6 +129,7 @@ namespace CheckWebCore
                 DebugMode = AppSettings.Get(nameof(HostConfig.DebugMode), false),
 //                UseSameSiteCookies = true, // prevents OAuth providers which use Sessions like Twitter from working
                 UseSecureCookies = true,
+                AdminAuthSecret = "secretz",
             });
 
             var cache = container.Resolve<ICacheClient>();
