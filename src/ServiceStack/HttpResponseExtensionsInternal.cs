@@ -467,21 +467,21 @@ namespace ServiceStack
             if (await HandleCustomErrorHandler(httpRes, httpReq, contentType, statusCode, errorDto, ex))
                 return;
 
-            if ((httpRes.ContentType == null || httpRes.ContentType == MimeTypes.Html) 
-                && contentType != null && contentType != httpRes.ContentType)
-            {
-                httpRes.ContentType = contentType;
-            }
-            if (HostContext.Config.AppendUtf8CharsetOnContentTypes.Contains(contentType))
-            {
-                httpRes.ContentType += ContentFormat.Utf8Suffix;
-            }
-
-            var hold = httpRes.StatusDescription;
-            var hasDefaultStatusDescription = hold == null || hold == "OK";
-
             if (!httpRes.HasStarted)
             {
+                if ((httpRes.ContentType == null || httpRes.ContentType == MimeTypes.Html) 
+                    && contentType != null && contentType != httpRes.ContentType)
+                {
+                    httpRes.ContentType = contentType;
+                }
+                if (HostContext.Config.AppendUtf8CharsetOnContentTypes.Contains(contentType))
+                {
+                    httpRes.ContentType += ContentFormat.Utf8Suffix;
+                }
+
+                var hold = httpRes.StatusDescription;
+                var hasDefaultStatusDescription = hold == null || hold == "OK";
+
                 httpRes.StatusCode = statusCode;
 
                 httpRes.StatusDescription = hasDefaultStatusDescription
