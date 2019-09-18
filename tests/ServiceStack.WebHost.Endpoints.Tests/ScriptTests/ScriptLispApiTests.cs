@@ -34,6 +34,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         object eval(string lisp) => context.EvaluateLisp($"(return (let () {lisp}))");
 
         [Test]
+        public void LISP_fn_shorthand()
+        {
+            Assert.That(eval(@"(#(1+ %) 2)"), Is.EqualTo(3));
+            Assert.That(eval(@"(#(+ %1 %2) 2 3)"), Is.EqualTo(5));
+        }
+
+        [Test]
         public void LISP_even()
         {
             Assert.That(eval(@"(even? 2)"), Is.True);

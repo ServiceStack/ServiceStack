@@ -496,6 +496,81 @@ Pairs where a < b:
         }
 
         [Test]
+        public void Linq14_zip_where()
+        {
+            Assert.That(render(@"
+(defn linq14 []
+  (let ( (numbers-a [0 2 4 5 6 8 9])
+         (numbers-b [1 3 5 7 8]) 
+         (pairs) )    
+    (setq pairs 
+        (zip-where #(< %1 %2) #(it { :a %1, :b %2 }) numbers-a numbers-b))        
+    (println ""Pairs where a < b:"")
+    (doseq (pair pairs)
+      (println (:a pair) "" is less than "" (:b pair)))
+  ))
+(linq14)"), 
+                
+                Does.StartWith(@"
+Pairs where a < b:
+0 is less than 1
+0 is less than 3
+0 is less than 5
+0 is less than 7
+0 is less than 8
+2 is less than 3
+2 is less than 5
+2 is less than 7
+2 is less than 8
+4 is less than 5
+4 is less than 7
+4 is less than 8
+5 is less than 7
+5 is less than 8
+6 is less than 7
+6 is less than 8
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq14_doseq()
+        {
+            Assert.That(render(@"
+(defn linq14 []
+  (let ( (numbers-a [0 2 4 5 6 8 9])
+       (numbers-b [1 3 5 7 8]) 
+       (pairs) )
+    (doseq (a numbers-a)
+        (doseq (b numbers-b)
+            (if (< a b) (push { :a a, :b b } pairs))))
+    (println ""Pairs where a < b:"")
+    (doseq (pair (nreverse pairs))
+      (println (:a pair) "" is less than "" (:b pair)))
+  ))
+(linq14)"), 
+                
+                Does.StartWith(@"
+Pairs where a < b:
+0 is less than 1
+0 is less than 3
+0 is less than 5
+0 is less than 7
+0 is less than 8
+2 is less than 3
+2 is less than 5
+2 is less than 7
+2 is less than 8
+4 is less than 5
+4 is less than 7
+4 is less than 8
+5 is less than 7
+5 is less than 8
+6 is less than 7
+6 is less than 8
+".NormalizeNewLines()));
+        }
+
+        [Test]
         public void Linq15()
         {
             Assert.That(render(@"

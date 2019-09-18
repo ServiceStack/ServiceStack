@@ -2602,16 +2602,50 @@ namespace ServiceStack.Script
                     ReadToken(); // (
                     var body = ParseListBody();
 
+                    var maxArg = 0;
                     body.Walk(c => {
-                        if (c.Car == PERCENT)
-                            c.Car = ARG;
-                        if (c.Cdr == PERCENT)
-                            c.Cdr = ARG;
+                        if (c.Car is Sym l && l.Name[0] == '%')
+                        {
+                            if (l == PERCENT)
+                            {
+                                c.Car = ARG;
+                            }
+                            else
+                            {
+                                var numStr = l.Name.Substring(1);
+                                if (!int.TryParse(numStr, out var lnum))
+                                    throw new FormatException("Not a numeric placeholder: " + l);
+                                c.Car = Sym.New(ARG + numStr);
+                                maxArg = Math.Max(maxArg, lnum);
+                            }
+                        }
+                        if (c.Cdr is Sym r && r.Name[0] == '%')
+                        {
+                            if (r == PERCENT)
+                            {
+                                c.Cdr = ARG;
+                            }
+                            else
+                            {
+                                var numStr = r.Name.Substring(1);
+                                if (!int.TryParse(numStr, out var rnum))
+                                    throw new FormatException("Not a numeric placeholder: " + r);
+                                c.Car = Sym.New(ARG + numStr);
+                                maxArg = Math.Max(maxArg, rnum);
+                            }
+                        }
                     });
                     
-                    // #(* 2 %) => (fn . ((_a . null) . ((* . (2 . (_a . null))) . null)))
-                    
-                    return new Cell(FN, new Cell(new Cell(ARG, null), new Cell(body, null)));
+                    // #(* 2 %)     => (fn . ((_a . null) . ((* . (2 . (_a . null))) . null)))
+                    // #(* 2 %1 %2) => (fn . ((_a1 . (_a2 . null)) . ((* . (2 . (_a1 . (_a2 . null)))) . null)))
+
+                    var args = new Cell(ARG, null);
+                    if (maxArg > 0)
+                    {
+                        var argsList = maxArg.Times(i => Sym.New("_a" + (i + 1)));
+                        args = ToCons(argsList);
+                    }
+                    return new Cell(FN, new Cell(args, new Cell(body, null)));
                 }
                 else if (Token == DOT || Token == RIGHT_PAREN)
                 {
@@ -3263,6 +3297,15 @@ setcdr rplacd)
     (doseq (a L1) 
       (doseq (b L2)
         (push (f a b) to)))
+    (nreverse to)
+  ))
+
+(defun zip-where (fpred fmap L1 L2)
+  (let ( (to) ) 
+    (doseq (a L1) 
+      (doseq (b L2)
+        (if (fpred a b) 
+            (push (fmap a b) to)) ))
     (nreverse to)
   ))
 
