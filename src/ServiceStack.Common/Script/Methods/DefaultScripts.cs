@@ -658,6 +658,15 @@ namespace ServiceStack.Script
             return IgnoreResult.Value;
         }
 
+        // Shorter Alias for assignToGlobal:
+        public IgnoreResult toGlobal(ScriptScopeContext scope, object value, object argExpr)
+        {
+            var varName = GetVarNameFromStringOrArrowExpression(nameof(toGlobal), argExpr);
+            
+            scope.PageResult.Args[varName] = value;
+            return IgnoreResult.Value;
+        }
+
         public IgnoreResult assignToGlobal(ScriptScopeContext scope, object value, object argExpr)
         {
             var varName = GetVarNameFromStringOrArrowExpression(nameof(assignToGlobal), argExpr);
@@ -672,6 +681,10 @@ namespace ServiceStack.Script
 
         public Task assignTo(ScriptScopeContext scope, object argExpr) =>
             assignToArgs(scope, nameof(assignTo), argExpr, scope.ScopedParams);
+
+        // Shorter Alias for assignToGlobal:
+        public Task toGlobal(ScriptScopeContext scope, object argExpr) =>
+            assignToArgs(scope, nameof(toGlobal), argExpr, scope.PageResult.Args);
 
         public Task assignToGlobal(ScriptScopeContext scope, object argExpr) =>
             assignToArgs(scope, nameof(assignToGlobal), argExpr, scope.PageResult.Args);

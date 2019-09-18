@@ -312,6 +312,40 @@ Global: {{ retVal + newVal }}
         }
 
         [Test]
+        public void Can_call_exported_delegate()
+        {
+            var context = LispScriptContext();
+
+            var output = context.EvaluateScript(@"
+{{ 1 | to => scopeArg }}
+```lisp|q
+(setq  lispArg  2)
+(setq  localArg 3)
+(defn lispAdd [a b] (+ a b localArg))
+(export exportedArg lispArg 
+        lispAdd (to-delegate lispAdd))
+```
+Global: {{ lispAdd(scopeArg, exportedArg) }}
+");
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo("Global: 6"));
+
+            output = context.EvaluateScript(@"
+{{ 1 | to => scopeArg }}
+```lisp|q
+(def lispArg  2)
+(def localArg 3)
+(def lispAdd  #(+ %1 %2 localArg))
+(export exportedArg lispArg 
+        lispAdd (to-delegate lispAdd))
+```
+Global: {{ lispAdd(scopeArg, exportedArg) }}
+");
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo("Global: 6"));
+            
+        }
+
+
+        [Test]
         public void Does_support_silent_blocks()
         {
             var context = LispScriptContext(new ObjectDictionary { ["contextArg"] = 1 });

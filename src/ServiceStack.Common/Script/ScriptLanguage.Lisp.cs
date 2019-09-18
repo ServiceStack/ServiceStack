@@ -1284,15 +1284,32 @@ namespace ServiceStack.Script
                     throw new LispEvalException("new requires Type Name or Type", a[0]);
                 });
                 
-                Def("new-map", -1, (I, a) => EvalMapArgs(a[0] as Cell, I));
-
+                Def("to-delegate", 1, (I, a) => {
+                    var f = a[0];
+                    switch (f) {
+                        case Closure fnclosure:
+                            return (StaticMethodInvoker)(p => I.invoke(fnclosure, p));
+                        case Macro fnmacro:
+                            return (StaticMethodInvoker)(p => I.invoke(fnmacro, p));
+                        case BuiltInFunc fnbulitin:
+                            return (StaticMethodInvoker)(p => I.invoke(fnbulitin, p));
+                        case Delegate fndel:
+                            return (StaticMethodInvoker)(p => I.invoke(fndel, p));
+                        default:
+                            throw new LispEvalException("not applicable", f);
+                    }
+                });
+                
                 Def("to-cons", 1, a => a[0] == null ? null : a[0] is IEnumerable e ? ToCons(e)
                     : throw new LispEvalException("not IEnumerable", a[0]));
                 Def("to-array", 1, a => toList(a[0] as IEnumerable).ToArray());
                 Def("to-list", 1, a => toList(a[0] as IEnumerable));
                 Def("to-dictionary", 2, (I, a) => EnumerableUtils.ToList(a[1].assertEnumerable()).ToDictionary(resolve1ArgFn(a[0], I)));
 
-                Def("nth", 2, (a) => {
+                Def("new-map", -1, (I, a) => EvalMapArgs(a[0] as Cell, I));
+
+                // can use (:key x) as indexer instead, e.g. (:i array) (:"key" map) (:Prop obj) or (.Prop obj) 
+                Def("nth", 2, a => {
                     if (a[0] == null)
                         return null;
                     if (!(a[1] is int i))
@@ -1914,8 +1931,7 @@ namespace ServiceStack.Script
                                     x = EvalProgN(arg, env);
                                 } else if (fn == COND) {
                                     x = EvalCond(arg, env);
-                                } else if (fn == 
-                                           SETQ) {
+                                } else if (fn == SETQ) {
                                     return EvalSetQ(arg, env);
                                 } else if (fn == EXPORT) {
                                     return EvalExport(arg, env, scope);
