@@ -632,13 +632,12 @@ Pairs where a < b:
 (defn linq17 []
   (let ( 
         (orders (flatmap (fn [c] 
-                    (flatmap (fn [o] 
-                        (if (>= (:total o) 2000)
-                        {
+                    (map-where #(>= (:total %) 2000)
+                        #(it {
                             :customer-id (.CustomerId c) 
-                            :order-id    (.OrderId o) 
-                            :total       (.Total o)
-                        })) (.Orders c) )
+                            :order-id    (.OrderId %) 
+                            :total       (.Total %)
+                        }) (.Orders c) )
                 ) customers-list) ))
     (doseq (o orders) (dump-inline o))
   ))
@@ -661,13 +660,12 @@ Pairs where a < b:
   (let ( (cutoff-date (DateTime. 1997 1 1))
          (orders) )
     (setq orders (flatmap (fn [c] 
-          (flatmap (fn [o] 
-              (if (>= (.OrderDate o) cutoff-date)
-              {
+          (map-where #(>= (.OrderDate %) cutoff-date) 
+              #(it {
                   :customer-id (.CustomerId c) 
-                  :order-id    (.OrderId o) 
-              })) (.Orders c) )
-      ) (filter #(= (.Region %) ""WA"") customers-list) ) )
+                  :order-id    (.OrderId %) 
+              }) (.Orders c) )
+      ) (where #(= (.Region %) ""WA"") customers-list) ) )
     (doseq (o orders) (dump-inline o))
   ))
 (linq18)"), 
@@ -700,8 +698,8 @@ Pairs where a < b:
 (defn linq19 []
   (let ( (customer-orders 
             (map 
-                (fn [x] (str ""Customer #"" (:i x) "" has an order with OrderID "" (.OrderId (:o x)))) 
-                (/flatten (map-index (fn (c i) (map (fn (o) { :o o :i (1+ i) }) (.Orders c))) customers-list)) 
+                #(str ""Customer #"" (:i %) "" has an order with OrderID "" (.OrderId (:o %))) 
+                (flatten (map-index (fn (c i) (map #(it { :o % :i (1+ i) }) (.Orders c))) customers-list)) 
             )) )
     (doseq (x customer-orders) (println x))
   ))
@@ -751,13 +749,12 @@ First 3 numbers:
     (setq first-3-wa-orders 
       (take 3 
         (flatmap (fn [c] 
-          (flatmap (fn [o] 
-              {
+          (map #(it {
                   :customer-id (.CustomerId c) 
-                  :order-id    (.OrderId o) 
-                  :order-date  (.OrderDate o)
-              }) (.Orders c) )
-        ) (filter #(= (.Region %) ""WA"") customers-list) )) )
+                  :order-id    (.OrderId %) 
+                  :order-date  (.OrderDate %) }) 
+            (.Orders c) )) 
+        (filter #(= (.Region %) ""WA"") customers-list) )) )
     (println ""First 3 orders in WA:"")
     (doseq (x first-3-wa-orders) (dump-inline x))
   ))
@@ -803,13 +800,12 @@ All but first 4 numbers:
   (let ( (all-but-first-2-orders
       (skip 2 
         (flatmap (fn [c] 
-          (flatmap (fn [o] 
-              {
-                  :customer-id (.CustomerId c) 
-                  :order-id    (.OrderId o) 
-                  :order-date  (.OrderDate o)
-              }) (.Orders c) )
-        ) (filter #(= (.Region %) ""WA"") customers-list) )) ))
+          (map #(it {
+              :customer-id (.CustomerId c) 
+              :order-id    (.OrderId %) 
+              :order-date  (.OrderDate %) }) 
+            (.Orders c) )) 
+          (filter #(= (.Region %) ""WA"") customers-list) )) ))
     (println ""All but first 2 orders in WA:"")
     (doseq (o all-but-first-2-orders) (dump-inline o))
   ))
