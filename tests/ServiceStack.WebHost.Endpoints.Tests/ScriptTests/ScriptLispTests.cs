@@ -546,6 +546,17 @@ C
         }
 
         [Test]
+        public void Can_create_type_with_constructor_arguments_LISP()
+        {
+            var context = LispNetContext();
+            object eval(string lisp) => context.EvaluateLisp($"(return (let () {lisp}))");
+
+            Assert.That(eval("(.GetTotal (Ints. 1 2))"), Is.EqualTo(3));
+            Assert.That(eval("(.GetTotal (/set (Ints. 1 2) { :C 3 :D 4 }))"), Is.EqualTo(10));
+            Assert.That(eval("(.GetTotal (set (Ints. 1 2) { :C 3 :D 4 }))"), Is.EqualTo(10));
+        }
+
+        [Test]
         public void Can_call_inner_class_properties_LISP()
         {
             var context = LispNetContext(new ObjectDictionary {
