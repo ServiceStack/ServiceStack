@@ -58,7 +58,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(render(@"
 (defn linq01 []
     (setq numbers [5 4 1 3 9 8 6 7 2 0])
-    (let ((low-numbers (filter #(< % 5) numbers)))
+    (let ((low-numbers (where #(< % 5) numbers)))
         (println ""Numbers < 5:"")
         (doseq (n low-numbers)
             (println n))))
@@ -80,7 +80,7 @@ Numbers < 5:
             Assert.That(render(@"
 (defn linq02 []
     (let ( (sold-out-products 
-               (filter #(= 0 (.UnitsInStock %)) products-list)) )
+               (where #(= 0 (.UnitsInStock %)) products-list)) )
         (println ""Sold out products:"")
         (doseq (p sold-out-products)
             (println (.ProductName p) "" is sold out"") )
@@ -103,7 +103,7 @@ Perth Pasties is sold out
             Assert.That(render(@"
 (defn linq03 []
   (let ( (expensive-in-stock-products
-            (filter #(and
+            (where #(and
                      (> (.UnitsInStock %) 0)
                      (> (.UnitPrice %) 3))
              products-list)
@@ -129,7 +129,7 @@ Grandma's Boysenberry Spread is in stock and costs more than 3.00
         {
             Assert.That(render(@"
 (defn linq04 []
-    (let ( (wa-customers (filter #(= (.Region %) ""WA"") customers-list)) )
+    (let ( (wa-customers (where #(= (.Region %) ""WA"") customers-list)) )
         (println ""Customers from Washington and their orders:"")
         (doseq (c wa-customers)
             (println ""Customer "" (.CustomerId c) "": "" (.CompanyName c) "": "")
@@ -157,7 +157,7 @@ Customer TRAIH: Trail's Head Gourmet Provisioners:
 (defn linq05 []
     (let ( (digits [""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""])
            (short-digits) )
-        (setq short-digits (filter-index (fn [x i] (> i (length x))) digits) )
+        (setq short-digits (where-index (fn [x i] (> i (length x))) digits) )
         (println ""Short digits:"")
         (doseq (d short-digits)
           (println ""The word "" d "" is shorter than its value""))
@@ -464,7 +464,7 @@ zero
   (let ( (numbers-a [0 2 4 5 6 8 9])
          (numbers-b [1 3 5 7 8]) 
          (pairs) )    
-    (setq pairs (filter #(< (:a %) (:b %)) 
+    (setq pairs (where #(< (:a %) (:b %)) 
                     (zip (fn [a b] { :a a, :b b }) numbers-a numbers-b)))        
     (println ""Pairs where a < b:"")
     (doseq (pair pairs)
@@ -754,7 +754,7 @@ First 3 numbers:
                   :order-id    (.OrderId %) 
                   :order-date  (.OrderDate %) }) 
             (.Orders c) )) 
-        (filter #(= (.Region %) ""WA"") customers-list) )) )
+        (where #(= (.Region %) ""WA"") customers-list) )) )
     (println ""First 3 orders in WA:"")
     (doseq (x first-3-wa-orders) (dump-inline x))
   ))
@@ -805,7 +805,7 @@ All but first 4 numbers:
               :order-id    (.OrderId %) 
               :order-date  (.OrderDate %) }) 
             (.Orders c) )) 
-          (filter #(= (.Region %) ""WA"") customers-list) )) ))
+          (where #(= (.Region %) ""WA"") customers-list) )) ))
     (println ""All but first 2 orders in WA:"")
     (doseq (o all-but-first-2-orders) (dump-inline o))
   ))
@@ -1022,7 +1022,7 @@ ClOvEr
 (defn linq32 []
   (let ( (dbls [1.7 2.3 1.9 4.1 2.9])
          (sorted-doubles) )
-    (setq sorted-doubles (/reverse (sort dbls)))
+    (setq sorted-doubles (reverse (sort dbls)))
     (println ""The doubles from highest to lowest:"")
     (doseq (d sorted-doubles) (println d))
   ))
@@ -1204,7 +1204,7 @@ BlUeBeRrY
 (defn linq39 []
   (let ( (digits [""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""])
          (sorted-digits) )
-    (setq sorted-digits (/reverse (filter #(= (nth % 1) (nth ""i"" 0)) digits)) )
+    (setq sorted-digits (reverse (where #(= (nth % 1) (:0 ""i"")) digits)) )
     (println ""A backwards list of the digits with a second character of 'i':"")
     (doseq (d sorted-digits) (println d))
   ))
@@ -1690,7 +1690,7 @@ Z
 (defn linq54 []
   (let ( (dbls [1.7 2.3 1.9 4.1 2.9])
          (sorted-doubles) )
-    (setq sorted-doubles (/reverse (sort dbls)))
+    (setq sorted-doubles (reverse (sort dbls)))
     (println ""Every other double from highest to lowest:"")
     (doseq (d (/step sorted-doubles { :by 2 })) (println d))
   ))
@@ -1769,7 +1769,7 @@ Numbers stored as doubles:
         {
             Assert.That(render(@"
 (defn linq58 []
-  (let ( (product-12 (first (filter #(= (.ProductId %) 12) products-list)) ) )
+  (let ( (product-12 (first (where #(= (.ProductId %) 12) products-list)) ) )
     (dump-inline product-12)
   ))
 (linq58)"), 
@@ -1788,7 +1788,7 @@ Numbers stored as doubles:
 (defn linq59 []
   (let ( (strings [""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""]) 
          (starts-with-o) )
-    (setq starts-with-o (first (filter #(/startsWith % ""o"") strings)))
+    (setq starts-with-o (first (where #(/startsWith % ""o"") strings)))
     (println ""A string starting with 'o': "" starts-with-o)
   ))
 (linq59)"),
@@ -1819,7 +1819,7 @@ A string starting with 'o': one
         {
             Assert.That(render(@"
 (defn linq62 []
-  (let ( (product-789 (first (filter #(= (.ProductId %) 789) products-list) )) )
+  (let ( (product-789 (first (where #(= (.ProductId %) 789) products-list) )) )
     (println ""Product 789 exists: "" (not= product-789 nil))
   ))
 (linq62)"),
@@ -1835,7 +1835,7 @@ Product 789 exists: False
             Assert.That(render(@"
 (defn linq64 []
   (let ( (numbers [5 4 1 3 9 8 6 7 2 0]) (fourth-low-num) )
-    (setq fourth-low-num (nth (filter #(> % 5) numbers) 1))
+    (setq fourth-low-num (nth (where #(> % 5) numbers) 1))
     (println ""Second number > 5: "" fourth-low-num)
   ))
 (linq64)"),

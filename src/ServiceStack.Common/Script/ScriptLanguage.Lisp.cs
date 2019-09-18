@@ -1863,7 +1863,11 @@ namespace ServiceStack.Script
                                 if (symName[0] == ':')
                                 {
                                     return (StaticMethodInvoker) (a => {
-                                        var ret = scope.Context.DefaultMethods.get(a[0], symName.Substring(1));
+                                        var name = symName.Substring(1);
+                                        var key = int.TryParse(name, out var index)
+                                            ? (object) index
+                                            : name;
+                                        var ret = scope.Context.DefaultMethods.get(a[0], key);
                                         return ret.unwrapScriptValue();
                                     });
                                 }
@@ -1985,7 +1989,10 @@ namespace ServiceStack.Script
                                             var target = fnArgs[fnArgs.Length - 1];
                                             if (target == null)
                                                 return null;
-                                            var ret = scope.Context.DefaultMethods.get(target, name);
+                                            var key = int.TryParse(name, out var index)
+                                                ? (object) index
+                                                : name;
+                                            var ret = scope.Context.DefaultMethods.get(target, key);
                                             return ret.unwrapScriptValue();
                                         }
                                         if (fnName[0] == '.') // member method https://clojure.org/reference/java_interop#_member_access

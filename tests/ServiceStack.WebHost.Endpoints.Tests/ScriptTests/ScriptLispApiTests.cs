@@ -302,6 +302,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         }
 
         [Test]
+        public void LISP_index()
+        {
+            Assert.That(eval(@"(:0 ""i"")"), Is.EqualTo('i'));
+            Assert.That(eval(@"(nth ""i"" 0)"), Is.EqualTo('i'));
+        }
+
+        [Test]
         public void Can_access_page_vars()
         {
             Assert.That(context.EvaluateLisp(@"<!--
