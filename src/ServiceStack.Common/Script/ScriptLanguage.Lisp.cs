@@ -798,8 +798,13 @@ namespace ServiceStack.Script
         static bool isTrue(object test) => test != null && !(test is bool b && !b);
 
         /// <summary>Core of the Lisp interpreter</summary>
-        public class Interpreter 
+        public class Interpreter
         {
+            private static int totalEvaluations = 0;
+            public static int TotalEvaluations => Interlocked.CompareExchange(ref totalEvaluations, 0, 0);
+            
+            public int Evaluations { get; set; }
+
             /// <summary>Table of the global values of symbols</summary>
             internal readonly Dictionary<Sym, object> Globals = new Dictionary<Sym, object>();
 
@@ -1820,7 +1825,10 @@ namespace ServiceStack.Script
                             return null;
                         scope.PageResult.AssertNextEvaluation();
                     }
-                    
+
+                    Evaluations++;
+                    Interlocked.Increment(ref totalEvaluations);
+
                     for (;;)
                     {
                         object value;

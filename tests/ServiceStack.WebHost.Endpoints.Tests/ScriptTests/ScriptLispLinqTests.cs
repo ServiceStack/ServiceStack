@@ -440,11 +440,9 @@ Number: In-place?
             Assert.That(render(@"
 (defn linq13 []
     (let ( (numbers [5 4 1 3 9 8 6 7 2 0])
-           (digits  [""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""]) 
-           (low-nums) )
-      (setq low-nums (map #(nth digits %) (filter #(< % 5) numbers)))
-      (println ""Numbers < 5:"")
-      (doseq (n low-nums) (println n))
+           (digits  [""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""]) )
+        (println ""Numbers < 5:"")
+        (joinln (map #(nth digits %) (where #(< % 5) numbers)))
     ))
 (linq13)"), 
                 
