@@ -70,6 +70,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(eval(@"(filter   even? (range 10))"), Is.EqualTo(new[] {0, 2, 4, 6, 8}));
         }
 
+        [Test]
+        public void LISP_filter_index()
+        {
+            Assert.That(eval(@"
+(setq digits [""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""])
+(filter-index (fn [x i] (> i (length x))) digits)"), 
+                Is.EqualTo(new[] { "five", "six", "seven", "eight", "nine", }));
+        }
+
         [Test] //filter works with both IEnumerable + Cells
         public void LISP_where()
         {
@@ -77,6 +86,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(eval(@"(where #(<= % 3) [-5 -4 -1 -3 -9 -8 -6 -7 -2 -0])"), Is.EqualTo(new[] { -5, -4, -1, -3, -9, -8, -6, -7, -2, 0 }));
             Assert.That(eval(@"(where #(<= % 3) (to-cons (map #(- %) [5 4 1 3 9 8 6 7 2 0])))"), Is.EqualTo(new[] { -5, -4, -1, -3, -9, -8, -6, -7, -2, 0 }));
             Assert.That(eval(@"(where   even? (range 10))"), Is.EqualTo(new[] {0, 2, 4, 6, 8}));
+        }
+
+        [Test]
+        public void LISP_where_index()
+        {
+            Assert.That(eval(@"
+(setq digits [""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""])
+(where-index (fn [x i] (> i (length x))) digits)"), 
+                Is.EqualTo(new[] { "five", "six", "seven", "eight", "nine", }));
         }
 
         [Test]
