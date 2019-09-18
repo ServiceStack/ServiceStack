@@ -249,13 +249,13 @@ prompt:
                                 }
                                 if (line == "mode")
                                 {
-                                    var toggle = interp.GetSymbolValue("immediate-mode") is bool v && v
+                                    var toggle = interp.GetSymbolValue("multi-line") is bool v && v
                                         ? null
                                         : Lisp.TRUE;
 
-                                    interp.SetSymbolValue("immediate-mode", toggle);
-                                    var mode = toggle != null ? "on" : "off";
-                                    write($"immediate line mode {mode}\n\n");
+                                    interp.SetSymbolValue("multi-line", toggle);
+                                    var mode = toggle != null ? "off" : "on";
+                                    write($"single-line mode {mode}\n\n");
                                     goto prompt;
                                 }
                                 if (line == "clear")
@@ -266,8 +266,8 @@ prompt:
                                 if (line == "?")
                                 {
                                     var usage = @"
- ; verbose - change output to indent complex responses
- ; mode    - change line mode to evaluate on <enter>
+ ; verbose - toggle output to indent complex responses
+ ; mode    - toggle between single and multi-line modes 
  ; clear   - clear screen
  ; quit    - exit session
 
@@ -279,8 +279,9 @@ Learn more about #Script Lisp at: https://sharpscript.net/lisp
                                 }
                                 
                                 sb.AppendLine(line);
-                                
-                                if (interp.GetSymbolValue("immediate-mode") is bool b && b)
+
+                                var multiLine = interp.GetSymbolValue("multi-line");
+                                if (multiLine == null || multiLine is bool b && !b)
                                     break;
                                 
                                 if (line == "") // evaluate on empty new line

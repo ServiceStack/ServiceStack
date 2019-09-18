@@ -1204,7 +1204,7 @@ BlUeBeRrY
 (defn linq39 []
   (let ( (digits [""zero"" ""one"" ""two"" ""three"" ""four"" ""five"" ""six"" ""seven"" ""eight"" ""nine""])
          (sorted-digits) )
-    (setq sorted-digits (reverse (where #(= (nth % 1) (:0 ""i"")) digits)) )
+    (setq sorted-digits (reverse (where #(= (:1 %) (:0 ""i"")) digits)) )
     (println ""A backwards list of the digits with a second character of 'i':"")
     (doseq (d sorted-digits) (println d))
   ))
@@ -2437,7 +2437,7 @@ The average word length is 6.66666666666667 characters.
         public void linq91()
         {
             Assert.That(render(@"
-(defn linq87 []
+(defn linq91 []
   (let ( (categories
              (map #(it {
                   :category (.Key %)
@@ -2446,7 +2446,7 @@ The average word length is 6.66666666666667 characters.
               (group-by .Category products-list))) )
     (doseq (x categories) (dump-inline x))
   ))
-(linq87)"),
+(linq91)"),
 
                 Does.StartWith(@"
 {category:Beverages,average-price:37.9791666666667}
