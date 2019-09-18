@@ -605,13 +605,13 @@ Pairs where a < b:
 (defn linq16 []
   (let ( 
         (orders (flatmap (fn [c] 
-                    (flatmap (fn [o] 
-                        (if (> (.OrderDate o) (DateTime. 1998 1 1)) {
+                    (map-where #(> (.OrderDate %) (DateTime. 1998 1 1)) 
+                        #(it {
                             :customer-id (.CustomerId c) 
-                            :order-id    (.OrderId o) 
-                            :order-date  (.OrderDate o)
-                        })) (.Orders c) )
-                ) customers-list)  ))
+                            :order-id    (.OrderId %) 
+                            :order-date  (.OrderDate %)
+                        }) (.Orders c) )
+                ) customers-list) ))
     (doseq (o orders) (dump-inline o))
   ))
 (linq16)"), 

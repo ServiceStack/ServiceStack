@@ -1325,6 +1325,7 @@ namespace ServiceStack.Script
                 });
 
                 Def("map", 2, (I, a) => a[1]?.assertEnumerable().Map(resolve1ArgFn(a[0], I)));
+                Def("map-where", 3, (I, a) => EnumerableUtils.ToList(a[2]?.assertEnumerable()).Where(resolvePredicate(a[0], I)).Map(resolve1ArgFn(a[1], I)));
                 Def("where", 2, (I, a) => EnumerableUtils.ToList(a[1]?.assertEnumerable()).Where(resolvePredicate(a[0], I)).ToList());
 
                 Def("reduce", -2, (I, a) => {
