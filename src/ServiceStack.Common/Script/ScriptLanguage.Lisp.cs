@@ -3233,19 +3233,6 @@ setcdr rplacd)
   `(progn (setq ,name (lambda ,args ,@body))
           ',name))
 
-(defmacro dolist-while (spec f &rest body) ; (dolist-while (name list pred [result]) body...)
-  (let ((name (car spec))
-        (list (gensym)))
-    `(let (,name
-           (,list ,(cadr spec)))
-       (while (and ,list (,f (car ,list)))
-         (setq ,name (car ,list))
-         ,@body
-         (setq ,list (cdr ,list)))
-       ,@(if (cddr spec)
-             `((setq ,name nil)
-               ,(caddr spec))))))
-
 (defmacro doseq (spec &rest body) ; (doseq (name seq [result]) body...)
   (let ( (name (first spec)) 
          (seq (second spec)) 
