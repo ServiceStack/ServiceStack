@@ -197,7 +197,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(render(@"(defn f [a b c] (+ a b c))(f 1 2 3)"), Is.EqualTo("6"));
             Assert.That(render(@"((fn [a b c] (+ a b c)) 1 2 3)"), Is.EqualTo("6"));
         }
-
+        
         [Test]
         public void LISP_can_call_xml_ContextBlockFilter()
         {
@@ -214,6 +214,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(eval(@"(if (bound? id id2) 1 -1)"), Is.EqualTo(-1));
             Assert.That(eval(@"(setq id 2)(if (bound? id id2) 1 -1)"), Is.EqualTo(-1));
             Assert.That(eval(@"(setq id 2)(setq id2 3)(if (bound? id id2) 1 -1)"), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void LISP_butlast()
+        {
+            Assert.That(eval(@"(butlast [1 2 3 4])"), Is.EqualTo(new[]{ 1, 2, 3 }));
+            Assert.That(eval(@"(butlast (to-list [1 2 3 4]))"), Is.EqualTo(new[]{ 1, 2, 3 }));
+        }
+
+        [Test]
+        public void LISP_reverse()
+        {
+            Assert.That(eval(@"(reverse [1 2 3 4])"), Is.EqualTo(new[]{ 4, 3, 2, 1 }));
+            Assert.That(eval(@"(reverse (to-list [1 2 3 4]))"), Is.EqualTo(new[]{ 4, 3, 2, 1 }));
         }
 
         [Test]

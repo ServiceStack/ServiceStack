@@ -1043,21 +1043,29 @@ The doubles from highest to lowest:
         {
             Assert.That(render(@"
 (defn linq33 []
-  (let ( (dbls [1.7 2.3 1.9 4.1 2.9])
-         (sorted-doubles) )
-    (setq sorted-doubles (/reverse (sort dbls)))
-    (println ""The doubles from highest to lowest:"")
-    (doseq (d sorted-doubles) (println d))
-  ))
+  (let ( (sorted-products (reverse (sort-by .UnitsInStock products-list))) )
+        (doseq (p sorted-products) (dump-inline p))
+    ))
 (linq33)"), 
                 
                 Does.StartWith(@"
-The doubles from highest to lowest:
-4.1
-2.9
-2.3
-1.9
-1.7
+{ProductId:75,ProductName:Rhönbräu Klosterbier,Category:Beverages,UnitPrice:7.75,UnitsInStock:125}
+{ProductId:40,ProductName:Boston Crab Meat,Category:Seafood,UnitPrice:18.4,UnitsInStock:123}
+{ProductId:6,ProductName:Grandma's Boysenberry Spread,Category:Condiments,UnitPrice:25,UnitsInStock:120}
+{ProductId:55,ProductName:Pâté chinois,Category:Meat/Poultry,UnitPrice:24,UnitsInStock:115}
+{ProductId:61,ProductName:Sirop d'érable,Category:Condiments,UnitPrice:28.5,UnitsInStock:113}
+".NormalizeNewLines()).Or.StartsWith(@"
+{UnitsInStock:125,ProductName:Rhönbräu Klosterbier,UnitPrice:7.75,Category:Beverages,ProductId:75}
+{UnitsInStock:123,ProductName:Boston Crab Meat,UnitPrice:18.4,Category:Seafood,ProductId:40}
+{UnitsInStock:120,ProductName:Grandma's Boysenberry Spread,UnitPrice:25,Category:Condiments,ProductId:6}
+{UnitsInStock:115,ProductName:Pâté chinois,UnitPrice:24,Category:Meat/Poultry,ProductId:55}
+{UnitsInStock:113,ProductName:Sirop d'érable,UnitPrice:28.5,Category:Condiments,ProductId:61}
+".NormalizeNewLines()).Or.StartsWith(@"
+{UnitsInStock:125,ProductId:75,ProductName:Rhönbräu Klosterbier,Category:Beverages,UnitPrice:7.75}
+{UnitsInStock:123,ProductId:40,ProductName:Boston Crab Meat,Category:Seafood,UnitPrice:18.4}
+{UnitsInStock:120,ProductId:6,ProductName:Grandma's Boysenberry Spread,Category:Condiments,UnitPrice:25}
+{UnitsInStock:115,ProductId:55,ProductName:Pâté chinois,Category:Meat/Poultry,UnitPrice:24}
+{UnitsInStock:113,ProductId:61,ProductName:Sirop d'érable,Category:Condiments,UnitPrice:28.5}
 ".NormalizeNewLines()));
         }
 
