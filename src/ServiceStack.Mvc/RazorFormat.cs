@@ -354,11 +354,11 @@ namespace ServiceStack.Mvc
                 if (viewName.StartsWith("/"))
                 {
                     var viewEngineResult = GetPageFromPathInfo(viewName);                
-                    if (viewEngineResult.Success)
+                    if (viewEngineResult?.Success == true)
                         return viewEngineResult;
             
                     viewEngineResult = GetRoutingPage(viewName, out routingArgs);                
-                    if (viewEngineResult.Success)
+                    if (viewEngineResult?.Success == true)
                         return viewEngineResult;
                 }
                 else
@@ -367,7 +367,7 @@ namespace ServiceStack.Mvc
                     {
                         var viewPath = location.CombineWith(viewName) + ".cshtml";
                         var viewEngineResult = ViewEngine.GetView(execPath, viewPath, isMainPage: false);
-                        if (viewEngineResult.Success)
+                        if (viewEngineResult?.Success == true)
                             return viewEngineResult;
                     }
                 }
