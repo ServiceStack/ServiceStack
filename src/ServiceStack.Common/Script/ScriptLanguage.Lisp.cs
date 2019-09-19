@@ -1753,9 +1753,7 @@ namespace ServiceStack.Script
                     Globals.Keys.Aggregate((Cell) null, (x, y) => new Cell(y, x)));
                 
                 Def("symbols", 0, a => 
-                    Globals.Keys.Map(x => x.Name).OrderBy(x => x));
-                Def("show-symbols", 0, a => 
-                    Globals.Keys.Map(x => x.Name).OrderBy(x => x).Join("\n"));
+                    Globals.Keys.Map(x => x.Name).OrderBy(x => x).ToArray());
                 
                 Def("prin1", 1, (I, a) => {
                         print(I, Str(a[0], true)); 
