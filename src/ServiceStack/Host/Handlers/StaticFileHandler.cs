@@ -254,7 +254,7 @@ namespace ServiceStack.Host.Handlers
                             {
                                 r.SetContentLength(contentLength);
                                 await fs.CopyToAsync(outputStream, BufferSize);
-                                outputStream.Flush();
+                                await outputStream.FlushAsync();
                             }
                             else
                             {

@@ -146,6 +146,7 @@ namespace ServiceStack.Host.NetCore
             if (closed) return;
 
             this.FlushBufferIfAny(BufferedStream, response.Body);
+            this.AllowSyncIO();
             response.Body.Flush();
         }
 

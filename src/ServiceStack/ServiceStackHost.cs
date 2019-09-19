@@ -964,7 +964,7 @@ namespace ServiceStack
                     {
                         try 
                         { 
-                            res.Flush();
+                            res.AllowSyncIO().Flush();
                             outputMs.Dispose();
                         }
                         catch (Exception ex)

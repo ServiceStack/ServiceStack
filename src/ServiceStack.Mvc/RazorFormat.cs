@@ -421,7 +421,7 @@ namespace ServiceStack.Mvc
 
                     await view.RenderAsync(viewContext);
 
-                    sw.Flush();
+                    await sw.FlushAsync();
 
                     try
                     {
