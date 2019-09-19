@@ -2,6 +2,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack</PackageId>
     <AssemblyName>ServiceStack</AssemblyName>
+    <RootNamespace>ServiceStack</RootNamespace>
     <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
     <Title>ServiceStack webservice framework: Faster, Cleaner, Modern WCF alternative</Title>
     <PackageDescription>
@@ -14,7 +15,7 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Templates\*.*;js\*.*" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
+    <EmbeddedResource Include="Templates\*.*;js\*.*;css\*.*" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
