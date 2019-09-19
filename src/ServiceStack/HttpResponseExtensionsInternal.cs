@@ -26,12 +26,14 @@ namespace ServiceStack
         {
             if (HostContext.Config.AllowPartialResponses && result is IPartialWriter partialResult && partialResult.IsPartialRequest)
             {
+                response.AllowSyncIO();
                 partialResult.WritePartialTo(response);
                 return true;
             }
 
             if (result is IStreamWriter streamWriter)
             {
+                response.AllowSyncIO();
                 if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
                 streamWriter.WriteTo(response.OutputStream);
                 if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);

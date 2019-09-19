@@ -67,12 +67,7 @@ namespace ServiceStack
 
             WriteEvent = (res, frame) =>
             {
-#if NETSTANDARD
-                // AllowSynchronousIO for sync SSE notifications https://github.com/aspnet/AspNetCore/issues/7644 
-                var feature = ((ServiceStack.Host.NetCore.NetCoreResponse)res).HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
-                feature.AllowSynchronousIO = true;
-#endif
-                MemoryProvider.Instance.Write(res.OutputStream, frame.AsMemory());
+                MemoryProvider.Instance.Write(res.AllowSyncIO().OutputStream, frame.AsMemory());
                 res.Flush();
             };
 

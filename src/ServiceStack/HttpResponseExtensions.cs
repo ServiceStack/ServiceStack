@@ -115,6 +115,16 @@ namespace ServiceStack
             httpRes.EndRequest();
         }
 
+        public static IResponse AllowSyncIO(this IResponse res)
+        {
+#if NETSTANDARD
+                // AllowSynchronousIO for sync SSE notifications https://github.com/aspnet/AspNetCore/issues/7644 
+                var feature = ((ServiceStack.Host.NetCore.NetCoreResponse)res).HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
+                feature.AllowSynchronousIO = true;
+#endif
+            return res;
+        }
+
         public static void Redirect(this IResponse httpRes, string url)
         {
             httpRes.AddHeader(HttpHeaders.Location, url);
@@ -273,7 +283,7 @@ namespace ServiceStack
 
             var bytes = contents.ToUtf8Bytes();
             response.SetContentLength(bytes.Length);
-            response.OutputStream.Write(bytes, 0, bytes.Length);
+            response.AllowSyncIO().OutputStream.Write(bytes, 0, bytes.Length);
         }
 
         public static Task WriteAsync(this IResponse response, string contents)

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.UI;
 using ServiceStack.Host;
@@ -57,7 +58,7 @@ namespace ServiceStack.Metadata
             }
         }
 
-        public virtual void Render(Stream output)
+        public virtual Task RenderAsync(Stream output)
         {
             var baseUrl = HttpRequest.ResolveAbsoluteUrl("~/");
             var renderedTemplate = Templates.HtmlTemplates.Format(Templates.HtmlTemplates.GetOperationControlTemplate(),
@@ -69,7 +70,7 @@ namespace ServiceStack.Metadata
                 ResponseTemplate,
                 MetadataHtml);
 
-            output.Write(renderedTemplate);
+            return output.WriteAsync(renderedTemplate);
         }
 
         public virtual string GetHttpRequestTemplate()
