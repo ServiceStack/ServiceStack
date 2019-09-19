@@ -71,7 +71,7 @@ namespace ServiceStack.Host
             { "xml", MimeTypes.Xml },
             { "jsv", MimeTypes.Jsv },
         };
-
+        
         public string GetFormatContentType(string format)
         {
             return ContentTypeFormats.TryGetValue(format, out var registeredFormats)
@@ -269,8 +269,7 @@ namespace ServiceStack.Host
 
             return (httpReq, dto, stream) =>
             {
-#if NETSTANDARD
-                if (Env.IsNetCore3)
+                if (HostContext.Config.BufferSyncSerializers)
                 {
                     using (var ms = MemoryStreamFactory.GetStream())
                     {
@@ -279,7 +278,6 @@ namespace ServiceStack.Host
                         return ms.CopyToAsync(stream);
                     }
                 }
-#endif
                 
                 serializer(httpReq, dto, stream);
                 return TypeConstants.EmptyTask;
