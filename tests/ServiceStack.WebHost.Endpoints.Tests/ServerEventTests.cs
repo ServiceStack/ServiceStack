@@ -77,7 +77,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public IServerEvents ServerEvents { get; set; }
 
-        public object Any(PostChatToChannel request)
+        public async Task<object> Any(PostChatToChannel request)
         {
             var sub = ServerEvents.GetSubscriptionInfo(request.From);
             if (sub == null)
@@ -99,18 +99,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 foreach (var toSub in toSubs)
                 {
                     msg.Message = "@{0}: {1}".Fmt(toSub.DisplayName, msg.Message);
-                    ServerEvents.NotifySubscription(request.From, request.Selector, msg);
+                    if (UseAsync)
+                        await ServerEvents.NotifySubscriptionAsync(request.From, request.Selector, msg);
+                    else
+                        ServerEvents.NotifySubscription(request.From, request.Selector, msg);
                 }
             }
             else
             {
-                ServerEvents.NotifyChannel(request.Channel, request.Selector, msg);
+                if (UseAsync)
+                    await ServerEvents.NotifyChannelAsync(request.Channel, request.Selector, msg);
+                else
+                    ServerEvents.NotifyChannel(request.Channel, request.Selector, msg);
             }
 
             return msg;
         }
 
-        public void Any(PostRawToChannel request)
+        public async Task Any(PostRawToChannel request)
         {
             var sub = ServerEvents.GetSubscriptionInfo(request.From);
             if (sub == null)
@@ -118,29 +124,49 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             if (request.ToUserId != null)
             {
-                ServerEvents.NotifyUserId(request.ToUserId, request.Selector, request.Message);
+                if (UseAsync)
+                    await ServerEvents.NotifyUserIdAsync(request.ToUserId, request.Selector, request.Message);
+                else
+                    ServerEvents.NotifyUserId(request.ToUserId, request.Selector, request.Message);
             }
             else
             {
-                ServerEvents.NotifyChannel(request.Channel, request.Selector, request.Message);
+                if (UseAsync)
+                    await ServerEvents.NotifyChannelAsync(request.Channel, request.Selector, request.Message);
+                else
+                    ServerEvents.NotifyChannel(request.Channel, request.Selector, request.Message);
             }
         }
 
-        public void Any(PostObjectToChannel request)
+        public bool UseAsync => ((ServerEventsAppHost) HostContext.AppHost).UseAsync;
+
+        public async Task Any(PostObjectToChannel request)
         {
             if (request.ToUserId != null)
             {
                 if (request.CustomType != null)
-                    ServerEvents.NotifyUserId(request.ToUserId, request.Selector ?? Selector.Id<CustomType>(), request.CustomType);
+                    if (UseAsync)
+                        await ServerEvents.NotifyUserIdAsync(request.ToUserId, request.Selector ?? Selector.Id<CustomType>(), request.CustomType);
+                    else
+                        ServerEvents.NotifyUserId(request.ToUserId, request.Selector ?? Selector.Id<CustomType>(), request.CustomType);
                 if (request.SetterType != null)
-                    ServerEvents.NotifyUserId(request.ToUserId, request.Selector ?? Selector.Id<SetterType>(), request.SetterType);
+                    if (UseAsync)
+                        await ServerEvents.NotifyUserIdAsync(request.ToUserId, request.Selector ?? Selector.Id<SetterType>(), request.SetterType);
+                    else
+                        ServerEvents.NotifyUserId(request.ToUserId, request.Selector ?? Selector.Id<SetterType>(), request.SetterType);
             }
             else
             {
                 if (request.CustomType != null)
-                    ServerEvents.NotifyChannel(request.Channel, request.Selector ?? Selector.Id<CustomType>(), request.CustomType);
+                    if (UseAsync)
+                        await ServerEvents.NotifyChannelAsync(request.Channel, request.Selector ?? Selector.Id<CustomType>(), request.CustomType);
+                    else
+                        ServerEvents.NotifyChannel(request.Channel, request.Selector ?? Selector.Id<CustomType>(), request.CustomType);
                 if (request.SetterType != null)
-                    ServerEvents.NotifyChannel(request.Channel, request.Selector ?? Selector.Id<SetterType>(), request.SetterType);
+                    if (UseAsync)
+                        await ServerEvents.NotifyChannelAsync(request.Channel, request.Selector ?? Selector.Id<SetterType>(), request.SetterType);
+                    else
+                        ServerEvents.NotifyChannel(request.Channel, request.Selector ?? Selector.Id<SetterType>(), request.SetterType);
             }
         }
     }
@@ -150,6 +176,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public ServerEventsAppHost()
             : base(typeof(ServerEventsAppHost).Name, typeof(ServerEventsAppHost).Assembly) { }
 
+        public bool UseAsync { get; set; }
         public bool UseRedisServerEvents { get; set; }
         public bool LimitToAuthenticatedUsers { get; set; }
         public Action<IEventSubscription, Web.IResponse, string> OnPublish { get; set; }
@@ -193,29 +220,53 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     
 #if DEBUG    
     
-//    [Ignore("Can hang builds")]
-//    [TestFixture]
-//    public class MemoryServerEventsTests : ServerEventsTests
-//    {
-//        protected override ServiceStackHost CreateAppHost()
-//        {
-//            return new ServerEventsAppHost()
-//                .Init()
-//                .Start(Config.AbsoluteBaseUri);
-//        }
-//    }
-//
-//    [Ignore("Hangs in new build server")]
-//    [TestFixture]
-//    public class RedisServerEventsTests : ServerEventsTests
-//    {
-//        protected override ServiceStackHost CreateAppHost()
-//        {
-//            return new ServerEventsAppHost { UseRedisServerEvents = true }
-//                .Init()
-//                .Start(Config.AbsoluteBaseUri);
-//        }
-//    }
+    [Ignore("Can hang builds")]
+    [TestFixture]
+    public class MemoryServerEventsTests : ServerEventsTests
+    {
+        protected override ServiceStackHost CreateAppHost()
+        {
+            return new ServerEventsAppHost()
+                .Init()
+                .Start(Config.AbsoluteBaseUri);
+        }
+    }
+    
+    [Ignore("Can hang builds")]
+    [TestFixture]
+    public class MemoryServerEventsTestsAsync : ServerEventsTests
+    {
+        protected override ServiceStackHost CreateAppHost()
+        {
+            return new ServerEventsAppHost { UseAsync = true }
+                .Init()
+                .Start(Config.AbsoluteBaseUri);
+        }
+    }
+
+    [Ignore("Hangs in new build server")]
+    [TestFixture]
+    public class RedisServerEventsTests : ServerEventsTests
+    {
+        protected override ServiceStackHost CreateAppHost()
+        {
+            return new ServerEventsAppHost { UseRedisServerEvents = true }
+                .Init()
+                .Start(Config.AbsoluteBaseUri);
+        }
+    }
+
+    [Ignore("Hangs in new build server")]
+    [TestFixture]
+    public class RedisServerEventsTestsAsync : ServerEventsTests
+    {
+        protected override ServiceStackHost CreateAppHost()
+        {
+            return new ServerEventsAppHost { UseRedisServerEvents = true, UseAsync = true }
+                .Init()
+                .Start(Config.AbsoluteBaseUri);
+        }
+    }
 
     public abstract class ServerEventsTests
     {

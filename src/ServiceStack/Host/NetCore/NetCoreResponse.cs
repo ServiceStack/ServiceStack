@@ -25,6 +25,10 @@ namespace ServiceStack.Host.NetCore
         private readonly HttpResponse response;
         private bool hasResponseBody;
 
+        public HttpContext HttpContext => response.HttpContext;
+        public HttpResponse HttpResponse => response;
+
+
         public NetCoreResponse(NetCoreRequest request, HttpResponse response)
         {
             this.request = request;

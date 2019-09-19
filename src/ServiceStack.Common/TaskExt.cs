@@ -59,5 +59,10 @@ namespace ServiceStack
         {
             return (T)((Task)task).GetResult();
         }
+        
+        private static readonly TaskFactory SyncTaskFactory = new TaskFactory(CancellationToken.None,
+            TaskCreationOptions.None, TaskContinuationOptions.None, TaskScheduler.Default);
+        public static void RunSync(Func<Task> task) => SyncTaskFactory.StartNew(task).Unwrap().GetAwaiter().GetResult();
+        public static TResult RunSync<TResult>(Func<Task<TResult>> task) => SyncTaskFactory.StartNew(task).Unwrap().GetAwaiter().GetResult();
     }
 }
