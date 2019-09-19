@@ -26,6 +26,11 @@ namespace ServiceStack.Logging
         {
             return new ConsoleLogger(typeName) { IsDebugEnabled = debugEnabled };
         }
+
+        public static void Configure(bool debugEnabled = true)
+        {
+            LogManager.LogFactory = new ConsoleLogFactory(); 
+        }
     }
 }
 #endif

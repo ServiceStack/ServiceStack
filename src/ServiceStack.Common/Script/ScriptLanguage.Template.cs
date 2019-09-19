@@ -322,7 +322,7 @@ namespace ServiceStack.Script
 
                 if (line.StartsWith("```"))
                 {
-                    if (startBlockPos >= 0 && line.Slice(delim).AdvancePastWhitespace().IsEmpty) //is end block
+                    if (scriptLanguage != null && startBlockPos >= 0 && line.Slice(delim).AdvancePastWhitespace().IsEmpty) //is end block
                     {
                         var templateFragments = ScriptTemplate.Language.Parse(context, prevBlock);
                         to.AddRange(templateFragments);
@@ -339,7 +339,7 @@ namespace ServiceStack.Script
                         continue;
                     }
 
-                    if (line.SafeGetChar(delim + 1).IsValidVarNameChar())
+                    if (line.SafeGetChar(delim).IsValidVarNameChar())
                     {
                         line = line.Slice(delim).ParseVarName(out var blockNameSpan);
 
@@ -401,20 +401,25 @@ namespace ServiceStack.Script
                 if (text.Span.SafeCharEquals(varStartPos - 1, '|')) // lang expression syntax {|lang ... |} https://flow.org/en/docs/types/objects/#toc-exact-object-types
                 {
                     var literal = text.Slice(varStartPos);
-                    literal = literal.ParseVarName(out var langSpan);
-                    
-                    var lang = context.GetScriptLanguage(langSpan.ToString());
-                    if (lang != null)
-                    {
-                        var endPos = literal.IndexOf("|}");
-                        if (endPos == -1)
-                            throw new SyntaxErrorException($"Unterminated '|}}' expression, near '{text.Slice(varStartPos).DebugLiteral()}'");
 
-                        var exprStr = literal.Slice(0, endPos);
-                        var langExprFragment = lang.Parse(context, exprStr);
-                        to.AddRange(langExprFragment);
+                    ScriptLanguage lang = null;
+                    if (literal.SafeGetChar(0).IsValidVarNameChar())
+                    {
+                        literal = literal.ParseVarName(out var langSpan);
+                    
+                        lang = context.GetScriptLanguage(langSpan.ToString());
+                        if (lang != null)
+                        {
+                            var endPos = literal.IndexOf("|}");
+                            if (endPos == -1)
+                                throw new SyntaxErrorException($"Unterminated '|}}' expression, near '{text.Slice(varStartPos).DebugLiteral()}'");
+
+                            var exprStr = literal.Slice(0, endPos);
+                            var langExprFragment = lang.Parse(context, exprStr);
+                            to.AddRange(langExprFragment);
+                        }
                     }
-                    else
+                    if (lang == null)
                     {
                         var nextLastPos = text.IndexOf("|}", varStartPos) + 2;
                         block = text.Slice(pos, nextLastPos - pos);
