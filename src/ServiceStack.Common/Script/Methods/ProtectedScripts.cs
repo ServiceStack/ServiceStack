@@ -1176,7 +1176,7 @@ namespace ServiceStack.Script
             .Map(x => x.Name);
 
         public List<string> scriptMethodSignatures(ScriptScopeContext scope) => scriptMethods(scope)
-            .Map(x => x.DisplaySignature);
+            .Map(x => x.Signature);
         
         static readonly string[] AllCacheNames = {
             nameof(ScriptContext.Cache),

@@ -13,8 +13,9 @@ namespace ServiceStack.Script
         public string ReturnType { get; set; }
         public int ParamCount { get; set; }
         public string[] RemainingParams { get; set; }
-        
         public ParameterInfo[] Params { get; set; }
+        public string[] ParamNames => Params.Select(x => x.Name).ToArray();
+        public string[] ParamTypes => Params.Select(x => x.ParameterType.Name.ToString()).ToArray();
         
         public static List<ScriptMethodInfo> GetScriptMethods(Type scriptMethodsType)
         {
@@ -57,13 +58,13 @@ namespace ServiceStack.Script
                 ? $"| {Name}"
                 : $"| {Name}(" + string.Join(", ", RemainingParams) + $")";
 
-        public string Display => ParamCount == 0
+        public string ScriptSignature => ParamCount == 0
             ? $"{Name}{Return}"
             : ParamCount == 1
                 ? $"{FirstParam} | {Name}{Return}"
                 : $"{FirstParam} | {Name}(" + string.Join(", ", RemainingParams) + $"){Return}";
 
-        public string DisplaySignature
+        public string Signature
         {
             get
             {
