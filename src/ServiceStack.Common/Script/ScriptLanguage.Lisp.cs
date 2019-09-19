@@ -3186,7 +3186,7 @@ setcdr rplacd)
         /// </summary>
         public const string LispCore = @"
 (defmacro def (k v) 
-    (list 'progn (list 'setq k v) ))
+    (list 'progn (list 'setq k v) nil ))
 
 (defmacro incf (elem &rest num)
   (cond

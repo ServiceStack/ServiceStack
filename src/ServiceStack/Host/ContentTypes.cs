@@ -278,7 +278,8 @@ namespace ServiceStack.Host
                         return ms.CopyToAsync(stream);
                     }
                 }
-                
+
+                httpReq.Response.AllowSyncIO();
                 serializer(httpReq, dto, stream);
                 return TypeConstants.EmptyTask;
             };

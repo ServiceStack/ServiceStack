@@ -316,7 +316,8 @@ Global: {{ retVal + newVal }}
         {
             var context = LispScriptContext();
 
-            var output = context.EvaluateScript(@"
+            string output;
+            output = context.EvaluateScript(@"
 {{ 1 | to => scopeArg }}
 ```lisp|q
 (setq  lispArg  2)
@@ -329,9 +330,10 @@ Global: {{ lispAdd(scopeArg, exportedArg) }}
 ");
             Assert.That(output.NormalizeNewLines(), Is.EqualTo("Global: 6"));
 
+            // def returns null output
             output = context.EvaluateScript(@"
 {{ 1 | to => scopeArg }}
-```lisp|q
+```lisp
 (def lispArg  2)
 (def localArg 3)
 (def lispAdd  #(+ %1 %2 localArg))
