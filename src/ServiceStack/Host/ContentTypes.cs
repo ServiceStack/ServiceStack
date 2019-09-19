@@ -269,6 +269,18 @@ namespace ServiceStack.Host
 
             return (httpReq, dto, stream) =>
             {
+#if NETSTANDARD
+                if (Env.IsNetCore3)
+                {
+                    using (var ms = MemoryStreamFactory.GetStream())
+                    {
+                        serializer(httpReq, dto, ms);
+                        ms.Position = 0;
+                        return ms.CopyToAsync(stream);
+                    }
+                }
+#endif
+                
                 serializer(httpReq, dto, stream);
                 return TypeConstants.EmptyTask;
             };
