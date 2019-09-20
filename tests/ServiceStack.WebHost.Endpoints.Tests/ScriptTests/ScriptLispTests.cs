@@ -950,7 +950,7 @@ C
         to
     )
 )
-(parseRss rss)
+(parse-rss rss)
 ");
             Assert.That(result, Is.EqualTo(expected));
             
