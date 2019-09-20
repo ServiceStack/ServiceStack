@@ -351,7 +351,7 @@ Global: {{ lispAdd(scopeArg, exportedArg) }}
 
 
         [Test]
-        public void Does_support_silent_blocks()
+        public void Does_support_quiet_blocks()
         {
             var context = LispScriptContext(new ObjectDictionary { ["contextArg"] = 1 });
             

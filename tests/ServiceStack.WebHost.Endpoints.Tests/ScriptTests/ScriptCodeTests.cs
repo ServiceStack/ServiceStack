@@ -880,7 +880,7 @@ remaining={{times}}";
                 Is.EqualTo("remaining=0"));
             Assert.That(context.EvaluateScript(template("code|q")).NormalizeNewLines(), 
                 Is.EqualTo("remaining=0"));
-            Assert.That(context.EvaluateScript(template("code|silent")).NormalizeNewLines(), 
+            Assert.That(context.EvaluateScript(template("code|mute")).NormalizeNewLines(), 
                 Is.EqualTo("remaining=0"));
         }
 
