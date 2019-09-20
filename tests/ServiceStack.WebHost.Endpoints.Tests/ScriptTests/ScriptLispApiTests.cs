@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Xml.Linq;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Data;
@@ -384,13 +386,26 @@ id 1
             Assert.That(result, Is.EqualTo(new[] { "A", "B" }));
         }
 
+        private static ScriptContext LoadLispContext(Action<ScriptContext> fn=null)
+        {
+            var context = new ScriptContext {
+                ScriptLanguages = {ScriptLisp.Language},
+                ScriptMethods = {new ProtectedScripts()},
+                ScriptNamespaces = { // same as SharpPagesFeature
+                    "System",
+                    "System.Collections",
+                    "System.Collections.Generic",
+                    "ServiceStack",
+                }
+            };
+            fn?.Invoke(context);
+            return context.Init();;
+        }
+
         [Test]
         public void Can_load_scripts()
         {
-            var context = new ScriptContext {
-                ScriptLanguages = { ScriptLisp.Language },
-                ScriptMethods = { new ProtectedScripts() },
-            }.Init();
+            var context = LoadLispContext();
             
             context.VirtualFiles.WriteFile("lib1.l", "(defn lib-calc [a b] (+ a b))");
             context.VirtualFiles.WriteFile("/dir/lib2.l", "(defn lib-calc [a b] (* a b))");
@@ -416,14 +431,25 @@ id 1
         {
 //            Lisp.AllowLoadingRemoteScripts = false; // uncomment to prevent loading remote scripts
 
-            var context = new ScriptContext {
-                ScriptLanguages = { ScriptLisp.Language },
-                ScriptMethods = { new ProtectedScripts() },
-            }.Init();
-            
+            var context = LoadLispContext();
 
             LoadLispTests(context);
             LoadLispTests(context); // load twice to check it's using cached downloaded assets
+        }
+
+//        [Test]
+        public void Can_load_parse_rss_and_evaluate_rss_feed()
+        {
+            var context = LoadLispContext(c => {
+                //c.AllowScriptingOfAllTypes = true;
+                c.ScriptTypes.Add(typeof(List<>));
+                c.ScriptTypes.Add(typeof(ObjectDictionary));
+                c.ScriptTypes.Add(typeof(XDocument));
+                c.ScriptTypes.Add(typeof(XLinqExtensions));
+            });
+
+            var result = context.EvaluateLisp(@"(load ""index:parse-rss"")(return (parse-rss (/urlContents ""https://news.ycombinator.com/rss"")))");
+            result.PrintDump();
         }
 
         private static void LoadLispTests(ScriptContext context)
