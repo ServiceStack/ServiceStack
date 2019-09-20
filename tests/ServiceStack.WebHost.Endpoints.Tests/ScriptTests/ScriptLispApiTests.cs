@@ -55,6 +55,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         }
 
         [Test]
+        public void LISP_empty()
+        {
+            Assert.That(eval(@"(empty? nil)"), Is.True);
+            Assert.That(eval(@"(empty? ())"), Is.True);
+            Assert.That(eval(@"(empty? [])"), Is.True);
+            Assert.That(eval(@"(empty? (to-list []))"), Is.True);
+            
+            Assert.That(eval(@"(empty? '(1))"), Is.False);
+            Assert.That(eval(@"(empty? [1])"), Is.False);
+            Assert.That(eval(@"(empty? (to-list [1]))"), Is.False);
+        }
+
+        [Test]
         public void LISP_mapcan()
         {
             Assert.That(eval(@"(mapcan (lambda (x) (and (number? x) (list x))) '(a 1 b c 3 4 d 5))"),

@@ -1511,9 +1511,11 @@ namespace ServiceStack.Script
                 Def("string-upcase", 1, a => (a[0] is string s) ? s.ToUpper() : a[0] != null ? throw new LispEvalException("not a string", a[0]) : "");
                 Def("string?", 1, a => (a[0] is string) ? TRUE : null);
                 Def("number?", 1, a => (DynamicNumber.IsNumber(a[0]?.GetType())) ? TRUE : null);
-                Def("eql", 2, a => ((a[0] == null) ? ((a[1] == null) ?
-                                                      TRUE : null) :
-                                    a[0].Equals(a[1]) ? TRUE : null));
+                Def("eql", 2, a => a[0] == null 
+                    ? a[1] == null 
+                        ? TRUE : null 
+                        : a[0].Equals(a[1]) 
+                        ? TRUE : null);
                 Def("<", 2, a => a[0].compareTo(a[1]) < 0 ? TRUE : null);
 
                 Def("%", 2, a =>  DynamicNumber.Mod(a[0], a[1]));
@@ -3359,8 +3361,9 @@ setcdr rplacd)
 (defun assoc-key (k L) (first (assoc k L)))
 (defun assoc-value (k L) (second (assoc k L)))
 
-(defun even? (n) (= (% n 2) 0))
-(defun odd? (n) (= (% n 2) 1))
+(defn even?  [n] (= (% n 2) 0))
+(defn odd?   [n] (= (% n 2) 1))
+(defn empty? [x] (not (and x (seq? x) (> (count x) 0) )))
 
 (defun flatmap (f L)
   (flatten (map f L)))
