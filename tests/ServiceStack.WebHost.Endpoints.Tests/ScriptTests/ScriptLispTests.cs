@@ -924,7 +924,7 @@ C
             object eval(string lisp) => context.EvaluateLisp($"(return (let () {lisp}))");
 
             var result = eval(@"
-(defn parseRss [xml]
+(defn parse-rss [xml]
     (let ( (to) (doc) (channel) (items) (el) )
         (def doc (System.Xml.Linq.XDocument/Parse xml))
         (def to  (ObjectDictionary.))
