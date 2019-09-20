@@ -2,7 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Xml;
+using System.Xml.Linq;
 using NUnit.Framework;
+using ServiceStack.Logging;
 using ServiceStack.Script;
 using ServiceStack.Text;
 
@@ -427,6 +430,8 @@ SUM: {{ sum }}
                 AllowScriptingOfAllTypes = true,
                 ScriptNamespaces = {
                     "System",
+                    "System.Collections.Generic",
+                    "ServiceStack",
                     typeof(StaticLog).Namespace,
                 },
                 ScriptTypes = {
@@ -854,6 +859,129 @@ C
             }
             catch (LispEvalException e) {}
         }
+
+        // https://news.ycombinator.com/rss
+        private const string rss = @"<rss version=""2.0"">
+    <channel>
+        <title>Hacker News</title>
+        <link>https://news.ycombinator.com/</link>
+        <description>Links for the intellectually curious, ranked by readers.</description>
+        <item>
+            <title>Breaking Pills</title>
+            <link>https://blog.plover.com/math/breaking-pills.html</link>
+            <pubDate>Fri, 20 Sep 2019 07:57:54 +0000</pubDate>
+            <comments>https://news.ycombinator.com/item?id=21024224</comments>
+        </item>
+        <item>
+            <title>A Gentle introduction to Kubernetes with more than just the basics</title>
+            <link>https://github.com/eon01/kubernetes-workshop</link>
+            <pubDate>Thu, 19 Sep 2019 22:04:14 +0000</pubDate>
+            <comments>https://news.ycombinator.com/item?id=21021184</comments>
+        </item>
+        <item>
+            <title>EasyOS: An experimental Linux distribution designed from scratch for containers</title>
+            <link>https://easyos.org</link>
+            <pubDate>Fri, 20 Sep 2019 07:17:07 +0000</pubDate>
+            <comments>https://news.ycombinator.com/item?id=21023989</comments>
+        </item>
+    </channel>
+</rss>";
+
+        private ObjectDictionary expected = new ObjectDictionary {
+            ["title"] = "Hacker News",
+            ["link"] = "https://news.ycombinator.com/",
+            ["description"] = "Links for the intellectually curious, ranked by readers.",
+            ["items"] = new List<ObjectDictionary> {
+                new ObjectDictionary {
+                    ["title"] = "Breaking Pills",
+                    ["link"] = "https://blog.plover.com/math/breaking-pills.html",
+                    ["pubDate"] = "Fri, 20 Sep 2019 07:57:54 +0000",
+                    ["comments"] = "https://news.ycombinator.com/item?id=21024224",
+                },
+                new ObjectDictionary {
+                    ["title"] = "A Gentle introduction to Kubernetes with more than just the basics",
+                    ["link"] = "https://github.com/eon01/kubernetes-workshop",
+                    ["pubDate"] = "Thu, 19 Sep 2019 22:04:14 +0000",
+                    ["comments"] = "https://news.ycombinator.com/item?id=21021184",
+                },
+                new ObjectDictionary {
+                    ["title"] = "EasyOS: An experimental Linux distribution designed from scratch for containers",
+                    ["link"] = "https://easyos.org",
+                    ["pubDate"] = "Fri, 20 Sep 2019 07:17:07 +0000",
+                    ["comments"] = "https://news.ycombinator.com/item?id=21023989",
+                },
+            },
+        };
+
+        [Test]
+        public void Can_parse_rss_LISP()
+        {
+            ConsoleLogFactory.Configure();
+            var context = LispNetContext(new Dictionary<string, object> {
+                ["rss"] = rss
+            }).Init();
+
+            object eval(string lisp) => context.EvaluateLisp($"(return (let () {lisp}))");
+
+            var result = eval(@"
+(defn parseRss [xml]
+    (let ( (to) (doc) (channel) (items) (el) )
+        (def doc (System.Xml.Linq.XDocument/Parse xml))
+        (def to  (ObjectDictionary.))
+        (def items (List<ObjectDictionary>.))
+        (def channel (first (.Descendants doc ""channel"")))
+        (def el  (XLinqExtensions/FirstElement channel))
+
+        (while (not= (.LocalName (.Name el)) ""item"")
+            (.Add to (.LocalName (.Name el)) (.Value el))
+            (def el (XLinqExtensions/NextElement el)))
+
+        (doseq (elItem (.Descendants channel ""item""))
+            (def item (ObjectDictionary.))
+            (def el (XLinqExtensions/FirstElement elItem))
+            
+            (while el
+                (.Add item (.LocalName (.Name el)) (.Value el))
+                (def el (XLinqExtensions/NextElement el)))
+            
+            (.Add items item))
+
+        (.Add to ""items"" (to-list items))
+        to
+    )
+)
+(parseRss rss)
+");
+            Assert.That(result, Is.EqualTo(expected));
+            
+            var to = new ObjectDictionary();
+            var items = new List<ObjectDictionary>();
+            
+            var doc = XDocument.Parse(rss);
+            var channel = doc.Descendants("channel").First();
+            var el = channel.FirstElement();
+            while (el.Name != "item")
+            {
+                to[el.Name.LocalName] = el.Value;
+                el = el.NextElement();
+            }
+            
+            var elItems = channel.Descendants("item");
+            foreach (var elItem in elItems)
+            {
+                var item = new ObjectDictionary();
+                el = elItem.FirstElement();
+                while (el != null)
+                {
+                    item[el.Name.LocalName] = el.Value;
+                    el = el.NextElement();
+                }
+                items.Add(item);
+            }
+
+            to["items"] = items;
+            Assert.That(to, Is.EqualTo(expected));
+        }
+
     }
-    
 }
