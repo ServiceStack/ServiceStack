@@ -1164,21 +1164,13 @@ namespace ServiceStack.Script
                             : null;
                         indexName = indexName.LeftPart('/');
                         
-                        var gistIndex = DownloadCachedGist(scope, IndexGistId);
-                        if (!gistIndex.Files.TryGetValue("index.md", out var indexGistFile))
-                            throw new NotSupportedException($"IndexGistId '{IndexGistId}' does not contain index.md");
-
-                        var indexGistContents = GetGistContents(scope, indexGistFile);
-                        var indexLinks = GistLink.Parse(indexGistContents);
+                        var indexLinks = GetGistIndexLinks(scope);
                         var indexLink = indexLinks.FirstOrDefault(x => x.Name == indexName);
 
                         // If can't find named link index.md could be stale, re-download and cache
                         if (indexLink == null)
                         {
-                            gistIndex = DownloadCachedGist(scope, IndexGistId, force:true);
-                            if (!gistIndex.Files.TryGetValue("index.md", out indexGistFile))
-                                throw new NotSupportedException($"IndexGistId '{IndexGistId}' does not contain index.md");
-                            indexLinks = GistLink.Parse(indexGistContents);
+                            indexLinks = GetGistIndexLinks(scope, force: true);
                             indexLink = indexLinks.FirstOrDefault(x => x.Name == indexName);
                             
                             if (indexLink == null)
@@ -1216,6 +1208,17 @@ namespace ServiceStack.Script
 
                 var lisp = file.GetTextContentsAsMemory();
                 return lisp;
+            }
+
+            private static List<GistLink> GetGistIndexLinks(ScriptScopeContext scope, bool force=false)
+            {
+                var gistIndex = DownloadCachedGist(scope, IndexGistId, force);
+                if (!gistIndex.Files.TryGetValue("index.md", out var indexGistFile))
+                    throw new NotSupportedException($"IndexGistId '{IndexGistId}' does not contain index.md");
+
+                var indexGistContents = GetGistContents(scope, indexGistFile);
+                var indexLinks = GistLink.Parse(indexGistContents);
+                return indexLinks;
             }
 
             private static bool IsTruncated(GistFile f) => (string.IsNullOrEmpty(f.Content) || f.Content.Length < f.Size) && f.Truncated;
@@ -1794,6 +1797,9 @@ namespace ServiceStack.Script
                 
                 Def("symbols", 0, a => 
                     Globals.Keys.Map(x => x.Name).OrderBy(x => x).ToArray());
+                
+                Def("gist-index", 0, (I, a) => 
+                    GetGistIndexLinks(I.AssertScope()));
                 
                 Def("prin1", 1, (I, a) => {
                         print(I, Str(a[0], true)); 

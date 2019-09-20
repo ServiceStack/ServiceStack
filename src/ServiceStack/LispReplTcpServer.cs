@@ -230,7 +230,7 @@ prompt:
 
                             while ((line = reader.ReadLine()) != null)
                             {
-                                if (line == "quit")
+                                if (line == "quit" || line == "exit")
                                 {
                                     write($"Goodbye.\n\n");
                                     client.Close();
