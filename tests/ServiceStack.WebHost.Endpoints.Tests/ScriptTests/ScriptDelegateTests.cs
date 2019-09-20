@@ -110,6 +110,36 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         }
 
         [Test]
+        public void Can_use_function_block_to_create_delegate_with_multiple_args_and_invoke_it_LISP()
+        {
+            var context = new ScriptContext {
+                ScriptLanguages = { ScriptLisp.Language },
+            }.Init();
+
+            var result = context.Evaluate(@"
+                {{#defn calc [a, b] }}
+                    (let ( (c (* a b)) )
+                        (+ a b c)
+                    )
+                {{/defn}}
+                {{ calc(3,4) }}
+                {{ calc(1,2) | return }}");
+
+            Assert.That(result, Is.EqualTo(5));
+
+            result = context.Evaluate(@"
+                {{#defn calc [a, b] }}
+                    (let ( (c (* a b)) )
+                        (+ a b c)
+                    )
+                {{/defn}}
+                {{ calc(3,4) }}
+                {{ calc(1,2) | return }}");
+
+            Assert.That(result, Is.EqualTo(5));
+        }
+
+        [Test]
         public void Does_not_Exceed_MaxStackDepth()
         {
             var context = new ScriptContext().Init();

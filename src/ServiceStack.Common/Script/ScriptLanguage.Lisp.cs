@@ -54,7 +54,11 @@ namespace ServiceStack.Script
         
         public override string LineComment => ";";
 
-        public void Configure(ScriptContext context) => Lisp.Init();
+        public void Configure(ScriptContext context)
+        {
+            Lisp.Init();
+            context.ScriptBlocks.Add(new DefnScriptBlock());
+        }
 
         public override List<PageFragment> Parse(ScriptContext context, ReadOnlyMemory<char> body, ReadOnlyMemory<char> modifiers)
         {
@@ -159,6 +163,40 @@ namespace ServiceStack.Script
         public override int GetHashCode() => (LispStatements != null ? LispStatements.GetHashCode() : 0);
     }
     
+    /// <summary>
+    /// Define and export a LISP function to the page
+    /// Usage: {{#defn calc [a, b] }}
+    ///           (let ( (c (* a b)) )
+    ///             (+ a b c)
+    ///           )
+    ///        {{/defn}}
+    /// </summary>
+    public class DefnScriptBlock : ScriptBlock
+    {
+        public override string Name => "defn";
+        public override ScriptLanguage Body => ScriptLanguage.Verbatim;
+        
+        public override Task WriteAsync(ScriptScopeContext scope, PageBlockFragment block, CancellationToken token)
+        {
+            // block.Argument key is unique to exact memory fragment, not string equality
+            // Parse sExpression once for all Page Results
+            var sExpr = (List<object>) scope.Context.CacheMemory.GetOrAdd(block.Argument, key => {
+
+                var literal = block.Argument.Span.ParseVarName(out var name);
+                var strName = name.ToString();
+
+                var strFragment = (PageStringFragment) block.Body[0];
+                var lispDefnAndExport =
+                    $@"(defn {block.Argument} {strFragment.Value}) (export {strName} (to-delegate {strName}))";
+                return Lisp.Parse(lispDefnAndExport);
+            });
+            
+            var interp = scope.PageResult.GetLispInterpreter(scope);
+            interp.Eval(sExpr);
+            
+            return TypeConstants.EmptyTask;
+        }
+    }
 
     /// <summary>Exception in evaluation</summary>
     public class LispEvalException: Exception 

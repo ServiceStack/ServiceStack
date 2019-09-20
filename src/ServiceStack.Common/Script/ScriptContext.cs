@@ -448,6 +448,15 @@ namespace ServiceStack.Script
             Container.AddSingleton(() => this);
             Container.AddSingleton(() => Pages);
 
+            ScriptLanguagesArray = ScriptLanguages.Distinct().ToArray();
+            foreach (var scriptLanguage in ScriptLanguagesArray)
+            {
+                scriptLanguagesMap[scriptLanguage.Name] = scriptLanguage;
+                
+                if (scriptLanguage is IConfigureScriptContext init)
+                    init.Configure(this);
+            }
+
             var beforePlugins = Plugins.OfType<IScriptPluginBefore>();
             foreach (var plugin in beforePlugins)
             {
@@ -482,15 +491,6 @@ namespace ServiceStack.Script
             {
                 InitBlock(block);
                 blocksMap[block.Name] = block;
-            }
-
-            ScriptLanguagesArray = ScriptLanguages.Distinct().ToArray();
-            foreach (var scriptLanguage in ScriptLanguagesArray)
-            {
-                scriptLanguagesMap[scriptLanguage.Name] = scriptLanguage;
-                
-                if (scriptLanguage is IConfigureScriptContext init)
-                    init.Configure(this);
             }
 
             ScriptNamespaces = ScriptNamespaces.Distinct().ToList();

@@ -8,7 +8,7 @@ using ServiceStack.Text;
 namespace ServiceStack.Script
 {
     /// <summary>
-    /// Define a reusable
+    /// Define a reusable function
     /// Usage: {{#function calc(a, b) }}
     ///           a * b | to => c
     ///           a + b + c | return
@@ -22,6 +22,7 @@ namespace ServiceStack.Script
         public override Task WriteAsync(ScriptScopeContext scope, PageBlockFragment block, CancellationToken token)
         {
             // block.Argument key is unique to exact memory fragment, not string equality
+            // Parse into AST once for all Page Results
             var invokerCtx = (Tuple<string,StaticMethodInvoker>)scope.Context.CacheMemory.GetOrAdd(block.Argument, key => {
                 var literal = block.Argument.Span.ParseVarName(out var name);
                 var strName = name.ToString();
