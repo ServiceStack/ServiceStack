@@ -627,5 +627,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             
             Assert.That(result is ICursor);
         }
+
+        [Test]
+        public void Can_Call_registered_IOC_Dependency()
+        {
+            var context = CreateContext(c => {
+                c.ScriptTypes.Add(typeof(InstanceLog));
+            }).Init();
+            context.Container.AddTransient(() => new InstanceLog("ioc"));
+            
+            string result = null;
+
+            result = context.Evaluate<string>(@"{{ resolve('InstanceLog') | to => o }}
+                {{ Function('InstanceLog.Log') | to => log }}                
+                {{ o.log('arg') }}
+                {{ Function('InstanceLog.AllLogs') | to => allLogs }}{{ o.allLogs() | return }}".NormalizeNewLines());
+            
+            Assert.That(result, Is.EqualTo("ioc arg"));
+        }
+
     }
 }

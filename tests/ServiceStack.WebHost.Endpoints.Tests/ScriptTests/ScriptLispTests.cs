@@ -622,6 +622,24 @@ C
         }
 
         [Test]
+        public void Can_Call_registered_IOC_Dependency_LISP()
+        {
+            var context = LispNetContext();
+            context.ScriptTypes.Add(typeof(InstanceLog));
+            context.Container.AddTransient(() => new InstanceLog("ioc"));
+            context.Init();
+            
+            object eval(string lisp) => context.EvaluateLisp($"(return (let () {lisp}))");
+
+            var result = eval(@"
+                (def o (/resolve ""InstanceLog""))
+                (.Log o ""arg"")
+                (.AllLogs o)".NormalizeNewLines());
+            
+            Assert.That(result, Is.EqualTo("ioc arg"));
+        }
+
+        [Test]
         public void Can_map_on_IEnumerables()
         {
             var context = LispScriptContext(new ObjectDictionary {

@@ -22,6 +22,18 @@ namespace ServiceStack.Script
     public class ProtectedScripts : ScriptMethods
     {
         public static readonly ProtectedScripts Instance = new ProtectedScripts();
+
+        public object resolve(ScriptScopeContext scope, object type)
+        {
+            if (type == null)
+                return null;
+            var t = type as Type ?? (type is string s
+                        ? @typeof(s)
+                        : throw new NotSupportedException($"{nameof(resolve)} requires a Type or Type Name, received '{type.GetType().Name}'"));
+
+            var instance = scope.Context.Container.Resolve(t);
+            return instance;
+        }
         
         public object @new(string typeName)
         {
