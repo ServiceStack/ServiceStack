@@ -753,6 +753,7 @@ namespace ServiceStack.Script
             }
 
             pageParams["it"] = pageParams;
+            pageParams[ScriptConstants.PartialArg] = page;
 
             await scope.WritePageAsync(page, codePage, pageParams);
         }
@@ -1177,6 +1178,8 @@ namespace ServiceStack.Script
                     pageParams[pageArg.Key] = pageArg.Value;
                 }
             }
+            
+            pageParams[ScriptConstants.PartialArg] = page;
 
             if (target is IEnumerable objs && !(target is IDictionary) && !(target is string))
             {

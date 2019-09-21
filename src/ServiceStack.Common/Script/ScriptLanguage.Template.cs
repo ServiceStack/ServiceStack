@@ -50,7 +50,8 @@ namespace ServiceStack.Script
             }
             else if (fragment is PageVariableFragment var)
             {
-                if (var.Binding?.Equals(ScriptConstants.Page) == true)
+                if (var.Binding?.Equals(ScriptConstants.Page) == true
+                    && !scope.ScopedParams.ContainsKey(ScriptConstants.PartialArg))
                 {
                     await scope.PageResult.WritePageAsync(scope.PageResult.Page, scope.PageResult.CodePage, scope, token);
 
