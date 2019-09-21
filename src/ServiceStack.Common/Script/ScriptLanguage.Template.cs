@@ -50,10 +50,9 @@ namespace ServiceStack.Script
             }
             else if (fragment is PageVariableFragment var)
             {
-                if (var.Binding?.Equals(ScriptConstants.Page) == true 
-                    && !(scope.ScopedParams.TryGetValue(ScriptConstants.PartialArg, out var oPartial) && oPartial == scope.Page))
+                if (var.Binding?.Equals(ScriptConstants.Page) == true)
                 {
-                    await scope.PageResult.WritePageAsync(scope, token);
+                    await scope.PageResult.WritePageAsync(scope.PageResult.Page, scope.PageResult.CodePage, scope, token);
 
                     if (scope.PageResult.HaltExecution)
                         scope.PageResult.HaltExecution = false; //break out of page but continue evaluating layout

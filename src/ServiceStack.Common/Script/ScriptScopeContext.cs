@@ -10,17 +10,15 @@ namespace ServiceStack.Script
     public struct ScriptScopeContext
     {
         public PageResult PageResult { get; }
-        public SharpPage Page { get; }
-        public SharpCodePage CodePage { get; }
+        public SharpPage Page => PageResult.Page;
+        public SharpCodePage CodePage => PageResult.CodePage;
         public ScriptContext Context => PageResult.Context;
         public Dictionary<string, object> ScopedParams { get; internal set; }
         public Stream OutputStream { get; }
 
         public ScriptScopeContext(PageResult pageResult, Stream outputStream, Dictionary<string, object> scopedParams)
         {
-            PageResult = pageResult ?? throw new ArgumentNullException(nameof(pageResult));
-            Page = pageResult.Page;
-            CodePage = pageResult.CodePage;
+            PageResult = pageResult;
             ScopedParams = scopedParams ?? new Dictionary<string, object>();
             OutputStream = outputStream;
         }
@@ -28,26 +26,8 @@ namespace ServiceStack.Script
         public ScriptScopeContext(ScriptContext context, Dictionary<string, object> scopedParams)
         {
             PageResult = new PageResult(context.EmptyPage);
-            Page = PageResult.Page;
-            CodePage = PageResult.CodePage;
             OutputStream = null;
             ScopedParams = scopedParams;
-        }
-
-        public ScriptScopeContext(ScriptScopeContext parent, Stream outputStream, Dictionary<string, object> scopedParams)
-        {
-            PageResult = parent.PageResult;
-            Page = parent.Page;
-            CodePage = parent.CodePage;
-            ScopedParams = scopedParams ?? new Dictionary<string, object>();
-            OutputStream = outputStream;
-        }
-
-        public ScriptScopeContext(ScriptScopeContext parent, SharpPage page, SharpCodePage codePage, Dictionary<string, object> pageParams) 
-            : this(parent, parent.OutputStream, pageParams)
-        {
-            Page = page;
-            CodePage = codePage;
         }
 
         public static implicit operator Templates.TemplateScopeContext(ScriptScopeContext from)
@@ -160,12 +140,6 @@ namespace ServiceStack.Script
 
         public static ScriptScopeContext ScopeWithParams(this ScriptScopeContext parentContext, Dictionary<string, object> scopedParams)
             => ScopeWith(parentContext, scopedParams, parentContext.OutputStream);
-
-        public static ScriptScopeContext ScopeWithPage(this ScriptScopeContext parentContext, SharpPage page, SharpCodePage codePage, Dictionary<string, object> scopedParams) =>
-            new ScriptScopeContext(parentContext, page, codePage, scopedParams);
-        
-        public static ScriptScopeContext ScopeWithStream(this ScriptScopeContext scope, Stream stream) =>
-            new ScriptScopeContext(scope, stream, scope.ScopedParams);
         
         public static ScriptScopeContext ScopeWith(this ScriptScopeContext parentContext, Dictionary<string, object> scopedParams=null, Stream outputStream=null)
         {
@@ -190,12 +164,15 @@ namespace ServiceStack.Script
             {
                 to[entry.Key] = entry.Value;
             }
-            return new ScriptScopeContext(parentContext, outputStream, to);
+            return new ScriptScopeContext(parentContext.PageResult, outputStream, to);
         }
+        
+        public static ScriptScopeContext ScopeWithStream(this ScriptScopeContext scope, Stream stream) =>
+            new ScriptScopeContext(scope.PageResult, stream, scope.ScopedParams);
 
         public static async Task WritePageAsync(this ScriptScopeContext scope, SharpPage page, SharpCodePage codePage, Dictionary<string, object> pageParams, CancellationToken token = default(CancellationToken))
         {
-            await scope.PageResult.WritePageAsync(scope.ScopeWithPage(page, codePage, pageParams), token);
+            await scope.PageResult.WritePageAsync(page, codePage, scope.ScopeWithParams(pageParams), token);
         }
 
         public static void InvokeAssignExpression(this ScriptScopeContext scope, string assignExpr, object target, object value)
