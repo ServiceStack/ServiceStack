@@ -137,6 +137,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 {{ calc(1,2) | return }}");
 
             Assert.That(result, Is.EqualTo(5));
+
+            result = context.Evaluate(@"
+                {{#defn fib [n] }}
+                    (if (<= n 1)
+                        n
+                        (+ (fib (- n 1))
+                           (fib (- n 2)) ))
+                {{/defn}}
+                {{ 10.fib() | return }}");
+
+            Assert.That(result, Is.EqualTo(55));
         }
 
         [Test]
