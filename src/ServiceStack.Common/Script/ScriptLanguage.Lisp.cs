@@ -263,13 +263,13 @@ namespace ServiceStack.Script
         public static string RenderLisp(this ScriptContext context, string lisp, Dictionary<string, object> args=null)
         {
             var pageResult = GetLispPageResult(context, lisp, args);
-            return pageResult.EvaluateScript();
+            return pageResult.RenderScript();
         }
 
         public static async Task<string> RenderLispAsync(this ScriptContext context, string lisp, Dictionary<string, object> args=null)
         {
             var pageResult = GetLispPageResult(context, lisp, args);
-            return await pageResult.EvaluateScriptAsync();
+            return await pageResult.RenderScriptAsync();
         }
 
         public static LispStatements ParseLisp(this ScriptContext context, string lisp) =>
@@ -878,7 +878,7 @@ namespace ServiceStack.Script
                 
                 this.Scope = new ScriptScopeContext(page, outputStream, args);
 
-                var output = page.EvaluateScript();
+                var output = page.RenderScript();
                 if (page.ReturnValue != null)
                 {
                     var ret = ScriptLanguage.UnwrapValue(page.ReturnValue.Result);

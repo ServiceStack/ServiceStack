@@ -730,7 +730,7 @@ namespace ServiceStack.Script
             }
         }
 
-        public static string EvaluateScript(this PageResult pageResult)
+        public static string RenderScript(this PageResult pageResult)
         {
             try
             {
@@ -749,7 +749,7 @@ namespace ServiceStack.Script
             }
         }
 
-        public static async Task<string> EvaluateScriptAsync(this PageResult pageResult, CancellationToken token = default)
+        public static async Task<string> RenderScriptAsync(this PageResult pageResult, CancellationToken token = default)
         {
             try
             {

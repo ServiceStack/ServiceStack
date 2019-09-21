@@ -124,7 +124,7 @@ namespace ServiceStack.Script
         {
             var pageResult = new PageResult(context.OneTimePage(script));
             args.Each((x,y) => pageResult.Args[x] = y);
-            return pageResult.EvaluateScript();
+            return pageResult.RenderScript();
         }
 
         /// <summary>
@@ -139,7 +139,7 @@ namespace ServiceStack.Script
         {
             var pageResult = new PageResult(context.OneTimePage(script));
             args.Each((x,y) => pageResult.Args[x] = y);
-            return await pageResult.EvaluateScriptAsync();
+            return await pageResult.RenderScriptAsync();
         }
         
         /// <summary>

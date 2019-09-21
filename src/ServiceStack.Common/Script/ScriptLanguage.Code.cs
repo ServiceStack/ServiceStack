@@ -123,13 +123,13 @@ namespace ServiceStack.Script
         public static string RenderCode(this ScriptContext context, string code, Dictionary<string, object> args=null)
         {
             var pageResult = GetCodePageResult(context, code, args);
-            return pageResult.EvaluateScript();
+            return pageResult.RenderScript();
         }
 
         public static async Task<string> RenderCodeAsync(this ScriptContext context, string code, Dictionary<string, object> args=null)
         {
             var pageResult = GetCodePageResult(context, code, args);
-            return await pageResult.EvaluateScriptAsync();
+            return await pageResult.RenderScriptAsync();
         }
 
         public static JsBlockStatement ParseCode(this ScriptContext context, string code) =>
