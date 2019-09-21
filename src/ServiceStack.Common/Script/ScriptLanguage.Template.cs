@@ -77,6 +77,20 @@ namespace ServiceStack.Script
     public static class ScriptTemplateUtils
     {
         /// <summary>
+        /// Create SharpPage configured to use #Script 
+        /// </summary>
+        public static SharpPage SharpScriptPage(this ScriptContext context, string code) 
+            => context.Pages.OneTimePage(code, context.PageFormats[0].Extension,
+                p => p.ScriptLanguage = SharpScript.Language);
+
+        /// <summary>
+        /// Create SharpPage configured to use #Script Templates 
+        /// </summary>
+        public static SharpPage TemplateSharpPage(this ScriptContext context, string code) 
+            => context.Pages.OneTimePage(code, context.PageFormats[0].Extension,
+                p => p.ScriptLanguage = ScriptTemplate.Language);
+
+        /// <summary>
         /// Render #Script output to string
         /// </summary>
         public static string RenderScript(this ScriptContext context, string script, out ScriptException error) => 
@@ -97,7 +111,7 @@ namespace ServiceStack.Script
         /// </summary>
         public static string EvaluateScript(this ScriptContext context, string script, Dictionary<string, object> args, out ScriptException error)
         {
-            var pageResult = new PageResult(context.OneTimePage(script));
+            var pageResult = new PageResult(context.SharpScriptPage(script));
             args.Each((x,y) => pageResult.Args[x] = y);
             try { 
                 var output = pageResult.Result;
@@ -122,7 +136,7 @@ namespace ServiceStack.Script
         /// </summary>
         public static string EvaluateScript(this ScriptContext context, string script, Dictionary<string, object> args=null)
         {
-            var pageResult = new PageResult(context.OneTimePage(script));
+            var pageResult = new PageResult(context.SharpScriptPage(script));
             args.Each((x,y) => pageResult.Args[x] = y);
             return pageResult.RenderScript();
         }
@@ -137,7 +151,7 @@ namespace ServiceStack.Script
         /// </summary>
         public static async Task<string> EvaluateScriptAsync(this ScriptContext context, string script, Dictionary<string, object> args=null)
         {
-            var pageResult = new PageResult(context.OneTimePage(script));
+            var pageResult = new PageResult(context.SharpScriptPage(script));
             args.Each((x,y) => pageResult.Args[x] = y);
             return await pageResult.RenderScriptAsync();
         }
@@ -153,7 +167,7 @@ namespace ServiceStack.Script
         /// </summary>
         public static object Evaluate(this ScriptContext context, string script, Dictionary<string, object> args=null)
         {
-            var pageResult = new PageResult(context.OneTimePage(script));
+            var pageResult = new PageResult(context.SharpScriptPage(script));
             args.Each((x,y) => pageResult.Args[x] = y);
 
             if (!pageResult.EvaluateResult(out var returnValue))
@@ -173,7 +187,7 @@ namespace ServiceStack.Script
         /// </summary>
         public static async Task<object> EvaluateAsync(this ScriptContext context, string script, Dictionary<string, object> args=null)
         {
-            var pageResult = new PageResult(context.OneTimePage(script));
+            var pageResult = new PageResult(context.SharpScriptPage(script));
             args.Each((x,y) => pageResult.Args[x] = y);
 
             var ret = await pageResult.EvaluateResultAsync();
