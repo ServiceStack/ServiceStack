@@ -159,7 +159,7 @@ namespace ServiceStack.Script
         /// Can be used to track number of Evaluations
         /// </summary>
         public long Evaluations { get; private set; }
-
+        
         public void AssertNextEvaluation()
         {
             if (Evaluations++ >= Context.MaxEvaluations)
@@ -297,7 +297,7 @@ namespace ServiceStack.Script
 
             token.ThrowIfCancellationRequested();
 
-            var pageScope = CreatePageContext(null, outputStream);
+            var pageScope = new ScriptScopeContext(this, outputStream, GetPageParams(null));
 
             if (!NoLayout && LayoutPage != null)
             {
@@ -316,7 +316,7 @@ namespace ServiceStack.Script
             }
             else
             {
-                await WritePageAsync(Page, CodePage, pageScope, token);
+                await WritePageAsync(pageScope, token);
             }
         }
 
@@ -481,16 +481,15 @@ namespace ServiceStack.Script
                 throw new NotSupportedException("PageResult.Init() required for this operation.");
         }
 
-        public Task WritePageAsync(SharpPage page, SharpCodePage codePage,
-            ScriptScopeContext scope, CancellationToken token = default(CancellationToken))
+        public Task WritePageAsync(ScriptScopeContext scope, CancellationToken token = default)
         {
-            if (page != null)
-                return WritePageAsync(page, scope, token);
+            if (scope.Page != null)
+                return WritePageAsync(scope.Page, scope, token);
 
-            return WriteCodePageAsync(codePage, scope, token);
+            return WriteCodePageAsync(scope.CodePage, scope, token);
         }
 
-        public async Task WritePageAsync(SharpPage page, ScriptScopeContext scope, CancellationToken token = default(CancellationToken))
+        public async Task WritePageAsync(SharpPage page, ScriptScopeContext scope, CancellationToken token = default)
         {
             if (PageTransformers.Count == 0)
             {
@@ -503,7 +502,7 @@ namespace ServiceStack.Script
             {
                 stackTrace.Push("PageTransformer");
 
-                await WritePageAsyncInternal(page, new ScriptScopeContext(this, ms, scope.ScopedParams), token);
+                await WritePageAsyncInternal(page, new ScriptScopeContext(scope, ms, scope.ScopedParams), token);
                 Stream stream = ms;
 
                 foreach (var transformer in PageTransformers)
@@ -522,14 +521,14 @@ namespace ServiceStack.Script
             }
         }
 
-        internal async Task WritePageAsyncInternal(SharpPage page, ScriptScopeContext scope, CancellationToken token = default(CancellationToken))
+        internal async Task WritePageAsyncInternal(SharpPage page, ScriptScopeContext scope, CancellationToken token = default)
         {
             await page.Init(); //reload modified changes if needed
 
             await WriteFragmentsAsync(scope, page.PageFragments, "Page: " + page.VirtualPath, token);
         }
 
-        public async Task WriteCodePageAsync(SharpCodePage page, ScriptScopeContext scope, CancellationToken token = default(CancellationToken))
+        public async Task WriteCodePageAsync(SharpCodePage page, ScriptScopeContext scope, CancellationToken token = default)
         {
             if (PageTransformers.Count == 0)
             {
@@ -557,7 +556,7 @@ namespace ServiceStack.Script
             }
         }
 
-        internal Task WriteCodePageAsyncInternal(SharpCodePage page, ScriptScopeContext scope, CancellationToken token = default(CancellationToken))
+        internal Task WriteCodePageAsyncInternal(SharpCodePage page, ScriptScopeContext scope, CancellationToken token = default)
         {
             page.Scope = scope;
 
@@ -641,9 +640,7 @@ namespace ServiceStack.Script
             return scopedParams;
         }
 
-        private ScriptScopeContext CreatePageContext(PageVariableFragment var, Stream outputStream) => new ScriptScopeContext(this, outputStream, GetPageParams(var));
-
-        private async Task<object> EvaluateAsync(PageVariableFragment var, ScriptScopeContext scope, CancellationToken token=default(CancellationToken))
+        private async Task<object> EvaluateAsync(PageVariableFragment var, ScriptScopeContext scope, CancellationToken token=default)
         {
             scope.ScopedParams[nameof(PageVariableFragment)] = var;
 
