@@ -598,6 +598,7 @@ namespace ServiceStack
     public class SvgScriptBlock : ScriptBlock
     {
         public override string Name => "svg";
+        public override ScriptLanguage Body => ScriptTemplate.Language;
         public override async Task WriteAsync(ScriptScopeContext scope, PageBlockFragment block, CancellationToken token)
         {
             if (block.Argument.IsEmpty)
@@ -621,7 +622,8 @@ namespace ServiceStack
     public abstract class MinifyScriptBlockBase : ScriptBlock
     {
         public abstract ICompressor Minifier { get; }
-        
+        public override ScriptLanguage Body => ScriptVerbatim.Language;
+
         //reduce string allocation of block contents at runtime
         readonly ConcurrentDictionary<ReadOnlyMemory<char>, Tuple<string,string>> allocatedStringsCache = 
             new ConcurrentDictionary<ReadOnlyMemory<char>, Tuple<string,string>>();

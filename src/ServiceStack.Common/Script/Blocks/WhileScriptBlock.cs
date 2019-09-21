@@ -6,7 +6,7 @@ namespace ServiceStack.Script
 {
     /// <summary>
     /// while block
-    /// Usages: {{#while b}} {{ false | to => b }} {{/while}}
+    /// Usages: {{#while times > 0}} {{times}}. {{times - 1 | to => times}} {{/while}}
     ///         {{#while b}} {{ false | to => b }} {{else}} {{b}} was false {{/while}}
     /// 
     /// Max Iterations = Context.Args[ScriptConstants.MaxQuota]
