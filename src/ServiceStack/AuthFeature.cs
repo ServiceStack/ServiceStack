@@ -160,16 +160,28 @@ namespace ServiceStack
         }
 
         string Localize(string s) => HostContext.AppHost?.ResolveLocalizedString(s, null) ?? s;
-
-        /// <summary>
-        /// Remove /authenticate and /authenticate/{provider} routes
-        /// </summary>
-        /// <returns></returns>
+        
+        [Obsolete("The /authenticate alias routes are no longer added by default")]
         public AuthFeature RemoveAuthenticateAliasRoutes()
         {
             ServiceRoutes[typeof(AuthenticateService)] = new[] {
                 "/" + Localize(LocalizedStrings.Auth),
                 "/" + Localize(LocalizedStrings.Auth) + "/{provider}",
+            };
+            return this;
+        }
+
+        /// <summary>
+        /// Add /authenticate and /authenticate/{provider} alias routes
+        /// </summary>
+        /// <returns></returns>
+        public AuthFeature AddAuthenticateAliasRoutes()
+        {
+            ServiceRoutes[typeof(AuthenticateService)] = new[] {
+                "/" + Localize(LocalizedStrings.Auth),
+                "/" + Localize(LocalizedStrings.Auth) + "/{provider}",
+                "/" + Localize(LocalizedStrings.Authenticate),
+                "/" + Localize(LocalizedStrings.Authenticate) + "/{provider}",
             };
             return this;
         }
@@ -184,8 +196,6 @@ namespace ServiceStack
                     {
                         "/" + Localize(LocalizedStrings.Auth),
                         "/" + Localize(LocalizedStrings.Auth) + "/{provider}",
-                        "/" + Localize(LocalizedStrings.Authenticate),
-                        "/" + Localize(LocalizedStrings.Authenticate) + "/{provider}",
                     } },
                 { typeof(AssignRolesService), new[]{ "/" + Localize(LocalizedStrings.AssignRoles) } },
                 { typeof(UnAssignRolesService), new[]{ "/" + Localize(LocalizedStrings.UnassignRoles) } },
