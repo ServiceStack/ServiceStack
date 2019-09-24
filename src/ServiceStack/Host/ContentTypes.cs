@@ -235,7 +235,7 @@ namespace ServiceStack.Host
             throw new NotSupportedException(ErrorMessages.ContentTypeNotSupported.Fmt(contentType));
         }
 
-        private static Task serializeSync(StreamSerializerDelegate serializer, IRequest httpReq, object dto, Stream stream)
+        private static async Task serializeSync(StreamSerializerDelegate serializer, IRequest httpReq, object dto, Stream stream)
         {
             if (HostContext.Config.BufferSyncSerializers)
             {
@@ -243,15 +243,13 @@ namespace ServiceStack.Host
                 {
                     serializer(httpReq, dto, ms);
                     ms.Position = 0;
-                    {
-                        return ms.CopyToAsync(stream);
-                    }
+                    await ms.CopyToAsync(stream);
+                    return;
                 }
             }
 
             httpReq.Response.AllowSyncIO();
             serializer(httpReq, dto, stream);
-            return TypeConstants.EmptyTask;
         }
         
         public Task SerializeToStreamAsync(IRequest req, object response, Stream responseStream)
