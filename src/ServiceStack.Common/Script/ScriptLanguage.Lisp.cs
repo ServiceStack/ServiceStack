@@ -3011,6 +3011,7 @@ namespace ServiceStack.Script
         public static void RunRepl(ScriptContext context)
         {
             //remove sandbox restrictions
+            bool breakLoop = false;
             context.MaxQuota = int.MaxValue;
             context.MaxEvaluations = long.MaxValue;
             
@@ -3022,13 +3023,26 @@ namespace ServiceStack.Script
             Console.SetOut(sw);
             using (sw)
             {
-                for (;;) {
+                while (!breakLoop)
+                {
                     interp.COut.Write("> ");
                     try
                     {
                         var sb = new StringBuilder();
 
-                        sb.AppendLine(Console.ReadLine());
+                        var line = Console.ReadLine();
+                        if (line == "clear")
+                        {
+                            Console.Clear();
+                            continue;
+                        }
+                        if (line == "quit" || line == "exit")
+                        {
+                            Console.WriteLine($"Goodbye.\n\n");
+                            return;
+                        }
+                        
+                        sb.AppendLine(line);
                         while (Console.KeyAvailable) 
                             sb.AppendLine(Console.ReadLine());
 
