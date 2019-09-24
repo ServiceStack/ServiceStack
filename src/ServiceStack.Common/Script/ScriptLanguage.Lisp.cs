@@ -57,6 +57,7 @@ namespace ServiceStack.Script
         public void Configure(ScriptContext context)
         {
             Lisp.Init();
+            context.ScriptMethods.Add(new LispScriptMethods());
             context.ScriptBlocks.Add(new DefnScriptBlock());
         }
 
@@ -162,6 +163,20 @@ namespace ServiceStack.Script
         }
         public override int GetHashCode() => (LispStatements != null ? LispStatements.GetHashCode() : 0);
     }
+
+    public class LispScriptMethods : ScriptMethods
+    {
+        public List<string> symbols(ScriptScopeContext scope)
+        {
+            var interp = scope.GetLispInterpreter();
+            return interp.Globals.Keys.Map(x => x.Name).OrderBy(x => x).ToList();
+        }
+
+        public List<GistLink> gistindex(ScriptScopeContext scope)
+        {
+            return Lisp.Interpreter.GetGistIndexLinks(scope);
+        }
+    }
     
     /// <summary>
     /// Define and export a LISP function to the page
@@ -222,6 +237,8 @@ namespace ServiceStack.Script
 
     public static class ScriptLispUtils
     {
+        public static Lisp.Interpreter GetLispInterpreter(this ScriptScopeContext scope) =>
+            scope.PageResult.GetLispInterpreter(scope);
         public static Lisp.Interpreter GetLispInterpreter(this PageResult pageResult, ScriptScopeContext scope)
         {
             if (!pageResult.Args.TryGetValue(nameof(ScriptLisp), out var oInterp))
@@ -1210,7 +1227,7 @@ namespace ServiceStack.Script
                 return lisp;
             }
 
-            private static List<GistLink> GetGistIndexLinks(ScriptScopeContext scope, bool force=false)
+            internal static List<GistLink> GetGistIndexLinks(ScriptScopeContext scope, bool force=false)
             {
                 var gistIndex = DownloadCachedGist(scope, IndexGistId, force);
                 if (!gistIndex.Files.TryGetValue("index.md", out var indexGistFile))
@@ -1795,11 +1812,11 @@ namespace ServiceStack.Script
                 Def("debug", 0, a =>
                     Globals.Keys.Aggregate((Cell) null, (x, y) => new Cell(y, x)));
                 
-                Def("symbols", 0, a => 
-                    Globals.Keys.Map(x => x.Name).OrderBy(x => x).ToArray());
+                //use symbols script method
+                //Def("symbols", 0, a =>  Globals.Keys.Map(x => x.Name).OrderBy(x => x).ToArray());
                 
-                Def("gist-index", 0, (I, a) => 
-                    GetGistIndexLinks(I.AssertScope()));
+                //Use gistindex script method
+                //Def("gist-index", 0, (I, a) => GetGistIndexLinks(I.AssertScope()));
                 
                 Def("prin1", 1, (I, a) => {
                         print(I, Str(a[0], true)); 
@@ -1825,6 +1842,14 @@ namespace ServiceStack.Script
                 Def("make-symbol", 1, a => new Sym((string) a[0]));
                 Def("intern", 1, a => Sym.New((string) a[0]));
                 Def("symbol-name", 1, a => ((Sym) a[0]).Name);
+                Def("symbol-type", 1, a => {
+                    var sym = a[0] as Sym ?? (a[0] is string s
+                        ? Sym.New(s)
+                        : throw new LispEvalException("Expected Symbol or Symbol Name", a[0]));
+                    if (Globals.TryGetValue(sym, out var value) && value != null)
+                        return value.GetType().Name;
+                    return "nil";
+                });
 
                 Def("apply", 2, a => a[1] is Cell c 
                     ? Eval(new Cell(a[0], MapCar(c, QqQuote)), null)
@@ -1836,8 +1861,8 @@ namespace ServiceStack.Script
                     });
 
                 Globals[Sym.New("*version*")] =
-                    new Cell(1.2d,
-                             new Cell("C# 7", new Cell("Nukata Lisp Light", null)));
+                    new Cell(Env.ServiceStackVersion,
+                             new Cell("#Script Lisp", new Cell("based on Nukata Lisp Light v1.2", null)));
             }
 
             /// <summary>Define a built-in function by a name, an arity,
