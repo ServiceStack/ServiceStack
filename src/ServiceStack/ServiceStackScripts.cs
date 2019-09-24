@@ -130,24 +130,55 @@ namespace ServiceStack
         {
             try
             {
-                if (requestName == null)
-                    throw new ArgumentNullException(nameof(requestName));
-                if (dto == null)
-                    throw new ArgumentNullException(nameof(dto));
-                
+                var requestDto = CreateRequestDto(dto, requestName);
                 var gateway = appHost.GetServiceGateway(req(scope));
-                var requestType = appHost.Metadata.GetOperationType(requestName);
-                if (requestType == null)
-                    throw new ArgumentException("Request DTO not found: " + requestName);
-
-                var requestDto = dto.GetType() == requestType
-                    ? dto
-                    : dto is Dictionary<string, object> objDictionary
-                        ? objDictionary.FromObjectDictionary(requestType)
-                        : dto.ConvertTo(requestType);
-
                 gateway.Publish(requestDto);
                 return StopExecution.Value;
+            }
+            catch (Exception ex)
+            {
+                if (Log.IsDebugEnabled)
+                    Log.Error(ex.Message, ex);
+                
+                throw new StopFilterExecutionException(scope, options, ex);
+            }
+        }
+
+        private object CreateRequestDto(object dto, string requestName)
+        {
+            if (requestName == null)
+                throw new ArgumentNullException(nameof(requestName));
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            var requestType = appHost.Metadata.GetOperationType(requestName);
+            if (requestType == null)
+                throw new ArgumentException("Request DTO not found: " + requestName);
+
+            var requestDto = dto.GetType() == requestType
+                ? dto
+                : dto is Dictionary<string, object> objDictionary
+                    ? objDictionary.FromObjectDictionary(requestType)
+                    : dto.ConvertTo(requestType);
+            return requestDto;
+        }
+
+        public IgnoreResult publishMessage(ScriptScopeContext scope, string requestName, object dto) =>
+            publishMessage(scope, requestName, dto, null);
+        public IgnoreResult publishMessage(ScriptScopeContext scope, string requestName, object dto, object options)
+        {
+            var msgProducer = appHost.GetMessageProducer();
+            if (msgProducer == null)
+                throw new NotSupportedException("IMessageService not configured");
+            
+            try 
+            {
+                var requestDto = CreateRequestDto(dto, requestName);
+                using (msgProducer)
+                {
+                    appHost.PublishMessage(msgProducer, requestDto);
+                    return IgnoreResult.Value;
+                }
             }
             catch (Exception ex)
             {
