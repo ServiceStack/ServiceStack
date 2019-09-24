@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using ServiceStack.Text;
 using ServiceStack.Text.Json;
@@ -968,6 +969,48 @@ namespace ServiceStack.Script
             }
 
             return TypeConstants.EmptyTask;
+        }
+
+        public List<string> props(object o)
+        {
+            if (o == null)
+                return TypeConstants.EmptyStringList;
+
+            var pis = propTypes(o);
+            return pis.Map(x => x.Name).OrderBy(x => x).ToList();
+        }
+
+        public PropertyInfo[] propTypes(object o)
+        {
+            if (o == null)
+                return TypeConstants<PropertyInfo>.EmptyArray;
+            
+            var type = o is Type t
+                ? t
+                : o.GetType();
+
+            return type.GetPublicProperties();
+        }
+
+        public List<string> fields(object o)
+        {
+            if (o == null)
+                return TypeConstants.EmptyStringList;
+
+            var fis = fieldTypes(o);
+            return fis.Map(x => x.Name).OrderBy(x => x).ToList();
+        }
+
+        public FieldInfo[] fieldTypes(object o)
+        {
+            if (o == null)
+                return TypeConstants<FieldInfo>.EmptyArray;
+            
+            var type = o is Type t
+                ? t
+                : o.GetType();
+
+            return type.GetPublicFields();
         }
 
         public object property(object target, string propertyName)
