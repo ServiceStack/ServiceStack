@@ -992,6 +992,27 @@ namespace ServiceStack.Script
             return type.GetPublicProperties();
         }
 
+        public List<string> staticProps(object o)
+        {
+            if (o == null)
+                return TypeConstants.EmptyStringList;
+
+            var pis = staticPropTypes(o);
+            return pis.Map(x => x.Name).OrderBy(x => x).ToList();
+        }
+
+        public PropertyInfo[] staticPropTypes(object o)
+        {
+            if (o == null)
+                return TypeConstants<PropertyInfo>.EmptyArray;
+            
+            var type = o is Type t
+                ? t
+                : o.GetType();
+
+            return type.GetProperties(BindingFlags.Static | BindingFlags.Public);
+        }
+
         public List<string> fields(object o)
         {
             if (o == null)
@@ -1011,6 +1032,27 @@ namespace ServiceStack.Script
                 : o.GetType();
 
             return type.GetPublicFields();
+        }
+
+        public List<string> staticFields(object o)
+        {
+            if (o == null)
+                return TypeConstants.EmptyStringList;
+
+            var fis = staticFieldTypes(o);
+            return fis.Map(x => x.Name).OrderBy(x => x).ToList();
+        }
+
+        public FieldInfo[] staticFieldTypes(object o)
+        {
+            if (o == null)
+                return TypeConstants<FieldInfo>.EmptyArray;
+            
+            var type = o is Type t
+                ? t
+                : o.GetType();
+
+            return type.GetFields(BindingFlags.Static | BindingFlags.Public);
         }
 
         public object property(object target, string propertyName)

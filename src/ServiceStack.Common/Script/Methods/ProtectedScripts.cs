@@ -1189,6 +1189,74 @@ namespace ServiceStack.Script
 
         public List<string> scriptMethodSignatures(ScriptScopeContext scope) => scriptMethods(scope)
             .Map(x => x.Signature);
+
+        private MethodInfo[] filterMethods(MethodInfo[] methodInfos) =>
+            methodInfos.Where(m => !m.IsSpecialName && m.DeclaringType != typeof(object)).ToArray();
+        public List<string> methods(object o)
+        {
+            if (o == null)
+                return TypeConstants.EmptyStringList;
+
+            var mis = methodTypes(o);
+            return mis.Map(x => x.Name).OrderBy(x => x).ToList();
+        }
+
+        public MethodInfo[] methodTypes(object o)
+        {
+            if (o == null)
+                return TypeConstants<MethodInfo>.EmptyArray;
+            
+            var type = o is Type t
+                ? t
+                : o.GetType();
+
+            return filterMethods(type.GetInstanceMethods());
+        }
+        
+        public List<string> staticMethods(object o)
+        {
+            if (o == null)
+                return TypeConstants.EmptyStringList;
+
+            var mis = staticMethodTypes(o);
+            return mis.Map(x => x.Name).OrderBy(x => x).ToList();
+        }
+
+        public MethodInfo[] staticMethodTypes(object o)
+        {
+            if (o == null)
+                return TypeConstants<MethodInfo>.EmptyArray;
+            
+            var type = o is Type t
+                ? t
+                : o.GetType();
+
+            return filterMethods(type.GetMethods(BindingFlags.Static | BindingFlags.Public));
+        }
+
+        public MethodInfo[] allMethodTypes(object o)
+        {
+            if (o == null)
+                return TypeConstants<MethodInfo>.EmptyArray;
+            
+            var type = o is Type t
+                ? t
+                : o.GetType();
+
+            return type.GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        }
+
+        public MemberInfo[] allMemberTypes(object o)
+        {
+            if (o == null)
+                return TypeConstants<MemberInfo>.EmptyArray;
+            
+            var type = o is Type t
+                ? t
+                : o.GetType();
+
+            return type.GetMembers(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        }
         
         static readonly string[] AllCacheNames = {
             nameof(ScriptContext.Cache),

@@ -76,9 +76,9 @@ namespace ServiceStack
         /// Lookup Namespaces for resolving Types in Scripts
         /// </summary>
         public List<string> ScriptNamespaces { get; set; } = new List<string>();
-        
+
         /// <summary>
-        /// Allow scripting of all Types in loaded Assemblies 
+        /// Allow scripting of all Types in loaded Assemblies
         /// </summary>
         public bool? AllowScriptingOfAllTypes { get; set; }
 
