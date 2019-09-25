@@ -31,13 +31,36 @@ namespace ServiceStack
             this.port = port;
             this.localIp = localIp ?? IPAddress.Loopback;
         }
-        
+
+        /// <summary>
+        /// Load the Lisp TCP Repl within this ScriptContext (falls back to SharpPagesFeature) 
+        /// </summary>
         public ScriptContext ScriptContext { get; set; }
-        
+
         /// <summary>
         /// Whether to Require Config.AdminAuthSecret to Access REPL
         /// </summary>
         public bool RequireAuthSecret { get; set; }
+        
+        /// <summary>
+        /// Additional Script Methods you want to add to the ScriptContext when Lisp TCP Repl is running 
+        /// </summary>
+        public List<ScriptMethods> ScriptMethods { get; set; } = new List<ScriptMethods>();
+
+        /// <summary>
+        /// Additional Script Blocks you want to add to the ScriptContext when Lisp TCP Repl is running 
+        /// </summary>
+        public List<ScriptBlock> ScriptBlocks { get; set; } = new List<ScriptBlock>();
+
+        /// <summary>
+        /// Scan Types and auto-register any Script Methods, Blocks and Code Pages
+        /// </summary>
+        public List<Type> ScanTypes { get; set; } = new List<Type>();
+
+        /// <summary>
+        /// Scan Assemblies and auto-register any Script Methods, Blocks and Code Pages
+        /// </summary>
+        public List<Assembly> ScanAssemblies { get; set; } = new List<Assembly>();
         
         /// <summary>
         /// Allow scripting of Types from specified Assemblies
@@ -66,14 +89,23 @@ namespace ServiceStack
             
             if (!ScriptContext.ScriptLanguages.Contains(ScriptLisp.Language))
                 ScriptContext.ScriptLanguages.Add(ScriptLisp.Language);
-
             if (AllowScriptingOfAllTypes != null)
                 ScriptContext.AllowScriptingOfAllTypes = AllowScriptingOfAllTypes.Value;
-            if (ScriptAssemblies != null)
+            
+            if (!ScriptMethods.IsEmpty())
+                ScriptContext.ScriptMethods.AddRange(ScriptMethods);
+            if (!ScriptBlocks.IsEmpty())
+                ScriptContext.ScriptBlocks.AddRange(ScriptBlocks);
+            if (!ScanTypes.IsEmpty())
+                ScriptContext.ScanTypes.AddRange(ScanTypes);
+            if (!ScanAssemblies.IsEmpty())
+                ScriptContext.ScanAssemblies.AddRange(ScanAssemblies);
+            
+            if (!ScriptAssemblies.IsEmpty())
                 ScriptContext.ScriptAssemblies.AddRange(ScriptAssemblies);
-            if (ScriptTypes != null)
+            if (!ScriptTypes.IsEmpty())
                 ScriptContext.ScriptTypes.AddRange(ScriptTypes);
-            if (ScriptNamespaces != null)
+            if (!ScriptNamespaces.IsEmpty())
                 ScriptContext.ScriptNamespaces.AddRange(ScriptNamespaces);
         }
 
