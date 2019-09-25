@@ -20,7 +20,7 @@ namespace ServiceStack
         private int port;
         private IPAddress localIp;
 
-        public LispReplTcpServer() : this(IPAddress.Loopback, 5002) {}
+        public LispReplTcpServer() : this(IPAddress.Loopback, 5005) {}
         public LispReplTcpServer(int port) : this(IPAddress.Loopback, port) {}
         public LispReplTcpServer(string localIp, int port) : this(IPAddress.Parse(localIp), port) {}
 
