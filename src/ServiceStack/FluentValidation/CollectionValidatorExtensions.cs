@@ -48,7 +48,7 @@ namespace ServiceStack.FluentValidation {
 				innerRuleBuilder.Rule.RuleSets = cfg.RuleSets;
 			});
 			
-			ruleBuilder.SetValidator(new ChildValidatorAdaptor(innerValidator, validator.GetType()) {				
+			ruleBuilder.SetValidator(new ChildValidatorAdaptor(innerValidator, validator.GetType()) {
 				PassThroughParentContext = true
 			});
 

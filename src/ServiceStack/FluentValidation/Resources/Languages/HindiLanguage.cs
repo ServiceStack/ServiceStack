@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 // Copyright (c) Jeremy Skinner (http://www.jeremyskinner.co.uk)
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); 
@@ -20,7 +20,8 @@ namespace ServiceStack.FluentValidation.Resources {
 	using Validators;
 
 	internal class HindiLanguage : Language	{
-		public override string Name => "hi";
+		public const string Culture = "hi";
+		public override string Name => Culture;
 
 		public HindiLanguage() {
 			Translate<EmailValidator>("'{PropertyName}' मान्य ईमेल एड्रेस नहीं है।");
@@ -46,6 +47,12 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<EmptyValidator>("'{PropertyName}' खाली होना चाहिए।");
 			Translate<NullValidator>("'{PropertyName}' खाली होना चाहिए।");
 			Translate<EnumValidator>("'{PropertyName}' में कई मान हैं जिनमें '{PropertyValue}' शामिल नहीं है।");
+			// Additional fallback messages used by clientside validation integration.
+			Translate("Length_Simple", "'{PropertyName}' {MinLength} और {MaxLength} अक्षरों के बीच होना चाहिए।");
+			Translate("MinimumLength_Simple", "'{PropertyName}' {MinLength} वर्णों से अधिक या उसके बराबर होना चाहिए।");
+			Translate("MaximumLength_Simple", "'{PropertyName}' {MaxLength} वर्णों से कम या उसके बराबर होना चाहिए।");
+			Translate("ExactLength_Simple", "'{PropertyName}' {MaxLength} अक्षरों के उसके बराबर होनी चाहिए।");
+			Translate("InclusiveBetween_Simple", "'{PropertyName}' {From} और {To} के बीच में होनी चाहिए।");
 		}
 	}
 }

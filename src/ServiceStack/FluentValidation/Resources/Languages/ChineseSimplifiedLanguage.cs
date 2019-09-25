@@ -20,7 +20,8 @@ namespace ServiceStack.FluentValidation.Resources {
 	using Validators;
 
 	internal class ChineseSimplifiedLanguage : Language {
-		public override string Name => "zh-CN";
+		public const string Culture = "zh-CN";
+		public override string Name => Culture;
 
 		public ChineseSimplifiedLanguage() {
 			Translate<EmailValidator>("'{PropertyName}' 不是有效的电子邮件地址。");
@@ -46,6 +47,12 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<EmptyValidator>("'{PropertyName}' 必须为空。");
 			Translate<NullValidator>("'{PropertyName}' 必须为Null。");
 			Translate<EnumValidator>("'{PropertyName}' 的值范围不包含 '{PropertyValue}'。");
+			// Additional fallback messages used by clientside validation integration.
+			Translate("Length_Simple", "'{PropertyName}' 的长度必须在 {MinLength} 到 {MaxLength} 字符。");
+			Translate("MinimumLength_Simple", "'{PropertyName}' 必须大于或等于{MinLength}个字符。");
+			Translate("MaximumLength_Simple", "'{PropertyName}' 必须小于或等于{MaxLength}个字符。");
+			Translate("ExactLength_Simple", "'{PropertyName}' 必须是 {MaxLength} 个字符。");
+			Translate("InclusiveBetween_Simple", "'{PropertyName}' 必须在 {From} (包含)和 {To} (包含)之间。");
 		}
 	}
 }

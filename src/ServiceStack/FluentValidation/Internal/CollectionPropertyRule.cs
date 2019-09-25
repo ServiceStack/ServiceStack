@@ -1,19 +1,19 @@
 ﻿#region License
 
 // Copyright (c) Jeremy Skinner (http://www.jeremyskinner.co.uk)
-// 
-// Licensed under the Apache License, Version 2.0 (the "License"); 
-// you may not use this file except in compliance with the License. 
-// You may obtain a copy of the License at 
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-// See the License for the specific language governing permissions and 
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
 // limitations under the License.
-// 
+//
 // The latest version of this file can be found at https://github.com/JeremySkinner/FluentValidation
 
 #endregion
@@ -81,6 +81,10 @@ namespace ServiceStack.FluentValidation.Internal {
 			}
 
 			var propertyContext = new PropertyValidatorContext(context, this, propertyName);
+
+			if (validator.Options.Condition != null && !validator.Options.Condition(propertyContext)) return Enumerable.Empty<ValidationFailure>();
+			if (validator.Options.AsyncCondition != null && !await validator.Options.AsyncCondition(propertyContext, cancellation)) return Enumerable.Empty<ValidationFailure>();
+
 			var collectionPropertyValue = propertyContext.PropertyValue as IEnumerable<TProperty>;
 
 			if (collectionPropertyValue != null) {
@@ -146,6 +150,9 @@ namespace ServiceStack.FluentValidation.Internal {
 			}
 
 			var propertyContext = new PropertyValidatorContext(context, this, propertyName);
+
+			if (validator.Options.Condition != null && !validator.Options.Condition(propertyContext)) return Enumerable.Empty<ValidationFailure>();
+
 			var results = new List<ValidationFailure>();
 			var collectionPropertyValue = propertyContext.PropertyValue as IEnumerable<TProperty>;
 
@@ -176,7 +183,7 @@ namespace ServiceStack.FluentValidation.Internal {
 					newContext.PropertyChain.AddIndexer(indexer, useDefaultIndexFormat);
 
 					var newPropertyContext = new PropertyValidatorContext(newContext, this, newContext.PropertyChain.ToString(), element);
-
+					newPropertyContext.MessageFormatter.AppendArgument("CollectionIndex", index);
 					results.AddRange(validator.Validate(newPropertyContext));
 				}
 			}

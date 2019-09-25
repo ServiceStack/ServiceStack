@@ -20,7 +20,8 @@ namespace ServiceStack.FluentValidation.Resources {
 	using Validators;
 
 	internal class NorwegianBokmalLanguage : Language {
-		public override string Name => "nb";
+		public const string Culture = "nb";
+		public override string Name => Culture;
 
 		public NorwegianBokmalLanguage() {
 			Translate<EmailValidator>("'{PropertyName}' er ikke en gyldig e-postadresse.");
@@ -46,6 +47,12 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<EmptyValidator>("'{PropertyName}' skal være tomt.");
 			Translate<NullValidator>("'{PropertyName}' skal være tomt.");
 			Translate<EnumValidator>("'{PropertyName}' har en rekke verdier men inneholder ikke '{PropertyValue}'.");
+			// Additional fallback messages used by clientside validation integration.
+			Translate("Length_Simple", "'{PropertyName}' skal være mellom {MinLength} og {MaxLength} tegn.");
+			Translate("MinimumLength_Simple", "'{PropertyName}' skal være større enn eller lik {MinLength} tegn.");
+			Translate("MaximumLength_Simple", "'{PropertyName}' skal være mindre enn eller lik {MaxLength} tegn.");
+			Translate("ExactLength_Simple", "'{PropertyName}' skal være {MaxLength} tegn langt.");
+			Translate("InclusiveBetween_Simple", "'{PropertyName}' skal være mellom {From} og {To}.");
 		}
 	}
 }

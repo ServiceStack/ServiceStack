@@ -20,7 +20,8 @@ namespace ServiceStack.FluentValidation.Resources {
 	using Validators;
 
 	internal class UkrainianLanguage : Language {
-		public override string Name => "uk";
+		public const string Culture = "uk";
+		public override string Name => Culture;
 
 		public UkrainianLanguage() {
 			Translate<EmailValidator>("'{PropertyName}' не є email-адресою.");
@@ -46,6 +47,12 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<EmptyValidator>("'{PropertyName}' має бути порожнім.");
 			Translate<NullValidator>("'{PropertyName}' має бути порожнім.");
 			Translate<EnumValidator>("'{PropertyName}' має діапазон значень, який не включає '{PropertyValue}'.");
+			// Additional fallback messages used by clientside validation integration.
+			Translate("Length_Simple", "'{PropertyName}' має бути довжиною від {MinLength} до {MaxLength} символів.");
+			Translate("MinimumLength_Simple", "Довжина '{PropertyName}' має бути не меншою ніж {MinLength} символів.");
+			Translate("MaximumLength_Simple", "Довжина '{PropertyName}' має бути {MaxLength} символів, або менше.");
+			Translate("ExactLength_Simple", "'{PropertyName}' має бути довжиною {MaxLength} символів.");
+			Translate("InclusiveBetween_Simple", "'{PropertyName}' має бути між {From} та {To} (включно).");
 		}
 	}
 }

@@ -17,41 +17,41 @@
 #endregion
 
 namespace ServiceStack.FluentValidation.Resources {
-	using System;
-	using System.Globalization;
-	using Validators;
+    using System;
+    using System.Globalization;
+    using Validators;
 
-	/// <summary>
-	/// IStringSource implementation that uses the default language manager.
-	/// </summary>
-	public class LanguageStringSource : IStringSource {
-		private readonly string _key;
-		internal Func<IValidationContext, string> ErrorCodeFunc { get; set; }
+    /// <summary>
+    /// IStringSource implementation that uses the default language manager.
+    /// </summary>
+    public class LanguageStringSource : IStringSource {
+        private readonly string _key;
+        internal Func<IValidationContext, string> ErrorCodeFunc { get; set; }
 
-		public LanguageStringSource(string key) {
-			_key = key;
-		}
+        public LanguageStringSource(string key) {
+            _key = key;
+        }
 		
-		public LanguageStringSource(Func<IValidationContext, string> errorCodeFunc, string fallbackKey) {
-			ErrorCodeFunc = errorCodeFunc;
-			_key = fallbackKey;
-		}
+        public LanguageStringSource(Func<IValidationContext, string> errorCodeFunc, string fallbackKey) {
+            ErrorCodeFunc = errorCodeFunc;
+            _key = fallbackKey;
+        }
 
-		public virtual string GetString(IValidationContext context) {
-			var errorCode = ErrorCodeFunc?.Invoke(context);
+        public virtual string GetString(IValidationContext context) {
+            var errorCode = ErrorCodeFunc?.Invoke(context);
 			
-			if (errorCode != null) {
-				string result = ValidatorOptions.LanguageManager.GetString(errorCode);
+            if (errorCode != null) {
+                string result = ValidatorOptions.LanguageManager.GetString(errorCode);
 				
-				if (!string.IsNullOrEmpty(result)) {
-					return result;
-				}
-			}
+                if (!string.IsNullOrEmpty(result)) {
+                    return result;
+                }
+            }
 
-			return ValidatorOptions.LanguageManager.GetString(_key);
-		}
+            return ValidatorOptions.LanguageManager.GetString(_key);
+        }
 
-		public string ResourceName => _key;
-		public Type ResourceType => typeof(LanguageManager);
-	}
+        public string ResourceName => _key;
+        public Type ResourceType => typeof(LanguageManager);
+    }
 }

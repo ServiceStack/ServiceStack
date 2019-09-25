@@ -20,7 +20,8 @@ namespace ServiceStack.FluentValidation.Resources {
 	using FluentValidation.Validators;
 
 	internal class GreekLanguage : Language {
-		public override string Name => "el";
+		public const string Culture = "el";
+		public override string Name => Culture;
 
 		public GreekLanguage() {
 			Translate<EmailValidator>("Το πεδίο '{PropertyName}' δεν περιέχει μια έγκυρη διεύθυνση email.");
@@ -46,6 +47,12 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<EmptyValidator>("Το πεδίο '{PropertyName}' πρέπει να είναι κενό.");
 			Translate<NullValidator>("Το πεδίο '{PropertyName}' πρέπει να είναι κενό.");
 			Translate<EnumValidator>("Το πεδίο '{PropertyName}' επιτρέπει συγκεκριμένο εύρος τιμών που δεν περιλαμβάνουν την τιμή '{PropertyValue}' που καταχωρίσατε.");
+			// Additional fallback messages used by clientside validation integration.
+			Translate("Length_Simple", "Το πεδίο '{PropertyName}' πρέπει να έχει μήκος μεταξύ {MinLength} και {MaxLength} χαρακτήρες.");
+			Translate("MinimumLength_Simple", "Το μήκος του πεδίου '{PropertyName}' πρέπει να είναι τουλάχιστον {MinLength} χαρακτήρες.");
+			Translate("MaximumLength_Simple", "Το μήκος του πεδίου '{PropertyName}' πρέπει να είναι το πολύ {MaxLength} χαρακτήρες.");
+			Translate("ExactLength_Simple", "Το πεδίο '{PropertyName}' πρέπει να έχει μήκος ίσο με {MaxLength} χαρακτήρες.");
+			Translate("InclusiveBetween_Simple", "Το πεδίο '{PropertyName}' πρέπει να έχει τιμή μεταξύ {From} και {To}.");
 		}
 	}
 }

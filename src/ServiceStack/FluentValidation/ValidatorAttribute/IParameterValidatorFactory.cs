@@ -1,4 +1,4 @@
-﻿namespace ServiceStack.FluentValidation {
+namespace ServiceStack.FluentValidation {
 	using System.Reflection;
 
 	/// <summary>

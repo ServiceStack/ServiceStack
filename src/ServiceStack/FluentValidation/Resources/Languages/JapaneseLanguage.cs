@@ -20,7 +20,8 @@ namespace ServiceStack.FluentValidation.Resources {
 	using Validators;
 
 	internal class JapaneseLanguage : Language {
-		public override string Name => "ja";
+		public const string Culture = "ja";
+		public override string Name => Culture;
 
 		public JapaneseLanguage() {
 			Translate<EmailValidator>("'{PropertyName}' は有効なメールアドレスではありません。");
@@ -46,6 +47,12 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<EmptyValidator>("'{PropertyName}' は空でなければなりません。");
 			Translate<NullValidator>("'{PropertyName}' は空でなければなりません。");
 			Translate<EnumValidator>("'{PropertyName}' の範囲に '{PropertyValue}' は含まれていません。");
+			// Additional fallback messages used by clientside validation integration.
+			Translate("Length_Simple", "'{PropertyName}' は {MinLength} から {MaxLength} 文字の間で入力する必要があります。");
+			Translate("MinimumLength_Simple", "'{PropertyName}' は少なくとも {MinLength} 文字を入力しなければなりません。");
+			Translate("MaximumLength_Simple", "'{PropertyName}' は {MaxLength} 文字以下でなければなりません。");
+			Translate("ExactLength_Simple", "'{PropertyName}' は {MaxLength} 文字でなくてはなりません。");
+			Translate("InclusiveBetween_Simple", "'{PropertyName}' は {From} から {To} までの間でなければなりません。");
 		}
 	}
 }

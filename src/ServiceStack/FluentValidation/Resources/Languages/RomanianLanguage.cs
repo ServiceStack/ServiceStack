@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 // Copyright (c) Jeremy Skinner (http://www.jeremyskinner.co.uk)
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +20,8 @@ namespace ServiceStack.FluentValidation.Resources {
 	using Validators;
 
 	internal class RomanianLanguage : Language {
-		public override string Name => "ro";
+		public const string Culture = "ro";
+		public override string Name => Culture;
 
 		public RomanianLanguage() {
 			Translate<EmailValidator>("'{PropertyName}' nu este o adresă de email validă.");
@@ -46,6 +47,12 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<EmptyValidator>("'{PropertyName}' ar trebui să fie goală.");
 			Translate<NullValidator>("'{PropertyName}' trebuie să fie goală.");
 			Translate<EnumValidator>("'{PropertyName}' are o serie de valori care nu sunt incluse în '{PropertyValue}'.");
+			// Additional fallback messages used by clientside validation integration.
+			Translate("Length_Simple", "'{PropertyName}' trebuie să fie între {MinLength} şi {MaxLength} caractere.");
+			Translate("MinimumLength_Simple", "'{PropertyName}' trebuie să fie mai mare sau egală cu caracterele {MinLength}.");
+			Translate("MaximumLength_Simple", "'{PropertyName}' trebuie să fie mai mică sau egală cu caracterele {MaxLength}.");
+			Translate("ExactLength_Simple", "'{PropertyName}' trebui să aibe lungimea maximă {MaxLength} de caractere.");
+			Translate("InclusiveBetween_Simple", "'{PropertyName}' trebuie sa fie între {From} şi {To}.");
 
 		}
 	}

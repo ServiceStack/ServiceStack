@@ -46,6 +46,8 @@ namespace ServiceStack.FluentValidation.Resources {
 				new GeorgianLanguage(),
 				new HebrewLanguage(),
 				new HindiLanguage(),
+				new HungarianLanguage(),
+				new IndonesianLanguage(),
 				new ItalianLanguage(),
 				new KoreanLanguage(),
 				new MacedonianLanguage(),
@@ -65,6 +67,7 @@ namespace ServiceStack.FluentValidation.Resources {
 				new GreekLanguage(),
 				new NorwegianBokmalLanguage(),
 				new JapaneseLanguage(),
+				new WelshLanguage()
 			};
 
 			foreach (var language in languages) {
@@ -88,10 +91,10 @@ namespace ServiceStack.FluentValidation.Resources {
 		/// Provides a collection of all supported languages.
 		/// </summary>
 		/// <returns></returns>
+		[Obsolete("LanguageManager.GetSupportedLanguages() will be removed in FluentValidation 9.0 as it assumes that all languages are pre-loaded.")]
 		public IEnumerable<string> GetSupportedLanguages() {
 			return _languages.Keys;
 		}
-
 
 		/// <summary>
 		/// Removes all languages except the default.
@@ -129,6 +132,7 @@ namespace ServiceStack.FluentValidation.Resources {
 			return value ?? string.Empty;
 		}
 
+		[Obsolete("LanguageManager.GetSupportedTranslationKeys() can return inconsistent information depending on the current culture. This method will be removed in 9.0.")]
 		public IEnumerable<string> GetSupportedTranslationKeys() {
 			return _fallback.GetSupportedKeys();
 		}
