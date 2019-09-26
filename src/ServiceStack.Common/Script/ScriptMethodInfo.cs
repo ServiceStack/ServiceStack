@@ -92,5 +92,7 @@ namespace ServiceStack.Script
                 return signature = StringBuilderCache.ReturnAndFree(sb);
             }
         }
+
+        public override string ToString() => Signature;
     }
 }
