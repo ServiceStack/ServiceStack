@@ -8,15 +8,28 @@ namespace ServiceStack.Script
 {
     public class ScriptMethodInfo
     {
-        public string Name { get; set; }
-        public string FirstParam { get; set; }
-        public string ReturnType { get; set; }
-        public int ParamCount { get; set; }
-        public string[] RemainingParams { get; set; }
-        public ParameterInfo[] Params { get; set; }
-        public string[] ParamNames => Params.Select(x => x.Name).ToArray();
-        public string[] ParamTypes => Params.Select(x => x.ParameterType.Name.ToString()).ToArray();
-        
+        private readonly MethodInfo methodInfo;
+        private readonly ParameterInfo[] @params;
+        public MethodInfo GetMethodInfo() => methodInfo;
+
+        public string Name => methodInfo.Name;
+        public string FirstParam => @params.FirstOrDefault()?.Name;
+        public string FirstParamType => @params.FirstOrDefault()?.ParameterType.Name;
+        public string ReturnType => methodInfo.ReturnType?.Name;
+        public int ParamCount => @params.Length;
+
+        public string[] RemainingParams => @params.Length > 1
+            ? @params.Skip(1).Select(x => x.Name).ToArray()
+            : TypeConstants.EmptyStringArray;
+        public string[] ParamNames => @params.Select(x => x.Name).ToArray();
+        public string[] ParamTypes => @params.Select(x => x.ParameterType.Name.ToString()).ToArray();
+
+        public ScriptMethodInfo(MethodInfo methodInfo, ParameterInfo[] @params)
+        {
+            this.methodInfo = methodInfo ?? throw new ArgumentNullException(nameof(methodInfo));
+            this.@params = @params ?? throw new ArgumentNullException(nameof(@params));
+        }
+
         public static List<ScriptMethodInfo> GetScriptMethods(Type scriptMethodsType)
         {
             var filters = scriptMethodsType.GetMethods(BindingFlags.Instance | BindingFlags.Public);
@@ -34,20 +47,7 @@ namespace ServiceStack.Script
             var pis = mi.GetParameters()
                 .Where(x => x.ParameterType != typeof(ScriptScopeContext)).ToArray();
             
-            var paramNames = pis
-                .Select(x => x.Name)
-                .ToArray();
-
-            var to = new ScriptMethodInfo {
-                Name = mi.Name,
-                Params = pis,
-                FirstParam = paramNames.FirstOrDefault(),
-                ParamCount = paramNames.Length,
-                RemainingParams = paramNames.Length > 1 ? paramNames.Skip(1).ToArray() : new string[]{},
-                ReturnType = mi.ReturnType?.Name,
-            };
-
-            return to;
+            return new ScriptMethodInfo(mi, pis);
         }
 
         public string Return => ReturnType != null && ReturnType != nameof(StopExecution) ? " -> " + ReturnType : "";
@@ -64,28 +64,32 @@ namespace ServiceStack.Script
                 ? $"{FirstParam} | {Name}{Return}"
                 : $"{FirstParam} | {Name}(" + string.Join(", ", RemainingParams) + $"){Return}";
 
+        private string signature;
         public string Signature
         {
             get
             {
+                if (signature != null)
+                    return signature;
+                
                 var sb = StringBuilderCache.Allocate()
                     .Append(Name);
 
-                if (Params.Length > 0)
+                if (@params.Length > 0)
                 {
                     sb.Append(" (");
-                    for (var i = 0; i < Params.Length; i++)
+                    for (var i = 0; i < @params.Length; i++)
                     {
                         sb.Append(i > 0 ? ", " : "")
-                            .Append(Params[i].ParameterType.Name)
+                            .Append(@params[i].ParameterType.Name)
                             .Append(" ")
-                            .Append(Params[i].Name);
+                            .Append(@params[i].Name);
                     }
                     sb.Append(")");
                 }
                 sb.Append(Return);
 
-                return StringBuilderCache.ReturnAndFree(sb);
+                return signature = StringBuilderCache.ReturnAndFree(sb);
             }
         }
     }

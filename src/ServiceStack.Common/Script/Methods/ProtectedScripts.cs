@@ -1190,8 +1190,9 @@ namespace ServiceStack.Script
         public List<string> scriptMethodSignatures(ScriptScopeContext scope) => scriptMethods(scope)
             .Map(x => x.Signature);
 
-        private MethodInfo[] filterMethods(MethodInfo[] methodInfos) =>
-            methodInfos.Where(m => !m.IsSpecialName && m.DeclaringType != typeof(object)).ToArray();
+        private ScriptMethodInfo[] filterMethods(MethodInfo[] methodInfos) =>
+            methodInfos.Where(m => !m.IsSpecialName && m.DeclaringType != typeof(object))
+                .Select(ScriptMethodInfo.Create).ToArray();
         public List<string> methods(object o)
         {
             if (o == null)
@@ -1201,10 +1202,10 @@ namespace ServiceStack.Script
             return mis.Map(x => x.Name).OrderBy(x => x).ToList();
         }
 
-        public MethodInfo[] methodTypes(object o)
+        public ScriptMethodInfo[] methodTypes(object o)
         {
             if (o == null)
-                return TypeConstants<MethodInfo>.EmptyArray;
+                return TypeConstants<ScriptMethodInfo>.EmptyArray;
             
             var type = o is Type t
                 ? t
@@ -1222,10 +1223,10 @@ namespace ServiceStack.Script
             return mis.Map(x => x.Name).OrderBy(x => x).ToList();
         }
 
-        public MethodInfo[] staticMethodTypes(object o)
+        public ScriptMethodInfo[] staticMethodTypes(object o)
         {
             if (o == null)
-                return TypeConstants<MethodInfo>.EmptyArray;
+                return TypeConstants<ScriptMethodInfo>.EmptyArray;
             
             var type = o is Type t
                 ? t
@@ -1234,19 +1235,20 @@ namespace ServiceStack.Script
             return filterMethods(type.GetMethods(BindingFlags.Static | BindingFlags.Public));
         }
 
-        public MethodInfo[] allMethodTypes(object o)
+        public ScriptMethodInfo[] allMethodTypes(object o)
         {
             if (o == null)
-                return TypeConstants<MethodInfo>.EmptyArray;
+                return TypeConstants<ScriptMethodInfo>.EmptyArray;
             
             var type = o is Type t
                 ? t
                 : o.GetType();
 
-            return type.GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            return type.GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                .Select(ScriptMethodInfo.Create).ToArray();
         }
 
-        public MemberInfo[] allMemberTypes(object o)
+        public MemberInfo[] allMemberInfos(object o)
         {
             if (o == null)
                 return TypeConstants<MemberInfo>.EmptyArray;
