@@ -1255,7 +1255,6 @@ namespace ServiceStack.Script
                             : throw new LispEvalException("not a string or symbol name", a[0]);
 
                     var cacheKey = nameof(Lisp) + ":load:" + path;
-                    scope.Context.Cache.TryRemove(cacheKey, out _);
                     var importSymbols = (Dictionary<Sym, object>) scope.Context.Cache.GetOrAdd(cacheKey, k => {
 
                         var span = lispContents(scope, path);
@@ -1277,6 +1276,19 @@ namespace ServiceStack.Script
                         I.Globals[importSymbol.Key] = importSymbol.Value;
                     }
                     return null;
+                });
+                
+                Def("load-src", 1, (I, a) => {
+                    var scope = I.AssertScope();
+
+                    var path = a[0] is string s
+                        ? s
+                        : a[0] is Sym sym
+                            ? sym.Name + ".l"
+                            : throw new LispEvalException("not a string or symbol name", a[0]);
+                    
+                    var span = lispContents(scope, path);
+                    return span.ToString();
                 });
 
                 Def("error", 1, a => throw new Exception(((string)a[0])));

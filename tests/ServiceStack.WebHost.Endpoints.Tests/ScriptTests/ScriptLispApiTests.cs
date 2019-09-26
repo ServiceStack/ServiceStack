@@ -475,6 +475,36 @@ id 1
             result = context.EvaluateLisp(@"(load ""index:lib-calc"")(return (lib-calc 4 5))");
             Assert.That(result, Is.EqualTo(20));
         }
+
+//        [Test]
+        public void Can_load_src()
+        {
+            object result;
+
+            var context = LoadLispContext();
+            object eval(string lisp) => context.EvaluateLisp($"(return (let () {lisp}))");
+
+            result = eval(@"(load-src ""gist:2f14d629ba1852ee55865607f1fa2c3e/lib1.l"")");
+            result.ToString().Print();
+
+            // imports all gist files and overwrites symbols where last symbol wins
+            result = eval(@"(load-src ""gist:2f14d629ba1852ee55865607f1fa2c3e"")");
+            result.ToString().Print();
+
+            result = eval(@"(load-src ""https://gist.githubusercontent.com/gistlyn/2f14d629ba1852ee55865607f1fa2c3e/raw/95cbc5d071d9db3a96866c1a583056dd87ab5f69/lib1.l"")");
+            result.ToString().Print();
+
+            // import single file from index.md
+            result = eval(@"(load-src ""index:lib-calc/lib1.l"")");
+            result.ToString().Print();
+
+            // imports all gist files and overwrites symbols where last symbol wins
+            result = eval(@"(load-src ""index:lib-calc"")");
+            result.ToString().Print();
+            
+            result = eval(@"(load-src ""index:parse-rss"")");
+            result.ToString().Print();
+        }
     }
     
 /* If LISP integration tests are needed in future
