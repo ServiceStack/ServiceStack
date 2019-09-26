@@ -1556,6 +1556,7 @@ namespace ServiceStack.Script
 
             return value;
         }
+        public object sync(object value) => unwrap(value);
     }
 
     public partial class DefaultScripts //Methods named after common keywords breaks intelli-sense when trying to use them        
