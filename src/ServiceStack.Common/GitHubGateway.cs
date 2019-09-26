@@ -652,6 +652,8 @@ namespace ServiceStack
 
         public string ToTagsString() => Tags == null ? "" : $"[" + string.Join(",", Tags) + "]";
 
+        public override string ToString() => $"{Name.PadRight(18, ' ')} {Description} {ToTagsString()}";
+
         public string ToListItem()
         {
             var sb = new StringBuilder(" - [")
