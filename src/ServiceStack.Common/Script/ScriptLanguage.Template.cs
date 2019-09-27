@@ -477,7 +477,7 @@ namespace ServiceStack.Script
                         literal = literal.AdvancePastWhitespace();
                         if (literal.FirstCharEquals(FilterSep))
                         {
-                            literal = literal.Advance(1);
+                            literal = literal.AdvancePastPipeOperator();
 
                             while (true)
                             {
@@ -498,13 +498,15 @@ namespace ServiceStack.Script
 
                                 if (!literal.FirstCharEquals(FilterSep))
                                     throw new SyntaxErrorException(
-                                        $"Expected filter separator '|' but was {literal.DebugFirstChar()}");
+                                        $"Expected pipeline operator '|>' but was {literal.DebugFirstChar()}");
 
-                                literal = literal.Advance(1);
+                                literal = literal.AdvancePastPipeOperator();
                             }
                         }
                         else
                         {
+                            // No valid syntax reaches here
+                            System.Diagnostics.Debug.Fail("Syntax Error? Expected pipeline operator '|>'");
                             if (!literal.IsNullOrEmpty())
                                 literal = literal.Advance(1);
                         }

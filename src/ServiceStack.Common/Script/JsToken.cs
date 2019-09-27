@@ -168,6 +168,13 @@ namespace ServiceStack.Script
         public static bool SafeCharEquals(this ReadOnlySpan<char> literal, int index, char c) =>
             index >= 0 && index < literal.Length && literal[index] == c;
 
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ReadOnlySpan<char> AdvancePastPipeOperator(this ReadOnlySpan<char> literal) =>
+            literal.SafeCharEquals(1,'>')
+                ? literal.Advance(2) // support new JS |> operator 
+                : literal.Advance(1);
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static char SafeGetChar(this ReadOnlyMemory<char> literal, int index) => literal.Span.SafeGetChar(index);
         

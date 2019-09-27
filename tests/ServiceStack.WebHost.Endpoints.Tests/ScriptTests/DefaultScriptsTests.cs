@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.IO;
+using ServiceStack.Logging;
 using ServiceStack.Script;
 using ServiceStack.Text;
 
@@ -163,6 +164,26 @@ var escapeDouble = ""double\"" quote\""s"";
         }
 
         [Test]
+        public async Task Does_default_filter_arithmetic_using_pipeline_operator()
+        {
+            var context = CreateContext().Init();
+            context.VirtualFiles.WriteFile("page.html", @"
+1 + 1 = {{ 1 |> add(1) }}
+2 x 2 = {{ 2 |> mul(2) }} or {{ 2 |> multiply(2) }}
+3 - 3 = {{ 3 |> sub(3) }} or {{ 3 |> subtract(3) }}
+4 / 4 = {{ 4 |> div(4) }} or {{ 4 |> divide(4) }}");
+
+            var result = await new PageResult(context.GetPage("page")).RenderToStringAsync();
+
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"
+1 + 1 = 2
+2 x 2 = 4 or 4
+3 - 3 = 0 or 0
+4 / 4 = 1 or 1
+".NormalizeNewLines()));
+        }
+
+        [Test]
         public async Task Does_default_filter_arithmetic_without_filter()
         {
             var context = CreateContext().Init();
@@ -205,7 +226,7 @@ square = 10 x 10 = 100".NormalizeNewLines()));
         }
         
         [Test]
-        public void Can_incrment_and_decrement()
+        public void Can_increment_and_decrement()
         {
             var context = new ScriptContext
             {
@@ -225,6 +246,25 @@ square = 10 x 10 = 100".NormalizeNewLines()));
             
             Assert.That(new PageResult(context.OneTimePage("{{ 1 | decr }}")).Result, Is.EqualTo("0"));
             Assert.That(new PageResult(context.OneTimePage("{{ ten | decrBy(2) }}")).Result, Is.EqualTo("8"));
+        }
+        
+        [Test]
+        public void Can_increment_and_decrement_pipeline_operator()
+        {
+            var context = new ScriptContext
+            {
+                Args =
+                {
+                    ["ten"] = 10
+                }
+            }.Init();
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ 1 |> incr }}")).Result, Is.EqualTo("2"));
+            Assert.That(new PageResult(context.OneTimePage("{{ ten |> incr }}")).Result, Is.EqualTo("11"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 1 |> incrBy(2) }}")).Result, Is.EqualTo("3"));
+            Assert.That(new PageResult(context.OneTimePage("{{ ten |> incrBy(2) }}")).Result, Is.EqualTo("12"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 1 |> decr }}")).Result, Is.EqualTo("0"));
+            Assert.That(new PageResult(context.OneTimePage("{{ ten |> decrBy(2) }}")).Result, Is.EqualTo("8"));
         }
 
         [Test]
@@ -695,6 +735,13 @@ result={{ result }}
             result = new PageResult(context.OneTimePage(@"
 {{ ' - {{it}}' | appendLine | selectEach(items) | markdown | assignTo('result') }}
 <div>{{ result | raw }}</div>
+")).Result;            
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo("<div><ul>\n<li>foo</li>\n<li>bar</li>\n<li>qux</li>\n</ul>\n</div>"));
+
+            ConsoleLogFactory.Configure();
+            result = new PageResult(context.OneTimePage(@"
+{{ ' - {{it}}' |> appendLine |> selectEach(items) |> markdown |> assignTo('result') }}
+<div>{{ result |> raw }}</div>
 ")).Result;            
             Assert.That(result.NormalizeNewLines(), Is.EqualTo("<div><ul>\n<li>foo</li>\n<li>bar</li>\n<li>qux</li>\n</ul>\n</div>"));
         }
