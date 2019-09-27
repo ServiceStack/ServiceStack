@@ -463,7 +463,7 @@ namespace ServiceStack.Script
             var name = isGeneric ? methodName.LeftPart('<') : methodName;
 
             var genericArgs = isGeneric
-                ? typeGenericArgs(name)
+                ? typeGenericArgs(methodName)
                 : TypeConstants.EmptyStringList;
             var genericArgsCount = genericArgs.Count;
 

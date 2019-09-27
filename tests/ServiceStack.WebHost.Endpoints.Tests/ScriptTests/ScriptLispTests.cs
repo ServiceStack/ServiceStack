@@ -587,7 +587,7 @@ C
         }
 
         [Test]
-        public void Can_create_generic_types()
+        public void Can_create_generic_types_LISP()
         {
             var context = LispNetContext();
 
@@ -601,6 +601,25 @@ C
             Assert.That(eval(@"((/C ""Tuple< String, int >( String, int )"") ""A"" 1)"), 
                 Is.EqualTo(new Tuple<string, int>("A", 1)));
             Assert.That(eval(@"(C ""Tuple< String, int >( String, int )"" ""A"" 1)"),
+                Is.EqualTo(new Tuple<string, int>("A", 1)));
+        }
+
+        [Test]
+        public void Can_call_generic_methods_LISP()
+        {
+            
+            var context = LispNetContext();
+
+            object eval(string lisp) => context.EvaluateLisp($"(return (let () {lisp}))");
+            
+            Assert.That(eval(@"((/F ""Tuple.Create<String,int>(String,int)"") ""A"" 1)"), 
+                Is.EqualTo(new Tuple<string, int>("A", 1)));
+            Assert.That(eval(@"(F ""Tuple.Create<String,int>(String,int)"" ""A"" 1)"),
+                Is.EqualTo(new Tuple<string, int>("A", 1)));
+            
+            Assert.That(eval(@"((/F ""Tuple.Create< String , int >( String , int )"") ""A"" 1)"), 
+                Is.EqualTo(new Tuple<string, int>("A", 1)));
+            Assert.That(eval(@"(F ""Tuple.Create< String , int >( String , int )"" ""A"" 1)"),
                 Is.EqualTo(new Tuple<string, int>("A", 1)));
         }
 
