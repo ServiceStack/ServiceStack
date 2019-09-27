@@ -1240,6 +1240,8 @@ namespace ServiceStack.Script
 
             private static bool IsTruncated(GistFile f) => (string.IsNullOrEmpty(f.Content) || f.Content.Length < f.Size) && f.Truncated;
 
+            private static long gensymCounter = 0;
+
             public void InitGlobals()
             {
                 Globals[TRUE] = Globals[BOOL_TRUE] = TRUE;
@@ -1847,8 +1849,8 @@ namespace ServiceStack.Script
                 var gensymCounterSym = Sym.New("*gensym-counter*");
                 Globals[gensymCounterSym] = 1.0;
                 Def("gensym", 0, a => {
-                        double x = DynamicDouble.Instance.Convert(Globals[gensymCounterSym]);
-                        Globals[gensymCounterSym] = x + 1.0;
+                        var x = Interlocked.Increment(ref gensymCounter);
+                        Globals[gensymCounterSym] = x;
                         return new Sym($"G{(int) x}");
                     });
 
