@@ -15,8 +15,10 @@ namespace ServiceStack.Script
     /// <summary>
     /// #Script Language which processes ```lang ... ``` blocks
     /// </summary>
-    public class SharpScript : ScriptLanguage
+    public sealed class SharpScript : ScriptLanguage
     {
+        private SharpScript() {} // force usage of singleton
+
         public static readonly ScriptLanguage Language = new SharpScript();
 
         public override string Name => "script";
@@ -30,8 +32,10 @@ namespace ServiceStack.Script
     /// <summary>
     /// The #Script Default Template Language (does not process ```lang ... ``` blocks)
     /// </summary>
-    public class ScriptTemplate : ScriptLanguage
+    public sealed class ScriptTemplate : ScriptLanguage
     {
+        private ScriptTemplate() {} // force usage of singleton
+
         public static readonly ScriptLanguage Language = new ScriptTemplate();
         
         public override string Name => "template";

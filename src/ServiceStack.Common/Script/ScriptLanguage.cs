@@ -40,6 +40,8 @@ namespace ServiceStack.Script
 
     public sealed class ScriptVerbatim : ScriptLanguage
     {
+        private ScriptVerbatim() {} // force usage of singleton
+
         public static readonly ScriptLanguage Language = new ScriptVerbatim();
 
         public override string Name => "verbatim";

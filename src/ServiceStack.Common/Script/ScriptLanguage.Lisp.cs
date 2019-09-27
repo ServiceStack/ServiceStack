@@ -46,9 +46,11 @@ using ServiceStack.Text.Json;
 
 namespace ServiceStack.Script
 {
-    public class ScriptLisp : ScriptLanguage, IConfigureScriptContext
+    public sealed class ScriptLisp : ScriptLanguage, IConfigureScriptContext
     {
-        public static ScriptLanguage Language = new ScriptLisp();
+        private ScriptLisp() {} // force usage of singleton
+
+        public static readonly ScriptLanguage Language = new ScriptLisp();
         
         public override string Name => "lisp";
         
@@ -259,8 +261,15 @@ namespace ServiceStack.Script
         public static SharpPage LispSharpPage(this ScriptContext context, string lisp) 
             => context.Pages.OneTimePage(lisp, context.PageFormats[0].Extension,p => p.ScriptLanguage = ScriptLisp.Language);
 
+        private static void AssertLisp(this ScriptContext context)
+        {
+            if (!context.ScriptLanguages.Contains(ScriptLisp.Language))
+                throw new NotSupportedException($"ScriptLisp.Language is not registered in {context.GetType().Name}.{nameof(context.ScriptLanguages)}");
+        }
+
         private static PageResult GetLispPageResult(ScriptContext context, string lisp, Dictionary<string, object> args)
         {
+            context.AssertLisp();
             PageResult pageResult = null;
             try
             {
