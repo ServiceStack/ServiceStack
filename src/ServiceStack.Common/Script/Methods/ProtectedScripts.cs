@@ -213,6 +213,8 @@ namespace ServiceStack.Script
         /// </summary>
         public Type @typeof(string typeName)
         {
+            typeName = typeName?.Trim();
+            
             if (string.IsNullOrEmpty(typeName))
                 return null;
             

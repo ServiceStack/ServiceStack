@@ -587,6 +587,24 @@ C
         }
 
         [Test]
+        public void Can_create_generic_types()
+        {
+            var context = LispNetContext();
+
+            object eval(string lisp) => context.EvaluateLisp($"(return (let () {lisp}))");
+            
+            Assert.That(eval(@"((/C ""Tuple<String,int>(String,int)"") ""A"" 1)"), 
+                Is.EqualTo(new Tuple<string, int>("A", 1)));
+            Assert.That(eval(@"(C ""Tuple<String,int>(String,int)"" ""A"" 1)"),
+                Is.EqualTo(new Tuple<string, int>("A", 1)));
+            
+            Assert.That(eval(@"((/C ""Tuple< String, int >( String, int )"") ""A"" 1)"), 
+                Is.EqualTo(new Tuple<string, int>("A", 1)));
+            Assert.That(eval(@"(C ""Tuple< String, int >( String, int )"" ""A"" 1)"),
+                Is.EqualTo(new Tuple<string, int>("A", 1)));
+        }
+
+        [Test]
         public void Can_create_type_with_constructor_arguments_LISP()
         {
             var context = LispNetContext();
