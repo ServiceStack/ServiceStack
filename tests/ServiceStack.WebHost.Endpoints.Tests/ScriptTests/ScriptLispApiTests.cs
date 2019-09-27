@@ -359,6 +359,18 @@ id 1
         }
 
         [Test]
+        public void LISP_Instanceof_tests()
+        {
+            var context = LoadLispContext(c => c.AllowScriptingOfAllTypes = true);
+            object eval(string lisp) => context.EvaluateLisp($"(return (let () {lisp}))");
+            
+            Assert.That(eval("(instance? 'IEnumerable [1])"), Is.True);
+            Assert.That(eval("(instance? \"IEnumerable\" [1])"), Is.True);
+            Assert.That(eval("(instance? 'System.Collections.IEnumerable [1])"), Is.True);
+            Assert.That(eval("(instance? 'IEnumerable 1)"), Is.Null);
+        }
+
+        [Test]
         public void Can_access_db()
         {
             var context = new ScriptContext {

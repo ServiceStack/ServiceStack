@@ -196,6 +196,18 @@ namespace ServiceStack.Script
             return StringBuilderCache.ReturnAndFree(sb);
         }
 
+        public static string TypeNotFoundErrorMessage(string typeName) => $"Could not resolve Type '{typeName}'. " +
+            $"Use ScriptContext.ScriptAssemblies or ScriptContext.AllowScriptingOfAllTypes + ScriptNamespaces to increase Type resolution";
+        
+        public Type assertTypeOf(string name)
+        {
+            var type = @typeof(name);
+            if (type == null)
+                throw new NotSupportedException(TypeNotFoundErrorMessage(name));
+            return type;
+        }
+
+
         /// <summary>
         /// Returns Type from type name syntax of .NET's typeof() 
         /// </summary>
@@ -575,9 +587,7 @@ namespace ServiceStack.Script
 
                 name = name.LastLeftPart('(');
 
-                var type = @typeof(name);
-                if (type == null)
-                    throw new NotSupportedException(TypeNotFoundErrorMessage(name));
+                var type = assertTypeOf(name);
 
                 var ctor = ResolveConstructor(type, argTypes);
 
@@ -698,9 +708,7 @@ namespace ServiceStack.Script
                 }
             }
 
-            var type = @typeof(typeName);
-            if (type == null)
-                throw new NotSupportedException(TypeNotFoundErrorMessage(typeName));
+            var type = assertTypeOf(typeName);
 
             var method = ResolveMethod(type, methodName, argTypes, argTypes?.Length, out var fn);
             return fn ?? method.GetInvokerDelegate();
@@ -708,9 +716,6 @@ namespace ServiceStack.Script
 
         static string MethodNotExists(string methodName) => $"Method {methodName} does not exist"; 
 
-        public static string TypeNotFoundErrorMessage(string typeName) => $"Could not resolve Type '{typeName}'. " +
-            $"Use ScriptContext.ScriptAssemblies or ScriptContext.AllowScriptingOfAllTypes+ScriptNamespaces to increase Type resolution";
-        
         public MemoryVirtualFiles vfsMemory() => new MemoryVirtualFiles();
 
         public FileSystemVirtualFiles vfsFileSystem(string dirPath) => new FileSystemVirtualFiles(dirPath);

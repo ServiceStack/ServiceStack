@@ -1579,8 +1579,9 @@ namespace ServiceStack.Script
                 Def("string-downcase", 1, a => 
                     (a[0] is string s) ? s.ToLower() : a[0] != null ? throw new Exception("not a string") : "");
                 Def("string-upcase", 1, a => (a[0] is string s) ? s.ToUpper() : a[0] != null ? throw new LispEvalException("not a string", a[0]) : "");
-                Def("string?", 1, a => (a[0] is string) ? TRUE : null);
-                Def("number?", 1, a => (DynamicNumber.IsNumber(a[0]?.GetType())) ? TRUE : null);
+                Def("string?", 1, a => a[0] is string ? TRUE : null);
+                Def("number?", 1, a => DynamicNumber.IsNumber(a[0]?.GetType()) ? TRUE : null);
+                Def("instance?", 2, (I, a) => I.AssertScope().Context.DefaultMethods.instanceOf(a[1], a[0] is Sym s ? s.Name : a[0]) ? TRUE : null);
                 Def("eql", 2, a => a[0] == null 
                     ? a[1] == null 
                         ? TRUE : null 

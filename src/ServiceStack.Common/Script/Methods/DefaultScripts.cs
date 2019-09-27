@@ -326,6 +326,29 @@ namespace ServiceStack.Script
         public bool isTuple(object target) => target?.GetType().IsTuple() == true;
         public bool isKeyValuePair(object target) => "KeyValuePair`2".Equals(target?.GetType().Name);
 
+        public bool instanceOf(object target, object type)
+        {
+            if (target == null || type == null)
+                return target == type;
+            
+            Type t = null;
+            if (type is string typeName)
+            {
+                var protectedScripts = Context.ProtectedMethods;
+                if (protectedScripts != null)
+                    t = protectedScripts.assertTypeOf(typeName);
+                else
+                    return target.GetType().Name == typeName;
+            }
+            if (t == null)
+            {
+                t = type as Type
+                    ?? throw new NotSupportedException($"{nameof(instanceOf)} expects Type or Type Name but was {type.GetType().Name}");
+            }
+
+            return t.IsInstanceOfType(target);
+        }
+
         public int length(object target) => target is IEnumerable e ? e.Cast<object>().Count() : 0;
 
         public bool hasMinCount(object target, int minCount) => target is IEnumerable e && e.Cast<object>().Count() >= minCount;
