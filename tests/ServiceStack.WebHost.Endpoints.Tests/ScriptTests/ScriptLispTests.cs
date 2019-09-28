@@ -323,8 +323,8 @@ Global: {{ retVal + newVal }}
             output = context.EvaluateScript(@"
 {{ 1 | to => scopeArg }}
 ```lisp|q
-(setq  lispArg  2)
-(setq  localArg 3)
+(setq lispArg  2)
+(setq localArg 3)
 (defn lispAdd [a b] (+ a b localArg))
 (export exportedArg lispArg 
         lispAdd (to-delegate lispAdd))

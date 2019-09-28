@@ -19,6 +19,7 @@ namespace ServiceStack.Script
         
         public static List<string> RemoveNewLinesFor { get; } = new List<string> {
             nameof(to),
+            nameof(toGlobal),
             nameof(assignTo),
             nameof(assignToGlobal),
             nameof(assignError),
