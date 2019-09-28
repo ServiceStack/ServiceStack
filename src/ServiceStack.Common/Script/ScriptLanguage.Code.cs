@@ -198,11 +198,21 @@ namespace ServiceStack.Script
 
                 var firstChar = line.Span[0];
 
-                // comments
+                // single-line comment
                 if (firstChar == '*')
                 {
                     if (line.EndsWith("*"))
                         continue;
+                }
+                // multi-line comment
+                if (line.StartsWith("{{*"))
+                {
+                    var endPos = code.IndexOf("*}}", cursorPos - lineLength);
+                    if (endPos == -1)
+                        throw new SyntaxErrorException($"Unterminated multi-line comment, near {line.DebugLiteral()}");
+
+                    cursorPos = endPos + 3; // "*}}".Length
+                    continue;
                 }
 
                 // template block statement
@@ -267,7 +277,8 @@ namespace ServiceStack.Script
                     // single-line {{ expr }}
                     if (line.EndsWith("}}"))
                     {
-                        var exprStr = code.Slice(cursorPos - lineLength + leftIndent + delim, lineLength - leftIndent - delim - delim).Trim();
+                        var exprStr = code.Slice(cursorPos - lineLength + leftIndent + delim);
+                        exprStr = exprStr.Slice(0, exprStr.IndexOf("}}")).Trim();
                         var afterExpr = exprStr.Span.ParseExpression(out var expr, out var filters);
                         
                         to.AddExpression(exprStr, expr, filters);
@@ -511,7 +522,7 @@ namespace ServiceStack.Script
             if (literal.FirstCharEquals(ScriptTemplateUtils.FilterSep))
             {
                 filters = new List<JsCallExpression>();
-                literal = literal.Advance(1);
+                literal = literal.AdvancePastPipeOperator();
 
                 while (true)
                 {
@@ -525,16 +536,14 @@ namespace ServiceStack.Script
                         return literal;
 
                     if (!literal.FirstCharEquals(ScriptTemplateUtils.FilterSep))
-                        throw new SyntaxErrorException(
-                            $"Expected filter separator '|' but was {literal.DebugFirstChar()}");
+                        throw new SyntaxErrorException($"Expected filter separator '|' but was {literal.DebugFirstChar()}");
 
-                    literal = literal.Advance(1);
+                    literal = literal.AdvancePastPipeOperator();
                 }
             }
-            else
+            else if (!literal.AdvancePastWhitespace().IsNullOrEmpty())
             {
-                if (!literal.IsNullOrEmpty())
-                    literal = literal.Advance(1);
+                throw new SyntaxErrorException($"Unexpected syntax '{literal.ToString()}', Expected pipeline operator '|>'");
             }
 
             return literal;

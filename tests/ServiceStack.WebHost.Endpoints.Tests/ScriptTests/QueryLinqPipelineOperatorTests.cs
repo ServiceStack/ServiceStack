@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.IO;
+using ServiceStack.Logging;
 using ServiceStack.Script;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
@@ -28,6 +29,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         [SetUp]
         public void Setup() => context = CreateContext();
         private ScriptContext context;
+
+        [Test]
+        public void Can_use_pipeline_operator_in_code_blocks()
+        {
+            ConsoleLogFactory.Configure();
+            Assert.That(context.EvaluateScript(@"
+```code
+`Numbers < 5:` |> raw
+[5, 4, 1, 3, 9, 8, 6, 7, 2, 0] |> to => numbers
+numbers |> where => it < 5 |> joinln |> raw
+```").NormalizeNewLines(), 
+                
+                Is.EqualTo(@"
+Numbers < 5:
+4
+1
+3
+2
+0
+".NormalizeNewLines()));
+        }
 
         [Test]
         public void Linq01() // alternative with clean whitespace sensitive string argument syntax:
