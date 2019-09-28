@@ -163,7 +163,7 @@ namespace ServiceStack.Script
         public void AssertNextEvaluation()
         {
             if (Evaluations++ >= Context.MaxEvaluations)
-                throw new NotSupportedException($"{Evaluations} exceeds Max Evaluations of {Context.MaxEvaluations}. \nMaxEvaluations can be changed in `ScriptContext.MaxEvaluations`.");
+                throw new NotSupportedException($"Exceeded Max Evaluations of {Context.MaxEvaluations}. \nMaxEvaluations can be changed in `ScriptContext.MaxEvaluations`.");
         }
 
         public void ResetIterations() => Evaluations = 0;
