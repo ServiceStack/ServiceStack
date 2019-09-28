@@ -55,14 +55,14 @@ namespace ServiceStack.Script
         public string Body => ParamCount == 0
             ? $"{Name}"
             : ParamCount == 1
-                ? $"| {Name}"
-                : $"| {Name}(" + string.Join(", ", RemainingParams) + $")";
+                ? $"|> {Name}"
+                : $"|> {Name}(" + string.Join(", ", RemainingParams) + $")";
 
         public string ScriptSignature => ParamCount == 0
             ? $"{Name}{Return}"
             : ParamCount == 1
-                ? $"{FirstParam} | {Name}{Return}"
-                : $"{FirstParam} | {Name}(" + string.Join(", ", RemainingParams) + $"){Return}";
+                ? $"{FirstParam} |> {Name}{Return}"
+                : $"{FirstParam} |> {Name}(" + string.Join(", ", RemainingParams) + $"){Return}";
 
         private string signature;
         public string Signature
