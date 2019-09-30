@@ -16,7 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="NUnit" Version="3.12.0" />
-    <PackageReference Include="ServiceStack.Text" Version="5.6.1" />
+    <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
     <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
