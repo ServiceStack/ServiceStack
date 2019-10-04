@@ -1,6 +1,6 @@
 /* Options:
-Date: 2018-05-19 14:47:02
-Version: 5.00
+Date: 2019-10-04 18:16:41
+Version: 5.70
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:55799
 
@@ -39,11 +39,12 @@ namespace dtos
 
     [Route("/api/acsprofiles", "POST,PUT,PATCH,DELETE")]
     [Route("/api/acsprofiles/{profileId}")]
+    [References(typeof(Check.ServiceInterface.acsprofileResponse))]
+    [Serializable]
     public partial class ACSProfile
         : IReturn<acsprofileResponse>, IHasVersion, IHasSessionId
     {
         public virtual string profileId { get; set; }
-        [Required]
         [StringLength(20)]
         public virtual string shortName { get; set; }
 
@@ -65,16 +66,25 @@ namespace dtos
         public virtual string SessionId { get; set; }
     }
 
+    [Serializable]
     public partial class acsprofileResponse
     {
         public virtual string profileId { get; set; }
     }
 
     [Route("/anontype")]
+    [Serializable]
     public partial class AnonType
     {
     }
 
+    [Serializable]
+    public partial class ArrayElementInDictionary
+    {
+        public virtual int Id { get; set; }
+    }
+
+    [Serializable]
     public partial class BatchThrows
         : IReturn<BatchThrowsResponse>
     {
@@ -82,6 +92,7 @@ namespace dtos
         public virtual string Name { get; set; }
     }
 
+    [Serializable]
     public partial class BatchThrowsAsync
         : IReturn<BatchThrowsResponse>
     {
@@ -89,6 +100,7 @@ namespace dtos
         public virtual string Name { get; set; }
     }
 
+    [Serializable]
     public partial class BatchThrowsResponse
     {
         public virtual string Result { get; set; }
@@ -96,12 +108,14 @@ namespace dtos
     }
 
     [Route("/changerequest/{Id}")]
+    [Serializable]
     public partial class ChangeRequest
         : IReturn<ChangeRequestResponse>
     {
         public virtual string Id { get; set; }
     }
 
+    [Serializable]
     public partial class ChangeRequestResponse
     {
         public virtual string ContentType { get; set; }
@@ -112,18 +126,21 @@ namespace dtos
     }
 
     [Route("/compress/{Path*}")]
+    [Serializable]
     public partial class CompressFile
     {
         public virtual string Path { get; set; }
     }
 
     [Route("/jwt")]
+    [Serializable]
     public partial class CreateJwt
         : AuthUserSession, IReturn<CreateJwtResponse>, IMeta
     {
         public virtual DateTime? JwtExpiry { get; set; }
     }
 
+    [Serializable]
     public partial class CreateJwtResponse
     {
         public virtual string Token { get; set; }
@@ -131,6 +148,7 @@ namespace dtos
     }
 
     [Route("/jwt-refresh")]
+    [Serializable]
     public partial class CreateRefreshJwt
         : IReturn<CreateRefreshJwtResponse>
     {
@@ -138,12 +156,14 @@ namespace dtos
         public virtual DateTime? JwtExpiry { get; set; }
     }
 
+    [Serializable]
     public partial class CreateRefreshJwtResponse
     {
         public virtual string Token { get; set; }
         public virtual ResponseStatus ResponseStatus { get; set; }
     }
 
+    [Serializable]
     public partial class CustomRockstar
     {
         [AutoQueryViewerField(Title="Name")]
@@ -160,6 +180,7 @@ namespace dtos
         public virtual string RockstarGenreName { get; set; }
     }
 
+    [Serializable]
     public partial class CustomUserSession
         : AuthUserSession, IMeta
     {
@@ -170,35 +191,53 @@ namespace dtos
         public virtual string CustomInfo { get; set; }
     }
 
+    [Serializable]
+    public partial class DiscoverTypes
+        : IReturn<DiscoverTypes>
+    {
+        public DiscoverTypes()
+        {
+            ElementInDictionary = new Dictionary<string, ArrayElementInDictionary[]>{};
+        }
+
+        public virtual Dictionary<string, ArrayElementInDictionary[]> ElementInDictionary { get; set; }
+    }
+
+    [Serializable]
     public partial class FallbackRoute
     {
         public virtual string PathInfo { get; set; }
     }
 
     [Route("/files/{Path*}")]
+    [Serializable]
     public partial class GetFile
     {
         public virtual string Path { get; set; }
     }
 
     [Route("/Request1/", "GET")]
+    [Serializable]
     public partial class GetRequest1
         : IReturn<List<ReturnedDto>>, IGet
     {
     }
 
     [Route("/Request3", "GET")]
+    [Serializable]
     public partial class GetRequest2
         : IReturn<ReturnedDto>, IGet
     {
     }
 
     [Route("/timestamp", "GET")]
+    [Serializable]
     public partial class GetTimestamp
         : IReturn<TimestampData>
     {
     }
 
+    [Serializable]
     public partial class GetUserSession
         : IReturn<CustomUserSession>
     {
@@ -209,12 +248,14 @@ namespace dtos
     }
 
     [Route("/info/{Id}")]
+    [Serializable]
     public partial class Info
     {
         public virtual string Id { get; set; }
     }
 
     [Route("/Routing/LeadPost.aspx")]
+    [Serializable]
     public partial class LegacyLeadPost
     {
         public virtual string LeadType { get; set; }
@@ -222,6 +263,7 @@ namespace dtos
     }
 
     [Route("/matchroute/html")]
+    [Serializable]
     public partial class MatchesHtml
         : IReturn<MatchesHtml>
     {
@@ -229,12 +271,14 @@ namespace dtos
     }
 
     [Route("/matchregex/{Id}")]
+    [Serializable]
     public partial class MatchesId
     {
         public virtual int Id { get; set; }
     }
 
     [Route("/matchroute/json")]
+    [Serializable]
     public partial class MatchesJson
         : IReturn<MatchesJson>
     {
@@ -242,29 +286,34 @@ namespace dtos
     }
 
     [Route("/matchlast/{Id}")]
+    [Serializable]
     public partial class MatchesLastInt
     {
         public virtual int Id { get; set; }
     }
 
     [Route("/matchlast/{Slug}")]
+    [Serializable]
     public partial class MatchesNotLastInt
     {
         public virtual string Slug { get; set; }
     }
 
     [Route("/matchregex/{Slug}")]
+    [Serializable]
     public partial class MatchesSlug
     {
         public virtual string Slug { get; set; }
     }
 
+    [Serializable]
     public partial class MetadataRequest
         : IReturn<AutoQueryMetadataResponse>
     {
         public virtual MetadataType MetadataType { get; set; }
     }
 
+    [Serializable]
     public partial class Movie
     {
         public Movie()
@@ -284,60 +333,71 @@ namespace dtos
     }
 
     [Route("/namedconnection")]
+    [Serializable]
     public partial class NamedConnection
     {
         public virtual string EmailAddresses { get; set; }
     }
 
+    [Serializable]
     public partial class NativeTypesTestService
     {
 
+        [Serializable]
         public partial class HelloInService
         {
             public virtual string Name { get; set; }
         }
     }
 
+    [Serializable]
     public partial class NoRepeat
         : IReturn<NoRepeatResponse>
     {
         public virtual Guid Id { get; set; }
     }
 
+    [Serializable]
     public partial class NoRepeatResponse
     {
         public virtual Guid Id { get; set; }
     }
 
+    [Serializable]
     public partial class ObjectDesign
     {
         public virtual int Id { get; set; }
     }
 
+    [Serializable]
     public partial class ObjectDesignResponse
     {
         public virtual ObjectDesign data { get; set; }
     }
 
     [Route("/code/object", "GET")]
+    [Serializable]
     public partial class ObjectId
         : IReturn<ObjectDesignResponse>
     {
         public virtual string objectName { get; set; }
     }
 
+    [Serializable]
     public partial class PgRockstar
         : Rockstar
     {
     }
 
     [AutoQueryViewer(Description="Use this option to search for Rockstars!", Title="Search for Rockstars")]
+    [Serializable]
     public partial class QueryCustomRockstars
         : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
+    [Serializable]
     public partial class QueryCustomRockstarsFilter
         : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>, IMeta
     {
@@ -345,6 +405,7 @@ namespace dtos
     }
 
     [Route("/querydata/rockstars")]
+    [Serializable]
     public partial class QueryDataRockstars
         : QueryData<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
@@ -352,6 +413,7 @@ namespace dtos
     }
 
     [Route("/query-custom/rockstars")]
+    [Serializable]
     public partial class QueryFieldRockstars
         : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
@@ -373,12 +435,14 @@ namespace dtos
         public virtual string[] FirstNameContainsMulti { get; set; }
     }
 
+    [Serializable]
     public partial class QueryFieldRockstarsDynamic
         : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
+    [Serializable]
     public partial class QueryGetRockstars
         : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
@@ -396,12 +460,14 @@ namespace dtos
         public virtual int[] IdsBetween { get; set; }
     }
 
+    [Serializable]
     public partial class QueryGetRockstarsDynamic
         : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
     }
 
     [Route("/movies")]
+    [Serializable]
     public partial class QueryMovies
         : QueryDb<Movie>, IReturn<QueryResponse<Movie>>, IMeta
     {
@@ -418,6 +484,7 @@ namespace dtos
     }
 
     [Route("/OrRockstars")]
+    [Serializable]
     public partial class QueryOrRockstars
         : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
@@ -425,12 +492,14 @@ namespace dtos
         public virtual string FirstName { get; set; }
     }
 
+    [Serializable]
     public partial class QueryOverridedCustomRockstars
         : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
+    [Serializable]
     public partial class QueryOverridedRockstars
         : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
@@ -438,6 +507,7 @@ namespace dtos
     }
 
     [Route("/pgsql/pgrockstars")]
+    [Serializable]
     public partial class QueryPostgresPgRockstars
         : QueryDb<PgRockstar>, IReturn<QueryResponse<PgRockstar>>, IMeta
     {
@@ -445,6 +515,7 @@ namespace dtos
     }
 
     [Route("/pgsql/rockstars")]
+    [Serializable]
     public partial class QueryPostgresRockstars
         : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
@@ -453,6 +524,7 @@ namespace dtos
 
     [Route("/query/requestlogs")]
     [Route("/query/requestlogs/{Date}")]
+    [Serializable]
     public partial class QueryRequestLogs
         : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>, IMeta
     {
@@ -461,6 +533,7 @@ namespace dtos
     }
 
     [Route("/customrockstars")]
+    [Serializable]
     public partial class QueryRockstarAlbums
         : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>, IMeta
     {
@@ -468,11 +541,13 @@ namespace dtos
         public virtual string RockstarAlbumName { get; set; }
     }
 
+    [Serializable]
     public partial class QueryRockstarAlbumsImplicit
         : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>, IMeta
     {
     }
 
+    [Serializable]
     public partial class QueryRockstarAlbumsLeftJoin
         : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>, IMeta
     {
@@ -481,6 +556,7 @@ namespace dtos
     }
 
     [Route("/query/rockstars")]
+    [Serializable]
     public partial class QueryRockstars
         : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
@@ -488,12 +564,14 @@ namespace dtos
     }
 
     [Route("/query/rockstars/cached")]
+    [Serializable]
     public partial class QueryRockstarsCached
         : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
+    [Serializable]
     public partial class QueryRockstarsConventions
         : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
@@ -515,12 +593,14 @@ namespace dtos
         public virtual int? RockstarIdOnOrAfter { get; set; }
     }
 
+    [Serializable]
     public partial class QueryRockstarsFilter
         : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
+    [Serializable]
     public partial class QueryRockstarsIFilter
         : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta, IFilterRockstars
     {
@@ -528,12 +608,14 @@ namespace dtos
     }
 
     [Route("/query/rockstar-references")]
+    [Serializable]
     public partial class QueryRockstarsWithReferences
         : QueryDb<RockstarReference>, IReturn<QueryResponse<RockstarReference>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
+    [Serializable]
     public partial class QueryUnknownRockstars
         : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
@@ -541,11 +623,13 @@ namespace dtos
         public virtual string UnknownProperty { get; set; }
     }
 
+    [Serializable]
     public partial class ReturnedDto
     {
         public virtual int Id { get; set; }
     }
 
+    [Serializable]
     public partial class RockstarAlbum
     {
         public virtual int Id { get; set; }
@@ -553,6 +637,7 @@ namespace dtos
         public virtual string Name { get; set; }
     }
 
+    [Serializable]
     public partial class RockstarReference
     {
         public RockstarReference()
@@ -568,11 +653,13 @@ namespace dtos
     }
 
     [Route("/movies/search")]
+    [Serializable]
     public partial class SearchMovies
         : QueryDb<Movie>, IReturn<QueryResponse<Movie>>, IMeta
     {
     }
 
+    [Serializable]
     public partial class StreamMovies
         : QueryDb<Movie>, IReturn<QueryResponse<Movie>>, IMeta
     {
@@ -585,69 +672,82 @@ namespace dtos
     }
 
     [Route("/test/errorview")]
+    [Serializable]
     public partial class TestErrorView
     {
         public virtual string Id { get; set; }
     }
 
     [Route("/testexecproc")]
+    [Serializable]
     public partial class TestExecProc
     {
     }
 
+    [Serializable]
     public partial class TestMiniverView
     {
     }
 
+    [Serializable]
     public partial class TimestampData
     {
         public virtual long Timestamp { get; set; }
     }
 
+    [Serializable]
     public partial class TodayErrorLogs
         : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>, IMeta
     {
     }
 
     [AutoQueryViewer(Name="Today\'s Logs", Title="Logs from Today")]
+    [Serializable]
     public partial class TodayLogs
         : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>, IMeta
     {
     }
 
+    [Serializable]
     public partial class YesterdayErrorLogs
         : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>, IMeta
     {
     }
 
+    [Serializable]
     public partial class YesterdayLogs
         : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>, IMeta
     {
     }
 
     [Route("/alwaysthrows")]
+    [Serializable]
     public partial class AlwaysThrows
         : IReturn<AlwaysThrows>
     {
     }
 
     [Route("/alwaysthrowsfilterattribute")]
+    [Serializable]
     public partial class AlwaysThrowsFilterAttribute
         : IReturn<AlwaysThrowsFilterAttribute>
     {
     }
 
     [Route("/alwaysthrowsglobalfilter")]
+    [Serializable]
     public partial class AlwaysThrowsGlobalFilter
         : IReturn<AlwaysThrowsGlobalFilter>
     {
     }
 
+    [Serializable]
     public partial class AsyncTest
         : IReturn<Echo>
     {
     }
 
+    [Serializable]
     public partial class CachedEcho
         : IReturn<Echo>
     {
@@ -655,17 +755,20 @@ namespace dtos
         public virtual string Sentence { get; set; }
     }
 
+    [Serializable]
     public partial class CustomFieldHttpError
         : IReturn<CustomFieldHttpErrorResponse>
     {
     }
 
+    [Serializable]
     public partial class CustomFieldHttpErrorResponse
     {
         public virtual string Custom { get; set; }
         public virtual ResponseStatus ResponseStatus { get; set; }
     }
 
+    [Serializable]
     public partial class CustomHttpError
         : IReturn<CustomHttpErrorResponse>
     {
@@ -673,6 +776,7 @@ namespace dtos
         public virtual string StatusDescription { get; set; }
     }
 
+    [Serializable]
     public partial class CustomHttpErrorResponse
     {
         public virtual string Custom { get; set; }
@@ -680,11 +784,13 @@ namespace dtos
     }
 
     [Route("/dynamically/registered/{Name}")]
+    [Serializable]
     public partial class DynamicallyRegistered
     {
         public virtual string Name { get; set; }
     }
 
+    [Serializable]
     public partial class Echo
         : IEcho
     {
@@ -696,6 +802,7 @@ namespace dtos
     ///</summary>
     [Route("/echoes", "POST")]
     [Api(Description="Echoes a sentence")]
+    [Serializable]
     public partial class Echoes
         : IReturn<Echo>
     {
@@ -706,6 +813,7 @@ namespace dtos
         public virtual string Sentence { get; set; }
     }
 
+    [Serializable]
     public partial class ExcludeMetadataProperty
     {
         public virtual int Id { get; set; }
@@ -713,12 +821,14 @@ namespace dtos
 
     [Route("/example", "GET")]
     [DataContract]
+    [Serializable]
     public partial class GetExample
         : IReturn<GetExampleResponse>
     {
     }
 
     [DataContract]
+    [Serializable]
     public partial class GetExampleResponse
     {
         [DataMember(Order=1)]
@@ -735,6 +845,7 @@ namespace dtos
     }
 
     [DataContract]
+    [Serializable]
     public partial class MenuExample
     {
         [DataMember(Order=1)]
@@ -742,6 +853,7 @@ namespace dtos
         public virtual MenuItemExample MenuItemExample1 { get; set; }
     }
 
+    [Serializable]
     public partial class MenuItemExample
     {
         [DataMember(Order=1)]
@@ -751,6 +863,7 @@ namespace dtos
         public virtual MenuItemExampleItem MenuItemExampleItem { get; set; }
     }
 
+    [Serializable]
     public partial class MenuItemExampleItem
     {
         [DataMember(Order=1)]
@@ -758,12 +871,14 @@ namespace dtos
         public virtual string Name1 { get; set; }
     }
 
+    [Serializable]
     public partial class MetadataTest
         : IReturn<MetadataTestResponse>
     {
         public virtual int Id { get; set; }
     }
 
+    [Serializable]
     public partial class MetadataTestChild
     {
         public MetadataTestChild()
@@ -775,11 +890,13 @@ namespace dtos
         public virtual List<MetadataTestNestedChild> Results { get; set; }
     }
 
+    [Serializable]
     public partial class MetadataTestNestedChild
     {
         public virtual string Name { get; set; }
     }
 
+    [Serializable]
     public partial class MetadataTestResponse
     {
         public MetadataTestResponse()
@@ -791,47 +908,69 @@ namespace dtos
         public virtual List<MetadataTestChild> Results { get; set; }
     }
 
+    [Serializable]
     public partial class OnlyDefinedInGenericType
     {
         public virtual int Id { get; set; }
         public virtual string Name { get; set; }
     }
 
+    [Serializable]
     public partial class OnlyDefinedInGenericTypeFrom
     {
         public virtual int Id { get; set; }
         public virtual string Name { get; set; }
     }
 
+    [Serializable]
     public partial class OnlyDefinedInGenericTypeInto
     {
         public virtual int Id { get; set; }
         public virtual string Name { get; set; }
     }
 
+    [Serializable]
     public partial class QueryPocoBase
         : QueryDb<OnlyDefinedInGenericType>, IReturn<QueryResponse<OnlyDefinedInGenericType>>, IMeta
     {
         public virtual int Id { get; set; }
     }
 
+    [Serializable]
     public partial class QueryPocoIntoBase
         : QueryDb<OnlyDefinedInGenericTypeFrom, OnlyDefinedInGenericTypeInto>, IReturn<QueryResponse<OnlyDefinedInGenericTypeInto>>, IMeta
     {
         public virtual int Id { get; set; }
     }
 
+    [Serializable]
+    public partial class RecursiveNode
+        : IReturn<RecursiveNode>
+    {
+        public RecursiveNode()
+        {
+            Children = new RecursiveNode[]{};
+        }
+
+        public virtual int Id { get; set; }
+        public virtual string Text { get; set; }
+        public virtual RecursiveNode[] Children { get; set; }
+    }
+
     [Route("/return404")]
+    [Serializable]
     public partial class Return404
     {
     }
 
     [Route("/return404result")]
+    [Serializable]
     public partial class Return404Result
     {
     }
 
     [Route("/return/bytes")]
+    [Serializable]
     public partial class ReturnBytes
         : IReturn<byte[]>
     {
@@ -844,6 +983,7 @@ namespace dtos
     }
 
     [Route("/return/stream")]
+    [Serializable]
     public partial class ReturnStream
         : IReturn<Stream>
     {
@@ -856,12 +996,14 @@ namespace dtos
     }
 
     [Route("/return/string")]
+    [Serializable]
     public partial class ReturnString
         : IReturn<string>
     {
         public virtual string Data { get; set; }
     }
 
+    [Serializable]
     public partial class Rockstar
     {
         ///<summary>
@@ -882,20 +1024,38 @@ namespace dtos
         public virtual int? Age { get; set; }
     }
 
+    [Route("/swagger/range")]
+    [Serializable]
+    public partial class SwaggerRangeTest
+    {
+        public virtual string IntRange { get; set; }
+        public virtual string DoubleRange { get; set; }
+    }
+
     [Route("/{Version}/userdata", "GET")]
+    [Serializable]
     public partial class SwaggerVersionTest
     {
         public virtual string Version { get; set; }
     }
 
+    [Serializable]
+    public partial class TestAttributeExport
+        : IReturn<TestAttributeExport>
+    {
+        public virtual int UnitMeasKey { get; set; }
+    }
+
     [Route("/throw404")]
     [Route("/throw404/{Message}")]
+    [Serializable]
     public partial class Throw404
     {
         public virtual string Message { get; set; }
     }
 
     [Route("/throwhttperror/{Status}")]
+    [Serializable]
     public partial class ThrowHttpError
         : IReturn<ThrowHttpErrorResponse>
     {
@@ -903,11 +1063,13 @@ namespace dtos
         public virtual string Message { get; set; }
     }
 
+    [Serializable]
     public partial class ThrowHttpErrorResponse
     {
     }
 
     [Route("/throw/{Type}")]
+    [Serializable]
     public partial class ThrowType
         : IReturn<ThrowTypeResponse>
     {
@@ -915,12 +1077,14 @@ namespace dtos
         public virtual string Message { get; set; }
     }
 
+    [Serializable]
     public partial class ThrowTypeResponse
     {
         public virtual ResponseStatus ResponseStatus { get; set; }
     }
 
     [Route("/throwvalidation")]
+    [Serializable]
     public partial class ThrowValidation
         : IReturn<ThrowValidationResponse>
     {
@@ -929,6 +1093,7 @@ namespace dtos
         public virtual string Email { get; set; }
     }
 
+    [Serializable]
     public partial class ThrowValidationResponse
     {
         public virtual int Age { get; set; }
@@ -944,6 +1109,7 @@ namespace dtos
     [Api(Description="AllowedAttributes Description")]
     [ApiResponse(Description="Your request was not understood", StatusCode=400)]
     [DataContract]
+    [Serializable]
     public partial class AllowedAttributes
     {
         [DataMember]
@@ -958,19 +1124,28 @@ namespace dtos
         public virtual double Range { get; set; }
     }
 
+    [Serializable]
     public partial class ArrayResult
     {
         public virtual string Result { get; set; }
+    }
+
+    public enum EnumAsInt
+    {
+        Value1 = 1000,
+        Value2 = 2000,
+        Value3 = 3000,
     }
 
     [Flags]
     public enum EnumFlags
     {
         Value0 = 0,
+        [EnumMember(Value="Value 1")]
         Value1 = 1,
         Value2 = 2,
-        Value3 = 3,
-        Value123 = 3,
+        Value3 = 4,
+        Value123 = 7,
     }
 
     public enum EnumStyle
@@ -983,20 +1158,47 @@ namespace dtos
         PascalUPPER,
     }
 
+    public enum EnumStyleMembers
+    {
+        [EnumMember(Value="lower")]
+        Lower,
+        [EnumMember(Value="UPPER")]
+        Upper,
+        PascalCase,
+        [EnumMember(Value="camelCase")]
+        CamelCase,
+        [EnumMember(Value="camelUPPER")]
+        CamelUpper,
+        [EnumMember(Value="PascalUPPER")]
+        PascalUpper,
+    }
+
     public enum EnumType
     {
         Value1,
         Value2,
+        Value3,
+    }
+
+    [Flags]
+    public enum EnumTypeFlags
+    {
+        Value1 = 0,
+        Value2 = 1,
+        Value3 = 2,
     }
 
     public enum EnumWithValues
     {
-        Value1 = 1,
-        Value2 = 2,
+        None,
+        [EnumMember(Value="Member 1")]
+        Value1,
+        Value2,
     }
 
     [Route("/hello")]
     [Route("/hello/{Name}")]
+    [Serializable]
     public partial class Hello
         : IReturn<HelloResponse>
     {
@@ -1009,6 +1211,7 @@ namespace dtos
     ///<summary>
     ///Description for HelloACodeGenTest
     ///</summary>
+    [Serializable]
     public partial class HelloACodeGenTest
         : IReturn<HelloACodeGenTestResponse>
     {
@@ -1025,6 +1228,7 @@ namespace dtos
     }
 
     [DataContract]
+    [Serializable]
     public partial class HelloACodeGenTestResponse
     {
         ///<summary>
@@ -1041,6 +1245,7 @@ namespace dtos
         public virtual int SecondResult { get; set; }
     }
 
+    [Serializable]
     public partial class HelloAllTypes
         : IReturn<HelloAllTypesResponse>
     {
@@ -1049,6 +1254,7 @@ namespace dtos
         public virtual AllCollectionTypes AllCollectionTypes { get; set; }
     }
 
+    [Serializable]
     public partial class HelloAllTypesResponse
     {
         public virtual string Result { get; set; }
@@ -1060,6 +1266,7 @@ namespace dtos
     ///Description on HelloAll type
     ///</summary>
     [DataContract]
+    [Serializable]
     public partial class HelloAnnotated
         : IReturn<HelloAnnotatedResponse>
     {
@@ -1071,12 +1278,14 @@ namespace dtos
     ///Description on HelloAllResponse type
     ///</summary>
     [DataContract]
+    [Serializable]
     public partial class HelloAnnotatedResponse
     {
         [DataMember]
         public virtual string Result { get; set; }
     }
 
+    [Serializable]
     public partial class HelloArray
         : IReturn<ArrayResult[]>
     {
@@ -1092,6 +1301,7 @@ namespace dtos
     ///Multi Line Class
     ///</summary>
     [Api(Description="Multi \r\nLine \r\nClass")]
+    [Serializable]
     public partial class HelloAttributeStringTest
     {
         ///<summary>
@@ -1107,6 +1317,7 @@ namespace dtos
         public virtual string EscapedChars { get; set; }
     }
 
+    [Serializable]
     public partial class HelloBase<T>
     {
         public HelloBase()
@@ -1119,6 +1330,7 @@ namespace dtos
         public virtual List<int> Counts { get; set; }
     }
 
+    [Serializable]
     public partial class HelloExisting
         : IReturn<HelloExistingResponse>
     {
@@ -1130,6 +1342,7 @@ namespace dtos
         public virtual List<string> Names { get; set; }
     }
 
+    [Serializable]
     public partial class HelloExistingResponse
     {
         public HelloExistingResponse()
@@ -1144,6 +1357,7 @@ namespace dtos
         public virtual List<ListResult> ListResults { get; set; }
     }
 
+    [Serializable]
     public partial class HelloList
         : IReturn<List<ListResult>>
     {
@@ -1155,11 +1369,13 @@ namespace dtos
         public virtual List<string> Names { get; set; }
     }
 
+    [Serializable]
     public partial class HelloResponse
     {
         public virtual string Result { get; set; }
     }
 
+    [Serializable]
     public partial class HelloReturnList
         : IReturn<List<OnlyInReturnListArg>>
     {
@@ -1171,18 +1387,21 @@ namespace dtos
         public virtual List<string> Names { get; set; }
     }
 
+    [Serializable]
     public partial class HelloString
         : IReturn<string>
     {
         public virtual string Name { get; set; }
     }
 
+    [Serializable]
     public partial class HelloVoid
         : IReturnVoid
     {
         public virtual string Name { get; set; }
     }
 
+    [Serializable]
     public partial class HelloWithAlternateReturnResponse
         : HelloWithReturnResponse
     {
@@ -1190,6 +1409,7 @@ namespace dtos
     }
 
     [DataContract]
+    [Serializable]
     public partial class HelloWithDataContract
         : IReturn<HelloWithDataContractResponse>
     {
@@ -1201,6 +1421,7 @@ namespace dtos
     }
 
     [DataContract]
+    [Serializable]
     public partial class HelloWithDataContractResponse
     {
         [DataMember(Name="result", Order=1, IsRequired=true, EmitDefaultValue=false)]
@@ -1210,6 +1431,7 @@ namespace dtos
     ///<summary>
     ///Description on HelloWithDescription type
     ///</summary>
+    [Serializable]
     public partial class HelloWithDescription
         : IReturn<HelloWithDescriptionResponse>
     {
@@ -1219,71 +1441,124 @@ namespace dtos
     ///<summary>
     ///Description on HelloWithDescriptionResponse type
     ///</summary>
+    [Serializable]
     public partial class HelloWithDescriptionResponse
     {
         public virtual string Result { get; set; }
     }
 
+    [Serializable]
     public partial class HelloWithEnum
     {
         public virtual EnumType EnumProp { get; set; }
+        public virtual EnumTypeFlags EnumTypeFlags { get; set; }
         public virtual EnumWithValues EnumWithValues { get; set; }
         public virtual EnumType? NullableEnumProp { get; set; }
         public virtual EnumFlags EnumFlags { get; set; }
+        public virtual EnumAsInt EnumAsInt { get; set; }
         public virtual EnumStyle EnumStyle { get; set; }
+        public virtual EnumStyleMembers EnumStyleMembers { get; set; }
     }
 
+    [Serializable]
+    public partial class HelloWithEnumList
+    {
+        public HelloWithEnumList()
+        {
+            EnumProp = new List<EnumType>{};
+            EnumWithValues = new List<EnumWithValues>{};
+            NullableEnumProp = new List<Nullable<EnumType>>{};
+            EnumFlags = new List<EnumFlags>{};
+            EnumStyle = new List<EnumStyle>{};
+        }
+
+        public virtual List<EnumType> EnumProp { get; set; }
+        public virtual List<EnumWithValues> EnumWithValues { get; set; }
+        public virtual List<Nullable<EnumType>> NullableEnumProp { get; set; }
+        public virtual List<EnumFlags> EnumFlags { get; set; }
+        public virtual List<EnumStyle> EnumStyle { get; set; }
+    }
+
+    [Serializable]
+    public partial class HelloWithEnumMap
+    {
+        public HelloWithEnumMap()
+        {
+            EnumProp = new Dictionary<EnumType, EnumType>{};
+            EnumWithValues = new Dictionary<EnumWithValues, EnumWithValues>{};
+            NullableEnumProp = new Dictionary<Nullable<EnumType>, Nullable<EnumType>>{};
+            EnumFlags = new Dictionary<EnumFlags, EnumFlags>{};
+            EnumStyle = new Dictionary<EnumStyle, EnumStyle>{};
+        }
+
+        public virtual Dictionary<EnumType, EnumType> EnumProp { get; set; }
+        public virtual Dictionary<EnumWithValues, EnumWithValues> EnumWithValues { get; set; }
+        public virtual Dictionary<Nullable<EnumType>, Nullable<EnumType>> NullableEnumProp { get; set; }
+        public virtual Dictionary<EnumFlags, EnumFlags> EnumFlags { get; set; }
+        public virtual Dictionary<EnumStyle, EnumStyle> EnumStyle { get; set; }
+    }
+
+    [Serializable]
     public partial class HelloWithGenericInheritance
         : HelloBase<Poco>
     {
         public virtual string Result { get; set; }
     }
 
+    [Serializable]
     public partial class HelloWithGenericInheritance2
         : HelloBase<Hello>
     {
         public virtual string Result { get; set; }
     }
 
+    [Serializable]
     public partial class HelloWithInheritance
         : HelloBase, IReturn<HelloWithInheritanceResponse>
     {
         public virtual string Name { get; set; }
     }
 
+    [Serializable]
     public partial class HelloWithInheritanceResponse
         : HelloResponseBase
     {
         public virtual string Result { get; set; }
     }
 
+    [Serializable]
     public partial class HelloWithListInheritance
         : List<InheritedItem>
     {
     }
 
+    [Serializable]
     public partial class HelloWithNestedClass
         : IReturn<HelloResponse>
     {
         public virtual string Name { get; set; }
         public virtual HelloWithNestedClass.NestedClass NestedClassProp { get; set; }
 
+        [Serializable]
         public partial class NestedClass
         {
             public virtual string Value { get; set; }
         }
     }
 
+    [Serializable]
     public partial class HelloWithNestedInheritance
         : HelloBase<HelloWithNestedInheritance.Item>
     {
 
+        [Serializable]
         public partial class Item
         {
             public virtual string Value { get; set; }
         }
     }
 
+    [Serializable]
     public partial class HelloWithReturn
         : IReturn<HelloWithAlternateReturnResponse>
     {
@@ -1291,43 +1566,51 @@ namespace dtos
     }
 
     [Route("/helloroute")]
+    [Serializable]
     public partial class HelloWithRoute
         : IReturn<HelloWithRouteResponse>
     {
         public virtual string Name { get; set; }
     }
 
+    [Serializable]
     public partial class HelloWithRouteResponse
     {
         public virtual string Result { get; set; }
     }
 
+    [Serializable]
     public partial class HelloWithType
         : IReturn<HelloWithTypeResponse>
     {
         public virtual string Name { get; set; }
     }
 
+    [Serializable]
     public partial class HelloWithTypeResponse
     {
         public virtual HelloType Result { get; set; }
     }
 
+    [Serializable]
     public partial class InheritedItem
     {
         public virtual string Name { get; set; }
     }
 
+    [Serializable]
     public partial class ListResult
     {
         public virtual string Result { get; set; }
     }
 
+    [Serializable]
     public partial class OnlyInReturnListArg
     {
         public virtual string Result { get; set; }
     }
 
+    [Serializable]
     public partial class RestrictedAttributes
     {
         public virtual int Id { get; set; }
@@ -1335,6 +1618,7 @@ namespace dtos
         public virtual Hello Hello { get; set; }
     }
 
+    [Serializable]
     public partial class AllCollectionTypes
     {
         public AllCollectionTypes()
@@ -1367,6 +1651,7 @@ namespace dtos
         public virtual Dictionary<string, List<Dictionary<String,Poco>>> PocoLookupMap { get; set; }
     }
 
+    [Serializable]
     public partial class AllTypes
         : IReturn<AllTypes>
     {
@@ -1409,37 +1694,44 @@ namespace dtos
         public virtual string OriginalName { get; set; }
     }
 
+    [Serializable]
     public partial class EmptyClass
     {
     }
 
+    [Serializable]
     public partial class EnumRequest
         : IReturn<EnumResponse>, IPut
     {
         public virtual ScopeType Operator { get; set; }
     }
 
+    [Serializable]
     public partial class EnumResponse
     {
         public virtual ScopeType Operator { get; set; }
     }
 
+    [Serializable]
     public partial class ExcludeTest1
         : IReturn<ExcludeTestNested>
     {
     }
 
+    [Serializable]
     public partial class ExcludeTest2
         : IReturn<string>
     {
         public virtual ExcludeTestNested ExcludeTestNested { get; set; }
     }
 
+    [Serializable]
     public partial class ExcludeTestNested
     {
         public virtual int Id { get; set; }
     }
 
+    [Serializable]
     public partial class HelloAuthenticated
         : IReturn<HelloAuthenticatedResponse>, IHasSessionId
     {
@@ -1447,6 +1739,7 @@ namespace dtos
         public virtual int Version { get; set; }
     }
 
+    [Serializable]
     public partial class HelloAuthenticatedResponse
     {
         public virtual int Version { get; set; }
@@ -1457,22 +1750,27 @@ namespace dtos
         public virtual ResponseStatus ResponseStatus { get; set; }
     }
 
+    [Serializable]
     public partial class HelloBase
     {
         public virtual int Id { get; set; }
     }
 
+    [Serializable]
     public partial class HelloBuiltin
     {
         public virtual DayOfWeek DayOfWeek { get; set; }
+        public virtual ShortDays ShortDays { get; set; }
     }
 
+    [Serializable]
     public partial class HelloDelete
         : IReturn<HelloVerbResponse>, IDelete
     {
         public virtual int Id { get; set; }
     }
 
+    [Serializable]
     public partial class HelloDictionary
         : IReturn<Dictionary<string, string>>
     {
@@ -1480,23 +1778,27 @@ namespace dtos
         public virtual string Value { get; set; }
     }
 
+    [Serializable]
     public partial class HelloGet
         : IReturn<HelloVerbResponse>, IGet
     {
         public virtual int Id { get; set; }
     }
 
+    [Serializable]
     public partial class HelloImplementsInterface
         : IReturn<HelloImplementsInterface>, ImplementsPoco
     {
         public virtual string Name { get; set; }
     }
 
+    [Serializable]
     public partial class HelloInnerTypes
         : IReturn<HelloInnerTypesResponse>
     {
     }
 
+    [Serializable]
     public partial class HelloInnerTypesResponse
     {
         public HelloInnerTypesResponse()
@@ -1509,6 +1811,7 @@ namespace dtos
         public virtual List<TypesGroup.InnerTypeItem> InnerList { get; set; }
     }
 
+    [Serializable]
     public partial class HelloInterface
     {
         public virtual IPoco Poco { get; set; }
@@ -1517,23 +1820,27 @@ namespace dtos
         public virtual string Value { get; set; }
     }
 
+    [Serializable]
     public partial class HelloPatch
         : IReturn<HelloVerbResponse>, IPatch
     {
         public virtual int Id { get; set; }
     }
 
+    [Serializable]
     public partial class HelloPost
         : HelloBase, IReturn<HelloVerbResponse>, IPost
     {
     }
 
+    [Serializable]
     public partial class HelloPut
         : IReturn<HelloVerbResponse>, IPut
     {
         public virtual int Id { get; set; }
     }
 
+    [Serializable]
     public partial class HelloReserved
     {
         public virtual string Class { get; set; }
@@ -1541,27 +1848,32 @@ namespace dtos
         public virtual string extension { get; set; }
     }
 
+    [Serializable]
     public partial class HelloResponseBase
     {
         public virtual int RefId { get; set; }
     }
 
+    [Serializable]
     public partial class HelloReturnVoid
         : IReturnVoid
     {
         public virtual int Id { get; set; }
     }
 
+    [Serializable]
     public partial class HelloSession
         : IReturn<HelloSessionResponse>
     {
     }
 
+    [Serializable]
     public partial class HelloSessionResponse
     {
         public virtual AuthUserSession Result { get; set; }
     }
 
+    [Serializable]
     public partial class HelloStruct
         : IReturn<HelloStruct>
     {
@@ -1569,6 +1881,7 @@ namespace dtos
         public virtual string NullablePoint { get; set; }
     }
 
+    [Serializable]
     public partial class HelloTuple
         : IReturn<HelloTuple>
     {
@@ -1584,16 +1897,19 @@ namespace dtos
         public virtual List<Tuple<String,Int64,Boolean>> Tuples3 { get; set; }
     }
 
+    [Serializable]
     public partial class HelloType
     {
         public virtual string Result { get; set; }
     }
 
+    [Serializable]
     public partial class HelloVerbResponse
     {
         public virtual string Result { get; set; }
     }
 
+    [Serializable]
     public partial class HelloWithReturnResponse
     {
         public virtual string Result { get; set; }
@@ -1613,12 +1929,14 @@ namespace dtos
         string Name { get; set; }
     }
 
+    [Serializable]
     public partial class Poco
     {
         public virtual string Name { get; set; }
     }
 
     [DataContract]
+    [Serializable]
     public partial class QueryResponseTemplate<T>
         : IMeta
     {
@@ -1644,39 +1962,46 @@ namespace dtos
         public virtual ResponseStatus ResponseStatus { get; set; }
     }
 
+    [Serializable]
     public partial class QueryTemplate
         : IReturn<QueryResponseTemplate<Poco>>
     {
     }
 
+    [Serializable]
     public partial class Request1
         : IReturn<Request1Response>
     {
         public virtual TypeA Test { get; set; }
     }
 
+    [Serializable]
     public partial class Request1Response
     {
         public virtual TypeA Test { get; set; }
     }
 
+    [Serializable]
     public partial class Request2
         : IReturn<Request2Response>
     {
         public virtual TypeA Test { get; set; }
     }
 
+    [Serializable]
     public partial class Request2Response
     {
         public virtual TypeA Test { get; set; }
     }
 
+    [Serializable]
     public partial class RestrictInternal
         : IReturn<RestrictInternal>
     {
         public virtual int Id { get; set; }
     }
 
+    [Serializable]
     public partial class RestrictLocalhost
         : IReturn<RestrictLocalhost>
     {
@@ -1690,12 +2015,33 @@ namespace dtos
         Sale = 2,
     }
 
+    [DataContract]
+    public enum ShortDays
+    {
+        [EnumMember(Value="MON")]
+        Monday,
+        [EnumMember(Value="TUE")]
+        Tuesday,
+        [EnumMember(Value="WED")]
+        Wednesday,
+        [EnumMember(Value="THU")]
+        Thursday,
+        [EnumMember(Value="FRI")]
+        Friday,
+        [EnumMember(Value="SAT")]
+        Saturday,
+        [EnumMember(Value="SUN")]
+        Sunday,
+    }
+
+    [Serializable]
     public partial class SubType
     {
         public virtual int Id { get; set; }
         public virtual string Name { get; set; }
     }
 
+    [Serializable]
     public partial class TypeA
     {
         public TypeA()
@@ -1706,20 +2052,24 @@ namespace dtos
         public virtual List<TypeB> Bar { get; set; }
     }
 
+    [Serializable]
     public partial class TypeB
     {
         public virtual string Foo { get; set; }
     }
 
+    [Serializable]
     public partial class TypesGroup
     {
 
+        [Serializable]
         public partial class InnerType
         {
             public virtual long Id { get; set; }
             public virtual string Name { get; set; }
         }
 
+        [Serializable]
         public partial class InnerTypeItem
         {
             public virtual long Id { get; set; }
@@ -1734,17 +2084,70 @@ namespace dtos
         }
     }
 
+    [Route("/surveys/{surveyId}/sendouts/{sendoutId}/respondents", "POST")]
+    [Serializable]
+    public partial class AddRespondentRequest
+        : IReturn<AddRespondentResponse>
+    {
+        public AddRespondentRequest()
+        {
+            backgroundData = new Dictionary<int, string>{};
+        }
+
+        ///<summary>
+        ///Remarks: SurveyId of requested Survey.
+        ///</summary>
+        [ApiMember(DataType="integer", Description="Remarks: SurveyId of requested Survey.", Format="int32", IsRequired=true, Name="surveyId", ParameterType="path")]
+        public virtual int surveyId { get; set; }
+
+        ///<summary>
+        ///Remarks: SendoutId of Sendout to which a respondent is added.
+        ///</summary>
+        [ApiMember(DataType="integer", Description="Remarks: SendoutId of Sendout to which a respondent is added.", Format="int32", IsRequired=true, Name="sendoutId", ParameterType="path")]
+        public virtual int sendoutId { get; set; }
+
+        ///<summary>
+        ///Remarks: Valid email address, SMS recipient or login identifier.
+        ///</summary>
+        [ApiMember(DataType="string", Description="Remarks: Valid email address, SMS recipient or login identifier.", Name="contactDetails", ParameterType="query")]
+        public virtual string contactDetails { get; set; }
+
+        ///<summary>
+        ///Remarks: Indicates whether Netigate should send the survey link to the respondent, or if you distribute it yourself.
+        ///</summary>
+        [ApiMember(DataType="boolean", Description="Remarks: Indicates whether Netigate should send the survey link to the respondent, or if you distribute it yourself.", Name="sendMail", ParameterType="query")]
+        public virtual bool sendMail { get; set; }
+
+        ///<summary>
+        ///Remarks: Key = BGDataLabelId, Value = respondent's background data (not empty or null)
+        ///</summary>
+        [ApiMember(Description="Remarks: Key = BGDataLabelId, Value = respondent\'s background data (not empty or null)", Name="backgroundData", ParameterType="query")]
+        public virtual Dictionary<int, string> backgroundData { get; set; }
+    }
+
+    [Serializable]
+    public partial class AddRespondentResponse
+    {
+        public virtual int RespondentId { get; set; }
+        public virtual string Email { get; set; }
+        public virtual string Password { get; set; }
+        public virtual string SurveyURL { get; set; }
+    }
+
     [Route("/defaultview/action")]
+    [Serializable]
     public partial class DefaultViewActionAttr
     {
     }
 
     [Route("/defaultview/class")]
+    [Serializable]
     public partial class DefaultViewAttr
     {
     }
 
     [Route("/gzip/{FileName}")]
+    [Serializable]
     public partial class DownloadGzipFile
         : IReturn<byte[]>
     {
@@ -1752,6 +2155,7 @@ namespace dtos
     }
 
     [Route("/lists", "GET")]
+    [Serializable]
     public partial class GetLists
         : IReturn<GetLists>
     {
@@ -1763,6 +2167,7 @@ namespace dtos
     ///</summary>
     [Route("/swaggerexamples/{Id}", "GET")]
     [Api(Description="Api GET Id")]
+    [Serializable]
     public partial class GetSwaggerExample
         : IReturn<GetSwaggerExample>
     {
@@ -1775,6 +2180,7 @@ namespace dtos
     ///</summary>
     [Route("/swaggerexamples", "GET")]
     [Api(Description="Api GET All")]
+    [Serializable]
     public partial class GetSwaggerExamples
         : IReturn<GetSwaggerExamples>
     {
@@ -1782,6 +2188,7 @@ namespace dtos
     }
 
     [Route("/httpresult-dto")]
+    [Serializable]
     public partial class HttpResultDto
         : IReturn<HttpResultDto>
     {
@@ -1789,20 +2196,24 @@ namespace dtos
     }
 
     [Route("/index")]
+    [Serializable]
     public partial class IndexPage
     {
         public virtual string PathInfo { get; set; }
     }
 
+    [Serializable]
     public partial class InProcRequest1
     {
     }
 
+    [Serializable]
     public partial class InProcRequest2
     {
     }
 
     [Route("/match/{Language*}")]
+    [Serializable]
     public partial class MatchLang
         : IReturn<HelloResponse>
     {
@@ -1810,6 +2221,7 @@ namespace dtos
     }
 
     [Route("/match/{Language}/{Name*}")]
+    [Serializable]
     public partial class MatchName
         : IReturn<HelloResponse>
     {
@@ -1832,6 +2244,7 @@ namespace dtos
     }
 
     [Route("/plain-dto")]
+    [Serializable]
     public partial class PlainDto
         : IReturn<PlainDto>
     {
@@ -1843,6 +2256,7 @@ namespace dtos
     ///</summary>
     [Route("/swaggerexamples", "POST")]
     [Api(Description="Api POST")]
+    [Serializable]
     public partial class PostSwaggerExamples
         : IReturn<PostSwaggerExamples>
     {
@@ -1854,6 +2268,7 @@ namespace dtos
     ///</summary>
     [Route("/swaggerexamples/{Id}", "PUT")]
     [Api(Description="Api PUT Id")]
+    [Serializable]
     public partial class PutSwaggerExample
         : IReturn<PutSwaggerExample>
     {
@@ -1862,12 +2277,14 @@ namespace dtos
     }
 
     [Route("/query/alltypes")]
+    [Serializable]
     public partial class QueryAllTypes
         : QueryDb<AllTypes>, IReturn<QueryResponse<AllTypes>>, IMeta
     {
     }
 
     [Route("/reqlogstest/{Name}")]
+    [Serializable]
     public partial class RequestLogsTest
         : IReturn<string>
     {
@@ -1875,12 +2292,14 @@ namespace dtos
     }
 
     [Route("/return/text")]
+    [Serializable]
     public partial class ReturnText
     {
         public virtual string Text { get; set; }
     }
 
     [Route("/set-cache")]
+    [Serializable]
     public partial class SetCache
         : IReturn<SetCache>
     {
@@ -1893,6 +2312,7 @@ namespace dtos
     }
 
     [Route("/swagger-complex", "POST")]
+    [Serializable]
     public partial class SwaggerComplex
         : IReturn<SwaggerComplexResponse>
     {
@@ -1930,6 +2350,7 @@ namespace dtos
         public virtual Dictionary<string, string> DictionaryString { get; set; }
     }
 
+    [Serializable]
     public partial class SwaggerComplexResponse
     {
         public SwaggerComplexResponse()
@@ -1967,6 +2388,7 @@ namespace dtos
     }
 
     [Route("/swagger/model")]
+    [Serializable]
     public partial class SwaggerModel
         : IReturn<SwaggerModel>
     {
@@ -1981,11 +2403,13 @@ namespace dtos
     [ApiResponse(Description="Code 1", StatusCode=400)]
     [ApiResponse(Description="Code 2", StatusCode=402)]
     [ApiResponse(Description="Code 3", StatusCode=401)]
+    [Serializable]
     public partial class SwaggerMultiApiResponseTest
         : IReturnVoid
     {
     }
 
+    [Serializable]
     public partial class SwaggerNestedModel
     {
         ///<summary>
@@ -1995,6 +2419,7 @@ namespace dtos
         public virtual bool NestedProperty { get; set; }
     }
 
+    [Serializable]
     public partial class SwaggerNestedModel2
     {
         ///<summary>
@@ -2019,6 +2444,7 @@ namespace dtos
     [Route("/swaggerpost/{Required1}", "GET")]
     [Route("/swaggerpost/{Required1}/{Optional1}", "GET")]
     [Route("/swaggerpost", "POST")]
+    [Serializable]
     public partial class SwaggerPostTest
         : IReturn<HelloResponse>
     {
@@ -2035,6 +2461,7 @@ namespace dtos
     [Route("/swaggerpost2/{Required1}/{Required2}", "GET")]
     [Route("/swaggerpost2/{Required1}/{Required2}/{Optional1}", "GET")]
     [Route("/swaggerpost2", "POST")]
+    [Serializable]
     public partial class SwaggerPostTest2
         : IReturn<HelloResponse>
     {
@@ -2060,6 +2487,7 @@ namespace dtos
     [ApiResponse(Description="Your request was not understood", StatusCode=400)]
     [ApiResponse(Description="Oops, something broke", StatusCode=500)]
     [DataContract]
+    [Serializable]
     public partial class SwaggerTest
     {
         public SwaggerTest()
@@ -2119,6 +2547,7 @@ namespace dtos
     }
 
     [Route("/swaggertest2", "POST")]
+    [Serializable]
     public partial class SwaggerTest2
     {
         [ApiMember]
@@ -2129,6 +2558,7 @@ namespace dtos
     }
 
     [Route("/test/html")]
+    [Serializable]
     public partial class TestHtml
         : IReturn<TestHtml>
     {
@@ -2136,12 +2566,14 @@ namespace dtos
     }
 
     [Route("/test/html2")]
+    [Serializable]
     public partial class TestHtml2
     {
         public virtual string Name { get; set; }
     }
 
     [Route("/restrict/mq")]
+    [Serializable]
     public partial class TestMqRestriction
         : IReturn<TestMqRestriction>
     {
@@ -2149,12 +2581,14 @@ namespace dtos
     }
 
     [Route("/views/request")]
+    [Serializable]
     public partial class ViewRequest
         : IReturn<ViewResponse>
     {
         public virtual string Name { get; set; }
     }
 
+    [Serializable]
     public partial class ViewResponse
     {
         public virtual string Result { get; set; }

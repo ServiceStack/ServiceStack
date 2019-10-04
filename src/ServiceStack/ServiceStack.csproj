@@ -20,7 +20,7 @@
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
     <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
-    <PackageReference Include="System.ComponentModel.Annotations" Version="4.4.1" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="4.6.0" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <Reference Include="System.Net" />

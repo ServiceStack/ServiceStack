@@ -582,6 +582,7 @@ namespace ServiceStack.NativeTypes
             var firstCtor = attr.GetType().GetConstructors()
                 //.OrderBy(x => x.GetParameters().Length)
                 .FirstOrDefault();
+            var emptyCtor = attr.GetType().GetConstructor(Type.EmptyTypes);
             var metaAttr = new MetadataAttribute {
                 Name = attr.GetType().Name.Replace("Attribute", ""),
                 ConstructorArgs = firstCtor != null
@@ -625,8 +626,9 @@ namespace ServiceStack.NativeTypes
             }
 
             //Only emit ctor args or property args
-            if (metaAttr.ConstructorArgs == null
-                || metaAttr.ConstructorArgs.Count <= metaAttr.Args.Count)
+            if (emptyCtor != null //empty ctor required for Property Args 
+                && (metaAttr.ConstructorArgs == null
+                    || metaAttr.ConstructorArgs.Count <= metaAttr.Args.Count))
             {
                 metaAttr.ConstructorArgs = null;
             }
