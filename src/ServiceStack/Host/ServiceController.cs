@@ -201,6 +201,26 @@ namespace ServiceStack.Host
                 && !serviceType.ContainsGenericParameters;
         }
 
+        public static bool IsServiceAction(MethodInfo mi)
+        {
+            if (mi.IsGenericMethod || mi.GetParameters().Length != 1)
+                return false;
+
+            var paramType = mi.GetParameters()[0].ParameterType;
+            if (paramType.IsValueType || paramType == typeof(string))
+                return false;
+
+            var actionName = mi.Name.ToUpper();
+            if (!HttpMethods.AllVerbs.Contains(actionName) &&
+                actionName != ActionContext.AnyAction &&
+                !HttpMethods.AllVerbs.Any(verb =>
+                    ContentTypes.KnownFormats.Any(format => actionName.EqualsIgnoreCase(verb + format))) &&
+                !ContentTypes.KnownFormats.Any(format => actionName.EqualsIgnoreCase(ActionContext.AnyAction + format)))
+                return false;
+            
+            return true;
+        }
+
         public readonly Dictionary<string, List<RestPath>> RestPathMap = new Dictionary<string, List<RestPath>>();
 
         private static RestPath fallbackRestPath = null;

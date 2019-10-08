@@ -206,7 +206,7 @@ namespace ServiceStack
             appHost.RegisterService(serviceType);
         }
 
-        Type GenerateMissingServices(IEnumerable<Type> misingRequestTypes)
+        Type GenerateMissingServices(IEnumerable<Type> missingRequestTypes)
         {
             var assemblyName = new AssemblyName { Name = "tmpAssembly" };
             var typeBuilder =
@@ -216,7 +216,7 @@ namespace ServiceStack
                     TypeAttributes.Public | TypeAttributes.Class,
                     AutoQueryServiceBaseType);
 
-            foreach (var requestType in misingRequestTypes)
+            foreach (var requestType in missingRequestTypes)
             {
                 var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryDb<,>));
                 var hasExplicitInto = genericDef != null;
