@@ -14,7 +14,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 {
     public class HttpErrorAsyncJsonServiceClientTests : HttpErrorAsyncTests
     {
-        public override IRestClientAsync CreateRestClient(string baseUri = null)
+        public override IHttpRestClientAsync CreateRestClient(string baseUri = null)
         {
             return baseUri != null
                 ? new JsonServiceClient(baseUri)
@@ -24,7 +24,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class HttpErrorAsyncJsonHttpClientTests : HttpErrorAsyncTests
     {
-        public override IRestClientAsync CreateRestClient(string baseUri = null)
+        public override IHttpRestClientAsync CreateRestClient(string baseUri = null)
         {
             return baseUri != null
                 ? new JsonHttpClient(baseUri)
@@ -53,7 +53,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Dispose();
         }
 
-        public abstract IRestClientAsync CreateRestClient(string baseUri = null);
+        public abstract IHttpRestClientAsync CreateRestClient(string baseUri = null);
 
         [Test]
         public async Task GET_returns_ArgumentNullException()

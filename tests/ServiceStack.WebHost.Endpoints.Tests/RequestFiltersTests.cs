@@ -233,7 +233,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         protected abstract IServiceClient CreateNewServiceClient();
-        protected abstract IRestClientAsync CreateNewRestClientAsync();
+        protected abstract IHttpRestClientAsync CreateNewRestClientAsync();
 
         protected virtual string GetFormat()
         {
@@ -498,7 +498,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public async Task Get_401_When_accessing_Secure_using_RestClient_POST_without_Authorization()
         {
-            var client = (IServiceClient) CreateNewRestClientAsync();
+            var client = CreateNewRestClientAsync();
             if (client == null) return;
 
             try
@@ -516,7 +516,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public async Task Get_401_When_accessing_Secure_using_RestClient_PUT_without_Authorization()
         {
-            var client = (IServiceClient) CreateNewRestClientAsync();
+            var client = CreateNewRestClientAsync();
             if (client == null) return;
 
             try
@@ -538,7 +538,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 return new DirectServiceClient(appHost.ServiceController);
             }
 
-            protected override IRestClientAsync CreateNewRestClientAsync()
+            protected override IHttpRestClientAsync CreateNewRestClientAsync()
             {
                 return null; //TODO implement REST calls with DirectServiceClient (i.e. Unit Tests)
                 //EndpointHandlerBase.ServiceManager = new ServiceManager(true, typeof(SecureService).Assembly);

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace ServiceStack
 {
-    public interface IHttpRestClientAsync
+    public interface IHttpRestClientAsync : IRestClientAsync
     {
         Task<TResponse> GetAsync<TResponse>(string relativeOrAbsoluteUrl);
         Task<TResponse> DeleteAsync<TResponse>(string relativeOrAbsoluteUrl);

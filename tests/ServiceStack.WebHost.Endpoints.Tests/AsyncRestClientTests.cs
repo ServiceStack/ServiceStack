@@ -26,7 +26,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Dispose();
         }
 
-        protected abstract IRestClientAsync CreateAsyncRestClient();
+        protected abstract IHttpRestClientAsync CreateAsyncRestClient();
 
         [Test]
         public async Task Can_call_GetAsync_on_GetFactorial_using_RestClientAsync()
@@ -64,7 +64,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public async Task Can_call_PostAsync_to_add_new_Movie_using_RestClientAsync()
         {
-            var asyncClient = (IServiceClient)CreateAsyncRestClient();
+            var asyncClient = CreateAsyncRestClient();
 
             var newMovie = new Support.Host.Movie
             {
@@ -89,7 +89,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public async Task Can_call_DeleteAsync_to_delete_Movie_using_RestClientAsync()
         {
-            var asyncClient = (IServiceClient)CreateAsyncRestClient();
+            var asyncClient = CreateAsyncRestClient();
 
             var newMovie = new Support.Host.Movie
             {
@@ -116,7 +116,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [TestFixture]
         public class JsonAsyncRestServiceClientTests : AsyncRestClientTests
         {
-            protected override IRestClientAsync CreateAsyncRestClient()
+            protected override IHttpRestClientAsync CreateAsyncRestClient()
             {
                 return new JsonServiceClient(ListeningOn);
             }
@@ -125,7 +125,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [TestFixture]
         public class JsonAsyncRestServiceHttpClientTests : AsyncRestClientTests
         {
-            protected override IRestClientAsync CreateAsyncRestClient()
+            protected override IHttpRestClientAsync CreateAsyncRestClient()
             {
                 return new JsonHttpClient(ListeningOn);
             }
@@ -134,7 +134,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [TestFixture]
         public class JsvAsyncRestServiceClientTests : AsyncRestClientTests
         {
-            protected override IRestClientAsync CreateAsyncRestClient()
+            protected override IHttpRestClientAsync CreateAsyncRestClient()
             {
                 return new JsvServiceClient(ListeningOn);
             }
@@ -143,7 +143,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [TestFixture]
         public class XmlAsyncRestServiceClientTests : AsyncRestClientTests
         {
-            protected override IRestClientAsync CreateAsyncRestClient()
+            protected override IHttpRestClientAsync CreateAsyncRestClient()
             {
                 return new XmlServiceClient(ListeningOn);
             }
