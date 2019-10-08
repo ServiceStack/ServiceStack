@@ -148,7 +148,11 @@ namespace ServiceStack.Host
 
         public static async Task SerializeUnknownContentType(IRequest req, object response, Stream stream)
         {
-            switch (response) 
+            req.Response.Dto = response;
+            if (stream == Stream.Null)
+                return;
+            
+            switch (response)
             {
                 case string text:
                     await stream.WriteAsync(text);
@@ -235,8 +239,21 @@ namespace ServiceStack.Host
             throw new NotSupportedException(ErrorMessages.ContentTypeNotSupported.Fmt(contentType));
         }
 
+        private static Task serializeAsync(StreamSerializerDelegateAsync serializer, IRequest httpReq, object dto, Stream stream)
+        {
+            httpReq.Response.Dto = dto;
+            if (stream == Stream.Null)
+                return TypeConstants.EmptyTask;
+
+            return serializer(httpReq, dto, stream);
+        }
+        
         private static async Task serializeSync(StreamSerializerDelegate serializer, IRequest httpReq, object dto, Stream stream)
         {
+            httpReq.Response.Dto = dto;
+            if (stream == Stream.Null)
+                return;
+            
             if (HostContext.Config.BufferSyncSerializers)
             {
                 using (var ms = MemoryStreamFactory.GetStream())
@@ -271,8 +288,9 @@ namespace ServiceStack.Host
         {
             contentType = ContentFormat.NormalizeContentType(contentType);
             
-            if (ContentTypeSerializersAsync.TryGetValue(contentType, out var serializerAsync))
-                return serializerAsync;
+            if (ContentTypeSerializersAsync.TryGetValue(contentType, out var asyncSerializer))
+                return (httpReq, dto, stream) => 
+                    serializeAsync(asyncSerializer, httpReq, dto, stream);
 
             var serializer = GetStreamSerializer(contentType);
             if (serializer == null) 

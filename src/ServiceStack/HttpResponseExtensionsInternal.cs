@@ -450,6 +450,7 @@ namespace ServiceStack
         {
             var req = httpRes.Request;
             var errorDto = ex.ToErrorResponse();
+            httpRes.Dto = errorDto;
             HostContext.AppHost.OnExceptionTypeFilter(ex, errorDto.ResponseStatus);
             var serializer = HostContext.ContentTypes.GetStreamSerializerAsync(MimeTypes.Html);
             serializer?.Invoke(req, errorDto, httpRes.OutputStream);
@@ -464,6 +465,7 @@ namespace ServiceStack
                 ex = new Exception(errorMessage);
 
             var errorDto = ex.ToErrorResponse();
+            httpRes.Dto = errorDto;
             HostContext.AppHost.OnExceptionTypeFilter(ex, errorDto.ResponseStatus);
 
             if (await HandleCustomErrorHandler(httpRes, httpReq, contentType, statusCode, errorDto, ex))
