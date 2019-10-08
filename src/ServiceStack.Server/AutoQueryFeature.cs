@@ -194,15 +194,15 @@ namespace ServiceStack
                 }
             }
 
-            var misingRequestTypes = scannedTypes
+            var missingRequestTypes = scannedTypes
                 .Where(x => x.HasInterface(typeof(IQueryDb)))
                 .Where(x => !appHost.Metadata.OperationsMap.ContainsKey(x))
                 .ToList();
 
-            if (misingRequestTypes.Count == 0)
+            if (missingRequestTypes.Count == 0)
                 return;
 
-            var serviceType = GenerateMissingServices(misingRequestTypes);
+            var serviceType = GenerateMissingServices(missingRequestTypes);
             appHost.RegisterService(serviceType);
         }
 

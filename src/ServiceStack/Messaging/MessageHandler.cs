@@ -189,7 +189,8 @@ namespace ServiceStack.Messaging
                         }
                     }
                 }
-                
+
+                response = response.GetResponseDto();
                 if (response != null)
                 {
                     var responseMessage = response as IMessage;
