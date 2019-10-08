@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using ServiceStack.Messaging;
 
 namespace ServiceStack.Web
@@ -27,6 +28,11 @@ namespace ServiceStack.Web
         /// <summary>
         /// Executes the DTO request under the supplied requestContext.
         /// </summary>
+        Task<object> ExecuteAsync(object requestDto, IRequest request);
+
+        /// <summary>
+        /// Executes the DTO request under the supplied requestContext.
+        /// </summary>
         object Execute(object requestDto, IRequest request);
 
         /// <summary>
@@ -43,5 +49,10 @@ namespace ServiceStack.Web
         /// Executes the DTO request with the current HttpRequest and option to Execute Request/Response Filters.
         /// </summary>
         object Execute(IRequest request, bool applyFilters);
+
+        /// <summary>
+        /// Execute Service Gateway Requests
+        /// </summary>
+        Task<object> GatewayExecuteAsync(object requestDto, IRequest req, bool applyFilters);
     }
 }

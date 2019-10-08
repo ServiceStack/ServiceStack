@@ -40,22 +40,22 @@ namespace ServiceStack
         /// <summary>
         /// Normal Request/Reply Services
         /// </summary>
-        Task<TResponse> SendAsync<TResponse>(object requestDto, CancellationToken token = default(CancellationToken));
+        Task<TResponse> SendAsync<TResponse>(object requestDto, CancellationToken token = default);
 
         /// <summary>
         /// Auto Batched Request/Reply Requests
         /// </summary>
-        Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<object> requestDtos, CancellationToken token = default(CancellationToken));
+        Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<object> requestDtos, CancellationToken token = default);
 
         /// <summary>
         /// OneWay Service
         /// </summary>
-        Task PublishAsync(object requestDto, CancellationToken token = default(CancellationToken));
+        Task PublishAsync(object requestDto, CancellationToken token = default);
 
         /// <summary>
         /// Auto Batched OneWay Requests
         /// </summary>
-        Task PublishAllAsync(IEnumerable<object> requestDtos, CancellationToken token = default(CancellationToken));
+        Task PublishAllAsync(IEnumerable<object> requestDtos, CancellationToken token = default);
     }
 }
 

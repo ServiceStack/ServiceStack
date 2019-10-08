@@ -64,7 +64,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public async Task Can_call_PostAsync_to_add_new_Movie_using_RestClientAsync()
         {
-            var asyncClient = CreateAsyncRestClient();
+            var asyncClient = (IServiceClient)CreateAsyncRestClient();
 
             var newMovie = new Support.Host.Movie
             {
@@ -89,7 +89,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public async Task Can_call_DeleteAsync_to_delete_Movie_using_RestClientAsync()
         {
-            var asyncClient = CreateAsyncRestClient();
+            var asyncClient = (IServiceClient)CreateAsyncRestClient();
 
             var newMovie = new Support.Host.Movie
             {

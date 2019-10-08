@@ -498,7 +498,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public async Task Get_401_When_accessing_Secure_using_RestClient_POST_without_Authorization()
         {
-            var client = CreateNewRestClientAsync();
+            var client = (IServiceClient) CreateNewRestClientAsync();
             if (client == null) return;
 
             try
@@ -516,7 +516,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public async Task Get_401_When_accessing_Secure_using_RestClient_PUT_without_Authorization()
         {
-            var client = CreateNewRestClientAsync();
+            var client = (IServiceClient) CreateNewRestClientAsync();
             if (client == null) return;
 
             try
