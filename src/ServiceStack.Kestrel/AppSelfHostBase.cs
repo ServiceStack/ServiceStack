@@ -32,6 +32,8 @@ namespace ServiceStack
         }
 
         IApplicationBuilder app;
+        public IApplicationBuilder App => app;
+        public IServiceProvider ApplicationServices => app?.ApplicationServices;
 
         public virtual void Bind(IApplicationBuilder app)
         {
