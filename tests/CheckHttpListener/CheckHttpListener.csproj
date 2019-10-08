@@ -51,7 +51,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="ServiceStack.Admin, Version=5.0.0.0, Culture=neutral, PublicKeyToken=02c12cbda47e6587">
-      <HintPath>..\..\src\packages\ServiceStack.Admin.5.6.1\lib\net45\ServiceStack.Admin.dll</HintPath>
+      <HintPath>..\..\src\packages\ServiceStack.Admin.5.7.0\lib\net45\ServiceStack.Admin.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="ServiceStack.Client, Version=5.0.0.0, Culture=neutral, PublicKeyToken=02c12cbda47e6587">
@@ -83,7 +83,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="ServiceStack.Server, Version=5.0.0.0, Culture=neutral, PublicKeyToken=02c12cbda47e6587">
-      <HintPath>..\..\src\packages\ServiceStack.Server.5.6.1\lib\net45\ServiceStack.Server.dll</HintPath>
+      <HintPath>..\..\src\packages\ServiceStack.Server.5.7.0\lib\net45\ServiceStack.Server.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="ServiceStack.Text, Version=5.0.0.0, Culture=neutral, PublicKeyToken=02c12cbda47e6587">
