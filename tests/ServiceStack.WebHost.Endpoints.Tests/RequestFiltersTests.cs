@@ -558,7 +558,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 return new XmlServiceClient(ServiceClientBaseUri);
             }
 
-            protected override IRestClientAsync CreateNewRestClientAsync()
+            protected override IHttpRestClientAsync CreateNewRestClientAsync()
             {
                 return new XmlServiceClient(ServiceClientBaseUri);
             }
@@ -577,7 +577,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 return new JsonServiceClient(ServiceClientBaseUri);
             }
 
-            protected override IRestClientAsync CreateNewRestClientAsync()
+            protected override IHttpRestClientAsync CreateNewRestClientAsync()
             {
                 return new JsonServiceClient(ServiceClientBaseUri);
             }
@@ -596,7 +596,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 return new JsvServiceClient(ServiceClientBaseUri);
             }
 
-            protected override IRestClientAsync CreateNewRestClientAsync()
+            protected override IHttpRestClientAsync CreateNewRestClientAsync()
             {
                 return new JsvServiceClient(ServiceClientBaseUri);
             }
@@ -612,7 +612,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 return new Soap11ServiceClient(ServiceClientBaseUri);
             }
 
-            protected override IRestClientAsync CreateNewRestClientAsync()
+            protected override IHttpRestClientAsync CreateNewRestClientAsync()
             {
                 return null;
             }
@@ -626,7 +626,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 return new Soap12ServiceClient(ServiceClientBaseUri);
             }
 
-            protected override IRestClientAsync CreateNewRestClientAsync()
+            protected override IHttpRestClientAsync CreateNewRestClientAsync()
             {
                 return null;
             }
