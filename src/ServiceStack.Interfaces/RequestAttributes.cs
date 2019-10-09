@@ -16,7 +16,7 @@ namespace ServiceStack
         AnyHttpMethod = HttpHead | HttpGet | HttpPost | HttpPut | HttpDelete | HttpPatch | HttpOptions | HttpOther,
         AnyCallStyle = OneWay | Reply,
         AnyFormat = Soap11 | Soap12 | Xml | Json | Jsv | Html | ProtoBuf | Csv | MsgPack | Wire | FormatOther,
-        AnyEndpoint = Http | MessageQueue | Tcp | EndpointOther,
+        AnyEndpoint = Http | MessageQueue | Tcp | Grpc | EndpointOther,
         InternalNetworkAccess = InProcess | Localhost | LocalSubnet,
 
         //Whether it came from an Internal or External address
@@ -64,9 +64,10 @@ namespace ServiceStack
         Http = 1 << 26,
         MessageQueue = 1 << 27,
         Tcp = 1 << 28,
-        EndpointOther = 1 << 29,
+        Grpc = 1 << 29,
+        EndpointOther = 1 << 30,
 
-        InProcess = 1 << 30, //Service was executed within code (e.g. ResolveService<T>)
+        InProcess = 1 << 31, //Service was executed within code (e.g. ResolveService<T>)
     }
 
     public enum Network : long
