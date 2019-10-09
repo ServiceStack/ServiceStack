@@ -9,7 +9,6 @@ namespace ServiceStack
     /// Generic ResponseStatus for when Response Type can't be inferred.
     /// In schema-less formats like JSON, JSV it has the same shape as a typed Response DTO
     /// </summary>
-
     [DataContract]
     public class ErrorResponse : IHasResponseStatus
     {
