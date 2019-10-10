@@ -99,9 +99,15 @@ namespace ServiceStack
         }
     }
 
+    // Needed to use Send/SendAll to avoid ambiguous signatures in IServiceClient APIs which implement both interfaces
     public static class ServiceGatewayAsyncWrappers
     {
         public static Task<TResponse> SendAsync<TResponse>(this IServiceGateway client, IReturn<TResponse> requestDto, CancellationToken token = default(CancellationToken))
+        {
+            return client.SendAsync<TResponse>((object)requestDto, token);
+        }
+
+        public static Task<TResponse> Send<TResponse>(this IServiceClientAsync client, IReturn<TResponse> requestDto, CancellationToken token = default(CancellationToken))
         {
             return client.SendAsync<TResponse>((object)requestDto, token);
         }
@@ -125,6 +131,11 @@ namespace ServiceStack
             return client is IServiceGatewayAsync nativeAsync
                 ? nativeAsync.SendAllAsync<TResponse>(requestDtos, token)
                 : Task.Factory.StartNew(() => client.SendAll<TResponse>(requestDtos), token);
+        }
+
+        public static Task<List<TResponse>> SendAll<TResponse>(this IServiceClientAsync client, IEnumerable<IReturn<TResponse>> requestDtos, CancellationToken token = default(CancellationToken))
+        {
+            return client.SendAllAsync<TResponse>(requestDtos, token);
         }
 
         public static Task PublishAsync(this IServiceGateway client, object requestDto, CancellationToken token = default(CancellationToken))
