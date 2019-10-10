@@ -7,7 +7,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host
 {
-    public class HttpResponseStreamWrapper : IHttpResponse
+    public class HttpResponseStreamWrapper : IHttpResponse, IHasHeaders
     {
         public HttpResponseStreamWrapper(Stream stream, IRequest request)
         {

@@ -17,7 +17,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Host.NetCore
 {
-    public class NetCoreResponse : IHttpResponse
+    public class NetCoreResponse : IHttpResponse, IHasHeaders
     {
         private static ILog Log = LogManager.GetLogger(typeof(NetCoreResponse));
 
@@ -94,6 +94,7 @@ namespace ServiceStack.Host.NetCore
         }
 
         bool closed = false;
+
         public void Close()
         {
             if (!closed)
@@ -160,7 +161,7 @@ namespace ServiceStack.Host.NetCore
         {
             if (!response.HasStarted && contentLength >= 0)
                 response.ContentLength = contentLength;
-            
+
             if (contentLength > 0)
                 hasResponseBody = true;
         }
@@ -175,8 +176,8 @@ namespace ServiceStack.Host.NetCore
             set => response.StatusCode = value;
         }
 
-        public string StatusDescription 
-        { 
+        public string StatusDescription
+        {
             get => response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase;
             set => response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = value;
         }
@@ -189,7 +190,7 @@ namespace ServiceStack.Host.NetCore
 
         public object Dto { get; set; }
 
-        public bool IsClosed => closed; 
+        public bool IsClosed => closed;
 
         public bool KeepAlive { get; set; }
 
@@ -219,6 +220,19 @@ namespace ServiceStack.Host.NetCore
         }
 
         public ICookies Cookies { get; }
+
+        public Dictionary<string, string> Headers
+        {
+            get
+            {
+                var to = new Dictionary<string, string>();
+                foreach (var entry in response.Headers)
+                {
+                    to[entry.Key] = entry.Value.ToString();
+                }
+                return to;
+            }
+        }
     }
 }
 
