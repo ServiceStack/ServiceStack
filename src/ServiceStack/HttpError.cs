@@ -6,7 +6,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class HttpError : Exception, IHttpError, IResponseStatusConvertible, IHasErrorCode
+    public class HttpError : Exception, IHttpError, IResponseStatusConvertible, IHasErrorCode, IHasResponseStatus
     {
         public HttpError() : this(null) { }
 
@@ -100,7 +100,12 @@ namespace ServiceStack
 
         public IDictionary<string, string> Options => this.Headers;
 
-        public ResponseStatus ResponseStatus => this.Response.GetResponseStatus();
+        private ResponseStatus responseStatus;
+        public ResponseStatus ResponseStatus
+        {
+            get => responseStatus ?? this.Response.GetResponseStatus();
+            set => responseStatus = value;
+        }
 
         public List<ResponseError> GetFieldErrors()
         {
