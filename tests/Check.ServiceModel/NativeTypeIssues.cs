@@ -28,6 +28,9 @@ namespace Check.ServiceModel
     {
         [Display(AutoGenerateField = true, AutoGenerateFilter = true, ShortName = "UnitMeasKey")]
         public int UnitMeasKey { get; set; }
+
+        [Display(AutoGenerateField = false)]
+        public int AutoGenerateFieldOff { get; set; }
     }
 
     public class RecursiveNode : IReturn<RecursiveNode>
