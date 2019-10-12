@@ -276,7 +276,7 @@ namespace ServiceStack
             {
                 response = await auc.ResponseAsync;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 throw;
             }

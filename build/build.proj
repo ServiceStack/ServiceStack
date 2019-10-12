@@ -104,6 +104,11 @@
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
+    <!-- ServiceStack.GrpcClient -->
+    <MSBuild Projects="$(SrcDir)/ServiceStack.GrpcClient/ServiceStack.GrpcClient.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
     <!-- ServiceStack.Interfaces -->
     <MSBuild Projects="$(SrcDir)/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj"
              Targets="Build;Pack"
@@ -141,6 +146,11 @@
 
     <!-- ServiceStack.Server -->
     <MSBuild Projects="$(SrcDir)/ServiceStack.Server/ServiceStack.Server.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.Extensions -->
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Extensions/ServiceStack.Extensions.csproj"
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
