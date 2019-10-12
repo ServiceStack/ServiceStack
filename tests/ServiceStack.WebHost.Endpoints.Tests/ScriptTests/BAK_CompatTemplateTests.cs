@@ -763,7 +763,7 @@ The Content");
             };
             new PageResult(page) {
                 Options = {
-                    ["X-Powered-By"] = "ServiceStack Templates"
+                    [HttpHeaders.XPoweredBy] = "ServiceStack Templates"
                 }
             };
             new PageResult(page) {
