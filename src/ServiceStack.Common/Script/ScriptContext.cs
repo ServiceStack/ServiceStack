@@ -200,8 +200,6 @@ namespace ServiceStack.Script
         public HashSet<string> RemoveNewLineAfterFiltersNamed { get; set; } = new HashSet<string>();
         public HashSet<string> OnlyEvaluateFiltersWhenSkippingPageFilterExecution { get; set; } = new HashSet<string>();
         
-        public HashSet<string> ParseAsVerbatimBlock { get; set; } = new HashSet<string>();
-        
         public Dictionary<string, ScriptLanguage> ParseAsLanguage { get; set; } = new Dictionary<string, ScriptLanguage>();
         
         public Func<PageVariableFragment, ReadOnlyMemory<byte>> OnUnhandledExpression { get; set; }

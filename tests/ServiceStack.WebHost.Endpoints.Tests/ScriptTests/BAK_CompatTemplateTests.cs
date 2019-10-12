@@ -699,8 +699,6 @@ The Content");
         
                 context.ScriptMethods.Add(new MarkdownTemplateFilter());
 
-                context.ParseAsVerbatimBlock.Add("markdown");
-        
                 context.ScriptBlocks.Add(new TemplateMarkdownBlock());
             }
         }
