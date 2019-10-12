@@ -74,7 +74,7 @@ namespace ServiceStack
     }
 
     [Priority(10)]
-    public class GrpcFeature : IPlugin, IPostInitPlugin
+    public class GrpcFeature : IPlugin, IPostInitPlugin, IConfigureServices
     {
         public string ServicesName { get; set; } = "GrpcServices";
         public Type GrpcServicesBaseType { get; set; } = typeof(GrpcServiceBase);
@@ -111,6 +111,11 @@ namespace ServiceStack
         public GrpcFeature(IApplicationBuilder app)
         {
             this.app = app;
+        }
+
+        public void Configure(IServiceCollection services)
+        {
+            services.AddServiceStackGrpc();
         }
 
         public void Register(IAppHost appHost)
@@ -276,7 +281,6 @@ namespace ServiceStack
             
             var servicesType = typeBuilder.CreateTypeInfo().AsType();
             return servicesType;
-            
         }
     }
 
