@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.0</TargetFramework>
+        <LangVersion>preview</LangVersion>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.1.1" />
+        <PackageReference Include="NUnit" Version="3.12.0" />
+        <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
+        <PackageReference Include="ServiceStack.OrmLite" Version="$(Version)" />
+        <PackageReference Include="ServiceStack.OrmLite.Sqlite" Version="$(Version)" />
+        <PackageReference Include="ServiceStack.OrmLite.SqlServer" Version="$(Version)" />
+        <PackageReference Include="Grpc.Net.Client" Version="2.23.2" />
+        <PackageReference Include="Grpc.Core.Api" Version="2.24.0" />
+        <PackageReference Include="Grpc.Core" Version="2.24.0" />
+
+        <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+        <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
+        <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+        <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
+        <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />
+        <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
+        <ProjectReference Include="..\..\src\ServiceStack.Extensions\ServiceStack.Extensions.csproj" />
+        <ProjectReference Include="..\..\src\ServiceStack.GrpcClient\ServiceStack.GrpcClient.csproj" />
+    </ItemGroup>
+
+</Project>

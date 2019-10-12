@@ -45,6 +45,7 @@
         public const string ErrorStatus = "__errorStatus";
         public const string Authorization = "__authorization";
         public const string Model = "Model";
+        public const string Status = "status";
     }
 
     public static class LocalizedStrings

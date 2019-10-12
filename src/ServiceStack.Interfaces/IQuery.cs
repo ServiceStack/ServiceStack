@@ -117,6 +117,7 @@ namespace ServiceStack
         public string Field { get; set; }
     }
 
+    [DataContract]
     public abstract class QueryBase : IQuery
     {
         [DataMember(Order = 1)]

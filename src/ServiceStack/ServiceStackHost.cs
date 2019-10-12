@@ -231,11 +231,15 @@ namespace ServiceStack
                     OnStartupException(ex);
                 }
             }
-            Plugins.ToList().ForEach(RunPreConfigure);
+
+            var priorityPlugins = Plugins.WithPriority().PriorityOrdered().Map(x => (IPlugin)x);
+            priorityPlugins.ForEach(RunPreConfigure);
             configInstances.ForEach(RunPreConfigure);
             
             if (ServiceController == null)
                 ServiceController = CreateServiceController(ServiceAssemblies.ToArray());
+            
+            RpcGateway = new RpcGateway(this);
 
             Config = HostConfig.ResetInstance();
             OnConfigLoad();
@@ -422,6 +426,8 @@ namespace ServiceStack
         public ServiceMetadata Metadata { get; set; }
 
         public ServiceController ServiceController { get; set; }
+        
+        public RpcGateway RpcGateway { get; set; }
 
         // Rare for a user to auto register all available services in ServiceStack.dll
         // But happens when ILMerged, so exclude auto-registering SS services by default 
@@ -896,7 +902,8 @@ namespace ServiceStack
 
             Config.PreferredContentTypesArray = Config.PreferredContentTypes.ToArray();
 
-            Plugins.ForEach(RunPostInitPlugin);
+            var plugins = Plugins.WithPriority().PriorityOrdered();
+            plugins.ForEach(RunPostInitPlugin);
 
             ServiceController.AfterInit();
         }
