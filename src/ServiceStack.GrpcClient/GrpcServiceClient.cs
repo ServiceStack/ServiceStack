@@ -241,9 +241,9 @@ namespace ServiceStack
                 using (newChannel){}
 
                 var refreshStatus = response.GetResponseStatus();
-                if (refreshStatus?.ErrorCode != null)
+                var headers = await auc.ResponseHeadersAsync;
+                if (refreshStatus?.ErrorCode != null || ResponseCallContext.GetStatusCode(headers) >= 300)
                 {
-                    var headers = await auc.ResponseHeadersAsync;
                     throw new RefreshTokenException(new WebServiceException(refreshStatus.Message) {
                         StatusCode = ResponseCallContext.GetStatusCode(headers),
                         ResponseDto = response,
@@ -282,20 +282,20 @@ namespace ServiceStack
             }
 
             var headers = await InvokeResponseFilters(auc, response);
+            var statusCode = ResponseCallContext.GetStatusCode(headers);
 
             var status = response.GetResponseStatus();
-            if (status?.ErrorCode != null)
+            if (status?.ErrorCode != null || statusCode >= 300)
             {
-                var statusCode = ResponseCallContext.GetStatusCode(headers);
                 if (await RetryRequest(statusCode, status, callInvoker))
                 {
                     authIncluded = InitRequestDto(requestDto);
                     fn = PrepareRequest<TResponse>(requestDto, noAuth: authIncluded, out options);
                     using var retryAuc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, ServicesName, methodName, options, null);
                     var retryResponse = await retryAuc.ResponseAsync;
-                    await InvokeResponseFilters(retryAuc, retryResponse);
+                    var retryHeaders = await InvokeResponseFilters(retryAuc, retryResponse);
 
-                    if (retryResponse.GetResponseStatus()?.ErrorCode == null)
+                    if (retryResponse.GetResponseStatus()?.ErrorCode == null && ResponseCallContext.GetStatusCode(retryHeaders) < 300)
                         return retryResponse;
                 }
                 
@@ -334,19 +334,20 @@ namespace ServiceStack
                 var response = await auc.ResponseAsync;
 
                 var status = response.GetResponseStatus();
-                if (status?.ErrorCode != null)
+                var headers = await auc.ResponseHeadersAsync;
+                var statusCode = ResponseCallContext.GetStatusCode(headers);
+
+                if (status?.ErrorCode != null || statusCode > 300)
                 {
-                    var headers = await auc.ResponseHeadersAsync;
-                    var statusCode = ResponseCallContext.GetStatusCode(headers);
                     if (await RetryRequest(statusCode, status, callInvoker))
                     {
                         authIncluded = InitRequestDto(requestDto);
                         fn = PrepareRequest<TResponse>(requestDto, noAuth: authIncluded, out options);
                         using var retryAuc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, ServicesName, methodName, options, null);
                         var retryResponse = await retryAuc.ResponseAsync;
-                        await InvokeResponseFilters(retryAuc, retryResponse);
+                        var retryHeaders = await InvokeResponseFilters(retryAuc, retryResponse);
 
-                        if (retryResponse.GetResponseStatus()?.ErrorCode == null)
+                        if (retryResponse.GetResponseStatus()?.ErrorCode == null && ResponseCallContext.GetStatusCode(retryHeaders) < 300)
                         {
                             responses.Add(retryResponse);
                             continue;
