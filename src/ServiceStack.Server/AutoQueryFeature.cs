@@ -12,6 +12,7 @@ using Funq;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
 using ServiceStack.Data;
+using ServiceStack.Extensions;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
 

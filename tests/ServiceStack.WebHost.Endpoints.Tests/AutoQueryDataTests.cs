@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Extensions;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -39,8 +40,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                             };
                             foreach (var cmd in ctx.Commands)
                             {
-                                Func<int, int, int> fn;
-                                if (!supportedFns.TryGetValue(cmd.Name.ToString(), out fn)) continue;
+                                if (!supportedFns.TryGetValue(cmd.Name, out var fn)) continue;
                                 var label = !cmd.Suffix.IsNullOrWhiteSpace() ? cmd.Suffix.Trim().ToString() : cmd.ToString();
                                 ctx.Response.Meta[label] = fn(cmd.Args[0].ParseInt32(), cmd.Args[1].ParseInt32()).ToString();
                                 executedCmds.Add(cmd);

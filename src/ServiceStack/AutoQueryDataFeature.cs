@@ -12,6 +12,7 @@ using System.Threading;
 using Funq;
 using ServiceStack.Caching;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Extensions;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Reflection;
 using ServiceStack.Web;

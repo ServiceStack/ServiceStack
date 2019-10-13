@@ -992,7 +992,7 @@ namespace ServiceStack.Extensions.Tests
                             foreach (var cmd in ctx.Commands)
                             {
                                 if (!supportedFns.TryGetValue(cmd.Name, out var fn)) continue;
-                                var label = !cmd.Suffix.IsNullOrWhiteSpace() ? cmd.Suffix.ToString().Trim() : cmd.ToString();
+                                var label = !cmd.Suffix.IsNullOrWhiteSpace() ? cmd.Suffix.Trim().ToString() : cmd.ToString();
                                 ctx.Response.Meta[label] = fn(cmd.Args[0].ParseInt32(), cmd.Args[1].ParseInt32()).ToString();
                                 executedCmds.Add(cmd);
                             }
