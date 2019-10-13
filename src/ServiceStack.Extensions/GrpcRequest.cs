@@ -53,6 +53,17 @@ namespace ServiceStack
             {
                 this.Headers[header.Key] = header.Value;
             }
+
+            if (context.ServerCallContext.UserState != null)
+            {
+                foreach (var entry in context.ServerCallContext.UserState)
+                {
+                    if (entry.Key is string key)
+                        Items[key] = entry.Value;
+                    else if (entry.Key.GetType().IsValueType)
+                        Items[entry.Key.ToString()] = entry.Value;
+                }
+            }
         }
 
         private string operationName;

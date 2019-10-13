@@ -37,6 +37,8 @@ namespace ServiceStack
         public string ErrorMessage => ResponseStatus?.Message;
 
         public string ServerStackTrace => ResponseStatus?.StackTrace;
+        
+        public object State { get; set; }
 
         private ResponseStatus responseStatus = null;
         public ResponseStatus ResponseStatus

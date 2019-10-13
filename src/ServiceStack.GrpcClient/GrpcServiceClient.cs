@@ -19,10 +19,12 @@ namespace ServiceStack
     public struct ResponseCallContext
     {
         public object Response { get; }
+        public Status Status { get; }
         public Metadata Headers { get; }
-        public ResponseCallContext(object response, Metadata headers)
+        public ResponseCallContext(object response, Status status, Metadata headers)
         {
             Response = response;
+            Status = status;
             Headers = headers ?? new Metadata();
         }
 
@@ -37,10 +39,20 @@ namespace ServiceStack
             return null;
         }
 
-        public int StatusCode => GetStatusCode(Headers);
+        public static byte[] GetHeaderBytes(Metadata headers, string name)
+        {
+            foreach (var entry in headers)
+            {
+                if (entry.Key.EqualsIgnoreCase(name))
+                    return entry.ValueBytes;
+            }
+            return null;
+        }
+
+        public int HttpStatus => GetHttpStatus(Headers);
         
-        public static int GetStatusCode(Metadata headers) => 
-            GetHeader(headers, GrpcServiceClient.Keywords.Status)?.ToInt() ?? default;
+        public static int GetHttpStatus(Metadata headers) => 
+            GetHeader(headers, GrpcServiceClient.Keywords.HttpStatus)?.ToInt() ?? default;
     }
 
     public class GrpcServiceClient : IServiceClientAsync, IHasSessionId, IHasBearerToken, IHasVersion
@@ -95,7 +107,8 @@ namespace ServiceStack
         {
             internal const string AutoBatchIndex = nameof(AutoBatchIndex);
             internal const string HeaderSessionId = "X-ss-id";
-            internal const string Status = "status";
+            internal const string HttpStatus = "httpstatus";
+            internal const string GrpcResponseStatus = "responsestatus-bin";
         }
 
         delegate object ExecuteInternalDelegate(CallInvoker invoker, object request,
@@ -198,7 +211,7 @@ namespace ServiceStack
             var headers = await auc.ResponseHeadersAsync;
             if (GlobalResponseFilter != null || ResponseFilter != null)
             {
-                var ctx = new ResponseCallContext(response, headers);
+                var ctx = new ResponseCallContext(response, auc.GetStatus(), headers);
                 fn?.Invoke(ctx);
 
                 GlobalResponseFilter?.Invoke(ctx);
@@ -212,15 +225,17 @@ namespace ServiceStack
             var to = new WebHeaderCollection();
             foreach (var header in headers)
             {
+                if (header.Key.EndsWith("-bin"))
+                    continue;
+                
                 to[header.Key] = header.Value;
             }
             return to;
         }
 
-        public async Task<bool> RetryRequest(int statusCode, ResponseStatus status, CallInvoker callInvoker)
+        public async Task<bool> RetryRequest(StatusCode statusCode, ResponseStatus status, CallInvoker callInvoker)
         {
-            if (RefreshToken != null &&
-                (statusCode == (int)HttpStatusCode.Unauthorized || status.ErrorCode == nameof(HttpStatusCode.Unauthorized)))
+            if (RefreshToken != null && statusCode == StatusCode.Unauthenticated)
             {
                 GrpcChannel newChannel = null;
                 var useInvoker = callInvoker;
@@ -237,17 +252,16 @@ namespace ServiceStack
                 var fn = PrepareRequest<GetAccessTokenResponse>(refreshRequest, noAuth: true, out var options);
 
                 using var auc = (AsyncUnaryCall<GetAccessTokenResponse>) fn(useInvoker, refreshRequest, ServicesName, methodName, options, null);
-                var response = await auc.ResponseAsync;
+                var (response, refreshStatus, headers) = await GetResponse(auc);
                 using (newChannel){}
 
-                var refreshStatus = response.GetResponseStatus();
-                var headers = await auc.ResponseHeadersAsync;
-                if (refreshStatus?.ErrorCode != null || ResponseCallContext.GetStatusCode(headers) >= 300)
+                if (refreshStatus?.ErrorCode != null)
                 {
                     throw new RefreshTokenException(new WebServiceException(refreshStatus.Message) {
-                        StatusCode = ResponseCallContext.GetStatusCode(headers),
-                        ResponseDto = response,
+                        StatusCode = ResponseCallContext.GetHttpStatus(headers),
+                        ResponseDto = (object) response ?? new EmptyResponse { ResponseStatus = refreshStatus },
                         ResponseHeaders = ResolveHeaders(headers),
+                        State = auc.GetStatus(),
                     });
                 }
                 var accessToken = response?.AccessToken;
@@ -260,6 +274,34 @@ namespace ServiceStack
             return false;
         }
 
+        private async Task<(TResponse, ResponseStatus, Metadata)> GetResponse<TResponse>(AsyncUnaryCall<TResponse> auc)
+        {
+            var headers = await auc.ResponseHeadersAsync;
+            ResponseStatus status = null;
+            TResponse response = default;
+            try
+            {
+                response = await auc.ResponseAsync;
+                status = response.GetResponseStatus();
+            }
+            catch (RpcException ex)
+            {
+                var statusBytes = ResponseCallContext.GetHeaderBytes(headers, Keywords.GrpcResponseStatus);
+                status = statusBytes != null 
+                    ? GrpcMarshaller<ResponseStatus>.Instance.Deserializer(statusBytes)
+                    : new ResponseStatus {
+                        ErrorCode = ex.Status.Detail ?? ex.StatusCode.ToString(),
+                        Message = HttpStatus.GetStatusDescription(ResponseCallContext.GetHttpStatus(headers)) 
+                    };
+            }
+            finally
+            {
+                await InvokeResponseFilters(auc, response);
+            }
+
+            return (response, status, headers);
+        }
+
         public async Task<TResponse> Execute<TResponse>(object requestDto, string methodName, CancellationToken token = default)
         {
             var authIncluded = InitRequestDto(requestDto);
@@ -270,24 +312,12 @@ namespace ServiceStack
 
             var callInvoker = channel.CreateCallInvoker();
             using var auc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, ServicesName, methodName, options, null);
-            
-            TResponse response;
-            try
-            {
-                response = await auc.ResponseAsync;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
 
-            var headers = await InvokeResponseFilters(auc, response);
-            var statusCode = ResponseCallContext.GetStatusCode(headers);
+            var (response, status, headers) = await GetResponse(auc);
 
-            var status = response.GetResponseStatus();
-            if (status?.ErrorCode != null || statusCode >= 300)
+            if (status?.ErrorCode != null)
             {
-                if (await RetryRequest(statusCode, status, callInvoker))
+                if (await RetryRequest(auc.GetStatus().StatusCode, status, callInvoker))
                 {
                     authIncluded = InitRequestDto(requestDto);
                     fn = PrepareRequest<TResponse>(requestDto, noAuth: authIncluded, out options);
@@ -295,14 +325,15 @@ namespace ServiceStack
                     var retryResponse = await retryAuc.ResponseAsync;
                     var retryHeaders = await InvokeResponseFilters(retryAuc, retryResponse);
 
-                    if (retryResponse.GetResponseStatus()?.ErrorCode == null && ResponseCallContext.GetStatusCode(retryHeaders) < 300)
+                    if (retryResponse.GetResponseStatus()?.ErrorCode == null && ResponseCallContext.GetHttpStatus(retryHeaders) < 300)
                         return retryResponse;
                 }
                 
                 throw new WebServiceException(status.Message) {
-                    StatusCode = statusCode,
-                    ResponseDto = response,
+                    StatusCode = ResponseCallContext.GetHttpStatus(headers),
+                    ResponseDto = response as object ?? new EmptyResponse { ResponseStatus = status },
                     ResponseHeaders = ResolveHeaders(headers),
+                    State = auc.GetStatus(),
                 };
             }
 
@@ -331,23 +362,19 @@ namespace ServiceStack
             {
                 var requestDto = requestDtos[i];
                 using var auc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, ServicesName, methodName, options, null);
-                var response = await auc.ResponseAsync;
 
-                var status = response.GetResponseStatus();
-                var headers = await auc.ResponseHeadersAsync;
-                var statusCode = ResponseCallContext.GetStatusCode(headers);
+                var (response, status, headers) = await GetResponse(auc);
 
-                if (status?.ErrorCode != null || statusCode > 300)
+                if (status?.ErrorCode != null)
                 {
-                    if (await RetryRequest(statusCode, status, callInvoker))
+                    if (await RetryRequest(auc.GetStatus().StatusCode, status, callInvoker))
                     {
                         authIncluded = InitRequestDto(requestDto);
                         fn = PrepareRequest<TResponse>(requestDto, noAuth: authIncluded, out options);
                         using var retryAuc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, ServicesName, methodName, options, null);
-                        var retryResponse = await retryAuc.ResponseAsync;
-                        var retryHeaders = await InvokeResponseFilters(retryAuc, retryResponse);
 
-                        if (retryResponse.GetResponseStatus()?.ErrorCode == null && ResponseCallContext.GetStatusCode(retryHeaders) < 300)
+                        var (retryResponse, retryStatus, retryHeaders) = await GetResponse(retryAuc);
+                        if (retryResponse.GetResponseStatus()?.ErrorCode == null)
                         {
                             responses.Add(retryResponse);
                             continue;
@@ -356,9 +383,10 @@ namespace ServiceStack
                     
                     await InvokeResponseFilters(auc, response, ctx => ctx.Headers.Add(Keywords.AutoBatchIndex, i.ToString()));
                     throw new WebServiceException(status.Message) {
-                        StatusCode = statusCode,
-                        ResponseDto = response,
+                        StatusCode = ResponseCallContext.GetHttpStatus(headers),
+                        ResponseDto = response as object ?? new EmptyResponse { ResponseStatus = status },
                         ResponseHeaders = ResolveHeaders(headers),
+                        State = auc.GetStatus(),
                     };
                 }
 
@@ -572,20 +600,34 @@ namespace ServiceStack
 
         public GrpcMarshaller() : base(Serialize, Deserialize) {}
 
-        private static byte[] Serialize(T payload)
+        public static byte[] Serialize(T payload)
         {
-            using (var ms = new MemoryStream())
+            try 
+            { 
+                using (var ms = new MemoryStream())
+                {
+                    GrpcUtils.TypeModel.Serialize(ms, payload);
+                    return ms.ToArray();
+                }
+            }
+            catch (Exception e)
             {
-                GrpcUtils.TypeModel.Serialize(ms, payload);
-                return ms.ToArray();
+                throw;
             }
         }
- 
-        private static T Deserialize(byte[] payload)
+
+        public static T Deserialize(byte[] payload)
         {
-            using (var ms = new MemoryStream(payload))
+            try 
+            { 
+                using (var ms = new MemoryStream(payload))
+                {
+                    return (T) GrpcUtils.TypeModel.Deserialize(ms, null, typeof(T));
+                }
+            }
+            catch (Exception e)
             {
-                return (T) GrpcUtils.TypeModel.Deserialize(ms, null, typeof(T));
+                throw;
             }
         }
     }
