@@ -70,7 +70,7 @@ namespace ServiceStack.Extensions.Tests
     }
 
     [Route("/query/rockstars")]
-    [DataContract]
+    [DataContract, Id(10)]
     public class QueryRockstars : QueryDb<Rockstar>
     {
         [DataMember(Order = 1)]
