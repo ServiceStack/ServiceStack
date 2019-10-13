@@ -8,14 +8,20 @@ namespace ServiceStack
 {
     public abstract class GrpcServiceBase : IGrpcService
     {
+        private ServiceStackHost appHost;
+        private ServiceStackHost AppHost => appHost ?? (appHost = HostContext.AppHost);
+
         private RpcGateway rpcGateway;
         protected RpcGateway RpcGateway => rpcGateway ?? (rpcGateway = HostContext.AppHost.RpcGateway);
 
         private GrpcFeature feature;
-        protected GrpcFeature Feature => feature ?? (feature = HostContext.AssertPlugin<GrpcFeature>()); 
+        protected GrpcFeature Feature => feature ?? (feature = HostContext.AssertPlugin<GrpcFeature>());
+
 
         protected virtual async Task<TResponse> Execute<TResponse>(string method, object request, CallContext context)
         {
+            AppHost.AssertFeatures(ServiceStack.Feature.Grpc);
+
             var req = new GrpcRequest(context, request, method);
             var ret = await RpcGateway.ExecuteAsync<TResponse>(request, req);
 
@@ -42,15 +48,8 @@ namespace ServiceStack
                     if (nonSuccessStatus)
                     {
                         var status = res.Dto.GetResponseStatus();
-                        try
-                        {
-                            if (status != null)
-                                headers.Add(Keywords.GrpcResponseStatus, GrpcMarshaller<ResponseStatus>.Instance.Serializer(status));
-                        }
-                        catch (Exception e)
-                        {
-                            throw;
-                        }
+                        if (status != null)
+                            headers.Add(Keywords.GrpcResponseStatus, GrpcMarshaller<ResponseStatus>.Instance.Serializer(status));
                         
                         var desc = status?.ErrorCode ?? res.StatusDescription ?? status?.Message ?? HttpStatus.GetStatusDescription(res.StatusCode);
                         context.ServerCallContext.Status = ToGrpcStatus(res.StatusCode, desc);

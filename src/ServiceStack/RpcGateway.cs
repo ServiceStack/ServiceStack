@@ -22,8 +22,6 @@ namespace ServiceStack
         {
             try 
             {
-                AppHost.AssertFeatures(Feature.Grpc);
-
                 var res = req.Response;
                 if (AppHost.ApplyPreRequestFilters(req, req.Response))
                     return CreateResponse<TResponse>(res);
