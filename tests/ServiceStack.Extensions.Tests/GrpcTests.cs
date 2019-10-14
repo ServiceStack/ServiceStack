@@ -20,6 +20,7 @@ using ProtoBuf.Grpc.Server;
 using ServiceStack.Auth;
 using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Validators;
+using ServiceStack.Text;
 using ServiceStack.Validation;
 
 namespace ServiceStack.Extensions.Tests
@@ -546,6 +547,19 @@ namespace ServiceStack.Extensions.Tests
 
             await client.GetAsync(new AddHeader { Name = "X-Custom", Value = "A" });
             Assert.That(customHeader, Is.EqualTo("A"));
+        }
+
+        [Test]
+        public async Task Can_download_file()
+        {
+            var client = GetClient();
+            var response = await client.GetAsync(new GetFile { Path = "/js/ss-utils.js" });
+            Assert.That(response.Name, Is.EqualTo("ss-utils.js"));
+            Assert.That(response.Length, Is.GreaterThan(0));
+            Assert.That(response.Length, Is.EqualTo(response.Body.Length));
+
+            var str = response.Body.FromUtf8Bytes();
+            Assert.That(str, Does.Contain("if (!$.ss) $.ss = {};"));
         }
     }
 }

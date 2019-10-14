@@ -5,8 +5,6 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using Grpc.Core;
-using Grpc.Core.Interceptors;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using ProtoBuf;
@@ -100,6 +98,10 @@ namespace ServiceStack
             HttpHeaders.Vary,
             HttpHeaders.XPoweredBy,
         };
+        
+        public List<Type> RegisterServices { get; set; } = new List<Type> {
+            typeof(GetFileService),
+        };
 
         public bool DisableResponseHeaders
         {
@@ -126,6 +128,11 @@ namespace ServiceStack
                     HttpHeaders.ExposeHeaders,
                     HttpHeaders.AccessControlMaxAge,
                 }.Each(x => IgnoreResponseHeaders.Add(x));
+            }
+
+            foreach (var service in RegisterServices)
+            {
+                appHost.RegisterService(service);
             }
         }
 
@@ -276,6 +283,27 @@ namespace ServiceStack
             
             var servicesType = typeBuilder.CreateTypeInfo().AsType();
             return servicesType;
+        }
+    }
+
+    [DefaultRequest(typeof(GetFile))]
+    [Restrict(VisibilityTo = RequestAttributes.None)]
+    public class GetFileService : Service
+    {
+        public object Any(GetFile request)
+        {
+            var file = VirtualFileSources.GetFile(request.Path);
+            if (file == null)
+                throw HttpError.NotFound("File does not exist");
+
+            var bytes = file.GetBytesContentsAsBytes();
+            var to = new GetFileResponse {
+                Name = file.Name,
+                Type = MimeTypes.GetMimeType(file.Extension),
+                Body = bytes,
+                Length = bytes.Length,
+            };
+            return to;
         }
     }
 

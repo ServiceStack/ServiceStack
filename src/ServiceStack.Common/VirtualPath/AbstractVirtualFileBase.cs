@@ -178,12 +178,30 @@ namespace ServiceStack
             var contents = file.GetContents();
             var span = contents is ReadOnlyMemory<byte> rom
                 ? rom
-                : contents is ReadOnlyMemory<char> romchars
-                    ? MemoryProvider.Instance.ToUtf8(romchars.Span)
+                : contents is ReadOnlyMemory<char> romChars
+                    ? MemoryProvider.Instance.ToUtf8(romChars.Span)
                     : contents is string s
                         ? MemoryProvider.Instance.ToUtf8(s.AsSpan())
                         : file.ReadAllBytes().AsMemory();
             return span;
+        }
+
+        public static byte[] GetBytesContentsAsBytes(this IVirtualFile file)
+        {
+            if (file is InMemoryVirtualFile m)
+                return m.ByteContents ?? MemoryProvider.Instance.ToUtf8Bytes(m.TextContents.AsSpan());
+            if (file is GistVirtualFile g && g.Stream != null)
+                return ((MemoryStream) g.Stream).GetBufferAsBytes();
+
+            var contents = file.GetContents();
+            var bytes = contents is ReadOnlyMemory<byte> rom
+                ? rom.ToArray()
+                : contents is ReadOnlyMemory<char> romChars
+                    ? MemoryProvider.Instance.ToUtf8(romChars.Span).ToArray()
+                    : contents is string s
+                        ? MemoryProvider.Instance.ToUtf8(s.AsSpan()).ToArray()
+                        : file.ReadAllBytes();
+            return bytes;
         }
 
     }

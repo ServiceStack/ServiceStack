@@ -332,4 +332,26 @@ namespace ServiceStack
         public ResponseStatus ResponseStatus { get; set; }
     }
 
+    [DataContract]
+    public class GetFile : IReturn<GetFileResponse>
+    {
+        [DataMember(Order = 1)]
+        public string Path { get; set; }
+    }
+
+    [DataContract]
+    public class GetFileResponse
+    {
+        [DataMember(Order = 1)]
+        public string Name { get; set; }
+        
+        [DataMember(Order = 2)]
+        public string Type { get; set; }
+        
+        [DataMember(Order = 3)]
+        public int Length { get; set; }
+        
+        [DataMember(Order = 4)]
+        public byte[] Body { get; set; }
+    }
 }

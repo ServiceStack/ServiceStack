@@ -27,7 +27,7 @@ namespace ServiceStack.Extensions.Tests
         [DataMember(Order = 1)]
         public virtual string Include { get; set; }
     }
-
+    
     public class ProtobufTests
     {
         public T Serialize<T>(T dto, TypeModel model = null)
@@ -113,5 +113,14 @@ namespace ServiceStack.Extensions.Tests
             Assert.That(to.Results[0].LastName, Is.EqualTo("SQL Server"));
         }
 
+        [Test]
+        public void Can_serialize_bytes()
+        {
+            var dto = new GetFileResponse {
+                Body = "abc".ToUtf8Bytes(),
+            };
+            var toDto = SerializeGrpc(dto);
+            Assert.That(toDto.Body, Is.EqualTo(dto.Body));
+        }
     }
 }
