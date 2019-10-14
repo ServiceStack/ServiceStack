@@ -303,7 +303,7 @@
                 var $el = $(this);
                 var $prev = $el.prev(), $next = $el.next();
                 var isCheck = this.type === "radio" || this.type === "checkbox";
-                var fieldId = (!isCheck ? this.id : null) || $el.attr("name");
+                var fieldId = $el.attr("name") || this.id;
                 if (!fieldId) return;
 
                 var key = (fieldId).toLowerCase();
