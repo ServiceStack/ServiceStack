@@ -31,7 +31,7 @@ namespace ServiceStack.Validation
             {
                 try
                 {
-                    var validationResult = await Validate(validator, req, requestDto);
+                    var validationResult = await validator.Validate(req, requestDto);
     
                     if (treatInfoAndWarningsAsErrors && validationResult.IsValid)
                         return;
@@ -107,7 +107,7 @@ namespace ServiceStack.Validation
             }
         }
 
-        private static async Task<ValidationResult> Validate(IValidator validator, IRequest req, object requestDto)
+        public static async Task<ValidationResult> Validate(this IValidator validator, IRequest req, object requestDto)
         {
             var ruleSet = req.Verb;
 

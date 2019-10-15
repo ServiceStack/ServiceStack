@@ -104,9 +104,9 @@ namespace ServiceStack.Validation
             foreach (var assembly in assemblies)
             {
                 foreach (var validator in assembly.GetTypes()
-                .Where(t => t.IsOrHasGenericInterfaceTypeOf(typeof(IValidator<>))))
+                    .Where(t => t.IsOrHasGenericInterfaceTypeOf(typeof(IValidator<>))))
                 {
-                    RegisterValidator(container, validator, scope);
+                    container.RegisterValidator(validator, scope);
                 }
             }
         }
