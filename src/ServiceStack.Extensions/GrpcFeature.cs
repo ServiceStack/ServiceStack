@@ -80,6 +80,8 @@ namespace ServiceStack
         public string ServicesName { get; set; } = "GrpcServices";
         public Type GrpcServicesBaseType { get; set; } = typeof(GrpcServiceBase);
         
+        public Type GrpcServicesType { get; private set; }
+        
         public Action<TypeBuilder, MethodBuilder, Type> GenerateServiceFilter { get; set; }
 
         /// <summary>
@@ -152,9 +154,9 @@ namespace ServiceStack
         public void AfterPluginsLoaded(IAppHost appHost)
         {
             var streamServices = RegisterServices.Where(x => typeof(IStreamService).IsAssignableFrom(x)).ToList();
-            var servicesType = GenerateGrpcServices(appHost.Metadata.Operations, streamServices);
+            GrpcServicesType = GenerateGrpcServices(appHost.Metadata.Operations, streamServices);
             var genericMi = GetType().GetMethod(nameof(MapGrpcService), BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            var mi = genericMi.MakeGenericMethod(servicesType);
+            var mi = genericMi.MakeGenericMethod(GrpcServicesType);
             mi.Invoke(this, TypeConstants.EmptyObjectArray);
 
             var allDtos = appHost.Metadata.GetAllDtos();
