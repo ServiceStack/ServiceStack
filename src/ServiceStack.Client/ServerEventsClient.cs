@@ -14,87 +14,54 @@ using ServiceStack.Text;
 
 namespace ServiceStack
 {
-    [DataContract]
     public class ServerEventConnect : ServerEventCommand
     {
-        [DataMember(Order = 1)]
         public string Id { get; set; }
-        [DataMember(Order = 2)]
         public string UnRegisterUrl { get; set; }
-        [DataMember(Order = 3)]
+        public string UpdateSubscriberUrl { get; set; }
         public string HeartbeatUrl { get; set; }
-        [DataMember(Order = 4)]
         public long HeartbeatIntervalMs { get; set; }
-        [DataMember(Order = 5)]
         public long IdleTimeoutMs { get; set; }
     }
 
-    [DataContract]
     public class ServerEventJoin : ServerEventCommand { }
 
-    [DataContract]
     public class ServerEventLeave : ServerEventCommand { }
 
-    [DataContract]
     public class ServerEventUpdate : ServerEventCommand { }
 
-    [DataContract]
     public class ServerEventHeartbeat : ServerEventCommand { }
 
-    [DataContract]
     public class ServerEventCommand : ServerEventMessage
     {
-        [DataMember(Order = 1)]
         public string UserId { get; set; }
-        [DataMember(Order = 2)]
         public string DisplayName { get; set; }
-        [DataMember(Order = 3)]
         public string ProfileUrl { get; set; }
-        [DataMember(Order = 4)]
         public bool IsAuthenticated { get; set; }
-        [DataMember(Order = 5)]
         public string[] Channels { get; set; }
-        [DataMember(Order = 6)]
         public DateTime CreatedAt { get; set; }
     }
 
-    [DataContract]
     public class ServerEventMessage : IMeta
     {
-        [DataMember(Order = 1)]
         public long EventId { get; set; }
-        [DataMember(Order = 2)]
         public string Channel { get; set; }
-        [DataMember(Order = 3)]
         public string Data { get; set; }
-        [DataMember(Order = 4)]
         public string Selector { get; set; }
-        [DataMember(Order = 5)]
         public string Json { get; set; }
-        [DataMember(Order = 6)]
         public string Op { get; set; }
-        [DataMember(Order = 7)]
         public string Target { get; set; }
-        [DataMember(Order = 8)]
         public string CssSelector { get; set; }
-
-        [DataMember(Order = 9)]
         public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]
     public class ServerEventUser : IMeta
     {
-        [DataMember(Order = 1)]
         public string UserId { get; set; }
-        [DataMember(Order = 2)]
         public string DisplayName { get; set; }
-        [DataMember(Order = 3)]
         public string ProfileUrl { get; set; }
-        [DataMember(Order = 4)]
         public string[] Channels { get; set; }
-
-        [DataMember(Order = 5)]
         public Dictionary<string, string> Meta { get; set; }
     }
 
@@ -631,18 +598,18 @@ namespace ServiceStack
             });
         }
 
-        private ServerEventMessage currentMsg;
+        private ServerEventMessage currentMsg { get; set; }
 
-        void ProcessLine(string line)
+        public void ProcessLine(string line)
         {
-            if (line == null) return;
+            if (line == null) 
+                return;
 
             if (currentMsg == null)
                 currentMsg = new ServerEventMessage();
 
-            var parts = line.SplitOnFirst(':');
-            var label = parts[0];
-            var data = parts[1];
+            var label = line.LeftPart(':');
+            var data = line.RightPart(':');
             if (data.Length > 0 && data[0] == ' ')
                 data = data.Substring(1);
 
@@ -657,133 +624,145 @@ namespace ServiceStack
             }
         }
 
-        void ProcessEventMessage(ServerEventMessage e)
+        public static ServerEventMessage ToTypedMessage(ServerEventMessage e)
         {
-            var parts = e.Data.SplitOnFirst(' ');
-
-            var validMsg = parts.Length > 1;  
-            if (!validMsg) // If it was not a valid msg sent with a Server Events client just fire event + return
+            e.Selector = e.Data.LeftPart(' ');
+            if (e.Selector.IndexOf('@') >= 0)
             {
-                OnMessageReceived(e);
-                return;
+                e.Channel = e.Selector.LeftPart('@');
+                e.Selector = e.Selector.RightPart('@');
             }
 
-            e.Selector = parts[0];
-            var selParts = e.Selector.SplitOnFirst('@');
-            if (selParts.Length > 1)
-            {
-                e.Channel = selParts[0];
-                e.Selector = selParts[1];
-            }
-
-            e.Json = parts[1];
+            e.Json = e.Data.RightPart(' ');
 
             if (!string.IsNullOrEmpty(e.Selector))
             {
-                parts = e.Selector.SplitOnFirst('.');
-                if (parts.Length < 2)
+                if (e.Selector.IndexOf('.') == -1)
                     throw new ArgumentException($"Invalid Selector '{e.Selector}'");
 
-                e.Op = parts[0];
-                var target = parts[1].Replace("%20", " ");
+                e.Op = e.Selector.LeftPart('.');
+                var target = e.Selector.RightPart('.').Replace("%20", " ");
 
-                var tokens = target.SplitOnFirst('$');
-                e.Target = tokens[0];
-                if (tokens.Length > 1)
-                    e.CssSelector = tokens[1];
+                e.Target = target.LeftPart('$');
+                if (e.Target.Length < target.Length)
+                    e.CssSelector = target.RightPart('$');
 
                 if (e.Op == "cmd")
                 {
                     switch (e.Target)
                     {
                         case "onConnect":
-                            ProcessOnConnectMessage(e);
-                            return;
-                        case "onJoin":
-                            ProcessOnJoinMessage(e);
-                            return;
-                        case "onLeave":
-                            ProcessOnLeaveMessage(e);
-                            return;
-                        case "onUpdate":
-                            ProcessOnUpdateMessage(e);
-                            return;
-                        case "onHeartbeat":
-                            ProcessOnHeartbeatMessage(e);
-                            return;
-                        default:
-                            if (Handlers.TryGetValue(e.Target, out var cb))
+                            var msg = JsonServiceClient.ParseObject(e.Json);
+                            var to = new ServerEventConnect
                             {
-                                cb(this, e);
-                            }
-                            break;
+                                HeartbeatIntervalMs = DefaultHeartbeatMs,
+                                IdleTimeoutMs = DefaultIdleTimeoutMs,
+                            }.Populate(e, msg);
+                            to.Id = msg.Get("id");
+                            to.HeartbeatUrl = msg.Get("heartbeatUrl");
+                            to.HeartbeatIntervalMs = msg.Get<long>("heartbeatIntervalMs");
+                            to.IdleTimeoutMs = msg.Get<long>("idleTimeoutMs");
+                            to.UnRegisterUrl = msg.Get("unRegisterUrl");
+                            to.UpdateSubscriberUrl = msg.Get("updateSubscriberUrl");
+                            to.UserId = msg.Get("userId");
+                            to.DisplayName = msg.Get("displayName");
+                            to.IsAuthenticated = msg.Get("isAuthenticated") == "true";
+                            to.ProfileUrl = msg.Get("profileUrl");
+                            return to;
+                        case "onJoin":
+                            return new ServerEventJoin().Populate(e, JsonServiceClient.ParseObject(e.Json));
+                        case "onLeave":
+                            return new ServerEventLeave().Populate(e, JsonServiceClient.ParseObject(e.Json));
+                        case "onUpdate":
+                            return new ServerEventUpdate().Populate(e, JsonServiceClient.ParseObject(e.Json));
+                        case "onHeartbeat":
+                            return new ServerEventHeartbeat().Populate(e, JsonServiceClient.ParseObject(e.Json));
                     }
                 }
-                else if (e.Op == "trigger")
-                {
-                    RaiseEvent(e.Target, e);
-                }
-
-                NamedReceivers.TryGetValue(e.Op, out var receiver);
-                receiver?.Invoke(this, e);
             }
+
+            return e;
+        }
+        
+        void ProcessEventMessage(ServerEventMessage e)
+        {
+            var validMsg = e.Data.IndexOf(' ') >= 0;  
+            if (!validMsg) // If it was not a valid msg sent with a Server Events client just fire event + return
+            {
+                OnMessageReceived(e);
+                return;
+            }
+
+            var msg = ToTypedMessage(e);
+            if (e.Op == "cmd")
+            {
+                switch (msg)
+                {
+                    case ServerEventConnect c:
+                        ProcessOnConnectMessage(c);
+                        return;
+                    case ServerEventJoin j:
+                        ProcessOnJoinMessage(j);
+                        return;
+                    case ServerEventLeave l:
+                        ProcessOnLeaveMessage(l);
+                        return;
+                    case ServerEventUpdate u:
+                        ProcessOnUpdateMessage(u);
+                        return;
+                    case ServerEventHeartbeat h:
+                        ProcessOnHeartbeatMessage(h);
+                        return;
+                    default:
+                        if (Handlers.TryGetValue(e.Target, out var cb))
+                        {
+                            cb(this, e);
+                        }
+                        break;
+                }
+            }
+            else if (e.Op == "trigger")
+            {
+                RaiseEvent(e.Target, e);
+            }
+
+            NamedReceivers.TryGetValue(e.Op, out var receiver);
+            receiver?.Invoke(this, e);
 
             OnMessageReceived(e);
         }
 
-        private void ProcessOnConnectMessage(ServerEventMessage e)
+        private void ProcessOnConnectMessage(ServerEventConnect e)
         {
-            var msg = JsonServiceClient.ParseObject(e.Json);
-            ConnectionInfo = new ServerEventConnect
-            {
-                HeartbeatIntervalMs = DefaultHeartbeatMs,
-                IdleTimeoutMs = DefaultIdleTimeoutMs,
-            }.Populate(e, msg);
-
-            ConnectionInfo.Id = msg.Get("id");
-            ConnectionInfo.HeartbeatUrl = msg.Get("heartbeatUrl");
-            ConnectionInfo.HeartbeatIntervalMs = msg.Get<long>("heartbeatIntervalMs");
-            ConnectionInfo.IdleTimeoutMs = msg.Get<long>("idleTimeoutMs");
-            ConnectionInfo.UnRegisterUrl = msg.Get("unRegisterUrl");
-            ConnectionInfo.UserId = msg.Get("userId");
-            ConnectionInfo.DisplayName = msg.Get("displayName");
-            ConnectionInfo.IsAuthenticated = msg.Get("isAuthenticated") == "true";
-            ConnectionInfo.ProfileUrl = msg.Get("profileUrl");
-
+            ConnectionInfo = e;
             OnConnectReceived();
         }
 
-        private void ProcessOnJoinMessage(ServerEventMessage e)
+        private void ProcessOnJoinMessage(ServerEventJoin msg)
         {
-            var msg = new ServerEventJoin().Populate(e, JsonServiceClient.ParseObject(e.Json));
             OnJoinReceived(msg);
             OnCommandReceived(msg);
         }
 
-        private void ProcessOnLeaveMessage(ServerEventMessage e)
+        private void ProcessOnLeaveMessage(ServerEventLeave msg)
         {
-            var msg = new ServerEventLeave().Populate(e, JsonServiceClient.ParseObject(e.Json));
             OnLeaveReceived(msg);
             OnCommandReceived(msg);
         }
 
-        private void ProcessOnUpdateMessage(ServerEventMessage e)
+        private void ProcessOnUpdateMessage(ServerEventUpdate msg)
         {
-            var msg = new ServerEventUpdate().Populate(e, JsonServiceClient.ParseObject(e.Json));
             OnUpdateReceived(msg);
             OnCommandReceived(msg);
         }
 
-        private void ProcessOnHeartbeatMessage(ServerEventMessage e)
+        private void ProcessOnHeartbeatMessage(ServerEventHeartbeat msg)
         {
             LastPulseAt = DateTime.UtcNow;
             if (log.IsDebugEnabled)
                 log.Debug("[SSE-CLIENT] LastPulseAt: " + DateTime.UtcNow.TimeOfDay);
 
-            var msg = JsonServiceClient.ParseObject(e.Json);
-            var heartbeatMsg = new ServerEventHeartbeat().Populate(e, msg);
-
-            OnHeartbeatReceived(heartbeatMsg);
+            OnHeartbeatReceived(msg);
         }
 
         public virtual Task Stop()

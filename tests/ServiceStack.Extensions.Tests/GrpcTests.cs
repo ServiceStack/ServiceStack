@@ -590,17 +590,45 @@ namespace ServiceStack.Extensions.Tests
         {
             var client = GetClient();
 
-            var i = 0;
-            await foreach (var eventMsg in client.StreamAsync(new SubscribeServerEvents { Channels = new[] { "home" } }))
+            void AssertMessage(SubscribeServerEventsResponse msg)
             {
+                Assert.That(msg.EventId, Is.GreaterThan(0));
+                Assert.That(msg.Channels, Is.EqualTo(new[] {"home"}));
+                Assert.That(msg.Json, Is.Not.Null);
+                Assert.That(msg.Op, Is.EqualTo("cmd"));
+                Assert.That(msg.UserId, Is.EqualTo("-1"));
+                Assert.That(msg.DisplayName, Is.Not.Null);
+                Assert.That(msg.ProfileUrl, Is.Not.Null);
+                Assert.That(msg.IsAuthenticated, Is.False);
+            }
+
+            var i = 0;
+            await foreach (var msg in client.StreamAsync(new SubscribeServerEvents { Channels = new[] { "home" } }))
+            {
+                if (i == 0)
+                {
+                    Assert.That(msg.Selector, Is.EqualTo("cmd.onConnect"));
+                    Assert.That(msg.Id, Is.Not.Null);
+                    Assert.That(msg.UnRegisterUrl, Is.Not.Null);
+                    Assert.That(msg.UpdateSubscriberUrl, Is.Not.Null);
+                    Assert.That(msg.HeartbeatUrl, Is.Not.Null);
+                    Assert.That(msg.HeartbeatIntervalMs, Is.GreaterThan(0));
+                    Assert.That(msg.IdleTimeoutMs, Is.GreaterThan(0));
+                    AssertMessage(msg);
+                }
+                else if (i == 1)
+                {
+                    Assert.That(msg.Selector, Is.EqualTo("cmd.onJoin"));
+                    AssertMessage(msg);
+                }
+                
                 $"\n\n{i}".Print();
-                eventMsg.PrintDump();
+                msg.PrintDump();
 
                 if (++i == 2)
                     break;
             }
-            
-            "HERE".Print();
+            Assert.That(i, Is.EqualTo(2));
         }
     }
 }

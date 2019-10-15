@@ -368,11 +368,12 @@ namespace ServiceStack
     [DataContract]
     public class SubscribeServerEventsResponse
     {
+        //ServerEventMessage
         [DataMember(Order = 1)]
         public long EventId { get; set; }
         [DataMember(Order = 2)]
         public string Channel { get; set; }
-        [DataMember(Order = 3)]
+//        [DataMember(Order = 3)]
         public string Data { get; set; }
         [DataMember(Order = 4)]
         public string Selector { get; set; }
@@ -384,11 +385,38 @@ namespace ServiceStack
         public string Target { get; set; }
         [DataMember(Order = 8)]
         public string CssSelector { get; set; }
-
         [DataMember(Order = 9)]
         public Dictionary<string, string> Meta { get; set; }
 
+        //ServerEventCommand
         [DataMember(Order = 10)]
+        public string UserId { get; set; }
+        [DataMember(Order = 11)]
+        public string DisplayName { get; set; }
+        [DataMember(Order = 12)]
+        public string ProfileUrl { get; set; }
+        [DataMember(Order = 13)]
+        public bool IsAuthenticated { get; set; }
+        [DataMember(Order = 14)]
+        public string[] Channels { get; set; }
+        [DataMember(Order = 15)]
+        public DateTime CreatedAt { get; set; }
+        
+        //ServerEventConnect
+        [DataMember(Order = 21)]
+        public string Id { get; set; }
+        [DataMember(Order = 22)]
+        public string UnRegisterUrl { get; set; }
+        [DataMember(Order = 23)]
+        public string UpdateSubscriberUrl { get; set; }
+        [DataMember(Order = 24)]
+        public string HeartbeatUrl { get; set; }
+        [DataMember(Order = 25)]
+        public long HeartbeatIntervalMs { get; set; }
+        [DataMember(Order = 26)]
+        public long IdleTimeoutMs { get; set; }
+        
+        [DataMember(Order = 30)]
         public ResponseStatus ResponseStatus { get; set; }
     }
 }

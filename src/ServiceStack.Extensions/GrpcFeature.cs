@@ -362,24 +362,101 @@ namespace ServiceStack
 
     public class SubscribeServerEventsService : Service, IStreamService<SubscribeServerEvents, SubscribeServerEventsResponse>
     {
+        public static HashSet<string> IgnoreMetaProps { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+            nameof(ServerEventMessage.EventId),
+            nameof(ServerEventMessage.Data),
+            nameof(ServerEventMessage.Channel),
+            nameof(ServerEventMessage.Selector),
+            nameof(ServerEventMessage.Json),
+            nameof(ServerEventMessage.Op),
+            nameof(ServerEventMessage.Target),
+            nameof(ServerEventMessage.CssSelector),
+            nameof(ServerEventCommand.UserId),
+            nameof(ServerEventCommand.DisplayName),
+            nameof(ServerEventCommand.ProfileUrl),
+            nameof(ServerEventCommand.IsAuthenticated),
+            nameof(ServerEventCommand.Channels),
+            nameof(ServerEventCommand.CreatedAt),
+            nameof(ServerEventConnect.Id),
+            nameof(ServerEventConnect.UnRegisterUrl),
+            nameof(ServerEventConnect.UpdateSubscriberUrl),
+            nameof(ServerEventConnect.HeartbeatUrl),
+            nameof(ServerEventConnect.HeartbeatIntervalMs),
+            nameof(ServerEventConnect.IdleTimeoutMs),
+        }; 
+        
         public async IAsyncEnumerable<SubscribeServerEventsResponse> Stream(SubscribeServerEvents request, [EnumeratorCancellation] CancellationToken cancel=default)
         {
             if (request.Channels != null)
                 Request.QueryString["channels"] = string.Join(",", request.Channels);
-            
+
             var handler = new ServerEventsHandler();
             await handler.ProcessRequestAsync(Request, Request.Response, nameof(SubscribeServerEvents));
 
             var res = (GrpcResponse) Request.Response;
 
+            //ensure response is cancelled after stream is cancelled 
+            using var deferResponse = new Defer(() => res.Close());
+
             int i = 0;
             while (!cancel.IsCancellationRequested)
             {
-                var msg = await res.EventsChannel.Reader.ReadAsync(cancel);
-                yield return new SubscribeServerEventsResponse { EventId = i++, Channel = msg };
+                var frame = await res.EventsChannel.Reader.ReadAsync(cancel);
+                var idLine = frame.LeftPart('\n');
+                var dataLine = frame.RightPart('\n');
+
+                var e = ServerEventsClient.ToTypedMessage(new ServerEventMessage {
+                    EventId = idLine.RightPart(':').Trim().ToInt(),
+                    Data = dataLine.RightPart(':').Trim(),
+                });
+
+                Dictionary<string, string> meta = null;
+                if (e.Meta != null)
+                {
+                    foreach (var entry in e.Meta)
+                    {
+                        if (IgnoreMetaProps.Contains(entry.Key))
+                            continue;
+                        if (meta == null)
+                            meta = new Dictionary<string, string>();
+                        meta[entry.Key] = entry.Value;
+                    }
+                }
+                
+                var to = new SubscribeServerEventsResponse {
+                    EventId = e.EventId,
+                    Data = e.Data,
+                    Channel = e.Channel,
+                    Selector = e.Selector,
+                    Json = e.Json,
+                    Op = e.Op,
+                    Target = e.Target,
+                    CssSelector = e.CssSelector,
+                    Meta = meta,
+                };
+
+                if (e is ServerEventCommand cmd)
+                {
+                    to.UserId = cmd.UserId;
+                    to.DisplayName = cmd.DisplayName;
+                    to.ProfileUrl = cmd.ProfileUrl;
+                    to.IsAuthenticated = cmd.IsAuthenticated;
+                    to.Channels = cmd.Channels;
+                    to.CreatedAt = cmd.CreatedAt;
+                }
+
+                if (e is ServerEventConnect conn)
+                {
+                    to.Id = conn.Id;
+                    to.UnRegisterUrl = conn.UnRegisterUrl;
+                    to.UpdateSubscriberUrl = conn.UpdateSubscriberUrl;
+                    to.HeartbeatUrl = conn.HeartbeatUrl;
+                    to.HeartbeatIntervalMs = conn.HeartbeatIntervalMs;
+                    to.IdleTimeoutMs = conn.IdleTimeoutMs;
+                }
+                
+                yield return to;
             }
-            
-            "HERE".Print();
         }
     }
 
