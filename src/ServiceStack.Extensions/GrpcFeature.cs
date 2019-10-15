@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
@@ -106,6 +107,7 @@ namespace ServiceStack
         
         public List<Type> RegisterServices { get; set; } = new List<Type> {
             typeof(GetFileService),
+            typeof(StreamFileService),
             typeof(SubscribeServerEventsService),
         };
         
@@ -352,13 +354,45 @@ namespace ServiceStack
                 throw HttpError.NotFound("File does not exist");
 
             var bytes = file.GetBytesContentsAsBytes();
-            var to = new GetFileResponse {
+            var to = new FileContent {
                 Name = file.Name,
                 Type = MimeTypes.GetMimeType(file.Extension),
                 Body = bytes,
                 Length = bytes.Length,
             };
             return to;
+        }
+    }
+
+    public class StreamFileService : Service, IStreamService<StreamFiles,FileContent>
+    {
+        public async IAsyncEnumerable<FileContent> Stream(StreamFiles request, CancellationToken cancel = default)
+        {
+            var i = 0;
+            var paths = request.Paths ?? TypeConstants.EmptyStringList;
+            while (!cancel.IsCancellationRequested)
+            {
+                var file = VirtualFileSources.GetFile(paths[i]);
+                var bytes = file?.GetBytesContentsAsBytes();
+                var to = file != null
+                    ? new FileContent {
+                        Name = file.Name,
+                        Type = MimeTypes.GetMimeType(file.Extension),
+                        Body = bytes,
+                        Length = bytes.Length,
+                    }
+                    : new FileContent {
+                        ResponseStatus = new ResponseStatus {
+                            ErrorCode = nameof(HttpStatusCode.NotFound),
+                            Message = "File does not exist",
+                        }
+                    };
+                
+                yield return to;
+
+                if (++i >= paths.Count)
+                    yield break;
+            }
         }
     }
 

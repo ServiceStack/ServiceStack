@@ -37,6 +37,7 @@ namespace ServiceStack
     public interface IDelete : IVerb { }
     public interface IPatch : IVerb { }
     public interface IOptions : IVerb { }
+    public interface IStream : IVerb { }
 
     public interface IAny<T>
     {

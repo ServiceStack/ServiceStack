@@ -543,7 +543,8 @@ namespace ServiceStack
                             State = assc.GetStatus(),
                         };
                     }
-                    yield return item;
+                    if (more)
+                        yield return item;
                 }
             }
             finally

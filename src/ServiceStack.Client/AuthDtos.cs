@@ -333,14 +333,14 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class GetFile : IReturn<GetFileResponse>, IGet
+    public class GetFile : IReturn<FileContent>, IGet
     {
         [DataMember(Order = 1)]
         public string Path { get; set; }
     }
 
     [DataContract]
-    public class GetFileResponse
+    public class FileContent
     {
         [DataMember(Order = 1)]
         public string Name { get; set; }
@@ -359,7 +359,14 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class SubscribeServerEvents : IReturn<SubscribeServerEventsResponse>, IGet
+    public class StreamFiles : IReturn<FileContent>
+    {
+        [DataMember(Order = 1)]
+        public List<string> Paths { get; set; }
+    }
+
+    [DataContract]
+    public class SubscribeServerEvents : IReturn<SubscribeServerEventsResponse>
     {
         [DataMember(Order = 1)]
         public string[] Channels { get; set; }
@@ -373,7 +380,7 @@ namespace ServiceStack
         public long EventId { get; set; }
         [DataMember(Order = 2)]
         public string Channel { get; set; }
-//        [DataMember(Order = 3)]
+//        [DataMember(Order = 3)] //ignore returning Data body
         public string Data { get; set; }
         [DataMember(Order = 4)]
         public string Selector { get; set; }

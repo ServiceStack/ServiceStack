@@ -116,7 +116,7 @@ namespace ServiceStack.Extensions.Tests
         [Test]
         public void Can_serialize_bytes()
         {
-            var dto = new GetFileResponse {
+            var dto = new FileContent {
                 Body = "abc".ToUtf8Bytes(),
             };
             var toDto = SerializeGrpc(dto);

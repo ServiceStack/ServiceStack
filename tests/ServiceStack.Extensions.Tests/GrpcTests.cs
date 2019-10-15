@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.ServiceModel;
@@ -559,13 +560,21 @@ namespace ServiceStack.Extensions.Tests
             AssertSSUtils(response);
         }
 
-        private static void AssertSSUtils(GetFileResponse response)
+        private static void AssertSSUtils(FileContent response)
         {
             Assert.That(response.Name, Is.EqualTo("ss-utils.js"));
             Assert.That(response.Length, Is.GreaterThan(0));
             Assert.That(response.Length, Is.EqualTo(response.Body.Length));
             var str = response.Body.FromUtf8Bytes();
             Assert.That(str, Does.Contain("if (!$.ss) $.ss = {};"));
+        }
+
+        private static void AssertFiles(List<FileContent> responses)
+        {
+            Assert.That(responses.Count, Is.EqualTo(3));
+            AssertSSUtils(responses[0]);
+            Assert.That(responses[1].Name, Is.EqualTo("hot-loader.js"));
+            Assert.That(responses[2].Name, Is.EqualTo("hot-fileloader.js"));
         }
 
         [Test]
@@ -580,9 +589,32 @@ namespace ServiceStack.Extensions.Tests
             };
 
             var responses = await client.SendAllAsync(files);
-            AssertSSUtils(responses[0]);
-            Assert.That(responses[1].Name, Is.EqualTo("hot-loader.js"));
-            Assert.That(responses[2].Name, Is.EqualTo("hot-fileloader.js"));
+            AssertFiles(responses);
+        }
+
+        [Test]
+        public async Task Can_stream_multiple_files()
+        {
+            var client = GetClient();
+
+            var request = new StreamFiles {
+                Paths = new List<string> {
+                    "/js/ss-utils.js",
+                    "/js/hot-loader.js",
+                    "/js/not-exists.js",
+                    "/js/hot-fileloader.js",
+                }
+            };
+
+            var files = new List<FileContent>();
+            await foreach (var file in client.StreamAsync(request))
+            {
+                files.Add(file);
+            }
+            Assert.That(files.Count, Is.EqualTo(request.Paths.Count));
+            Assert.That(files[2].ResponseStatus.ErrorCode, Is.EqualTo(nameof(HttpStatusCode.NotFound)));
+            files = files.Where(x => x.ResponseStatus == null).ToList();
+            AssertFiles(files);
         }
 
         [Test]

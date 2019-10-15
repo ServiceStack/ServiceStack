@@ -134,7 +134,8 @@ namespace ServiceStack
                         await enumerator.DisposeAsync();
                         yield break; //written in headers
                     }
-                    yield return enumerator.Current;
+                    if (more)
+                        yield return enumerator.Current;
                 }
 
                 await enumerator.DisposeAsync();
