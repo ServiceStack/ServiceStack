@@ -4,12 +4,16 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
+using Grpc.Core;
+using Microsoft.AspNetCore.Http;
 using ProtoBuf.Grpc;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.IO;
 using ServiceStack.Web;
+using Channel = System.Threading.Channels.Channel;
 
 namespace ServiceStack
 {
@@ -39,6 +43,11 @@ namespace ServiceStack
             this.Response = new GrpcResponse(this);
             this.Verb = httpMethod;
             this.PathInfo = context.ServerCallContext.Method;
+            var httpCtx = context.ServerCallContext.GetHttpContext();
+            var httpFeature = httpCtx.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestFeature>();
+            var scheme = httpFeature.Scheme;
+            this.RawUrl = scheme + "://" + context.ServerCallContext.Host.CombineWith(PathInfo);
+            this.AbsoluteUri = RawUrl;
             this.RemoteIp = context.ServerCallContext.Peer;
             ContentType = this.ResponseContentType = MimeTypes.ProtoBuf;
             this.InputStream = Stream.Null;
@@ -103,8 +112,7 @@ namespace ServiceStack
 
         private IRequestPreferences requestPreferences;
 
-        public IRequestPreferences RequestPreferences =>
-            requestPreferences ?? (requestPreferences = new RequestPreferences(this));
+        public IRequestPreferences RequestPreferences => requestPreferences ??= new RequestPreferences(this);
 
         public string ContentType { get; set; }
 
@@ -196,7 +204,7 @@ namespace ServiceStack
         public string Accept { get; set; }
     }
 
-    public class GrpcResponse : IHttpResponse, IHasHeaders
+    public class GrpcResponse : IHttpResponse, IHasHeaders, IWriteEvent, IWriteEventAsync
     {
         private readonly GrpcRequest request;
         public Dictionary<string, string> Headers { get; }
@@ -291,5 +299,19 @@ namespace ServiceStack
         public void SetCookie(Cookie cookie) {}
 
         public void ClearCookies() {}
+
+
+        private Channel<string> eventsChannel;
+        public Channel<string> EventsChannel => eventsChannel ??= Channel.CreateUnbounded<string>(new UnboundedChannelOptions { SingleReader = true });
+        
+        public void WriteEvent(string msg)
+        {
+            while (!EventsChannel.Writer.TryWrite(msg)) {}
+        }
+
+        public async Task WriteEventAsync(string msg, CancellationToken token = default)
+        {
+            await EventsChannel.Writer.WriteAsync(msg, token);
+        }
     }
 }

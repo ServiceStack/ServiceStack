@@ -6,6 +6,7 @@
         <TargetFramework>netcoreapp3.0</TargetFramework>
         <RootNamespace>ServiceStack</RootNamespace>
         <DefineConstants>$(DefineConstants);PLAT_PBN_NOSPAN</DefineConstants>
+        <LangVersion>8</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>

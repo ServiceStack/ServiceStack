@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,54 +14,87 @@ using ServiceStack.Text;
 
 namespace ServiceStack
 {
+    [DataContract]
     public class ServerEventConnect : ServerEventCommand
     {
+        [DataMember(Order = 1)]
         public string Id { get; set; }
+        [DataMember(Order = 2)]
         public string UnRegisterUrl { get; set; }
+        [DataMember(Order = 3)]
         public string HeartbeatUrl { get; set; }
+        [DataMember(Order = 4)]
         public long HeartbeatIntervalMs { get; set; }
+        [DataMember(Order = 5)]
         public long IdleTimeoutMs { get; set; }
     }
 
+    [DataContract]
     public class ServerEventJoin : ServerEventCommand { }
 
+    [DataContract]
     public class ServerEventLeave : ServerEventCommand { }
 
+    [DataContract]
     public class ServerEventUpdate : ServerEventCommand { }
 
+    [DataContract]
     public class ServerEventHeartbeat : ServerEventCommand { }
 
+    [DataContract]
     public class ServerEventCommand : ServerEventMessage
     {
+        [DataMember(Order = 1)]
         public string UserId { get; set; }
+        [DataMember(Order = 2)]
         public string DisplayName { get; set; }
+        [DataMember(Order = 3)]
         public string ProfileUrl { get; set; }
+        [DataMember(Order = 4)]
         public bool IsAuthenticated { get; set; }
+        [DataMember(Order = 5)]
         public string[] Channels { get; set; }
+        [DataMember(Order = 6)]
         public DateTime CreatedAt { get; set; }
     }
 
+    [DataContract]
     public class ServerEventMessage : IMeta
     {
+        [DataMember(Order = 1)]
         public long EventId { get; set; }
+        [DataMember(Order = 2)]
         public string Channel { get; set; }
+        [DataMember(Order = 3)]
         public string Data { get; set; }
+        [DataMember(Order = 4)]
         public string Selector { get; set; }
+        [DataMember(Order = 5)]
         public string Json { get; set; }
+        [DataMember(Order = 6)]
         public string Op { get; set; }
+        [DataMember(Order = 7)]
         public string Target { get; set; }
+        [DataMember(Order = 8)]
         public string CssSelector { get; set; }
 
+        [DataMember(Order = 9)]
         public Dictionary<string, string> Meta { get; set; }
     }
 
+    [DataContract]
     public class ServerEventUser : IMeta
     {
+        [DataMember(Order = 1)]
         public string UserId { get; set; }
+        [DataMember(Order = 2)]
         public string DisplayName { get; set; }
+        [DataMember(Order = 3)]
         public string ProfileUrl { get; set; }
+        [DataMember(Order = 4)]
         public string[] Channels { get; set; }
 
+        [DataMember(Order = 5)]
         public Dictionary<string, string> Meta { get; set; }
     }
 

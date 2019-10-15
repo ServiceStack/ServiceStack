@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netcoreapp3.0</TargetFramework>
-        <LangVersion>preview</LangVersion>
+        <LangVersion>8</LangVersion>
     </PropertyGroup>
     
     <ItemGroup>

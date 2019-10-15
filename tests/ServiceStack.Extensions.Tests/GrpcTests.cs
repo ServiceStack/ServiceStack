@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -122,6 +123,7 @@ namespace ServiceStack.Extensions.Tests
             //ServiceBinder.Default = new GrpcServiceBinder();
          
             Plugins.Add(new ValidationFeature());
+            Plugins.Add(new ServerEventsFeature());
             Plugins.Add(new GrpcFeature(App));
         }
 
@@ -554,12 +556,51 @@ namespace ServiceStack.Extensions.Tests
         {
             var client = GetClient();
             var response = await client.GetAsync(new GetFile { Path = "/js/ss-utils.js" });
+            AssertSSUtils(response);
+        }
+
+        private static void AssertSSUtils(GetFileResponse response)
+        {
             Assert.That(response.Name, Is.EqualTo("ss-utils.js"));
             Assert.That(response.Length, Is.GreaterThan(0));
             Assert.That(response.Length, Is.EqualTo(response.Body.Length));
-
             var str = response.Body.FromUtf8Bytes();
             Assert.That(str, Does.Contain("if (!$.ss) $.ss = {};"));
+        }
+
+        [Test]
+        public async Task Can_download_multiple_files()
+        {
+            var client = GetClient();
+
+            var files = new[] {
+                new GetFile { Path = "/js/ss-utils.js" },
+                new GetFile { Path = "/js/hot-loader.js" },
+                new GetFile { Path = "/js/hot-fileloader.js" },
+            };
+
+            var responses = await client.SendAllAsync(files);
+            AssertSSUtils(responses[0]);
+            Assert.That(responses[1].Name, Is.EqualTo("hot-loader.js"));
+            Assert.That(responses[2].Name, Is.EqualTo("hot-fileloader.js"));
+        }
+
+        [Test]
+        public async Task Can_subscribe_to_ServerEvents()
+        {
+            var client = GetClient();
+
+            var i = 0;
+            await foreach (var eventMsg in client.StreamAsync(new SubscribeServerEvents { Channels = new[] { "home" } }))
+            {
+                $"\n\n{i}".Print();
+                eventMsg.PrintDump();
+
+                if (++i == 2)
+                    break;
+            }
+            
+            "HERE".Print();
         }
     }
 }

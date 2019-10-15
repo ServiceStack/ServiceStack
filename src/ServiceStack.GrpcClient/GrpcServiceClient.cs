@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
@@ -114,9 +115,6 @@ namespace ServiceStack
         delegate object ExecuteInternalDelegate(CallInvoker invoker, object request,
             string serviceName, string methodName, CallOptions options, string host);
 
-        private readonly ConcurrentDictionary<Tuple<Type, Type>, ExecuteInternalDelegate> execFnCache =
-            new ConcurrentDictionary<Tuple<Type, Type>, ExecuteInternalDelegate>();
-
         internal class Executor<TRequest, TResponse>
             where TRequest : class
             where TResponse : class
@@ -134,12 +132,29 @@ namespace ServiceStack
             {
                 return GenericExecute(invoker, (TRequest) request, serviceName, methodName, options, host);
             }
+
+            public static AsyncServerStreamingCall<TResponse> GenericStream(CallInvoker invoker, TRequest request,
+                string serviceName, string methodName, CallOptions options, string host)
+            {
+                var method = new Method<TRequest, TResponse>(MethodType.ServerStreaming, serviceName, methodName,
+                    GrpcMarshaller<TRequest>.Instance, GrpcMarshaller<TResponse>.Instance);
+                var auc = invoker.AsyncServerStreamingCall(method, host, options, request);
+                return auc;
+            }
+
+            public static object Stream(CallInvoker invoker, object request,
+                string serviceName, string methodName, CallOptions options, string host)
+            {
+                return GenericStream(invoker, (TRequest) request, serviceName, methodName, options, host);
+            }
         }
 
-        private ExecuteInternalDelegate PrepareRequest<TResponse>(object requestDto, bool noAuth, out CallOptions options)
+        private readonly ConcurrentDictionary<Tuple<Type, Type>, ExecuteInternalDelegate> execFnCache =
+            new ConcurrentDictionary<Tuple<Type, Type>, ExecuteInternalDelegate>();
+
+        ExecuteInternalDelegate ResolveExecute<TResponse>(object requestDto)
         {
             var key = new Tuple<Type, Type>(requestDto.GetType(), typeof(TResponse));
-
             if (!execFnCache.TryGetValue(key, out var fn))
             {
                 var type = typeof(Executor<,>).MakeGenericType(requestDto.GetType(), typeof(TResponse));
@@ -148,8 +163,28 @@ namespace ServiceStack
                 fn = (ExecuteInternalDelegate) mi.CreateDelegate(typeof(ExecuteInternalDelegate));
                 execFnCache[key] = fn;
             }
+            return fn;
+        }
 
-            options = default;
+        private readonly ConcurrentDictionary<Tuple<Type, Type>, ExecuteInternalDelegate> streamFnCache =
+            new ConcurrentDictionary<Tuple<Type, Type>, ExecuteInternalDelegate>();
+
+        ExecuteInternalDelegate ResolveStream<TResponse>(object requestDto)
+        {
+            var key = new Tuple<Type, Type>(requestDto.GetType(), typeof(TResponse));
+            if (!streamFnCache.TryGetValue(key, out var fn))
+            {
+                var type = typeof(Executor<,>).MakeGenericType(requestDto.GetType(), typeof(TResponse));
+                var mi = type.GetMethod(nameof(Stream),
+                    BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+                fn = (ExecuteInternalDelegate) mi.CreateDelegate(typeof(ExecuteInternalDelegate));
+                streamFnCache[key] = fn;
+            }
+            return fn;
+        }
+
+        private CallOptions PrepareRequest(bool noAuth)
+        {
             var auth = noAuth
                 ? null
                 : !string.IsNullOrEmpty(UserName) && !string.IsNullOrEmpty(Password)
@@ -179,10 +214,9 @@ namespace ServiceStack
                 if (UserAgent != null)
                     headers.Add(HttpHeaders.UserAgent, UserAgent);
 
-                options = new CallOptions(headers: headers);
+                return new CallOptions(headers: headers);
             }
-
-            return fn;
+            return default;
         }
 
         private bool InitRequestDto(object requestDto)
@@ -220,6 +254,20 @@ namespace ServiceStack
             return headers;
         }
 
+        private async Task<Metadata> InvokeResponseFilters<TResponse>(AsyncServerStreamingCall<TResponse> asc, IAsyncStreamReader<TResponse> response, Action<ResponseCallContext> fn = null)
+        {
+            var headers = await asc.ResponseHeadersAsync;
+            if (GlobalResponseFilter != null || ResponseFilter != null)
+            {
+                var ctx = new ResponseCallContext(response, asc.GetStatus(), headers);
+                fn?.Invoke(ctx);
+
+                GlobalResponseFilter?.Invoke(ctx);
+                ResponseFilter?.Invoke(ctx);
+            }
+            return headers;
+        }
+
         public WebHeaderCollection ResolveHeaders(Metadata headers)
         {
             var to = new WebHeaderCollection();
@@ -249,7 +297,8 @@ namespace ServiceStack
                     RefreshToken = RefreshToken,
                 };
                 var methodName = Methods.Post + nameof(GetAccessToken);
-                var fn = PrepareRequest<GetAccessTokenResponse>(refreshRequest, noAuth: true, out var options);
+                var fn = ResolveExecute<GetAccessTokenResponse>(refreshRequest);
+                var options = PrepareRequest(noAuth:true);
 
                 using var auc = (AsyncUnaryCall<GetAccessTokenResponse>) fn(useInvoker, refreshRequest, ServicesName, methodName, options, null);
                 var (response, refreshStatus, headers) = await GetResponse(auc);
@@ -302,10 +351,45 @@ namespace ServiceStack
             return (response, status, headers);
         }
 
+        private async Task<(IAsyncStreamReader<TResponse>, ResponseStatus, Metadata)> GetResponse<TResponse>(AsyncServerStreamingCall<TResponse> auc)
+        {
+            var headers = await auc.ResponseHeadersAsync;
+            ResponseStatus status = null;
+            IAsyncStreamReader<TResponse> response = default;
+            try
+            {
+                response = auc.ResponseStream;
+                status = response.GetResponseStatus();
+            }
+            catch (RpcException ex)
+            {
+                status = HandleRpcException(headers, ex);
+            }
+            finally
+            {
+                await InvokeResponseFilters(auc, response);
+            }
+
+            return (response, status, headers);
+        }
+
+        private static ResponseStatus HandleRpcException(Metadata headers, RpcException ex)
+        {
+            var statusBytes = ResponseCallContext.GetHeaderBytes(headers, Keywords.GrpcResponseStatus);
+            var status = statusBytes != null
+                ? GrpcMarshaller<ResponseStatus>.Instance.Deserializer(statusBytes)
+                : new ResponseStatus {
+                    ErrorCode = ex.Status.Detail ?? ex.StatusCode.ToString(),
+                    Message = HttpStatus.GetStatusDescription(ResponseCallContext.GetHttpStatus(headers))
+                };
+            return status;
+        }
+
         public async Task<TResponse> Execute<TResponse>(object requestDto, string methodName, CancellationToken token = default)
         {
             var authIncluded = InitRequestDto(requestDto);
-            var fn = PrepareRequest<TResponse>(requestDto, noAuth: authIncluded, out var options);
+            var fn = ResolveExecute<TResponse>(requestDto);
+            var options = PrepareRequest(noAuth:authIncluded);
 
             GlobalRequestFilter?.Invoke(options);
             RequestFilter?.Invoke(options);
@@ -319,13 +403,10 @@ namespace ServiceStack
             {
                 if (await RetryRequest(auc.GetStatus().StatusCode, status, callInvoker))
                 {
-                    authIncluded = InitRequestDto(requestDto);
-                    fn = PrepareRequest<TResponse>(requestDto, noAuth: authIncluded, out options);
+                    options = PrepareRequest(noAuth:authIncluded);
                     using var retryAuc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, ServicesName, methodName, options, null);
-                    var retryResponse = await retryAuc.ResponseAsync;
-                    var retryHeaders = await InvokeResponseFilters(retryAuc, retryResponse);
-
-                    if (retryResponse.GetResponseStatus()?.ErrorCode == null && ResponseCallContext.GetHttpStatus(retryHeaders) < 300)
+                    var (retryResponse, retryStatus, retryHeaders) = await GetResponse(retryAuc);
+                    if (retryStatus?.ErrorCode == null)
                         return retryResponse;
                 }
                 
@@ -350,7 +431,8 @@ namespace ServiceStack
             var methodName = GetMethod(firstDto) + firstDto.GetType().Name;
             var authIncluded = InitRequestDto(firstDto);
 
-            var fn = PrepareRequest<TResponse>(firstDto, noAuth: authIncluded, out var options);
+            var fn = ResolveExecute<TResponse>(firstDto);
+            var options = PrepareRequest(noAuth:authIncluded);
 
             GlobalRequestFilter?.Invoke(options);
             RequestFilter?.Invoke(options);
@@ -370,7 +452,8 @@ namespace ServiceStack
                     if (await RetryRequest(auc.GetStatus().StatusCode, status, callInvoker))
                     {
                         authIncluded = InitRequestDto(requestDto);
-                        fn = PrepareRequest<TResponse>(requestDto, noAuth: authIncluded, out options);
+                        fn = ResolveExecute<TResponse>(requestDto);
+                        options = PrepareRequest(noAuth:authIncluded);
                         using var retryAuc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, ServicesName, methodName, options, null);
 
                         var (retryResponse, retryStatus, retryHeaders) = await GetResponse(retryAuc);
@@ -397,6 +480,81 @@ namespace ServiceStack
             }
 
             return responses;
+        }
+
+        public async IAsyncEnumerable<TResponse> Stream<TResponse>(object requestDto, string methodName, [EnumeratorCancellation] CancellationToken token = default)
+        {
+            var authIncluded = InitRequestDto(requestDto);
+            var fn = ResolveStream<TResponse>(requestDto);
+            var options = PrepareRequest(noAuth:authIncluded);
+
+            GlobalRequestFilter?.Invoke(options);
+            RequestFilter?.Invoke(options);
+
+            var callInvoker = channel.CreateCallInvoker();
+            using var assc = (AsyncServerStreamingCall<TResponse>) fn(callInvoker, requestDto, ServicesName, methodName, options, null);
+
+            var (response, status, headers) = await GetResponse(assc);
+
+            if (status?.ErrorCode != null)
+            {
+                if (await RetryRequest(assc.GetStatus().StatusCode, status, callInvoker))
+                {
+                    fn = ResolveStream<TResponse>(requestDto);
+                    options = PrepareRequest(noAuth:authIncluded);
+                    using var retryAssc = (AsyncServerStreamingCall<TResponse>) fn(callInvoker, requestDto, ServicesName, methodName, options, null);
+                    var (retryResponse, retryStatus, retryHeaders) = await GetResponse(retryAssc);
+                    if (retryStatus?.ErrorCode == null)
+                    {
+                        await foreach(var item in retryResponse.ReadAllAsync(token))
+                        {
+                            yield return item;
+                        }
+                    }
+                }
+                
+                throw new WebServiceException(status.Message) {
+                    StatusCode = ResponseCallContext.GetHttpStatus(headers),
+                    ResponseDto = response as object ?? new EmptyResponse { ResponseStatus = status },
+                    ResponseHeaders = ResolveHeaders(headers),
+                    State = assc.GetStatus(),
+                };
+            }
+            
+            var enumerator = response.ReadAllAsync(token).GetAsyncEnumerator(token);
+            try
+            {
+                var more = true;
+                while (more)
+                {
+                    TResponse item;
+                    try 
+                    { 
+                        more = await enumerator.MoveNextAsync();
+                        item = enumerator.Current;
+                    }
+                    catch (RpcException ex)
+                    {
+                        status = HandleRpcException(headers, ex);
+                        throw new WebServiceException(status.Message) {
+                            StatusCode = ResponseCallContext.GetHttpStatus(headers),
+                            ResponseDto = new EmptyResponse { ResponseStatus = status },
+                            ResponseHeaders = ResolveHeaders(headers),
+                            State = assc.GetStatus(),
+                        };
+                    }
+                    yield return item;
+                }
+            }
+            finally
+            {
+                await enumerator.DisposeAsync(); // omitted, along with the try/finally, if the enumerator doesn't expose DisposeAsync
+            }
+        }
+        
+        public IAsyncEnumerable<TResponse> StreamAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default)
+        {
+            return Stream<TResponse>(requestDto, requestDto.GetType().Name, token);
         }
 
         protected string GetMethod(object request)
@@ -596,7 +754,7 @@ namespace ServiceStack
         }
 
         //also forces static initializer
-        public static MetaType GetMetaType() => metaType ?? (metaType = GrpcUtils.TypeModel.Add(typeof(T), applyDefaultBehaviour:true)); 
+        public static MetaType GetMetaType() => metaType ??= GrpcUtils.TypeModel.Add(typeof(T), applyDefaultBehaviour:true); 
 
         public GrpcMarshaller() : base(Serialize, Deserialize) {}
 

@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +16,7 @@ using ProtoBuf.Grpc.Server;
 using ProtoBuf.Meta;
 using ServiceStack.Host;
 using ServiceStack.Logging;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -101,7 +104,10 @@ namespace ServiceStack
         
         public List<Type> RegisterServices { get; set; } = new List<Type> {
             typeof(GetFileService),
+            typeof(SubscribeServerEventsService),
         };
+        
+        internal Dictionary<Type, Type> RequestServiceTypeMap { get; } = new Dictionary<Type, Type>();
 
         public bool DisableResponseHeaders
         {
@@ -130,20 +136,39 @@ namespace ServiceStack
                 }.Each(x => IgnoreResponseHeaders.Add(x));
             }
 
-            foreach (var service in RegisterServices)
+            foreach (var serviceType in RegisterServices)
             {
-                appHost.RegisterService(service);
+                if (!typeof(IStreamService).IsAssignableFrom(serviceType))
+                {
+                    appHost.RegisterService(serviceType);
+                }
+                else
+                {
+                    ((ServiceStackHost)appHost).Container.RegisterAutoWiredType(serviceType);
+                }
             }
         }
 
         public void AfterPluginsLoaded(IAppHost appHost)
         {
-            var servicesType = GenerateGrpcServices(appHost.Metadata.Operations);
+            var streamServices = RegisterServices.Where(x => typeof(IStreamService).IsAssignableFrom(x)).ToList();
+            var servicesType = GenerateGrpcServices(appHost.Metadata.Operations, streamServices);
             var genericMi = GetType().GetMethod(nameof(MapGrpcService), BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             var mi = genericMi.MakeGenericMethod(servicesType);
             mi.Invoke(this, TypeConstants.EmptyObjectArray);
-            
-            RegisterDtoTypes(appHost.Metadata.GetAllDtos());
+
+            var allDtos = appHost.Metadata.GetAllDtos();
+            foreach (var serviceType in streamServices)
+            {
+                var genericDef = serviceType.GetTypeWithGenericTypeDefinitionOf(typeof(IStreamService<,>));
+                foreach (var argType in genericDef.GenericTypeArguments)
+                {
+                    allDtos.Add(argType);
+                }
+                var requestType = genericDef.GenericTypeArguments[0];
+                RequestServiceTypeMap[requestType] = serviceType;
+            }
+            RegisterDtoTypes(allDtos);
         }
 
         private void RegisterDtoTypes(IEnumerable<Type> allDtos)
@@ -160,7 +185,7 @@ namespace ServiceStack
             app.UseEndpoints(endpoints => endpoints.MapGrpcService<TService>());
         }
 
-        public Type GenerateGrpcServices(IEnumerable<Operation> metadataOperations)
+        public Type GenerateGrpcServices(IEnumerable<Operation> metadataOperations, IEnumerable<Type> streamServices)
         {
             var log = LogManager.GetLogger(GetType());
                 
@@ -280,6 +305,34 @@ namespace ServiceStack
                     il.Emit(OpCodes.Ret);
                 }
             }
+
+            foreach (var streamService in streamServices)
+            {
+                var genericDef = streamService.GetTypeWithGenericTypeDefinitionOf(typeof(IStreamService<,>));
+                var requestType = genericDef.GenericTypeArguments[0];
+                var responseType = genericDef.GenericTypeArguments[1];
+                var methodName = requestType.Name;
+
+                var method = typeBuilder.DefineMethod(methodName, MethodAttributes.Public | MethodAttributes.Virtual,
+                    CallingConventions.Standard,
+                    returnType: typeof(IAsyncEnumerable<>).MakeGenericType(responseType),
+                    parameterTypes: new[] { requestType, typeof(CallContext) });
+
+                GenerateServiceFilter?.Invoke(typeBuilder, method, requestType);
+
+                var il = method.GetILGenerator();
+
+                var mi = GrpcServicesBaseType.GetMethod("Stream", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                    
+                var genericMi = mi.MakeGenericMethod(requestType, responseType);
+                    
+                il.Emit(OpCodes.Nop);
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldarg_1);
+                il.Emit(OpCodes.Ldarg_2);
+                il.Emit(OpCodes.Callvirt, genericMi);
+                il.Emit(OpCodes.Ret);
+            }
             
             var servicesType = typeBuilder.CreateTypeInfo().AsType();
             return servicesType;
@@ -290,7 +343,7 @@ namespace ServiceStack
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public class GetFileService : Service
     {
-        public object Any(GetFile request)
+        public object Get(GetFile request)
         {
             var file = VirtualFileSources.GetFile(request.Path);
             if (file == null)
@@ -304,6 +357,29 @@ namespace ServiceStack
                 Length = bytes.Length,
             };
             return to;
+        }
+    }
+
+    public class SubscribeServerEventsService : Service, IStreamService<SubscribeServerEvents, SubscribeServerEventsResponse>
+    {
+        public async IAsyncEnumerable<SubscribeServerEventsResponse> Stream(SubscribeServerEvents request, [EnumeratorCancellation] CancellationToken cancel=default)
+        {
+            if (request.Channels != null)
+                Request.QueryString["channels"] = string.Join(",", request.Channels);
+            
+            var handler = new ServerEventsHandler();
+            await handler.ProcessRequestAsync(Request, Request.Response, nameof(SubscribeServerEvents));
+
+            var res = (GrpcResponse) Request.Response;
+
+            int i = 0;
+            while (!cancel.IsCancellationRequested)
+            {
+                var msg = await res.EventsChannel.Reader.ReadAsync(cancel);
+                yield return new SubscribeServerEventsResponse { EventId = i++, Channel = msg };
+            }
+            
+            "HERE".Print();
         }
     }
 

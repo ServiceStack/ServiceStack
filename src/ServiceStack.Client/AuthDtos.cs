@@ -333,7 +333,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class GetFile : IReturn<GetFileResponse>
+    public class GetFile : IReturn<GetFileResponse>, IGet
     {
         [DataMember(Order = 1)]
         public string Path { get; set; }
@@ -353,5 +353,42 @@ namespace ServiceStack
         
         [DataMember(Order = 4)]
         public byte[] Body { get; set; }
+        
+        [DataMember(Order = 5)]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    [DataContract]
+    public class SubscribeServerEvents : IReturn<SubscribeServerEventsResponse>, IGet
+    {
+        [DataMember(Order = 1)]
+        public string[] Channels { get; set; }
+    }
+
+    [DataContract]
+    public class SubscribeServerEventsResponse
+    {
+        [DataMember(Order = 1)]
+        public long EventId { get; set; }
+        [DataMember(Order = 2)]
+        public string Channel { get; set; }
+        [DataMember(Order = 3)]
+        public string Data { get; set; }
+        [DataMember(Order = 4)]
+        public string Selector { get; set; }
+        [DataMember(Order = 5)]
+        public string Json { get; set; }
+        [DataMember(Order = 6)]
+        public string Op { get; set; }
+        [DataMember(Order = 7)]
+        public string Target { get; set; }
+        [DataMember(Order = 8)]
+        public string CssSelector { get; set; }
+
+        [DataMember(Order = 9)]
+        public Dictionary<string, string> Meta { get; set; }
+
+        [DataMember(Order = 10)]
+        public ResponseStatus ResponseStatus { get; set; }
     }
 }

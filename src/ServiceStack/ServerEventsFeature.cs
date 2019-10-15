@@ -67,13 +67,28 @@ namespace ServiceStack
 
             WriteEvent = (res, frame) =>
             {
-                MemoryProvider.Instance.Write(res.AllowSyncIO().OutputStream, frame.AsMemory());
-                res.Flush();
+                if (res is IWriteEvent writeEvent)
+                {
+                    writeEvent.WriteEvent(frame);
+                }
+                else
+                {
+                    MemoryProvider.Instance.Write(res.AllowSyncIO().OutputStream, frame.AsMemory());
+                    res.Flush();
+                }
             };
 
-            WriteEventAsync = async (res, frame) => {
-                await MemoryProvider.Instance.WriteAsync(res.OutputStream, frame.AsMemory());
-                await res.FlushAsync();
+            WriteEventAsync = async (res, frame) => 
+            {
+                if (res is IWriteEventAsync writeEvent)
+                {
+                    await writeEvent.WriteEventAsync(frame);
+                }
+                else
+                {
+                    await MemoryProvider.Instance.WriteAsync(res.OutputStream, frame.AsMemory());
+                    await res.FlushAsync();
+                }
             };
 
             IdleTimeout = TimeSpan.FromSeconds(30);
@@ -162,7 +177,7 @@ namespace ServiceStack
             if (HostContext.ApplyCustomHandlerRequestFilters(req, res))
                 return;
 
-            var feature = HostContext.GetPlugin<ServerEventsFeature>();
+            var feature = HostContext.AssertPlugin<ServerEventsFeature>();
 
             var session = req.GetSession();
             if (feature.LimitToAuthenticatedUsers && !session.IsAuthenticated)
@@ -263,6 +278,18 @@ namespace ServiceStack
             feature.OnConnect?.Invoke(subscription, subscription.ConnectArgs);
 
             await serverEvents.RegisterAsync(subscription, subscription.ConnectArgs);
+
+            if (req.Response is IWriteEventAsync) // gRPC
+            {
+                subscription.OnDispose = sub =>
+                {
+                    try
+                    {
+                        (sub as EventSubscription)?.EndRequestIfDisposed();
+                    } catch { }
+                };
+                return;
+            }
             
             var tcs = new TaskCompletionSource<bool>();
 
@@ -1503,6 +1530,16 @@ namespace ServiceStack
 
             TaskExt.RunSync(DisposeAsync);
         }
+    }
+
+    public interface IWriteEvent
+    {
+        void WriteEvent(string msg);
+    }
+
+    public interface IWriteEventAsync
+    {
+        Task WriteEventAsync(string msg, CancellationToken token = default);
     }
 
     public interface IServerEvents : IDisposable
