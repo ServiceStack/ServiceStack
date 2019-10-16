@@ -129,6 +129,11 @@ namespace ServiceStack
                     {
                         more = await enumerator.MoveNextAsync();
                     }
+                    catch (OperationCanceledException)
+                    {
+                        await enumerator.DisposeAsync();
+                        yield break; //written in headers
+                    }
                     catch (Exception)
                     {
                         await enumerator.DisposeAsync();

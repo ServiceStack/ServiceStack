@@ -366,14 +366,14 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class SubscribeServerEvents : IReturn<SubscribeServerEventsResponse>
+    public class StreamServerEvents : IReturn<StreamServerEventsResponse>
     {
         [DataMember(Order = 1)]
         public string[] Channels { get; set; }
     }
 
     [DataContract]
-    public class SubscribeServerEventsResponse
+    public class StreamServerEventsResponse
     {
         //ServerEventMessage
         [DataMember(Order = 1)]

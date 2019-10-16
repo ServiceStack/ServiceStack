@@ -285,6 +285,42 @@ namespace ServiceStack.Extensions.Tests
         }
     }
 
+    [Route("/channels/{Channel}/chat")]
+    [DataContract]
+    public class PostChatToChannel : IReturn<ChatMessage>, IPost
+    {
+        [DataMember(Order = 1)]
+        public string From { get; set; }
+        [DataMember(Order = 2)]
+        public string ToUserId { get; set; }
+        [DataMember(Order = 3)]
+        public string Channel { get; set; }
+        [DataMember(Order = 4)]
+        public string Message { get; set; }
+        [DataMember(Order = 5)]
+        public string Selector { get; set; }
+    }
+    
+    [DataContract]
+    public class ChatMessage
+    {
+        [DataMember(Order = 1)]
+        public long Id { get; set; }
+        [DataMember(Order = 2)]
+        public string Channel { get; set; }
+        [DataMember(Order = 3)]
+        public string FromUserId { get; set; }
+        [DataMember(Order = 4)]
+        public string FromName { get; set; }
+        [DataMember(Order = 5)]
+        public string DisplayName { get; set; }
+        [DataMember(Order = 6)]
+        public string Message { get; set; }
+        [DataMember(Order = 7)]
+        public string UserAuthId { get; set; }
+        [DataMember(Order = 8)]
+        public bool Private { get; set; }
+    }
 
     public class MyServices : Service
     {
@@ -313,6 +349,25 @@ namespace ServiceStack.Extensions.Tests
         {
             Response.AddHeader(request.Name, request.Value);
         }
+        
+        public IServerEvents ServerEvents { get; set; }
+        public int Id = 0;
+
+        public async Task<object> Any(PostChatToChannel request)
+        {
+            var msg = new ChatMessage
+            {
+                Id = Id++,
+                Channel = request.Channel,
+                FromUserId = request.From,
+                FromName = request.From,
+                Message = request.Message.HtmlEncode(),
+            };
+
+            await ServerEvents.NotifyChannelAsync(request.Channel, request.Selector, msg);
+
+            return msg;
+        }        
     }
     
     /// <summary>
@@ -627,7 +682,7 @@ namespace ServiceStack.Extensions.Tests
         {
             var client = GetClient();
 
-            void AssertMessage(SubscribeServerEventsResponse msg)
+            void AssertMessage(StreamServerEventsResponse msg)
             {
                 Assert.That(msg.EventId, Is.GreaterThan(0));
                 Assert.That(msg.Channels, Is.EqualTo(new[] {"home"}));
@@ -640,7 +695,7 @@ namespace ServiceStack.Extensions.Tests
             }
 
             var i = 0;
-            await foreach (var msg in client.StreamAsync(new SubscribeServerEvents { Channels = new[] { "home" } }))
+            await foreach (var msg in client.StreamAsync(new StreamServerEvents { Channels = new[] { "home" } }))
             {
                 if (i == 0)
                 {
@@ -666,6 +721,38 @@ namespace ServiceStack.Extensions.Tests
                     break;
             }
             Assert.That(i, Is.EqualTo(2));
+        }
+
+        [Test]
+        public async Task Does_receive_all_messages()
+        {
+            var client1 = GetClient();
+            var client2 = GetClient();
+
+            Task.Factory.StartNew(async () => {
+                await Task.Delay(500);
+                await client2.PostAsync(new PostChatToChannel {
+                    Channel = "home",
+                    From = nameof(client2),
+                    Message = "Hello from client2",
+                    Selector = "cmd.chat",
+                });
+            });
+
+            var responses = new List<StreamServerEventsResponse>();
+            await foreach (var msg in client1.StreamAsync(new StreamServerEvents { Channels = new[] { "home" } }))
+            {
+                responses.Add(msg);
+                
+                if (msg.Selector == "cmd.chat")
+                    break;
+            }
+            
+            Assert.That(responses[0].Selector, Is.EqualTo("cmd.onConnect"));
+            Assert.That(responses[1].Selector, Is.EqualTo("cmd.onJoin"));
+            Assert.That(responses[2].Selector, Is.EqualTo("cmd.chat"));
+            var obj = (Dictionary<string, object>) JSON.parse(responses[2].Json);
+            Assert.That(obj["message"], Is.EqualTo("Hello from client2"));
         }
     }
 }

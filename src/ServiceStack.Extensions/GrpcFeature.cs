@@ -396,7 +396,7 @@ namespace ServiceStack
         }
     }
 
-    public class SubscribeServerEventsService : Service, IStreamService<SubscribeServerEvents, SubscribeServerEventsResponse>
+    public class SubscribeServerEventsService : Service, IStreamService<StreamServerEvents, StreamServerEventsResponse>
     {
         public static HashSet<string> IgnoreMetaProps { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
             nameof(ServerEventMessage.EventId),
@@ -421,13 +421,13 @@ namespace ServiceStack
             nameof(ServerEventConnect.IdleTimeoutMs),
         }; 
         
-        public async IAsyncEnumerable<SubscribeServerEventsResponse> Stream(SubscribeServerEvents request, [EnumeratorCancellation] CancellationToken cancel=default)
+        public async IAsyncEnumerable<StreamServerEventsResponse> Stream(StreamServerEvents request, [EnumeratorCancellation] CancellationToken cancel=default)
         {
             if (request.Channels != null)
                 Request.QueryString["channels"] = string.Join(",", request.Channels);
 
             var handler = new ServerEventsHandler();
-            await handler.ProcessRequestAsync(Request, Request.Response, nameof(SubscribeServerEvents));
+            await handler.ProcessRequestAsync(Request, Request.Response, nameof(StreamServerEvents));
 
             var res = (GrpcResponse) Request.Response;
 
@@ -459,7 +459,7 @@ namespace ServiceStack
                     }
                 }
                 
-                var to = new SubscribeServerEventsResponse {
+                var to = new StreamServerEventsResponse {
                     EventId = e.EventId,
                     Data = e.Data,
                     Channel = e.Channel,
