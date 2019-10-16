@@ -106,7 +106,6 @@ namespace ServiceStack
 
         internal static class Keywords
         {
-            internal const string AutoBatchIndex = nameof(AutoBatchIndex);
             internal const string HeaderSessionId = "X-ss-id";
             internal const string HttpStatus = "httpstatus";
             internal const string GrpcResponseStatus = "responsestatus-bin";
@@ -342,6 +341,13 @@ namespace ServiceStack
                         ErrorCode = ex.Status.Detail ?? ex.StatusCode.ToString(),
                         Message = HttpStatus.GetStatusDescription(ResponseCallContext.GetHttpStatus(headers)) 
                     };
+                
+                var prop = TypeProperties<TResponse>.GetAccessor(nameof(ErrorResponse.ResponseStatus));
+                if (prop != null)
+                {
+                    response = typeof(TResponse).CreateInstance<TResponse>();
+                    prop.PublicSetter(response, status);
+                }
             }
             finally
             {
@@ -440,31 +446,30 @@ namespace ServiceStack
             var responses = new List<TResponse>();
 
             var callInvoker = channel.CreateCallInvoker();
-            for (var i = 0; i < requestDtos.Length; i++)
+
+            // Handle retry on first request
+            var requestDto = requestDtos[0];
+            using var auc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, ServicesName, methodName, options, null);
+            var (response, status, headers) = await GetResponse(auc);
+
+            if (status?.ErrorCode != null)
             {
-                var requestDto = requestDtos[i];
-                using var auc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, ServicesName, methodName, options, null);
-
-                var (response, status, headers) = await GetResponse(auc);
-
-                if (status?.ErrorCode != null)
+                if (await RetryRequest(auc.GetStatus().StatusCode, status, callInvoker))
                 {
-                    if (await RetryRequest(auc.GetStatus().StatusCode, status, callInvoker))
-                    {
-                        authIncluded = InitRequestDto(requestDto);
-                        fn = ResolveExecute<TResponse>(requestDto);
-                        options = PrepareRequest(noAuth:authIncluded);
-                        using var retryAuc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, ServicesName, methodName, options, null);
+                    authIncluded = InitRequestDto(requestDto);
+                    fn = ResolveExecute<TResponse>(requestDto);
+                    options = PrepareRequest(noAuth:authIncluded);
+                    using var retryAuc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, ServicesName, methodName, options, null);
 
-                        var (retryResponse, retryStatus, retryHeaders) = await GetResponse(retryAuc);
-                        if (retryResponse.GetResponseStatus()?.ErrorCode == null)
-                        {
-                            responses.Add(retryResponse);
-                            continue;
-                        }
+                    var (retryResponse, retryStatus, retryHeaders) = await GetResponse(retryAuc);
+                    if (retryResponse.GetResponseStatus()?.ErrorCode == null)
+                    {
+                        responses.Add(retryResponse);
                     }
-                    
-                    await InvokeResponseFilters(auc, response, ctx => ctx.Headers.Add(Keywords.AutoBatchIndex, i.ToString()));
+                }
+
+                if (responses.Count == 0)
+                {
                     throw new WebServiceException(status.Message) {
                         StatusCode = ResponseCallContext.GetHttpStatus(headers),
                         ResponseDto = response as object ?? new EmptyResponse { ResponseStatus = status },
@@ -472,11 +477,25 @@ namespace ServiceStack
                         State = auc.GetStatus(),
                     };
                 }
-
+            }
+            else
+            {
                 responses.Add(response);
-                
-                if (i == requestDtos.Length - 1)
-                    await InvokeResponseFilters(auc, response, ctx => ctx.Headers.Add(Keywords.AutoBatchIndex, i.ToString()));
+            }
+
+            var asyncTasks = new List<Task<(TResponse, ResponseStatus, Metadata)>>();
+            for (var i = 1; i < requestDtos.Length; i++)
+            {
+                requestDto = requestDtos[i];
+                asyncTasks.Add(GetResponse((AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, ServicesName, methodName, options, null)));
+            }
+
+            await Task.WhenAll(asyncTasks);
+
+            foreach (var task in asyncTasks)
+            {
+                (response, _, _) = await task;
+                responses.Add(response);
             }
 
             return responses;

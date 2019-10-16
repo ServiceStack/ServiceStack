@@ -585,10 +585,15 @@ namespace ServiceStack.Extensions.Tests
             var files = new[] {
                 new GetFile { Path = "/js/ss-utils.js" },
                 new GetFile { Path = "/js/hot-loader.js" },
+                new GetFile { Path = "/js/not-exists.js" },
                 new GetFile { Path = "/js/hot-fileloader.js" },
             };
 
             var responses = await client.SendAllAsync(files);
+
+            Assert.That(responses.Count, Is.EqualTo(files.Length));
+            Assert.That(responses[2].ResponseStatus.ErrorCode, Is.EqualTo(nameof(HttpStatusCode.NotFound)));
+            responses = responses.Where(x => x.ResponseStatus == null).ToList();
             AssertFiles(responses);
         }
 
