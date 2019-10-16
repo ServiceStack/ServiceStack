@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -8,7 +7,7 @@ using System.Threading.Tasks;
 using ServiceStack.Host;
 using ServiceStack.Web;
 
-namespace ServiceStack
+namespace ServiceStack.Grpc
 {
     public class GrpcResponse : IHttpResponse, IHasHeaders, IWriteEvent, IWriteEventAsync
     {

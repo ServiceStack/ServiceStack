@@ -15,6 +15,7 @@ using ProtoBuf.Grpc;
 using ProtoBuf.Grpc.Configuration;
 using ProtoBuf.Grpc.Server;
 using ProtoBuf.Meta;
+using ServiceStack.Grpc;
 using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.Text;

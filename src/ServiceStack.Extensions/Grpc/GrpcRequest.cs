@@ -4,14 +4,13 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using Grpc.Core;
-using Microsoft.AspNetCore.Http;
 using ProtoBuf.Grpc;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.IO;
 using ServiceStack.Web;
 
-namespace ServiceStack
+namespace ServiceStack.Grpc
 {
     public class GrpcRequest : IHttpRequest
     {

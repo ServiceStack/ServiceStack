@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Grpc.Core;
 using ProtoBuf.Grpc;
 using ProtoBuf.Grpc.Configuration;
+using ServiceStack.Grpc;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -34,7 +35,7 @@ namespace ServiceStack
 
                 if (res.Headers.Count > 0 || nonSuccessStatus)
                 {
-                    var headers = new Grpc.Core.Metadata();
+                    var headers = new global::Grpc.Core.Metadata();
                     if (nonSuccessStatus)
                         headers.Add(Keywords.HttpStatus, res.StatusCode.ToString());
 
