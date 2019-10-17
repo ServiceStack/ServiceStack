@@ -142,8 +142,8 @@ namespace ServiceStack
                 }.Each(x => IgnoreResponseHeaders.Add(x));
             }
             
-            NativeTypesService.TypeLinksFilters.Add(links => {
-                links["Proto"] = new TypesProto().ToAbsoluteUri();
+            NativeTypesService.TypeLinksFilters.Add((req,links) => {
+                links["Proto"] = new TypesProto().ToAbsoluteUri(req);
             });
             appHost.RegisterService(typeof(TypesProtoService));
 
@@ -163,23 +163,101 @@ namespace ServiceStack
         public void AfterPluginsLoaded(IAppHost appHost)
         {
             var streamServices = RegisterServices.Where(x => typeof(IStreamService).IsAssignableFrom(x)).ToList();
-            GrpcServicesType = GenerateGrpcServices(appHost.Metadata.Operations, streamServices);
+
+            var ops = new List<Operation>();
+            var allDtos = new HashSet<Type>();
+            foreach (var op in appHost.Metadata.Operations)
+            {
+                if (!ShouldRegisterService(op)) 
+                    continue;
+
+                ops.Add(op);
+
+                ServiceMetadata.AddReferencedTypes(allDtos, op.RequestType);
+                ServiceMetadata.AddReferencedTypes(allDtos, op.ResponseType);
+            }
+
+            GrpcServicesType = GenerateGrpcServices(ops, streamServices);
             var genericMi = GetType().GetMethod(nameof(MapGrpcService), BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             var mi = genericMi.MakeGenericMethod(GrpcServicesType);
             mi.Invoke(this, TypeConstants.EmptyObjectArray);
 
-            var allDtos = appHost.Metadata.GetAllDtos();
             foreach (var serviceType in streamServices)
             {
                 var genericDef = serviceType.GetTypeWithGenericTypeDefinitionOf(typeof(IStreamService<,>));
                 foreach (var argType in genericDef.GenericTypeArguments)
                 {
-                    allDtos.Add(argType);
+                    ServiceMetadata.AddReferencedTypes(allDtos, argType);
                 }
                 var requestType = genericDef.GenericTypeArguments[0];
                 RequestServiceTypeMap[requestType] = serviceType;
             }
             RegisterDtoTypes(allDtos);
+        }
+        
+        public Func<Operation, bool?> RegisterService { get; set; }
+
+        private bool ShouldRegisterService(Operation op)
+        {
+            var ret = RegisterService?.Invoke(op);
+            if (ret != null)
+                return ret.Value;
+
+            // don't register hidden services
+            if (op.RequestType.FirstAttribute<RestrictAttribute>()?.VisibilityTo == RequestAttributes.None)
+                return false;
+            if (op.ServiceType.FirstAttribute<RestrictAttribute>()?.VisibilityTo == RequestAttributes.None)
+                return false;
+            if (op.RequestType.FirstAttribute<ExcludeAttribute>()?.Feature.HasFlag(Feature.Metadata) == true)
+                return false;
+            if (op.ServiceType.FirstAttribute<ExcludeAttribute>()?.Feature.HasFlag(Feature.Metadata) == true)
+                return false;
+            
+            // Only enable Services via Grpc with known Response Types 
+            var responseType = op.ResponseType ?? typeof(EmptyResponse); //void responses can return empty ErrorResponse 
+            if (responseType == typeof(object) || responseType == typeof(Task<object>))
+                return false;
+            
+            // Only enable Services that are annotated with [DataContract] or [ProtoContract] attributes. ProtoBuf requires index per prop
+            var isDataContract = op.RequestType.HasAttribute<DataContractAttribute>();
+            var isProtoContract = op.RequestType.HasAttribute<ProtoContractAttribute>();
+            if (!(isDataContract || isProtoContract))
+                return false;
+
+            if (isDataContract)
+            {
+                var log = LogManager.GetLogger(GetType());
+                var missingMemberOrders = new List<string>();
+                missingMemberOrders.Clear();
+                foreach (var prop in op.RequestType.GetPublicProperties())
+                {
+                    var dataMember = prop.FirstAttribute<DataMemberAttribute>();
+                    if (dataMember != null && dataMember.Order == default)
+                        missingMemberOrders.Add(prop.Name);
+                }
+                if (missingMemberOrders.Count > 0)
+                {
+                    if (log.IsDebugEnabled)
+                        log.Debug($"{op.RequestType.Name} properties: '{string.Join(", ", missingMemberOrders)}' are missing '[DataMember(Order=N)]' annotations required by GRPC.");
+                    return false;
+                }
+
+                missingMemberOrders.Clear();
+                foreach (var prop in responseType.GetPublicProperties())
+                {
+                    var dataMember = prop.FirstAttribute<DataMemberAttribute>();
+                    if (dataMember != null && dataMember.Order == default)
+                        missingMemberOrders.Add(prop.Name);
+                }
+                if (missingMemberOrders.Count > 0)
+                {
+                    if (log.IsDebugEnabled)
+                        log.Debug($"{responseType.Name} properties: '{string.Join(", ", missingMemberOrders)}' are missing '[DataMember(Order=N)]' annotations required by GRPC.");
+                    return false;
+                }
+            }
+            
+            return true;
         }
 
         private void RegisterDtoTypes(IEnumerable<Type> allDtos)
@@ -198,8 +276,6 @@ namespace ServiceStack
 
         public Type GenerateGrpcServices(IEnumerable<Operation> metadataOperations, IEnumerable<Type> streamServices)
         {
-            var log = LogManager.GetLogger(GetType());
-                
             var assemblyName = new AssemblyName { Name = "tmpAssemblyGrpc" };
             var typeBuilder =
                 AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run)
@@ -209,50 +285,9 @@ namespace ServiceStack
                         GrpcServicesBaseType);
 
             var methods = new List<string>();
-            var missingMemberOrders = new List<string>();
             foreach (var op in metadataOperations)
             {
-                // Only enable Services via Grpc with known Response Types 
                 var responseType = op.ResponseType ?? typeof(EmptyResponse); //void responses can return empty ErrorResponse 
-                if (responseType == typeof(object) || responseType == typeof(Task<object>))
-                    continue;
-                
-                // Only enable Services that are annotated with [DataContract] or [ProtoContract] attributes. ProtoBuf requires index per prop
-                var isDataContract = op.RequestType.HasAttribute<DataContractAttribute>();
-                var isProtoContract = op.RequestType.HasAttribute<ProtoContractAttribute>();
-                if (!(isDataContract || isProtoContract))
-                    continue;
-
-                if (isDataContract)
-                {
-                    missingMemberOrders.Clear();
-                    foreach (var prop in op.RequestType.GetPublicProperties())
-                    {
-                        var dataMember = prop.FirstAttribute<DataMemberAttribute>();
-                        if (dataMember != null && dataMember.Order == default)
-                            missingMemberOrders.Add(prop.Name);
-                    }
-                    if (missingMemberOrders.Count > 0)
-                    {
-                        if (log.IsDebugEnabled)
-                            log.Debug($"{op.RequestType.Name} properties: '{string.Join(", ", missingMemberOrders)}' are missing '[DataMember(Order=N)]' annotations required by GRPC.");
-                        continue;
-                    }
-
-                    missingMemberOrders.Clear();
-                    foreach (var prop in responseType.GetPublicProperties())
-                    {
-                        var dataMember = prop.FirstAttribute<DataMemberAttribute>();
-                        if (dataMember != null && dataMember.Order == default)
-                            missingMemberOrders.Add(prop.Name);
-                    }
-                    if (missingMemberOrders.Count > 0)
-                    {
-                        if (log.IsDebugEnabled)
-                            log.Debug($"{responseType.Name} properties: '{string.Join(", ", missingMemberOrders)}' are missing '[DataMember(Order=N)]' annotations required by GRPC.");
-                        continue;
-                    }
-                }
                 
                 methods.Clear();
                 foreach (var action in op.Actions)
@@ -358,9 +393,18 @@ namespace ServiceStack
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public class TypesProtoService : Service
     {
+        public INativeTypesMetadata NativeTypesMetadata { get; set; }
+        private string GetBaseUrl(string baseUrl) => baseUrl ?? HostContext.GetPlugin<NativeTypesFeature>().MetadataTypesConfig.BaseUrl ?? Request.GetBaseUrl();
+
+        [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Get(TypesProto request)
         {
-            return "proto3";
+            request.BaseUrl = GetBaseUrl(request.BaseUrl);
+
+            var typesConfig = NativeTypesMetadata.GetConfig(request);
+            var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
+            var csharp = new GrpcProtoGenerator(typesConfig).GetCode(metadataTypes, base.Request);
+            return csharp;
         }
     }
 
