@@ -17,21 +17,7 @@ namespace ServiceStack.NativeTypes
 {
     [Exclude(Feature.Soap)]
     [Route("/types")]
-    public class TypeLinks : NativeTypesBase, IReturn<TypeLinksResponse> { }
-
-    public class TypeLinksResponse
-    {
-        public string Metadata { get; set; }
-        public string Csharp { get; set; }
-        public string Fsharp { get; set; }
-        public string VbNet { get; set; }
-        public string TypeScript { get; set; }
-        public string TypeScriptDefinition { get; set; }
-        public string Dart { get; set; }
-        public string Java { get; set; }
-        public string Kotlin { get; set; }
-        public string Swift { get; set; }
-    }
+    public class TypeLinks : NativeTypesBase, IReturn<Dictionary<string, string>> { }
 
     [Exclude(Feature.Soap)]
     [Route("/types/metadata")]
@@ -123,23 +109,28 @@ namespace ServiceStack.NativeTypes
     public class NativeTypesService : Service
     {
         public INativeTypesMetadata NativeTypesMetadata { get; set; }
-
+        public static List<Action<Dictionary<string, string>>> TypeLinksFilters { get; set; } = 
+            new List<Action<Dictionary<string, string>>>();
+        
         public object Any(TypeLinks request)
         {
-            var response = new TypeLinksResponse
-            {
-                Metadata = new TypesMetadata().ToAbsoluteUri(),
-                Csharp = new TypesCSharp().ToAbsoluteUri(),
-                Fsharp = new TypesFSharp().ToAbsoluteUri(),
-                VbNet = new TypesVbNet().ToAbsoluteUri(),
-                TypeScript = new TypesTypeScript().ToAbsoluteUri(),
-                TypeScriptDefinition = new TypesTypeScriptDefinition().ToAbsoluteUri(),
-                Dart = new TypesDart().ToAbsoluteUri(),
-                Java = new TypesJava().ToAbsoluteUri(),
-                Kotlin = new TypesKotlin().ToAbsoluteUri(),
-                Swift = new TypesSwift().ToAbsoluteUri(),
+            var links = new Dictionary<string,string> {
+                {"Metadata", new TypesMetadata().ToAbsoluteUri()},
+                {"CSharp", new TypesCSharp().ToAbsoluteUri()},
+                {"FSharp", new TypesFSharp().ToAbsoluteUri()},
+                {"VbNet", new TypesVbNet().ToAbsoluteUri()},
+                {"TypeScript", new TypesTypeScript().ToAbsoluteUri()},
+                {"TypeScriptDefinition", new TypesTypeScriptDefinition().ToAbsoluteUri()},
+                {"Dart", new TypesDart().ToAbsoluteUri()},
+                {"Java", new TypesJava().ToAbsoluteUri()},
+                {"Kotlin", new TypesKotlin().ToAbsoluteUri()},
+                {"Swift", new TypesSwift().ToAbsoluteUri()},
             };
-            return response;
+            foreach (var linksFilter in TypeLinksFilters)
+            {
+                linksFilter(links);
+            }
+            return links;
         }
 
         private string GetBaseUrl(string baseUrl) => baseUrl ?? HostContext.GetPlugin<NativeTypesFeature>().MetadataTypesConfig.BaseUrl ?? Request.GetBaseUrl();

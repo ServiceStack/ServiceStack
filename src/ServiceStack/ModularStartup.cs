@@ -72,7 +72,7 @@ namespace ServiceStack
         
         public List<Assembly> ScanAssemblies { get; }
 
-        public IConfiguration Configuration { get; }
+        public IConfiguration Configuration { get; protected set; }
         
         public Func<IEnumerable<Type>> TypeResolver { get; }
         
@@ -153,7 +153,7 @@ namespace ServiceStack
             return priorityInstances;
         }
 
-        public virtual IServiceProvider ConfigureServices(IServiceCollection services)
+        public IServiceProvider ConfigureServices(IServiceCollection services)
         {
             void RunConfigure(object instance)
             {
@@ -187,7 +187,7 @@ namespace ServiceStack
             return services.BuildServiceProvider();
         }
 
-        public virtual void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app)
         {
             void RunConfigure(object instance)
             {
@@ -241,6 +241,54 @@ namespace ServiceStack
             
             var postStartupConfigs = startupConfigs.PriorityZeroOrAbove();
             postStartupConfigs.ForEach(RunConfigure);
+        }
+
+        // .NET Core 3.0 disables IStartup and multiple 
+        public class ModularCreateStartup
+        {
+            public static Type StartupType { get; internal set; }
+            private IConfiguration Configuration { get; }
+
+            private readonly ModularStartup instance;
+            public ModularCreateStartup(IConfiguration configuration)
+            {
+                Configuration = configuration;
+                var ci = StartupType.GetConstructor(new[] { typeof(IConfiguration) });
+                if (ci == null)
+                {
+                    instance = (ModularStartup) ci.Invoke(new[]{ Configuration });
+                }
+                else
+                {
+                    ci = StartupType.GetConstructor(Type.EmptyTypes);
+                    if (ci != null)
+                    {
+                        
+                        instance.Configuration = configuration;
+                    }
+                    else
+                        throw new NotSupportedException($"{StartupType.Name} does not have a {StartupType.Name}(IConfiguration) constructor");
+                }
+            }
+
+            public void ConfigureServices(IServiceCollection services)
+            {
+                instance.ConfigureServices(services);
+            }
+            
+            public void Configure(IApplicationBuilder app)
+            {
+                instance.Configure(app);
+            }
+        }
+
+        public static Type Create<TStartup>()
+        {
+            if (!typeof(ModularStartup).IsAssignableFrom(typeof(TStartup)))
+                throw new NotSupportedException($"{typeof(TStartup).Name} does not inherit ModularStartup");
+            
+            ModularCreateStartup.StartupType = typeof(TStartup);
+            return typeof(ModularCreateStartup);
         }
     }
 #endif
