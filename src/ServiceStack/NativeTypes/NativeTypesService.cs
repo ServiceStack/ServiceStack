@@ -104,31 +104,30 @@ namespace ServiceStack.NativeTypes
         MetadataTypesGenerator GetGenerator();
     }
 
-
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public class NativeTypesService : Service
     {
         public INativeTypesMetadata NativeTypesMetadata { get; set; }
-        public static List<Action<Dictionary<string, string>>> TypeLinksFilters { get; set; } = 
-            new List<Action<Dictionary<string, string>>>();
+        public static List<Action<IRequest,Dictionary<string, string>>> TypeLinksFilters { get; set; } = 
+            new List<Action<IRequest,Dictionary<string, string>>>();
         
         public object Any(TypeLinks request)
         {
             var links = new Dictionary<string,string> {
-                {"Metadata", new TypesMetadata().ToAbsoluteUri()},
-                {"CSharp", new TypesCSharp().ToAbsoluteUri()},
-                {"FSharp", new TypesFSharp().ToAbsoluteUri()},
-                {"VbNet", new TypesVbNet().ToAbsoluteUri()},
-                {"TypeScript", new TypesTypeScript().ToAbsoluteUri()},
-                {"TypeScriptDefinition", new TypesTypeScriptDefinition().ToAbsoluteUri()},
-                {"Dart", new TypesDart().ToAbsoluteUri()},
-                {"Java", new TypesJava().ToAbsoluteUri()},
-                {"Kotlin", new TypesKotlin().ToAbsoluteUri()},
-                {"Swift", new TypesSwift().ToAbsoluteUri()},
+                {"Metadata", new TypesMetadata().ToAbsoluteUri(Request)},
+                {"CSharp", new TypesCSharp().ToAbsoluteUri(Request)},
+                {"FSharp", new TypesFSharp().ToAbsoluteUri(Request)},
+                {"VbNet", new TypesVbNet().ToAbsoluteUri(Request)},
+                {"TypeScript", new TypesTypeScript().ToAbsoluteUri(Request)},
+                {"TypeScriptDefinition", new TypesTypeScriptDefinition().ToAbsoluteUri(Request)},
+                {"Dart", new TypesDart().ToAbsoluteUri(Request)},
+                {"Java", new TypesJava().ToAbsoluteUri(Request)},
+                {"Kotlin", new TypesKotlin().ToAbsoluteUri(Request)},
+                {"Swift", new TypesSwift().ToAbsoluteUri(Request)},
             };
             foreach (var linksFilter in TypeLinksFilters)
             {
-                linksFilter(links);
+                linksFilter(Request,links);
             }
             return links;
         }
