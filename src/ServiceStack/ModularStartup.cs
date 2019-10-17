@@ -78,6 +78,13 @@ namespace ServiceStack
         
         public List<object> LoadedConfigurations { get; set; } = new List<object>();
 
+        protected ModularStartup()
+        {
+            Instance = this;
+            ScanAssemblies = new List<Assembly> { GetType().Assembly };
+            TypeResolver = () => ScanAssemblies.Distinct().SelectMany(x => x.GetTypes());
+        }
+
         /// <summary>
         /// Scan Types in Assemblies for Startup configuration classes
         /// </summary>
