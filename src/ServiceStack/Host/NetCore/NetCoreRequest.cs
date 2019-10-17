@@ -19,7 +19,7 @@ using ServiceStack.NetCore;
 
 namespace ServiceStack.Host.NetCore
 {
-    public class NetCoreRequest : IHttpRequest, IHasResolver, IHasVirtualFiles, IServiceProvider
+    public class NetCoreRequest : IHttpRequest, IHasResolver, IHasVirtualFiles, IServiceProvider, IHasBufferedStream
     {
         public static ILog log = LogManager.GetLogger(typeof(NetCoreRequest));
 

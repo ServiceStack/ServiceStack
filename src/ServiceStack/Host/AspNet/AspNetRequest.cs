@@ -18,7 +18,7 @@ using ServiceStack.Web;
 namespace ServiceStack.Host.AspNet
 {
     public class AspNetRequest
-        : IHttpRequest, IHasResolver, IHasVirtualFiles
+        : IHttpRequest, IHasResolver, IHasVirtualFiles, IHasBufferedStream
     {
         public static ILog log = LogManager.GetLogger(typeof(AspNetRequest));
 

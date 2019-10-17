@@ -16,7 +16,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host.HttpListener
 {
-    public partial class ListenerRequest : IHttpRequest, IHasResolver, IHasVirtualFiles
+    public partial class ListenerRequest : IHttpRequest, IHasResolver, IHasVirtualFiles, IHasBufferedStream
     {
         private IResolver resolver;
         public IResolver Resolver
