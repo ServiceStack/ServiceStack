@@ -254,7 +254,7 @@ namespace ServiceStack
             {
                 Configuration = configuration;
                 var ci = StartupType.GetConstructor(new[] { typeof(IConfiguration) });
-                if (ci == null)
+                if (ci != null)
                 {
                     instance = (ModularStartup) ci.Invoke(new[]{ Configuration });
                 }
@@ -263,7 +263,7 @@ namespace ServiceStack
                     ci = StartupType.GetConstructor(Type.EmptyTypes);
                     if (ci != null)
                     {
-                        
+                        instance = (ModularStartup) ci.Invoke(TypeConstants.EmptyObjectArray);
                         instance.Configuration = configuration;
                     }
                     else
