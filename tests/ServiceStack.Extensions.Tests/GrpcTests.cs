@@ -110,49 +110,6 @@ namespace ServiceStack.Extensions.Tests
         }
     }
 
-    public class AppHost : AppSelfHostBase
-    {
-        private static readonly byte[] AuthKey = AesUtils.CreateKey();
-        public const string Username = "mythz";
-        public const string Password = "p@55word";
-
-        public AppHost() 
-            : base(nameof(GrpcTests), typeof(MyServices).Assembly) { }
-
-        public override void Configure(Container container)
-        {
-            //BinderConfiguration.Default.Bin
-            //ServiceBinder.Default = new GrpcServiceBinder();
-         
-            Plugins.Add(new ValidationFeature());
-            Plugins.Add(new ServerEventsFeature());
-            Plugins.Add(new GrpcFeature(App));
-        }
-
-        public override void ConfigureKestrel(KestrelServerOptions options)
-        {
-            options.ListenLocalhost(20000, listenOptions =>
-            {
-                listenOptions.Protocols = HttpProtocols.Http2;
-            });
-        }
-
-        public override void Configure(IServiceCollection services)
-        {
-            services.AddServiceStackGrpc();
-        }
-
-        public override void Configure(IApplicationBuilder app)
-        {
-            app.UseRouting();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapGrpcService<MyCalculator>();
-            });
-        }
-    }
-
     [DataContract]
     public class Multiply : IReturn<MultiplyResponse>
     {
@@ -384,9 +341,45 @@ namespace ServiceStack.Extensions.Tests
 
     public class GrpcTests
     {
+        public class AppHost : AppSelfHostBase
+        {
+            public AppHost() 
+                : base(nameof(GrpcTests), typeof(MyServices).Assembly) { }
+
+            public override void Configure(Container container)
+            {
+                Plugins.Add(new ValidationFeature());
+                Plugins.Add(new GrpcFeature(App));
+            }
+
+            public override void ConfigureKestrel(KestrelServerOptions options)
+            {
+                options.ListenLocalhost(20000, listenOptions =>
+                {
+                    listenOptions.Protocols = HttpProtocols.Http2;
+                });
+            }
+
+            public override void Configure(IServiceCollection services)
+            {
+                services.AddServiceStackGrpc();
+            }
+
+            public override void Configure(IApplicationBuilder app)
+            {
+                app.UseRouting();
+
+                app.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapGrpcService<MyCalculator>();
+                });
+            }
+        }
+
         private readonly ServiceStackHost appHost;
         public GrpcTests()
         {
+            GrpcClientFactory.AllowUnencryptedHttp2 = true;
             appHost = new AppHost()
                 .Init()
                 .Start("http://localhost:20000/");
@@ -395,12 +388,7 @@ namespace ServiceStack.Extensions.Tests
         [OneTimeTearDown]
         public void OneTimeTearDown() => appHost.Dispose();
 
-        private static GrpcServiceClient GetClient()
-        {
-            GrpcClientFactory.AllowUnencryptedHttp2 = true;
-            var client = new GrpcServiceClient("http://localhost:20000");
-            return client;
-        }
+        private static GrpcServiceClient GetClient() => new GrpcServiceClient("http://localhost:20000");
 
         [Test]
         public async Task Can_call_MultiplyRequest_Grpc_Service_ICalculator()
@@ -676,84 +664,6 @@ namespace ServiceStack.Extensions.Tests
             Assert.That(files[2].ResponseStatus.ErrorCode, Is.EqualTo(nameof(HttpStatusCode.NotFound)));
             files = files.Where(x => x.ResponseStatus == null).ToList();
             AssertFiles(files);
-        }
-
-//        [Test]
-        public async Task Can_subscribe_to_ServerEvents()
-        {
-            var client = GetClient();
-
-            void AssertMessage(StreamServerEventsResponse msg)
-            {
-                Assert.That(msg.EventId, Is.GreaterThan(0));
-                Assert.That(msg.Channels, Is.EqualTo(new[] { "home" }));
-                Assert.That(msg.Json, Is.Not.Null);
-                Assert.That(msg.Op, Is.EqualTo("cmd"));
-                Assert.That(msg.UserId, Is.EqualTo("-1"));
-                Assert.That(msg.DisplayName, Is.Not.Null);
-                Assert.That(msg.ProfileUrl, Is.Not.Null);
-                Assert.That(msg.IsAuthenticated, Is.False);
-            }
-
-            var i = 0;
-            await foreach (var msg in client.StreamAsync(new StreamServerEvents { Channels = new[] { "home" } }))
-            {
-                if (i == 0)
-                {
-                    Assert.That(msg.Selector, Is.EqualTo("cmd.onConnect"));
-                    Assert.That(msg.Id, Is.Not.Null);
-                    Assert.That(msg.UnRegisterUrl, Is.Not.Null);
-                    Assert.That(msg.UpdateSubscriberUrl, Is.Not.Null);
-                    Assert.That(msg.HeartbeatUrl, Is.Not.Null);
-                    Assert.That(msg.HeartbeatIntervalMs, Is.GreaterThan(0));
-                    Assert.That(msg.IdleTimeoutMs, Is.GreaterThan(0));
-                    AssertMessage(msg);
-                }
-                else if (i == 1)
-                {
-                    Assert.That(msg.Selector, Is.EqualTo("cmd.onJoin"));
-                    AssertMessage(msg);
-                }
-                
-                $"\n\n{i}".Print();
-                msg.PrintDump();
-
-                if (++i == 2)
-                    break;
-            }
-            Assert.That(i, Is.EqualTo(2));
-        }
-
-        [Test]
-        public async Task Does_receive_all_messages()
-        {
-            var client1 = GetClient();
-            var client2 = GetClient();
-
-            Task.Factory.StartNew(async () => {
-                await Task.Delay(500);
-                await client2.PostAsync(new PostChatToChannel {
-                    Channel = "send",
-                    From = nameof(client2),
-                    Message = "Hello from client2",
-                    Selector = "cmd.chat",
-                });
-            });
-
-            var responses = new List<StreamServerEventsResponse>();
-            await foreach (var msg in client1.StreamAsync(new StreamServerEvents { Channels = new[] { "send" } }))
-            {
-                responses.Add(msg);
-                
-                if (msg.Selector == "cmd.chat")
-                    break;
-            }
-            
-            Assert.That(responses[0].Selector, Is.EqualTo("cmd.onConnect"));
-            Assert.That(responses[1].Selector, Is.EqualTo("cmd.onJoin"));
-            Assert.That(responses[2].Selector, Is.EqualTo("cmd.chat"));
-            var obj = (Dictionary<string, object>) JSON.parse(responses[2].Json);
-            Assert.That(obj["message"], Is.EqualTo("Hello from client2"));
         }
     }
 }

@@ -15,10 +15,11 @@ using ProtoBuf.Grpc;
 using ProtoBuf.Grpc.Configuration;
 using ProtoBuf.Grpc.Server;
 using ProtoBuf.Meta;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Grpc;
 using ServiceStack.Host;
 using ServiceStack.Logging;
-using ServiceStack.Text;
+using ServiceStack.NativeTypes;
 
 namespace ServiceStack
 {
@@ -140,6 +141,11 @@ namespace ServiceStack
                     HttpHeaders.AccessControlMaxAge,
                 }.Each(x => IgnoreResponseHeaders.Add(x));
             }
+            
+            NativeTypesService.TypeLinksFilters.Add(links => {
+                links["Proto"] = new TypesProto().ToAbsoluteUri();
+            });
+            appHost.RegisterService(typeof(TypesProtoService));
 
             foreach (var serviceType in RegisterServices)
             {
@@ -341,6 +347,20 @@ namespace ServiceStack
             
             var servicesType = typeBuilder.CreateTypeInfo().AsType();
             return servicesType;
+        }
+    }
+    
+    [Exclude(Feature.Soap)]
+    [Route("/types/proto")]
+    public class TypesProto : NativeTypesBase { }
+
+    [DefaultRequest(typeof(TypesProto))]
+    [Restrict(VisibilityTo = RequestAttributes.None)]
+    public class TypesProtoService : Service
+    {
+        public object Get(TypesProto request)
+        {
+            return "proto3";
         }
     }
 

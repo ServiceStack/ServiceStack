@@ -737,6 +737,9 @@ namespace ServiceStack
 
         private static void RegisterSubType(Type type)
         {
+            if (GrpcUtils.IgnoreTypeModel(type))
+                return;
+            
             var baseMetaType = GrpcUtils.Register(type.BaseType);
             // need to generate predictable fieldIds, allow specifying with [Id(n)] or use MurmurHash2 hash function % 2^29-1,
             var idAttr = type.FirstAttribute<IdAttribute>();
@@ -774,7 +777,8 @@ namespace ServiceStack
         }
 
         //also forces static initializer
-        public static MetaType GetMetaType() => metaType ??= GrpcUtils.TypeModel.Add(typeof(T), applyDefaultBehaviour:true); 
+        public static MetaType GetMetaType() => metaType 
+            ??= typeof(T).IsValueType ? null : GrpcUtils.TypeModel.Add(typeof(T), applyDefaultBehaviour:true); 
 
         public GrpcMarshaller() : base(Serialize, Deserialize) {}
 
@@ -809,43 +813,4 @@ namespace ServiceStack
             }
         }
     }
-    
-    public static class GrpcUtils
-    {
-        public static MetaType Register<T>() => GrpcMarshaller<T>.GetMetaType();
-
-        private static readonly ConcurrentDictionary<Type, Func<MetaType>> FnCache = new ConcurrentDictionary<Type, Func<MetaType>>();
-        
-        public static MetaType Register(Type type)
-        {
-            if (!FnCache.TryGetValue(type, out var fn))
-            {
-                var grpc = typeof(GrpcMarshaller<>).MakeGenericType(type);
-                var mi = grpc.GetMethod("GetMetaType", BindingFlags.Static | BindingFlags.Public);
-                FnCache[type] = fn = (Func<MetaType>) mi.CreateDelegate(typeof(Func<MetaType>));
-            }
-            return fn();
-        }
-
-        public static RuntimeTypeModel TypeModel { get; } = ProtoBuf.Meta.TypeModel.Create();
-        
-        public static Task<TResponse> Execute<TRequest, TResponse>(this Channel channel, TRequest request, string serviceName, string methodName,
-            CallOptions options = default, string host = null)
-            where TRequest : class
-            where TResponse : class
-            => Execute<TRequest, TResponse>(new DefaultCallInvoker(channel), request, serviceName, methodName, options, host);
-        
-        public static async Task<TResponse> Execute<TRequest, TResponse>(this CallInvoker invoker, TRequest request, string serviceName, string methodName,
-            CallOptions options = default, string host = null)
-            where TRequest : class
-            where TResponse : class
-        {
-            var method = new Method<TRequest, TResponse>(MethodType.Unary, serviceName, methodName,
-                GrpcMarshaller<TRequest>.Instance, GrpcMarshaller<TResponse>.Instance);
-            using (var auc = invoker.AsyncUnaryCall(method, host, options, request))
-            {
-                return await auc.ResponseAsync;
-            }
-        }
-    }    
 }
