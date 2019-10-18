@@ -4,20 +4,20 @@ using Funq;
 using ServiceStack.Host;
 using ServiceStack.Web;
 
-namespace ServiceStack.Testing
+namespace ServiceStack
 {
-    public class BasicAppHost : ServiceStackHost
+    public class GenericAppHost : ServiceStackHost
     {
-        public BasicAppHost(params Assembly[] serviceAssemblies)
-            : base(typeof (BasicAppHost).GetOperationName(),
-                   serviceAssemblies.Length > 0 ? serviceAssemblies : new[]
-                   {
+        public GenericAppHost(params Assembly[] serviceAssemblies)
+            : base(typeof (GenericAppHost).GetOperationName(),
+                serviceAssemblies.Length > 0 ? serviceAssemblies : new[]
+                {
 #if !NETSTANDARD2_0
-                       Assembly.GetExecutingAssembly()
+                    Assembly.GetExecutingAssembly()
 #else
-                       typeof(BasicAppHost).Assembly
+                    typeof(GenericAppHost).Assembly
 #endif
-                   })
+                })
         {
             this.TestMode = true;
             Plugins.Clear();
@@ -31,14 +31,9 @@ namespace ServiceStack.Testing
 
         public Action<Container> ConfigureContainer { get; set; }
 
-        public Action<BasicAppHost> ConfigureAppHost { get; set; }
+        public Action<GenericAppHost> ConfigureAppHost { get; set; }
 
         public Action<HostConfig> ConfigFilter { get; set; }
-
-        public Func<BasicAppHost, ServiceController> UseServiceController
-        {
-            set => ServiceController = value(this);
-        }
 
         public override IServiceGateway GetServiceGateway(IRequest req) => 
             base.GetServiceGateway(req ?? new BasicRequest());
