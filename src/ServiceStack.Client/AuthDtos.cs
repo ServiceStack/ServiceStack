@@ -407,7 +407,7 @@ namespace ServiceStack
         [DataMember(Order = 14)]
         public string[] Channels { get; set; }
         [DataMember(Order = 15)]
-        public DateTime CreatedAt { get; set; }
+        public long CreatedAt { get; set; }
         
         //ServerEventConnect
         [DataMember(Order = 21)]

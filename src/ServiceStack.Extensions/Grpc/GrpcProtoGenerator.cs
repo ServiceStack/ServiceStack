@@ -131,8 +131,6 @@ namespace ServiceStack.Grpc
                     sb.AppendLine();
                 }
             }
-            
-            sb.AppendLine(proto);
 
             return StringBuilderCache.ReturnAndFree(sbInner);
         }

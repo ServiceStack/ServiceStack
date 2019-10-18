@@ -21,6 +21,7 @@ using ServiceStack.Grpc;
 using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.NativeTypes;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -546,7 +547,7 @@ namespace ServiceStack
                     to.ProfileUrl = cmd.ProfileUrl;
                     to.IsAuthenticated = cmd.IsAuthenticated;
                     to.Channels = cmd.Channels;
-                    to.CreatedAt = cmd.CreatedAt;
+                    to.CreatedAt = cmd.CreatedAt.ToUnixTimeMs();
                 }
 
                 if (e is ServerEventConnect conn)
