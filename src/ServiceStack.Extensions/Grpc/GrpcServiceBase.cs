@@ -53,7 +53,7 @@ namespace ServiceStack
 
                         var desc = status?.ErrorCode ?? res.StatusDescription ??
                                    status?.Message ?? HttpStatus.GetStatusDescription(res.StatusCode);
-                        context.ServerCallContext.Status = ToGrpcStatus(res.StatusCode, desc);
+                        context.ServerCallContext.Status = feature.ToGrpcStatus?.Invoke(httpRes) ?? ToGrpcStatus(res.StatusCode, desc);
                     }
 
                     await context.ServerCallContext.WriteResponseHeadersAsync(headers);

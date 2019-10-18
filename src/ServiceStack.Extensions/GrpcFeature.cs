@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Grpc.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using ProtoBuf;
@@ -20,6 +21,7 @@ using ServiceStack.Grpc;
 using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.NativeTypes;
+using ServiceStack.Web;
 
 namespace ServiceStack
 {
@@ -86,6 +88,8 @@ namespace ServiceStack
         public Type GrpcServicesType { get; private set; }
         
         public Action<TypeBuilder, MethodBuilder, Type> GenerateServiceFilter { get; set; }
+
+        public Func<IResponse, Status?> ToGrpcStatus { get; set; }
 
         /// <summary>
         /// Only generate specified Verb entries for "ANY" routes
