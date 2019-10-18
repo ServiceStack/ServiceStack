@@ -295,7 +295,7 @@ namespace ServiceStack
                 var refreshRequest = new GetAccessToken {
                     RefreshToken = RefreshToken,
                 };
-                var methodName = Methods.Post + nameof(GetAccessToken);
+                var methodName = GrpcUtils.GetServiceName(Methods.Post, nameof(GetAccessToken));
                 var fn = ResolveExecute<GetAccessTokenResponse>(refreshRequest);
                 var options = PrepareRequest(noAuth:true);
 
@@ -434,7 +434,8 @@ namespace ServiceStack
                 return TypeConstants<TResponse>.EmptyList;
 
             var firstDto = requestDtos[0];
-            var methodName = GetMethod(firstDto) + firstDto.GetType().Name;
+            var methodName = GrpcUtils.GetServiceName(GetMethod(firstDto), firstDto.GetType().Name);
+
             var authIncluded = InitRequestDto(firstDto);
 
             var fn = ResolveExecute<TResponse>(firstDto);
@@ -596,14 +597,16 @@ namespace ServiceStack
             return DefaultMethod;
         }
 
+        string GetMethodName(string verb, object requestDto) => GrpcUtils.GetServiceName(verb, requestDto.GetType().Name); 
+
         public Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default)
         {
-            return Execute<TResponse>(requestDto, GetMethod(requestDto) + requestDto.GetType().Name, token);
+            return Execute<TResponse>(requestDto, GetMethodName(GetMethod(requestDto), requestDto), token);
         }
 
         public Task<TResponse> SendAsync<TResponse>(object requestDto, CancellationToken token = default)
         {
-            return Execute<TResponse>(requestDto, GetMethod(requestDto) + requestDto.GetType().Name, token);
+            return Execute<TResponse>(requestDto, GetMethodName(GetMethod(requestDto), requestDto), token);
         }
 
         public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<IReturn<TResponse>> requestDtos, CancellationToken token = default)
@@ -618,7 +621,7 @@ namespace ServiceStack
 
         public async Task PublishAsync(object requestDto, CancellationToken token = default)
         {
-            await Execute<EmptyResponse>(requestDto, GetMethod(requestDto) + requestDto.GetType().Name, token);
+            await Execute<EmptyResponse>(requestDto, GetMethodName(GetMethod(requestDto), requestDto), token);
         }
 
         public Task PublishAllAsync(IEnumerable<object> requestDtos, CancellationToken token = default)
@@ -634,77 +637,77 @@ namespace ServiceStack
 
         public Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto)
         {
-            return Execute<TResponse>(requestDto, Methods.Get + requestDto.GetType().Name);
+            return Execute<TResponse>(requestDto, GetMethodName(Methods.Get, requestDto));
         }
 
         public Task<TResponse> GetAsync<TResponse>(object requestDto)
         {
-            return Execute<TResponse>(requestDto, Methods.Get + requestDto.GetType().Name);
+            return Execute<TResponse>(requestDto, GetMethodName(Methods.Get, requestDto));
         }
 
         public async Task GetAsync(IReturnVoid requestDto)
         {
-            await Execute<EmptyResponse>(requestDto, Methods.Get + requestDto.GetType().Name);
+            await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Get, requestDto));
         }
 
         public Task<TResponse> DeleteAsync<TResponse>(IReturn<TResponse> requestDto)
         {
-            return Execute<TResponse>(requestDto, Methods.Delete + requestDto.GetType().Name);
+            return Execute<TResponse>(requestDto, GetMethodName(Methods.Delete, requestDto));
         }
 
         public Task<TResponse> DeleteAsync<TResponse>(object requestDto)
         {
-            return Execute<TResponse>(requestDto, Methods.Delete + requestDto.GetType().Name);
+            return Execute<TResponse>(requestDto, GetMethodName(Methods.Delete, requestDto));
         }
 
         public async Task DeleteAsync(IReturnVoid requestDto)
         {
-            await Execute<EmptyResponse>(requestDto, Methods.Delete + requestDto.GetType().Name);
+            await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Delete, requestDto));
         }
 
         public Task<TResponse> PostAsync<TResponse>(IReturn<TResponse> requestDto)
         {
-            return Execute<TResponse>(requestDto, Methods.Post + requestDto.GetType().Name);
+            return Execute<TResponse>(requestDto, GetMethodName(Methods.Post, requestDto));
         }
 
         public Task<TResponse> PostAsync<TResponse>(object requestDto)
         {
-            return Execute<TResponse>(requestDto, Methods.Post + requestDto.GetType().Name);
+            return Execute<TResponse>(requestDto, GetMethodName(Methods.Post, requestDto));
         }
 
         public async Task PostAsync(IReturnVoid requestDto)
         {
-            await Execute<EmptyResponse>(requestDto, Methods.Post + requestDto.GetType().Name);
+            await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Post, requestDto));
         }
 
         public Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto)
         {
-            return Execute<TResponse>(requestDto, Methods.Put + requestDto.GetType().Name);
+            return Execute<TResponse>(requestDto, GetMethodName(Methods.Put, requestDto));
         }
 
         public Task<TResponse> PutAsync<TResponse>(object requestDto)
         {
-            return Execute<TResponse>(requestDto, Methods.Put + requestDto.GetType().Name);
+            return Execute<TResponse>(requestDto, GetMethodName(Methods.Put, requestDto));
         }
 
         public async Task PutAsync(IReturnVoid requestDto)
         {
-            await Execute<EmptyResponse>(requestDto, Methods.Put + requestDto.GetType().Name);
+            await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Put, requestDto));
         }
 
         public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
         {
-            return Execute<TResponse>(requestDto, httpVerb.ToPascalCase() + requestDto.GetType().Name);
+            return Execute<TResponse>(requestDto, GetMethodName(httpVerb, requestDto));
         }
 
         public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto)
         {
-            return Execute<TResponse>(requestDto, httpVerb.ToPascalCase() + requestDto.GetType().Name);
+            return Execute<TResponse>(requestDto, GetMethodName(httpVerb, requestDto));
         }
 
         public async Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto)
         {
-            await Execute<EmptyResponse>(requestDto, httpVerb.ToPascalCase() + requestDto.GetType().Name);
+            await Execute<EmptyResponse>(requestDto, GetMethodName(httpVerb, requestDto));
         }
     }
 

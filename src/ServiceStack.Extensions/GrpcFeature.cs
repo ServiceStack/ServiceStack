@@ -327,7 +327,7 @@ namespace ServiceStack
                 foreach (var action in genMethods)
                 {
                     var requestType = op.RequestType;
-                    var methodName = action.ToPascalCase() + requestType.Name;
+                    var methodName = GrpcUtils.GetServiceName(action, requestType.Name);
                     
                     var method = typeBuilder.DefineMethod(methodName, MethodAttributes.Public | MethodAttributes.Virtual,
                         CallingConventions.Standard,
@@ -409,7 +409,6 @@ namespace ServiceStack
     }
 
     [DefaultRequest(typeof(GetFile))]
-    [Restrict(VisibilityTo = RequestAttributes.None)]
     public class GetFileService : Service
     {
         public object Get(GetFile request)

@@ -15,6 +15,9 @@ namespace ServiceStack
         
         public static MetaType Register<T>() => GrpcMarshaller<T>.GetMetaType();
 
+        public static string GetServiceName(string verb, string requestName) =>
+            requestName.StartsWithIgnoreCase(verb) ? requestName : verb.ToPascalCase() + requestName;
+
         private static readonly ConcurrentDictionary<Type, Func<MetaType>> FnCache =
             new ConcurrentDictionary<Type, Func<MetaType>>();
 

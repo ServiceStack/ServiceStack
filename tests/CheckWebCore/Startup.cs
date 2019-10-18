@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -18,6 +19,7 @@ using ServiceStack.Mvc;
 using ServiceStack.NativeTypes.TypeScript;
 using ServiceStack.Text;
 using ServiceStack.Validation;
+using ServiceStack.Web;
 using Container = Funq.Container;
 
 namespace CheckWebCore
