@@ -318,8 +318,7 @@ namespace ServiceStack
         public static IWebHostBuilder UseModularStartup<TStartup>(this IWebHostBuilder hostBuilder)
             where TStartup : class
         {
-            ModularStartup.Create<TStartup>();
-            return hostBuilder;
+            return webBuilder.UseStartup(ModularStartup.Create<TStartup>());
         }
 #endif
     }
