@@ -19,7 +19,6 @@ namespace ServiceStack
 #endif
                 })
         {
-            this.TestMode = true;
             Plugins.Clear();
         }
 
