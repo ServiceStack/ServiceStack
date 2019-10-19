@@ -7,6 +7,7 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using ServiceStack;
 
 namespace CheckRazorCore
 {
@@ -19,6 +20,8 @@ namespace CheckRazorCore
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+//                .UseModularStartup<Startup>();
                 .UseStartup<Startup>();
     }
+    
 }

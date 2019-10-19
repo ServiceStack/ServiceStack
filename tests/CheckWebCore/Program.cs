@@ -23,12 +23,10 @@ namespace CheckWebCore
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder => {
                     webBuilder.ConfigureKestrel(options => {
-                        options.ListenLocalhost(5000, listenOptions =>
-                        {
-                            listenOptions.Protocols = HttpProtocols.Http2;
-                        });
-                    });
-                    webBuilder.UseStartup(ModularStartup.Create<Startup>());
+                            options.ListenLocalhost(5000,
+                                listenOptions => { listenOptions.Protocols = HttpProtocols.Http2; });
+                        })
+                        .UseModularStartup<Startup>();
                 });
     }
 }

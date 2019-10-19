@@ -90,19 +90,19 @@ namespace ServiceStack.Grpc
             var proto = GrpcUtils.TypeModel.GetSchema(null /*all types*/, ProtoSyntax.Proto3);
             foreach (var line in proto.ReadLines())
             {
-                if (line.StartsWith("package "))
-                {
-                    var globalNs = Config.GlobalNamespace ?? orderedTypes[0].Namespace; 
-                    sb.AppendLine($"package {Config.Package ?? globalNs.ToLowercaseUnderscore()};");
-                    sb.AppendLine($"option csharp_namespace = \"{globalNs}\";");
+                if (line.StartsWith("package ")) // strip
                     continue;
-                }
 
                 sb.AppendLine(line);
 
                 if (!addedRpcServices && string.IsNullOrEmpty(line))
                 {
                     addedRpcServices = true;
+                    
+                    var globalNs = Config.GlobalNamespace ?? orderedTypes[0].Namespace; 
+                    sb.AppendLine($"package {Config.Package ?? globalNs.Replace(".","_").ToLowercaseUnderscore().Replace("__","_")};");
+                    sb.AppendLine($"option csharp_namespace = \"{globalNs}\";");
+                    sb.AppendLine();
                     
                     sb.AppendLine($"services {grpc.GrpcServicesType.Name} {{");
                     sb = sb.Indent();

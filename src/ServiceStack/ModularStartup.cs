@@ -313,6 +313,14 @@ namespace ServiceStack
 
         public static List<object> PriorityZeroOrAbove(this List<Tuple<object, int>> instances) =>
             instances.Where(x => x.Item2 >= 0).OrderBy(x => x.Item2).Map(x => x.Item1);
+
+#if NETSTANDARD
+        public static IWebHostBuilder UseModularStartup<TStartup>(this IWebHostBuilder hostBuilder)
+            where TStartup : class
+        {
+            return hostBuilder.UseStartup(ModularStartup.Create<TStartup>());
+        }
+#endif
     }
 }
 
