@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 using Grpc.Core;
 using ProtoBuf.Grpc;
 using ServiceStack.Configuration;
@@ -138,6 +139,7 @@ namespace ServiceStack.Grpc
         public bool UseBufferedStream { get; set; }
 
         public string GetRawBody() => null;
+        public Task<string> GetRawBodyAsync() => Task.FromResult((string)null);
 
         public string RawUrl { get; set; }
 

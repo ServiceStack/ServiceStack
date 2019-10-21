@@ -239,6 +239,19 @@ namespace CheckWebCore
    
     public class ExtendsDictionary : Dictionary<Guid, string> {
     }
+    
+    [Route("/hello/body")]
+    public class HelloBody : IReturn<HelloBodyResponse>
+    {
+        public string Name { get; set; }
+    }
+
+    public class HelloBodyResponse
+    {
+        public string Message { get; set; }
+        public string Body { get; set; }
+        public ResponseStatus ResponseStatus { get; set; }
+    }
 
 
     //    [Authenticate]
@@ -286,6 +299,16 @@ namespace CheckWebCore
             //ImportData(month, file);
 
             return new ImportDataResponse();
+        }
+
+        public object Any(HelloBody request)
+        {
+            var body = Request.GetRawBody();
+            var to = new HelloBodyResponse {
+                Message = $"Hello, {request.Name}",
+                Body = body,
+            };
+            return to;
         }
     }
 }
