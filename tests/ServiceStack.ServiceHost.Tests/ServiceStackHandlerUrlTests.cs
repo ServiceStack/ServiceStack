@@ -65,7 +65,7 @@ namespace ServiceStack.ServiceHost.Tests
 
             public string GetRawBody() => throw new NotImplementedException();
 
-            Task<string> GetRawBodyAsync() => throw new NotImplementedException(); 
+            public Task<string> GetRawBodyAsync() => throw new NotImplementedException(); 
 
             public string RawUrl { get; private set; }
             public string AbsoluteUri { get; set; }
