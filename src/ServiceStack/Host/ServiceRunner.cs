@@ -151,9 +151,9 @@ namespace ServiceStack.Host
                         await taskResponse;
                         response = taskResponse.GetResult();
                     }
-                    catch (Exception e)
+                    catch (AggregateException e)
                     {
-                        response = e;
+                        response = e.UnwrapIfSingleException();
                     }
                 }
                 LogRequest(req, requestDto, response);
