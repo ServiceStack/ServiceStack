@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using ServiceStack.Web;
 
 namespace ServiceStack.ServiceHost.Tests
@@ -75,6 +76,8 @@ namespace ServiceStack.ServiceHost.Tests
         {
             throw new NotImplementedException();
         }
+
+        public Task<string> GetRawBodyAsync() => throw new NotImplementedException(); 
 
         public string RawUrl
         {
