@@ -729,6 +729,9 @@ namespace ServiceStack.Script
             ? path.Replace('/', '\\')
             : path.Replace('\\', '/');
 
+        public IVirtualFile resolveFile(ScriptScopeContext scope, string virtualPath) =>
+            ResolveFile(scope.Context.VirtualFiles, scope.PageResult.VirtualPath, virtualPath);
+
         public IVirtualFile ResolveFile(string filterName, ScriptScopeContext scope, string virtualPath)
         {
             var file = ResolveFile(scope.Context.VirtualFiles, scope.PageResult.VirtualPath, virtualPath);
