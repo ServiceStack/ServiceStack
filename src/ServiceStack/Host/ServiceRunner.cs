@@ -155,6 +155,10 @@ namespace ServiceStack.Host
                     {
                         response = e.UnwrapIfSingleException();
                     }
+                    catch (Exception e)
+                    {
+                        response = e;
+                    }
                 }
                 LogRequest(req, requestDto, response);
 
