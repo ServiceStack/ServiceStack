@@ -20,7 +20,7 @@ namespace ServiceStack
         public WebServiceException(string message) : base(message) { }
         public WebServiceException(string message, Exception innerException) : base(message, innerException) { }
 
-        public int StatusCode { get; set; }
+        public int StatusCode { get; set; } = 500;
 
         public string StatusDescription { get; set; }
 

@@ -143,22 +143,11 @@ namespace ServiceStack.Host
 
                 if (response is Task taskResponse)
                 {
-                    try
-                    {
-                        if (taskResponse.Status == TaskStatus.Created)
-                            taskResponse.Start();
+                    if (taskResponse.Status == TaskStatus.Created)
+                        taskResponse.Start();
 
-                        await taskResponse;
-                        response = taskResponse.GetResult();
-                    }
-                    catch (AggregateException e)
-                    {
-                        response = e.UnwrapIfSingleException();
-                    }
-                    catch (Exception e)
-                    {
-                        response = e;
-                    }
+                    await taskResponse;
+                    response = taskResponse.GetResult();
                 }
                 LogRequest(req, requestDto, response);
 

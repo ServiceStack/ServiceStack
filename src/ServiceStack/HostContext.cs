@@ -247,14 +247,15 @@ namespace ServiceStack
             return AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex);
         }
 
-        public static async Task RaiseAndHandleUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
+        public static async Task RaiseAndHandleException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
         {
-            await AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex);
+            if (!httpReq.Items.ContainsKey(nameof(ServiceStackHost.OnServiceException)))
+                await AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex);
 
             if (httpRes.IsClosed)
                 return;
 
-            await AssertAppHost().HandleUncaughtException(httpReq, httpRes, operationName, ex);
+            await AssertAppHost().HandleResponseException(httpReq, httpRes, operationName, ex);
         }
 
 #if !NETSTANDARD2_0

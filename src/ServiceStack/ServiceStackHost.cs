@@ -615,6 +615,8 @@ namespace ServiceStack
         /// </summary>
         public virtual async Task<object> OnServiceException(IRequest httpReq, object request, Exception ex)
         {
+            httpReq.Items[nameof(OnServiceException)] = bool.TrueString;
+            
             object lastError = null;
             foreach (var errorHandler in ServiceExceptionHandlers)
             {
@@ -642,7 +644,11 @@ namespace ServiceStack
             }
         }
 
-        public virtual Task HandleUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
+        [Obsolete("Use HandleResponseException")]
+        protected virtual Task HandleUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex) =>
+            HandleResponseException(httpReq, httpRes, operationName, ex);
+        
+        public virtual Task HandleResponseException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
         {
             //Only add custom error messages to StatusDescription
             var httpError = ex as IHttpError;

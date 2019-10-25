@@ -368,7 +368,7 @@ namespace ServiceStack
 
         internal static async Task HandleResponseWriteException(this Exception originalEx, IRequest request, IResponse response, string defaultContentType)
         {
-            await HostContext.RaiseAndHandleUncaughtException(request, response, request.OperationName, originalEx);
+            await HostContext.RaiseAndHandleException(request, response, request.OperationName, originalEx);
 
             if (!HostContext.Config.WriteErrorsToResponse)
                 throw originalEx;
