@@ -341,6 +341,12 @@ namespace ServiceStack
                         ErrorCode = ex.Status.Detail ?? ex.StatusCode.ToString(),
                         Message = HttpStatus.GetStatusDescription(ResponseCallContext.GetHttpStatus(headers)) 
                     };
+
+                if (string.IsNullOrEmpty(status.Message))
+                {
+                    status.ErrorCode = ex.StatusCode.ToString();
+                    status.Message = ex.Status.Detail;
+                }
                 
                 var prop = TypeProperties<TResponse>.GetAccessor(nameof(ErrorResponse.ResponseStatus));
                 if (prop != null)
@@ -393,6 +399,9 @@ namespace ServiceStack
 
         public async Task<TResponse> Execute<TResponse>(object requestDto, string methodName, CancellationToken token = default)
         {
+            if (requestDto == null)
+                throw new ArgumentNullException(nameof(requestDto));
+            
             var authIncluded = InitRequestDto(requestDto);
             var fn = ResolveExecute<TResponse>(requestDto);
             var options = PrepareRequest(noAuth:authIncluded);
@@ -619,14 +628,26 @@ namespace ServiceStack
             return ExecuteAll<TResponse>(requestDtos?.ToArray(), token);
         }
 
+        private static void AssertPublishType(Type requestType)
+        {
+            if (!typeof(IReturnVoid).IsAssignableFrom(requestType) && !typeof(IReturn<EmptyResponse>).IsAssignableFrom(requestType))
+                throw new NotSupportedException($"{requestType.Name} must implement IReturnVoid. Use Send* APIs for IReturn<T> DTOs");
+        }
+
         public async Task PublishAsync(object requestDto, CancellationToken token = default)
         {
+            AssertPublishType(requestDto.GetType());
             await Execute<EmptyResponse>(requestDto, GetMethodName(GetMethod(requestDto), requestDto), token);
         }
 
         public Task PublishAllAsync(IEnumerable<object> requestDtos, CancellationToken token = default)
         {
-            return ExecuteAll<EmptyResponse>(requestDtos?.ToArray(), token);
+            var array = requestDtos?.ToArray();
+            if (array == null || array.Length == 0)
+                return Task.CompletedTask;
+            AssertPublishType(array[0].GetType());
+            
+            return ExecuteAll<EmptyResponse>(array, token);
         }
 
         public void SetCredentials(string userName, string password)
