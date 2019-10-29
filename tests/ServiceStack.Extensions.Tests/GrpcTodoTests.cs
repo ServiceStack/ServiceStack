@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -173,6 +174,7 @@ namespace ServiceStack.Extensions.Tests
             {
                 Plugins.Add(new GrpcFeature(App));
                 Plugins.Add(new ServerEventsFeature());
+                
             }
 
             public override void ConfigureKestrel(KestrelServerOptions options)

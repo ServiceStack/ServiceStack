@@ -19,6 +19,18 @@ namespace ServiceStack.Grpc
         readonly GrpcFeature grpc;
         public static string Package { get; set; }
 
+        public static Func<List<Type>, string> DefaultNamespace { get; set; } = ResolveDefaultNamespace;
+        
+        public static string ResolveDefaultNamespace(List<Type> orderedTypes)
+        {
+            return orderedTypes.FirstOrDefault(x =>
+                    x.Namespace != null && !"ServiceStack".StartsWith(x.Namespace) && !"System".StartsWith(x.Namespace))?.Namespace
+                ?? orderedTypes[0].Namespace;
+        }
+        
+        public static Func<string,string> ResolvePackageName { get; set; } = globalNs =>
+            globalNs.Replace(".","_").ToLowercaseUnderscore().Replace("__","_").Replace("service_stack","servicestack");
+
         public GrpcProtoGenerator(MetadataTypesConfig config)
         {
             Config = config;
@@ -98,9 +110,9 @@ namespace ServiceStack.Grpc
                 if (!addedRpcServices && string.IsNullOrEmpty(line))
                 {
                     addedRpcServices = true;
-                    
-                    var globalNs = Config.GlobalNamespace ?? orderedTypes[0].Namespace; 
-                    sb.AppendLine($"package {Config.Package ?? globalNs.Replace(".","_").ToLowercaseUnderscore().Replace("__","_")};");
+
+                    var globalNs = Config.GlobalNamespace ?? DefaultNamespace(orderedTypes); 
+                    sb.AppendLine($"package {Config.Package ?? ResolvePackageName(globalNs.Replace(".","_").ToLowercaseUnderscore().Replace("__","_"))};");
                     sb.AppendLine($"option csharp_namespace = \"{globalNs}\";");
                     sb.AppendLine();
                     
