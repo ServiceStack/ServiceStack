@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Authentication.OAuth2</PackageId>
     <AssemblyName>ServiceStack.Authentication.OAuth2</AssemblyName>
-    <TargetFramework>net45</TargetFramework>
+    <TargetFrameworks>net45</TargetFrameworks>
     <RuntimeIdentifiers>win</RuntimeIdentifiers>
     <Title>OAuth2 Providers for ServiceStack - inc. Google, LinkedIn</Title>
     <PackageDescription>
