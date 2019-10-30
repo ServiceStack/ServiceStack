@@ -23,9 +23,11 @@ namespace ServiceStack.Grpc
         
         public static string ResolveDefaultNamespace(List<Type> orderedTypes)
         {
-            return orderedTypes.FirstOrDefault(x =>
+            var ns = orderedTypes.FirstOrDefault(x =>
                     x.Namespace != null && !"ServiceStack".StartsWith(x.Namespace) && !"System".StartsWith(x.Namespace))?.Namespace
                 ?? orderedTypes[0].Namespace;
+            var pos = ns?.IndexOf(".ServiceModel", StringComparison.OrdinalIgnoreCase) ?? -1;
+            return pos >= 0 ? ns.Substring(0, pos) : ns;
         }
         
         public static Func<string,string> ResolvePackageName { get; set; } = globalNs =>
