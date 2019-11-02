@@ -559,7 +559,6 @@ namespace ServiceStack.Script
         {
             literal = literal.ParseVarName(out var blockNameSpan);
 
-            PageBlockFragment statement;
             var blockName = blockNameSpan.ToString();
             var endBlock = "{{/" + blockName + "}}";
             var endExprPos = literal.IndexOf("}}");
