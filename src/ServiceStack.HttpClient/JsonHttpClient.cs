@@ -34,7 +34,7 @@ namespace ServiceStack
         public ExceptionFilterHttpDelegate ExceptionFilter { get; set; }
 
         public const string DefaultHttpMethod = HttpMethods.Post;
-        public static string DefaultUserAgent = "ServiceStack .NET HttpClient " + Env.ServiceStackVersion;
+        public static string DefaultUserAgent = "ServiceStack .NET HttpClient " + Env.VersionString;
 
         public string BaseUri { get; set; }
 

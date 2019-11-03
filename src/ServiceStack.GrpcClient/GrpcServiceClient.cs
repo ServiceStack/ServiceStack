@@ -76,7 +76,7 @@ namespace ServiceStack
         public static Action<ResponseCallContext> GlobalResponseFilter { get; set; }
         public Action<ResponseCallContext> ResponseFilter { get; set; }
 
-        public string UserAgent { get; set; } = ".NET gRPC Client " + Env.ServiceStackVersion;
+        public string UserAgent { get; set; } = ".NET gRPC Client " + Env.VersionString;
 
         public Grpc.Core.Metadata Headers { get; } = new Grpc.Core.Metadata();
 

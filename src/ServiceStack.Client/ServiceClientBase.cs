@@ -66,7 +66,7 @@ namespace ServiceStack
         public NameValueCollection Headers { get; private set; }
 
         public const string DefaultHttpMethod = HttpMethods.Post;
-        public static string DefaultUserAgent = "ServiceStack .NET Client " + Env.ServiceStackVersion;
+        public static string DefaultUserAgent = "ServiceStack .NET Client " + Env.VersionString;
 
         readonly AsyncServiceClient asyncClient;
 

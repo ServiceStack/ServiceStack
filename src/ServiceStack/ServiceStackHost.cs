@@ -1264,7 +1264,7 @@ namespace ServiceStack
                 {
                     var reqInfo = RequestInfoHandler.GetRequestInfo(httpReq);
 
-                    reqInfo.Host = Config.DebugHttpListenerHostEnvironment + "_v" + Env.ServiceStackVersion + "_" + ServiceName;
+                    reqInfo.Host = Config.DebugHttpListenerHostEnvironment + "_v" + Env.VersionString + "_" + ServiceName;
                     reqInfo.PathInfo = httpReq.PathInfo;
                     reqInfo.GetPathUrl = httpReq.GetPathUrl();
 
