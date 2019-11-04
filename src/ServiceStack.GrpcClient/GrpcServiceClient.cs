@@ -348,7 +348,7 @@ namespace ServiceStack
                     status.Message = ex.Status.Detail;
                 }
                 
-                var prop = TypeProperties<TResponse>.GetAccessor(nameof(ErrorResponse.ResponseStatus));
+                var prop = TypeProperties<TResponse>.GetAccessor(nameof(IHasResponseStatus.ResponseStatus));
                 if (prop != null)
                 {
                     response = typeof(TResponse).CreateInstance<TResponse>();

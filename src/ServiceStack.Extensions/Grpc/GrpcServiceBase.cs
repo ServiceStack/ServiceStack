@@ -67,6 +67,8 @@ namespace ServiceStack
 
             var req = new GrpcRequest(context, request, method);
             var ret = await RpcGateway.ExecuteAsync<TResponse>(request, req);
+            if (req.Response.Dto == null)
+                req.Response.Dto = ret;
             await WriteResponseHeadersAsync(req.Response, context);
             return ret;
         }

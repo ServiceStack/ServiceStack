@@ -23,6 +23,7 @@ using ProtoBuf.Grpc.Server;
 using ServiceStack.Auth;
 using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Validators;
+using ServiceStack.Model;
 using ServiceStack.Text;
 using ServiceStack.Validation;
 
@@ -279,6 +280,28 @@ namespace ServiceStack.Extensions.Tests
         [DataMember(Order = 8)]
         public bool Private { get; set; }
     }
+    
+    public class CustomException : Exception, IResponseStatusConvertible, IHasStatusCode
+    {
+        public ResponseStatus ToResponseStatus() => new ResponseStatus
+        {
+            ErrorCode = "CustomErrorCode",
+            Message = "Custom Error Message",
+        };
+
+        public int StatusCode { get; } = 401;
+    }
+    
+    [DataContract]
+    public class ThrowCustom : IReturn<ThrowCustomResponse> {}
+
+    [DataContract]
+    public class ThrowCustomResponse
+    {
+        [DataMember(Order = 1)]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+    
 
     public class MyServices : Service
     {
@@ -300,6 +323,8 @@ namespace ServiceStack.Extensions.Tests
         public object Get(Throw request) => throw new Exception(request.Message ?? "Error in Throw");
         
         public void Get(ThrowVoid request) => throw new Exception(request.Message ?? "Error in ThrowVoid");
+
+        public object Get(ThrowCustom request) => request; //thrown in Global Request Filters
 
         public object Post(TriggerValidators request) => new EmptyResponse();
 
@@ -350,6 +375,11 @@ namespace ServiceStack.Extensions.Tests
             {
                 Plugins.Add(new ValidationFeature());
                 Plugins.Add(new GrpcFeature(App));
+                
+                GlobalRequestFilters.Add((req, res, dto) => {
+                    if (dto is ThrowCustom)
+                        throw new CustomException();
+                });
             }
 
             public override void ConfigureKestrel(KestrelServerOptions options)
@@ -582,6 +612,23 @@ namespace ServiceStack.Extensions.Tests
                 Assert.That(errors.First(x => x.FieldName == "Null").ErrorCode, Is.EqualTo("Null"));
                 Assert.That(errors.First(x => x.FieldName == "RegularExpression").ErrorCode, Is.EqualTo("RegularExpression"));
                 Assert.That(errors.First(x => x.FieldName == "ScalePrecision").ErrorCode, Is.EqualTo("ScalePrecision"));
+            }
+        }
+        
+        [Test]
+        public async Task Does_throw_WebServiceException_on_CustomException()
+        {
+            using var client = GetClient();
+
+            try
+            {
+                await client.GetAsync(new ThrowCustom());
+                Assert.Fail("should throw");
+            }
+            catch (WebServiceException e)
+            {
+                Assert.That(e.StatusCode, Is.EqualTo(401));
+                Assert.That(e.Message, Is.EqualTo("Custom Error Message"));
             }
         }
 
