@@ -157,7 +157,11 @@ namespace ServiceStack.Extensions.Tests
             return Task.WhenAll(tasks);
         }
 
-        public void Post(ResetTodos request) => Todos.Clear();
+        public void Post(ResetTodos request)
+        {
+            Counter = 0;
+            Todos.Clear();
+        }
     }
 
     public class GrpcTodoTests

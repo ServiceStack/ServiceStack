@@ -118,7 +118,7 @@ namespace ServiceStack.Grpc
                     sb.AppendLine($"option csharp_namespace = \"{globalNs}\";");
                     sb.AppendLine();
                     
-                    sb.AppendLine($"services {grpc.GrpcServicesType.Name} {{");
+                    sb.AppendLine($"service {grpc.GrpcServicesType.Name} {{");
                     sb = sb.Indent();
 
                     foreach (var service in services)

@@ -16,7 +16,7 @@ namespace ServiceStack
         public static MetaType Register<T>() => GrpcMarshaller<T>.GetMetaType();
 
         public static string GetServiceName(string verb, string requestName) =>
-            requestName.StartsWithIgnoreCase(verb) ? requestName : verb.ToPascalCase() + requestName;
+            (requestName.StartsWithIgnoreCase(verb) ? requestName : verb.ToPascalCase() + requestName) + "Service";
 
         private static readonly ConcurrentDictionary<Type, Func<MetaType>> FnCache =
             new ConcurrentDictionary<Type, Func<MetaType>>();
@@ -39,20 +39,20 @@ namespace ServiceStack
         public static RuntimeTypeModel TypeModel { get; } = ProtoBuf.Meta.TypeModel.Create();
 
         public static Task<TResponse> Execute<TRequest, TResponse>(this Channel channel, TRequest request,
-            string serviceName, string methodName,
+            string servicesName, string methodName,
             CallOptions options = default, string host = null)
             where TRequest : class
             where TResponse : class
-            => Execute<TRequest, TResponse>(new DefaultCallInvoker(channel), request, serviceName, methodName, options,
+            => Execute<TRequest, TResponse>(new DefaultCallInvoker(channel), request, servicesName, methodName, options,
                 host);
 
         public static async Task<TResponse> Execute<TRequest, TResponse>(this CallInvoker invoker, TRequest request,
-            string serviceName, string methodName,
+            string servicesName, string methodName,
             CallOptions options = default, string host = null)
             where TRequest : class
             where TResponse : class
         {
-            var method = new Method<TRequest, TResponse>(MethodType.Unary, serviceName, methodName,
+            var method = new Method<TRequest, TResponse>(MethodType.Unary, servicesName, methodName,
                 GrpcMarshaller<TRequest>.Instance, GrpcMarshaller<TResponse>.Instance);
             using (var auc = invoker.AsyncUnaryCall(method, host, options, request))
             {
