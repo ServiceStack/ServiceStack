@@ -362,7 +362,7 @@ namespace ServiceStack
                 var genericDef = streamService.GetTypeWithGenericTypeDefinitionOf(typeof(IStreamService<,>));
                 var requestType = genericDef.GenericTypeArguments[0];
                 var responseType = genericDef.GenericTypeArguments[1];
-                var methodName = requestType.Name;
+                var methodName = GrpcUtils.GetStreamServiceName(requestType.Name);
 
                 var method = typeBuilder.DefineMethod(methodName, MethodAttributes.Public | MethodAttributes.Virtual,
                     CallingConventions.Standard,

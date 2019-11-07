@@ -11,12 +11,17 @@ namespace ServiceStack
     {
         public static Func<Type, bool> IgnoreTypeModel { get; set; } = DefaultIgnoreTypes;
 
-        public static bool DefaultIgnoreTypes(Type type) => type.IsValueType || type == typeof(string);  
+        public static bool DefaultIgnoreTypes(Type type) => type.IsValueType || type == typeof(string);
+
+        public static Func<string, string> ServiceNameResolver { get; set; } = DefaultServiceNameResolver;
+        public static string DefaultServiceNameResolver(string name) => "Call" + name;
         
         public static MetaType Register<T>() => GrpcMarshaller<T>.GetMetaType();
-
+        
         public static string GetServiceName(string verb, string requestName) =>
-            (requestName.StartsWithIgnoreCase(verb) ? requestName : verb.ToPascalCase() + requestName) + "Service";
+            ServiceNameResolver(requestName.StartsWithIgnoreCase(verb) ? requestName : verb.ToPascalCase() + requestName);
+
+        public static string GetStreamServiceName(string requestName) => ServiceNameResolver(requestName);
 
         private static readonly ConcurrentDictionary<Type, Func<MetaType>> FnCache =
             new ConcurrentDictionary<Type, Func<MetaType>>();
