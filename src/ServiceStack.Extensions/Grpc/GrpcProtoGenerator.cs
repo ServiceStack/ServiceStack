@@ -54,7 +54,7 @@ namespace ServiceStack.Grpc
             sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
-            sb.AppendLine("{0}Package: {1}".Fmt(defaultValue("Package"), Config.Package));
+            //sb.AppendLine("{0}Package: {1}".Fmt(defaultValue("Package"), Config.Package));
             sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
             sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
 //            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
@@ -114,7 +114,8 @@ namespace ServiceStack.Grpc
                     addedRpcServices = true;
 
                     var globalNs = Config.GlobalNamespace ?? DefaultNamespace(orderedTypes); 
-                    sb.AppendLine($"package {Config.Package ?? ResolvePackageName(globalNs.Replace(".","_").ToLowercaseUnderscore().Replace("__","_"))};");
+                    //package name changes Service Name from /GrpcServices to /package_name.GrpcServices
+                    //sb.AppendLine($"package {Config.Package ?? ResolvePackageName(globalNs.Replace(".","_").ToLowercaseUnderscore().Replace("__","_"))};");
                     sb.AppendLine($"option csharp_namespace = \"{globalNs}\";");
                     sb.AppendLine();
                     
