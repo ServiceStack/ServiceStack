@@ -584,7 +584,7 @@ namespace ServiceStack
         
         public IAsyncEnumerable<TResponse> StreamAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default)
         {
-            return Stream<TResponse>(requestDto, GrpcUtils.GetStreamServiceName(requestDto.GetType().Name), token);
+            return Stream<TResponse>(requestDto, GrpcUtils.GetServerStreamServiceName(requestDto.GetType().Name), token);
         }
 
         protected string GetMethod(object request)
