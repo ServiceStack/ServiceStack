@@ -5,9 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.FluentValidation;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Text;
+using ServiceStack.Validation;
 using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -71,10 +73,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Value { get; set; }
     }
 
-    public class SGMInternalultiGatewayRequests : IReturn<SGMInternalultiGatewayRequests>, IPost
+    public class SGMInternalMultiGatewayRequests : IReturn<SGMInternalMultiGatewayRequests>, IPost
     {
         public int Delay { get; set; }
         public string Value { get; set; }
+    }
+
+    public class SGMInternalMultiGatewayRequestsValidator : AbstractValidator<SGMInternalMultiGatewayRequests>
+    {
+        public SGMInternalMultiGatewayRequestsValidator()
+        {
+            RuleFor(x => x.Value)
+                .CustomAsync((x,ctx,cancel) => Gateway.SendAsync(new SGAsyncPostInternal()));
+        }
     }
 
     public class ServiceGatewayAsyncServices : Service
@@ -159,14 +170,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             for (var i = 0; i < request.Times; i++)
             {
-                await Gateway.SendAsync(new SGMInternalultiGatewayRequests {
+                await Gateway.SendAsync(new SGMInternalMultiGatewayRequests {
                     Delay = request.Delay
                 });
             }
             return request;
         }
 
-        public async Task<object> Any(SGMInternalultiGatewayRequests request)
+        public async Task<object> Any(SGMInternalMultiGatewayRequests request)
         {
             if (!Request.IsInProcessRequest())
                 throw new Exception("Gateway Request is not in process");
@@ -401,6 +412,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public override void Configure(Container container)
             {
                 container.Register<IMessageFactory>(c => new MessageFactory());
+                
+                Plugins.Add(new ValidationFeature());
             }
         }
 

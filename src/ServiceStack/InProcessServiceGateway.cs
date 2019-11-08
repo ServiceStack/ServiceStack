@@ -203,6 +203,7 @@ namespace ServiceStack
             var holdDto = req.Dto;
             var holdOp = req.OperationName;
             var holdVerb = SetVerb(requestDto);
+            var holdAttrs = req.RequestAttributes;
 
             req.SetInProcessRequest();
 
@@ -215,7 +216,7 @@ namespace ServiceStack
             {
                 req.Dto = holdDto;
                 req.OperationName = holdOp;
-                req.ReleaseIfInProcessRequest();
+                req.RequestAttributes = holdAttrs;
                 ResetVerb(holdVerb);
             }
         }
@@ -236,6 +237,7 @@ namespace ServiceStack
         {
             var holdDto = req.Dto;
             string holdVerb = req.GetItem(Keywords.InvokeVerb) as string;
+            var holdAttrs = req.RequestAttributes;
 
             var typedArray = CreateTypedArray(requestDtos);
             req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
@@ -248,7 +250,7 @@ namespace ServiceStack
             finally
             {
                 req.Dto = holdDto;
-                req.ReleaseIfInProcessRequest();
+                req.RequestAttributes = holdAttrs;
                 ResetVerb(holdVerb);
             }
         }
@@ -267,7 +269,7 @@ namespace ServiceStack
             return HostContext.Async.ContinueWith(req, responseTask, task => 
                 {
                     req.Dto = holdDto;
-                    req.ReleaseIfInProcessRequest();
+                    req.RequestAttributes = holdAttrs;
                     ResetVerb(holdVerb);
                     return task.Result.ToList();
                 }, token);
