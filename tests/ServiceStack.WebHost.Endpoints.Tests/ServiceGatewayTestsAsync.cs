@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -60,6 +61,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class SGPublishAllAsyncPostExternalVoid : IReturnVoid, IPost
     {
+        public string Value { get; set; }
+    }
+
+    public class SGMultiGatewayRequests : IReturn<SGMultiGatewayRequests>, IPost
+    {
+        public int Times { get; set; }
+        public int Delay { get; set; }
+        public string Value { get; set; }
+    }
+
+    public class SGMInternalultiGatewayRequests : IReturn<SGMInternalultiGatewayRequests>, IPost
+    {
+        public int Delay { get; set; }
         public string Value { get; set; }
     }
 
@@ -139,6 +153,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             });
 
             await Gateway.PublishAllAsync(requests);
+        }
+
+        public async Task<object> Any(SGMultiGatewayRequests request)
+        {
+            for (var i = 0; i < request.Times; i++)
+            {
+                await Gateway.SendAsync(new SGMInternalultiGatewayRequests {
+                    Delay = request.Delay
+                });
+            }
+            return request;
+        }
+
+        public async Task<object> Any(SGMInternalultiGatewayRequests request)
+        {
+            if (!Request.IsInProcessRequest())
+                throw new Exception("Gateway Request is not in process");
+
+            await Task.Delay(request.Delay);
+            return request;
         }
     }
 
@@ -374,8 +408,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             return new AllInternalAppHost();
         }
-    }
 
+        [Test]
+        public async Task Verify_all_internal_gateway_requests_are_marked_as_in_process()
+        {
+            await client.GetAsync(new SGMultiGatewayRequests { Times = 3, Delay = 10 });
+        }
+    }
 
     public abstract class ServiceGatewayAsyncTests
     {
@@ -405,7 +444,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         protected abstract ServiceStackHost CreateAppHost();
 
-        readonly IServiceClient client;
+        protected readonly IServiceClient client;
         private readonly ServiceStackHost appHost;
         public ServiceGatewayAsyncTests()
         {
@@ -417,10 +456,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [OneTimeTearDown]
-        public void TestFixtureTearDown()
-        {
-            appHost.Dispose();
-        }
+        public void TestFixtureTearDown() => appHost.Dispose();
 
         [Test]
         public void Does_SGSendAsyncInternal()

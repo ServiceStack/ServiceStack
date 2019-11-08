@@ -110,7 +110,7 @@ namespace ServiceStack
                 if (Equals(mockSession, default(TUserSession)))
                     mockSession = TryResolve<IAuthSession>() is TUserSession 
                         ? (TUserSession)TryResolve<IAuthSession>() 
-                        : default(TUserSession);
+                        : default;
 
                 if (!Equals(mockSession, default(TUserSession)))
                     return mockSession;

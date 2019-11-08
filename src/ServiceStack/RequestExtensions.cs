@@ -232,7 +232,8 @@ namespace ServiceStack
 
         public static void ReleaseIfInProcessRequest(this IRequest httpReq)
         {
-            if (httpReq == null) return;
+            if (httpReq == null) 
+                return;
 
             httpReq.RequestAttributes = httpReq.RequestAttributes & ~RequestAttributes.InProcess;
         }
