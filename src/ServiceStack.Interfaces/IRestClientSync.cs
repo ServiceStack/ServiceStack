@@ -20,6 +20,10 @@ namespace ServiceStack
         TResponse Put<TResponse>(object requestDto);
         void Put(IReturnVoid requestDto);
 
+        TResponse Patch<TResponse>(IReturn<TResponse> requestDto);
+        TResponse Patch<TResponse>(object requestDto);
+        void Patch(IReturnVoid requestDto);
+
         TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> requestDto);
         TResponse CustomMethod<TResponse>(string httpVerb, object requestDto);
         void CustomMethod(string httpVerb, IReturnVoid requestDto);

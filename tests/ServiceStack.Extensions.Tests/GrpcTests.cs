@@ -452,6 +452,15 @@ namespace ServiceStack.Extensions.Tests
         }
 
         [Test]
+        public void Can_call_Multiply_Grpc_Service_GrpcServiceClient_sync()
+        {
+            using var client = GetClient();
+
+            var response = client.Post(new Multiply { X = 12, Y = 4 });
+            Assert.That(response.Result, Is.EqualTo(48));
+        }
+
+        [Test]
         public async Task Can_call_Incr_ReturnVoid_GrpcServiceClient()
         {
             using var client = GetClient();
@@ -478,6 +487,18 @@ namespace ServiceStack.Extensions.Tests
         }
 
         [Test]
+        public void Can_call_GetHello_with_Get_or_Send_sync()
+        {
+            using var client = GetClient();
+
+            var response = client.Get(new GetHello { Name = "GET" });
+            Assert.That(response.Result, Is.EqualTo($"Hello, GET!"));
+
+            response = client.Send(new GetHello { Name = "SEND" });
+            Assert.That(response.Result, Is.EqualTo($"Hello, SEND!"));
+        }
+
+        [Test]
         public async Task Can_call_AnyHello_with_Get_Post_or_Send()
         {
             using var client = GetClient();
@@ -493,6 +514,21 @@ namespace ServiceStack.Extensions.Tests
         }
 
         [Test]
+        public void Can_call_AnyHello_with_Get_Post_or_Send_sync()
+        {
+            using var client = GetClient();
+
+            var response = client.Get(new AnyHello { Name = "GET" });
+            Assert.That(response.Result, Is.EqualTo($"Hello, GET!"));
+
+            response = client.Post(new AnyHello { Name = "POST" });
+            Assert.That(response.Result, Is.EqualTo($"Hello, POST!"));
+
+            response = client.Send(new GetHello { Name = "SEND" });
+            Assert.That(response.Result, Is.EqualTo($"Hello, SEND!"));
+        }
+
+        [Test]
         public async Task Can_call_AnyHello_Batch()
         {
             using var client = GetClient();
@@ -503,6 +539,24 @@ namespace ServiceStack.Extensions.Tests
                 new AnyHello {Name = "C"},
             };
             var responses = await client.SendAllAsync(requests);
+            Assert.That( responses.Map(x => x.Result), Is.EqualTo(new[] {
+                $"Hello, A!",
+                $"Hello, B!",
+                $"Hello, C!",
+            }));
+        }
+
+        [Test]
+        public void Can_call_AnyHello_Batch_sync()
+        {
+            using var client = GetClient();
+
+            var requests = new[] {
+                new AnyHello {Name = "A"},
+                new AnyHello {Name = "B"},
+                new AnyHello {Name = "C"},
+            };
+            var responses = client.SendAll(requests);
             Assert.That( responses.Map(x => x.Result), Is.EqualTo(new[] {
                 $"Hello, A!",
                 $"Hello, B!",
@@ -528,6 +582,23 @@ namespace ServiceStack.Extensions.Tests
         }
 
         [Test]
+        public void Can_call_Incr_Batch_ReturnVoid_sync()
+        {
+            using var client = GetClient();
+
+            Incr.Counter = 0;
+            
+            var requests = new[] {
+                new Incr {Amount = 1},
+                new Incr {Amount = 2},
+                new Incr {Amount = 3},
+            };
+            client.PublishAll(requests);
+            
+            Assert.That(Incr.Counter, Is.EqualTo(1 + 2 + 3));
+        }
+
+        [Test]
         public async Task Does_throw_WebServiceException()
         {
             using var client = GetClient();
@@ -545,6 +616,23 @@ namespace ServiceStack.Extensions.Tests
         }
 
         [Test]
+        public void Does_throw_WebServiceException_sync()
+        {
+            using var client = GetClient();
+
+            try
+            {
+                client.Get(new Throw { Message = "throw test" });
+                Assert.Fail("should throw");
+            }
+            catch (WebServiceException e)
+            {
+                Assert.That(e.StatusCode, Is.EqualTo(500));
+                Assert.That(e.Message, Is.EqualTo("throw test"));
+            }
+        }
+
+        [Test]
         public async Task Does_throw_WebServiceException_ReturnVoid()
         {
             using var client = GetClient();
@@ -552,6 +640,23 @@ namespace ServiceStack.Extensions.Tests
             try
             {
                 await client.GetAsync(new ThrowVoid { Message = "throw test" });
+                Assert.Fail("should throw");
+            }
+            catch (WebServiceException e)
+            {
+                Assert.That(e.StatusCode, Is.EqualTo(500));
+                Assert.That(e.Message, Is.EqualTo("throw test"));
+            }
+        }
+
+        [Test]
+        public void Does_throw_WebServiceException_ReturnVoid_sync()
+        {
+            using var client = GetClient();
+
+            try
+            {
+                client.Get(new ThrowVoid { Message = "throw test" });
                 Assert.Fail("should throw");
             }
             catch (WebServiceException e)

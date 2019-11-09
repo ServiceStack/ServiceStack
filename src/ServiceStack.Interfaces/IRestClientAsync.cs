@@ -23,6 +23,10 @@ namespace ServiceStack
         Task<TResponse> PutAsync<TResponse>(object requestDto);
         Task PutAsync(IReturnVoid requestDto);
 
+        Task<TResponse> PatchAsync<TResponse>(IReturn<TResponse> requestDto);
+        Task<TResponse> PatchAsync<TResponse>(object requestDto);
+        Task PatchAsync(IReturnVoid requestDto);
+
         Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto);
         Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto);
         Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto);

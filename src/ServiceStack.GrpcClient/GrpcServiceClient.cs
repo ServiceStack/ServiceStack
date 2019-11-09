@@ -56,7 +56,7 @@ namespace ServiceStack
             GetHeader(headers, GrpcServiceClient.Keywords.HttpStatus)?.ToInt() ?? default;
     }
 
-    public class GrpcServiceClient : IServiceClientAsync, IHasSessionId, IHasBearerToken, IHasVersion
+    public class GrpcServiceClient : IServiceClientAsync, IServiceClientSync, IHasSessionId, IHasBearerToken, IHasVersion
     {
         public string BaseUri { get; set; }
         public string SessionId { get; set; }
@@ -656,6 +656,44 @@ namespace ServiceStack
             Password = password;
         }
 
+        public TResponse Get<TResponse>(IReturn<TResponse> requestDto) => GetAsync(requestDto).GetAwaiter().GetResult();
+
+        public TResponse Get<TResponse>(object requestDto) => GetAsync<TResponse>(requestDto).GetAwaiter().GetResult();
+
+        public void Get(IReturnVoid requestDto) => GetAsync(requestDto).GetAwaiter().GetResult();
+
+        public TResponse Delete<TResponse>(IReturn<TResponse> requestDto) => DeleteAsync(requestDto).GetAwaiter().GetResult();
+
+        public TResponse Delete<TResponse>(object requestDto) => DeleteAsync<TResponse>(requestDto).GetAwaiter().GetResult();
+
+        public void Delete(IReturnVoid requestDto) => DeleteAsync(requestDto).GetAwaiter().GetResult();
+
+        public TResponse Post<TResponse>(IReturn<TResponse> requestDto) => PostAsync(requestDto).GetAwaiter().GetResult();
+
+        public TResponse Post<TResponse>(object requestDto) => PostAsync<TResponse>(requestDto).GetAwaiter().GetResult();
+
+        public void Post(IReturnVoid requestDto) => PostAsync(requestDto).GetAwaiter().GetResult();
+
+        public TResponse Put<TResponse>(IReturn<TResponse> requestDto) => PutAsync(requestDto).GetAwaiter().GetResult();
+
+        public TResponse Put<TResponse>(object requestDto) => PutAsync<TResponse>(requestDto).GetAwaiter().GetResult();
+
+        public void Put(IReturnVoid requestDto) => PutAsync(requestDto).GetAwaiter().GetResult();
+        public TResponse Patch<TResponse>(IReturn<TResponse> requestDto) => PutAsync(requestDto).GetAwaiter().GetResult();
+
+        public TResponse Patch<TResponse>(object requestDto) => PutAsync<TResponse>(requestDto).GetAwaiter().GetResult();
+
+        public void Patch(IReturnVoid requestDto) => PutAsync(requestDto).GetAwaiter().GetResult();
+
+        public TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> requestDto) =>
+            CustomMethodAsync(httpVerb, requestDto).GetAwaiter().GetResult();
+
+        public TResponse CustomMethod<TResponse>(string httpVerb, object requestDto) =>
+            CustomMethodAsync<TResponse>(httpVerb, requestDto).GetAwaiter().GetResult();
+
+        public void CustomMethod(string httpVerb, IReturnVoid requestDto) =>
+            CustomMethodAsync(httpVerb, requestDto).GetAwaiter().GetResult();
+
         public Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto)
         {
             return Execute<TResponse>(requestDto, GetMethodName(Methods.Get, requestDto));
@@ -716,6 +754,21 @@ namespace ServiceStack
             await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Put, requestDto));
         }
 
+        public Task<TResponse> PatchAsync<TResponse>(IReturn<TResponse> requestDto)
+        {
+            return Execute<TResponse>(requestDto, GetMethodName(Methods.Patch, requestDto));
+        }
+
+        public Task<TResponse> PatchAsync<TResponse>(object requestDto)
+        {
+            return Execute<TResponse>(requestDto, GetMethodName(Methods.Patch, requestDto));
+        }
+
+        public async Task PatchAsync(IReturnVoid requestDto)
+        {
+            await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Patch, requestDto));
+        }
+
         public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
         {
             return Execute<TResponse>(requestDto, GetMethodName(httpVerb, requestDto));
@@ -730,6 +783,14 @@ namespace ServiceStack
         {
             await Execute<EmptyResponse>(requestDto, GetMethodName(httpVerb, requestDto));
         }
+
+        public TResponse Send<TResponse>(object requestDto) => SendAsync<TResponse>(requestDto).GetAwaiter().GetResult();
+
+        public List<TResponse> SendAll<TResponse>(IEnumerable<object> requestDtos) => SendAllAsync<TResponse>(requestDtos).GetAwaiter().GetResult();
+
+        public void Publish(object requestDto) => PublishAsync(requestDto).GetAwaiter().GetResult();
+
+        public void PublishAll(IEnumerable<object> requestDtos) => PublishAllAsync(requestDtos).GetAwaiter().GetResult();
     }
 
     public class GrpcMarshaller<T> : Marshaller<T>

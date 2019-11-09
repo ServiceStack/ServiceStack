@@ -13,4 +13,5 @@ namespace ServiceStack
     public interface IReplyClient : IServiceGateway { }
 
     public interface IServiceClientAsync : IServiceGatewayAsync, IRestClientAsync {}
+    public interface IServiceClientSync : IServiceGateway, IRestClientSync {}
 }
