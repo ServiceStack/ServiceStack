@@ -12,6 +12,11 @@ namespace ServiceStack
 
     public interface IReplyClient : IServiceGateway { }
 
+    public interface IServiceClientCommon
+    {
+        void SetCredentials(string userName, string password);
+    }
+
     public interface IServiceClientAsync : IServiceGatewayAsync, IRestClientAsync {}
     public interface IServiceClientSync : IServiceGateway, IRestClientSync {}
 }

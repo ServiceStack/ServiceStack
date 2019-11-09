@@ -5,8 +5,7 @@ namespace ServiceStack
 {
     public interface IRestClientAsync : IDisposable
     {
-        void SetCredentials(string userName, string password);
-
+        void SetCredentials(string userName, string password); //TEMP move to IServiceClientCommon 
         Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto);
         Task<TResponse> GetAsync<TResponse>(object requestDto);
         Task GetAsync(IReturnVoid requestDto);

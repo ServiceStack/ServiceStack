@@ -2,8 +2,6 @@ namespace ServiceStack
 {
     public interface IRestClientSync
     {
-        void SetCredentials(string userName, string password);
-
         TResponse Get<TResponse>(IReturn<TResponse> requestDto);
         TResponse Get<TResponse>(object requestDto);
         void Get(IReturnVoid requestDto);
