@@ -4,13 +4,6 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public enum RequestFilterPriority : int
-    {
-        Authenticate = -100,
-        RequiredRole = -90,
-        RequiredPermission = -80,
-    }
-
     /// <summary>
     /// Base class to create request filter attributes only for specific HTTP methods (GET, POST...)
     /// </summary>
