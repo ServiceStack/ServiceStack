@@ -4,7 +4,7 @@ using Neo4j.Driver.V1;
 
 namespace ServiceStack.Authentication.Neo4j
 {
-    internal static class EntityExtensions
+    internal static class RecordExtensions
     {
         public static IEnumerable<TReturn> Map<TReturn>(
             this IEnumerable<IRecord> records)

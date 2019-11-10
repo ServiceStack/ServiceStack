@@ -155,7 +155,7 @@ namespace ServiceStack.Authentication.Neo4j
             WriteTxQuery(tx =>
             {
                 if (userAuth.Id == default)
-                    userAuth.Id = NextId(tx, Label.UserAuth);
+                    userAuth.Id = NextSequence(tx, Label.UserAuth);
 
                 var parameters = new
                 {
@@ -166,7 +166,7 @@ namespace ServiceStack.Authentication.Neo4j
             });
         }
 
-        private int NextId(ITransaction tx, string scope)
+        private int NextSequence(ITransaction tx, string scope)
         {
             var parameters = new { scope };
 
@@ -298,7 +298,7 @@ namespace ServiceStack.Authentication.Neo4j
 
         public IUserAuth GetUserAuth(string userAuthId)
         {
-            // TODO: Check userAuthId is convertible to int
+            userAuthId.ThrowIfNotConvertibleToInteger("userAuthId");
 
             var parameters = new
             {
@@ -317,7 +317,11 @@ namespace ServiceStack.Authentication.Neo4j
                 : authSession.ConvertTo<UserAuth>();
 
             if (userAuth.Id == default && !authSession.UserAuthId.IsNullOrEmpty())
+            {
+                authSession.UserAuthId.ThrowIfNotConvertibleToInteger("userAuthId");
+                
                 userAuth.Id = int.Parse(authSession.UserAuthId);
+            }
 
             userAuth.ModifiedDate = DateTime.UtcNow;
             if (userAuth.CreatedDate == default)
@@ -337,6 +341,8 @@ namespace ServiceStack.Authentication.Neo4j
 
         public void DeleteUserAuth(string userAuthId)
         {
+            userAuthId.ThrowIfNotConvertibleToInteger("userAuthId");
+
             var parameters = new
             {
                 id = int.Parse(userAuthId)
@@ -347,7 +353,7 @@ namespace ServiceStack.Authentication.Neo4j
 
         public List<IUserAuthDetails> GetUserAuthDetails(string userAuthId)
         {
-            // TODO: Can parse id
+            userAuthId.ThrowIfNotConvertibleToInteger("userAuthId");
 
             var parameters = new
             {
@@ -430,7 +436,7 @@ namespace ServiceStack.Authentication.Neo4j
             WriteTxQuery(tx =>
             {
                 if (userAuthDetails.Id == default)
-                    userAuthDetails.Id = NextId(tx, Label.UserAuthDetails);
+                    userAuthDetails.Id = NextSequence(tx, Label.UserAuthDetails);
 
                 var detailsParameters = new
                 {
@@ -483,6 +489,8 @@ namespace ServiceStack.Authentication.Neo4j
 
         public List<ApiKey> GetUserApiKeys(string userId)
         {
+            userId.ThrowIfNotConvertibleToInteger("userId");
+
             var parameters = new
             {
                 id = int.Parse(userId),
