@@ -10,16 +10,114 @@ namespace ServiceStack.Authentication.Neo4j
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public class Neo4jAuthRepository : IUserAuthRepository, IClearable, IRequiresSchema, IManageApiKeys
     {
+        internal static class Label
+        {
+            public const string IdScope = "AuthId";    
+            public static string UserAuth => typeof(UserAuth).Name;
+            public static string UserAuthDetails => typeof(UserAuthDetails).Name;
+            public static string ApiKey => typeof(ApiKey).Name;
+        }
+
+        internal static class Rel
+        {
+            public const string HasUserAuthDetails = "HAS_USER_AUTH_DETAILS";
+            public const string HasApiKey = "HAS_API_KEY";
+        }
+
+        internal static class Query
+        {
+            public static string IdScopeConstraint => $@"
+                CREATE CONSTRAINT ON (u:{Label.IdScope}) ASSERT u.Scope IS UNIQUE";
+
+            public static string UserAuthConstraint => $@"
+                CREATE CONSTRAINT ON (userAuth:{Label.UserAuth}) ASSERT userAuth.Id IS UNIQUE";
+
+            public static string UserAuthDetailsConstraint => $@"
+                CREATE CONSTRAINT ON (details:{Label.UserAuthDetails}) ASSERT details.Id IS UNIQUE";
+
+            public static string ApiKeyConstraint => $@"
+                CREATE CONSTRAINT ON (apiKey:{Label.ApiKey}) ASSERT apiKey.Id IS UNIQUE";
+
+            public static string NextSequence => $@"
+                MERGE (seq:{Label.IdScope} {{Scope: $scope}})
+                SET seq.Value = COALESCE(seq.Value, 0) + 1
+                RETURN seq.Value";
+
+            public static string DeleteAllSequence => $@"
+                MATCH (seq:{Label.IdScope})
+                DELETE seq";
+
+            public static string CreateOrUpdateUserAuth => $@"
+                MERGE (user:{Label.UserAuth} {{Id: $user.Id}})
+                SET user = $user";
+
+            public static string UserAuthById => $@"
+                MATCH (user:{Label.UserAuth} {{Id: $id}})
+                RETURN user";
+
+            public static string UserAuthByName => $@"
+                MATCH (user:{Label.UserAuth} {{UserName: $name}})
+                RETURN user";
+
+            public static string UserAuthByEmail => $@"
+                MATCH (user:{Label.UserAuth} {{Email: $name}})
+                RETURN user";
+
+            public static string UserAuthDetailsById => $@"
+                MATCH (:{Label.UserAuth} {{Id: $id}})-[:{Rel.HasUserAuthDetails}]->(details:{Label.UserAuthDetails})
+                RETURN details";
+
+            public static string DeleteUserAuth => $@"
+                MATCH (user:{Label.UserAuth} {{Id: $id}})
+                OPTIONAL MATCH (user)-[rDetails:{Rel.HasUserAuthDetails}]->(details:{Label.UserAuthDetails})
+                OPTIONAL MATCH (user)-[rApiKey:{Rel.HasApiKey}]->(apiKey:{Label.ApiKey})
+                DELETE user, details, apiKey, rDetails, rApiKey";
+
+            public static string DeleteAllUserAuth => $@"
+                MATCH (user:{Label.UserAuth})
+                OPTIONAL MATCH (user)-[rDetails:{Rel.HasUserAuthDetails}]->(details:{Label.UserAuthDetails})
+                OPTIONAL MATCH (user)-[rApiKey:{Rel.HasApiKey}]->(apiKey:{Label.ApiKey})
+                DELETE user, details, apiKey, rDetails, rApiKey";
+
+            public static string UserAuthDetailsByProviderAndUserId => $@"
+                MATCH (details:{Label.UserAuthDetails})
+                WHERE details.Provider = $provider AND details.UserId = $userId
+                RETURN details";
+
+            public static string UserAuthByProviderAndUserId => $@"
+                MATCH (details:{Label.UserAuthDetails})
+                WHERE details.Provider = $provider AND details.UserId = $userId
+                WITH details
+                MATCH (userAuth:{Label.UserAuth})-[:{Rel.HasUserAuthDetails}]->(details:{Label.UserAuthDetails})
+                RETURN DISTINCT userAuth";
+
+            public static string CreateOrUpdateUserAuthDetails => $@"
+                MERGE (details:{Label.UserAuthDetails} {{Id: $details.Id}})
+                SET details = $details
+                WITH details
+                MATCH (user:{Label.UserAuth} {{Id: $id}})
+                MERGE (user)-[:{Rel.HasUserAuthDetails}]->(details)";
+
+            public static string ApiKeyById => $@"
+                MATCH (apiKey:{Label.ApiKey} {{Id: $id}})
+                RETURN apiKey";
+
+            public static string ActiveApiKeysByUserAuthId => $@"
+                MATCH (userAuth:{Label.UserAuth} {{Id: $id}})-[:{Rel.HasApiKey}]->(apiKey:{Label.ApiKey})
+                WHERE apiKey.CancelledDate Is null AND (apiKey.ExpiryDate IS null OR apiKey.ExpiryDate >= $expiry)
+                RETURN apiKey";
+
+            public static string UpdateApiKeys => $@"
+                UNWIND $keys AS key
+                MERGE (apiKey:{Label.ApiKey} {{Id: key.Id}})
+                SET apiKey = key
+                WITH apiKey, key
+                MATCH (userAuth:{Label.UserAuth} {{Id: toInteger(key.UserAuthId)}})
+                MERGE (userAuth)-[:{Rel.HasApiKey}]->(apiKey)";
+        }
+
         private readonly IDriver driver;
-
-        private static string UserAuthLabel => typeof(UserAuth).Name;
-        private static string UserAuthDetailsLabel => typeof(UserAuthDetails).Name;
-        private static string ApiKeyLabel => typeof(ApiKey).Name;
-
-        private const string IdScopeLabel = "AuthId";
-        private const string HasUserAuthDetailsRel = "HAS_USER_AUTH_DETAILS";
-        private const string HasApiKeyRel = "HAS_API_KEY";
-
+        
         public Neo4jAuthRepository(IDriver driver)
         {
             this.driver = driver;
@@ -32,9 +130,9 @@ namespace ServiceStack.Authentication.Neo4j
         {
             WriteTxQuery(tx =>
             {
-                tx.Run($"CREATE CONSTRAINT ON (u:{IdScopeLabel}) ASSERT u.Scope IS UNIQUE");
-                tx.Run($"CREATE CONSTRAINT ON (userAuth:{UserAuthLabel}) ASSERT userAuth.Id IS UNIQUE");
-                tx.Run($"CREATE CONSTRAINT ON (details:{UserAuthDetailsLabel}) ASSERT details.Id IS UNIQUE");
+                tx.Run(Query.IdScopeConstraint);
+                tx.Run(Query.UserAuthConstraint);
+                tx.Run(Query.UserAuthDetailsConstraint);
             });
         }
 
@@ -54,34 +152,25 @@ namespace ServiceStack.Authentication.Neo4j
 
         private void SaveUser(IUserAuth userAuth)
         {
-            var query = $@"
-                MERGE (user:{UserAuthLabel} {{Id: $user.Id}})
-                SET user = $user";
-
             WriteTxQuery(tx =>
             {
                 if (userAuth.Id == default)
-                    userAuth.Id = NextId(tx, UserAuthLabel);
+                    userAuth.Id = NextId(tx, Label.UserAuth);
 
                 var parameters = new
                 {
                     user = userAuth.ToObjectDictionary()
                 };
 
-                tx.Run(query, parameters);
+                tx.Run(Query.CreateOrUpdateUserAuth, parameters);
             });
         }
 
         private int NextId(ITransaction tx, string scope)
         {
-            var query = $@"
-                MERGE (n:{IdScopeLabel} {{Scope: $scope}})
-                SET n.Value = COALESCE(n.Value, 0) + 1
-                RETURN n.Value";
-
             var parameters = new { scope };
 
-            var result = tx.Run(query, parameters);
+            var result = tx.Run(Query.NextSequence, parameters);
 
             var record = result.Single();
             return record[0].As<int>();
@@ -145,25 +234,14 @@ namespace ServiceStack.Authentication.Neo4j
 
             var isEmail = userNameOrEmail.Contains("@");
 
-            var findByUsernameQuery = $@"
-                MATCH (user:{UserAuthLabel} {{UserName: $name}})
-                RETURN user";
-
-            var findByEmailQuery = $@"
-                MATCH (user:{UserAuthLabel} {{Email: $name}})
-                RETURN user";
-
             var parameters = new
             {
                 name = userNameOrEmail
             };
 
-            var result = ReadQuery(isEmail ? findByEmailQuery : findByUsernameQuery, parameters)
-                .SingleOrDefault();
+            var result = ReadQuery(isEmail ? Query.UserAuthByEmail : Query.UserAuthByName, parameters);
 
-            var userAuth = ((INode) result?[0])?.Map<UserAuth>();
-
-            return userAuth;
+            return result.Map<UserAuth>().SingleOrDefault();
         }
 
         public bool TryAuthenticate(string userName, string password, out IUserAuth userAuth)
@@ -220,23 +298,17 @@ namespace ServiceStack.Authentication.Neo4j
 
         public IUserAuth GetUserAuth(string userAuthId)
         {
-            var query = $@"
-                MATCH (user:{UserAuthLabel} {{Id: $id}})
-                RETURN user";
+            // TODO: Check userAuthId is convertible to int
 
             var parameters = new
             {
                 id = int.Parse(userAuthId)
             };
 
-            var result = ReadQuery(query, parameters)
-                .SingleOrDefault();
+            var result = ReadQuery(Query.UserAuthById, parameters);
 
-            var userAuth = ((INode)result?[0])?.Map<UserAuth>();
-
-            return userAuth;
+            return result.Map<UserAuth>().SingleOrDefault();
         }
-
 
         public void SaveUserAuth(IAuthSession authSession)
         {
@@ -265,34 +337,26 @@ namespace ServiceStack.Authentication.Neo4j
 
         public void DeleteUserAuth(string userAuthId)
         {
-            var query = $@"
-                MATCH (user:{UserAuthLabel} {{Id: $id}})
-                OPTIONAL MATCH (user)-[r:{HasUserAuthDetailsRel}]->(details:{UserAuthDetailsLabel})
-                DELETE user, details, r";
-
             var parameters = new
             {
                 id = int.Parse(userAuthId)
             };
 
-            WriteQuery(query, parameters);
+            WriteQuery(Query.DeleteUserAuth, parameters);
         }
 
         public List<IUserAuthDetails> GetUserAuthDetails(string userAuthId)
         {
-            var query = $@"
-                MATCH (:{UserAuthLabel} {{Id: $id}})-[:{HasUserAuthDetailsRel}]->(details:{UserAuthDetailsLabel})
-                RETURN details";
+            // TODO: Can parse id
 
             var parameters = new
             {
                 id = int.Parse(userAuthId)
             };
 
-            var results = ReadQuery(query, parameters);
+            var results = ReadQuery(Query.UserAuthDetailsById, parameters);
 
-            var items = results.Select(
-                result => ((INode) result[0]).Map<UserAuthDetails>());
+            var items = results.Map<UserAuthDetails>();
 
             return items.Cast<IUserAuthDetails>().ToList();
         }
@@ -314,44 +378,28 @@ namespace ServiceStack.Authentication.Neo4j
             if (tokens == null || tokens.Provider.IsNullOrEmpty() || tokens.UserId.IsNullOrEmpty())
                 return null;
 
-            var query = $@"
-                MATCH (details:{UserAuthDetailsLabel})
-                WHERE details.Provider = $provider AND details.UserId = $userId
-                WITH details
-                MATCH (userAuth:{UserAuthLabel})-[:{HasUserAuthDetailsRel}]->(details:{UserAuthDetailsLabel})
-                RETURN DISTINCT userAuth";
-
             var parameters = new
             {
                 userId = tokens.UserId,
                 provider = tokens.Provider
             };
 
-            var result = ReadQuery(query, parameters)
-                .SingleOrDefault();
+            var result = ReadQuery(Query.UserAuthByProviderAndUserId, parameters);
 
-            userAuth = ((INode)result?[0])?.Map<UserAuth>();
-
-            return userAuth;
+            return result.Map<UserAuth>().SingleOrDefault();
         }
 
         public IUserAuthDetails CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
         {
-            var query = $@"
-                MATCH (details:{UserAuthDetailsLabel})
-                WHERE details.Provider = $provider AND details.UserId = $userId
-                RETURN details";
-
             var parameters = new
             {
                 userId = tokens.UserId,
                 provider = tokens.Provider
             };
 
-            var result = ReadQuery(query, parameters)
-                .SingleOrDefault();
+            var result = ReadQuery(Query.UserAuthDetailsByProviderAndUserId, parameters);
 
-            var userAuthDetails = ((INode)result?[0])?.Map<UserAuthDetails>();
+            var userAuthDetails = result.Map<UserAuthDetails>().SingleOrDefault();
 
             if (userAuthDetails == null)
             {
@@ -379,17 +427,10 @@ namespace ServiceStack.Authentication.Neo4j
                 userAuthDetails.CreatedDate = userAuth.ModifiedDate;
             userAuthDetails.ModifiedDate = userAuth.ModifiedDate;
 
-            var detailsQuery = $@"
-                MERGE (details:{UserAuthDetailsLabel} {{Id: $details.Id}})
-                SET details = $details
-                WITH details
-                MATCH (user:{UserAuthLabel} {{Id: $id}})
-                MERGE (user)-[:{HasUserAuthDetailsRel}]->(details)";
-            
             WriteTxQuery(tx =>
             {
                 if (userAuthDetails.Id == default)
-                    userAuthDetails.Id = NextId(tx, UserAuthDetailsLabel);
+                    userAuthDetails.Id = NextId(tx, Label.UserAuthDetails);
 
                 var detailsParameters = new
                 {
@@ -397,7 +438,7 @@ namespace ServiceStack.Authentication.Neo4j
                     id = userAuth.Id
                 };
 
-                tx.Run(detailsQuery, detailsParameters);
+                tx.Run(Query.CreateOrUpdateUserAuthDetails, detailsParameters);
             });
 
             return userAuthDetails;
@@ -405,26 +446,16 @@ namespace ServiceStack.Authentication.Neo4j
 
         public void Clear()
         {
-            var userAuthQuery = $@"
-                MATCH (userAuth:{UserAuthLabel})
-                OPTIONAL MATCH (userAuth)-[r1:{HasUserAuthDetailsRel}]->(details)
-                OPTIONAL MATCH (userAuth)-[r2:{HasApiKeyRel}]->(apiKey)
-                DELETE userAuth, details, apiKey, r1, r2";
-
-            var idScopeQuery = $@"
-                MATCH (u:{IdScopeLabel})
-                DELETE u";
-
             WriteTxQuery(tx =>
             {
-                tx.Run(userAuthQuery);
-                tx.Run(idScopeQuery);
+                tx.Run(Query.DeleteAllUserAuth);
+                tx.Run(Query.DeleteAllSequence);
             });
         }
 
         public void InitApiKeySchema()
         {
-            WriteQuery($"CREATE CONSTRAINT ON (apiKey:{ApiKeyLabel}) ASSERT apiKey.Id IS UNIQUE");
+            WriteQuery(Query.ApiKeyConstraint);
         }
 
         public bool ApiKeyExists(string apiKey)
@@ -432,19 +463,7 @@ namespace ServiceStack.Authentication.Neo4j
             if (string.IsNullOrEmpty(apiKey))
                 return false;
 
-            var query = $@"
-                MATCH (apiKey:{ApiKeyLabel} {{Id: $id}})
-                RETURN user IS NOT NULL";
-
-            var parameters = new
-            {
-                id = apiKey
-            };
-
-            var result = ReadQuery(query, parameters)
-                .SingleOrDefault();
-
-            return result?[0].As<bool>() ?? false;
+            return GetApiKey(apiKey) != null;
         }
 
         public ApiKey GetApiKey(string apiKey)
@@ -452,60 +471,37 @@ namespace ServiceStack.Authentication.Neo4j
             if (string.IsNullOrEmpty(apiKey))
                 return null;
 
-            var query = $@"
-                MATCH (apiKey:{ApiKeyLabel} {{Id: $id}})
-                RETURN apiKey";
-
             var parameters = new
             {
                 id = apiKey
             };
 
-            var result = ReadQuery(query, parameters)
-                .SingleOrDefault();
+            var result = ReadQuery(Query.ApiKeyById, parameters);
 
-            return ((INode)result?[0])?.Map<ApiKey>();
+            return result.Map<ApiKey>().SingleOrDefault();
         }
 
         public List<ApiKey> GetUserApiKeys(string userId)
         {
-            var query = $@"
-                MATCH (userAuth:{UserAuthLabel} {{Id: $id}})-[:{HasApiKeyRel}]->(apiKey:{ApiKeyLabel})
-                WHERE apiKey.CancelledDate Is null AND (apiKey.ExpiryDate IS null OR apiKey.ExpiryDate >= $expiry)
-                RETURN apiKey";
-
             var parameters = new
             {
                 id = int.Parse(userId),
                 expiry = DateTime.UtcNow
             };
 
-            var results = ReadQuery(query, parameters);
+            var results = ReadQuery(Query.ActiveApiKeysByUserAuthId, parameters);
 
-            var items = results.Select(
-                result => ((INode)result[0]).Map<ApiKey>());
-
-            var itemList = items.ToList();
-
-            return itemList;
+            return results.Map<ApiKey>().ToList();
         }
 
         public void StoreAll(IEnumerable<ApiKey> apiKeys)
         {
-            var query = $@"
-                UNWIND $keys AS key
-                MERGE (apiKey:{ApiKeyLabel} {{Id: key.Id}})
-                SET apiKey = key
-                WITH apiKey, key
-                MATCH (userAuth:{UserAuthLabel} {{Id: toInteger(key.UserAuthId)}})
-                MERGE (userAuth)-[:{HasApiKeyRel}]->(apiKey)";
-
             var parameters = new
             {
                 keys = apiKeys.Select(p => p.ToObjectDictionary())
             };
 
-            WriteQuery(query, parameters);
+            WriteQuery(Query.UpdateApiKeys, parameters);
         }
 
         private IStatementResult ReadQuery(string statement, object parameters = null)
