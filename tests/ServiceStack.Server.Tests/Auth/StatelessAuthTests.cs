@@ -14,7 +14,6 @@ using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Authentication.Neo4j;
 #if !NETCORE_SUPPORT
-using MongoDB.Driver;
 using ServiceStack.Authentication.MongoDb;
 #endif
 using ServiceStack.Aws.DynamoDb;
@@ -186,7 +185,7 @@ namespace ServiceStack.Server.Tests.Auth
     }
 #endif
 
-    [Ignore("Requires Neo4j Dependency")]
+    //[Ignore("Requires Neo4j Dependency")]
     public class Neo4jAuthRepoStatelessAuthTests : StatelessAuthTests
     {
         protected override ServiceStackHost CreateAppHost()
@@ -201,6 +200,132 @@ namespace ServiceStack.Server.Tests.Auth
         }
     }
 
+    [TestFixture]
+    public class Neo4jAuthRepositoryTest
+    {
+        private Neo4jAuthRepository Sut { get; set; }
+
+        private IDriver driver;
+
+        [OneTimeSetUp]
+        public void OneTimeSetup()
+        {
+            driver = GraphDatabase.Driver("bolt://localhost:7687");
+        }
+
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
+            driver.Close();
+            driver.Dispose();
+        }
+
+        [SetUp]
+        public void Setup()
+        {
+            Sut = new Neo4jAuthRepository(null);
+            Sut.Clear();
+        }
+
+        [Test]
+        public void LoadUserAuth(IAuthSession session, IAuthTokens tokens)
+        {
+            // Act
+            Sut.LoadUserAuth(session, tokens);
+        }
+
+        [Test]
+        public void SaveUserAuth(IAuthSession authSession)
+        {
+            // Act
+            Sut.SaveUserAuth(authSession);
+        }
+
+        [Test]
+        public List<IUserAuthDetails> GetUserAuthDetails(string userAuthId)
+        {
+            // Act
+            var result = Sut.GetUserAuthDetails(userAuthId);
+            return result;
+        }
+
+        [Test]
+        public IUserAuthDetails CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
+        {
+            // Act
+            var result = Sut.CreateOrMergeAuthSession(authSession, tokens);
+            return result;
+        }
+
+        [Test]
+        public IUserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens)
+        {
+            var result = Sut.GetUserAuth(authSession, tokens);
+            return result;
+        }
+
+        [Test]
+        public IUserAuth GetUserAuthByUserName(string userNameOrEmail)
+        {
+            var result = Sut.GetUserAuthByUserName(userNameOrEmail);
+            return result;
+        }
+
+        [Test]
+        public void SaveUserAuth(IUserAuth userAuth)
+        {
+            Sut.SaveUserAuth(userAuth);
+        }
+
+        [Test]
+        public bool TryAuthenticate(string userName, string password, out IUserAuth userAuth)
+        {
+            var result = Sut.TryAuthenticate(userName, password, out userAuth);
+            return result;
+        }
+
+        [Test]
+        public bool TryAuthenticate(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence,
+            out IUserAuth userAuth)
+        {
+            var result = Sut.TryAuthenticate(digestHeaders, privateKey, nonceTimeOut, sequence, out userAuth);
+            return result;
+        }
+
+        [Test]
+        public IUserAuth CreateUserAuth(IUserAuth newUser, string password)
+        {
+            var result = Sut.CreateUserAuth(newUser, password);
+            return result;
+        }
+
+        [Test]
+        public IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser)
+        {
+            var result = Sut.UpdateUserAuth(existingUser, newUser);
+            return result;
+        }
+
+        [Test]
+        public IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser, string password)
+        {
+            var result = Sut.UpdateUserAuth(existingUser, newUser, password);
+            return result;
+        }
+
+        [Test]
+        public IUserAuth GetUserAuth(string userAuthId)
+        {
+            var result = Sut.GetUserAuth(userAuthId);
+            return result;
+        }
+
+        [Test]
+        public void DeleteUserAuth(string userAuthId)
+        {
+            Sut.DeleteUserAuth(userAuthId);
+        }
+    }
     public class OrmLiteStatelessAuthTests : StatelessAuthTests
     {
         [Test]
