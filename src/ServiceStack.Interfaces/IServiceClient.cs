@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,7 +13,7 @@ namespace ServiceStack
 
     public interface IReplyClient : IServiceGateway { }
 
-    public interface IServiceClientCommon
+    public interface IServiceClientCommon : IDisposable
     {
         void SetCredentials(string userName, string password);
     }

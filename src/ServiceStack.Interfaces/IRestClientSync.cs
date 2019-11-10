@@ -1,6 +1,6 @@
 namespace ServiceStack
 {
-    public interface IRestClientSync
+    public interface IRestClientSync : IServiceClientCommon
     {
         TResponse Get<TResponse>(IReturn<TResponse> requestDto);
         TResponse Get<TResponse>(object requestDto);

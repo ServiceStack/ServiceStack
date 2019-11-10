@@ -3,9 +3,8 @@ using System.Threading.Tasks;
 
 namespace ServiceStack
 {
-    public interface IRestClientAsync : IDisposable
+    public interface IRestClientAsync : IServiceClientCommon
     {
-        void SetCredentials(string userName, string password); //TEMP move to IServiceClientCommon 
         Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto);
         Task<TResponse> GetAsync<TResponse>(object requestDto);
         Task GetAsync(IReturnVoid requestDto);
