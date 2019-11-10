@@ -269,13 +269,14 @@ namespace ServiceStack.Host.HttpListener
 
         public static void WriteUnhandledErrorResponse(IRequest httpReq, Exception ex)
         {
+            var hostConfig = HostContext.Config;
             var errorResponse = new ErrorResponse
             {
                 ResponseStatus = new ResponseStatus
                 {
                     ErrorCode = ex.GetType().GetOperationName(),
                     Message = ex.Message,
-                    StackTrace = ex.StackTrace,
+                    StackTrace = hostConfig.DebugMode ? ex.StackTrace : null,
                 }
             };
 
@@ -285,7 +286,7 @@ namespace ServiceStack.Host.HttpListener
             var serializer = HostContext.ContentTypes.GetStreamSerializerAsync(contentType);
             if (serializer == null)
             {
-                contentType = HostContext.Config.DefaultContentType;
+                contentType = hostConfig.DefaultContentType;
                 serializer = HostContext.ContentTypes.GetStreamSerializerAsync(contentType);
             }
 

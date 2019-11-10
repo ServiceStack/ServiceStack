@@ -25,6 +25,10 @@ namespace ServiceStack.Host.NetCore
         private readonly HttpResponse response;
         private bool hasResponseBody;
 
+        public HttpContext HttpContext => response.HttpContext;
+        public HttpResponse HttpResponse => response;
+
+
         public NetCoreResponse(NetCoreRequest request, HttpResponse response)
         {
             this.request = request;
@@ -142,6 +146,7 @@ namespace ServiceStack.Host.NetCore
             if (closed) return;
 
             this.FlushBufferIfAny(BufferedStream, response.Body);
+            this.AllowSyncIO();
             response.Body.Flush();
         }
 

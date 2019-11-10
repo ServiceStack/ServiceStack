@@ -382,7 +382,7 @@
     $.fn.bindForm = function (orig) { //bootstrap v3
         return this.each(function () {
             var f = $(this);
-            if (orig.model)
+            if (orig && orig.model)
                 $.ss.populateForm(this,orig.model);
             f.submit(function (e) {
                 e.preventDefault();

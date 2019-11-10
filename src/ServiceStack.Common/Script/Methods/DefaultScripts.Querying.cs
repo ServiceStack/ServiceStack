@@ -72,6 +72,8 @@ namespace ServiceStack.Script
             throw new NotSupportedException($"'{nameof(contains)}' requires a string or IEnumerable but received a '{target.GetType()?.Name}' instead");
         }
 
+        public bool sequenceEquals(IEnumerable a, IEnumerable b) => a.Cast<object>().SequenceEqual(b.Cast<object>());
+
         public IEnumerable<object> take(ScriptScopeContext scope, IEnumerable<object> original, object countOrBinding) =>
             original.Take(scope.GetValueOrEvaluateBinding<int>(countOrBinding));
 
@@ -271,17 +273,26 @@ namespace ServiceStack.Script
             return to;
         }
 
-        public List<object> flatten(object target)
+        public List<object> flatten(object target) => flatten(target, int.MaxValue);
+        public List<object> flatten(object target, int depth)
         {
             var to = new List<object>();
+            _flatten(to, target, depth);
+            return to;
+        }
 
+        private void _flatten(List<object> to, object target, int depth)
+        {
             if (target != null)
             {
-                if (!(target is string) && target is IEnumerable objs)
+                if (!(target is string) && !(target is IDictionary) && target is IEnumerable objs)
                 {
                     foreach (var o in objs)
                     {
-                        to.AddRange(flatten(o));
+                        if (depth > 0)
+                            _flatten(to, o, depth - 1);
+                        else
+                            to.Add(o);
                     }
                 }
                 else
@@ -289,8 +300,6 @@ namespace ServiceStack.Script
                     to.Add(target);
                 }
             }
-
-            return to;
         }
 
         public object let(ScriptScopeContext scope, object target, object scopeBindings) //from filter
@@ -686,7 +695,7 @@ namespace ServiceStack.Script
                     ? l[index]
                     : null;
             }
-            else if (target is IEnumerable e)
+            else if (target is IEnumerable e && DynamicNumber.IsNumber(key.GetType())) // IGrouping<TKey,TElement> is IEnumerable & can ref 'Key' property
             {
                 var index = key.ConvertTo<int>();
                 var i = 0;
@@ -704,8 +713,18 @@ namespace ServiceStack.Script
                 if (memberFn != null)
                     return memberFn(target);
             }
+            else if (DynamicNumber.IsNumber(key.GetType()))
+            {
+                var indexerMethod = target.GetType().GetInstanceMethod("get_Item");
+                if (indexerMethod != null)
+                {
+                    var fn = indexerMethod.GetInvoker();
+                    var ret = fn(target, key);
+                    return ret ?? JsNull.Value;
+                }
+            }
 
-            throw new NotSupportedException($"'{nameof(get)}' expects a collection but received a '{target.GetType().Name}'");
+            throw new NotSupportedException($"Unknown key '{key}' on '{target.GetType().Name}'");
         }
     }
 }

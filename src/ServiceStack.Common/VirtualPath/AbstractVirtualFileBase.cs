@@ -161,6 +161,31 @@ namespace ServiceStack
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ResourceVirtualFiles GetResourceVirtualFiles(this IVirtualPathProvider vfs) =>
             vfs.GetVirtualFileSource<ResourceVirtualFiles>();
+
+        public static ReadOnlyMemory<char> GetTextContentsAsMemory(this IVirtualFile file)
+        {
+            var contents = file.GetContents();
+            var span = contents is ReadOnlyMemory<char> rom
+                ? rom
+                : contents is string s
+                    ? s.AsMemory()
+                    : file.ReadAllText().AsMemory();
+            return span;
+        }
+
+        public static ReadOnlyMemory<byte> GetBytesContentsAsMemory(this IVirtualFile file)
+        {
+            var contents = file.GetContents();
+            var span = contents is ReadOnlyMemory<byte> rom
+                ? rom
+                : contents is ReadOnlyMemory<char> romchars
+                    ? MemoryProvider.Instance.ToUtf8(romchars.Span)
+                    : contents is string s
+                        ? MemoryProvider.Instance.ToUtf8(s.AsSpan())
+                        : file.ReadAllBytes().AsMemory();
+            return span;
+        }
+
     }
     
 }

@@ -20,8 +20,17 @@ namespace ServiceStack
     [Obsolete("Use ServiceStackScripts")]
     public class TemplateServiceStackFilters : ServiceStackScripts {}
     
-    public partial class ServiceStackScripts : ScriptMethods
+    public partial class ServiceStackScripts : ScriptMethods, IConfigureScriptContext
     {
+        public static List<string> RemoveNewLinesFor { get; } = new List<string> {
+            nameof(publishToGateway),
+        };
+
+        public void Configure(ScriptContext context)
+        {
+            RemoveNewLinesFor.Each(name => context.RemoveNewLineAfterFiltersNamed.Add(name));
+        }
+        
         public static ILog Log = LogManager.GetLogger(typeof(ServiceStackScripts));
         
         private ServiceStackHost appHost => HostContext.AppHost;
@@ -37,7 +46,45 @@ namespace ServiceStack
 
         public object resolveUrl(ScriptScopeContext scope, string virtualPath) =>
             req(scope).ResolveAbsoluteUrl(virtualPath);
+
+        public string serviceUrl(ScriptScopeContext scope, string requestName) => 
+            serviceUrl(scope, requestName, null, HttpMethods.Get);
+        public string serviceUrl(ScriptScopeContext scope, string requestName, Dictionary<string, object> properties) =>
+            serviceUrl(scope, requestName, properties, HttpMethods.Get);
+        public string serviceUrl(ScriptScopeContext scope, string requestName, Dictionary<string, object> properties, string httpMethod)
+        {
+            if (requestName == null)
+                throw new ArgumentNullException(nameof(requestName));
+
+            var requestType = AssertRequestType(requestName);
+            var requestDto = ToRequestDto(requestType, properties);
+
+            var url = requestDto.ToUrl(httpMethod);
+            return url;
+        }
         
+        private static object ToRequestDto(Type requestType, object dto)
+        {
+            if (dto == null)
+                return requestType.CreateInstance();
+            
+            var requestDto = dto.GetType() == requestType
+                ? dto
+                : dto is Dictionary<string, object> objDictionary
+                    ? objDictionary.FromObjectDictionary(requestType)
+                    : dto.ConvertTo(requestType);
+            return requestDto;
+        }
+
+        private Type AssertRequestType(string requestName)
+        {
+            var requestType = appHost.Metadata.GetOperationType(requestName);
+            if (requestType == null)
+                throw new ArgumentException("Request DTO not found: " + requestName);
+            
+            return requestType;
+        }
+
         public object execService(ScriptScopeContext scope, string requestName) => 
             sendToGateway(scope, TypeConstants.EmptyObjectDictionary, requestName, null);
 
@@ -58,17 +105,11 @@ namespace ServiceStack
                     throw new ArgumentNullException(nameof(dto));
                 
                 var gateway = appHost.GetServiceGateway(req(scope));
-                var requestType = appHost.Metadata.GetOperationType(requestName);
-                if (requestType == null)
-                    throw new ArgumentException("Request DTO not found: " + requestName);
+                var requestType = AssertRequestType(requestName);
 
                 var responseType = appHost.Metadata.GetResponseTypeByRequest(requestType);
 
-                var requestDto = dto.GetType() == requestType
-                    ? dto
-                    : dto is Dictionary<string, object> objDictionary
-                        ? objDictionary.FromObjectDictionary(requestType)
-                        : dto.ConvertTo(requestType);
+                var requestDto = ToRequestDto(requestType, dto);
 
                 var response = gateway.Send(responseType, requestDto);
                 return response;
@@ -89,24 +130,55 @@ namespace ServiceStack
         {
             try
             {
-                if (requestName == null)
-                    throw new ArgumentNullException(nameof(requestName));
-                if (dto == null)
-                    throw new ArgumentNullException(nameof(dto));
-                
+                var requestDto = CreateRequestDto(dto, requestName);
                 var gateway = appHost.GetServiceGateway(req(scope));
-                var requestType = appHost.Metadata.GetOperationType(requestName);
-                if (requestType == null)
-                    throw new ArgumentException("Request DTO not found: " + requestName);
-
-                var requestDto = dto.GetType() == requestType
-                    ? dto
-                    : dto is Dictionary<string, object> objDictionary
-                        ? objDictionary.FromObjectDictionary(requestType)
-                        : dto.ConvertTo(requestType);
-
                 gateway.Publish(requestDto);
                 return StopExecution.Value;
+            }
+            catch (Exception ex)
+            {
+                if (Log.IsDebugEnabled)
+                    Log.Error(ex.Message, ex);
+                
+                throw new StopFilterExecutionException(scope, options, ex);
+            }
+        }
+
+        private object CreateRequestDto(object dto, string requestName)
+        {
+            if (requestName == null)
+                throw new ArgumentNullException(nameof(requestName));
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            var requestType = appHost.Metadata.GetOperationType(requestName);
+            if (requestType == null)
+                throw new ArgumentException("Request DTO not found: " + requestName);
+
+            var requestDto = dto.GetType() == requestType
+                ? dto
+                : dto is Dictionary<string, object> objDictionary
+                    ? objDictionary.FromObjectDictionary(requestType)
+                    : dto.ConvertTo(requestType);
+            return requestDto;
+        }
+
+        public IgnoreResult publishMessage(ScriptScopeContext scope, string requestName, object dto) =>
+            publishMessage(scope, requestName, dto, null);
+        public IgnoreResult publishMessage(ScriptScopeContext scope, string requestName, object dto, object options)
+        {
+            var msgProducer = appHost.GetMessageProducer();
+            if (msgProducer == null)
+                throw new NotSupportedException("IMessageService not configured");
+            
+            try 
+            {
+                var requestDto = CreateRequestDto(dto, requestName);
+                using (msgProducer)
+                {
+                    appHost.PublishMessage(msgProducer, requestDto);
+                    return IgnoreResult.Value;
+                }
             }
             catch (Exception ex)
             {
@@ -557,6 +629,7 @@ namespace ServiceStack
     public class SvgScriptBlock : ScriptBlock
     {
         public override string Name => "svg";
+        public override ScriptLanguage Body => ScriptTemplate.Language;
         public override async Task WriteAsync(ScriptScopeContext scope, PageBlockFragment block, CancellationToken token)
         {
             if (block.Argument.IsEmpty)
@@ -580,30 +653,34 @@ namespace ServiceStack
     public abstract class MinifyScriptBlockBase : ScriptBlock
     {
         public abstract ICompressor Minifier { get; }
-        
+        public override ScriptLanguage Body => ScriptVerbatim.Language;
+
         //reduce string allocation of block contents at runtime
-        ConcurrentDictionary<ReadOnlyMemory<char>, string[]> AllocatedStringsCache = new ConcurrentDictionary<ReadOnlyMemory<char>, string[]>();
+        readonly ConcurrentDictionary<ReadOnlyMemory<char>, Tuple<string,string>> allocatedStringsCache = 
+            new ConcurrentDictionary<ReadOnlyMemory<char>, Tuple<string,string>>();
 
         public ReadOnlyMemory<char> GetMinifiedOutputCache(ReadOnlyMemory<char> contents)
         {
             if (Context.DebugMode)
                 return contents;
             
-            var cachedStrings = AllocatedStringsCache.GetOrAdd(contents, c => {
+            var cachedStrings = allocatedStringsCache.GetOrAdd(contents, c => {
                     var str = c.ToString();
-                    return new[] { Name + "::" + str, str }; //cache allocated key + string
+                    return Tuple.Create(Name + ":" + str, str); //cache allocated key + string
                 });
+
+            var minified = (ReadOnlyMemory<char>) Context.Cache.GetOrAdd(cachedStrings.Item1, k => 
+                Minifier.Compress(cachedStrings.Item2).AsMemory());
             
-            if (Context.Cache.TryGetValue(cachedStrings[0], out var oMinified))
-                return (ReadOnlyMemory<char>)oMinified;
-            
-            var minified = Minifier.Compress(cachedStrings[1]).AsMemory();
-            Context.Cache[cachedStrings[0]] = minified;
+            Context.Cache[cachedStrings.Item1] = minified;
             return minified;
         }
         
         public override async Task WriteAsync(ScriptScopeContext scope, PageBlockFragment block, CancellationToken token)
         {
+            if (block.Body.Length == 0)
+                return;
+            
             var strFragment = (PageStringFragment)block.Body[0];
 
             if (!block.Argument.IsNullOrWhiteSpace())

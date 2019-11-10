@@ -20,7 +20,8 @@ namespace ServiceStack.FluentValidation.Resources {
 	using Validators;
 
 	internal class PolishLanguage : Language {
-		public override string Name => "pl";
+		public const string Culture = "pl";
+		public override string Name => Culture;
 
 		public PolishLanguage() {
 			Translate<EmailValidator>("Pole '{PropertyName}' nie zawiera poprawnego adresu email.");
@@ -46,6 +47,12 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<EmptyValidator>("Pole '{PropertyName}' musi być puste.");
 			Translate<NullValidator>("Pole '{PropertyName}' musi być puste.");
 			Translate<EnumValidator>("Pole '{PropertyName}' ma zakres wartości, który nie obejmuje {PropertyValue}.");
+			// Additional fallback messages used by clientside validation integration.
+			Translate("Length_Simple", "Długość pola '{PropertyName}' musi się zawierać pomiędzy {MinLength} i {MaxLength} znaki(ów).");
+			Translate("MinimumLength_Simple", "Długość pola '{PropertyName}' musi być większa lub równa {MinLength} znaki(ów).");
+			Translate("MaximumLength_Simple", "Długość pola '{PropertyName}' musi być mniejszy lub równy {MaxLength} znaki(ów).");
+			Translate("ExactLength_Simple", "Pole '{PropertyName}' musi posiadać długość {MaxLength} znaki(ów).");
+			Translate("InclusiveBetween_Simple", "Wartość pola '{PropertyName}' musi się zawierać pomiędzy {From} i {To}.");
 		}
 	}
 }

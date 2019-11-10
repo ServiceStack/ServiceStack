@@ -4,8 +4,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using ServiceStack.DataAnnotations;
 using ServiceStack.IO;
@@ -18,6 +21,703 @@ namespace ServiceStack.Script
     
     public class ProtectedScripts : ScriptMethods
     {
+        public static readonly ProtectedScripts Instance = new ProtectedScripts();
+
+        public object resolve(ScriptScopeContext scope, object type)
+        {
+            if (type == null)
+                return null;
+            var t = type as Type ?? (type is string s
+                        ? @typeof(s)
+                        : throw new NotSupportedException($"{nameof(resolve)} requires a Type or Type Name, received '{type.GetType().Name}'"));
+
+            var instance = scope.Context.Container.Resolve(t);
+            return instance;
+        }
+        
+        public object @new(string typeName)
+        {
+            var type = @typeof(typeName);
+            return type != null 
+                ? createInstance(type) 
+                : null;
+        }
+
+        public object @new(string typeName, List<object> constructorArgs)
+        {
+            var type = @typeof(typeName);
+            return type != null 
+                ? createInstance(type, constructorArgs) 
+                : null;
+        }
+
+        public object set(object instance, Dictionary<string, object> args)
+        {
+            args.PopulateInstance(instance);
+            return instance;
+        }
+
+        private Type[] typeGenericTypes(string typeName)
+        {
+            return typeGenericTypes(typeGenericArgs(typeName));
+        }
+
+        private Type[] typeGenericTypes(List<string> genericArgs)
+        {
+            var genericTypes = new List<Type>();
+            foreach (var genericArg in genericArgs)
+            {
+                var genericType = @typeof(genericArg);
+                genericTypes.Add(genericType);
+            }
+
+            return genericTypes.ToArray();
+        }
+
+        private static List<string> typeGenericArgs(string typeName)
+        {
+            var argList = typeName.RightPart('<');
+            argList = argList.Substring(0, argList.Length - 1);
+            var splitArgs = StringUtils.SplitGenericArgs(argList);
+            return splitArgs;
+        }
+
+        public object createInstance(Type type) => AssertCanCreateType(type).CreateInstance();
+
+        public object createInstance(Type type, List<object> constructorArgs)
+        {
+            var key = callKey(AssertCanCreateType(type), "<new>", constructorArgs);
+
+            var activator = (ObjectActivator) Context.Cache.GetOrAdd(key, k => {
+                
+                var args = constructorArgs;
+                var argTypes = args?.Select(x => x?.GetType()).ToArray() ?? TypeConstants.EmptyTypeArray;
+                
+                var ctorInfo = ResolveConstructor(type, argTypes);
+                return ctorInfo.GetActivator();
+            });
+
+            return activator(constructorArgs?.ToArray() ?? TypeConstants.EmptyObjectArray);
+        }
+
+        private Type AssertCanCreateType(Type type)
+        {
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
+
+            if (!type.IsPublic && !Context.AllowScriptingOfAllTypes)
+                throw new NotSupportedException(
+                    "Can only create instances of non public Types when AllowScriptingOfAllTypes=true");
+            return type;
+        }
+
+        private ConstructorInfo ResolveConstructor(Type type, Type[] argTypes)
+        {
+            var argsCount = argTypes.Length;
+            var ctors = type.GetConstructors()
+                .Where(x => x.GetParameters().Length == argsCount).ToArray();
+
+            if (ctors.Length == 0)
+            {
+                var argTypesList = string.Join(",", argTypes.Select(x => x?.Name ?? "null"));
+                throw new NotSupportedException(
+                    $"Constructor {typeQualifiedName(type)}({argTypesList}) does not exist");
+            }
+
+            ConstructorInfo targetCtor = null;
+            if (ctors.Length > 1)
+            {
+                var candidates = 0;
+                foreach (var ctor in ctors)
+                {
+                    var match = true;
+
+                    var ctorParams = ctor.GetParameters();
+                    for (var i = 0; i < argTypes.Length; i++)
+                    {
+                        var argType = argTypes[i];
+                        if (argType == null)
+                            continue;
+
+                        match = ctorParams[i].ParameterType == argType;
+                        if (!match)
+                            break;
+                    }
+
+                    if (match)
+                    {
+                        targetCtor = ctor;
+                        candidates++;
+                    }
+                }
+
+                if (targetCtor == null || candidates != 1)
+                {
+                    var argTypesList = string.Join(",", argTypes.Select(x => x?.Name ?? "null"));
+                    throw new NotSupportedException(
+                        $"Could not resolve ambiguous constructor {typeQualifiedName(type)}({argTypesList})");
+                }
+            }
+            else targetCtor = ctors[0];
+
+            return targetCtor;
+        }
+
+        public Type getType(object instance) => instance?.GetType();
+
+        public string typeQualifiedName(Type type)
+        {
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
+
+            var sb = StringBuilderCache.Allocate();
+            sb.Append(type.Namespace).Append('.');
+            
+            if (type.GenericTypeArguments.Length > 0)
+            {
+                sb.Append(type.Name.LeftPart('`'))
+                    .Append('<');
+
+                var i = 0;
+                foreach (var arg in type.GenericTypeArguments)
+                {
+                    if (i++ > 0)
+                        sb.Append(',');
+                    
+                    sb.Append(typeQualifiedName(arg));
+                }
+                sb.Append('>');
+            }
+            else
+            {
+                sb.Append(type.Name);
+            }
+
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+
+        public static string TypeNotFoundErrorMessage(string typeName) => $"Could not resolve Type '{typeName}'. " +
+            $"Use ScriptContext.ScriptAssemblies or ScriptContext.AllowScriptingOfAllTypes + ScriptNamespaces to increase Type resolution";
+        
+        public Type assertTypeOf(string name)
+        {
+            var type = @typeof(name);
+            if (type == null)
+                throw new NotSupportedException(TypeNotFoundErrorMessage(name));
+            return type;
+        }
+
+
+        /// <summary>
+        /// Returns Type from type name syntax of .NET's typeof() 
+        /// </summary>
+        public Type @typeof(string typeName)
+        {
+            typeName = typeName?.Trim();
+            
+            if (string.IsNullOrEmpty(typeName))
+                return null;
+            
+            var key = "type:" + typeName;
+
+            Type cookType(Type type, List<string> genericArgs, bool isArray)
+            {
+                if (type.IsGenericType)
+                {
+                    var isGenericDefinition = genericArgs != null && genericArgs.All(x => x == "");
+                    if (!isGenericDefinition)
+                    {
+                        var genericTypes = typeGenericTypes(genericArgs);
+                        type = type.MakeGenericType(genericTypes);
+                    }
+                }
+
+                if (isArray)
+                {
+                    type = type.MakeArrayType();
+                }
+            
+                return type;
+            }
+            
+            Type onlyTypeOf(string _typeName)
+            {
+                var isArray = _typeName.EndsWith("[]");
+                if (isArray)
+                {
+                    _typeName = _typeName.Substring(0, _typeName.Length - 2);
+                }
+
+                var isGeneric = _typeName.IndexOf('<') >= 0;
+                List<string> genericArgs = null;
+
+                if (isGeneric)
+                {
+                    genericArgs = typeGenericArgs(_typeName);
+                    _typeName = _typeName.LeftPart('<') + '`' + Math.Max(genericArgs.Count, 1);
+                }
+
+                if (_typeName.IndexOf('.') >= 0)
+                {
+                    if (Context.ScriptTypeQualifiedNameMap.TryGetValue(_typeName, out var type))
+                        return cookType(type, genericArgs, isArray);
+
+                    if (Context.AllowScriptingOfAllTypes)
+                    {
+                        type = AssemblyUtils.FindType(_typeName);
+                        if (type != null)
+                            return cookType(type, genericArgs, isArray);
+                    }
+                }
+                else
+                {
+                    switch (_typeName)
+                    {
+                        case "bool":
+                            return !isArray ? typeof(bool) : typeof(bool[]);
+                        case "byte":
+                            return !isArray ? typeof(byte) : typeof(byte[]);
+                        case "sbyte":
+                            return !isArray ? typeof(sbyte) : typeof(sbyte[]);
+                        case "char":
+                            return !isArray ? typeof(char) : typeof(char[]);
+                        case "decimal":
+                            return !isArray ? typeof(decimal) : typeof(decimal[]);
+                        case "double":
+                            return !isArray ? typeof(double) : typeof(double[]);
+                        case "float":
+                            return !isArray ? typeof(float) : typeof(float[]);
+                        case "int":
+                            return !isArray ? typeof(int) : typeof(int[]);
+                        case "uint":
+                            return !isArray ? typeof(uint) : typeof(uint[]);
+                        case "long":
+                            return !isArray ? typeof(long) : typeof(long[]);
+                        case "ulong":
+                            return !isArray ? typeof(ulong) : typeof(ulong[]);
+                        case "object":
+                            return !isArray ? typeof(object) : typeof(object[]);
+                        case "short":
+                            return !isArray ? typeof(short) : typeof(short[]);
+                        case "ushort":
+                            return !isArray ? typeof(ushort) : typeof(ushort[]);
+                        case "string":
+                            return !isArray ? typeof(string) : typeof(string[]);
+                    }
+
+                    if (Context.ScriptTypeNameMap.TryGetValue(_typeName, out var type))
+                        return cookType(type, genericArgs, isArray);
+                }
+
+                foreach (var ns in Context.ScriptNamespaces)
+                {
+                    var lookupType = ns + "." + _typeName;
+                    if (Context.ScriptTypeQualifiedNameMap.TryGetValue(lookupType, out var type))
+                        return cookType(type, genericArgs, isArray);
+                    
+                    if (Context.AllowScriptingOfAllTypes)
+                    {
+                        type = AssemblyUtils.FindType(lookupType);
+                        if (type != null)
+                            return cookType(type, genericArgs, isArray);
+                    }
+                }
+
+                return null;
+            }
+
+            var resolvedType = (Type) Context.Cache.GetOrAdd(key, k => {
+
+                var type = onlyTypeOf(typeName);
+                if (type != null)
+                    return type;
+
+                var parts = typeName.Split('.');
+                if (parts.Length > 1)
+                {
+                    var nameBuilder = "";
+                    for (var i = 0; i < parts.Length; i++)
+                    {
+                        try
+                        {
+                            if (i > 0)
+                                nameBuilder += '.';
+                            
+                            nameBuilder += parts[i];
+                            var parentType = onlyTypeOf(nameBuilder);
+                            if (parentType != null)
+                            {
+                                var nestedTypeName = parts[++i];
+                                var nestedType = parentType.GetNestedType(nestedTypeName);
+                                i++;
+                                while (i < parts.Length)
+                                {
+                                    nestedTypeName = parts[i++];
+                                    nestedType = nestedType.GetNestedType(nestedTypeName);
+                                }
+                                return nestedType;
+                            }
+                        }
+                        catch { }
+                    }
+                }
+
+                return null;
+            });
+
+            return resolvedType;
+        }
+
+        public object call(object instance, string name) => call(instance, name, null);
+
+        internal string callKey(Type type, string name, List<object> args)
+        {
+            var sb = StringBuilderCache.Allocate()
+                .Append("call:")
+                .Append(type.Namespace)
+                .Append('.')
+                .Append(type.Name)
+                .Append('.')
+                .Append(name);
+
+            if (type.GenericTypeArguments.Length > 0)
+            {
+                sb.Append('<');
+                for (var i = 0; i < type.GenericTypeArguments.Length; i++)
+                {
+                    if (i > 0)
+                        sb.Append(',');
+                    var genericArg = type.GenericTypeArguments[i];
+                    sb.Append(typeQualifiedName(genericArg));
+                }
+                sb.Append('>');
+            }
+            
+            appendArgTypes(sb, args);
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+
+        static string argTypesString(List<object> args)
+        {
+            var sb = StringBuilderCache.Allocate();
+            appendArgTypes(sb, args);
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+
+        private static void appendArgTypes(StringBuilder sb, List<object> args)
+        {
+            sb.Append('(');
+
+            if (args != null)
+            {
+                for (var i = 0; i < args.Count; i++)
+                {
+                    if (i > 0)
+                        sb.Append(',');
+                    var argType = args[i]?.GetType();
+                    sb.Append(argType == null ? "null" : argType.Namespace + '.' + argType.Name);
+                }
+            }
+
+            sb.Append(')');
+        }
+
+        public object call(object instance, string name, List<object> args)
+        {
+            if (instance == null)
+                throw new ArgumentNullException(nameof(instance));
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+            
+            var type = instance.GetType();
+
+            var key = callKey(type, name, args);
+
+            var invoker = (Delegate)Context.Cache.GetOrAdd(key, k => {
+                var argTypes = args?.Select(x => x?.GetType()).ToArray();
+                var targetMethod = ResolveMethod(type, name, argTypes, argTypes?.Length ?? 0, out var fn);
+                if (targetMethod != null && targetMethod.IsStatic)
+                    throw new NotSupportedException($"Cannot call static method {instance.GetType().Name}.{targetMethod.Name}");
+                
+                return fn ?? targetMethod.GetInvokerDelegate();
+            });
+
+            if (invoker is MethodInvoker methodInvoker)
+            {
+                var ret = methodInvoker(instance, args?.ToArray() ?? TypeConstants.EmptyObjectArray);
+                return ret;
+            }
+            if (invoker is ActionInvoker actionInvoker)
+            {
+                actionInvoker(instance, args?.ToArray() ?? TypeConstants.EmptyObjectArray);
+                return IgnoreResult.Value;
+            }
+
+            throw new NotSupportedException($"Cannot call {invoker.GetType().Name} methods");
+        }
+
+        private MethodInfo ResolveMethod(Type type, string methodName, Type[] argTypes, int? argsCount, out Delegate invokerDelegate)
+        {
+            invokerDelegate = null;
+            var isGeneric = methodName.IndexOf('<') >= 0;
+            var name = isGeneric ? methodName.LeftPart('<') : methodName;
+
+            var genericArgs = isGeneric
+                ? typeGenericArgs(methodName)
+                : TypeConstants.EmptyStringList;
+            var genericArgsCount = genericArgs.Count;
+
+            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)
+                .Where(x => x.Name == name && (argsCount == null || x.GetParameters().Length == argsCount.Value) 
+                    && ((genericArgs.Count == 0 && !x.IsGenericMethod) || (x.IsGenericMethod && x.GetGenericArguments().Length == genericArgsCount)))
+                .ToArray();
+
+            MethodInfo targetMethod = null;
+            if (methods.Length == 0)
+            {
+                if ((argTypes?.Length ?? 0) == 0)
+                {
+                    var prop = type.GetProperty(name,BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+
+                    if (prop != null)
+                    {
+                        targetMethod = prop.GetMethod;
+                        if (targetMethod == null)
+                        {
+                            throw new NotSupportedException(
+                                $"Property {typeQualifiedName(type)}.{name} does not have a getter");
+                        }
+                    }
+                    else
+                    {
+                        var field = type.GetField(name,BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+                        if (field != null)
+                        {
+                            if (field.IsStatic)
+                            {
+                                invokerDelegate = (StaticMethodInvoker) ((args) => field.GetValue(null));
+                                return null;
+                            }
+                            else
+                            {
+                                invokerDelegate = (MethodInvoker) ((instance, args) => field.GetValue(instance));
+                                return null;
+                            }
+                        }
+                    }
+                }
+
+                if (targetMethod == null)
+                {
+                    throw new NotSupportedException(
+                        $"Method {typeQualifiedName(type)}.{name} does not exist");
+                }
+            }
+
+            if (targetMethod == null)
+            {
+                if (methods.Length > 1)
+                {
+                    var candidates = 0;
+                    foreach (var method in methods)
+                    {
+                        var match = true;
+
+                        var methodParams = method.GetParameters();
+                        if (argTypes != null)
+                        {
+                            for (var i = 0; i < argTypes.Length; i++)
+                            {
+                                var argType = argTypes[i];
+                                if (argType == null)
+                                    continue;
+
+                                match = methodParams[i].ParameterType == argType;
+                                if (!match)
+                                    break;
+                            }
+                        }
+
+                        if (match)
+                        {
+                            targetMethod = method;
+                            candidates++;
+                        }
+                    }
+
+                    if (targetMethod == null || candidates != 1)
+                    {
+                        var argTypesList = argTypes != null ? string.Join(",", argTypes.Select(x => x?.Name ?? "null")) : "";
+                        throw new NotSupportedException(
+                            $"Could not resolve ambiguous method {typeQualifiedName(type)}.{name}({argTypesList})");
+                    }
+                }
+                else targetMethod = methods[0];
+            }
+
+            if (targetMethod.IsGenericMethod)
+            {
+                var genericTypes = typeGenericTypes(methodName);
+                targetMethod = targetMethod.MakeGenericMethod(genericTypes);
+            }
+
+            if (targetMethod == null)
+                throw new NotSupportedException(MethodNotExists($"{type.Name}.{name}"));
+
+            return targetMethod;
+        }
+
+        /// <summary>
+        /// Qualified Constructor Name Examples:
+        ///  - Type()
+        ///  - Type(string)
+        ///  - GenericType&lt;string&lt;(System.Int32)
+        ///  - Namespace.Type()
+        /// </summary>
+        public ObjectActivator Constructor(string qualifiedConstructorName)
+        {
+            if (qualifiedConstructorName.IndexOf('(') == -1)
+                throw new NotSupportedException($"Invalid Constructor Name '{qualifiedConstructorName}', " +
+                    $"format: <type>(<arg-types>), e.g. Uri(String), see: https://sharpscript.net/docs/script-net");
+            
+            var name = qualifiedConstructorName;
+
+            var activator = (ObjectActivator) Context.Cache.GetOrAdd(nameof(Constructor) + ":" + name, k => {
+                var argList = name.LastRightPart('(');
+                argList = argList?.Substring(0, argList.Length - 1);
+                var argTypes = typeGenericTypes(StringUtils.SplitGenericArgs(argList));
+
+                name = name.LastLeftPart('(');
+
+                var type = assertTypeOf(name);
+
+                var ctor = ResolveConstructor(type, argTypes);
+
+                return ctor.GetActivator();
+            });
+            
+            return activator;
+        }
+
+        /// <summary>
+        /// Shorter Alias for Constructor
+        /// </summary>
+        /// <returns></returns>
+        public Delegate C(string qualifiedMethodName) => Constructor(qualifiedMethodName);
+
+        /// <summary>
+        /// Shorter Alias for Function
+        /// </summary>
+        /// <returns></returns>
+        public Delegate F(string qualifiedMethodName) => Function(qualifiedMethodName);
+
+        /// <summary>
+        /// Shorter Alias for Function(name,args)
+        /// </summary>
+        /// <returns></returns>
+        public Delegate F(string qualifiedMethodName, List<object> args) => Function(qualifiedMethodName, args);
+
+        /// <summary>
+        /// Qualified Method Name Examples:
+        ///  - Console.WriteLine(string)
+        ///  - Type.StaticMethod
+        ///  - Type.InstanceMethod
+        ///  - GenericType&lt;string&lt;.Method
+        ///  - GenericType&lt;string&lt;.GenericMethod&lt;System.Int32&lt;
+        ///  - Namespace.Type.Method
+        /// </summary>
+        public Delegate Function(string qualifiedMethodName)
+        {
+            if (qualifiedMethodName.IndexOf('.') == -1)
+                throw new NotSupportedException($"Invalid Function Name '{qualifiedMethodName}', " +
+                    $"format: <type>.<method>(<arg-types>), e.g. Console.WriteLine(string), see: https://sharpscript.net/docs/script-net");
+
+            var invoker = (Delegate) Context.Cache.GetOrAdd(nameof(Function) + ":" + qualifiedMethodName, k => 
+                ResolveFunction(qualifiedMethodName));
+
+            return invoker;
+        }
+
+        /// <summary>
+        /// Resolve Function from qualified type name, when args Type list are unspecified fallback to use args to resolve ambiguous methods
+        /// 
+        /// Qualified Method Name Examples:
+        ///  - Console.WriteLine ['string']
+        ///  - Type.StaticMethod
+        ///  - Type.InstanceMethod
+        ///  - GenericType&lt;string&lt;.Method
+        ///  - GenericType&lt;string&lt;.GenericMethod&lt;System.Int32&lt;
+        ///  - Namespace.Type.Method
+        /// </summary>
+        public Delegate Function(string qualifiedMethodName, List<object> args)
+        {
+            if (qualifiedMethodName.IndexOf('.') == -1)
+                throw new NotSupportedException($"Invalid Function Name '{qualifiedMethodName}', " +
+                                                $"format: <type>.<method>(<arg-types>), e.g. Console.WriteLine(string), see: https://sharpscript.net/docs/script-net");
+
+            var key = nameof(Function) + ":" + qualifiedMethodName + argTypesString(args);
+            var invoker = (Delegate)Context.Cache.GetOrAdd(key, k => 
+                ResolveFunction(qualifiedMethodName, args?.Select(x => x?.GetType()).ToArray()));
+
+            return invoker;
+        }
+
+        private Delegate ResolveFunction(string name, Type[] argTypes=null)
+        {
+            var hasArgsList = name.IndexOf('(') >= 0;
+            var argList = hasArgsList
+                ? name.LastRightPart('(')
+                : null;
+            argList = argList?.Substring(0, argList.Length - 1);
+
+            name = name.LastLeftPart('(');
+
+            var lastGenericPos = name.LastIndexOf('>');
+            var lastSepPos = name.LastIndexOf('.');
+
+            int pos = -1;
+            if (lastSepPos > lastGenericPos)
+            {
+                pos = lastSepPos;
+            }
+            else
+            {
+                var genericPos = name.IndexOf('<');
+                pos = genericPos >= 0
+                    ? name.LastIndexOf('.', genericPos)
+                    : name.LastIndexOf('.');
+
+                if (pos == -1)
+                    pos = name.IndexOf(">.", StringComparison.Ordinal) + 1;
+            }
+
+            if (pos == -1)
+                throw new NotSupportedException($"Could not parse Function Name '{name}', " +
+                                                $"format: <type>.<method>(<arg-types>), e.g. Console.WriteLine(string)");
+
+
+            var typeName = name.Substring(0, pos);
+            var methodName = name.Substring(pos + 1);
+
+            if (hasArgsList)
+            {
+                var splitArgs = StringUtils.SplitGenericArgs(argList);
+                argTypes = typeGenericTypes(splitArgs);
+                for (var i = 0; i < argTypes.Length; i++)
+                {
+                    if (argTypes[i] == null)
+                        throw new NotSupportedException($"Could not resolve Argument Type '{splitArgs[i]}' for '{name}'");
+                }
+            }
+
+            var type = assertTypeOf(typeName);
+
+            var method = ResolveMethod(type, methodName, argTypes, argTypes?.Length, out var fn);
+            return fn ?? method.GetInvokerDelegate();
+        }
+
+        static string MethodNotExists(string methodName) => $"Method {methodName} does not exist"; 
+
         public MemoryVirtualFiles vfsMemory() => new MemoryVirtualFiles();
 
         public FileSystemVirtualFiles vfsFileSystem(string dirPath) => new FileSystemVirtualFiles(dirPath);
@@ -241,19 +941,7 @@ namespace ServiceStack.Script
         {
             var scopedParams = scope.AssertOptions(nameof(includeUrl), options);
 
-            var webReq = (HttpWebRequest)WebRequest.Create(url);
-            var dataType = scopedParams.TryGetValue("dataType", out object value)
-                ? ConvertDataTypeToContentType((string)value)
-                : null;
-
-            if (scopedParams.TryGetValue("method", out value))
-                webReq.Method = (string)value;
-            if (scopedParams.TryGetValue("contentType", out value) || dataType != null)
-                webReq.ContentType = (string)value ?? dataType;            
-            if (scopedParams.TryGetValue("accept", out value) || dataType != null) 
-                webReq.Accept = (string)value ?? dataType;            
-            if (scopedParams.TryGetValue("userAgent", out value))
-                PclExport.Instance.SetUserAgent(webReq, (string)value);
+            var webReq = initWebRequest(url, scopedParams);
 
             if (scopedParams.TryRemove("data", out object data))
             {
@@ -274,6 +962,73 @@ namespace ServiceStack.Script
             using (var stream = webRes.GetResponseStream())
             {
                 await stream.CopyToAsync(scope.OutputStream);
+            }
+        }
+
+        private static HttpWebRequest initWebRequest(string url, Dictionary<string, object> scopedParams)
+        {
+            var webReq = (HttpWebRequest) WebRequest.Create(url);
+            var dataType = scopedParams.TryGetValue("dataType", out object value)
+                ? ConvertDataTypeToContentType((string) value)
+                : null;
+
+            if (scopedParams.TryGetValue("method", out value))
+                webReq.Method = (string) value;
+            if (scopedParams.TryGetValue("contentType", out value) || dataType != null)
+                webReq.ContentType = (string) value ?? dataType;
+            if (scopedParams.TryGetValue("accept", out value) || dataType != null)
+                webReq.Accept = (string) value ?? dataType;
+            if (scopedParams.TryGetValue("userAgent", out value))
+                PclExport.Instance.SetUserAgent(webReq, (string) value);
+            return webReq;
+        }
+
+        private static HttpWebRequest postWebRequestSync(string url, Dictionary<string, object> scopedParams)
+        {
+            var webReq = initWebRequest(url, scopedParams);
+
+            if (scopedParams.TryRemove("data", out object data))
+            {
+                if (webReq.Method == null)
+                    webReq.Method = HttpMethods.Post;
+
+                if (webReq.ContentType == null)
+                    webReq.ContentType = MimeTypes.FormUrlEncoded;
+
+                var body = ConvertDataToString(data, webReq.ContentType);
+                using (var stream = webReq.GetRequestStream())
+                {
+                    var utf8 = MemoryProvider.Instance.ToUtf8(body.AsSpan()).ToArray();
+                    stream.Write(utf8, 0, utf8.Length);
+                }
+            }
+
+            return webReq;
+        }
+
+        public string urlTextContents(ScriptScopeContext scope, string url, object options)
+        {
+            var scopedParams = scope.AssertOptions(nameof(urlTextContents), options);
+            var webReq = postWebRequestSync(url, scopedParams);
+
+            using (var webRes = webReq.GetResponse())
+            using (var stream = webRes.GetResponseStream())
+            {
+                var ret = stream.ReadToEnd();
+                return ret;
+            }
+        }
+
+        public ReadOnlyMemory<byte> urlBytesContents(ScriptScopeContext scope, string url, object options)
+        {
+            var scopedParams = scope.AssertOptions(nameof(urlTextContents), options);
+            var webReq = postWebRequestSync(url, scopedParams);
+
+            using (var webRes = webReq.GetResponse())
+            using (var stream = webRes.GetResponseStream())
+            {
+                var ret = stream.ReadFullyAsMemory();
+                return ret;
             }
         }
 
@@ -426,12 +1181,97 @@ namespace ServiceStack.Script
                 await scope.OutputStream.WriteAsync(bytes);
             }
         }
+
+        public List<ScriptMethodInfo> scriptMethods(ScriptScopeContext scope)
+        {
+            var methods = scope.Context.ScriptMethods.SelectMany(x => ScriptMethodInfo.GetScriptMethods(x.GetType()))
+                .OrderBy(x => x.Name)
+                .ThenBy(x => x.ParamCount)
+                .ToList();
+            return methods;
+        }
+
+        public List<string> scriptMethodNames(ScriptScopeContext scope) => scriptMethods(scope)
+            .Map(x => x.Name);
+
+        public List<string> scriptMethodSignatures(ScriptScopeContext scope) => scriptMethods(scope)
+            .Map(x => x.Signature);
+
+        private ScriptMethodInfo[] filterMethods(MethodInfo[] methodInfos) =>
+            methodInfos.Where(m => !m.IsSpecialName && m.DeclaringType != typeof(object))
+                .Select(ScriptMethodInfo.Create).ToArray();
+        public List<string> methods(object o)
+        {
+            if (o == null)
+                return TypeConstants.EmptyStringList;
+
+            var mis = methodTypes(o);
+            return mis.Map(x => x.Name).OrderBy(x => x).ToList();
+        }
+
+        public ScriptMethodInfo[] methodTypes(object o)
+        {
+            if (o == null)
+                return TypeConstants<ScriptMethodInfo>.EmptyArray;
+            
+            var type = o is Type t
+                ? t
+                : o.GetType();
+
+            return filterMethods(type.GetInstanceMethods());
+        }
+        
+        public List<string> staticMethods(object o)
+        {
+            if (o == null)
+                return TypeConstants.EmptyStringList;
+
+            var mis = staticMethodTypes(o);
+            return mis.Map(x => x.Name).OrderBy(x => x).ToList();
+        }
+
+        public ScriptMethodInfo[] staticMethodTypes(object o)
+        {
+            if (o == null)
+                return TypeConstants<ScriptMethodInfo>.EmptyArray;
+            
+            var type = o is Type t
+                ? t
+                : o.GetType();
+
+            return filterMethods(type.GetMethods(BindingFlags.Static | BindingFlags.Public));
+        }
+
+        public ScriptMethodInfo[] allMethodTypes(object o)
+        {
+            if (o == null)
+                return TypeConstants<ScriptMethodInfo>.EmptyArray;
+            
+            var type = o is Type t
+                ? t
+                : o.GetType();
+
+            return type.GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                .Select(ScriptMethodInfo.Create).ToArray();
+        }
+
+        public MemberInfo[] allMemberInfos(object o)
+        {
+            if (o == null)
+                return TypeConstants<MemberInfo>.EmptyArray;
+            
+            var type = o is Type t
+                ? t
+                : o.GetType();
+
+            return type.GetMembers(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        }
         
         static readonly string[] AllCacheNames = {
             nameof(ScriptContext.Cache),
             nameof(ScriptContext.CacheMemory),
             nameof(ScriptContext.ExpiringCache),
-            nameof(SharpPageUtils.BinderCache),
+            nameof(ScriptTemplateUtils.BinderCache),
             nameof(ScriptContext.JsTokenCache),
             nameof(ScriptContext.AssignExpressionCache),
             nameof(ScriptContext.PathMappings),
@@ -447,8 +1287,8 @@ namespace ServiceStack.Script
                     return Context.CacheMemory;
                 case nameof(ScriptContext.ExpiringCache):
                     return Context.ExpiringCache;
-                case nameof(SharpPageUtils.BinderCache):
-                    return SharpPageUtils.BinderCache;
+                case nameof(ScriptTemplateUtils.BinderCache):
+                    return ScriptTemplateUtils.BinderCache;
                 case nameof(ScriptContext.JsTokenCache):
                     return Context.JsTokenCache;
                 case nameof(ScriptContext.AssignExpressionCache):
@@ -595,6 +1435,5 @@ namespace ServiceStack.Script
             catch {}               
             return null;
         }
-        
     }
 }

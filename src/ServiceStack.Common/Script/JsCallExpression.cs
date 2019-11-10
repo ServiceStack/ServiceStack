@@ -20,37 +20,133 @@ namespace ServiceStack.Script
         private string nameString;
         public string Name => nameString ?? (nameString = Callee is JsIdentifier identifier ? identifier.Name : null);
 
-       
+        public static object InvokeDelegate(Delegate fn, object target, bool isMemberExpr, List<object> fnArgValues)
+        {
+#if DEBUG            
+            try
+#endif            
+            { 
+                if (fn is MethodInvoker methodInvoker)
+                {
+                    if (target == null && !isMemberExpr && fnArgValues.Count > 0)
+                    {
+                        target = fnArgValues[0];
+                        fnArgValues.RemoveAt(0);
+                    }
+
+                    return methodInvoker(target, fnArgValues.ToArray());
+                }
+                if (fn is ActionInvoker actionInvoker)
+                {
+                    if (target == null && !isMemberExpr && fnArgValues.Count > 0)
+                    {
+                        target = fnArgValues[0];
+                        fnArgValues.RemoveAt(0);
+                    }
+                    
+                    actionInvoker(target, fnArgValues.ToArray());
+                    return IgnoreResult.Value;
+                }
+                if (fn is StaticMethodInvoker staticMethodInvoker)
+                {
+                    if (isMemberExpr)
+                        fnArgValues.Insert(0, target);
+                    
+                    return staticMethodInvoker(fnArgValues.ToArray());
+                }
+                if (fn is StaticActionInvoker staticActionInvoker)
+                {
+                    if (isMemberExpr)
+                        fnArgValues.Insert(0, target);
+
+                    staticActionInvoker(fnArgValues.ToArray());
+                    return IgnoreResult.Value;
+                }
+                if (fn is ObjectActivator activator)
+                {
+                    if (isMemberExpr)
+                        fnArgValues.Insert(0, target);
+
+                    return activator(fnArgValues.ToArray());
+                }
+
+                var delegateInvoker = fn.Method.GetInvokerDelegate();
+
+                if (target != null && isMemberExpr)
+                {
+                    fnArgValues.Insert(0, target);
+                }
+
+                var isStaticDelegate = delegateInvoker is StaticMethodInvoker || delegateInvoker is StaticActionInvoker;
+                target = isStaticDelegate
+                    ? null
+                    : fn.Method.DeclaringType.CreateInstance();
+                if (isStaticDelegate)
+                    isMemberExpr = false;
+                
+                return InvokeDelegate(delegateInvoker, 
+                    target, 
+                    isMemberExpr, fnArgValues);
+            }
+#if DEBUG            
+            catch (Exception e)
+            {
+                var ex = e.GetInnerMostException().UnwrapIfSingleException().GetInnerMostException();
+                Logging.LogManager.GetLogger(typeof(JsCallExpression)).Error(ex.Message + "\n" + ex.StackTrace, ex);
+                throw;
+            }
+#endif            
+        }
+
         public override object Evaluate(ScriptScopeContext scope)
         {
-            string ResolveMethodName(JsMemberExpression expr)
+            string ResolveMethodName(JsToken token)
             {
-                if (!expr.Computed) 
-                    return JsObjectExpression.GetKey(expr.Property);
-                
-                var propValue = expr.Property.Evaluate(scope);
-                var s = propValue as string;
-                if (s == null)
-                    throw new NotSupportedException($"Expected string method name but was '{propValue?.GetType().Name ?? "null"}'");
-                return s;
+                if (token is JsIdentifier identifier)
+                    return identifier.Name;
+
+                if (token is JsMemberExpression memberExpr)
+                {
+                    if (!memberExpr.Computed)
+                        return JsObjectExpression.GetKey(memberExpr.Property);
+
+                    var propValue = memberExpr.Property.Evaluate(scope);
+                    if (!(propValue is string s))
+                        throw new NotSupportedException($"Expected string method name but was '{propValue?.GetType().Name ?? "null"}'");
+                    return s;
+                }
+
+                return null;
             }
+
 
             MethodInvoker invoker;
             ScriptMethods filter;
             object value;
-            string name;
+
+            var name = ResolveMethodName(Callee);
             var result = scope.PageResult;
+
+            if (result.StackDepth > scope.Context.MaxStackDepth)
+                throw new StackOverflowException("Exceeded MaxStackDepth of " + scope.Context.MaxStackDepth);
+
+            var expr = Callee as JsMemberExpression;
 
             if (Arguments.Length == 0)
             {
-                if (Callee is JsMemberExpression expr)
+                var argFn = ResolveDelegate(scope, name);
+                if (argFn is Delegate fn)
                 {
-                    name = ResolveMethodName(expr);
-                    
+                    var ret = InvokeDelegate(fn, expr?.Object.Evaluate(scope), expr != null, new List<object>());
+                    return ret;
+                }
+
+                if (expr != null)
+                {
                     invoker = result.GetFilterInvoker(name, 1, out filter);
                     if (invoker != null)
                     {
-                        var targetValue = expr.Object.Evaluate(scope);                        
+                        var targetValue = expr.Object.Evaluate(scope);
                         if (targetValue == StopExecution.Value)
                             return targetValue;
 
@@ -69,15 +165,15 @@ namespace ServiceStack.Script
                         return value;
                     }
                 }
-                
-                value = Callee.Evaluate(scope); 
+
+                value = Callee.Evaluate(scope);
                 return value;
             }
             else
             {
                 var fnArgValuesCount = Arguments.Length;
                 foreach (var arg in Arguments)
-                {                    
+                {
                     if (arg is JsSpreadElement) // ...[1,2] Arguments.Length = 1 / fnArgValues.Length = 2
                     {
                         var expandedArgs = EvaluateArgumentValues(scope, Arguments);
@@ -86,24 +182,32 @@ namespace ServiceStack.Script
                     }
                 }
 
-                if (Callee is JsMemberExpression expr)
+                object argFn = null;
+                argFn = ResolveDelegate(scope, name);
+
+                if (argFn is Delegate fn)
                 {
-                    name = ResolveMethodName(expr);
-                    
+                    var fnArgValues = EvaluateArgumentValues(scope, Arguments);
+                    var ret = InvokeDelegate(fn, expr?.Object.Evaluate(scope), expr != null, fnArgValues);
+                    return ret;
+                }
+
+                if (expr != null)
+                {
                     invoker = result.GetFilterInvoker(name, fnArgValuesCount + 1, out filter);
                     if (invoker != null)
                     {
                         var targetValue = expr.Object.Evaluate(scope);
                         if (targetValue == StopExecution.Value)
                             return targetValue;
-                        
-                        var fnArgValues = EvaluateArgumentValues(scope, Arguments);   
+
+                        var fnArgValues = EvaluateArgumentValues(scope, Arguments);
                         fnArgValues.Insert(0, targetValue);
-                        
+
                         value = result.InvokeFilter(invoker, filter, fnArgValues.ToArray(), name);
                         return value;
                     }
-                    
+
                     invoker = result.GetContextFilterInvoker(name, fnArgValuesCount + 2, out filter);
                     if (invoker != null)
                     {
@@ -111,8 +215,8 @@ namespace ServiceStack.Script
                         if (targetValue == StopExecution.Value)
                             return targetValue;
 
-                        var fnArgValues = EvaluateArgumentValues(scope, Arguments); 
-                        fnArgValues.InsertRange(0, new[]{ scope, targetValue });
+                        var fnArgValues = EvaluateArgumentValues(scope, Arguments);
+                        fnArgValues.InsertRange(0, new[] { scope, targetValue });
                         value = result.InvokeFilter(invoker, filter, fnArgValues.ToArray(), name);
                         return value;
                     }
@@ -124,7 +228,7 @@ namespace ServiceStack.Script
                     invoker = result.GetFilterInvoker(name, fnArgValuesCount, out filter);
                     if (invoker != null)
                     {
-                        var fnArgValues = EvaluateArgumentValues(scope, Arguments); 
+                        var fnArgValues = EvaluateArgumentValues(scope, Arguments);
                         value = result.InvokeFilter(invoker, filter, fnArgValues.ToArray(), name);
                         return value;
                     }
@@ -141,6 +245,19 @@ namespace ServiceStack.Script
 
                 throw new NotSupportedException(result.CreateMissingFilterErrorMessage(name.LeftPart('(')));
             }
+        }
+
+        private object ResolveDelegate(ScriptScopeContext scope, string name)
+        {
+            if (name == null)
+            {
+                if (Callee is JsCallExpression)
+                    return Callee.Evaluate(scope);
+            }
+            else
+                return scope.GetValue(name);
+
+            return null;
         }
 
         public static List<object> EvaluateArgumentValues(ScriptScopeContext scope, JsToken[] args)
@@ -177,6 +294,7 @@ namespace ServiceStack.Script
                     sb.Append(',');
                 sb.Append(arg.ToRawString());
             }
+
             return $"{Callee.ToRawString()}({StringBuilderCacheAlt.ReturnAndFree(sb)})";
         }
 

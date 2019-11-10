@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 // Copyright (c) Jeremy Skinner (http://www.jeremyskinner.co.uk)
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +20,8 @@ namespace ServiceStack.FluentValidation.Resources {
 	using Validators;
 
 	internal class HebrewLanguage : Language {
-		public override string Name => "he";
+		public const string Culture = "he";
+		public override string Name => Culture;
 
 		public HebrewLanguage() {
 			Translate<EmailValidator>("'{PropertyName}' אינה כתובת דוא\"ל חוקית.");
@@ -46,6 +47,12 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<EmptyValidator>("'{PropertyName}' אמור להיות ריק.");
 			Translate<NullValidator>("'{PropertyName}' חייב להיות ריק.");
 			Translate<EnumValidator>("'{PropertyName}' מכיל טווח ערכים שאינו כולל את '{PropertyValue}'.");
+			// Additional fallback messages used by clientside validation integration.
+			Translate("Length_Simple", "אורך '{PropertyName}' חייב להיות בין {MinLength} ל- {MaxLength}.");
+			Translate("MinimumLength_Simple", "אורך '{PropertyName}' חייב להיות לפחות {MinLength} תווים.");
+			Translate("MaximumLength_Simple", "אורך '{PropertyName}' חייב להיות {MaxLength} תווים או פחות.");
+			Translate("ExactLength_Simple", "'{PropertyName}' חייב להיות באורך {MaxLength} תווים.");
+			Translate("InclusiveBetween_Simple", "'{PropertyName}' חייב להיות בין {From} לבין {To}.");
 		}
 	}
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using System.Web.UI;
 using ServiceStack.Host;
 using ServiceStack.Text;
@@ -119,7 +120,7 @@ namespace ServiceStack.Metadata
             return icons;
         }
 
-        public void Render(Stream output)
+        public Task RenderAsync(Stream output)
         {
             var operationsPart = new TableTemplate
             {
@@ -204,7 +205,7 @@ namespace ServiceStack.Metadata
                 Env.VersionString,
                 startupErrors);
 
-            output.Write(renderedTemplate);
+            return output.WriteAsync(renderedTemplate);
         }
 
         public Dictionary<string, string> ToAbsoluteUrls(Dictionary<string, string> linksMap)

@@ -20,7 +20,8 @@ namespace ServiceStack.FluentValidation.Resources {
 	using Validators;
 
 	internal class SlovakLanguage : Language {
-		public override string Name => "sk";
+		public const string Culture = "sk";
+		public override string Name => Culture;
 
 		public SlovakLanguage() {
 			Translate<EmailValidator>("Pole '{PropertyName}' musí obsahovať platnú emailovú adresu.");
@@ -31,9 +32,9 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<MaximumLengthValidator>("Dĺžka poľa '{PropertyName}' musí byť menšia alebo rovná {MaxLength} znakom. Vami zadaná dĺžka je {TotalLength} znakov.");
 			Translate<LessThanOrEqualValidator>("Hodnota poľa '{PropertyName}' musí byť menšia alebo sa rovnať '{ComparisonValue}'.");
 			Translate<LessThanValidator>("Hodnota poľa '{PropertyName}' musí byť menšia ako '{ComparisonValue}'.");
-			Translate<NotEmptyValidator>("Pole '{PropertyName}' nesmie byť prázdné.");
+			Translate<NotEmptyValidator>("Pole '{PropertyName}' nesmie byť prázdne.");
 			Translate<NotEqualValidator>("Pole '{PropertyName}' sa nesmie rovnať '{ComparisonValue}'.");
-			Translate<NotNullValidator>("Pole '{PropertyName}' nesmie byť prázdné.");
+			Translate<NotNullValidator>("Pole '{PropertyName}' nesmie byť prázdne.");
 			Translate<PredicateValidator>("Nebola splnená podmienka pre pole '{PropertyName}'.");
 			Translate<AsyncPredicateValidator>("Nebola splnená podmienka pre pole '{PropertyName}'.");
 			Translate<RegularExpressionValidator>("Pole '{PropertyName}' nemá správný formát.");
@@ -46,6 +47,12 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<EmptyValidator>("Pole '{PropertyName}' musí byť prázdne.");
 			Translate<NullValidator>("Pole '{PropertyName}' musí byť prázdne.");
 			Translate<EnumValidator>("Pole '{PropertyName}' má rozsah hodnôt, ktoré neobsahujú '{PropertyValue}'.");
+			// Additional fallback messages used by clientside validation integration.
+			Translate("Length_Simple", "Dĺžka poľa '{PropertyName}' musí byť medzi {MinLength} a {MaxLength} znakmi.");
+			Translate("MinimumLength_Simple", "Dĺžka poľa '{PropertyName}' musí byť väčšia alebo rovná {MinLength} znakom.");
+			Translate("MaximumLength_Simple", "Dĺžka poľa '{PropertyName}' musí byť menšia alebo rovná {MaxLength} znakom.");
+			Translate("ExactLength_Simple", "Dĺžka poľa '{PropertyName}' musí byť {MaxLength} znakov. ");
+			Translate("InclusiveBetween_Simple", "Hodnota poľa '{PropertyName}' musí byť medzi {From} a {To} (vrátane).");
 		}
 	}
 }

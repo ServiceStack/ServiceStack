@@ -1,59 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using ServiceStack.IO;
 
 namespace ServiceStack.Script
 {
     public static class ScriptConfig
     {
-        public static HashSet<string> RemoveNewLineAfterFiltersNamed { get; set; } = new HashSet<string>
-        {
-            "to",
-            "assignTo",
-            "assignToGlobal",
-            "assignError",
-            "addTo",
-            "addToGlobal",
-            "addToStart",
-            "addToStartGlobal",
-            "appendTo",
-            "appendToGlobal",
-            "prependTo",
-            "prependToGlobal",
-            "forEach",
-            "do",
-            "end",
-            "throw",
-            "ifthrow",
-            "throwIf",
-            "throwIf",
-            "ifThrowArgumentException",
-            "ifThrowArgumentNullException",
-            "throwArgumentNullExceptionIf",
-            "throwArgumentException",
-            "throwArgumentNullException",
-            "throwNotSupportedException",
-            "throwNotImplementedException",
-            "throwUnauthorizedAccessException",
-            "throwFileNotFoundException",
-            "throwOptimisticConcurrencyException",
-            "throwNotSupportedException",
-            "ifError",
-            "ifErrorFmt",
-            "skipExecutingFiltersOnError",
-            "continueExecutingFiltersOnError",
-            "publishToGateway",
-        };
-        
-        public static HashSet<string> OnlyEvaluateFiltersWhenSkippingPageFilterExecution { get; set; } = new HashSet<string>
-        {
-            "ifError",
-            "lastError",
-            "htmlError",
-            "htmlErrorMessage",
-            "htmlErrorDebug",
-        };
-        
         /// <summary>
         /// Rethrow fatal exceptions thrown on incorrect API usage    
         /// </summary>
@@ -62,6 +15,7 @@ namespace ServiceStack.Script
             typeof(NotSupportedException),
             typeof(System.Reflection.TargetInvocationException),
             typeof(NotImplementedException),
+            typeof(StackOverflowException),
         };
         
         public static HashSet<Type> CaptureAndEvaluateExceptionsToNull { get; set; } = new HashSet<Type>
@@ -69,12 +23,6 @@ namespace ServiceStack.Script
             typeof(NullReferenceException),
             typeof(ArgumentNullException),
         };
-        
-        public static HashSet<string> DontEvaluateBlocksNamed { get; set; } = new HashSet<string> {
-            "raw"
-        };
-
-        public static int MaxQuota { get; set; } = 10000;
         public static CultureInfo DefaultCulture { get; set; } //Uses CurrentCulture by default
         public static string DefaultDateFormat { get; set; }  = "yyyy-MM-dd";
         public static string DefaultDateTimeFormat { get; set; } = "u";
@@ -87,6 +35,7 @@ namespace ServiceStack.Script
         public static StringComparison DefaultStringComparison { get; set; } = StringComparison.Ordinal;
         public static string DefaultTableClassName { get; set; } = "table";
         public static string DefaultErrorClassName { get; set; } = "alert alert-danger";
+        public static bool AllowUnixPipeSyntax { get; set; } = true;
         
         public static CultureInfo CreateCulture()
         {

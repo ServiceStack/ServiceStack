@@ -48,6 +48,7 @@ namespace ServiceStack
                 },
                 AllowJsonpRequests = true,
                 AllowRouteContentTypeExtensions = true,
+                BufferSyncSerializers = Env.IsNetCore3,
                 AllowNonHttpOnlyCookies = false,
                 DebugMode = false,
                 StrictMode = Env.StrictMode,
@@ -206,6 +207,7 @@ namespace ServiceStack
             this.PreferredContentTypes = instance.PreferredContentTypes;
             this.AllowJsonpRequests = instance.AllowJsonpRequests;
             this.AllowRouteContentTypeExtensions = instance.AllowRouteContentTypeExtensions;
+            this.BufferSyncSerializers = instance.BufferSyncSerializers;
             this.DebugMode = instance.DebugMode;
             this.StrictMode = instance.StrictMode;
             this.DefaultDocuments = instance.DefaultDocuments;
@@ -278,8 +280,9 @@ namespace ServiceStack
         internal string[] PreferredContentTypesArray = TypeConstants.EmptyStringArray; //use array at runtime
         public bool AllowJsonpRequests { get; set; }
         public bool AllowRouteContentTypeExtensions { get; set; }
-        public bool DebugMode { get; set; }
+        public bool BufferSyncSerializers { get; set; }
 
+        public bool DebugMode { get; set; }
         public bool? StrictMode { get; set; }
 
         public string DebugAspNetHostEnvironment { get; set; }

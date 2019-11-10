@@ -24,6 +24,29 @@ namespace ServiceStack
         /// </summary>
         public Func<IRequest, IHttpResult> OnAuthenticateValidate { get; set; }
 
+        /// <summary>
+        /// Custom Validation Function in AuthenticateService 
+        /// </summary>
+        public ValidateFn ValidateFn { get; set; }
+
+        public Action<IRequest, string> ValidateRedirectLinks { get; set; } = NoExternalRedirects;
+
+        public static void AllowAllRedirects(IRequest req, string redirect) {}
+        public static void NoExternalRedirects(IRequest req, string redirect)
+        {
+            redirect = redirect?.Trim();
+            if (string.IsNullOrEmpty(redirect))
+                return;
+
+            if (redirect.StartsWith("//") || redirect.IndexOf("://", StringComparison.Ordinal) >= 0)
+            {
+                if (redirect.StartsWith(req.GetBaseUrl()))
+                    return;
+                
+                throw new ArgumentException(ErrorMessages.NoExternalRedirects, nameof(Authenticate.Continue));
+            }
+        }
+
         private readonly Func<IAuthSession> sessionFactory;
         private IAuthProvider[] authProviders;
         public IAuthProvider[] AuthProviders => authProviders;
@@ -137,16 +160,28 @@ namespace ServiceStack
         }
 
         string Localize(string s) => HostContext.AppHost?.ResolveLocalizedString(s, null) ?? s;
-
-        /// <summary>
-        /// Remove /authenticate and /authenticate/{provider} routes
-        /// </summary>
-        /// <returns></returns>
+        
+        [Obsolete("The /authenticate alias routes are no longer added by default")]
         public AuthFeature RemoveAuthenticateAliasRoutes()
         {
             ServiceRoutes[typeof(AuthenticateService)] = new[] {
                 "/" + Localize(LocalizedStrings.Auth),
                 "/" + Localize(LocalizedStrings.Auth) + "/{provider}",
+            };
+            return this;
+        }
+
+        /// <summary>
+        /// Add /authenticate and /authenticate/{provider} alias routes
+        /// </summary>
+        /// <returns></returns>
+        public AuthFeature AddAuthenticateAliasRoutes()
+        {
+            ServiceRoutes[typeof(AuthenticateService)] = new[] {
+                "/" + Localize(LocalizedStrings.Auth),
+                "/" + Localize(LocalizedStrings.Auth) + "/{provider}",
+                "/" + Localize(LocalizedStrings.Authenticate),
+                "/" + Localize(LocalizedStrings.Authenticate) + "/{provider}",
             };
             return this;
         }
@@ -161,8 +196,6 @@ namespace ServiceStack
                     {
                         "/" + Localize(LocalizedStrings.Auth),
                         "/" + Localize(LocalizedStrings.Auth) + "/{provider}",
-                        "/" + Localize(LocalizedStrings.Authenticate),
-                        "/" + Localize(LocalizedStrings.Authenticate) + "/{provider}",
                     } },
                 { typeof(AssignRolesService), new[]{ "/" + Localize(LocalizedStrings.AssignRoles) } },
                 { typeof(UnAssignRolesService), new[]{ "/" + Localize(LocalizedStrings.UnassignRoles) } },
@@ -225,6 +258,8 @@ namespace ServiceStack
             AuthenticateService.HtmlRedirectReturnParam = HtmlRedirectReturnParam;
             AuthenticateService.HtmlRedirectReturnPathOnly = HtmlRedirectReturnPathOnly;            
             AuthenticateService.AuthResponseDecorator = AuthResponseDecorator;
+            if (ValidateFn != null)
+                AuthenticateService.ValidateFn = ValidateFn;
 
             var authNavItems = AuthProviders.Select(x => (x as AuthProvider)?.NavItem).Where(x => x != null);
             if (!ViewUtils.NavItemsMap.TryGetValue("auth", out var navItems))

@@ -20,7 +20,8 @@ namespace ServiceStack.FluentValidation.Resources {
 	using Validators;
 
 	internal class SpanishLanguage : Language {
-		public override string Name => "es";
+		public const string Culture = "es";
+		public override string Name => Culture;
 
 		public SpanishLanguage() {
 			Translate<EmailValidator>("'{PropertyName}' no es una dirección de correo electrónico válida.");
@@ -46,6 +47,12 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<EmptyValidator>("'{PropertyName}' debe estar vacío.");
 			Translate<NullValidator>("'{PropertyName}' debe estar vacío.");
 			Translate<EnumValidator>("'{PropertyName}' tiene un rango de valores que no incluye '{PropertyValue}'.");
+			// Additional fallback messages used by clientside validation integration.
+			Translate("Length_Simple", "'{PropertyName}' debe tener entre {MinLength} y {MaxLength} caracter(es).");
+			Translate("MinimumLength_Simple", "'{PropertyName}' debe ser mayor o igual que {MinLength} caracteres.");
+			Translate("MaximumLength_Simple", "'{PropertyName}' debe ser menor o igual que {MaxLength} caracteres.");
+			Translate("ExactLength_Simple", "'{PropertyName}' debe tener un largo de {MaxLength} caracteres.");
+			Translate("InclusiveBetween_Simple", "'{PropertyName}' debe estar entre {From} y {To}.");
 		}
 	}
 }

@@ -682,9 +682,7 @@ The Content");
             }.Init();
             
             context = new TemplateContext {
-                Args = {
-                    [TemplateConstants.MaxQuota] = 1000
-                }
+                MaxQuota = 1000
             }.Init();
         }
         
@@ -701,7 +699,7 @@ The Content");
         
                 context.ScriptMethods.Add(new MarkdownTemplateFilter());
 
-                TemplateConfig.DontEvaluateBlocksNamed.Add("markdown");
+                context.ParseAsVerbatimBlock.Add("markdown");
         
                 context.ScriptBlocks.Add(new TemplateMarkdownBlock());
             }
@@ -724,9 +722,9 @@ The Content");
                 }
                 .Init();
             
-            context = new TemplateContext { 
+            context = new TemplateContext {
+                MaxQuota = 10000,
                 Args = {
-                    [TemplateConstants.MaxQuota] = 10000,
                     [TemplateConstants.DefaultCulture] = CultureInfo.CurrentCulture,
                     [TemplateConstants.DefaultDateFormat] = "yyyy-MM-dd",
                     [TemplateConstants.DefaultDateTimeFormat] = "u",

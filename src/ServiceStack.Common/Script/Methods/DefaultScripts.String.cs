@@ -166,6 +166,9 @@ namespace ServiceStack.Script
         public Dictionary<string, string> parseKeyValueText(string target) => target?.ParseKeyValueText();
         public Dictionary<string, string> parseKeyValueText(string target, string delimiter) => target?.ParseKeyValueText(delimiter);
 
+        public IEnumerable<KeyValuePair<string,string>> parseAsKeyValues(string target) => target?.ParseAsKeyValues();
+        public IEnumerable<KeyValuePair<string,string>> parseAsKeyValues(string target, string delimiter) => target?.ParseAsKeyValues(delimiter);
+
         public ICollection keys(object target) => 
             target is IDictionary d 
                 ? d.Keys
@@ -298,6 +301,22 @@ namespace ServiceStack.Script
 
         public object eval(ScriptScopeContext scope, string js) => JS.eval(js, scope);
         public object parseJson(string json) => JSON.parse(json);
+
+        public List<List<string>> parseCsv(string csv)
+        {
+            var trimmedBody = StringBuilderCache.Allocate();
+            foreach (var line in csv.ReadLines())
+            {
+                trimmedBody.AppendLine(line.Trim());
+            }
+            var strList = trimmedBody.ToString().FromCsv<List<List<string>>>();
+            return strList;
+        }
+
+        public List<KeyValuePair<string, string>> parseKeyValues(string keyValuesText) =>
+            parseKeyValues(keyValuesText, " ");
+        public List<KeyValuePair<string, string>> parseKeyValues(string keyValuesText, string delimiter) => 
+            keyValuesText.Trim().ParseAsKeyValues(delimiter);
 
         private static readonly Regex InvalidCharsRegex = new Regex(@"[^a-z0-9\s-]", RegexOptions.Compiled);
         private static readonly Regex SpacesRegex = new Regex(@"\s", RegexOptions.Compiled);

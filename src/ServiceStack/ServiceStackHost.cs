@@ -168,6 +168,7 @@ namespace ServiceStack
                 typeof(MetadataNavService),
                 typeof(ScriptAdminService),
                 typeof(RequestLogsService),
+                typeof(AutoQueryMetadataService),
             };
 
             JsConfig.InitStatics();
@@ -567,7 +568,9 @@ namespace ServiceStack
              ?? VirtualFileSources
              ?? new FileSystemVirtualFiles(GetWebRootPath())).RootDirectory;
 
-        public IVirtualDirectory ContentRootDirectory => VirtualFiles.RootDirectory;
+        public IVirtualDirectory ContentRootDirectory => 
+            VirtualFiles?.RootDirectory
+            ?? new FileSystemVirtualFiles(MapProjectPath("~/")).RootDirectory;
         
         public List<IVirtualPathProvider> InsertVirtualFileSources { get; set; }
         
@@ -872,8 +875,8 @@ namespace ServiceStack
         {
             try
             {
-                if (instance is IAfterInitAppHost prePlugin)
-                    prePlugin.AfterInit(this);
+                if (instance is IAfterInitAppHost afterPlugin)
+                    afterPlugin.AfterInit(this);
             }
             catch (Exception ex)
             {
@@ -922,6 +925,14 @@ namespace ServiceStack
         {
             try
             {
+                if (request != null)
+                {
+                    if (request.Items.ContainsKey(nameof(OnEndRequest)))
+                        return;
+
+                    request.Items[nameof(OnEndRequest)] = bool.TrueString;
+                }
+                
                 var disposables = RequestContext.Instance.Items.Values;
                 foreach (var item in disposables)
                 {
@@ -953,7 +964,7 @@ namespace ServiceStack
                     {
                         try 
                         { 
-                            res.Flush();
+                            res.AllowSyncIO().Flush();
                             outputMs.Dispose();
                         }
                         catch (Exception ex)

@@ -2,7 +2,6 @@ namespace ServiceStack.Script
 {
     public static class ScriptConstants
     {
-        public const string MaxQuota = nameof(ScriptConfig.MaxQuota);
         public const string DefaultCulture = nameof(ScriptConfig.DefaultCulture);
         public const string DefaultDateFormat = nameof(ScriptConfig.DefaultDateFormat);
         public const string DefaultDateTimeFormat = nameof(ScriptConfig.DefaultDateTimeFormat);
@@ -34,6 +33,7 @@ namespace ServiceStack.Script
         public const string AssetsBase = "assetsBase";
         public const string Format = "format";
         public const string BaseUrl = "BaseUrl";
+        public const string PartialArg = "__partial";
 
         public static IRawString EmptyRawString { get; } = new RawString("");
         public static IRawString TrueRawString { get; } = new RawString("true");

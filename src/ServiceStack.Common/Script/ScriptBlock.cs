@@ -6,8 +6,19 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Script
 {
-    public abstract class ScriptBlock
+    public abstract class ScriptBlock : IConfigureScriptContext
     {
+        /// <summary>
+        /// Parse Body using Specified Language. Uses host language if unspecified.
+        /// </summary>
+        public virtual ScriptLanguage Body { get; }
+        
+        public void Configure(ScriptContext context)
+        {
+            if (Body != null)
+                context.ParseAsLanguage[Name] = Body;
+        }
+
         public ScriptContext Context { get; set; }
         public ISharpPages Pages { get; set; }
         public abstract string Name { get; }
@@ -23,6 +34,11 @@ namespace ServiceStack.Script
         protected virtual async Task WriteAsync(ScriptScopeContext scope, PageFragment[] body, string callTrace, CancellationToken cancel)
         {
             await scope.PageResult.WriteFragmentsAsync(scope, body, callTrace, cancel);
+        }
+
+        protected virtual async Task WriteAsync(ScriptScopeContext scope, JsStatement[] body, string callTrace, CancellationToken cancel)
+        {
+            await scope.PageResult.WriteStatementsAsync(scope, body, callTrace, cancel);
         }
 
         protected virtual async Task WriteBodyAsync(ScriptScopeContext scope, PageBlockFragment fragment, CancellationToken token)
@@ -62,14 +78,8 @@ namespace ServiceStack.Script
         protected bool CanExportScopeArgs(object element) => 
             element != null && !(element is string) && (element.GetType().IsClass || element.GetType().Name == "KeyValuePair`2");
 
-        protected int AssertWithinMaxQuota(int value)
-        {
-            var maxQuota = (int)Context.Args[nameof(ScriptConfig.MaxQuota)];
-            if (value > maxQuota)
-                throw new NotSupportedException($"{value} exceeds Max Quota of {maxQuota}. \nMaxQuota can be changed in `Context.Args[nameof(TemplateConfig.MaxQuota)]` or globally in `TemplateConfig.MaxQuota`.");
+        protected int AssertWithinMaxQuota(int value) => Context.DefaultMethods.AssertWithinMaxQuota(value);
 
-            return value;
-        }
     }
 
     public class DefaultScriptBlocks : IScriptPlugin
@@ -84,6 +94,10 @@ namespace ServiceStack.Script
                 new PartialScriptBlock(),
                 new WithScriptBlock(),
                 new NoopScriptBlock(),
+                new KeyValuesScriptBlock(),
+                new CsvScriptBlock(),
+                new FunctionScriptBlock(), 
+                new WhileScriptBlock(),
             });
         }
     }
@@ -93,7 +107,7 @@ namespace ServiceStack.Script
         public void Register(ScriptContext context)
         {
             context.ScriptBlocks.AddRange(new ScriptBlock[] {
-                new EvalScriptBlock(), // evalTemplate filter has same functionality and is registered by default 
+                new EvalScriptBlock(), // evalScript has same functionality and is registered by default 
             });
         }
     }

@@ -311,9 +311,24 @@ namespace ServiceStack.NativeTypes.VbNet
                         if (KeyWords.Contains(name))
                             name = $"[{name}]";
                         
-                        sb.AppendLine(value == null
-                            ? name
-                            : $"{name} = {value}");
+                        if (type.EnumMemberValues != null && type.EnumMemberValues[i] != name)
+                        {
+                            AppendAttributes(sb, new List<MetadataAttribute> {
+                                new MetadataAttribute {
+                                    Name = "EnumMember",
+                                    Args = new List<MetadataPropertyType> {
+                                        new MetadataPropertyType {
+                                            Name = "Value",
+                                            Value = type.EnumMemberValues[i],
+                                            Type = "String",
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                        sb.AppendLine(value == null 
+                            ? $"{name},"
+                            : $"{name} = {value},");
                     }
                 }
 

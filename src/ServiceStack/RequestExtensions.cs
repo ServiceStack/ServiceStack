@@ -260,6 +260,26 @@ namespace ServiceStack
                 ? HostContext.AppHost.GetRuntimeConfig(req, name, defaultValue)
                 : defaultValue;
         }
+
+        public static void RegisterForDispose(this IRequest request, IDisposable disposable)
+        {
+            if (disposable == null)
+                return;
+#if NETSTANDARD2_0
+            var netcoreReq = (Microsoft.AspNetCore.Http.HttpRequest) request.OriginalRequest;
+            netcoreReq.HttpContext.Response.RegisterForDispose(disposable);
+#else
+            // IDisposable's in IRequest.Items are disposed in AppHost.OnEndRequest()
+            var typeName = disposable.GetType().Name;
+            var i = 0;
+            var key = typeName;
+            while (request.Items.ContainsKey(key))
+            {
+                key = typeName + (++i);
+            }
+            request.Items[key] = disposable;
+#endif
+        }
     }
 
     // Share same buffered impl/behavior across all Hosts

@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -148,6 +150,24 @@ namespace ServiceStack.Script
         /// </summary>
         public ReturnValue ReturnValue { get; set; }
         
+        /// <summary>
+        /// The Current StackDepth
+        /// </summary>
+        public int StackDepth { get; internal set; }
+        
+        /// <summary>
+        /// Can be used to track number of Evaluations
+        /// </summary>
+        public long Evaluations { get; private set; }
+
+        public void AssertNextEvaluation()
+        {
+            if (Evaluations++ >= Context.MaxEvaluations)
+                throw new NotSupportedException($"Exceeded Max Evaluations of {Context.MaxEvaluations}. \nMaxEvaluations can be changed in `ScriptContext.MaxEvaluations`.");
+        }
+
+        public void ResetIterations() => Evaluations = 0;
+        
         private readonly Stack<string> stackTrace = new Stack<string>();
 
         private PageResult(PageFormat format)
@@ -289,29 +309,7 @@ namespace ServiceStack.Script
                     if (HaltExecution)
                         break;
 
-                    if (fragment is PageStringFragment str)
-                    {
-                        await outputStream.WriteAsync(str.ValueUtf8, token);
-                    }
-                    else if (fragment is PageVariableFragment var && !ShouldSkipFilterExecution(var))
-                    {
-                        if (var.Binding?.Equals(ScriptConstants.Page) == true)
-                        {
-                            await WritePageAsync(Page, CodePage, pageScope, token);
-
-                            if (HaltExecution)
-                                HaltExecution = false; //break out of page but continue evaluating layout
-                        }
-                        else
-                        {
-                            await WriteVarAsync(pageScope, var, token);
-                        }
-                    }
-                    else if (fragment is PageBlockFragment blockFragment && !ShouldSkipFilterExecution(blockFragment))
-                    {
-                        var block = GetBlock(blockFragment.Name);
-                        await block.WriteAsync(pageScope, blockFragment, token);
-                    }
+                    await WritePageFragmentAsync(pageScope, fragment, token);
                 }
 
                 stackTrace.Pop();
@@ -329,38 +327,69 @@ namespace ServiceStack.Script
             foreach (var fragment in fragments)
             {
                 if (HaltExecution)
-                    break;
+                    return;
 
-                if (fragment is PageStringFragment str)
-                {
-                    await scope.OutputStream.WriteAsync(str.ValueUtf8, token);
-                }
-                else if (fragment is PageVariableFragment var && !ShouldSkipFilterExecution(var))
-                {
-                    await WriteVarAsync(scope, var, token);
-                }
-                else if (fragment is PageBlockFragment blockFragment && !ShouldSkipFilterExecution(blockFragment))
-                {
-                    var block = GetBlock(blockFragment.Name);
-                    await block.WriteAsync(scope, blockFragment, token);
-                }
+                await WritePageFragmentAsync(scope, fragment, token);
             }
             
             stackTrace.Pop();
         }
 
+        public async Task WritePageFragmentAsync(ScriptScopeContext scope, PageFragment fragment, CancellationToken token)
+        {
+            foreach (var scriptLanguage in Context.ScriptLanguagesArray)
+            {
+                if (ShouldSkipFilterExecution(fragment))
+                    return;
+                
+                if (await scriptLanguage.WritePageFragmentAsync(scope, fragment, token))
+                    break;
+            }
+        }
+
+        public Task WriteStatementsAsync(ScriptScopeContext scope, IEnumerable<JsStatement> blockStatements, string callTrace, CancellationToken token)
+        {
+            try
+            {
+                stackTrace.Push(callTrace);
+                return WriteStatementsAsync(scope, blockStatements, token);
+            }
+            finally
+            {
+                
+                stackTrace.Pop();
+            }
+        }
+        
+        public async Task WriteStatementsAsync(ScriptScopeContext scope, IEnumerable<JsStatement> blockStatements, CancellationToken token)
+        {
+            foreach (var statement in blockStatements)
+            {
+                foreach (var scriptLanguage in Context.ScriptLanguagesArray)
+                {
+                    if (HaltExecution || ShouldSkipFilterExecution(statement))
+                        return;
+
+                    if (await scriptLanguage.WriteStatementAsync(scope, statement, token))
+                        break;
+                }
+            }
+        }
+
         public bool ShouldSkipFilterExecution(PageVariableFragment var)
         {
             return HaltExecution || SkipFilterExecution && (var.Binding != null 
-               ? !ScriptConfig.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Contains(var.Binding)
+               ? !Context.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Contains(var.Binding)
                : var.InitialExpression?.Name == null || 
-                 !ScriptConfig.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Contains(var.InitialExpression.Name));
+                 !Context.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Contains(var.InitialExpression.Name));
         }
 
-        public bool ShouldSkipFilterExecution(PageBlockFragment var)
-        {
-            return HaltExecution || SkipFilterExecution;
-        }
+        public bool ShouldSkipFilterExecution(PageFragment fragment) => !(fragment is PageStringFragment) 
+            && (fragment is PageVariableFragment var 
+                ? ShouldSkipFilterExecution(var)
+                : HaltExecution || SkipFilterExecution);
+
+        public bool ShouldSkipFilterExecution(JsStatement statement) => HaltExecution || SkipFilterExecution; 
 
         public ScriptContext Context => Page?.Context ?? CodePage.Context;
         public PageFormat Format => Page?.Format ?? CodePage.Format;
@@ -384,6 +413,14 @@ namespace ServiceStack.Script
                 }
             }
             Args[ScriptConstants.Model] = Model ?? JsNull.Value;
+
+            foreach (var scriptLanguage in Context.ScriptLanguages)
+            {
+                if (scriptLanguage is IConfigurePageResult configurePageResult)
+                {
+                    configurePageResult.Configure(this);
+                }
+            }
 
             foreach (var filter in ScriptMethods)
             {
@@ -413,7 +450,7 @@ namespace ServiceStack.Script
                     ? Context.Pages.ResolveLayoutPage(Page, Layout)
                     : Context.Pages.ResolveLayoutPage(CodePage, Layout);
             }
-
+            
             hasInit = true;
 
             return this;
@@ -548,7 +585,7 @@ namespace ServiceStack.Script
             }
         }
 
-        private async Task WriteVarAsync(ScriptScopeContext scope, PageVariableFragment var, CancellationToken token)
+        public async Task WriteVarAsync(ScriptScopeContext scope, PageVariableFragment var, CancellationToken token)
         {
             if (var.Binding != null)
                 stackTrace.Push($"Expression (binding): " + var.Binding);
@@ -675,8 +712,11 @@ namespace ServiceStack.Script
                     var contextBlockInvoker = invoker == null && contextFilterInvoker == null
                         ? GetContextBlockInvoker(filterName, 2 + fnArgsLength, out filter)
                         : null;
+                    var delegateInvoker = invoker == null && contextFilterInvoker == null && contextBlockInvoker == null
+                        ? GetValue(filterName, scope) as Delegate
+                        : null;
 
-                    if (invoker == null && contextFilterInvoker == null && contextBlockInvoker == null)
+                    if (invoker == null && contextFilterInvoker == null && contextBlockInvoker == null && delegateInvoker == null)
                     {
                         if (i == 0)
                             return null; // ignore on server (i.e. assume it's on client) if first filter is missing  
@@ -688,7 +728,11 @@ namespace ServiceStack.Script
                     if (value is Task<object> valueObjectTask)
                         value = await valueObjectTask;
 
-                    if (invoker != null)
+                    if (delegateInvoker != null)
+                    {
+                        value = JsCallExpression.InvokeDelegate(delegateInvoker, value, true, fnArgValues);
+                    }
+                    else if (invoker != null)
                     {
                         fnArgValues.Insert(0, value);
                         var args = fnArgValues.ToArray();
@@ -852,6 +896,11 @@ namespace ServiceStack.Script
                 }
             }
 
+            return UnwrapValue(value);
+        }
+
+        private static object UnwrapValue(object value)
+        {
             if (value == null || value == JsNull.Value || value == StopExecution.Value)
                 return string.Empty; // treat as empty value if evaluated to null
 
@@ -1020,14 +1069,15 @@ namespace ServiceStack.Script
             return value;
         }
 
-        internal object GetValue(string name, ScriptScopeContext scope)
+        internal bool TryGetValue(string name, ScriptScopeContext scope, out object value)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
 
             MethodInvoker invoker;
+            var ret = true;
 
-            var value = scope.ScopedParams != null && scope.ScopedParams.TryGetValue(name, out object obj)
+            value = scope.ScopedParams != null && scope.ScopedParams.TryGetValue(name, out object obj)
                 ? obj
                 : Args.TryGetValue(name, out obj)
                     ? obj
@@ -1042,8 +1092,14 @@ namespace ServiceStack.Script
                                     : (invoker = GetFilterAsBinding(name, out ScriptMethods filter)) != null
                                         ? InvokeFilter(invoker, filter, new object[0], name)
                                         : (invoker = GetContextFilterAsBinding(name, out filter)) != null
-                                             ? InvokeFilter(invoker, filter, new object[]{ scope }, name)
-                                             : null;
+                                            ? InvokeFilter(invoker, filter, new object[]{ scope }, name)
+                                            : ((ret = false) ? (object)null : null);
+            return ret;
+        }
+        
+        internal object GetValue(string name, ScriptScopeContext scope)
+        {
+            TryGetValue(name, scope, out var value);
             return value;
         }
 
@@ -1065,7 +1121,8 @@ namespace ServiceStack.Script
                 }
                 catch (AggregateException e)
                 {
-                    throw e.UnwrapIfSingleException();
+                    var ex = e.UnwrapIfSingleException();
+                    throw ex;
                 }
             }
         }

@@ -33,7 +33,7 @@ namespace ServiceStack.FluentValidation {
 	/// Extension methods that provide the default set of validators.
 	/// </summary>
 	public static class DefaultValidatorExtensions {
-    /// <summary>
+		/// <summary>
 		/// Defines a 'not null' validator on the current rule builder.
 		/// Validation will fail if the property is null.
 		/// </summary>
@@ -46,20 +46,20 @@ namespace ServiceStack.FluentValidation {
 		}
 
 		/// <summary>
-			/// Defines a 'null' validator on the current rule builder.
-			/// Validation will fail if the property is not null.
-			/// </summary>
-			/// <typeparam name="T">Type of object being validated</typeparam>
-			/// <typeparam name="TProperty">Type of property being validated</typeparam>
-			/// <param name="ruleBuilder">The rule builder on which the validator should be defined</param>
-			/// <returns></returns>
-			public static IRuleBuilderOptions<T, TProperty> Null<T, TProperty>(this IRuleBuilder<T, TProperty> ruleBuilder) {
+		/// Defines a 'null' validator on the current rule builder.
+		/// Validation will fail if the property is not null.
+		/// </summary>
+		/// <typeparam name="T">Type of object being validated</typeparam>
+		/// <typeparam name="TProperty">Type of property being validated</typeparam>
+		/// <param name="ruleBuilder">The rule builder on which the validator should be defined</param>
+		/// <returns></returns>
+		public static IRuleBuilderOptions<T, TProperty> Null<T, TProperty>(this IRuleBuilder<T, TProperty> ruleBuilder) {
 			return ruleBuilder.SetValidator(new NullValidator());
 		}
 
 		/// <summary>
 		/// Defines a 'not empty' validator on the current rule builder.
-		/// Validation will fail if the property is null, an empty or the default value for the type (for example, 0 for integers)
+		/// Validation will fail if the property is null, an empty string, whitespace, an empty collection or the default value for the type (for example, 0 for integers but null for nullable integers)
 		/// </summary>
 		/// <typeparam name="T">Type of object being validated</typeparam>
 		/// <typeparam name="TProperty">Type of property being validated</typeparam>
@@ -69,7 +69,7 @@ namespace ServiceStack.FluentValidation {
 			return ruleBuilder.SetValidator(new NotEmptyValidator(default(TProperty)));
 		}
 
-        /// <summary>
+		/// <summary>
 		/// Defines a 'empty' validator on the current rule builder.
 		/// Validation will fail if the property is not null, an empty or the default value for the type (for example, 0 for integers)
 		/// </summary>
@@ -103,8 +103,7 @@ namespace ServiceStack.FluentValidation {
 		/// <param name="min"></param>
 		/// <param name="max"></param>
 		/// <returns></returns>
-		public static IRuleBuilderOptions<T, string> Length<T>(this IRuleBuilder<T, string> ruleBuilder, Func<T, int> min, Func<T, int> max)
-		{
+		public static IRuleBuilderOptions<T, string> Length<T>(this IRuleBuilder<T, string> ruleBuilder, Func<T, int> min, Func<T, int> max) {
 			return ruleBuilder.SetValidator(new LengthValidator(min.CoerceToNonGeneric(), max.CoerceToNonGeneric()));
 		}
 
@@ -128,8 +127,7 @@ namespace ServiceStack.FluentValidation {
 		/// <param name="ruleBuilder">The rule builder on which the validator should be defined</param>
 		/// <param name="exactLength"></param>
 		/// <returns></returns>
-		public static IRuleBuilderOptions<T, string> Length<T>(this IRuleBuilder<T, string> ruleBuilder, Func<T, int> exactLength)
-		{
+		public static IRuleBuilderOptions<T, string> Length<T>(this IRuleBuilder<T, string> ruleBuilder, Func<T, int> exactLength) {
 			return ruleBuilder.SetValidator(new ExactLengthValidator(exactLength.CoerceToNonGeneric()));
 		}
 
@@ -153,8 +151,7 @@ namespace ServiceStack.FluentValidation {
 		/// <param name="ruleBuilder">The rule builder on which the validator should be defined</param>
 		/// <param name="maximumLength"></param>
 		/// <returns></returns>
-		public static IRuleBuilderOptions<T, string> MaximumLength<T>(this IRuleBuilder<T, string> ruleBuilder, int maximumLength)
-		{
+		public static IRuleBuilderOptions<T, string> MaximumLength<T>(this IRuleBuilder<T, string> ruleBuilder, int maximumLength) {
 			return ruleBuilder.SetValidator(new MaximumLengthValidator(maximumLength));
 		}
 
@@ -166,8 +163,7 @@ namespace ServiceStack.FluentValidation {
 		/// <param name="ruleBuilder">The rule builder on which the validator should be defined</param>
 		/// <param name="minimumLength"></param>
 		/// <returns></returns>
-		public static IRuleBuilderOptions<T, string> MinimumLength<T>(this IRuleBuilder<T, string> ruleBuilder, int minimumLength)
-		{
+		public static IRuleBuilderOptions<T, string> MinimumLength<T>(this IRuleBuilder<T, string> ruleBuilder, int minimumLength) {
 			return ruleBuilder.SetValidator(new MinimumLengthValidator(minimumLength));
 		}
 
@@ -179,8 +175,7 @@ namespace ServiceStack.FluentValidation {
 		/// <param name="ruleBuilder">The rule builder on which the validator should be defined</param>
 		/// <param name="expression">The regular expression to check the value against.</param>
 		/// <returns></returns>
-		public static IRuleBuilderOptions<T, string> Matches<T>(this IRuleBuilder<T, string> ruleBuilder, Func<T, string> expression)
-		{
+		public static IRuleBuilderOptions<T, string> Matches<T>(this IRuleBuilder<T, string> ruleBuilder, Func<T, string> expression) {
 			return ruleBuilder.SetValidator(new RegularExpressionValidator(expression.CoerceToNonGeneric()));
 		}
 
@@ -205,8 +200,7 @@ namespace ServiceStack.FluentValidation {
 		/// <param name="ruleBuilder">The rule builder on which the validator should be defined</param>
 		/// <param name="regex">The regular expression to use</param>
 		/// <returns></returns>
-		public static IRuleBuilderOptions<T, string> Matches<T>(this IRuleBuilder<T, string> ruleBuilder, Func<T, Regex> regex)
-		{
+		public static IRuleBuilderOptions<T, string> Matches<T>(this IRuleBuilder<T, string> ruleBuilder, Func<T, Regex> regex) {
 			return ruleBuilder.SetValidator(new RegularExpressionValidator(regex.CoerceToNonGeneric()));
 		}
 
@@ -233,8 +227,7 @@ namespace ServiceStack.FluentValidation {
 		/// <param name="expression">The regular expression to check the value against.</param>
 		/// <param name="options">Regex options</param>
 		/// <returns></returns>
-		public static IRuleBuilderOptions<T, string> Matches<T>(this IRuleBuilder<T, string> ruleBuilder, Func<T, string> expression, RegexOptions options)
-		{
+		public static IRuleBuilderOptions<T, string> Matches<T>(this IRuleBuilder<T, string> ruleBuilder, Func<T, string> expression, RegexOptions options) {
 			return ruleBuilder.SetValidator(new RegularExpressionValidator(expression.CoerceToNonGeneric(), options));
 		}
 
@@ -248,6 +241,21 @@ namespace ServiceStack.FluentValidation {
 		public static IRuleBuilderOptions<T, string> EmailAddress<T>(this IRuleBuilder<T, string> ruleBuilder) {
 			return ruleBuilder.SetValidator(new EmailValidator());
 		}
+
+		/// <summary>
+		/// Defines a regular expression validator on the current rule builder, but only for string properties.
+		/// Validation will fail if the value returned by the lambda is not a valid email address.
+		/// </summary>
+		/// <typeparam name="T">Type of object being validated</typeparam>
+		/// <param name="ruleBuilder">The rule builder on which the validator should be defined</param>
+		/// <param name="mode">The mode to use for email validation. If set to <see cref="EmailValidationMode.Net4xRegex"/>, then a regular expression will be used. This is the same regex used by <see cref="System.ComponentModel.DataAnnotations.EmailAddressAttribute"/> in .NET 4.x. If set to <see cref="EmailValidationMode.AspNetCoreCompatible"/> then this uses the simplified ASP.NET Core logic for checking an email address, which just checks for the presence of an @ sign.</param>
+		/// <returns></returns>
+		public static IRuleBuilderOptions<T, string> EmailAddress<T>(this IRuleBuilder<T, string> ruleBuilder, EmailValidationMode mode) {
+			// TODO: Merge the 2 email overloads together. This overload was added separately to retain backwards compatibility for the compiler.
+			var validator = mode == EmailValidationMode.AspNetCoreCompatible ? new AspNetCoreCompatibleEmailValidator() : (PropertyValidator)new EmailValidator();
+			return ruleBuilder.SetValidator(validator);
+		}
+
 
 		/// <summary>
 		/// Defines a 'not equal' validator on the current rule builder.
@@ -662,23 +670,23 @@ namespace ServiceStack.FluentValidation {
 			return ruleBuilder.SetValidator(new LessThanOrEqualValidator(func.CoerceToNonGeneric(), expression.GetMember()));
 		}
 
-	/// <summary>
-	/// Defines a 'less than or equal' validator on the current rule builder using a lambda expression.
-	/// The validation will succeed if the property value is less than or equal to the specified value.
-	/// The validation will fail if the property value is greater than the specified value.
-	/// </summary>
-	/// <typeparam name="T">Type of object being validated</typeparam>
-	/// <typeparam name="TProperty">Type of property being validated</typeparam>
-	/// <param name="ruleBuilder">The rule builder on which the validator should be defined</param>
-	/// <param name="expression">The value being compared</param>
-	/// <returns></returns>
-	public static IRuleBuilderOptions<T, TProperty?> LessThanOrEqualTo<T, TProperty>(
-	  this IRuleBuilder<T, TProperty?> ruleBuilder, Expression<Func<T, TProperty?>> expression)
-	  where TProperty : struct, IComparable<TProperty>, IComparable {
-	  var func = expression.Compile();
+		/// <summary>
+		/// Defines a 'less than or equal' validator on the current rule builder using a lambda expression.
+		/// The validation will succeed if the property value is less than or equal to the specified value.
+		/// The validation will fail if the property value is greater than the specified value.
+		/// </summary>
+		/// <typeparam name="T">Type of object being validated</typeparam>
+		/// <typeparam name="TProperty">Type of property being validated</typeparam>
+		/// <param name="ruleBuilder">The rule builder on which the validator should be defined</param>
+		/// <param name="expression">The value being compared</param>
+		/// <returns></returns>
+		public static IRuleBuilderOptions<T, TProperty?> LessThanOrEqualTo<T, TProperty>(
+		  this IRuleBuilder<T, TProperty?> ruleBuilder, Expression<Func<T, TProperty?>> expression)
+		  where TProperty : struct, IComparable<TProperty>, IComparable {
+			var func = expression.Compile();
 
-	  return ruleBuilder.SetValidator(new LessThanOrEqualValidator(func.CoerceToNonGeneric(), expression.GetMember()));
-	}
+			return ruleBuilder.SetValidator(new LessThanOrEqualValidator(func.CoerceToNonGeneric(), expression.GetMember()));
+		}
 
 		/// <summary>
 		/// Defines a 'less than' validator on the current rule builder using a lambda expression.
@@ -788,41 +796,39 @@ namespace ServiceStack.FluentValidation {
 			return ruleBuilder.SetValidator(new GreaterThanOrEqualValidator(func.CoerceToNonGeneric(), valueToCompare.GetMember()));
 		}
 
-	/// <summary>
-	/// Defines a 'greater than or equal to' validator on the current rule builder using a lambda expression.
-	/// The validation will succeed if the property value is greater than or equal the specified value.
-	/// The validation will fail if the property value is less than the specified value.
-	/// </summary>
-	/// <typeparam name="T">Type of object being validated</typeparam>
-	/// <typeparam name="TProperty">Type of property being validated</typeparam>
-	/// <param name="ruleBuilder">The rule builder on which the validator should be defined</param>
-	/// <param name="valueToCompare">The value being compared</param>
-	/// <returns></returns>
-	public static IRuleBuilderOptions<T, TProperty?> GreaterThanOrEqualTo<T, TProperty>(this IRuleBuilder<T, TProperty?> ruleBuilder, Expression<Func<T, TProperty?>> valueToCompare)
-	  where TProperty : struct, IComparable<TProperty>, IComparable
-	{
-	  var func = valueToCompare.Compile();
-	  return ruleBuilder.SetValidator(new GreaterThanOrEqualValidator(func.CoerceToNonGeneric(), valueToCompare.GetMember()));
-	}
+		/// <summary>
+		/// Defines a 'greater than or equal to' validator on the current rule builder using a lambda expression.
+		/// The validation will succeed if the property value is greater than or equal the specified value.
+		/// The validation will fail if the property value is less than the specified value.
+		/// </summary>
+		/// <typeparam name="T">Type of object being validated</typeparam>
+		/// <typeparam name="TProperty">Type of property being validated</typeparam>
+		/// <param name="ruleBuilder">The rule builder on which the validator should be defined</param>
+		/// <param name="valueToCompare">The value being compared</param>
+		/// <returns></returns>
+		public static IRuleBuilderOptions<T, TProperty?> GreaterThanOrEqualTo<T, TProperty>(this IRuleBuilder<T, TProperty?> ruleBuilder, Expression<Func<T, TProperty?>> valueToCompare)
+		  where TProperty : struct, IComparable<TProperty>, IComparable {
+			var func = valueToCompare.Compile();
+			return ruleBuilder.SetValidator(new GreaterThanOrEqualValidator(func.CoerceToNonGeneric(), valueToCompare.GetMember()));
+		}
 
-	/// <summary>
-	/// Defines a 'greater than or equal to' validator on the current rule builder using a lambda expression.
-	/// The validation will succeed if the property value is greater than or equal the specified value.
-	/// The validation will fail if the property value is less than the specified value.
-	/// </summary>
-	/// <typeparam name="T">Type of object being validated</typeparam>
-	/// <typeparam name="TProperty">Type of property being validated</typeparam>
-	/// <param name="ruleBuilder">The rule builder on which the validator should be defined</param>
-	/// <param name="valueToCompare">The value being compared</param>
-	/// <returns></returns>
-	public static IRuleBuilderOptions<T, TProperty?> GreaterThanOrEqualTo<T, TProperty>(
-	  this IRuleBuilder<T, TProperty?> ruleBuilder, Expression<Func<T, TProperty>> valueToCompare)
-	  where TProperty : struct, IComparable<TProperty>, IComparable
-	{
-	  var func = valueToCompare.Compile();
+		/// <summary>
+		/// Defines a 'greater than or equal to' validator on the current rule builder using a lambda expression.
+		/// The validation will succeed if the property value is greater than or equal the specified value.
+		/// The validation will fail if the property value is less than the specified value.
+		/// </summary>
+		/// <typeparam name="T">Type of object being validated</typeparam>
+		/// <typeparam name="TProperty">Type of property being validated</typeparam>
+		/// <param name="ruleBuilder">The rule builder on which the validator should be defined</param>
+		/// <param name="valueToCompare">The value being compared</param>
+		/// <returns></returns>
+		public static IRuleBuilderOptions<T, TProperty?> GreaterThanOrEqualTo<T, TProperty>(
+		  this IRuleBuilder<T, TProperty?> ruleBuilder, Expression<Func<T, TProperty>> valueToCompare)
+		  where TProperty : struct, IComparable<TProperty>, IComparable {
+			var func = valueToCompare.Compile();
 
-	  return ruleBuilder.SetValidator(new GreaterThanOrEqualValidator(func.CoerceToNonGeneric(), valueToCompare.GetMember()));
-	}
+			return ruleBuilder.SetValidator(new GreaterThanOrEqualValidator(func.CoerceToNonGeneric(), valueToCompare.GetMember()));
+		}
 
 		/// <summary>
 		/// Validates certain properties of the specified instance.
@@ -859,15 +865,15 @@ namespace ServiceStack.FluentValidation {
 		/// <param name="ruleSet"></param>
 		/// <returns></returns>
 		public static ValidationResult Validate<T>(this IValidator<T> validator, T instance, IValidatorSelector selector = null, string ruleSet = null) {
-			if(selector != null && ruleSet != null) {
+			if (selector != null && ruleSet != null) {
 				throw new InvalidOperationException("Cannot specify both an IValidatorSelector and a RuleSet.");
 			}
 
-			if(selector == null) {
+			if (selector == null) {
 				selector = ValidatorOptions.ValidatorSelectors.DefaultValidatorSelectorFactory();
 			}
 
-			if(ruleSet != null) {
+			if (ruleSet != null) {
 				var ruleSetNames = ruleSet.Split(',', ';').Select(x => x.Trim());
 				selector = ValidatorOptions.ValidatorSelectors.RulesetValidatorSelectorFactory(ruleSetNames.ToArray());
 			}
@@ -959,7 +965,7 @@ namespace ServiceStack.FluentValidation {
 			}
 		}
 
-	    /// <summary>
+		/// <summary>
 		/// Defines an 'inclusive between' validator on the current rule builder, but only for properties of types that implement IComparable.
 		/// Validation will fail if the value of the property is outside of the specified range. The range is inclusive.
 		/// </summary>
@@ -1018,7 +1024,7 @@ namespace ServiceStack.FluentValidation {
 		/// <summary>
 		/// Defines a credit card validator for the current rule builder that ensures that the specified string is a valid credit card number.
 		/// </summary>
-		public static IRuleBuilderOptions<T,string> CreditCard<T>(this IRuleBuilder<T, string> ruleBuilder) {
+		public static IRuleBuilderOptions<T, string> CreditCard<T>(this IRuleBuilder<T, string> ruleBuilder) {
 			return ruleBuilder.SetValidator(new CreditCardValidator());
 		}
 
@@ -1079,11 +1085,40 @@ namespace ServiceStack.FluentValidation {
 		/// <typeparam name="T"></typeparam>
 		/// <typeparam name="TElement"></typeparam>
 		/// <returns></returns>
-		public static IRuleBuilder<T, IEnumerable<TElement>> ForEach<T, TElement>(this IRuleBuilder<T, IEnumerable<TElement>> ruleBuilder, 
+		public static IRuleBuilderOptions<T, IEnumerable<TElement>> ForEach<T, TElement>(this IRuleBuilder<T, IEnumerable<TElement>> ruleBuilder,
 			Action<IRuleBuilderInitialCollection<IEnumerable<TElement>, TElement>> action) {
 			var innerValidator = new InlineValidator<IEnumerable<TElement>>();
 			action(innerValidator.RuleForEach(x => x));
 			return ruleBuilder.SetValidator(innerValidator);
+		}
+
+		/// <summary>
+		/// Defines a enum value validator on the current rule builder that ensures that the specific value is a valid enum name.
+		/// </summary>
+		/// <typeparam name="T">Type of Enum being validated</typeparam>
+		/// <typeparam name="TProperty">Type of property being validated</typeparam>
+		/// <param name="ruleBuilder">The rule builder on which the validator should be defined</param>
+		/// <param name="enumType">The enum whose the string should match any name</param>
+		/// <param name="caseSensitive">If the comparison between the string and the enum names should be case sensitive</param>
+		/// <returns></returns>
+		public static IRuleBuilderOptions<T, string> IsEnumName<T>(this IRuleBuilder<T, string> ruleBuilder, Type enumType, bool caseSensitive = true) {
+			return ruleBuilder.SetValidator(new StringEnumValidator(enumType, caseSensitive));
+		}
+
+		/// <summary>
+		/// Defines child rules for a nested property.
+		/// </summary>
+		/// <param name="ruleBuilder">The rule builder.</param>
+		/// <param name="action">Callback that will be invoked to build the rules.</param>
+		/// <typeparam name="T"></typeparam>
+		/// <typeparam name="TProperty"></typeparam>
+		/// <returns></returns>
+		/// <exception cref="ArgumentNullException"></exception>
+		public static IRuleBuilderOptions<T, TProperty> ChildRules<T, TProperty>(this IRuleBuilder<T, TProperty> ruleBuilder, Action<InlineValidator<TProperty>> action) {
+			if (action == null) throw new ArgumentNullException(nameof(action));
+			var validator = new InlineValidator<TProperty>();
+			action(validator);
+			return ruleBuilder.SetValidator(validator);
 		}
 	}
 }

@@ -43,8 +43,6 @@ namespace ServiceStack.Mvc
 
         public static string DefaultLayout { get; set; } = "_Layout";
 
-        public IVirtualPathProvider VirtualFileSources { get; set; }
-
         public List<string> ViewLocations { get; set; }
 
         public string PagesPath { get; set; } = "~/Views/Pages";
@@ -356,11 +354,11 @@ namespace ServiceStack.Mvc
                 if (viewName.StartsWith("/"))
                 {
                     var viewEngineResult = GetPageFromPathInfo(viewName);                
-                    if (viewEngineResult.Success)
+                    if (viewEngineResult?.Success == true)
                         return viewEngineResult;
             
                     viewEngineResult = GetRoutingPage(viewName, out routingArgs);                
-                    if (viewEngineResult.Success)
+                    if (viewEngineResult?.Success == true)
                         return viewEngineResult;
                 }
                 else
@@ -369,7 +367,7 @@ namespace ServiceStack.Mvc
                     {
                         var viewPath = location.CombineWith(viewName) + ".cshtml";
                         var viewEngineResult = ViewEngine.GetView(execPath, viewPath, isMainPage: false);
-                        if (viewEngineResult.Success)
+                        if (viewEngineResult?.Success == true)
                             return viewEngineResult;
                     }
                 }
@@ -423,7 +421,7 @@ namespace ServiceStack.Mvc
 
                     await view.RenderAsync(viewContext);
 
-                    sw.Flush();
+                    await sw.FlushAsync();
 
                     try
                     {
@@ -753,6 +751,18 @@ namespace ServiceStack.Mvc
         public static HtmlString ValidationSummary(this IHtmlHelper html, ICollection<string> exceptFields, object divAttrs) =>
             ViewUtils.ValidationSummary(html.GetErrorStatus(), exceptFields, divAttrs.ToObjectDictionary()).ToHtmlString();
 
+        public static HtmlString ValidationSuccess(this IHtmlHelper html, string message) => html.ValidationSuccess(message, null);
+        public static HtmlString ValidationSuccess(this IHtmlHelper html, string message, Dictionary<string,object> divAttrs)
+        {
+            var errorStatus = html.GetErrorStatus();
+            if (message == null 
+                || errorStatus != null
+                || html.GetRequest().Verb == HttpMethods.Get)
+                return null; 
+
+            return ViewUtils.ValidationSuccess(message, divAttrs).ToHtmlString();
+        }
+
         public static HtmlString HiddenInputs(this IHtmlHelper html, IEnumerable<KeyValuePair<string, string>> kvps) =>
             ViewUtils.HtmlHiddenInputs(kvps.ToObjectDictionary()).ToHtmlString();
         public static HtmlString HiddenInputs(this IHtmlHelper html, IEnumerable<KeyValuePair<string, object>> kvps) =>
@@ -917,6 +927,11 @@ namespace ServiceStack.Mvc
 
         internal static HtmlString RedirectTo(this IRequest req, string path) => WaitStopAsync(() => 
             req.RedirectToAsync(path));
+
+        public static bool HasRole(this IHtmlHelper html, string role) => 
+            html.GetRequest().GetSession().HasRole(role, html.GetRequest().TryResolve<IAuthRepository>());
+        public static bool HasPermission(this IHtmlHelper html, string permission) => 
+            html.GetRequest().GetSession().HasPermission(permission, html.GetRequest().TryResolve<IAuthRepository>());
 
         public static HtmlString AssertRole(this IHtmlHelper html, string role, string message = null, string redirect = null) =>
             WaitStopAsync(() => html.GetRequest().AssertRoleAsync(role:role, message:message, redirect:redirect));
@@ -1087,7 +1102,7 @@ namespace ServiceStack.Mvc
 
         public virtual bool IsAuthenticated => ServiceStackProvider.IsAuthenticated;
 
-        protected virtual IAuthSession GetSession(bool reload = true) => ServiceStackProvider.GetSession(reload);
+        protected virtual IAuthSession GetSession(bool reload = false) => ServiceStackProvider.GetSession(reload);
 
         protected virtual IAuthSession UserSession => GetSession();
 

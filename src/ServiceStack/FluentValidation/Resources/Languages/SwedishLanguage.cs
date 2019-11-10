@@ -20,7 +20,8 @@ namespace ServiceStack.FluentValidation.Resources {
 	using Validators;
 
 	internal class SwedishLanguage : Language {
-		public override string Name => "sv";
+		public const string Culture = "sv";
+		public override string Name => Culture;
 
 		public SwedishLanguage() {
 			Translate<EmailValidator>("\"{PropertyName}\" är inte en giltig e-postadress.");
@@ -46,6 +47,12 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<EmptyValidator>("\"{PropertyName}\" ska vara tomt.");
 			Translate<NullValidator>("\"{PropertyName}\" ska vara tomt.");
 			Translate<EnumValidator>("\"{PropertyName}\" har ett antal värden som inte inkluderar \"{PropertyValue}\".");
+			// Additional fallback messages used by clientside validation integration.
+			Translate("Length_Simple", "\"{PropertyName}\" måste vara mellan {MinLength} och {MaxLength} tecken långt.");
+			Translate("MinimumLength_Simple", "\"{PropertyName}\" måste vara större än eller lika med {MinLength} tecken.");
+			Translate("MaximumLength_Simple", "\"{PropertyName}\" måste vara mindre än eller lika med {MaxLength} tecken.");
+			Translate("ExactLength_Simple", "\"{PropertyName}\" måste vara {MaxLength} tecken långt.");
+			Translate("InclusiveBetween_Simple", "\"{PropertyName}\" måste vara mellan {From} och {To}.");
 		}
 	}
 }

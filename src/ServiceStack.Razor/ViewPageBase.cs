@@ -428,6 +428,8 @@ namespace ServiceStack.Razor
 
         private string layout;
 
+        protected virtual IAuthSession UserSession => GetSession();
+
         public virtual IAuthSession GetSession(bool reload = false)
         {
             var req = this.Request;
@@ -581,6 +583,11 @@ namespace ServiceStack.Razor
         }
 
         public MvcHtmlString RedirectTo(string path) => WaitStopAsync(() => RedirectToAsync(path));
+
+        public bool HasRole(string role) => 
+            Request.GetSession().HasRole(role, TryResolve<IAuthRepository>());
+        public bool HasPermission(string permission) => 
+            Request.GetSession().HasPermission(permission, TryResolve<IAuthRepository>());
 
         public MvcHtmlString AssertRole(string role, string message = null, string redirect = null) =>
             WaitStopAsync(() => AssertRoleAsync(role, message, redirect));

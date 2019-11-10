@@ -89,12 +89,19 @@ namespace ServiceStack.Auth
         /// </summary>
         public object Post(Register request)
         {
-            if (HostContext.GetPlugin<AuthFeature>()?.SaveUserNamesInLowerCase == true)
+            var authFeature = GetPlugin<AuthFeature>();
+            if (authFeature != null)
             {
-                if (request.UserName != null)
-                    request.UserName = request.UserName.ToLower();
-                if (request.Email != null)
-                    request.Email = request.Email.ToLower();
+                if (authFeature.SaveUserNamesInLowerCase == true)
+                {
+                    if (request.UserName != null)
+                        request.UserName = request.UserName.ToLower();
+                    if (request.Email != null)
+                        request.Email = request.Email.ToLower();
+                }
+
+                if (!string.IsNullOrEmpty(request.Continue))
+                    authFeature.ValidateRedirectLinks(Request, request.Continue);
             }
             
             var validateResponse = ValidateFn?.Invoke(this, HttpMethods.Post, request);

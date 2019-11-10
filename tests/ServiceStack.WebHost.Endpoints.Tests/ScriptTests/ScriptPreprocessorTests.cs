@@ -84,7 +84,9 @@ title: The title
         [Test]
         public void Does_preprocess_code_blocks_by_default()
         {
-            var context = new ScriptContext().Init();
+            var context = new ScriptContext {
+                Preprocessors = { ScriptPreprocessors.TransformCodeBlocks }
+            }.Init();
 
             var script = context.OneTimePage(CodeBlock);
             

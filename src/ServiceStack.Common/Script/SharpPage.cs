@@ -9,16 +9,22 @@ namespace ServiceStack.Script
 {
     public class SharpPage
     {
+        /// <summary>
+        /// Whether to evaluate as Template block or code block
+        /// </summary>
+        public ScriptLanguage ScriptLanguage { get; set; }
         public IVirtualFile File { get; }
         public ReadOnlyMemory<char> FileContents { get; private set; }
         public ReadOnlyMemory<char> BodyContents { get; private set; }
         public Dictionary<string, object> Args { get; protected set; }
         public SharpPage LayoutPage { get; set; }
-        public List<PageFragment> PageFragments { get; set; }
+        public PageFragment[] PageFragments { get; set; }
         public DateTime LastModified { get; set; }
         public DateTime LastModifiedCheck { get; private set; }
         public bool HasInit { get; private set; }
         public bool IsLayout { get; private set; }
+        
+        public bool IsImmutable { get; private set; }
 
         public ScriptContext Context { get; }
         public PageFormat Format { get; }
@@ -30,6 +36,7 @@ namespace ServiceStack.Script
         public SharpPage(ScriptContext context, IVirtualFile file, PageFormat format=null)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
+            ScriptLanguage = context.DefaultScriptLanguage;
             File = file ?? throw new ArgumentNullException(nameof(file));
             
             Format = format ?? Context.GetFormat(File.Extension);
@@ -37,8 +44,23 @@ namespace ServiceStack.Script
                 throw new ArgumentException($"File with extension '{File.Extension}' is not a registered PageFormat in Context.PageFormats", nameof(file));
         }
 
+        public SharpPage(ScriptContext context, PageFragment[] body)
+        {
+            Context = context ?? throw new ArgumentNullException(nameof(context));
+            PageFragments = body ?? throw new ArgumentNullException(nameof(body));
+            Format = Context.PageFormats[0];
+            ScriptLanguage = context.DefaultScriptLanguage;
+            Args = TypeConstants.EmptyObjectDictionary;
+            File = context.EmptyFile;
+            HasInit = true;
+            IsImmutable = true;
+        }
+
         public virtual async Task<SharpPage> Init()
         {
+            if (IsImmutable)
+                return this;
+            
             if (HasInit)
             {
                 var skipCheck = !Context.DebugMode &&
@@ -61,6 +83,9 @@ namespace ServiceStack.Script
 
         public async Task<SharpPage> Load()
         {
+            if (IsImmutable)
+                return this;
+            
             string contents;
             using (var stream = File.OpenRead())
             {
@@ -79,7 +104,8 @@ namespace ServiceStack.Script
             var pos = 0;
             var bodyContents = fileContents;
             fileContents.AdvancePastWhitespace().TryReadLine(out ReadOnlyMemory<char> line, ref pos);
-            if (line.StartsWith(Format.ArgsPrefix))
+            var lineComment = ScriptLanguage.LineComment;
+            if (line.StartsWith(Format.ArgsPrefix) || (lineComment != null && line.StartsWith(lineComment + Format.ArgsPrefix)))
             {
                 while (fileContents.TryReadLine(out line, ref pos))
                 {
@@ -87,8 +113,11 @@ namespace ServiceStack.Script
                         continue;
 
 
-                    if (line.StartsWith(Format.ArgsSuffix))
+                    if (line.StartsWith(Format.ArgsSuffix) || (lineComment != null && line.StartsWith(lineComment + Format.ArgsSuffix)))
                         break;
+
+                    if (lineComment != null && line.StartsWith(lineComment))
+                        line = line.Slice(lineComment.Length).TrimStart();
 
                     var colonPos = line.IndexOf(':');
                     var spacePos = line.IndexOf(' ');
@@ -100,7 +129,8 @@ namespace ServiceStack.Script
                     
                     line.SplitOnFirst(sep, out var first, out var last);
 
-                    pageVars[first.Trim().ToString()] = !last.IsEmpty ? last.Trim().ToString() : "";
+                    var key = first.Trim().ToString();
+                    pageVars[key] = !last.IsEmpty ? last.Trim().ToString() : "";
                 }
                 
                 //When page has variables body starts from first non whitespace after variables end  
@@ -116,7 +146,7 @@ namespace ServiceStack.Script
             var pageFragments = pageVars.TryGetValue("ignore", out object ignore) 
                     && ("page".Equals(ignore.ToString()) || "template".Equals(ignore.ToString()))
                 ? new List<PageFragment> { new PageStringFragment(bodyContents) } 
-                : SharpPageUtils.ParseTemplatePage(bodyContents);
+                : ScriptLanguage.Parse(Context, bodyContents);
 
             foreach (var fragment in pageFragments)
             {
@@ -134,7 +164,7 @@ namespace ServiceStack.Script
                 FileContents = fileContents;
                 Args = pageVars;
                 BodyContents = bodyContents;
-                PageFragments = pageFragments;
+                PageFragments = pageFragments.ToArray();
 
                 HasInit = true;
                 LayoutPage = Format.ResolveLayout(this);
@@ -178,7 +208,7 @@ namespace ServiceStack.Script
         public SharpPartialPage(ScriptContext context, string name, IEnumerable<PageFragment> body, string format, Dictionary<string,object> args=null)
             : base(context, CreateFile(name, format), context.GetFormat(format))
         {
-            PageFragments = body.ToList();
+            PageFragments = body.ToArray();
             Args = args ?? new Dictionary<string, object>();
         }
 

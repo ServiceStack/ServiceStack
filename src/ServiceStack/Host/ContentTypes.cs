@@ -71,7 +71,7 @@ namespace ServiceStack.Host
             { "xml", MimeTypes.Xml },
             { "jsv", MimeTypes.Jsv },
         };
-
+        
         public string GetFormatContentType(string format)
         {
             return ContentTypeFormats.TryGetValue(format, out var registeredFormats)
@@ -234,28 +234,39 @@ namespace ServiceStack.Host
 
             throw new NotSupportedException(ErrorMessages.ContentTypeNotSupported.Fmt(contentType));
         }
+
+        private static async Task serializeSync(StreamSerializerDelegate serializer, IRequest httpReq, object dto, Stream stream)
+        {
+            if (HostContext.Config.BufferSyncSerializers)
+            {
+                using (var ms = MemoryStreamFactory.GetStream())
+                {
+                    serializer(httpReq, dto, ms);
+                    ms.Position = 0;
+                    await ms.CopyToAsync(stream);
+                    return;
+                }
+            }
+
+            httpReq.Response.AllowSyncIO();
+            serializer(httpReq, dto, stream);
+        }
         
-        public async Task SerializeToStreamAsync(IRequest req, object response, Stream responseStream)
+        public Task SerializeToStreamAsync(IRequest req, object response, Stream responseStream)
         {
             var contentType = ContentFormat.NormalizeContentType(req.ResponseContentType);
 
             var serializer = GetStreamSerializer(contentType);
             if (serializer != null)
-            {
-                serializer(req, response, responseStream);
-                return;
-            }
+                return serializeSync(serializer, req, response, responseStream);
 
             var serializerAsync = GetStreamSerializerAsync(contentType);
             if (serializerAsync != null)
-            {
-                await serializerAsync(req, response, responseStream);
-                return;
-            }
+                return serializerAsync(req, response, responseStream);
             
             throw new NotSupportedException(ErrorMessages.ContentTypeNotSupported.Fmt(contentType));
         }
-
+        
         public StreamSerializerDelegateAsync GetStreamSerializerAsync(string contentType)
         {
             contentType = ContentFormat.NormalizeContentType(contentType);
@@ -267,11 +278,8 @@ namespace ServiceStack.Host
             if (serializer == null) 
                 return UnknownContentTypeSerializer;
 
-            return (httpReq, dto, stream) =>
-            {
-                serializer(httpReq, dto, stream);
-                return TypeConstants.EmptyTask;
-            };
+            return (httpReq, dto, stream) => 
+                serializeSync(serializer, httpReq, dto, stream);
         }
 
         public StreamSerializerDelegate GetStreamSerializer(string contentType)

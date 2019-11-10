@@ -154,9 +154,9 @@ namespace ServiceStack
                     return mockSession;
             }
 
-            object oSession = null;
-            if (!reload)
-                httpReq.Items.TryGetValue(Keywords.Session, out oSession);
+            httpReq.Items.TryGetValue(Keywords.Session, out var oSession);
+            if (reload && (oSession as IAuthSession)?.FromToken != true) // can't reload FromToken sessions from cache
+                oSession = null;
 
             if (oSession == null && !httpReq.Items.ContainsKey(Keywords.HasPreAuthenticated))
             {

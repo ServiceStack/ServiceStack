@@ -19,27 +19,57 @@ namespace ServiceStack
     /// </summary>
     public class InputOptions
     {
+        /// <summary>
+        /// Display the Control inline 
+        /// </summary>
         public bool Inline { get; set; }
         
+        /// <summary>
+        /// Label for the control
+        /// </summary>
         public string Label { get; set; }
         
+        /// <summary>
+        /// Class for Label
+        /// </summary>
         public string LabelClass { get; set; }
         
+        /// <summary>
+        /// Override the class on the error message (default: invalid-feedback)
+        /// </summary>
         public string ErrorClass { get; set; }
 
+        /// <summary>
+        /// Small Help Text displayed with the control
+        /// </summary>
         public string Help { get; set; }
         
+        /// <summary>
+        /// Bootstrap Size of the Control: sm, lg
+        /// </summary>
         public string Size { get; set; }
         
+        /// <summary>
+        /// Multiple Value Data Source for Checkboxes, Radio boxes and Select Controls 
+        /// </summary>
         public object Values { get; set; }
 
+        /// <summary>
+        /// Typed setter of Multi Input Values
+        /// </summary>
         public IEnumerable<KeyValuePair<string, string>> InputValues
         {
             set => Values = value;
         }
 
+        /// <summary>
+        /// Whether to preserve value state after post back
+        /// </summary>
         public bool PreserveValue { get; set; } = true;
 
+        /// <summary>
+        /// Whether to show Error Message associated with this control
+        /// </summary>
         public bool ShowErrors { get; set; } = true;
     }
 
@@ -581,6 +611,8 @@ namespace ServiceStack
 
         public static string TextDump(this object target) => DefaultScripts.TextDump(target, null); 
         public static string TextDump(this object target, TextDumpOptions options) => DefaultScripts.TextDump(target, options); 
+        public static string DumpTable(this object target) => DefaultScripts.TextDump(target, null); 
+        public static string DumpTable(this object target, TextDumpOptions options) => DefaultScripts.TextDump(target, options); 
         
         public static string HtmlDump(object target) => HtmlScripts.HtmlDump(target, null); 
         public static string HtmlDump(object target, HtmlDumpOptions options) => HtmlScripts.HtmlDump(target, options); 
@@ -721,11 +753,25 @@ namespace ServiceStack
                 divAttrs = new Dictionary<string, object>();
             
             if (!divAttrs.ContainsKey("class") && !divAttrs.ContainsKey("className"))
-                divAttrs["class"] = "alert alert-danger";
+                divAttrs["class"] = ValidationSummaryCssClassNames;
             
             return HtmlScripts.htmlDiv(errorSummaryMsg, divAttrs).ToRawString();
         }
+        
+        public static string ValidationSummaryCssClassNames = "alert alert-danger";
+        public static string ValidationSuccessCssClassNames = "alert alert-success";
 
+        public static string ValidationSuccess(string message, Dictionary<string,object> divAttrs)
+        {
+            if (divAttrs == null)
+                divAttrs = new Dictionary<string, object>();
+            
+            if (!divAttrs.ContainsKey("class") && !divAttrs.ContainsKey("className"))
+                divAttrs["class"] = ValidationSuccessCssClassNames;
+            
+            return HtmlScripts.htmlDiv(message, divAttrs).ToRawString();
+        }
+        
         public static string ErrorResponseExcept(ResponseStatus errorStatus, string fieldNames) =>
             ErrorResponseExcept(errorStatus, ToVarNames(fieldNames));
         public static string ErrorResponseExcept(ResponseStatus errorStatus, ICollection<string> fieldNames)
@@ -882,12 +928,14 @@ namespace ServiceStack
             var values = options.Values;
             var isSingleCheck = isCheck && values == null;
 
+            object oValue = null;
             string formValue = null;
             var isGet = req.Verb == HttpMethods.Get;
             var preserveValue = options.PreserveValue;
             if (preserveValue)
             {
-                formValue = FormValue(req, name);
+                var strValue = args.TryGetValue("value", out oValue) ? oValue as string : null;
+                formValue = FormValue(req, name, strValue);
                 if (!isGet || !string.IsNullOrEmpty(formValue)) //only override value if POST or GET queryString has value
                 {
                     if (!isCheck)
@@ -911,7 +959,7 @@ namespace ServiceStack
             className = HtmlScripts.htmlAddClass(className, inputClass);
 
             if (size != null)
-                className = HtmlScripts.htmlAddClass(className, inputClass + "-" + size);
+                className = HtmlScripts.htmlAddClass(className, (notInput || isCheck ? inputClass : "input") + "-" + size);
 
             var errorMsg = ErrorResponse(GetErrorStatus(req), name);
             if (errorMsg != null)
@@ -935,7 +983,7 @@ namespace ServiceStack
                 labelHtml = HtmlScripts.htmlLabel(labelArgs).AsString();
             }
 
-            var value = (args.TryGetValue("value", out var oValue)
+            var value = (args.TryGetValue("value", out oValue)
                     ? oValue as string
                     : null)
                 ?? (oValue?.GetType().IsValueType == true
@@ -1211,13 +1259,24 @@ namespace ServiceStack
                         if (existingBundleTag == null)
                         {
                             // use existing bundle if file with matching hash pattern is found
-                            var fileSearchPath = outFilePath.Replace("[hash]", ".*");
-                            var fileMatch = webVfs.GetAllMatchingFiles(fileSearchPath).FirstOrDefault();
-                            if (fileMatch != null)
+                            var outDirPath = outFilePath.LastLeftPart('/');
+                            var outFileName = outFilePath.LastRightPart('/');
+                            var outGlobFile = outFileName.Replace("[hash]", ".*");
+
+                            // use glob search to avoid unnecessary file scans
+                            var outDir = webVfs.GetDirectory(outDirPath);
+                            if (outDir != null)
                             {
-                                outHtmlTag = htmlTagFmt.Replace("{0}", "/" + fileMatch.VirtualPath);
-                                memFs.WriteFile(outFilePath, outHtmlTag); //cache lookup
-                                return outHtmlTag;
+                                var outDirFiles = outDir.GetFiles();
+                                foreach (var file in outDirFiles)
+                                {
+                                    if (file.Name.Glob(outGlobFile))
+                                    {
+                                        outHtmlTag = htmlTagFmt.Replace("{0}", "/" + file.VirtualPath);
+                                        memFs.WriteFile(outFilePath, outHtmlTag); //cache lookup
+                                        return outHtmlTag;
+                                    }
+                                }
                             }
                         }
                         else

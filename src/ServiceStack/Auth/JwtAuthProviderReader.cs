@@ -386,6 +386,44 @@ namespace ServiceStack.Auth
 
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
+            // only allow verification of token
+            if (!string.IsNullOrEmpty(request.Password) && string.IsNullOrEmpty(request.UserName))
+            {
+                AuthenticateResponse toAuthResponse(IAuthSession jwtSession)
+                {
+                    var to = jwtSession.ConvertTo<AuthenticateResponse>();
+                    to.UserId = jwtSession.UserAuthId;
+                    return to;
+                }
+
+                var req = authService.Request;
+                
+                var bearerToken = request.Password;
+                var parts = bearerToken.Split('.');
+                if (parts.Length == 3)
+                {
+                    var jwtPayload = GetVerifiedJwtPayload(req, parts);
+                    if (jwtPayload == null) //not verified
+                        throw HttpError.Forbidden(ErrorMessages.TokenInvalid.Localize(req));
+                    
+                    return toAuthResponse(CreateSessionFromPayload(req, jwtPayload));
+                }
+                if (parts.Length == 5) //Encrypted JWE Token
+                {
+                    var jwtPayload = GetVerifiedJwtPayload(req, parts);
+                    if (jwtPayload == null) //not verified
+                        throw HttpError.Forbidden(ErrorMessages.TokenInvalid.Localize(req));
+
+                    if (ValidateToken != null)
+                    {
+                        if (!ValidateToken(jwtPayload, req))
+                            throw HttpError.Forbidden(ErrorMessages.TokenInvalid.Localize(req));
+                    }
+
+                    return toAuthResponse(CreateSessionFromPayload(req, jwtPayload));
+                }
+            }
+   
             throw new NotImplementedException("JWT Authenticate() should not be called directly");
         }
 

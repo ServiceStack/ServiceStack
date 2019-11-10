@@ -20,7 +20,8 @@ namespace ServiceStack.FluentValidation.Resources {
 	using Validators;
 
 	internal class TurkishLanguage : Language {
-		public override string Name => "tr";
+		public const string Culture = "tr";
+		public override string Name => Culture;
 
 		public TurkishLanguage() {
 			Translate<EmailValidator>("'{PropertyName}'  geçerli bir e-posta adresi değil.");
@@ -46,6 +47,12 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<EmptyValidator>("'{PropertyName}' boş olmalıdır.");
 			Translate<NullValidator>("'{PropertyName}' boş olmalıdır.");
 			Translate<EnumValidator>("'{PropertyName}', '{PropertyValue}' içermeyen bir değer aralığı içeriyor.");
+			// Additional fallback messages used by clientside validation integration.
+			Translate("Length_Simple", "'{PropertyName}', {MinLength} ve {MaxLength} arasında karakter uzunluğunda olmalı.");
+			Translate("MinimumLength_Simple", "'{PropertyName}', {MinLength} karakterden büyük veya eşit olmalıdır.");
+			Translate("MaximumLength_Simple", "'{PropertyName}', {MaxLength} karakterden küçük veya eşit olmalıdır.");
+			Translate("ExactLength_Simple", "'{PropertyName}', {MaxLength} karakter uzunluğunda olmalı.");
+			Translate("InclusiveBetween_Simple", "'{PropertyName}', {From} ve {To} arasında olmalı.");
 		}
 	}
 }

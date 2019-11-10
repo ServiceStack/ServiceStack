@@ -65,7 +65,7 @@ namespace CheckHttpListener
                 CompressFilesWithExtensions = { "js", "css" },
                 // (optional), only compress .js or .css files > 10k
                 CompressFilesLargerThanBytes = 10 * 1024,
-                DebugMode = true
+                DebugMode = false
             });
         }
 

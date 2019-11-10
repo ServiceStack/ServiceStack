@@ -213,10 +213,14 @@ namespace ServiceStack.Script
         public List<object> filter(ScriptScopeContext scope, IList list, JsArrowFunctionExpression expression) => 
             where(scope, list, expression, null).ToList();
 
-        public List<object> flat(IList list) => flatten(list);
+        public List<object> flat(IList list) => flatten(list, 1);
+        public List<object> flat(IList list, int depth) => flatten(list, depth);
 
         public List<object> flatMap(ScriptScopeContext scope, IList list, JsArrowFunctionExpression expression) => 
             flat((IList)map(scope, list, expression, null));
+
+        public List<object> flatMap(ScriptScopeContext scope, IList list, JsArrowFunctionExpression expression, int depth) => 
+            flat((IList)map(scope, list, expression, null), depth);
 
         public bool includes(IList list, object item) =>
             includes(list, item, 0);

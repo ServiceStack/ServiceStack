@@ -23,7 +23,7 @@ namespace ServiceStack
             
             context.ScriptMethods.Add(new MarkdownScriptMethods());
 
-            ScriptConfig.DontEvaluateBlocksNamed.Add("markdown");
+            context.ParseAsVerbatimBlock.Add("markdown");
             
             context.ScriptBlocks.Add(new MarkdownScriptBlock());
         }
@@ -52,7 +52,8 @@ namespace ServiceStack
     public class MarkdownScriptBlock : ScriptBlock
     {
         public override string Name => "markdown";
-        
+        public override ScriptLanguage Body => ScriptVerbatim.Language;
+
         public override async Task WriteAsync(ScriptScopeContext scope, PageBlockFragment block, CancellationToken token)
         {
             var strFragment = (PageStringFragment)block.Body[0];

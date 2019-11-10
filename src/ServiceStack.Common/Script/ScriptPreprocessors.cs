@@ -46,6 +46,12 @@ namespace ServiceStack.Script
                         continue;
                     }
 
+                    if (codeOnly.StartsWith("*") && !codeOnly.EndsWith("*"))
+                    {
+                        processed.AppendLine(codeOnly.Substring(1));
+                        continue;
+                    }
+
                     processed
                         .Append("{{")
                         .Append(codeOnly)
@@ -66,6 +72,11 @@ namespace ServiceStack.Script
             // return original script if there were no code blocks
             StringBuilderCache.Free(processed);
             return script;
+        }
+
+        public static string TransformStatementBody(string body)
+        {
+            return TransformCodeBlocks("```code\n" + body + "\n```");
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
@@ -31,9 +32,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public AppHost()
                 : base(nameof(ExceptionHandlingTestsAsync), typeof(UserService).Assembly) { }
 
+            public static int OnEndRequestCallbacksCount;
+
             public override void Configure(Container container)
             {
                 SetConfig(new HostConfig { DebugMode = false });
+                
+                OnEndRequestCallbacks.Add(req => {
+                    Interlocked.Increment(ref OnEndRequestCallbacksCount);
+                });
 
                 //Custom global uncaught exception handling strategy
                 this.UncaughtExceptionHandlersAsync.Add(async (req, res, operationName, ex) =>
@@ -123,10 +130,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Request_binding_error_raises_UncaughtException()
         {
+            Interlocked.Exchange(ref AppHost.OnEndRequestCallbacksCount, 0);
+            
             var response = PredefinedJsonUrl<ExceptionWithRequestBinding>()
                 .AddQueryParam("Id", "NaN")
                 .GetStringFromUrl();
 
+            Assert.That(AppHost.OnEndRequestCallbacksCount, Is.EqualTo(1));
             Assert.That(response, Is.EqualTo("UncaughtException SerializationException"));
         }
     }
