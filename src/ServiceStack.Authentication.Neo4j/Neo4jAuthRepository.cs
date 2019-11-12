@@ -124,6 +124,14 @@ namespace ServiceStack.Authentication.Neo4j
 
             AutoMapping.RegisterConverter<ZonedDateTime, DateTime>(zonedDateTime => zonedDateTime.ToDateTimeOffset().DateTime);
             AutoMapping.RegisterConverter<ZonedDateTime, DateTime?>(zonedDateTime => zonedDateTime.ToDateTimeOffset().DateTime);
+            
+            AutoMapping.RegisterConverter<UserAuthDetails, Dictionary<string, object>>(userAuthDetails =>
+            {
+                var dictionary = userAuthDetails.ToObjectDictionary();
+                dictionary[nameof(UserAuthDetails.Items)] = userAuthDetails.Items.ToJson();
+                dictionary[nameof(UserAuthDetails.Meta)] = userAuthDetails.Meta.ToJson();
+                return dictionary;
+            });
         }
 
         public void InitSchema()
@@ -440,7 +448,7 @@ namespace ServiceStack.Authentication.Neo4j
 
                 var detailsParameters = new
                 {
-                    details = userAuthDetails.ToObjectDictionary(),
+                    details = userAuthDetails.ConvertTo<Dictionary<string, object>>(),
                     id = userAuth.Id
                 };
 
