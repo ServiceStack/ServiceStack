@@ -94,6 +94,7 @@ namespace ServiceStack.Server.Tests.Auth
         {
             // Arrange
             var userAuth = CreateUserAuth();
+            var details = CreateUserAuthDetails(userAuth);
 
             var authSession = new AuthUserSession
             {
@@ -203,7 +204,15 @@ namespace ServiceStack.Server.Tests.Auth
 
         private IUserAuth CreateUserAuth(Action<UserAuth> userAuthFn = null)
         {
-            var userAuth = new UserAuth
+            var userAuth = GetUserAuth();
+            userAuthFn?.Invoke(userAuth);
+
+            return Sut.CreateUserAuth(userAuth, Password);
+        }
+
+        private static UserAuth GetUserAuth()
+        {
+            return new UserAuth
             {
                 Address = nameof(UserAuth.Address),
                 Address2 = nameof(UserAuth.Address2),
@@ -234,22 +243,28 @@ namespace ServiceStack.Server.Tests.Auth
                 TimeZone = nameof(UserAuth.TimeZone),
                 UserName = nameof(UserAuth.UserName),
             };
-
-            userAuthFn?.Invoke(userAuth);
-
-            return Sut.CreateUserAuth(userAuth, Password);
         }
 
         private IUserAuthDetails CreateUserAuthDetails(IUserAuth userAuth)
         {
-            var authSession = new AuthUserSession
-            {
-                UserAuthId = userAuth.Id.ToString()
-            };
+            var authSession = GetAuthUserSession();
+            authSession.UserAuthId = userAuth.Id.ToString();
 
-            var tokens = new AuthTokens();
+            var tokens = GetAuthTokens();
+            tokens.UserId = authSession.UserAuthId;
+            tokens.Provider = "google";
 
             return Sut.CreateOrMergeAuthSession(authSession, tokens);
+        }
+
+        private static AuthUserSession GetAuthUserSession()
+        {
+            return new AuthUserSession();
+        }
+
+        private static AuthTokens GetAuthTokens()
+        {
+            return new AuthTokens();
         }
     }
 
