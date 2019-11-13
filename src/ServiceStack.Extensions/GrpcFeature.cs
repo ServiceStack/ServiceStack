@@ -414,6 +414,7 @@ namespace ServiceStack
     }
 
     [DefaultRequest(typeof(GetFile))]
+    [Restrict(VisibilityTo = RequestAttributes.None)]
     public class GetFileService : Service
     {
         public object Get(GetFile request)
@@ -433,6 +434,7 @@ namespace ServiceStack
         }
     }
 
+    [Restrict(VisibilityTo = RequestAttributes.None)]
     public class StreamFileService : Service, IStreamService<StreamFiles,FileContent>
     {
         public async IAsyncEnumerable<FileContent> Stream(StreamFiles request, CancellationToken cancel = default)
