@@ -17,12 +17,13 @@ using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Configuration;
 using ServiceStack.IO;
+using ServiceStack.Model;
 using ServiceStack.NetCore;
 using ServiceStack.Text;
 
 namespace ServiceStack.Host.NetCore
 {
-    public class NetCoreRequest : IHttpRequest, IHasResolver, IHasVirtualFiles, IServiceProvider, IHasBufferedStream
+    public class NetCoreRequest : IHttpRequest, IHasResolver, IHasVirtualFiles, IServiceProvider, IHasBufferedStream, IHasStringId
     {
         public static ILog log = LogManager.GetLogger(typeof(NetCoreRequest));
 
@@ -340,6 +341,8 @@ namespace ServiceStack.Host.NetCore
                 return isFile.Value;
             }
         }
+
+        public string Id => System.Diagnostics.Activity.Current?.Id ?? HttpContext.TraceIdentifier;
     }
 }
 
