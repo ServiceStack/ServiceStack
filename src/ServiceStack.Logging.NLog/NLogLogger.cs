@@ -21,7 +21,7 @@ namespace ServiceStack.Logging.NLogger
         /// <param name="type">The type.</param>
         public NLogLogger(Type type)
         {
-            log = NLog.LogManager.GetLogger(UseFullTypeNames ? type.FullName : type.Name);
+            log = NLog.LogManager.GetLogger(UseFullTypeNames ? type.ToString() : type.Name);
         }
 
         public static bool UseFullTypeNames { get; set; }
@@ -48,7 +48,7 @@ namespace ServiceStack.Logging.NLogger
         public void Debug(object message)
         {
             if (IsDebugEnabled)
-                Log(LogLevel.Debug, AsString(message));
+                LogValue(LogLevel.Debug, message);
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace ServiceStack.Logging.NLogger
         public void Error(object message)
         {
             if (IsErrorEnabled)
-                Log(LogLevel.Error, AsString(message));
+                LogValue(LogLevel.Error, message);
         }
 
         /// <summary>
@@ -134,7 +134,7 @@ namespace ServiceStack.Logging.NLogger
         public void Fatal(object message)
         {
             if (IsFatalEnabled)
-                Log(LogLevel.Fatal, AsString(message));
+                LogValue(LogLevel.Fatal, message);
         }
 
         /// <summary>
@@ -177,7 +177,7 @@ namespace ServiceStack.Logging.NLogger
         public void Info(object message)
         {
             if (IsInfoEnabled)
-                Log(LogLevel.Info, AsString(message));
+                LogValue(LogLevel.Info, message);
         }
 
         /// <summary>
@@ -220,7 +220,7 @@ namespace ServiceStack.Logging.NLogger
         public void Warn(object message)
         {
             if (IsWarnEnabled)
-                Log(LogLevel.Warn, AsString(message));
+                LogValue(LogLevel.Warn, message);
         }
 
         /// <summary>
@@ -269,6 +269,11 @@ namespace ServiceStack.Logging.NLogger
         public void Log(NLog.LogLevel logLevel, string format, object[] args, Exception ex)
         {
             log.Log(typeof(NLogLogger), new LogEventInfo(logLevel, log.Name, null, format, args, ex));
+        }
+
+        private void LogValue(NLog.LogLevel logLevel, object value)
+        {
+            log.Log(typeof(NLogLogger), LogEventInfo.Create(logLevel, log.Name, null, value));
         }
 
         public IDisposable PushProperty(string key, object value)
