@@ -164,7 +164,9 @@ namespace ServiceStack.Host
 #else                                                  
                         : AssemblyUtils.FindType(requestType.FullName + ResponseDtoSuffix);
 #endif
-                    if (responseType?.Name == "Task`1" && responseType.GetGenericArguments()[0] != typeof(object))
+                    if (responseType == typeof(Task))
+                        responseType = null;
+                    else if (responseType?.Name == "Task`1" && responseType.GetGenericArguments()[0] != typeof(object))
                         responseType = responseType.GetGenericArguments()[0];
                     
                     RegisterRestPaths(requestType);
@@ -199,6 +201,26 @@ namespace ServiceStack.Host
                 && !serviceType.IsAbstract 
                 && !serviceType.IsGenericTypeDefinition 
                 && !serviceType.ContainsGenericParameters;
+        }
+
+        public static bool IsServiceAction(MethodInfo mi)
+        {
+            if (mi.IsGenericMethod || mi.GetParameters().Length != 1)
+                return false;
+
+            var paramType = mi.GetParameters()[0].ParameterType;
+            if (paramType.IsValueType || paramType == typeof(string))
+                return false;
+
+            var actionName = mi.Name.ToUpper();
+            if (!HttpMethods.AllVerbs.Contains(actionName) &&
+                actionName != ActionContext.AnyAction &&
+                !HttpMethods.AllVerbs.Any(verb =>
+                    ContentTypes.KnownFormats.Any(format => actionName.EqualsIgnoreCase(verb + format))) &&
+                !ContentTypes.KnownFormats.Any(format => actionName.EqualsIgnoreCase(ActionContext.AnyAction + format)))
+                return false;
+            
+            return true;
         }
 
         public readonly Dictionary<string, List<RestPath>> RestPathMap = new Dictionary<string, List<RestPath>>();
@@ -449,31 +471,39 @@ namespace ServiceStack.Host
                 InjectRequestContext(service, request);
 
                 object response = null;
+
+                object Release(object result)
+                {
+                    //Gets disposed by AppHost or ContainerAdapter if set
+                    if (result is Task taskResponse)
+                    {
+                        return HostContext.Async.ContinueWith(request, taskResponse, task => {
+                            appHost.Release(service);
+                            return taskResponse.GetResult();
+                        });
+                    }
+                    appHost.Release(service);
+                    return result;
+                }
+                
                 try
                 {
                     requestDto = appHost.OnPreExecuteServiceFilter(service, requestDto, request, request.Response);
 
                     if (request.Dto == null) // Don't override existing batched DTO[]
-                        request.Dto = requestDto; 
+                        request.Dto = requestDto;
 
                     //Executes the service and returns the result
                     response = serviceExec(request, requestDto);
 
                     response = appHost.OnPostExecuteServiceFilter(service, response, request, request.Response);
 
-                    return response;
+                    return Release(response);
                 }
-                finally
+                catch (Exception)
                 {
-                    //Gets disposed by AppHost or ContainerAdapter if set
-                    if (response is Task taskResponse)
-                    {
-                        HostContext.Async.ContinueWith(request, taskResponse, task => appHost.Release(service));
-                    }
-                    else
-                    {
-                        appHost.Release(service);
-                    }
+                    Release(response);
+                    throw;
                 }
             }
             catch (TargetInvocationException tex)
@@ -711,13 +741,11 @@ namespace ServiceStack.Host
                     }
                     return ret;
                 }
-
-                return applyFilters ? await ApplyResponseFiltersAsync(response, req) : response;
             }
 
-            return applyFilters
-                ? await ApplyResponseFiltersAsync(response, req)
-                : response;
+            if (applyFilters)
+                return await ApplyResponseFiltersAsync(response, req); 
+            return response;
         }
 
         public virtual ServiceExecFn GetService(Type requestType)

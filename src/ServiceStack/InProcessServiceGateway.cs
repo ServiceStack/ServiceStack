@@ -106,13 +106,13 @@ namespace ServiceStack
             {
                 filter(req, request);
                 if (req.Response.IsClosed)
-                    return default(TResponse);
+                    return default;
             }
             foreach (var filter in HostContext.AppHost.GatewayRequestFiltersAsyncArray)
             {
                 await filter(req, request);
                 if (req.Response.IsClosed)
-                    return default(TResponse);
+                    return default;
             }
 
             await ExecValidators(request);
@@ -125,13 +125,13 @@ namespace ServiceStack
             {
                 filter(req, responseDto);
                 if (req.Response.IsClosed)
-                    return default(TResponse);
+                    return default;
             }
             foreach (var filter in HostContext.AppHost.GatewayResponseFiltersAsyncArray)
             {
                 await filter(req, responseDto);
                 if (req.Response.IsClosed)
-                    return default(TResponse);
+                    return default;
             }
 
             return responseDto;
@@ -202,10 +202,10 @@ namespace ServiceStack
         {
             var holdDto = req.Dto;
             var holdOp = req.OperationName;
-            var holdAttrs = req.RequestAttributes;
             var holdVerb = SetVerb(requestDto);
+            var holdAttrs = req.RequestAttributes;
 
-            req.RequestAttributes |= RequestAttributes.InProcess;
+            req.SetInProcessRequest();
 
             try
             {
@@ -236,12 +236,12 @@ namespace ServiceStack
         public List<TResponse> SendAll<TResponse>(IEnumerable<object> requestDtos)
         {
             var holdDto = req.Dto;
-            var holdAttrs = req.RequestAttributes;
             string holdVerb = req.GetItem(Keywords.InvokeVerb) as string;
+            var holdAttrs = req.RequestAttributes;
 
             var typedArray = CreateTypedArray(requestDtos);
             req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
-            req.RequestAttributes |= RequestAttributes.InProcess;
+            req.SetInProcessRequest();
 
             try
             {
@@ -263,7 +263,7 @@ namespace ServiceStack
 
             var typedArray = CreateTypedArray(requestDtos);
             req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
-            req.RequestAttributes |= RequestAttributes.InProcess;
+            req.SetInProcessRequest();
 
             var responseTask = ExecAsync<TResponse[]>(typedArray);
             return HostContext.Async.ContinueWith(req, responseTask, task => 

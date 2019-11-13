@@ -87,22 +87,28 @@ namespace ServiceStack.Script
         public string titleCase(string text) => text.ToTitleCase();
         public string pascalCase(string text) => text.ToPascalCase();
         public string camelCase(string text) => text.ToCamelCase();
+        public string snakeCase(string text) => text.ToLowercaseUnderscore();
+        public string kebabCase(string text) => text.ToLowercaseUnderscore().Replace("_","-");
 
         public string textStyle(string text, string headerStyle)
         {
             if (text == null) return null;
             switch (headerStyle)
             {
-                case "splitCase":
+                case nameof(splitCase):
                     return splitCase(text);
-                case "humanize":
+                case nameof(humanize):
                     return humanize(text);
-                case "titleCase":
+                case nameof(titleCase):
                     return titleCase(text);
-                case "pascalCase":
+                case nameof(pascalCase):
                     return pascalCase(text);
-                case "camelCase":
+                case nameof(camelCase):
                     return camelCase(text);
+                case nameof(snakeCase):
+                    return snakeCase(text);
+                case nameof(kebabCase):
+                    return kebabCase(text);
             }
             return text;
         }

@@ -18,7 +18,7 @@ namespace ServiceStack
         public TokenException(string message) : base(message) {}
     }
 
-    public class AuthenticationException : Exception
+    public class AuthenticationException : Exception, IHasStatusCode
     {
         public AuthenticationException() {}
 
@@ -27,6 +27,8 @@ namespace ServiceStack
 
         public AuthenticationException(string message, Exception innerException)
             : base(message, innerException) {}
+
+        public int StatusCode => (int) HttpStatusCode.Unauthorized;
     }
 
     // by adamfowleruk

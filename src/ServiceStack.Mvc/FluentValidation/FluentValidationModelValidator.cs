@@ -1,4 +1,4 @@
-#if !NETSTANDARD2_0
+#if !NETSTANDARD
 namespace ServiceStack.FluentValidation.Mvc {
 	using System;
 	using System.Collections.Generic;

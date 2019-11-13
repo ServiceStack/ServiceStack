@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using ServiceStack.Messaging;
 
 namespace ServiceStack.Web
@@ -7,7 +8,7 @@ namespace ServiceStack.Web
     /// Responsible for executing the operation within the specified context.
     /// </summary>
     /// <value>The operation types.</value>
-    public interface IServiceController
+    public interface IServiceController : IServiceExecutor
     {
         /// <summary>
         /// Returns the first matching RestPath
@@ -20,12 +21,12 @@ namespace ServiceStack.Web
         object ExecuteMessage(IMessage mqMessage);
 
         /// <summary>
-        /// Executes the MQ DTO request with the supplied requestContext
+        /// Executes the MQ DTO request with the supplied request context
         /// </summary>
-        object ExecuteMessage(IMessage dto, IRequest requestContext);
+        object ExecuteMessage(IMessage dto, IRequest request);
 
         /// <summary>
-        /// Executes the DTO request under the supplied requestContext.
+        /// Executes the DTO request under the supplied request context.
         /// </summary>
         object Execute(object requestDto, IRequest request);
 
@@ -35,7 +36,7 @@ namespace ServiceStack.Web
         object Execute(object requestDto, IRequest request, bool applyFilters);
 
         /// <summary>
-        /// Executes the DTO request with an empty RequestContext.
+        /// Executes the DTO request with an empty request context.
         /// </summary>
         object Execute(object requestDto);
 
@@ -43,5 +44,10 @@ namespace ServiceStack.Web
         /// Executes the DTO request with the current HttpRequest and option to Execute Request/Response Filters.
         /// </summary>
         object Execute(IRequest request, bool applyFilters);
+
+        /// <summary>
+        /// Execute Service Gateway Requests
+        /// </summary>
+        Task<object> GatewayExecuteAsync(object requestDto, IRequest req, bool applyFilters);
     }
 }

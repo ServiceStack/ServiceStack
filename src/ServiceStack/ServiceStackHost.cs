@@ -231,11 +231,15 @@ namespace ServiceStack
                     OnStartupException(ex);
                 }
             }
-            Plugins.ToList().ForEach(RunPreConfigure);
+
+            var priorityPlugins = Plugins.WithPriority().PriorityOrdered().Map(x => (IPlugin)x);
+            priorityPlugins.ForEach(RunPreConfigure);
             configInstances.ForEach(RunPreConfigure);
             
             if (ServiceController == null)
                 ServiceController = CreateServiceController(ServiceAssemblies.ToArray());
+            
+            RpcGateway = new RpcGateway(this);
 
             Config = HostConfig.ResetInstance();
             OnConfigLoad();
@@ -422,6 +426,8 @@ namespace ServiceStack
         public ServiceMetadata Metadata { get; set; }
 
         public ServiceController ServiceController { get; set; }
+        
+        public RpcGateway RpcGateway { get; set; }
 
         // Rare for a user to auto register all available services in ServiceStack.dll
         // But happens when ILMerged, so exclude auto-registering SS services by default 
@@ -609,6 +615,8 @@ namespace ServiceStack
         /// </summary>
         public virtual async Task<object> OnServiceException(IRequest httpReq, object request, Exception ex)
         {
+            httpReq.Items[nameof(OnServiceException)] = bool.TrueString;
+            
             object lastError = null;
             foreach (var errorHandler in ServiceExceptionHandlers)
             {
@@ -636,7 +644,11 @@ namespace ServiceStack
             }
         }
 
-        public virtual Task HandleUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
+        [Obsolete("Use HandleResponseException")]
+        protected virtual Task HandleUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex) =>
+            HandleResponseException(httpReq, httpRes, operationName, ex);
+        
+        public virtual Task HandleResponseException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
         {
             //Only add custom error messages to StatusDescription
             var httpError = ex as IHttpError;
@@ -896,7 +908,8 @@ namespace ServiceStack
 
             Config.PreferredContentTypesArray = Config.PreferredContentTypes.ToArray();
 
-            Plugins.ForEach(RunPostInitPlugin);
+            var plugins = Plugins.WithPriority().PriorityOrdered();
+            plugins.ForEach(RunPostInitPlugin);
 
             ServiceController.AfterInit();
         }
@@ -1251,7 +1264,7 @@ namespace ServiceStack
                 {
                     var reqInfo = RequestInfoHandler.GetRequestInfo(httpReq);
 
-                    reqInfo.Host = Config.DebugHttpListenerHostEnvironment + "_v" + Env.ServiceStackVersion + "_" + ServiceName;
+                    reqInfo.Host = Config.DebugHttpListenerHostEnvironment + "_v" + Env.VersionString + "_" + ServiceName;
                     reqInfo.PathInfo = httpReq.PathInfo;
                     reqInfo.GetPathUrl = httpReq.GetPathUrl();
 

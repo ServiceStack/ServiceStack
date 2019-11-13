@@ -63,8 +63,8 @@ namespace ServiceStack
                     "default.ashx",
                 },
                 GlobalResponseHeaders = new Dictionary<string, string> {
-                    { "Vary", "Accept" },
-                    { "X-Powered-By", Env.ServerUserAgent },
+                    { HttpHeaders.Vary, "Accept" },
+                    { HttpHeaders.XPoweredBy, Env.ServerUserAgent },
                 },
                 IsMobileRegex = new Regex("Mobile|iP(hone|od|ad)|Android|BlackBerry|IEMobile|Kindle|(hpw|web)OS|Fennec|Minimo|Opera M(obi|ini)|Blazer|Dolfin|Dolphin|Skyfire|Zune", RegexOptions.Compiled),
                 RequestRules = new Dictionary<string, Func<IHttpRequest, bool>> {

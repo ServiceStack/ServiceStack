@@ -1423,7 +1423,7 @@ namespace ServiceStack
                     return StringBuilderCache.ReturnAndFree(sb);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 throw;
             }

@@ -128,7 +128,7 @@ namespace ServiceStack.NativeTypes.Kotlin
             var sb = new StringBuilderWrapper(sbInner);
             sb.AppendLine("/* Options:");
             sb.AppendLine($"Date: {DateTime.Now.ToString("s").Replace("T", " ")}");
-            sb.AppendLine($"Version: {Env.ServiceStackVersion}");
+            sb.AppendLine($"Version: {Env.VersionString}");
             sb.AppendLine($"Tip: {HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")}");
             sb.AppendLine($"BaseUrl: {Config.BaseUrl}");
             sb.AppendLine();

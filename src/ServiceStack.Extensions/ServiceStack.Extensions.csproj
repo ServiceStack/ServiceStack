@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <PackageId>ServiceStack.Extensions</PackageId>
+        <AssemblyName>ServiceStack.Extensions</AssemblyName>
+        <TargetFramework>netcoreapp3.0</TargetFramework>
+        <RootNamespace>ServiceStack</RootNamespace>
+        <DefineConstants>$(DefineConstants);PLAT_PBN_NOSPAN</DefineConstants>
+        <LangVersion>8</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Grpc.AspNetCore.Server" Version="2.23.2" />
+        <PackageReference Include="Grpc.Core.Api" Version="2.24.0" />
+        <PackageReference Include="System.Threading.Channels" Version="4.6.0" />
+        <PackageReference Include="protobuf-net" Version="2.4.1" />
+        
+        <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+        <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
+        <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
+        <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
+        <ProjectReference Include="..\ServiceStack.GrpcClient\ServiceStack.GrpcClient.csproj" />
+        <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
+        
+        <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.0.10" />
+    </ItemGroup>
+
+</Project>

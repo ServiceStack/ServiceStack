@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using ServiceStack;
 using ServiceStack.Api.OpenApi;
 using ServiceStack.Auth;
@@ -17,6 +19,7 @@ using ServiceStack.Mvc;
 using ServiceStack.NativeTypes.TypeScript;
 using ServiceStack.Text;
 using ServiceStack.Validation;
+using ServiceStack.Web;
 using Container = Funq.Container;
 
 namespace CheckWebCore
@@ -60,7 +63,7 @@ namespace CheckWebCore
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)                 
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)                 
         {
             "#8".Print();      // #8
             if (env.IsDevelopment())
@@ -93,6 +96,8 @@ namespace CheckWebCore
 
         public void Configure(IApplicationBuilder app)
         {
+            app.UseRouting();
+
             app.UseServiceStack(new AppHost
             {
                 AppSettings = new NetCoreAppSettings(Configuration)
@@ -101,6 +106,7 @@ namespace CheckWebCore
 
         public override void Configure(IServiceCollection services)
         {
+            services.AddServiceStackGrpc();
             services.AddSingleton<ICacheClient>(new MemoryCacheClient());
         }
         
@@ -108,6 +114,8 @@ namespace CheckWebCore
         // Configure your AppHost with the necessary configuration and dependencies your App needs
         public override void Configure(Container container)
         {
+            Plugins.Add(new GrpcFeature(App));
+            
             // enable server-side rendering, see: https://sharpscript.net
             Plugins.Add(new SharpPagesFeature()); 
             
@@ -231,6 +239,19 @@ namespace CheckWebCore
    
     public class ExtendsDictionary : Dictionary<Guid, string> {
     }
+    
+    [Route("/hello/body")]
+    public class HelloBody : IReturn<HelloBodyResponse>
+    {
+        public string Name { get; set; }
+    }
+
+    public class HelloBodyResponse
+    {
+        public string Message { get; set; }
+        public string Body { get; set; }
+        public ResponseStatus ResponseStatus { get; set; }
+    }
 
 
     //    [Authenticate]
@@ -278,6 +299,16 @@ namespace CheckWebCore
             //ImportData(month, file);
 
             return new ImportDataResponse();
+        }
+
+        public object Any(HelloBody request)
+        {
+            var body = Request.GetRawBody();
+            var to = new HelloBodyResponse {
+                Message = $"Hello, {request.Name}",
+                Body = body,
+            };
+            return to;
         }
     }
 }

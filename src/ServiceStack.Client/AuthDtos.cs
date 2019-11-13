@@ -332,4 +332,98 @@ namespace ServiceStack
         public ResponseStatus ResponseStatus { get; set; }
     }
 
+    [DataContract]
+    public class GetFile : IReturn<FileContent>, IGet
+    {
+        [DataMember(Order = 1)]
+        public string Path { get; set; }
+    }
+
+    [DataContract]
+    public class FileContent
+    {
+        [DataMember(Order = 1)]
+        public string Name { get; set; }
+        
+        [DataMember(Order = 2)]
+        public string Type { get; set; }
+        
+        [DataMember(Order = 3)]
+        public int Length { get; set; }
+        
+        [DataMember(Order = 4)]
+        public byte[] Body { get; set; }
+        
+        [DataMember(Order = 5)]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    [DataContract]
+    public class StreamFiles : IReturn<FileContent>
+    {
+        [DataMember(Order = 1)]
+        public List<string> Paths { get; set; }
+    }
+
+    [DataContract]
+    public class StreamServerEvents : IReturn<StreamServerEventsResponse>
+    {
+        [DataMember(Order = 1)]
+        public string[] Channels { get; set; }
+    }
+
+    [DataContract]
+    public class StreamServerEventsResponse
+    {
+        //ServerEventMessage
+        [DataMember(Order = 1)]
+        public long EventId { get; set; }
+        [DataMember(Order = 2)]
+        public string Channel { get; set; }
+//        [DataMember(Order = 3)] //ignore returning Data body
+        public string Data { get; set; }
+        [DataMember(Order = 4)]
+        public string Selector { get; set; }
+        [DataMember(Order = 5)]
+        public string Json { get; set; }
+        [DataMember(Order = 6)]
+        public string Op { get; set; }
+        [DataMember(Order = 7)]
+        public string Target { get; set; }
+        [DataMember(Order = 8)]
+        public string CssSelector { get; set; }
+        [DataMember(Order = 9)]
+        public Dictionary<string, string> Meta { get; set; }
+
+        //ServerEventCommand
+        [DataMember(Order = 10)]
+        public string UserId { get; set; }
+        [DataMember(Order = 11)]
+        public string DisplayName { get; set; }
+        [DataMember(Order = 12)]
+        public string ProfileUrl { get; set; }
+        [DataMember(Order = 13)]
+        public bool IsAuthenticated { get; set; }
+        [DataMember(Order = 14)]
+        public string[] Channels { get; set; }
+        [DataMember(Order = 15)]
+        public long CreatedAt { get; set; }
+        
+        //ServerEventConnect
+        [DataMember(Order = 21)]
+        public string Id { get; set; }
+        [DataMember(Order = 22)]
+        public string UnRegisterUrl { get; set; }
+        [DataMember(Order = 23)]
+        public string UpdateSubscriberUrl { get; set; }
+        [DataMember(Order = 24)]
+        public string HeartbeatUrl { get; set; }
+        [DataMember(Order = 25)]
+        public long HeartbeatIntervalMs { get; set; }
+        [DataMember(Order = 26)]
+        public long IdleTimeoutMs { get; set; }
+        
+        [DataMember(Order = 30)]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
 }

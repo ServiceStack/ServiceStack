@@ -29,7 +29,8 @@ namespace ServiceStack
         ProtoBuf     = 1 << 13,
         MsgPack      = 1 << 14,
         Wire         = 1 << 15,
+        Grpc         = 1 << 16,
 
-        ServiceDiscovery = 1 << 16,
+        ServiceDiscovery = 1 << 17,
     }
 }

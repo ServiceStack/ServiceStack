@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -24,6 +25,7 @@ using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.MiniProfiler;
 using ServiceStack.MiniProfiler.Data;
+using ServiceStack.NativeTypes;
 using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.ProtoBuf;
 using ServiceStack.Razor;
@@ -121,6 +123,19 @@ namespace CheckWeb
             });
 
             Plugins.Add(new DynamicallyRegisteredPlugin());
+
+            var feature = GetPlugin<NativeTypesFeature>();
+            feature.ExportAttribute<DisplayAttribute>(x => {
+                var attr = (DisplayAttribute) x;
+                var metadata = feature.GetGenerator().ToMetadataAttribute(x);
+                if (!attr.AutoGenerateField)
+                    metadata.Args.Add(new MetadataPropertyType {
+                        Name = nameof(DisplayAttribute.AutoGenerateField),
+                        Type = nameof(Boolean),
+                        Value = "false",
+                    });
+                return metadata;
+            });
 
 //            container.Register<IDbConnectionFactory>(
 //                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));

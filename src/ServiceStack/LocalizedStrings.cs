@@ -45,6 +45,8 @@
         public const string ErrorStatus = "__errorStatus";
         public const string Authorization = "__authorization";
         public const string Model = "Model";
+        public const string HttpStatus = "httpstatus";
+        public const string GrpcResponseStatus = "responsestatus-bin";
     }
 
     public static class LocalizedStrings

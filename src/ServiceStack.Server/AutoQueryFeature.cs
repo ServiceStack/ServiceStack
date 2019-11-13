@@ -12,6 +12,7 @@ using Funq;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
 using ServiceStack.Data;
+using ServiceStack.Extensions;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
 
@@ -194,19 +195,19 @@ namespace ServiceStack
                 }
             }
 
-            var misingRequestTypes = scannedTypes
+            var missingRequestTypes = scannedTypes
                 .Where(x => x.HasInterface(typeof(IQueryDb)))
                 .Where(x => !appHost.Metadata.OperationsMap.ContainsKey(x))
                 .ToList();
 
-            if (misingRequestTypes.Count == 0)
+            if (missingRequestTypes.Count == 0)
                 return;
 
-            var serviceType = GenerateMissingServices(misingRequestTypes);
+            var serviceType = GenerateMissingServices(missingRequestTypes);
             appHost.RegisterService(serviceType);
         }
 
-        Type GenerateMissingServices(IEnumerable<Type> misingRequestTypes)
+        Type GenerateMissingServices(IEnumerable<Type> missingRequestTypes)
         {
             var assemblyName = new AssemblyName { Name = "tmpAssembly" };
             var typeBuilder =
@@ -216,7 +217,7 @@ namespace ServiceStack
                     TypeAttributes.Public | TypeAttributes.Class,
                     AutoQueryServiceBaseType);
 
-            foreach (var requestType in misingRequestTypes)
+            foreach (var requestType in missingRequestTypes)
             {
                 var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryDb<,>));
                 var hasExplicitInto = genericDef != null;

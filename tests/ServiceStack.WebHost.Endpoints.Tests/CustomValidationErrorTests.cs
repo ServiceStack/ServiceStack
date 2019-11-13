@@ -13,7 +13,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    public class CustomValidationAppHost : AppHostHttpListenerBase
+    public class CustomValidationAppHost : AppSelfHostBase
     {
         public CustomValidationAppHost() : base("Custom Error", typeof(CustomValidationAppHost).Assembly) { }
 

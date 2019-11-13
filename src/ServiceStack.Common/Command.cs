@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ServiceStack.Extensions;
 using ServiceStack.Text;
 
 namespace ServiceStack

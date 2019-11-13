@@ -1885,7 +1885,7 @@ namespace ServiceStack.Script
                     });
 
                 Globals[Sym.New("*version*")] =
-                    new Cell(Env.ServiceStackVersion,
+                    new Cell(Env.VersionString,
                              new Cell("#Script Lisp", new Cell("based on Nukata Lisp Light v1.2", null)));
             }
 

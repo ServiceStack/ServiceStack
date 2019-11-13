@@ -11,12 +11,12 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Testing
 {
-    public class MockHttpResponse : IHttpResponse
+    public class MockHttpResponse : IHttpResponse, IHasHeaders
     {
         public MockHttpResponse(IRequest request = null)
         {
             this.Request = request;
-            this.Headers = new NameValueCollection();
+            this.Headers = new Dictionary<string, string>();
             this.OutputStream = new MemoryStream();
             this.TextWritten = new StringBuilder();
             this.Cookies = HostContext.AssertAppHost().GetCookies(this);
@@ -31,7 +31,7 @@ namespace ServiceStack.Testing
 
         public StringBuilder TextWritten { get; set; }
 
-        public NameValueCollection Headers { get; set; }
+        public Dictionary<string, string> Headers { get; }
 
         public ICookies Cookies { get; set; }
 

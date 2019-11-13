@@ -699,8 +699,6 @@ The Content");
         
                 context.ScriptMethods.Add(new MarkdownTemplateFilter());
 
-                context.ParseAsVerbatimBlock.Add("markdown");
-        
                 context.ScriptBlocks.Add(new TemplateMarkdownBlock());
             }
         }
@@ -763,7 +761,7 @@ The Content");
             };
             new PageResult(page) {
                 Options = {
-                    ["X-Powered-By"] = "ServiceStack Templates"
+                    [HttpHeaders.XPoweredBy] = "ServiceStack Templates"
                 }
             };
             new PageResult(page) {

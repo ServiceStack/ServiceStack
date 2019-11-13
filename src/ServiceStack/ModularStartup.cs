@@ -72,11 +72,18 @@ namespace ServiceStack
         
         public List<Assembly> ScanAssemblies { get; }
 
-        public IConfiguration Configuration { get; }
+        public IConfiguration Configuration { get; protected set; }
         
         public Func<IEnumerable<Type>> TypeResolver { get; }
         
         public List<object> LoadedConfigurations { get; set; } = new List<object>();
+
+        protected ModularStartup()
+        {
+            Instance = this;
+            ScanAssemblies = new List<Assembly> { GetType().Assembly };
+            TypeResolver = () => ScanAssemblies.Distinct().SelectMany(x => x.GetTypes());
+        }
 
         /// <summary>
         /// Scan Types in Assemblies for Startup configuration classes
@@ -153,7 +160,7 @@ namespace ServiceStack
             return priorityInstances;
         }
 
-        public virtual IServiceProvider ConfigureServices(IServiceCollection services)
+        public IServiceProvider ConfigureServices(IServiceCollection services)
         {
             void RunConfigure(object instance)
             {
@@ -187,7 +194,7 @@ namespace ServiceStack
             return services.BuildServiceProvider();
         }
 
-        public virtual void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app)
         {
             void RunConfigure(object instance)
             {
@@ -242,6 +249,54 @@ namespace ServiceStack
             var postStartupConfigs = startupConfigs.PriorityZeroOrAbove();
             postStartupConfigs.ForEach(RunConfigure);
         }
+
+        // .NET Core 3.0 disables IStartup and multiple 
+        public class ModularCreateStartup
+        {
+            public static Type StartupType { get; internal set; }
+            private IConfiguration Configuration { get; }
+
+            private readonly ModularStartup instance;
+            public ModularCreateStartup(IConfiguration configuration)
+            {
+                Configuration = configuration;
+                var ci = StartupType.GetConstructor(new[] { typeof(IConfiguration) });
+                if (ci != null)
+                {
+                    instance = (ModularStartup) ci.Invoke(new[]{ Configuration });
+                }
+                else
+                {
+                    ci = StartupType.GetConstructor(Type.EmptyTypes);
+                    if (ci != null)
+                    {
+                        instance = (ModularStartup) ci.Invoke(TypeConstants.EmptyObjectArray);
+                        instance.Configuration = configuration;
+                    }
+                    else
+                        throw new NotSupportedException($"{StartupType.Name} does not have a {StartupType.Name}(IConfiguration) constructor");
+                }
+            }
+
+            public void ConfigureServices(IServiceCollection services)
+            {
+                instance.ConfigureServices(services);
+            }
+            
+            public void Configure(IApplicationBuilder app)
+            {
+                instance.Configure(app);
+            }
+        }
+
+        public static Type Create<TStartup>()
+        {
+            if (!typeof(ModularStartup).IsAssignableFrom(typeof(TStartup)))
+                throw new NotSupportedException($"{typeof(TStartup).Name} does not inherit ModularStartup");
+            
+            ModularCreateStartup.StartupType = typeof(TStartup);
+            return typeof(ModularCreateStartup);
+        }
     }
 #endif
 
@@ -258,6 +313,14 @@ namespace ServiceStack
 
         public static List<object> PriorityZeroOrAbove(this List<Tuple<object, int>> instances) =>
             instances.Where(x => x.Item2 >= 0).OrderBy(x => x.Item2).Map(x => x.Item1);
+
+#if NETSTANDARD2_0
+        public static IWebHostBuilder UseModularStartup<TStartup>(this IWebHostBuilder hostBuilder)
+            where TStartup : class
+        {
+            return hostBuilder.UseStartup(ModularStartup.Create<TStartup>());
+        }
+#endif
     }
 }
 

@@ -34,7 +34,7 @@ namespace ServiceStack
         public ExceptionFilterHttpDelegate ExceptionFilter { get; set; }
 
         public const string DefaultHttpMethod = HttpMethods.Post;
-        public static string DefaultUserAgent = "ServiceStack .NET HttpClient " + Env.ServiceStackVersion;
+        public static string DefaultUserAgent = "ServiceStack .NET HttpClient " + Env.VersionString;
 
         public string BaseUri { get; set; }
 
@@ -752,14 +752,20 @@ namespace ServiceStack
             SendAsync<TResponse>(HttpMethods.Put, ResolveUrl(HttpMethods.Put, relativeOrAbsoluteUrl), request, token);
 
         public Task PutAsync(IReturnVoid requestDto) => PutAsync(requestDto, default);
+        public Task<TResponse> PatchAsync<TResponse>(IReturn<TResponse> requestDto) =>
+            SendAsync<TResponse>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto);
+
         public Task PutAsync(IReturnVoid requestDto, CancellationToken token) => 
             SendAsync<byte[]>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto, token);
 
-
         public Task<TResponse> PatchAsync<TResponse>(object requestDto) => PatchAsync<TResponse>(requestDto, default);
+        public Task PatchAsync(IReturnVoid requestDto) => PatchAsync(requestDto, default);
+
         public Task<TResponse> PatchAsync<TResponse>(object requestDto, CancellationToken token) => 
             SendAsync<TResponse>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, requestDto), requestDto, token);
 
+        public Task PatchAsync(IReturnVoid requestDto, CancellationToken token) => 
+            SendAsync<byte[]>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, requestDto), requestDto, token);
 
         public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto) =>
             CustomMethodAsync<TResponse>(httpVerb, requestDto, default);

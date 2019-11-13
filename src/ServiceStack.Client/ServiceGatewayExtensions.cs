@@ -22,12 +22,12 @@ namespace ServiceStack
             return client.SendAll<TResponse>(request);
         }
 
-        public static object Send(this IServiceGateway client, Type resposneType, object request)
+        public static object Send(this IServiceGateway client, Type responseType, object request)
         {
-            if (!LateBoundSendSyncFns.TryGetValue(resposneType, out var sendFn))
+            if (!LateBoundSendSyncFns.TryGetValue(responseType, out var sendFn))
             {
                 var mi = typeof(ServiceGatewayExtensions).GetStaticMethod("SendObject");
-                var genericMi = mi.MakeGenericMethod(resposneType);
+                var genericMi = mi.MakeGenericMethod(responseType);
                 sendFn = (Func<IServiceGateway, object, object>)
                     genericMi.CreateDelegate(typeof(Func<IServiceGateway, object, object>));
 
@@ -37,7 +37,7 @@ namespace ServiceStack
                     snapshot = LateBoundSendSyncFns;
                     newCache = new Dictionary<Type, Func<IServiceGateway, object, object>>(LateBoundSendSyncFns)
                     {
-                        [resposneType] = sendFn
+                        [responseType] = sendFn
                     };
 
                 } while (!ReferenceEquals(
@@ -46,12 +46,12 @@ namespace ServiceStack
             return sendFn(client, request);
         }
 
-        public static Task<object> SendAsync(this IServiceGateway client, Type resposneType, object request, CancellationToken token = default(CancellationToken))
+        public static Task<object> SendAsync(this IServiceGateway client, Type responseType, object request, CancellationToken token = default(CancellationToken))
         {
-            if (!LateBoundSendAsyncFns.TryGetValue(resposneType, out var sendFn))
+            if (!LateBoundSendAsyncFns.TryGetValue(responseType, out var sendFn))
             {
                 var mi = typeof(ServiceGatewayExtensions).GetStaticMethod("SendObjectAsync");
-                var genericMi = mi.MakeGenericMethod(resposneType);
+                var genericMi = mi.MakeGenericMethod(responseType);
                 sendFn = (Func<IServiceGateway, object, CancellationToken, Task<object>>)
                     genericMi.CreateDelegate(typeof(Func<IServiceGateway, object, CancellationToken, Task<object>>));
 
@@ -60,7 +60,7 @@ namespace ServiceStack
                 {
                     snapshot = LateBoundSendAsyncFns;
                     newCache = new Dictionary<Type, Func<IServiceGateway, object, CancellationToken, Task<object>>>(LateBoundSendAsyncFns) {
-                        [resposneType] = sendFn
+                        [responseType] = sendFn
                     };
 
                 } while (!ReferenceEquals(
@@ -78,8 +78,8 @@ namespace ServiceStack
             if (returnTypeDef == null)
                 throw new ArgumentException("Late-bound Send<object> can only be called for Request DTO's implementing IReturn<T>");
 
-            var resposneType = returnTypeDef.GetGenericArguments()[0];
-            return resposneType;
+            var responseType = returnTypeDef.GetGenericArguments()[0];
+            return responseType;
         }
 
         private static Dictionary<Type, Func<IServiceGateway, object, object>> LateBoundSendSyncFns =
@@ -99,6 +99,7 @@ namespace ServiceStack
         }
     }
 
+    // Needed to use Send/SendAll to avoid ambiguous signatures in IServiceClient APIs which implement both interfaces
     public static class ServiceGatewayAsyncWrappers
     {
         public static Task<TResponse> SendAsync<TResponse>(this IServiceGateway client, IReturn<TResponse> requestDto, CancellationToken token = default(CancellationToken))
@@ -139,6 +140,28 @@ namespace ServiceStack
             return client is IServiceGatewayAsync nativeAsync
                 ? nativeAsync.PublishAllAsync(requestDtos, token)
                 : Task.Factory.StartNew(() => client.PublishAll(requestDtos), token);
+        }
+        
+        /* IServiceClientAsync signatures cannot match IServiceGateway APIs to make them unambiguous */
+
+        public static Task<TResponse> Send<TResponse>(this IServiceClientAsync client, IReturn<TResponse> requestDto, CancellationToken token = default(CancellationToken))
+        {
+            return client.SendAsync<TResponse>((object)requestDto, token);
+        }
+
+        public static Task<List<TResponse>> SendAllAsync<TResponse>(this IServiceClientAsync client, IReturn<TResponse>[] requestDtos, CancellationToken token = default(CancellationToken))
+        {
+            return client.SendAllAsync<TResponse>(requestDtos, token);
+        }
+
+        public static Task<List<TResponse>> SendAllAsync<TResponse>(this IServiceClientAsync client, List<IReturn<TResponse>> requestDtos, CancellationToken token = default(CancellationToken))
+        {
+            return client.SendAllAsync<TResponse>(requestDtos, token);
+        }
+
+        public static Task PublishAllAsync(this IServiceGatewayAsync client, IEnumerable<IReturnVoid> requestDtos, CancellationToken token = default(CancellationToken))
+        {
+            return client.PublishAllAsync(requestDtos, token);
         }
     }
 }

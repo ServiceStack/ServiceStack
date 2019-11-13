@@ -661,7 +661,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public async Task Does_work_with_CredentailsAuth_Async()
+        public async Task Does_work_with_CredentialsAuth_Async()
         {
             var client = GetClient();
 

@@ -177,13 +177,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var httpResult = new HttpResult(ms, "audio/mpeg");            
 
-            bool reponseWasAutoHandled = await mockResponse.WriteToResponse(mockRequest, httpResult);
-            Assert.That(reponseWasAutoHandled, Is.True);
+            bool responseWasAutoHandled = await mockResponse.WriteToResponse(mockRequest, httpResult);
+            Assert.That(responseWasAutoHandled, Is.True);
 
             string writtenString = mockResponse.ReadAsString();
             Assert.That(writtenString, Is.EqualTo(customText));
 
-            Assert.That(mockResponse.Headers["Content-Range"], Is.Null);
+            Assert.That(mockResponse.Headers.ContainsKey("Content-Range"), Is.False);
             Assert.That(mockResponse.Headers["Accept-Ranges"], Is.EqualTo("bytes"));
             Assert.That(mockResponse.StatusCode, Is.EqualTo(200));
         }

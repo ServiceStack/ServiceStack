@@ -31,7 +31,7 @@ namespace ServiceStack.Auth
             return Authenticate(authService, session, userName, password, request.Continue);
         }
 
-        public void PreAuthenticate(IRequest req, IResponse res)
+        public virtual void PreAuthenticate(IRequest req, IResponse res)
         {
             //API Keys are sent in Basic Auth Username and Password is Empty
             var userPass = req.GetBasicAuthUserAndPassword();

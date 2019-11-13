@@ -45,7 +45,7 @@ namespace ServiceStack.RabbitMq
             if (password != null)
                 ConnectionFactory.Password = password;
 
-            if (connectionString.StartsWith("amqp://"))
+            if (connectionString.StartsWith("amqp://") || connectionString.StartsWith("amqps://"))
             {
                 ConnectionFactory.Uri = new Uri(connectionString);
             }

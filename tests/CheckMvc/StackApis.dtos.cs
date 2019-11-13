@@ -1,8 +1,8 @@
 /* Options:
-Date: 2018-05-19 18:46:53
+Date: 2019-10-04 22:16:42
 Version: 5.00
 Tip: To override a DTO option, remove "//" prefix before updating
-BaseUrl: http://stackapis.servicestack.net
+BaseUrl: http://stackapis.netcore.io
 
 //GlobalNamespace: 
 //MakePartial: True
@@ -50,6 +50,27 @@ namespace StackApis.ServiceModel
     public partial class GetAnswersResponse
     {
         public virtual Answer Ansnwer { get; set; }
+    }
+
+    [Route("/admin/stats", "GET")]
+    public partial class GetStats
+        : IReturn<GetStatsResponse>
+    {
+    }
+
+    public partial class GetStatsResponse
+    {
+        public GetStatsResponse()
+        {
+            TagCounts = new Dictionary<string, long>{};
+        }
+
+        public virtual long QuestionsCount { get; set; }
+        public virtual long AnswersCount { get; set; }
+        public virtual Dictionary<string, long> TagCounts { get; set; }
+        public virtual long TopQuestionScore { get; set; }
+        public virtual long TopQuestionViews { get; set; }
+        public virtual long TopAnswerScore { get; set; }
     }
 
     [Route("/questions/search")]

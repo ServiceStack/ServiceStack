@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Host.NetCore;
@@ -31,6 +32,8 @@ namespace ServiceStack
         }
 
         IApplicationBuilder app;
+        public IApplicationBuilder App => app;
+        public IServiceProvider ApplicationServices => app?.ApplicationServices;
 
         public virtual void Bind(IApplicationBuilder app)
         {
@@ -205,12 +208,14 @@ namespace ServiceStack
 
         public virtual IWebHostBuilder ConfigureHost(IWebHostBuilder host, string[] urlBases)
         {
-            return host.UseKestrel()
+            return host.UseKestrel(ConfigureKestrel)
                 .UseContentRoot(System.IO.Directory.GetCurrentDirectory())
                 .UseWebRoot(System.IO.Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
                 .UseUrls(urlBases);
         }
+        
+        public virtual void ConfigureKestrel(KestrelServerOptions options) {}
 
         /// <summary>
         /// Override to Configure .NET Core dependencies
@@ -218,9 +223,14 @@ namespace ServiceStack
         public virtual void Configure(IServiceCollection services) {}
 
         /// <summary>
-        /// Override to Confgiure .NET Core App
+        /// Override to Configure .NET Core App
         /// </summary>
-        public virtual void Configure(IApplicationBuilder app, IHostingEnvironment env) {}
+        public virtual void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        {
+            Configure(app);
+        }
+        
+        public virtual void Configure(IApplicationBuilder app) {}
 
         public static AppSelfHostBase HostInstance => (AppSelfHostBase)Platforms.PlatformNetCore.HostInstance;
 

@@ -41,6 +41,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 OnEndRequestCallbacks.Add(req => {
                     Interlocked.Increment(ref OnEndRequestCallbacksCount);
                 });
+                
+                GlobalRequestFilters.Add((req, res, dto) => {
+                    if (dto is UncatchedException || dto is UncatchedExceptionAsync)
+                        throw new ArgumentException();
+                });
 
                 //Custom global uncaught exception handling strategy
                 this.UncaughtExceptionHandlersAsync.Add(async (req, res, operationName, ex) =>

@@ -1,8 +1,10 @@
+
+
+using System.Threading.Tasks;
 #if !NETSTANDARD2_0
 
 //Copyright (c) ServiceStack, Inc. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -18,7 +20,7 @@ using ServiceStack.Web;
 namespace ServiceStack.Host.AspNet
 {
     public class AspNetRequest
-        : IHttpRequest, IHasResolver, IHasVirtualFiles
+        : IHttpRequest, IHasResolver, IHasVirtualFiles, IHasBufferedStream
     {
         public static ILog log = LogManager.GetLogger(typeof(AspNetRequest));
 
@@ -194,6 +196,8 @@ namespace ServiceStack.Host.AspNet
 
         private NameValueCollection formData;
         public NameValueCollection FormData => formData ?? (formData = request.Form);
+
+        public Task<string> GetRawBodyAsync() => Task.FromResult(GetRawBody());
 
         public string RawUrl => request.RawUrl;
 

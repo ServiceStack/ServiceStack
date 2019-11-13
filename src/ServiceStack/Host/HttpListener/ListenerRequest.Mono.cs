@@ -241,12 +241,14 @@ namespace ServiceStack.Host.HttpListener
 
         void LoadWwwForm()
         {
-            using (Stream input = GetSubStream(InputStream))
+            var key = StringBuilderCache.Allocate();
+            var value = StringBuilderCacheAlt.Allocate();
+            try
             {
+                using (Stream input = GetSubStream(InputStream))
                 using (StreamReader s = new StreamReader(input, ContentEncoding))
                 {
-                    var key = StringBuilderCache.Allocate();
-                    var value = StringBuilderCacheAlt.Allocate();
+
                     int c;
 
                     while ((c = s.Read()) != -1)
@@ -262,8 +264,9 @@ namespace ServiceStack.Host.HttpListener
                                     break;
                                 }
                                 else
-                                    value.Append((char)c);
+                                    value.Append((char) c);
                             }
+
                             if (c == -1)
                             {
                                 AddRawKeyValue(key, value);
@@ -273,16 +276,19 @@ namespace ServiceStack.Host.HttpListener
                         else if (c == '&')
                             AddRawKeyValue(key, value);
                         else
-                            key.Append((char)c);
+                            key.Append((char) c);
                     }
+
                     if (c == -1)
                         AddRawKeyValue(key, value);
 
                     EndSubStream(input);
-
-                    StringBuilderCache.Free(key);
-                    StringBuilderCacheAlt.Free(key);
                 }
+            }
+            finally
+            {
+                StringBuilderCache.Free(key);
+                StringBuilderCacheAlt.Free(value);
             }
         }
 
@@ -396,7 +402,7 @@ namespace ServiceStack.Host.HttpListener
                     if (sb.Length > 0)
                         sb.Append('&');
 
-                    if (key != null && key.Length > 0)
+                    if (!string.IsNullOrEmpty(key))
                     {
                         sb.Append(key);
                         sb.Append('=');

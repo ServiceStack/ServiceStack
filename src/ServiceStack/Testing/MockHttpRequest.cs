@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.IO;
@@ -110,6 +111,8 @@ namespace ServiceStack.Testing
             rawBody = InputStream.ReadToEnd();
             return rawBody;
         }
+
+        public Task<string> GetRawBodyAsync() => Task.FromResult(GetRawBody());
 
         public string RawUrl { get; set; }
 

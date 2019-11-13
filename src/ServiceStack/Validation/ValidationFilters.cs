@@ -31,7 +31,7 @@ namespace ServiceStack.Validation
             {
                 try
                 {
-                    var validationResult = await Validate(validator, req, requestDto);
+                    var validationResult = await validator.ValidateAsync(req, requestDto);
     
                     if (treatInfoAndWarningsAsErrors && validationResult.IsValid)
                         return;
@@ -85,7 +85,7 @@ namespace ServiceStack.Validation
             if (validator == null)
                 return;
 
-            var validationResult = await Validate(validator, req, req.Dto);
+            var validationResult = await ValidateAsync(validator, req, req.Dto);
 
             if (!validationResult.IsValid)
             {
@@ -107,12 +107,16 @@ namespace ServiceStack.Validation
             }
         }
 
-        private static async Task<ValidationResult> Validate(IValidator validator, IRequest req, object requestDto)
+        public static async Task<ValidationResult> ValidateAsync(this IValidator validator, IRequest req, object requestDto)
         {
+            if (validator == null)
+                throw new ArgumentNullException(nameof(validator));
+            if (req == null)
+                throw new ArgumentNullException(nameof(req));
+            if (requestDto == null)
+                throw new ArgumentNullException(nameof(requestDto));
+            
             var ruleSet = req.Verb;
-
-            ValidationResult validationResult;
-
             using (validator as IDisposable)
             {
                 var validationContext = new ValidationContext(requestDto, null, 
@@ -128,5 +132,30 @@ namespace ServiceStack.Validation
                 return validator.Validate(validationContext);
             }
         }
+
+        public static ValidationResult Validate(this IValidator validator, IRequest req, object requestDto)
+        {
+            if (validator == null)
+                throw new ArgumentNullException(nameof(validator));
+            if (req == null)
+                throw new ArgumentNullException(nameof(req));
+            if (requestDto == null)
+                throw new ArgumentNullException(nameof(requestDto));
+            
+            var ruleSet = req.Verb;
+            using (validator as IDisposable)
+            {
+                var validationContext = new ValidationContext(requestDto, null, 
+                    new MultiRuleSetValidatorSelector(ruleSet)) {
+                    Request = req
+                };
+                
+                if (validator.HasAsyncValidators(validationContext,ruleSet))
+                    throw new NotSupportedException($"Use {nameof(ValidateAsync)} to call async validator '{validator.GetType().Name}'");
+
+                return validator.Validate(validationContext);
+            }
+        }
+
     }
 }

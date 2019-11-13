@@ -282,6 +282,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 Plugins.Add(new ProtoBufFormat());
 
+                GlobalRequestFilters.Add((req, res, dto) => {
+                    if (dto is UncatchedException || dto is UncatchedExceptionAsync)
+                        throw new ArgumentException();
+                });
+
                 //Custom global uncaught exception handling strategy
                 this.UncaughtExceptionHandlers.Add((req, res, operationName, ex) =>
                 {
