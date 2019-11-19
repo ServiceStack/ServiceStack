@@ -265,7 +265,7 @@ namespace ServiceStack
 #if !NETSTANDARD2_0
             if (response is Host.AspNet.AspNetResponse aspRes)
             {
-                aspRes.Write(contents);
+                aspRes.Response.Write(contents);
                 return;
             }
 #endif
