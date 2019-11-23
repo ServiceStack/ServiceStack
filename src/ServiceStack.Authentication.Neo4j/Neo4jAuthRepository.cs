@@ -10,7 +10,7 @@ namespace ServiceStack.Authentication.Neo4j
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public class Neo4jAuthRepository : IUserAuthRepository, IClearable, IRequiresSchema, IManageApiKeys
     {
-        internal static class Label
+        private static class Label
         {
             public const string IdScope = "AuthId";    
             public static string UserAuth => typeof(UserAuth).Name;
@@ -18,13 +18,13 @@ namespace ServiceStack.Authentication.Neo4j
             public static string ApiKey => typeof(ApiKey).Name;
         }
 
-        internal static class Rel
+        private static class Rel
         {
             public const string HasUserAuthDetails = "HAS_USER_AUTH_DETAILS";
             public const string HasApiKey = "HAS_API_KEY";
         }
 
-        internal static class Query
+        private static class Query
         {
             public static string IdScopeConstraint => $@"
                 CREATE CONSTRAINT ON (u:{Label.IdScope}) ASSERT u.Scope IS UNIQUE";
@@ -122,16 +122,7 @@ namespace ServiceStack.Authentication.Neo4j
         {
             this.driver = driver;
 
-            AutoMapping.RegisterConverter<ZonedDateTime, DateTime>(zonedDateTime => zonedDateTime.ToDateTimeOffset().DateTime);
-            AutoMapping.RegisterConverter<ZonedDateTime, DateTime?>(zonedDateTime => zonedDateTime.ToDateTimeOffset().DateTime);
-            
-            AutoMapping.RegisterConverter<UserAuthDetails, Dictionary<string, object>>(userAuthDetails =>
-            {
-                var dictionary = userAuthDetails.ToObjectDictionary();
-                dictionary[nameof(UserAuthDetails.Items)] = userAuthDetails.Items.ToJson();
-                dictionary[nameof(UserAuthDetails.Meta)] = userAuthDetails.Meta.ToJson();
-                return dictionary;
-            });
+            InitMappers();
         }
 
         public void InitSchema()
@@ -167,7 +158,7 @@ namespace ServiceStack.Authentication.Neo4j
 
                 var parameters = new
                 {
-                    user = userAuth.ToObjectDictionary()
+                    user = userAuth.ConvertTo<Dictionary<string, object>>()
                 };
 
                 tx.Run(Query.CreateOrUpdateUserAuth, parameters);
@@ -413,16 +404,11 @@ namespace ServiceStack.Authentication.Neo4j
 
             var result = ReadQuery(Query.UserAuthDetailsByProviderAndUserId, parameters);
 
-            var userAuthDetails = result.Map<UserAuthDetails>().SingleOrDefault();
-
-            if (userAuthDetails == null)
+            var userAuthDetails = result.Map<UserAuthDetails>().SingleOrDefault() ?? new UserAuthDetails
             {
-                userAuthDetails = new UserAuthDetails
-                {
-                    Provider = tokens.Provider,
-                    UserId = tokens.UserId,
-                };
-            }
+                Provider = tokens.Provider,
+                UserId = tokens.UserId,
+            };
 
             userAuthDetails.PopulateMissing(tokens);
             
@@ -542,6 +528,29 @@ namespace ServiceStack.Authentication.Neo4j
             {
                 session.WriteTransaction(action);
             }
+        }
+        
+        private static void InitMappers()
+        {
+            AutoMapping.RegisterConverter<ZonedDateTime, DateTime>(zonedDateTime => zonedDateTime.ToDateTimeOffset().DateTime);
+            AutoMapping.RegisterConverter<ZonedDateTime, DateTime?>(zonedDateTime => zonedDateTime.ToDateTimeOffset().DateTime);
+            
+            AutoMapping.RegisterConverter<UserAuth, Dictionary<string, object>>(userAuth =>
+            {
+                var dictionary = userAuth.ToObjectDictionary();
+                dictionary[nameof(UserAuth.Meta)] = userAuth.Meta.ToJsv();
+                dictionary[nameof(UserAuth.Roles)] = userAuth.Roles.ToJsv();
+                dictionary[nameof(UserAuth.Permissions)] = userAuth.Permissions.ToJsv();
+                return dictionary;
+            });
+
+            AutoMapping.RegisterConverter<UserAuthDetails, Dictionary<string, object>>(userAuthDetails =>
+            {
+                var dictionary = userAuthDetails.ToObjectDictionary();
+                dictionary[nameof(UserAuthDetails.Items)] = userAuthDetails.Items.ToJsv();
+                dictionary[nameof(UserAuthDetails.Meta)] = userAuthDetails.Meta.ToJsv();
+                return dictionary;
+            });
         }
     }
 }

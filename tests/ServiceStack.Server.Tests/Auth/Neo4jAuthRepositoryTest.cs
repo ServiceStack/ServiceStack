@@ -94,14 +94,15 @@ namespace ServiceStack.Server.Tests.Auth
         {
             // Arrange
             var userAuth = CreateUserAuth();
-            var details = CreateUserAuthDetails(userAuth);
+            CreateUserAuthDetails(userAuth);
 
-            var authSession = new AuthUserSession
+            var authSession = new AuthUserSession();
+
+            var tokens = new AuthTokens
             {
-                UserAuthName = userAuth.UserName
+                UserId = userAuth.Id.ToString(),
+                Provider = GetAuthTokens().Provider
             };
-
-            var tokens = new AuthTokens();
 
             // Act
             Sut.LoadUserAuth(authSession, tokens);
@@ -242,6 +243,12 @@ namespace ServiceStack.Server.Tests.Auth
                 State = nameof(UserAuth.State),
                 TimeZone = nameof(UserAuth.TimeZone),
                 UserName = nameof(UserAuth.UserName),
+                Meta = new Dictionary<string, string>
+                {
+                    { "Key1", "Value1" },
+                    { "Key2", "Value2" },
+                    { "Key3", "Value3" },
+                },
             };
         }
 
@@ -252,19 +259,111 @@ namespace ServiceStack.Server.Tests.Auth
 
             var tokens = GetAuthTokens();
             tokens.UserId = authSession.UserAuthId;
-            tokens.Provider = "google";
 
             return Sut.CreateOrMergeAuthSession(authSession, tokens);
         }
 
         private static AuthUserSession GetAuthUserSession()
         {
-            return new AuthUserSession();
+            return new AuthUserSession
+            {
+                Address = nameof(AuthUserSession.Address),
+                Address2 = nameof(AuthUserSession.Address2),
+                Audiences = new List<string> {"Audience1", "Audience2"},
+                AuthProvider = nameof(AuthUserSession.AuthProvider),
+                BirthDate = new DateTime(2001, 4, 24),
+                BirthDateRaw = nameof(AuthUserSession.BirthDateRaw),
+                City = nameof(AuthUserSession.City),
+                Company = nameof(AuthUserSession.Company),
+                Country = nameof(AuthUserSession.Country),
+                Culture = nameof(AuthUserSession.Culture),
+                DisplayName = nameof(AuthUserSession.DisplayName),
+                Dns = nameof(AuthUserSession.Dns),
+                Email = "email@example.com",
+                EmailConfirmed = true,
+                FirstName = nameof(AuthUserSession.FirstName),
+                FullName = nameof(AuthUserSession.FullName),
+                FromToken = true,
+                FacebookUserId = nameof(AuthUserSession.FacebookUserId),
+                Gender = nameof(AuthUserSession.Gender),
+                Hash = nameof(AuthUserSession.Hash),
+                Language = nameof(AuthUserSession.Language),
+                LastName = nameof(AuthUserSession.LastName),
+                MailAddress = nameof(AuthUserSession.MailAddress),
+                Meta = new Dictionary<string, string>
+                {
+                    {"Key1", "Value1"},
+                    {"Key2", "Value2"},
+                    {"Key3", "Value3"},
+                },
+                Nickname = nameof(AuthUserSession.Nickname),
+                Permissions = new List<string> {"First", "Second"},
+                PhoneNumber = nameof(AuthUserSession.PhoneNumber),
+                PostalCode = nameof(AuthUserSession.PostalCode),
+                PrimaryEmail = nameof(AuthUserSession.PrimaryEmail),
+                ProfileUrl = nameof(AuthUserSession.ProfileUrl),
+                RequestTokenSecret = nameof(AuthTokens.RequestTokenSecret),
+                Roles = new List<string> {"Role1", "Role2"},
+                Rsa = nameof(AuthUserSession.Rsa),
+                ReferrerUrl = nameof(AuthUserSession.ReferrerUrl),
+                State = nameof(AuthUserSession.State),
+                Scopes = new List<string> {"Scope1", "Scope2"},
+                Sequence = nameof(AuthUserSession.Sequence),
+                Sid = nameof(AuthUserSession.Sid),
+                SecurityStamp = nameof(AuthUserSession.SecurityStamp),
+                TimeZone = nameof(AuthUserSession.TimeZone),
+                Tag = 1,
+                Type = nameof(AuthUserSession.Type),
+                TwitterScreenName = nameof(AuthUserSession.TwitterScreenName),
+                TwitterUserId = nameof(AuthUserSession.TwitterUserId),
+                TwoFactorEnabled = true,
+                UserName = nameof(AuthUserSession.UserName),
+                UserAuthId = nameof(AuthUserSession.UserAuthId),
+                UserAuthName = nameof(AuthUserSession.UserAuthName),
+                Webpage = nameof(AuthUserSession.Webpage),
+            };
         }
 
         private static AuthTokens GetAuthTokens()
         {
-            return new AuthTokens();
+            return new AuthTokens
+            {
+                Address = nameof(AuthTokens.Address),
+                Address2 = nameof(AuthTokens.Address2),
+                AccessToken = nameof(AuthTokens.AccessToken),
+                AccessTokenSecret = nameof(AuthTokens.AccessTokenSecret),
+                BirthDate = new DateTime(2001, 4, 24),
+                BirthDateRaw = nameof(UserAuth.BirthDateRaw),
+                City = nameof(AuthTokens.City),
+                Company = nameof(AuthTokens.Company),
+                Country = nameof(AuthTokens.Country),
+                Culture = nameof(AuthTokens.Culture),
+                DisplayName = nameof(AuthTokens.DisplayName),
+                Email = "email@example.com",
+                FirstName = nameof(AuthTokens.FirstName),
+                FullName = nameof(AuthTokens.FullName),
+                Gender = nameof(AuthTokens.Gender),
+                Items = new Dictionary<string, string>
+                {
+                    {"Key1", "Value1"},
+                    {"Key2", "Value2"},
+                    {"Key3", "Value3"},
+                },
+                Language = nameof(AuthTokens.Language),
+                LastName = nameof(AuthTokens.LastName),
+                MailAddress = nameof(AuthTokens.MailAddress),
+                Nickname = nameof(AuthTokens.Nickname),
+                Provider = "google",
+                PhoneNumber = nameof(AuthTokens.PhoneNumber),
+                PostalCode = nameof(AuthTokens.PostalCode),
+                RefreshToken = nameof(AuthTokens.RefreshToken),
+                RequestToken = nameof(AuthTokens.RequestToken),
+                RequestTokenSecret = nameof(AuthTokens.RequestTokenSecret),
+                State = nameof(AuthTokens.State),
+                TimeZone = nameof(AuthTokens.TimeZone),
+                UserId = nameof(AuthTokens.UserId),
+                UserName = nameof(AuthTokens.UserName)
+            };
         }
     }
 
