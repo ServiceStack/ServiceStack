@@ -185,6 +185,10 @@ namespace ServiceStack.Metadata
 
                 for (var i = 0; i < metadataType.EnumNames.Count; i++)
                 {
+                    var enumMember = metadataType.EnumMemberValues != null &&
+                                     metadataType.EnumMemberValues.Count > i
+                                     ? " \"" + metadataType.EnumMemberValues[i] + "\""
+                                     : "";
                     sb.Append("<tr>");
                     if (hasEnumValues)
                     {
@@ -192,12 +196,14 @@ namespace ServiceStack.Metadata
                           .Append(metadataType.EnumNames[i])
                           .Append("</td><td>")
                           .Append(metadataType.EnumValues[i])
+                          .Append(enumMember)
                           .Append("</td>");
                     }
                     else
                     {
                         sb.Append("<td>")
                           .Append(metadataType.EnumNames[i])
+                          .Append(enumMember)
                           .Append("</td>");
                     }
                     sb.Append("</tr>");
