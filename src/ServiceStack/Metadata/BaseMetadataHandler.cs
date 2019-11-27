@@ -172,7 +172,8 @@ namespace ServiceStack.Metadata
                 sb.Append("<table class='enum'>");
                 sb.Append($"<caption><b>{ConvertToHtml(metadataType.DisplayType ?? metadataType.Name)}</b> Enum:</caption>");
 
-                var hasEnumValues = !metadataType.EnumValues.IsEmpty();
+                var hasEnumValues = !metadataType.EnumMemberValues.IsEmpty() ||
+                                    !metadataType.EnumValues.IsEmpty();
                 if (hasEnumValues)
                 {
                     sb.Append("<thead><tr>");
@@ -185,25 +186,21 @@ namespace ServiceStack.Metadata
 
                 for (var i = 0; i < metadataType.EnumNames.Count; i++)
                 {
-                    var enumMember = metadataType.EnumMemberValues != null &&
-                                     metadataType.EnumMemberValues.Count > i
-                                     ? " \"" + metadataType.EnumMemberValues[i] + "\""
-                                     : "";
                     sb.Append("<tr>");
                     if (hasEnumValues)
                     {
                         sb.Append("<td>")
                           .Append(metadataType.EnumNames[i])
                           .Append("</td><td>")
-                          .Append(metadataType.EnumValues[i])
-                          .Append(enumMember)
+                          .Append(!metadataType.EnumMemberValues.IsEmpty() 
+                                ? metadataType.EnumMemberValues[i]
+                                : metadataType.EnumValues[i])
                           .Append("</td>");
                     }
                     else
                     {
                         sb.Append("<td>")
                           .Append(metadataType.EnumNames[i])
-                          .Append(enumMember)
                           .Append("</td>");
                     }
                     sb.Append("</tr>");
