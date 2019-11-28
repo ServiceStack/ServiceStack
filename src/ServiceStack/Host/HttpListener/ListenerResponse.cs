@@ -86,22 +86,20 @@ namespace ServiceStack.Host.HttpListener
 
         public void Close()
         {
-            if (!this.IsClosed)
+            if (this.IsClosed) return;
+            this.IsClosed = true;
+
+            try
             {
-                this.IsClosed = true;
+                this.FlushBufferIfAny(BufferedStream, response.OutputStream);
+                BufferedStream?.Dispose();
+                BufferedStream = null;
 
-                try
-                {
-                    this.FlushBufferIfAny(BufferedStream, response.OutputStream);
-                    BufferedStream?.Dispose();
-                    BufferedStream = null;
-
-                    this.response.CloseOutputStream();
-                }
-                catch (Exception ex)
-                {
-                    Log.Error("Error closing HttpListener output stream", ex);
-                }
+                this.response.CloseOutputStream();
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Error closing HttpListener output stream", ex);
             }
         }
 
