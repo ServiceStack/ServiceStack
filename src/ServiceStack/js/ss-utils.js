@@ -771,3 +771,19 @@
         };
     };
 });
+$.ss.disposeServerEvents = function (cb) {
+  var unRegisterUrl = $.ss.eventOptions && $.ss.eventOptions.unRegisterUrl;
+  if ($.ss.eventSource) $.ss.eventSource.close();
+
+  $.ss.eventSourceStop = false;
+  $.ss.eventOptions = {};
+  $.ss.eventReceivers = {};
+  $.ss.eventChannels = [];
+  $.ss.eventSourceUrl = $.ss.updateSubscriberUrl = $.ss.eventOptions = $.ss.eventSource = null;
+
+  if (unRegisterUrl) {
+      $.ajax({ type: 'POST', url: unRegisterUrl, complete: function() { if (cb) cb(); } });
+  } else {
+      if (cb) cb();
+  }
+};
