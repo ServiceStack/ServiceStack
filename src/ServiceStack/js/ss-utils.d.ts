@@ -40,6 +40,7 @@ declare namespace ssutils {
         subscribeToChannels: (channels: string[], cb?: (user: SSEUpdate) => void, cbError?: Function) => any;
         unsubscribeFromChannels: (channels: string[], cb?: (user: SSEUpdate) => void, cbError?: Function) => any;
         reconnectServerEvents: (opt: ReconnectServerEventsOptions) => any;
+        disposeServerEvents: (cb?:Function) => void; 
     }
 
     interface Validation {
