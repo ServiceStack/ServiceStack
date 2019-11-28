@@ -87,7 +87,6 @@ namespace ServiceStack.Authentication.Neo4j
             public static string UserAuthByProviderAndUserId => $@"
                 MATCH (details:{Label.UserAuthDetails})
                 WHERE details.Provider = $provider AND details.UserId = $userId
-                WITH details
                 MATCH (userAuth:{Label.UserAuth})-[:{Rel.HasUserAuthDetails}]->(details:{Label.UserAuthDetails})
                 RETURN DISTINCT userAuth";
 
@@ -327,6 +326,11 @@ namespace ServiceStack.Authentication.Neo4j
                 userAuth.CreatedDate = userAuth.ModifiedDate;
 
             SaveUser(userAuth);
+
+            if (authSession.UserAuthId.IsNullOrEmpty())
+            {
+                authSession.UserAuthId = userAuth.Id.ToString();
+            }
         }
 
         public void SaveUserAuth(IUserAuth userAuth)

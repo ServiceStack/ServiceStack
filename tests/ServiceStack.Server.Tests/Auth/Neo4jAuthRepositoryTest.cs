@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using FluentAssertions;
 using Neo4j.Driver.V1;
 using NUnit.Framework;
 using ServiceStack.Auth;
@@ -94,14 +96,14 @@ namespace ServiceStack.Server.Tests.Auth
         {
             // Arrange
             var userAuth = CreateUserAuth();
-            CreateUserAuthDetails(userAuth);
+            CreateUserAuthDetails(userAuth, "google");
 
             var authSession = new AuthUserSession();
 
             var tokens = new AuthTokens
             {
                 UserId = userAuth.Id.ToString(),
-                Provider = GetAuthTokens().Provider
+                Provider = "google"
             };
 
             // Act
@@ -112,33 +114,137 @@ namespace ServiceStack.Server.Tests.Auth
         }
 
         [Test]
-        public void SaveUserAuth(IAuthSession authSession)
+        public void SaveUserAuth_Should_Throw_When_UserAuthId_Is_Not_An_Integer()
         {
+            // Arrange
+            var authUserSession = new AuthUserSession
+            {
+                UserAuthId = "Test"
+            };
+
             // Act
-            Sut.SaveUserAuth(authSession);
+            var exception = Assert.Throws<ArgumentException>(
+                () => Sut.SaveUserAuth(authUserSession));
+            
+            // Assert
+            Assert.AreEqual("Cannot convert to integer\r\nParameter name: userAuthId", exception.Message);
         }
 
         [Test]
-        public List<IUserAuthDetails> GetUserAuthDetails(string userAuthId)
+        public void SaveUserAuth()
         {
+            // Arrange
+            var userAuth = CreateUserAuth();
+
+            var authUserSession = new AuthUserSession
+            {
+                UserAuthId = userAuth.Id.ToString()
+            };
+
             // Act
-            var result = Sut.GetUserAuthDetails(userAuthId);
-            return result;
+            Sut.SaveUserAuth(authUserSession);
+            
+            // Assert
+            var updatedUserAuth = Sut.GetUserAuth(userAuth.Id.ToString());
+            Assert.Greater(updatedUserAuth.ModifiedDate, userAuth.ModifiedDate);
         }
 
         [Test]
-        public IUserAuthDetails CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
+        public void SaveUserAuth_From_AuthSession()
         {
+            // Arrange
+            var authUserSession = GetAuthUserSession();
+
+            // Act
+            Sut.SaveUserAuth(authUserSession);
+            
+            // Assert
+            Assert.IsFalse(authUserSession.UserAuthId.IsNullOrEmpty());
+            authUserSession.UserAuthId.ThrowIfNotConvertibleToInteger(nameof(AuthUserSession.UserAuthId));
+
+            var userAuth = Sut.GetUserAuth(authUserSession.UserAuthId);
+            Assert.AreEqual(authUserSession.Email, userAuth.Email);
+        }
+
+        [Test]
+        public void GetUserAuthDetails()
+        {
+            // Arrange
+            var userAuth = CreateUserAuth();
+            CreateUserAuthDetails(userAuth, "google");
+            CreateUserAuthDetails(userAuth, "twitter");
+            
+            // Act
+            var result = Sut.GetUserAuthDetails(userAuth.Id);
+            
+            // Assert
+            Assert.IsTrue(result.Select(d => d.Provider).Contains("google"));
+            Assert.IsTrue(result.Select(d => d.Provider).Contains("twitter"));
+        }
+
+        [Test]
+        public void CreateOrMergeAuthSession_Create()
+        {
+            // Arrange
+            var authSession = GetAuthUserSession();
+            var tokens = GetAuthTokens();
+            
             // Act
             var result = Sut.CreateOrMergeAuthSession(authSession, tokens);
-            return result;
+            
+            // Assert
+            Assert.Greater(result.Id, 0);
+            Assert.AreEqual(result.Id, result.UserAuthId);
         }
 
         [Test]
-        public IUserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens)
+        public void CreateOrMergeAuthSession_Update()
         {
+            // Arrange
+            var userAuth = CreateUserAuth();
+            CreateUserAuthDetails(userAuth, "google");
+
+            var authSession = new AuthUserSession();
+
+            var tokens = new AuthTokens
+            {
+                UserId = userAuth.Id.ToString(),
+                Provider = "google"
+            };
+            
+            // Act
+            var result = Sut.CreateOrMergeAuthSession(authSession, tokens);
+            
+            // Assert
+            Assert.Greater(result.Id, 0);
+            Assert.AreEqual(result.Id, result.UserAuthId);
+            Assert.Greater(result.ModifiedDate, userAuth.ModifiedDate);
+        }
+
+        [Test]
+        public void GetUserAuth1()
+        {
+            // Arrange
+            var userAuth = GetUserAuth();
+            Sut.CreateUserAuth(userAuth, Password);
+
+            CreateUserAuthDetails(userAuth, "google");
+
+            var authSession = new AuthUserSession();
+
+            var tokens = new AuthTokens
+            {
+                UserId = userAuth.Id.ToString(),
+                Provider = "google"
+            };
+
+            // Act
             var result = Sut.GetUserAuth(authSession, tokens);
-            return result;
+            
+            // Assert
+            result.Should().BeEquivalentTo(userAuth, options => options
+                .Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, 1000))
+                .When(info => info.SelectedMemberPath.Equals(nameof(UserAuth.ModifiedDate))));
         }
 
         [Test]
@@ -224,6 +330,7 @@ namespace ServiceStack.Server.Tests.Auth
                 Country = nameof(UserAuth.Country),
                 Culture = nameof(UserAuth.Culture),
                 DigestHa1Hash = nameof(UserAuth.DigestHa1Hash),
+                DisplayName = nameof(UserAuth.DisplayName),
                 Email = "email@example.com",
                 FirstName = nameof(UserAuth.FirstName),
                 FullName = nameof(UserAuth.FullName),
@@ -252,13 +359,14 @@ namespace ServiceStack.Server.Tests.Auth
             };
         }
 
-        private IUserAuthDetails CreateUserAuthDetails(IUserAuth userAuth)
+        private IUserAuthDetails CreateUserAuthDetails(IUserAuth userAuth, string provider)
         {
             var authSession = GetAuthUserSession();
             authSession.UserAuthId = userAuth.Id.ToString();
 
             var tokens = GetAuthTokens();
             tokens.UserId = authSession.UserAuthId;
+            tokens.Provider = provider;
 
             return Sut.CreateOrMergeAuthSession(authSession, tokens);
         }
@@ -318,7 +426,6 @@ namespace ServiceStack.Server.Tests.Auth
                 TwitterUserId = nameof(AuthUserSession.TwitterUserId),
                 TwoFactorEnabled = true,
                 UserName = nameof(AuthUserSession.UserName),
-                UserAuthId = nameof(AuthUserSession.UserAuthId),
                 UserAuthName = nameof(AuthUserSession.UserAuthName),
                 Webpage = nameof(AuthUserSession.Webpage),
             };
@@ -353,7 +460,6 @@ namespace ServiceStack.Server.Tests.Auth
                 LastName = nameof(AuthTokens.LastName),
                 MailAddress = nameof(AuthTokens.MailAddress),
                 Nickname = nameof(AuthTokens.Nickname),
-                Provider = "google",
                 PhoneNumber = nameof(AuthTokens.PhoneNumber),
                 PostalCode = nameof(AuthTokens.PostalCode),
                 RefreshToken = nameof(AuthTokens.RefreshToken),
