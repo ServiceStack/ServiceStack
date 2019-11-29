@@ -527,6 +527,7 @@ namespace ServiceStack
         {
             var elType = requests.GetType().GetCollectionType();
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";
+            this.PopulateRequestMetadatas(requests);
             var client = SendRequest(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), requests);
 
             try
@@ -1015,6 +1016,7 @@ namespace ServiceStack
         {
             var elType = requests.GetType().GetCollectionType();
             var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + elType.Name + "[]";
+            this.PopulateRequestMetadatas(requests);
             SendOneWay(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), requests);
         }
 
@@ -1135,6 +1137,7 @@ namespace ServiceStack
         {
             var elType = requests.GetType().GetCollectionType();
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";
+            this.PopulateRequestMetadatas(requests);
             return asyncClient.SendAsync<List<TResponse>>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), requests, token);
         }
 
@@ -1148,6 +1151,7 @@ namespace ServiceStack
         {
             var elType = requests.GetType().GetCollectionType();
             var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + elType.Name + "[]";
+            this.PopulateRequestMetadatas(requests);
             return asyncClient.SendAsync<byte[]>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), requests, token);
         }
 
@@ -1906,6 +1910,14 @@ namespace ServiceStack
             }
         }
 
+        public static void PopulateRequestMetadatas(this IHasSessionId client, IEnumerable<object> requests)
+        {
+            foreach (var request in requests)
+            {
+                client.PopulateRequestMetadata(request);
+            }
+        }
+        
         public static void PopulateRequestMetadata(this IHasSessionId client, object request)
         {
             if (client.SessionId != null)
