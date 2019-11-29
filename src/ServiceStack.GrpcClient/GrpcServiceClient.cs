@@ -220,22 +220,9 @@ namespace ServiceStack
 
         private bool InitRequestDto(object requestDto)
         {
-            if (Version != default && requestDto is IHasVersion hasVersion)
-                hasVersion.Version = Version;
-
-            var authIncluded = false;
-            if (!string.IsNullOrEmpty(BearerToken) && requestDto is IHasBearerToken hasBearerToken)
-            {
-                authIncluded = true;
-                hasBearerToken.BearerToken = BearerToken;
-            }
-
-            if (!string.IsNullOrEmpty(SessionId) && requestDto is IHasSessionId hasSessionId)
-            {
-                authIncluded = true;
-                hasSessionId.SessionId = SessionId;
-            }
-
+            this.PopulateRequestMetadata(requestDto);
+            var authIncluded = !string.IsNullOrEmpty((requestDto is IHasBearerToken hasBearerToken ? hasBearerToken.BearerToken : null) ?? 
+                                                     (requestDto is IHasSessionId hasSessionId ? hasSessionId.SessionId : null));
             return authIncluded;
         }
 
@@ -442,9 +429,11 @@ namespace ServiceStack
             if (requestDtos == null || requestDtos.Length == 0)
                 return TypeConstants<TResponse>.EmptyList;
 
+            this.PopulateRequestMetadatas(requestDtos);
             var firstDto = requestDtos[0];
             var methodName = GrpcUtils.GetServiceName(GetMethod(firstDto), firstDto.GetType().Name);
 
+            this.PopulateRequestMetadatas(requestDtos);
             var authIncluded = InitRequestDto(firstDto);
 
             var fn = ResolveExecute<TResponse>(firstDto);
