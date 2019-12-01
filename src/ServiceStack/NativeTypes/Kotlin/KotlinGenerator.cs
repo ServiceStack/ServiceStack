@@ -735,7 +735,10 @@ namespace ServiceStack.NativeTypes.Kotlin
             if (node.Text == "List")
             {
                 sb.Append("ArrayList<");
-                sb.Append(ConvertFromCSharp(node.Children[0]));
+                if (!node.Children.IsEmpty())
+                    sb.Append(ConvertFromCSharp(node.Children[0]));
+                else
+                    sb.Append(ConvertFromCSharp(new TextNode { Text = "Object" })); //error fallback
                 sb.Append(">");
             }
             else if (node.Text == "Dictionary")
