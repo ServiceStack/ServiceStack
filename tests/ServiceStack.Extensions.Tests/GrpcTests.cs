@@ -373,6 +373,8 @@ namespace ServiceStack.Extensions.Tests
 
             public override void Configure(Container container)
             {
+                RegisterService<GetFileService>();
+                
                 Plugins.Add(new ValidationFeature());
                 Plugins.Add(new GrpcFeature(App));
                 

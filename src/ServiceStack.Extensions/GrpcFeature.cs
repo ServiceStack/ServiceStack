@@ -113,7 +113,6 @@ namespace ServiceStack
         };
         
         public List<Type> RegisterServices { get; set; } = new List<Type> {
-            typeof(GetFileService),
             typeof(StreamFileService),
             typeof(SubscribeServerEventsService),
         };
@@ -265,7 +264,7 @@ namespace ServiceStack
             return true;
         }
 
-        private void RegisterDtoTypes(IEnumerable<Type> allDtos)
+        private static void RegisterDtoTypes(IEnumerable<Type> allDtos)
         {
             // All DTO Types with inheritance need to be registered in GrpcMarshaller<T> / GrpcUtils.TypeModel
             foreach (var dto in allDtos)
@@ -413,28 +412,7 @@ namespace ServiceStack
         }
     }
 
-    [DefaultRequest(typeof(GetFile))]
-    [Restrict(VisibilityTo = RequestAttributes.None)]
-    public class GetFileService : Service
-    {
-        public object Get(GetFile request)
-        {
-            var file = VirtualFileSources.GetFile(request.Path);
-            if (file == null)
-                throw HttpError.NotFound("File does not exist");
-
-            var bytes = file.GetBytesContentsAsBytes();
-            var to = new FileContent {
-                Name = file.Name,
-                Type = MimeTypes.GetMimeType(file.Extension),
-                Body = bytes,
-                Length = bytes.Length,
-            };
-            return to;
-        }
-    }
-
-    [Restrict(VisibilityTo = RequestAttributes.None)]
+    [Restrict(VisibilityTo = RequestAttributes.Grpc)]
     public class StreamFileService : Service, IStreamService<StreamFiles,FileContent>
     {
         public async IAsyncEnumerable<FileContent> Stream(StreamFiles request, CancellationToken cancel = default)

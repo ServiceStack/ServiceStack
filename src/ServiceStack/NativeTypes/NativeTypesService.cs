@@ -295,6 +295,10 @@ namespace ServiceStack.NativeTypes
             typeof(NavItem),
             typeof(GetNavItems),
             typeof(GetNavItemsResponse),
+            typeof(GetFile),
+            typeof(FileContent),
+            typeof(StreamFiles), // gRPC Server Stream
+            typeof(StreamServerEvents), // gRPC Server Stream
         }.ToList();
 
         private MetadataTypes ConfigureScript(MetadataTypesConfig typesConfig)

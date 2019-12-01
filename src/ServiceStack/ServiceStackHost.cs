@@ -1138,6 +1138,7 @@ namespace ServiceStack
 
         public virtual object ExecuteMessage(IMessage dto, IRequest req) => ServiceController.ExecuteMessage(dto, req);
 
+        public virtual void RegisterService<T>(params string[] atRestPaths) where T : IService => RegisterService(typeof(T), atRestPaths);
         public virtual void RegisterService(Type serviceType, params string[] atRestPaths)
         {
             ServiceController.RegisterService(serviceType);
