@@ -1,26 +1,21 @@
 using System;
-using System.Collections.Generic;
-using System.Net;
 using Amazon.DynamoDBv2;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Testing;
 using ServiceStack.DataAnnotations;
-
 using MongoDB.Driver;
+using Neo4j.Driver.V1;
 using ServiceStack.Authentication.MongoDb;
-
 using ServiceStack.Authentication.RavenDb;
+using ServiceStack.Authentication.Neo4j;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.Redis;
-using ServiceStack.Text;
-using Raven.Client;
 using Raven.Client.Documents;
-using Raven.Client.Documents.Operations;
-using Raven.Client.Documents.Queries;
 using ServiceStack.Aws.DynamoDb;
+using AuthTokens = ServiceStack.Auth.AuthTokens;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -127,6 +122,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             container.AddSingleton(mongoDatabase);
             container.AddSingleton<IAuthRepository>(c => 
                 new MongoDbAuthRepository(c.Resolve<IMongoDatabase>(), createMissingCollections:true));
+        }
+    }
+
+    [NUnit.Framework.Ignore("Requires Neo4j")]
+    public class Neo4jAuthRepositoryTests : AuthRepositoryTestsBase
+    {
+        public override void ConfigureAuthRepo(Container container)
+        {
+            var driver = GraphDatabase.Driver("bolt://localhost:7687");
+            container.AddSingleton(driver);
+            container.AddSingleton<IAuthRepository>(c =>
+            {
+                var repository = new Neo4jAuthRepository(c.Resolve<IDriver>());
+                repository.Clear();
+                return repository;
+            });
         }
     }
 

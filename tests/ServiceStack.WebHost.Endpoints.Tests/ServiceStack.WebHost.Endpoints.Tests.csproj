@@ -19,6 +19,7 @@
       <Name>ServiceStack.Api.OpenApi</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Authentication.MongoDb\ServiceStack.Authentication.MongoDb.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Authentication.Neo4j\ServiceStack.Authentication.Neo4j.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Authentication.RavenDb\ServiceStack.Authentication.RavenDb.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
@@ -30,6 +31,7 @@
     <ProjectReference Include="..\..\src\ServiceStack.Api.Swagger\ServiceStack.Api.Swagger.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.csproj" />
     <ProjectReference Include="..\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj" />
+    <PackageReference Include="Neo4j.Driver.Signed" Version="1.7.2" />
     
     <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
     <PackageReference Include="ServiceStack.Redis" Version="$(Version)" />
