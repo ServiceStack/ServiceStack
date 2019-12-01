@@ -656,6 +656,7 @@ namespace ServiceStack
         {
             var elType = requests.GetType().GetCollectionType();
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";
+            this.PopulateRequestMetadatas(requests);
             return SendAsync<List<TResponse>>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), requests, token);
         }
 
@@ -669,6 +670,7 @@ namespace ServiceStack
         {
             var elType = requests.GetType().GetCollectionType();
             var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + elType.Name + "[]";
+            this.PopulateRequestMetadatas(requests);
             return SendAsync<byte[]>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), requests, token);
         }
 
@@ -821,8 +823,8 @@ namespace ServiceStack
         public void SendOneWay(string relativeOrAbsoluteUrl, object request, CancellationToken token)
         {
             var httpMethod = ServiceClientBase.GetExplicitMethod(request) ?? DefaultHttpMethod;
-            var absolutetUri = ToAbsoluteUrl(ResolveUrl(httpMethod, relativeOrAbsoluteUrl));
-            SendAsync<byte[]>(httpMethod, absolutetUri, request, token).Wait(token);
+            var absoluteUri = ToAbsoluteUrl(ResolveUrl(httpMethod, relativeOrAbsoluteUrl));
+            SendAsync<byte[]>(httpMethod, absoluteUri, request, token).Wait(token);
         }
 
         public void SendAllOneWay(IEnumerable<object> requests) => SendAllOneWay(requests, default);
@@ -830,8 +832,9 @@ namespace ServiceStack
         {
             var elType = requests.GetType().GetCollectionType();
             var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + elType.Name + "[]";
-            var absolutetUri = ToAbsoluteUrl(ResolveUrl(HttpMethods.Post, requestUri));
-            SendAsync<byte[]>(HttpMethods.Post, absolutetUri, requests, token).Wait(token);
+            var absoluteUri = ToAbsoluteUrl(ResolveUrl(HttpMethods.Post, requestUri));
+            this.PopulateRequestMetadatas(requests);
+            SendAsync<byte[]>(HttpMethods.Post, absoluteUri, requests, token).Wait(token);
         }
         
 

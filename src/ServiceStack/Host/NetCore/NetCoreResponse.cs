@@ -97,30 +97,28 @@ namespace ServiceStack.Host.NetCore
 
         public void Close()
         {
-            if (!closed)
+            if (closed) return;
+            closed = true;
+            try
             {
-                closed = true;
-                try
-                {
-                    this.FlushBufferIfAny(BufferedStream, response.Body);
-                    BufferedStream?.Dispose();
-                    BufferedStream = null;
-                }
-                catch (Exception ex)
-                {
-                    Log.Error("Error closing .NET Core OutputStream", ex);
-                }
+                this.FlushBufferIfAny(BufferedStream, response.Body);
+                BufferedStream?.Dispose();
+                BufferedStream = null;
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Error closing .NET Core OutputStream", ex);
             }
         }
 
-        public async Task CloseAsync(CancellationToken token = default(CancellationToken))
+        public async Task CloseAsync(CancellationToken token = default)
         {
             if (!closed)
             {
                 closed = true;
                 try
                 {
-                    await this.FlushBufferIfAnyAsync(BufferedStream, response.Body);
+                    await this.FlushBufferIfAnyAsync(BufferedStream, response.Body, token: token);
                     BufferedStream?.Dispose();
                     BufferedStream = null;
                 }

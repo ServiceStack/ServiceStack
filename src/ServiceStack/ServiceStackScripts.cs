@@ -44,6 +44,8 @@ namespace ServiceStack
         public IHttpRequest getHttpRequest(ScriptScopeContext scope) => req(scope);
         internal IHttpRequest req(ScriptScopeContext scope) => scope.GetValue("Request") as IHttpRequest;
 
+        public object baseUrl(ScriptScopeContext scope) => req(scope).GetBaseUrl();
+
         public object resolveUrl(ScriptScopeContext scope, string virtualPath) =>
             req(scope).ResolveAbsoluteUrl(virtualPath);
 

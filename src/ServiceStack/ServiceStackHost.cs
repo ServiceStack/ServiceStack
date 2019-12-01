@@ -662,18 +662,24 @@ namespace ServiceStack
 
         public virtual async Task HandleShortCircuitedErrors(IRequest req, IResponse res, object requestDto)
         {
-            var httpError = new HttpError(res.StatusCode, res.StatusDescription);
-            var response = await OnServiceException(req, requestDto, httpError);
-            if (response != null)
+            object response = null;
+            try
             {
-                await res.EndHttpHandlerRequestAsync(afterHeaders: async httpRes =>
+                var httpError = new HttpError(res.StatusCode, res.StatusDescription);
+                response = await OnServiceException(req, requestDto, httpError);
+                if (response != null)
                 {
-                    await ContentTypes.SerializeToStreamAsync(req, response, httpRes.OutputStream);
-                });
+                    await res.EndHttpHandlerRequestAsync(afterHeaders: async httpRes => {
+                        await ContentTypes.SerializeToStreamAsync(req, response, httpRes.OutputStream);
+                    });
+                }
             }
-            else
+            finally
             {
-                res.EndRequest();
+                if (response == null)
+                {
+                    res.EndRequest();
+                }
             }
         }
 

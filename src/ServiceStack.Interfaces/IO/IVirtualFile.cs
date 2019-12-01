@@ -6,6 +6,9 @@ namespace ServiceStack.IO
     {
         IVirtualPathProvider VirtualPathProvider { get; }
 
+        /// <summary>
+        /// The file extension without '.' prefix
+        /// </summary>
         string Extension { get; }
 
         string GetFileHash();

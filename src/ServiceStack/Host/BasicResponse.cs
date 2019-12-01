@@ -68,6 +68,7 @@ namespace ServiceStack.Host
 
         public void Close()
         {
+            if (IsClosed) return;
             IsClosed = true;
             if (ms != null && ms.CanWrite)
                 ms.Dispose();

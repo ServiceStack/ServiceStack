@@ -241,6 +241,10 @@ namespace ServiceStack.Host.HttpListener
                 {
                     task.RunSynchronously();
                 }
+                else
+                {
+                    task.Wait();
+                }
             }
             catch (Exception ex)
             {
@@ -348,7 +352,7 @@ namespace ServiceStack.Host.HttpListener
         }
 
         /// <summary>
-        /// Overridable method that can be used to implement a custom hnandler
+        /// Overridable method that can be used to implement a custom handler
         /// </summary>
         /// <param name="context"></param>
         protected abstract Task ProcessRequestAsync(HttpListenerContext context);
