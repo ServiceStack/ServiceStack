@@ -10,10 +10,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Grpc.AspNetCore.Server" Version="2.23.2" />
-        <PackageReference Include="Grpc.Core.Api" Version="2.24.0" />
+        <PackageReference Include="Grpc.AspNetCore.Server" Version="2.25.0" />
+        <PackageReference Include="Grpc.Core.Api" Version="2.25.0" />
         <PackageReference Include="System.Threading.Channels" Version="4.6.0" />
-        <PackageReference Include="protobuf-net" Version="2.4.1" />
+        <PackageReference Include="protobuf-net" Version="2.4.4" />
         
         <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
         <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
@@ -22,7 +22,7 @@
         <ProjectReference Include="..\ServiceStack.GrpcClient\ServiceStack.GrpcClient.csproj" />
         <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
         
-        <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.0.10" />
+        <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.0.13" />
     </ItemGroup>
 
 </Project>
