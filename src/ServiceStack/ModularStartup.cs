@@ -300,7 +300,7 @@ namespace ServiceStack
     // .NET Core 3.0 disables IStartup and multiple Configure* entry points, using wrapper instead
     public class ModularStartupActivator
     {
-        public static Type StartupType { get; internal set; }
+        public static Type StartupType { get; set; }
         protected IConfiguration Configuration { get; }
 
         protected readonly ModularStartup Instance;
