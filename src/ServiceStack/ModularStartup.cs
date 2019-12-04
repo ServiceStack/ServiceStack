@@ -276,11 +276,21 @@ namespace ServiceStack
             instances.Where(x => x.Item2 >= 0).OrderBy(x => x.Item2).Map(x => x.Item1);
 
 #if NETSTANDARD2_0
+        
+        /// <summary>
+        /// .NET Core 3.0 disables IStartup and multiple Configure* entry points on Startup class requiring the use of a
+        /// clean ModularStartupActivator adapter class for implementing https://docs.servicestack.net/modular-startup
+        /// </summary>
         public static IWebHostBuilder UseModularStartup<TStartup>(this IWebHostBuilder hostBuilder)
             where TStartup : class
         {
             return hostBuilder.UseStartup(ModularStartup.Create<TStartup>());
         }
+        
+        /// <summary>
+        /// ASP.NET Core MVC has a built-in limitation/heuristic requiring the Startup class to be defined in the Host assembly,
+        /// which can be done by registering a custom ModularStartupActivator sub class.
+        /// </summary>
         public static IWebHostBuilder UseModularStartup<TStartup, TStartupActivator>(this IWebHostBuilder hostBuilder)
             where TStartup : class
         {
@@ -297,7 +307,13 @@ namespace ServiceStack
     }
     
 #if NETSTANDARD2_0
-    // .NET Core 3.0 disables IStartup and multiple Configure* entry points, using wrapper instead
+    /// <summary>
+    /// .NET Core 3.0 disables IStartup and multiple Configure* entry points on Startup class requiring the use of a
+    /// clean ModularStartupActivator adapter class for implementing https://docs.servicestack.net/modular-startup
+    ///
+    /// ASP.NET Core MVC has a built-in limitation/heuristic requiring the Startup class to be defined in the Host assembly,
+    /// which can be done by registering a custom ModularStartupActivator sub class.
+    /// </summary>
     public class ModularStartupActivator
     {
         public static Type StartupType { get; set; }
@@ -325,12 +341,12 @@ namespace ServiceStack
             }
         }
 
-        public void ConfigureServices(IServiceCollection services)
+        public virtual void ConfigureServices(IServiceCollection services)
         {
             Instance.ConfigureServices(services);
         }
-            
-        public void Configure(IApplicationBuilder app)
+
+        public virtual void Configure(IApplicationBuilder app)
         {
             Instance.Configure(app);
         }
