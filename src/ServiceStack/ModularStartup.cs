@@ -291,7 +291,7 @@ namespace ServiceStack
                 throw new NotSupportedException($"{typeof(TStartupActivator).Name} does not inherit ModularStartupActivator");
             
             ModularStartupActivator.StartupType = typeof(TStartup);
-            return hostBuilder.UseStartup(typeof(ModularStartupActivator));
+            return hostBuilder.UseStartup(typeof(TStartupActivator));
         }
 #endif
     }
