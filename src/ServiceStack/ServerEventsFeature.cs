@@ -32,6 +32,7 @@ namespace ServiceStack
         public Action<IEventSubscription, IRequest> OnCreated { get; set; }
         public Action<IEventSubscription, Dictionary<string, string>> OnConnect { get; set; }
         public Action<IEventSubscription> OnSubscribe { get; set; }
+        public Action<IEventSubscription, IRequest> OnDispose { get; set; }
         /// <summary>
         /// Calls sync OnSubscribe if exists by default
         /// </summary>
@@ -285,6 +286,7 @@ namespace ServiceStack
                 {
                     try
                     {
+                        feature.OnDispose?.Invoke(sub, req);
                         (sub as EventSubscription)?.EndRequestIfDisposed();
                     } catch { }
                 };
@@ -297,6 +299,7 @@ namespace ServiceStack
             {
                 try
                 {
+                    feature.OnDispose?.Invoke(sub, req);
                     (sub as EventSubscription)?.EndRequestIfDisposed();
                 } catch { }
 
