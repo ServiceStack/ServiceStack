@@ -101,7 +101,7 @@ namespace ServiceStack.Grpc
 
             var addedRpcServices = false;
             //https://github.com/protobuf-net/protobuf-net/blob/master/src/Tools/bcl.proto
-            var proto = GrpcUtils.TypeModel.GetSchema(null /*all types*/, ProtoSyntax.Proto3);
+            var proto = GrpcConfig.TypeModel.GetSchema(null /*all types*/, ProtoSyntax.Proto3);
             foreach (var line in proto.ReadLines())
             {
                 if (line.StartsWith("package ")) // strip

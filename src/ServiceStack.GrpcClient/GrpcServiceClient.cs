@@ -282,7 +282,7 @@ namespace ServiceStack
                 var refreshRequest = new GetAccessToken {
                     RefreshToken = RefreshToken,
                 };
-                var methodName = GrpcUtils.GetServiceName(Methods.Post, nameof(GetAccessToken));
+                var methodName = GrpcConfig.GetServiceName(Methods.Post, nameof(GetAccessToken));
                 var fn = ResolveExecute<GetAccessTokenResponse>(refreshRequest);
                 var options = PrepareRequest(noAuth:true);
 
@@ -431,7 +431,7 @@ namespace ServiceStack
 
             this.PopulateRequestMetadatas(requestDtos);
             var firstDto = requestDtos[0];
-            var methodName = GrpcUtils.GetServiceName(GetMethod(firstDto), firstDto.GetType().Name);
+            var methodName = GrpcConfig.GetServiceName(GetMethod(firstDto), firstDto.GetType().Name);
 
             this.PopulateRequestMetadatas(requestDtos);
             var authIncluded = InitRequestDto(firstDto);
@@ -573,7 +573,7 @@ namespace ServiceStack
         
         public IAsyncEnumerable<TResponse> StreamAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default)
         {
-            return Stream<TResponse>(requestDto, GrpcUtils.GetServerStreamServiceName(requestDto.GetType().Name), token);
+            return Stream<TResponse>(requestDto, GrpcConfig.GetServerStreamServiceName(requestDto.GetType().Name), token);
         }
 
         protected string GetMethod(object request)
@@ -595,7 +595,7 @@ namespace ServiceStack
             return DefaultMethod;
         }
 
-        string GetMethodName(string verb, object requestDto) => GrpcUtils.GetServiceName(verb, requestDto.GetType().Name); 
+        string GetMethodName(string verb, object requestDto) => GrpcConfig.GetServiceName(verb, requestDto.GetType().Name); 
 
         public Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default)
         {
@@ -804,17 +804,17 @@ namespace ServiceStack
             {
                 foreach (var argType in typeof(T).GenericTypeArguments)
                 {
-                    GrpcUtils.Register(argType);
+                    GrpcConfig.Register(argType);
                 }
             }
         }
 
         private static void RegisterSubType(Type type)
         {
-            if (GrpcUtils.IgnoreTypeModel(type))
+            if (GrpcConfig.IgnoreTypeModel(type))
                 return;
             
-            var baseMetaType = GrpcUtils.Register(type.BaseType);
+            var baseMetaType = GrpcConfig.Register(type.BaseType);
             // need to generate predictable fieldIds, allow specifying with [Id(n)] or use MurmurHash2 hash function % 2^29-1,
             var idAttr = type.FirstAttribute<IdAttribute>();
             var fieldId = idAttr?.Id ?? Math.Abs(unchecked((int) MurmurHash2.Hash(GetTypeName(type))));
@@ -852,7 +852,7 @@ namespace ServiceStack
 
         //also forces static initializer
         public static MetaType GetMetaType() => metaType 
-            ??= typeof(T).IsValueType ? null : GrpcUtils.TypeModel.Add(typeof(T), applyDefaultBehaviour:true); 
+            ??= typeof(T).IsValueType ? null : GrpcConfig.TypeModel.Add(typeof(T), applyDefaultBehaviour:true); 
 
         public GrpcMarshaller() : base(Serialize, Deserialize) {}
 
@@ -862,7 +862,7 @@ namespace ServiceStack
             { 
                 using (var ms = new MemoryStream())
                 {
-                    GrpcUtils.TypeModel.Serialize(ms, payload);
+                    GrpcConfig.TypeModel.Serialize(ms, payload);
                     return ms.ToArray();
                 }
             }
@@ -878,7 +878,7 @@ namespace ServiceStack
             { 
                 using (var ms = new MemoryStream(payload))
                 {
-                    return (T) GrpcUtils.TypeModel.Deserialize(ms, null, typeof(T));
+                    return (T) GrpcConfig.TypeModel.Deserialize(ms, null, typeof(T));
                 }
             }
             catch (Exception e)

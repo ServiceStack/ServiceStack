@@ -1581,7 +1581,7 @@ namespace ServiceStack
         // Admin API's
         Task RegisterAsync(IEventSubscription subscription, Dictionary<string, string> connectArgs = null, CancellationToken token=default);
 
-        Task  UnRegisterAsync(string subscriptionId, CancellationToken token=default);
+        Task UnRegisterAsync(string subscriptionId, CancellationToken token=default);
 
         long GetNextSequence(string sequenceId);
 

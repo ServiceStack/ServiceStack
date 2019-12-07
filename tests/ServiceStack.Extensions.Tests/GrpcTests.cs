@@ -439,7 +439,7 @@ namespace ServiceStack.Extensions.Tests
             using var http = GrpcChannel.ForAddress("http://localhost:20000");
 
             var response = await http.CreateCallInvoker().Execute<Multiply, MultiplyResponse>(new Multiply { X = 12, Y = 4 }, "GrpcServices",
-                GrpcUtils.GetServiceName(HttpMethods.Post, nameof(Multiply)));
+                GrpcConfig.GetServiceName(HttpMethods.Post, nameof(Multiply)));
 
             Assert.That(response.Result, Is.EqualTo(48));
         }
