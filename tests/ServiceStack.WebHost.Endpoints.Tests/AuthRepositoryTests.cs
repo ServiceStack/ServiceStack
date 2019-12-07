@@ -125,7 +125,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    [NUnit.Framework.Ignore("Requires Neo4j")]
+    [NUnit.Framework.Ignore("Requires Neo4j Dependency")]
     public class Neo4jAuthRepositoryTests : AuthRepositoryTestsBase
     {
         public override void ConfigureAuthRepo(Container container)
@@ -134,7 +134,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             container.AddSingleton(driver);
             container.AddSingleton<IAuthRepository>(c =>
             {
-                var repository = new Neo4jAuthRepository(c.Resolve<IDriver>());
+                var repository = new Neo4jAuthRepository<UserAuth, UserAuthDetails>(c.Resolve<IDriver>());
                 repository.Clear();
                 return repository;
             });

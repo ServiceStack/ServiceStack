@@ -8,11 +8,13 @@ using ServiceStack.Auth;
 namespace ServiceStack.Authentication.Neo4j
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public class Neo4jAuthRepository : IUserAuthRepository, IClearable, IRequiresSchema, IManageApiKeys
+    public class Neo4jAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IClearable, IRequiresSchema, IManageApiKeys
+        where TUserAuth : class, IUserAuth, new()
+        where TUserAuthDetails : class, IUserAuthDetails, new()
     {
         private static class Label
         {
-            public const string IdScope = "AuthId";    
+            public const string AuthIdSeq = nameof(AuthIdSeq);    
             public static string UserAuth => typeof(UserAuth).Name;
             public static string UserAuthDetails => typeof(UserAuthDetails).Name;
             public static string ApiKey => typeof(ApiKey).Name;
@@ -27,7 +29,7 @@ namespace ServiceStack.Authentication.Neo4j
         private static class Query
         {
             public static string IdScopeConstraint => $@"
-                CREATE CONSTRAINT ON (u:{Label.IdScope}) ASSERT u.Scope IS UNIQUE";
+                CREATE CONSTRAINT ON (seq:{Label.AuthIdSeq}) ASSERT seq.Scope IS UNIQUE";
 
             public static string UserAuthConstraint => $@"
                 CREATE CONSTRAINT ON (userAuth:{Label.UserAuth}) ASSERT userAuth.Id IS UNIQUE";
@@ -39,12 +41,12 @@ namespace ServiceStack.Authentication.Neo4j
                 CREATE CONSTRAINT ON (apiKey:{Label.ApiKey}) ASSERT apiKey.Id IS UNIQUE";
 
             public static string NextSequence => $@"
-                MERGE (seq:{Label.IdScope} {{Scope: $scope}})
+                MERGE (seq:{Label.AuthIdSeq} {{Scope: $scope}})
                 SET seq.Value = COALESCE(seq.Value, 0) + 1
                 RETURN seq.Value";
 
             public static string DeleteAllSequence => $@"
-                MATCH (seq:{Label.IdScope})
+                MATCH (seq:{Label.AuthIdSeq})
                 DELETE seq";
 
             public static string CreateOrUpdateUserAuth => $@"
@@ -239,7 +241,7 @@ namespace ServiceStack.Authentication.Neo4j
 
             var result = ReadQuery(isEmail ? Query.UserAuthByEmail : Query.UserAuthByName, parameters);
 
-            return result.Map<UserAuth>().SingleOrDefault();
+            return result.Map<TUserAuth>().SingleOrDefault();
         }
 
         public bool TryAuthenticate(string userName, string password, out IUserAuth userAuth)
@@ -296,29 +298,29 @@ namespace ServiceStack.Authentication.Neo4j
 
         public IUserAuth GetUserAuth(string userAuthId)
         {
-            userAuthId.ThrowIfNotConvertibleToInteger("userAuthId");
+            TryConvertToInteger(userAuthId, "userAuthId", out var idVal);
 
             var parameters = new
             {
-                id = int.Parse(userAuthId)
+                id = idVal
             };
 
             var result = ReadQuery(Query.UserAuthById, parameters);
 
-            return result.Map<UserAuth>().SingleOrDefault();
+            return result.Map<TUserAuth>().SingleOrDefault();
         }
 
         public void SaveUserAuth(IAuthSession authSession)
         {
             var userAuth = !authSession.UserAuthId.IsNullOrEmpty()
-                ? (UserAuth)GetUserAuth(authSession.UserAuthId)
-                : authSession.ConvertTo<UserAuth>();
+                ? (TUserAuth)GetUserAuth(authSession.UserAuthId)
+                : authSession.ConvertTo<TUserAuth>();
 
             if (userAuth.Id == default && !authSession.UserAuthId.IsNullOrEmpty())
             {
-                authSession.UserAuthId.ThrowIfNotConvertibleToInteger("userAuthId");
-                
-                userAuth.Id = int.Parse(authSession.UserAuthId);
+                TryConvertToInteger(authSession.UserAuthId, "authSession.UserAuthId", out var idVal);
+
+                userAuth.Id = idVal;
             }
 
             userAuth.ModifiedDate = DateTime.UtcNow;
@@ -344,11 +346,11 @@ namespace ServiceStack.Authentication.Neo4j
 
         public void DeleteUserAuth(string userAuthId)
         {
-            userAuthId.ThrowIfNotConvertibleToInteger("userAuthId");
+            TryConvertToInteger(userAuthId, "userAuthId", out var idVal);
 
             var parameters = new
             {
-                id = int.Parse(userAuthId)
+                id = idVal
             };
 
             WriteQuery(Query.DeleteUserAuth, parameters);
@@ -356,16 +358,16 @@ namespace ServiceStack.Authentication.Neo4j
 
         public List<IUserAuthDetails> GetUserAuthDetails(string userAuthId)
         {
-            userAuthId.ThrowIfNotConvertibleToInteger("userAuthId");
+            TryConvertToInteger(userAuthId, "userAuthId", out var idVal);
 
             var parameters = new
             {
-                id = int.Parse(userAuthId)
+                id = idVal
             };
 
             var results = ReadQuery(Query.UserAuthDetailsById, parameters);
 
-            var items = results.Map<UserAuthDetails>();
+            var items = results.Map<TUserAuthDetails>();
 
             return items.Cast<IUserAuthDetails>().ToList();
         }
@@ -395,7 +397,7 @@ namespace ServiceStack.Authentication.Neo4j
 
             var result = ReadQuery(Query.UserAuthByProviderAndUserId, parameters);
 
-            return result.Map<UserAuth>().SingleOrDefault();
+            return result.Map<TUserAuth>().SingleOrDefault();
         }
 
         public IUserAuthDetails CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
@@ -408,7 +410,7 @@ namespace ServiceStack.Authentication.Neo4j
 
             var result = ReadQuery(Query.UserAuthDetailsByProviderAndUserId, parameters);
 
-            var userAuthDetails = result.Map<UserAuthDetails>().SingleOrDefault() ?? new UserAuthDetails
+            var userAuthDetails = result.Map<TUserAuthDetails>().SingleOrDefault() ?? new TUserAuthDetails
             {
                 Provider = tokens.Provider,
                 UserId = tokens.UserId,
@@ -416,14 +418,14 @@ namespace ServiceStack.Authentication.Neo4j
 
             userAuthDetails.PopulateMissing(tokens);
             
-            var userAuth = GetUserAuth(authSession, tokens) ?? new UserAuth();
+            var userAuth = GetUserAuth(authSession, tokens) ?? new TUserAuth();
             userAuth.PopulateMissingExtended(userAuthDetails);
 
             userAuth.ModifiedDate = DateTime.UtcNow;
             if (userAuth.CreatedDate == default)
                 userAuth.CreatedDate = userAuth.ModifiedDate;
 
-            SaveUser((UserAuth)userAuth);
+            SaveUser((TUserAuth)userAuth);
 
             userAuthDetails.UserAuthId = userAuth.Id;
             
@@ -487,11 +489,11 @@ namespace ServiceStack.Authentication.Neo4j
 
         public List<ApiKey> GetUserApiKeys(string userId)
         {
-            userId.ThrowIfNotConvertibleToInteger("userId");
+            TryConvertToInteger(userId, "userId", out var idVal);
 
             var parameters = new
             {
-                id = int.Parse(userId),
+                id = idVal,
                 expiry = DateTime.UtcNow
             };
 
@@ -539,7 +541,7 @@ namespace ServiceStack.Authentication.Neo4j
             AutoMapping.RegisterConverter<ZonedDateTime, DateTime>(zonedDateTime => zonedDateTime.ToDateTimeOffset().DateTime);
             AutoMapping.RegisterConverter<ZonedDateTime, DateTime?>(zonedDateTime => zonedDateTime.ToDateTimeOffset().DateTime);
             
-            AutoMapping.RegisterConverter<UserAuth, Dictionary<string, object>>(userAuth =>
+            AutoMapping.RegisterConverter<TUserAuth, Dictionary<string, object>>(userAuth =>
             {
                 var dictionary = userAuth.ToObjectDictionary();
                 dictionary[nameof(UserAuth.Meta)] = userAuth.Meta.ToJsv();
@@ -548,13 +550,19 @@ namespace ServiceStack.Authentication.Neo4j
                 return dictionary;
             });
 
-            AutoMapping.RegisterConverter<UserAuthDetails, Dictionary<string, object>>(userAuthDetails =>
+            AutoMapping.RegisterConverter<TUserAuthDetails, Dictionary<string, object>>(userAuthDetails =>
             {
                 var dictionary = userAuthDetails.ToObjectDictionary();
                 dictionary[nameof(UserAuthDetails.Items)] = userAuthDetails.Items.ToJsv();
                 dictionary[nameof(UserAuthDetails.Meta)] = userAuthDetails.Meta.ToJsv();
                 return dictionary;
             });
+        }
+        
+        private static void TryConvertToInteger(string strValue, string varName, out int result)
+        {
+            if (!int.TryParse(strValue, out result))
+                throw new ArgumentException(@"Cannot convert to integer", varName ?? "string");
         }
     }
 }

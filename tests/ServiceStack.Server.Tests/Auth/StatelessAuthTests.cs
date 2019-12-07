@@ -185,17 +185,17 @@ namespace ServiceStack.Server.Tests.Auth
     }
 #endif
 
-    //[Ignore("Requires Neo4j Dependency")]
+    [Ignore("Requires Neo4j Dependency")]
     public class Neo4jAuthRepoStatelessAuthTests : StatelessAuthTests
     {
         protected override ServiceStackHost CreateAppHost()
         {
             var driver = GraphDatabase.Driver("bolt://localhost:7687");
-            new Neo4jAuthRepository(driver).Clear();
+            new Neo4jAuthRepository<UserAuth, UserAuthDetails>(driver).Clear();
 
             return new AppHost
             {
-                Use = container => container.Register<IAuthRepository>(c => new Neo4jAuthRepository(driver))
+                Use = container => container.Register<IAuthRepository>(c => new Neo4jAuthRepository<UserAuth, UserAuthDetails>(driver))
             };
         }
     }

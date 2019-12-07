@@ -11,9 +11,14 @@ using AuthTokens = ServiceStack.Auth.AuthTokens;
 namespace ServiceStack.Server.Tests.Auth
 {
     [TestFixture]
-    //[Ignore("Requires Neo4j Dependency")]
+    [Ignore("Requires Neo4j Dependency")]
     public class Neo4jAuthRepositoryTests
     {
+        public class AppUser : UserAuth
+        {
+            public string AppName { get; set; }
+        }
+        
         private const string Password = "letmein";
 
         private ServiceStackHost AppHost { get; set; }
@@ -26,8 +31,8 @@ namespace ServiceStack.Server.Tests.Auth
                 Use = container =>
                 {
                     container.Register(c => GraphDatabase.Driver("bolt://localhost:7687"));
-                    container.RegisterAutoWiredAs<Neo4jAuthRepository, IUserAuthRepository>();
-                    container.RegisterAutoWiredAs<Neo4jAuthRepository, IAuthRepository>();
+                    container.RegisterAutoWiredAs<Neo4jAuthRepository<AppUser, UserAuthDetails>, IUserAuthRepository>();
+                    container.RegisterAutoWiredAs<Neo4jAuthRepository<AppUser, UserAuthDetails>, IAuthRepository>();
                 }
             };
         }
@@ -515,8 +520,9 @@ namespace ServiceStack.Server.Tests.Auth
             return Sut.CreateOrMergeAuthSession(authSession, tokens);
         }
 
-        private static UserAuth NewUserAuth => new UserAuth
+        private static UserAuth NewUserAuth => new AppUser
         {
+            AppName = nameof(AppUser.AppName),
             Address = nameof(UserAuth.Address),
             Address2 = nameof(UserAuth.Address2),
             BirthDate = new DateTime(2001, 4, 24),
