@@ -19,6 +19,8 @@ namespace IdentityDemo
 
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                // can't use UseModularStartup, for some reason the assembly where
+                // the Startup class is defined matters
                 .UseStartup<Startup>()
                 .Build();
     }

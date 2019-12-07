@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netcoreapp3.0</TargetFramework>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
         <LangVersion>8</LangVersion>
     </PropertyGroup>
     
@@ -13,9 +13,9 @@
         <PackageReference Include="ServiceStack.OrmLite" Version="$(Version)" />
         <PackageReference Include="ServiceStack.OrmLite.Sqlite" Version="$(Version)" />
         <PackageReference Include="ServiceStack.OrmLite.SqlServer" Version="$(Version)" />
-        <PackageReference Include="Grpc.Net.Client" Version="2.23.2" />
-        <PackageReference Include="Grpc.Core.Api" Version="2.24.0" />
-        <PackageReference Include="Grpc.Core" Version="2.24.0" />
+        <PackageReference Include="Grpc.Net.Client" Version="2.25.0" />
+        <PackageReference Include="Grpc.Core.Api" Version="2.25.0" />
+        <PackageReference Include="Grpc.Core" Version="2.25.0" />
 
         <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />

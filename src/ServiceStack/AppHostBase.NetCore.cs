@@ -88,6 +88,7 @@ namespace ServiceStack
                 //Initialize VFS
                 Config.WebHostPhysicalPath = HostingEnvironment.ContentRootPath;
                 Config.DebugMode = HostingEnvironment.IsDevelopment();
+                Config.HandlerFactoryPath = Environment.GetEnvironmentVariable($"ASPNETCORE_APPL_PATH"); //IIS Mapping / sometimes UPPER CASE https://serverfault.com/q/292335
 
                 if (VirtualFiles == null)
                 {
@@ -128,9 +129,10 @@ namespace ServiceStack
             var mode = Config.HandlerFactoryPath;
             if (!string.IsNullOrEmpty(mode))
             {
-                var includedInPathInfo = pathInfo.IndexOf(mode, StringComparison.Ordinal) == 1;
+                //IIS Reports "ASPNETCORE_APPL_PATH" in UPPER CASE
+                var includedInPathInfo = pathInfo.IndexOf(mode, StringComparison.OrdinalIgnoreCase) == 1;
                 var includedInPathBase = context.Request.PathBase.HasValue &&
-                                         context.Request.PathBase.Value.IndexOf(mode, StringComparison.Ordinal) == 1;
+                                         context.Request.PathBase.Value.IndexOf(mode, StringComparison.OrdinalIgnoreCase) == 1;
                 if (!includedInPathInfo && !includedInPathBase)
                 {
                     await next();

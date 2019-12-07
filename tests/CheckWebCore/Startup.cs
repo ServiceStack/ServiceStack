@@ -114,6 +114,8 @@ namespace CheckWebCore
         // Configure your AppHost with the necessary configuration and dependencies your App needs
         public override void Configure(Container container)
         {
+            RegisterService<GetFileService>();
+
             Plugins.Add(new GrpcFeature(App));
             
             // enable server-side rendering, see: https://sharpscript.net

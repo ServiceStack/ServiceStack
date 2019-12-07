@@ -72,7 +72,7 @@ namespace ServiceStack
         
         public List<Assembly> ScanAssemblies { get; }
 
-        public IConfiguration Configuration { get; protected set; }
+        public IConfiguration Configuration { get; set; }
         
         public Func<IEnumerable<Type>> TypeResolver { get; }
         
@@ -250,52 +250,13 @@ namespace ServiceStack
             postStartupConfigs.ForEach(RunConfigure);
         }
 
-        // .NET Core 3.0 disables IStartup and multiple 
-        public class ModularCreateStartup
-        {
-            public static Type StartupType { get; internal set; }
-            private IConfiguration Configuration { get; }
-
-            private readonly ModularStartup instance;
-            public ModularCreateStartup(IConfiguration configuration)
-            {
-                Configuration = configuration;
-                var ci = StartupType.GetConstructor(new[] { typeof(IConfiguration) });
-                if (ci != null)
-                {
-                    instance = (ModularStartup) ci.Invoke(new[]{ Configuration });
-                }
-                else
-                {
-                    ci = StartupType.GetConstructor(Type.EmptyTypes);
-                    if (ci != null)
-                    {
-                        instance = (ModularStartup) ci.Invoke(TypeConstants.EmptyObjectArray);
-                        instance.Configuration = configuration;
-                    }
-                    else
-                        throw new NotSupportedException($"{StartupType.Name} does not have a {StartupType.Name}(IConfiguration) constructor");
-                }
-            }
-
-            public void ConfigureServices(IServiceCollection services)
-            {
-                instance.ConfigureServices(services);
-            }
-            
-            public void Configure(IApplicationBuilder app)
-            {
-                instance.Configure(app);
-            }
-        }
-
         public static Type Create<TStartup>()
         {
             if (!typeof(ModularStartup).IsAssignableFrom(typeof(TStartup)))
                 throw new NotSupportedException($"{typeof(TStartup).Name} does not inherit ModularStartup");
             
-            ModularCreateStartup.StartupType = typeof(TStartup);
-            return typeof(ModularCreateStartup);
+            ModularStartupActivator.StartupType = typeof(TStartup);
+            return typeof(ModularStartupActivator);
         }
     }
 #endif
@@ -315,12 +276,82 @@ namespace ServiceStack
             instances.Where(x => x.Item2 >= 0).OrderBy(x => x.Item2).Map(x => x.Item1);
 
 #if NETSTANDARD2_0
+        
+        /// <summary>
+        /// .NET Core 3.0 disables IStartup and multiple Configure* entry points on Startup class requiring the use of a
+        /// clean ModularStartupActivator adapter class for implementing https://docs.servicestack.net/modular-startup
+        /// </summary>
         public static IWebHostBuilder UseModularStartup<TStartup>(this IWebHostBuilder hostBuilder)
             where TStartup : class
         {
             return hostBuilder.UseStartup(ModularStartup.Create<TStartup>());
         }
+        
+        /// <summary>
+        /// ASP.NET Core MVC has a built-in limitation/heuristic requiring the Startup class to be defined in the Host assembly,
+        /// which can be done by registering a custom ModularStartupActivator sub class.
+        /// </summary>
+        public static IWebHostBuilder UseModularStartup<TStartup, TStartupActivator>(this IWebHostBuilder hostBuilder)
+            where TStartup : class
+        {
+            if (!typeof(ModularStartup).IsAssignableFrom(typeof(TStartup)))
+                throw new NotSupportedException($"{typeof(TStartup).Name} does not inherit ModularStartup");
+            
+            if (!typeof(ModularStartupActivator).IsAssignableFrom(typeof(TStartupActivator)))
+                throw new NotSupportedException($"{typeof(TStartupActivator).Name} does not inherit ModularStartupActivator");
+            
+            ModularStartupActivator.StartupType = typeof(TStartup);
+            return hostBuilder.UseStartup(typeof(TStartupActivator));
+        }
 #endif
     }
+    
+#if NETSTANDARD2_0
+    /// <summary>
+    /// .NET Core 3.0 disables IStartup and multiple Configure* entry points on Startup class requiring the use of a
+    /// clean ModularStartupActivator adapter class for implementing https://docs.servicestack.net/modular-startup
+    ///
+    /// ASP.NET Core MVC has a built-in limitation/heuristic requiring the Startup class to be defined in the Host assembly,
+    /// which can be done by registering a custom ModularStartupActivator sub class.
+    /// </summary>
+    public class ModularStartupActivator
+    {
+        public static Type StartupType { get; set; }
+        protected IConfiguration Configuration { get; }
+
+        protected readonly ModularStartup Instance;
+        public ModularStartupActivator(IConfiguration configuration)
+        {
+            Configuration = configuration;
+            var ci = StartupType.GetConstructor(new[] { typeof(IConfiguration) });
+            if (ci != null)
+            {
+                Instance = (ModularStartup) ci.Invoke(new[]{ Configuration });
+            }
+            else
+            {
+                ci = StartupType.GetConstructor(Type.EmptyTypes);
+                if (ci != null)
+                {
+                    Instance = (ModularStartup) ci.Invoke(TypeConstants.EmptyObjectArray);
+                    Instance.Configuration = configuration;
+                }
+                else
+                    throw new NotSupportedException($"{StartupType.Name} does not have a {StartupType.Name}(IConfiguration) constructor");
+            }
+        }
+
+        public virtual void ConfigureServices(IServiceCollection services)
+        {
+            Instance.ConfigureServices(services);
+        }
+
+        public virtual void Configure(IApplicationBuilder app)
+        {
+            Instance.Configure(app);
+        }
+    }
+#endif
+    
 }
 

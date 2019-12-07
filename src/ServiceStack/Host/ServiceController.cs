@@ -18,9 +18,9 @@ using ServiceStack.Web;
 namespace ServiceStack.Host
 {
     public delegate object ServiceExecFn(IRequest requestContext, object request);
-    public delegate object InstanceExecFn(IRequest requestContext, object intance, object request);
-    public delegate object ActionInvokerFn(object intance, object request);
-    public delegate void VoidActionInvokerFn(object intance, object request);
+    public delegate object InstanceExecFn(IRequest requestContext, object instance, object request);
+    public delegate object ActionInvokerFn(object instance, object request);
+    public delegate void VoidActionInvokerFn(object instance, object request);
 
     public class ServiceController : IServiceController
     {

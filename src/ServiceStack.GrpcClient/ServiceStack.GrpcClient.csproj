@@ -9,9 +9,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Grpc.Net.Client" Version="2.23.2" />
-        <PackageReference Include="Grpc.Core" Version="2.24.0" />
-        <PackageReference Include="protobuf-net.Grpc" Version="1.0.10" />
+        <PackageReference Include="Grpc.Net.Client" Version="2.25.0" />
+        <PackageReference Include="Grpc.Core" Version="2.25.0" />
+        <PackageReference Include="protobuf-net.Grpc" Version="1.0.13" />
         <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
 
         <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />

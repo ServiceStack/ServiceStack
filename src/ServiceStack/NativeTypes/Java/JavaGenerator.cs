@@ -606,7 +606,7 @@ namespace ServiceStack.NativeTypes.Java
             if (genericArgs != null)
             {
                 if (type == "Nullable`1")
-                    return /*@Nullable*/ "{0}".Fmt(GenericArg(genericArgs[0]));
+                    return /*@Nullable*/ GenericArg(genericArgs[0]);
                 if (ArrayTypes.Contains(type))
                     return "ArrayList<{0}>".Fmt(GenericArg(genericArgs[0])).StripNullable();
                 if (DictionaryTypes.Contains(type))
@@ -645,8 +645,7 @@ namespace ServiceStack.NativeTypes.Java
             if (arrParts.Length > 1)
                 return "ArrayList<{0}>".Fmt(TypeAlias(arrParts[0]));
 
-            string typeAlias;
-            TypeAliases.TryGetValue(type, out typeAlias);
+            TypeAliases.TryGetValue(type, out var typeAlias);
 
             return typeAlias ?? NameOnly(type);
         }
@@ -771,7 +770,10 @@ namespace ServiceStack.NativeTypes.Java
             if (node.Text == "List")
             {
                 sb.Append("ArrayList<");
-                sb.Append(ConvertFromCSharp(node.Children[0]));
+                if (!node.Children.IsEmpty())
+                    sb.Append(ConvertFromCSharp(node.Children[0]));
+                else
+                    sb.Append(ConvertFromCSharp(new TextNode { Text = "Object" })); //error fallback
                 sb.Append(">");
             }
             else if (node.Text == "Dictionary")
