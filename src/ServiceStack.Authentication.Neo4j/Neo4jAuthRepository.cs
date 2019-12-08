@@ -133,7 +133,7 @@ namespace ServiceStack.Authentication.Neo4j
 
         public void InitSchema()
         {
-            WriteTxQuery(tx =>
+            driver.WriteTxQuery(tx =>
             {
                 tx.Run(Query.IdScopeConstraint);
                 tx.Run(Query.UserAuthConstraint);
@@ -157,7 +157,7 @@ namespace ServiceStack.Authentication.Neo4j
 
         private void SaveUser(IUserAuth userAuth)
         {
-            WriteTxQuery(tx =>
+            driver.WriteTxQuery(tx =>
             {
                 if (userAuth.Id == default)
                     userAuth.Id = NextSequence(tx, Label.UserAuth);
@@ -244,7 +244,7 @@ namespace ServiceStack.Authentication.Neo4j
                 name = userNameOrEmail
             };
 
-            var result = ReadQuery(isEmail ? Query.UserAuthByEmail : Query.UserAuthByName, parameters);
+            var result = driver.ReadQuery(isEmail ? Query.UserAuthByEmail : Query.UserAuthByName, parameters);
 
             return result.Map<TUserAuth>().SingleOrDefault();
         }
@@ -310,7 +310,7 @@ namespace ServiceStack.Authentication.Neo4j
                 id = idVal
             };
 
-            var result = ReadQuery(Query.UserAuthById, parameters);
+            var result = driver.ReadQuery(Query.UserAuthById, parameters);
 
             return result.Map<TUserAuth>().SingleOrDefault();
         }
@@ -358,7 +358,7 @@ namespace ServiceStack.Authentication.Neo4j
                 id = idVal
             };
 
-            WriteQuery(Query.DeleteUserAuth, parameters);
+            driver.WriteQuery(Query.DeleteUserAuth, parameters);
         }
 
         public List<IUserAuthDetails> GetUserAuthDetails(string userAuthId)
@@ -370,7 +370,7 @@ namespace ServiceStack.Authentication.Neo4j
                 id = idVal
             };
 
-            var results = ReadQuery(Query.UserAuthDetailsById, parameters);
+            var results = driver.ReadQuery(Query.UserAuthDetailsById, parameters);
 
             var items = results.Map<TUserAuthDetails>();
 
@@ -400,7 +400,7 @@ namespace ServiceStack.Authentication.Neo4j
                 provider = tokens.Provider
             };
 
-            var result = ReadQuery(Query.UserAuthByProviderAndUserId, parameters);
+            var result = driver.ReadQuery(Query.UserAuthByProviderAndUserId, parameters);
 
             return result.Map<TUserAuth>().SingleOrDefault();
         }
@@ -413,7 +413,7 @@ namespace ServiceStack.Authentication.Neo4j
                 provider = tokens.Provider
             };
 
-            var result = ReadQuery(Query.UserAuthDetailsByProviderAndUserId, parameters);
+            var result = driver.ReadQuery(Query.UserAuthDetailsByProviderAndUserId, parameters);
 
             var userAuthDetails = result.Map<TUserAuthDetails>().SingleOrDefault() ?? new TUserAuthDetails
             {
@@ -438,7 +438,7 @@ namespace ServiceStack.Authentication.Neo4j
                 userAuthDetails.CreatedDate = userAuth.ModifiedDate;
             userAuthDetails.ModifiedDate = userAuth.ModifiedDate;
 
-            WriteTxQuery(tx =>
+            driver.WriteTxQuery(tx =>
             {
                 if (userAuthDetails.Id == default)
                     userAuthDetails.Id = NextSequence(tx, Label.UserAuthDetails);
@@ -457,7 +457,7 @@ namespace ServiceStack.Authentication.Neo4j
 
         public void Clear()
         {
-            WriteTxQuery(tx =>
+            driver.WriteTxQuery(tx =>
             {
                 tx.Run(Query.DeleteAllUserAuth);
                 tx.Run(Query.DeleteAllSequence);
@@ -466,7 +466,7 @@ namespace ServiceStack.Authentication.Neo4j
 
         public void InitApiKeySchema()
         {
-            WriteQuery(Query.ApiKeyConstraint);
+            driver.WriteQuery(Query.ApiKeyConstraint);
         }
 
         public bool ApiKeyExists(string apiKey)
@@ -487,7 +487,7 @@ namespace ServiceStack.Authentication.Neo4j
                 id = apiKey
             };
 
-            var result = ReadQuery(Query.ApiKeyById, parameters);
+            var result = driver.ReadQuery(Query.ApiKeyById, parameters);
 
             return result.Map<ApiKey>().SingleOrDefault();
         }
@@ -502,7 +502,7 @@ namespace ServiceStack.Authentication.Neo4j
                 expiry = DateTime.UtcNow
             };
 
-            var results = ReadQuery(Query.ActiveApiKeysByUserAuthId, parameters);
+            var results = driver.ReadQuery(Query.ActiveApiKeysByUserAuthId, parameters);
 
             return results.Map<ApiKey>().ToList();
         }
@@ -514,31 +514,7 @@ namespace ServiceStack.Authentication.Neo4j
                 keys = apiKeys.Select(p => p.ToObjectDictionary())
             };
 
-            WriteQuery(Query.UpdateApiKeys, parameters);
-        }
-
-        private IStatementResult ReadQuery(string statement, object parameters = null)
-        {
-            using (var session = driver.Session())
-            {
-                return session.ReadTransaction(tx => tx.Run(statement, parameters));
-            }
-        }
-        
-        private void WriteQuery(string statement, object parameters = null)
-        {
-            using (var session = driver.Session())
-            {
-                session.WriteTransaction(tx => tx.Run(statement, parameters));
-            }
-        }
-        
-        private void WriteTxQuery(Action<ITransaction> action)
-        {
-            using (var session = driver.Session())
-            {
-                session.WriteTransaction(action);
-            }
+            driver.WriteQuery(Query.UpdateApiKeys, parameters);
         }
         
         private static void InitMappers()
@@ -568,6 +544,33 @@ namespace ServiceStack.Authentication.Neo4j
         {
             if (!int.TryParse(strValue, out result))
                 throw new ArgumentException(@"Cannot convert to integer", varName ?? "string");
+        }
+    }
+
+    internal static class DriverExtensions
+    {
+        public static IStatementResult ReadQuery(this IDriver driver, string statement, object parameters = null)
+        {
+            using (var session = driver.Session())
+            {
+                return session.ReadTransaction(tx => tx.Run(statement, parameters));
+            }
+        }
+        
+        public static void WriteQuery(this IDriver driver, string statement, object parameters = null)
+        {
+            using (var session = driver.Session())
+            {
+                session.WriteTransaction(tx => tx.Run(statement, parameters));
+            }
+        }
+        
+        public static void WriteTxQuery(this IDriver driver, Action<ITransaction> action)
+        {
+            using (var session = driver.Session())
+            {
+                session.WriteTransaction(action);
+            }
         }
     }
     
