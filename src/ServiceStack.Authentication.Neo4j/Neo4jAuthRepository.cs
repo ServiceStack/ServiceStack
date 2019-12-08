@@ -557,19 +557,27 @@ namespace ServiceStack.Authentication.Neo4j
             }
         }
         
-        public static void WriteQuery(this IDriver driver, string statement, object parameters = null)
+        public static IStatementResult WriteQuery(this IDriver driver, string statement, object parameters = null)
         {
             using (var session = driver.Session())
             {
-                session.WriteTransaction(tx => tx.Run(statement, parameters));
+                return session.WriteTransaction(tx => tx.Run(statement, parameters));
             }
         }
         
-        public static void WriteTxQuery(this IDriver driver, Action<ITransaction> action)
+        public static void WriteTxQuery(this IDriver driver, Action<ITransaction> txFn)
         {
             using (var session = driver.Session())
             {
-                session.WriteTransaction(action);
+                session.WriteTransaction(txFn);
+            }
+        }
+
+        public static IStatementResult WriteTxQuery(this IDriver driver, Func<ITransaction, IStatementResult> txFn)
+        {
+            using (var session = driver.Session())
+            {
+                return session.WriteTransaction(txFn);
             }
         }
     }
