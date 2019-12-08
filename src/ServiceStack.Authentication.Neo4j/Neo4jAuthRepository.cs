@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Neo4j.Driver.V1;
 using ServiceStack.Auth;
 
 namespace ServiceStack.Authentication.Neo4j
 {
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    // ReSharper disable once InconsistentNaming
     public class Neo4jAuthRepository : Neo4jAuthRepository<UserAuth, UserAuthDetails>
     {
         public Neo4jAuthRepository(IDriver driver) : base(driver) { }
     }
     
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    // ReSharper disable once InconsistentNaming
     public class Neo4jAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IClearable, IRequiresSchema, IManageApiKeys
         where TUserAuth : class, IUserAuth, new()
         where TUserAuthDetails : class, IUserAuthDetails, new()
@@ -569,6 +568,20 @@ namespace ServiceStack.Authentication.Neo4j
         {
             if (!int.TryParse(strValue, out result))
                 throw new ArgumentException(@"Cannot convert to integer", varName ?? "string");
+        }
+    }
+    
+    internal static class RecordExtensions
+    {
+        public static IEnumerable<TReturn> Map<TReturn>(
+            this IEnumerable<IRecord> records)
+        {
+            return records.Select(record => record.Map<TReturn>());
+        }
+
+        public static TReturn Map<TReturn>(this IRecord record)
+        {
+            return ((IEntity) record[0]).Properties.FromObjectDictionary<TReturn>();
         }
     }
 }
