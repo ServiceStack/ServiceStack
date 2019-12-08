@@ -134,7 +134,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             container.AddSingleton(driver);
             container.AddSingleton<IAuthRepository>(c =>
             {
-                var repository = new Neo4jAuthRepository<UserAuth, UserAuthDetails>(c.Resolve<IDriver>());
+                var repository = new Neo4jAuthRepository(c.Resolve<IDriver>());
                 repository.Clear();
                 return repository;
             });

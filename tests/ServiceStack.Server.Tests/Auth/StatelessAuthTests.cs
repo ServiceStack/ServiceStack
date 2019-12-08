@@ -191,11 +191,11 @@ namespace ServiceStack.Server.Tests.Auth
         protected override ServiceStackHost CreateAppHost()
         {
             var driver = GraphDatabase.Driver("bolt://localhost:7687");
-            new Neo4jAuthRepository<UserAuth, UserAuthDetails>(driver).Clear();
+            new Neo4jAuthRepository(driver).Clear();
 
             return new AppHost
             {
-                Use = container => container.Register<IAuthRepository>(c => new Neo4jAuthRepository<UserAuth, UserAuthDetails>(driver))
+                Use = container => container.Register<IAuthRepository>(c => new Neo4jAuthRepository(driver))
             };
         }
     }

@@ -8,6 +8,12 @@ using ServiceStack.Auth;
 namespace ServiceStack.Authentication.Neo4j
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
+    public class Neo4jAuthRepository : Neo4jAuthRepository<UserAuth, UserAuthDetails>
+    {
+        public Neo4jAuthRepository(IDriver driver) : base(driver) { }
+    }
+    
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
     public class Neo4jAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IClearable, IRequiresSchema, IManageApiKeys
         where TUserAuth : class, IUserAuth, new()
         where TUserAuthDetails : class, IUserAuthDetails, new()
