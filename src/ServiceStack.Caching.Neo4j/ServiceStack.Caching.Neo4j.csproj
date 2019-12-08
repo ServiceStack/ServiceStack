@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <PackageId>ServiceStack.Caching.Neo4j</PackageId>
+        <AssemblyName>ServiceStack.Caching.Neo4j</AssemblyName>
+        <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
+        <Title>An ICacheClient implementation to persist cached data in a Neo4j Graph DB</Title>
+        <PackageDescription>
+            A Neo4j ICacheClient to persist cached data in a Neo4j Graph DB.
+            Implements ServiceStack's built-in Cache Provider:
+            https://docs.servicestack.net/caching
+        </PackageDescription>
+        <PackageTags>ServiceStack;Cache;Neo4j;POCO;Code-First</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+        <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
+        <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
+        <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
+        <PackageReference Include="Neo4j.Driver.Signed" Version="1.7.2" />
+    </ItemGroup>
+
+</Project>
