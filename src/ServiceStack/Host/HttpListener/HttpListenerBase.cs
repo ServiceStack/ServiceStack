@@ -241,7 +241,7 @@ namespace ServiceStack.Host.HttpListener
                 {
                     task.RunSynchronously();
                 }
-                else
+                else if (task.Status == TaskStatus.Running)
                 {
                     task.Wait();
                 }
