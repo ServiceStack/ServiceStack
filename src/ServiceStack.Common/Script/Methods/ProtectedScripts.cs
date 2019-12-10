@@ -1438,5 +1438,7 @@ namespace ServiceStack.Script
             catch {}               
             return null;
         }
+
+        public void exit(int exitCode) => Environment.Exit(exitCode);
     }
 }
