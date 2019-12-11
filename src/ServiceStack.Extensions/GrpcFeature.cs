@@ -125,7 +125,7 @@ namespace ServiceStack
             set => IgnoreResponseHeaders = null;
         }
         
-        public List<Func<IRequest,MetadataTypesConfig, string>> ProtoOptions { get; set; } = new List<Func<IRequest,MetadataTypesConfig, string>> {
+        public List<ProtoOptionDelegate> ProtoOptions { get; set; } = new List<ProtoOptionDelegate> {
             ProtoOption.CSharpNamespace,
             ProtoOption.PhpNamespace,
         };
