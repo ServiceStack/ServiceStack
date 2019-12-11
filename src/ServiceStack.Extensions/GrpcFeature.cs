@@ -124,6 +124,11 @@ namespace ServiceStack
             get => IgnoreResponseHeaders == null;
             set => IgnoreResponseHeaders = null;
         }
+        
+        public List<Func<IRequest,MetadataTypesConfig, string>> ProtoOptions { get; set; } = new List<Func<IRequest,MetadataTypesConfig, string>> {
+            ProtoOption.CSharpNamespace,
+            ProtoOption.PhpNamespace,
+        };
 
         private readonly IApplicationBuilder app;
         public GrpcFeature(IApplicationBuilder app)
