@@ -367,7 +367,7 @@ namespace ServiceStack.Caching.Neo4j
         }
     }
 
-    public static class DictionaryExtensions
+    internal static class DictionaryExtensions
     {
         public static bool TryRemoveAll<TKey, TValue>(this IDictionary<TKey, TValue> dict, 
             Func<TValue, bool> predicate)
@@ -381,6 +381,7 @@ namespace ServiceStack.Caching.Neo4j
             return keys.Any();
         }
     }
+
     internal static class DriverExtensions
     {
         public static T ReadTxQuery<T>(this IDriver driver, Func<ITransaction, T> work)
@@ -472,6 +473,11 @@ namespace ServiceStack.Caching.Neo4j
                 WHERE item.Id IN $keys
                 RETURN item";
 
+            public static string GetKeysByPattern => $@"
+                MATCH (item:{Label.CacheEntry})
+                WHERE item.Id LIKE $pattern
+                RETURN item.Id";
+            
             public static string Update => $@"
                 MATCH (item:{Label.CacheEntry} {{Id: $item.Id}})
                 SET item = $item";
@@ -497,6 +503,16 @@ namespace ServiceStack.Caching.Neo4j
                 WHERE item.Id IN $keys
                 DELETE item";
 
+            public static string DeleteByPattern => $@"
+                MATCH (item:{Label.CacheEntry})
+                WHERE item.Id LIKE $pattern
+                DELETE item";
+
+            public static string DeleteByRegex => $@"
+                MATCH (item:{Label.CacheEntry})
+                WHERE item.Id =~ $regex
+                DELETE item";
+
             public static string DeleteExpired => $@"
                 MATCH (item:{Label.CacheEntry})
                 WHERE $now > item.ExpiryDate
@@ -505,7 +521,6 @@ namespace ServiceStack.Caching.Neo4j
             public static string DeleteAll => $@"
                 MATCH (item:{Label.CacheEntry})
                 DELETE item";
-
         }
 
         public bool Exists(ITransaction tx, string key)
@@ -627,24 +642,27 @@ namespace ServiceStack.Caching.Neo4j
             tx.Run(Query.Index);
         }
 
-        public TimeSpan? GetTimeToLive(ITransaction tx, string key)
-        {
-            throw new NotImplementedException();
-        }
-
         public IEnumerable<string> GetKeysByPattern(ITransaction tx, string pattern)
         {
-            throw new NotImplementedException();
+            var parameters = new { pattern };
+
+            var result = tx.Run(Query.GetKeysByPattern, parameters);
+
+            return result.Map<string>();
         }
 
         public void RemoveByPattern(ITransaction tx, string pattern)
         {
-            throw new NotImplementedException();
+            var parameters = new { pattern };
+
+            tx.Run(Query.DeleteByPattern, parameters);
         }
 
         public void RemoveByRegex(ITransaction tx, string regex)
         {
-            throw new NotImplementedException();
+            var parameters = new { regex };
+
+            tx.Run(Query.DeleteByRegex, parameters);
         }
     }
 }
