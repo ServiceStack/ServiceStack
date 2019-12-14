@@ -105,7 +105,7 @@ namespace CheckWebCore
     }
 
     public class AppHost 
-        //: DefaultAppHost<ServiceInterfaceAssembly>, IConfigureApp
+        //: AppHostConstraintsBase<AppHostConstraint>, IConfigureApp
         : AppHostBase, IConfigureApp
     {
         public AppHost() : base("TestLogin", typeof(MyServices).Assembly) { }
