@@ -188,17 +188,16 @@ namespace ServiceStack
             foreach (var entry in ImplicitConventions)
             {
                 var key = entry.Key.Trim('%');
-                var conditioAlias = entry.Value;
-                QueryCondition query;
-                if (!ConditionsAliases.TryGetValue(conditioAlias, out query))
-                    throw new NotSupportedException($"No Condition registered with name '{conditioAlias}'");
+                var conditionAlias = entry.Value;
+                if (!ConditionsAliases.TryGetValue(conditionAlias, out var query))
+                    throw new NotSupportedException($"No Condition registered with name '{conditionAlias}'");
 
                 if (entry.Key.EndsWith("%"))
                 {
                     StartsWithConventions[key] = new QueryDataField
                     {
                         Term = QueryTerm.And,
-                        Condition = conditioAlias,
+                        Condition = conditionAlias,
                         QueryCondition = query,
                         Field = key,
                     };
@@ -208,7 +207,7 @@ namespace ServiceStack
                     EndsWithConventions[key] = new QueryDataField
                     {
                         Term = QueryTerm.And,
-                        Condition = conditioAlias,
+                        Condition = conditionAlias,
                         QueryCondition = query,
                         Field = key,
                     };
