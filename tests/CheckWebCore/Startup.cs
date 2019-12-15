@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Net;
+using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -15,6 +16,7 @@ using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
+using ServiceStack.Logging;
 using ServiceStack.Mvc;
 using ServiceStack.NativeTypes.TypeScript;
 using ServiceStack.Text;
@@ -88,9 +90,23 @@ namespace CheckWebCore
     {
         public void Configure(IApplicationBuilder app)=> "#9".Print();           // #9
     }
-    
 
-    public class AppHost : AppHostBase, IConfigureApp
+
+    public interface IAppHostConstraint{}
+    public class AppHostConstraint : IAppHostConstraint{}
+    public abstract class AppHostConstraintsBase<TServiceInterfaceAssembly> : AppHostBase
+        where TServiceInterfaceAssembly : IAppHostConstraint
+    {
+        protected AppHostConstraintsBase(string serviceName, params Assembly[] assembliesWithServices) 
+        : base(serviceName, assembliesWithServices)
+        {
+            ConsoleLogFactory.Configure();
+        }
+    }
+
+    public class AppHost 
+        //: AppHostConstraintsBase<AppHostConstraint>, IConfigureApp
+        : AppHostBase, IConfigureApp
     {
         public AppHost() : base("TestLogin", typeof(MyServices).Assembly) { }
 

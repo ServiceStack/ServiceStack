@@ -141,6 +141,7 @@ namespace ServiceStack
             {
                 var types = TypeResolver().Where(x =>
                     !typeof(ModularStartup).IsAssignableFrom(x) // exclude self
+                    && !x.IsAbstract
                     && (
                         x.HasInterface(typeof(IStartup)) ||
                         x.HasInterface(typeof(IConfigureServices)) ||

@@ -101,7 +101,7 @@ namespace ServiceStack.Grpc
 
             var addedRpcServices = false;
             //https://github.com/protobuf-net/protobuf-net/blob/master/src/Tools/bcl.proto
-            var proto = GrpcUtils.TypeModel.GetSchema(null /*all types*/, ProtoSyntax.Proto3);
+            var proto = GrpcConfig.TypeModel.GetSchema(null /*all types*/, ProtoSyntax.Proto3);
             foreach (var line in proto.ReadLines())
             {
                 if (line.StartsWith("package ")) // strip
@@ -113,10 +113,20 @@ namespace ServiceStack.Grpc
                 {
                     addedRpcServices = true;
 
-                    var globalNs = Config.GlobalNamespace ?? DefaultNamespace(orderedTypes); 
-                    //package name changes Service Name from /GrpcServices to /package_name.GrpcServices
+                    if (Config.GlobalNamespace == null)
+                        Config.GlobalNamespace = DefaultNamespace(orderedTypes);
+
                     //sb.AppendLine($"package {Config.Package ?? ResolvePackageName(globalNs.Replace(".","_").ToLowercaseUnderscore().Replace("__","_"))};");
-                    sb.AppendLine($"option csharp_namespace = \"{globalNs}\";");
+
+                    foreach (var optionFn in grpc.ProtoOptions)
+                    {
+                        var option = optionFn(request, Config);
+                        if (!string.IsNullOrEmpty(option))
+                        {
+                            sb.AppendLine(option);
+                        }
+                    }
+                    
                     sb.AppendLine();
                     
                     sb.AppendLine($"service {grpc.GrpcServicesType.Name} {{");

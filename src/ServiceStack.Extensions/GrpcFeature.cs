@@ -43,7 +43,7 @@ namespace ServiceStack
     public class GrpcMarshallerFactory : MarshallerFactory
     {
         private static ILog log = LogManager.GetLogger(typeof(GrpcMarshallerFactory));
-        public static readonly GrpcMarshallerFactory Instance = new GrpcMarshallerFactory(GrpcUtils.TypeModel);
+        public static readonly GrpcMarshallerFactory Instance = new GrpcMarshallerFactory(GrpcConfig.TypeModel);
 
         public RuntimeTypeModel TypeModel { get; }
         private GrpcMarshallerFactory(RuntimeTypeModel typeModel) => TypeModel = typeModel;
@@ -124,6 +124,11 @@ namespace ServiceStack
             get => IgnoreResponseHeaders == null;
             set => IgnoreResponseHeaders = null;
         }
+        
+        public List<ProtoOptionDelegate> ProtoOptions { get; set; } = new List<ProtoOptionDelegate> {
+            ProtoOption.CSharpNamespace,
+            ProtoOption.PhpNamespace,
+        };
 
         private readonly IApplicationBuilder app;
         public GrpcFeature(IApplicationBuilder app)
@@ -269,7 +274,7 @@ namespace ServiceStack
             // All DTO Types with inheritance need to be registered in GrpcMarshaller<T> / GrpcUtils.TypeModel
             foreach (var dto in allDtos)
             {
-                GrpcUtils.Register(dto);
+                GrpcConfig.Register(dto);
             }
         }
 
@@ -331,7 +336,7 @@ namespace ServiceStack
                 foreach (var action in genMethods)
                 {
                     var requestType = op.RequestType;
-                    var methodName = GrpcUtils.GetServiceName(action, requestType.Name);
+                    var methodName = GrpcConfig.GetServiceName(action, requestType.Name);
                     
                     var method = typeBuilder.DefineMethod(methodName, MethodAttributes.Public | MethodAttributes.Virtual,
                         CallingConventions.Standard,
@@ -361,7 +366,7 @@ namespace ServiceStack
                 var genericDef = streamService.GetTypeWithGenericTypeDefinitionOf(typeof(IStreamService<,>));
                 var requestType = genericDef.GenericTypeArguments[0];
                 var responseType = genericDef.GenericTypeArguments[1];
-                var methodName = GrpcUtils.GetServerStreamServiceName(requestType.Name);
+                var methodName = GrpcConfig.GetServerStreamServiceName(requestType.Name);
 
                 var method = typeBuilder.DefineMethod(methodName, MethodAttributes.Public | MethodAttributes.Virtual,
                     CallingConventions.Standard,
