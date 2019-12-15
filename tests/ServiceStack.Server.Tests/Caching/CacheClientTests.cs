@@ -94,6 +94,7 @@ namespace ServiceStack.Server.Tests.Caching
         }
     }
 
+    [NUnit.Framework.Ignore("Neo4j dependency")]
     public class Neo4jCacheClientTests : CacheClientTestsBase
     {
         public override ICacheClient CreateClient()
