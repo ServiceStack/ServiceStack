@@ -22,6 +22,8 @@ namespace ServiceStack.Caching.Neo4j
         {
             this.driver = driver;
             repository = new Neo4jCacheRepository();
+
+            InitMappers();
         }
         
         public bool Remove(string key)
@@ -36,8 +38,13 @@ namespace ServiceStack.Caching.Neo4j
 
         public T Get<T>(string key)
         {
-            var cacheItem = driver.ReadTxQuery(tx => repository.GetCacheEntry<TCacheEntry>(tx, key));
-            return cacheItem.Deserialize<T>();
+            var verifiedCacheItem = driver.WriteTxQuery(tx =>
+            {
+                var cacheItem = repository.GetCacheEntry<TCacheEntry>(tx, key);
+                return Verify(tx, cacheItem);
+            });
+
+            return verifiedCacheItem.Deserialize<T>();
         }
 
         public long Increment(string key, uint amount)
@@ -90,13 +97,14 @@ namespace ServiceStack.Caching.Neo4j
         {
             try
             {
-                return driver.WriteTxQuery(tx =>
+                driver.WriteTxQuery(tx =>
                 {
                     repository.Create(tx, CreateEntry(key, value.Serialize()));
-                    return true;
                 });
+                
+                return true;
             }
-            catch (Exception)
+            catch (ClientException)
             {
                 return false;
             }
@@ -104,19 +112,26 @@ namespace ServiceStack.Caching.Neo4j
 
         public bool Set<T>(string key, T value)
         {
-            return driver.WriteTxQuery(tx =>
+            try
             {
-                if (!repository.Exists(tx, key))
+                driver.WriteTxQuery(tx =>
                 {
-                    repository.Create(tx, CreateEntry(key, value.Serialize()));
-                }
-                else
-                {
-                    repository.Update(tx, key, value.Serialize(), DateTime.UtcNow);
-                }
-
+                    if (!repository.Exists(tx, key))
+                    {
+                        repository.Create(tx, CreateEntry(key, value.Serialize()));
+                    }
+                    else
+                    {
+                        repository.Update(tx, key, value.Serialize(), DateTime.UtcNow);
+                    }
+                });
+                
                 return true;
-            });
+            }
+            catch (ClientException)
+            {
+                return false;
+            }
         }
 
         public bool Replace<T>(string key, T value)
@@ -135,13 +150,14 @@ namespace ServiceStack.Caching.Neo4j
         {
             try
             {
-                return driver.WriteTxQuery(tx =>
+                driver.WriteTxQuery(tx =>
                 {
-                    repository.Create(tx, CreateEntry(key, value.Serialize(), expiresAt));
-                    return true;
+                    repository.Create(tx, CreateEntry(key, value.Serialize(), DateTime.UtcNow, expiresAt));
                 });
+                
+                return true;
             }
-            catch (Exception)
+            catch (ClientException)
             {
                 return false;
             }
@@ -149,19 +165,26 @@ namespace ServiceStack.Caching.Neo4j
 
         public bool Set<T>(string key, T value, DateTime expiresAt)
         {
-            return driver.WriteTxQuery(tx =>
+            try
             {
-                if (!repository.Exists(tx, key))
+                driver.WriteTxQuery(tx =>
                 {
-                    repository.Create(tx, CreateEntry(key, value.Serialize(), expiresAt));
-                }
-                else
-                {
-                    repository.Update(tx, key, value.Serialize(), DateTime.UtcNow);
-                }
-
+                    if (!repository.Exists(tx, key))
+                    {
+                        repository.Create(tx, CreateEntry(key, value.Serialize(), DateTime.UtcNow, expiresAt));
+                    }
+                    else
+                    {
+                        repository.Update(tx, key, value.Serialize(), DateTime.UtcNow, expiresAt);
+                    }
+                });
+                
                 return true;
-            });
+            }
+            catch (ClientException)
+            {
+                return false;
+            }
         }
 
         public bool Replace<T>(string key, T value, DateTime expiresAt)
@@ -180,13 +203,15 @@ namespace ServiceStack.Caching.Neo4j
         {
             try
             {
-                return driver.WriteTxQuery(tx =>
+                var utcNow = DateTime.UtcNow;
+                driver.WriteTxQuery(tx =>
                 {
-                    repository.Create(tx, CreateEntry(key, value.Serialize(), DateTime.UtcNow.Add(expiresIn)));
-                    return true;
+                    repository.Create(tx, CreateEntry(key, value.Serialize(), utcNow, utcNow.Add(expiresIn)));
                 });
+                
+                return true;
             }
-            catch (Exception)
+            catch (ClientException)
             {
                 return false;
             }
@@ -194,20 +219,28 @@ namespace ServiceStack.Caching.Neo4j
 
         public bool Set<T>(string key, T value, TimeSpan expiresIn)
         {
-            return driver.WriteTxQuery(tx =>
+            try
             {
-                var expiresAt = DateTime.UtcNow.Add(expiresIn);
-                if (!repository.Exists(tx, key))
+                driver.WriteTxQuery(tx =>
                 {
-                    repository.Create(tx, CreateEntry(key, value.Serialize(), expiresAt));
-                }
-                else
-                {
-                    repository.Update(tx, key, value.Serialize(), DateTime.UtcNow, expiresAt);
-                }
+                    var utcNow = DateTime.UtcNow;
+                    var expiresAt = utcNow.Add(expiresIn);
+                    if (!repository.Exists(tx, key))
+                    {
+                        repository.Create(tx, CreateEntry(key, value.Serialize(), utcNow, expiresAt));
+                    }
+                    else
+                    {
+                        repository.Update(tx, key, value.Serialize(), utcNow, expiresAt);
+                    }
+                });
 
                 return true;
-            });
+            }
+            catch (ClientException)
+            {
+                return false;
+            }
         }
 
         public bool Replace<T>(string key, T value, TimeSpan expiresIn)
@@ -216,7 +249,8 @@ namespace ServiceStack.Caching.Neo4j
             {
                 if (!repository.Exists(tx, key)) return false;
                 
-                repository.Update(tx, key, value.Serialize(), DateTime.UtcNow, DateTime.UtcNow.Add(expiresIn));
+                var utcNow = DateTime.UtcNow;
+                repository.Update(tx, key, value.Serialize(), utcNow, utcNow.Add(expiresIn));
 
                 return true;
             });
@@ -225,26 +259,28 @@ namespace ServiceStack.Caching.Neo4j
         public void FlushAll()
         {
             driver.WriteTxQuery(tx => repository.FlushAll(tx));
-       }
+        }
 
         public IDictionary<string, T> GetAll<T>(IEnumerable<string> keys)
         {
-            return driver.WriteTxQuery(tx =>
-            {
-                var keyList = keys.ToList();
-                var cacheEntries = repository.GetCacheEntries<TCacheEntry>(tx, keyList);
-                var verifiedCacheEntries = Verify(tx, cacheEntries);
-                
-                var map = new Dictionary<string, T>();
-                verifiedCacheEntries.Each(c => map[c.Key] = c.Value.Deserialize<T>());
+            var keyList = keys.ToList();
 
-                foreach (var key in keyList.Where(key => !map.ContainsKey(key)))
-                {
-                    map[key] = default;
-                }
-                
-                return map;
+            var verifiedCacheEntries = driver.WriteTxQuery(tx =>
+            {
+                var cacheEntries = repository.GetCacheEntries<TCacheEntry>(tx, keyList);
+                return Verify(tx, cacheEntries);
             });
+                
+            var map = new Dictionary<string, T>();
+            verifiedCacheEntries.Each(c => map[c.Key] = c.Value.Deserialize<T>());
+
+            foreach (var key in keyList.Where(key => !map.ContainsKey(key)))
+            {
+                map[key] = default;
+            }
+                
+            return map;
+
         }
 
         public void SetAll<T>(IDictionary<string, T> values)
@@ -296,14 +332,14 @@ namespace ServiceStack.Caching.Neo4j
             DateTime? created = null, 
             DateTime? expires = null)
         {
-            var createdDate = created ?? DateTime.UtcNow;
+            var utcNow = created ?? DateTime.UtcNow;
             return new TCacheEntry
             {
                 Id = id,
                 Data = data,
                 ExpiryDate = expires,
-                CreatedDate = createdDate,
-                ModifiedDate = createdDate,
+                CreatedDate = utcNow,
+                ModifiedDate = utcNow,
             };
         }
 
@@ -332,337 +368,11 @@ namespace ServiceStack.Caching.Neo4j
         }
 
         public void Dispose() { }
-    }
-    
-    public interface ICacheEntry
-    {
-        string Id { get; set; }
-        string Data { get; set; }
-        DateTime? ExpiryDate { get; set; }
-        DateTime CreatedDate { get; set; }
-        DateTime ModifiedDate { get; set; }
-    }
-
-    public class CacheEntry : ICacheEntry
-    {
-        public string Id { get; set; }
-        public string Data { get; set; }
-        public DateTime? ExpiryDate { get; set; }
-        public DateTime CreatedDate { get; set; }
-        public DateTime ModifiedDate { get; set; }
-    }
-
-    internal static class CacheValueExtensions
-    {
-        public static string Serialize<T>(this T value)
-        {
-            return value.ToJsv();
-        }
-
-        public static T Deserialize<T>(this ICacheEntry cacheEntry)
-        {
-            return cacheEntry?.Data == null 
-                ? default 
-                : cacheEntry.Data.FromJsv<T>();
-        }
-    }
-
-    internal static class DictionaryExtensions
-    {
-        public static bool TryRemoveAll<TKey, TValue>(this IDictionary<TKey, TValue> dict, 
-            Func<TValue, bool> predicate)
-        {
-            var keys = dict.Keys.Where(k => predicate(dict[k])).ToList();
-            foreach (var key in keys)
-            {
-                dict.Remove(key);
-            }
-
-            return keys.Any();
-        }
-    }
-
-    internal static class DriverExtensions
-    {
-        public static T ReadTxQuery<T>(this IDriver driver, Func<ITransaction, T> work)
-        {
-            using (var session = driver.Session())
-            {
-                return session.ReadTransaction(work);
-            }
-        }
-
-        public static void WriteTxQuery(this IDriver driver, Action<ITransaction> txWorkFn)
-        {
-            using (var session = driver.Session())
-            {
-                session.WriteTransaction(txWorkFn);
-            }
-        }
         
-        public static T WriteTxQuery<T>(this IDriver driver, Func<ITransaction, T> txWorkFn)
+        public static void InitMappers()
         {
-            using (var session = driver.Session())
-            {
-                return session.WriteTransaction(txWorkFn);
-            }
-        }
-    }
-    
-    internal static class RecordExtensions
-    {
-        public static IEnumerable<TReturn> Map<TReturn>(
-            this IEnumerable<IRecord> records)
-        {
-            return records.Select(record => ((IEntity) record[0]).Map<TReturn>());
-        }
-
-        public static Dictionary<string, TReturn> MapDictionary<TReturn>(
-            this IEnumerable<IRecord> records)
-        {
-            return records.ToDictionary(
-                record => record[0].As<string>(), 
-                record => ((IEntity) record[1]).Map<TReturn>());
-        }
-
-        public static TReturn Map<TReturn>(this IEntity entity)
-        {
-            return entity.Properties.FromObjectDictionary<TReturn>();
-        }
-
-        public static bool Truthy(this IEnumerable<IRecord> records)
-        {
-            var record = records.SingleOrDefault();
-            return record != null && record[0].As<bool>();
-        }
-    }
-    
-    // ReSharper disable once InconsistentNaming
-    internal class Neo4jCacheRepository
-    {
-        private static class Label
-        {
-            public const string CacheEntry = nameof(CacheEntry);    
-        }
-
-        private static class Query
-        {
-            public static string Constraint => $@"
-                CREATE CONSTRAINT ON (item:{Label.CacheEntry}) ASSERT item.Id IS UNIQUE";
-
-            public static string Index => $@"
-                CREATE INDEX ON :{Label.CacheEntry}(ExpiryDate)";
-
-            public static string Exists => $@"
-                MATCH (item:{Label.CacheEntry} {{Id: $key}})
-                RETURN item IS NOT NULL";
-
-            public static string Create => $@"
-                CREATE (item:{Label.CacheEntry} {{ $item }})";
-
-            public static string CreateAll => $@"
-                UNWIND $items AS item
-                CREATE (:{Label.CacheEntry} {{ item }})";
-
-            public static string GetByKey => $@"
-                MATCH (item:{Label.CacheEntry} {{Id: $key}})
-                RETURN item";
-            
-            public static string GetByKeys => $@"
-                MATCH (item:{Label.CacheEntry})
-                WHERE item.Id IN $keys
-                RETURN item";
-
-            public static string GetKeysByPattern => $@"
-                MATCH (item:{Label.CacheEntry})
-                WHERE item.Id LIKE $pattern
-                RETURN item.Id";
-            
-            public static string Update => $@"
-                MATCH (item:{Label.CacheEntry} {{Id: $item.Id}})
-                SET item = $item";
-
-            public static string UpdateData => $@"
-                MATCH (item:{Label.CacheEntry} {{Id: $key}})
-                SET item.Data = $data
-                SET item.ModifiedDate = $modifiedDate";
-
-            public static string UpdateDataWithExpiry => $@"
-                MATCH (item:{Label.CacheEntry} {{Id: $key}})
-                SET item.Data = $data
-                SET item.ModifiedDate = $modifiedDate
-                SET item.ModifiedDate = $modifiedDate";
-
-            public static string DeleteByKey => $@"
-                MATCH (item:{Label.CacheEntry} {{Id: $key}})
-                DELETE item
-                RETURN item IS NOT NULL";
-
-            public static string DeleteByKeys => $@"
-                MATCH (item:{Label.CacheEntry})
-                WHERE item.Id IN $keys
-                DELETE item";
-
-            public static string DeleteByPattern => $@"
-                MATCH (item:{Label.CacheEntry})
-                WHERE item.Id LIKE $pattern
-                DELETE item";
-
-            public static string DeleteByRegex => $@"
-                MATCH (item:{Label.CacheEntry})
-                WHERE item.Id =~ $regex
-                DELETE item";
-
-            public static string DeleteExpired => $@"
-                MATCH (item:{Label.CacheEntry})
-                WHERE $now > item.ExpiryDate
-                DELETE item";
-            
-            public static string DeleteAll => $@"
-                MATCH (item:{Label.CacheEntry})
-                DELETE item";
-        }
-
-        public bool Exists(ITransaction tx, string key)
-        {
-            var parameters = new { key };
-
-            var result = tx.Run(Query.Exists, parameters);
-            return result.Truthy();
-        }
-        
-        public void Create<TCacheEntry>(ITransaction tx, TCacheEntry entry)
-            where TCacheEntry : ICacheEntry, new()
-        {
-            var parameters = new
-            {
-                item = entry.ConvertTo<Dictionary<string, object>>()
-            };
-
-            tx.Run(Query.Create, parameters);
-        }
-
-        public void Create<TCacheEntry>(ITransaction tx, IEnumerable<TCacheEntry> entries)
-            where TCacheEntry : ICacheEntry, new()
-        {
-            var parameters = new
-            {
-                items = entries.Select(p => p.ConvertTo<Dictionary<string, object>>())
-            };
-
-            tx.Run(Query.CreateAll, parameters);
-        }
-
-        public void Update<TCacheEntry>(ITransaction tx, TCacheEntry entry)
-            where TCacheEntry : ICacheEntry, new()
-        {
-            var parameters = new
-            {
-                item = entry.ConvertTo<Dictionary<string, object>>()
-            };
-
-            tx.Run(Query.Update, parameters);
-        }
-
-        public void Update(ITransaction tx, string key, string data, DateTime modifiedDate)
-        {
-            var parameters = new
-            {
-                key,
-                data,
-                modifiedDate = new ZonedDateTime(modifiedDate),
-            };
-
-            tx.Run(Query.UpdateData, parameters);
-        }
-
-        public void Update(ITransaction tx, string key, string data, DateTime modifiedDate, DateTime expiresAt)
-        {
-            var parameters = new
-            {
-                key,
-                data,
-                modifiedDate = new ZonedDateTime(modifiedDate),
-                expiresAt = new ZonedDateTime(expiresAt)
-            };
-
-            tx.Run(Query.UpdateDataWithExpiry, parameters);
-        }
-
-        public bool Remove(ITransaction tx, string key)
-        {
-            var parameters = new { key };
-
-            var result = tx.Run(Query.DeleteByKey, parameters);
-            return result.Truthy();
-        }
-
-        public void RemoveAll(ITransaction tx, IEnumerable<string> keys)
-        {
-            var parameters = new { keys };
-
-            tx.Run(Query.DeleteByKeys, parameters);
-        }
-
-        public void FlushAll(ITransaction tx)
-        {
-            tx.Run(Query.DeleteAll);
-        }
-
-        public void RemoveExpired(ITransaction tx, DateTime expiredAt)
-        {
-            var parameters = new {now = new ZonedDateTime(expiredAt)};
-
-            tx.Run(Query.DeleteExpired, parameters);
-        }
-
-        public TCacheEntry GetCacheEntry<TCacheEntry>(ITransaction tx, string key)
-            where TCacheEntry : ICacheEntry, new()
-        {
-            var parameters = new { key };
-
-            var result = tx.Run(Query.GetByKey, parameters);
-            
-            return result.Map<TCacheEntry>().SingleOrDefault();
-        }
-
-        public Dictionary<string, TCacheEntry> GetCacheEntries<TCacheEntry>(ITransaction tx, IEnumerable<string> keys)
-            where TCacheEntry : ICacheEntry, new()
-        {
-            var parameters = new { keys };
-
-            var result = tx.Run(Query.GetByKeys, parameters);
-            
-            return result.MapDictionary<TCacheEntry>();
-        }
-
-        public void InitSchema(ITransaction tx)
-        {
-            tx.Run(Query.Constraint);
-            tx.Run(Query.Index);
-        }
-
-        public IEnumerable<string> GetKeysByPattern(ITransaction tx, string pattern)
-        {
-            var parameters = new { pattern };
-
-            var result = tx.Run(Query.GetKeysByPattern, parameters);
-
-            return result.Map<string>();
-        }
-
-        public void RemoveByPattern(ITransaction tx, string pattern)
-        {
-            var parameters = new { pattern };
-
-            tx.Run(Query.DeleteByPattern, parameters);
-        }
-
-        public void RemoveByRegex(ITransaction tx, string regex)
-        {
-            var parameters = new { regex };
-
-            tx.Run(Query.DeleteByRegex, parameters);
+            AutoMapping.RegisterConverter<ZonedDateTime, DateTime>(zonedDateTime => zonedDateTime.ToDateTimeOffset().DateTime);
+            AutoMapping.RegisterConverter<ZonedDateTime, DateTime?>(zonedDateTime => zonedDateTime.ToDateTimeOffset().DateTime);
         }
     }
 }

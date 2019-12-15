@@ -146,7 +146,7 @@ namespace ServiceStack.Server.Tests.Shared
         }
 
         [SetUp]
-        public void SetUp()
+        public virtual void SetUp()
         {
             Cache.FlushAll();
         }

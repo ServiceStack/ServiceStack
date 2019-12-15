@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Threading;
+using Neo4j.Driver;
+using Neo4j.Driver.V1;
 using NUnit.Framework;
 using ServiceStack.Caching;
+using ServiceStack.Caching.Neo4j;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.Redis;
 using ServiceStack.Server.Tests.Shared;
+using CacheEntry = ServiceStack.Caching.CacheEntry;
+using ICacheEntry = ServiceStack.Caching.ICacheEntry;
 
 namespace ServiceStack.Server.Tests.Caching
 {
@@ -86,6 +91,24 @@ namespace ServiceStack.Server.Tests.Caching
         public override ICacheClient CreateClient()
         {
             return new RedisManagerPool("127.0.0.1").GetCacheClient();
+        }
+    }
+
+    public class Neo4jCacheClientTests : CacheClientTestsBase
+    {
+        public override ICacheClient CreateClient()
+        {
+            var cache = new Neo4jCacheClient(GraphDatabase.Driver("bolt://localhost:7687"));
+            cache.InitSchema();
+
+            return cache;
+        }
+
+        public override void SetUp()
+        {
+            base.SetUp();
+            
+            Neo4jCacheClient.InitMappers();
         }
     }
 
