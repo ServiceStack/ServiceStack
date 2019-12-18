@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using ProtoBuf.Meta;
 using ServiceStack.DataAnnotations;
@@ -38,6 +40,25 @@ namespace ServiceStack.Grpc
             Config = config;
             feature = HostContext.AssertPlugin<NativeTypesFeature>();
             grpc = HostContext.AssertPlugin<GrpcFeature>();
+        }
+
+        static MethodInfo getSchemaMethod;
+        static readonly ConcurrentDictionary<Type, string> SchemaTypeNamesCache = new ConcurrentDictionary<Type, string>();
+
+        public string GetSchemaTypeName(Type type)
+        {
+            if (getSchemaMethod == null)
+            {
+                getSchemaMethod = typeof(MetaType).GetMethod("GetSchemaTypeName",
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            }
+
+            return SchemaTypeNamesCache.GetOrAdd(type, key => {
+                if (getSchemaMethod != null)
+                    return (string) getSchemaMethod.Invoke(GrpcConfig.TypeModel[type], null);
+
+                return type.Name;
+            });
         }
 
         public string GetCode(MetadataTypes metadata, IRequest request)
@@ -85,11 +106,11 @@ namespace ServiceStack.Grpc
                     ServiceMetadata.AddReferencedTypes(types, resType);
                     if (isTask)
                     {
-                        services.Add((reqType, $"rpc {method.Name}({reqType.Name}) returns ({resType.Name}) {{}}"));
+                        services.Add((reqType, $"rpc {method.Name}({GetSchemaTypeName(reqType)}) returns ({GetSchemaTypeName(resType)}) {{}}"));
                     }
                     else
                     {
-                        services.Add((reqType, $"rpc {method.Name}({reqType.Name}) returns (stream {resType.Name}) {{}}"));
+                        services.Add((reqType, $"rpc {method.Name}({GetSchemaTypeName(reqType)}) returns (stream {GetSchemaTypeName(resType)}) {{}}"));
                     }
                 }
             }
