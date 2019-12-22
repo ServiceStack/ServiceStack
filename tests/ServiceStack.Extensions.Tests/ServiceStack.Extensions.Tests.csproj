@@ -16,6 +16,7 @@
         <PackageReference Include="Grpc.Net.Client" Version="2.25.0" />
         <PackageReference Include="Grpc.Core.Api" Version="2.25.0" />
         <PackageReference Include="Grpc.Core" Version="2.25.0" />
+        <PackageReference Include="Google.Protobuf" Version="3.11.1" />
 
         <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
@@ -25,6 +26,10 @@
         <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.Extensions\ServiceStack.Extensions.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.GrpcClient\ServiceStack.GrpcClient.csproj" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <Folder Include="Protoc\protobuf-net" />
     </ItemGroup>
 
 </Project>

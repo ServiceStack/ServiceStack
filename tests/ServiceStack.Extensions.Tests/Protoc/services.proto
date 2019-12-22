@@ -1,0 +1,588 @@
+/* Options:
+Date: 2019-12-18 00:36:51
+Version: 5.71
+Tip: To override a DTO option, remove "//" prefix before updating
+BaseUrl: http://localhost:20000
+
+//GlobalNamespace: 
+//AddDescriptionAsComments: True
+*/
+
+syntax = "proto3";
+import "protobuf-net/bcl.proto"; // schema for protobuf-net's handling of core .NET types
+
+option csharp_namespace = "ServiceStack.Extensions.Tests.Protoc";
+option php_namespace = "ServiceStack.Extensions.Tests.Protoc";
+
+service GrpcServices {
+
+    rpc GetAddHeader(AddHeader) returns (EmptyResponse) {}
+
+    rpc GetAnyHello(AnyHello) returns (HelloResponse) {}
+
+    rpc PostAnyHello(AnyHello) returns (HelloResponse) {}
+
+    rpc PutAnyHello(AnyHello) returns (HelloResponse) {}
+
+    rpc DeleteAnyHello(AnyHello) returns (HelloResponse) {}
+
+    rpc PatchAnyHello(AnyHello) returns (HelloResponse) {}
+
+    rpc PostAssignRoles(AssignRoles) returns (AssignRolesResponse) {}
+
+    rpc OptionsAuthenticate(Authenticate) returns (AuthenticateResponse) {}
+
+    rpc GetAuthenticate(Authenticate) returns (AuthenticateResponse) {}
+
+    rpc PostAuthenticate(Authenticate) returns (AuthenticateResponse) {}
+
+    rpc DeleteAuthenticate(Authenticate) returns (AuthenticateResponse) {}
+
+    rpc GetChangeConnectionInfo(ChangeConnectionInfo) returns (ChangeDbResponse) {}
+
+    rpc GetChangeDb(ChangeDb) returns (ChangeDbResponse) {}
+
+    rpc PostConvertSessionToToken(ConvertSessionToToken) returns (ConvertSessionToTokenResponse) {}
+
+    rpc PostCreateTodo(CreateTodo) returns (CreateTodoResponse) {}
+
+    rpc CallDeleteTodo(DeleteTodo) returns (EmptyResponse) {}
+
+    rpc CallDeleteTodos(DeleteTodos) returns (EmptyResponse) {}
+
+    rpc PostGetAccessToken(GetAccessToken) returns (GetAccessTokenResponse) {}
+
+    rpc CallGetApiKeys(GetApiKeys) returns (GetApiKeysResponse) {}
+
+    rpc CallGetHello(GetHello) returns (HelloResponse) {}
+
+    rpc CallGetTodo(GetTodo) returns (GetTodoResponse) {}
+
+    rpc CallGetTodos(GetTodos) returns (GetTodosResponse) {}
+
+    rpc GetHelloJwt(HelloJwt) returns (HelloJwtResponse) {}
+
+    rpc PostHelloJwt(HelloJwt) returns (HelloJwtResponse) {}
+
+    rpc PutHelloJwt(HelloJwt) returns (HelloJwtResponse) {}
+
+    rpc DeleteHelloJwt(HelloJwt) returns (HelloJwtResponse) {}
+
+    rpc PatchHelloJwt(HelloJwt) returns (HelloJwtResponse) {}
+
+    rpc GetIncr(Incr) returns (EmptyResponse) {}
+
+    rpc PostIncr(Incr) returns (EmptyResponse) {}
+
+    rpc PutIncr(Incr) returns (EmptyResponse) {}
+
+    rpc DeleteIncr(Incr) returns (EmptyResponse) {}
+
+    rpc PatchIncr(Incr) returns (EmptyResponse) {}
+
+    rpc PostMultiply(Multiply) returns (MultiplyResponse) {}
+
+    rpc CallPostChatToChannel(PostChatToChannel) returns (ChatMessage) {}
+
+    rpc GetQueryCaseInsensitiveOrderBy(QueryCaseInsensitiveOrderBy) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryChangeConnectionInfo(QueryChangeConnectionInfo) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryCustomRockstarsReferences(QueryCustomRockstarsReferences) returns (QueryResponse_RockstarReference) {}
+
+    rpc GetQueryOverridedCustomRockstars(QueryOverridedCustomRockstars) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetQueryOverridedRockstars(QueryOverridedRockstars) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryRockstarAlbumsCustomLeftJoin(QueryRockstarAlbumsCustomLeftJoin) returns (QueryResponse_CustomRockstar) {}
+
+    rpc PostRegenerateApiKeys(RegenerateApiKeys) returns (RegenerateApiKeysResponse) {}
+
+    rpc PutRegister(Register) returns (RegisterResponse) {}
+
+    rpc PostRegister(Register) returns (RegisterResponse) {}
+
+    rpc GetRequiresAuth(RequiresAuth) returns (RequiresAuth) {}
+
+    rpc PostRequiresAuth(RequiresAuth) returns (RequiresAuth) {}
+
+    rpc PutRequiresAuth(RequiresAuth) returns (RequiresAuth) {}
+
+    rpc DeleteRequiresAuth(RequiresAuth) returns (RequiresAuth) {}
+
+    rpc PatchRequiresAuth(RequiresAuth) returns (RequiresAuth) {}
+
+    rpc PostResetTodos(ResetTodos) returns (EmptyResponse) {}
+
+    rpc PostSecured(Secured) returns (SecuredResponse) {}
+
+    rpc ServerStreamFiles(StreamFiles) returns (stream FileContent) {}
+
+    rpc GetStreamMovies(StreamMovies) returns (QueryResponse_Movie) {}
+
+    rpc ServerStreamServerEvents(StreamServerEvents) returns (stream StreamServerEventsResponse) {}
+
+    rpc GetThrow(Throw) returns (HelloResponse) {}
+
+    rpc GetThrowCustom(ThrowCustom) returns (ThrowCustomResponse) {}
+
+    rpc GetThrowVoid(ThrowVoid) returns (EmptyResponse) {}
+
+    rpc PostTriggerValidators(TriggerValidators) returns (EmptyResponse) {}
+
+    rpc PostUnAssignRoles(UnAssignRoles) returns (UnAssignRolesResponse) {}
+
+    rpc PutUpdateTodo(UpdateTodo) returns (EmptyResponse) {}
+}
+
+message AddHeader {
+   string Name = 1;
+   string Value = 2;
+}
+message AnyHello {
+   string Name = 1;
+}
+message AssignRoles {
+   string UserName = 1;
+   repeated string Permissions = 2;
+   repeated string Roles = 3;
+   map<string,string> Meta = 4;
+}
+message AssignRolesResponse {
+   repeated string AllRoles = 1;
+   repeated string AllPermissions = 2;
+   map<string,string> Meta = 3;
+   ResponseStatus ResponseStatus = 4;
+}
+message Authenticate {
+   string provider = 1;
+   string State = 2;
+   string oauth_token = 3;
+   string oauth_verifier = 4;
+   string UserName = 5;
+   string Password = 6;
+   bool RememberMe = 7;
+   string Continue = 8;
+   string ErrorView = 9;
+   string nonce = 10;
+   string uri = 11;
+   string response = 12;
+   string qop = 13;
+   string nc = 14;
+   string cnonce = 15;
+   bool UseTokenCookie = 16;
+   string AccessToken = 17;
+   string AccessTokenSecret = 18;
+   string scope = 19;
+   map<string,string> Meta = 20;
+}
+message AuthenticateResponse {
+   string UserId = 1;
+   string SessionId = 2;
+   string UserName = 3;
+   string DisplayName = 4;
+   string ReferrerUrl = 5;
+   string BearerToken = 6;
+   string RefreshToken = 7;
+   string ProfileUrl = 8;
+   repeated string Roles = 9;
+   repeated string Permissions = 10;
+   ResponseStatus ResponseStatus = 11;
+   map<string,string> Meta = 12;
+}
+message ChangeConnectionInfo {
+}
+message ChangeDb {
+   string NamedConnection = 1;
+   string ConnectionString = 2;
+   string ProviderName = 3;
+}
+message ChangeDbResponse {
+   repeated Rockstar Results = 1;
+}
+message ChatMessage {
+   int64 Id = 1;
+   string Channel = 2;
+   string FromUserId = 3;
+   string FromName = 4;
+   string DisplayName = 5;
+   string Message = 6;
+   string UserAuthId = 7;
+   bool Private = 8;
+}
+message ConvertSessionToToken {
+   bool PreserveSession = 1;
+   map<string,string> Meta = 2;
+}
+message ConvertSessionToTokenResponse {
+   map<string,string> Meta = 1;
+   string AccessToken = 2;
+   string RefreshToken = 3;
+   ResponseStatus ResponseStatus = 4;
+}
+message CreateTodo {
+   string Title = 1;
+   int32 Order = 2;
+}
+message CreateTodoResponse {
+   Todo Result = 1;
+   ResponseStatus ResponseStatus = 2;
+}
+message CustomRockstar {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   string RockstarAlbumName = 4;
+   string RockstarGenreName = 5;
+}
+message DeleteTodo {
+   int64 Id = 1;
+}
+message DeleteTodos {
+   repeated int64 Ids = 1 [packed = false];
+}
+message EmptyResponse {
+   ResponseStatus ResponseStatus = 1;
+}
+message FileContent {
+   string Name = 1;
+   string Type = 2;
+   int32 Length = 3;
+   bytes Body = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message GetAccessToken {
+   string RefreshToken = 1;
+   bool UseTokenCookie = 2;
+   map<string,string> Meta = 3;
+}
+message GetAccessTokenResponse {
+   string AccessToken = 1;
+   map<string,string> Meta = 2;
+   ResponseStatus ResponseStatus = 3;
+}
+message GetApiKeys {
+   string Environment = 1;
+   map<string,string> Meta = 2;
+}
+message GetApiKeysResponse {
+   repeated UserApiKey Results = 1;
+   map<string,string> Meta = 2;
+   ResponseStatus ResponseStatus = 3;
+}
+message GetHello {
+   string Name = 1;
+}
+message GetTodo {
+   int64 Id = 1;
+}
+message GetTodoResponse {
+   Todo Result = 1;
+   ResponseStatus ResponseStatus = 2;
+}
+message GetTodos {
+}
+message GetTodosResponse {
+   repeated Todo Results = 1;
+   ResponseStatus ResponseStatus = 2;
+}
+message HelloJwt {
+   string Name = 1;
+   string BearerToken = 2;
+}
+message HelloJwtResponse {
+   string Result = 1;
+   ResponseStatus ResponseStatus = 2;
+}
+message HelloResponse {
+   string Result = 1;
+   ResponseStatus ResponseStatus = 2;
+}
+message Incr {
+   int32 Amount = 1;
+}
+enum LivingStatus {
+   Alive = 0;
+   Dead = 1;
+}
+message Movie {
+   int32 Id = 1;
+   string ImdbId = 2;
+   string Title = 3;
+   string Rating = 4;
+   .bcl.Decimal Score = 5;
+   string Director = 6;
+   .bcl.DateTime ReleaseDate = 7;
+   string TagLine = 8;
+   repeated string Genres = 9;
+}
+message Multiply {
+   int32 X = 1;
+   int32 Y = 2;
+}
+message MultiplyResponse {
+   int32 Result = 1;
+}
+message PostChatToChannel {
+   string From = 1;
+   string ToUserId = 2;
+   string Channel = 3;
+   string Message = 4;
+   string Selector = 5;
+}
+message QueryBase {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   oneof subtype {
+      QueryDb_Rockstar_CustomRockstar QueryDb_Rockstar_CustomRockstar = 1595516;
+      QueryDb_Movie QueryDb_Movie = 133134611;
+      QueryDb_RockstarReference QueryDb_RockstarReference = 139856298;
+      QueryDb_Rockstar QueryDb_Rockstar = 447773769;
+   }
+}
+message QueryCaseInsensitiveOrderBy {
+   int32 Age = 1;
+}
+message QueryChangeConnectionInfo {
+}
+message QueryCustomRockstarsReferences {
+   int32 Age = 1;
+}
+message QueryDb_Movie {
+   oneof subtype {
+      StreamMovies StreamMovies = 254558360;
+   }
+}
+message QueryDb_Rockstar {
+   oneof subtype {
+      QueryChangeConnectionInfo QueryChangeConnectionInfo = 48758375;
+      QueryOverridedRockstars QueryOverridedRockstars = 120014899;
+      QueryCaseInsensitiveOrderBy QueryCaseInsensitiveOrderBy = 425975099;
+   }
+}
+message QueryDb_RockstarReference {
+   oneof subtype {
+      QueryCustomRockstarsReferences QueryCustomRockstarsReferences = 376893524;
+   }
+}
+message QueryDb_Rockstar_CustomRockstar {
+   oneof subtype {
+      QueryRockstarAlbumsCustomLeftJoin QueryRockstarAlbumsCustomLeftJoin = 396185863;
+      QueryOverridedCustomRockstars QueryOverridedCustomRockstars = 442785347;
+   }
+}
+message QueryOverridedCustomRockstars {
+   int32 Age = 1;
+}
+message QueryOverridedRockstars {
+   int32 Age = 1;
+}
+message QueryResponse_CustomRockstar {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated CustomRockstar Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_Movie {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated Movie Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_Rockstar {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated Rockstar Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_RockstarReference {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated RockstarReference Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryRockstarAlbumsCustomLeftJoin {
+   int32 Age = 1;
+   string AlbumName = 2;
+   int32 IdNotEqualTo = 3;
+}
+message RegenerateApiKeys {
+   string Environment = 1;
+   map<string,string> Meta = 2;
+}
+message RegenerateApiKeysResponse {
+   repeated UserApiKey Results = 1;
+   map<string,string> Meta = 2;
+   ResponseStatus ResponseStatus = 3;
+}
+message Register {
+   string UserName = 1;
+   string FirstName = 2;
+   string LastName = 3;
+   string DisplayName = 4;
+   string Email = 5;
+   string Password = 6;
+   string ConfirmPassword = 7;
+   bool AutoLogin = 8;
+   string Continue = 9;
+   string ErrorView = 10;
+   map<string,string> Meta = 11;
+}
+message RegisterResponse {
+   string UserId = 1;
+   string SessionId = 2;
+   string UserName = 3;
+   string ReferrerUrl = 4;
+   string BearerToken = 5;
+   string RefreshToken = 6;
+   ResponseStatus ResponseStatus = 7;
+   map<string,string> Meta = 8;
+}
+message RequiresAuth {
+   string Name = 1;
+   string BearerToken = 2;
+}
+message ResetTodos {
+}
+message ResponseError {
+   string ErrorCode = 1;
+   string FieldName = 2;
+   string Message = 3;
+   map<string,string> Meta = 4;
+}
+message ResponseStatus {
+   string ErrorCode = 1;
+   string Message = 2;
+   string StackTrace = 3;
+   repeated ResponseError Errors = 4;
+   map<string,string> Meta = 5;
+}
+message Rockstar {
+   int32 Id = 1;
+   string FirstName = 2;
+   string LastName = 3;
+   int32 Age = 4;
+   .bcl.DateTime DateOfBirth = 5;
+   .bcl.DateTime DateDied = 6;
+   LivingStatus LivingStatus = 7;
+}
+message RockstarAlbum {
+   int32 Id = 1;
+   int32 RockstarId = 2;
+   string Name = 3;
+   string Genre = 4;
+}
+message RockstarReference {
+   int32 Id = 1;
+   string FirstName = 2;
+   string LastName = 3;
+   int32 Age = 4;
+   repeated RockstarAlbum Albums = 5;
+}
+message Secured {
+   string Name = 1;
+}
+message SecuredResponse {
+   string Result = 1;
+   ResponseStatus ResponseStatus = 2;
+}
+message StreamFiles {
+   repeated string Paths = 1;
+}
+message StreamMovies {
+   repeated string Ratings = 1;
+}
+message StreamServerEvents {
+   repeated string Channels = 1;
+}
+message StreamServerEventsResponse {
+   int64 EventId = 1;
+   string Channel = 2;
+   string Selector = 4;
+   string Json = 5;
+   string Op = 6;
+   string Target = 7;
+   string CssSelector = 8;
+   map<string,string> Meta = 9;
+   string UserId = 10;
+   string DisplayName = 11;
+   string ProfileUrl = 12;
+   bool IsAuthenticated = 13;
+   repeated string Channels = 14;
+   int64 CreatedAt = 15;
+   string Id = 21;
+   string UnRegisterUrl = 22;
+   string UpdateSubscriberUrl = 23;
+   string HeartbeatUrl = 24;
+   int64 HeartbeatIntervalMs = 25;
+   int64 IdleTimeoutMs = 26;
+   ResponseStatus ResponseStatus = 30;
+}
+message Throw {
+   string Message = 1;
+}
+message ThrowCustom {
+}
+message ThrowCustomResponse {
+   ResponseStatus ResponseStatus = 1;
+}
+message ThrowVoid {
+   string Message = 1;
+}
+message Todo {
+   int64 Id = 1;
+   string Title = 2;
+   int32 Order = 3;
+   bool Completed = 4;
+}
+message TriggerValidators {
+   string CreditCard = 1;
+   string Email = 2;
+   string Empty = 3;
+   string Equal = 4;
+   int32 ExclusiveBetween = 5;
+   int32 GreaterThanOrEqual = 6;
+   int32 GreaterThan = 7;
+   int32 InclusiveBetween = 8;
+   string Length = 9;
+   int32 LessThanOrEqual = 10;
+   int32 LessThan = 11;
+   string NotEmpty = 12;
+   string NotEqual = 13;
+   string Null = 14;
+   string RegularExpression = 15;
+   .bcl.Decimal ScalePrecision = 16;
+}
+message UnAssignRoles {
+   string UserName = 1;
+   repeated string Permissions = 2;
+   repeated string Roles = 3;
+   map<string,string> Meta = 4;
+}
+message UnAssignRolesResponse {
+   repeated string AllRoles = 1;
+   repeated string AllPermissions = 2;
+   map<string,string> Meta = 3;
+   ResponseStatus ResponseStatus = 4;
+}
+message UpdateTodo {
+   int64 Id = 1;
+   string Title = 2;
+   int32 Order = 3;
+   bool Completed = 4;
+}
+message UserApiKey {
+   string Key = 1;
+   string KeyType = 2;
+   .bcl.DateTime ExpiryDate = 3;
+   map<string,string> Meta = 4;
+}

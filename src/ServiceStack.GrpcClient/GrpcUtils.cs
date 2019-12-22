@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
@@ -49,5 +50,207 @@ namespace ServiceStack
                 (sslPolicyErrors & ~SslPolicyErrors.RemoteCertificateChainErrors) == SslPolicyErrors.None; // only this
             return handler;
         }
+
+        public static void Set(this Metadata headers, string name, string value)
+        {
+            for (var i = 0; i < headers.Count; i++)
+            {
+                var entry = headers[i];
+                if (entry.Key.EqualsIgnoreCase(name))
+                {
+                    headers.RemoveAt(i);
+                    break;
+                }
+            }
+
+            headers.Add(name, value);
+        }
+        
+        public static CallOptions Init(this CallOptions options, GrpcClientConfig config, bool noAuth)
+        {
+            var auth = noAuth
+                ? null
+                : !string.IsNullOrEmpty(config.UserName) && !string.IsNullOrEmpty(config.Password)
+                    ? "Basic " + Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(config.UserName + ":" + config.Password))
+                    : !string.IsNullOrEmpty(config.BearerToken)
+                        ? "Bearer " + config.BearerToken
+                        : !string.IsNullOrEmpty(config.SessionId)
+                            ? nameof(config.SessionId)
+                            : null;
+
+            if (config.Headers.Count > 0 || auth != null || config.UserAgent != null)
+            {
+                var headers = options.Headers;
+                if (headers == null)
+                    options = options.WithHeaders(headers = new Metadata());
+                
+                foreach (var entry in config.Headers)
+                {
+                    headers.Add(entry);
+                }
+
+                if (auth != null)
+                {
+                    if (auth == nameof(config.SessionId))
+                        headers.Set(GrpcClientConfig.Keywords.HeaderSessionId, config.SessionId);
+                    else
+                        headers.Set(HttpHeaders.Authorization, auth);
+                }
+
+                if (config.UserAgent != null)
+                    headers.Set(HttpHeaders.UserAgent, config.UserAgent);
+            }
+            return options;
+        }
+
+        public static bool InitRequestDto(GrpcClientConfig config, object requestDto)
+        {
+            config.PopulateRequestMetadata(requestDto);
+            var authIncluded = !string.IsNullOrEmpty((requestDto is IHasBearerToken hasBearerToken ? hasBearerToken.BearerToken : null) ?? 
+                (requestDto is IHasSessionId hasSessionId ? hasSessionId.SessionId : null));
+            return authIncluded;
+        }
+
+        public static async Task<(TResponse, ResponseStatus, Metadata)> GetResponseAsync<TResponse>(GrpcClientConfig config, AsyncUnaryCall<TResponse> auc)
+        {
+            var headers = await auc.ResponseHeadersAsync;
+            object status = null;
+            ResponseStatus typedStatus = null;
+            string errorCode = null;
+            string message = null;
+            TResponse response = default;
+            try
+            {
+                response = await auc.ResponseAsync;
+                status = response.GetResponseStatus();
+            }
+            catch (RpcException ex)
+            {
+                var statusBytes = ResponseCallContext.GetHeaderBytes(headers, GrpcClientConfig.Keywords.GrpcResponseStatus);
+                status = statusBytes != null 
+                    ? GrpcServiceStack.ParseResponseStatus(statusBytes)
+                    : new ResponseStatus {
+                        ErrorCode = errorCode = ex.Status.Detail ?? ex.StatusCode.ToString(),
+                        Message = message = HttpStatus.GetStatusDescription(ResponseCallContext.GetHttpStatus(headers)) 
+                    };
+
+                typedStatus = status as ResponseStatus; 
+                if (typedStatus != null && string.IsNullOrEmpty(typedStatus.Message))
+                {
+                    typedStatus.ErrorCode = errorCode = ex.StatusCode.ToString();
+                    typedStatus.Message = message = ex.Status.Detail;
+                }
+
+                var prop = TypeProperties<TResponse>.GetAccessor(nameof(IHasResponseStatus.ResponseStatus));
+                if (prop != null)
+                {
+                    response = typeof(TResponse).CreateInstance<TResponse>();
+                    if (prop.PropertyInfo.PropertyType.IsInstanceOfType(status))
+                    {
+                        prop.PublicSetter(response, status);
+                    }
+                    else
+                    {
+                        // Protoc clients generate different ResponseStatus DTO
+                        var propStatus = status.ConvertTo(prop.PropertyInfo.PropertyType);
+                        prop.PublicSetter(response, propStatus);
+                    }
+                }
+            }
+            finally
+            {
+                await InvokeResponseFiltersAsync(config, auc, response);
+            }
+
+            if (typedStatus == null)
+                typedStatus = status as ResponseStatus;
+            
+            if (typedStatus == null && status != null)
+            {
+                typedStatus = new ResponseStatus {
+                    ErrorCode = errorCode ?? TypeProperties.Get(status.GetType()).GetPublicGetter(nameof(ResponseStatus.ErrorCode))(status) as string,
+                    Message = message ?? TypeProperties.Get(status.GetType()).GetPublicGetter(nameof(ResponseStatus.Message))(status) as string,
+                };
+            }
+
+            return (response, typedStatus, headers);
+        }
+
+        public static async Task<Metadata> InvokeResponseFiltersAsync<TResponse>(GrpcClientConfig config, AsyncUnaryCall<TResponse> auc, TResponse response, Action<ResponseCallContext> fn = null)
+        {
+            var headers = await auc.ResponseHeadersAsync;
+            if (GrpcClientConfig.GlobalResponseFilter != null || config.ResponseFilter != null)
+            {
+                var ctx = new ResponseCallContext(response, auc.GetStatus(), headers);
+                fn?.Invoke(ctx);
+
+                GrpcClientConfig.GlobalResponseFilter?.Invoke(ctx);
+                config.ResponseFilter?.Invoke(ctx);
+            }
+            return headers;
+        }
+
+        public static async Task<Metadata> InvokeResponseFiltersAsync<TResponse>(GrpcClientConfig config, AsyncServerStreamingCall<TResponse> asc, IAsyncStreamReader<TResponse> response, Action<ResponseCallContext> fn = null)
+        {
+            var headers = await asc.ResponseHeadersAsync;
+            if (GrpcClientConfig.GlobalResponseFilter != null || config.ResponseFilter != null)
+            {
+                var ctx = new ResponseCallContext(response, asc.GetStatus(), headers);
+                fn?.Invoke(ctx);
+
+                GrpcClientConfig.GlobalResponseFilter?.Invoke(ctx);
+                config.ResponseFilter?.Invoke(ctx);
+            }
+            return headers;
+        }
+
+        public static async Task<(IAsyncStreamReader<TResponse>, ResponseStatus, Metadata)> GetResponseAsync<TResponse>(GrpcClientConfig config, AsyncServerStreamingCall<TResponse> auc)
+        {
+            var headers = await auc.ResponseHeadersAsync;
+            ResponseStatus status = null;
+            IAsyncStreamReader<TResponse> response = default;
+            try
+            {
+                response = auc.ResponseStream;
+                status = response.GetResponseStatus();
+            }
+            catch (RpcException ex)
+            {
+                status = HandleRpcException(headers, ex);
+            }
+            finally
+            {
+                await InvokeResponseFiltersAsync(config, auc, response);
+            }
+
+            return (response, status, headers);
+        }
+
+        public static ResponseStatus HandleRpcException(Metadata headers, RpcException ex)
+        {
+            var statusBytes = ResponseCallContext.GetHeaderBytes(headers, GrpcClientConfig.Keywords.GrpcResponseStatus);
+            var status = statusBytes != null
+                ? GrpcMarshaller<ResponseStatus>.Instance.Deserializer(statusBytes)
+                : new ResponseStatus {
+                    ErrorCode = ex.Status.Detail ?? ex.StatusCode.ToString(),
+                    Message = HttpStatus.GetStatusDescription(ResponseCallContext.GetHttpStatus(headers))
+                };
+            return status;
+        }
+        
+        public static WebHeaderCollection ResolveHeaders(Metadata headers)
+        {
+            var to = new WebHeaderCollection();
+            foreach (var header in headers)
+            {
+                if (header.Key.EndsWith("-bin"))
+                    continue;
+                
+                to[header.Key] = header.Value;
+            }
+            return to;
+        }
+
+        
     }
 }

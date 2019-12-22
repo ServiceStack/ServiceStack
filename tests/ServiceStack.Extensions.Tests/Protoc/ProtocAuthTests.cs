@@ -1,9 +1,13 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Net;
-using System.Runtime.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using Funq;
+using Grpc.Core;
+using Grpc.Core.Interceptors;
+using Grpc.Net.Client;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,78 +17,9 @@ using ServiceStack.Auth;
 using ServiceStack.Text;
 using ServiceStack.Validation;
 
-namespace ServiceStack.Extensions.Tests
+namespace ServiceStack.Extensions.Tests.Protoc
 {
-    [DataContract]
-    public class HelloJwt : IReturn<HelloJwtResponse>, IHasBearerToken
-    {
-        [DataMember(Order = 1)]
-        public string Name { get; set; }
-        [DataMember(Order = 2)]
-        public string BearerToken { get; set; }
-    }
-    [DataContract]
-    public class HelloJwtResponse
-    {
-        [DataMember(Order = 1)]
-        public string Result { get; set; }
-        [DataMember(Order = 2)]
-        public ResponseStatus ResponseStatus { get; set; }
-    }
-
-    [DataContract]
-    public class Secured : IReturn<SecuredResponse>
-    {
-        [DataMember(Order = 1)]
-        public string Name { get; set; }
-    }
-
-    [DataContract]
-    public class SecuredResponse
-    {
-        [DataMember(Order = 1)]
-        public string Result { get; set; }
-
-        [DataMember(Order = 2)]
-        public ResponseStatus ResponseStatus { get; set; }
-    }
-
-    [Authenticate]
-    public class AuthServices : Service
-    {
-        public object Any(HelloJwt request)
-        {
-            return new HelloJwtResponse { Result = $"Hello, {request.Name}" };
-        }
-
-        public object Post(Secured request)
-        {
-            return new SecuredResponse { Result = $"Hello, {request.Name}" };
-        }
-    }
-    
-    [DataContract]
-    public class RequiresAuth : IReturn<RequiresAuth>, IHasBearerToken
-    {
-        [DataMember(Order = 1)]
-        public string Name { get; set; }
-        [DataMember(Order = 2)]
-        public string BearerToken { get; set; }
-    }
-
-    [Authenticate]
-    public class RequiresAuthService : Service
-    {
-        public static ApiKey LastApiKey;
-
-        public object Any(RequiresAuth request)
-        {
-            LastApiKey = base.Request.GetApiKey();
-            return request;
-        }
-    }
-
-    public class GrpcAuthTests
+    public class ProtocAuthTests
     {
         public static readonly byte[] AuthKey = AesUtils.CreateKey();
         public const string Username = "mythz";
@@ -136,6 +71,7 @@ namespace ServiceStack.Extensions.Tests
                     
                     var authRepo = GetAuthRepository();
                     (authRepo as InMemoryAuthRepository).Clear();
+                    
                     authRepo.CreateUserAuth(new UserAuth
                     {
                         Id = userId.ToInt(),
@@ -161,7 +97,8 @@ namespace ServiceStack.Extensions.Tests
             {
                 options.ListenLocalhost(20000, listenOptions =>
                 {
-                    listenOptions.Protocols = HttpProtocols.Http2;
+                    listenOptions.Protocols = HttpProtocols.Http2; // use for tests
+//                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2; // use for UpdateProto
                 });
             }
 
@@ -177,7 +114,7 @@ namespace ServiceStack.Extensions.Tests
         }
 
         private readonly ServiceStackHost appHost;
-        public GrpcAuthTests()
+        public ProtocAuthTests()
         {
             appHost = new AppHost()
                 .Init()
@@ -186,6 +123,18 @@ namespace ServiceStack.Extensions.Tests
 
         [OneTimeTearDown]
         public void OneTimeTearDown() => appHost.Dispose();
+
+        // [Test] // needs: listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+        public void UpdateProto()
+        {
+            Directory.GetCurrentDirectory().Print();
+            var protoc = "http://localhost:20000/types/proto".GetStringFromUrl();
+            protoc = protoc.Replace("ServiceStack.Extensions.Tests","ServiceStack.Extensions.Tests.Protoc");
+            
+            Directory.SetCurrentDirectory("../../../Protoc");
+            File.WriteAllText("services.proto", protoc);
+            ExecUtils.ShellExec("web proto-csharp services.proto");
+        }
 
         private static string CreateExpiredToken()
         {
@@ -204,42 +153,50 @@ namespace ServiceStack.Extensions.Tests
             return token;
         }
 
+        private static GrpcServices.GrpcServicesClient GetClient(Action<GrpcClientConfig> init=null)
+        {
+            GrpcClientFactory.AllowUnencryptedHttp2 = true;
+            GrpcServiceStack.ParseResponseStatus = bytes => ResponseStatus.Parser.ParseFrom(bytes);
+            
+            var config = new GrpcClientConfig();
+            init?.Invoke(config);
+            var client = new GrpcServices.GrpcServicesClient(
+                GrpcServiceStack.Client("http://localhost:20000", config));
+            return client;
+        }
+
         private async Task<string> GetRefreshToken()
         {
             var authClient = GetClient();
-            var response = await authClient.SendAsync(new Authenticate
+            var response = await authClient.PostAuthenticateAsync(new Authenticate
                 {
-                    provider = "credentials",
+                    Provider = "credentials",
                     UserName = Username,
                     Password = Password,
                 });
             return response.RefreshToken;
         }
-
-        private static GrpcServiceClient GetClient()
-        {
-            GrpcClientFactory.AllowUnencryptedHttp2 = true;
-            var client = new GrpcServiceClient("http://localhost:20000");
-            return client;
-        }
-
-        protected virtual async Task<GrpcServiceClient> GetClientWithRefreshToken(string refreshToken = null, string accessToken = null)
+        
+        protected virtual async Task<GrpcServices.GrpcServicesClient> GetClientWithRefreshToken(string refreshToken = null, string accessToken = null)
         {
             if (refreshToken == null)
             {
                 refreshToken = await GetRefreshToken();
             }
 
-            var client = GetClient();
-            client.RefreshToken = refreshToken;
-            client.BearerToken = accessToken;
+            var client = GetClient(c => {
+                c.RefreshToken = refreshToken;
+                c.BearerToken = accessToken;
+            });
             return client;
         }
 
-        protected virtual GrpcServiceClient GetClientWithBasicAuthCredentials()
+        protected virtual GrpcServices.GrpcServicesClient GetClientWithBasicAuthCredentials()
         {
-            var client = GetClient();
-            client.SetCredentials(Username, Password);
+            var client = GetClient(c => {
+                c.UserName = Username;
+                c.Password = Password;
+            });
             return client;
         }
 
@@ -251,7 +208,7 @@ namespace ServiceStack.Extensions.Tests
             try
             {
                 var request = new Secured { Name = "test" };
-                var response = await client.SendAsync(request);
+                var response = await client.PostSecuredAsync(request);
                 Assert.Fail("Should throw");
             }
             catch (WebServiceException ex)
@@ -269,10 +226,10 @@ namespace ServiceStack.Extensions.Tests
 
             var request = new Secured { Name = "test" };
 
-            var response = await client.SendAsync(request);
+            var response = await client.PostSecuredAsync(request);
             Assert.That(response.Result, Is.EqualTo("Hello, test"));
 
-            response = await client.PostAsync(request);
+            response = await client.PostSecuredAsync(request);
             Assert.That(response.Result, Is.EqualTo("Hello, test"));
         }
         
@@ -280,9 +237,9 @@ namespace ServiceStack.Extensions.Tests
         public async Task Can_ConvertSessionToToken()
         {
             var authClient = GetClient();
-            var authResponse = await authClient.SendAsync(new Authenticate
+            var authResponse = await authClient.PostAuthenticateAsync(new Authenticate
             {
-                provider = "credentials",
+                Provider = "credentials",
                 UserName = Username,
                 Password = Password,
             });
@@ -290,17 +247,23 @@ namespace ServiceStack.Extensions.Tests
             Assert.That(authResponse.UserName, Is.EqualTo(Username));
             Assert.That(authResponse.BearerToken, Is.Not.Null);
 
-            authClient.SessionId = authResponse.SessionId;
+            authClient = GetClient(c => c.SessionId = authResponse.SessionId);
 
-            var response = await authClient.SendAsync(new HelloJwt { Name = "from auth service" });
+            var response = await authClient.PostHelloJwtAsync(new HelloJwt { Name = "from auth service" });
             Assert.That(response.Result, Is.EqualTo("Hello, from auth service"));
 
-            authClient.BearerToken = (await authClient.SendAsync(new ConvertSessionToToken())).AccessToken;
-            Assert.That(authClient.BearerToken, Is.Not.Null);
+            GrpcClientConfig config = null;
+            string bearerToken = null;
+            authClient = GetClient(c => {
+                bearerToken = authClient.PostConvertSessionToToken(new ConvertSessionToToken()).AccessToken;
+                (config = c).BearerToken = bearerToken;
+            });
+            
+            Assert.That(bearerToken, Is.Not.Null);
 
-            authClient.SessionId = null;
+            config.SessionId = null;
 
-            response = await authClient.SendAsync(new HelloJwt { Name = "from auth service" });
+            response = await authClient.PostHelloJwtAsync(new HelloJwt { Name = "from auth service" });
             Assert.That(response.Result, Is.EqualTo("Hello, from auth service"));
         }
 
@@ -311,7 +274,7 @@ namespace ServiceStack.Extensions.Tests
             try
             {
                 var request = new Secured { Name = "test" };
-                var response = await client.SendAsync(request);
+                var response = await client.PostSecuredAsync(request);
                 Assert.Fail("Should throw");
             }
             catch (RefreshTokenException ex)
@@ -327,10 +290,10 @@ namespace ServiceStack.Extensions.Tests
             var client = await GetClientWithRefreshToken();
 
             var request = new Secured { Name = "test" };
-            var response = await client.SendAsync(request);
+            var response = await client.PostSecuredAsync(request);
             Assert.That(response.Result, Is.EqualTo("Hello, test"));
 
-            response = await client.SendAsync(request);
+            response = await client.PostSecuredAsync(request);
             Assert.That(response.Result, Is.EqualTo("Hello, test"));
         }
 
@@ -340,10 +303,23 @@ namespace ServiceStack.Extensions.Tests
             var client = await GetClientWithRefreshToken(await GetRefreshToken(), CreateExpiredToken());
 
             var request = new Secured { Name = "test" };
-            var response = await client.SendAsync(request);
+            var response = await client.PostSecuredAsync(request);
             Assert.That(response.Result, Is.EqualTo("Hello, test"));
 
-            response = await client.SendAsync(request);
+            response = await client.PostSecuredAsync(request);
+            Assert.That(response.Result, Is.EqualTo("Hello, test"));
+        }
+
+        [Test]
+        public void Can_Auto_reconnect_with_RefreshToken_after_expired_token_Sync()
+        {
+            var client = GetClientWithRefreshToken(GetRefreshToken().Result, CreateExpiredToken()).Result;
+
+            var request = new Secured { Name = "test" };
+            var response = client.PostSecured(request);
+            Assert.That(response.Result, Is.EqualTo("Hello, test"));
+
+            response = client.PostSecured(request);
             Assert.That(response.Result, Is.EqualTo("Hello, test"));
         }
         
@@ -352,11 +328,11 @@ namespace ServiceStack.Extensions.Tests
         {
             var client = GetClientWithBasicAuthCredentials();
 
-            var response = await client.PostAsync(new Authenticate());
+            var response = await client.PostAuthenticateAsync(new Authenticate());
             Assert.That(response.BearerToken, Is.Not.Null);
             Assert.That(response.RefreshToken, Is.Not.Null);
 
-            response = await client.PostAsync(new Authenticate());
+            response = await client.PostAuthenticateAsync(new Authenticate());
             Assert.That(response.BearerToken, Is.Not.Null);
             Assert.That(response.RefreshToken, Is.Not.Null);
         }
@@ -367,18 +343,17 @@ namespace ServiceStack.Extensions.Tests
             AppHost.LastApiKey = null;
             RequiresAuthService.LastApiKey = null;
 
-            var client = GetClient();
-            client.BearerToken = liveKey.Id;
+            var client = GetClient(c => c.BearerToken = liveKey.Id);
 
             var request = new RequiresAuth { Name = "foo" };
-            var response = await client.SendAsync(request);
+            var response = await client.PostRequiresAuthAsync(request);
             Assert.That(response.Name, Is.EqualTo(request.Name));
 
             Assert.That(AppHost.LastApiKey.Id, Is.EqualTo(liveKey.Id));
             Assert.That(RequiresAuthService.LastApiKey.Id, Is.EqualTo(liveKey.Id));
 
-            client.BearerToken = testKey.Id;
-            var testResponse = await client.SendAsync(new Secured { Name = "test" });
+            client = GetClient(c => c.BearerToken = testKey.Id);
+            var testResponse = await client.PostSecuredAsync(new Secured { Name = "test" });
             Assert.That(testResponse.Result, Is.EqualTo("Hello, test"));
 
             Assert.That(AppHost.LastApiKey.Id, Is.EqualTo(testKey.Id));
@@ -393,11 +368,12 @@ namespace ServiceStack.Extensions.Tests
             var client = GetClient();
 
             var request = new RequiresAuth { BearerToken = liveKey.Id, Name = "foo" };
-            var response = await client.SendAsync(request);
+            var response = await client.PostRequiresAuthAsync(request);
             Assert.That(response.Name, Is.EqualTo(request.Name));
 
             Assert.That(AppHost.LastApiKey.Id, Is.EqualTo(liveKey.Id));
             Assert.That(RequiresAuthService.LastApiKey.Id, Is.EqualTo(liveKey.Id));
         }
+        
     }
 }

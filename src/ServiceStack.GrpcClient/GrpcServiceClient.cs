@@ -53,62 +53,73 @@ namespace ServiceStack
         public int HttpStatus => GetHttpStatus(Headers);
         
         public static int GetHttpStatus(Metadata headers) => 
-            GetHeader(headers, GrpcServiceClient.Keywords.HttpStatus)?.ToInt() ?? default;
+            GetHeader(headers, GrpcClientConfig.Keywords.HttpStatus)?.ToInt() ?? default;
     }
+
 
     public class GrpcServiceClient : IServiceClientAsync, IServiceClientSync, IHasSessionId, IHasBearerToken, IHasVersion
     {
-        public string BaseUri { get; set; }
-        public string SessionId { get; set; }
-        public string BearerToken { get; set; }
-        public string RefreshToken { get; set; }
-        public string RefreshTokenUri { get; set; }
-        public int Version { get; set; }
-        public string UserName { get; set; }
-        public string Password { get; set; }
-
-        public string ServicesName { get; set; } = "GrpcServices";
-
         private const string DefaultMethod = Methods.Post;
 
-        public static Action<CallContext> GlobalRequestFilter { get; set; }
-        public Action<CallContext> RequestFilter { get; set; }
-        public static Action<ResponseCallContext> GlobalResponseFilter { get; set; }
-        public Action<ResponseCallContext> ResponseFilter { get; set; }
+        public GrpcClientConfig Config { get; }
 
-        public string UserAgent { get; set; } = ".NET gRPC Client " + Env.VersionString;
-
-        public Grpc.Core.Metadata Headers { get; } = new Grpc.Core.Metadata();
-
-        private readonly GrpcChannel channel;
-
-        public GrpcServiceClient(string url) : this(GrpcChannel.ForAddress(url))
+        public string SessionId
         {
-            BaseUri = url;
+            get => Config.SessionId;
+            set => Config.SessionId = value;
+        }
+        
+        public string BearerToken
+        {
+            get => Config.BearerToken;
+            set => Config.BearerToken = value;
+        }
+        
+        public string RefreshToken
+        {
+            get => Config.RefreshToken;
+            set => Config.RefreshToken = value;
+        }
+        
+        public int Version
+        {
+            get => Config.Version;
+            set => Config.Version = value;
         }
 
-        public GrpcServiceClient(GrpcChannel channel)
+        public Action<CallContext> RequestFilter
         {
-            this.channel = channel;
-            BaseUri = this.channel.Target;
+            get => Config.RequestFilter;
+            set => Config.RequestFilter = value;
         }
 
-        public void Dispose() => channel.Dispose();
+        public Action<ResponseCallContext> ResponseFilter
+        {
+            get => Config.ResponseFilter;
+            set => Config.ResponseFilter = value;
+        }
 
-        static class Methods
+        public GrpcServiceClient(string url) : this(GrpcChannel.ForAddress(url)) {}
+
+        public GrpcServiceClient(GrpcChannel channel) : this(new GrpcClientConfig { Channel = channel }) {}
+
+        public GrpcServiceClient(GrpcClientConfig config)
+        {
+            if (config.Channel == null)
+                throw new ArgumentNullException(nameof(Config.Channel));
+
+            Config = config;
+        }
+
+        public void Dispose() => Config.Channel?.Dispose();
+
+        public static class Methods
         {
             internal const string Get = "Get";
             internal const string Post = "Post";
             internal const string Put = "Put";
             internal const string Delete = "Delete";
             internal const string Patch = "Patch";
-        }
-
-        internal static class Keywords
-        {
-            internal const string HeaderSessionId = "X-ss-id";
-            internal const string HttpStatus = "httpstatus";
-            internal const string GrpcResponseStatus = "responsestatus-bin";
         }
 
         delegate object ExecuteInternalDelegate(CallInvoker invoker, object request,
@@ -182,112 +193,27 @@ namespace ServiceStack
             return fn;
         }
 
-        private CallOptions PrepareRequest(bool noAuth)
+        public async Task<bool> RetryRequest(GrpcClientConfig config, StatusCode statusCode, ResponseStatus status, CallInvoker callInvoker)
         {
-            var auth = noAuth
-                ? null
-                : !string.IsNullOrEmpty(UserName) && !string.IsNullOrEmpty(Password)
-                    ? "Basic " + Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(UserName + ":" + Password))
-                    : !string.IsNullOrEmpty(BearerToken)
-                        ? "Bearer " + BearerToken
-                        : !string.IsNullOrEmpty(SessionId)
-                            ? nameof(SessionId)
-                            : null;
-
-            if (Headers.Count > 0 || auth != null || UserAgent != null)
-            {
-                var headers = new Grpc.Core.Metadata();
-                foreach (var entry in Headers)
-                {
-                    headers.Add(entry);
-                }
-
-                if (auth != null)
-                {
-                    if (auth == nameof(SessionId))
-                        headers.Add(Keywords.HeaderSessionId, SessionId);
-                    else
-                        headers.Add(HttpHeaders.Authorization, auth);
-                }
-
-                if (UserAgent != null)
-                    headers.Add(HttpHeaders.UserAgent, UserAgent);
-
-                return new CallOptions(headers: headers);
-            }
-            return default;
-        }
-
-        private bool InitRequestDto(object requestDto)
-        {
-            this.PopulateRequestMetadata(requestDto);
-            var authIncluded = !string.IsNullOrEmpty((requestDto is IHasBearerToken hasBearerToken ? hasBearerToken.BearerToken : null) ?? 
-                                                     (requestDto is IHasSessionId hasSessionId ? hasSessionId.SessionId : null));
-            return authIncluded;
-        }
-
-        private async Task<Metadata> InvokeResponseFilters<TResponse>(AsyncUnaryCall<TResponse> auc, TResponse response, Action<ResponseCallContext> fn = null)
-        {
-            var headers = await auc.ResponseHeadersAsync;
-            if (GlobalResponseFilter != null || ResponseFilter != null)
-            {
-                var ctx = new ResponseCallContext(response, auc.GetStatus(), headers);
-                fn?.Invoke(ctx);
-
-                GlobalResponseFilter?.Invoke(ctx);
-                ResponseFilter?.Invoke(ctx);
-            }
-            return headers;
-        }
-
-        private async Task<Metadata> InvokeResponseFilters<TResponse>(AsyncServerStreamingCall<TResponse> asc, IAsyncStreamReader<TResponse> response, Action<ResponseCallContext> fn = null)
-        {
-            var headers = await asc.ResponseHeadersAsync;
-            if (GlobalResponseFilter != null || ResponseFilter != null)
-            {
-                var ctx = new ResponseCallContext(response, asc.GetStatus(), headers);
-                fn?.Invoke(ctx);
-
-                GlobalResponseFilter?.Invoke(ctx);
-                ResponseFilter?.Invoke(ctx);
-            }
-            return headers;
-        }
-
-        public WebHeaderCollection ResolveHeaders(Metadata headers)
-        {
-            var to = new WebHeaderCollection();
-            foreach (var header in headers)
-            {
-                if (header.Key.EndsWith("-bin"))
-                    continue;
-                
-                to[header.Key] = header.Value;
-            }
-            return to;
-        }
-
-        public async Task<bool> RetryRequest(StatusCode statusCode, ResponseStatus status, CallInvoker callInvoker)
-        {
-            if (RefreshToken != null && statusCode == StatusCode.Unauthenticated)
+            if (config.RefreshToken != null && statusCode == StatusCode.Unauthenticated)
             {
                 GrpcChannel newChannel = null;
                 var useInvoker = callInvoker;
-                if (!string.IsNullOrEmpty(RefreshTokenUri))
+                if (!string.IsNullOrEmpty(config.RefreshTokenUri))
                 {
-                    newChannel = GrpcChannel.ForAddress(RefreshTokenUri);
+                    newChannel = GrpcChannel.ForAddress(config.RefreshTokenUri);
                     useInvoker = newChannel.CreateCallInvoker();
                 }
                 
                 var refreshRequest = new GetAccessToken {
-                    RefreshToken = RefreshToken,
+                    RefreshToken = config.RefreshToken,
                 };
                 var methodName = GrpcConfig.GetServiceName(Methods.Post, nameof(GetAccessToken));
-                var fn = ResolveExecute<GetAccessTokenResponse>(refreshRequest);
-                var options = PrepareRequest(noAuth:true);
+                var options = new CallOptions().Init(config, noAuth:true);
 
-                using var auc = (AsyncUnaryCall<GetAccessTokenResponse>) fn(useInvoker, refreshRequest, ServicesName, methodName, options, null);
-                var (response, refreshStatus, headers) = await GetResponse(auc);
+                var fn = ResolveExecute<GetAccessTokenResponse>(refreshRequest);
+                using var auc = (AsyncUnaryCall<GetAccessTokenResponse>) fn(useInvoker, refreshRequest, config.ServicesName, methodName, options, null);
+                var (response, refreshStatus, headers) = await GrpcUtils.GetResponseAsync(config, auc);
                 using (newChannel){}
 
                 if (refreshStatus?.ErrorCode != null)
@@ -295,93 +221,18 @@ namespace ServiceStack
                     throw new RefreshTokenException(new WebServiceException(refreshStatus.Message) {
                         StatusCode = ResponseCallContext.GetHttpStatus(headers),
                         ResponseDto = (object) response ?? new EmptyResponse { ResponseStatus = refreshStatus },
-                        ResponseHeaders = ResolveHeaders(headers),
+                        ResponseHeaders = GrpcUtils.ResolveHeaders(headers),
                         State = auc.GetStatus(),
                     });
                 }
                 var accessToken = response?.AccessToken;
                 if (string.IsNullOrEmpty(accessToken))
-                    throw new RefreshTokenException("Could not retrieve new AccessToken from: " + (RefreshTokenUri ?? BaseUri));
+                    throw new RefreshTokenException("Could not retrieve new AccessToken from: " + (config.RefreshTokenUri ?? config.BaseUri));
 
-                BearerToken = accessToken;
+                config.BearerToken = accessToken;
                 return true;
             }
             return false;
-        }
-
-        private async Task<(TResponse, ResponseStatus, Metadata)> GetResponse<TResponse>(AsyncUnaryCall<TResponse> auc)
-        {
-            var headers = await auc.ResponseHeadersAsync;
-            ResponseStatus status = null;
-            TResponse response = default;
-            try
-            {
-                response = await auc.ResponseAsync;
-                status = response.GetResponseStatus();
-            }
-            catch (RpcException ex)
-            {
-                var statusBytes = ResponseCallContext.GetHeaderBytes(headers, Keywords.GrpcResponseStatus);
-                status = statusBytes != null 
-                    ? GrpcMarshaller<ResponseStatus>.Instance.Deserializer(statusBytes)
-                    : new ResponseStatus {
-                        ErrorCode = ex.Status.Detail ?? ex.StatusCode.ToString(),
-                        Message = HttpStatus.GetStatusDescription(ResponseCallContext.GetHttpStatus(headers)) 
-                    };
-
-                if (string.IsNullOrEmpty(status.Message))
-                {
-                    status.ErrorCode = ex.StatusCode.ToString();
-                    status.Message = ex.Status.Detail;
-                }
-                
-                var prop = TypeProperties<TResponse>.GetAccessor(nameof(IHasResponseStatus.ResponseStatus));
-                if (prop != null)
-                {
-                    response = typeof(TResponse).CreateInstance<TResponse>();
-                    prop.PublicSetter(response, status);
-                }
-            }
-            finally
-            {
-                await InvokeResponseFilters(auc, response);
-            }
-
-            return (response, status, headers);
-        }
-
-        private async Task<(IAsyncStreamReader<TResponse>, ResponseStatus, Metadata)> GetResponse<TResponse>(AsyncServerStreamingCall<TResponse> auc)
-        {
-            var headers = await auc.ResponseHeadersAsync;
-            ResponseStatus status = null;
-            IAsyncStreamReader<TResponse> response = default;
-            try
-            {
-                response = auc.ResponseStream;
-                status = response.GetResponseStatus();
-            }
-            catch (RpcException ex)
-            {
-                status = HandleRpcException(headers, ex);
-            }
-            finally
-            {
-                await InvokeResponseFilters(auc, response);
-            }
-
-            return (response, status, headers);
-        }
-
-        private static ResponseStatus HandleRpcException(Metadata headers, RpcException ex)
-        {
-            var statusBytes = ResponseCallContext.GetHeaderBytes(headers, Keywords.GrpcResponseStatus);
-            var status = statusBytes != null
-                ? GrpcMarshaller<ResponseStatus>.Instance.Deserializer(statusBytes)
-                : new ResponseStatus {
-                    ErrorCode = ex.Status.Detail ?? ex.StatusCode.ToString(),
-                    Message = HttpStatus.GetStatusDescription(ResponseCallContext.GetHttpStatus(headers))
-                };
-            return status;
         }
 
         public async Task<TResponse> Execute<TResponse>(object requestDto, string methodName, CancellationToken token = default)
@@ -389,25 +240,25 @@ namespace ServiceStack
             if (requestDto == null)
                 throw new ArgumentNullException(nameof(requestDto));
             
-            var authIncluded = InitRequestDto(requestDto);
+            var authIncluded = GrpcUtils.InitRequestDto(Config, requestDto);
+            var options = new CallOptions().Init(Config, noAuth:authIncluded);
+
+            GrpcClientConfig.GlobalRequestFilter?.Invoke(options);
+            Config.RequestFilter?.Invoke(options);
+
+            var callInvoker = Config.Channel.CreateCallInvoker();
             var fn = ResolveExecute<TResponse>(requestDto);
-            var options = PrepareRequest(noAuth:authIncluded);
+            using var auc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, Config.ServicesName, methodName, options, null);
 
-            GlobalRequestFilter?.Invoke(options);
-            RequestFilter?.Invoke(options);
-
-            var callInvoker = channel.CreateCallInvoker();
-            using var auc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, ServicesName, methodName, options, null);
-
-            var (response, status, headers) = await GetResponse(auc);
+            var (response, status, headers) = await GrpcUtils.GetResponseAsync(Config, auc);
 
             if (status?.ErrorCode != null)
             {
-                if (await RetryRequest(auc.GetStatus().StatusCode, status, callInvoker))
+                if (await RetryRequest(Config, auc.GetStatus().StatusCode, status, callInvoker))
                 {
-                    options = PrepareRequest(noAuth:authIncluded);
-                    using var retryAuc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, ServicesName, methodName, options, null);
-                    var (retryResponse, retryStatus, retryHeaders) = await GetResponse(retryAuc);
+                    options = new CallOptions().Init(Config, noAuth:authIncluded);
+                    using var retryAuc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, Config.ServicesName, methodName, options, null);
+                    var (retryResponse, retryStatus, retryHeaders) = await GrpcUtils.GetResponseAsync(Config, retryAuc);
                     if (retryStatus?.ErrorCode == null)
                         return retryResponse;
                 }
@@ -415,7 +266,7 @@ namespace ServiceStack
                 throw new WebServiceException(status.Message) {
                     StatusCode = ResponseCallContext.GetHttpStatus(headers),
                     ResponseDto = response as object ?? new EmptyResponse { ResponseStatus = status },
-                    ResponseHeaders = ResolveHeaders(headers),
+                    ResponseHeaders = GrpcUtils.ResolveHeaders(headers),
                     State = auc.GetStatus(),
                 };
             }
@@ -434,33 +285,33 @@ namespace ServiceStack
             var methodName = GrpcConfig.GetServiceName(GetMethod(firstDto), firstDto.GetType().Name);
 
             this.PopulateRequestMetadatas(requestDtos);
-            var authIncluded = InitRequestDto(firstDto);
+            var authIncluded = GrpcUtils.InitRequestDto(Config, firstDto);
 
             var fn = ResolveExecute<TResponse>(firstDto);
-            var options = PrepareRequest(noAuth:authIncluded);
+            var options = new CallOptions().Init(Config, noAuth:authIncluded);
 
-            GlobalRequestFilter?.Invoke(options);
-            RequestFilter?.Invoke(options);
+            GrpcClientConfig.GlobalRequestFilter?.Invoke(options);
+            Config.RequestFilter?.Invoke(options);
 
             var responses = new List<TResponse>();
 
-            var callInvoker = channel.CreateCallInvoker();
+            var callInvoker = Config.Channel.CreateCallInvoker();
 
             // Handle retry on first request
             var requestDto = requestDtos[0];
-            using var auc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, ServicesName, methodName, options, null);
-            var (response, status, headers) = await GetResponse(auc);
+            using var auc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, Config.ServicesName, methodName, options, null);
+            var (response, status, headers) = await GrpcUtils.GetResponseAsync(Config, auc);
 
             if (status?.ErrorCode != null)
             {
-                if (await RetryRequest(auc.GetStatus().StatusCode, status, callInvoker))
+                if (await RetryRequest(Config, auc.GetStatus().StatusCode, status, callInvoker))
                 {
-                    authIncluded = InitRequestDto(requestDto);
+                    authIncluded = GrpcUtils.InitRequestDto(Config, requestDto);
                     fn = ResolveExecute<TResponse>(requestDto);
-                    options = PrepareRequest(noAuth:authIncluded);
-                    using var retryAuc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, ServicesName, methodName, options, null);
+                    options = new CallOptions().Init(Config, noAuth:authIncluded);
+                    using var retryAuc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, Config.ServicesName, methodName, options, null);
 
-                    var (retryResponse, retryStatus, retryHeaders) = await GetResponse(retryAuc);
+                    var (retryResponse, retryStatus, retryHeaders) = await GrpcUtils.GetResponseAsync(Config, retryAuc);
                     if (retryResponse.GetResponseStatus()?.ErrorCode == null)
                     {
                         responses.Add(retryResponse);
@@ -472,7 +323,7 @@ namespace ServiceStack
                     throw new WebServiceException(status.Message) {
                         StatusCode = ResponseCallContext.GetHttpStatus(headers),
                         ResponseDto = response as object ?? new EmptyResponse { ResponseStatus = status },
-                        ResponseHeaders = ResolveHeaders(headers),
+                        ResponseHeaders = GrpcUtils.ResolveHeaders(headers),
                         State = auc.GetStatus(),
                     };
                 }
@@ -486,7 +337,7 @@ namespace ServiceStack
             for (var i = 1; i < requestDtos.Length; i++)
             {
                 requestDto = requestDtos[i];
-                asyncTasks.Add(GetResponse((AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, ServicesName, methodName, options, null)));
+                asyncTasks.Add(GrpcUtils.GetResponseAsync(Config, (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, Config.ServicesName, methodName, options, null)));
             }
 
             await Task.WhenAll(asyncTasks);
@@ -502,26 +353,25 @@ namespace ServiceStack
 
         public async IAsyncEnumerable<TResponse> Stream<TResponse>(object requestDto, string methodName, [EnumeratorCancellation] CancellationToken token = default)
         {
-            var authIncluded = InitRequestDto(requestDto);
+            var authIncluded = GrpcUtils.InitRequestDto(Config, requestDto);
             var fn = ResolveStream<TResponse>(requestDto);
-            var options = PrepareRequest(noAuth:authIncluded);
+            var options = new CallOptions().Init(Config, noAuth:authIncluded);
 
-            GlobalRequestFilter?.Invoke(options);
-            RequestFilter?.Invoke(options);
+            GrpcClientConfig.GlobalRequestFilter?.Invoke(options);
+            Config.RequestFilter?.Invoke(options);
 
-            var callInvoker = channel.CreateCallInvoker();
-            using var assc = (AsyncServerStreamingCall<TResponse>) fn(callInvoker, requestDto, ServicesName, methodName, options, null);
+            var callInvoker = Config.Channel.CreateCallInvoker();
+            using var assc = (AsyncServerStreamingCall<TResponse>) fn(callInvoker, requestDto, Config.ServicesName, methodName, options, null);
 
-            var (response, status, headers) = await GetResponse(assc);
+            var (response, status, headers) = await GrpcUtils.GetResponseAsync(Config, assc);
 
             if (status?.ErrorCode != null)
             {
-                if (await RetryRequest(assc.GetStatus().StatusCode, status, callInvoker))
+                if (await RetryRequest(Config, assc.GetStatus().StatusCode, status, callInvoker))
                 {
                     fn = ResolveStream<TResponse>(requestDto);
-                    options = PrepareRequest(noAuth:authIncluded);
-                    using var retryAssc = (AsyncServerStreamingCall<TResponse>) fn(callInvoker, requestDto, ServicesName, methodName, options, null);
-                    var (retryResponse, retryStatus, retryHeaders) = await GetResponse(retryAssc);
+                    using var retryAssc = (AsyncServerStreamingCall<TResponse>) fn(callInvoker, requestDto, Config.ServicesName, methodName, options, null);
+                    var (retryResponse, retryStatus, retryHeaders) = await GrpcUtils.GetResponseAsync(Config, retryAssc);
                     if (retryStatus?.ErrorCode == null)
                     {
                         await foreach(var item in retryResponse.ReadAllAsync(token))
@@ -534,7 +384,7 @@ namespace ServiceStack
                 throw new WebServiceException(status.Message) {
                     StatusCode = ResponseCallContext.GetHttpStatus(headers),
                     ResponseDto = response as object ?? new EmptyResponse { ResponseStatus = status },
-                    ResponseHeaders = ResolveHeaders(headers),
+                    ResponseHeaders = GrpcUtils.ResolveHeaders(headers),
                     State = assc.GetStatus(),
                 };
             }
@@ -553,11 +403,11 @@ namespace ServiceStack
                     }
                     catch (RpcException ex)
                     {
-                        status = HandleRpcException(headers, ex);
+                        status = GrpcUtils.HandleRpcException(headers, ex);
                         throw new WebServiceException(status.Message) {
                             StatusCode = ResponseCallContext.GetHttpStatus(headers),
                             ResponseDto = new EmptyResponse { ResponseStatus = status },
-                            ResponseHeaders = ResolveHeaders(headers),
+                            ResponseHeaders = GrpcUtils.ResolveHeaders(headers),
                             State = assc.GetStatus(),
                         };
                     }
@@ -641,8 +491,8 @@ namespace ServiceStack
 
         public void SetCredentials(string userName, string password)
         {
-            UserName = userName;
-            Password = password;
+            Config.UserName = userName;
+            Config.Password = password;
         }
 
         public TResponse Get<TResponse>(IReturn<TResponse> requestDto) => GetAsync(requestDto).GetAwaiter().GetResult();
