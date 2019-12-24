@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Funq;
@@ -8,9 +9,9 @@ using NUnit.Framework;
 using ProtoBuf.Grpc.Client;
 using ServiceStack.Text;
 
-namespace ServiceStack.Extensions.Tests
+namespace ServiceStack.Extensions.Tests.Protoc
 {
-    public class GrpcServerEventsTests
+    public class ProtocServerEventsTests
     {
         public class AppHost : AppSelfHostBase
         {
@@ -36,7 +37,7 @@ namespace ServiceStack.Extensions.Tests
         }
 
         private readonly ServiceStackHost appHost;
-        public GrpcServerEventsTests()
+        public ProtocServerEventsTests()
         {
             GrpcClientFactory.AllowUnencryptedHttp2 = true;
             appHost = new AppHost()
@@ -47,7 +48,8 @@ namespace ServiceStack.Extensions.Tests
         [OneTimeTearDown]
         public void OneTimeTearDown() => appHost.Dispose();
 
-        private static GrpcServiceClient GetClient() => new GrpcServiceClient(TestsConfig.BaseUri);
+        private static GrpcServices.GrpcServicesClient GetClient(Action<GrpcClientConfig> init = null) =>
+            ProtocTests.GetClient(init);
 
         [Test]
         public async Task Can_subscribe_to_ServerEvents()
@@ -67,8 +69,10 @@ namespace ServiceStack.Extensions.Tests
             }
 
             var i = 0;
-            await foreach (var msg in client.StreamAsync(new StreamServerEvents { Channels = new[] { "home" } }))
+            var stream = client.ServerStreamServerEvents(new StreamServerEvents { Channels = {"home"} }).ResponseStream;
+            while (await stream.MoveNext(default))
             {
+                var msg = stream.Current;
                 if (i == 0)
                 {
                     Assert.That(msg.Selector, Is.EqualTo("cmd.onConnect"));
@@ -103,7 +107,7 @@ namespace ServiceStack.Extensions.Tests
 
             Task.Factory.StartNew(async () => {
                 await Task.Delay(500);
-                await client2.PostAsync(new PostChatToChannel {
+                await client2.CallPostChatToChannelAsync(new PostChatToChannel {
                     Channel = "send",
                     From = nameof(client2),
                     Message = "Hello from client2",
@@ -112,8 +116,10 @@ namespace ServiceStack.Extensions.Tests
             });
 
             var responses = new List<StreamServerEventsResponse>();
-            await foreach (var msg in client1.StreamAsync(new StreamServerEvents { Channels = new[] { "send" } }))
+            var stream = client1.ServerStreamServerEvents(new StreamServerEvents { Channels = {"send"} }).ResponseStream;
+            while (await stream.MoveNext(default))
             {
+                var msg = stream.Current;
                 responses.Add(msg);
                 
                 if (msg.Selector == "cmd.chat")

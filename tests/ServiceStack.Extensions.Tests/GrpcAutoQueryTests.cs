@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using ProtoBuf;
 using ProtoBuf.Grpc.Client;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
@@ -589,6 +590,7 @@ namespace ServiceStack.Extensions.Tests
     [EnumAsInt]
     public enum SomeEnumAsInt
     {
+        Value0 = 0,
         Value1 = 1,
         Value2 = 2,
         Value3 = 3,
@@ -596,8 +598,15 @@ namespace ServiceStack.Extensions.Tests
 
     public enum SomeEnum
     {
+        // Enum values must be unique globally
+        // https://stackoverflow.com/questions/13802844/protobuf-net-into-proto-generates-enum-conflicts
+        [ProtoEnum(Name="SomeEnum_Value0")]
+        Value0 = 0,
+        [ProtoEnum(Name="SomeEnum_Value1")]
         Value1 = 1,
+        [ProtoEnum(Name="SomeEnum_Value2")]
         Value2 = 2,
+        [ProtoEnum(Name="SomeEnum_Value3")]
         Value3 = 3
     }
 
@@ -819,13 +828,14 @@ namespace ServiceStack.Extensions.Tests
     
     public class TestsConfig
     {
-        public static readonly string ServiceStackBaseUri = Environment.GetEnvironmentVariable("CI_BASEURI") ?? "http://localhost:20000";
-        public static readonly string AbsoluteBaseUri = ServiceStackBaseUri + "/";
+        public static readonly int Port = 20000;
+        public static readonly string BaseUri = Environment.GetEnvironmentVariable("CI_BASEURI") ?? $"http://localhost:{Port}";
+        public static readonly string AbsoluteBaseUri = BaseUri + "/";
         
-        public static readonly string HostNameBaseUrl = "http://DESKTOP-BCS76J0:20000/"; //Allow fiddler
-        public static readonly string AnyHostBaseUrl = "http://*:20000/"; //Allow capturing by fiddler
+        public static readonly string HostNameBaseUrl = $"http://DESKTOP-BCS76J0:{Port}/"; //Allow fiddler
+        public static readonly string AnyHostBaseUrl = $"http://*:{Port}/"; //Allow capturing by fiddler
 
-        public static readonly string ListeningOn = ServiceStackBaseUri + "/";
+        public static readonly string ListeningOn = BaseUri + "/";
         public static readonly string RabbitMQConnString = Environment.GetEnvironmentVariable("CI_RABBITMQ") ?? "localhost";
         public static readonly string SqlServerConnString = Environment.GetEnvironmentVariable("MSSQL_CONNECTION") ?? "Server=localhost;Database=test;User Id=test;Password=test;";
         public static readonly string PostgreSqlConnString = Environment.GetEnvironmentVariable("PGSQL_CONNECTION") ?? "Server=localhost;Port=5432;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200";
@@ -849,7 +859,7 @@ namespace ServiceStack.Extensions.Tests
 
         public override void ConfigureKestrel(KestrelServerOptions options)
         {
-            options.ListenLocalhost(20000, listenOptions =>
+            options.ListenLocalhost(TestsConfig.Port, listenOptions =>
             {
                 listenOptions.Protocols = HttpProtocols.Http2;
             });

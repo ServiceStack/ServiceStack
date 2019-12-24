@@ -1,5 +1,5 @@
 /* Options:
-Date: 2019-12-18 00:36:51
+Date: 2019-12-23 04:00:46
 Version: 5.71
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -54,6 +54,8 @@ service GrpcServices {
 
     rpc CallGetApiKeys(GetApiKeys) returns (GetApiKeysResponse) {}
 
+    rpc CallGetFile(GetFile) returns (FileContent) {}
+
     rpc CallGetHello(GetHello) returns (HelloResponse) {}
 
     rpc CallGetTodo(GetTodo) returns (GetTodoResponse) {}
@@ -84,17 +86,83 @@ service GrpcServices {
 
     rpc CallPostChatToChannel(PostChatToChannel) returns (ChatMessage) {}
 
+    rpc GetQueryAdhoc(QueryAdhoc) returns (QueryResponse_Adhoc) {}
+
+    rpc GetQueryAdhocRockstars(QueryAdhocRockstars) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryAllFields(QueryAllFields) returns (QueryResponse_AllFields) {}
+
     rpc GetQueryCaseInsensitiveOrderBy(QueryCaseInsensitiveOrderBy) returns (QueryResponse_Rockstar) {}
 
     rpc GetQueryChangeConnectionInfo(QueryChangeConnectionInfo) returns (QueryResponse_Rockstar) {}
 
+    rpc GetQueryChangeDb(QueryChangeDb) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryCustomRockstars(QueryCustomRockstars) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetQueryCustomRockstarsFilter(QueryCustomRockstarsFilter) returns (QueryResponse_CustomRockstar) {}
+
     rpc GetQueryCustomRockstarsReferences(QueryCustomRockstarsReferences) returns (QueryResponse_RockstarReference) {}
+
+    rpc GetQueryCustomRockstarsSchema(QueryCustomRockstarsSchema) returns (QueryResponse_CustomRockstarSchema) {}
+
+    rpc GetQueryFieldRockstars(QueryFieldRockstars) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryFieldRockstarsDynamic(QueryFieldRockstarsDynamic) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryFieldsImplicitConventions(QueryFieldsImplicitConventions) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryGetRockstars(QueryGetRockstars) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryGetRockstarsDynamic(QueryGetRockstarsDynamic) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryJoinedRockstarAlbums(QueryJoinedRockstarAlbums) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetQueryJoinedRockstarAlbumsCustomSelect(QueryJoinedRockstarAlbumsCustomSelect) returns (QueryResponse_CustomSelectRockstar) {}
+
+    rpc GetQueryJoinedRockstarAlbumsCustomSelectResponse(QueryJoinedRockstarAlbumsCustomSelectResponse) returns (QueryResponse_CustomSelectRockstarResponse) {}
+
+    rpc GetQueryMovies(QueryMovies) returns (QueryResponse_Movie) {}
+
+    rpc GetQueryMultiJoinRockstar(QueryMultiJoinRockstar) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetQueryNamedRockstars(QueryNamedRockstars) returns (QueryResponse_NamedRockstar) {}
+
+    rpc GetQueryOrRockstars(QueryOrRockstars) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryOrRockstarsFields(QueryOrRockstarsFields) returns (QueryResponse_Rockstar) {}
 
     rpc GetQueryOverridedCustomRockstars(QueryOverridedCustomRockstars) returns (QueryResponse_CustomRockstar) {}
 
     rpc GetQueryOverridedRockstars(QueryOverridedRockstars) returns (QueryResponse_Rockstar) {}
 
+    rpc GetQueryPagingTest(QueryPagingTest) returns (QueryResponse_PagingTest) {}
+
+    rpc GetQueryRockstarAlbums(QueryRockstarAlbums) returns (QueryResponse_RockstarAlbum) {}
+
     rpc GetQueryRockstarAlbumsCustomLeftJoin(QueryRockstarAlbumsCustomLeftJoin) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetQueryRockstarAlbumsImplicit(QueryRockstarAlbumsImplicit) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetQueryRockstarAlbumsLeftJoin(QueryRockstarAlbumsLeftJoin) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetQueryRockstarAlias(QueryRockstarAlias) returns (QueryResponse_RockstarAlias) {}
+
+    rpc GetQueryRockstarFilters(QueryRockstarFilters) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryRockstars(QueryRockstars) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryRockstarsConventions(QueryRockstarsConventions) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryRockstarsFilter(QueryRockstarsFilter) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryRockstarsIFilter(QueryRockstarsIFilter) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryRockstarsWithReferences(QueryRockstarsWithReferences) returns (QueryResponse_RockstarReference) {}
+
+    rpc GetQueryTypeWithEnums(QueryTypeWithEnums) returns (QueryResponse_TypeWithEnum) {}
+
+    rpc GetQueryUnknownRockstars(QueryUnknownRockstars) returns (QueryResponse_Rockstar) {}
 
     rpc PostRegenerateApiKeys(RegenerateApiKeys) returns (RegenerateApiKeysResponse) {}
 
@@ -113,6 +181,8 @@ service GrpcServices {
     rpc PatchRequiresAuth(RequiresAuth) returns (RequiresAuth) {}
 
     rpc PostResetTodos(ResetTodos) returns (EmptyResponse) {}
+
+    rpc GetSearchMovies(SearchMovies) returns (QueryResponse_Movie) {}
 
     rpc PostSecured(Secured) returns (SecuredResponse) {}
 
@@ -138,6 +208,34 @@ service GrpcServices {
 message AddHeader {
    string Name = 1;
    string Value = 2;
+}
+message Adhoc {
+   int32 Id = 1;
+   string first_name = 2;
+   string LastName = 3;
+}
+message AllFields {
+   int32 Id = 1;
+   int32 NullableId = 2;
+   uint32 Byte = 3;
+   int32 Short = 4;
+   int32 Int = 5;
+   int64 Long = 6;
+   uint32 UShort = 7;
+   uint32 UInt = 8;
+   uint64 ULong = 9;
+   float Float = 10;
+   double Double = 11;
+   .bcl.Decimal Decimal = 12;
+   string String = 13;
+   .bcl.DateTime DateTime = 14;
+   .bcl.TimeSpan TimeSpan = 15;
+   .bcl.Guid Guid = 16; // default value could not be applied: 00000000-0000-0000-0000-000000000000
+   .bcl.DateTime NullableDateTime = 17;
+   .bcl.TimeSpan NullableTimeSpan = 18;
+   .bcl.Guid NullableGuid = 19;
+   HttpStatusCode Enum = 20;
+   HttpStatusCode NullableEnum = 21;
 }
 message AnyHello {
    string Name = 1;
@@ -235,6 +333,24 @@ message CustomRockstar {
    string RockstarAlbumName = 4;
    string RockstarGenreName = 5;
 }
+message CustomRockstarSchema {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   string RockstarAlbumName = 4;
+   string RockstarGenreName = 5;
+}
+message CustomSelectRockstar {
+   int32 Id = 1;
+   string FirstName = 2;
+   string LastName = 3;
+   int32 Age = 4;
+}
+message CustomSelectRockstarResponse {
+   int32 Id = 1;
+   string FirstName = 2;
+   int32 Age = 3;
+}
 message DeleteTodo {
    int64 Id = 1;
 }
@@ -270,6 +386,9 @@ message GetApiKeysResponse {
    map<string,string> Meta = 2;
    ResponseStatus ResponseStatus = 3;
 }
+message GetFile {
+   string Path = 1;
+}
 message GetHello {
    string Name = 1;
 }
@@ -298,6 +417,76 @@ message HelloResponse {
    string Result = 1;
    ResponseStatus ResponseStatus = 2;
 }
+enum HttpStatusCode {
+   option allow_alias = true;
+   ZERO = 0; // proto3 requires a zero value as the first item (it can be named anything)
+   Continue = 100;
+   SwitchingProtocols = 101;
+   Processing = 102;
+   EarlyHints = 103;
+   OK = 200;
+   Created = 201;
+   Accepted = 202;
+   NonAuthoritativeInformation = 203;
+   NoContent = 204;
+   ResetContent = 205;
+   PartialContent = 206;
+   MultiStatus = 207;
+   AlreadyReported = 208;
+   IMUsed = 226;
+   Ambiguous = 300;
+   MultipleChoices = 300;
+   MovedPermanently = 301;
+   Moved = 301;
+   Found = 302;
+   Redirect = 302;
+   SeeOther = 303;
+   RedirectMethod = 303;
+   NotModified = 304;
+   UseProxy = 305;
+   Unused = 306;
+   TemporaryRedirect = 307;
+   RedirectKeepVerb = 307;
+   PermanentRedirect = 308;
+   BadRequest = 400;
+   Unauthorized = 401;
+   PaymentRequired = 402;
+   Forbidden = 403;
+   NotFound = 404;
+   MethodNotAllowed = 405;
+   NotAcceptable = 406;
+   ProxyAuthenticationRequired = 407;
+   RequestTimeout = 408;
+   Conflict = 409;
+   Gone = 410;
+   LengthRequired = 411;
+   PreconditionFailed = 412;
+   RequestEntityTooLarge = 413;
+   RequestUriTooLong = 414;
+   UnsupportedMediaType = 415;
+   RequestedRangeNotSatisfiable = 416;
+   ExpectationFailed = 417;
+   MisdirectedRequest = 421;
+   UnprocessableEntity = 422;
+   Locked = 423;
+   FailedDependency = 424;
+   UpgradeRequired = 426;
+   PreconditionRequired = 428;
+   TooManyRequests = 429;
+   RequestHeaderFieldsTooLarge = 431;
+   UnavailableForLegalReasons = 451;
+   InternalServerError = 500;
+   NotImplemented = 501;
+   BadGateway = 502;
+   ServiceUnavailable = 503;
+   GatewayTimeout = 504;
+   HttpVersionNotSupported = 505;
+   VariantAlsoNegotiates = 506;
+   InsufficientStorage = 507;
+   LoopDetected = 508;
+   NotExtended = 510;
+   NetworkAuthenticationRequired = 511;
+}
 message Incr {
    int32 Amount = 1;
 }
@@ -323,12 +512,27 @@ message Multiply {
 message MultiplyResponse {
    int32 Result = 1;
 }
+message NamedRockstar {
+}
+message PagingTest {
+   int32 Id = 1;
+   string Name = 2;
+   int32 Value = 3;
+}
 message PostChatToChannel {
    string From = 1;
    string ToUserId = 2;
    string Channel = 3;
    string Message = 4;
    string Selector = 5;
+}
+message QueryAdhoc {
+}
+message QueryAdhocRockstars {
+   string first_name = 1;
+}
+message QueryAllFields {
+   .bcl.Guid Guid = 1;
 }
 message QueryBase {
    int32 Skip = 1;
@@ -340,9 +544,19 @@ message QueryBase {
    map<string,string> Meta = 7;
    oneof subtype {
       QueryDb_Rockstar_CustomRockstar QueryDb_Rockstar_CustomRockstar = 1595516;
+      QueryDb_Rockstar_RockstarAlias QueryDb_Rockstar_RockstarAlias = 95568396;
+      QueryDb_PagingTest QueryDb_PagingTest = 110246772;
+      QueryDb_CustomSelectRockstar QueryDb_CustomSelectRockstar = 117530989;
       QueryDb_Movie QueryDb_Movie = 133134611;
       QueryDb_RockstarReference QueryDb_RockstarReference = 139856298;
+      QueryDb_Adhoc QueryDb_Adhoc = 193863048;
+      QueryDb_NamedRockstar QueryDb_NamedRockstar = 217534861;
+      QueryDb_TypeWithEnum QueryDb_TypeWithEnum = 390586478;
+      QueryDb_RockstarAlbum QueryDb_RockstarAlbum = 411180685;
+      QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse = 428847863;
       QueryDb_Rockstar QueryDb_Rockstar = 447773769;
+      QueryDb_AllFields QueryDb_AllFields = 473971172;
+      QueryDb_Rockstar_CustomRockstarSchema QueryDb_Rockstar_CustomRockstarSchema = 483328659;
    }
 }
 message QueryCaseInsensitiveOrderBy {
@@ -350,31 +564,177 @@ message QueryCaseInsensitiveOrderBy {
 }
 message QueryChangeConnectionInfo {
 }
+message QueryChangeDb {
+   string NamedConnection = 1;
+   string ConnectionString = 2;
+   string ProviderName = 3;
+}
+message QueryCustomRockstars {
+   int32 Age = 1;
+}
+message QueryCustomRockstarsFilter {
+   int32 Age = 1;
+}
 message QueryCustomRockstarsReferences {
    int32 Age = 1;
 }
+message QueryCustomRockstarsSchema {
+   int32 Age = 1;
+}
+message QueryDb_Adhoc {
+   oneof subtype {
+      QueryAdhoc QueryAdhoc = 91431949;
+   }
+}
+message QueryDb_AllFields {
+   oneof subtype {
+      QueryAllFields QueryAllFields = 524448297;
+   }
+}
+message QueryDb_CustomSelectRockstar {
+   oneof subtype {
+      QueryJoinedRockstarAlbumsCustomSelect QueryJoinedRockstarAlbumsCustomSelect = 141691829;
+   }
+}
+message QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse {
+   oneof subtype {
+      QueryJoinedRockstarAlbumsCustomSelectResponse QueryJoinedRockstarAlbumsCustomSelectResponse = 536127599;
+   }
+}
 message QueryDb_Movie {
    oneof subtype {
+      SearchMovies SearchMovies = 205066215;
       StreamMovies StreamMovies = 254558360;
+      QueryMovies QueryMovies = 510651567;
+   }
+}
+message QueryDb_NamedRockstar {
+   oneof subtype {
+      QueryNamedRockstars QueryNamedRockstars = 294326335;
+   }
+}
+message QueryDb_PagingTest {
+   oneof subtype {
+      QueryPagingTest QueryPagingTest = 354250915;
    }
 }
 message QueryDb_Rockstar {
    oneof subtype {
+      QueryRockstars QueryRockstars = 10;
       QueryChangeConnectionInfo QueryChangeConnectionInfo = 48758375;
+      QueryFieldRockstarsDynamic QueryFieldRockstarsDynamic = 69037208;
+      QueryFieldRockstars QueryFieldRockstars = 112815840;
       QueryOverridedRockstars QueryOverridedRockstars = 120014899;
+      QueryRockstarsIFilter QueryRockstarsIFilter = 148136160;
+      QueryGetRockstars QueryGetRockstars = 216997297;
+      QueryOrRockstars QueryOrRockstars = 221913152;
+      QueryRockstarsFilter QueryRockstarsFilter = 261863748;
+      QueryRockstarsConventions QueryRockstarsConventions = 314421004;
+      QueryAdhocRockstars QueryAdhocRockstars = 327102818;
+      QueryFieldsImplicitConventions QueryFieldsImplicitConventions = 355646391;
+      QueryRockstarFilters QueryRockstarFilters = 408217178;
       QueryCaseInsensitiveOrderBy QueryCaseInsensitiveOrderBy = 425975099;
+      QueryChangeDb QueryChangeDb = 454373236;
+      QueryGetRockstarsDynamic QueryGetRockstarsDynamic = 487926813;
+      QueryOrRockstarsFields QueryOrRockstarsFields = 527268965;
+      QueryUnknownRockstars QueryUnknownRockstars = 527646846;
+   }
+}
+message QueryDb_RockstarAlbum {
+   oneof subtype {
+      QueryRockstarAlbums QueryRockstarAlbums = 497413094;
    }
 }
 message QueryDb_RockstarReference {
    oneof subtype {
+      QueryRockstarsWithReferences QueryRockstarsWithReferences = 203511396;
       QueryCustomRockstarsReferences QueryCustomRockstarsReferences = 376893524;
    }
 }
 message QueryDb_Rockstar_CustomRockstar {
    oneof subtype {
+      QueryCustomRockstars QueryCustomRockstars = 24502909;
+      QueryJoinedRockstarAlbums QueryJoinedRockstarAlbums = 149576717;
+      QueryCustomRockstarsFilter QueryCustomRockstarsFilter = 227679611;
       QueryRockstarAlbumsCustomLeftJoin QueryRockstarAlbumsCustomLeftJoin = 396185863;
+      QueryRockstarAlbumsImplicit QueryRockstarAlbumsImplicit = 415628851;
       QueryOverridedCustomRockstars QueryOverridedCustomRockstars = 442785347;
+      QueryRockstarAlbumsLeftJoin QueryRockstarAlbumsLeftJoin = 461151229;
+      QueryMultiJoinRockstar QueryMultiJoinRockstar = 467458623;
    }
+}
+message QueryDb_Rockstar_CustomRockstarSchema {
+   oneof subtype {
+      QueryCustomRockstarsSchema QueryCustomRockstarsSchema = 251457334;
+   }
+}
+message QueryDb_Rockstar_RockstarAlias {
+   oneof subtype {
+      QueryRockstarAlias QueryRockstarAlias = 390089709;
+   }
+}
+message QueryDb_TypeWithEnum {
+   oneof subtype {
+      QueryTypeWithEnums QueryTypeWithEnums = 314562614;
+   }
+}
+message QueryFieldRockstars {
+   string FirstName = 1;
+   repeated string FirstNames = 2;
+   int32 Age = 3;
+   string FirstNameCaseInsensitive = 4;
+   string FirstNameStartsWith = 5;
+   string LastNameEndsWith = 6;
+   repeated string FirstNameBetween = 7;
+   string OrLastName = 8;
+}
+message QueryFieldRockstarsDynamic {
+   int32 Age = 1;
+}
+message QueryFieldsImplicitConventions {
+   string FirstNameContains = 1;
+   string LastNameEndsWith = 2;
+}
+message QueryGetRockstars {
+   repeated int32 Ids = 1 [packed = false];
+   repeated int32 Ages = 2 [packed = false];
+   repeated string FirstNames = 3;
+   repeated int32 IdsBetween = 4 [packed = false];
+}
+message QueryGetRockstarsDynamic {
+}
+message QueryJoinedRockstarAlbums {
+   int32 Age = 1;
+   string RockstarAlbumName = 2;
+}
+message QueryJoinedRockstarAlbumsCustomSelect {
+   int32 Age = 1;
+   string RockstarAlbumName = 2;
+}
+message QueryJoinedRockstarAlbumsCustomSelectResponse {
+   int32 Age = 1;
+   string RockstarAlbumName = 2;
+}
+message QueryMovies {
+   repeated int32 Ids = 1 [packed = false];
+   repeated string ImdbIds = 2;
+   repeated string Ratings = 3;
+}
+message QueryMultiJoinRockstar {
+   int32 Age = 1;
+   string RockstarAlbumName = 2;
+   string RockstarGenreName = 3;
+}
+message QueryNamedRockstars {
+   int32 Age = 1;
+}
+message QueryOrRockstars {
+   int32 Age = 1;
+   string FirstName = 2;
+}
+message QueryOrRockstarsFields {
+   string FirstName = 1;
+   string LastName = 2;
 }
 message QueryOverridedCustomRockstars {
    int32 Age = 1;
@@ -382,10 +742,50 @@ message QueryOverridedCustomRockstars {
 message QueryOverridedRockstars {
    int32 Age = 1;
 }
+message QueryPagingTest {
+   int32 Id = 1;
+   string Name = 2;
+   int32 Value = 3;
+}
+message QueryResponse_Adhoc {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated Adhoc Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_AllFields {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated AllFields Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
 message QueryResponse_CustomRockstar {
    int32 Offset = 1;
    int32 Total = 2;
    repeated CustomRockstar Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_CustomRockstarSchema {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated CustomRockstarSchema Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_CustomSelectRockstar {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated CustomSelectRockstar Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_CustomSelectRockstarResponse {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated CustomSelectRockstarResponse Results = 3;
    map<string,string> Meta = 4;
    ResponseStatus ResponseStatus = 5;
 }
@@ -396,10 +796,38 @@ message QueryResponse_Movie {
    map<string,string> Meta = 4;
    ResponseStatus ResponseStatus = 5;
 }
+message QueryResponse_NamedRockstar {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated Rockstar Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_PagingTest {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated PagingTest Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
 message QueryResponse_Rockstar {
    int32 Offset = 1;
    int32 Total = 2;
    repeated Rockstar Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_RockstarAlbum {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated RockstarAlbum Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_RockstarAlias {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated RockstarAlias Results = 3;
    map<string,string> Meta = 4;
    ResponseStatus ResponseStatus = 5;
 }
@@ -410,10 +838,74 @@ message QueryResponse_RockstarReference {
    map<string,string> Meta = 4;
    ResponseStatus ResponseStatus = 5;
 }
+message QueryResponse_TypeWithEnum {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated TypeWithEnum Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryRockstarAlbums {
+   int32 Id = 1;
+   int32 RockstarId = 2;
+   string Name = 3;
+   string Genre = 4;
+   repeated int32 IdBetween = 5 [packed = false];
+}
 message QueryRockstarAlbumsCustomLeftJoin {
    int32 Age = 1;
    string AlbumName = 2;
    int32 IdNotEqualTo = 3;
+}
+message QueryRockstarAlbumsImplicit {
+}
+message QueryRockstarAlbumsLeftJoin {
+   int32 Age = 1;
+   string AlbumName = 2;
+   int32 IdNotEqualTo = 3;
+}
+message QueryRockstarAlias {
+   int32 Age = 1;
+   string RockstarAlbumName = 2;
+}
+message QueryRockstarFilters {
+   repeated int32 Ids = 1 [packed = false];
+   repeated int32 Ages = 2 [packed = false];
+   repeated string FirstNames = 3;
+   repeated int32 IdsBetween = 4 [packed = false];
+}
+message QueryRockstars {
+   int32 Age = 1;
+}
+message QueryRockstarsConventions {
+   .bcl.DateTime DateOfBirthGreaterThan = 1;
+   .bcl.DateTime DateDiedLessThan = 2;
+   repeated int32 Ids = 3 [packed = false];
+   int32 AgeOlderThan = 4;
+   int32 AgeGreaterThanOrEqualTo = 5;
+   int32 AgeGreaterThan = 6;
+   int32 GreaterThanAge = 7;
+   string FirstNameStartsWith = 8;
+   string LastNameEndsWith = 9;
+   string LastNameContains = 10;
+   string RockstarAlbumNameContains = 11;
+   int32 RockstarIdAfter = 12;
+   int32 RockstarIdOnOrAfter = 13;
+}
+message QueryRockstarsFilter {
+   int32 Age = 1;
+}
+message QueryRockstarsIFilter {
+   int32 Age = 1;
+}
+message QueryRockstarsWithReferences {
+   int32 Age = 1;
+}
+message QueryTypeWithEnums {
+}
+message QueryUnknownRockstars {
+   int32 UnknownInt = 1;
+   string UnknownProperty = 2;
 }
 message RegenerateApiKeys {
    string Environment = 1;
@@ -474,12 +966,21 @@ message Rockstar {
    .bcl.DateTime DateOfBirth = 5;
    .bcl.DateTime DateDied = 6;
    LivingStatus LivingStatus = 7;
+   oneof subtype {
+      NamedRockstar NamedRockstar = 345091624;
+   }
 }
 message RockstarAlbum {
    int32 Id = 1;
    int32 RockstarId = 2;
    string Name = 3;
    string Genre = 4;
+}
+message RockstarAlias {
+   int32 RockstarId = 1;
+   string FirstName = 2;
+   string Surname = 3;
+   string album = 4;
 }
 message RockstarReference {
    int32 Id = 1;
@@ -488,12 +989,26 @@ message RockstarReference {
    int32 Age = 4;
    repeated RockstarAlbum Albums = 5;
 }
+message SearchMovies {
+}
 message Secured {
    string Name = 1;
 }
 message SecuredResponse {
    string Result = 1;
    ResponseStatus ResponseStatus = 2;
+}
+enum SomeEnum {
+   SomeEnum_Value0 = 0;
+   SomeEnum_Value1 = 1;
+   SomeEnum_Value2 = 2;
+   SomeEnum_Value3 = 3;
+}
+enum SomeEnumAsInt {
+   Value0 = 0;
+   Value1 = 1;
+   Value2 = 2;
+   Value3 = 3;
 }
 message StreamFiles {
    repeated string Paths = 1;
@@ -561,6 +1076,14 @@ message TriggerValidators {
    string Null = 14;
    string RegularExpression = 15;
    .bcl.Decimal ScalePrecision = 16;
+}
+message TypeWithEnum {
+   int32 Id = 1;
+   string Name = 2;
+   SomeEnum SomeEnum = 3;
+   SomeEnumAsInt SomeEnumAsInt = 4;
+   SomeEnum NSomeEnum = 5;
+   SomeEnumAsInt NSomeEnumAsInt = 6;
 }
 message UnAssignRoles {
    string UserName = 1;

@@ -25,303 +25,611 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Cg5zZXJ2aWNlcy5wcm90bxoWcHJvdG9idWYtbmV0L2JjbC5wcm90byIoCglB",
-            "ZGRIZWFkZXISDAoETmFtZRgBIAEoCRINCgVWYWx1ZRgCIAEoCSIYCghBbnlI",
-            "ZWxsbxIMCgROYW1lGAEgASgJIpYBCgtBc3NpZ25Sb2xlcxIQCghVc2VyTmFt",
-            "ZRgBIAEoCRITCgtQZXJtaXNzaW9ucxgCIAMoCRINCgVSb2xlcxgDIAMoCRIk",
-            "CgRNZXRhGAQgAygLMhYuQXNzaWduUm9sZXMuTWV0YUVudHJ5GisKCU1ldGFF",
-            "bnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIsMBChNBc3Np",
-            "Z25Sb2xlc1Jlc3BvbnNlEhAKCEFsbFJvbGVzGAEgAygJEhYKDkFsbFBlcm1p",
-            "c3Npb25zGAIgAygJEiwKBE1ldGEYAyADKAsyHi5Bc3NpZ25Sb2xlc1Jlc3Bv",
-            "bnNlLk1ldGFFbnRyeRInCg5SZXNwb25zZVN0YXR1cxgEIAEoCzIPLlJlc3Bv",
-            "bnNlU3RhdHVzGisKCU1ldGFFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUY",
-            "AiABKAk6AjgBIrsDCgxBdXRoZW50aWNhdGUSEAoIcHJvdmlkZXIYASABKAkS",
-            "DQoFU3RhdGUYAiABKAkSEwoLb2F1dGhfdG9rZW4YAyABKAkSFgoOb2F1dGhf",
-            "dmVyaWZpZXIYBCABKAkSEAoIVXNlck5hbWUYBSABKAkSEAoIUGFzc3dvcmQY",
-            "BiABKAkSEgoKUmVtZW1iZXJNZRgHIAEoCBIQCghDb250aW51ZRgIIAEoCRIR",
-            "CglFcnJvclZpZXcYCSABKAkSDQoFbm9uY2UYCiABKAkSCwoDdXJpGAsgASgJ",
-            "EhAKCHJlc3BvbnNlGAwgASgJEgsKA3FvcBgNIAEoCRIKCgJuYxgOIAEoCRIO",
-            "CgZjbm9uY2UYDyABKAkSFgoOVXNlVG9rZW5Db29raWUYECABKAgSEwoLQWNj",
-            "ZXNzVG9rZW4YESABKAkSGQoRQWNjZXNzVG9rZW5TZWNyZXQYEiABKAkSDQoF",
-            "c2NvcGUYEyABKAkSJQoETWV0YRgUIAMoCzIXLkF1dGhlbnRpY2F0ZS5NZXRh",
-            "RW50cnkaKwoJTWV0YUVudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEo",
-            "CToCOAEi3QIKFEF1dGhlbnRpY2F0ZVJlc3BvbnNlEg4KBlVzZXJJZBgBIAEo",
-            "CRIRCglTZXNzaW9uSWQYAiABKAkSEAoIVXNlck5hbWUYAyABKAkSEwoLRGlz",
-            "cGxheU5hbWUYBCABKAkSEwoLUmVmZXJyZXJVcmwYBSABKAkSEwoLQmVhcmVy",
-            "VG9rZW4YBiABKAkSFAoMUmVmcmVzaFRva2VuGAcgASgJEhIKClByb2ZpbGVV",
-            "cmwYCCABKAkSDQoFUm9sZXMYCSADKAkSEwoLUGVybWlzc2lvbnMYCiADKAkS",
-            "JwoOUmVzcG9uc2VTdGF0dXMYCyABKAsyDy5SZXNwb25zZVN0YXR1cxItCgRN",
-            "ZXRhGAwgAygLMh8uQXV0aGVudGljYXRlUmVzcG9uc2UuTWV0YUVudHJ5GisK",
-            "CU1ldGFFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIhYK",
-            "FENoYW5nZUNvbm5lY3Rpb25JbmZvIlMKCENoYW5nZURiEhcKD05hbWVkQ29u",
-            "bmVjdGlvbhgBIAEoCRIYChBDb25uZWN0aW9uU3RyaW5nGAIgASgJEhQKDFBy",
-            "b3ZpZGVyTmFtZRgDIAEoCSIuChBDaGFuZ2VEYlJlc3BvbnNlEhoKB1Jlc3Vs",
-            "dHMYASADKAsyCS5Sb2Nrc3RhciKbAQoLQ2hhdE1lc3NhZ2USCgoCSWQYASAB",
-            "KAMSDwoHQ2hhbm5lbBgCIAEoCRISCgpGcm9tVXNlcklkGAMgASgJEhAKCEZy",
-            "b21OYW1lGAQgASgJEhMKC0Rpc3BsYXlOYW1lGAUgASgJEg8KB01lc3NhZ2UY",
-            "BiABKAkSEgoKVXNlckF1dGhJZBgHIAEoCRIPCgdQcml2YXRlGAggASgIIo0B",
-            "ChVDb252ZXJ0U2Vzc2lvblRvVG9rZW4SFwoPUHJlc2VydmVTZXNzaW9uGAEg",
-            "ASgIEi4KBE1ldGEYAiADKAsyIC5Db252ZXJ0U2Vzc2lvblRvVG9rZW4uTWV0",
-            "YUVudHJ5GisKCU1ldGFFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiAB",
-            "KAk6AjgBItgBCh1Db252ZXJ0U2Vzc2lvblRvVG9rZW5SZXNwb25zZRI2CgRN",
-            "ZXRhGAEgAygLMiguQ29udmVydFNlc3Npb25Ub1Rva2VuUmVzcG9uc2UuTWV0",
-            "YUVudHJ5EhMKC0FjY2Vzc1Rva2VuGAIgASgJEhQKDFJlZnJlc2hUb2tlbhgD",
-            "IAEoCRInCg5SZXNwb25zZVN0YXR1cxgEIAEoCzIPLlJlc3BvbnNlU3RhdHVz",
-            "GisKCU1ldGFFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgB",
-            "IioKCkNyZWF0ZVRvZG8SDQoFVGl0bGUYASABKAkSDQoFT3JkZXIYAiABKAUi",
-            "VAoSQ3JlYXRlVG9kb1Jlc3BvbnNlEhUKBlJlc3VsdBgBIAEoCzIFLlRvZG8S",
-            "JwoOUmVzcG9uc2VTdGF0dXMYAiABKAsyDy5SZXNwb25zZVN0YXR1cyJ4Cg5D",
-            "dXN0b21Sb2Nrc3RhchIRCglGaXJzdE5hbWUYASABKAkSEAoITGFzdE5hbWUY",
-            "AiABKAkSCwoDQWdlGAMgASgFEhkKEVJvY2tzdGFyQWxidW1OYW1lGAQgASgJ",
-            "EhkKEVJvY2tzdGFyR2VucmVOYW1lGAUgASgJIhgKCkRlbGV0ZVRvZG8SCgoC",
-            "SWQYASABKAMiHgoLRGVsZXRlVG9kb3MSDwoDSWRzGAEgAygDQgIQACI4Cg1F",
-            "bXB0eVJlc3BvbnNlEicKDlJlc3BvbnNlU3RhdHVzGAEgASgLMg8uUmVzcG9u",
-            "c2VTdGF0dXMicAoLRmlsZUNvbnRlbnQSDAoETmFtZRgBIAEoCRIMCgRUeXBl",
-            "GAIgASgJEg4KBkxlbmd0aBgDIAEoBRIMCgRCb2R5GAQgASgMEicKDlJlc3Bv",
-            "bnNlU3RhdHVzGAUgASgLMg8uUmVzcG9uc2VTdGF0dXMilAEKDkdldEFjY2Vz",
-            "c1Rva2VuEhQKDFJlZnJlc2hUb2tlbhgBIAEoCRIWCg5Vc2VUb2tlbkNvb2tp",
-            "ZRgCIAEoCBInCgRNZXRhGAMgAygLMhkuR2V0QWNjZXNzVG9rZW4uTWV0YUVu",
-            "dHJ5GisKCU1ldGFFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6",
-            "AjgBIrQBChZHZXRBY2Nlc3NUb2tlblJlc3BvbnNlEhMKC0FjY2Vzc1Rva2Vu",
-            "GAEgASgJEi8KBE1ldGEYAiADKAsyIS5HZXRBY2Nlc3NUb2tlblJlc3BvbnNl",
-            "Lk1ldGFFbnRyeRInCg5SZXNwb25zZVN0YXR1cxgDIAEoCzIPLlJlc3BvbnNl",
-            "U3RhdHVzGisKCU1ldGFFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiAB",
-            "KAk6AjgBInMKCkdldEFwaUtleXMSEwoLRW52aXJvbm1lbnQYASABKAkSIwoE",
-            "TWV0YRgCIAMoCzIVLkdldEFwaUtleXMuTWV0YUVudHJ5GisKCU1ldGFFbnRy",
-            "eRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIrUBChJHZXRBcGlL",
-            "ZXlzUmVzcG9uc2USHAoHUmVzdWx0cxgBIAMoCzILLlVzZXJBcGlLZXkSKwoE",
-            "TWV0YRgCIAMoCzIdLkdldEFwaUtleXNSZXNwb25zZS5NZXRhRW50cnkSJwoO",
-            "UmVzcG9uc2VTdGF0dXMYAyABKAsyDy5SZXNwb25zZVN0YXR1cxorCglNZXRh",
-            "RW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASIYCghHZXRI",
-            "ZWxsbxIMCgROYW1lGAEgASgJIhUKB0dldFRvZG8SCgoCSWQYASABKAMiUQoP",
-            "R2V0VG9kb1Jlc3BvbnNlEhUKBlJlc3VsdBgBIAEoCzIFLlRvZG8SJwoOUmVz",
-            "cG9uc2VTdGF0dXMYAiABKAsyDy5SZXNwb25zZVN0YXR1cyIKCghHZXRUb2Rv",
-            "cyJTChBHZXRUb2Rvc1Jlc3BvbnNlEhYKB1Jlc3VsdHMYASADKAsyBS5Ub2Rv",
-            "EicKDlJlc3BvbnNlU3RhdHVzGAIgASgLMg8uUmVzcG9uc2VTdGF0dXMiLQoI",
-            "SGVsbG9Kd3QSDAoETmFtZRgBIAEoCRITCgtCZWFyZXJUb2tlbhgCIAEoCSJL",
-            "ChBIZWxsb0p3dFJlc3BvbnNlEg4KBlJlc3VsdBgBIAEoCRInCg5SZXNwb25z",
-            "ZVN0YXR1cxgCIAEoCzIPLlJlc3BvbnNlU3RhdHVzIkgKDUhlbGxvUmVzcG9u",
-            "c2USDgoGUmVzdWx0GAEgASgJEicKDlJlc3BvbnNlU3RhdHVzGAIgASgLMg8u",
-            "UmVzcG9uc2VTdGF0dXMiFgoESW5jchIOCgZBbW91bnQYASABKAUitgEKBU1v",
-            "dmllEgoKAklkGAEgASgFEg4KBkltZGJJZBgCIAEoCRINCgVUaXRsZRgDIAEo",
-            "CRIOCgZSYXRpbmcYBCABKAkSGwoFU2NvcmUYBSABKAsyDC5iY2wuRGVjaW1h",
-            "bBIQCghEaXJlY3RvchgGIAEoCRIiCgtSZWxlYXNlRGF0ZRgHIAEoCzINLmJj",
-            "bC5EYXRlVGltZRIPCgdUYWdMaW5lGAggASgJEg4KBkdlbnJlcxgJIAMoCSIg",
-            "CghNdWx0aXBseRIJCgFYGAEgASgFEgkKAVkYAiABKAUiIgoQTXVsdGlwbHlS",
-            "ZXNwb25zZRIOCgZSZXN1bHQYASABKAUiZwoRUG9zdENoYXRUb0NoYW5uZWwS",
-            "DAoERnJvbRgBIAEoCRIQCghUb1VzZXJJZBgCIAEoCRIPCgdDaGFubmVsGAMg",
-            "ASgJEg8KB01lc3NhZ2UYBCABKAkSEAoIU2VsZWN0b3IYBSABKAkivAMKCVF1",
-            "ZXJ5QmFzZRIMCgRTa2lwGAEgASgFEgwKBFRha2UYAiABKAUSDwoHT3JkZXJC",
-            "eRgDIAEoCRITCgtPcmRlckJ5RGVzYxgEIAEoCRIPCgdJbmNsdWRlGAUgASgJ",
-            "Eg4KBkZpZWxkcxgGIAEoCRIiCgRNZXRhGAcgAygLMhQuUXVlcnlCYXNlLk1l",
-            "dGFFbnRyeRJNCh9RdWVyeURiX1JvY2tzdGFyX0N1c3RvbVJvY2tzdGFyGPyw",
-            "YSABKAsyIC5RdWVyeURiX1JvY2tzdGFyX0N1c3RvbVJvY2tzdGFySAASKgoN",
-            "UXVlcnlEYl9Nb3ZpZRiT8r0/IAEoCzIOLlF1ZXJ5RGJfTW92aWVIABJCChlR",
-            "dWVyeURiX1JvY2tzdGFyUmVmZXJlbmNlGKqT2EIgASgLMhouUXVlcnlEYl9S",
-            "b2Nrc3RhclJlZmVyZW5jZUgAEjEKEFF1ZXJ5RGJfUm9ja3N0YXIYyfjB1QEg",
-            "ASgLMhEuUXVlcnlEYl9Sb2Nrc3RhckgAGisKCU1ldGFFbnRyeRILCgNrZXkY",
-            "ASABKAkSDQoFdmFsdWUYAiABKAk6AjgBQgkKB3N1YnR5cGUiKgobUXVlcnlD",
-            "YXNlSW5zZW5zaXRpdmVPcmRlckJ5EgsKA0FnZRgBIAEoBSIbChlRdWVyeUNo",
-            "YW5nZUNvbm5lY3Rpb25JbmZvIi0KHlF1ZXJ5Q3VzdG9tUm9ja3N0YXJzUmVm",
-            "ZXJlbmNlcxILCgNBZ2UYASABKAUiRAoNUXVlcnlEYl9Nb3ZpZRIoCgxTdHJl",
-            "YW1Nb3ZpZXMYmIGxeSABKAsyDS5TdHJlYW1Nb3ZpZXNIAEIJCgdzdWJ0eXBl",
-            "IuoBChBRdWVyeURiX1JvY2tzdGFyEkIKGVF1ZXJ5Q2hhbmdlQ29ubmVjdGlv",
-            "bkluZm8Y5/yfFyABKAsyGi5RdWVyeUNoYW5nZUNvbm5lY3Rpb25JbmZvSAAS",
-            "PgoXUXVlcnlPdmVycmlkZWRSb2Nrc3RhcnMYs5CdOSABKAsyGC5RdWVyeU92",
-            "ZXJyaWRlZFJvY2tzdGFyc0gAEkcKG1F1ZXJ5Q2FzZUluc2Vuc2l0aXZlT3Jk",
-            "ZXJCeRi7uo/LASABKAsyHC5RdWVyeUNhc2VJbnNlbnNpdGl2ZU9yZGVyQnlI",
-            "AEIJCgdzdWJ0eXBlInUKGVF1ZXJ5RGJfUm9ja3N0YXJSZWZlcmVuY2USTQoe",
-            "UXVlcnlDdXN0b21Sb2Nrc3RhcnNSZWZlcmVuY2VzGNTg27MBIAEoCzIfLlF1",
-            "ZXJ5Q3VzdG9tUm9ja3N0YXJzUmVmZXJlbmNlc0gAQgkKB3N1YnR5cGUizgEK",
-            "H1F1ZXJ5RGJfUm9ja3N0YXJfQ3VzdG9tUm9ja3N0YXISUwohUXVlcnlSb2Nr",
-            "c3RhckFsYnVtc0N1c3RvbUxlZnRKb2luGIei9bwBIAEoCzIiLlF1ZXJ5Um9j",
-            "a3N0YXJBbGJ1bXNDdXN0b21MZWZ0Sm9pbkgAEksKHVF1ZXJ5T3ZlcnJpZGVk",
-            "Q3VzdG9tUm9ja3N0YXJzGMO8kdMBIAEoCzIeLlF1ZXJ5T3ZlcnJpZGVkQ3Vz",
-            "dG9tUm9ja3N0YXJzSABCCQoHc3VidHlwZSIsCh1RdWVyeU92ZXJyaWRlZEN1",
-            "c3RvbVJvY2tzdGFycxILCgNBZ2UYASABKAUiJgoXUXVlcnlPdmVycmlkZWRS",
-            "b2Nrc3RhcnMSCwoDQWdlGAEgASgFIuwBChxRdWVyeVJlc3BvbnNlX0N1c3Rv",
-            "bVJvY2tzdGFyEg4KBk9mZnNldBgBIAEoBRINCgVUb3RhbBgCIAEoBRIgCgdS",
-            "ZXN1bHRzGAMgAygLMg8uQ3VzdG9tUm9ja3N0YXISNQoETWV0YRgEIAMoCzIn",
-            "LlF1ZXJ5UmVzcG9uc2VfQ3VzdG9tUm9ja3N0YXIuTWV0YUVudHJ5EicKDlJl",
-            "c3BvbnNlU3RhdHVzGAUgASgLMg8uUmVzcG9uc2VTdGF0dXMaKwoJTWV0YUVu",
-            "dHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEi0QEKE1F1ZXJ5",
-            "UmVzcG9uc2VfTW92aWUSDgoGT2Zmc2V0GAEgASgFEg0KBVRvdGFsGAIgASgF",
-            "EhcKB1Jlc3VsdHMYAyADKAsyBi5Nb3ZpZRIsCgRNZXRhGAQgAygLMh4uUXVl",
-            "cnlSZXNwb25zZV9Nb3ZpZS5NZXRhRW50cnkSJwoOUmVzcG9uc2VTdGF0dXMY",
-            "BSABKAsyDy5SZXNwb25zZVN0YXR1cxorCglNZXRhRW50cnkSCwoDa2V5GAEg",
-            "ASgJEg0KBXZhbHVlGAIgASgJOgI4ASLaAQoWUXVlcnlSZXNwb25zZV9Sb2Nr",
-            "c3RhchIOCgZPZmZzZXQYASABKAUSDQoFVG90YWwYAiABKAUSGgoHUmVzdWx0",
-            "cxgDIAMoCzIJLlJvY2tzdGFyEi8KBE1ldGEYBCADKAsyIS5RdWVyeVJlc3Bv",
-            "bnNlX1JvY2tzdGFyLk1ldGFFbnRyeRInCg5SZXNwb25zZVN0YXR1cxgFIAEo",
-            "CzIPLlJlc3BvbnNlU3RhdHVzGisKCU1ldGFFbnRyeRILCgNrZXkYASABKAkS",
-            "DQoFdmFsdWUYAiABKAk6AjgBIvUBCh9RdWVyeVJlc3BvbnNlX1JvY2tzdGFy",
-            "UmVmZXJlbmNlEg4KBk9mZnNldBgBIAEoBRINCgVUb3RhbBgCIAEoBRIjCgdS",
-            "ZXN1bHRzGAMgAygLMhIuUm9ja3N0YXJSZWZlcmVuY2USOAoETWV0YRgEIAMo",
-            "CzIqLlF1ZXJ5UmVzcG9uc2VfUm9ja3N0YXJSZWZlcmVuY2UuTWV0YUVudHJ5",
-            "EicKDlJlc3BvbnNlU3RhdHVzGAUgASgLMg8uUmVzcG9uc2VTdGF0dXMaKwoJ",
-            "TWV0YUVudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEiWQoh",
-            "UXVlcnlSb2Nrc3RhckFsYnVtc0N1c3RvbUxlZnRKb2luEgsKA0FnZRgBIAEo",
-            "BRIRCglBbGJ1bU5hbWUYAiABKAkSFAoMSWROb3RFcXVhbFRvGAMgASgFIoEB",
-            "ChFSZWdlbmVyYXRlQXBpS2V5cxITCgtFbnZpcm9ubWVudBgBIAEoCRIqCgRN",
-            "ZXRhGAIgAygLMhwuUmVnZW5lcmF0ZUFwaUtleXMuTWV0YUVudHJ5GisKCU1l",
-            "dGFFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIsMBChlS",
-            "ZWdlbmVyYXRlQXBpS2V5c1Jlc3BvbnNlEhwKB1Jlc3VsdHMYASADKAsyCy5V",
-            "c2VyQXBpS2V5EjIKBE1ldGEYAiADKAsyJC5SZWdlbmVyYXRlQXBpS2V5c1Jl",
-            "c3BvbnNlLk1ldGFFbnRyeRInCg5SZXNwb25zZVN0YXR1cxgDIAEoCzIPLlJl",
-            "c3BvbnNlU3RhdHVzGisKCU1ldGFFbnRyeRILCgNrZXkYASABKAkSDQoFdmFs",
-            "dWUYAiABKAk6AjgBIpgCCghSZWdpc3RlchIQCghVc2VyTmFtZRgBIAEoCRIR",
-            "CglGaXJzdE5hbWUYAiABKAkSEAoITGFzdE5hbWUYAyABKAkSEwoLRGlzcGxh",
-            "eU5hbWUYBCABKAkSDQoFRW1haWwYBSABKAkSEAoIUGFzc3dvcmQYBiABKAkS",
-            "FwoPQ29uZmlybVBhc3N3b3JkGAcgASgJEhEKCUF1dG9Mb2dpbhgIIAEoCBIQ",
-            "CghDb250aW51ZRgJIAEoCRIRCglFcnJvclZpZXcYCiABKAkSIQoETWV0YRgL",
-            "IAMoCzITLlJlZ2lzdGVyLk1ldGFFbnRyeRorCglNZXRhRW50cnkSCwoDa2V5",
-            "GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASKIAgoQUmVnaXN0ZXJSZXNwb25z",
-            "ZRIOCgZVc2VySWQYASABKAkSEQoJU2Vzc2lvbklkGAIgASgJEhAKCFVzZXJO",
-            "YW1lGAMgASgJEhMKC1JlZmVycmVyVXJsGAQgASgJEhMKC0JlYXJlclRva2Vu",
-            "GAUgASgJEhQKDFJlZnJlc2hUb2tlbhgGIAEoCRInCg5SZXNwb25zZVN0YXR1",
-            "cxgHIAEoCzIPLlJlc3BvbnNlU3RhdHVzEikKBE1ldGEYCCADKAsyGy5SZWdp",
-            "c3RlclJlc3BvbnNlLk1ldGFFbnRyeRorCglNZXRhRW50cnkSCwoDa2V5GAEg",
-            "ASgJEg0KBXZhbHVlGAIgASgJOgI4ASIxCgxSZXF1aXJlc0F1dGgSDAoETmFt",
-            "ZRgBIAEoCRITCgtCZWFyZXJUb2tlbhgCIAEoCSIMCgpSZXNldFRvZG9zIpsB",
-            "Cg1SZXNwb25zZUVycm9yEhEKCUVycm9yQ29kZRgBIAEoCRIRCglGaWVsZE5h",
-            "bWUYAiABKAkSDwoHTWVzc2FnZRgDIAEoCRImCgRNZXRhGAQgAygLMhguUmVz",
-            "cG9uc2VFcnJvci5NZXRhRW50cnkaKwoJTWV0YUVudHJ5EgsKA2tleRgBIAEo",
-            "CRINCgV2YWx1ZRgCIAEoCToCOAEivgEKDlJlc3BvbnNlU3RhdHVzEhEKCUVy",
-            "cm9yQ29kZRgBIAEoCRIPCgdNZXNzYWdlGAIgASgJEhIKClN0YWNrVHJhY2UY",
-            "AyABKAkSHgoGRXJyb3JzGAQgAygLMg4uUmVzcG9uc2VFcnJvchInCgRNZXRh",
-            "GAUgAygLMhkuUmVzcG9uc2VTdGF0dXMuTWV0YUVudHJ5GisKCU1ldGFFbnRy",
-            "eRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIrIBCghSb2Nrc3Rh",
-            "chIKCgJJZBgBIAEoBRIRCglGaXJzdE5hbWUYAiABKAkSEAoITGFzdE5hbWUY",
-            "AyABKAkSCwoDQWdlGAQgASgFEiIKC0RhdGVPZkJpcnRoGAUgASgLMg0uYmNs",
-            "LkRhdGVUaW1lEh8KCERhdGVEaWVkGAYgASgLMg0uYmNsLkRhdGVUaW1lEiMK",
-            "DExpdmluZ1N0YXR1cxgHIAEoDjINLkxpdmluZ1N0YXR1cyJMCg1Sb2Nrc3Rh",
-            "ckFsYnVtEgoKAklkGAEgASgFEhIKClJvY2tzdGFySWQYAiABKAUSDAoETmFt",
-            "ZRgDIAEoCRINCgVHZW5yZRgEIAEoCSJxChFSb2Nrc3RhclJlZmVyZW5jZRIK",
-            "CgJJZBgBIAEoBRIRCglGaXJzdE5hbWUYAiABKAkSEAoITGFzdE5hbWUYAyAB",
-            "KAkSCwoDQWdlGAQgASgFEh4KBkFsYnVtcxgFIAMoCzIOLlJvY2tzdGFyQWxi",
-            "dW0iFwoHU2VjdXJlZBIMCgROYW1lGAEgASgJIkoKD1NlY3VyZWRSZXNwb25z",
-            "ZRIOCgZSZXN1bHQYASABKAkSJwoOUmVzcG9uc2VTdGF0dXMYAiABKAsyDy5S",
-            "ZXNwb25zZVN0YXR1cyIcCgtTdHJlYW1GaWxlcxINCgVQYXRocxgBIAMoCSIf",
-            "CgxTdHJlYW1Nb3ZpZXMSDwoHUmF0aW5ncxgBIAMoCSImChJTdHJlYW1TZXJ2",
-            "ZXJFdmVudHMSEAoIQ2hhbm5lbHMYASADKAkimwQKGlN0cmVhbVNlcnZlckV2",
-            "ZW50c1Jlc3BvbnNlEg8KB0V2ZW50SWQYASABKAMSDwoHQ2hhbm5lbBgCIAEo",
-            "CRIQCghTZWxlY3RvchgEIAEoCRIMCgRKc29uGAUgASgJEgoKAk9wGAYgASgJ",
-            "Eg4KBlRhcmdldBgHIAEoCRITCgtDc3NTZWxlY3RvchgIIAEoCRIzCgRNZXRh",
-            "GAkgAygLMiUuU3RyZWFtU2VydmVyRXZlbnRzUmVzcG9uc2UuTWV0YUVudHJ5",
-            "Eg4KBlVzZXJJZBgKIAEoCRITCgtEaXNwbGF5TmFtZRgLIAEoCRISCgpQcm9m",
-            "aWxlVXJsGAwgASgJEhcKD0lzQXV0aGVudGljYXRlZBgNIAEoCBIQCghDaGFu",
-            "bmVscxgOIAMoCRIRCglDcmVhdGVkQXQYDyABKAMSCgoCSWQYFSABKAkSFQoN",
-            "VW5SZWdpc3RlclVybBgWIAEoCRIbChNVcGRhdGVTdWJzY3JpYmVyVXJsGBcg",
-            "ASgJEhQKDEhlYXJ0YmVhdFVybBgYIAEoCRIbChNIZWFydGJlYXRJbnRlcnZh",
-            "bE1zGBkgASgDEhUKDUlkbGVUaW1lb3V0TXMYGiABKAMSJwoOUmVzcG9uc2VT",
-            "dGF0dXMYHiABKAsyDy5SZXNwb25zZVN0YXR1cxorCglNZXRhRW50cnkSCwoD",
-            "a2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASIYCgVUaHJvdxIPCgdNZXNz",
-            "YWdlGAEgASgJIg0KC1Rocm93Q3VzdG9tIj4KE1Rocm93Q3VzdG9tUmVzcG9u",
-            "c2USJwoOUmVzcG9uc2VTdGF0dXMYASABKAsyDy5SZXNwb25zZVN0YXR1cyIc",
-            "CglUaHJvd1ZvaWQSDwoHTWVzc2FnZRgBIAEoCSJDCgRUb2RvEgoKAklkGAEg",
-            "ASgDEg0KBVRpdGxlGAIgASgJEg0KBU9yZGVyGAMgASgFEhEKCUNvbXBsZXRl",
-            "ZBgEIAEoCCLnAgoRVHJpZ2dlclZhbGlkYXRvcnMSEgoKQ3JlZGl0Q2FyZBgB",
-            "IAEoCRINCgVFbWFpbBgCIAEoCRINCgVFbXB0eRgDIAEoCRINCgVFcXVhbBgE",
-            "IAEoCRIYChBFeGNsdXNpdmVCZXR3ZWVuGAUgASgFEhoKEkdyZWF0ZXJUaGFu",
-            "T3JFcXVhbBgGIAEoBRITCgtHcmVhdGVyVGhhbhgHIAEoBRIYChBJbmNsdXNp",
-            "dmVCZXR3ZWVuGAggASgFEg4KBkxlbmd0aBgJIAEoCRIXCg9MZXNzVGhhbk9y",
-            "RXF1YWwYCiABKAUSEAoITGVzc1RoYW4YCyABKAUSEAoITm90RW1wdHkYDCAB",
-            "KAkSEAoITm90RXF1YWwYDSABKAkSDAoETnVsbBgOIAEoCRIZChFSZWd1bGFy",
-            "RXhwcmVzc2lvbhgPIAEoCRIkCg5TY2FsZVByZWNpc2lvbhgQIAEoCzIMLmJj",
-            "bC5EZWNpbWFsIpoBCg1VbkFzc2lnblJvbGVzEhAKCFVzZXJOYW1lGAEgASgJ",
-            "EhMKC1Blcm1pc3Npb25zGAIgAygJEg0KBVJvbGVzGAMgAygJEiYKBE1ldGEY",
-            "BCADKAsyGC5VbkFzc2lnblJvbGVzLk1ldGFFbnRyeRorCglNZXRhRW50cnkS",
-            "CwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASLHAQoVVW5Bc3NpZ25S",
-            "b2xlc1Jlc3BvbnNlEhAKCEFsbFJvbGVzGAEgAygJEhYKDkFsbFBlcm1pc3Np",
-            "b25zGAIgAygJEi4KBE1ldGEYAyADKAsyIC5VbkFzc2lnblJvbGVzUmVzcG9u",
-            "c2UuTWV0YUVudHJ5EicKDlJlc3BvbnNlU3RhdHVzGAQgASgLMg8uUmVzcG9u",
+            "ZGRIZWFkZXISDAoETmFtZRgBIAEoCRINCgVWYWx1ZRgCIAEoCSI5CgVBZGhv",
+            "YxIKCgJJZBgBIAEoBRISCgpmaXJzdF9uYW1lGAIgASgJEhAKCExhc3ROYW1l",
+            "GAMgASgJIvIDCglBbGxGaWVsZHMSCgoCSWQYASABKAUSEgoKTnVsbGFibGVJ",
+            "ZBgCIAEoBRIMCgRCeXRlGAMgASgNEg0KBVNob3J0GAQgASgFEgsKA0ludBgF",
+            "IAEoBRIMCgRMb25nGAYgASgDEg4KBlVTaG9ydBgHIAEoDRIMCgRVSW50GAgg",
+            "ASgNEg0KBVVMb25nGAkgASgEEg0KBUZsb2F0GAogASgCEg4KBkRvdWJsZRgL",
+            "IAEoARIdCgdEZWNpbWFsGAwgASgLMgwuYmNsLkRlY2ltYWwSDgoGU3RyaW5n",
+            "GA0gASgJEh8KCERhdGVUaW1lGA4gASgLMg0uYmNsLkRhdGVUaW1lEh8KCFRp",
+            "bWVTcGFuGA8gASgLMg0uYmNsLlRpbWVTcGFuEhcKBEd1aWQYECABKAsyCS5i",
+            "Y2wuR3VpZBInChBOdWxsYWJsZURhdGVUaW1lGBEgASgLMg0uYmNsLkRhdGVU",
+            "aW1lEicKEE51bGxhYmxlVGltZVNwYW4YEiABKAsyDS5iY2wuVGltZVNwYW4S",
+            "HwoMTnVsbGFibGVHdWlkGBMgASgLMgkuYmNsLkd1aWQSHQoERW51bRgUIAEo",
+            "DjIPLkh0dHBTdGF0dXNDb2RlEiUKDE51bGxhYmxlRW51bRgVIAEoDjIPLkh0",
+            "dHBTdGF0dXNDb2RlIhgKCEFueUhlbGxvEgwKBE5hbWUYASABKAkilgEKC0Fz",
+            "c2lnblJvbGVzEhAKCFVzZXJOYW1lGAEgASgJEhMKC1Blcm1pc3Npb25zGAIg",
+            "AygJEg0KBVJvbGVzGAMgAygJEiQKBE1ldGEYBCADKAsyFi5Bc3NpZ25Sb2xl",
+            "cy5NZXRhRW50cnkaKwoJTWV0YUVudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1",
+            "ZRgCIAEoCToCOAEiwwEKE0Fzc2lnblJvbGVzUmVzcG9uc2USEAoIQWxsUm9s",
+            "ZXMYASADKAkSFgoOQWxsUGVybWlzc2lvbnMYAiADKAkSLAoETWV0YRgDIAMo",
+            "CzIeLkFzc2lnblJvbGVzUmVzcG9uc2UuTWV0YUVudHJ5EicKDlJlc3BvbnNl",
+            "U3RhdHVzGAQgASgLMg8uUmVzcG9uc2VTdGF0dXMaKwoJTWV0YUVudHJ5EgsK",
+            "A2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEiuwMKDEF1dGhlbnRpY2F0",
+            "ZRIQCghwcm92aWRlchgBIAEoCRINCgVTdGF0ZRgCIAEoCRITCgtvYXV0aF90",
+            "b2tlbhgDIAEoCRIWCg5vYXV0aF92ZXJpZmllchgEIAEoCRIQCghVc2VyTmFt",
+            "ZRgFIAEoCRIQCghQYXNzd29yZBgGIAEoCRISCgpSZW1lbWJlck1lGAcgASgI",
+            "EhAKCENvbnRpbnVlGAggASgJEhEKCUVycm9yVmlldxgJIAEoCRINCgVub25j",
+            "ZRgKIAEoCRILCgN1cmkYCyABKAkSEAoIcmVzcG9uc2UYDCABKAkSCwoDcW9w",
+            "GA0gASgJEgoKAm5jGA4gASgJEg4KBmNub25jZRgPIAEoCRIWCg5Vc2VUb2tl",
+            "bkNvb2tpZRgQIAEoCBITCgtBY2Nlc3NUb2tlbhgRIAEoCRIZChFBY2Nlc3NU",
+            "b2tlblNlY3JldBgSIAEoCRINCgVzY29wZRgTIAEoCRIlCgRNZXRhGBQgAygL",
+            "MhcuQXV0aGVudGljYXRlLk1ldGFFbnRyeRorCglNZXRhRW50cnkSCwoDa2V5",
+            "GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASLdAgoUQXV0aGVudGljYXRlUmVz",
+            "cG9uc2USDgoGVXNlcklkGAEgASgJEhEKCVNlc3Npb25JZBgCIAEoCRIQCghV",
+            "c2VyTmFtZRgDIAEoCRITCgtEaXNwbGF5TmFtZRgEIAEoCRITCgtSZWZlcnJl",
+            "clVybBgFIAEoCRITCgtCZWFyZXJUb2tlbhgGIAEoCRIUCgxSZWZyZXNoVG9r",
+            "ZW4YByABKAkSEgoKUHJvZmlsZVVybBgIIAEoCRINCgVSb2xlcxgJIAMoCRIT",
+            "CgtQZXJtaXNzaW9ucxgKIAMoCRInCg5SZXNwb25zZVN0YXR1cxgLIAEoCzIP",
+            "LlJlc3BvbnNlU3RhdHVzEi0KBE1ldGEYDCADKAsyHy5BdXRoZW50aWNhdGVS",
+            "ZXNwb25zZS5NZXRhRW50cnkaKwoJTWV0YUVudHJ5EgsKA2tleRgBIAEoCRIN",
+            "CgV2YWx1ZRgCIAEoCToCOAEiFgoUQ2hhbmdlQ29ubmVjdGlvbkluZm8iUwoI",
+            "Q2hhbmdlRGISFwoPTmFtZWRDb25uZWN0aW9uGAEgASgJEhgKEENvbm5lY3Rp",
+            "b25TdHJpbmcYAiABKAkSFAoMUHJvdmlkZXJOYW1lGAMgASgJIi4KEENoYW5n",
+            "ZURiUmVzcG9uc2USGgoHUmVzdWx0cxgBIAMoCzIJLlJvY2tzdGFyIpsBCgtD",
+            "aGF0TWVzc2FnZRIKCgJJZBgBIAEoAxIPCgdDaGFubmVsGAIgASgJEhIKCkZy",
+            "b21Vc2VySWQYAyABKAkSEAoIRnJvbU5hbWUYBCABKAkSEwoLRGlzcGxheU5h",
+            "bWUYBSABKAkSDwoHTWVzc2FnZRgGIAEoCRISCgpVc2VyQXV0aElkGAcgASgJ",
+            "Eg8KB1ByaXZhdGUYCCABKAgijQEKFUNvbnZlcnRTZXNzaW9uVG9Ub2tlbhIX",
+            "Cg9QcmVzZXJ2ZVNlc3Npb24YASABKAgSLgoETWV0YRgCIAMoCzIgLkNvbnZl",
+            "cnRTZXNzaW9uVG9Ub2tlbi5NZXRhRW50cnkaKwoJTWV0YUVudHJ5EgsKA2tl",
+            "eRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEi2AEKHUNvbnZlcnRTZXNzaW9u",
+            "VG9Ub2tlblJlc3BvbnNlEjYKBE1ldGEYASADKAsyKC5Db252ZXJ0U2Vzc2lv",
+            "blRvVG9rZW5SZXNwb25zZS5NZXRhRW50cnkSEwoLQWNjZXNzVG9rZW4YAiAB",
+            "KAkSFAoMUmVmcmVzaFRva2VuGAMgASgJEicKDlJlc3BvbnNlU3RhdHVzGAQg",
+            "ASgLMg8uUmVzcG9uc2VTdGF0dXMaKwoJTWV0YUVudHJ5EgsKA2tleRgBIAEo",
+            "CRINCgV2YWx1ZRgCIAEoCToCOAEiKgoKQ3JlYXRlVG9kbxINCgVUaXRsZRgB",
+            "IAEoCRINCgVPcmRlchgCIAEoBSJUChJDcmVhdGVUb2RvUmVzcG9uc2USFQoG",
+            "UmVzdWx0GAEgASgLMgUuVG9kbxInCg5SZXNwb25zZVN0YXR1cxgCIAEoCzIP",
+            "LlJlc3BvbnNlU3RhdHVzIngKDkN1c3RvbVJvY2tzdGFyEhEKCUZpcnN0TmFt",
+            "ZRgBIAEoCRIQCghMYXN0TmFtZRgCIAEoCRILCgNBZ2UYAyABKAUSGQoRUm9j",
+            "a3N0YXJBbGJ1bU5hbWUYBCABKAkSGQoRUm9ja3N0YXJHZW5yZU5hbWUYBSAB",
+            "KAkifgoUQ3VzdG9tUm9ja3N0YXJTY2hlbWESEQoJRmlyc3ROYW1lGAEgASgJ",
+            "EhAKCExhc3ROYW1lGAIgASgJEgsKA0FnZRgDIAEoBRIZChFSb2Nrc3RhckFs",
+            "YnVtTmFtZRgEIAEoCRIZChFSb2Nrc3RhckdlbnJlTmFtZRgFIAEoCSJUChRD",
+            "dXN0b21TZWxlY3RSb2Nrc3RhchIKCgJJZBgBIAEoBRIRCglGaXJzdE5hbWUY",
+            "AiABKAkSEAoITGFzdE5hbWUYAyABKAkSCwoDQWdlGAQgASgFIkoKHEN1c3Rv",
+            "bVNlbGVjdFJvY2tzdGFyUmVzcG9uc2USCgoCSWQYASABKAUSEQoJRmlyc3RO",
+            "YW1lGAIgASgJEgsKA0FnZRgDIAEoBSIYCgpEZWxldGVUb2RvEgoKAklkGAEg",
+            "ASgDIh4KC0RlbGV0ZVRvZG9zEg8KA0lkcxgBIAMoA0ICEAAiOAoNRW1wdHlS",
+            "ZXNwb25zZRInCg5SZXNwb25zZVN0YXR1cxgBIAEoCzIPLlJlc3BvbnNlU3Rh",
+            "dHVzInAKC0ZpbGVDb250ZW50EgwKBE5hbWUYASABKAkSDAoEVHlwZRgCIAEo",
+            "CRIOCgZMZW5ndGgYAyABKAUSDAoEQm9keRgEIAEoDBInCg5SZXNwb25zZVN0",
+            "YXR1cxgFIAEoCzIPLlJlc3BvbnNlU3RhdHVzIpQBCg5HZXRBY2Nlc3NUb2tl",
+            "bhIUCgxSZWZyZXNoVG9rZW4YASABKAkSFgoOVXNlVG9rZW5Db29raWUYAiAB",
+            "KAgSJwoETWV0YRgDIAMoCzIZLkdldEFjY2Vzc1Rva2VuLk1ldGFFbnRyeRor",
+            "CglNZXRhRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASK0",
+            "AQoWR2V0QWNjZXNzVG9rZW5SZXNwb25zZRITCgtBY2Nlc3NUb2tlbhgBIAEo",
+            "CRIvCgRNZXRhGAIgAygLMiEuR2V0QWNjZXNzVG9rZW5SZXNwb25zZS5NZXRh",
+            "RW50cnkSJwoOUmVzcG9uc2VTdGF0dXMYAyABKAsyDy5SZXNwb25zZVN0YXR1",
+            "cxorCglNZXRhRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4",
+            "ASJzCgpHZXRBcGlLZXlzEhMKC0Vudmlyb25tZW50GAEgASgJEiMKBE1ldGEY",
+            "AiADKAsyFS5HZXRBcGlLZXlzLk1ldGFFbnRyeRorCglNZXRhRW50cnkSCwoD",
+            "a2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASK1AQoSR2V0QXBpS2V5c1Jl",
+            "c3BvbnNlEhwKB1Jlc3VsdHMYASADKAsyCy5Vc2VyQXBpS2V5EisKBE1ldGEY",
+            "AiADKAsyHS5HZXRBcGlLZXlzUmVzcG9uc2UuTWV0YUVudHJ5EicKDlJlc3Bv",
+            "bnNlU3RhdHVzGAMgASgLMg8uUmVzcG9uc2VTdGF0dXMaKwoJTWV0YUVudHJ5",
+            "EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEiFwoHR2V0RmlsZRIM",
+            "CgRQYXRoGAEgASgJIhgKCEdldEhlbGxvEgwKBE5hbWUYASABKAkiFQoHR2V0",
+            "VG9kbxIKCgJJZBgBIAEoAyJRCg9HZXRUb2RvUmVzcG9uc2USFQoGUmVzdWx0",
+            "GAEgASgLMgUuVG9kbxInCg5SZXNwb25zZVN0YXR1cxgCIAEoCzIPLlJlc3Bv",
+            "bnNlU3RhdHVzIgoKCEdldFRvZG9zIlMKEEdldFRvZG9zUmVzcG9uc2USFgoH",
+            "UmVzdWx0cxgBIAMoCzIFLlRvZG8SJwoOUmVzcG9uc2VTdGF0dXMYAiABKAsy",
+            "Dy5SZXNwb25zZVN0YXR1cyItCghIZWxsb0p3dBIMCgROYW1lGAEgASgJEhMK",
+            "C0JlYXJlclRva2VuGAIgASgJIksKEEhlbGxvSnd0UmVzcG9uc2USDgoGUmVz",
+            "dWx0GAEgASgJEicKDlJlc3BvbnNlU3RhdHVzGAIgASgLMg8uUmVzcG9uc2VT",
+            "dGF0dXMiSAoNSGVsbG9SZXNwb25zZRIOCgZSZXN1bHQYASABKAkSJwoOUmVz",
+            "cG9uc2VTdGF0dXMYAiABKAsyDy5SZXNwb25zZVN0YXR1cyIWCgRJbmNyEg4K",
+            "BkFtb3VudBgBIAEoBSK2AQoFTW92aWUSCgoCSWQYASABKAUSDgoGSW1kYklk",
+            "GAIgASgJEg0KBVRpdGxlGAMgASgJEg4KBlJhdGluZxgEIAEoCRIbCgVTY29y",
+            "ZRgFIAEoCzIMLmJjbC5EZWNpbWFsEhAKCERpcmVjdG9yGAYgASgJEiIKC1Jl",
+            "bGVhc2VEYXRlGAcgASgLMg0uYmNsLkRhdGVUaW1lEg8KB1RhZ0xpbmUYCCAB",
+            "KAkSDgoGR2VucmVzGAkgAygJIiAKCE11bHRpcGx5EgkKAVgYASABKAUSCQoB",
+            "WRgCIAEoBSIiChBNdWx0aXBseVJlc3BvbnNlEg4KBlJlc3VsdBgBIAEoBSIP",
+            "Cg1OYW1lZFJvY2tzdGFyIjUKClBhZ2luZ1Rlc3QSCgoCSWQYASABKAUSDAoE",
+            "TmFtZRgCIAEoCRINCgVWYWx1ZRgDIAEoBSJnChFQb3N0Q2hhdFRvQ2hhbm5l",
+            "bBIMCgRGcm9tGAEgASgJEhAKCFRvVXNlcklkGAIgASgJEg8KB0NoYW5uZWwY",
+            "AyABKAkSDwoHTWVzc2FnZRgEIAEoCRIQCghTZWxlY3RvchgFIAEoCSIMCgpR",
+            "dWVyeUFkaG9jIikKE1F1ZXJ5QWRob2NSb2Nrc3RhcnMSEgoKZmlyc3RfbmFt",
+            "ZRgBIAEoCSIpCg5RdWVyeUFsbEZpZWxkcxIXCgRHdWlkGAEgASgLMgkuYmNs",
+            "Lkd1aWQiggkKCVF1ZXJ5QmFzZRIMCgRTa2lwGAEgASgFEgwKBFRha2UYAiAB",
+            "KAUSDwoHT3JkZXJCeRgDIAEoCRITCgtPcmRlckJ5RGVzYxgEIAEoCRIPCgdJ",
+            "bmNsdWRlGAUgASgJEg4KBkZpZWxkcxgGIAEoCRIiCgRNZXRhGAcgAygLMhQu",
+            "UXVlcnlCYXNlLk1ldGFFbnRyeRJNCh9RdWVyeURiX1JvY2tzdGFyX0N1c3Rv",
+            "bVJvY2tzdGFyGPywYSABKAsyIC5RdWVyeURiX1JvY2tzdGFyX0N1c3RvbVJv",
+            "Y2tzdGFySAASTAoeUXVlcnlEYl9Sb2Nrc3Rhcl9Sb2Nrc3RhckFsaWFzGIyE",
+            "yS0gASgLMh8uUXVlcnlEYl9Sb2Nrc3Rhcl9Sb2Nrc3RhckFsaWFzSAASNAoS",
+            "UXVlcnlEYl9QYWdpbmdUZXN0GPT2yDQgASgLMhMuUXVlcnlEYl9QYWdpbmdU",
+            "ZXN0SAASSAocUXVlcnlEYl9DdXN0b21TZWxlY3RSb2Nrc3RhchjtwoU4IAEo",
+            "CzIdLlF1ZXJ5RGJfQ3VzdG9tU2VsZWN0Um9ja3N0YXJIABIqCg1RdWVyeURi",
+            "X01vdmllGJPyvT8gASgLMg4uUXVlcnlEYl9Nb3ZpZUgAEkIKGVF1ZXJ5RGJf",
+            "Um9ja3N0YXJSZWZlcmVuY2UYqpPYQiABKAsyGi5RdWVyeURiX1JvY2tzdGFy",
+            "UmVmZXJlbmNlSAASKgoNUXVlcnlEYl9BZGhvYxiIu7hcIAEoCzIOLlF1ZXJ5",
+            "RGJfQWRob2NIABI6ChVRdWVyeURiX05hbWVkUm9ja3N0YXIYjaPdZyABKAsy",
+            "Fi5RdWVyeURiX05hbWVkUm9ja3N0YXJIABI5ChRRdWVyeURiX1R5cGVXaXRo",
+            "RW51bRjuwJ+6ASABKAsyFS5RdWVyeURiX1R5cGVXaXRoRW51bUgAEjsKFVF1",
+            "ZXJ5RGJfUm9ja3N0YXJBbGJ1bRiNvYjEASABKAsyFi5RdWVyeURiX1JvY2tz",
+            "dGFyQWxidW1IABKDAQo5UXVlcnlEYl9DdXN0b21TZWxlY3RSb2Nrc3Rhcl9D",
+            "dXN0b21TZWxlY3RSb2Nrc3RhclJlc3BvbnNlGPflvswBIAEoCzI6LlF1ZXJ5",
+            "RGJfQ3VzdG9tU2VsZWN0Um9ja3N0YXJfQ3VzdG9tU2VsZWN0Um9ja3N0YXJS",
+            "ZXNwb25zZUgAEjEKEFF1ZXJ5RGJfUm9ja3N0YXIYyfjB1QEgASgLMhEuUXVl",
+            "cnlEYl9Sb2Nrc3RhckgAEjMKEVF1ZXJ5RGJfQWxsRmllbGRzGOTzgOIBIAEo",
+            "CzISLlF1ZXJ5RGJfQWxsRmllbGRzSAASWwolUXVlcnlEYl9Sb2Nrc3Rhcl9D",
+            "dXN0b21Sb2Nrc3RhclNjaGVtYRiThbzmASABKAsyJi5RdWVyeURiX1JvY2tz",
+            "dGFyX0N1c3RvbVJvY2tzdGFyU2NoZW1hSAAaKwoJTWV0YUVudHJ5EgsKA2tl",
+            "eRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAFCCQoHc3VidHlwZSIqChtRdWVy",
+            "eUNhc2VJbnNlbnNpdGl2ZU9yZGVyQnkSCwoDQWdlGAEgASgFIhsKGVF1ZXJ5",
+            "Q2hhbmdlQ29ubmVjdGlvbkluZm8iWAoNUXVlcnlDaGFuZ2VEYhIXCg9OYW1l",
+            "ZENvbm5lY3Rpb24YASABKAkSGAoQQ29ubmVjdGlvblN0cmluZxgCIAEoCRIU",
+            "CgxQcm92aWRlck5hbWUYAyABKAkiIwoUUXVlcnlDdXN0b21Sb2Nrc3RhcnMS",
+            "CwoDQWdlGAEgASgFIikKGlF1ZXJ5Q3VzdG9tUm9ja3N0YXJzRmlsdGVyEgsK",
+            "A0FnZRgBIAEoBSItCh5RdWVyeUN1c3RvbVJvY2tzdGFyc1JlZmVyZW5jZXMS",
+            "CwoDQWdlGAEgASgFIikKGlF1ZXJ5Q3VzdG9tUm9ja3N0YXJzU2NoZW1hEgsK",
+            "A0FnZRgBIAEoBSJACg1RdWVyeURiX0FkaG9jEiQKClF1ZXJ5QWRob2MYjcjM",
+            "KyABKAsyCy5RdWVyeUFkaG9jSABCCQoHc3VidHlwZSJNChFRdWVyeURiX0Fs",
+            "bEZpZWxkcxItCg5RdWVyeUFsbEZpZWxkcxip5In6ASABKAsyDy5RdWVyeUFs",
+            "bEZpZWxkc0gAQgkKB3N1YnR5cGUihQEKHFF1ZXJ5RGJfQ3VzdG9tU2VsZWN0",
+            "Um9ja3N0YXISWgolUXVlcnlKb2luZWRSb2Nrc3RhckFsYnVtc0N1c3RvbVNl",
+            "bGVjdBi1l8hDIAEoCzImLlF1ZXJ5Sm9pbmVkUm9ja3N0YXJBbGJ1bXNDdXN0",
+            "b21TZWxlY3RIAEIJCgdzdWJ0eXBlIrMBCjlRdWVyeURiX0N1c3RvbVNlbGVj",
+            "dFJvY2tzdGFyX0N1c3RvbVNlbGVjdFJvY2tzdGFyUmVzcG9uc2USawotUXVl",
+            "cnlKb2luZWRSb2Nrc3RhckFsYnVtc0N1c3RvbVNlbGVjdFJlc3BvbnNlGO/Q",
+            "0v8BIAEoCzIuLlF1ZXJ5Sm9pbmVkUm9ja3N0YXJBbGJ1bXNDdXN0b21TZWxl",
+            "Y3RSZXNwb25zZUgAQgkKB3N1YnR5cGUilwEKDVF1ZXJ5RGJfTW92aWUSKAoM",
+            "U2VhcmNoTW92aWVzGOef5GEgASgLMg0uU2VhcmNoTW92aWVzSAASKAoMU3Ry",
+            "ZWFtTW92aWVzGJiBsXkgASgLMg0uU3RyZWFtTW92aWVzSAASJwoLUXVlcnlN",
+            "b3ZpZXMYr9m/8wEgASgLMgwuUXVlcnlNb3ZpZXNIAEIJCgdzdWJ0eXBlIlsK",
+            "FVF1ZXJ5RGJfTmFtZWRSb2Nrc3RhchI3ChNRdWVyeU5hbWVkUm9ja3N0YXJz",
+            "GL+grIwBIAEoCzIULlF1ZXJ5TmFtZWRSb2Nrc3RhcnNIAEIJCgdzdWJ0eXBl",
+            "IlAKElF1ZXJ5RGJfUGFnaW5nVGVzdBIvCg9RdWVyeVBhZ2luZ1Rlc3QYo+H1",
+            "qAEgASgLMhAuUXVlcnlQYWdpbmdUZXN0SABCCQoHc3VidHlwZSLjCAoQUXVl",
+            "cnlEYl9Sb2Nrc3RhchIpCg5RdWVyeVJvY2tzdGFycxgKIAEoCzIPLlF1ZXJ5",
+            "Um9ja3N0YXJzSAASQgoZUXVlcnlDaGFuZ2VDb25uZWN0aW9uSW5mbxjn/J8X",
+            "IAEoCzIaLlF1ZXJ5Q2hhbmdlQ29ubmVjdGlvbkluZm9IABJEChpRdWVyeUZp",
+            "ZWxkUm9ja3N0YXJzRHluYW1pYxiY2fUgIAEoCzIbLlF1ZXJ5RmllbGRSb2Nr",
+            "c3RhcnNEeW5hbWljSAASNgoTUXVlcnlGaWVsZFJvY2tzdGFycxjg3eU1IAEo",
+            "CzIULlF1ZXJ5RmllbGRSb2Nrc3RhcnNIABI+ChdRdWVyeU92ZXJyaWRlZFJv",
+            "Y2tzdGFycxizkJ05IAEoCzIYLlF1ZXJ5T3ZlcnJpZGVkUm9ja3N0YXJzSAAS",
+            "OgoVUXVlcnlSb2Nrc3RhcnNJRmlsdGVyGODB0UYgASgLMhYuUXVlcnlSb2Nr",
+            "c3RhcnNJRmlsdGVySAASMgoRUXVlcnlHZXRSb2Nrc3RhcnMYsbu8ZyABKAsy",
+            "Ei5RdWVyeUdldFJvY2tzdGFyc0gAEjAKEFF1ZXJ5T3JSb2Nrc3RhcnMYwMDo",
+            "aSABKAsyES5RdWVyeU9yUm9ja3N0YXJzSAASOAoUUXVlcnlSb2Nrc3RhcnNG",
+            "aWx0ZXIYxPLufCABKAsyFS5RdWVyeVJvY2tzdGFyc0ZpbHRlckgAEkMKGVF1",
+            "ZXJ5Um9ja3N0YXJzQ29udmVudGlvbnMYjN72lQEgASgLMhouUXVlcnlSb2Nr",
+            "c3RhcnNDb252ZW50aW9uc0gAEjcKE1F1ZXJ5QWRob2NSb2Nrc3RhcnMY4uL8",
+            "mwEgASgLMhQuUXVlcnlBZGhvY1JvY2tzdGFyc0gAEk0KHlF1ZXJ5RmllbGRz",
+            "SW1wbGljaXRDb252ZW50aW9ucxi398qpASABKAsyHy5RdWVyeUZpZWxkc0lt",
+            "cGxpY2l0Q29udmVudGlvbnNIABI5ChRRdWVyeVJvY2tzdGFyRmlsdGVycxja",
+            "zNPCASABKAsyFS5RdWVyeVJvY2tzdGFyRmlsdGVyc0gAEkcKG1F1ZXJ5Q2Fz",
+            "ZUluc2Vuc2l0aXZlT3JkZXJCeRi7uo/LASABKAsyHC5RdWVyeUNhc2VJbnNl",
+            "bnNpdGl2ZU9yZGVyQnlIABIrCg1RdWVyeUNoYW5nZURiGPTe1NgBIAEoCzIO",
+            "LlF1ZXJ5Q2hhbmdlRGJIABJBChhRdWVyeUdldFJvY2tzdGFyc0R5bmFtaWMY",
+            "ndjU6AEgASgLMhkuUXVlcnlHZXRSb2Nrc3RhcnNEeW5hbWljSAASPQoWUXVl",
+            "cnlPclJvY2tzdGFyc0ZpZWxkcxjl+LX7ASABKAsyFy5RdWVyeU9yUm9ja3N0",
+            "YXJzRmllbGRzSAASOwoVUXVlcnlVbmtub3duUm9ja3N0YXJzGP6AzfsBIAEo",
+            "CzIWLlF1ZXJ5VW5rbm93blJvY2tzdGFyc0gAQgkKB3N1YnR5cGUiWwoVUXVl",
+            "cnlEYl9Sb2Nrc3RhckFsYnVtEjcKE1F1ZXJ5Um9ja3N0YXJBbGJ1bXMY5teX",
+            "7QEgASgLMhQuUXVlcnlSb2Nrc3RhckFsYnVtc0gAQgkKB3N1YnR5cGUivwEK",
+            "GVF1ZXJ5RGJfUm9ja3N0YXJSZWZlcmVuY2USSAocUXVlcnlSb2Nrc3RhcnNX",
+            "aXRoUmVmZXJlbmNlcxjkrIVhIAEoCzIdLlF1ZXJ5Um9ja3N0YXJzV2l0aFJl",
+            "ZmVyZW5jZXNIABJNCh5RdWVyeUN1c3RvbVJvY2tzdGFyc1JlZmVyZW5jZXMY",
+            "1ODbswEgASgLMh8uUXVlcnlDdXN0b21Sb2Nrc3RhcnNSZWZlcmVuY2VzSABC",
+            "CQoHc3VidHlwZSLjBAofUXVlcnlEYl9Sb2Nrc3Rhcl9DdXN0b21Sb2Nrc3Rh",
+            "chI4ChRRdWVyeUN1c3RvbVJvY2tzdGFycxj9xNcLIAEoCzIVLlF1ZXJ5Q3Vz",
+            "dG9tUm9ja3N0YXJzSAASQgoZUXVlcnlKb2luZWRSb2Nrc3RhckFsYnVtcxiN",
+            "uKlHIAEoCzIaLlF1ZXJ5Sm9pbmVkUm9ja3N0YXJBbGJ1bXNIABJEChpRdWVy",
+            "eUN1c3RvbVJvY2tzdGFyc0ZpbHRlchj7ushsIAEoCzIbLlF1ZXJ5Q3VzdG9t",
+            "Um9ja3N0YXJzRmlsdGVySAASUwohUXVlcnlSb2Nrc3RhckFsYnVtc0N1c3Rv",
+            "bUxlZnRKb2luGIei9bwBIAEoCzIiLlF1ZXJ5Um9ja3N0YXJBbGJ1bXNDdXN0",
+            "b21MZWZ0Sm9pbkgAEkcKG1F1ZXJ5Um9ja3N0YXJBbGJ1bXNJbXBsaWNpdBiz",
+            "/JfGASABKAsyHC5RdWVyeVJvY2tzdGFyQWxidW1zSW1wbGljaXRIABJLCh1R",
+            "dWVyeU92ZXJyaWRlZEN1c3RvbVJvY2tzdGFycxjDvJHTASABKAsyHi5RdWVy",
+            "eU92ZXJyaWRlZEN1c3RvbVJvY2tzdGFyc0gAEkcKG1F1ZXJ5Um9ja3N0YXJB",
+            "bGJ1bXNMZWZ0Sm9pbhj9t/LbASABKAsyHC5RdWVyeVJvY2tzdGFyQWxidW1z",
+            "TGVmdEpvaW5IABI9ChZRdWVyeU11bHRpSm9pblJvY2tzdGFyGL+0894BIAEo",
+            "CzIXLlF1ZXJ5TXVsdGlKb2luUm9ja3N0YXJIAEIJCgdzdWJ0eXBlIngKJVF1",
+            "ZXJ5RGJfUm9ja3N0YXJfQ3VzdG9tUm9ja3N0YXJTY2hlbWESRAoaUXVlcnlD",
+            "dXN0b21Sb2Nrc3RhcnNTY2hlbWEYtt7zdyABKAsyGy5RdWVyeUN1c3RvbVJv",
+            "Y2tzdGFyc1NjaGVtYUgAQgkKB3N1YnR5cGUiYgoeUXVlcnlEYl9Sb2Nrc3Rh",
+            "cl9Sb2Nrc3RhckFsaWFzEjUKElF1ZXJ5Um9ja3N0YXJBbGlhcxjtl4G6ASAB",
+            "KAsyEy5RdWVyeVJvY2tzdGFyQWxpYXNIAEIJCgdzdWJ0eXBlIlgKFFF1ZXJ5",
+            "RGJfVHlwZVdpdGhFbnVtEjUKElF1ZXJ5VHlwZVdpdGhFbnVtcxi2sP+VASAB",
+            "KAsyEy5RdWVyeVR5cGVXaXRoRW51bXNIAEIJCgdzdWJ0eXBlItABChNRdWVy",
+            "eUZpZWxkUm9ja3N0YXJzEhEKCUZpcnN0TmFtZRgBIAEoCRISCgpGaXJzdE5h",
+            "bWVzGAIgAygJEgsKA0FnZRgDIAEoBRIgChhGaXJzdE5hbWVDYXNlSW5zZW5z",
+            "aXRpdmUYBCABKAkSGwoTRmlyc3ROYW1lU3RhcnRzV2l0aBgFIAEoCRIYChBM",
+            "YXN0TmFtZUVuZHNXaXRoGAYgASgJEhgKEEZpcnN0TmFtZUJldHdlZW4YByAD",
+            "KAkSEgoKT3JMYXN0TmFtZRgIIAEoCSIpChpRdWVyeUZpZWxkUm9ja3N0YXJz",
+            "RHluYW1pYxILCgNBZ2UYASABKAUiVQoeUXVlcnlGaWVsZHNJbXBsaWNpdENv",
+            "bnZlbnRpb25zEhkKEUZpcnN0TmFtZUNvbnRhaW5zGAEgASgJEhgKEExhc3RO",
+            "YW1lRW5kc1dpdGgYAiABKAkiYgoRUXVlcnlHZXRSb2Nrc3RhcnMSDwoDSWRz",
+            "GAEgAygFQgIQABIQCgRBZ2VzGAIgAygFQgIQABISCgpGaXJzdE5hbWVzGAMg",
+            "AygJEhYKCklkc0JldHdlZW4YBCADKAVCAhAAIhoKGFF1ZXJ5R2V0Um9ja3N0",
+            "YXJzRHluYW1pYyJDChlRdWVyeUpvaW5lZFJvY2tzdGFyQWxidW1zEgsKA0Fn",
+            "ZRgBIAEoBRIZChFSb2Nrc3RhckFsYnVtTmFtZRgCIAEoCSJPCiVRdWVyeUpv",
+            "aW5lZFJvY2tzdGFyQWxidW1zQ3VzdG9tU2VsZWN0EgsKA0FnZRgBIAEoBRIZ",
+            "ChFSb2Nrc3RhckFsYnVtTmFtZRgCIAEoCSJXCi1RdWVyeUpvaW5lZFJvY2tz",
+            "dGFyQWxidW1zQ3VzdG9tU2VsZWN0UmVzcG9uc2USCwoDQWdlGAEgASgFEhkK",
+            "EVJvY2tzdGFyQWxidW1OYW1lGAIgASgJIkAKC1F1ZXJ5TW92aWVzEg8KA0lk",
+            "cxgBIAMoBUICEAASDwoHSW1kYklkcxgCIAMoCRIPCgdSYXRpbmdzGAMgAygJ",
+            "IlsKFlF1ZXJ5TXVsdGlKb2luUm9ja3N0YXISCwoDQWdlGAEgASgFEhkKEVJv",
+            "Y2tzdGFyQWxidW1OYW1lGAIgASgJEhkKEVJvY2tzdGFyR2VucmVOYW1lGAMg",
+            "ASgJIiIKE1F1ZXJ5TmFtZWRSb2Nrc3RhcnMSCwoDQWdlGAEgASgFIjIKEFF1",
+            "ZXJ5T3JSb2Nrc3RhcnMSCwoDQWdlGAEgASgFEhEKCUZpcnN0TmFtZRgCIAEo",
+            "CSI9ChZRdWVyeU9yUm9ja3N0YXJzRmllbGRzEhEKCUZpcnN0TmFtZRgBIAEo",
+            "CRIQCghMYXN0TmFtZRgCIAEoCSIsCh1RdWVyeU92ZXJyaWRlZEN1c3RvbVJv",
+            "Y2tzdGFycxILCgNBZ2UYASABKAUiJgoXUXVlcnlPdmVycmlkZWRSb2Nrc3Rh",
+            "cnMSCwoDQWdlGAEgASgFIjoKD1F1ZXJ5UGFnaW5nVGVzdBIKCgJJZBgBIAEo",
+            "BRIMCgROYW1lGAIgASgJEg0KBVZhbHVlGAMgASgFItEBChNRdWVyeVJlc3Bv",
+            "bnNlX0FkaG9jEg4KBk9mZnNldBgBIAEoBRINCgVUb3RhbBgCIAEoBRIXCgdS",
+            "ZXN1bHRzGAMgAygLMgYuQWRob2MSLAoETWV0YRgEIAMoCzIeLlF1ZXJ5UmVz",
+            "cG9uc2VfQWRob2MuTWV0YUVudHJ5EicKDlJlc3BvbnNlU3RhdHVzGAUgASgL",
+            "Mg8uUmVzcG9uc2VTdGF0dXMaKwoJTWV0YUVudHJ5EgsKA2tleRgBIAEoCRIN",
+            "CgV2YWx1ZRgCIAEoCToCOAEi3QEKF1F1ZXJ5UmVzcG9uc2VfQWxsRmllbGRz",
+            "Eg4KBk9mZnNldBgBIAEoBRINCgVUb3RhbBgCIAEoBRIbCgdSZXN1bHRzGAMg",
+            "AygLMgouQWxsRmllbGRzEjAKBE1ldGEYBCADKAsyIi5RdWVyeVJlc3BvbnNl",
+            "X0FsbEZpZWxkcy5NZXRhRW50cnkSJwoOUmVzcG9uc2VTdGF0dXMYBSABKAsy",
+            "Dy5SZXNwb25zZVN0YXR1cxorCglNZXRhRW50cnkSCwoDa2V5GAEgASgJEg0K",
+            "BXZhbHVlGAIgASgJOgI4ASLsAQocUXVlcnlSZXNwb25zZV9DdXN0b21Sb2Nr",
+            "c3RhchIOCgZPZmZzZXQYASABKAUSDQoFVG90YWwYAiABKAUSIAoHUmVzdWx0",
+            "cxgDIAMoCzIPLkN1c3RvbVJvY2tzdGFyEjUKBE1ldGEYBCADKAsyJy5RdWVy",
+            "eVJlc3BvbnNlX0N1c3RvbVJvY2tzdGFyLk1ldGFFbnRyeRInCg5SZXNwb25z",
+            "ZVN0YXR1cxgFIAEoCzIPLlJlc3BvbnNlU3RhdHVzGisKCU1ldGFFbnRyeRIL",
+            "CgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIv4BCiJRdWVyeVJlc3Bv",
+            "bnNlX0N1c3RvbVJvY2tzdGFyU2NoZW1hEg4KBk9mZnNldBgBIAEoBRINCgVU",
+            "b3RhbBgCIAEoBRImCgdSZXN1bHRzGAMgAygLMhUuQ3VzdG9tUm9ja3N0YXJT",
+            "Y2hlbWESOwoETWV0YRgEIAMoCzItLlF1ZXJ5UmVzcG9uc2VfQ3VzdG9tUm9j",
+            "a3N0YXJTY2hlbWEuTWV0YUVudHJ5EicKDlJlc3BvbnNlU3RhdHVzGAUgASgL",
+            "Mg8uUmVzcG9uc2VTdGF0dXMaKwoJTWV0YUVudHJ5EgsKA2tleRgBIAEoCRIN",
+            "CgV2YWx1ZRgCIAEoCToCOAEi/gEKIlF1ZXJ5UmVzcG9uc2VfQ3VzdG9tU2Vs",
+            "ZWN0Um9ja3N0YXISDgoGT2Zmc2V0GAEgASgFEg0KBVRvdGFsGAIgASgFEiYK",
+            "B1Jlc3VsdHMYAyADKAsyFS5DdXN0b21TZWxlY3RSb2Nrc3RhchI7CgRNZXRh",
+            "GAQgAygLMi0uUXVlcnlSZXNwb25zZV9DdXN0b21TZWxlY3RSb2Nrc3Rhci5N",
+            "ZXRhRW50cnkSJwoOUmVzcG9uc2VTdGF0dXMYBSABKAsyDy5SZXNwb25zZVN0",
+            "YXR1cxorCglNZXRhRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJ",
+            "OgI4ASKWAgoqUXVlcnlSZXNwb25zZV9DdXN0b21TZWxlY3RSb2Nrc3RhclJl",
+            "c3BvbnNlEg4KBk9mZnNldBgBIAEoBRINCgVUb3RhbBgCIAEoBRIuCgdSZXN1",
+            "bHRzGAMgAygLMh0uQ3VzdG9tU2VsZWN0Um9ja3N0YXJSZXNwb25zZRJDCgRN",
+            "ZXRhGAQgAygLMjUuUXVlcnlSZXNwb25zZV9DdXN0b21TZWxlY3RSb2Nrc3Rh",
+            "clJlc3BvbnNlLk1ldGFFbnRyeRInCg5SZXNwb25zZVN0YXR1cxgFIAEoCzIP",
+            "LlJlc3BvbnNlU3RhdHVzGisKCU1ldGFFbnRyeRILCgNrZXkYASABKAkSDQoF",
+            "dmFsdWUYAiABKAk6AjgBItEBChNRdWVyeVJlc3BvbnNlX01vdmllEg4KBk9m",
+            "ZnNldBgBIAEoBRINCgVUb3RhbBgCIAEoBRIXCgdSZXN1bHRzGAMgAygLMgYu",
+            "TW92aWUSLAoETWV0YRgEIAMoCzIeLlF1ZXJ5UmVzcG9uc2VfTW92aWUuTWV0",
+            "YUVudHJ5EicKDlJlc3BvbnNlU3RhdHVzGAUgASgLMg8uUmVzcG9uc2VTdGF0",
+            "dXMaKwoJTWV0YUVudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToC",
+            "OAEi5AEKG1F1ZXJ5UmVzcG9uc2VfTmFtZWRSb2Nrc3RhchIOCgZPZmZzZXQY",
+            "ASABKAUSDQoFVG90YWwYAiABKAUSGgoHUmVzdWx0cxgDIAMoCzIJLlJvY2tz",
+            "dGFyEjQKBE1ldGEYBCADKAsyJi5RdWVyeVJlc3BvbnNlX05hbWVkUm9ja3N0",
+            "YXIuTWV0YUVudHJ5EicKDlJlc3BvbnNlU3RhdHVzGAUgASgLMg8uUmVzcG9u",
             "c2VTdGF0dXMaKwoJTWV0YUVudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgC",
-            "IAEoCToCOAEiSQoKVXBkYXRlVG9kbxIKCgJJZBgBIAEoAxINCgVUaXRsZRgC",
-            "IAEoCRINCgVPcmRlchgDIAEoBRIRCglDb21wbGV0ZWQYBCABKAginwEKClVz",
-            "ZXJBcGlLZXkSCwoDS2V5GAEgASgJEg8KB0tleVR5cGUYAiABKAkSIQoKRXhw",
-            "aXJ5RGF0ZRgDIAEoCzINLmJjbC5EYXRlVGltZRIjCgRNZXRhGAQgAygLMhUu",
-            "VXNlckFwaUtleS5NZXRhRW50cnkaKwoJTWV0YUVudHJ5EgsKA2tleRgBIAEo",
-            "CRINCgV2YWx1ZRgCIAEoCToCOAEqIwoMTGl2aW5nU3RhdHVzEgkKBUFsaXZl",
-            "EAASCAoERGVhZBABMpUaCgxHcnBjU2VydmljZXMSLAoMR2V0QWRkSGVhZGVy",
-            "EgouQWRkSGVhZGVyGg4uRW1wdHlSZXNwb25zZSIAEioKC0dldEFueUhlbGxv",
-            "EgkuQW55SGVsbG8aDi5IZWxsb1Jlc3BvbnNlIgASKwoMUG9zdEFueUhlbGxv",
-            "EgkuQW55SGVsbG8aDi5IZWxsb1Jlc3BvbnNlIgASKgoLUHV0QW55SGVsbG8S",
-            "CS5BbnlIZWxsbxoOLkhlbGxvUmVzcG9uc2UiABItCg5EZWxldGVBbnlIZWxs",
-            "bxIJLkFueUhlbGxvGg4uSGVsbG9SZXNwb25zZSIAEiwKDVBhdGNoQW55SGVs",
-            "bG8SCS5BbnlIZWxsbxoOLkhlbGxvUmVzcG9uc2UiABI3Cg9Qb3N0QXNzaWdu",
-            "Um9sZXMSDC5Bc3NpZ25Sb2xlcxoULkFzc2lnblJvbGVzUmVzcG9uc2UiABI9",
-            "ChNPcHRpb25zQXV0aGVudGljYXRlEg0uQXV0aGVudGljYXRlGhUuQXV0aGVu",
-            "dGljYXRlUmVzcG9uc2UiABI5Cg9HZXRBdXRoZW50aWNhdGUSDS5BdXRoZW50",
-            "aWNhdGUaFS5BdXRoZW50aWNhdGVSZXNwb25zZSIAEjoKEFBvc3RBdXRoZW50",
+            "IAEoCToCOAEi4AEKGFF1ZXJ5UmVzcG9uc2VfUGFnaW5nVGVzdBIOCgZPZmZz",
+            "ZXQYASABKAUSDQoFVG90YWwYAiABKAUSHAoHUmVzdWx0cxgDIAMoCzILLlBh",
+            "Z2luZ1Rlc3QSMQoETWV0YRgEIAMoCzIjLlF1ZXJ5UmVzcG9uc2VfUGFnaW5n",
+            "VGVzdC5NZXRhRW50cnkSJwoOUmVzcG9uc2VTdGF0dXMYBSABKAsyDy5SZXNw",
+            "b25zZVN0YXR1cxorCglNZXRhRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVl",
+            "GAIgASgJOgI4ASLaAQoWUXVlcnlSZXNwb25zZV9Sb2Nrc3RhchIOCgZPZmZz",
+            "ZXQYASABKAUSDQoFVG90YWwYAiABKAUSGgoHUmVzdWx0cxgDIAMoCzIJLlJv",
+            "Y2tzdGFyEi8KBE1ldGEYBCADKAsyIS5RdWVyeVJlc3BvbnNlX1JvY2tzdGFy",
+            "Lk1ldGFFbnRyeRInCg5SZXNwb25zZVN0YXR1cxgFIAEoCzIPLlJlc3BvbnNl",
+            "U3RhdHVzGisKCU1ldGFFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiAB",
+            "KAk6AjgBIukBChtRdWVyeVJlc3BvbnNlX1JvY2tzdGFyQWxidW0SDgoGT2Zm",
+            "c2V0GAEgASgFEg0KBVRvdGFsGAIgASgFEh8KB1Jlc3VsdHMYAyADKAsyDi5S",
+            "b2Nrc3RhckFsYnVtEjQKBE1ldGEYBCADKAsyJi5RdWVyeVJlc3BvbnNlX1Jv",
+            "Y2tzdGFyQWxidW0uTWV0YUVudHJ5EicKDlJlc3BvbnNlU3RhdHVzGAUgASgL",
+            "Mg8uUmVzcG9uc2VTdGF0dXMaKwoJTWV0YUVudHJ5EgsKA2tleRgBIAEoCRIN",
+            "CgV2YWx1ZRgCIAEoCToCOAEi6QEKG1F1ZXJ5UmVzcG9uc2VfUm9ja3N0YXJB",
+            "bGlhcxIOCgZPZmZzZXQYASABKAUSDQoFVG90YWwYAiABKAUSHwoHUmVzdWx0",
+            "cxgDIAMoCzIOLlJvY2tzdGFyQWxpYXMSNAoETWV0YRgEIAMoCzImLlF1ZXJ5",
+            "UmVzcG9uc2VfUm9ja3N0YXJBbGlhcy5NZXRhRW50cnkSJwoOUmVzcG9uc2VT",
+            "dGF0dXMYBSABKAsyDy5SZXNwb25zZVN0YXR1cxorCglNZXRhRW50cnkSCwoD",
+            "a2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASL1AQofUXVlcnlSZXNwb25z",
+            "ZV9Sb2Nrc3RhclJlZmVyZW5jZRIOCgZPZmZzZXQYASABKAUSDQoFVG90YWwY",
+            "AiABKAUSIwoHUmVzdWx0cxgDIAMoCzISLlJvY2tzdGFyUmVmZXJlbmNlEjgK",
+            "BE1ldGEYBCADKAsyKi5RdWVyeVJlc3BvbnNlX1JvY2tzdGFyUmVmZXJlbmNl",
+            "Lk1ldGFFbnRyeRInCg5SZXNwb25zZVN0YXR1cxgFIAEoCzIPLlJlc3BvbnNl",
+            "U3RhdHVzGisKCU1ldGFFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiAB",
+            "KAk6AjgBIuYBChpRdWVyeVJlc3BvbnNlX1R5cGVXaXRoRW51bRIOCgZPZmZz",
+            "ZXQYASABKAUSDQoFVG90YWwYAiABKAUSHgoHUmVzdWx0cxgDIAMoCzINLlR5",
+            "cGVXaXRoRW51bRIzCgRNZXRhGAQgAygLMiUuUXVlcnlSZXNwb25zZV9UeXBl",
+            "V2l0aEVudW0uTWV0YUVudHJ5EicKDlJlc3BvbnNlU3RhdHVzGAUgASgLMg8u",
+            "UmVzcG9uc2VTdGF0dXMaKwoJTWV0YUVudHJ5EgsKA2tleRgBIAEoCRINCgV2",
+            "YWx1ZRgCIAEoCToCOAEiaQoTUXVlcnlSb2Nrc3RhckFsYnVtcxIKCgJJZBgB",
+            "IAEoBRISCgpSb2Nrc3RhcklkGAIgASgFEgwKBE5hbWUYAyABKAkSDQoFR2Vu",
+            "cmUYBCABKAkSFQoJSWRCZXR3ZWVuGAUgAygFQgIQACJZCiFRdWVyeVJvY2tz",
+            "dGFyQWxidW1zQ3VzdG9tTGVmdEpvaW4SCwoDQWdlGAEgASgFEhEKCUFsYnVt",
+            "TmFtZRgCIAEoCRIUCgxJZE5vdEVxdWFsVG8YAyABKAUiHQobUXVlcnlSb2Nr",
+            "c3RhckFsYnVtc0ltcGxpY2l0IlMKG1F1ZXJ5Um9ja3N0YXJBbGJ1bXNMZWZ0",
+            "Sm9pbhILCgNBZ2UYASABKAUSEQoJQWxidW1OYW1lGAIgASgJEhQKDElkTm90",
+            "RXF1YWxUbxgDIAEoBSI8ChJRdWVyeVJvY2tzdGFyQWxpYXMSCwoDQWdlGAEg",
+            "ASgFEhkKEVJvY2tzdGFyQWxidW1OYW1lGAIgASgJImUKFFF1ZXJ5Um9ja3N0",
+            "YXJGaWx0ZXJzEg8KA0lkcxgBIAMoBUICEAASEAoEQWdlcxgCIAMoBUICEAAS",
+            "EgoKRmlyc3ROYW1lcxgDIAMoCRIWCgpJZHNCZXR3ZWVuGAQgAygFQgIQACId",
+            "Cg5RdWVyeVJvY2tzdGFycxILCgNBZ2UYASABKAUilQMKGVF1ZXJ5Um9ja3N0",
+            "YXJzQ29udmVudGlvbnMSLQoWRGF0ZU9mQmlydGhHcmVhdGVyVGhhbhgBIAEo",
+            "CzINLmJjbC5EYXRlVGltZRInChBEYXRlRGllZExlc3NUaGFuGAIgASgLMg0u",
+            "YmNsLkRhdGVUaW1lEg8KA0lkcxgDIAMoBUICEAASFAoMQWdlT2xkZXJUaGFu",
+            "GAQgASgFEh8KF0FnZUdyZWF0ZXJUaGFuT3JFcXVhbFRvGAUgASgFEhYKDkFn",
+            "ZUdyZWF0ZXJUaGFuGAYgASgFEhYKDkdyZWF0ZXJUaGFuQWdlGAcgASgFEhsK",
+            "E0ZpcnN0TmFtZVN0YXJ0c1dpdGgYCCABKAkSGAoQTGFzdE5hbWVFbmRzV2l0",
+            "aBgJIAEoCRIYChBMYXN0TmFtZUNvbnRhaW5zGAogASgJEiEKGVJvY2tzdGFy",
+            "QWxidW1OYW1lQ29udGFpbnMYCyABKAkSFwoPUm9ja3N0YXJJZEFmdGVyGAwg",
+            "ASgFEhsKE1JvY2tzdGFySWRPbk9yQWZ0ZXIYDSABKAUiIwoUUXVlcnlSb2Nr",
+            "c3RhcnNGaWx0ZXISCwoDQWdlGAEgASgFIiQKFVF1ZXJ5Um9ja3N0YXJzSUZp",
+            "bHRlchILCgNBZ2UYASABKAUiKwocUXVlcnlSb2Nrc3RhcnNXaXRoUmVmZXJl",
+            "bmNlcxILCgNBZ2UYASABKAUiFAoSUXVlcnlUeXBlV2l0aEVudW1zIkQKFVF1",
+            "ZXJ5VW5rbm93blJvY2tzdGFycxISCgpVbmtub3duSW50GAEgASgFEhcKD1Vu",
+            "a25vd25Qcm9wZXJ0eRgCIAEoCSKBAQoRUmVnZW5lcmF0ZUFwaUtleXMSEwoL",
+            "RW52aXJvbm1lbnQYASABKAkSKgoETWV0YRgCIAMoCzIcLlJlZ2VuZXJhdGVB",
+            "cGlLZXlzLk1ldGFFbnRyeRorCglNZXRhRW50cnkSCwoDa2V5GAEgASgJEg0K",
+            "BXZhbHVlGAIgASgJOgI4ASLDAQoZUmVnZW5lcmF0ZUFwaUtleXNSZXNwb25z",
+            "ZRIcCgdSZXN1bHRzGAEgAygLMgsuVXNlckFwaUtleRIyCgRNZXRhGAIgAygL",
+            "MiQuUmVnZW5lcmF0ZUFwaUtleXNSZXNwb25zZS5NZXRhRW50cnkSJwoOUmVz",
+            "cG9uc2VTdGF0dXMYAyABKAsyDy5SZXNwb25zZVN0YXR1cxorCglNZXRhRW50",
+            "cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASKYAgoIUmVnaXN0",
+            "ZXISEAoIVXNlck5hbWUYASABKAkSEQoJRmlyc3ROYW1lGAIgASgJEhAKCExh",
+            "c3ROYW1lGAMgASgJEhMKC0Rpc3BsYXlOYW1lGAQgASgJEg0KBUVtYWlsGAUg",
+            "ASgJEhAKCFBhc3N3b3JkGAYgASgJEhcKD0NvbmZpcm1QYXNzd29yZBgHIAEo",
+            "CRIRCglBdXRvTG9naW4YCCABKAgSEAoIQ29udGludWUYCSABKAkSEQoJRXJy",
+            "b3JWaWV3GAogASgJEiEKBE1ldGEYCyADKAsyEy5SZWdpc3Rlci5NZXRhRW50",
+            "cnkaKwoJTWV0YUVudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToC",
+            "OAEiiAIKEFJlZ2lzdGVyUmVzcG9uc2USDgoGVXNlcklkGAEgASgJEhEKCVNl",
+            "c3Npb25JZBgCIAEoCRIQCghVc2VyTmFtZRgDIAEoCRITCgtSZWZlcnJlclVy",
+            "bBgEIAEoCRITCgtCZWFyZXJUb2tlbhgFIAEoCRIUCgxSZWZyZXNoVG9rZW4Y",
+            "BiABKAkSJwoOUmVzcG9uc2VTdGF0dXMYByABKAsyDy5SZXNwb25zZVN0YXR1",
+            "cxIpCgRNZXRhGAggAygLMhsuUmVnaXN0ZXJSZXNwb25zZS5NZXRhRW50cnka",
+            "KwoJTWV0YUVudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEi",
+            "MQoMUmVxdWlyZXNBdXRoEgwKBE5hbWUYASABKAkSEwoLQmVhcmVyVG9rZW4Y",
+            "AiABKAkiDAoKUmVzZXRUb2RvcyKbAQoNUmVzcG9uc2VFcnJvchIRCglFcnJv",
+            "ckNvZGUYASABKAkSEQoJRmllbGROYW1lGAIgASgJEg8KB01lc3NhZ2UYAyAB",
+            "KAkSJgoETWV0YRgEIAMoCzIYLlJlc3BvbnNlRXJyb3IuTWV0YUVudHJ5GisK",
+            "CU1ldGFFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIr4B",
+            "Cg5SZXNwb25zZVN0YXR1cxIRCglFcnJvckNvZGUYASABKAkSDwoHTWVzc2Fn",
+            "ZRgCIAEoCRISCgpTdGFja1RyYWNlGAMgASgJEh4KBkVycm9ycxgEIAMoCzIO",
+            "LlJlc3BvbnNlRXJyb3ISJwoETWV0YRgFIAMoCzIZLlJlc3BvbnNlU3RhdHVz",
+            "Lk1ldGFFbnRyeRorCglNZXRhRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVl",
+            "GAIgASgJOgI4ASLqAQoIUm9ja3N0YXISCgoCSWQYASABKAUSEQoJRmlyc3RO",
+            "YW1lGAIgASgJEhAKCExhc3ROYW1lGAMgASgJEgsKA0FnZRgEIAEoBRIiCgtE",
+            "YXRlT2ZCaXJ0aBgFIAEoCzINLmJjbC5EYXRlVGltZRIfCghEYXRlRGllZBgG",
+            "IAEoCzINLmJjbC5EYXRlVGltZRIjCgxMaXZpbmdTdGF0dXMYByABKA4yDS5M",
+            "aXZpbmdTdGF0dXMSKwoNTmFtZWRSb2Nrc3Rhchio3MakASABKAsyDi5OYW1l",
+            "ZFJvY2tzdGFySABCCQoHc3VidHlwZSJMCg1Sb2Nrc3RhckFsYnVtEgoKAklk",
+            "GAEgASgFEhIKClJvY2tzdGFySWQYAiABKAUSDAoETmFtZRgDIAEoCRINCgVH",
+            "ZW5yZRgEIAEoCSJWCg1Sb2Nrc3RhckFsaWFzEhIKClJvY2tzdGFySWQYASAB",
+            "KAUSEQoJRmlyc3ROYW1lGAIgASgJEg8KB1N1cm5hbWUYAyABKAkSDQoFYWxi",
+            "dW0YBCABKAkicQoRUm9ja3N0YXJSZWZlcmVuY2USCgoCSWQYASABKAUSEQoJ",
+            "Rmlyc3ROYW1lGAIgASgJEhAKCExhc3ROYW1lGAMgASgJEgsKA0FnZRgEIAEo",
+            "BRIeCgZBbGJ1bXMYBSADKAsyDi5Sb2Nrc3RhckFsYnVtIg4KDFNlYXJjaE1v",
+            "dmllcyIXCgdTZWN1cmVkEgwKBE5hbWUYASABKAkiSgoPU2VjdXJlZFJlc3Bv",
+            "bnNlEg4KBlJlc3VsdBgBIAEoCRInCg5SZXNwb25zZVN0YXR1cxgCIAEoCzIP",
+            "LlJlc3BvbnNlU3RhdHVzIhwKC1N0cmVhbUZpbGVzEg0KBVBhdGhzGAEgAygJ",
+            "Ih8KDFN0cmVhbU1vdmllcxIPCgdSYXRpbmdzGAEgAygJIiYKElN0cmVhbVNl",
+            "cnZlckV2ZW50cxIQCghDaGFubmVscxgBIAMoCSKbBAoaU3RyZWFtU2VydmVy",
+            "RXZlbnRzUmVzcG9uc2USDwoHRXZlbnRJZBgBIAEoAxIPCgdDaGFubmVsGAIg",
+            "ASgJEhAKCFNlbGVjdG9yGAQgASgJEgwKBEpzb24YBSABKAkSCgoCT3AYBiAB",
+            "KAkSDgoGVGFyZ2V0GAcgASgJEhMKC0Nzc1NlbGVjdG9yGAggASgJEjMKBE1l",
+            "dGEYCSADKAsyJS5TdHJlYW1TZXJ2ZXJFdmVudHNSZXNwb25zZS5NZXRhRW50",
+            "cnkSDgoGVXNlcklkGAogASgJEhMKC0Rpc3BsYXlOYW1lGAsgASgJEhIKClBy",
+            "b2ZpbGVVcmwYDCABKAkSFwoPSXNBdXRoZW50aWNhdGVkGA0gASgIEhAKCENo",
+            "YW5uZWxzGA4gAygJEhEKCUNyZWF0ZWRBdBgPIAEoAxIKCgJJZBgVIAEoCRIV",
+            "Cg1VblJlZ2lzdGVyVXJsGBYgASgJEhsKE1VwZGF0ZVN1YnNjcmliZXJVcmwY",
+            "FyABKAkSFAoMSGVhcnRiZWF0VXJsGBggASgJEhsKE0hlYXJ0YmVhdEludGVy",
+            "dmFsTXMYGSABKAMSFQoNSWRsZVRpbWVvdXRNcxgaIAEoAxInCg5SZXNwb25z",
+            "ZVN0YXR1cxgeIAEoCzIPLlJlc3BvbnNlU3RhdHVzGisKCU1ldGFFbnRyeRIL",
+            "CgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIhgKBVRocm93Eg8KB01l",
+            "c3NhZ2UYASABKAkiDQoLVGhyb3dDdXN0b20iPgoTVGhyb3dDdXN0b21SZXNw",
+            "b25zZRInCg5SZXNwb25zZVN0YXR1cxgBIAEoCzIPLlJlc3BvbnNlU3RhdHVz",
+            "IhwKCVRocm93Vm9pZBIPCgdNZXNzYWdlGAEgASgJIkMKBFRvZG8SCgoCSWQY",
+            "ASABKAMSDQoFVGl0bGUYAiABKAkSDQoFT3JkZXIYAyABKAUSEQoJQ29tcGxl",
+            "dGVkGAQgASgIIucCChFUcmlnZ2VyVmFsaWRhdG9ycxISCgpDcmVkaXRDYXJk",
+            "GAEgASgJEg0KBUVtYWlsGAIgASgJEg0KBUVtcHR5GAMgASgJEg0KBUVxdWFs",
+            "GAQgASgJEhgKEEV4Y2x1c2l2ZUJldHdlZW4YBSABKAUSGgoSR3JlYXRlclRo",
+            "YW5PckVxdWFsGAYgASgFEhMKC0dyZWF0ZXJUaGFuGAcgASgFEhgKEEluY2x1",
+            "c2l2ZUJldHdlZW4YCCABKAUSDgoGTGVuZ3RoGAkgASgJEhcKD0xlc3NUaGFu",
+            "T3JFcXVhbBgKIAEoBRIQCghMZXNzVGhhbhgLIAEoBRIQCghOb3RFbXB0eRgM",
+            "IAEoCRIQCghOb3RFcXVhbBgNIAEoCRIMCgROdWxsGA4gASgJEhkKEVJlZ3Vs",
+            "YXJFeHByZXNzaW9uGA8gASgJEiQKDlNjYWxlUHJlY2lzaW9uGBAgASgLMgwu",
+            "YmNsLkRlY2ltYWwisgEKDFR5cGVXaXRoRW51bRIKCgJJZBgBIAEoBRIMCgRO",
+            "YW1lGAIgASgJEhsKCFNvbWVFbnVtGAMgASgOMgkuU29tZUVudW0SJQoNU29t",
+            "ZUVudW1Bc0ludBgEIAEoDjIOLlNvbWVFbnVtQXNJbnQSHAoJTlNvbWVFbnVt",
+            "GAUgASgOMgkuU29tZUVudW0SJgoOTlNvbWVFbnVtQXNJbnQYBiABKA4yDi5T",
+            "b21lRW51bUFzSW50IpoBCg1VbkFzc2lnblJvbGVzEhAKCFVzZXJOYW1lGAEg",
+            "ASgJEhMKC1Blcm1pc3Npb25zGAIgAygJEg0KBVJvbGVzGAMgAygJEiYKBE1l",
+            "dGEYBCADKAsyGC5VbkFzc2lnblJvbGVzLk1ldGFFbnRyeRorCglNZXRhRW50",
+            "cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASLHAQoVVW5Bc3Np",
+            "Z25Sb2xlc1Jlc3BvbnNlEhAKCEFsbFJvbGVzGAEgAygJEhYKDkFsbFBlcm1p",
+            "c3Npb25zGAIgAygJEi4KBE1ldGEYAyADKAsyIC5VbkFzc2lnblJvbGVzUmVz",
+            "cG9uc2UuTWV0YUVudHJ5EicKDlJlc3BvbnNlU3RhdHVzGAQgASgLMg8uUmVz",
+            "cG9uc2VTdGF0dXMaKwoJTWV0YUVudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1",
+            "ZRgCIAEoCToCOAEiSQoKVXBkYXRlVG9kbxIKCgJJZBgBIAEoAxINCgVUaXRs",
+            "ZRgCIAEoCRINCgVPcmRlchgDIAEoBRIRCglDb21wbGV0ZWQYBCABKAginwEK",
+            "ClVzZXJBcGlLZXkSCwoDS2V5GAEgASgJEg8KB0tleVR5cGUYAiABKAkSIQoK",
+            "RXhwaXJ5RGF0ZRgDIAEoCzINLmJjbC5EYXRlVGltZRIjCgRNZXRhGAQgAygL",
+            "MhUuVXNlckFwaUtleS5NZXRhRW50cnkaKwoJTWV0YUVudHJ5EgsKA2tleRgB",
+            "IAEoCRINCgV2YWx1ZRgCIAEoCToCOAEqjwsKDkh0dHBTdGF0dXNDb2RlEggK",
+            "BFpFUk8QABIMCghDb250aW51ZRBkEhYKElN3aXRjaGluZ1Byb3RvY29scxBl",
+            "Eg4KClByb2Nlc3NpbmcQZhIOCgpFYXJseUhpbnRzEGcSBwoCT0sQyAESDAoH",
+            "Q3JlYXRlZBDJARINCghBY2NlcHRlZBDKARIgChtOb25BdXRob3JpdGF0aXZl",
+            "SW5mb3JtYXRpb24QywESDgoJTm9Db250ZW50EMwBEhEKDFJlc2V0Q29udGVu",
+            "dBDNARITCg5QYXJ0aWFsQ29udGVudBDOARIQCgtNdWx0aVN0YXR1cxDPARIU",
+            "Cg9BbHJlYWR5UmVwb3J0ZWQQ0AESCwoGSU1Vc2VkEOIBEg4KCUFtYmlndW91",
+            "cxCsAhIUCg9NdWx0aXBsZUNob2ljZXMQrAISFQoQTW92ZWRQZXJtYW5lbnRs",
+            "eRCtAhIKCgVNb3ZlZBCtAhIKCgVGb3VuZBCuAhINCghSZWRpcmVjdBCuAhIN",
+            "CghTZWVPdGhlchCvAhITCg5SZWRpcmVjdE1ldGhvZBCvAhIQCgtOb3RNb2Rp",
+            "ZmllZBCwAhINCghVc2VQcm94eRCxAhILCgZVbnVzZWQQsgISFgoRVGVtcG9y",
+            "YXJ5UmVkaXJlY3QQswISFQoQUmVkaXJlY3RLZWVwVmVyYhCzAhIWChFQZXJt",
+            "YW5lbnRSZWRpcmVjdBC0AhIPCgpCYWRSZXF1ZXN0EJADEhEKDFVuYXV0aG9y",
+            "aXplZBCRAxIUCg9QYXltZW50UmVxdWlyZWQQkgMSDgoJRm9yYmlkZGVuEJMD",
+            "Eg0KCE5vdEZvdW5kEJQDEhUKEE1ldGhvZE5vdEFsbG93ZWQQlQMSEgoNTm90",
+            "QWNjZXB0YWJsZRCWAxIgChtQcm94eUF1dGhlbnRpY2F0aW9uUmVxdWlyZWQQ",
+            "lwMSEwoOUmVxdWVzdFRpbWVvdXQQmAMSDQoIQ29uZmxpY3QQmQMSCQoER29u",
+            "ZRCaAxITCg5MZW5ndGhSZXF1aXJlZBCbAxIXChJQcmVjb25kaXRpb25GYWls",
+            "ZWQQnAMSGgoVUmVxdWVzdEVudGl0eVRvb0xhcmdlEJ0DEhYKEVJlcXVlc3RV",
+            "cmlUb29Mb25nEJ4DEhkKFFVuc3VwcG9ydGVkTWVkaWFUeXBlEJ8DEiEKHFJl",
+            "cXVlc3RlZFJhbmdlTm90U2F0aXNmaWFibGUQoAMSFgoRRXhwZWN0YXRpb25G",
+            "YWlsZWQQoQMSFwoSTWlzZGlyZWN0ZWRSZXF1ZXN0EKUDEhgKE1VucHJvY2Vz",
+            "c2FibGVFbnRpdHkQpgMSCwoGTG9ja2VkEKcDEhUKEEZhaWxlZERlcGVuZGVu",
+            "Y3kQqAMSFAoPVXBncmFkZVJlcXVpcmVkEKoDEhkKFFByZWNvbmRpdGlvblJl",
+            "cXVpcmVkEKwDEhQKD1Rvb01hbnlSZXF1ZXN0cxCtAxIgChtSZXF1ZXN0SGVh",
+            "ZGVyRmllbGRzVG9vTGFyZ2UQrwMSHwoaVW5hdmFpbGFibGVGb3JMZWdhbFJl",
+            "YXNvbnMQwwMSGAoTSW50ZXJuYWxTZXJ2ZXJFcnJvchD0AxITCg5Ob3RJbXBs",
+            "ZW1lbnRlZBD1AxIPCgpCYWRHYXRld2F5EPYDEhcKElNlcnZpY2VVbmF2YWls",
+            "YWJsZRD3AxITCg5HYXRld2F5VGltZW91dBD4AxIcChdIdHRwVmVyc2lvbk5v",
+            "dFN1cHBvcnRlZBD5AxIaChVWYXJpYW50QWxzb05lZ290aWF0ZXMQ+gMSGAoT",
+            "SW5zdWZmaWNpZW50U3RvcmFnZRD7AxIRCgxMb29wRGV0ZWN0ZWQQ/AMSEAoL",
+            "Tm90RXh0ZW5kZWQQ/gMSIgodTmV0d29ya0F1dGhlbnRpY2F0aW9uUmVxdWly",
+            "ZWQQ/wMaAhABKiMKDExpdmluZ1N0YXR1cxIJCgVBbGl2ZRAAEggKBERlYWQQ",
+            "ASpeCghTb21lRW51bRITCg9Tb21lRW51bV9WYWx1ZTAQABITCg9Tb21lRW51",
+            "bV9WYWx1ZTEQARITCg9Tb21lRW51bV9WYWx1ZTIQAhITCg9Tb21lRW51bV9W",
+            "YWx1ZTMQAyo/Cg1Tb21lRW51bUFzSW50EgoKBlZhbHVlMBAAEgoKBlZhbHVl",
+            "MRABEgoKBlZhbHVlMhACEgoKBlZhbHVlMxADMrswCgxHcnBjU2VydmljZXMS",
+            "LAoMR2V0QWRkSGVhZGVyEgouQWRkSGVhZGVyGg4uRW1wdHlSZXNwb25zZSIA",
+            "EioKC0dldEFueUhlbGxvEgkuQW55SGVsbG8aDi5IZWxsb1Jlc3BvbnNlIgAS",
+            "KwoMUG9zdEFueUhlbGxvEgkuQW55SGVsbG8aDi5IZWxsb1Jlc3BvbnNlIgAS",
+            "KgoLUHV0QW55SGVsbG8SCS5BbnlIZWxsbxoOLkhlbGxvUmVzcG9uc2UiABIt",
+            "Cg5EZWxldGVBbnlIZWxsbxIJLkFueUhlbGxvGg4uSGVsbG9SZXNwb25zZSIA",
+            "EiwKDVBhdGNoQW55SGVsbG8SCS5BbnlIZWxsbxoOLkhlbGxvUmVzcG9uc2Ui",
+            "ABI3Cg9Qb3N0QXNzaWduUm9sZXMSDC5Bc3NpZ25Sb2xlcxoULkFzc2lnblJv",
+            "bGVzUmVzcG9uc2UiABI9ChNPcHRpb25zQXV0aGVudGljYXRlEg0uQXV0aGVu",
+            "dGljYXRlGhUuQXV0aGVudGljYXRlUmVzcG9uc2UiABI5Cg9HZXRBdXRoZW50",
             "aWNhdGUSDS5BdXRoZW50aWNhdGUaFS5BdXRoZW50aWNhdGVSZXNwb25zZSIA",
-            "EjwKEkRlbGV0ZUF1dGhlbnRpY2F0ZRINLkF1dGhlbnRpY2F0ZRoVLkF1dGhl",
-            "bnRpY2F0ZVJlc3BvbnNlIgASRQoXR2V0Q2hhbmdlQ29ubmVjdGlvbkluZm8S",
-            "FS5DaGFuZ2VDb25uZWN0aW9uSW5mbxoRLkNoYW5nZURiUmVzcG9uc2UiABIt",
-            "CgtHZXRDaGFuZ2VEYhIJLkNoYW5nZURiGhEuQ2hhbmdlRGJSZXNwb25zZSIA",
-            "ElUKGVBvc3RDb252ZXJ0U2Vzc2lvblRvVG9rZW4SFi5Db252ZXJ0U2Vzc2lv",
-            "blRvVG9rZW4aHi5Db252ZXJ0U2Vzc2lvblRvVG9rZW5SZXNwb25zZSIAEjQK",
-            "DlBvc3RDcmVhdGVUb2RvEgsuQ3JlYXRlVG9kbxoTLkNyZWF0ZVRvZG9SZXNw",
-            "b25zZSIAEi8KDkNhbGxEZWxldGVUb2RvEgsuRGVsZXRlVG9kbxoOLkVtcHR5",
-            "UmVzcG9uc2UiABIxCg9DYWxsRGVsZXRlVG9kb3MSDC5EZWxldGVUb2RvcxoO",
-            "LkVtcHR5UmVzcG9uc2UiABJAChJQb3N0R2V0QWNjZXNzVG9rZW4SDy5HZXRB",
-            "Y2Nlc3NUb2tlbhoXLkdldEFjY2Vzc1Rva2VuUmVzcG9uc2UiABI0Cg5DYWxs",
-            "R2V0QXBpS2V5cxILLkdldEFwaUtleXMaEy5HZXRBcGlLZXlzUmVzcG9uc2Ui",
-            "ABIrCgxDYWxsR2V0SGVsbG8SCS5HZXRIZWxsbxoOLkhlbGxvUmVzcG9uc2Ui",
-            "ABIrCgtDYWxsR2V0VG9kbxIILkdldFRvZG8aEC5HZXRUb2RvUmVzcG9uc2Ui",
-            "ABIuCgxDYWxsR2V0VG9kb3MSCS5HZXRUb2RvcxoRLkdldFRvZG9zUmVzcG9u",
-            "c2UiABItCgtHZXRIZWxsb0p3dBIJLkhlbGxvSnd0GhEuSGVsbG9Kd3RSZXNw",
-            "b25zZSIAEi4KDFBvc3RIZWxsb0p3dBIJLkhlbGxvSnd0GhEuSGVsbG9Kd3RS",
-            "ZXNwb25zZSIAEi0KC1B1dEhlbGxvSnd0EgkuSGVsbG9Kd3QaES5IZWxsb0p3",
-            "dFJlc3BvbnNlIgASMAoORGVsZXRlSGVsbG9Kd3QSCS5IZWxsb0p3dBoRLkhl",
-            "bGxvSnd0UmVzcG9uc2UiABIvCg1QYXRjaEhlbGxvSnd0EgkuSGVsbG9Kd3Qa",
-            "ES5IZWxsb0p3dFJlc3BvbnNlIgASIgoHR2V0SW5jchIFLkluY3IaDi5FbXB0",
-            "eVJlc3BvbnNlIgASIwoIUG9zdEluY3ISBS5JbmNyGg4uRW1wdHlSZXNwb25z",
-            "ZSIAEiIKB1B1dEluY3ISBS5JbmNyGg4uRW1wdHlSZXNwb25zZSIAEiUKCkRl",
-            "bGV0ZUluY3ISBS5JbmNyGg4uRW1wdHlSZXNwb25zZSIAEiQKCVBhdGNoSW5j",
-            "chIFLkluY3IaDi5FbXB0eVJlc3BvbnNlIgASLgoMUG9zdE11bHRpcGx5Egku",
-            "TXVsdGlwbHkaES5NdWx0aXBseVJlc3BvbnNlIgASOwoVQ2FsbFBvc3RDaGF0",
-            "VG9DaGFubmVsEhIuUG9zdENoYXRUb0NoYW5uZWwaDC5DaGF0TWVzc2FnZSIA",
-            "ElkKHkdldFF1ZXJ5Q2FzZUluc2Vuc2l0aXZlT3JkZXJCeRIcLlF1ZXJ5Q2Fz",
-            "ZUluc2Vuc2l0aXZlT3JkZXJCeRoXLlF1ZXJ5UmVzcG9uc2VfUm9ja3N0YXIi",
-            "ABJVChxHZXRRdWVyeUNoYW5nZUNvbm5lY3Rpb25JbmZvEhouUXVlcnlDaGFu",
-            "Z2VDb25uZWN0aW9uSW5mbxoXLlF1ZXJ5UmVzcG9uc2VfUm9ja3N0YXIiABJo",
-            "CiFHZXRRdWVyeUN1c3RvbVJvY2tzdGFyc1JlZmVyZW5jZXMSHy5RdWVyeUN1",
-            "c3RvbVJvY2tzdGFyc1JlZmVyZW5jZXMaIC5RdWVyeVJlc3BvbnNlX1JvY2tz",
-            "dGFyUmVmZXJlbmNlIgASYwogR2V0UXVlcnlPdmVycmlkZWRDdXN0b21Sb2Nr",
-            "c3RhcnMSHi5RdWVyeU92ZXJyaWRlZEN1c3RvbVJvY2tzdGFycxodLlF1ZXJ5",
-            "UmVzcG9uc2VfQ3VzdG9tUm9ja3N0YXIiABJRChpHZXRRdWVyeU92ZXJyaWRl",
-            "ZFJvY2tzdGFycxIYLlF1ZXJ5T3ZlcnJpZGVkUm9ja3N0YXJzGhcuUXVlcnlS",
-            "ZXNwb25zZV9Sb2Nrc3RhciIAEmsKJEdldFF1ZXJ5Um9ja3N0YXJBbGJ1bXND",
-            "dXN0b21MZWZ0Sm9pbhIiLlF1ZXJ5Um9ja3N0YXJBbGJ1bXNDdXN0b21MZWZ0",
-            "Sm9pbhodLlF1ZXJ5UmVzcG9uc2VfQ3VzdG9tUm9ja3N0YXIiABJJChVQb3N0",
-            "UmVnZW5lcmF0ZUFwaUtleXMSEi5SZWdlbmVyYXRlQXBpS2V5cxoaLlJlZ2Vu",
-            "ZXJhdGVBcGlLZXlzUmVzcG9uc2UiABItCgtQdXRSZWdpc3RlchIJLlJlZ2lz",
-            "dGVyGhEuUmVnaXN0ZXJSZXNwb25zZSIAEi4KDFBvc3RSZWdpc3RlchIJLlJl",
-            "Z2lzdGVyGhEuUmVnaXN0ZXJSZXNwb25zZSIAEjEKD0dldFJlcXVpcmVzQXV0",
-            "aBINLlJlcXVpcmVzQXV0aBoNLlJlcXVpcmVzQXV0aCIAEjIKEFBvc3RSZXF1",
-            "aXJlc0F1dGgSDS5SZXF1aXJlc0F1dGgaDS5SZXF1aXJlc0F1dGgiABIxCg9Q",
-            "dXRSZXF1aXJlc0F1dGgSDS5SZXF1aXJlc0F1dGgaDS5SZXF1aXJlc0F1dGgi",
-            "ABI0ChJEZWxldGVSZXF1aXJlc0F1dGgSDS5SZXF1aXJlc0F1dGgaDS5SZXF1",
-            "aXJlc0F1dGgiABIzChFQYXRjaFJlcXVpcmVzQXV0aBINLlJlcXVpcmVzQXV0",
-            "aBoNLlJlcXVpcmVzQXV0aCIAEi8KDlBvc3RSZXNldFRvZG9zEgsuUmVzZXRU",
-            "b2RvcxoOLkVtcHR5UmVzcG9uc2UiABIrCgtQb3N0U2VjdXJlZBIILlNlY3Vy",
-            "ZWQaEC5TZWN1cmVkUmVzcG9uc2UiABIzChFTZXJ2ZXJTdHJlYW1GaWxlcxIM",
-            "LlN0cmVhbUZpbGVzGgwuRmlsZUNvbnRlbnQiADABEjgKD0dldFN0cmVhbU1v",
-            "dmllcxINLlN0cmVhbU1vdmllcxoULlF1ZXJ5UmVzcG9uc2VfTW92aWUiABJQ",
-            "ChhTZXJ2ZXJTdHJlYW1TZXJ2ZXJFdmVudHMSEy5TdHJlYW1TZXJ2ZXJFdmVu",
-            "dHMaGy5TdHJlYW1TZXJ2ZXJFdmVudHNSZXNwb25zZSIAMAESJAoIR2V0VGhy",
-            "b3cSBi5UaHJvdxoOLkhlbGxvUmVzcG9uc2UiABI2Cg5HZXRUaHJvd0N1c3Rv",
-            "bRIMLlRocm93Q3VzdG9tGhQuVGhyb3dDdXN0b21SZXNwb25zZSIAEiwKDEdl",
-            "dFRocm93Vm9pZBIKLlRocm93Vm9pZBoOLkVtcHR5UmVzcG9uc2UiABI9ChVQ",
-            "b3N0VHJpZ2dlclZhbGlkYXRvcnMSEi5UcmlnZ2VyVmFsaWRhdG9ycxoOLkVt",
-            "cHR5UmVzcG9uc2UiABI9ChFQb3N0VW5Bc3NpZ25Sb2xlcxIOLlVuQXNzaWdu",
-            "Um9sZXMaFi5VbkFzc2lnblJvbGVzUmVzcG9uc2UiABIuCg1QdXRVcGRhdGVU",
-            "b2RvEgsuVXBkYXRlVG9kbxoOLkVtcHR5UmVzcG9uc2UiAEJOqgIkU2Vydmlj",
-            "ZVN0YWNrLkV4dGVuc2lvbnMuVGVzdHMuUHJvdG9jygIkU2VydmljZVN0YWNr",
-            "LkV4dGVuc2lvbnMuVGVzdHMuUHJvdG9jYgZwcm90bzM="));
+            "EjoKEFBvc3RBdXRoZW50aWNhdGUSDS5BdXRoZW50aWNhdGUaFS5BdXRoZW50",
+            "aWNhdGVSZXNwb25zZSIAEjwKEkRlbGV0ZUF1dGhlbnRpY2F0ZRINLkF1dGhl",
+            "bnRpY2F0ZRoVLkF1dGhlbnRpY2F0ZVJlc3BvbnNlIgASRQoXR2V0Q2hhbmdl",
+            "Q29ubmVjdGlvbkluZm8SFS5DaGFuZ2VDb25uZWN0aW9uSW5mbxoRLkNoYW5n",
+            "ZURiUmVzcG9uc2UiABItCgtHZXRDaGFuZ2VEYhIJLkNoYW5nZURiGhEuQ2hh",
+            "bmdlRGJSZXNwb25zZSIAElUKGVBvc3RDb252ZXJ0U2Vzc2lvblRvVG9rZW4S",
+            "Fi5Db252ZXJ0U2Vzc2lvblRvVG9rZW4aHi5Db252ZXJ0U2Vzc2lvblRvVG9r",
+            "ZW5SZXNwb25zZSIAEjQKDlBvc3RDcmVhdGVUb2RvEgsuQ3JlYXRlVG9kbxoT",
+            "LkNyZWF0ZVRvZG9SZXNwb25zZSIAEi8KDkNhbGxEZWxldGVUb2RvEgsuRGVs",
+            "ZXRlVG9kbxoOLkVtcHR5UmVzcG9uc2UiABIxCg9DYWxsRGVsZXRlVG9kb3MS",
+            "DC5EZWxldGVUb2RvcxoOLkVtcHR5UmVzcG9uc2UiABJAChJQb3N0R2V0QWNj",
+            "ZXNzVG9rZW4SDy5HZXRBY2Nlc3NUb2tlbhoXLkdldEFjY2Vzc1Rva2VuUmVz",
+            "cG9uc2UiABI0Cg5DYWxsR2V0QXBpS2V5cxILLkdldEFwaUtleXMaEy5HZXRB",
+            "cGlLZXlzUmVzcG9uc2UiABInCgtDYWxsR2V0RmlsZRIILkdldEZpbGUaDC5G",
+            "aWxlQ29udGVudCIAEisKDENhbGxHZXRIZWxsbxIJLkdldEhlbGxvGg4uSGVs",
+            "bG9SZXNwb25zZSIAEisKC0NhbGxHZXRUb2RvEgguR2V0VG9kbxoQLkdldFRv",
+            "ZG9SZXNwb25zZSIAEi4KDENhbGxHZXRUb2RvcxIJLkdldFRvZG9zGhEuR2V0",
+            "VG9kb3NSZXNwb25zZSIAEi0KC0dldEhlbGxvSnd0EgkuSGVsbG9Kd3QaES5I",
+            "ZWxsb0p3dFJlc3BvbnNlIgASLgoMUG9zdEhlbGxvSnd0EgkuSGVsbG9Kd3Qa",
+            "ES5IZWxsb0p3dFJlc3BvbnNlIgASLQoLUHV0SGVsbG9Kd3QSCS5IZWxsb0p3",
+            "dBoRLkhlbGxvSnd0UmVzcG9uc2UiABIwCg5EZWxldGVIZWxsb0p3dBIJLkhl",
+            "bGxvSnd0GhEuSGVsbG9Kd3RSZXNwb25zZSIAEi8KDVBhdGNoSGVsbG9Kd3QS",
+            "CS5IZWxsb0p3dBoRLkhlbGxvSnd0UmVzcG9uc2UiABIiCgdHZXRJbmNyEgUu",
+            "SW5jchoOLkVtcHR5UmVzcG9uc2UiABIjCghQb3N0SW5jchIFLkluY3IaDi5F",
+            "bXB0eVJlc3BvbnNlIgASIgoHUHV0SW5jchIFLkluY3IaDi5FbXB0eVJlc3Bv",
+            "bnNlIgASJQoKRGVsZXRlSW5jchIFLkluY3IaDi5FbXB0eVJlc3BvbnNlIgAS",
+            "JAoJUGF0Y2hJbmNyEgUuSW5jchoOLkVtcHR5UmVzcG9uc2UiABIuCgxQb3N0",
+            "TXVsdGlwbHkSCS5NdWx0aXBseRoRLk11bHRpcGx5UmVzcG9uc2UiABI7ChVD",
+            "YWxsUG9zdENoYXRUb0NoYW5uZWwSEi5Qb3N0Q2hhdFRvQ2hhbm5lbBoMLkNo",
+            "YXRNZXNzYWdlIgASNAoNR2V0UXVlcnlBZGhvYxILLlF1ZXJ5QWRob2MaFC5R",
+            "dWVyeVJlc3BvbnNlX0FkaG9jIgASSQoWR2V0UXVlcnlBZGhvY1JvY2tzdGFy",
+            "cxIULlF1ZXJ5QWRob2NSb2Nrc3RhcnMaFy5RdWVyeVJlc3BvbnNlX1JvY2tz",
+            "dGFyIgASQAoRR2V0UXVlcnlBbGxGaWVsZHMSDy5RdWVyeUFsbEZpZWxkcxoY",
+            "LlF1ZXJ5UmVzcG9uc2VfQWxsRmllbGRzIgASWQoeR2V0UXVlcnlDYXNlSW5z",
+            "ZW5zaXRpdmVPcmRlckJ5EhwuUXVlcnlDYXNlSW5zZW5zaXRpdmVPcmRlckJ5",
+            "GhcuUXVlcnlSZXNwb25zZV9Sb2Nrc3RhciIAElUKHEdldFF1ZXJ5Q2hhbmdl",
+            "Q29ubmVjdGlvbkluZm8SGi5RdWVyeUNoYW5nZUNvbm5lY3Rpb25JbmZvGhcu",
+            "UXVlcnlSZXNwb25zZV9Sb2Nrc3RhciIAEj0KEEdldFF1ZXJ5Q2hhbmdlRGIS",
+            "Di5RdWVyeUNoYW5nZURiGhcuUXVlcnlSZXNwb25zZV9Sb2Nrc3RhciIAElEK",
+            "F0dldFF1ZXJ5Q3VzdG9tUm9ja3N0YXJzEhUuUXVlcnlDdXN0b21Sb2Nrc3Rh",
+            "cnMaHS5RdWVyeVJlc3BvbnNlX0N1c3RvbVJvY2tzdGFyIgASXQodR2V0UXVl",
+            "cnlDdXN0b21Sb2Nrc3RhcnNGaWx0ZXISGy5RdWVyeUN1c3RvbVJvY2tzdGFy",
+            "c0ZpbHRlchodLlF1ZXJ5UmVzcG9uc2VfQ3VzdG9tUm9ja3N0YXIiABJoCiFH",
+            "ZXRRdWVyeUN1c3RvbVJvY2tzdGFyc1JlZmVyZW5jZXMSHy5RdWVyeUN1c3Rv",
+            "bVJvY2tzdGFyc1JlZmVyZW5jZXMaIC5RdWVyeVJlc3BvbnNlX1JvY2tzdGFy",
+            "UmVmZXJlbmNlIgASYwodR2V0UXVlcnlDdXN0b21Sb2Nrc3RhcnNTY2hlbWES",
+            "Gy5RdWVyeUN1c3RvbVJvY2tzdGFyc1NjaGVtYRojLlF1ZXJ5UmVzcG9uc2Vf",
+            "Q3VzdG9tUm9ja3N0YXJTY2hlbWEiABJJChZHZXRRdWVyeUZpZWxkUm9ja3N0",
+            "YXJzEhQuUXVlcnlGaWVsZFJvY2tzdGFycxoXLlF1ZXJ5UmVzcG9uc2VfUm9j",
+            "a3N0YXIiABJXCh1HZXRRdWVyeUZpZWxkUm9ja3N0YXJzRHluYW1pYxIbLlF1",
+            "ZXJ5RmllbGRSb2Nrc3RhcnNEeW5hbWljGhcuUXVlcnlSZXNwb25zZV9Sb2Nr",
+            "c3RhciIAEl8KIUdldFF1ZXJ5RmllbGRzSW1wbGljaXRDb252ZW50aW9ucxIf",
+            "LlF1ZXJ5RmllbGRzSW1wbGljaXRDb252ZW50aW9ucxoXLlF1ZXJ5UmVzcG9u",
+            "c2VfUm9ja3N0YXIiABJFChRHZXRRdWVyeUdldFJvY2tzdGFycxISLlF1ZXJ5",
+            "R2V0Um9ja3N0YXJzGhcuUXVlcnlSZXNwb25zZV9Sb2Nrc3RhciIAElMKG0dl",
+            "dFF1ZXJ5R2V0Um9ja3N0YXJzRHluYW1pYxIZLlF1ZXJ5R2V0Um9ja3N0YXJz",
+            "RHluYW1pYxoXLlF1ZXJ5UmVzcG9uc2VfUm9ja3N0YXIiABJbChxHZXRRdWVy",
+            "eUpvaW5lZFJvY2tzdGFyQWxidW1zEhouUXVlcnlKb2luZWRSb2Nrc3RhckFs",
+            "YnVtcxodLlF1ZXJ5UmVzcG9uc2VfQ3VzdG9tUm9ja3N0YXIiABJ5CihHZXRR",
+            "dWVyeUpvaW5lZFJvY2tzdGFyQWxidW1zQ3VzdG9tU2VsZWN0EiYuUXVlcnlK",
+            "b2luZWRSb2Nrc3RhckFsYnVtc0N1c3RvbVNlbGVjdBojLlF1ZXJ5UmVzcG9u",
+            "c2VfQ3VzdG9tU2VsZWN0Um9ja3N0YXIiABKRAQowR2V0UXVlcnlKb2luZWRS",
+            "b2Nrc3RhckFsYnVtc0N1c3RvbVNlbGVjdFJlc3BvbnNlEi4uUXVlcnlKb2lu",
+            "ZWRSb2Nrc3RhckFsYnVtc0N1c3RvbVNlbGVjdFJlc3BvbnNlGisuUXVlcnlS",
+            "ZXNwb25zZV9DdXN0b21TZWxlY3RSb2Nrc3RhclJlc3BvbnNlIgASNgoOR2V0",
+            "UXVlcnlNb3ZpZXMSDC5RdWVyeU1vdmllcxoULlF1ZXJ5UmVzcG9uc2VfTW92",
+            "aWUiABJVChlHZXRRdWVyeU11bHRpSm9pblJvY2tzdGFyEhcuUXVlcnlNdWx0",
+            "aUpvaW5Sb2Nrc3RhchodLlF1ZXJ5UmVzcG9uc2VfQ3VzdG9tUm9ja3N0YXIi",
+            "ABJOChZHZXRRdWVyeU5hbWVkUm9ja3N0YXJzEhQuUXVlcnlOYW1lZFJvY2tz",
+            "dGFycxocLlF1ZXJ5UmVzcG9uc2VfTmFtZWRSb2Nrc3RhciIAEkMKE0dldFF1",
+            "ZXJ5T3JSb2Nrc3RhcnMSES5RdWVyeU9yUm9ja3N0YXJzGhcuUXVlcnlSZXNw",
+            "b25zZV9Sb2Nrc3RhciIAEk8KGUdldFF1ZXJ5T3JSb2Nrc3RhcnNGaWVsZHMS",
+            "Fy5RdWVyeU9yUm9ja3N0YXJzRmllbGRzGhcuUXVlcnlSZXNwb25zZV9Sb2Nr",
+            "c3RhciIAEmMKIEdldFF1ZXJ5T3ZlcnJpZGVkQ3VzdG9tUm9ja3N0YXJzEh4u",
+            "UXVlcnlPdmVycmlkZWRDdXN0b21Sb2Nrc3RhcnMaHS5RdWVyeVJlc3BvbnNl",
+            "X0N1c3RvbVJvY2tzdGFyIgASUQoaR2V0UXVlcnlPdmVycmlkZWRSb2Nrc3Rh",
+            "cnMSGC5RdWVyeU92ZXJyaWRlZFJvY2tzdGFycxoXLlF1ZXJ5UmVzcG9uc2Vf",
+            "Um9ja3N0YXIiABJDChJHZXRRdWVyeVBhZ2luZ1Rlc3QSEC5RdWVyeVBhZ2lu",
+            "Z1Rlc3QaGS5RdWVyeVJlc3BvbnNlX1BhZ2luZ1Rlc3QiABJOChZHZXRRdWVy",
+            "eVJvY2tzdGFyQWxidW1zEhQuUXVlcnlSb2Nrc3RhckFsYnVtcxocLlF1ZXJ5",
+            "UmVzcG9uc2VfUm9ja3N0YXJBbGJ1bSIAEmsKJEdldFF1ZXJ5Um9ja3N0YXJB",
+            "bGJ1bXNDdXN0b21MZWZ0Sm9pbhIiLlF1ZXJ5Um9ja3N0YXJBbGJ1bXNDdXN0",
+            "b21MZWZ0Sm9pbhodLlF1ZXJ5UmVzcG9uc2VfQ3VzdG9tUm9ja3N0YXIiABJf",
+            "Ch5HZXRRdWVyeVJvY2tzdGFyQWxidW1zSW1wbGljaXQSHC5RdWVyeVJvY2tz",
+            "dGFyQWxidW1zSW1wbGljaXQaHS5RdWVyeVJlc3BvbnNlX0N1c3RvbVJvY2tz",
+            "dGFyIgASXwoeR2V0UXVlcnlSb2Nrc3RhckFsYnVtc0xlZnRKb2luEhwuUXVl",
+            "cnlSb2Nrc3RhckFsYnVtc0xlZnRKb2luGh0uUXVlcnlSZXNwb25zZV9DdXN0",
+            "b21Sb2Nrc3RhciIAEkwKFUdldFF1ZXJ5Um9ja3N0YXJBbGlhcxITLlF1ZXJ5",
+            "Um9ja3N0YXJBbGlhcxocLlF1ZXJ5UmVzcG9uc2VfUm9ja3N0YXJBbGlhcyIA",
+            "EksKF0dldFF1ZXJ5Um9ja3N0YXJGaWx0ZXJzEhUuUXVlcnlSb2Nrc3RhckZp",
+            "bHRlcnMaFy5RdWVyeVJlc3BvbnNlX1JvY2tzdGFyIgASPwoRR2V0UXVlcnlS",
+            "b2Nrc3RhcnMSDy5RdWVyeVJvY2tzdGFycxoXLlF1ZXJ5UmVzcG9uc2VfUm9j",
+            "a3N0YXIiABJVChxHZXRRdWVyeVJvY2tzdGFyc0NvbnZlbnRpb25zEhouUXVl",
+            "cnlSb2Nrc3RhcnNDb252ZW50aW9ucxoXLlF1ZXJ5UmVzcG9uc2VfUm9ja3N0",
+            "YXIiABJLChdHZXRRdWVyeVJvY2tzdGFyc0ZpbHRlchIVLlF1ZXJ5Um9ja3N0",
+            "YXJzRmlsdGVyGhcuUXVlcnlSZXNwb25zZV9Sb2Nrc3RhciIAEk0KGEdldFF1",
+            "ZXJ5Um9ja3N0YXJzSUZpbHRlchIWLlF1ZXJ5Um9ja3N0YXJzSUZpbHRlchoX",
+            "LlF1ZXJ5UmVzcG9uc2VfUm9ja3N0YXIiABJkCh9HZXRRdWVyeVJvY2tzdGFy",
+            "c1dpdGhSZWZlcmVuY2VzEh0uUXVlcnlSb2Nrc3RhcnNXaXRoUmVmZXJlbmNl",
+            "cxogLlF1ZXJ5UmVzcG9uc2VfUm9ja3N0YXJSZWZlcmVuY2UiABJLChVHZXRR",
+            "dWVyeVR5cGVXaXRoRW51bXMSEy5RdWVyeVR5cGVXaXRoRW51bXMaGy5RdWVy",
+            "eVJlc3BvbnNlX1R5cGVXaXRoRW51bSIAEk0KGEdldFF1ZXJ5VW5rbm93blJv",
+            "Y2tzdGFycxIWLlF1ZXJ5VW5rbm93blJvY2tzdGFycxoXLlF1ZXJ5UmVzcG9u",
+            "c2VfUm9ja3N0YXIiABJJChVQb3N0UmVnZW5lcmF0ZUFwaUtleXMSEi5SZWdl",
+            "bmVyYXRlQXBpS2V5cxoaLlJlZ2VuZXJhdGVBcGlLZXlzUmVzcG9uc2UiABIt",
+            "CgtQdXRSZWdpc3RlchIJLlJlZ2lzdGVyGhEuUmVnaXN0ZXJSZXNwb25zZSIA",
+            "Ei4KDFBvc3RSZWdpc3RlchIJLlJlZ2lzdGVyGhEuUmVnaXN0ZXJSZXNwb25z",
+            "ZSIAEjEKD0dldFJlcXVpcmVzQXV0aBINLlJlcXVpcmVzQXV0aBoNLlJlcXVp",
+            "cmVzQXV0aCIAEjIKEFBvc3RSZXF1aXJlc0F1dGgSDS5SZXF1aXJlc0F1dGga",
+            "DS5SZXF1aXJlc0F1dGgiABIxCg9QdXRSZXF1aXJlc0F1dGgSDS5SZXF1aXJl",
+            "c0F1dGgaDS5SZXF1aXJlc0F1dGgiABI0ChJEZWxldGVSZXF1aXJlc0F1dGgS",
+            "DS5SZXF1aXJlc0F1dGgaDS5SZXF1aXJlc0F1dGgiABIzChFQYXRjaFJlcXVp",
+            "cmVzQXV0aBINLlJlcXVpcmVzQXV0aBoNLlJlcXVpcmVzQXV0aCIAEi8KDlBv",
+            "c3RSZXNldFRvZG9zEgsuUmVzZXRUb2RvcxoOLkVtcHR5UmVzcG9uc2UiABI4",
+            "Cg9HZXRTZWFyY2hNb3ZpZXMSDS5TZWFyY2hNb3ZpZXMaFC5RdWVyeVJlc3Bv",
+            "bnNlX01vdmllIgASKwoLUG9zdFNlY3VyZWQSCC5TZWN1cmVkGhAuU2VjdXJl",
+            "ZFJlc3BvbnNlIgASMwoRU2VydmVyU3RyZWFtRmlsZXMSDC5TdHJlYW1GaWxl",
+            "cxoMLkZpbGVDb250ZW50IgAwARI4Cg9HZXRTdHJlYW1Nb3ZpZXMSDS5TdHJl",
+            "YW1Nb3ZpZXMaFC5RdWVyeVJlc3BvbnNlX01vdmllIgASUAoYU2VydmVyU3Ry",
+            "ZWFtU2VydmVyRXZlbnRzEhMuU3RyZWFtU2VydmVyRXZlbnRzGhsuU3RyZWFt",
+            "U2VydmVyRXZlbnRzUmVzcG9uc2UiADABEiQKCEdldFRocm93EgYuVGhyb3ca",
+            "Di5IZWxsb1Jlc3BvbnNlIgASNgoOR2V0VGhyb3dDdXN0b20SDC5UaHJvd0N1",
+            "c3RvbRoULlRocm93Q3VzdG9tUmVzcG9uc2UiABIsCgxHZXRUaHJvd1ZvaWQS",
+            "Ci5UaHJvd1ZvaWQaDi5FbXB0eVJlc3BvbnNlIgASPQoVUG9zdFRyaWdnZXJW",
+            "YWxpZGF0b3JzEhIuVHJpZ2dlclZhbGlkYXRvcnMaDi5FbXB0eVJlc3BvbnNl",
+            "IgASPQoRUG9zdFVuQXNzaWduUm9sZXMSDi5VbkFzc2lnblJvbGVzGhYuVW5B",
+            "c3NpZ25Sb2xlc1Jlc3BvbnNlIgASLgoNUHV0VXBkYXRlVG9kbxILLlVwZGF0",
+            "ZVRvZG8aDi5FbXB0eVJlc3BvbnNlIgBCTqoCJFNlcnZpY2VTdGFjay5FeHRl",
+            "bnNpb25zLlRlc3RzLlByb3RvY8oCJFNlcnZpY2VTdGFjay5FeHRlbnNpb25z",
+            "LlRlc3RzLlByb3RvY2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::ProtoBuf.Bcl.BclReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::ServiceStack.Extensions.Tests.Protoc.LivingStatus), }, new pbr::GeneratedClrTypeInfo[] {
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::ServiceStack.Extensions.Tests.Protoc.HttpStatusCode), typeof(global::ServiceStack.Extensions.Tests.Protoc.LivingStatus), typeof(global::ServiceStack.Extensions.Tests.Protoc.SomeEnum), typeof(global::ServiceStack.Extensions.Tests.Protoc.SomeEnumAsInt), }, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.AddHeader), global::ServiceStack.Extensions.Tests.Protoc.AddHeader.Parser, new[]{ "Name", "Value" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.Adhoc), global::ServiceStack.Extensions.Tests.Protoc.Adhoc.Parser, new[]{ "Id", "FirstName", "LastName" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.AllFields), global::ServiceStack.Extensions.Tests.Protoc.AllFields.Parser, new[]{ "Id", "NullableId", "Byte", "Short", "Int", "Long", "UShort", "UInt", "ULong", "Float", "Double", "Decimal", "String", "DateTime", "TimeSpan", "Guid", "NullableDateTime", "NullableTimeSpan", "NullableGuid", "Enum", "NullableEnum" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.AnyHello), global::ServiceStack.Extensions.Tests.Protoc.AnyHello.Parser, new[]{ "Name" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.AssignRoles), global::ServiceStack.Extensions.Tests.Protoc.AssignRoles.Parser, new[]{ "UserName", "Permissions", "Roles", "Meta" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.AssignRolesResponse), global::ServiceStack.Extensions.Tests.Protoc.AssignRolesResponse.Parser, new[]{ "AllRoles", "AllPermissions", "Meta", "ResponseStatus" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
@@ -336,6 +644,9 @@ namespace ServiceStack.Extensions.Tests.Protoc {
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.CreateTodo), global::ServiceStack.Extensions.Tests.Protoc.CreateTodo.Parser, new[]{ "Title", "Order" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.CreateTodoResponse), global::ServiceStack.Extensions.Tests.Protoc.CreateTodoResponse.Parser, new[]{ "Result", "ResponseStatus" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.CustomRockstar), global::ServiceStack.Extensions.Tests.Protoc.CustomRockstar.Parser, new[]{ "FirstName", "LastName", "Age", "RockstarAlbumName", "RockstarGenreName" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.CustomRockstarSchema), global::ServiceStack.Extensions.Tests.Protoc.CustomRockstarSchema.Parser, new[]{ "FirstName", "LastName", "Age", "RockstarAlbumName", "RockstarGenreName" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.CustomSelectRockstar), global::ServiceStack.Extensions.Tests.Protoc.CustomSelectRockstar.Parser, new[]{ "Id", "FirstName", "LastName", "Age" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.CustomSelectRockstarResponse), global::ServiceStack.Extensions.Tests.Protoc.CustomSelectRockstarResponse.Parser, new[]{ "Id", "FirstName", "Age" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.DeleteTodo), global::ServiceStack.Extensions.Tests.Protoc.DeleteTodo.Parser, new[]{ "Id" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.DeleteTodos), global::ServiceStack.Extensions.Tests.Protoc.DeleteTodos.Parser, new[]{ "Ids" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse), global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse.Parser, new[]{ "ResponseStatus" }, null, null, null),
@@ -344,6 +655,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.GetAccessTokenResponse), global::ServiceStack.Extensions.Tests.Protoc.GetAccessTokenResponse.Parser, new[]{ "AccessToken", "Meta", "ResponseStatus" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.GetApiKeys), global::ServiceStack.Extensions.Tests.Protoc.GetApiKeys.Parser, new[]{ "Environment", "Meta" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.GetApiKeysResponse), global::ServiceStack.Extensions.Tests.Protoc.GetApiKeysResponse.Parser, new[]{ "Results", "Meta", "ResponseStatus" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.GetFile), global::ServiceStack.Extensions.Tests.Protoc.GetFile.Parser, new[]{ "Path" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.GetHello), global::ServiceStack.Extensions.Tests.Protoc.GetHello.Parser, new[]{ "Name" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.GetTodo), global::ServiceStack.Extensions.Tests.Protoc.GetTodo.Parser, new[]{ "Id" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.GetTodoResponse), global::ServiceStack.Extensions.Tests.Protoc.GetTodoResponse.Parser, new[]{ "Result", "ResponseStatus" }, null, null, null),
@@ -356,22 +668,77 @@ namespace ServiceStack.Extensions.Tests.Protoc {
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.Movie), global::ServiceStack.Extensions.Tests.Protoc.Movie.Parser, new[]{ "Id", "ImdbId", "Title", "Rating", "Score", "Director", "ReleaseDate", "TagLine", "Genres" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.Multiply), global::ServiceStack.Extensions.Tests.Protoc.Multiply.Parser, new[]{ "X", "Y" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.MultiplyResponse), global::ServiceStack.Extensions.Tests.Protoc.MultiplyResponse.Parser, new[]{ "Result" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.NamedRockstar), global::ServiceStack.Extensions.Tests.Protoc.NamedRockstar.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.PagingTest), global::ServiceStack.Extensions.Tests.Protoc.PagingTest.Parser, new[]{ "Id", "Name", "Value" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.PostChatToChannel), global::ServiceStack.Extensions.Tests.Protoc.PostChatToChannel.Parser, new[]{ "From", "ToUserId", "Channel", "Message", "Selector" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryBase), global::ServiceStack.Extensions.Tests.Protoc.QueryBase.Parser, new[]{ "Skip", "Take", "OrderBy", "OrderByDesc", "Include", "Fields", "Meta", "QueryDbRockstarCustomRockstar", "QueryDbMovie", "QueryDbRockstarReference", "QueryDbRockstar" }, new[]{ "Subtype" }, null, new pbr::GeneratedClrTypeInfo[] { null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryAdhoc), global::ServiceStack.Extensions.Tests.Protoc.QueryAdhoc.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryAdhocRockstars), global::ServiceStack.Extensions.Tests.Protoc.QueryAdhocRockstars.Parser, new[]{ "FirstName" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryAllFields), global::ServiceStack.Extensions.Tests.Protoc.QueryAllFields.Parser, new[]{ "Guid" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryBase), global::ServiceStack.Extensions.Tests.Protoc.QueryBase.Parser, new[]{ "Skip", "Take", "OrderBy", "OrderByDesc", "Include", "Fields", "Meta", "QueryDbRockstarCustomRockstar", "QueryDbRockstarRockstarAlias", "QueryDbPagingTest", "QueryDbCustomSelectRockstar", "QueryDbMovie", "QueryDbRockstarReference", "QueryDbAdhoc", "QueryDbNamedRockstar", "QueryDbTypeWithEnum", "QueryDbRockstarAlbum", "QueryDbCustomSelectRockstarCustomSelectRockstarResponse", "QueryDbRockstar", "QueryDbAllFields", "QueryDbRockstarCustomRockstarSchema" }, new[]{ "Subtype" }, null, new pbr::GeneratedClrTypeInfo[] { null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryCaseInsensitiveOrderBy), global::ServiceStack.Extensions.Tests.Protoc.QueryCaseInsensitiveOrderBy.Parser, new[]{ "Age" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryChangeConnectionInfo), global::ServiceStack.Extensions.Tests.Protoc.QueryChangeConnectionInfo.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryChangeDb), global::ServiceStack.Extensions.Tests.Protoc.QueryChangeDb.Parser, new[]{ "NamedConnection", "ConnectionString", "ProviderName" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstars), global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstars.Parser, new[]{ "Age" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstarsFilter), global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstarsFilter.Parser, new[]{ "Age" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstarsReferences), global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstarsReferences.Parser, new[]{ "Age" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Movie), global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Movie.Parser, new[]{ "StreamMovies" }, new[]{ "Subtype" }, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Rockstar), global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Rockstar.Parser, new[]{ "QueryChangeConnectionInfo", "QueryOverridedRockstars", "QueryCaseInsensitiveOrderBy" }, new[]{ "Subtype" }, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryDb_RockstarReference), global::ServiceStack.Extensions.Tests.Protoc.QueryDb_RockstarReference.Parser, new[]{ "QueryCustomRockstarsReferences" }, new[]{ "Subtype" }, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Rockstar_CustomRockstar), global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Rockstar_CustomRockstar.Parser, new[]{ "QueryRockstarAlbumsCustomLeftJoin", "QueryOverridedCustomRockstars" }, new[]{ "Subtype" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstarsSchema), global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstarsSchema.Parser, new[]{ "Age" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Adhoc), global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Adhoc.Parser, new[]{ "QueryAdhoc" }, new[]{ "Subtype" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryDb_AllFields), global::ServiceStack.Extensions.Tests.Protoc.QueryDb_AllFields.Parser, new[]{ "QueryAllFields" }, new[]{ "Subtype" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryDb_CustomSelectRockstar), global::ServiceStack.Extensions.Tests.Protoc.QueryDb_CustomSelectRockstar.Parser, new[]{ "QueryJoinedRockstarAlbumsCustomSelect" }, new[]{ "Subtype" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse), global::ServiceStack.Extensions.Tests.Protoc.QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse.Parser, new[]{ "QueryJoinedRockstarAlbumsCustomSelectResponse" }, new[]{ "Subtype" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Movie), global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Movie.Parser, new[]{ "SearchMovies", "StreamMovies", "QueryMovies" }, new[]{ "Subtype" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryDb_NamedRockstar), global::ServiceStack.Extensions.Tests.Protoc.QueryDb_NamedRockstar.Parser, new[]{ "QueryNamedRockstars" }, new[]{ "Subtype" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryDb_PagingTest), global::ServiceStack.Extensions.Tests.Protoc.QueryDb_PagingTest.Parser, new[]{ "QueryPagingTest" }, new[]{ "Subtype" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Rockstar), global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Rockstar.Parser, new[]{ "QueryRockstars", "QueryChangeConnectionInfo", "QueryFieldRockstarsDynamic", "QueryFieldRockstars", "QueryOverridedRockstars", "QueryRockstarsIFilter", "QueryGetRockstars", "QueryOrRockstars", "QueryRockstarsFilter", "QueryRockstarsConventions", "QueryAdhocRockstars", "QueryFieldsImplicitConventions", "QueryRockstarFilters", "QueryCaseInsensitiveOrderBy", "QueryChangeDb", "QueryGetRockstarsDynamic", "QueryOrRockstarsFields", "QueryUnknownRockstars" }, new[]{ "Subtype" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryDb_RockstarAlbum), global::ServiceStack.Extensions.Tests.Protoc.QueryDb_RockstarAlbum.Parser, new[]{ "QueryRockstarAlbums" }, new[]{ "Subtype" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryDb_RockstarReference), global::ServiceStack.Extensions.Tests.Protoc.QueryDb_RockstarReference.Parser, new[]{ "QueryRockstarsWithReferences", "QueryCustomRockstarsReferences" }, new[]{ "Subtype" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Rockstar_CustomRockstar), global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Rockstar_CustomRockstar.Parser, new[]{ "QueryCustomRockstars", "QueryJoinedRockstarAlbums", "QueryCustomRockstarsFilter", "QueryRockstarAlbumsCustomLeftJoin", "QueryRockstarAlbumsImplicit", "QueryOverridedCustomRockstars", "QueryRockstarAlbumsLeftJoin", "QueryMultiJoinRockstar" }, new[]{ "Subtype" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Rockstar_CustomRockstarSchema), global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Rockstar_CustomRockstarSchema.Parser, new[]{ "QueryCustomRockstarsSchema" }, new[]{ "Subtype" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Rockstar_RockstarAlias), global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Rockstar_RockstarAlias.Parser, new[]{ "QueryRockstarAlias" }, new[]{ "Subtype" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryDb_TypeWithEnum), global::ServiceStack.Extensions.Tests.Protoc.QueryDb_TypeWithEnum.Parser, new[]{ "QueryTypeWithEnums" }, new[]{ "Subtype" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryFieldRockstars), global::ServiceStack.Extensions.Tests.Protoc.QueryFieldRockstars.Parser, new[]{ "FirstName", "FirstNames", "Age", "FirstNameCaseInsensitive", "FirstNameStartsWith", "LastNameEndsWith", "FirstNameBetween", "OrLastName" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryFieldRockstarsDynamic), global::ServiceStack.Extensions.Tests.Protoc.QueryFieldRockstarsDynamic.Parser, new[]{ "Age" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryFieldsImplicitConventions), global::ServiceStack.Extensions.Tests.Protoc.QueryFieldsImplicitConventions.Parser, new[]{ "FirstNameContains", "LastNameEndsWith" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryGetRockstars), global::ServiceStack.Extensions.Tests.Protoc.QueryGetRockstars.Parser, new[]{ "Ids", "Ages", "FirstNames", "IdsBetween" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryGetRockstarsDynamic), global::ServiceStack.Extensions.Tests.Protoc.QueryGetRockstarsDynamic.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryJoinedRockstarAlbums), global::ServiceStack.Extensions.Tests.Protoc.QueryJoinedRockstarAlbums.Parser, new[]{ "Age", "RockstarAlbumName" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryJoinedRockstarAlbumsCustomSelect), global::ServiceStack.Extensions.Tests.Protoc.QueryJoinedRockstarAlbumsCustomSelect.Parser, new[]{ "Age", "RockstarAlbumName" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryJoinedRockstarAlbumsCustomSelectResponse), global::ServiceStack.Extensions.Tests.Protoc.QueryJoinedRockstarAlbumsCustomSelectResponse.Parser, new[]{ "Age", "RockstarAlbumName" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryMovies), global::ServiceStack.Extensions.Tests.Protoc.QueryMovies.Parser, new[]{ "Ids", "ImdbIds", "Ratings" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryMultiJoinRockstar), global::ServiceStack.Extensions.Tests.Protoc.QueryMultiJoinRockstar.Parser, new[]{ "Age", "RockstarAlbumName", "RockstarGenreName" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryNamedRockstars), global::ServiceStack.Extensions.Tests.Protoc.QueryNamedRockstars.Parser, new[]{ "Age" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryOrRockstars), global::ServiceStack.Extensions.Tests.Protoc.QueryOrRockstars.Parser, new[]{ "Age", "FirstName" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryOrRockstarsFields), global::ServiceStack.Extensions.Tests.Protoc.QueryOrRockstarsFields.Parser, new[]{ "FirstName", "LastName" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryOverridedCustomRockstars), global::ServiceStack.Extensions.Tests.Protoc.QueryOverridedCustomRockstars.Parser, new[]{ "Age" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryOverridedRockstars), global::ServiceStack.Extensions.Tests.Protoc.QueryOverridedRockstars.Parser, new[]{ "Age" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryPagingTest), global::ServiceStack.Extensions.Tests.Protoc.QueryPagingTest.Parser, new[]{ "Id", "Name", "Value" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc.Parser, new[]{ "Offset", "Total", "Results", "Meta", "ResponseStatus" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields.Parser, new[]{ "Offset", "Total", "Results", "Meta", "ResponseStatus" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstar), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstar.Parser, new[]{ "Offset", "Total", "Results", "Meta", "ResponseStatus" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstarSchema), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstarSchema.Parser, new[]{ "Offset", "Total", "Results", "Meta", "ResponseStatus" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstar), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstar.Parser, new[]{ "Offset", "Total", "Results", "Meta", "ResponseStatus" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstarResponse), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstarResponse.Parser, new[]{ "Offset", "Total", "Results", "Meta", "ResponseStatus" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie.Parser, new[]{ "Offset", "Total", "Results", "Meta", "ResponseStatus" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_NamedRockstar), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_NamedRockstar.Parser, new[]{ "Offset", "Total", "Results", "Meta", "ResponseStatus" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_PagingTest), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_PagingTest.Parser, new[]{ "Offset", "Total", "Results", "Meta", "ResponseStatus" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar.Parser, new[]{ "Offset", "Total", "Results", "Meta", "ResponseStatus" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarAlbum), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarAlbum.Parser, new[]{ "Offset", "Total", "Results", "Meta", "ResponseStatus" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarAlias), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarAlias.Parser, new[]{ "Offset", "Total", "Results", "Meta", "ResponseStatus" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarReference), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarReference.Parser, new[]{ "Offset", "Total", "Results", "Meta", "ResponseStatus" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_TypeWithEnum), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_TypeWithEnum.Parser, new[]{ "Offset", "Total", "Results", "Meta", "ResponseStatus" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbums), global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbums.Parser, new[]{ "Id", "RockstarId", "Name", "Genre", "IdBetween" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbumsCustomLeftJoin), global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbumsCustomLeftJoin.Parser, new[]{ "Age", "AlbumName", "IdNotEqualTo" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbumsImplicit), global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbumsImplicit.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbumsLeftJoin), global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbumsLeftJoin.Parser, new[]{ "Age", "AlbumName", "IdNotEqualTo" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlias), global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlias.Parser, new[]{ "Age", "RockstarAlbumName" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarFilters), global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarFilters.Parser, new[]{ "Ids", "Ages", "FirstNames", "IdsBetween" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryRockstars), global::ServiceStack.Extensions.Tests.Protoc.QueryRockstars.Parser, new[]{ "Age" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsConventions), global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsConventions.Parser, new[]{ "DateOfBirthGreaterThan", "DateDiedLessThan", "Ids", "AgeOlderThan", "AgeGreaterThanOrEqualTo", "AgeGreaterThan", "GreaterThanAge", "FirstNameStartsWith", "LastNameEndsWith", "LastNameContains", "RockstarAlbumNameContains", "RockstarIdAfter", "RockstarIdOnOrAfter" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsFilter), global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsFilter.Parser, new[]{ "Age" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsIFilter), global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsIFilter.Parser, new[]{ "Age" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsWithReferences), global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsWithReferences.Parser, new[]{ "Age" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryTypeWithEnums), global::ServiceStack.Extensions.Tests.Protoc.QueryTypeWithEnums.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.QueryUnknownRockstars), global::ServiceStack.Extensions.Tests.Protoc.QueryUnknownRockstars.Parser, new[]{ "UnknownInt", "UnknownProperty" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.RegenerateApiKeys), global::ServiceStack.Extensions.Tests.Protoc.RegenerateApiKeys.Parser, new[]{ "Environment", "Meta" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.RegenerateApiKeysResponse), global::ServiceStack.Extensions.Tests.Protoc.RegenerateApiKeysResponse.Parser, new[]{ "Results", "Meta", "ResponseStatus" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.Register), global::ServiceStack.Extensions.Tests.Protoc.Register.Parser, new[]{ "UserName", "FirstName", "LastName", "DisplayName", "Email", "Password", "ConfirmPassword", "AutoLogin", "Continue", "ErrorView", "Meta" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
@@ -380,9 +747,11 @@ namespace ServiceStack.Extensions.Tests.Protoc {
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.ResetTodos), global::ServiceStack.Extensions.Tests.Protoc.ResetTodos.Parser, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.ResponseError), global::ServiceStack.Extensions.Tests.Protoc.ResponseError.Parser, new[]{ "ErrorCode", "FieldName", "Message", "Meta" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus), global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus.Parser, new[]{ "ErrorCode", "Message", "StackTrace", "Errors", "Meta" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
-            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.Rockstar), global::ServiceStack.Extensions.Tests.Protoc.Rockstar.Parser, new[]{ "Id", "FirstName", "LastName", "Age", "DateOfBirth", "DateDied", "LivingStatus" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.Rockstar), global::ServiceStack.Extensions.Tests.Protoc.Rockstar.Parser, new[]{ "Id", "FirstName", "LastName", "Age", "DateOfBirth", "DateDied", "LivingStatus", "NamedRockstar" }, new[]{ "Subtype" }, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.RockstarAlbum), global::ServiceStack.Extensions.Tests.Protoc.RockstarAlbum.Parser, new[]{ "Id", "RockstarId", "Name", "Genre" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.RockstarAlias), global::ServiceStack.Extensions.Tests.Protoc.RockstarAlias.Parser, new[]{ "RockstarId", "FirstName", "Surname", "Album" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.RockstarReference), global::ServiceStack.Extensions.Tests.Protoc.RockstarReference.Parser, new[]{ "Id", "FirstName", "LastName", "Age", "Albums" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.SearchMovies), global::ServiceStack.Extensions.Tests.Protoc.SearchMovies.Parser, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.Secured), global::ServiceStack.Extensions.Tests.Protoc.Secured.Parser, new[]{ "Name" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.SecuredResponse), global::ServiceStack.Extensions.Tests.Protoc.SecuredResponse.Parser, new[]{ "Result", "ResponseStatus" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.StreamFiles), global::ServiceStack.Extensions.Tests.Protoc.StreamFiles.Parser, new[]{ "Paths" }, null, null, null),
@@ -395,6 +764,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.ThrowVoid), global::ServiceStack.Extensions.Tests.Protoc.ThrowVoid.Parser, new[]{ "Message" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.Todo), global::ServiceStack.Extensions.Tests.Protoc.Todo.Parser, new[]{ "Id", "Title", "Order", "Completed" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.TriggerValidators), global::ServiceStack.Extensions.Tests.Protoc.TriggerValidators.Parser, new[]{ "CreditCard", "Email", "Empty", "Equal", "ExclusiveBetween", "GreaterThanOrEqual", "GreaterThan", "InclusiveBetween", "Length", "LessThanOrEqual", "LessThan", "NotEmpty", "NotEqual", "Null", "RegularExpression", "ScalePrecision" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.TypeWithEnum), global::ServiceStack.Extensions.Tests.Protoc.TypeWithEnum.Parser, new[]{ "Id", "Name", "SomeEnum", "SomeEnumAsInt", "NSomeEnum", "NSomeEnumAsInt" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.UnAssignRoles), global::ServiceStack.Extensions.Tests.Protoc.UnAssignRoles.Parser, new[]{ "UserName", "Permissions", "Roles", "Meta" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.UnAssignRolesResponse), global::ServiceStack.Extensions.Tests.Protoc.UnAssignRolesResponse.Parser, new[]{ "AllRoles", "AllPermissions", "Meta", "ResponseStatus" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::ServiceStack.Extensions.Tests.Protoc.UpdateTodo), global::ServiceStack.Extensions.Tests.Protoc.UpdateTodo.Parser, new[]{ "Id", "Title", "Order", "Completed" }, null, null, null),
@@ -405,9 +775,96 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
   }
   #region Enums
+  public enum HttpStatusCode {
+    /// <summary>
+    /// proto3 requires a zero value as the first item (it can be named anything)
+    /// </summary>
+    [pbr::OriginalName("ZERO")] Zero = 0,
+    [pbr::OriginalName("Continue")] Continue = 100,
+    [pbr::OriginalName("SwitchingProtocols")] SwitchingProtocols = 101,
+    [pbr::OriginalName("Processing")] Processing = 102,
+    [pbr::OriginalName("EarlyHints")] EarlyHints = 103,
+    [pbr::OriginalName("OK")] Ok = 200,
+    [pbr::OriginalName("Created")] Created = 201,
+    [pbr::OriginalName("Accepted")] Accepted = 202,
+    [pbr::OriginalName("NonAuthoritativeInformation")] NonAuthoritativeInformation = 203,
+    [pbr::OriginalName("NoContent")] NoContent = 204,
+    [pbr::OriginalName("ResetContent")] ResetContent = 205,
+    [pbr::OriginalName("PartialContent")] PartialContent = 206,
+    [pbr::OriginalName("MultiStatus")] MultiStatus = 207,
+    [pbr::OriginalName("AlreadyReported")] AlreadyReported = 208,
+    [pbr::OriginalName("IMUsed")] Imused = 226,
+    [pbr::OriginalName("Ambiguous")] Ambiguous = 300,
+    [pbr::OriginalName("MultipleChoices", PreferredAlias = false)] MultipleChoices = 300,
+    [pbr::OriginalName("MovedPermanently")] MovedPermanently = 301,
+    [pbr::OriginalName("Moved", PreferredAlias = false)] Moved = 301,
+    [pbr::OriginalName("Found")] Found = 302,
+    [pbr::OriginalName("Redirect", PreferredAlias = false)] Redirect = 302,
+    [pbr::OriginalName("SeeOther")] SeeOther = 303,
+    [pbr::OriginalName("RedirectMethod", PreferredAlias = false)] RedirectMethod = 303,
+    [pbr::OriginalName("NotModified")] NotModified = 304,
+    [pbr::OriginalName("UseProxy")] UseProxy = 305,
+    [pbr::OriginalName("Unused")] Unused = 306,
+    [pbr::OriginalName("TemporaryRedirect")] TemporaryRedirect = 307,
+    [pbr::OriginalName("RedirectKeepVerb", PreferredAlias = false)] RedirectKeepVerb = 307,
+    [pbr::OriginalName("PermanentRedirect")] PermanentRedirect = 308,
+    [pbr::OriginalName("BadRequest")] BadRequest = 400,
+    [pbr::OriginalName("Unauthorized")] Unauthorized = 401,
+    [pbr::OriginalName("PaymentRequired")] PaymentRequired = 402,
+    [pbr::OriginalName("Forbidden")] Forbidden = 403,
+    [pbr::OriginalName("NotFound")] NotFound = 404,
+    [pbr::OriginalName("MethodNotAllowed")] MethodNotAllowed = 405,
+    [pbr::OriginalName("NotAcceptable")] NotAcceptable = 406,
+    [pbr::OriginalName("ProxyAuthenticationRequired")] ProxyAuthenticationRequired = 407,
+    [pbr::OriginalName("RequestTimeout")] RequestTimeout = 408,
+    [pbr::OriginalName("Conflict")] Conflict = 409,
+    [pbr::OriginalName("Gone")] Gone = 410,
+    [pbr::OriginalName("LengthRequired")] LengthRequired = 411,
+    [pbr::OriginalName("PreconditionFailed")] PreconditionFailed = 412,
+    [pbr::OriginalName("RequestEntityTooLarge")] RequestEntityTooLarge = 413,
+    [pbr::OriginalName("RequestUriTooLong")] RequestUriTooLong = 414,
+    [pbr::OriginalName("UnsupportedMediaType")] UnsupportedMediaType = 415,
+    [pbr::OriginalName("RequestedRangeNotSatisfiable")] RequestedRangeNotSatisfiable = 416,
+    [pbr::OriginalName("ExpectationFailed")] ExpectationFailed = 417,
+    [pbr::OriginalName("MisdirectedRequest")] MisdirectedRequest = 421,
+    [pbr::OriginalName("UnprocessableEntity")] UnprocessableEntity = 422,
+    [pbr::OriginalName("Locked")] Locked = 423,
+    [pbr::OriginalName("FailedDependency")] FailedDependency = 424,
+    [pbr::OriginalName("UpgradeRequired")] UpgradeRequired = 426,
+    [pbr::OriginalName("PreconditionRequired")] PreconditionRequired = 428,
+    [pbr::OriginalName("TooManyRequests")] TooManyRequests = 429,
+    [pbr::OriginalName("RequestHeaderFieldsTooLarge")] RequestHeaderFieldsTooLarge = 431,
+    [pbr::OriginalName("UnavailableForLegalReasons")] UnavailableForLegalReasons = 451,
+    [pbr::OriginalName("InternalServerError")] InternalServerError = 500,
+    [pbr::OriginalName("NotImplemented")] NotImplemented = 501,
+    [pbr::OriginalName("BadGateway")] BadGateway = 502,
+    [pbr::OriginalName("ServiceUnavailable")] ServiceUnavailable = 503,
+    [pbr::OriginalName("GatewayTimeout")] GatewayTimeout = 504,
+    [pbr::OriginalName("HttpVersionNotSupported")] HttpVersionNotSupported = 505,
+    [pbr::OriginalName("VariantAlsoNegotiates")] VariantAlsoNegotiates = 506,
+    [pbr::OriginalName("InsufficientStorage")] InsufficientStorage = 507,
+    [pbr::OriginalName("LoopDetected")] LoopDetected = 508,
+    [pbr::OriginalName("NotExtended")] NotExtended = 510,
+    [pbr::OriginalName("NetworkAuthenticationRequired")] NetworkAuthenticationRequired = 511,
+  }
+
   public enum LivingStatus {
     [pbr::OriginalName("Alive")] Alive = 0,
     [pbr::OriginalName("Dead")] Dead = 1,
+  }
+
+  public enum SomeEnum {
+    [pbr::OriginalName("SomeEnum_Value0")] Value0 = 0,
+    [pbr::OriginalName("SomeEnum_Value1")] Value1 = 1,
+    [pbr::OriginalName("SomeEnum_Value2")] Value2 = 2,
+    [pbr::OriginalName("SomeEnum_Value3")] Value3 = 3,
+  }
+
+  public enum SomeEnumAsInt {
+    [pbr::OriginalName("Value0")] Value0 = 0,
+    [pbr::OriginalName("Value1")] Value1 = 1,
+    [pbr::OriginalName("Value2")] Value2 = 2,
+    [pbr::OriginalName("Value3")] Value3 = 3,
   }
 
   #endregion
@@ -570,6 +1027,925 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
   }
 
+  public sealed partial class Adhoc : pb::IMessage<Adhoc> {
+    private static readonly pb::MessageParser<Adhoc> _parser = new pb::MessageParser<Adhoc>(() => new Adhoc());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<Adhoc> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[1]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Adhoc() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Adhoc(Adhoc other) : this() {
+      id_ = other.id_;
+      firstName_ = other.firstName_;
+      lastName_ = other.lastName_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Adhoc Clone() {
+      return new Adhoc(this);
+    }
+
+    /// <summary>Field number for the "Id" field.</summary>
+    public const int IdFieldNumber = 1;
+    private int id_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Id {
+      get { return id_; }
+      set {
+        id_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "first_name" field.</summary>
+    public const int FirstNameFieldNumber = 2;
+    private string firstName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string FirstName {
+      get { return firstName_; }
+      set {
+        firstName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "LastName" field.</summary>
+    public const int LastNameFieldNumber = 3;
+    private string lastName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string LastName {
+      get { return lastName_; }
+      set {
+        lastName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as Adhoc);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(Adhoc other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Id != other.Id) return false;
+      if (FirstName != other.FirstName) return false;
+      if (LastName != other.LastName) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Id != 0) hash ^= Id.GetHashCode();
+      if (FirstName.Length != 0) hash ^= FirstName.GetHashCode();
+      if (LastName.Length != 0) hash ^= LastName.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Id != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Id);
+      }
+      if (FirstName.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(FirstName);
+      }
+      if (LastName.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(LastName);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Id != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Id);
+      }
+      if (FirstName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(FirstName);
+      }
+      if (LastName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(LastName);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(Adhoc other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Id != 0) {
+        Id = other.Id;
+      }
+      if (other.FirstName.Length != 0) {
+        FirstName = other.FirstName;
+      }
+      if (other.LastName.Length != 0) {
+        LastName = other.LastName;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Id = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            FirstName = input.ReadString();
+            break;
+          }
+          case 26: {
+            LastName = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class AllFields : pb::IMessage<AllFields> {
+    private static readonly pb::MessageParser<AllFields> _parser = new pb::MessageParser<AllFields>(() => new AllFields());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<AllFields> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[2]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public AllFields() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public AllFields(AllFields other) : this() {
+      id_ = other.id_;
+      nullableId_ = other.nullableId_;
+      byte_ = other.byte_;
+      short_ = other.short_;
+      int_ = other.int_;
+      long_ = other.long_;
+      uShort_ = other.uShort_;
+      uInt_ = other.uInt_;
+      uLong_ = other.uLong_;
+      float_ = other.float_;
+      double_ = other.double_;
+      decimal_ = other.decimal_ != null ? other.decimal_.Clone() : null;
+      string_ = other.string_;
+      dateTime_ = other.dateTime_ != null ? other.dateTime_.Clone() : null;
+      timeSpan_ = other.timeSpan_ != null ? other.timeSpan_.Clone() : null;
+      guid_ = other.guid_ != null ? other.guid_.Clone() : null;
+      nullableDateTime_ = other.nullableDateTime_ != null ? other.nullableDateTime_.Clone() : null;
+      nullableTimeSpan_ = other.nullableTimeSpan_ != null ? other.nullableTimeSpan_.Clone() : null;
+      nullableGuid_ = other.nullableGuid_ != null ? other.nullableGuid_.Clone() : null;
+      enum_ = other.enum_;
+      nullableEnum_ = other.nullableEnum_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public AllFields Clone() {
+      return new AllFields(this);
+    }
+
+    /// <summary>Field number for the "Id" field.</summary>
+    public const int IdFieldNumber = 1;
+    private int id_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Id {
+      get { return id_; }
+      set {
+        id_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "NullableId" field.</summary>
+    public const int NullableIdFieldNumber = 2;
+    private int nullableId_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int NullableId {
+      get { return nullableId_; }
+      set {
+        nullableId_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Byte" field.</summary>
+    public const int ByteFieldNumber = 3;
+    private uint byte_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public uint Byte {
+      get { return byte_; }
+      set {
+        byte_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Short" field.</summary>
+    public const int ShortFieldNumber = 4;
+    private int short_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Short {
+      get { return short_; }
+      set {
+        short_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Int" field.</summary>
+    public const int IntFieldNumber = 5;
+    private int int_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Int {
+      get { return int_; }
+      set {
+        int_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Long" field.</summary>
+    public const int LongFieldNumber = 6;
+    private long long_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public long Long {
+      get { return long_; }
+      set {
+        long_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "UShort" field.</summary>
+    public const int UShortFieldNumber = 7;
+    private uint uShort_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public uint UShort {
+      get { return uShort_; }
+      set {
+        uShort_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "UInt" field.</summary>
+    public const int UIntFieldNumber = 8;
+    private uint uInt_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public uint UInt {
+      get { return uInt_; }
+      set {
+        uInt_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "ULong" field.</summary>
+    public const int ULongFieldNumber = 9;
+    private ulong uLong_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ulong ULong {
+      get { return uLong_; }
+      set {
+        uLong_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Float" field.</summary>
+    public const int FloatFieldNumber = 10;
+    private float float_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float Float {
+      get { return float_; }
+      set {
+        float_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Double" field.</summary>
+    public const int DoubleFieldNumber = 11;
+    private double double_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public double Double {
+      get { return double_; }
+      set {
+        double_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Decimal" field.</summary>
+    public const int DecimalFieldNumber = 12;
+    private global::ProtoBuf.Bcl.Decimal decimal_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ProtoBuf.Bcl.Decimal Decimal {
+      get { return decimal_; }
+      set {
+        decimal_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "String" field.</summary>
+    public const int StringFieldNumber = 13;
+    private string string_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string String {
+      get { return string_; }
+      set {
+        string_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "DateTime" field.</summary>
+    public const int DateTimeFieldNumber = 14;
+    private global::ProtoBuf.Bcl.DateTime dateTime_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ProtoBuf.Bcl.DateTime DateTime {
+      get { return dateTime_; }
+      set {
+        dateTime_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "TimeSpan" field.</summary>
+    public const int TimeSpanFieldNumber = 15;
+    private global::ProtoBuf.Bcl.TimeSpan timeSpan_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ProtoBuf.Bcl.TimeSpan TimeSpan {
+      get { return timeSpan_; }
+      set {
+        timeSpan_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Guid" field.</summary>
+    public const int GuidFieldNumber = 16;
+    private global::ProtoBuf.Bcl.Guid guid_;
+    /// <summary>
+    /// default value could not be applied: 00000000-0000-0000-0000-000000000000
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ProtoBuf.Bcl.Guid Guid {
+      get { return guid_; }
+      set {
+        guid_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "NullableDateTime" field.</summary>
+    public const int NullableDateTimeFieldNumber = 17;
+    private global::ProtoBuf.Bcl.DateTime nullableDateTime_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ProtoBuf.Bcl.DateTime NullableDateTime {
+      get { return nullableDateTime_; }
+      set {
+        nullableDateTime_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "NullableTimeSpan" field.</summary>
+    public const int NullableTimeSpanFieldNumber = 18;
+    private global::ProtoBuf.Bcl.TimeSpan nullableTimeSpan_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ProtoBuf.Bcl.TimeSpan NullableTimeSpan {
+      get { return nullableTimeSpan_; }
+      set {
+        nullableTimeSpan_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "NullableGuid" field.</summary>
+    public const int NullableGuidFieldNumber = 19;
+    private global::ProtoBuf.Bcl.Guid nullableGuid_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ProtoBuf.Bcl.Guid NullableGuid {
+      get { return nullableGuid_; }
+      set {
+        nullableGuid_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Enum" field.</summary>
+    public const int EnumFieldNumber = 20;
+    private global::ServiceStack.Extensions.Tests.Protoc.HttpStatusCode enum_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.HttpStatusCode Enum {
+      get { return enum_; }
+      set {
+        enum_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "NullableEnum" field.</summary>
+    public const int NullableEnumFieldNumber = 21;
+    private global::ServiceStack.Extensions.Tests.Protoc.HttpStatusCode nullableEnum_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.HttpStatusCode NullableEnum {
+      get { return nullableEnum_; }
+      set {
+        nullableEnum_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as AllFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(AllFields other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Id != other.Id) return false;
+      if (NullableId != other.NullableId) return false;
+      if (Byte != other.Byte) return false;
+      if (Short != other.Short) return false;
+      if (Int != other.Int) return false;
+      if (Long != other.Long) return false;
+      if (UShort != other.UShort) return false;
+      if (UInt != other.UInt) return false;
+      if (ULong != other.ULong) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Float, other.Float)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Double, other.Double)) return false;
+      if (!object.Equals(Decimal, other.Decimal)) return false;
+      if (String != other.String) return false;
+      if (!object.Equals(DateTime, other.DateTime)) return false;
+      if (!object.Equals(TimeSpan, other.TimeSpan)) return false;
+      if (!object.Equals(Guid, other.Guid)) return false;
+      if (!object.Equals(NullableDateTime, other.NullableDateTime)) return false;
+      if (!object.Equals(NullableTimeSpan, other.NullableTimeSpan)) return false;
+      if (!object.Equals(NullableGuid, other.NullableGuid)) return false;
+      if (Enum != other.Enum) return false;
+      if (NullableEnum != other.NullableEnum) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Id != 0) hash ^= Id.GetHashCode();
+      if (NullableId != 0) hash ^= NullableId.GetHashCode();
+      if (Byte != 0) hash ^= Byte.GetHashCode();
+      if (Short != 0) hash ^= Short.GetHashCode();
+      if (Int != 0) hash ^= Int.GetHashCode();
+      if (Long != 0L) hash ^= Long.GetHashCode();
+      if (UShort != 0) hash ^= UShort.GetHashCode();
+      if (UInt != 0) hash ^= UInt.GetHashCode();
+      if (ULong != 0UL) hash ^= ULong.GetHashCode();
+      if (Float != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Float);
+      if (Double != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Double);
+      if (decimal_ != null) hash ^= Decimal.GetHashCode();
+      if (String.Length != 0) hash ^= String.GetHashCode();
+      if (dateTime_ != null) hash ^= DateTime.GetHashCode();
+      if (timeSpan_ != null) hash ^= TimeSpan.GetHashCode();
+      if (guid_ != null) hash ^= Guid.GetHashCode();
+      if (nullableDateTime_ != null) hash ^= NullableDateTime.GetHashCode();
+      if (nullableTimeSpan_ != null) hash ^= NullableTimeSpan.GetHashCode();
+      if (nullableGuid_ != null) hash ^= NullableGuid.GetHashCode();
+      if (Enum != 0) hash ^= Enum.GetHashCode();
+      if (NullableEnum != 0) hash ^= NullableEnum.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Id != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Id);
+      }
+      if (NullableId != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(NullableId);
+      }
+      if (Byte != 0) {
+        output.WriteRawTag(24);
+        output.WriteUInt32(Byte);
+      }
+      if (Short != 0) {
+        output.WriteRawTag(32);
+        output.WriteInt32(Short);
+      }
+      if (Int != 0) {
+        output.WriteRawTag(40);
+        output.WriteInt32(Int);
+      }
+      if (Long != 0L) {
+        output.WriteRawTag(48);
+        output.WriteInt64(Long);
+      }
+      if (UShort != 0) {
+        output.WriteRawTag(56);
+        output.WriteUInt32(UShort);
+      }
+      if (UInt != 0) {
+        output.WriteRawTag(64);
+        output.WriteUInt32(UInt);
+      }
+      if (ULong != 0UL) {
+        output.WriteRawTag(72);
+        output.WriteUInt64(ULong);
+      }
+      if (Float != 0F) {
+        output.WriteRawTag(85);
+        output.WriteFloat(Float);
+      }
+      if (Double != 0D) {
+        output.WriteRawTag(89);
+        output.WriteDouble(Double);
+      }
+      if (decimal_ != null) {
+        output.WriteRawTag(98);
+        output.WriteMessage(Decimal);
+      }
+      if (String.Length != 0) {
+        output.WriteRawTag(106);
+        output.WriteString(String);
+      }
+      if (dateTime_ != null) {
+        output.WriteRawTag(114);
+        output.WriteMessage(DateTime);
+      }
+      if (timeSpan_ != null) {
+        output.WriteRawTag(122);
+        output.WriteMessage(TimeSpan);
+      }
+      if (guid_ != null) {
+        output.WriteRawTag(130, 1);
+        output.WriteMessage(Guid);
+      }
+      if (nullableDateTime_ != null) {
+        output.WriteRawTag(138, 1);
+        output.WriteMessage(NullableDateTime);
+      }
+      if (nullableTimeSpan_ != null) {
+        output.WriteRawTag(146, 1);
+        output.WriteMessage(NullableTimeSpan);
+      }
+      if (nullableGuid_ != null) {
+        output.WriteRawTag(154, 1);
+        output.WriteMessage(NullableGuid);
+      }
+      if (Enum != 0) {
+        output.WriteRawTag(160, 1);
+        output.WriteEnum((int) Enum);
+      }
+      if (NullableEnum != 0) {
+        output.WriteRawTag(168, 1);
+        output.WriteEnum((int) NullableEnum);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Id != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Id);
+      }
+      if (NullableId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(NullableId);
+      }
+      if (Byte != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(Byte);
+      }
+      if (Short != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Short);
+      }
+      if (Int != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Int);
+      }
+      if (Long != 0L) {
+        size += 1 + pb::CodedOutputStream.ComputeInt64Size(Long);
+      }
+      if (UShort != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(UShort);
+      }
+      if (UInt != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(UInt);
+      }
+      if (ULong != 0UL) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(ULong);
+      }
+      if (Float != 0F) {
+        size += 1 + 4;
+      }
+      if (Double != 0D) {
+        size += 1 + 8;
+      }
+      if (decimal_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Decimal);
+      }
+      if (String.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(String);
+      }
+      if (dateTime_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(DateTime);
+      }
+      if (timeSpan_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(TimeSpan);
+      }
+      if (guid_ != null) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(Guid);
+      }
+      if (nullableDateTime_ != null) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(NullableDateTime);
+      }
+      if (nullableTimeSpan_ != null) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(NullableTimeSpan);
+      }
+      if (nullableGuid_ != null) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(NullableGuid);
+      }
+      if (Enum != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) Enum);
+      }
+      if (NullableEnum != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) NullableEnum);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(AllFields other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Id != 0) {
+        Id = other.Id;
+      }
+      if (other.NullableId != 0) {
+        NullableId = other.NullableId;
+      }
+      if (other.Byte != 0) {
+        Byte = other.Byte;
+      }
+      if (other.Short != 0) {
+        Short = other.Short;
+      }
+      if (other.Int != 0) {
+        Int = other.Int;
+      }
+      if (other.Long != 0L) {
+        Long = other.Long;
+      }
+      if (other.UShort != 0) {
+        UShort = other.UShort;
+      }
+      if (other.UInt != 0) {
+        UInt = other.UInt;
+      }
+      if (other.ULong != 0UL) {
+        ULong = other.ULong;
+      }
+      if (other.Float != 0F) {
+        Float = other.Float;
+      }
+      if (other.Double != 0D) {
+        Double = other.Double;
+      }
+      if (other.decimal_ != null) {
+        if (decimal_ == null) {
+          Decimal = new global::ProtoBuf.Bcl.Decimal();
+        }
+        Decimal.MergeFrom(other.Decimal);
+      }
+      if (other.String.Length != 0) {
+        String = other.String;
+      }
+      if (other.dateTime_ != null) {
+        if (dateTime_ == null) {
+          DateTime = new global::ProtoBuf.Bcl.DateTime();
+        }
+        DateTime.MergeFrom(other.DateTime);
+      }
+      if (other.timeSpan_ != null) {
+        if (timeSpan_ == null) {
+          TimeSpan = new global::ProtoBuf.Bcl.TimeSpan();
+        }
+        TimeSpan.MergeFrom(other.TimeSpan);
+      }
+      if (other.guid_ != null) {
+        if (guid_ == null) {
+          Guid = new global::ProtoBuf.Bcl.Guid();
+        }
+        Guid.MergeFrom(other.Guid);
+      }
+      if (other.nullableDateTime_ != null) {
+        if (nullableDateTime_ == null) {
+          NullableDateTime = new global::ProtoBuf.Bcl.DateTime();
+        }
+        NullableDateTime.MergeFrom(other.NullableDateTime);
+      }
+      if (other.nullableTimeSpan_ != null) {
+        if (nullableTimeSpan_ == null) {
+          NullableTimeSpan = new global::ProtoBuf.Bcl.TimeSpan();
+        }
+        NullableTimeSpan.MergeFrom(other.NullableTimeSpan);
+      }
+      if (other.nullableGuid_ != null) {
+        if (nullableGuid_ == null) {
+          NullableGuid = new global::ProtoBuf.Bcl.Guid();
+        }
+        NullableGuid.MergeFrom(other.NullableGuid);
+      }
+      if (other.Enum != 0) {
+        Enum = other.Enum;
+      }
+      if (other.NullableEnum != 0) {
+        NullableEnum = other.NullableEnum;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Id = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            NullableId = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            Byte = input.ReadUInt32();
+            break;
+          }
+          case 32: {
+            Short = input.ReadInt32();
+            break;
+          }
+          case 40: {
+            Int = input.ReadInt32();
+            break;
+          }
+          case 48: {
+            Long = input.ReadInt64();
+            break;
+          }
+          case 56: {
+            UShort = input.ReadUInt32();
+            break;
+          }
+          case 64: {
+            UInt = input.ReadUInt32();
+            break;
+          }
+          case 72: {
+            ULong = input.ReadUInt64();
+            break;
+          }
+          case 85: {
+            Float = input.ReadFloat();
+            break;
+          }
+          case 89: {
+            Double = input.ReadDouble();
+            break;
+          }
+          case 98: {
+            if (decimal_ == null) {
+              Decimal = new global::ProtoBuf.Bcl.Decimal();
+            }
+            input.ReadMessage(Decimal);
+            break;
+          }
+          case 106: {
+            String = input.ReadString();
+            break;
+          }
+          case 114: {
+            if (dateTime_ == null) {
+              DateTime = new global::ProtoBuf.Bcl.DateTime();
+            }
+            input.ReadMessage(DateTime);
+            break;
+          }
+          case 122: {
+            if (timeSpan_ == null) {
+              TimeSpan = new global::ProtoBuf.Bcl.TimeSpan();
+            }
+            input.ReadMessage(TimeSpan);
+            break;
+          }
+          case 130: {
+            if (guid_ == null) {
+              Guid = new global::ProtoBuf.Bcl.Guid();
+            }
+            input.ReadMessage(Guid);
+            break;
+          }
+          case 138: {
+            if (nullableDateTime_ == null) {
+              NullableDateTime = new global::ProtoBuf.Bcl.DateTime();
+            }
+            input.ReadMessage(NullableDateTime);
+            break;
+          }
+          case 146: {
+            if (nullableTimeSpan_ == null) {
+              NullableTimeSpan = new global::ProtoBuf.Bcl.TimeSpan();
+            }
+            input.ReadMessage(NullableTimeSpan);
+            break;
+          }
+          case 154: {
+            if (nullableGuid_ == null) {
+              NullableGuid = new global::ProtoBuf.Bcl.Guid();
+            }
+            input.ReadMessage(NullableGuid);
+            break;
+          }
+          case 160: {
+            Enum = (global::ServiceStack.Extensions.Tests.Protoc.HttpStatusCode) input.ReadEnum();
+            break;
+          }
+          case 168: {
+            NullableEnum = (global::ServiceStack.Extensions.Tests.Protoc.HttpStatusCode) input.ReadEnum();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public sealed partial class AnyHello : pb::IMessage<AnyHello> {
     private static readonly pb::MessageParser<AnyHello> _parser = new pb::MessageParser<AnyHello>(() => new AnyHello());
     private pb::UnknownFieldSet _unknownFields;
@@ -578,7 +1954,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[1]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[3]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -707,7 +2083,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[2]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[4]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -896,7 +2272,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[3]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[5]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1091,7 +2467,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[4]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[6]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1744,7 +3120,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[5]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[7]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2163,7 +3539,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[6]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[8]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2264,7 +3640,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[7]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[9]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2449,7 +3825,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[8]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[10]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2570,7 +3946,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[9]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[11]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2895,7 +4271,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[10]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[12]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3044,7 +4420,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[11]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[13]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3255,7 +4631,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[12]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[14]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3412,7 +4788,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[13]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[15]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3581,7 +4957,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[14]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[16]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3814,6 +5190,645 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
   }
 
+  public sealed partial class CustomRockstarSchema : pb::IMessage<CustomRockstarSchema> {
+    private static readonly pb::MessageParser<CustomRockstarSchema> _parser = new pb::MessageParser<CustomRockstarSchema>(() => new CustomRockstarSchema());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<CustomRockstarSchema> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[17]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public CustomRockstarSchema() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public CustomRockstarSchema(CustomRockstarSchema other) : this() {
+      firstName_ = other.firstName_;
+      lastName_ = other.lastName_;
+      age_ = other.age_;
+      rockstarAlbumName_ = other.rockstarAlbumName_;
+      rockstarGenreName_ = other.rockstarGenreName_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public CustomRockstarSchema Clone() {
+      return new CustomRockstarSchema(this);
+    }
+
+    /// <summary>Field number for the "FirstName" field.</summary>
+    public const int FirstNameFieldNumber = 1;
+    private string firstName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string FirstName {
+      get { return firstName_; }
+      set {
+        firstName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "LastName" field.</summary>
+    public const int LastNameFieldNumber = 2;
+    private string lastName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string LastName {
+      get { return lastName_; }
+      set {
+        lastName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "Age" field.</summary>
+    public const int AgeFieldNumber = 3;
+    private int age_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Age {
+      get { return age_; }
+      set {
+        age_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "RockstarAlbumName" field.</summary>
+    public const int RockstarAlbumNameFieldNumber = 4;
+    private string rockstarAlbumName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string RockstarAlbumName {
+      get { return rockstarAlbumName_; }
+      set {
+        rockstarAlbumName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "RockstarGenreName" field.</summary>
+    public const int RockstarGenreNameFieldNumber = 5;
+    private string rockstarGenreName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string RockstarGenreName {
+      get { return rockstarGenreName_; }
+      set {
+        rockstarGenreName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as CustomRockstarSchema);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(CustomRockstarSchema other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (FirstName != other.FirstName) return false;
+      if (LastName != other.LastName) return false;
+      if (Age != other.Age) return false;
+      if (RockstarAlbumName != other.RockstarAlbumName) return false;
+      if (RockstarGenreName != other.RockstarGenreName) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (FirstName.Length != 0) hash ^= FirstName.GetHashCode();
+      if (LastName.Length != 0) hash ^= LastName.GetHashCode();
+      if (Age != 0) hash ^= Age.GetHashCode();
+      if (RockstarAlbumName.Length != 0) hash ^= RockstarAlbumName.GetHashCode();
+      if (RockstarGenreName.Length != 0) hash ^= RockstarGenreName.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (FirstName.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(FirstName);
+      }
+      if (LastName.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(LastName);
+      }
+      if (Age != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Age);
+      }
+      if (RockstarAlbumName.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(RockstarAlbumName);
+      }
+      if (RockstarGenreName.Length != 0) {
+        output.WriteRawTag(42);
+        output.WriteString(RockstarGenreName);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (FirstName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(FirstName);
+      }
+      if (LastName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(LastName);
+      }
+      if (Age != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Age);
+      }
+      if (RockstarAlbumName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(RockstarAlbumName);
+      }
+      if (RockstarGenreName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(RockstarGenreName);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(CustomRockstarSchema other) {
+      if (other == null) {
+        return;
+      }
+      if (other.FirstName.Length != 0) {
+        FirstName = other.FirstName;
+      }
+      if (other.LastName.Length != 0) {
+        LastName = other.LastName;
+      }
+      if (other.Age != 0) {
+        Age = other.Age;
+      }
+      if (other.RockstarAlbumName.Length != 0) {
+        RockstarAlbumName = other.RockstarAlbumName;
+      }
+      if (other.RockstarGenreName.Length != 0) {
+        RockstarGenreName = other.RockstarGenreName;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            FirstName = input.ReadString();
+            break;
+          }
+          case 18: {
+            LastName = input.ReadString();
+            break;
+          }
+          case 24: {
+            Age = input.ReadInt32();
+            break;
+          }
+          case 34: {
+            RockstarAlbumName = input.ReadString();
+            break;
+          }
+          case 42: {
+            RockstarGenreName = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class CustomSelectRockstar : pb::IMessage<CustomSelectRockstar> {
+    private static readonly pb::MessageParser<CustomSelectRockstar> _parser = new pb::MessageParser<CustomSelectRockstar>(() => new CustomSelectRockstar());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<CustomSelectRockstar> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[18]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public CustomSelectRockstar() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public CustomSelectRockstar(CustomSelectRockstar other) : this() {
+      id_ = other.id_;
+      firstName_ = other.firstName_;
+      lastName_ = other.lastName_;
+      age_ = other.age_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public CustomSelectRockstar Clone() {
+      return new CustomSelectRockstar(this);
+    }
+
+    /// <summary>Field number for the "Id" field.</summary>
+    public const int IdFieldNumber = 1;
+    private int id_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Id {
+      get { return id_; }
+      set {
+        id_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "FirstName" field.</summary>
+    public const int FirstNameFieldNumber = 2;
+    private string firstName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string FirstName {
+      get { return firstName_; }
+      set {
+        firstName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "LastName" field.</summary>
+    public const int LastNameFieldNumber = 3;
+    private string lastName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string LastName {
+      get { return lastName_; }
+      set {
+        lastName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "Age" field.</summary>
+    public const int AgeFieldNumber = 4;
+    private int age_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Age {
+      get { return age_; }
+      set {
+        age_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as CustomSelectRockstar);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(CustomSelectRockstar other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Id != other.Id) return false;
+      if (FirstName != other.FirstName) return false;
+      if (LastName != other.LastName) return false;
+      if (Age != other.Age) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Id != 0) hash ^= Id.GetHashCode();
+      if (FirstName.Length != 0) hash ^= FirstName.GetHashCode();
+      if (LastName.Length != 0) hash ^= LastName.GetHashCode();
+      if (Age != 0) hash ^= Age.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Id != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Id);
+      }
+      if (FirstName.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(FirstName);
+      }
+      if (LastName.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(LastName);
+      }
+      if (Age != 0) {
+        output.WriteRawTag(32);
+        output.WriteInt32(Age);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Id != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Id);
+      }
+      if (FirstName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(FirstName);
+      }
+      if (LastName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(LastName);
+      }
+      if (Age != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Age);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(CustomSelectRockstar other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Id != 0) {
+        Id = other.Id;
+      }
+      if (other.FirstName.Length != 0) {
+        FirstName = other.FirstName;
+      }
+      if (other.LastName.Length != 0) {
+        LastName = other.LastName;
+      }
+      if (other.Age != 0) {
+        Age = other.Age;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Id = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            FirstName = input.ReadString();
+            break;
+          }
+          case 26: {
+            LastName = input.ReadString();
+            break;
+          }
+          case 32: {
+            Age = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class CustomSelectRockstarResponse : pb::IMessage<CustomSelectRockstarResponse> {
+    private static readonly pb::MessageParser<CustomSelectRockstarResponse> _parser = new pb::MessageParser<CustomSelectRockstarResponse>(() => new CustomSelectRockstarResponse());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<CustomSelectRockstarResponse> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[19]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public CustomSelectRockstarResponse() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public CustomSelectRockstarResponse(CustomSelectRockstarResponse other) : this() {
+      id_ = other.id_;
+      firstName_ = other.firstName_;
+      age_ = other.age_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public CustomSelectRockstarResponse Clone() {
+      return new CustomSelectRockstarResponse(this);
+    }
+
+    /// <summary>Field number for the "Id" field.</summary>
+    public const int IdFieldNumber = 1;
+    private int id_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Id {
+      get { return id_; }
+      set {
+        id_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "FirstName" field.</summary>
+    public const int FirstNameFieldNumber = 2;
+    private string firstName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string FirstName {
+      get { return firstName_; }
+      set {
+        firstName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "Age" field.</summary>
+    public const int AgeFieldNumber = 3;
+    private int age_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Age {
+      get { return age_; }
+      set {
+        age_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as CustomSelectRockstarResponse);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(CustomSelectRockstarResponse other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Id != other.Id) return false;
+      if (FirstName != other.FirstName) return false;
+      if (Age != other.Age) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Id != 0) hash ^= Id.GetHashCode();
+      if (FirstName.Length != 0) hash ^= FirstName.GetHashCode();
+      if (Age != 0) hash ^= Age.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Id != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Id);
+      }
+      if (FirstName.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(FirstName);
+      }
+      if (Age != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Age);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Id != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Id);
+      }
+      if (FirstName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(FirstName);
+      }
+      if (Age != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Age);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(CustomSelectRockstarResponse other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Id != 0) {
+        Id = other.Id;
+      }
+      if (other.FirstName.Length != 0) {
+        FirstName = other.FirstName;
+      }
+      if (other.Age != 0) {
+        Age = other.Age;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Id = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            FirstName = input.ReadString();
+            break;
+          }
+          case 24: {
+            Age = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public sealed partial class DeleteTodo : pb::IMessage<DeleteTodo> {
     private static readonly pb::MessageParser<DeleteTodo> _parser = new pb::MessageParser<DeleteTodo>(() => new DeleteTodo());
     private pb::UnknownFieldSet _unknownFields;
@@ -3822,7 +5837,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[15]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[20]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3951,7 +5966,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[16]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[21]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4073,7 +6088,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[17]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[22]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4208,7 +6223,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[18]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[23]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4455,7 +6470,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[19]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[24]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4632,7 +6647,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[20]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[25]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4815,7 +6830,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[21]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[26]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4964,7 +6979,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[22]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[27]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5131,6 +7146,135 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
   }
 
+  public sealed partial class GetFile : pb::IMessage<GetFile> {
+    private static readonly pb::MessageParser<GetFile> _parser = new pb::MessageParser<GetFile>(() => new GetFile());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<GetFile> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[28]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public GetFile() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public GetFile(GetFile other) : this() {
+      path_ = other.path_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public GetFile Clone() {
+      return new GetFile(this);
+    }
+
+    /// <summary>Field number for the "Path" field.</summary>
+    public const int PathFieldNumber = 1;
+    private string path_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Path {
+      get { return path_; }
+      set {
+        path_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as GetFile);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(GetFile other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Path != other.Path) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Path.Length != 0) hash ^= Path.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Path.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Path);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Path.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Path);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(GetFile other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Path.Length != 0) {
+        Path = other.Path;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            Path = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public sealed partial class GetHello : pb::IMessage<GetHello> {
     private static readonly pb::MessageParser<GetHello> _parser = new pb::MessageParser<GetHello>(() => new GetHello());
     private pb::UnknownFieldSet _unknownFields;
@@ -5139,7 +7283,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[23]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[29]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5268,7 +7412,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[24]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[30]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5397,7 +7541,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[25]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[31]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5566,7 +7710,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[26]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[32]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5667,7 +7811,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[27]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[33]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5822,7 +7966,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[28]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[34]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5979,7 +8123,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[29]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[35]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6142,7 +8286,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[30]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[36]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6305,7 +8449,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[31]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[37]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6434,7 +8578,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[32]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[38]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6791,7 +8935,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[33]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[39]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6948,7 +9092,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[34]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[40]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7069,6 +9213,292 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
   }
 
+  public sealed partial class NamedRockstar : pb::IMessage<NamedRockstar> {
+    private static readonly pb::MessageParser<NamedRockstar> _parser = new pb::MessageParser<NamedRockstar>(() => new NamedRockstar());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<NamedRockstar> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[41]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public NamedRockstar() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public NamedRockstar(NamedRockstar other) : this() {
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public NamedRockstar Clone() {
+      return new NamedRockstar(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as NamedRockstar);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(NamedRockstar other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(NamedRockstar other) {
+      if (other == null) {
+        return;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class PagingTest : pb::IMessage<PagingTest> {
+    private static readonly pb::MessageParser<PagingTest> _parser = new pb::MessageParser<PagingTest>(() => new PagingTest());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<PagingTest> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[42]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public PagingTest() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public PagingTest(PagingTest other) : this() {
+      id_ = other.id_;
+      name_ = other.name_;
+      value_ = other.value_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public PagingTest Clone() {
+      return new PagingTest(this);
+    }
+
+    /// <summary>Field number for the "Id" field.</summary>
+    public const int IdFieldNumber = 1;
+    private int id_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Id {
+      get { return id_; }
+      set {
+        id_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Name" field.</summary>
+    public const int NameFieldNumber = 2;
+    private string name_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Name {
+      get { return name_; }
+      set {
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "Value" field.</summary>
+    public const int ValueFieldNumber = 3;
+    private int value_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Value {
+      get { return value_; }
+      set {
+        value_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as PagingTest);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(PagingTest other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Id != other.Id) return false;
+      if (Name != other.Name) return false;
+      if (Value != other.Value) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Id != 0) hash ^= Id.GetHashCode();
+      if (Name.Length != 0) hash ^= Name.GetHashCode();
+      if (Value != 0) hash ^= Value.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Id != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Id);
+      }
+      if (Name.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Name);
+      }
+      if (Value != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Value);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Id != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Id);
+      }
+      if (Name.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
+      }
+      if (Value != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Value);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(PagingTest other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Id != 0) {
+        Id = other.Id;
+      }
+      if (other.Name.Length != 0) {
+        Name = other.Name;
+      }
+      if (other.Value != 0) {
+        Value = other.Value;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Id = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            Name = input.ReadString();
+            break;
+          }
+          case 24: {
+            Value = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public sealed partial class PostChatToChannel : pb::IMessage<PostChatToChannel> {
     private static readonly pb::MessageParser<PostChatToChannel> _parser = new pb::MessageParser<PostChatToChannel>(() => new PostChatToChannel());
     private pb::UnknownFieldSet _unknownFields;
@@ -7077,7 +9507,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[35]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[43]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7310,6 +9740,371 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
   }
 
+  public sealed partial class QueryAdhoc : pb::IMessage<QueryAdhoc> {
+    private static readonly pb::MessageParser<QueryAdhoc> _parser = new pb::MessageParser<QueryAdhoc>(() => new QueryAdhoc());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryAdhoc> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[44]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryAdhoc() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryAdhoc(QueryAdhoc other) : this() {
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryAdhoc Clone() {
+      return new QueryAdhoc(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryAdhoc);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryAdhoc other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryAdhoc other) {
+      if (other == null) {
+        return;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryAdhocRockstars : pb::IMessage<QueryAdhocRockstars> {
+    private static readonly pb::MessageParser<QueryAdhocRockstars> _parser = new pb::MessageParser<QueryAdhocRockstars>(() => new QueryAdhocRockstars());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryAdhocRockstars> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[45]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryAdhocRockstars() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryAdhocRockstars(QueryAdhocRockstars other) : this() {
+      firstName_ = other.firstName_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryAdhocRockstars Clone() {
+      return new QueryAdhocRockstars(this);
+    }
+
+    /// <summary>Field number for the "first_name" field.</summary>
+    public const int FirstNameFieldNumber = 1;
+    private string firstName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string FirstName {
+      get { return firstName_; }
+      set {
+        firstName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryAdhocRockstars);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryAdhocRockstars other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (FirstName != other.FirstName) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (FirstName.Length != 0) hash ^= FirstName.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (FirstName.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(FirstName);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (FirstName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(FirstName);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryAdhocRockstars other) {
+      if (other == null) {
+        return;
+      }
+      if (other.FirstName.Length != 0) {
+        FirstName = other.FirstName;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            FirstName = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryAllFields : pb::IMessage<QueryAllFields> {
+    private static readonly pb::MessageParser<QueryAllFields> _parser = new pb::MessageParser<QueryAllFields>(() => new QueryAllFields());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryAllFields> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[46]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryAllFields() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryAllFields(QueryAllFields other) : this() {
+      guid_ = other.guid_ != null ? other.guid_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryAllFields Clone() {
+      return new QueryAllFields(this);
+    }
+
+    /// <summary>Field number for the "Guid" field.</summary>
+    public const int GuidFieldNumber = 1;
+    private global::ProtoBuf.Bcl.Guid guid_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ProtoBuf.Bcl.Guid Guid {
+      get { return guid_; }
+      set {
+        guid_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryAllFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryAllFields other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(Guid, other.Guid)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (guid_ != null) hash ^= Guid.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (guid_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Guid);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (guid_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Guid);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryAllFields other) {
+      if (other == null) {
+        return;
+      }
+      if (other.guid_ != null) {
+        if (guid_ == null) {
+          Guid = new global::ProtoBuf.Bcl.Guid();
+        }
+        Guid.MergeFrom(other.Guid);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (guid_ == null) {
+              Guid = new global::ProtoBuf.Bcl.Guid();
+            }
+            input.ReadMessage(Guid);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public sealed partial class QueryBase : pb::IMessage<QueryBase> {
     private static readonly pb::MessageParser<QueryBase> _parser = new pb::MessageParser<QueryBase>(() => new QueryBase());
     private pb::UnknownFieldSet _unknownFields;
@@ -7318,7 +10113,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[36]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[47]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7346,14 +10141,44 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         case SubtypeOneofCase.QueryDbRockstarCustomRockstar:
           QueryDbRockstarCustomRockstar = other.QueryDbRockstarCustomRockstar.Clone();
           break;
+        case SubtypeOneofCase.QueryDbRockstarRockstarAlias:
+          QueryDbRockstarRockstarAlias = other.QueryDbRockstarRockstarAlias.Clone();
+          break;
+        case SubtypeOneofCase.QueryDbPagingTest:
+          QueryDbPagingTest = other.QueryDbPagingTest.Clone();
+          break;
+        case SubtypeOneofCase.QueryDbCustomSelectRockstar:
+          QueryDbCustomSelectRockstar = other.QueryDbCustomSelectRockstar.Clone();
+          break;
         case SubtypeOneofCase.QueryDbMovie:
           QueryDbMovie = other.QueryDbMovie.Clone();
           break;
         case SubtypeOneofCase.QueryDbRockstarReference:
           QueryDbRockstarReference = other.QueryDbRockstarReference.Clone();
           break;
+        case SubtypeOneofCase.QueryDbAdhoc:
+          QueryDbAdhoc = other.QueryDbAdhoc.Clone();
+          break;
+        case SubtypeOneofCase.QueryDbNamedRockstar:
+          QueryDbNamedRockstar = other.QueryDbNamedRockstar.Clone();
+          break;
+        case SubtypeOneofCase.QueryDbTypeWithEnum:
+          QueryDbTypeWithEnum = other.QueryDbTypeWithEnum.Clone();
+          break;
+        case SubtypeOneofCase.QueryDbRockstarAlbum:
+          QueryDbRockstarAlbum = other.QueryDbRockstarAlbum.Clone();
+          break;
+        case SubtypeOneofCase.QueryDbCustomSelectRockstarCustomSelectRockstarResponse:
+          QueryDbCustomSelectRockstarCustomSelectRockstarResponse = other.QueryDbCustomSelectRockstarCustomSelectRockstarResponse.Clone();
+          break;
         case SubtypeOneofCase.QueryDbRockstar:
           QueryDbRockstar = other.QueryDbRockstar.Clone();
+          break;
+        case SubtypeOneofCase.QueryDbAllFields:
+          QueryDbAllFields = other.QueryDbAllFields.Clone();
+          break;
+        case SubtypeOneofCase.QueryDbRockstarCustomRockstarSchema:
+          QueryDbRockstarCustomRockstarSchema = other.QueryDbRockstarCustomRockstarSchema.Clone();
           break;
       }
 
@@ -7452,6 +10277,39 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       }
     }
 
+    /// <summary>Field number for the "QueryDb_Rockstar_RockstarAlias" field.</summary>
+    public const int QueryDbRockstarRockstarAliasFieldNumber = 95568396;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Rockstar_RockstarAlias QueryDbRockstarRockstarAlias {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryDbRockstarRockstarAlias ? (global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Rockstar_RockstarAlias) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryDbRockstarRockstarAlias;
+      }
+    }
+
+    /// <summary>Field number for the "QueryDb_PagingTest" field.</summary>
+    public const int QueryDbPagingTestFieldNumber = 110246772;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryDb_PagingTest QueryDbPagingTest {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryDbPagingTest ? (global::ServiceStack.Extensions.Tests.Protoc.QueryDb_PagingTest) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryDbPagingTest;
+      }
+    }
+
+    /// <summary>Field number for the "QueryDb_CustomSelectRockstar" field.</summary>
+    public const int QueryDbCustomSelectRockstarFieldNumber = 117530989;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryDb_CustomSelectRockstar QueryDbCustomSelectRockstar {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryDbCustomSelectRockstar ? (global::ServiceStack.Extensions.Tests.Protoc.QueryDb_CustomSelectRockstar) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryDbCustomSelectRockstar;
+      }
+    }
+
     /// <summary>Field number for the "QueryDb_Movie" field.</summary>
     public const int QueryDbMovieFieldNumber = 133134611;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7474,6 +10332,61 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       }
     }
 
+    /// <summary>Field number for the "QueryDb_Adhoc" field.</summary>
+    public const int QueryDbAdhocFieldNumber = 193863048;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Adhoc QueryDbAdhoc {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryDbAdhoc ? (global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Adhoc) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryDbAdhoc;
+      }
+    }
+
+    /// <summary>Field number for the "QueryDb_NamedRockstar" field.</summary>
+    public const int QueryDbNamedRockstarFieldNumber = 217534861;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryDb_NamedRockstar QueryDbNamedRockstar {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryDbNamedRockstar ? (global::ServiceStack.Extensions.Tests.Protoc.QueryDb_NamedRockstar) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryDbNamedRockstar;
+      }
+    }
+
+    /// <summary>Field number for the "QueryDb_TypeWithEnum" field.</summary>
+    public const int QueryDbTypeWithEnumFieldNumber = 390586478;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryDb_TypeWithEnum QueryDbTypeWithEnum {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryDbTypeWithEnum ? (global::ServiceStack.Extensions.Tests.Protoc.QueryDb_TypeWithEnum) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryDbTypeWithEnum;
+      }
+    }
+
+    /// <summary>Field number for the "QueryDb_RockstarAlbum" field.</summary>
+    public const int QueryDbRockstarAlbumFieldNumber = 411180685;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryDb_RockstarAlbum QueryDbRockstarAlbum {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryDbRockstarAlbum ? (global::ServiceStack.Extensions.Tests.Protoc.QueryDb_RockstarAlbum) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryDbRockstarAlbum;
+      }
+    }
+
+    /// <summary>Field number for the "QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse" field.</summary>
+    public const int QueryDbCustomSelectRockstarCustomSelectRockstarResponseFieldNumber = 428847863;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse QueryDbCustomSelectRockstarCustomSelectRockstarResponse {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryDbCustomSelectRockstarCustomSelectRockstarResponse ? (global::ServiceStack.Extensions.Tests.Protoc.QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryDbCustomSelectRockstarCustomSelectRockstarResponse;
+      }
+    }
+
     /// <summary>Field number for the "QueryDb_Rockstar" field.</summary>
     public const int QueryDbRockstarFieldNumber = 447773769;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7485,14 +10398,46 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       }
     }
 
+    /// <summary>Field number for the "QueryDb_AllFields" field.</summary>
+    public const int QueryDbAllFieldsFieldNumber = 473971172;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryDb_AllFields QueryDbAllFields {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryDbAllFields ? (global::ServiceStack.Extensions.Tests.Protoc.QueryDb_AllFields) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryDbAllFields;
+      }
+    }
+
+    /// <summary>Field number for the "QueryDb_Rockstar_CustomRockstarSchema" field.</summary>
+    public const int QueryDbRockstarCustomRockstarSchemaFieldNumber = 483328659;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Rockstar_CustomRockstarSchema QueryDbRockstarCustomRockstarSchema {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryDbRockstarCustomRockstarSchema ? (global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Rockstar_CustomRockstarSchema) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryDbRockstarCustomRockstarSchema;
+      }
+    }
+
     private object subtype_;
     /// <summary>Enum of possible cases for the "subtype" oneof.</summary>
     public enum SubtypeOneofCase {
       None = 0,
       QueryDbRockstarCustomRockstar = 1595516,
+      QueryDbRockstarRockstarAlias = 95568396,
+      QueryDbPagingTest = 110246772,
+      QueryDbCustomSelectRockstar = 117530989,
       QueryDbMovie = 133134611,
       QueryDbRockstarReference = 139856298,
+      QueryDbAdhoc = 193863048,
+      QueryDbNamedRockstar = 217534861,
+      QueryDbTypeWithEnum = 390586478,
+      QueryDbRockstarAlbum = 411180685,
+      QueryDbCustomSelectRockstarCustomSelectRockstarResponse = 428847863,
       QueryDbRockstar = 447773769,
+      QueryDbAllFields = 473971172,
+      QueryDbRockstarCustomRockstarSchema = 483328659,
     }
     private SubtypeOneofCase subtypeCase_ = SubtypeOneofCase.None;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7527,9 +10472,19 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       if (Fields != other.Fields) return false;
       if (!Meta.Equals(other.Meta)) return false;
       if (!object.Equals(QueryDbRockstarCustomRockstar, other.QueryDbRockstarCustomRockstar)) return false;
+      if (!object.Equals(QueryDbRockstarRockstarAlias, other.QueryDbRockstarRockstarAlias)) return false;
+      if (!object.Equals(QueryDbPagingTest, other.QueryDbPagingTest)) return false;
+      if (!object.Equals(QueryDbCustomSelectRockstar, other.QueryDbCustomSelectRockstar)) return false;
       if (!object.Equals(QueryDbMovie, other.QueryDbMovie)) return false;
       if (!object.Equals(QueryDbRockstarReference, other.QueryDbRockstarReference)) return false;
+      if (!object.Equals(QueryDbAdhoc, other.QueryDbAdhoc)) return false;
+      if (!object.Equals(QueryDbNamedRockstar, other.QueryDbNamedRockstar)) return false;
+      if (!object.Equals(QueryDbTypeWithEnum, other.QueryDbTypeWithEnum)) return false;
+      if (!object.Equals(QueryDbRockstarAlbum, other.QueryDbRockstarAlbum)) return false;
+      if (!object.Equals(QueryDbCustomSelectRockstarCustomSelectRockstarResponse, other.QueryDbCustomSelectRockstarCustomSelectRockstarResponse)) return false;
       if (!object.Equals(QueryDbRockstar, other.QueryDbRockstar)) return false;
+      if (!object.Equals(QueryDbAllFields, other.QueryDbAllFields)) return false;
+      if (!object.Equals(QueryDbRockstarCustomRockstarSchema, other.QueryDbRockstarCustomRockstarSchema)) return false;
       if (SubtypeCase != other.SubtypeCase) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -7545,9 +10500,19 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       if (Fields.Length != 0) hash ^= Fields.GetHashCode();
       hash ^= Meta.GetHashCode();
       if (subtypeCase_ == SubtypeOneofCase.QueryDbRockstarCustomRockstar) hash ^= QueryDbRockstarCustomRockstar.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbRockstarRockstarAlias) hash ^= QueryDbRockstarRockstarAlias.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbPagingTest) hash ^= QueryDbPagingTest.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbCustomSelectRockstar) hash ^= QueryDbCustomSelectRockstar.GetHashCode();
       if (subtypeCase_ == SubtypeOneofCase.QueryDbMovie) hash ^= QueryDbMovie.GetHashCode();
       if (subtypeCase_ == SubtypeOneofCase.QueryDbRockstarReference) hash ^= QueryDbRockstarReference.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbAdhoc) hash ^= QueryDbAdhoc.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbNamedRockstar) hash ^= QueryDbNamedRockstar.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbTypeWithEnum) hash ^= QueryDbTypeWithEnum.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbRockstarAlbum) hash ^= QueryDbRockstarAlbum.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbCustomSelectRockstarCustomSelectRockstarResponse) hash ^= QueryDbCustomSelectRockstarCustomSelectRockstarResponse.GetHashCode();
       if (subtypeCase_ == SubtypeOneofCase.QueryDbRockstar) hash ^= QueryDbRockstar.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbAllFields) hash ^= QueryDbAllFields.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbRockstarCustomRockstarSchema) hash ^= QueryDbRockstarCustomRockstarSchema.GetHashCode();
       hash ^= (int) subtypeCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -7591,6 +10556,18 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         output.WriteRawTag(226, 135, 139, 6);
         output.WriteMessage(QueryDbRockstarCustomRockstar);
       }
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbRockstarRockstarAlias) {
+        output.WriteRawTag(226, 160, 200, 236, 2);
+        output.WriteMessage(QueryDbRockstarRockstarAlias);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbPagingTest) {
+        output.WriteRawTag(162, 183, 199, 164, 3);
+        output.WriteMessage(QueryDbPagingTest);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbCustomSelectRockstar) {
+        output.WriteRawTag(234, 150, 172, 192, 3);
+        output.WriteMessage(QueryDbCustomSelectRockstar);
+      }
       if (subtypeCase_ == SubtypeOneofCase.QueryDbMovie) {
         output.WriteRawTag(154, 145, 239, 251, 3);
         output.WriteMessage(QueryDbMovie);
@@ -7599,9 +10576,37 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         output.WriteRawTag(210, 154, 193, 149, 4);
         output.WriteMessage(QueryDbRockstarReference);
       }
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbAdhoc) {
+        output.WriteRawTag(194, 216, 195, 227, 5);
+        output.WriteMessage(QueryDbAdhoc);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbNamedRockstar) {
+        output.WriteRawTag(234, 152, 234, 189, 6);
+        output.WriteMessage(QueryDbNamedRockstar);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbTypeWithEnum) {
+        output.WriteRawTag(242, 134, 252, 209, 11);
+        output.WriteMessage(QueryDbTypeWithEnum);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbRockstarAlbum) {
+        output.WriteRawTag(234, 232, 195, 160, 12);
+        output.WriteMessage(QueryDbRockstarAlbum);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbCustomSelectRockstarCustomSelectRockstarResponse) {
+        output.WriteRawTag(186, 175, 246, 227, 12);
+        output.WriteMessage(QueryDbCustomSelectRockstarCustomSelectRockstarResponse);
+      }
       if (subtypeCase_ == SubtypeOneofCase.QueryDbRockstar) {
         output.WriteRawTag(202, 196, 143, 172, 13);
         output.WriteMessage(QueryDbRockstar);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbAllFields) {
+        output.WriteRawTag(162, 158, 135, 144, 14);
+        output.WriteMessage(QueryDbAllFields);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbRockstarCustomRockstarSchema) {
+        output.WriteRawTag(154, 169, 224, 179, 14);
+        output.WriteMessage(QueryDbRockstarCustomRockstarSchema);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -7633,14 +10638,44 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       if (subtypeCase_ == SubtypeOneofCase.QueryDbRockstarCustomRockstar) {
         size += 4 + pb::CodedOutputStream.ComputeMessageSize(QueryDbRockstarCustomRockstar);
       }
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbRockstarRockstarAlias) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryDbRockstarRockstarAlias);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbPagingTest) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryDbPagingTest);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbCustomSelectRockstar) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryDbCustomSelectRockstar);
+      }
       if (subtypeCase_ == SubtypeOneofCase.QueryDbMovie) {
         size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryDbMovie);
       }
       if (subtypeCase_ == SubtypeOneofCase.QueryDbRockstarReference) {
         size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryDbRockstarReference);
       }
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbAdhoc) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryDbAdhoc);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbNamedRockstar) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryDbNamedRockstar);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbTypeWithEnum) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryDbTypeWithEnum);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbRockstarAlbum) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryDbRockstarAlbum);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbCustomSelectRockstarCustomSelectRockstarResponse) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryDbCustomSelectRockstarCustomSelectRockstarResponse);
+      }
       if (subtypeCase_ == SubtypeOneofCase.QueryDbRockstar) {
         size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryDbRockstar);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbAllFields) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryDbAllFields);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryDbRockstarCustomRockstarSchema) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryDbRockstarCustomRockstarSchema);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -7679,6 +10714,24 @@ namespace ServiceStack.Extensions.Tests.Protoc {
           }
           QueryDbRockstarCustomRockstar.MergeFrom(other.QueryDbRockstarCustomRockstar);
           break;
+        case SubtypeOneofCase.QueryDbRockstarRockstarAlias:
+          if (QueryDbRockstarRockstarAlias == null) {
+            QueryDbRockstarRockstarAlias = new global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Rockstar_RockstarAlias();
+          }
+          QueryDbRockstarRockstarAlias.MergeFrom(other.QueryDbRockstarRockstarAlias);
+          break;
+        case SubtypeOneofCase.QueryDbPagingTest:
+          if (QueryDbPagingTest == null) {
+            QueryDbPagingTest = new global::ServiceStack.Extensions.Tests.Protoc.QueryDb_PagingTest();
+          }
+          QueryDbPagingTest.MergeFrom(other.QueryDbPagingTest);
+          break;
+        case SubtypeOneofCase.QueryDbCustomSelectRockstar:
+          if (QueryDbCustomSelectRockstar == null) {
+            QueryDbCustomSelectRockstar = new global::ServiceStack.Extensions.Tests.Protoc.QueryDb_CustomSelectRockstar();
+          }
+          QueryDbCustomSelectRockstar.MergeFrom(other.QueryDbCustomSelectRockstar);
+          break;
         case SubtypeOneofCase.QueryDbMovie:
           if (QueryDbMovie == null) {
             QueryDbMovie = new global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Movie();
@@ -7691,11 +10744,53 @@ namespace ServiceStack.Extensions.Tests.Protoc {
           }
           QueryDbRockstarReference.MergeFrom(other.QueryDbRockstarReference);
           break;
+        case SubtypeOneofCase.QueryDbAdhoc:
+          if (QueryDbAdhoc == null) {
+            QueryDbAdhoc = new global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Adhoc();
+          }
+          QueryDbAdhoc.MergeFrom(other.QueryDbAdhoc);
+          break;
+        case SubtypeOneofCase.QueryDbNamedRockstar:
+          if (QueryDbNamedRockstar == null) {
+            QueryDbNamedRockstar = new global::ServiceStack.Extensions.Tests.Protoc.QueryDb_NamedRockstar();
+          }
+          QueryDbNamedRockstar.MergeFrom(other.QueryDbNamedRockstar);
+          break;
+        case SubtypeOneofCase.QueryDbTypeWithEnum:
+          if (QueryDbTypeWithEnum == null) {
+            QueryDbTypeWithEnum = new global::ServiceStack.Extensions.Tests.Protoc.QueryDb_TypeWithEnum();
+          }
+          QueryDbTypeWithEnum.MergeFrom(other.QueryDbTypeWithEnum);
+          break;
+        case SubtypeOneofCase.QueryDbRockstarAlbum:
+          if (QueryDbRockstarAlbum == null) {
+            QueryDbRockstarAlbum = new global::ServiceStack.Extensions.Tests.Protoc.QueryDb_RockstarAlbum();
+          }
+          QueryDbRockstarAlbum.MergeFrom(other.QueryDbRockstarAlbum);
+          break;
+        case SubtypeOneofCase.QueryDbCustomSelectRockstarCustomSelectRockstarResponse:
+          if (QueryDbCustomSelectRockstarCustomSelectRockstarResponse == null) {
+            QueryDbCustomSelectRockstarCustomSelectRockstarResponse = new global::ServiceStack.Extensions.Tests.Protoc.QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse();
+          }
+          QueryDbCustomSelectRockstarCustomSelectRockstarResponse.MergeFrom(other.QueryDbCustomSelectRockstarCustomSelectRockstarResponse);
+          break;
         case SubtypeOneofCase.QueryDbRockstar:
           if (QueryDbRockstar == null) {
             QueryDbRockstar = new global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Rockstar();
           }
           QueryDbRockstar.MergeFrom(other.QueryDbRockstar);
+          break;
+        case SubtypeOneofCase.QueryDbAllFields:
+          if (QueryDbAllFields == null) {
+            QueryDbAllFields = new global::ServiceStack.Extensions.Tests.Protoc.QueryDb_AllFields();
+          }
+          QueryDbAllFields.MergeFrom(other.QueryDbAllFields);
+          break;
+        case SubtypeOneofCase.QueryDbRockstarCustomRockstarSchema:
+          if (QueryDbRockstarCustomRockstarSchema == null) {
+            QueryDbRockstarCustomRockstarSchema = new global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Rockstar_CustomRockstarSchema();
+          }
+          QueryDbRockstarCustomRockstarSchema.MergeFrom(other.QueryDbRockstarCustomRockstarSchema);
           break;
       }
 
@@ -7747,6 +10842,33 @@ namespace ServiceStack.Extensions.Tests.Protoc {
             QueryDbRockstarCustomRockstar = subBuilder;
             break;
           }
+          case 764547170: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Rockstar_RockstarAlias subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Rockstar_RockstarAlias();
+            if (subtypeCase_ == SubtypeOneofCase.QueryDbRockstarRockstarAlias) {
+              subBuilder.MergeFrom(QueryDbRockstarRockstarAlias);
+            }
+            input.ReadMessage(subBuilder);
+            QueryDbRockstarRockstarAlias = subBuilder;
+            break;
+          }
+          case 881974178: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryDb_PagingTest subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryDb_PagingTest();
+            if (subtypeCase_ == SubtypeOneofCase.QueryDbPagingTest) {
+              subBuilder.MergeFrom(QueryDbPagingTest);
+            }
+            input.ReadMessage(subBuilder);
+            QueryDbPagingTest = subBuilder;
+            break;
+          }
+          case 940247914: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryDb_CustomSelectRockstar subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryDb_CustomSelectRockstar();
+            if (subtypeCase_ == SubtypeOneofCase.QueryDbCustomSelectRockstar) {
+              subBuilder.MergeFrom(QueryDbCustomSelectRockstar);
+            }
+            input.ReadMessage(subBuilder);
+            QueryDbCustomSelectRockstar = subBuilder;
+            break;
+          }
           case 1065076890: {
             global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Movie subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Movie();
             if (subtypeCase_ == SubtypeOneofCase.QueryDbMovie) {
@@ -7765,6 +10887,51 @@ namespace ServiceStack.Extensions.Tests.Protoc {
             QueryDbRockstarReference = subBuilder;
             break;
           }
+          case 1550904386: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Adhoc subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Adhoc();
+            if (subtypeCase_ == SubtypeOneofCase.QueryDbAdhoc) {
+              subBuilder.MergeFrom(QueryDbAdhoc);
+            }
+            input.ReadMessage(subBuilder);
+            QueryDbAdhoc = subBuilder;
+            break;
+          }
+          case 1740278890: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryDb_NamedRockstar subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryDb_NamedRockstar();
+            if (subtypeCase_ == SubtypeOneofCase.QueryDbNamedRockstar) {
+              subBuilder.MergeFrom(QueryDbNamedRockstar);
+            }
+            input.ReadMessage(subBuilder);
+            QueryDbNamedRockstar = subBuilder;
+            break;
+          }
+          case 3124691826: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryDb_TypeWithEnum subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryDb_TypeWithEnum();
+            if (subtypeCase_ == SubtypeOneofCase.QueryDbTypeWithEnum) {
+              subBuilder.MergeFrom(QueryDbTypeWithEnum);
+            }
+            input.ReadMessage(subBuilder);
+            QueryDbTypeWithEnum = subBuilder;
+            break;
+          }
+          case 3289445482: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryDb_RockstarAlbum subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryDb_RockstarAlbum();
+            if (subtypeCase_ == SubtypeOneofCase.QueryDbRockstarAlbum) {
+              subBuilder.MergeFrom(QueryDbRockstarAlbum);
+            }
+            input.ReadMessage(subBuilder);
+            QueryDbRockstarAlbum = subBuilder;
+            break;
+          }
+          case 3430782906: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse();
+            if (subtypeCase_ == SubtypeOneofCase.QueryDbCustomSelectRockstarCustomSelectRockstarResponse) {
+              subBuilder.MergeFrom(QueryDbCustomSelectRockstarCustomSelectRockstarResponse);
+            }
+            input.ReadMessage(subBuilder);
+            QueryDbCustomSelectRockstarCustomSelectRockstarResponse = subBuilder;
+            break;
+          }
           case 3582190154: {
             global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Rockstar subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Rockstar();
             if (subtypeCase_ == SubtypeOneofCase.QueryDbRockstar) {
@@ -7772,6 +10939,24 @@ namespace ServiceStack.Extensions.Tests.Protoc {
             }
             input.ReadMessage(subBuilder);
             QueryDbRockstar = subBuilder;
+            break;
+          }
+          case 3791769378: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryDb_AllFields subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryDb_AllFields();
+            if (subtypeCase_ == SubtypeOneofCase.QueryDbAllFields) {
+              subBuilder.MergeFrom(QueryDbAllFields);
+            }
+            input.ReadMessage(subBuilder);
+            QueryDbAllFields = subBuilder;
+            break;
+          }
+          case 3866629274: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Rockstar_CustomRockstarSchema subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryDb_Rockstar_CustomRockstarSchema();
+            if (subtypeCase_ == SubtypeOneofCase.QueryDbRockstarCustomRockstarSchema) {
+              subBuilder.MergeFrom(QueryDbRockstarCustomRockstarSchema);
+            }
+            input.ReadMessage(subBuilder);
+            QueryDbRockstarCustomRockstarSchema = subBuilder;
             break;
           }
         }
@@ -7788,7 +10973,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[37]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[48]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7917,7 +11102,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[38]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[49]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8010,6 +11195,449 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
   }
 
+  public sealed partial class QueryChangeDb : pb::IMessage<QueryChangeDb> {
+    private static readonly pb::MessageParser<QueryChangeDb> _parser = new pb::MessageParser<QueryChangeDb>(() => new QueryChangeDb());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryChangeDb> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[50]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryChangeDb() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryChangeDb(QueryChangeDb other) : this() {
+      namedConnection_ = other.namedConnection_;
+      connectionString_ = other.connectionString_;
+      providerName_ = other.providerName_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryChangeDb Clone() {
+      return new QueryChangeDb(this);
+    }
+
+    /// <summary>Field number for the "NamedConnection" field.</summary>
+    public const int NamedConnectionFieldNumber = 1;
+    private string namedConnection_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string NamedConnection {
+      get { return namedConnection_; }
+      set {
+        namedConnection_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "ConnectionString" field.</summary>
+    public const int ConnectionStringFieldNumber = 2;
+    private string connectionString_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string ConnectionString {
+      get { return connectionString_; }
+      set {
+        connectionString_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "ProviderName" field.</summary>
+    public const int ProviderNameFieldNumber = 3;
+    private string providerName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string ProviderName {
+      get { return providerName_; }
+      set {
+        providerName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryChangeDb);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryChangeDb other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (NamedConnection != other.NamedConnection) return false;
+      if (ConnectionString != other.ConnectionString) return false;
+      if (ProviderName != other.ProviderName) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (NamedConnection.Length != 0) hash ^= NamedConnection.GetHashCode();
+      if (ConnectionString.Length != 0) hash ^= ConnectionString.GetHashCode();
+      if (ProviderName.Length != 0) hash ^= ProviderName.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (NamedConnection.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(NamedConnection);
+      }
+      if (ConnectionString.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(ConnectionString);
+      }
+      if (ProviderName.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(ProviderName);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (NamedConnection.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(NamedConnection);
+      }
+      if (ConnectionString.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(ConnectionString);
+      }
+      if (ProviderName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(ProviderName);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryChangeDb other) {
+      if (other == null) {
+        return;
+      }
+      if (other.NamedConnection.Length != 0) {
+        NamedConnection = other.NamedConnection;
+      }
+      if (other.ConnectionString.Length != 0) {
+        ConnectionString = other.ConnectionString;
+      }
+      if (other.ProviderName.Length != 0) {
+        ProviderName = other.ProviderName;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            NamedConnection = input.ReadString();
+            break;
+          }
+          case 18: {
+            ConnectionString = input.ReadString();
+            break;
+          }
+          case 26: {
+            ProviderName = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryCustomRockstars : pb::IMessage<QueryCustomRockstars> {
+    private static readonly pb::MessageParser<QueryCustomRockstars> _parser = new pb::MessageParser<QueryCustomRockstars>(() => new QueryCustomRockstars());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryCustomRockstars> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[51]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryCustomRockstars() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryCustomRockstars(QueryCustomRockstars other) : this() {
+      age_ = other.age_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryCustomRockstars Clone() {
+      return new QueryCustomRockstars(this);
+    }
+
+    /// <summary>Field number for the "Age" field.</summary>
+    public const int AgeFieldNumber = 1;
+    private int age_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Age {
+      get { return age_; }
+      set {
+        age_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryCustomRockstars);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryCustomRockstars other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Age != other.Age) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Age != 0) hash ^= Age.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Age != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Age);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Age != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Age);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryCustomRockstars other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Age != 0) {
+        Age = other.Age;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Age = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryCustomRockstarsFilter : pb::IMessage<QueryCustomRockstarsFilter> {
+    private static readonly pb::MessageParser<QueryCustomRockstarsFilter> _parser = new pb::MessageParser<QueryCustomRockstarsFilter>(() => new QueryCustomRockstarsFilter());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryCustomRockstarsFilter> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[52]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryCustomRockstarsFilter() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryCustomRockstarsFilter(QueryCustomRockstarsFilter other) : this() {
+      age_ = other.age_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryCustomRockstarsFilter Clone() {
+      return new QueryCustomRockstarsFilter(this);
+    }
+
+    /// <summary>Field number for the "Age" field.</summary>
+    public const int AgeFieldNumber = 1;
+    private int age_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Age {
+      get { return age_; }
+      set {
+        age_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryCustomRockstarsFilter);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryCustomRockstarsFilter other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Age != other.Age) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Age != 0) hash ^= Age.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Age != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Age);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Age != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Age);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryCustomRockstarsFilter other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Age != 0) {
+        Age = other.Age;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Age = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public sealed partial class QueryCustomRockstarsReferences : pb::IMessage<QueryCustomRockstarsReferences> {
     private static readonly pb::MessageParser<QueryCustomRockstarsReferences> _parser = new pb::MessageParser<QueryCustomRockstarsReferences>(() => new QueryCustomRockstarsReferences());
     private pb::UnknownFieldSet _unknownFields;
@@ -8018,7 +11646,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[39]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[53]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8139,6 +11767,795 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
   }
 
+  public sealed partial class QueryCustomRockstarsSchema : pb::IMessage<QueryCustomRockstarsSchema> {
+    private static readonly pb::MessageParser<QueryCustomRockstarsSchema> _parser = new pb::MessageParser<QueryCustomRockstarsSchema>(() => new QueryCustomRockstarsSchema());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryCustomRockstarsSchema> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[54]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryCustomRockstarsSchema() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryCustomRockstarsSchema(QueryCustomRockstarsSchema other) : this() {
+      age_ = other.age_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryCustomRockstarsSchema Clone() {
+      return new QueryCustomRockstarsSchema(this);
+    }
+
+    /// <summary>Field number for the "Age" field.</summary>
+    public const int AgeFieldNumber = 1;
+    private int age_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Age {
+      get { return age_; }
+      set {
+        age_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryCustomRockstarsSchema);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryCustomRockstarsSchema other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Age != other.Age) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Age != 0) hash ^= Age.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Age != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Age);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Age != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Age);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryCustomRockstarsSchema other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Age != 0) {
+        Age = other.Age;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Age = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryDb_Adhoc : pb::IMessage<QueryDb_Adhoc> {
+    private static readonly pb::MessageParser<QueryDb_Adhoc> _parser = new pb::MessageParser<QueryDb_Adhoc>(() => new QueryDb_Adhoc());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryDb_Adhoc> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[55]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_Adhoc() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_Adhoc(QueryDb_Adhoc other) : this() {
+      switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryAdhoc:
+          QueryAdhoc = other.QueryAdhoc.Clone();
+          break;
+      }
+
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_Adhoc Clone() {
+      return new QueryDb_Adhoc(this);
+    }
+
+    /// <summary>Field number for the "QueryAdhoc" field.</summary>
+    public const int QueryAdhocFieldNumber = 91431949;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryAdhoc QueryAdhoc {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryAdhoc ? (global::ServiceStack.Extensions.Tests.Protoc.QueryAdhoc) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryAdhoc;
+      }
+    }
+
+    private object subtype_;
+    /// <summary>Enum of possible cases for the "subtype" oneof.</summary>
+    public enum SubtypeOneofCase {
+      None = 0,
+      QueryAdhoc = 91431949,
+    }
+    private SubtypeOneofCase subtypeCase_ = SubtypeOneofCase.None;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public SubtypeOneofCase SubtypeCase {
+      get { return subtypeCase_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSubtype() {
+      subtypeCase_ = SubtypeOneofCase.None;
+      subtype_ = null;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryDb_Adhoc);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryDb_Adhoc other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(QueryAdhoc, other.QueryAdhoc)) return false;
+      if (SubtypeCase != other.SubtypeCase) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (subtypeCase_ == SubtypeOneofCase.QueryAdhoc) hash ^= QueryAdhoc.GetHashCode();
+      hash ^= (int) subtypeCase_;
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (subtypeCase_ == SubtypeOneofCase.QueryAdhoc) {
+        output.WriteRawTag(234, 192, 228, 220, 2);
+        output.WriteMessage(QueryAdhoc);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (subtypeCase_ == SubtypeOneofCase.QueryAdhoc) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryAdhoc);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryDb_Adhoc other) {
+      if (other == null) {
+        return;
+      }
+      switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryAdhoc:
+          if (QueryAdhoc == null) {
+            QueryAdhoc = new global::ServiceStack.Extensions.Tests.Protoc.QueryAdhoc();
+          }
+          QueryAdhoc.MergeFrom(other.QueryAdhoc);
+          break;
+      }
+
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 731455594: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryAdhoc subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryAdhoc();
+            if (subtypeCase_ == SubtypeOneofCase.QueryAdhoc) {
+              subBuilder.MergeFrom(QueryAdhoc);
+            }
+            input.ReadMessage(subBuilder);
+            QueryAdhoc = subBuilder;
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryDb_AllFields : pb::IMessage<QueryDb_AllFields> {
+    private static readonly pb::MessageParser<QueryDb_AllFields> _parser = new pb::MessageParser<QueryDb_AllFields>(() => new QueryDb_AllFields());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryDb_AllFields> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[56]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_AllFields() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_AllFields(QueryDb_AllFields other) : this() {
+      switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryAllFields:
+          QueryAllFields = other.QueryAllFields.Clone();
+          break;
+      }
+
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_AllFields Clone() {
+      return new QueryDb_AllFields(this);
+    }
+
+    /// <summary>Field number for the "QueryAllFields" field.</summary>
+    public const int QueryAllFieldsFieldNumber = 524448297;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryAllFields QueryAllFields {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryAllFields ? (global::ServiceStack.Extensions.Tests.Protoc.QueryAllFields) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryAllFields;
+      }
+    }
+
+    private object subtype_;
+    /// <summary>Enum of possible cases for the "subtype" oneof.</summary>
+    public enum SubtypeOneofCase {
+      None = 0,
+      QueryAllFields = 524448297,
+    }
+    private SubtypeOneofCase subtypeCase_ = SubtypeOneofCase.None;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public SubtypeOneofCase SubtypeCase {
+      get { return subtypeCase_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSubtype() {
+      subtypeCase_ = SubtypeOneofCase.None;
+      subtype_ = null;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryDb_AllFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryDb_AllFields other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(QueryAllFields, other.QueryAllFields)) return false;
+      if (SubtypeCase != other.SubtypeCase) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (subtypeCase_ == SubtypeOneofCase.QueryAllFields) hash ^= QueryAllFields.GetHashCode();
+      hash ^= (int) subtypeCase_;
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (subtypeCase_ == SubtypeOneofCase.QueryAllFields) {
+        output.WriteRawTag(202, 162, 206, 208, 15);
+        output.WriteMessage(QueryAllFields);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (subtypeCase_ == SubtypeOneofCase.QueryAllFields) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryAllFields);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryDb_AllFields other) {
+      if (other == null) {
+        return;
+      }
+      switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryAllFields:
+          if (QueryAllFields == null) {
+            QueryAllFields = new global::ServiceStack.Extensions.Tests.Protoc.QueryAllFields();
+          }
+          QueryAllFields.MergeFrom(other.QueryAllFields);
+          break;
+      }
+
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 4195586378: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryAllFields subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryAllFields();
+            if (subtypeCase_ == SubtypeOneofCase.QueryAllFields) {
+              subBuilder.MergeFrom(QueryAllFields);
+            }
+            input.ReadMessage(subBuilder);
+            QueryAllFields = subBuilder;
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryDb_CustomSelectRockstar : pb::IMessage<QueryDb_CustomSelectRockstar> {
+    private static readonly pb::MessageParser<QueryDb_CustomSelectRockstar> _parser = new pb::MessageParser<QueryDb_CustomSelectRockstar>(() => new QueryDb_CustomSelectRockstar());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryDb_CustomSelectRockstar> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[57]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_CustomSelectRockstar() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_CustomSelectRockstar(QueryDb_CustomSelectRockstar other) : this() {
+      switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryJoinedRockstarAlbumsCustomSelect:
+          QueryJoinedRockstarAlbumsCustomSelect = other.QueryJoinedRockstarAlbumsCustomSelect.Clone();
+          break;
+      }
+
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_CustomSelectRockstar Clone() {
+      return new QueryDb_CustomSelectRockstar(this);
+    }
+
+    /// <summary>Field number for the "QueryJoinedRockstarAlbumsCustomSelect" field.</summary>
+    public const int QueryJoinedRockstarAlbumsCustomSelectFieldNumber = 141691829;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryJoinedRockstarAlbumsCustomSelect QueryJoinedRockstarAlbumsCustomSelect {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryJoinedRockstarAlbumsCustomSelect ? (global::ServiceStack.Extensions.Tests.Protoc.QueryJoinedRockstarAlbumsCustomSelect) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryJoinedRockstarAlbumsCustomSelect;
+      }
+    }
+
+    private object subtype_;
+    /// <summary>Enum of possible cases for the "subtype" oneof.</summary>
+    public enum SubtypeOneofCase {
+      None = 0,
+      QueryJoinedRockstarAlbumsCustomSelect = 141691829,
+    }
+    private SubtypeOneofCase subtypeCase_ = SubtypeOneofCase.None;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public SubtypeOneofCase SubtypeCase {
+      get { return subtypeCase_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSubtype() {
+      subtypeCase_ = SubtypeOneofCase.None;
+      subtype_ = null;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryDb_CustomSelectRockstar);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryDb_CustomSelectRockstar other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(QueryJoinedRockstarAlbumsCustomSelect, other.QueryJoinedRockstarAlbumsCustomSelect)) return false;
+      if (SubtypeCase != other.SubtypeCase) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (subtypeCase_ == SubtypeOneofCase.QueryJoinedRockstarAlbumsCustomSelect) hash ^= QueryJoinedRockstarAlbumsCustomSelect.GetHashCode();
+      hash ^= (int) subtypeCase_;
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (subtypeCase_ == SubtypeOneofCase.QueryJoinedRockstarAlbumsCustomSelect) {
+        output.WriteRawTag(170, 187, 193, 156, 4);
+        output.WriteMessage(QueryJoinedRockstarAlbumsCustomSelect);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (subtypeCase_ == SubtypeOneofCase.QueryJoinedRockstarAlbumsCustomSelect) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryJoinedRockstarAlbumsCustomSelect);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryDb_CustomSelectRockstar other) {
+      if (other == null) {
+        return;
+      }
+      switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryJoinedRockstarAlbumsCustomSelect:
+          if (QueryJoinedRockstarAlbumsCustomSelect == null) {
+            QueryJoinedRockstarAlbumsCustomSelect = new global::ServiceStack.Extensions.Tests.Protoc.QueryJoinedRockstarAlbumsCustomSelect();
+          }
+          QueryJoinedRockstarAlbumsCustomSelect.MergeFrom(other.QueryJoinedRockstarAlbumsCustomSelect);
+          break;
+      }
+
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 1133534634: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryJoinedRockstarAlbumsCustomSelect subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryJoinedRockstarAlbumsCustomSelect();
+            if (subtypeCase_ == SubtypeOneofCase.QueryJoinedRockstarAlbumsCustomSelect) {
+              subBuilder.MergeFrom(QueryJoinedRockstarAlbumsCustomSelect);
+            }
+            input.ReadMessage(subBuilder);
+            QueryJoinedRockstarAlbumsCustomSelect = subBuilder;
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse : pb::IMessage<QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse> {
+    private static readonly pb::MessageParser<QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse> _parser = new pb::MessageParser<QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse>(() => new QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[58]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse(QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse other) : this() {
+      switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryJoinedRockstarAlbumsCustomSelectResponse:
+          QueryJoinedRockstarAlbumsCustomSelectResponse = other.QueryJoinedRockstarAlbumsCustomSelectResponse.Clone();
+          break;
+      }
+
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse Clone() {
+      return new QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse(this);
+    }
+
+    /// <summary>Field number for the "QueryJoinedRockstarAlbumsCustomSelectResponse" field.</summary>
+    public const int QueryJoinedRockstarAlbumsCustomSelectResponseFieldNumber = 536127599;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryJoinedRockstarAlbumsCustomSelectResponse QueryJoinedRockstarAlbumsCustomSelectResponse {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryJoinedRockstarAlbumsCustomSelectResponse ? (global::ServiceStack.Extensions.Tests.Protoc.QueryJoinedRockstarAlbumsCustomSelectResponse) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryJoinedRockstarAlbumsCustomSelectResponse;
+      }
+    }
+
+    private object subtype_;
+    /// <summary>Enum of possible cases for the "subtype" oneof.</summary>
+    public enum SubtypeOneofCase {
+      None = 0,
+      QueryJoinedRockstarAlbumsCustomSelectResponse = 536127599,
+    }
+    private SubtypeOneofCase subtypeCase_ = SubtypeOneofCase.None;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public SubtypeOneofCase SubtypeCase {
+      get { return subtypeCase_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSubtype() {
+      subtypeCase_ = SubtypeOneofCase.None;
+      subtype_ = null;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(QueryJoinedRockstarAlbumsCustomSelectResponse, other.QueryJoinedRockstarAlbumsCustomSelectResponse)) return false;
+      if (SubtypeCase != other.SubtypeCase) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (subtypeCase_ == SubtypeOneofCase.QueryJoinedRockstarAlbumsCustomSelectResponse) hash ^= QueryJoinedRockstarAlbumsCustomSelectResponse.GetHashCode();
+      hash ^= (int) subtypeCase_;
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (subtypeCase_ == SubtypeOneofCase.QueryJoinedRockstarAlbumsCustomSelectResponse) {
+        output.WriteRawTag(250, 134, 149, 253, 15);
+        output.WriteMessage(QueryJoinedRockstarAlbumsCustomSelectResponse);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (subtypeCase_ == SubtypeOneofCase.QueryJoinedRockstarAlbumsCustomSelectResponse) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryJoinedRockstarAlbumsCustomSelectResponse);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse other) {
+      if (other == null) {
+        return;
+      }
+      switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryJoinedRockstarAlbumsCustomSelectResponse:
+          if (QueryJoinedRockstarAlbumsCustomSelectResponse == null) {
+            QueryJoinedRockstarAlbumsCustomSelectResponse = new global::ServiceStack.Extensions.Tests.Protoc.QueryJoinedRockstarAlbumsCustomSelectResponse();
+          }
+          QueryJoinedRockstarAlbumsCustomSelectResponse.MergeFrom(other.QueryJoinedRockstarAlbumsCustomSelectResponse);
+          break;
+      }
+
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 4289020794: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryJoinedRockstarAlbumsCustomSelectResponse subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryJoinedRockstarAlbumsCustomSelectResponse();
+            if (subtypeCase_ == SubtypeOneofCase.QueryJoinedRockstarAlbumsCustomSelectResponse) {
+              subBuilder.MergeFrom(QueryJoinedRockstarAlbumsCustomSelectResponse);
+            }
+            input.ReadMessage(subBuilder);
+            QueryJoinedRockstarAlbumsCustomSelectResponse = subBuilder;
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public sealed partial class QueryDb_Movie : pb::IMessage<QueryDb_Movie> {
     private static readonly pb::MessageParser<QueryDb_Movie> _parser = new pb::MessageParser<QueryDb_Movie>(() => new QueryDb_Movie());
     private pb::UnknownFieldSet _unknownFields;
@@ -8147,7 +12564,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[40]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[59]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8165,8 +12582,14 @@ namespace ServiceStack.Extensions.Tests.Protoc {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public QueryDb_Movie(QueryDb_Movie other) : this() {
       switch (other.SubtypeCase) {
+        case SubtypeOneofCase.SearchMovies:
+          SearchMovies = other.SearchMovies.Clone();
+          break;
         case SubtypeOneofCase.StreamMovies:
           StreamMovies = other.StreamMovies.Clone();
+          break;
+        case SubtypeOneofCase.QueryMovies:
+          QueryMovies = other.QueryMovies.Clone();
           break;
       }
 
@@ -8176,6 +12599,17 @@ namespace ServiceStack.Extensions.Tests.Protoc {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public QueryDb_Movie Clone() {
       return new QueryDb_Movie(this);
+    }
+
+    /// <summary>Field number for the "SearchMovies" field.</summary>
+    public const int SearchMoviesFieldNumber = 205066215;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.SearchMovies SearchMovies {
+      get { return subtypeCase_ == SubtypeOneofCase.SearchMovies ? (global::ServiceStack.Extensions.Tests.Protoc.SearchMovies) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.SearchMovies;
+      }
     }
 
     /// <summary>Field number for the "StreamMovies" field.</summary>
@@ -8189,11 +12623,24 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       }
     }
 
+    /// <summary>Field number for the "QueryMovies" field.</summary>
+    public const int QueryMoviesFieldNumber = 510651567;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryMovies QueryMovies {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryMovies ? (global::ServiceStack.Extensions.Tests.Protoc.QueryMovies) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryMovies;
+      }
+    }
+
     private object subtype_;
     /// <summary>Enum of possible cases for the "subtype" oneof.</summary>
     public enum SubtypeOneofCase {
       None = 0,
+      SearchMovies = 205066215,
       StreamMovies = 254558360,
+      QueryMovies = 510651567,
     }
     private SubtypeOneofCase subtypeCase_ = SubtypeOneofCase.None;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8220,7 +12667,9 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       if (ReferenceEquals(other, this)) {
         return true;
       }
+      if (!object.Equals(SearchMovies, other.SearchMovies)) return false;
       if (!object.Equals(StreamMovies, other.StreamMovies)) return false;
+      if (!object.Equals(QueryMovies, other.QueryMovies)) return false;
       if (SubtypeCase != other.SubtypeCase) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -8228,7 +12677,9 @@ namespace ServiceStack.Extensions.Tests.Protoc {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
+      if (subtypeCase_ == SubtypeOneofCase.SearchMovies) hash ^= SearchMovies.GetHashCode();
       if (subtypeCase_ == SubtypeOneofCase.StreamMovies) hash ^= StreamMovies.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryMovies) hash ^= QueryMovies.GetHashCode();
       hash ^= (int) subtypeCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -8243,9 +12694,17 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      if (subtypeCase_ == SubtypeOneofCase.SearchMovies) {
+        output.WriteRawTag(186, 254, 161, 142, 6);
+        output.WriteMessage(SearchMovies);
+      }
       if (subtypeCase_ == SubtypeOneofCase.StreamMovies) {
         output.WriteRawTag(194, 137, 136, 203, 7);
         output.WriteMessage(StreamMovies);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryMovies) {
+        output.WriteRawTag(250, 202, 253, 155, 15);
+        output.WriteMessage(QueryMovies);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -8255,8 +12714,14 @@ namespace ServiceStack.Extensions.Tests.Protoc {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
+      if (subtypeCase_ == SubtypeOneofCase.SearchMovies) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(SearchMovies);
+      }
       if (subtypeCase_ == SubtypeOneofCase.StreamMovies) {
         size += 5 + pb::CodedOutputStream.ComputeMessageSize(StreamMovies);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryMovies) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryMovies);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -8270,11 +12735,23 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         return;
       }
       switch (other.SubtypeCase) {
+        case SubtypeOneofCase.SearchMovies:
+          if (SearchMovies == null) {
+            SearchMovies = new global::ServiceStack.Extensions.Tests.Protoc.SearchMovies();
+          }
+          SearchMovies.MergeFrom(other.SearchMovies);
+          break;
         case SubtypeOneofCase.StreamMovies:
           if (StreamMovies == null) {
             StreamMovies = new global::ServiceStack.Extensions.Tests.Protoc.StreamMovies();
           }
           StreamMovies.MergeFrom(other.StreamMovies);
+          break;
+        case SubtypeOneofCase.QueryMovies:
+          if (QueryMovies == null) {
+            QueryMovies = new global::ServiceStack.Extensions.Tests.Protoc.QueryMovies();
+          }
+          QueryMovies.MergeFrom(other.QueryMovies);
           break;
       }
 
@@ -8289,6 +12766,15 @@ namespace ServiceStack.Extensions.Tests.Protoc {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
+          case 1640529722: {
+            global::ServiceStack.Extensions.Tests.Protoc.SearchMovies subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.SearchMovies();
+            if (subtypeCase_ == SubtypeOneofCase.SearchMovies) {
+              subBuilder.MergeFrom(SearchMovies);
+            }
+            input.ReadMessage(subBuilder);
+            SearchMovies = subBuilder;
+            break;
+          }
           case 2036466882: {
             global::ServiceStack.Extensions.Tests.Protoc.StreamMovies subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.StreamMovies();
             if (subtypeCase_ == SubtypeOneofCase.StreamMovies) {
@@ -8296,6 +12782,345 @@ namespace ServiceStack.Extensions.Tests.Protoc {
             }
             input.ReadMessage(subBuilder);
             StreamMovies = subBuilder;
+            break;
+          }
+          case 4085212538: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryMovies subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryMovies();
+            if (subtypeCase_ == SubtypeOneofCase.QueryMovies) {
+              subBuilder.MergeFrom(QueryMovies);
+            }
+            input.ReadMessage(subBuilder);
+            QueryMovies = subBuilder;
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryDb_NamedRockstar : pb::IMessage<QueryDb_NamedRockstar> {
+    private static readonly pb::MessageParser<QueryDb_NamedRockstar> _parser = new pb::MessageParser<QueryDb_NamedRockstar>(() => new QueryDb_NamedRockstar());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryDb_NamedRockstar> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[60]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_NamedRockstar() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_NamedRockstar(QueryDb_NamedRockstar other) : this() {
+      switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryNamedRockstars:
+          QueryNamedRockstars = other.QueryNamedRockstars.Clone();
+          break;
+      }
+
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_NamedRockstar Clone() {
+      return new QueryDb_NamedRockstar(this);
+    }
+
+    /// <summary>Field number for the "QueryNamedRockstars" field.</summary>
+    public const int QueryNamedRockstarsFieldNumber = 294326335;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryNamedRockstars QueryNamedRockstars {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryNamedRockstars ? (global::ServiceStack.Extensions.Tests.Protoc.QueryNamedRockstars) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryNamedRockstars;
+      }
+    }
+
+    private object subtype_;
+    /// <summary>Enum of possible cases for the "subtype" oneof.</summary>
+    public enum SubtypeOneofCase {
+      None = 0,
+      QueryNamedRockstars = 294326335,
+    }
+    private SubtypeOneofCase subtypeCase_ = SubtypeOneofCase.None;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public SubtypeOneofCase SubtypeCase {
+      get { return subtypeCase_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSubtype() {
+      subtypeCase_ = SubtypeOneofCase.None;
+      subtype_ = null;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryDb_NamedRockstar);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryDb_NamedRockstar other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(QueryNamedRockstars, other.QueryNamedRockstars)) return false;
+      if (SubtypeCase != other.SubtypeCase) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (subtypeCase_ == SubtypeOneofCase.QueryNamedRockstars) hash ^= QueryNamedRockstars.GetHashCode();
+      hash ^= (int) subtypeCase_;
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (subtypeCase_ == SubtypeOneofCase.QueryNamedRockstars) {
+        output.WriteRawTag(250, 131, 226, 226, 8);
+        output.WriteMessage(QueryNamedRockstars);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (subtypeCase_ == SubtypeOneofCase.QueryNamedRockstars) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryNamedRockstars);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryDb_NamedRockstar other) {
+      if (other == null) {
+        return;
+      }
+      switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryNamedRockstars:
+          if (QueryNamedRockstars == null) {
+            QueryNamedRockstars = new global::ServiceStack.Extensions.Tests.Protoc.QueryNamedRockstars();
+          }
+          QueryNamedRockstars.MergeFrom(other.QueryNamedRockstars);
+          break;
+      }
+
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 2354610682: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryNamedRockstars subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryNamedRockstars();
+            if (subtypeCase_ == SubtypeOneofCase.QueryNamedRockstars) {
+              subBuilder.MergeFrom(QueryNamedRockstars);
+            }
+            input.ReadMessage(subBuilder);
+            QueryNamedRockstars = subBuilder;
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryDb_PagingTest : pb::IMessage<QueryDb_PagingTest> {
+    private static readonly pb::MessageParser<QueryDb_PagingTest> _parser = new pb::MessageParser<QueryDb_PagingTest>(() => new QueryDb_PagingTest());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryDb_PagingTest> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[61]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_PagingTest() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_PagingTest(QueryDb_PagingTest other) : this() {
+      switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryPagingTest:
+          QueryPagingTest = other.QueryPagingTest.Clone();
+          break;
+      }
+
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_PagingTest Clone() {
+      return new QueryDb_PagingTest(this);
+    }
+
+    /// <summary>Field number for the "QueryPagingTest" field.</summary>
+    public const int QueryPagingTestFieldNumber = 354250915;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryPagingTest QueryPagingTest {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryPagingTest ? (global::ServiceStack.Extensions.Tests.Protoc.QueryPagingTest) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryPagingTest;
+      }
+    }
+
+    private object subtype_;
+    /// <summary>Enum of possible cases for the "subtype" oneof.</summary>
+    public enum SubtypeOneofCase {
+      None = 0,
+      QueryPagingTest = 354250915,
+    }
+    private SubtypeOneofCase subtypeCase_ = SubtypeOneofCase.None;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public SubtypeOneofCase SubtypeCase {
+      get { return subtypeCase_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSubtype() {
+      subtypeCase_ = SubtypeOneofCase.None;
+      subtype_ = null;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryDb_PagingTest);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryDb_PagingTest other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(QueryPagingTest, other.QueryPagingTest)) return false;
+      if (SubtypeCase != other.SubtypeCase) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (subtypeCase_ == SubtypeOneofCase.QueryPagingTest) hash ^= QueryPagingTest.GetHashCode();
+      hash ^= (int) subtypeCase_;
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (subtypeCase_ == SubtypeOneofCase.QueryPagingTest) {
+        output.WriteRawTag(154, 138, 174, 199, 10);
+        output.WriteMessage(QueryPagingTest);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (subtypeCase_ == SubtypeOneofCase.QueryPagingTest) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryPagingTest);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryDb_PagingTest other) {
+      if (other == null) {
+        return;
+      }
+      switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryPagingTest:
+          if (QueryPagingTest == null) {
+            QueryPagingTest = new global::ServiceStack.Extensions.Tests.Protoc.QueryPagingTest();
+          }
+          QueryPagingTest.MergeFrom(other.QueryPagingTest);
+          break;
+      }
+
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 2834007322: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryPagingTest subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryPagingTest();
+            if (subtypeCase_ == SubtypeOneofCase.QueryPagingTest) {
+              subBuilder.MergeFrom(QueryPagingTest);
+            }
+            input.ReadMessage(subBuilder);
+            QueryPagingTest = subBuilder;
             break;
           }
         }
@@ -8312,7 +13137,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[41]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[62]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8330,14 +13155,59 @@ namespace ServiceStack.Extensions.Tests.Protoc {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public QueryDb_Rockstar(QueryDb_Rockstar other) : this() {
       switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryRockstars:
+          QueryRockstars = other.QueryRockstars.Clone();
+          break;
         case SubtypeOneofCase.QueryChangeConnectionInfo:
           QueryChangeConnectionInfo = other.QueryChangeConnectionInfo.Clone();
+          break;
+        case SubtypeOneofCase.QueryFieldRockstarsDynamic:
+          QueryFieldRockstarsDynamic = other.QueryFieldRockstarsDynamic.Clone();
+          break;
+        case SubtypeOneofCase.QueryFieldRockstars:
+          QueryFieldRockstars = other.QueryFieldRockstars.Clone();
           break;
         case SubtypeOneofCase.QueryOverridedRockstars:
           QueryOverridedRockstars = other.QueryOverridedRockstars.Clone();
           break;
+        case SubtypeOneofCase.QueryRockstarsIFilter:
+          QueryRockstarsIFilter = other.QueryRockstarsIFilter.Clone();
+          break;
+        case SubtypeOneofCase.QueryGetRockstars:
+          QueryGetRockstars = other.QueryGetRockstars.Clone();
+          break;
+        case SubtypeOneofCase.QueryOrRockstars:
+          QueryOrRockstars = other.QueryOrRockstars.Clone();
+          break;
+        case SubtypeOneofCase.QueryRockstarsFilter:
+          QueryRockstarsFilter = other.QueryRockstarsFilter.Clone();
+          break;
+        case SubtypeOneofCase.QueryRockstarsConventions:
+          QueryRockstarsConventions = other.QueryRockstarsConventions.Clone();
+          break;
+        case SubtypeOneofCase.QueryAdhocRockstars:
+          QueryAdhocRockstars = other.QueryAdhocRockstars.Clone();
+          break;
+        case SubtypeOneofCase.QueryFieldsImplicitConventions:
+          QueryFieldsImplicitConventions = other.QueryFieldsImplicitConventions.Clone();
+          break;
+        case SubtypeOneofCase.QueryRockstarFilters:
+          QueryRockstarFilters = other.QueryRockstarFilters.Clone();
+          break;
         case SubtypeOneofCase.QueryCaseInsensitiveOrderBy:
           QueryCaseInsensitiveOrderBy = other.QueryCaseInsensitiveOrderBy.Clone();
+          break;
+        case SubtypeOneofCase.QueryChangeDb:
+          QueryChangeDb = other.QueryChangeDb.Clone();
+          break;
+        case SubtypeOneofCase.QueryGetRockstarsDynamic:
+          QueryGetRockstarsDynamic = other.QueryGetRockstarsDynamic.Clone();
+          break;
+        case SubtypeOneofCase.QueryOrRockstarsFields:
+          QueryOrRockstarsFields = other.QueryOrRockstarsFields.Clone();
+          break;
+        case SubtypeOneofCase.QueryUnknownRockstars:
+          QueryUnknownRockstars = other.QueryUnknownRockstars.Clone();
           break;
       }
 
@@ -8349,6 +13219,17 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       return new QueryDb_Rockstar(this);
     }
 
+    /// <summary>Field number for the "QueryRockstars" field.</summary>
+    public const int QueryRockstarsFieldNumber = 10;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryRockstars QueryRockstars {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryRockstars ? (global::ServiceStack.Extensions.Tests.Protoc.QueryRockstars) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryRockstars;
+      }
+    }
+
     /// <summary>Field number for the "QueryChangeConnectionInfo" field.</summary>
     public const int QueryChangeConnectionInfoFieldNumber = 48758375;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8357,6 +13238,28 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       set {
         subtype_ = value;
         subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryChangeConnectionInfo;
+      }
+    }
+
+    /// <summary>Field number for the "QueryFieldRockstarsDynamic" field.</summary>
+    public const int QueryFieldRockstarsDynamicFieldNumber = 69037208;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryFieldRockstarsDynamic QueryFieldRockstarsDynamic {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryFieldRockstarsDynamic ? (global::ServiceStack.Extensions.Tests.Protoc.QueryFieldRockstarsDynamic) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryFieldRockstarsDynamic;
+      }
+    }
+
+    /// <summary>Field number for the "QueryFieldRockstars" field.</summary>
+    public const int QueryFieldRockstarsFieldNumber = 112815840;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryFieldRockstars QueryFieldRockstars {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryFieldRockstars ? (global::ServiceStack.Extensions.Tests.Protoc.QueryFieldRockstars) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryFieldRockstars;
       }
     }
 
@@ -8371,6 +13274,94 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       }
     }
 
+    /// <summary>Field number for the "QueryRockstarsIFilter" field.</summary>
+    public const int QueryRockstarsIFilterFieldNumber = 148136160;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsIFilter QueryRockstarsIFilter {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryRockstarsIFilter ? (global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsIFilter) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryRockstarsIFilter;
+      }
+    }
+
+    /// <summary>Field number for the "QueryGetRockstars" field.</summary>
+    public const int QueryGetRockstarsFieldNumber = 216997297;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryGetRockstars QueryGetRockstars {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryGetRockstars ? (global::ServiceStack.Extensions.Tests.Protoc.QueryGetRockstars) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryGetRockstars;
+      }
+    }
+
+    /// <summary>Field number for the "QueryOrRockstars" field.</summary>
+    public const int QueryOrRockstarsFieldNumber = 221913152;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryOrRockstars QueryOrRockstars {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryOrRockstars ? (global::ServiceStack.Extensions.Tests.Protoc.QueryOrRockstars) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryOrRockstars;
+      }
+    }
+
+    /// <summary>Field number for the "QueryRockstarsFilter" field.</summary>
+    public const int QueryRockstarsFilterFieldNumber = 261863748;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsFilter QueryRockstarsFilter {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryRockstarsFilter ? (global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsFilter) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryRockstarsFilter;
+      }
+    }
+
+    /// <summary>Field number for the "QueryRockstarsConventions" field.</summary>
+    public const int QueryRockstarsConventionsFieldNumber = 314421004;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsConventions QueryRockstarsConventions {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryRockstarsConventions ? (global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsConventions) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryRockstarsConventions;
+      }
+    }
+
+    /// <summary>Field number for the "QueryAdhocRockstars" field.</summary>
+    public const int QueryAdhocRockstarsFieldNumber = 327102818;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryAdhocRockstars QueryAdhocRockstars {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryAdhocRockstars ? (global::ServiceStack.Extensions.Tests.Protoc.QueryAdhocRockstars) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryAdhocRockstars;
+      }
+    }
+
+    /// <summary>Field number for the "QueryFieldsImplicitConventions" field.</summary>
+    public const int QueryFieldsImplicitConventionsFieldNumber = 355646391;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryFieldsImplicitConventions QueryFieldsImplicitConventions {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryFieldsImplicitConventions ? (global::ServiceStack.Extensions.Tests.Protoc.QueryFieldsImplicitConventions) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryFieldsImplicitConventions;
+      }
+    }
+
+    /// <summary>Field number for the "QueryRockstarFilters" field.</summary>
+    public const int QueryRockstarFiltersFieldNumber = 408217178;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarFilters QueryRockstarFilters {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryRockstarFilters ? (global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarFilters) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryRockstarFilters;
+      }
+    }
+
     /// <summary>Field number for the "QueryCaseInsensitiveOrderBy" field.</summary>
     public const int QueryCaseInsensitiveOrderByFieldNumber = 425975099;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8382,13 +13373,72 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       }
     }
 
+    /// <summary>Field number for the "QueryChangeDb" field.</summary>
+    public const int QueryChangeDbFieldNumber = 454373236;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryChangeDb QueryChangeDb {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryChangeDb ? (global::ServiceStack.Extensions.Tests.Protoc.QueryChangeDb) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryChangeDb;
+      }
+    }
+
+    /// <summary>Field number for the "QueryGetRockstarsDynamic" field.</summary>
+    public const int QueryGetRockstarsDynamicFieldNumber = 487926813;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryGetRockstarsDynamic QueryGetRockstarsDynamic {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryGetRockstarsDynamic ? (global::ServiceStack.Extensions.Tests.Protoc.QueryGetRockstarsDynamic) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryGetRockstarsDynamic;
+      }
+    }
+
+    /// <summary>Field number for the "QueryOrRockstarsFields" field.</summary>
+    public const int QueryOrRockstarsFieldsFieldNumber = 527268965;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryOrRockstarsFields QueryOrRockstarsFields {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryOrRockstarsFields ? (global::ServiceStack.Extensions.Tests.Protoc.QueryOrRockstarsFields) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryOrRockstarsFields;
+      }
+    }
+
+    /// <summary>Field number for the "QueryUnknownRockstars" field.</summary>
+    public const int QueryUnknownRockstarsFieldNumber = 527646846;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryUnknownRockstars QueryUnknownRockstars {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryUnknownRockstars ? (global::ServiceStack.Extensions.Tests.Protoc.QueryUnknownRockstars) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryUnknownRockstars;
+      }
+    }
+
     private object subtype_;
     /// <summary>Enum of possible cases for the "subtype" oneof.</summary>
     public enum SubtypeOneofCase {
       None = 0,
+      QueryRockstars = 10,
       QueryChangeConnectionInfo = 48758375,
+      QueryFieldRockstarsDynamic = 69037208,
+      QueryFieldRockstars = 112815840,
       QueryOverridedRockstars = 120014899,
+      QueryRockstarsIFilter = 148136160,
+      QueryGetRockstars = 216997297,
+      QueryOrRockstars = 221913152,
+      QueryRockstarsFilter = 261863748,
+      QueryRockstarsConventions = 314421004,
+      QueryAdhocRockstars = 327102818,
+      QueryFieldsImplicitConventions = 355646391,
+      QueryRockstarFilters = 408217178,
       QueryCaseInsensitiveOrderBy = 425975099,
+      QueryChangeDb = 454373236,
+      QueryGetRockstarsDynamic = 487926813,
+      QueryOrRockstarsFields = 527268965,
+      QueryUnknownRockstars = 527646846,
     }
     private SubtypeOneofCase subtypeCase_ = SubtypeOneofCase.None;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8415,9 +13465,24 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       if (ReferenceEquals(other, this)) {
         return true;
       }
+      if (!object.Equals(QueryRockstars, other.QueryRockstars)) return false;
       if (!object.Equals(QueryChangeConnectionInfo, other.QueryChangeConnectionInfo)) return false;
+      if (!object.Equals(QueryFieldRockstarsDynamic, other.QueryFieldRockstarsDynamic)) return false;
+      if (!object.Equals(QueryFieldRockstars, other.QueryFieldRockstars)) return false;
       if (!object.Equals(QueryOverridedRockstars, other.QueryOverridedRockstars)) return false;
+      if (!object.Equals(QueryRockstarsIFilter, other.QueryRockstarsIFilter)) return false;
+      if (!object.Equals(QueryGetRockstars, other.QueryGetRockstars)) return false;
+      if (!object.Equals(QueryOrRockstars, other.QueryOrRockstars)) return false;
+      if (!object.Equals(QueryRockstarsFilter, other.QueryRockstarsFilter)) return false;
+      if (!object.Equals(QueryRockstarsConventions, other.QueryRockstarsConventions)) return false;
+      if (!object.Equals(QueryAdhocRockstars, other.QueryAdhocRockstars)) return false;
+      if (!object.Equals(QueryFieldsImplicitConventions, other.QueryFieldsImplicitConventions)) return false;
+      if (!object.Equals(QueryRockstarFilters, other.QueryRockstarFilters)) return false;
       if (!object.Equals(QueryCaseInsensitiveOrderBy, other.QueryCaseInsensitiveOrderBy)) return false;
+      if (!object.Equals(QueryChangeDb, other.QueryChangeDb)) return false;
+      if (!object.Equals(QueryGetRockstarsDynamic, other.QueryGetRockstarsDynamic)) return false;
+      if (!object.Equals(QueryOrRockstarsFields, other.QueryOrRockstarsFields)) return false;
+      if (!object.Equals(QueryUnknownRockstars, other.QueryUnknownRockstars)) return false;
       if (SubtypeCase != other.SubtypeCase) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -8425,9 +13490,24 @@ namespace ServiceStack.Extensions.Tests.Protoc {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstars) hash ^= QueryRockstars.GetHashCode();
       if (subtypeCase_ == SubtypeOneofCase.QueryChangeConnectionInfo) hash ^= QueryChangeConnectionInfo.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryFieldRockstarsDynamic) hash ^= QueryFieldRockstarsDynamic.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryFieldRockstars) hash ^= QueryFieldRockstars.GetHashCode();
       if (subtypeCase_ == SubtypeOneofCase.QueryOverridedRockstars) hash ^= QueryOverridedRockstars.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarsIFilter) hash ^= QueryRockstarsIFilter.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryGetRockstars) hash ^= QueryGetRockstars.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryOrRockstars) hash ^= QueryOrRockstars.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarsFilter) hash ^= QueryRockstarsFilter.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarsConventions) hash ^= QueryRockstarsConventions.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryAdhocRockstars) hash ^= QueryAdhocRockstars.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryFieldsImplicitConventions) hash ^= QueryFieldsImplicitConventions.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarFilters) hash ^= QueryRockstarFilters.GetHashCode();
       if (subtypeCase_ == SubtypeOneofCase.QueryCaseInsensitiveOrderBy) hash ^= QueryCaseInsensitiveOrderBy.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryChangeDb) hash ^= QueryChangeDb.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryGetRockstarsDynamic) hash ^= QueryGetRockstarsDynamic.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryOrRockstarsFields) hash ^= QueryOrRockstarsFields.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryUnknownRockstars) hash ^= QueryUnknownRockstars.GetHashCode();
       hash ^= (int) subtypeCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -8442,17 +13522,77 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstars) {
+        output.WriteRawTag(82);
+        output.WriteMessage(QueryRockstars);
+      }
       if (subtypeCase_ == SubtypeOneofCase.QueryChangeConnectionInfo) {
         output.WriteRawTag(186, 230, 255, 185, 1);
         output.WriteMessage(QueryChangeConnectionInfo);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryFieldRockstarsDynamic) {
+        output.WriteRawTag(194, 201, 173, 135, 2);
+        output.WriteMessage(QueryFieldRockstarsDynamic);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryFieldRockstars) {
+        output.WriteRawTag(130, 238, 173, 174, 3);
+        output.WriteMessage(QueryFieldRockstars);
       }
       if (subtypeCase_ == SubtypeOneofCase.QueryOverridedRockstars) {
         output.WriteRawTag(154, 131, 233, 201, 3);
         output.WriteMessage(QueryOverridedRockstars);
       }
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarsIFilter) {
+        output.WriteRawTag(130, 142, 140, 181, 4);
+        output.WriteMessage(QueryRockstarsIFilter);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryGetRockstars) {
+        output.WriteRawTag(138, 219, 227, 187, 6);
+        output.WriteMessage(QueryGetRockstars);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryOrRockstars) {
+        output.WriteRawTag(130, 132, 196, 206, 6);
+        output.WriteMessage(QueryOrRockstars);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarsFilter) {
+        output.WriteRawTag(162, 148, 247, 230, 7);
+        output.WriteMessage(QueryRockstarsFilter);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarsConventions) {
+        output.WriteRawTag(226, 240, 181, 175, 9);
+        output.WriteMessage(QueryRockstarsConventions);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryAdhocRockstars) {
+        output.WriteRawTag(146, 150, 230, 223, 9);
+        output.WriteMessage(QueryAdhocRockstars);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryFieldsImplicitConventions) {
+        output.WriteRawTag(186, 187, 215, 204, 10);
+        output.WriteMessage(QueryFieldsImplicitConventions);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarFilters) {
+        output.WriteRawTag(210, 229, 156, 149, 12);
+        output.WriteMessage(QueryRockstarFilters);
+      }
       if (subtypeCase_ == SubtypeOneofCase.QueryCaseInsensitiveOrderBy) {
         output.WriteRawTag(218, 211, 251, 216, 12);
         output.WriteMessage(QueryCaseInsensitiveOrderBy);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryChangeDb) {
+        output.WriteRawTag(162, 247, 165, 197, 13);
+        output.WriteMessage(QueryChangeDb);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryGetRockstarsDynamic) {
+        output.WriteRawTag(234, 193, 165, 197, 14);
+        output.WriteMessage(QueryGetRockstarsDynamic);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryOrRockstarsFields) {
+        output.WriteRawTag(170, 198, 175, 219, 15);
+        output.WriteMessage(QueryOrRockstarsFields);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryUnknownRockstars) {
+        output.WriteRawTag(242, 135, 232, 220, 15);
+        output.WriteMessage(QueryUnknownRockstars);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -8462,14 +13602,59 @@ namespace ServiceStack.Extensions.Tests.Protoc {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstars) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(QueryRockstars);
+      }
       if (subtypeCase_ == SubtypeOneofCase.QueryChangeConnectionInfo) {
         size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryChangeConnectionInfo);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryFieldRockstarsDynamic) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryFieldRockstarsDynamic);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryFieldRockstars) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryFieldRockstars);
       }
       if (subtypeCase_ == SubtypeOneofCase.QueryOverridedRockstars) {
         size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryOverridedRockstars);
       }
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarsIFilter) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryRockstarsIFilter);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryGetRockstars) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryGetRockstars);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryOrRockstars) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryOrRockstars);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarsFilter) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryRockstarsFilter);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarsConventions) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryRockstarsConventions);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryAdhocRockstars) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryAdhocRockstars);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryFieldsImplicitConventions) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryFieldsImplicitConventions);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarFilters) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryRockstarFilters);
+      }
       if (subtypeCase_ == SubtypeOneofCase.QueryCaseInsensitiveOrderBy) {
         size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryCaseInsensitiveOrderBy);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryChangeDb) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryChangeDb);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryGetRockstarsDynamic) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryGetRockstarsDynamic);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryOrRockstarsFields) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryOrRockstarsFields);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryUnknownRockstars) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryUnknownRockstars);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -8483,11 +13668,29 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         return;
       }
       switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryRockstars:
+          if (QueryRockstars == null) {
+            QueryRockstars = new global::ServiceStack.Extensions.Tests.Protoc.QueryRockstars();
+          }
+          QueryRockstars.MergeFrom(other.QueryRockstars);
+          break;
         case SubtypeOneofCase.QueryChangeConnectionInfo:
           if (QueryChangeConnectionInfo == null) {
             QueryChangeConnectionInfo = new global::ServiceStack.Extensions.Tests.Protoc.QueryChangeConnectionInfo();
           }
           QueryChangeConnectionInfo.MergeFrom(other.QueryChangeConnectionInfo);
+          break;
+        case SubtypeOneofCase.QueryFieldRockstarsDynamic:
+          if (QueryFieldRockstarsDynamic == null) {
+            QueryFieldRockstarsDynamic = new global::ServiceStack.Extensions.Tests.Protoc.QueryFieldRockstarsDynamic();
+          }
+          QueryFieldRockstarsDynamic.MergeFrom(other.QueryFieldRockstarsDynamic);
+          break;
+        case SubtypeOneofCase.QueryFieldRockstars:
+          if (QueryFieldRockstars == null) {
+            QueryFieldRockstars = new global::ServiceStack.Extensions.Tests.Protoc.QueryFieldRockstars();
+          }
+          QueryFieldRockstars.MergeFrom(other.QueryFieldRockstars);
           break;
         case SubtypeOneofCase.QueryOverridedRockstars:
           if (QueryOverridedRockstars == null) {
@@ -8495,11 +13698,83 @@ namespace ServiceStack.Extensions.Tests.Protoc {
           }
           QueryOverridedRockstars.MergeFrom(other.QueryOverridedRockstars);
           break;
+        case SubtypeOneofCase.QueryRockstarsIFilter:
+          if (QueryRockstarsIFilter == null) {
+            QueryRockstarsIFilter = new global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsIFilter();
+          }
+          QueryRockstarsIFilter.MergeFrom(other.QueryRockstarsIFilter);
+          break;
+        case SubtypeOneofCase.QueryGetRockstars:
+          if (QueryGetRockstars == null) {
+            QueryGetRockstars = new global::ServiceStack.Extensions.Tests.Protoc.QueryGetRockstars();
+          }
+          QueryGetRockstars.MergeFrom(other.QueryGetRockstars);
+          break;
+        case SubtypeOneofCase.QueryOrRockstars:
+          if (QueryOrRockstars == null) {
+            QueryOrRockstars = new global::ServiceStack.Extensions.Tests.Protoc.QueryOrRockstars();
+          }
+          QueryOrRockstars.MergeFrom(other.QueryOrRockstars);
+          break;
+        case SubtypeOneofCase.QueryRockstarsFilter:
+          if (QueryRockstarsFilter == null) {
+            QueryRockstarsFilter = new global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsFilter();
+          }
+          QueryRockstarsFilter.MergeFrom(other.QueryRockstarsFilter);
+          break;
+        case SubtypeOneofCase.QueryRockstarsConventions:
+          if (QueryRockstarsConventions == null) {
+            QueryRockstarsConventions = new global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsConventions();
+          }
+          QueryRockstarsConventions.MergeFrom(other.QueryRockstarsConventions);
+          break;
+        case SubtypeOneofCase.QueryAdhocRockstars:
+          if (QueryAdhocRockstars == null) {
+            QueryAdhocRockstars = new global::ServiceStack.Extensions.Tests.Protoc.QueryAdhocRockstars();
+          }
+          QueryAdhocRockstars.MergeFrom(other.QueryAdhocRockstars);
+          break;
+        case SubtypeOneofCase.QueryFieldsImplicitConventions:
+          if (QueryFieldsImplicitConventions == null) {
+            QueryFieldsImplicitConventions = new global::ServiceStack.Extensions.Tests.Protoc.QueryFieldsImplicitConventions();
+          }
+          QueryFieldsImplicitConventions.MergeFrom(other.QueryFieldsImplicitConventions);
+          break;
+        case SubtypeOneofCase.QueryRockstarFilters:
+          if (QueryRockstarFilters == null) {
+            QueryRockstarFilters = new global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarFilters();
+          }
+          QueryRockstarFilters.MergeFrom(other.QueryRockstarFilters);
+          break;
         case SubtypeOneofCase.QueryCaseInsensitiveOrderBy:
           if (QueryCaseInsensitiveOrderBy == null) {
             QueryCaseInsensitiveOrderBy = new global::ServiceStack.Extensions.Tests.Protoc.QueryCaseInsensitiveOrderBy();
           }
           QueryCaseInsensitiveOrderBy.MergeFrom(other.QueryCaseInsensitiveOrderBy);
+          break;
+        case SubtypeOneofCase.QueryChangeDb:
+          if (QueryChangeDb == null) {
+            QueryChangeDb = new global::ServiceStack.Extensions.Tests.Protoc.QueryChangeDb();
+          }
+          QueryChangeDb.MergeFrom(other.QueryChangeDb);
+          break;
+        case SubtypeOneofCase.QueryGetRockstarsDynamic:
+          if (QueryGetRockstarsDynamic == null) {
+            QueryGetRockstarsDynamic = new global::ServiceStack.Extensions.Tests.Protoc.QueryGetRockstarsDynamic();
+          }
+          QueryGetRockstarsDynamic.MergeFrom(other.QueryGetRockstarsDynamic);
+          break;
+        case SubtypeOneofCase.QueryOrRockstarsFields:
+          if (QueryOrRockstarsFields == null) {
+            QueryOrRockstarsFields = new global::ServiceStack.Extensions.Tests.Protoc.QueryOrRockstarsFields();
+          }
+          QueryOrRockstarsFields.MergeFrom(other.QueryOrRockstarsFields);
+          break;
+        case SubtypeOneofCase.QueryUnknownRockstars:
+          if (QueryUnknownRockstars == null) {
+            QueryUnknownRockstars = new global::ServiceStack.Extensions.Tests.Protoc.QueryUnknownRockstars();
+          }
+          QueryUnknownRockstars.MergeFrom(other.QueryUnknownRockstars);
           break;
       }
 
@@ -8514,6 +13789,15 @@ namespace ServiceStack.Extensions.Tests.Protoc {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
+          case 82: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryRockstars subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryRockstars();
+            if (subtypeCase_ == SubtypeOneofCase.QueryRockstars) {
+              subBuilder.MergeFrom(QueryRockstars);
+            }
+            input.ReadMessage(subBuilder);
+            QueryRockstars = subBuilder;
+            break;
+          }
           case 390067002: {
             global::ServiceStack.Extensions.Tests.Protoc.QueryChangeConnectionInfo subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryChangeConnectionInfo();
             if (subtypeCase_ == SubtypeOneofCase.QueryChangeConnectionInfo) {
@@ -8521,6 +13805,24 @@ namespace ServiceStack.Extensions.Tests.Protoc {
             }
             input.ReadMessage(subBuilder);
             QueryChangeConnectionInfo = subBuilder;
+            break;
+          }
+          case 552297666: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryFieldRockstarsDynamic subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryFieldRockstarsDynamic();
+            if (subtypeCase_ == SubtypeOneofCase.QueryFieldRockstarsDynamic) {
+              subBuilder.MergeFrom(QueryFieldRockstarsDynamic);
+            }
+            input.ReadMessage(subBuilder);
+            QueryFieldRockstarsDynamic = subBuilder;
+            break;
+          }
+          case 902526722: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryFieldRockstars subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryFieldRockstars();
+            if (subtypeCase_ == SubtypeOneofCase.QueryFieldRockstars) {
+              subBuilder.MergeFrom(QueryFieldRockstars);
+            }
+            input.ReadMessage(subBuilder);
+            QueryFieldRockstars = subBuilder;
             break;
           }
           case 960119194: {
@@ -8532,6 +13834,78 @@ namespace ServiceStack.Extensions.Tests.Protoc {
             QueryOverridedRockstars = subBuilder;
             break;
           }
+          case 1185089282: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsIFilter subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsIFilter();
+            if (subtypeCase_ == SubtypeOneofCase.QueryRockstarsIFilter) {
+              subBuilder.MergeFrom(QueryRockstarsIFilter);
+            }
+            input.ReadMessage(subBuilder);
+            QueryRockstarsIFilter = subBuilder;
+            break;
+          }
+          case 1735978378: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryGetRockstars subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryGetRockstars();
+            if (subtypeCase_ == SubtypeOneofCase.QueryGetRockstars) {
+              subBuilder.MergeFrom(QueryGetRockstars);
+            }
+            input.ReadMessage(subBuilder);
+            QueryGetRockstars = subBuilder;
+            break;
+          }
+          case 1775305218: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryOrRockstars subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryOrRockstars();
+            if (subtypeCase_ == SubtypeOneofCase.QueryOrRockstars) {
+              subBuilder.MergeFrom(QueryOrRockstars);
+            }
+            input.ReadMessage(subBuilder);
+            QueryOrRockstars = subBuilder;
+            break;
+          }
+          case 2094909986: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsFilter subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsFilter();
+            if (subtypeCase_ == SubtypeOneofCase.QueryRockstarsFilter) {
+              subBuilder.MergeFrom(QueryRockstarsFilter);
+            }
+            input.ReadMessage(subBuilder);
+            QueryRockstarsFilter = subBuilder;
+            break;
+          }
+          case 2515368034: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsConventions subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsConventions();
+            if (subtypeCase_ == SubtypeOneofCase.QueryRockstarsConventions) {
+              subBuilder.MergeFrom(QueryRockstarsConventions);
+            }
+            input.ReadMessage(subBuilder);
+            QueryRockstarsConventions = subBuilder;
+            break;
+          }
+          case 2616822546: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryAdhocRockstars subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryAdhocRockstars();
+            if (subtypeCase_ == SubtypeOneofCase.QueryAdhocRockstars) {
+              subBuilder.MergeFrom(QueryAdhocRockstars);
+            }
+            input.ReadMessage(subBuilder);
+            QueryAdhocRockstars = subBuilder;
+            break;
+          }
+          case 2845171130: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryFieldsImplicitConventions subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryFieldsImplicitConventions();
+            if (subtypeCase_ == SubtypeOneofCase.QueryFieldsImplicitConventions) {
+              subBuilder.MergeFrom(QueryFieldsImplicitConventions);
+            }
+            input.ReadMessage(subBuilder);
+            QueryFieldsImplicitConventions = subBuilder;
+            break;
+          }
+          case 3265737426: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarFilters subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarFilters();
+            if (subtypeCase_ == SubtypeOneofCase.QueryRockstarFilters) {
+              subBuilder.MergeFrom(QueryRockstarFilters);
+            }
+            input.ReadMessage(subBuilder);
+            QueryRockstarFilters = subBuilder;
+            break;
+          }
           case 3407800794: {
             global::ServiceStack.Extensions.Tests.Protoc.QueryCaseInsensitiveOrderBy subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryCaseInsensitiveOrderBy();
             if (subtypeCase_ == SubtypeOneofCase.QueryCaseInsensitiveOrderBy) {
@@ -8539,6 +13913,207 @@ namespace ServiceStack.Extensions.Tests.Protoc {
             }
             input.ReadMessage(subBuilder);
             QueryCaseInsensitiveOrderBy = subBuilder;
+            break;
+          }
+          case 3634985890: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryChangeDb subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryChangeDb();
+            if (subtypeCase_ == SubtypeOneofCase.QueryChangeDb) {
+              subBuilder.MergeFrom(QueryChangeDb);
+            }
+            input.ReadMessage(subBuilder);
+            QueryChangeDb = subBuilder;
+            break;
+          }
+          case 3903414506: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryGetRockstarsDynamic subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryGetRockstarsDynamic();
+            if (subtypeCase_ == SubtypeOneofCase.QueryGetRockstarsDynamic) {
+              subBuilder.MergeFrom(QueryGetRockstarsDynamic);
+            }
+            input.ReadMessage(subBuilder);
+            QueryGetRockstarsDynamic = subBuilder;
+            break;
+          }
+          case 4218151722: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryOrRockstarsFields subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryOrRockstarsFields();
+            if (subtypeCase_ == SubtypeOneofCase.QueryOrRockstarsFields) {
+              subBuilder.MergeFrom(QueryOrRockstarsFields);
+            }
+            input.ReadMessage(subBuilder);
+            QueryOrRockstarsFields = subBuilder;
+            break;
+          }
+          case 4221174770: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryUnknownRockstars subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryUnknownRockstars();
+            if (subtypeCase_ == SubtypeOneofCase.QueryUnknownRockstars) {
+              subBuilder.MergeFrom(QueryUnknownRockstars);
+            }
+            input.ReadMessage(subBuilder);
+            QueryUnknownRockstars = subBuilder;
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryDb_RockstarAlbum : pb::IMessage<QueryDb_RockstarAlbum> {
+    private static readonly pb::MessageParser<QueryDb_RockstarAlbum> _parser = new pb::MessageParser<QueryDb_RockstarAlbum>(() => new QueryDb_RockstarAlbum());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryDb_RockstarAlbum> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[63]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_RockstarAlbum() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_RockstarAlbum(QueryDb_RockstarAlbum other) : this() {
+      switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryRockstarAlbums:
+          QueryRockstarAlbums = other.QueryRockstarAlbums.Clone();
+          break;
+      }
+
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_RockstarAlbum Clone() {
+      return new QueryDb_RockstarAlbum(this);
+    }
+
+    /// <summary>Field number for the "QueryRockstarAlbums" field.</summary>
+    public const int QueryRockstarAlbumsFieldNumber = 497413094;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbums QueryRockstarAlbums {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryRockstarAlbums ? (global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbums) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryRockstarAlbums;
+      }
+    }
+
+    private object subtype_;
+    /// <summary>Enum of possible cases for the "subtype" oneof.</summary>
+    public enum SubtypeOneofCase {
+      None = 0,
+      QueryRockstarAlbums = 497413094,
+    }
+    private SubtypeOneofCase subtypeCase_ = SubtypeOneofCase.None;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public SubtypeOneofCase SubtypeCase {
+      get { return subtypeCase_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSubtype() {
+      subtypeCase_ = SubtypeOneofCase.None;
+      subtype_ = null;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryDb_RockstarAlbum);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryDb_RockstarAlbum other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(QueryRockstarAlbums, other.QueryRockstarAlbums)) return false;
+      if (SubtypeCase != other.SubtypeCase) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarAlbums) hash ^= QueryRockstarAlbums.GetHashCode();
+      hash ^= (int) subtypeCase_;
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarAlbums) {
+        output.WriteRawTag(178, 190, 189, 233, 14);
+        output.WriteMessage(QueryRockstarAlbums);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarAlbums) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryRockstarAlbums);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryDb_RockstarAlbum other) {
+      if (other == null) {
+        return;
+      }
+      switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryRockstarAlbums:
+          if (QueryRockstarAlbums == null) {
+            QueryRockstarAlbums = new global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbums();
+          }
+          QueryRockstarAlbums.MergeFrom(other.QueryRockstarAlbums);
+          break;
+      }
+
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 3979304754: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbums subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbums();
+            if (subtypeCase_ == SubtypeOneofCase.QueryRockstarAlbums) {
+              subBuilder.MergeFrom(QueryRockstarAlbums);
+            }
+            input.ReadMessage(subBuilder);
+            QueryRockstarAlbums = subBuilder;
             break;
           }
         }
@@ -8555,7 +14130,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[42]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[64]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8573,6 +14148,9 @@ namespace ServiceStack.Extensions.Tests.Protoc {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public QueryDb_RockstarReference(QueryDb_RockstarReference other) : this() {
       switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryRockstarsWithReferences:
+          QueryRockstarsWithReferences = other.QueryRockstarsWithReferences.Clone();
+          break;
         case SubtypeOneofCase.QueryCustomRockstarsReferences:
           QueryCustomRockstarsReferences = other.QueryCustomRockstarsReferences.Clone();
           break;
@@ -8584,6 +14162,17 @@ namespace ServiceStack.Extensions.Tests.Protoc {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public QueryDb_RockstarReference Clone() {
       return new QueryDb_RockstarReference(this);
+    }
+
+    /// <summary>Field number for the "QueryRockstarsWithReferences" field.</summary>
+    public const int QueryRockstarsWithReferencesFieldNumber = 203511396;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsWithReferences QueryRockstarsWithReferences {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryRockstarsWithReferences ? (global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsWithReferences) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryRockstarsWithReferences;
+      }
     }
 
     /// <summary>Field number for the "QueryCustomRockstarsReferences" field.</summary>
@@ -8601,6 +14190,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
     /// <summary>Enum of possible cases for the "subtype" oneof.</summary>
     public enum SubtypeOneofCase {
       None = 0,
+      QueryRockstarsWithReferences = 203511396,
       QueryCustomRockstarsReferences = 376893524,
     }
     private SubtypeOneofCase subtypeCase_ = SubtypeOneofCase.None;
@@ -8628,6 +14218,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       if (ReferenceEquals(other, this)) {
         return true;
       }
+      if (!object.Equals(QueryRockstarsWithReferences, other.QueryRockstarsWithReferences)) return false;
       if (!object.Equals(QueryCustomRockstarsReferences, other.QueryCustomRockstarsReferences)) return false;
       if (SubtypeCase != other.SubtypeCase) return false;
       return Equals(_unknownFields, other._unknownFields);
@@ -8636,6 +14227,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarsWithReferences) hash ^= QueryRockstarsWithReferences.GetHashCode();
       if (subtypeCase_ == SubtypeOneofCase.QueryCustomRockstarsReferences) hash ^= QueryCustomRockstarsReferences.GetHashCode();
       hash ^= (int) subtypeCase_;
       if (_unknownFields != null) {
@@ -8651,6 +14243,10 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarsWithReferences) {
+        output.WriteRawTag(162, 230, 170, 136, 6);
+        output.WriteMessage(QueryRockstarsWithReferences);
+      }
       if (subtypeCase_ == SubtypeOneofCase.QueryCustomRockstarsReferences) {
         output.WriteRawTag(162, 133, 222, 157, 11);
         output.WriteMessage(QueryCustomRockstarsReferences);
@@ -8663,6 +14259,9 @@ namespace ServiceStack.Extensions.Tests.Protoc {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarsWithReferences) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryRockstarsWithReferences);
+      }
       if (subtypeCase_ == SubtypeOneofCase.QueryCustomRockstarsReferences) {
         size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryCustomRockstarsReferences);
       }
@@ -8678,6 +14277,12 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         return;
       }
       switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryRockstarsWithReferences:
+          if (QueryRockstarsWithReferences == null) {
+            QueryRockstarsWithReferences = new global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsWithReferences();
+          }
+          QueryRockstarsWithReferences.MergeFrom(other.QueryRockstarsWithReferences);
+          break;
         case SubtypeOneofCase.QueryCustomRockstarsReferences:
           if (QueryCustomRockstarsReferences == null) {
             QueryCustomRockstarsReferences = new global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstarsReferences();
@@ -8697,6 +14302,15 @@ namespace ServiceStack.Extensions.Tests.Protoc {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
+          case 1628091170: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsWithReferences subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsWithReferences();
+            if (subtypeCase_ == SubtypeOneofCase.QueryRockstarsWithReferences) {
+              subBuilder.MergeFrom(QueryRockstarsWithReferences);
+            }
+            input.ReadMessage(subBuilder);
+            QueryRockstarsWithReferences = subBuilder;
+            break;
+          }
           case 3015148194: {
             global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstarsReferences subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstarsReferences();
             if (subtypeCase_ == SubtypeOneofCase.QueryCustomRockstarsReferences) {
@@ -8720,7 +14334,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[43]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[65]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8738,11 +14352,29 @@ namespace ServiceStack.Extensions.Tests.Protoc {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public QueryDb_Rockstar_CustomRockstar(QueryDb_Rockstar_CustomRockstar other) : this() {
       switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryCustomRockstars:
+          QueryCustomRockstars = other.QueryCustomRockstars.Clone();
+          break;
+        case SubtypeOneofCase.QueryJoinedRockstarAlbums:
+          QueryJoinedRockstarAlbums = other.QueryJoinedRockstarAlbums.Clone();
+          break;
+        case SubtypeOneofCase.QueryCustomRockstarsFilter:
+          QueryCustomRockstarsFilter = other.QueryCustomRockstarsFilter.Clone();
+          break;
         case SubtypeOneofCase.QueryRockstarAlbumsCustomLeftJoin:
           QueryRockstarAlbumsCustomLeftJoin = other.QueryRockstarAlbumsCustomLeftJoin.Clone();
           break;
+        case SubtypeOneofCase.QueryRockstarAlbumsImplicit:
+          QueryRockstarAlbumsImplicit = other.QueryRockstarAlbumsImplicit.Clone();
+          break;
         case SubtypeOneofCase.QueryOverridedCustomRockstars:
           QueryOverridedCustomRockstars = other.QueryOverridedCustomRockstars.Clone();
+          break;
+        case SubtypeOneofCase.QueryRockstarAlbumsLeftJoin:
+          QueryRockstarAlbumsLeftJoin = other.QueryRockstarAlbumsLeftJoin.Clone();
+          break;
+        case SubtypeOneofCase.QueryMultiJoinRockstar:
+          QueryMultiJoinRockstar = other.QueryMultiJoinRockstar.Clone();
           break;
       }
 
@@ -8754,6 +14386,39 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       return new QueryDb_Rockstar_CustomRockstar(this);
     }
 
+    /// <summary>Field number for the "QueryCustomRockstars" field.</summary>
+    public const int QueryCustomRockstarsFieldNumber = 24502909;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstars QueryCustomRockstars {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryCustomRockstars ? (global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstars) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryCustomRockstars;
+      }
+    }
+
+    /// <summary>Field number for the "QueryJoinedRockstarAlbums" field.</summary>
+    public const int QueryJoinedRockstarAlbumsFieldNumber = 149576717;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryJoinedRockstarAlbums QueryJoinedRockstarAlbums {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryJoinedRockstarAlbums ? (global::ServiceStack.Extensions.Tests.Protoc.QueryJoinedRockstarAlbums) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryJoinedRockstarAlbums;
+      }
+    }
+
+    /// <summary>Field number for the "QueryCustomRockstarsFilter" field.</summary>
+    public const int QueryCustomRockstarsFilterFieldNumber = 227679611;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstarsFilter QueryCustomRockstarsFilter {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryCustomRockstarsFilter ? (global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstarsFilter) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryCustomRockstarsFilter;
+      }
+    }
+
     /// <summary>Field number for the "QueryRockstarAlbumsCustomLeftJoin" field.</summary>
     public const int QueryRockstarAlbumsCustomLeftJoinFieldNumber = 396185863;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8762,6 +14427,17 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       set {
         subtype_ = value;
         subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryRockstarAlbumsCustomLeftJoin;
+      }
+    }
+
+    /// <summary>Field number for the "QueryRockstarAlbumsImplicit" field.</summary>
+    public const int QueryRockstarAlbumsImplicitFieldNumber = 415628851;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbumsImplicit QueryRockstarAlbumsImplicit {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryRockstarAlbumsImplicit ? (global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbumsImplicit) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryRockstarAlbumsImplicit;
       }
     }
 
@@ -8776,12 +14452,40 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       }
     }
 
+    /// <summary>Field number for the "QueryRockstarAlbumsLeftJoin" field.</summary>
+    public const int QueryRockstarAlbumsLeftJoinFieldNumber = 461151229;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbumsLeftJoin QueryRockstarAlbumsLeftJoin {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryRockstarAlbumsLeftJoin ? (global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbumsLeftJoin) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryRockstarAlbumsLeftJoin;
+      }
+    }
+
+    /// <summary>Field number for the "QueryMultiJoinRockstar" field.</summary>
+    public const int QueryMultiJoinRockstarFieldNumber = 467458623;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryMultiJoinRockstar QueryMultiJoinRockstar {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryMultiJoinRockstar ? (global::ServiceStack.Extensions.Tests.Protoc.QueryMultiJoinRockstar) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryMultiJoinRockstar;
+      }
+    }
+
     private object subtype_;
     /// <summary>Enum of possible cases for the "subtype" oneof.</summary>
     public enum SubtypeOneofCase {
       None = 0,
+      QueryCustomRockstars = 24502909,
+      QueryJoinedRockstarAlbums = 149576717,
+      QueryCustomRockstarsFilter = 227679611,
       QueryRockstarAlbumsCustomLeftJoin = 396185863,
+      QueryRockstarAlbumsImplicit = 415628851,
       QueryOverridedCustomRockstars = 442785347,
+      QueryRockstarAlbumsLeftJoin = 461151229,
+      QueryMultiJoinRockstar = 467458623,
     }
     private SubtypeOneofCase subtypeCase_ = SubtypeOneofCase.None;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8808,8 +14512,14 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       if (ReferenceEquals(other, this)) {
         return true;
       }
+      if (!object.Equals(QueryCustomRockstars, other.QueryCustomRockstars)) return false;
+      if (!object.Equals(QueryJoinedRockstarAlbums, other.QueryJoinedRockstarAlbums)) return false;
+      if (!object.Equals(QueryCustomRockstarsFilter, other.QueryCustomRockstarsFilter)) return false;
       if (!object.Equals(QueryRockstarAlbumsCustomLeftJoin, other.QueryRockstarAlbumsCustomLeftJoin)) return false;
+      if (!object.Equals(QueryRockstarAlbumsImplicit, other.QueryRockstarAlbumsImplicit)) return false;
       if (!object.Equals(QueryOverridedCustomRockstars, other.QueryOverridedCustomRockstars)) return false;
+      if (!object.Equals(QueryRockstarAlbumsLeftJoin, other.QueryRockstarAlbumsLeftJoin)) return false;
+      if (!object.Equals(QueryMultiJoinRockstar, other.QueryMultiJoinRockstar)) return false;
       if (SubtypeCase != other.SubtypeCase) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -8817,8 +14527,14 @@ namespace ServiceStack.Extensions.Tests.Protoc {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
+      if (subtypeCase_ == SubtypeOneofCase.QueryCustomRockstars) hash ^= QueryCustomRockstars.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryJoinedRockstarAlbums) hash ^= QueryJoinedRockstarAlbums.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryCustomRockstarsFilter) hash ^= QueryCustomRockstarsFilter.GetHashCode();
       if (subtypeCase_ == SubtypeOneofCase.QueryRockstarAlbumsCustomLeftJoin) hash ^= QueryRockstarAlbumsCustomLeftJoin.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarAlbumsImplicit) hash ^= QueryRockstarAlbumsImplicit.GetHashCode();
       if (subtypeCase_ == SubtypeOneofCase.QueryOverridedCustomRockstars) hash ^= QueryOverridedCustomRockstars.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarAlbumsLeftJoin) hash ^= QueryRockstarAlbumsLeftJoin.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.QueryMultiJoinRockstar) hash ^= QueryMultiJoinRockstar.GetHashCode();
       hash ^= (int) subtypeCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -8833,13 +14549,37 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      if (subtypeCase_ == SubtypeOneofCase.QueryCustomRockstars) {
+        output.WriteRawTag(234, 167, 188, 93);
+        output.WriteMessage(QueryCustomRockstars);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryJoinedRockstarAlbums) {
+        output.WriteRawTag(234, 192, 203, 186, 4);
+        output.WriteMessage(QueryJoinedRockstarAlbums);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryCustomRockstarsFilter) {
+        output.WriteRawTag(218, 215, 195, 228, 6);
+        output.WriteMessage(QueryCustomRockstarsFilter);
+      }
       if (subtypeCase_ == SubtypeOneofCase.QueryRockstarAlbumsCustomLeftJoin) {
         output.WriteRawTag(186, 144, 170, 231, 11);
         output.WriteMessage(QueryRockstarAlbumsCustomLeftJoin);
       }
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarAlbumsImplicit) {
+        output.WriteRawTag(154, 227, 191, 177, 12);
+        output.WriteMessage(QueryRockstarAlbumsImplicit);
+      }
       if (subtypeCase_ == SubtypeOneofCase.QueryOverridedCustomRockstars) {
         output.WriteRawTag(154, 228, 139, 153, 13);
         output.WriteMessage(QueryOverridedCustomRockstars);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarAlbumsLeftJoin) {
+        output.WriteRawTag(234, 191, 147, 223, 13);
+        output.WriteMessage(QueryRockstarAlbumsLeftJoin);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryMultiJoinRockstar) {
+        output.WriteRawTag(250, 163, 155, 247, 13);
+        output.WriteMessage(QueryMultiJoinRockstar);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -8849,11 +14589,29 @@ namespace ServiceStack.Extensions.Tests.Protoc {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
+      if (subtypeCase_ == SubtypeOneofCase.QueryCustomRockstars) {
+        size += 4 + pb::CodedOutputStream.ComputeMessageSize(QueryCustomRockstars);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryJoinedRockstarAlbums) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryJoinedRockstarAlbums);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryCustomRockstarsFilter) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryCustomRockstarsFilter);
+      }
       if (subtypeCase_ == SubtypeOneofCase.QueryRockstarAlbumsCustomLeftJoin) {
         size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryRockstarAlbumsCustomLeftJoin);
       }
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarAlbumsImplicit) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryRockstarAlbumsImplicit);
+      }
       if (subtypeCase_ == SubtypeOneofCase.QueryOverridedCustomRockstars) {
         size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryOverridedCustomRockstars);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarAlbumsLeftJoin) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryRockstarAlbumsLeftJoin);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.QueryMultiJoinRockstar) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryMultiJoinRockstar);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -8867,17 +14625,53 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         return;
       }
       switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryCustomRockstars:
+          if (QueryCustomRockstars == null) {
+            QueryCustomRockstars = new global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstars();
+          }
+          QueryCustomRockstars.MergeFrom(other.QueryCustomRockstars);
+          break;
+        case SubtypeOneofCase.QueryJoinedRockstarAlbums:
+          if (QueryJoinedRockstarAlbums == null) {
+            QueryJoinedRockstarAlbums = new global::ServiceStack.Extensions.Tests.Protoc.QueryJoinedRockstarAlbums();
+          }
+          QueryJoinedRockstarAlbums.MergeFrom(other.QueryJoinedRockstarAlbums);
+          break;
+        case SubtypeOneofCase.QueryCustomRockstarsFilter:
+          if (QueryCustomRockstarsFilter == null) {
+            QueryCustomRockstarsFilter = new global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstarsFilter();
+          }
+          QueryCustomRockstarsFilter.MergeFrom(other.QueryCustomRockstarsFilter);
+          break;
         case SubtypeOneofCase.QueryRockstarAlbumsCustomLeftJoin:
           if (QueryRockstarAlbumsCustomLeftJoin == null) {
             QueryRockstarAlbumsCustomLeftJoin = new global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbumsCustomLeftJoin();
           }
           QueryRockstarAlbumsCustomLeftJoin.MergeFrom(other.QueryRockstarAlbumsCustomLeftJoin);
           break;
+        case SubtypeOneofCase.QueryRockstarAlbumsImplicit:
+          if (QueryRockstarAlbumsImplicit == null) {
+            QueryRockstarAlbumsImplicit = new global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbumsImplicit();
+          }
+          QueryRockstarAlbumsImplicit.MergeFrom(other.QueryRockstarAlbumsImplicit);
+          break;
         case SubtypeOneofCase.QueryOverridedCustomRockstars:
           if (QueryOverridedCustomRockstars == null) {
             QueryOverridedCustomRockstars = new global::ServiceStack.Extensions.Tests.Protoc.QueryOverridedCustomRockstars();
           }
           QueryOverridedCustomRockstars.MergeFrom(other.QueryOverridedCustomRockstars);
+          break;
+        case SubtypeOneofCase.QueryRockstarAlbumsLeftJoin:
+          if (QueryRockstarAlbumsLeftJoin == null) {
+            QueryRockstarAlbumsLeftJoin = new global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbumsLeftJoin();
+          }
+          QueryRockstarAlbumsLeftJoin.MergeFrom(other.QueryRockstarAlbumsLeftJoin);
+          break;
+        case SubtypeOneofCase.QueryMultiJoinRockstar:
+          if (QueryMultiJoinRockstar == null) {
+            QueryMultiJoinRockstar = new global::ServiceStack.Extensions.Tests.Protoc.QueryMultiJoinRockstar();
+          }
+          QueryMultiJoinRockstar.MergeFrom(other.QueryMultiJoinRockstar);
           break;
       }
 
@@ -8892,6 +14686,33 @@ namespace ServiceStack.Extensions.Tests.Protoc {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
+          case 196023274: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstars subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstars();
+            if (subtypeCase_ == SubtypeOneofCase.QueryCustomRockstars) {
+              subBuilder.MergeFrom(QueryCustomRockstars);
+            }
+            input.ReadMessage(subBuilder);
+            QueryCustomRockstars = subBuilder;
+            break;
+          }
+          case 1196613738: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryJoinedRockstarAlbums subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryJoinedRockstarAlbums();
+            if (subtypeCase_ == SubtypeOneofCase.QueryJoinedRockstarAlbums) {
+              subBuilder.MergeFrom(QueryJoinedRockstarAlbums);
+            }
+            input.ReadMessage(subBuilder);
+            QueryJoinedRockstarAlbums = subBuilder;
+            break;
+          }
+          case 1821436890: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstarsFilter subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstarsFilter();
+            if (subtypeCase_ == SubtypeOneofCase.QueryCustomRockstarsFilter) {
+              subBuilder.MergeFrom(QueryCustomRockstarsFilter);
+            }
+            input.ReadMessage(subBuilder);
+            QueryCustomRockstarsFilter = subBuilder;
+            break;
+          }
           case 3169486906: {
             global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbumsCustomLeftJoin subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbumsCustomLeftJoin();
             if (subtypeCase_ == SubtypeOneofCase.QueryRockstarAlbumsCustomLeftJoin) {
@@ -8901,6 +14722,15 @@ namespace ServiceStack.Extensions.Tests.Protoc {
             QueryRockstarAlbumsCustomLeftJoin = subBuilder;
             break;
           }
+          case 3325030810: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbumsImplicit subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbumsImplicit();
+            if (subtypeCase_ == SubtypeOneofCase.QueryRockstarAlbumsImplicit) {
+              subBuilder.MergeFrom(QueryRockstarAlbumsImplicit);
+            }
+            input.ReadMessage(subBuilder);
+            QueryRockstarAlbumsImplicit = subBuilder;
+            break;
+          }
           case 3542282778: {
             global::ServiceStack.Extensions.Tests.Protoc.QueryOverridedCustomRockstars subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryOverridedCustomRockstars();
             if (subtypeCase_ == SubtypeOneofCase.QueryOverridedCustomRockstars) {
@@ -8908,6 +14738,2660 @@ namespace ServiceStack.Extensions.Tests.Protoc {
             }
             input.ReadMessage(subBuilder);
             QueryOverridedCustomRockstars = subBuilder;
+            break;
+          }
+          case 3689209834: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbumsLeftJoin subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlbumsLeftJoin();
+            if (subtypeCase_ == SubtypeOneofCase.QueryRockstarAlbumsLeftJoin) {
+              subBuilder.MergeFrom(QueryRockstarAlbumsLeftJoin);
+            }
+            input.ReadMessage(subBuilder);
+            QueryRockstarAlbumsLeftJoin = subBuilder;
+            break;
+          }
+          case 3739668986: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryMultiJoinRockstar subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryMultiJoinRockstar();
+            if (subtypeCase_ == SubtypeOneofCase.QueryMultiJoinRockstar) {
+              subBuilder.MergeFrom(QueryMultiJoinRockstar);
+            }
+            input.ReadMessage(subBuilder);
+            QueryMultiJoinRockstar = subBuilder;
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryDb_Rockstar_CustomRockstarSchema : pb::IMessage<QueryDb_Rockstar_CustomRockstarSchema> {
+    private static readonly pb::MessageParser<QueryDb_Rockstar_CustomRockstarSchema> _parser = new pb::MessageParser<QueryDb_Rockstar_CustomRockstarSchema>(() => new QueryDb_Rockstar_CustomRockstarSchema());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryDb_Rockstar_CustomRockstarSchema> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[66]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_Rockstar_CustomRockstarSchema() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_Rockstar_CustomRockstarSchema(QueryDb_Rockstar_CustomRockstarSchema other) : this() {
+      switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryCustomRockstarsSchema:
+          QueryCustomRockstarsSchema = other.QueryCustomRockstarsSchema.Clone();
+          break;
+      }
+
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_Rockstar_CustomRockstarSchema Clone() {
+      return new QueryDb_Rockstar_CustomRockstarSchema(this);
+    }
+
+    /// <summary>Field number for the "QueryCustomRockstarsSchema" field.</summary>
+    public const int QueryCustomRockstarsSchemaFieldNumber = 251457334;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstarsSchema QueryCustomRockstarsSchema {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryCustomRockstarsSchema ? (global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstarsSchema) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryCustomRockstarsSchema;
+      }
+    }
+
+    private object subtype_;
+    /// <summary>Enum of possible cases for the "subtype" oneof.</summary>
+    public enum SubtypeOneofCase {
+      None = 0,
+      QueryCustomRockstarsSchema = 251457334,
+    }
+    private SubtypeOneofCase subtypeCase_ = SubtypeOneofCase.None;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public SubtypeOneofCase SubtypeCase {
+      get { return subtypeCase_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSubtype() {
+      subtypeCase_ = SubtypeOneofCase.None;
+      subtype_ = null;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryDb_Rockstar_CustomRockstarSchema);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryDb_Rockstar_CustomRockstarSchema other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(QueryCustomRockstarsSchema, other.QueryCustomRockstarsSchema)) return false;
+      if (SubtypeCase != other.SubtypeCase) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (subtypeCase_ == SubtypeOneofCase.QueryCustomRockstarsSchema) hash ^= QueryCustomRockstarsSchema.GetHashCode();
+      hash ^= (int) subtypeCase_;
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (subtypeCase_ == SubtypeOneofCase.QueryCustomRockstarsSchema) {
+        output.WriteRawTag(178, 243, 157, 191, 7);
+        output.WriteMessage(QueryCustomRockstarsSchema);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (subtypeCase_ == SubtypeOneofCase.QueryCustomRockstarsSchema) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryCustomRockstarsSchema);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryDb_Rockstar_CustomRockstarSchema other) {
+      if (other == null) {
+        return;
+      }
+      switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryCustomRockstarsSchema:
+          if (QueryCustomRockstarsSchema == null) {
+            QueryCustomRockstarsSchema = new global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstarsSchema();
+          }
+          QueryCustomRockstarsSchema.MergeFrom(other.QueryCustomRockstarsSchema);
+          break;
+      }
+
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 2011658674: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstarsSchema subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryCustomRockstarsSchema();
+            if (subtypeCase_ == SubtypeOneofCase.QueryCustomRockstarsSchema) {
+              subBuilder.MergeFrom(QueryCustomRockstarsSchema);
+            }
+            input.ReadMessage(subBuilder);
+            QueryCustomRockstarsSchema = subBuilder;
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryDb_Rockstar_RockstarAlias : pb::IMessage<QueryDb_Rockstar_RockstarAlias> {
+    private static readonly pb::MessageParser<QueryDb_Rockstar_RockstarAlias> _parser = new pb::MessageParser<QueryDb_Rockstar_RockstarAlias>(() => new QueryDb_Rockstar_RockstarAlias());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryDb_Rockstar_RockstarAlias> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[67]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_Rockstar_RockstarAlias() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_Rockstar_RockstarAlias(QueryDb_Rockstar_RockstarAlias other) : this() {
+      switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryRockstarAlias:
+          QueryRockstarAlias = other.QueryRockstarAlias.Clone();
+          break;
+      }
+
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_Rockstar_RockstarAlias Clone() {
+      return new QueryDb_Rockstar_RockstarAlias(this);
+    }
+
+    /// <summary>Field number for the "QueryRockstarAlias" field.</summary>
+    public const int QueryRockstarAliasFieldNumber = 390089709;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlias QueryRockstarAlias {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryRockstarAlias ? (global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlias) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryRockstarAlias;
+      }
+    }
+
+    private object subtype_;
+    /// <summary>Enum of possible cases for the "subtype" oneof.</summary>
+    public enum SubtypeOneofCase {
+      None = 0,
+      QueryRockstarAlias = 390089709,
+    }
+    private SubtypeOneofCase subtypeCase_ = SubtypeOneofCase.None;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public SubtypeOneofCase SubtypeCase {
+      get { return subtypeCase_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSubtype() {
+      subtypeCase_ = SubtypeOneofCase.None;
+      subtype_ = null;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryDb_Rockstar_RockstarAlias);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryDb_Rockstar_RockstarAlias other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(QueryRockstarAlias, other.QueryRockstarAlias)) return false;
+      if (SubtypeCase != other.SubtypeCase) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarAlias) hash ^= QueryRockstarAlias.GetHashCode();
+      hash ^= (int) subtypeCase_;
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarAlias) {
+        output.WriteRawTag(234, 190, 137, 208, 11);
+        output.WriteMessage(QueryRockstarAlias);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (subtypeCase_ == SubtypeOneofCase.QueryRockstarAlias) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryRockstarAlias);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryDb_Rockstar_RockstarAlias other) {
+      if (other == null) {
+        return;
+      }
+      switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryRockstarAlias:
+          if (QueryRockstarAlias == null) {
+            QueryRockstarAlias = new global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlias();
+          }
+          QueryRockstarAlias.MergeFrom(other.QueryRockstarAlias);
+          break;
+      }
+
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 3120717674: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlias subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarAlias();
+            if (subtypeCase_ == SubtypeOneofCase.QueryRockstarAlias) {
+              subBuilder.MergeFrom(QueryRockstarAlias);
+            }
+            input.ReadMessage(subBuilder);
+            QueryRockstarAlias = subBuilder;
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryDb_TypeWithEnum : pb::IMessage<QueryDb_TypeWithEnum> {
+    private static readonly pb::MessageParser<QueryDb_TypeWithEnum> _parser = new pb::MessageParser<QueryDb_TypeWithEnum>(() => new QueryDb_TypeWithEnum());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryDb_TypeWithEnum> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[68]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_TypeWithEnum() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_TypeWithEnum(QueryDb_TypeWithEnum other) : this() {
+      switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryTypeWithEnums:
+          QueryTypeWithEnums = other.QueryTypeWithEnums.Clone();
+          break;
+      }
+
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryDb_TypeWithEnum Clone() {
+      return new QueryDb_TypeWithEnum(this);
+    }
+
+    /// <summary>Field number for the "QueryTypeWithEnums" field.</summary>
+    public const int QueryTypeWithEnumsFieldNumber = 314562614;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.QueryTypeWithEnums QueryTypeWithEnums {
+      get { return subtypeCase_ == SubtypeOneofCase.QueryTypeWithEnums ? (global::ServiceStack.Extensions.Tests.Protoc.QueryTypeWithEnums) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.QueryTypeWithEnums;
+      }
+    }
+
+    private object subtype_;
+    /// <summary>Enum of possible cases for the "subtype" oneof.</summary>
+    public enum SubtypeOneofCase {
+      None = 0,
+      QueryTypeWithEnums = 314562614,
+    }
+    private SubtypeOneofCase subtypeCase_ = SubtypeOneofCase.None;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public SubtypeOneofCase SubtypeCase {
+      get { return subtypeCase_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSubtype() {
+      subtypeCase_ = SubtypeOneofCase.None;
+      subtype_ = null;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryDb_TypeWithEnum);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryDb_TypeWithEnum other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(QueryTypeWithEnums, other.QueryTypeWithEnums)) return false;
+      if (SubtypeCase != other.SubtypeCase) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (subtypeCase_ == SubtypeOneofCase.QueryTypeWithEnums) hash ^= QueryTypeWithEnums.GetHashCode();
+      hash ^= (int) subtypeCase_;
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (subtypeCase_ == SubtypeOneofCase.QueryTypeWithEnums) {
+        output.WriteRawTag(178, 131, 251, 175, 9);
+        output.WriteMessage(QueryTypeWithEnums);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (subtypeCase_ == SubtypeOneofCase.QueryTypeWithEnums) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(QueryTypeWithEnums);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryDb_TypeWithEnum other) {
+      if (other == null) {
+        return;
+      }
+      switch (other.SubtypeCase) {
+        case SubtypeOneofCase.QueryTypeWithEnums:
+          if (QueryTypeWithEnums == null) {
+            QueryTypeWithEnums = new global::ServiceStack.Extensions.Tests.Protoc.QueryTypeWithEnums();
+          }
+          QueryTypeWithEnums.MergeFrom(other.QueryTypeWithEnums);
+          break;
+      }
+
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 2516500914: {
+            global::ServiceStack.Extensions.Tests.Protoc.QueryTypeWithEnums subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.QueryTypeWithEnums();
+            if (subtypeCase_ == SubtypeOneofCase.QueryTypeWithEnums) {
+              subBuilder.MergeFrom(QueryTypeWithEnums);
+            }
+            input.ReadMessage(subBuilder);
+            QueryTypeWithEnums = subBuilder;
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryFieldRockstars : pb::IMessage<QueryFieldRockstars> {
+    private static readonly pb::MessageParser<QueryFieldRockstars> _parser = new pb::MessageParser<QueryFieldRockstars>(() => new QueryFieldRockstars());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryFieldRockstars> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[69]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryFieldRockstars() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryFieldRockstars(QueryFieldRockstars other) : this() {
+      firstName_ = other.firstName_;
+      firstNames_ = other.firstNames_.Clone();
+      age_ = other.age_;
+      firstNameCaseInsensitive_ = other.firstNameCaseInsensitive_;
+      firstNameStartsWith_ = other.firstNameStartsWith_;
+      lastNameEndsWith_ = other.lastNameEndsWith_;
+      firstNameBetween_ = other.firstNameBetween_.Clone();
+      orLastName_ = other.orLastName_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryFieldRockstars Clone() {
+      return new QueryFieldRockstars(this);
+    }
+
+    /// <summary>Field number for the "FirstName" field.</summary>
+    public const int FirstNameFieldNumber = 1;
+    private string firstName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string FirstName {
+      get { return firstName_; }
+      set {
+        firstName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "FirstNames" field.</summary>
+    public const int FirstNamesFieldNumber = 2;
+    private static readonly pb::FieldCodec<string> _repeated_firstNames_codec
+        = pb::FieldCodec.ForString(18);
+    private readonly pbc::RepeatedField<string> firstNames_ = new pbc::RepeatedField<string>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<string> FirstNames {
+      get { return firstNames_; }
+    }
+
+    /// <summary>Field number for the "Age" field.</summary>
+    public const int AgeFieldNumber = 3;
+    private int age_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Age {
+      get { return age_; }
+      set {
+        age_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "FirstNameCaseInsensitive" field.</summary>
+    public const int FirstNameCaseInsensitiveFieldNumber = 4;
+    private string firstNameCaseInsensitive_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string FirstNameCaseInsensitive {
+      get { return firstNameCaseInsensitive_; }
+      set {
+        firstNameCaseInsensitive_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "FirstNameStartsWith" field.</summary>
+    public const int FirstNameStartsWithFieldNumber = 5;
+    private string firstNameStartsWith_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string FirstNameStartsWith {
+      get { return firstNameStartsWith_; }
+      set {
+        firstNameStartsWith_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "LastNameEndsWith" field.</summary>
+    public const int LastNameEndsWithFieldNumber = 6;
+    private string lastNameEndsWith_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string LastNameEndsWith {
+      get { return lastNameEndsWith_; }
+      set {
+        lastNameEndsWith_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "FirstNameBetween" field.</summary>
+    public const int FirstNameBetweenFieldNumber = 7;
+    private static readonly pb::FieldCodec<string> _repeated_firstNameBetween_codec
+        = pb::FieldCodec.ForString(58);
+    private readonly pbc::RepeatedField<string> firstNameBetween_ = new pbc::RepeatedField<string>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<string> FirstNameBetween {
+      get { return firstNameBetween_; }
+    }
+
+    /// <summary>Field number for the "OrLastName" field.</summary>
+    public const int OrLastNameFieldNumber = 8;
+    private string orLastName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string OrLastName {
+      get { return orLastName_; }
+      set {
+        orLastName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryFieldRockstars);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryFieldRockstars other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (FirstName != other.FirstName) return false;
+      if(!firstNames_.Equals(other.firstNames_)) return false;
+      if (Age != other.Age) return false;
+      if (FirstNameCaseInsensitive != other.FirstNameCaseInsensitive) return false;
+      if (FirstNameStartsWith != other.FirstNameStartsWith) return false;
+      if (LastNameEndsWith != other.LastNameEndsWith) return false;
+      if(!firstNameBetween_.Equals(other.firstNameBetween_)) return false;
+      if (OrLastName != other.OrLastName) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (FirstName.Length != 0) hash ^= FirstName.GetHashCode();
+      hash ^= firstNames_.GetHashCode();
+      if (Age != 0) hash ^= Age.GetHashCode();
+      if (FirstNameCaseInsensitive.Length != 0) hash ^= FirstNameCaseInsensitive.GetHashCode();
+      if (FirstNameStartsWith.Length != 0) hash ^= FirstNameStartsWith.GetHashCode();
+      if (LastNameEndsWith.Length != 0) hash ^= LastNameEndsWith.GetHashCode();
+      hash ^= firstNameBetween_.GetHashCode();
+      if (OrLastName.Length != 0) hash ^= OrLastName.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (FirstName.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(FirstName);
+      }
+      firstNames_.WriteTo(output, _repeated_firstNames_codec);
+      if (Age != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Age);
+      }
+      if (FirstNameCaseInsensitive.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(FirstNameCaseInsensitive);
+      }
+      if (FirstNameStartsWith.Length != 0) {
+        output.WriteRawTag(42);
+        output.WriteString(FirstNameStartsWith);
+      }
+      if (LastNameEndsWith.Length != 0) {
+        output.WriteRawTag(50);
+        output.WriteString(LastNameEndsWith);
+      }
+      firstNameBetween_.WriteTo(output, _repeated_firstNameBetween_codec);
+      if (OrLastName.Length != 0) {
+        output.WriteRawTag(66);
+        output.WriteString(OrLastName);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (FirstName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(FirstName);
+      }
+      size += firstNames_.CalculateSize(_repeated_firstNames_codec);
+      if (Age != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Age);
+      }
+      if (FirstNameCaseInsensitive.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(FirstNameCaseInsensitive);
+      }
+      if (FirstNameStartsWith.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(FirstNameStartsWith);
+      }
+      if (LastNameEndsWith.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(LastNameEndsWith);
+      }
+      size += firstNameBetween_.CalculateSize(_repeated_firstNameBetween_codec);
+      if (OrLastName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(OrLastName);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryFieldRockstars other) {
+      if (other == null) {
+        return;
+      }
+      if (other.FirstName.Length != 0) {
+        FirstName = other.FirstName;
+      }
+      firstNames_.Add(other.firstNames_);
+      if (other.Age != 0) {
+        Age = other.Age;
+      }
+      if (other.FirstNameCaseInsensitive.Length != 0) {
+        FirstNameCaseInsensitive = other.FirstNameCaseInsensitive;
+      }
+      if (other.FirstNameStartsWith.Length != 0) {
+        FirstNameStartsWith = other.FirstNameStartsWith;
+      }
+      if (other.LastNameEndsWith.Length != 0) {
+        LastNameEndsWith = other.LastNameEndsWith;
+      }
+      firstNameBetween_.Add(other.firstNameBetween_);
+      if (other.OrLastName.Length != 0) {
+        OrLastName = other.OrLastName;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            FirstName = input.ReadString();
+            break;
+          }
+          case 18: {
+            firstNames_.AddEntriesFrom(input, _repeated_firstNames_codec);
+            break;
+          }
+          case 24: {
+            Age = input.ReadInt32();
+            break;
+          }
+          case 34: {
+            FirstNameCaseInsensitive = input.ReadString();
+            break;
+          }
+          case 42: {
+            FirstNameStartsWith = input.ReadString();
+            break;
+          }
+          case 50: {
+            LastNameEndsWith = input.ReadString();
+            break;
+          }
+          case 58: {
+            firstNameBetween_.AddEntriesFrom(input, _repeated_firstNameBetween_codec);
+            break;
+          }
+          case 66: {
+            OrLastName = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryFieldRockstarsDynamic : pb::IMessage<QueryFieldRockstarsDynamic> {
+    private static readonly pb::MessageParser<QueryFieldRockstarsDynamic> _parser = new pb::MessageParser<QueryFieldRockstarsDynamic>(() => new QueryFieldRockstarsDynamic());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryFieldRockstarsDynamic> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[70]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryFieldRockstarsDynamic() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryFieldRockstarsDynamic(QueryFieldRockstarsDynamic other) : this() {
+      age_ = other.age_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryFieldRockstarsDynamic Clone() {
+      return new QueryFieldRockstarsDynamic(this);
+    }
+
+    /// <summary>Field number for the "Age" field.</summary>
+    public const int AgeFieldNumber = 1;
+    private int age_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Age {
+      get { return age_; }
+      set {
+        age_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryFieldRockstarsDynamic);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryFieldRockstarsDynamic other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Age != other.Age) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Age != 0) hash ^= Age.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Age != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Age);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Age != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Age);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryFieldRockstarsDynamic other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Age != 0) {
+        Age = other.Age;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Age = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryFieldsImplicitConventions : pb::IMessage<QueryFieldsImplicitConventions> {
+    private static readonly pb::MessageParser<QueryFieldsImplicitConventions> _parser = new pb::MessageParser<QueryFieldsImplicitConventions>(() => new QueryFieldsImplicitConventions());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryFieldsImplicitConventions> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[71]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryFieldsImplicitConventions() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryFieldsImplicitConventions(QueryFieldsImplicitConventions other) : this() {
+      firstNameContains_ = other.firstNameContains_;
+      lastNameEndsWith_ = other.lastNameEndsWith_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryFieldsImplicitConventions Clone() {
+      return new QueryFieldsImplicitConventions(this);
+    }
+
+    /// <summary>Field number for the "FirstNameContains" field.</summary>
+    public const int FirstNameContainsFieldNumber = 1;
+    private string firstNameContains_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string FirstNameContains {
+      get { return firstNameContains_; }
+      set {
+        firstNameContains_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "LastNameEndsWith" field.</summary>
+    public const int LastNameEndsWithFieldNumber = 2;
+    private string lastNameEndsWith_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string LastNameEndsWith {
+      get { return lastNameEndsWith_; }
+      set {
+        lastNameEndsWith_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryFieldsImplicitConventions);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryFieldsImplicitConventions other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (FirstNameContains != other.FirstNameContains) return false;
+      if (LastNameEndsWith != other.LastNameEndsWith) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (FirstNameContains.Length != 0) hash ^= FirstNameContains.GetHashCode();
+      if (LastNameEndsWith.Length != 0) hash ^= LastNameEndsWith.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (FirstNameContains.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(FirstNameContains);
+      }
+      if (LastNameEndsWith.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(LastNameEndsWith);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (FirstNameContains.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(FirstNameContains);
+      }
+      if (LastNameEndsWith.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(LastNameEndsWith);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryFieldsImplicitConventions other) {
+      if (other == null) {
+        return;
+      }
+      if (other.FirstNameContains.Length != 0) {
+        FirstNameContains = other.FirstNameContains;
+      }
+      if (other.LastNameEndsWith.Length != 0) {
+        LastNameEndsWith = other.LastNameEndsWith;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            FirstNameContains = input.ReadString();
+            break;
+          }
+          case 18: {
+            LastNameEndsWith = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryGetRockstars : pb::IMessage<QueryGetRockstars> {
+    private static readonly pb::MessageParser<QueryGetRockstars> _parser = new pb::MessageParser<QueryGetRockstars>(() => new QueryGetRockstars());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryGetRockstars> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[72]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryGetRockstars() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryGetRockstars(QueryGetRockstars other) : this() {
+      ids_ = other.ids_.Clone();
+      ages_ = other.ages_.Clone();
+      firstNames_ = other.firstNames_.Clone();
+      idsBetween_ = other.idsBetween_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryGetRockstars Clone() {
+      return new QueryGetRockstars(this);
+    }
+
+    /// <summary>Field number for the "Ids" field.</summary>
+    public const int IdsFieldNumber = 1;
+    private static readonly pb::FieldCodec<int> _repeated_ids_codec
+        = pb::FieldCodec.ForInt32(8);
+    private readonly pbc::RepeatedField<int> ids_ = new pbc::RepeatedField<int>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<int> Ids {
+      get { return ids_; }
+    }
+
+    /// <summary>Field number for the "Ages" field.</summary>
+    public const int AgesFieldNumber = 2;
+    private static readonly pb::FieldCodec<int> _repeated_ages_codec
+        = pb::FieldCodec.ForInt32(16);
+    private readonly pbc::RepeatedField<int> ages_ = new pbc::RepeatedField<int>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<int> Ages {
+      get { return ages_; }
+    }
+
+    /// <summary>Field number for the "FirstNames" field.</summary>
+    public const int FirstNamesFieldNumber = 3;
+    private static readonly pb::FieldCodec<string> _repeated_firstNames_codec
+        = pb::FieldCodec.ForString(26);
+    private readonly pbc::RepeatedField<string> firstNames_ = new pbc::RepeatedField<string>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<string> FirstNames {
+      get { return firstNames_; }
+    }
+
+    /// <summary>Field number for the "IdsBetween" field.</summary>
+    public const int IdsBetweenFieldNumber = 4;
+    private static readonly pb::FieldCodec<int> _repeated_idsBetween_codec
+        = pb::FieldCodec.ForInt32(32);
+    private readonly pbc::RepeatedField<int> idsBetween_ = new pbc::RepeatedField<int>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<int> IdsBetween {
+      get { return idsBetween_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryGetRockstars);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryGetRockstars other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if(!ids_.Equals(other.ids_)) return false;
+      if(!ages_.Equals(other.ages_)) return false;
+      if(!firstNames_.Equals(other.firstNames_)) return false;
+      if(!idsBetween_.Equals(other.idsBetween_)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      hash ^= ids_.GetHashCode();
+      hash ^= ages_.GetHashCode();
+      hash ^= firstNames_.GetHashCode();
+      hash ^= idsBetween_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      ids_.WriteTo(output, _repeated_ids_codec);
+      ages_.WriteTo(output, _repeated_ages_codec);
+      firstNames_.WriteTo(output, _repeated_firstNames_codec);
+      idsBetween_.WriteTo(output, _repeated_idsBetween_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      size += ids_.CalculateSize(_repeated_ids_codec);
+      size += ages_.CalculateSize(_repeated_ages_codec);
+      size += firstNames_.CalculateSize(_repeated_firstNames_codec);
+      size += idsBetween_.CalculateSize(_repeated_idsBetween_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryGetRockstars other) {
+      if (other == null) {
+        return;
+      }
+      ids_.Add(other.ids_);
+      ages_.Add(other.ages_);
+      firstNames_.Add(other.firstNames_);
+      idsBetween_.Add(other.idsBetween_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10:
+          case 8: {
+            ids_.AddEntriesFrom(input, _repeated_ids_codec);
+            break;
+          }
+          case 18:
+          case 16: {
+            ages_.AddEntriesFrom(input, _repeated_ages_codec);
+            break;
+          }
+          case 26: {
+            firstNames_.AddEntriesFrom(input, _repeated_firstNames_codec);
+            break;
+          }
+          case 34:
+          case 32: {
+            idsBetween_.AddEntriesFrom(input, _repeated_idsBetween_codec);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryGetRockstarsDynamic : pb::IMessage<QueryGetRockstarsDynamic> {
+    private static readonly pb::MessageParser<QueryGetRockstarsDynamic> _parser = new pb::MessageParser<QueryGetRockstarsDynamic>(() => new QueryGetRockstarsDynamic());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryGetRockstarsDynamic> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[73]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryGetRockstarsDynamic() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryGetRockstarsDynamic(QueryGetRockstarsDynamic other) : this() {
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryGetRockstarsDynamic Clone() {
+      return new QueryGetRockstarsDynamic(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryGetRockstarsDynamic);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryGetRockstarsDynamic other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryGetRockstarsDynamic other) {
+      if (other == null) {
+        return;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryJoinedRockstarAlbums : pb::IMessage<QueryJoinedRockstarAlbums> {
+    private static readonly pb::MessageParser<QueryJoinedRockstarAlbums> _parser = new pb::MessageParser<QueryJoinedRockstarAlbums>(() => new QueryJoinedRockstarAlbums());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryJoinedRockstarAlbums> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[74]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryJoinedRockstarAlbums() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryJoinedRockstarAlbums(QueryJoinedRockstarAlbums other) : this() {
+      age_ = other.age_;
+      rockstarAlbumName_ = other.rockstarAlbumName_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryJoinedRockstarAlbums Clone() {
+      return new QueryJoinedRockstarAlbums(this);
+    }
+
+    /// <summary>Field number for the "Age" field.</summary>
+    public const int AgeFieldNumber = 1;
+    private int age_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Age {
+      get { return age_; }
+      set {
+        age_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "RockstarAlbumName" field.</summary>
+    public const int RockstarAlbumNameFieldNumber = 2;
+    private string rockstarAlbumName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string RockstarAlbumName {
+      get { return rockstarAlbumName_; }
+      set {
+        rockstarAlbumName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryJoinedRockstarAlbums);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryJoinedRockstarAlbums other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Age != other.Age) return false;
+      if (RockstarAlbumName != other.RockstarAlbumName) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Age != 0) hash ^= Age.GetHashCode();
+      if (RockstarAlbumName.Length != 0) hash ^= RockstarAlbumName.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Age != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Age);
+      }
+      if (RockstarAlbumName.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(RockstarAlbumName);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Age != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Age);
+      }
+      if (RockstarAlbumName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(RockstarAlbumName);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryJoinedRockstarAlbums other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Age != 0) {
+        Age = other.Age;
+      }
+      if (other.RockstarAlbumName.Length != 0) {
+        RockstarAlbumName = other.RockstarAlbumName;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Age = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            RockstarAlbumName = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryJoinedRockstarAlbumsCustomSelect : pb::IMessage<QueryJoinedRockstarAlbumsCustomSelect> {
+    private static readonly pb::MessageParser<QueryJoinedRockstarAlbumsCustomSelect> _parser = new pb::MessageParser<QueryJoinedRockstarAlbumsCustomSelect>(() => new QueryJoinedRockstarAlbumsCustomSelect());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryJoinedRockstarAlbumsCustomSelect> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[75]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryJoinedRockstarAlbumsCustomSelect() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryJoinedRockstarAlbumsCustomSelect(QueryJoinedRockstarAlbumsCustomSelect other) : this() {
+      age_ = other.age_;
+      rockstarAlbumName_ = other.rockstarAlbumName_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryJoinedRockstarAlbumsCustomSelect Clone() {
+      return new QueryJoinedRockstarAlbumsCustomSelect(this);
+    }
+
+    /// <summary>Field number for the "Age" field.</summary>
+    public const int AgeFieldNumber = 1;
+    private int age_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Age {
+      get { return age_; }
+      set {
+        age_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "RockstarAlbumName" field.</summary>
+    public const int RockstarAlbumNameFieldNumber = 2;
+    private string rockstarAlbumName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string RockstarAlbumName {
+      get { return rockstarAlbumName_; }
+      set {
+        rockstarAlbumName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryJoinedRockstarAlbumsCustomSelect);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryJoinedRockstarAlbumsCustomSelect other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Age != other.Age) return false;
+      if (RockstarAlbumName != other.RockstarAlbumName) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Age != 0) hash ^= Age.GetHashCode();
+      if (RockstarAlbumName.Length != 0) hash ^= RockstarAlbumName.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Age != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Age);
+      }
+      if (RockstarAlbumName.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(RockstarAlbumName);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Age != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Age);
+      }
+      if (RockstarAlbumName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(RockstarAlbumName);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryJoinedRockstarAlbumsCustomSelect other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Age != 0) {
+        Age = other.Age;
+      }
+      if (other.RockstarAlbumName.Length != 0) {
+        RockstarAlbumName = other.RockstarAlbumName;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Age = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            RockstarAlbumName = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryJoinedRockstarAlbumsCustomSelectResponse : pb::IMessage<QueryJoinedRockstarAlbumsCustomSelectResponse> {
+    private static readonly pb::MessageParser<QueryJoinedRockstarAlbumsCustomSelectResponse> _parser = new pb::MessageParser<QueryJoinedRockstarAlbumsCustomSelectResponse>(() => new QueryJoinedRockstarAlbumsCustomSelectResponse());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryJoinedRockstarAlbumsCustomSelectResponse> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[76]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryJoinedRockstarAlbumsCustomSelectResponse() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryJoinedRockstarAlbumsCustomSelectResponse(QueryJoinedRockstarAlbumsCustomSelectResponse other) : this() {
+      age_ = other.age_;
+      rockstarAlbumName_ = other.rockstarAlbumName_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryJoinedRockstarAlbumsCustomSelectResponse Clone() {
+      return new QueryJoinedRockstarAlbumsCustomSelectResponse(this);
+    }
+
+    /// <summary>Field number for the "Age" field.</summary>
+    public const int AgeFieldNumber = 1;
+    private int age_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Age {
+      get { return age_; }
+      set {
+        age_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "RockstarAlbumName" field.</summary>
+    public const int RockstarAlbumNameFieldNumber = 2;
+    private string rockstarAlbumName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string RockstarAlbumName {
+      get { return rockstarAlbumName_; }
+      set {
+        rockstarAlbumName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryJoinedRockstarAlbumsCustomSelectResponse);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryJoinedRockstarAlbumsCustomSelectResponse other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Age != other.Age) return false;
+      if (RockstarAlbumName != other.RockstarAlbumName) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Age != 0) hash ^= Age.GetHashCode();
+      if (RockstarAlbumName.Length != 0) hash ^= RockstarAlbumName.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Age != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Age);
+      }
+      if (RockstarAlbumName.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(RockstarAlbumName);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Age != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Age);
+      }
+      if (RockstarAlbumName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(RockstarAlbumName);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryJoinedRockstarAlbumsCustomSelectResponse other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Age != 0) {
+        Age = other.Age;
+      }
+      if (other.RockstarAlbumName.Length != 0) {
+        RockstarAlbumName = other.RockstarAlbumName;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Age = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            RockstarAlbumName = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryMovies : pb::IMessage<QueryMovies> {
+    private static readonly pb::MessageParser<QueryMovies> _parser = new pb::MessageParser<QueryMovies>(() => new QueryMovies());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryMovies> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[77]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryMovies() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryMovies(QueryMovies other) : this() {
+      ids_ = other.ids_.Clone();
+      imdbIds_ = other.imdbIds_.Clone();
+      ratings_ = other.ratings_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryMovies Clone() {
+      return new QueryMovies(this);
+    }
+
+    /// <summary>Field number for the "Ids" field.</summary>
+    public const int IdsFieldNumber = 1;
+    private static readonly pb::FieldCodec<int> _repeated_ids_codec
+        = pb::FieldCodec.ForInt32(8);
+    private readonly pbc::RepeatedField<int> ids_ = new pbc::RepeatedField<int>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<int> Ids {
+      get { return ids_; }
+    }
+
+    /// <summary>Field number for the "ImdbIds" field.</summary>
+    public const int ImdbIdsFieldNumber = 2;
+    private static readonly pb::FieldCodec<string> _repeated_imdbIds_codec
+        = pb::FieldCodec.ForString(18);
+    private readonly pbc::RepeatedField<string> imdbIds_ = new pbc::RepeatedField<string>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<string> ImdbIds {
+      get { return imdbIds_; }
+    }
+
+    /// <summary>Field number for the "Ratings" field.</summary>
+    public const int RatingsFieldNumber = 3;
+    private static readonly pb::FieldCodec<string> _repeated_ratings_codec
+        = pb::FieldCodec.ForString(26);
+    private readonly pbc::RepeatedField<string> ratings_ = new pbc::RepeatedField<string>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<string> Ratings {
+      get { return ratings_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryMovies);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryMovies other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if(!ids_.Equals(other.ids_)) return false;
+      if(!imdbIds_.Equals(other.imdbIds_)) return false;
+      if(!ratings_.Equals(other.ratings_)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      hash ^= ids_.GetHashCode();
+      hash ^= imdbIds_.GetHashCode();
+      hash ^= ratings_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      ids_.WriteTo(output, _repeated_ids_codec);
+      imdbIds_.WriteTo(output, _repeated_imdbIds_codec);
+      ratings_.WriteTo(output, _repeated_ratings_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      size += ids_.CalculateSize(_repeated_ids_codec);
+      size += imdbIds_.CalculateSize(_repeated_imdbIds_codec);
+      size += ratings_.CalculateSize(_repeated_ratings_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryMovies other) {
+      if (other == null) {
+        return;
+      }
+      ids_.Add(other.ids_);
+      imdbIds_.Add(other.imdbIds_);
+      ratings_.Add(other.ratings_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10:
+          case 8: {
+            ids_.AddEntriesFrom(input, _repeated_ids_codec);
+            break;
+          }
+          case 18: {
+            imdbIds_.AddEntriesFrom(input, _repeated_imdbIds_codec);
+            break;
+          }
+          case 26: {
+            ratings_.AddEntriesFrom(input, _repeated_ratings_codec);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryMultiJoinRockstar : pb::IMessage<QueryMultiJoinRockstar> {
+    private static readonly pb::MessageParser<QueryMultiJoinRockstar> _parser = new pb::MessageParser<QueryMultiJoinRockstar>(() => new QueryMultiJoinRockstar());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryMultiJoinRockstar> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[78]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryMultiJoinRockstar() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryMultiJoinRockstar(QueryMultiJoinRockstar other) : this() {
+      age_ = other.age_;
+      rockstarAlbumName_ = other.rockstarAlbumName_;
+      rockstarGenreName_ = other.rockstarGenreName_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryMultiJoinRockstar Clone() {
+      return new QueryMultiJoinRockstar(this);
+    }
+
+    /// <summary>Field number for the "Age" field.</summary>
+    public const int AgeFieldNumber = 1;
+    private int age_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Age {
+      get { return age_; }
+      set {
+        age_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "RockstarAlbumName" field.</summary>
+    public const int RockstarAlbumNameFieldNumber = 2;
+    private string rockstarAlbumName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string RockstarAlbumName {
+      get { return rockstarAlbumName_; }
+      set {
+        rockstarAlbumName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "RockstarGenreName" field.</summary>
+    public const int RockstarGenreNameFieldNumber = 3;
+    private string rockstarGenreName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string RockstarGenreName {
+      get { return rockstarGenreName_; }
+      set {
+        rockstarGenreName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryMultiJoinRockstar);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryMultiJoinRockstar other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Age != other.Age) return false;
+      if (RockstarAlbumName != other.RockstarAlbumName) return false;
+      if (RockstarGenreName != other.RockstarGenreName) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Age != 0) hash ^= Age.GetHashCode();
+      if (RockstarAlbumName.Length != 0) hash ^= RockstarAlbumName.GetHashCode();
+      if (RockstarGenreName.Length != 0) hash ^= RockstarGenreName.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Age != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Age);
+      }
+      if (RockstarAlbumName.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(RockstarAlbumName);
+      }
+      if (RockstarGenreName.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(RockstarGenreName);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Age != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Age);
+      }
+      if (RockstarAlbumName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(RockstarAlbumName);
+      }
+      if (RockstarGenreName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(RockstarGenreName);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryMultiJoinRockstar other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Age != 0) {
+        Age = other.Age;
+      }
+      if (other.RockstarAlbumName.Length != 0) {
+        RockstarAlbumName = other.RockstarAlbumName;
+      }
+      if (other.RockstarGenreName.Length != 0) {
+        RockstarGenreName = other.RockstarGenreName;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Age = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            RockstarAlbumName = input.ReadString();
+            break;
+          }
+          case 26: {
+            RockstarGenreName = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryNamedRockstars : pb::IMessage<QueryNamedRockstars> {
+    private static readonly pb::MessageParser<QueryNamedRockstars> _parser = new pb::MessageParser<QueryNamedRockstars>(() => new QueryNamedRockstars());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryNamedRockstars> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[79]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryNamedRockstars() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryNamedRockstars(QueryNamedRockstars other) : this() {
+      age_ = other.age_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryNamedRockstars Clone() {
+      return new QueryNamedRockstars(this);
+    }
+
+    /// <summary>Field number for the "Age" field.</summary>
+    public const int AgeFieldNumber = 1;
+    private int age_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Age {
+      get { return age_; }
+      set {
+        age_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryNamedRockstars);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryNamedRockstars other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Age != other.Age) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Age != 0) hash ^= Age.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Age != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Age);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Age != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Age);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryNamedRockstars other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Age != 0) {
+        Age = other.Age;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Age = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryOrRockstars : pb::IMessage<QueryOrRockstars> {
+    private static readonly pb::MessageParser<QueryOrRockstars> _parser = new pb::MessageParser<QueryOrRockstars>(() => new QueryOrRockstars());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryOrRockstars> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[80]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryOrRockstars() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryOrRockstars(QueryOrRockstars other) : this() {
+      age_ = other.age_;
+      firstName_ = other.firstName_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryOrRockstars Clone() {
+      return new QueryOrRockstars(this);
+    }
+
+    /// <summary>Field number for the "Age" field.</summary>
+    public const int AgeFieldNumber = 1;
+    private int age_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Age {
+      get { return age_; }
+      set {
+        age_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "FirstName" field.</summary>
+    public const int FirstNameFieldNumber = 2;
+    private string firstName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string FirstName {
+      get { return firstName_; }
+      set {
+        firstName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryOrRockstars);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryOrRockstars other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Age != other.Age) return false;
+      if (FirstName != other.FirstName) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Age != 0) hash ^= Age.GetHashCode();
+      if (FirstName.Length != 0) hash ^= FirstName.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Age != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Age);
+      }
+      if (FirstName.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(FirstName);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Age != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Age);
+      }
+      if (FirstName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(FirstName);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryOrRockstars other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Age != 0) {
+        Age = other.Age;
+      }
+      if (other.FirstName.Length != 0) {
+        FirstName = other.FirstName;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Age = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            FirstName = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryOrRockstarsFields : pb::IMessage<QueryOrRockstarsFields> {
+    private static readonly pb::MessageParser<QueryOrRockstarsFields> _parser = new pb::MessageParser<QueryOrRockstarsFields>(() => new QueryOrRockstarsFields());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryOrRockstarsFields> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[81]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryOrRockstarsFields() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryOrRockstarsFields(QueryOrRockstarsFields other) : this() {
+      firstName_ = other.firstName_;
+      lastName_ = other.lastName_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryOrRockstarsFields Clone() {
+      return new QueryOrRockstarsFields(this);
+    }
+
+    /// <summary>Field number for the "FirstName" field.</summary>
+    public const int FirstNameFieldNumber = 1;
+    private string firstName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string FirstName {
+      get { return firstName_; }
+      set {
+        firstName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "LastName" field.</summary>
+    public const int LastNameFieldNumber = 2;
+    private string lastName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string LastName {
+      get { return lastName_; }
+      set {
+        lastName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryOrRockstarsFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryOrRockstarsFields other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (FirstName != other.FirstName) return false;
+      if (LastName != other.LastName) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (FirstName.Length != 0) hash ^= FirstName.GetHashCode();
+      if (LastName.Length != 0) hash ^= LastName.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (FirstName.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(FirstName);
+      }
+      if (LastName.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(LastName);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (FirstName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(FirstName);
+      }
+      if (LastName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(LastName);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryOrRockstarsFields other) {
+      if (other == null) {
+        return;
+      }
+      if (other.FirstName.Length != 0) {
+        FirstName = other.FirstName;
+      }
+      if (other.LastName.Length != 0) {
+        LastName = other.LastName;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            FirstName = input.ReadString();
+            break;
+          }
+          case 18: {
+            LastName = input.ReadString();
             break;
           }
         }
@@ -8924,7 +17408,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[44]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[82]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -9053,7 +17537,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[45]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[83]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -9174,6 +17658,653 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
   }
 
+  public sealed partial class QueryPagingTest : pb::IMessage<QueryPagingTest> {
+    private static readonly pb::MessageParser<QueryPagingTest> _parser = new pb::MessageParser<QueryPagingTest>(() => new QueryPagingTest());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryPagingTest> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[84]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryPagingTest() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryPagingTest(QueryPagingTest other) : this() {
+      id_ = other.id_;
+      name_ = other.name_;
+      value_ = other.value_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryPagingTest Clone() {
+      return new QueryPagingTest(this);
+    }
+
+    /// <summary>Field number for the "Id" field.</summary>
+    public const int IdFieldNumber = 1;
+    private int id_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Id {
+      get { return id_; }
+      set {
+        id_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Name" field.</summary>
+    public const int NameFieldNumber = 2;
+    private string name_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Name {
+      get { return name_; }
+      set {
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "Value" field.</summary>
+    public const int ValueFieldNumber = 3;
+    private int value_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Value {
+      get { return value_; }
+      set {
+        value_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryPagingTest);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryPagingTest other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Id != other.Id) return false;
+      if (Name != other.Name) return false;
+      if (Value != other.Value) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Id != 0) hash ^= Id.GetHashCode();
+      if (Name.Length != 0) hash ^= Name.GetHashCode();
+      if (Value != 0) hash ^= Value.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Id != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Id);
+      }
+      if (Name.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Name);
+      }
+      if (Value != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Value);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Id != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Id);
+      }
+      if (Name.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
+      }
+      if (Value != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Value);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryPagingTest other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Id != 0) {
+        Id = other.Id;
+      }
+      if (other.Name.Length != 0) {
+        Name = other.Name;
+      }
+      if (other.Value != 0) {
+        Value = other.Value;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Id = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            Name = input.ReadString();
+            break;
+          }
+          case 24: {
+            Value = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryResponse_Adhoc : pb::IMessage<QueryResponse_Adhoc> {
+    private static readonly pb::MessageParser<QueryResponse_Adhoc> _parser = new pb::MessageParser<QueryResponse_Adhoc>(() => new QueryResponse_Adhoc());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryResponse_Adhoc> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[85]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_Adhoc() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_Adhoc(QueryResponse_Adhoc other) : this() {
+      offset_ = other.offset_;
+      total_ = other.total_;
+      results_ = other.results_.Clone();
+      meta_ = other.meta_.Clone();
+      responseStatus_ = other.responseStatus_ != null ? other.responseStatus_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_Adhoc Clone() {
+      return new QueryResponse_Adhoc(this);
+    }
+
+    /// <summary>Field number for the "Offset" field.</summary>
+    public const int OffsetFieldNumber = 1;
+    private int offset_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Offset {
+      get { return offset_; }
+      set {
+        offset_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Total" field.</summary>
+    public const int TotalFieldNumber = 2;
+    private int total_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Total {
+      get { return total_; }
+      set {
+        total_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Results" field.</summary>
+    public const int ResultsFieldNumber = 3;
+    private static readonly pb::FieldCodec<global::ServiceStack.Extensions.Tests.Protoc.Adhoc> _repeated_results_codec
+        = pb::FieldCodec.ForMessage(26, global::ServiceStack.Extensions.Tests.Protoc.Adhoc.Parser);
+    private readonly pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.Adhoc> results_ = new pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.Adhoc>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.Adhoc> Results {
+      get { return results_; }
+    }
+
+    /// <summary>Field number for the "Meta" field.</summary>
+    public const int MetaFieldNumber = 4;
+    private static readonly pbc::MapField<string, string>.Codec _map_meta_codec
+        = new pbc::MapField<string, string>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForString(18), 34);
+    private readonly pbc::MapField<string, string> meta_ = new pbc::MapField<string, string>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::MapField<string, string> Meta {
+      get { return meta_; }
+    }
+
+    /// <summary>Field number for the "ResponseStatus" field.</summary>
+    public const int ResponseStatusFieldNumber = 5;
+    private global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus responseStatus_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus ResponseStatus {
+      get { return responseStatus_; }
+      set {
+        responseStatus_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryResponse_Adhoc);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryResponse_Adhoc other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Offset != other.Offset) return false;
+      if (Total != other.Total) return false;
+      if(!results_.Equals(other.results_)) return false;
+      if (!Meta.Equals(other.Meta)) return false;
+      if (!object.Equals(ResponseStatus, other.ResponseStatus)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Offset != 0) hash ^= Offset.GetHashCode();
+      if (Total != 0) hash ^= Total.GetHashCode();
+      hash ^= results_.GetHashCode();
+      hash ^= Meta.GetHashCode();
+      if (responseStatus_ != null) hash ^= ResponseStatus.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Offset != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Offset);
+      }
+      if (Total != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Total);
+      }
+      results_.WriteTo(output, _repeated_results_codec);
+      meta_.WriteTo(output, _map_meta_codec);
+      if (responseStatus_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(ResponseStatus);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Offset != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Offset);
+      }
+      if (Total != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Total);
+      }
+      size += results_.CalculateSize(_repeated_results_codec);
+      size += meta_.CalculateSize(_map_meta_codec);
+      if (responseStatus_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ResponseStatus);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryResponse_Adhoc other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Offset != 0) {
+        Offset = other.Offset;
+      }
+      if (other.Total != 0) {
+        Total = other.Total;
+      }
+      results_.Add(other.results_);
+      meta_.Add(other.meta_);
+      if (other.responseStatus_ != null) {
+        if (responseStatus_ == null) {
+          ResponseStatus = new global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus();
+        }
+        ResponseStatus.MergeFrom(other.ResponseStatus);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Offset = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Total = input.ReadInt32();
+            break;
+          }
+          case 26: {
+            results_.AddEntriesFrom(input, _repeated_results_codec);
+            break;
+          }
+          case 34: {
+            meta_.AddEntriesFrom(input, _map_meta_codec);
+            break;
+          }
+          case 42: {
+            if (responseStatus_ == null) {
+              ResponseStatus = new global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus();
+            }
+            input.ReadMessage(ResponseStatus);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryResponse_AllFields : pb::IMessage<QueryResponse_AllFields> {
+    private static readonly pb::MessageParser<QueryResponse_AllFields> _parser = new pb::MessageParser<QueryResponse_AllFields>(() => new QueryResponse_AllFields());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryResponse_AllFields> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[86]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_AllFields() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_AllFields(QueryResponse_AllFields other) : this() {
+      offset_ = other.offset_;
+      total_ = other.total_;
+      results_ = other.results_.Clone();
+      meta_ = other.meta_.Clone();
+      responseStatus_ = other.responseStatus_ != null ? other.responseStatus_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_AllFields Clone() {
+      return new QueryResponse_AllFields(this);
+    }
+
+    /// <summary>Field number for the "Offset" field.</summary>
+    public const int OffsetFieldNumber = 1;
+    private int offset_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Offset {
+      get { return offset_; }
+      set {
+        offset_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Total" field.</summary>
+    public const int TotalFieldNumber = 2;
+    private int total_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Total {
+      get { return total_; }
+      set {
+        total_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Results" field.</summary>
+    public const int ResultsFieldNumber = 3;
+    private static readonly pb::FieldCodec<global::ServiceStack.Extensions.Tests.Protoc.AllFields> _repeated_results_codec
+        = pb::FieldCodec.ForMessage(26, global::ServiceStack.Extensions.Tests.Protoc.AllFields.Parser);
+    private readonly pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.AllFields> results_ = new pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.AllFields>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.AllFields> Results {
+      get { return results_; }
+    }
+
+    /// <summary>Field number for the "Meta" field.</summary>
+    public const int MetaFieldNumber = 4;
+    private static readonly pbc::MapField<string, string>.Codec _map_meta_codec
+        = new pbc::MapField<string, string>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForString(18), 34);
+    private readonly pbc::MapField<string, string> meta_ = new pbc::MapField<string, string>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::MapField<string, string> Meta {
+      get { return meta_; }
+    }
+
+    /// <summary>Field number for the "ResponseStatus" field.</summary>
+    public const int ResponseStatusFieldNumber = 5;
+    private global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus responseStatus_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus ResponseStatus {
+      get { return responseStatus_; }
+      set {
+        responseStatus_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryResponse_AllFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryResponse_AllFields other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Offset != other.Offset) return false;
+      if (Total != other.Total) return false;
+      if(!results_.Equals(other.results_)) return false;
+      if (!Meta.Equals(other.Meta)) return false;
+      if (!object.Equals(ResponseStatus, other.ResponseStatus)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Offset != 0) hash ^= Offset.GetHashCode();
+      if (Total != 0) hash ^= Total.GetHashCode();
+      hash ^= results_.GetHashCode();
+      hash ^= Meta.GetHashCode();
+      if (responseStatus_ != null) hash ^= ResponseStatus.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Offset != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Offset);
+      }
+      if (Total != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Total);
+      }
+      results_.WriteTo(output, _repeated_results_codec);
+      meta_.WriteTo(output, _map_meta_codec);
+      if (responseStatus_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(ResponseStatus);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Offset != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Offset);
+      }
+      if (Total != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Total);
+      }
+      size += results_.CalculateSize(_repeated_results_codec);
+      size += meta_.CalculateSize(_map_meta_codec);
+      if (responseStatus_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ResponseStatus);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryResponse_AllFields other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Offset != 0) {
+        Offset = other.Offset;
+      }
+      if (other.Total != 0) {
+        Total = other.Total;
+      }
+      results_.Add(other.results_);
+      meta_.Add(other.meta_);
+      if (other.responseStatus_ != null) {
+        if (responseStatus_ == null) {
+          ResponseStatus = new global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus();
+        }
+        ResponseStatus.MergeFrom(other.ResponseStatus);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Offset = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Total = input.ReadInt32();
+            break;
+          }
+          case 26: {
+            results_.AddEntriesFrom(input, _repeated_results_codec);
+            break;
+          }
+          case 34: {
+            meta_.AddEntriesFrom(input, _map_meta_codec);
+            break;
+          }
+          case 42: {
+            if (responseStatus_ == null) {
+              ResponseStatus = new global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus();
+            }
+            input.ReadMessage(ResponseStatus);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public sealed partial class QueryResponse_CustomRockstar : pb::IMessage<QueryResponse_CustomRockstar> {
     private static readonly pb::MessageParser<QueryResponse_CustomRockstar> _parser = new pb::MessageParser<QueryResponse_CustomRockstar>(() => new QueryResponse_CustomRockstar());
     private pb::UnknownFieldSet _unknownFields;
@@ -9182,7 +18313,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[46]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[87]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -9405,6 +18536,699 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
   }
 
+  public sealed partial class QueryResponse_CustomRockstarSchema : pb::IMessage<QueryResponse_CustomRockstarSchema> {
+    private static readonly pb::MessageParser<QueryResponse_CustomRockstarSchema> _parser = new pb::MessageParser<QueryResponse_CustomRockstarSchema>(() => new QueryResponse_CustomRockstarSchema());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryResponse_CustomRockstarSchema> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[88]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_CustomRockstarSchema() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_CustomRockstarSchema(QueryResponse_CustomRockstarSchema other) : this() {
+      offset_ = other.offset_;
+      total_ = other.total_;
+      results_ = other.results_.Clone();
+      meta_ = other.meta_.Clone();
+      responseStatus_ = other.responseStatus_ != null ? other.responseStatus_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_CustomRockstarSchema Clone() {
+      return new QueryResponse_CustomRockstarSchema(this);
+    }
+
+    /// <summary>Field number for the "Offset" field.</summary>
+    public const int OffsetFieldNumber = 1;
+    private int offset_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Offset {
+      get { return offset_; }
+      set {
+        offset_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Total" field.</summary>
+    public const int TotalFieldNumber = 2;
+    private int total_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Total {
+      get { return total_; }
+      set {
+        total_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Results" field.</summary>
+    public const int ResultsFieldNumber = 3;
+    private static readonly pb::FieldCodec<global::ServiceStack.Extensions.Tests.Protoc.CustomRockstarSchema> _repeated_results_codec
+        = pb::FieldCodec.ForMessage(26, global::ServiceStack.Extensions.Tests.Protoc.CustomRockstarSchema.Parser);
+    private readonly pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.CustomRockstarSchema> results_ = new pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.CustomRockstarSchema>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.CustomRockstarSchema> Results {
+      get { return results_; }
+    }
+
+    /// <summary>Field number for the "Meta" field.</summary>
+    public const int MetaFieldNumber = 4;
+    private static readonly pbc::MapField<string, string>.Codec _map_meta_codec
+        = new pbc::MapField<string, string>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForString(18), 34);
+    private readonly pbc::MapField<string, string> meta_ = new pbc::MapField<string, string>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::MapField<string, string> Meta {
+      get { return meta_; }
+    }
+
+    /// <summary>Field number for the "ResponseStatus" field.</summary>
+    public const int ResponseStatusFieldNumber = 5;
+    private global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus responseStatus_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus ResponseStatus {
+      get { return responseStatus_; }
+      set {
+        responseStatus_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryResponse_CustomRockstarSchema);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryResponse_CustomRockstarSchema other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Offset != other.Offset) return false;
+      if (Total != other.Total) return false;
+      if(!results_.Equals(other.results_)) return false;
+      if (!Meta.Equals(other.Meta)) return false;
+      if (!object.Equals(ResponseStatus, other.ResponseStatus)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Offset != 0) hash ^= Offset.GetHashCode();
+      if (Total != 0) hash ^= Total.GetHashCode();
+      hash ^= results_.GetHashCode();
+      hash ^= Meta.GetHashCode();
+      if (responseStatus_ != null) hash ^= ResponseStatus.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Offset != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Offset);
+      }
+      if (Total != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Total);
+      }
+      results_.WriteTo(output, _repeated_results_codec);
+      meta_.WriteTo(output, _map_meta_codec);
+      if (responseStatus_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(ResponseStatus);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Offset != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Offset);
+      }
+      if (Total != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Total);
+      }
+      size += results_.CalculateSize(_repeated_results_codec);
+      size += meta_.CalculateSize(_map_meta_codec);
+      if (responseStatus_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ResponseStatus);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryResponse_CustomRockstarSchema other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Offset != 0) {
+        Offset = other.Offset;
+      }
+      if (other.Total != 0) {
+        Total = other.Total;
+      }
+      results_.Add(other.results_);
+      meta_.Add(other.meta_);
+      if (other.responseStatus_ != null) {
+        if (responseStatus_ == null) {
+          ResponseStatus = new global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus();
+        }
+        ResponseStatus.MergeFrom(other.ResponseStatus);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Offset = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Total = input.ReadInt32();
+            break;
+          }
+          case 26: {
+            results_.AddEntriesFrom(input, _repeated_results_codec);
+            break;
+          }
+          case 34: {
+            meta_.AddEntriesFrom(input, _map_meta_codec);
+            break;
+          }
+          case 42: {
+            if (responseStatus_ == null) {
+              ResponseStatus = new global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus();
+            }
+            input.ReadMessage(ResponseStatus);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryResponse_CustomSelectRockstar : pb::IMessage<QueryResponse_CustomSelectRockstar> {
+    private static readonly pb::MessageParser<QueryResponse_CustomSelectRockstar> _parser = new pb::MessageParser<QueryResponse_CustomSelectRockstar>(() => new QueryResponse_CustomSelectRockstar());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryResponse_CustomSelectRockstar> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[89]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_CustomSelectRockstar() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_CustomSelectRockstar(QueryResponse_CustomSelectRockstar other) : this() {
+      offset_ = other.offset_;
+      total_ = other.total_;
+      results_ = other.results_.Clone();
+      meta_ = other.meta_.Clone();
+      responseStatus_ = other.responseStatus_ != null ? other.responseStatus_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_CustomSelectRockstar Clone() {
+      return new QueryResponse_CustomSelectRockstar(this);
+    }
+
+    /// <summary>Field number for the "Offset" field.</summary>
+    public const int OffsetFieldNumber = 1;
+    private int offset_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Offset {
+      get { return offset_; }
+      set {
+        offset_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Total" field.</summary>
+    public const int TotalFieldNumber = 2;
+    private int total_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Total {
+      get { return total_; }
+      set {
+        total_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Results" field.</summary>
+    public const int ResultsFieldNumber = 3;
+    private static readonly pb::FieldCodec<global::ServiceStack.Extensions.Tests.Protoc.CustomSelectRockstar> _repeated_results_codec
+        = pb::FieldCodec.ForMessage(26, global::ServiceStack.Extensions.Tests.Protoc.CustomSelectRockstar.Parser);
+    private readonly pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.CustomSelectRockstar> results_ = new pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.CustomSelectRockstar>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.CustomSelectRockstar> Results {
+      get { return results_; }
+    }
+
+    /// <summary>Field number for the "Meta" field.</summary>
+    public const int MetaFieldNumber = 4;
+    private static readonly pbc::MapField<string, string>.Codec _map_meta_codec
+        = new pbc::MapField<string, string>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForString(18), 34);
+    private readonly pbc::MapField<string, string> meta_ = new pbc::MapField<string, string>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::MapField<string, string> Meta {
+      get { return meta_; }
+    }
+
+    /// <summary>Field number for the "ResponseStatus" field.</summary>
+    public const int ResponseStatusFieldNumber = 5;
+    private global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus responseStatus_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus ResponseStatus {
+      get { return responseStatus_; }
+      set {
+        responseStatus_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryResponse_CustomSelectRockstar);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryResponse_CustomSelectRockstar other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Offset != other.Offset) return false;
+      if (Total != other.Total) return false;
+      if(!results_.Equals(other.results_)) return false;
+      if (!Meta.Equals(other.Meta)) return false;
+      if (!object.Equals(ResponseStatus, other.ResponseStatus)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Offset != 0) hash ^= Offset.GetHashCode();
+      if (Total != 0) hash ^= Total.GetHashCode();
+      hash ^= results_.GetHashCode();
+      hash ^= Meta.GetHashCode();
+      if (responseStatus_ != null) hash ^= ResponseStatus.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Offset != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Offset);
+      }
+      if (Total != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Total);
+      }
+      results_.WriteTo(output, _repeated_results_codec);
+      meta_.WriteTo(output, _map_meta_codec);
+      if (responseStatus_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(ResponseStatus);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Offset != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Offset);
+      }
+      if (Total != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Total);
+      }
+      size += results_.CalculateSize(_repeated_results_codec);
+      size += meta_.CalculateSize(_map_meta_codec);
+      if (responseStatus_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ResponseStatus);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryResponse_CustomSelectRockstar other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Offset != 0) {
+        Offset = other.Offset;
+      }
+      if (other.Total != 0) {
+        Total = other.Total;
+      }
+      results_.Add(other.results_);
+      meta_.Add(other.meta_);
+      if (other.responseStatus_ != null) {
+        if (responseStatus_ == null) {
+          ResponseStatus = new global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus();
+        }
+        ResponseStatus.MergeFrom(other.ResponseStatus);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Offset = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Total = input.ReadInt32();
+            break;
+          }
+          case 26: {
+            results_.AddEntriesFrom(input, _repeated_results_codec);
+            break;
+          }
+          case 34: {
+            meta_.AddEntriesFrom(input, _map_meta_codec);
+            break;
+          }
+          case 42: {
+            if (responseStatus_ == null) {
+              ResponseStatus = new global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus();
+            }
+            input.ReadMessage(ResponseStatus);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryResponse_CustomSelectRockstarResponse : pb::IMessage<QueryResponse_CustomSelectRockstarResponse> {
+    private static readonly pb::MessageParser<QueryResponse_CustomSelectRockstarResponse> _parser = new pb::MessageParser<QueryResponse_CustomSelectRockstarResponse>(() => new QueryResponse_CustomSelectRockstarResponse());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryResponse_CustomSelectRockstarResponse> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[90]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_CustomSelectRockstarResponse() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_CustomSelectRockstarResponse(QueryResponse_CustomSelectRockstarResponse other) : this() {
+      offset_ = other.offset_;
+      total_ = other.total_;
+      results_ = other.results_.Clone();
+      meta_ = other.meta_.Clone();
+      responseStatus_ = other.responseStatus_ != null ? other.responseStatus_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_CustomSelectRockstarResponse Clone() {
+      return new QueryResponse_CustomSelectRockstarResponse(this);
+    }
+
+    /// <summary>Field number for the "Offset" field.</summary>
+    public const int OffsetFieldNumber = 1;
+    private int offset_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Offset {
+      get { return offset_; }
+      set {
+        offset_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Total" field.</summary>
+    public const int TotalFieldNumber = 2;
+    private int total_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Total {
+      get { return total_; }
+      set {
+        total_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Results" field.</summary>
+    public const int ResultsFieldNumber = 3;
+    private static readonly pb::FieldCodec<global::ServiceStack.Extensions.Tests.Protoc.CustomSelectRockstarResponse> _repeated_results_codec
+        = pb::FieldCodec.ForMessage(26, global::ServiceStack.Extensions.Tests.Protoc.CustomSelectRockstarResponse.Parser);
+    private readonly pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.CustomSelectRockstarResponse> results_ = new pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.CustomSelectRockstarResponse>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.CustomSelectRockstarResponse> Results {
+      get { return results_; }
+    }
+
+    /// <summary>Field number for the "Meta" field.</summary>
+    public const int MetaFieldNumber = 4;
+    private static readonly pbc::MapField<string, string>.Codec _map_meta_codec
+        = new pbc::MapField<string, string>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForString(18), 34);
+    private readonly pbc::MapField<string, string> meta_ = new pbc::MapField<string, string>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::MapField<string, string> Meta {
+      get { return meta_; }
+    }
+
+    /// <summary>Field number for the "ResponseStatus" field.</summary>
+    public const int ResponseStatusFieldNumber = 5;
+    private global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus responseStatus_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus ResponseStatus {
+      get { return responseStatus_; }
+      set {
+        responseStatus_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryResponse_CustomSelectRockstarResponse);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryResponse_CustomSelectRockstarResponse other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Offset != other.Offset) return false;
+      if (Total != other.Total) return false;
+      if(!results_.Equals(other.results_)) return false;
+      if (!Meta.Equals(other.Meta)) return false;
+      if (!object.Equals(ResponseStatus, other.ResponseStatus)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Offset != 0) hash ^= Offset.GetHashCode();
+      if (Total != 0) hash ^= Total.GetHashCode();
+      hash ^= results_.GetHashCode();
+      hash ^= Meta.GetHashCode();
+      if (responseStatus_ != null) hash ^= ResponseStatus.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Offset != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Offset);
+      }
+      if (Total != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Total);
+      }
+      results_.WriteTo(output, _repeated_results_codec);
+      meta_.WriteTo(output, _map_meta_codec);
+      if (responseStatus_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(ResponseStatus);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Offset != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Offset);
+      }
+      if (Total != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Total);
+      }
+      size += results_.CalculateSize(_repeated_results_codec);
+      size += meta_.CalculateSize(_map_meta_codec);
+      if (responseStatus_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ResponseStatus);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryResponse_CustomSelectRockstarResponse other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Offset != 0) {
+        Offset = other.Offset;
+      }
+      if (other.Total != 0) {
+        Total = other.Total;
+      }
+      results_.Add(other.results_);
+      meta_.Add(other.meta_);
+      if (other.responseStatus_ != null) {
+        if (responseStatus_ == null) {
+          ResponseStatus = new global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus();
+        }
+        ResponseStatus.MergeFrom(other.ResponseStatus);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Offset = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Total = input.ReadInt32();
+            break;
+          }
+          case 26: {
+            results_.AddEntriesFrom(input, _repeated_results_codec);
+            break;
+          }
+          case 34: {
+            meta_.AddEntriesFrom(input, _map_meta_codec);
+            break;
+          }
+          case 42: {
+            if (responseStatus_ == null) {
+              ResponseStatus = new global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus();
+            }
+            input.ReadMessage(ResponseStatus);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public sealed partial class QueryResponse_Movie : pb::IMessage<QueryResponse_Movie> {
     private static readonly pb::MessageParser<QueryResponse_Movie> _parser = new pb::MessageParser<QueryResponse_Movie>(() => new QueryResponse_Movie());
     private pb::UnknownFieldSet _unknownFields;
@@ -9413,7 +19237,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[47]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[91]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -9636,6 +19460,468 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
   }
 
+  public sealed partial class QueryResponse_NamedRockstar : pb::IMessage<QueryResponse_NamedRockstar> {
+    private static readonly pb::MessageParser<QueryResponse_NamedRockstar> _parser = new pb::MessageParser<QueryResponse_NamedRockstar>(() => new QueryResponse_NamedRockstar());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryResponse_NamedRockstar> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[92]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_NamedRockstar() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_NamedRockstar(QueryResponse_NamedRockstar other) : this() {
+      offset_ = other.offset_;
+      total_ = other.total_;
+      results_ = other.results_.Clone();
+      meta_ = other.meta_.Clone();
+      responseStatus_ = other.responseStatus_ != null ? other.responseStatus_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_NamedRockstar Clone() {
+      return new QueryResponse_NamedRockstar(this);
+    }
+
+    /// <summary>Field number for the "Offset" field.</summary>
+    public const int OffsetFieldNumber = 1;
+    private int offset_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Offset {
+      get { return offset_; }
+      set {
+        offset_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Total" field.</summary>
+    public const int TotalFieldNumber = 2;
+    private int total_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Total {
+      get { return total_; }
+      set {
+        total_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Results" field.</summary>
+    public const int ResultsFieldNumber = 3;
+    private static readonly pb::FieldCodec<global::ServiceStack.Extensions.Tests.Protoc.Rockstar> _repeated_results_codec
+        = pb::FieldCodec.ForMessage(26, global::ServiceStack.Extensions.Tests.Protoc.Rockstar.Parser);
+    private readonly pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.Rockstar> results_ = new pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.Rockstar>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.Rockstar> Results {
+      get { return results_; }
+    }
+
+    /// <summary>Field number for the "Meta" field.</summary>
+    public const int MetaFieldNumber = 4;
+    private static readonly pbc::MapField<string, string>.Codec _map_meta_codec
+        = new pbc::MapField<string, string>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForString(18), 34);
+    private readonly pbc::MapField<string, string> meta_ = new pbc::MapField<string, string>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::MapField<string, string> Meta {
+      get { return meta_; }
+    }
+
+    /// <summary>Field number for the "ResponseStatus" field.</summary>
+    public const int ResponseStatusFieldNumber = 5;
+    private global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus responseStatus_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus ResponseStatus {
+      get { return responseStatus_; }
+      set {
+        responseStatus_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryResponse_NamedRockstar);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryResponse_NamedRockstar other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Offset != other.Offset) return false;
+      if (Total != other.Total) return false;
+      if(!results_.Equals(other.results_)) return false;
+      if (!Meta.Equals(other.Meta)) return false;
+      if (!object.Equals(ResponseStatus, other.ResponseStatus)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Offset != 0) hash ^= Offset.GetHashCode();
+      if (Total != 0) hash ^= Total.GetHashCode();
+      hash ^= results_.GetHashCode();
+      hash ^= Meta.GetHashCode();
+      if (responseStatus_ != null) hash ^= ResponseStatus.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Offset != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Offset);
+      }
+      if (Total != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Total);
+      }
+      results_.WriteTo(output, _repeated_results_codec);
+      meta_.WriteTo(output, _map_meta_codec);
+      if (responseStatus_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(ResponseStatus);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Offset != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Offset);
+      }
+      if (Total != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Total);
+      }
+      size += results_.CalculateSize(_repeated_results_codec);
+      size += meta_.CalculateSize(_map_meta_codec);
+      if (responseStatus_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ResponseStatus);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryResponse_NamedRockstar other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Offset != 0) {
+        Offset = other.Offset;
+      }
+      if (other.Total != 0) {
+        Total = other.Total;
+      }
+      results_.Add(other.results_);
+      meta_.Add(other.meta_);
+      if (other.responseStatus_ != null) {
+        if (responseStatus_ == null) {
+          ResponseStatus = new global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus();
+        }
+        ResponseStatus.MergeFrom(other.ResponseStatus);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Offset = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Total = input.ReadInt32();
+            break;
+          }
+          case 26: {
+            results_.AddEntriesFrom(input, _repeated_results_codec);
+            break;
+          }
+          case 34: {
+            meta_.AddEntriesFrom(input, _map_meta_codec);
+            break;
+          }
+          case 42: {
+            if (responseStatus_ == null) {
+              ResponseStatus = new global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus();
+            }
+            input.ReadMessage(ResponseStatus);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryResponse_PagingTest : pb::IMessage<QueryResponse_PagingTest> {
+    private static readonly pb::MessageParser<QueryResponse_PagingTest> _parser = new pb::MessageParser<QueryResponse_PagingTest>(() => new QueryResponse_PagingTest());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryResponse_PagingTest> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[93]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_PagingTest() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_PagingTest(QueryResponse_PagingTest other) : this() {
+      offset_ = other.offset_;
+      total_ = other.total_;
+      results_ = other.results_.Clone();
+      meta_ = other.meta_.Clone();
+      responseStatus_ = other.responseStatus_ != null ? other.responseStatus_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_PagingTest Clone() {
+      return new QueryResponse_PagingTest(this);
+    }
+
+    /// <summary>Field number for the "Offset" field.</summary>
+    public const int OffsetFieldNumber = 1;
+    private int offset_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Offset {
+      get { return offset_; }
+      set {
+        offset_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Total" field.</summary>
+    public const int TotalFieldNumber = 2;
+    private int total_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Total {
+      get { return total_; }
+      set {
+        total_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Results" field.</summary>
+    public const int ResultsFieldNumber = 3;
+    private static readonly pb::FieldCodec<global::ServiceStack.Extensions.Tests.Protoc.PagingTest> _repeated_results_codec
+        = pb::FieldCodec.ForMessage(26, global::ServiceStack.Extensions.Tests.Protoc.PagingTest.Parser);
+    private readonly pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.PagingTest> results_ = new pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.PagingTest>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.PagingTest> Results {
+      get { return results_; }
+    }
+
+    /// <summary>Field number for the "Meta" field.</summary>
+    public const int MetaFieldNumber = 4;
+    private static readonly pbc::MapField<string, string>.Codec _map_meta_codec
+        = new pbc::MapField<string, string>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForString(18), 34);
+    private readonly pbc::MapField<string, string> meta_ = new pbc::MapField<string, string>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::MapField<string, string> Meta {
+      get { return meta_; }
+    }
+
+    /// <summary>Field number for the "ResponseStatus" field.</summary>
+    public const int ResponseStatusFieldNumber = 5;
+    private global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus responseStatus_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus ResponseStatus {
+      get { return responseStatus_; }
+      set {
+        responseStatus_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryResponse_PagingTest);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryResponse_PagingTest other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Offset != other.Offset) return false;
+      if (Total != other.Total) return false;
+      if(!results_.Equals(other.results_)) return false;
+      if (!Meta.Equals(other.Meta)) return false;
+      if (!object.Equals(ResponseStatus, other.ResponseStatus)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Offset != 0) hash ^= Offset.GetHashCode();
+      if (Total != 0) hash ^= Total.GetHashCode();
+      hash ^= results_.GetHashCode();
+      hash ^= Meta.GetHashCode();
+      if (responseStatus_ != null) hash ^= ResponseStatus.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Offset != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Offset);
+      }
+      if (Total != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Total);
+      }
+      results_.WriteTo(output, _repeated_results_codec);
+      meta_.WriteTo(output, _map_meta_codec);
+      if (responseStatus_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(ResponseStatus);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Offset != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Offset);
+      }
+      if (Total != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Total);
+      }
+      size += results_.CalculateSize(_repeated_results_codec);
+      size += meta_.CalculateSize(_map_meta_codec);
+      if (responseStatus_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ResponseStatus);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryResponse_PagingTest other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Offset != 0) {
+        Offset = other.Offset;
+      }
+      if (other.Total != 0) {
+        Total = other.Total;
+      }
+      results_.Add(other.results_);
+      meta_.Add(other.meta_);
+      if (other.responseStatus_ != null) {
+        if (responseStatus_ == null) {
+          ResponseStatus = new global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus();
+        }
+        ResponseStatus.MergeFrom(other.ResponseStatus);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Offset = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Total = input.ReadInt32();
+            break;
+          }
+          case 26: {
+            results_.AddEntriesFrom(input, _repeated_results_codec);
+            break;
+          }
+          case 34: {
+            meta_.AddEntriesFrom(input, _map_meta_codec);
+            break;
+          }
+          case 42: {
+            if (responseStatus_ == null) {
+              ResponseStatus = new global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus();
+            }
+            input.ReadMessage(ResponseStatus);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public sealed partial class QueryResponse_Rockstar : pb::IMessage<QueryResponse_Rockstar> {
     private static readonly pb::MessageParser<QueryResponse_Rockstar> _parser = new pb::MessageParser<QueryResponse_Rockstar>(() => new QueryResponse_Rockstar());
     private pb::UnknownFieldSet _unknownFields;
@@ -9644,7 +19930,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[48]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[94]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -9867,6 +20153,468 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
   }
 
+  public sealed partial class QueryResponse_RockstarAlbum : pb::IMessage<QueryResponse_RockstarAlbum> {
+    private static readonly pb::MessageParser<QueryResponse_RockstarAlbum> _parser = new pb::MessageParser<QueryResponse_RockstarAlbum>(() => new QueryResponse_RockstarAlbum());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryResponse_RockstarAlbum> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[95]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_RockstarAlbum() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_RockstarAlbum(QueryResponse_RockstarAlbum other) : this() {
+      offset_ = other.offset_;
+      total_ = other.total_;
+      results_ = other.results_.Clone();
+      meta_ = other.meta_.Clone();
+      responseStatus_ = other.responseStatus_ != null ? other.responseStatus_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_RockstarAlbum Clone() {
+      return new QueryResponse_RockstarAlbum(this);
+    }
+
+    /// <summary>Field number for the "Offset" field.</summary>
+    public const int OffsetFieldNumber = 1;
+    private int offset_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Offset {
+      get { return offset_; }
+      set {
+        offset_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Total" field.</summary>
+    public const int TotalFieldNumber = 2;
+    private int total_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Total {
+      get { return total_; }
+      set {
+        total_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Results" field.</summary>
+    public const int ResultsFieldNumber = 3;
+    private static readonly pb::FieldCodec<global::ServiceStack.Extensions.Tests.Protoc.RockstarAlbum> _repeated_results_codec
+        = pb::FieldCodec.ForMessage(26, global::ServiceStack.Extensions.Tests.Protoc.RockstarAlbum.Parser);
+    private readonly pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.RockstarAlbum> results_ = new pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.RockstarAlbum>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.RockstarAlbum> Results {
+      get { return results_; }
+    }
+
+    /// <summary>Field number for the "Meta" field.</summary>
+    public const int MetaFieldNumber = 4;
+    private static readonly pbc::MapField<string, string>.Codec _map_meta_codec
+        = new pbc::MapField<string, string>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForString(18), 34);
+    private readonly pbc::MapField<string, string> meta_ = new pbc::MapField<string, string>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::MapField<string, string> Meta {
+      get { return meta_; }
+    }
+
+    /// <summary>Field number for the "ResponseStatus" field.</summary>
+    public const int ResponseStatusFieldNumber = 5;
+    private global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus responseStatus_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus ResponseStatus {
+      get { return responseStatus_; }
+      set {
+        responseStatus_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryResponse_RockstarAlbum);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryResponse_RockstarAlbum other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Offset != other.Offset) return false;
+      if (Total != other.Total) return false;
+      if(!results_.Equals(other.results_)) return false;
+      if (!Meta.Equals(other.Meta)) return false;
+      if (!object.Equals(ResponseStatus, other.ResponseStatus)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Offset != 0) hash ^= Offset.GetHashCode();
+      if (Total != 0) hash ^= Total.GetHashCode();
+      hash ^= results_.GetHashCode();
+      hash ^= Meta.GetHashCode();
+      if (responseStatus_ != null) hash ^= ResponseStatus.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Offset != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Offset);
+      }
+      if (Total != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Total);
+      }
+      results_.WriteTo(output, _repeated_results_codec);
+      meta_.WriteTo(output, _map_meta_codec);
+      if (responseStatus_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(ResponseStatus);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Offset != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Offset);
+      }
+      if (Total != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Total);
+      }
+      size += results_.CalculateSize(_repeated_results_codec);
+      size += meta_.CalculateSize(_map_meta_codec);
+      if (responseStatus_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ResponseStatus);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryResponse_RockstarAlbum other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Offset != 0) {
+        Offset = other.Offset;
+      }
+      if (other.Total != 0) {
+        Total = other.Total;
+      }
+      results_.Add(other.results_);
+      meta_.Add(other.meta_);
+      if (other.responseStatus_ != null) {
+        if (responseStatus_ == null) {
+          ResponseStatus = new global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus();
+        }
+        ResponseStatus.MergeFrom(other.ResponseStatus);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Offset = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Total = input.ReadInt32();
+            break;
+          }
+          case 26: {
+            results_.AddEntriesFrom(input, _repeated_results_codec);
+            break;
+          }
+          case 34: {
+            meta_.AddEntriesFrom(input, _map_meta_codec);
+            break;
+          }
+          case 42: {
+            if (responseStatus_ == null) {
+              ResponseStatus = new global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus();
+            }
+            input.ReadMessage(ResponseStatus);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryResponse_RockstarAlias : pb::IMessage<QueryResponse_RockstarAlias> {
+    private static readonly pb::MessageParser<QueryResponse_RockstarAlias> _parser = new pb::MessageParser<QueryResponse_RockstarAlias>(() => new QueryResponse_RockstarAlias());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryResponse_RockstarAlias> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[96]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_RockstarAlias() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_RockstarAlias(QueryResponse_RockstarAlias other) : this() {
+      offset_ = other.offset_;
+      total_ = other.total_;
+      results_ = other.results_.Clone();
+      meta_ = other.meta_.Clone();
+      responseStatus_ = other.responseStatus_ != null ? other.responseStatus_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_RockstarAlias Clone() {
+      return new QueryResponse_RockstarAlias(this);
+    }
+
+    /// <summary>Field number for the "Offset" field.</summary>
+    public const int OffsetFieldNumber = 1;
+    private int offset_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Offset {
+      get { return offset_; }
+      set {
+        offset_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Total" field.</summary>
+    public const int TotalFieldNumber = 2;
+    private int total_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Total {
+      get { return total_; }
+      set {
+        total_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Results" field.</summary>
+    public const int ResultsFieldNumber = 3;
+    private static readonly pb::FieldCodec<global::ServiceStack.Extensions.Tests.Protoc.RockstarAlias> _repeated_results_codec
+        = pb::FieldCodec.ForMessage(26, global::ServiceStack.Extensions.Tests.Protoc.RockstarAlias.Parser);
+    private readonly pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.RockstarAlias> results_ = new pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.RockstarAlias>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.RockstarAlias> Results {
+      get { return results_; }
+    }
+
+    /// <summary>Field number for the "Meta" field.</summary>
+    public const int MetaFieldNumber = 4;
+    private static readonly pbc::MapField<string, string>.Codec _map_meta_codec
+        = new pbc::MapField<string, string>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForString(18), 34);
+    private readonly pbc::MapField<string, string> meta_ = new pbc::MapField<string, string>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::MapField<string, string> Meta {
+      get { return meta_; }
+    }
+
+    /// <summary>Field number for the "ResponseStatus" field.</summary>
+    public const int ResponseStatusFieldNumber = 5;
+    private global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus responseStatus_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus ResponseStatus {
+      get { return responseStatus_; }
+      set {
+        responseStatus_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryResponse_RockstarAlias);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryResponse_RockstarAlias other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Offset != other.Offset) return false;
+      if (Total != other.Total) return false;
+      if(!results_.Equals(other.results_)) return false;
+      if (!Meta.Equals(other.Meta)) return false;
+      if (!object.Equals(ResponseStatus, other.ResponseStatus)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Offset != 0) hash ^= Offset.GetHashCode();
+      if (Total != 0) hash ^= Total.GetHashCode();
+      hash ^= results_.GetHashCode();
+      hash ^= Meta.GetHashCode();
+      if (responseStatus_ != null) hash ^= ResponseStatus.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Offset != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Offset);
+      }
+      if (Total != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Total);
+      }
+      results_.WriteTo(output, _repeated_results_codec);
+      meta_.WriteTo(output, _map_meta_codec);
+      if (responseStatus_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(ResponseStatus);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Offset != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Offset);
+      }
+      if (Total != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Total);
+      }
+      size += results_.CalculateSize(_repeated_results_codec);
+      size += meta_.CalculateSize(_map_meta_codec);
+      if (responseStatus_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ResponseStatus);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryResponse_RockstarAlias other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Offset != 0) {
+        Offset = other.Offset;
+      }
+      if (other.Total != 0) {
+        Total = other.Total;
+      }
+      results_.Add(other.results_);
+      meta_.Add(other.meta_);
+      if (other.responseStatus_ != null) {
+        if (responseStatus_ == null) {
+          ResponseStatus = new global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus();
+        }
+        ResponseStatus.MergeFrom(other.ResponseStatus);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Offset = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Total = input.ReadInt32();
+            break;
+          }
+          case 26: {
+            results_.AddEntriesFrom(input, _repeated_results_codec);
+            break;
+          }
+          case 34: {
+            meta_.AddEntriesFrom(input, _map_meta_codec);
+            break;
+          }
+          case 42: {
+            if (responseStatus_ == null) {
+              ResponseStatus = new global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus();
+            }
+            input.ReadMessage(ResponseStatus);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public sealed partial class QueryResponse_RockstarReference : pb::IMessage<QueryResponse_RockstarReference> {
     private static readonly pb::MessageParser<QueryResponse_RockstarReference> _parser = new pb::MessageParser<QueryResponse_RockstarReference>(() => new QueryResponse_RockstarReference());
     private pb::UnknownFieldSet _unknownFields;
@@ -9875,7 +20623,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[49]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[97]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -10098,6 +20846,471 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
   }
 
+  public sealed partial class QueryResponse_TypeWithEnum : pb::IMessage<QueryResponse_TypeWithEnum> {
+    private static readonly pb::MessageParser<QueryResponse_TypeWithEnum> _parser = new pb::MessageParser<QueryResponse_TypeWithEnum>(() => new QueryResponse_TypeWithEnum());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryResponse_TypeWithEnum> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[98]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_TypeWithEnum() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_TypeWithEnum(QueryResponse_TypeWithEnum other) : this() {
+      offset_ = other.offset_;
+      total_ = other.total_;
+      results_ = other.results_.Clone();
+      meta_ = other.meta_.Clone();
+      responseStatus_ = other.responseStatus_ != null ? other.responseStatus_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryResponse_TypeWithEnum Clone() {
+      return new QueryResponse_TypeWithEnum(this);
+    }
+
+    /// <summary>Field number for the "Offset" field.</summary>
+    public const int OffsetFieldNumber = 1;
+    private int offset_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Offset {
+      get { return offset_; }
+      set {
+        offset_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Total" field.</summary>
+    public const int TotalFieldNumber = 2;
+    private int total_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Total {
+      get { return total_; }
+      set {
+        total_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Results" field.</summary>
+    public const int ResultsFieldNumber = 3;
+    private static readonly pb::FieldCodec<global::ServiceStack.Extensions.Tests.Protoc.TypeWithEnum> _repeated_results_codec
+        = pb::FieldCodec.ForMessage(26, global::ServiceStack.Extensions.Tests.Protoc.TypeWithEnum.Parser);
+    private readonly pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.TypeWithEnum> results_ = new pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.TypeWithEnum>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::ServiceStack.Extensions.Tests.Protoc.TypeWithEnum> Results {
+      get { return results_; }
+    }
+
+    /// <summary>Field number for the "Meta" field.</summary>
+    public const int MetaFieldNumber = 4;
+    private static readonly pbc::MapField<string, string>.Codec _map_meta_codec
+        = new pbc::MapField<string, string>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForString(18), 34);
+    private readonly pbc::MapField<string, string> meta_ = new pbc::MapField<string, string>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::MapField<string, string> Meta {
+      get { return meta_; }
+    }
+
+    /// <summary>Field number for the "ResponseStatus" field.</summary>
+    public const int ResponseStatusFieldNumber = 5;
+    private global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus responseStatus_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus ResponseStatus {
+      get { return responseStatus_; }
+      set {
+        responseStatus_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryResponse_TypeWithEnum);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryResponse_TypeWithEnum other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Offset != other.Offset) return false;
+      if (Total != other.Total) return false;
+      if(!results_.Equals(other.results_)) return false;
+      if (!Meta.Equals(other.Meta)) return false;
+      if (!object.Equals(ResponseStatus, other.ResponseStatus)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Offset != 0) hash ^= Offset.GetHashCode();
+      if (Total != 0) hash ^= Total.GetHashCode();
+      hash ^= results_.GetHashCode();
+      hash ^= Meta.GetHashCode();
+      if (responseStatus_ != null) hash ^= ResponseStatus.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Offset != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Offset);
+      }
+      if (Total != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Total);
+      }
+      results_.WriteTo(output, _repeated_results_codec);
+      meta_.WriteTo(output, _map_meta_codec);
+      if (responseStatus_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(ResponseStatus);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Offset != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Offset);
+      }
+      if (Total != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Total);
+      }
+      size += results_.CalculateSize(_repeated_results_codec);
+      size += meta_.CalculateSize(_map_meta_codec);
+      if (responseStatus_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ResponseStatus);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryResponse_TypeWithEnum other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Offset != 0) {
+        Offset = other.Offset;
+      }
+      if (other.Total != 0) {
+        Total = other.Total;
+      }
+      results_.Add(other.results_);
+      meta_.Add(other.meta_);
+      if (other.responseStatus_ != null) {
+        if (responseStatus_ == null) {
+          ResponseStatus = new global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus();
+        }
+        ResponseStatus.MergeFrom(other.ResponseStatus);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Offset = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Total = input.ReadInt32();
+            break;
+          }
+          case 26: {
+            results_.AddEntriesFrom(input, _repeated_results_codec);
+            break;
+          }
+          case 34: {
+            meta_.AddEntriesFrom(input, _map_meta_codec);
+            break;
+          }
+          case 42: {
+            if (responseStatus_ == null) {
+              ResponseStatus = new global::ServiceStack.Extensions.Tests.Protoc.ResponseStatus();
+            }
+            input.ReadMessage(ResponseStatus);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryRockstarAlbums : pb::IMessage<QueryRockstarAlbums> {
+    private static readonly pb::MessageParser<QueryRockstarAlbums> _parser = new pb::MessageParser<QueryRockstarAlbums>(() => new QueryRockstarAlbums());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryRockstarAlbums> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[99]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarAlbums() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarAlbums(QueryRockstarAlbums other) : this() {
+      id_ = other.id_;
+      rockstarId_ = other.rockstarId_;
+      name_ = other.name_;
+      genre_ = other.genre_;
+      idBetween_ = other.idBetween_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarAlbums Clone() {
+      return new QueryRockstarAlbums(this);
+    }
+
+    /// <summary>Field number for the "Id" field.</summary>
+    public const int IdFieldNumber = 1;
+    private int id_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Id {
+      get { return id_; }
+      set {
+        id_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "RockstarId" field.</summary>
+    public const int RockstarIdFieldNumber = 2;
+    private int rockstarId_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int RockstarId {
+      get { return rockstarId_; }
+      set {
+        rockstarId_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Name" field.</summary>
+    public const int NameFieldNumber = 3;
+    private string name_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Name {
+      get { return name_; }
+      set {
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "Genre" field.</summary>
+    public const int GenreFieldNumber = 4;
+    private string genre_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Genre {
+      get { return genre_; }
+      set {
+        genre_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "IdBetween" field.</summary>
+    public const int IdBetweenFieldNumber = 5;
+    private static readonly pb::FieldCodec<int> _repeated_idBetween_codec
+        = pb::FieldCodec.ForInt32(40);
+    private readonly pbc::RepeatedField<int> idBetween_ = new pbc::RepeatedField<int>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<int> IdBetween {
+      get { return idBetween_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryRockstarAlbums);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryRockstarAlbums other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Id != other.Id) return false;
+      if (RockstarId != other.RockstarId) return false;
+      if (Name != other.Name) return false;
+      if (Genre != other.Genre) return false;
+      if(!idBetween_.Equals(other.idBetween_)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Id != 0) hash ^= Id.GetHashCode();
+      if (RockstarId != 0) hash ^= RockstarId.GetHashCode();
+      if (Name.Length != 0) hash ^= Name.GetHashCode();
+      if (Genre.Length != 0) hash ^= Genre.GetHashCode();
+      hash ^= idBetween_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Id != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Id);
+      }
+      if (RockstarId != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(RockstarId);
+      }
+      if (Name.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(Name);
+      }
+      if (Genre.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(Genre);
+      }
+      idBetween_.WriteTo(output, _repeated_idBetween_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Id != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Id);
+      }
+      if (RockstarId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(RockstarId);
+      }
+      if (Name.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
+      }
+      if (Genre.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Genre);
+      }
+      size += idBetween_.CalculateSize(_repeated_idBetween_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryRockstarAlbums other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Id != 0) {
+        Id = other.Id;
+      }
+      if (other.RockstarId != 0) {
+        RockstarId = other.RockstarId;
+      }
+      if (other.Name.Length != 0) {
+        Name = other.Name;
+      }
+      if (other.Genre.Length != 0) {
+        Genre = other.Genre;
+      }
+      idBetween_.Add(other.idBetween_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Id = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            RockstarId = input.ReadInt32();
+            break;
+          }
+          case 26: {
+            Name = input.ReadString();
+            break;
+          }
+          case 34: {
+            Genre = input.ReadString();
+            break;
+          }
+          case 42:
+          case 40: {
+            idBetween_.AddEntriesFrom(input, _repeated_idBetween_codec);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public sealed partial class QueryRockstarAlbumsCustomLeftJoin : pb::IMessage<QueryRockstarAlbumsCustomLeftJoin> {
     private static readonly pb::MessageParser<QueryRockstarAlbumsCustomLeftJoin> _parser = new pb::MessageParser<QueryRockstarAlbumsCustomLeftJoin>(() => new QueryRockstarAlbumsCustomLeftJoin());
     private pb::UnknownFieldSet _unknownFields;
@@ -10106,7 +21319,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[50]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[100]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -10283,6 +21496,1877 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
   }
 
+  public sealed partial class QueryRockstarAlbumsImplicit : pb::IMessage<QueryRockstarAlbumsImplicit> {
+    private static readonly pb::MessageParser<QueryRockstarAlbumsImplicit> _parser = new pb::MessageParser<QueryRockstarAlbumsImplicit>(() => new QueryRockstarAlbumsImplicit());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryRockstarAlbumsImplicit> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[101]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarAlbumsImplicit() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarAlbumsImplicit(QueryRockstarAlbumsImplicit other) : this() {
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarAlbumsImplicit Clone() {
+      return new QueryRockstarAlbumsImplicit(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryRockstarAlbumsImplicit);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryRockstarAlbumsImplicit other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryRockstarAlbumsImplicit other) {
+      if (other == null) {
+        return;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryRockstarAlbumsLeftJoin : pb::IMessage<QueryRockstarAlbumsLeftJoin> {
+    private static readonly pb::MessageParser<QueryRockstarAlbumsLeftJoin> _parser = new pb::MessageParser<QueryRockstarAlbumsLeftJoin>(() => new QueryRockstarAlbumsLeftJoin());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryRockstarAlbumsLeftJoin> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[102]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarAlbumsLeftJoin() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarAlbumsLeftJoin(QueryRockstarAlbumsLeftJoin other) : this() {
+      age_ = other.age_;
+      albumName_ = other.albumName_;
+      idNotEqualTo_ = other.idNotEqualTo_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarAlbumsLeftJoin Clone() {
+      return new QueryRockstarAlbumsLeftJoin(this);
+    }
+
+    /// <summary>Field number for the "Age" field.</summary>
+    public const int AgeFieldNumber = 1;
+    private int age_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Age {
+      get { return age_; }
+      set {
+        age_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "AlbumName" field.</summary>
+    public const int AlbumNameFieldNumber = 2;
+    private string albumName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string AlbumName {
+      get { return albumName_; }
+      set {
+        albumName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "IdNotEqualTo" field.</summary>
+    public const int IdNotEqualToFieldNumber = 3;
+    private int idNotEqualTo_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int IdNotEqualTo {
+      get { return idNotEqualTo_; }
+      set {
+        idNotEqualTo_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryRockstarAlbumsLeftJoin);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryRockstarAlbumsLeftJoin other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Age != other.Age) return false;
+      if (AlbumName != other.AlbumName) return false;
+      if (IdNotEqualTo != other.IdNotEqualTo) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Age != 0) hash ^= Age.GetHashCode();
+      if (AlbumName.Length != 0) hash ^= AlbumName.GetHashCode();
+      if (IdNotEqualTo != 0) hash ^= IdNotEqualTo.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Age != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Age);
+      }
+      if (AlbumName.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(AlbumName);
+      }
+      if (IdNotEqualTo != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(IdNotEqualTo);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Age != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Age);
+      }
+      if (AlbumName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(AlbumName);
+      }
+      if (IdNotEqualTo != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(IdNotEqualTo);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryRockstarAlbumsLeftJoin other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Age != 0) {
+        Age = other.Age;
+      }
+      if (other.AlbumName.Length != 0) {
+        AlbumName = other.AlbumName;
+      }
+      if (other.IdNotEqualTo != 0) {
+        IdNotEqualTo = other.IdNotEqualTo;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Age = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            AlbumName = input.ReadString();
+            break;
+          }
+          case 24: {
+            IdNotEqualTo = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryRockstarAlias : pb::IMessage<QueryRockstarAlias> {
+    private static readonly pb::MessageParser<QueryRockstarAlias> _parser = new pb::MessageParser<QueryRockstarAlias>(() => new QueryRockstarAlias());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryRockstarAlias> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[103]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarAlias() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarAlias(QueryRockstarAlias other) : this() {
+      age_ = other.age_;
+      rockstarAlbumName_ = other.rockstarAlbumName_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarAlias Clone() {
+      return new QueryRockstarAlias(this);
+    }
+
+    /// <summary>Field number for the "Age" field.</summary>
+    public const int AgeFieldNumber = 1;
+    private int age_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Age {
+      get { return age_; }
+      set {
+        age_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "RockstarAlbumName" field.</summary>
+    public const int RockstarAlbumNameFieldNumber = 2;
+    private string rockstarAlbumName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string RockstarAlbumName {
+      get { return rockstarAlbumName_; }
+      set {
+        rockstarAlbumName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryRockstarAlias);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryRockstarAlias other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Age != other.Age) return false;
+      if (RockstarAlbumName != other.RockstarAlbumName) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Age != 0) hash ^= Age.GetHashCode();
+      if (RockstarAlbumName.Length != 0) hash ^= RockstarAlbumName.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Age != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Age);
+      }
+      if (RockstarAlbumName.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(RockstarAlbumName);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Age != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Age);
+      }
+      if (RockstarAlbumName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(RockstarAlbumName);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryRockstarAlias other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Age != 0) {
+        Age = other.Age;
+      }
+      if (other.RockstarAlbumName.Length != 0) {
+        RockstarAlbumName = other.RockstarAlbumName;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Age = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            RockstarAlbumName = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryRockstarFilters : pb::IMessage<QueryRockstarFilters> {
+    private static readonly pb::MessageParser<QueryRockstarFilters> _parser = new pb::MessageParser<QueryRockstarFilters>(() => new QueryRockstarFilters());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryRockstarFilters> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[104]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarFilters() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarFilters(QueryRockstarFilters other) : this() {
+      ids_ = other.ids_.Clone();
+      ages_ = other.ages_.Clone();
+      firstNames_ = other.firstNames_.Clone();
+      idsBetween_ = other.idsBetween_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarFilters Clone() {
+      return new QueryRockstarFilters(this);
+    }
+
+    /// <summary>Field number for the "Ids" field.</summary>
+    public const int IdsFieldNumber = 1;
+    private static readonly pb::FieldCodec<int> _repeated_ids_codec
+        = pb::FieldCodec.ForInt32(8);
+    private readonly pbc::RepeatedField<int> ids_ = new pbc::RepeatedField<int>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<int> Ids {
+      get { return ids_; }
+    }
+
+    /// <summary>Field number for the "Ages" field.</summary>
+    public const int AgesFieldNumber = 2;
+    private static readonly pb::FieldCodec<int> _repeated_ages_codec
+        = pb::FieldCodec.ForInt32(16);
+    private readonly pbc::RepeatedField<int> ages_ = new pbc::RepeatedField<int>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<int> Ages {
+      get { return ages_; }
+    }
+
+    /// <summary>Field number for the "FirstNames" field.</summary>
+    public const int FirstNamesFieldNumber = 3;
+    private static readonly pb::FieldCodec<string> _repeated_firstNames_codec
+        = pb::FieldCodec.ForString(26);
+    private readonly pbc::RepeatedField<string> firstNames_ = new pbc::RepeatedField<string>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<string> FirstNames {
+      get { return firstNames_; }
+    }
+
+    /// <summary>Field number for the "IdsBetween" field.</summary>
+    public const int IdsBetweenFieldNumber = 4;
+    private static readonly pb::FieldCodec<int> _repeated_idsBetween_codec
+        = pb::FieldCodec.ForInt32(32);
+    private readonly pbc::RepeatedField<int> idsBetween_ = new pbc::RepeatedField<int>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<int> IdsBetween {
+      get { return idsBetween_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryRockstarFilters);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryRockstarFilters other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if(!ids_.Equals(other.ids_)) return false;
+      if(!ages_.Equals(other.ages_)) return false;
+      if(!firstNames_.Equals(other.firstNames_)) return false;
+      if(!idsBetween_.Equals(other.idsBetween_)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      hash ^= ids_.GetHashCode();
+      hash ^= ages_.GetHashCode();
+      hash ^= firstNames_.GetHashCode();
+      hash ^= idsBetween_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      ids_.WriteTo(output, _repeated_ids_codec);
+      ages_.WriteTo(output, _repeated_ages_codec);
+      firstNames_.WriteTo(output, _repeated_firstNames_codec);
+      idsBetween_.WriteTo(output, _repeated_idsBetween_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      size += ids_.CalculateSize(_repeated_ids_codec);
+      size += ages_.CalculateSize(_repeated_ages_codec);
+      size += firstNames_.CalculateSize(_repeated_firstNames_codec);
+      size += idsBetween_.CalculateSize(_repeated_idsBetween_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryRockstarFilters other) {
+      if (other == null) {
+        return;
+      }
+      ids_.Add(other.ids_);
+      ages_.Add(other.ages_);
+      firstNames_.Add(other.firstNames_);
+      idsBetween_.Add(other.idsBetween_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10:
+          case 8: {
+            ids_.AddEntriesFrom(input, _repeated_ids_codec);
+            break;
+          }
+          case 18:
+          case 16: {
+            ages_.AddEntriesFrom(input, _repeated_ages_codec);
+            break;
+          }
+          case 26: {
+            firstNames_.AddEntriesFrom(input, _repeated_firstNames_codec);
+            break;
+          }
+          case 34:
+          case 32: {
+            idsBetween_.AddEntriesFrom(input, _repeated_idsBetween_codec);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryRockstars : pb::IMessage<QueryRockstars> {
+    private static readonly pb::MessageParser<QueryRockstars> _parser = new pb::MessageParser<QueryRockstars>(() => new QueryRockstars());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryRockstars> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[105]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstars() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstars(QueryRockstars other) : this() {
+      age_ = other.age_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstars Clone() {
+      return new QueryRockstars(this);
+    }
+
+    /// <summary>Field number for the "Age" field.</summary>
+    public const int AgeFieldNumber = 1;
+    private int age_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Age {
+      get { return age_; }
+      set {
+        age_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryRockstars);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryRockstars other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Age != other.Age) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Age != 0) hash ^= Age.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Age != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Age);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Age != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Age);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryRockstars other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Age != 0) {
+        Age = other.Age;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Age = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryRockstarsConventions : pb::IMessage<QueryRockstarsConventions> {
+    private static readonly pb::MessageParser<QueryRockstarsConventions> _parser = new pb::MessageParser<QueryRockstarsConventions>(() => new QueryRockstarsConventions());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryRockstarsConventions> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[106]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarsConventions() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarsConventions(QueryRockstarsConventions other) : this() {
+      dateOfBirthGreaterThan_ = other.dateOfBirthGreaterThan_ != null ? other.dateOfBirthGreaterThan_.Clone() : null;
+      dateDiedLessThan_ = other.dateDiedLessThan_ != null ? other.dateDiedLessThan_.Clone() : null;
+      ids_ = other.ids_.Clone();
+      ageOlderThan_ = other.ageOlderThan_;
+      ageGreaterThanOrEqualTo_ = other.ageGreaterThanOrEqualTo_;
+      ageGreaterThan_ = other.ageGreaterThan_;
+      greaterThanAge_ = other.greaterThanAge_;
+      firstNameStartsWith_ = other.firstNameStartsWith_;
+      lastNameEndsWith_ = other.lastNameEndsWith_;
+      lastNameContains_ = other.lastNameContains_;
+      rockstarAlbumNameContains_ = other.rockstarAlbumNameContains_;
+      rockstarIdAfter_ = other.rockstarIdAfter_;
+      rockstarIdOnOrAfter_ = other.rockstarIdOnOrAfter_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarsConventions Clone() {
+      return new QueryRockstarsConventions(this);
+    }
+
+    /// <summary>Field number for the "DateOfBirthGreaterThan" field.</summary>
+    public const int DateOfBirthGreaterThanFieldNumber = 1;
+    private global::ProtoBuf.Bcl.DateTime dateOfBirthGreaterThan_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ProtoBuf.Bcl.DateTime DateOfBirthGreaterThan {
+      get { return dateOfBirthGreaterThan_; }
+      set {
+        dateOfBirthGreaterThan_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "DateDiedLessThan" field.</summary>
+    public const int DateDiedLessThanFieldNumber = 2;
+    private global::ProtoBuf.Bcl.DateTime dateDiedLessThan_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ProtoBuf.Bcl.DateTime DateDiedLessThan {
+      get { return dateDiedLessThan_; }
+      set {
+        dateDiedLessThan_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Ids" field.</summary>
+    public const int IdsFieldNumber = 3;
+    private static readonly pb::FieldCodec<int> _repeated_ids_codec
+        = pb::FieldCodec.ForInt32(24);
+    private readonly pbc::RepeatedField<int> ids_ = new pbc::RepeatedField<int>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<int> Ids {
+      get { return ids_; }
+    }
+
+    /// <summary>Field number for the "AgeOlderThan" field.</summary>
+    public const int AgeOlderThanFieldNumber = 4;
+    private int ageOlderThan_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int AgeOlderThan {
+      get { return ageOlderThan_; }
+      set {
+        ageOlderThan_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "AgeGreaterThanOrEqualTo" field.</summary>
+    public const int AgeGreaterThanOrEqualToFieldNumber = 5;
+    private int ageGreaterThanOrEqualTo_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int AgeGreaterThanOrEqualTo {
+      get { return ageGreaterThanOrEqualTo_; }
+      set {
+        ageGreaterThanOrEqualTo_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "AgeGreaterThan" field.</summary>
+    public const int AgeGreaterThanFieldNumber = 6;
+    private int ageGreaterThan_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int AgeGreaterThan {
+      get { return ageGreaterThan_; }
+      set {
+        ageGreaterThan_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "GreaterThanAge" field.</summary>
+    public const int GreaterThanAgeFieldNumber = 7;
+    private int greaterThanAge_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int GreaterThanAge {
+      get { return greaterThanAge_; }
+      set {
+        greaterThanAge_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "FirstNameStartsWith" field.</summary>
+    public const int FirstNameStartsWithFieldNumber = 8;
+    private string firstNameStartsWith_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string FirstNameStartsWith {
+      get { return firstNameStartsWith_; }
+      set {
+        firstNameStartsWith_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "LastNameEndsWith" field.</summary>
+    public const int LastNameEndsWithFieldNumber = 9;
+    private string lastNameEndsWith_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string LastNameEndsWith {
+      get { return lastNameEndsWith_; }
+      set {
+        lastNameEndsWith_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "LastNameContains" field.</summary>
+    public const int LastNameContainsFieldNumber = 10;
+    private string lastNameContains_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string LastNameContains {
+      get { return lastNameContains_; }
+      set {
+        lastNameContains_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "RockstarAlbumNameContains" field.</summary>
+    public const int RockstarAlbumNameContainsFieldNumber = 11;
+    private string rockstarAlbumNameContains_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string RockstarAlbumNameContains {
+      get { return rockstarAlbumNameContains_; }
+      set {
+        rockstarAlbumNameContains_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "RockstarIdAfter" field.</summary>
+    public const int RockstarIdAfterFieldNumber = 12;
+    private int rockstarIdAfter_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int RockstarIdAfter {
+      get { return rockstarIdAfter_; }
+      set {
+        rockstarIdAfter_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "RockstarIdOnOrAfter" field.</summary>
+    public const int RockstarIdOnOrAfterFieldNumber = 13;
+    private int rockstarIdOnOrAfter_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int RockstarIdOnOrAfter {
+      get { return rockstarIdOnOrAfter_; }
+      set {
+        rockstarIdOnOrAfter_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryRockstarsConventions);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryRockstarsConventions other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(DateOfBirthGreaterThan, other.DateOfBirthGreaterThan)) return false;
+      if (!object.Equals(DateDiedLessThan, other.DateDiedLessThan)) return false;
+      if(!ids_.Equals(other.ids_)) return false;
+      if (AgeOlderThan != other.AgeOlderThan) return false;
+      if (AgeGreaterThanOrEqualTo != other.AgeGreaterThanOrEqualTo) return false;
+      if (AgeGreaterThan != other.AgeGreaterThan) return false;
+      if (GreaterThanAge != other.GreaterThanAge) return false;
+      if (FirstNameStartsWith != other.FirstNameStartsWith) return false;
+      if (LastNameEndsWith != other.LastNameEndsWith) return false;
+      if (LastNameContains != other.LastNameContains) return false;
+      if (RockstarAlbumNameContains != other.RockstarAlbumNameContains) return false;
+      if (RockstarIdAfter != other.RockstarIdAfter) return false;
+      if (RockstarIdOnOrAfter != other.RockstarIdOnOrAfter) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (dateOfBirthGreaterThan_ != null) hash ^= DateOfBirthGreaterThan.GetHashCode();
+      if (dateDiedLessThan_ != null) hash ^= DateDiedLessThan.GetHashCode();
+      hash ^= ids_.GetHashCode();
+      if (AgeOlderThan != 0) hash ^= AgeOlderThan.GetHashCode();
+      if (AgeGreaterThanOrEqualTo != 0) hash ^= AgeGreaterThanOrEqualTo.GetHashCode();
+      if (AgeGreaterThan != 0) hash ^= AgeGreaterThan.GetHashCode();
+      if (GreaterThanAge != 0) hash ^= GreaterThanAge.GetHashCode();
+      if (FirstNameStartsWith.Length != 0) hash ^= FirstNameStartsWith.GetHashCode();
+      if (LastNameEndsWith.Length != 0) hash ^= LastNameEndsWith.GetHashCode();
+      if (LastNameContains.Length != 0) hash ^= LastNameContains.GetHashCode();
+      if (RockstarAlbumNameContains.Length != 0) hash ^= RockstarAlbumNameContains.GetHashCode();
+      if (RockstarIdAfter != 0) hash ^= RockstarIdAfter.GetHashCode();
+      if (RockstarIdOnOrAfter != 0) hash ^= RockstarIdOnOrAfter.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (dateOfBirthGreaterThan_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(DateOfBirthGreaterThan);
+      }
+      if (dateDiedLessThan_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(DateDiedLessThan);
+      }
+      ids_.WriteTo(output, _repeated_ids_codec);
+      if (AgeOlderThan != 0) {
+        output.WriteRawTag(32);
+        output.WriteInt32(AgeOlderThan);
+      }
+      if (AgeGreaterThanOrEqualTo != 0) {
+        output.WriteRawTag(40);
+        output.WriteInt32(AgeGreaterThanOrEqualTo);
+      }
+      if (AgeGreaterThan != 0) {
+        output.WriteRawTag(48);
+        output.WriteInt32(AgeGreaterThan);
+      }
+      if (GreaterThanAge != 0) {
+        output.WriteRawTag(56);
+        output.WriteInt32(GreaterThanAge);
+      }
+      if (FirstNameStartsWith.Length != 0) {
+        output.WriteRawTag(66);
+        output.WriteString(FirstNameStartsWith);
+      }
+      if (LastNameEndsWith.Length != 0) {
+        output.WriteRawTag(74);
+        output.WriteString(LastNameEndsWith);
+      }
+      if (LastNameContains.Length != 0) {
+        output.WriteRawTag(82);
+        output.WriteString(LastNameContains);
+      }
+      if (RockstarAlbumNameContains.Length != 0) {
+        output.WriteRawTag(90);
+        output.WriteString(RockstarAlbumNameContains);
+      }
+      if (RockstarIdAfter != 0) {
+        output.WriteRawTag(96);
+        output.WriteInt32(RockstarIdAfter);
+      }
+      if (RockstarIdOnOrAfter != 0) {
+        output.WriteRawTag(104);
+        output.WriteInt32(RockstarIdOnOrAfter);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (dateOfBirthGreaterThan_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(DateOfBirthGreaterThan);
+      }
+      if (dateDiedLessThan_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(DateDiedLessThan);
+      }
+      size += ids_.CalculateSize(_repeated_ids_codec);
+      if (AgeOlderThan != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(AgeOlderThan);
+      }
+      if (AgeGreaterThanOrEqualTo != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(AgeGreaterThanOrEqualTo);
+      }
+      if (AgeGreaterThan != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(AgeGreaterThan);
+      }
+      if (GreaterThanAge != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(GreaterThanAge);
+      }
+      if (FirstNameStartsWith.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(FirstNameStartsWith);
+      }
+      if (LastNameEndsWith.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(LastNameEndsWith);
+      }
+      if (LastNameContains.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(LastNameContains);
+      }
+      if (RockstarAlbumNameContains.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(RockstarAlbumNameContains);
+      }
+      if (RockstarIdAfter != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(RockstarIdAfter);
+      }
+      if (RockstarIdOnOrAfter != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(RockstarIdOnOrAfter);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryRockstarsConventions other) {
+      if (other == null) {
+        return;
+      }
+      if (other.dateOfBirthGreaterThan_ != null) {
+        if (dateOfBirthGreaterThan_ == null) {
+          DateOfBirthGreaterThan = new global::ProtoBuf.Bcl.DateTime();
+        }
+        DateOfBirthGreaterThan.MergeFrom(other.DateOfBirthGreaterThan);
+      }
+      if (other.dateDiedLessThan_ != null) {
+        if (dateDiedLessThan_ == null) {
+          DateDiedLessThan = new global::ProtoBuf.Bcl.DateTime();
+        }
+        DateDiedLessThan.MergeFrom(other.DateDiedLessThan);
+      }
+      ids_.Add(other.ids_);
+      if (other.AgeOlderThan != 0) {
+        AgeOlderThan = other.AgeOlderThan;
+      }
+      if (other.AgeGreaterThanOrEqualTo != 0) {
+        AgeGreaterThanOrEqualTo = other.AgeGreaterThanOrEqualTo;
+      }
+      if (other.AgeGreaterThan != 0) {
+        AgeGreaterThan = other.AgeGreaterThan;
+      }
+      if (other.GreaterThanAge != 0) {
+        GreaterThanAge = other.GreaterThanAge;
+      }
+      if (other.FirstNameStartsWith.Length != 0) {
+        FirstNameStartsWith = other.FirstNameStartsWith;
+      }
+      if (other.LastNameEndsWith.Length != 0) {
+        LastNameEndsWith = other.LastNameEndsWith;
+      }
+      if (other.LastNameContains.Length != 0) {
+        LastNameContains = other.LastNameContains;
+      }
+      if (other.RockstarAlbumNameContains.Length != 0) {
+        RockstarAlbumNameContains = other.RockstarAlbumNameContains;
+      }
+      if (other.RockstarIdAfter != 0) {
+        RockstarIdAfter = other.RockstarIdAfter;
+      }
+      if (other.RockstarIdOnOrAfter != 0) {
+        RockstarIdOnOrAfter = other.RockstarIdOnOrAfter;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (dateOfBirthGreaterThan_ == null) {
+              DateOfBirthGreaterThan = new global::ProtoBuf.Bcl.DateTime();
+            }
+            input.ReadMessage(DateOfBirthGreaterThan);
+            break;
+          }
+          case 18: {
+            if (dateDiedLessThan_ == null) {
+              DateDiedLessThan = new global::ProtoBuf.Bcl.DateTime();
+            }
+            input.ReadMessage(DateDiedLessThan);
+            break;
+          }
+          case 26:
+          case 24: {
+            ids_.AddEntriesFrom(input, _repeated_ids_codec);
+            break;
+          }
+          case 32: {
+            AgeOlderThan = input.ReadInt32();
+            break;
+          }
+          case 40: {
+            AgeGreaterThanOrEqualTo = input.ReadInt32();
+            break;
+          }
+          case 48: {
+            AgeGreaterThan = input.ReadInt32();
+            break;
+          }
+          case 56: {
+            GreaterThanAge = input.ReadInt32();
+            break;
+          }
+          case 66: {
+            FirstNameStartsWith = input.ReadString();
+            break;
+          }
+          case 74: {
+            LastNameEndsWith = input.ReadString();
+            break;
+          }
+          case 82: {
+            LastNameContains = input.ReadString();
+            break;
+          }
+          case 90: {
+            RockstarAlbumNameContains = input.ReadString();
+            break;
+          }
+          case 96: {
+            RockstarIdAfter = input.ReadInt32();
+            break;
+          }
+          case 104: {
+            RockstarIdOnOrAfter = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryRockstarsFilter : pb::IMessage<QueryRockstarsFilter> {
+    private static readonly pb::MessageParser<QueryRockstarsFilter> _parser = new pb::MessageParser<QueryRockstarsFilter>(() => new QueryRockstarsFilter());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryRockstarsFilter> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[107]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarsFilter() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarsFilter(QueryRockstarsFilter other) : this() {
+      age_ = other.age_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarsFilter Clone() {
+      return new QueryRockstarsFilter(this);
+    }
+
+    /// <summary>Field number for the "Age" field.</summary>
+    public const int AgeFieldNumber = 1;
+    private int age_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Age {
+      get { return age_; }
+      set {
+        age_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryRockstarsFilter);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryRockstarsFilter other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Age != other.Age) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Age != 0) hash ^= Age.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Age != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Age);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Age != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Age);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryRockstarsFilter other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Age != 0) {
+        Age = other.Age;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Age = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryRockstarsIFilter : pb::IMessage<QueryRockstarsIFilter> {
+    private static readonly pb::MessageParser<QueryRockstarsIFilter> _parser = new pb::MessageParser<QueryRockstarsIFilter>(() => new QueryRockstarsIFilter());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryRockstarsIFilter> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[108]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarsIFilter() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarsIFilter(QueryRockstarsIFilter other) : this() {
+      age_ = other.age_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarsIFilter Clone() {
+      return new QueryRockstarsIFilter(this);
+    }
+
+    /// <summary>Field number for the "Age" field.</summary>
+    public const int AgeFieldNumber = 1;
+    private int age_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Age {
+      get { return age_; }
+      set {
+        age_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryRockstarsIFilter);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryRockstarsIFilter other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Age != other.Age) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Age != 0) hash ^= Age.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Age != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Age);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Age != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Age);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryRockstarsIFilter other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Age != 0) {
+        Age = other.Age;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Age = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryRockstarsWithReferences : pb::IMessage<QueryRockstarsWithReferences> {
+    private static readonly pb::MessageParser<QueryRockstarsWithReferences> _parser = new pb::MessageParser<QueryRockstarsWithReferences>(() => new QueryRockstarsWithReferences());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryRockstarsWithReferences> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[109]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarsWithReferences() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarsWithReferences(QueryRockstarsWithReferences other) : this() {
+      age_ = other.age_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryRockstarsWithReferences Clone() {
+      return new QueryRockstarsWithReferences(this);
+    }
+
+    /// <summary>Field number for the "Age" field.</summary>
+    public const int AgeFieldNumber = 1;
+    private int age_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Age {
+      get { return age_; }
+      set {
+        age_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryRockstarsWithReferences);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryRockstarsWithReferences other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Age != other.Age) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Age != 0) hash ^= Age.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Age != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Age);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Age != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Age);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryRockstarsWithReferences other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Age != 0) {
+        Age = other.Age;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Age = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryTypeWithEnums : pb::IMessage<QueryTypeWithEnums> {
+    private static readonly pb::MessageParser<QueryTypeWithEnums> _parser = new pb::MessageParser<QueryTypeWithEnums>(() => new QueryTypeWithEnums());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryTypeWithEnums> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[110]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryTypeWithEnums() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryTypeWithEnums(QueryTypeWithEnums other) : this() {
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryTypeWithEnums Clone() {
+      return new QueryTypeWithEnums(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryTypeWithEnums);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryTypeWithEnums other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryTypeWithEnums other) {
+      if (other == null) {
+        return;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class QueryUnknownRockstars : pb::IMessage<QueryUnknownRockstars> {
+    private static readonly pb::MessageParser<QueryUnknownRockstars> _parser = new pb::MessageParser<QueryUnknownRockstars>(() => new QueryUnknownRockstars());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<QueryUnknownRockstars> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[111]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryUnknownRockstars() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryUnknownRockstars(QueryUnknownRockstars other) : this() {
+      unknownInt_ = other.unknownInt_;
+      unknownProperty_ = other.unknownProperty_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public QueryUnknownRockstars Clone() {
+      return new QueryUnknownRockstars(this);
+    }
+
+    /// <summary>Field number for the "UnknownInt" field.</summary>
+    public const int UnknownIntFieldNumber = 1;
+    private int unknownInt_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int UnknownInt {
+      get { return unknownInt_; }
+      set {
+        unknownInt_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "UnknownProperty" field.</summary>
+    public const int UnknownPropertyFieldNumber = 2;
+    private string unknownProperty_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string UnknownProperty {
+      get { return unknownProperty_; }
+      set {
+        unknownProperty_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as QueryUnknownRockstars);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(QueryUnknownRockstars other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (UnknownInt != other.UnknownInt) return false;
+      if (UnknownProperty != other.UnknownProperty) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (UnknownInt != 0) hash ^= UnknownInt.GetHashCode();
+      if (UnknownProperty.Length != 0) hash ^= UnknownProperty.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (UnknownInt != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(UnknownInt);
+      }
+      if (UnknownProperty.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(UnknownProperty);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (UnknownInt != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(UnknownInt);
+      }
+      if (UnknownProperty.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(UnknownProperty);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(QueryUnknownRockstars other) {
+      if (other == null) {
+        return;
+      }
+      if (other.UnknownInt != 0) {
+        UnknownInt = other.UnknownInt;
+      }
+      if (other.UnknownProperty.Length != 0) {
+        UnknownProperty = other.UnknownProperty;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            UnknownInt = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            UnknownProperty = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public sealed partial class RegenerateApiKeys : pb::IMessage<RegenerateApiKeys> {
     private static readonly pb::MessageParser<RegenerateApiKeys> _parser = new pb::MessageParser<RegenerateApiKeys>(() => new RegenerateApiKeys());
     private pb::UnknownFieldSet _unknownFields;
@@ -10291,7 +23375,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[51]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[112]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -10440,7 +23524,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[52]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[113]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -10615,7 +23699,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[53]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[114]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -11016,7 +24100,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[54]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[115]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -11339,7 +24423,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[55]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[116]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -11496,7 +24580,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[56]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[117]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -11597,7 +24681,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[57]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[118]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -11802,7 +24886,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[58]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[119]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -12027,7 +25111,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[59]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[120]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -12051,6 +25135,12 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       dateOfBirth_ = other.dateOfBirth_ != null ? other.dateOfBirth_.Clone() : null;
       dateDied_ = other.dateDied_ != null ? other.dateDied_.Clone() : null;
       livingStatus_ = other.livingStatus_;
+      switch (other.SubtypeCase) {
+        case SubtypeOneofCase.NamedRockstar:
+          NamedRockstar = other.NamedRockstar.Clone();
+          break;
+      }
+
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -12136,6 +25226,35 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       }
     }
 
+    /// <summary>Field number for the "NamedRockstar" field.</summary>
+    public const int NamedRockstarFieldNumber = 345091624;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.NamedRockstar NamedRockstar {
+      get { return subtypeCase_ == SubtypeOneofCase.NamedRockstar ? (global::ServiceStack.Extensions.Tests.Protoc.NamedRockstar) subtype_ : null; }
+      set {
+        subtype_ = value;
+        subtypeCase_ = value == null ? SubtypeOneofCase.None : SubtypeOneofCase.NamedRockstar;
+      }
+    }
+
+    private object subtype_;
+    /// <summary>Enum of possible cases for the "subtype" oneof.</summary>
+    public enum SubtypeOneofCase {
+      None = 0,
+      NamedRockstar = 345091624,
+    }
+    private SubtypeOneofCase subtypeCase_ = SubtypeOneofCase.None;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public SubtypeOneofCase SubtypeCase {
+      get { return subtypeCase_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSubtype() {
+      subtypeCase_ = SubtypeOneofCase.None;
+      subtype_ = null;
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Rockstar);
@@ -12156,6 +25275,8 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       if (!object.Equals(DateOfBirth, other.DateOfBirth)) return false;
       if (!object.Equals(DateDied, other.DateDied)) return false;
       if (LivingStatus != other.LivingStatus) return false;
+      if (!object.Equals(NamedRockstar, other.NamedRockstar)) return false;
+      if (SubtypeCase != other.SubtypeCase) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -12169,6 +25290,8 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       if (dateOfBirth_ != null) hash ^= DateOfBirth.GetHashCode();
       if (dateDied_ != null) hash ^= DateDied.GetHashCode();
       if (LivingStatus != 0) hash ^= LivingStatus.GetHashCode();
+      if (subtypeCase_ == SubtypeOneofCase.NamedRockstar) hash ^= NamedRockstar.GetHashCode();
+      hash ^= (int) subtypeCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -12210,6 +25333,10 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         output.WriteRawTag(56);
         output.WriteEnum((int) LivingStatus);
       }
+      if (subtypeCase_ == SubtypeOneofCase.NamedRockstar) {
+        output.WriteRawTag(194, 226, 181, 164, 10);
+        output.WriteMessage(NamedRockstar);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -12238,6 +25365,9 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       }
       if (LivingStatus != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) LivingStatus);
+      }
+      if (subtypeCase_ == SubtypeOneofCase.NamedRockstar) {
+        size += 5 + pb::CodedOutputStream.ComputeMessageSize(NamedRockstar);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -12277,6 +25407,15 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       if (other.LivingStatus != 0) {
         LivingStatus = other.LivingStatus;
       }
+      switch (other.SubtypeCase) {
+        case SubtypeOneofCase.NamedRockstar:
+          if (NamedRockstar == null) {
+            NamedRockstar = new global::ServiceStack.Extensions.Tests.Protoc.NamedRockstar();
+          }
+          NamedRockstar.MergeFrom(other.NamedRockstar);
+          break;
+      }
+
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -12322,6 +25461,15 @@ namespace ServiceStack.Extensions.Tests.Protoc {
             LivingStatus = (global::ServiceStack.Extensions.Tests.Protoc.LivingStatus) input.ReadEnum();
             break;
           }
+          case 2760732994: {
+            global::ServiceStack.Extensions.Tests.Protoc.NamedRockstar subBuilder = new global::ServiceStack.Extensions.Tests.Protoc.NamedRockstar();
+            if (subtypeCase_ == SubtypeOneofCase.NamedRockstar) {
+              subBuilder.MergeFrom(NamedRockstar);
+            }
+            input.ReadMessage(subBuilder);
+            NamedRockstar = subBuilder;
+            break;
+          }
         }
       }
     }
@@ -12336,7 +25484,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[60]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[121]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -12541,6 +25689,219 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
   }
 
+  public sealed partial class RockstarAlias : pb::IMessage<RockstarAlias> {
+    private static readonly pb::MessageParser<RockstarAlias> _parser = new pb::MessageParser<RockstarAlias>(() => new RockstarAlias());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<RockstarAlias> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[122]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public RockstarAlias() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public RockstarAlias(RockstarAlias other) : this() {
+      rockstarId_ = other.rockstarId_;
+      firstName_ = other.firstName_;
+      surname_ = other.surname_;
+      album_ = other.album_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public RockstarAlias Clone() {
+      return new RockstarAlias(this);
+    }
+
+    /// <summary>Field number for the "RockstarId" field.</summary>
+    public const int RockstarIdFieldNumber = 1;
+    private int rockstarId_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int RockstarId {
+      get { return rockstarId_; }
+      set {
+        rockstarId_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "FirstName" field.</summary>
+    public const int FirstNameFieldNumber = 2;
+    private string firstName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string FirstName {
+      get { return firstName_; }
+      set {
+        firstName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "Surname" field.</summary>
+    public const int SurnameFieldNumber = 3;
+    private string surname_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Surname {
+      get { return surname_; }
+      set {
+        surname_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "album" field.</summary>
+    public const int AlbumFieldNumber = 4;
+    private string album_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Album {
+      get { return album_; }
+      set {
+        album_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as RockstarAlias);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(RockstarAlias other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (RockstarId != other.RockstarId) return false;
+      if (FirstName != other.FirstName) return false;
+      if (Surname != other.Surname) return false;
+      if (Album != other.Album) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (RockstarId != 0) hash ^= RockstarId.GetHashCode();
+      if (FirstName.Length != 0) hash ^= FirstName.GetHashCode();
+      if (Surname.Length != 0) hash ^= Surname.GetHashCode();
+      if (Album.Length != 0) hash ^= Album.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (RockstarId != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(RockstarId);
+      }
+      if (FirstName.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(FirstName);
+      }
+      if (Surname.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(Surname);
+      }
+      if (Album.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(Album);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (RockstarId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(RockstarId);
+      }
+      if (FirstName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(FirstName);
+      }
+      if (Surname.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Surname);
+      }
+      if (Album.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Album);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(RockstarAlias other) {
+      if (other == null) {
+        return;
+      }
+      if (other.RockstarId != 0) {
+        RockstarId = other.RockstarId;
+      }
+      if (other.FirstName.Length != 0) {
+        FirstName = other.FirstName;
+      }
+      if (other.Surname.Length != 0) {
+        Surname = other.Surname;
+      }
+      if (other.Album.Length != 0) {
+        Album = other.Album;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            RockstarId = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            FirstName = input.ReadString();
+            break;
+          }
+          case 26: {
+            Surname = input.ReadString();
+            break;
+          }
+          case 34: {
+            Album = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public sealed partial class RockstarReference : pb::IMessage<RockstarReference> {
     private static readonly pb::MessageParser<RockstarReference> _parser = new pb::MessageParser<RockstarReference>(() => new RockstarReference());
     private pb::UnknownFieldSet _unknownFields;
@@ -12549,7 +25910,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[61]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[123]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -12774,6 +26135,107 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
   }
 
+  public sealed partial class SearchMovies : pb::IMessage<SearchMovies> {
+    private static readonly pb::MessageParser<SearchMovies> _parser = new pb::MessageParser<SearchMovies>(() => new SearchMovies());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<SearchMovies> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[124]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public SearchMovies() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public SearchMovies(SearchMovies other) : this() {
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public SearchMovies Clone() {
+      return new SearchMovies(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as SearchMovies);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(SearchMovies other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(SearchMovies other) {
+      if (other == null) {
+        return;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+        }
+      }
+    }
+
+  }
+
   public sealed partial class Secured : pb::IMessage<Secured> {
     private static readonly pb::MessageParser<Secured> _parser = new pb::MessageParser<Secured>(() => new Secured());
     private pb::UnknownFieldSet _unknownFields;
@@ -12782,7 +26244,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[62]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[125]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -12911,7 +26373,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[63]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[126]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -13074,7 +26536,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[64]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[127]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -13195,7 +26657,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[65]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[128]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -13316,7 +26778,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[66]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[129]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -13437,7 +26899,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[67]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[130]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -14116,7 +27578,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[68]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[131]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -14245,7 +27707,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[69]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[132]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -14346,7 +27808,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[70]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[133]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -14481,7 +27943,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[71]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[134]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -14610,7 +28072,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[72]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[135]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -14823,7 +28285,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[73]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[136]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -15370,6 +28832,275 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
   }
 
+  public sealed partial class TypeWithEnum : pb::IMessage<TypeWithEnum> {
+    private static readonly pb::MessageParser<TypeWithEnum> _parser = new pb::MessageParser<TypeWithEnum>(() => new TypeWithEnum());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<TypeWithEnum> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[137]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public TypeWithEnum() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public TypeWithEnum(TypeWithEnum other) : this() {
+      id_ = other.id_;
+      name_ = other.name_;
+      someEnum_ = other.someEnum_;
+      someEnumAsInt_ = other.someEnumAsInt_;
+      nSomeEnum_ = other.nSomeEnum_;
+      nSomeEnumAsInt_ = other.nSomeEnumAsInt_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public TypeWithEnum Clone() {
+      return new TypeWithEnum(this);
+    }
+
+    /// <summary>Field number for the "Id" field.</summary>
+    public const int IdFieldNumber = 1;
+    private int id_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Id {
+      get { return id_; }
+      set {
+        id_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Name" field.</summary>
+    public const int NameFieldNumber = 2;
+    private string name_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Name {
+      get { return name_; }
+      set {
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "SomeEnum" field.</summary>
+    public const int SomeEnumFieldNumber = 3;
+    private global::ServiceStack.Extensions.Tests.Protoc.SomeEnum someEnum_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.SomeEnum SomeEnum {
+      get { return someEnum_; }
+      set {
+        someEnum_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "SomeEnumAsInt" field.</summary>
+    public const int SomeEnumAsIntFieldNumber = 4;
+    private global::ServiceStack.Extensions.Tests.Protoc.SomeEnumAsInt someEnumAsInt_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.SomeEnumAsInt SomeEnumAsInt {
+      get { return someEnumAsInt_; }
+      set {
+        someEnumAsInt_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "NSomeEnum" field.</summary>
+    public const int NSomeEnumFieldNumber = 5;
+    private global::ServiceStack.Extensions.Tests.Protoc.SomeEnum nSomeEnum_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.SomeEnum NSomeEnum {
+      get { return nSomeEnum_; }
+      set {
+        nSomeEnum_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "NSomeEnumAsInt" field.</summary>
+    public const int NSomeEnumAsIntFieldNumber = 6;
+    private global::ServiceStack.Extensions.Tests.Protoc.SomeEnumAsInt nSomeEnumAsInt_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ServiceStack.Extensions.Tests.Protoc.SomeEnumAsInt NSomeEnumAsInt {
+      get { return nSomeEnumAsInt_; }
+      set {
+        nSomeEnumAsInt_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as TypeWithEnum);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(TypeWithEnum other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Id != other.Id) return false;
+      if (Name != other.Name) return false;
+      if (SomeEnum != other.SomeEnum) return false;
+      if (SomeEnumAsInt != other.SomeEnumAsInt) return false;
+      if (NSomeEnum != other.NSomeEnum) return false;
+      if (NSomeEnumAsInt != other.NSomeEnumAsInt) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Id != 0) hash ^= Id.GetHashCode();
+      if (Name.Length != 0) hash ^= Name.GetHashCode();
+      if (SomeEnum != 0) hash ^= SomeEnum.GetHashCode();
+      if (SomeEnumAsInt != 0) hash ^= SomeEnumAsInt.GetHashCode();
+      if (NSomeEnum != 0) hash ^= NSomeEnum.GetHashCode();
+      if (NSomeEnumAsInt != 0) hash ^= NSomeEnumAsInt.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Id != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Id);
+      }
+      if (Name.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Name);
+      }
+      if (SomeEnum != 0) {
+        output.WriteRawTag(24);
+        output.WriteEnum((int) SomeEnum);
+      }
+      if (SomeEnumAsInt != 0) {
+        output.WriteRawTag(32);
+        output.WriteEnum((int) SomeEnumAsInt);
+      }
+      if (NSomeEnum != 0) {
+        output.WriteRawTag(40);
+        output.WriteEnum((int) NSomeEnum);
+      }
+      if (NSomeEnumAsInt != 0) {
+        output.WriteRawTag(48);
+        output.WriteEnum((int) NSomeEnumAsInt);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Id != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Id);
+      }
+      if (Name.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
+      }
+      if (SomeEnum != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) SomeEnum);
+      }
+      if (SomeEnumAsInt != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) SomeEnumAsInt);
+      }
+      if (NSomeEnum != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) NSomeEnum);
+      }
+      if (NSomeEnumAsInt != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) NSomeEnumAsInt);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(TypeWithEnum other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Id != 0) {
+        Id = other.Id;
+      }
+      if (other.Name.Length != 0) {
+        Name = other.Name;
+      }
+      if (other.SomeEnum != 0) {
+        SomeEnum = other.SomeEnum;
+      }
+      if (other.SomeEnumAsInt != 0) {
+        SomeEnumAsInt = other.SomeEnumAsInt;
+      }
+      if (other.NSomeEnum != 0) {
+        NSomeEnum = other.NSomeEnum;
+      }
+      if (other.NSomeEnumAsInt != 0) {
+        NSomeEnumAsInt = other.NSomeEnumAsInt;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Id = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            Name = input.ReadString();
+            break;
+          }
+          case 24: {
+            SomeEnum = (global::ServiceStack.Extensions.Tests.Protoc.SomeEnum) input.ReadEnum();
+            break;
+          }
+          case 32: {
+            SomeEnumAsInt = (global::ServiceStack.Extensions.Tests.Protoc.SomeEnumAsInt) input.ReadEnum();
+            break;
+          }
+          case 40: {
+            NSomeEnum = (global::ServiceStack.Extensions.Tests.Protoc.SomeEnum) input.ReadEnum();
+            break;
+          }
+          case 48: {
+            NSomeEnumAsInt = (global::ServiceStack.Extensions.Tests.Protoc.SomeEnumAsInt) input.ReadEnum();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public sealed partial class UnAssignRoles : pb::IMessage<UnAssignRoles> {
     private static readonly pb::MessageParser<UnAssignRoles> _parser = new pb::MessageParser<UnAssignRoles>(() => new UnAssignRoles());
     private pb::UnknownFieldSet _unknownFields;
@@ -15378,7 +29109,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[74]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[138]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -15567,7 +29298,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[75]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[139]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -15762,7 +29493,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[76]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[140]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -15975,7 +29706,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[77]; }
+      get { return global::ServiceStack.Extensions.Tests.Protoc.ServicesReflection.Descriptor.MessageTypes[141]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

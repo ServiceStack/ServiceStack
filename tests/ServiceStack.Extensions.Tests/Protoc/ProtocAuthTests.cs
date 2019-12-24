@@ -34,12 +34,15 @@ namespace ServiceStack.Extensions.Tests.Protoc
         {
             public static ApiKey LastApiKey;
             public AppHost() 
-                : base(nameof(GrpcTests), typeof(MyServices).Assembly) { }
+                : base(nameof(ProtocTests), typeof(MyServices).Assembly) { }
 
             public override void Configure(Container container)
             {
-                Plugins.Add(new ValidationFeature());
+                RegisterService<GetFileService>();
                 Plugins.Add(new GrpcFeature(App));
+
+                Plugins.Add(new ValidationFeature());
+                Plugins.Add(new AutoQueryFeature());
 
                 container.Register<IAuthRepository>(new InMemoryAuthRepository());
                 container.Resolve<IAuthRepository>().InitSchema();
@@ -93,15 +96,6 @@ namespace ServiceStack.Extensions.Tests.Protoc
                 });
             }
 
-            public override void ConfigureKestrel(KestrelServerOptions options)
-            {
-                options.ListenLocalhost(20000, listenOptions =>
-                {
-                    listenOptions.Protocols = HttpProtocols.Http2; // use for tests
-//                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2; // use for UpdateProto
-                });
-            }
-
             public override void Configure(IServiceCollection services)
             {
                 services.AddServiceStackGrpc();
@@ -111,6 +105,28 @@ namespace ServiceStack.Extensions.Tests.Protoc
             {
                 app.UseRouting();
             }
+
+            public override void ConfigureKestrel(KestrelServerOptions options)
+            {
+                options.ListenLocalhost(TestsConfig.Port, listenOptions =>
+                {
+                    listenOptions.Protocols = HttpProtocols.Http2; // use for tests
+                    // listenOptions.Protocols = HttpProtocols.Http1AndHttp2; // use for UpdateProto
+                });
+            }
+        }
+
+        // [Test] public void TestProtoTypes() => TestsConfig.BaseUri.CombineWith("/types/proto").GetStringFromUrl();
+        // [Test] // needs: listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+        public void UpdateProto()
+        {
+            Directory.GetCurrentDirectory().Print();
+            var protoc = TestsConfig.BaseUri.CombineWith("/types/proto").GetStringFromUrl();
+            protoc = protoc.Replace("ServiceStack.Extensions.Tests","ServiceStack.Extensions.Tests.Protoc");
+            
+            Directory.SetCurrentDirectory("../../../Protoc");
+            File.WriteAllText("services.proto", protoc);
+            ExecUtils.ShellExec("web proto-csharp services.proto");
         }
 
         private readonly ServiceStackHost appHost;
@@ -118,23 +134,11 @@ namespace ServiceStack.Extensions.Tests.Protoc
         {
             appHost = new AppHost()
                 .Init()
-                .Start("http://localhost:20000/");
+                .Start(TestsConfig.ListeningOn);
         }
 
         [OneTimeTearDown]
         public void OneTimeTearDown() => appHost.Dispose();
-
-        // [Test] // needs: listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-        public void UpdateProto()
-        {
-            Directory.GetCurrentDirectory().Print();
-            var protoc = "http://localhost:20000/types/proto".GetStringFromUrl();
-            protoc = protoc.Replace("ServiceStack.Extensions.Tests","ServiceStack.Extensions.Tests.Protoc");
-            
-            Directory.SetCurrentDirectory("../../../Protoc");
-            File.WriteAllText("services.proto", protoc);
-            ExecUtils.ShellExec("web proto-csharp services.proto");
-        }
 
         private static string CreateExpiredToken()
         {
@@ -153,17 +157,8 @@ namespace ServiceStack.Extensions.Tests.Protoc
             return token;
         }
 
-        private static GrpcServices.GrpcServicesClient GetClient(Action<GrpcClientConfig> init=null)
-        {
-            GrpcClientFactory.AllowUnencryptedHttp2 = true;
-            GrpcServiceStack.ParseResponseStatus = bytes => ResponseStatus.Parser.ParseFrom(bytes);
-            
-            var config = new GrpcClientConfig();
-            init?.Invoke(config);
-            var client = new GrpcServices.GrpcServicesClient(
-                GrpcServiceStack.Client("http://localhost:20000", config));
-            return client;
-        }
+        private static GrpcServices.GrpcServicesClient GetClient(Action<GrpcClientConfig> init = null) =>
+            ProtocTests.GetClient(init);
 
         private async Task<string> GetRefreshToken()
         {

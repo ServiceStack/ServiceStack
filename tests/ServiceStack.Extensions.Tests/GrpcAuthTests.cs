@@ -159,7 +159,7 @@ namespace ServiceStack.Extensions.Tests
 
             public override void ConfigureKestrel(KestrelServerOptions options)
             {
-                options.ListenLocalhost(20000, listenOptions =>
+                options.ListenLocalhost(TestsConfig.Port, listenOptions =>
                 {
                     listenOptions.Protocols = HttpProtocols.Http2;
                 });
@@ -181,7 +181,7 @@ namespace ServiceStack.Extensions.Tests
         {
             appHost = new AppHost()
                 .Init()
-                .Start("http://localhost:20000/");
+                .Start(TestsConfig.ListeningOn);
         }
 
         [OneTimeTearDown]
@@ -219,7 +219,7 @@ namespace ServiceStack.Extensions.Tests
         private static GrpcServiceClient GetClient()
         {
             GrpcClientFactory.AllowUnencryptedHttp2 = true;
-            var client = new GrpcServiceClient("http://localhost:20000");
+            var client = new GrpcServiceClient(TestsConfig.BaseUri);
             return client;
         }
 

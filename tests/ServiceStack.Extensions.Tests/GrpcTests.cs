@@ -386,7 +386,7 @@ namespace ServiceStack.Extensions.Tests
 
             public override void ConfigureKestrel(KestrelServerOptions options)
             {
-                options.ListenLocalhost(20000, listenOptions =>
+                options.ListenLocalhost(TestsConfig.Port, listenOptions =>
                 {
                     listenOptions.Protocols = HttpProtocols.Http2;
                 });
@@ -414,19 +414,19 @@ namespace ServiceStack.Extensions.Tests
             GrpcClientFactory.AllowUnencryptedHttp2 = true;
             appHost = new AppHost()
                 .Init()
-                .Start("http://localhost:20000/");
+                .Start(TestsConfig.ListeningOn);
         }
 
         [OneTimeTearDown]
         public void OneTimeTearDown() => appHost.Dispose();
 
-        private static GrpcServiceClient GetClient() => new GrpcServiceClient("http://localhost:20000");
+        private static GrpcServiceClient GetClient() => new GrpcServiceClient(TestsConfig.BaseUri);
 
         [Test]
         public async Task Can_call_MultiplyRequest_Grpc_Service_ICalculator()
         {
             GrpcClientFactory.AllowUnencryptedHttp2 = true;
-            using var http = GrpcChannel.ForAddress("http://localhost:20000");
+            using var http = GrpcChannel.ForAddress(TestsConfig.BaseUri);
             var calculator = http.CreateGrpcService<ICalculator>();
             var result = await calculator.MultiplyAsync(new MultiplyRequest { X = 12, Y = 4 });
             Assert.That(result.Result, Is.EqualTo(48));
@@ -436,7 +436,7 @@ namespace ServiceStack.Extensions.Tests
         public async Task Can_call_Multiply_Grpc_Service_GrpcChannel()
         {
             GrpcClientFactory.AllowUnencryptedHttp2 = true;
-            using var http = GrpcChannel.ForAddress("http://localhost:20000");
+            using var http = GrpcChannel.ForAddress(TestsConfig.BaseUri);
 
             var response = await http.CreateCallInvoker().Execute<Multiply, MultiplyResponse>(new Multiply { X = 12, Y = 4 }, "GrpcServices",
                 GrpcConfig.GetServiceName(HttpMethods.Post, nameof(Multiply)));

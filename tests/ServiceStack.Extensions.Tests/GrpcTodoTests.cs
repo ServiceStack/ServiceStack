@@ -166,8 +166,6 @@ namespace ServiceStack.Extensions.Tests
 
     public class GrpcTodoTests
     {
-        private const int Port = 2000;
-        static readonly string BaseUri = $"http://localhost:{Port}/";
         private readonly ServiceStackHost appHost;
 
         class AppHost : AppSelfHostBase
@@ -183,7 +181,7 @@ namespace ServiceStack.Extensions.Tests
 
             public override void ConfigureKestrel(KestrelServerOptions options)
             {
-                options.ListenLocalhost(2000, listenOptions =>
+                options.ListenLocalhost(TestsConfig.Port, listenOptions =>
                 {
                     listenOptions.Protocols = HttpProtocols.Http2;
                 });
@@ -204,7 +202,7 @@ namespace ServiceStack.Extensions.Tests
         {
             appHost = new AppHost()
                 .Init()
-                .Start(BaseUri);
+                .Start(TestsConfig.BaseUri);
 
             GrpcClientFactory.AllowUnencryptedHttp2 = true;
         }
@@ -212,7 +210,7 @@ namespace ServiceStack.Extensions.Tests
         [OneTimeTearDown]
         public void OneTimeTearDown() => appHost.Dispose();
 
-        public IServiceClientAsync CreateClient() => new GrpcServiceClient(BaseUri);
+        public IServiceClientAsync CreateClient() => new GrpcServiceClient(TestsConfig.BaseUri);
 
         [Test]
         public async Task Can_CreateTodo()
