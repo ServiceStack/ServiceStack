@@ -116,7 +116,7 @@ namespace ServiceStack.Extensions.Tests.Protoc
         }
 
         [Test]
-        public async Task Can_call_GetHello_with_Get_or_Send()
+        public async Task Can_call_GetHello_with_Get()
         {
             var client = GetClient();
 
@@ -125,7 +125,7 @@ namespace ServiceStack.Extensions.Tests.Protoc
         }
 
         [Test]
-        public void Can_call_GetHello_with_Get_or_Send_sync()
+        public void Can_call_GetHello_with_Get_sync()
         {
             var client = GetClient();
 
@@ -225,7 +225,7 @@ namespace ServiceStack.Extensions.Tests.Protoc
             }
         }
 
-        private static ProtoBuf.Bcl.Decimal ToProtoBufDecimal(decimal value)
+        public static ProtoBuf.Bcl.Decimal ToProtoBufDecimal(decimal value)
         {
             // https://github.com/protobuf-net/protobuf-net/blob/master/src/protobuf-net.Core/Internal/PrimaryTypeProvider.Decimal.cs
             var to = new ProtoBuf.Bcl.Decimal();
@@ -270,26 +270,66 @@ namespace ServiceStack.Extensions.Tests.Protoc
             catch (WebServiceException ex)
             {
                 //ex.ResponseStatus.PrintDump();
-                Assert.That(ex.StatusCode, Is.EqualTo(400));
-                var errors = ex.ResponseStatus.Errors;
-                Assert.That(errors.First(x => x.FieldName == "CreditCard").ErrorCode, Is.EqualTo("CreditCard"));
-                Assert.That(errors.First(x => x.FieldName == "Email").ErrorCode, Is.EqualTo("Email"));
-                Assert.That(errors.First(x => x.FieldName == "Email").ErrorCode, Is.EqualTo("Email"));
-                Assert.That(errors.First(x => x.FieldName == "Empty").ErrorCode, Is.EqualTo("Empty"));
-                Assert.That(errors.First(x => x.FieldName == "Equal").ErrorCode, Is.EqualTo("Equal"));
-                Assert.That(errors.First(x => x.FieldName == "ExclusiveBetween").ErrorCode, Is.EqualTo("ExclusiveBetween"));
-                Assert.That(errors.First(x => x.FieldName == "GreaterThan").ErrorCode, Is.EqualTo("GreaterThan"));
-                Assert.That(errors.First(x => x.FieldName == "GreaterThanOrEqual").ErrorCode, Is.EqualTo("GreaterThanOrEqual"));
-                Assert.That(errors.First(x => x.FieldName == "InclusiveBetween").ErrorCode, Is.EqualTo("InclusiveBetween"));
-                Assert.That(errors.First(x => x.FieldName == "Length").ErrorCode, Is.EqualTo("Length"));
-                Assert.That(errors.First(x => x.FieldName == "LessThan").ErrorCode, Is.EqualTo("LessThan"));
-                Assert.That(errors.First(x => x.FieldName == "LessThanOrEqual").ErrorCode, Is.EqualTo("LessThanOrEqual"));
-                Assert.That(errors.First(x => x.FieldName == "NotEmpty").ErrorCode, Is.EqualTo("NotEmpty"));
-                Assert.That(errors.First(x => x.FieldName == "NotEqual").ErrorCode, Is.EqualTo("NotEqual"));
-                Assert.That(errors.First(x => x.FieldName == "Null").ErrorCode, Is.EqualTo("Null"));
-                Assert.That(errors.First(x => x.FieldName == "RegularExpression").ErrorCode, Is.EqualTo("RegularExpression"));
-                Assert.That(errors.First(x => x.FieldName == "ScalePrecision").ErrorCode, Is.EqualTo("ScalePrecision"));
+                AssertTriggerValidatorsResponse(ex);
             }
+        }
+
+        [Test]
+        public async Task Triggering_all_validators_returns_right_ErrorCode_from_Headers()
+        {
+            var client = GetClient();
+
+            try
+            {
+                var response = await client.PostTriggerValidatorsAsync(new TriggerValidators(),
+                    GrpcUtils.ToHeaders(new {
+                        CreditCard = "NotCreditCard",
+                        Email = "NotEmail",
+                        Empty = "NotEmpty",
+                        Equal = "NotEqual",
+                        ExclusiveBetween = 1,
+                        GreaterThan = 1,
+                        GreaterThanOrEqual = 1,
+                        InclusiveBetween = 1,
+                        Length = "Length",
+                        LessThan = 20,
+                        LessThanOrEqual = 20,
+                        NotEmpty = "",
+                        NotEqual = "NotEqual",
+                        Null = "NotNull",
+                        RegularExpression = "FOO",
+                        ScalePrecision = 123.456m
+                    }));
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                //ex.ResponseStatus.PrintDump();
+                AssertTriggerValidatorsResponse(ex);
+            }
+        }
+
+        private static void AssertTriggerValidatorsResponse(WebServiceException ex)
+        {
+            Assert.That(ex.StatusCode, Is.EqualTo(400));
+            var errors = ex.ResponseStatus.Errors;
+            Assert.That(errors.First(x => x.FieldName == "CreditCard").ErrorCode, Is.EqualTo("CreditCard"));
+            Assert.That(errors.First(x => x.FieldName == "Email").ErrorCode, Is.EqualTo("Email"));
+            Assert.That(errors.First(x => x.FieldName == "Email").ErrorCode, Is.EqualTo("Email"));
+            Assert.That(errors.First(x => x.FieldName == "Empty").ErrorCode, Is.EqualTo("Empty"));
+            Assert.That(errors.First(x => x.FieldName == "Equal").ErrorCode, Is.EqualTo("Equal"));
+            Assert.That(errors.First(x => x.FieldName == "ExclusiveBetween").ErrorCode, Is.EqualTo("ExclusiveBetween"));
+            Assert.That(errors.First(x => x.FieldName == "GreaterThan").ErrorCode, Is.EqualTo("GreaterThan"));
+            Assert.That(errors.First(x => x.FieldName == "GreaterThanOrEqual").ErrorCode, Is.EqualTo("GreaterThanOrEqual"));
+            Assert.That(errors.First(x => x.FieldName == "InclusiveBetween").ErrorCode, Is.EqualTo("InclusiveBetween"));
+            Assert.That(errors.First(x => x.FieldName == "Length").ErrorCode, Is.EqualTo("Length"));
+            Assert.That(errors.First(x => x.FieldName == "LessThan").ErrorCode, Is.EqualTo("LessThan"));
+            Assert.That(errors.First(x => x.FieldName == "LessThanOrEqual").ErrorCode, Is.EqualTo("LessThanOrEqual"));
+            Assert.That(errors.First(x => x.FieldName == "NotEmpty").ErrorCode, Is.EqualTo("NotEmpty"));
+            Assert.That(errors.First(x => x.FieldName == "NotEqual").ErrorCode, Is.EqualTo("NotEqual"));
+            Assert.That(errors.First(x => x.FieldName == "Null").ErrorCode, Is.EqualTo("Null"));
+            Assert.That(errors.First(x => x.FieldName == "RegularExpression").ErrorCode, Is.EqualTo("RegularExpression"));
+            Assert.That(errors.First(x => x.FieldName == "ScalePrecision").ErrorCode, Is.EqualTo("ScalePrecision"));
         }
 
         [Test]

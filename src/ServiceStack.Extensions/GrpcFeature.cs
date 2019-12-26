@@ -125,6 +125,8 @@ namespace ServiceStack
             set => IgnoreResponseHeaders = null;
         }
         
+        public bool DisableRequestParamsInHeaders { get; set; }
+        
         public List<ProtoOptionDelegate> ProtoOptions { get; set; } = new List<ProtoOptionDelegate> {
             ProtoOption.CSharpNamespace,
             ProtoOption.PhpNamespace,

@@ -40,16 +40,9 @@ namespace ServiceStack.Extensions.Tests.Protoc
         [Test]
         public async Task Can_execute_basic_query()
         {
-            var response = await client.GetQueryRockstarsAsync(new QueryRockstars {
+            var response = await client.GetQueryRockstarsAsync(new QueryRockstars(), GrpcUtils.ToHeaders(new {
                 Include = "Total",
-            });
-            var req = new QueryBase {
-                Include = "Total",
-                QueryDbRockstar = new QueryDb_Rockstar {
-                    QueryRockstars = new QueryRockstars()
-                }
-            };
-            var response = await client.GetQueryRockstarsAsync(new QueryRockstars());
+            }));
             
             Assert.That(response.Offset, Is.EqualTo(0));
             Assert.That(response.Total, Is.EqualTo(TotalRockstars));

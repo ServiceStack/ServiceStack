@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -251,6 +252,26 @@ namespace ServiceStack
             return to;
         }
 
-        
+        public static Metadata ToHeaders(Dictionary<string, string> headers)
+        {
+            var to = new Metadata();
+            foreach (var entry in headers)
+            {
+                to.Add(entry.Key, entry.Value);
+            }
+            return to;
+        }
+
+        public static Metadata ToHeaders<T>(T headers)
+        {
+            var to = new Metadata();
+            var objDictionary = headers.ToObjectDictionary();
+            foreach (var entry in objDictionary)
+            {
+                var val = entry.Value.ConvertTo<string>();
+                to.Add(entry.Key, val);
+            }
+            return to;
+        }
     }
 }

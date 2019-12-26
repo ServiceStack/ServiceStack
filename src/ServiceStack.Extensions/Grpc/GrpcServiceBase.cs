@@ -64,6 +64,8 @@ namespace ServiceStack
         protected virtual async Task<TResponse> Execute<TResponse>(string method, object request, CallContext context)
         {
             AppHost.AssertFeatures(ServiceStack.Feature.Grpc);
+            if (!Feature.DisableRequestParamsInHeaders)
+                PopulateRequestFromHeaders(request, context.CallOptions.Headers);
 
             var req = new GrpcRequest(context, request, method);
             var ret = await RpcGateway.ExecuteAsync<TResponse>(request, req);
@@ -73,9 +75,32 @@ namespace ServiceStack
             return ret;
         }
 
+        public void PopulateRequestFromHeaders(object request, global::Grpc.Core.Metadata headers)
+        {
+            if (headers.Count == 0)
+                return;
+
+            var props = TypeProperties.Get(request.GetType());
+            var to = new Dictionary<string, object>();
+            foreach (var entry in headers)
+            {
+                if (!props.PropertyMap.TryGetValue(entry.Key, out var accessor))
+                    continue;
+
+                var propName = accessor.PropertyInfo.Name; 
+                to[propName] = !entry.Key.EndsWith("-bin")
+                    ? (object) entry.Value
+                    : entry.ValueBytes;
+            }
+
+            to.PopulateInstance(request);
+        }
+
         protected virtual async IAsyncEnumerable<TResponse> Stream<TRequest,TResponse>(TRequest request, CallContext context)
         {
             AppHost.AssertFeatures(ServiceStack.Feature.Grpc);
+            if (!Feature.DisableRequestParamsInHeaders)
+                PopulateRequestFromHeaders(request, context.CallOptions.Headers);
             
             if (!Feature.RequestServiceTypeMap.TryGetValue(typeof(TRequest), out var serviceType))
                 throw new NotSupportedException($"'{typeof(TRequest).Name}' was not registered in GrpcFeature.RegisterServices");
