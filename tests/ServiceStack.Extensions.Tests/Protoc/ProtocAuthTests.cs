@@ -39,7 +39,9 @@ namespace ServiceStack.Extensions.Tests.Protoc
             public override void Configure(Container container)
             {
                 RegisterService<GetFileService>();
-                Plugins.Add(new GrpcFeature(App));
+                Plugins.Add(new GrpcFeature(App) {
+                    CreateDynamicService = GrpcConfig.AutoQueryOrDynamicAttribute // required by protoc AutoQuery Tests
+                });
 
                 Plugins.Add(new ValidationFeature());
                 Plugins.Add(new AutoQueryFeature());
@@ -116,7 +118,7 @@ namespace ServiceStack.Extensions.Tests.Protoc
             }
         }
 
-        // [Test] public void TestProtoTypes() => TestsConfig.BaseUri.CombineWith("/types/proto").GetStringFromUrl();
+        // [Test] public void TestProtoTypes() => TestsConfig.BaseUri.CombineWith("/types/proto").GetStringFromUrl().Print();
         // [Test] // needs: listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
         public void UpdateProto()
         {

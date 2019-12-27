@@ -61,6 +61,13 @@ namespace ServiceStack
             }
         }
 
+        protected virtual Task<TResponse> ExecuteDynamic<TResponse>(string method, DynamicRequest request, CallContext context, Type requestType)
+        {
+            var to = request.Params.ToObjectDictionary();
+            var typedRequest = to?.FromObjectDictionary(requestType) ?? requestType.CreateInstance();
+            return Execute<TResponse>(method, typedRequest, context);
+        }
+        
         protected virtual async Task<TResponse> Execute<TResponse>(string method, object request, CallContext context)
         {
             AppHost.AssertFeatures(ServiceStack.Feature.Grpc);
@@ -93,7 +100,8 @@ namespace ServiceStack
                     : entry.ValueBytes;
             }
 
-            to.PopulateInstance(request);
+            if (to.Count > 0)
+                to.PopulateInstance(request);
         }
 
         protected virtual async IAsyncEnumerable<TResponse> Stream<TRequest,TResponse>(TRequest request, CallContext context)

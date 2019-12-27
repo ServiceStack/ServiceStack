@@ -90,6 +90,8 @@ namespace ServiceStack
         
         public Action<TypeBuilder, MethodBuilder, Type> GenerateServiceFilter { get; set; }
 
+        public Func<Type, string, bool> CreateDynamicService { get; set; } = GrpcConfig.HasDynamicAttribute;
+
         public Func<IResponse, Status?> ToGrpcStatus { get; set; }
 
         /// <summary>
@@ -341,6 +343,7 @@ namespace ServiceStack
                     var methodName = GrpcConfig.GetServiceName(action, requestType.Name);
                     
                     var method = typeBuilder.DefineMethod(methodName, MethodAttributes.Public | MethodAttributes.Virtual,
+                        
                         CallingConventions.Standard,
                         returnType: typeof(Task<>).MakeGenericType(responseType),
                         parameterTypes: new[] { requestType, typeof(CallContext) });
@@ -360,6 +363,34 @@ namespace ServiceStack
                     il.Emit(OpCodes.Ldarg_2);
                     il.Emit(OpCodes.Callvirt, genericMi);
                     il.Emit(OpCodes.Ret);
+
+                    if (CreateDynamicService(requestType, action))
+                    {
+                        var dynamicMethodName = GrpcConfig.GetServiceName(action + Keywords.Dynamic, requestType.Name);
+                        
+                        method = typeBuilder.DefineMethod(dynamicMethodName, MethodAttributes.Public | MethodAttributes.Virtual,
+                        
+                            CallingConventions.Standard,
+                            returnType: typeof(Task<>).MakeGenericType(responseType),
+                            parameterTypes: new[] { typeof(DynamicRequest), typeof(CallContext) });
+
+                        GenerateServiceFilter?.Invoke(typeBuilder, method, requestType);
+
+                        il = method.GetILGenerator();
+
+                        mi = GrpcServicesBaseType.GetMethod("ExecuteDynamic", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                    
+                        genericMi = mi.MakeGenericMethod(responseType);
+                    
+                        il.Emit(OpCodes.Nop);
+                        il.Emit(OpCodes.Ldarg_0);
+                        il.Emit(OpCodes.Ldstr, action);
+                        il.Emit(OpCodes.Ldarg_1);
+                        il.Emit(OpCodes.Ldarg_2);
+                        il.Emit(OpCodes.Ldtoken, requestType);
+                        il.Emit(OpCodes.Callvirt, genericMi);
+                        il.Emit(OpCodes.Ret);
+                    }
                 }
             }
 

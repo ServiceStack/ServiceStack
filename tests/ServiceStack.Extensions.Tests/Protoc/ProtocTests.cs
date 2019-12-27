@@ -237,6 +237,17 @@ namespace ServiceStack.Extensions.Tests.Protoc
             return to;
         }
 
+        public static Guid ToGuid(ProtoBuf.Bcl.Guid value)
+        {
+            // https://github.com/protobuf-net/protobuf-net/blob/master/src/protobuf-net.Core/Internal/PrimaryTypeProvider.Guid.cs
+            var low = value.Lo;
+            var high = value.Hi;
+            uint a = (uint)(low >> 32), b = (uint)low, c = (uint)(high >> 32), d = (uint)high;
+            return new Guid((int)b, (short)a, (short)(a >> 16),
+                (byte)d, (byte)(d >> 8), (byte)(d >> 16), (byte)(d >> 24),
+                (byte)c, (byte)(c >> 8), (byte)(c >> 16), (byte)(c >> 24));
+        }
+
         [Test]
         public async Task Triggering_all_validators_returns_right_ErrorCode()
         {

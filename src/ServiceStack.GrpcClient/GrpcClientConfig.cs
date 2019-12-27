@@ -13,6 +13,7 @@ namespace ServiceStack
             internal const string HeaderSessionId = "X-ss-id";
             internal const string HttpStatus = "httpstatus";
             internal const string GrpcResponseStatus = "responsestatus-bin";
+            internal const string Dynamic = nameof(Dynamic);
         }
 
         public GrpcChannel Channel { get; set; }

@@ -71,7 +71,7 @@ namespace ServiceStack.Extensions.Tests
     }
 
     [Route("/query/rockstars")]
-    [DataContract, Id(10)]
+    [DataContract, Id(10), Tag(Keywords.Dynamic)]
     public class QueryRockstars : QueryDb<Rockstar>
     {
         [DataMember(Order = 1)]
@@ -870,9 +870,13 @@ namespace ServiceStack.Extensions.Tests
             services.AddServiceStackGrpc();
         }
         
+        public Action<GrpcFeature> ConfigureGrpc { get; set; }
+        
         public override void Configure(Container container)
         {
-            Plugins.Add(new GrpcFeature(App));
+            var grpcFeature = new GrpcFeature(App);
+            ConfigureGrpc?.Invoke(grpcFeature);
+            Plugins.Add(grpcFeature);
 
             var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
             container.Register<IDbConnectionFactory>(dbFactory);

@@ -1,5 +1,5 @@
 /* Options:
-Date: 2019-12-23 04:00:46
+Date: 2019-12-26 19:06:49
 Version: 5.71
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -49,6 +49,88 @@ service GrpcServices {
     rpc CallDeleteTodo(DeleteTodo) returns (EmptyResponse) {}
 
     rpc CallDeleteTodos(DeleteTodos) returns (EmptyResponse) {}
+
+    rpc GetDynamicQueryChangeDb(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryJoinedRockstarAlbumsCustomSelect(DynamicRequest) returns (QueryResponse_CustomSelectRockstar) {}
+
+    rpc GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse(DynamicRequest) returns (QueryResponse_CustomSelectRockstarResponse) {}
+
+    rpc GetDynamicQueryOverridedRockstars(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryOverridedCustomRockstars(DynamicRequest) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetDynamicQueryCaseInsensitiveOrderBy(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicStreamMovies(DynamicRequest) returns (QueryResponse_Movie) {}
+
+    rpc GetDynamicQueryCustomRockstarsReferences(DynamicRequest) returns (QueryResponse_RockstarReference) {}
+
+    rpc GetDynamicQueryRockstarAlbumsCustomLeftJoin(DynamicRequest) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetDynamicQueryChangeConnectionInfo(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryNamedRockstars(DynamicRequest) returns (QueryResponse_NamedRockstar) {}
+
+    rpc GetDynamicQueryRockstars(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryRockstarAlbums(DynamicRequest) returns (QueryResponse_RockstarAlbum) {}
+
+    rpc GetDynamicQueryPagingTest(DynamicRequest) returns (QueryResponse_PagingTest) {}
+
+    rpc GetDynamicQueryRockstarsConventions(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryCustomRockstars(DynamicRequest) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetDynamicQueryJoinedRockstarAlbums(DynamicRequest) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetDynamicQueryRockstarAlbumsImplicit(DynamicRequest) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetDynamicQueryRockstarAlbumsLeftJoin(DynamicRequest) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetDynamicQueryMultiJoinRockstar(DynamicRequest) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetDynamicQueryFieldRockstars(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryRockstarAlias(DynamicRequest) returns (QueryResponse_RockstarAlias) {}
+
+    rpc GetDynamicQueryFieldRockstarsDynamic(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryRockstarsFilter(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryCustomRockstarsFilter(DynamicRequest) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetDynamicQueryRockstarsIFilter(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryOrRockstars(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryOrRockstarsFields(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryFieldsImplicitConventions(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryGetRockstars(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryRockstarFilters(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryGetRockstarsDynamic(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryCustomRockstarsSchema(DynamicRequest) returns (QueryResponse_CustomRockstarSchema) {}
+
+    rpc GetDynamicSearchMovies(DynamicRequest) returns (QueryResponse_Movie) {}
+
+    rpc GetDynamicQueryMovies(DynamicRequest) returns (QueryResponse_Movie) {}
+
+    rpc GetDynamicQueryUnknownRockstars(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryRockstarsWithReferences(DynamicRequest) returns (QueryResponse_RockstarReference) {}
+
+    rpc GetDynamicQueryAllFields(DynamicRequest) returns (QueryResponse_AllFields) {}
+
+    rpc GetDynamicQueryTypeWithEnums(DynamicRequest) returns (QueryResponse_TypeWithEnum) {}
+
+    rpc GetDynamicQueryAdhocRockstars(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryAdhoc(DynamicRequest) returns (QueryResponse_Adhoc) {}
 
     rpc PostGetAccessToken(GetAccessToken) returns (GetAccessTokenResponse) {}
 
@@ -356,6 +438,9 @@ message DeleteTodo {
 }
 message DeleteTodos {
    repeated int64 Ids = 1 [packed = false];
+}
+message DynamicRequest {
+   map<string,string> Params = 1;
 }
 message EmptyResponse {
    ResponseStatus ResponseStatus = 1;

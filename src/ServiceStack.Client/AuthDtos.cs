@@ -426,4 +426,11 @@ namespace ServiceStack
         [DataMember(Order = 30)]
         public ResponseStatus ResponseStatus { get; set; }
     }
+
+    [DataContract]
+    public class DynamicRequest
+    {
+        [DataMember(Order = 1)]
+        public Dictionary<string, string> Params { get; set; }
+    }
 }

@@ -44,5 +44,14 @@ namespace ServiceStack
 
             return fn();
         }
+
+        public static bool HasDynamicAttribute(Type requestType, string action) =>
+            requestType.FirstAttribute<TagAttribute>()?.Name == GrpcClientConfig.Keywords.Dynamic;
+
+        public static bool IsAutoQueryService(Type requestType, string action) =>
+            requestType.HasInterface(typeof(IQuery));
+
+        public static bool AutoQueryOrDynamicAttribute(Type requestType, string action) =>
+            IsAutoQueryService(requestType, action) || HasDynamicAttribute(requestType, action);
     }
 }
