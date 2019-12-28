@@ -4,8 +4,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Security;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
@@ -100,6 +103,17 @@ namespace ServiceStack
         }
 
         public GrpcServiceClient(string url) : this(GrpcChannel.ForAddress(url)) {}
+        
+        public GrpcServiceClient(string url, X509Certificate2 cert) 
+            : this(url, cert, null) {}
+        
+        public GrpcServiceClient(
+            string url, 
+            X509Certificate2 cert, 
+            Func<HttpRequestMessage, X509Certificate2, X509Chain, SslPolicyErrors, bool> serverCertificateCustomValidationCallback = null) 
+            : this(GrpcChannel.ForAddress(url, new GrpcChannelOptions {
+                HttpClient = new HttpClient(new HttpClientHandler().AddPemCertificate(cert, serverCertificateCustomValidationCallback))
+            })) {}
 
         public GrpcServiceClient(GrpcChannel channel) : this(new GrpcClientConfig { Channel = channel }) {}
 

@@ -34,23 +34,31 @@ namespace ServiceStack
             }
         }
 
-        public static HttpClientHandler AddPemCertificateFromFile(this HttpClientHandler handler, string fileName, 
-            Func<HttpRequestMessage, X509Certificate2, X509Chain, SslPolicyErrors, bool> serverCertificateCustomValidationCallback = null)
+        public static HttpClientHandler AddPemCertificate(this HttpClientHandler handler, X509Certificate2 cert,
+            Func<HttpRequestMessage, X509Certificate2, X509Chain, SslPolicyErrors, bool>
+                serverCertificateCustomValidationCallback = null)
         {
-            handler.ClientCertificates.Add(new X509Certificate2(fileName));
+            handler.ClientCertificates.Add(cert);
             if (serverCertificateCustomValidationCallback != null)
                 handler.ServerCertificateCustomValidationCallback = serverCertificateCustomValidationCallback;
             return handler;
         }
 
+        public static HttpClientHandler AddPemCertificateFromFile(this HttpClientHandler handler, string fileName,
+            Func<HttpRequestMessage, X509Certificate2, X509Chain, SslPolicyErrors, bool> serverCertificateCustomValidationCallback = null) =>
+            handler.AddPemCertificate(new X509Certificate2(fileName), serverCertificateCustomValidationCallback);
+
         public static HttpClientHandler AllowSelfSignedCertificatesFrom(this HttpClientHandler handler, string dnsName)
         {
-            handler.ServerCertificateCustomValidationCallback = (req, cert, certChain, sslPolicyErrors) =>
+            handler.ServerCertificateCustomValidationCallback = AllowSelfSignedCertificatesFrom(dnsName);
+            return handler;
+        }
+        
+        public static Func<HttpRequestMessage, X509Certificate2, X509Chain, SslPolicyErrors, bool> AllowSelfSignedCertificatesFrom(string dnsName) =>
+            (req, cert, certChain, sslPolicyErrors) =>
                 cert.SubjectName.RawData.SequenceEqual(cert.IssuerName.RawData) && // self-signed
                 cert.GetNameInfo(X509NameType.DnsName, forIssuer: false) == dnsName &&
                 (sslPolicyErrors & ~SslPolicyErrors.RemoteCertificateChainErrors) == SslPolicyErrors.None; // only this
-            return handler;
-        }
 
         public static void Set(this Metadata headers, string name, string value)
         {
