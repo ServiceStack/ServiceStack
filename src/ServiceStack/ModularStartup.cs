@@ -285,7 +285,11 @@ namespace ServiceStack
         public static IWebHostBuilder UseModularStartup<TStartup>(this IWebHostBuilder hostBuilder)
             where TStartup : class
         {
-            return hostBuilder.UseStartup(ModularStartup.Create<TStartup>());
+            return hostBuilder
+                // UserSecrets not loaded when using surrogate startup class, load explicitly from TStartup.Assembly
+                .ConfigureAppConfiguration((ctx, config) => 
+                    config.AddUserSecrets(typeof(TStartup).GetTypeInfo().Assembly, optional:true))                    
+                .UseStartup(ModularStartup.Create<TStartup>());
         }
         
         /// <summary>
