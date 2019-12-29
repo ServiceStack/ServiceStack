@@ -10,8 +10,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Grpc.AspNetCore.Server" Version="2.25.0" />
-        <PackageReference Include="Grpc.Core.Api" Version="2.25.0" />
+        <PackageReference Include="Grpc.AspNetCore.Server" Version="2.26.0" />
+        <PackageReference Include="Grpc.Core.Api" Version="2.26.0" />
         <PackageReference Include="System.Threading.Channels" Version="4.7.0" />
         <PackageReference Include="protobuf-net" Version="2.4.4" />
         
