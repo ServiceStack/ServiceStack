@@ -1,9 +1,11 @@
 using System;
+using System.Net.Http;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Grpc.Core.Interceptors;
 using Grpc.Net.Client;
-using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -13,6 +15,17 @@ namespace ServiceStack
             GrpcChannel.ForAddress(baseUrl).ForServiceStack(config);
         public static CallInvoker Client(GrpcChannel channel, GrpcClientConfig config = null) =>
             channel.ForServiceStack(config);
+
+        public static CallInvoker Client(string baseUrl, X509Certificate2 cert, GrpcClientConfig config) =>
+            Client(baseUrl, cert, null, config);
+
+        public static CallInvoker Client(string baseUrl, 
+            X509Certificate2 cert, 
+            Func<HttpRequestMessage, X509Certificate2, X509Chain, SslPolicyErrors, bool> serverCertificateCustomValidationCallback = null, 
+            GrpcClientConfig config = null) =>
+            GrpcChannel.ForAddress(baseUrl, new GrpcChannelOptions {
+                HttpClient = new HttpClient(new HttpClientHandler().AddPemCertificate(cert, serverCertificateCustomValidationCallback))
+            }).ForServiceStack(config);
 
         public static CallInvoker ForServiceStack(this GrpcChannel channel, GrpcClientConfig config = null) =>
             channel.Intercept(new ServiceStackClientInterceptor(channel, config ?? new GrpcClientConfig()));
