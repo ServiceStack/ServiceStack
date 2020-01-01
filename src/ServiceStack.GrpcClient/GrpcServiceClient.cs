@@ -60,7 +60,7 @@ namespace ServiceStack
     }
 
 
-    public class GrpcServiceClient : IServiceClientAsync, IServiceClientSync, IHasSessionId, IHasBearerToken, IHasVersion
+    public class GrpcServiceClient : IRestServiceClient
     {
         private const string DefaultMethod = Methods.Post;
 
