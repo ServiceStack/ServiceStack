@@ -355,5 +355,8 @@ namespace ServiceStack.Script
         
         public bool isBinary(string fileOrExt) => MimeTypes.IsBinary(MimeTypes.GetMimeType(fileOrExt));
         public string contentType(string fileOrExt) => MimeTypes.GetMimeType(fileOrExt);
+
+        public static string[] splitLines(string contents) => contents.Replace("\r", "").Split('\n');
+        public IEnumerable<string> readLines(string contents) => contents.ReadLines();
     }
 }
