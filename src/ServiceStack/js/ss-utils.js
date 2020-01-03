@@ -703,30 +703,34 @@
                 if (cmd === "onConnect") {
                     $.extend(opt, msg);
                     if (opt.heartbeatUrl) {
-                        if (opt.heartbeat) {
-                            window.clearInterval(opt.heartbeat);
-                        }
-                        opt.heartbeat = window.setInterval(function () {
-                            if ($.ss.eventSource.readyState === 2) //CLOSED
-                            {
-                                window.clearInterval(opt.heartbeat);
-                                var stopFn = $.ss.handlers["onStop"];
-                                if (stopFn != null)
-                                    stopFn.apply($.ss.eventSource);
-                                $.ss.reconnectServerEvents({ errorArgs: { error:'CLOSED' } });
-                                return;
-                            }
-                            $.ajax({
-                                type: "POST",
-                                url: opt.heartbeatUrl,
-                                data: null,
-                                dataType: "text",
-                                success: function (r) { },
-                                error: function () {
-                                    $.ss.reconnectServerEvents({ errorArgs: arguments });
+                        $.ss.CONNECT_ID = $.ss.CONNECT_ID ? $.ss.CONNECT_ID + 1 : 1;
+                        (function(connectId) {
+                            function sendHeartbeat() {
+                                if (connectId !== $.ss.CONNECT_ID) // Only allow latest connections heartbeat callback through 
+                                    return;
+                                if ($.ss.eventSource.readyState === 2) //CLOSED
+                                {
+                                    var stopFn = $.ss.handlers["onStop"];
+                                    if (stopFn != null)
+                                        stopFn.apply($.ss.eventSource);
+                                    $.ss.reconnectServerEvents({ errorArgs: { error:'CLOSED' } });
+                                    return;
                                 }
-                            });
-                        }, parseInt(opt.heartbeatIntervalMs) || 10000);
+                                $.ajax({
+                                    type: "POST",
+                                    url: opt.heartbeatUrl,
+                                    data: null,
+                                    dataType: "text",
+                                    success: function (r) {
+                                        setTimeout(sendHeartbeat, parseInt(opt.heartbeatIntervalMs) || 10000)
+                                    },
+                                    error: function () {
+                                        $.ss.reconnectServerEvents({ errorArgs: arguments });
+                                    }
+                                });
+                            }
+                            setTimeout(sendHeartbeat, parseInt(opt.heartbeatIntervalMs) || 10000);
+                        })($.ss.CONNECT_ID);
                     }
                     if (opt.unRegisterUrl) {
                         $(window).on("unload", function () {
