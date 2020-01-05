@@ -63,8 +63,16 @@ namespace ServiceStack
 
         protected virtual Task<TResponse> ExecuteDynamic<TResponse>(string method, DynamicRequest request, CallContext context, Type requestType)
         {
+            AppHost.AssertFeatures(ServiceStack.Feature.Grpc);
             var to = request.Params.ToObjectDictionary();
             var typedRequest = to?.FromObjectDictionary(requestType) ?? requestType.CreateInstance();
+            if (request.Params != null)
+            {
+                foreach (var entry in request.Params)
+                {
+                    context.RequestHeaders.Add("query." + entry.Key, entry.Value);
+                }
+            }
             return Execute<TResponse>(method, typedRequest, context);
         }
         
@@ -91,7 +99,15 @@ namespace ServiceStack
             var to = new Dictionary<string, object>();
             foreach (var entry in headers)
             {
-                if (!props.PropertyMap.TryGetValue(entry.Key, out var accessor))
+                var key = entry.Key.IndexOf('.') >= 0 && (
+                        entry.Key.StartsWith("query.") ||
+                        entry.Key.StartsWith("form.") ||
+                        entry.Key.StartsWith("cookie.") ||
+                        entry.Key.StartsWith("header."))
+                    ? entry.Key.RightPart('.')
+                    : entry.Key;
+                
+                if (!props.PropertyMap.TryGetValue(key, out var accessor))
                     continue;
 
                 var propName = accessor.PropertyInfo.Name; 

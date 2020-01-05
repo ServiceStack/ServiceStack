@@ -128,7 +128,7 @@ namespace ServiceStack.Extensions.Tests.Protoc
             
             Directory.SetCurrentDirectory("../../../Protoc");
             File.WriteAllText("services.proto", protoc);
-            ExecUtils.ShellExec("web proto-csharp services.proto");
+            ExecUtils.ShellExec("x proto-csharp services.proto");
         }
 
         private readonly ServiceStackHost appHost;

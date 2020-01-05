@@ -4,7 +4,7 @@
 // </auto-generated>
 // Original file comments:
 // Options:
-// Date: 2019-12-26 19:06:49
+// Date: 2020-01-05 18:26:21
 // Version: 5.71
 // Tip: To override a DTO option, remove "//" prefix before updating
 // BaseUrl: http://localhost:20000
@@ -40,6 +40,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.DeleteTodo> __Marshaller_DeleteTodo = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.DeleteTodo.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.DeleteTodos> __Marshaller_DeleteTodos = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.DeleteTodos.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest> __Marshaller_DynamicRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc> __Marshaller_QueryResponse_Adhoc = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> __Marshaller_QueryResponse_Rockstar = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstar> __Marshaller_QueryResponse_CustomSelectRockstar = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstar.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstarResponse> __Marshaller_QueryResponse_CustomSelectRockstarResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstarResponse.Parser.ParseFrom);
@@ -53,7 +54,6 @@ namespace ServiceStack.Extensions.Tests.Protoc {
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstarSchema> __Marshaller_QueryResponse_CustomRockstarSchema = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstarSchema.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields> __Marshaller_QueryResponse_AllFields = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_TypeWithEnum> __Marshaller_QueryResponse_TypeWithEnum = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_TypeWithEnum.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc> __Marshaller_QueryResponse_Adhoc = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.GetAccessToken> __Marshaller_GetAccessToken = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.GetAccessToken.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.GetAccessTokenResponse> __Marshaller_GetAccessTokenResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.GetAccessTokenResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.GetApiKeys> __Marshaller_GetApiKeys = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.GetApiKeys.Parser.ParseFrom);
@@ -108,6 +108,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsConventions> __Marshaller_QueryRockstarsConventions = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsConventions.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsFilter> __Marshaller_QueryRockstarsFilter = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsFilter.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsIFilter> __Marshaller_QueryRockstarsIFilter = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsIFilter.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsImplicit> __Marshaller_QueryRockstarsImplicit = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsImplicit.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsWithReferences> __Marshaller_QueryRockstarsWithReferences = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsWithReferences.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryTypeWithEnums> __Marshaller_QueryTypeWithEnums = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryTypeWithEnums.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryUnknownRockstars> __Marshaller_QueryUnknownRockstars = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryUnknownRockstars.Parser.ParseFrom);
@@ -251,6 +252,13 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         "CallDeleteTodos",
         __Marshaller_DeleteTodos,
         __Marshaller_EmptyResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc> __Method_GetDynamicQueryAdhoc = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetDynamicQueryAdhoc",
+        __Marshaller_DynamicRequest,
+        __Marshaller_QueryResponse_Adhoc);
 
     static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> __Method_GetDynamicQueryChangeDb = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(
         grpc::MethodType.Unary,
@@ -441,6 +449,13 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         __Marshaller_DynamicRequest,
         __Marshaller_QueryResponse_Rockstar);
 
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> __Method_GetDynamicQueryRockstarsImplicit = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetDynamicQueryRockstarsImplicit",
+        __Marshaller_DynamicRequest,
+        __Marshaller_QueryResponse_Rockstar);
+
     static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> __Method_GetDynamicQueryOrRockstarsFields = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(
         grpc::MethodType.Unary,
         __ServiceName,
@@ -531,13 +546,6 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         "GetDynamicQueryAdhocRockstars",
         __Marshaller_DynamicRequest,
         __Marshaller_QueryResponse_Rockstar);
-
-    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc> __Method_GetDynamicQueryAdhoc = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc>(
-        grpc::MethodType.Unary,
-        __ServiceName,
-        "GetDynamicQueryAdhoc",
-        __Marshaller_DynamicRequest,
-        __Marshaller_QueryResponse_Adhoc);
 
     static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.GetAccessToken, global::ServiceStack.Extensions.Tests.Protoc.GetAccessTokenResponse> __Method_PostGetAccessToken = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.GetAccessToken, global::ServiceStack.Extensions.Tests.Protoc.GetAccessTokenResponse>(
         grpc::MethodType.Unary,
@@ -917,6 +925,13 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         __Marshaller_QueryRockstarsIFilter,
         __Marshaller_QueryResponse_Rockstar);
 
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsImplicit, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> __Method_GetQueryRockstarsImplicit = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsImplicit, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetQueryRockstarsImplicit",
+        __Marshaller_QueryRockstarsImplicit,
+        __Marshaller_QueryResponse_Rockstar);
+
     static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsWithReferences, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarReference> __Method_GetQueryRockstarsWithReferences = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsWithReferences, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarReference>(
         grpc::MethodType.Unary,
         __ServiceName,
@@ -1173,6 +1188,11 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
 
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc> GetDynamicQueryAdhoc(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
       public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryChangeDb(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
@@ -1308,6 +1328,11 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
 
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryRockstarsImplicit(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
       public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryOrRockstarsFields(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
@@ -1369,11 +1394,6 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       }
 
       public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryAdhocRockstars(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
-      {
-        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
-      }
-
-      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc> GetDynamicQueryAdhoc(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
@@ -1644,6 +1664,11 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       }
 
       public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetQueryRockstarsIFilter(global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsIFilter request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetQueryRockstarsImplicit(global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsImplicit request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
@@ -2059,6 +2084,22 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> CallDeleteTodosAsync(global::ServiceStack.Extensions.Tests.Protoc.DeleteTodos request, grpc::CallOptions options)
       {
         return CallInvoker.AsyncUnaryCall(__Method_CallDeleteTodos, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc GetDynamicQueryAdhoc(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryAdhoc(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc GetDynamicQueryAdhoc(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryAdhoc, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc> GetDynamicQueryAdhocAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryAdhocAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc> GetDynamicQueryAdhocAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryAdhoc, null, options, request);
       }
       public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar GetDynamicQueryChangeDb(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
@@ -2492,6 +2533,22 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       {
         return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryOrRockstars, null, options, request);
       }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar GetDynamicQueryRockstarsImplicit(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryRockstarsImplicit(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar GetDynamicQueryRockstarsImplicit(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryRockstarsImplicit, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryRockstarsImplicitAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryRockstarsImplicitAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryRockstarsImplicitAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryRockstarsImplicit, null, options, request);
+      }
       public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar GetDynamicQueryOrRockstarsFields(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
         return GetDynamicQueryOrRockstarsFields(request, new grpc::CallOptions(headers, deadline, cancellationToken));
@@ -2699,22 +2756,6 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryAdhocRockstarsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
       {
         return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryAdhocRockstars, null, options, request);
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc GetDynamicQueryAdhoc(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicQueryAdhoc(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc GetDynamicQueryAdhoc(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryAdhoc, null, options, request);
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc> GetDynamicQueryAdhocAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicQueryAdhocAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc> GetDynamicQueryAdhocAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryAdhoc, null, options, request);
       }
       public virtual global::ServiceStack.Extensions.Tests.Protoc.GetAccessTokenResponse PostGetAccessToken(global::ServiceStack.Extensions.Tests.Protoc.GetAccessToken request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
@@ -3580,6 +3621,22 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       {
         return CallInvoker.AsyncUnaryCall(__Method_GetQueryRockstarsIFilter, null, options, request);
       }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar GetQueryRockstarsImplicit(global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsImplicit request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetQueryRockstarsImplicit(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar GetQueryRockstarsImplicit(global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsImplicit request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetQueryRockstarsImplicit, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetQueryRockstarsImplicitAsync(global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsImplicit request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetQueryRockstarsImplicitAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetQueryRockstarsImplicitAsync(global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsImplicit request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetQueryRockstarsImplicit, null, options, request);
+      }
       public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarReference GetQueryRockstarsWithReferences(global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsWithReferences request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
         return GetQueryRockstarsWithReferences(request, new grpc::CallOptions(headers, deadline, cancellationToken));
@@ -3961,6 +4018,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
           .AddMethod(__Method_PostCreateTodo, serviceImpl.PostCreateTodo)
           .AddMethod(__Method_CallDeleteTodo, serviceImpl.CallDeleteTodo)
           .AddMethod(__Method_CallDeleteTodos, serviceImpl.CallDeleteTodos)
+          .AddMethod(__Method_GetDynamicQueryAdhoc, serviceImpl.GetDynamicQueryAdhoc)
           .AddMethod(__Method_GetDynamicQueryChangeDb, serviceImpl.GetDynamicQueryChangeDb)
           .AddMethod(__Method_GetDynamicQueryJoinedRockstarAlbumsCustomSelect, serviceImpl.GetDynamicQueryJoinedRockstarAlbumsCustomSelect)
           .AddMethod(__Method_GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse, serviceImpl.GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse)
@@ -3988,6 +4046,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
           .AddMethod(__Method_GetDynamicQueryCustomRockstarsFilter, serviceImpl.GetDynamicQueryCustomRockstarsFilter)
           .AddMethod(__Method_GetDynamicQueryRockstarsIFilter, serviceImpl.GetDynamicQueryRockstarsIFilter)
           .AddMethod(__Method_GetDynamicQueryOrRockstars, serviceImpl.GetDynamicQueryOrRockstars)
+          .AddMethod(__Method_GetDynamicQueryRockstarsImplicit, serviceImpl.GetDynamicQueryRockstarsImplicit)
           .AddMethod(__Method_GetDynamicQueryOrRockstarsFields, serviceImpl.GetDynamicQueryOrRockstarsFields)
           .AddMethod(__Method_GetDynamicQueryFieldsImplicitConventions, serviceImpl.GetDynamicQueryFieldsImplicitConventions)
           .AddMethod(__Method_GetDynamicQueryGetRockstars, serviceImpl.GetDynamicQueryGetRockstars)
@@ -4001,7 +4060,6 @@ namespace ServiceStack.Extensions.Tests.Protoc {
           .AddMethod(__Method_GetDynamicQueryAllFields, serviceImpl.GetDynamicQueryAllFields)
           .AddMethod(__Method_GetDynamicQueryTypeWithEnums, serviceImpl.GetDynamicQueryTypeWithEnums)
           .AddMethod(__Method_GetDynamicQueryAdhocRockstars, serviceImpl.GetDynamicQueryAdhocRockstars)
-          .AddMethod(__Method_GetDynamicQueryAdhoc, serviceImpl.GetDynamicQueryAdhoc)
           .AddMethod(__Method_PostGetAccessToken, serviceImpl.PostGetAccessToken)
           .AddMethod(__Method_CallGetApiKeys, serviceImpl.CallGetApiKeys)
           .AddMethod(__Method_CallGetFile, serviceImpl.CallGetFile)
@@ -4056,6 +4114,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
           .AddMethod(__Method_GetQueryRockstarsConventions, serviceImpl.GetQueryRockstarsConventions)
           .AddMethod(__Method_GetQueryRockstarsFilter, serviceImpl.GetQueryRockstarsFilter)
           .AddMethod(__Method_GetQueryRockstarsIFilter, serviceImpl.GetQueryRockstarsIFilter)
+          .AddMethod(__Method_GetQueryRockstarsImplicit, serviceImpl.GetQueryRockstarsImplicit)
           .AddMethod(__Method_GetQueryRockstarsWithReferences, serviceImpl.GetQueryRockstarsWithReferences)
           .AddMethod(__Method_GetQueryTypeWithEnums, serviceImpl.GetQueryTypeWithEnums)
           .AddMethod(__Method_GetQueryUnknownRockstars, serviceImpl.GetQueryUnknownRockstars)
@@ -4104,6 +4163,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       serviceBinder.AddMethod(__Method_PostCreateTodo, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.CreateTodo, global::ServiceStack.Extensions.Tests.Protoc.CreateTodoResponse>(serviceImpl.PostCreateTodo));
       serviceBinder.AddMethod(__Method_CallDeleteTodo, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DeleteTodo, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(serviceImpl.CallDeleteTodo));
       serviceBinder.AddMethod(__Method_CallDeleteTodos, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DeleteTodos, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(serviceImpl.CallDeleteTodos));
+      serviceBinder.AddMethod(__Method_GetDynamicQueryAdhoc, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc>(serviceImpl.GetDynamicQueryAdhoc));
       serviceBinder.AddMethod(__Method_GetDynamicQueryChangeDb, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetDynamicQueryChangeDb));
       serviceBinder.AddMethod(__Method_GetDynamicQueryJoinedRockstarAlbumsCustomSelect, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstar>(serviceImpl.GetDynamicQueryJoinedRockstarAlbumsCustomSelect));
       serviceBinder.AddMethod(__Method_GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstarResponse>(serviceImpl.GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse));
@@ -4131,6 +4191,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       serviceBinder.AddMethod(__Method_GetDynamicQueryCustomRockstarsFilter, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstar>(serviceImpl.GetDynamicQueryCustomRockstarsFilter));
       serviceBinder.AddMethod(__Method_GetDynamicQueryRockstarsIFilter, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetDynamicQueryRockstarsIFilter));
       serviceBinder.AddMethod(__Method_GetDynamicQueryOrRockstars, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetDynamicQueryOrRockstars));
+      serviceBinder.AddMethod(__Method_GetDynamicQueryRockstarsImplicit, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetDynamicQueryRockstarsImplicit));
       serviceBinder.AddMethod(__Method_GetDynamicQueryOrRockstarsFields, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetDynamicQueryOrRockstarsFields));
       serviceBinder.AddMethod(__Method_GetDynamicQueryFieldsImplicitConventions, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetDynamicQueryFieldsImplicitConventions));
       serviceBinder.AddMethod(__Method_GetDynamicQueryGetRockstars, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetDynamicQueryGetRockstars));
@@ -4144,7 +4205,6 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       serviceBinder.AddMethod(__Method_GetDynamicQueryAllFields, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields>(serviceImpl.GetDynamicQueryAllFields));
       serviceBinder.AddMethod(__Method_GetDynamicQueryTypeWithEnums, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_TypeWithEnum>(serviceImpl.GetDynamicQueryTypeWithEnums));
       serviceBinder.AddMethod(__Method_GetDynamicQueryAdhocRockstars, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetDynamicQueryAdhocRockstars));
-      serviceBinder.AddMethod(__Method_GetDynamicQueryAdhoc, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc>(serviceImpl.GetDynamicQueryAdhoc));
       serviceBinder.AddMethod(__Method_PostGetAccessToken, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.GetAccessToken, global::ServiceStack.Extensions.Tests.Protoc.GetAccessTokenResponse>(serviceImpl.PostGetAccessToken));
       serviceBinder.AddMethod(__Method_CallGetApiKeys, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.GetApiKeys, global::ServiceStack.Extensions.Tests.Protoc.GetApiKeysResponse>(serviceImpl.CallGetApiKeys));
       serviceBinder.AddMethod(__Method_CallGetFile, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.GetFile, global::ServiceStack.Extensions.Tests.Protoc.FileContent>(serviceImpl.CallGetFile));
@@ -4199,6 +4259,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       serviceBinder.AddMethod(__Method_GetQueryRockstarsConventions, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsConventions, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetQueryRockstarsConventions));
       serviceBinder.AddMethod(__Method_GetQueryRockstarsFilter, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsFilter, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetQueryRockstarsFilter));
       serviceBinder.AddMethod(__Method_GetQueryRockstarsIFilter, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsIFilter, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetQueryRockstarsIFilter));
+      serviceBinder.AddMethod(__Method_GetQueryRockstarsImplicit, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsImplicit, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetQueryRockstarsImplicit));
       serviceBinder.AddMethod(__Method_GetQueryRockstarsWithReferences, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.QueryRockstarsWithReferences, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarReference>(serviceImpl.GetQueryRockstarsWithReferences));
       serviceBinder.AddMethod(__Method_GetQueryTypeWithEnums, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.QueryTypeWithEnums, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_TypeWithEnum>(serviceImpl.GetQueryTypeWithEnums));
       serviceBinder.AddMethod(__Method_GetQueryUnknownRockstars, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.QueryUnknownRockstars, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetQueryUnknownRockstars));

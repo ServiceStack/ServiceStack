@@ -316,6 +316,9 @@ namespace ServiceStack.Extensions.Tests
         [DataMember(Order = 2)]
         public string FirstName { get; set; }
     }
+    
+    [DataContract]
+    public class QueryRockstarsImplicit : QueryDb<Rockstar> {}
 
     [Route("/OrRockstarsFields")]
     [DataContract]
@@ -1191,6 +1194,21 @@ namespace ServiceStack.Extensions.Tests
         public async Task Can_execute_explicit_equality_condition()
         {
             var response = await client.GetAsync(new QueryRockstars { Age = 27, Include = "Total" });
+
+            Assert.That(response.Total, Is.EqualTo(3));
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+        }
+
+        [Test]
+        public async Task Can_execute_explicit_equality_condition_implicitly()
+        {
+            var client = new GrpcServiceClient(TestsConfig.ListeningOn) {
+                RequestFilter = ctx => {
+                    ctx.RequestHeaders.Add("query.Age", "27");
+                    ctx.RequestHeaders.Add("query.Include", "Total");
+                }
+            };
+            var response = await client.GetAsync(new QueryRockstarsImplicit());
 
             Assert.That(response.Total, Is.EqualTo(3));
             Assert.That(response.Results.Count, Is.EqualTo(3));

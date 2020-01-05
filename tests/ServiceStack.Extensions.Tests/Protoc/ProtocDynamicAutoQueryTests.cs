@@ -172,6 +172,20 @@ namespace ServiceStack.Extensions.Tests.Protoc
             Assert.That(response.Total, Is.EqualTo(3));
             Assert.That(response.Results.Count, Is.EqualTo(3));
         }
+
+        [Test]
+        public async Task Can_execute_explicit_equality_condition_implicitly()
+        {
+            var response = await client.GetDynamicQueryRockstarsImplicitAsync(new DynamicRequest {
+                Params = {
+                    { "Age", "27" }, 
+                    { "Include", "Total" },
+                }
+            });
+            
+            Assert.That(response.Total, Is.EqualTo(3));
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+        }
         
         [Test]
         public async Task Can_execute_explicit_equality_condition_on_CustomRockstar()

@@ -413,7 +413,8 @@ namespace ServiceStack
 
         public void AssertFeatures(Feature usesFeatures)
         {
-            if (Config.EnableFeatures == Feature.All) return;
+            if (Config.EnableFeatures == Feature.All) 
+                return;
 
             if (!HasFeature(usesFeatures))
             {

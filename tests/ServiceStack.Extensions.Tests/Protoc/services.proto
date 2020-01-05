@@ -1,5 +1,5 @@
 /* Options:
-Date: 2019-12-26 19:06:49
+Date: 2020-01-05 18:26:21
 Version: 5.71
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -49,6 +49,8 @@ service GrpcServices {
     rpc CallDeleteTodo(DeleteTodo) returns (EmptyResponse) {}
 
     rpc CallDeleteTodos(DeleteTodos) returns (EmptyResponse) {}
+
+    rpc GetDynamicQueryAdhoc(DynamicRequest) returns (QueryResponse_Adhoc) {}
 
     rpc GetDynamicQueryChangeDb(DynamicRequest) returns (QueryResponse_Rockstar) {}
 
@@ -104,6 +106,8 @@ service GrpcServices {
 
     rpc GetDynamicQueryOrRockstars(DynamicRequest) returns (QueryResponse_Rockstar) {}
 
+    rpc GetDynamicQueryRockstarsImplicit(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
     rpc GetDynamicQueryOrRockstarsFields(DynamicRequest) returns (QueryResponse_Rockstar) {}
 
     rpc GetDynamicQueryFieldsImplicitConventions(DynamicRequest) returns (QueryResponse_Rockstar) {}
@@ -129,8 +133,6 @@ service GrpcServices {
     rpc GetDynamicQueryTypeWithEnums(DynamicRequest) returns (QueryResponse_TypeWithEnum) {}
 
     rpc GetDynamicQueryAdhocRockstars(DynamicRequest) returns (QueryResponse_Rockstar) {}
-
-    rpc GetDynamicQueryAdhoc(DynamicRequest) returns (QueryResponse_Adhoc) {}
 
     rpc PostGetAccessToken(GetAccessToken) returns (GetAccessTokenResponse) {}
 
@@ -239,6 +241,8 @@ service GrpcServices {
     rpc GetQueryRockstarsFilter(QueryRockstarsFilter) returns (QueryResponse_Rockstar) {}
 
     rpc GetQueryRockstarsIFilter(QueryRockstarsIFilter) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryRockstarsImplicit(QueryRockstarsImplicit) returns (QueryResponse_Rockstar) {}
 
     rpc GetQueryRockstarsWithReferences(QueryRockstarsWithReferences) returns (QueryResponse_RockstarReference) {}
 
@@ -707,6 +711,7 @@ message QueryDb_Rockstar {
    oneof subtype {
       QueryRockstars QueryRockstars = 10;
       QueryChangeConnectionInfo QueryChangeConnectionInfo = 48758375;
+      QueryRockstarsImplicit QueryRockstarsImplicit = 49586902;
       QueryFieldRockstarsDynamic QueryFieldRockstarsDynamic = 69037208;
       QueryFieldRockstars QueryFieldRockstars = 112815840;
       QueryOverridedRockstars QueryOverridedRockstars = 120014899;
@@ -982,6 +987,8 @@ message QueryRockstarsFilter {
 }
 message QueryRockstarsIFilter {
    int32 Age = 1;
+}
+message QueryRockstarsImplicit {
 }
 message QueryRockstarsWithReferences {
    int32 Age = 1;

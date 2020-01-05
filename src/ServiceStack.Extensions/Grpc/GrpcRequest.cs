@@ -56,7 +56,32 @@ namespace ServiceStack.Grpc
 
             foreach (var header in context.RequestHeaders)
             {
-                this.Headers[header.Key] = header.Value;
+                var key = header.Key;
+                if (header.Key.IndexOf('.') >= 0)
+                {
+                    if (header.Key.StartsWith("query."))
+                    {
+                        this.QueryString[header.Key.Substring(6)] = header.Value;
+                        continue;
+                    }
+                    if (header.Key.StartsWith("form."))
+                    {
+                        this.FormData[header.Key.Substring(5)] = header.Value;
+                        continue;
+                    }
+                    if (header.Key.StartsWith("cookie."))
+                    {
+                        var name = header.Key.Substring(7); 
+                        this.Cookies[name] = new Cookie(name, header.Value);
+                        continue;
+                    }
+                    if (header.Key.StartsWith("header."))
+                    {
+                        key = header.Key.Substring(7);
+                    }
+                }
+
+                this.Headers[key] =  header.Value;
             }
 
             if (context.ServerCallContext.UserState != null)
