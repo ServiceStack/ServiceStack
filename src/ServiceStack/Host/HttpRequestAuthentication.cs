@@ -38,25 +38,30 @@ namespace ServiceStack.Host
                 : null;
             if (!string.IsNullOrEmpty(ret))
                 return ret;
-
             return null;
         }
 
         public static string GetBasicAuth(this IRequest httpReq)
         {
             var auth = httpReq.GetAuthorization();
-            if (auth == null) return null;
+            if (auth == null) 
+                return null;
 
             var pos = auth.IndexOf(' ');
-            return auth.Substring(0, pos).EqualsIgnoreCase("Basic") ? auth.Substring(pos + 1) : null;
+            return pos >= 0 && string.Equals("Basic", auth.Substring(0, pos), StringComparison.OrdinalIgnoreCase) 
+                ? auth.Substring(pos + 1)
+                : null;
         }
 
         public static KeyValuePair<string, string>? GetBasicAuthUserAndPassword(this IRequest httpReq)
         {
             var userPassBase64 = httpReq.GetBasicAuth();
-            if (userPassBase64 == null) return null;
+            if (userPassBase64 == null) 
+                return null;
             var userPass = Encoding.UTF8.GetString(Convert.FromBase64String(userPassBase64));
             var pos = userPass.IndexOf(':');
+            if (pos < 0)
+                return null;
             return new KeyValuePair<string, string>(userPass.Substring(0, pos), userPass.Substring(pos + 1));
         }
 
@@ -69,7 +74,7 @@ namespace ServiceStack.Host
             if (parts.Length < 2) return null;
             // It has to be a digest request
             if (parts[0].ToLowerInvariant() != "digest") return null;
-            // Remove uptil the first space
+            // Remove up til the first space
             auth = auth.Substring(auth.IndexOf(' '));
             
             int i = 0;
