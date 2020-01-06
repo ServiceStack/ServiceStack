@@ -97,7 +97,7 @@ namespace ServiceStack
         /// <summary>
         /// Only generate specified Verb entries for "ANY" routes
         /// </summary>
-        public List<string> GenerateMethodsForAny { get; set; } = new List<string> {
+        public List<string> DefaultMethodsForAny { get; set; } = new List<string> {
             HttpMethods.Get,
             HttpMethods.Post,
             HttpMethods.Put,
@@ -105,9 +105,16 @@ namespace ServiceStack
             HttpMethods.Patch,
         };
         
-        public List<string> GenerateMethodsForAnyAutoQuery { get; set; } = new List<string> {
+        public List<string> AutoQueryMethodsForAny { get; set; } = new List<string> {
             HttpMethods.Get,
         };
+
+        public Func<Type, List<string>> GenerateMethodsForAny { get; }
+        
+        public List<string> DefaultGenerateMethodsForAny(Type requestType) =>
+            typeof(IQuery).IsAssignableFrom(requestType)
+                ? AutoQueryMethodsForAny
+                : DefaultMethodsForAny;
         
         public HashSet<string> IgnoreResponseHeaders { get; set; } = new HashSet<string> {
             HttpHeaders.Vary,
@@ -138,6 +145,7 @@ namespace ServiceStack
         public GrpcFeature(IApplicationBuilder app)
         {
             this.app = app;
+            GenerateMethodsForAny = DefaultGenerateMethodsForAny;
         }
 
         public void Register(IAppHost appHost)
@@ -324,10 +332,11 @@ namespace ServiceStack
                         }
                         else
                         {
-                            if (typeof(IQuery).IsAssignableFrom(op.RequestType))
-                                methods.AddRange(GenerateMethodsForAnyAutoQuery);
-                            else
-                                methods.AddRange(GenerateMethodsForAny);
+                            var anyMethods = GenerateMethodsForAny(op.RequestType);
+                            if (!anyMethods.IsEmpty())
+                            {
+                                methods.AddRange(anyMethods);
+                            }
                         }
                     }
                     else
