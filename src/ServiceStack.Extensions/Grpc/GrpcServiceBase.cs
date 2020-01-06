@@ -184,12 +184,12 @@ namespace ServiceStack
                     catch (OperationCanceledException)
                     {
                         await enumerator.DisposeAsync();
-                        yield break; //written in headers
+                        yield break;
                     }
                     catch (Exception)
                     {
                         await enumerator.DisposeAsync();
-                        yield break; //written in headers
+                        yield break;
                     }
                     if (more)
                         yield return enumerator.Current;

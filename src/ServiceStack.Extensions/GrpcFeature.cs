@@ -477,6 +477,7 @@ namespace ServiceStack
                         Length = bytes.Length,
                     }
                     : new FileContent {
+                        Name = paths[i],
                         ResponseStatus = new ResponseStatus {
                             ErrorCode = nameof(HttpStatusCode.NotFound),
                             Message = "File does not exist",
