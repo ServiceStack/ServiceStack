@@ -21,7 +21,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public abstract class AppSelfHostBase : ServiceStackHost, IConfigureServices, IRequireConfiguration
+    public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConfigureServices, IRequireConfiguration
     {
         public IConfiguration Configuration { get; set; }
         
@@ -34,6 +34,10 @@ namespace ServiceStack
         IApplicationBuilder app;
         public IApplicationBuilder App => app;
         public IServiceProvider ApplicationServices => app?.ApplicationServices;
+
+        private IHostingEnvironment env;
+        public IHostingEnvironment HostingEnvironment => env 
+            ?? (env = app?.ApplicationServices.GetService<IHostingEnvironment>());  
 
         public virtual void Bind(IApplicationBuilder app)
         {

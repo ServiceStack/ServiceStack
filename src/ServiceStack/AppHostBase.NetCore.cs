@@ -23,7 +23,7 @@ using ServiceStack.IO;
 
 namespace ServiceStack
 {
-    public abstract class AppHostBase : ServiceStackHost, IConfigureServices, IRequireConfiguration
+    public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigureServices, IRequireConfiguration
     {
         protected AppHostBase(string serviceName, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices) 
@@ -274,8 +274,19 @@ namespace ServiceStack
         public IConfiguration Configuration { get; set; }
     }
 
+    public interface IAppHostNetCore : IAppHost, IRequireConfiguration
+    {
+        IApplicationBuilder App { get; }
+        IHostingEnvironment HostingEnvironment { get; }
+    }
+
     public static class NetCoreAppHostExtensions
     {
+        public static IConfiguration GetConfiguration(this IAppHost appHost) => ((IAppHostNetCore)appHost).Configuration;
+        public static IApplicationBuilder GetApp(this IAppHost appHost) => ((IAppHostNetCore)appHost).App;
+        public static IServiceProvider GetApplicationServices(this IAppHost appHost) => ((IAppHostNetCore)appHost).App.ApplicationServices;
+        public static IHostingEnvironment GetHostingEnvironment(this IAppHost appHost) => ((IAppHostNetCore)appHost).HostingEnvironment;
+        
         public static IApplicationBuilder UseServiceStack(this IApplicationBuilder app, AppHostBase appHost)
         {
             appHost.Bind(app);
