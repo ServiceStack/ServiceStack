@@ -102,7 +102,6 @@ namespace ServiceStack
             HttpMethods.Post,
             HttpMethods.Put,
             HttpMethods.Delete,
-            HttpMethods.Patch,
         };
         
         public List<string> AutoQueryMethodsForAny { get; set; } = new List<string> {
