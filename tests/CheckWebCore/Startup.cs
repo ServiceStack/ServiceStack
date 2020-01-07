@@ -271,10 +271,43 @@ namespace CheckWebCore
         public ResponseStatus ResponseStatus { get; set; }
     }
 
+  [Route("/bookings/repeat",
+    Summary = "Create new bookings",
+    Notes =
+        "Create new bookings if you are authorized to do so.",
+    Verbs = "POST")]
+[ApiResponse(HttpStatusCode.Unauthorized, "You were unauthorized to call this service")]
+//[Restrict(VisibleLocalhostOnly = true)]
+public class CreateBookings : CreateBookingBase ,IReturn<CreateBookingsResponse>
+{
+
+    [ApiMember(
+    Description =
+    "Set the dates you want to book and it's quantities. It's an array of dates and quantities.",
+    IsRequired = true)]
+    public List<DatesToRepeat> DatesToRepeat { get; set; }
+}
+
+public class CreateBookingBase
+{
+    public int Id { get; set; }
+}
+
+public class CreateBookingsResponse
+{
+    public ResponseStatus ResponseStatus { get; set; }
+}
+
+public class DatesToRepeat
+{
+    public int Ticks { get; set; }
+}
 
     //    [Authenticate]
     public class MyServices : Service
     {
+        public object Any(CreateBookings request) => new CreateBookingsResponse();
+        
         public object Any(Dummy request) => request;
         public object Any(Campaign request) => request;
         
