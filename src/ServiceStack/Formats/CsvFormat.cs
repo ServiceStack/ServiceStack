@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -22,9 +23,28 @@ namespace ServiceStack.Formats
             });
         }
 
-        public void SerializeToStream(IRequest requestContext, object request, Stream stream)
+        public void SerializeToStream(IRequest req, object request, Stream stream)
         {
-            CsvSerializer.SerializeToStream(request, stream);
+            if (request is string str)
+            {
+                stream.Write(str);
+            }
+            else if (request is byte[] bytes)
+            {
+                stream.Write(bytes, 0, bytes.Length);
+            }
+            else if (request is Stream s)
+            {
+                s.WriteTo(stream);
+            }
+            else if (request is ReadOnlyMemory<char> roms)
+            {
+                MemoryProvider.Instance.Write(stream, roms);
+            }
+            else
+            {
+                CsvSerializer.SerializeToStream(request, stream);
+            }
         }
     }
 }
