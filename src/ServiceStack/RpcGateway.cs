@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -20,7 +21,7 @@ namespace ServiceStack
 
         public virtual async Task<TResponse> ExecuteAsync<TResponse>(object requestDto, IRequest req)
         {
-            try 
+            try
             {
                 var res = req.Response;
                 if (AppHost.ApplyPreRequestFilters(req, req.Response))
@@ -34,7 +35,7 @@ namespace ServiceStack
                 var response = await Executor.ExecuteAsync(requestDto, req);
 
                 response = await AppHost.ApplyResponseConvertersAsync(req, response);
-            
+
                 await AppHost.ApplyResponseFiltersAsync(req, res, response);
                 if (res.IsClosed)
                     return CreateResponse<TResponse>(res);
@@ -47,6 +48,10 @@ namespace ServiceStack
             catch (Exception e)
             {
                 return GetResponse<TResponse>(req.Response, e);
+            }
+            finally
+            {
+                AppHost.OnEndRequest(req);
             }
         }
 
