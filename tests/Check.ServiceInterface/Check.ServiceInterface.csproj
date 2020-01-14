@@ -79,6 +79,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnnotationsService.cs" />
     <Compile Include="AnonTypeService.cs" />
     <Compile Include="AutoQueryDataServices.cs" />
     <Compile Include="AutoQueryServices.cs" />

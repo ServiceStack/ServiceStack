@@ -124,18 +124,39 @@ namespace CheckWeb
 
             Plugins.Add(new DynamicallyRegisteredPlugin());
 
-            var feature = GetPlugin<NativeTypesFeature>();
-            feature.ExportAttribute<DisplayAttribute>(x => {
-                var attr = (DisplayAttribute) x;
-                var metadata = feature.GetGenerator().ToMetadataAttribute(x);
-                if (!attr.AutoGenerateField)
-                    metadata.Args.Add(new MetadataPropertyType {
-                        Name = nameof(DisplayAttribute.AutoGenerateField),
-                        Type = nameof(Boolean),
-                        Value = "false",
-                    });
-                return metadata;
-            });
+            var nativeTypes = GetPlugin<NativeTypesFeature>();
+            nativeTypes.MetadataTypesConfig.ExportAttributes.Add(typeof(DisplayAttribute));
+            nativeTypes.MetadataTypesConfig.ExportAttributes.Add(typeof(DisplayColumnAttribute));
+            nativeTypes.MetadataTypesConfig.ExportAttributes.Add(typeof(DisplayFormatAttribute));
+            nativeTypes.MetadataTypesConfig.ExportAttributes.Add(typeof(DataTypeAttribute));
+            nativeTypes.MetadataTypesConfig.ExportAttributes.Add(typeof(EditableAttribute));
+            nativeTypes.MetadataTypesConfig.ExportAttributes.Add(typeof(ServiceStack.DataAnnotations.PrimaryKeyAttribute));
+            nativeTypes.MetadataTypesConfig.ExportAttributes.Add(typeof(ServiceStack.DataAnnotations.AutoIncrementAttribute));
+            nativeTypes.MetadataTypesConfig.ExportAttributes.Add(typeof(ServiceStack.DataAnnotations.AutoIdAttribute));
+            nativeTypes.MetadataTypesConfig.ExportAttributes.Add(typeof(System.ComponentModel.BindableAttribute));
+            nativeTypes.MetadataTypesConfig.ExportAttributes.Add(typeof(AssociationAttribute));
+
+            nativeTypes.ExportAttribute<DisplayAttribute>(x =>
+            {
+                var metadata = nativeTypes.GetGenerator().ToMetadataAttribute(x);
+                try
+                {
+                    var attr = (DisplayAttribute)x;
+                    if (attr.GetAutoGenerateField() == null || (attr.GetAutoGenerateField().HasValue && !attr.GetAutoGenerateField().Value))
+                        metadata.Args.Add(new MetadataPropertyType {
+                            Name = nameof(DisplayAttribute.AutoGenerateField), 
+                            TypeNamespace = "System", 
+                            Type = nameof(Boolean), 
+                            Value = "false"
+                        });
+                    return metadata;
+                }
+                catch (Exception ex)
+                {
+                    throw;
+                }
+            });            
+            
 
 //            container.Register<IDbConnectionFactory>(
 //                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
