@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
-using Microsoft.Extensions.Configuration;
 using ServiceStack.Text;
 
 namespace ServiceStack.Configuration
@@ -199,7 +198,7 @@ namespace ServiceStack.Configuration
         {
 #if NETSTANDARD2_0
             return appSettings is NetCoreAppSettings config
-                ? config.Configuration.GetConnectionString(name)
+                ? config.Configuration?.GetSection("ConnectionStrings")?[name]
                 : appSettings.GetString("ConnectionStrings:" + name);
 #else
             return System.Configuration.ConfigurationManager.ConnectionStrings[name]?.ConnectionString;
