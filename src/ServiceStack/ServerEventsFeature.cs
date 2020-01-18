@@ -287,7 +287,6 @@ namespace ServiceStack
                     try
                     {
                         feature.OnDispose?.Invoke(sub, req);
-                        (sub as EventSubscription)?.EndRequest();
                     } catch { }
                 };
                 return;
@@ -295,12 +294,12 @@ namespace ServiceStack
             
             var tcs = new TaskCompletionSource<bool>();
 
+            //Only invoked by subscription.Dispose() 
             subscription.OnDispose = sub =>
             {
                 try
                 {
                     feature.OnDispose?.Invoke(sub, req);
-                    (sub as EventSubscription)?.EndRequest();
                 } catch { }
 
                 if (!res.IsClosed)
@@ -489,12 +488,11 @@ namespace ServiceStack
             set => Interlocked.Exchange(ref LastPulseAtTicks, value.Ticks);
         }
 
-        bool isDisposed;
         private long subscribed = 1;
-        private long requestEnded = 0;
-        
+        private long isDisposed = 0;
+
         // Don't access asyncLock or response if request is already ended
-        public bool RequestEnded => Interlocked.Read(ref requestEnded) != 0; 
+        public bool IsDisposed => Interlocked.Read(ref isDisposed) != 0;
 
         private readonly IResponse response;
         private long msgId;
@@ -528,7 +526,6 @@ namespace ServiceStack
         public Func<IResponse, string, Task> WriteEventAsync { get; set; }
         public Action<IEventSubscription, Exception> OnError { get; set; }
         public bool IsClosed => this.response.IsClosed;
-        public bool IsDisposed => isDisposed;
 
         StringBuilder buffer = new StringBuilder();
         
@@ -556,13 +553,20 @@ namespace ServiceStack
             PublishRawAsync(CreateFrame(selector, message), token);
         public async Task PublishRawAsync(string frame, CancellationToken token = default)
         {
-            if (RequestEnded)
+            if (IsDisposed)
                 return;
+            if (response.IsClosed)
+            {
+                Dispose();
+                return;
+            }
+
+            var hasLock = await asyncLock.WaitAsync(0, token);
             try
             {
-                if (await asyncLock.WaitAsync(0, token))
+                if (hasLock)
                 {
-                    if (!EndRequestIfDisposed())
+                    if (CanWrite())
                     {
                         var pendingWrites = GetAndResetBuffer();
                         if (pendingWrites != null)
@@ -572,15 +576,13 @@ namespace ServiceStack
                         {
                             if (OnPublishAsync != null)
                                 await OnPublishAsync(this, response, frame);
-                            
+
                             await WriteEventAsync(response, frame);
                         }
                         catch (Exception ex)
                         {
                             await HandleWriteExceptionAsync(frame, ex, token);
                         }
-
-                        EndRequestIfDisposed();
                     }
                 }
                 else
@@ -591,21 +593,32 @@ namespace ServiceStack
             }
             finally
             {
-                asyncLock.Release();
+                if (hasLock && !IsDisposed)
+                    asyncLock.Release();
             }
+
+            if (response.IsClosed)
+                Dispose();
         }
 
         public void Publish(string selector, string message) => PublishRaw(CreateFrame(selector, message));
 
         public void PublishRaw(string frame)
         {
-            if (RequestEnded)
+            if (IsDisposed)
                 return;
+            if (response.IsClosed)
+            {
+                Dispose();
+                return;
+            }
+
+            var hasLock = asyncLock.Wait(0);
             try
             {
-                if (asyncLock.Wait(0))
+                if (hasLock)
                 {
-                    if (!EndRequestIfDisposed())
+                    if (CanWrite())
                     {
                         var pendingWrites = GetAndResetBuffer();
                         if (pendingWrites != null)
@@ -620,8 +633,6 @@ namespace ServiceStack
                         {
                             TaskExt.RunSync(() => HandleWriteExceptionAsync(frame, ex));
                         }
-
-                        EndRequestIfDisposed();
                     }
                 }
                 else
@@ -632,8 +643,12 @@ namespace ServiceStack
             }
             finally
             {
-                asyncLock.Release();
+                if (hasLock && !IsDisposed)
+                    asyncLock.Release();
             }
+
+            if (response.IsClosed)
+                Dispose();
         }
 
         string GetAndResetBuffer()
@@ -674,53 +689,7 @@ namespace ServiceStack
             return UnsubscribeAsync();
         }
 
-        private bool EndRequestIfDisposed()
-        {
-            if (!isDisposed) return false;
-            if (response.IsClosed) return true;
-
-            EndRequestNoLock();
-            return true;
-        }
-        
-        private void EndRequestNoLock()
-        {
-            if (Interlocked.CompareExchange(ref requestEnded, 1, 0) == 0)
-            {
-                try
-                {
-                    response.EndHttpHandlerRequest(skipHeaders: true);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error("Error ending subscription response", ex);
-                }
-            }
-        }
-
-        public void EndRequest()
-        {
-            if (RequestEnded)
-                return;
-
-            try
-            {
-                if (asyncLock.Wait(1000))
-                {
-                    EndRequestNoLock();
-                }
-                else
-                {
-                    var msg = "Failed to acquire asyncLock to dispose of " + GetType().Name;
-                    Log.Error(msg);
-                    System.Diagnostics.Debug.Fail(msg);
-                }
-            }
-            finally
-            {
-                asyncLock.Release();
-            }
-        }
+        private bool CanWrite() => !IsDisposed && !response.IsClosed;
 
         [Obsolete("Use UnsubscribeAsync. Will be removed in future.")]
         public void Unsubscribe()
@@ -749,17 +718,39 @@ namespace ServiceStack
 
         public void Dispose()
         {
-            if (isDisposed)
-                return;
+            if (Interlocked.CompareExchange(ref isDisposed, 1, 0) == 0)
+            {
+                bool hasLock = asyncLock.Wait(1000);
+                try
+                {
+                    if (hasLock)
+                    {
+                        try
+                        {
+                            response.EndHttpHandlerRequest(skipHeaders: true);
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error("Error ending subscription response", ex);
+                        }
+                    }
+                    else
+                    {
+                        var msg = "Failed to acquire asyncLock to dispose of " + GetType().Name;
+                        Log.Error(msg);
+                        System.Diagnostics.Debug.Fail(msg);
+                    }
+                }
+                finally
+                {
+                    if (hasLock)
+                        asyncLock.Release();
+                }
 
-            isDisposed = true;
-
-            EndRequest();
-
-            asyncLock?.Dispose();
-            OnDispose?.Invoke(this);
+                asyncLock?.Dispose();
+                OnDispose?.Invoke(this);
+            }
         }
-
     }
 
     public interface IEventSubscription : IMeta, IDisposable
