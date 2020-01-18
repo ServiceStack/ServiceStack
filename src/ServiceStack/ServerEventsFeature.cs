@@ -494,7 +494,7 @@ namespace ServiceStack
         private long requestEnded = 0;
         
         // Don't access asyncLock or response if request is already ended
-        public bool RequestEnded => Interlocked.Read(ref requestEnded) == 0; 
+        public bool RequestEnded => Interlocked.Read(ref requestEnded) != 0; 
 
         private readonly IResponse response;
         private long msgId;
