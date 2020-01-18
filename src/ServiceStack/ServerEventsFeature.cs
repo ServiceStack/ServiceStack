@@ -693,6 +693,9 @@ namespace ServiceStack
 
         public void EndRequest()
         {
+            if (Interlocked.Read(ref requestEnded) != 0) // don't attempt to use lock if request is already ended
+                return;
+
             try
             {
                 if (asyncLock.Wait(1000))
