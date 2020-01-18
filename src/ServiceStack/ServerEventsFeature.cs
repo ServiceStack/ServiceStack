@@ -667,7 +667,7 @@ namespace ServiceStack
             return UnsubscribeAsync();
         }
 
-        internal bool EndRequestIfDisposed()
+        private bool EndRequestIfDisposed()
         {
             if (!isDisposed) return false;
             if (response.IsClosed) return true;
@@ -701,7 +701,9 @@ namespace ServiceStack
                 }
                 else
                 {
-                    Log.Error("Failed to acquire asyncLock to dispose of " + GetType().Name);
+                    var msg = "Failed to acquire asyncLock to dispose of " + GetType().Name;
+                    Log.Error(msg);
+                    System.Diagnostics.Debug.Fail(msg);
                 }
             }
             finally
