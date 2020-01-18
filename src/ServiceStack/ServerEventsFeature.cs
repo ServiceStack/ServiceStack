@@ -489,9 +489,12 @@ namespace ServiceStack
             set => Interlocked.Exchange(ref LastPulseAtTicks, value.Ticks);
         }
 
+        bool isDisposed;
         private long subscribed = 1;
         private long requestEnded = 0;
-        bool isDisposed;
+        
+        // Don't access asyncLock or response if request is already ended
+        public bool RequestEnded => Interlocked.Read(ref requestEnded) == 0; 
 
         private readonly IResponse response;
         private long msgId;
@@ -553,6 +556,8 @@ namespace ServiceStack
             PublishRawAsync(CreateFrame(selector, message), token);
         public async Task PublishRawAsync(string frame, CancellationToken token = default)
         {
+            if (RequestEnded)
+                return;
             try
             {
                 if (await asyncLock.WaitAsync(0, token))
@@ -594,6 +599,8 @@ namespace ServiceStack
 
         public void PublishRaw(string frame)
         {
+            if (RequestEnded)
+                return;
             try
             {
                 if (asyncLock.Wait(0))
@@ -675,7 +682,7 @@ namespace ServiceStack
             EndRequestNoLock();
             return true;
         }
-
+        
         private void EndRequestNoLock()
         {
             if (Interlocked.CompareExchange(ref requestEnded, 1, 0) == 0)
@@ -693,7 +700,7 @@ namespace ServiceStack
 
         public void EndRequest()
         {
-            if (Interlocked.Read(ref requestEnded) != 0) // don't attempt to use lock if request is already ended
+            if (RequestEnded)
                 return;
 
             try
@@ -748,7 +755,7 @@ namespace ServiceStack
             isDisposed = true;
 
             EndRequest();
-            
+
             asyncLock?.Dispose();
             OnDispose?.Invoke(this);
         }
