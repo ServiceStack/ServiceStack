@@ -596,7 +596,8 @@
         var qs = $.ss.queryString(url);
         qs['channels'] = channels;
         delete qs['channel'];
-        $.ss.eventSourceUrl = $.ss.toUrl(url.substring(0, Math.min(url.indexOf('?'), url.length)), qs);
+        var pos = url.indexOf('?');
+        $.ss.eventSourceUrl = $.ss.toUrl(pos >= 0 ? url.substring(0, pos) : url, qs);
     };
     $.ss.updateSubscriberInfo = function (subscribe, unsubscribe) {
         var sub = typeof subscribe == "string" ? subscribe.split(',') : subscribe;
