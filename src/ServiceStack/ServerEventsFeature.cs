@@ -287,7 +287,7 @@ namespace ServiceStack
                     try
                     {
                         feature.OnDispose?.Invoke(sub, req);
-                        (sub as EventSubscription)?.EndRequestIfDisposed();
+                        (sub as EventSubscription)?.EndRequest();
                     } catch { }
                 };
                 return;
@@ -300,7 +300,7 @@ namespace ServiceStack
                 try
                 {
                     feature.OnDispose?.Invoke(sub, req);
-                    (sub as EventSubscription)?.EndRequestIfDisposed();
+                    (sub as EventSubscription)?.EndRequest();
                 } catch { }
 
                 if (!res.IsClosed)
@@ -550,12 +550,12 @@ namespace ServiceStack
         readonly SemaphoreSlim asyncLock = new SemaphoreSlim(1);
 
         public Task PublishAsync(string selector, string message, CancellationToken token = default) => 
-            PublishRawAsync(CreateFrame(selector, message));
+            PublishRawAsync(CreateFrame(selector, message), token);
         public async Task PublishRawAsync(string frame, CancellationToken token = default)
         {
             try
             {
-                if (asyncLock.Wait(0))
+                if (await asyncLock.WaitAsync(0, token))
                 {
                     if (!EndRequestIfDisposed())
                     {
@@ -672,6 +672,12 @@ namespace ServiceStack
             if (!isDisposed) return false;
             if (response.IsClosed) return true;
 
+            EndRequestNoLock();
+            return true;
+        }
+
+        private void EndRequestNoLock()
+        {
             if (Interlocked.CompareExchange(ref requestEnded, 1, 0) == 0)
             {
                 try
@@ -683,7 +689,25 @@ namespace ServiceStack
                     Log.Error("Error ending subscription response", ex);
                 }
             }
-            return true;
+        }
+
+        public void EndRequest()
+        {
+            try
+            {
+                if (asyncLock.Wait(1000))
+                {
+                    EndRequestNoLock();
+                }
+                else
+                {
+                    Log.Error("Failed to acquire asyncLock to dispose of " + GetType().Name);
+                }
+            }
+            finally
+            {
+                asyncLock.Release();
+            }
         }
 
         [Obsolete("Use UnsubscribeAsync. Will be removed in future.")]
@@ -718,10 +742,12 @@ namespace ServiceStack
 
             isDisposed = true;
 
-            EndRequestIfDisposed();
-
+            EndRequest();
+            
+            asyncLock?.Dispose();
             OnDispose?.Invoke(this);
         }
+
     }
 
     public interface IEventSubscription : IMeta, IDisposable
