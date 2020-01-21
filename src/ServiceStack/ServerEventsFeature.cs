@@ -488,11 +488,18 @@ namespace ServiceStack
             set => Interlocked.Exchange(ref LastPulseAtTicks, value.Ticks);
         }
 
+        /// <summary>
+        /// How long to wait to obtain async lock before force disposing subscriptions connection
+        /// </summary>
+        public static int DisposeMaxWaitMs { get; set; } = 30 * 1000;
+
         private long subscribed = 1;
         private long isDisposed = 0;
+        private long disposing = 0;
 
         // Don't access asyncLock or response if request is already ended
         public bool IsDisposed => Interlocked.Read(ref isDisposed) != 0;
+        private bool Disposing => Interlocked.Read(ref disposing) != 0;
 
         private readonly IResponse response;
         private long msgId;
@@ -547,13 +554,22 @@ namespace ServiceStack
             Publish(selector, null);
         }
 
-        readonly SemaphoreSlim asyncLock = new SemaphoreSlim(1);
+        private long semaphore = 0;
+
+        int GetThrottleMs()
+        {
+            // throttle publisher if buffer gets too full
+            lock (buffer)
+                return buffer.Length < 100 * 1024 
+                    ? 0 
+                    : (int) Math.Ceiling(buffer.Length / 100d);
+        }
 
         public Task PublishAsync(string selector, string message, CancellationToken token = default) => 
             PublishRawAsync(CreateFrame(selector, message), token);
         public async Task PublishRawAsync(string frame, CancellationToken token = default)
         {
-            if (IsDisposed)
+            if (Disposing)
                 return;
             if (response.IsClosed)
             {
@@ -561,7 +577,8 @@ namespace ServiceStack
                 return;
             }
 
-            var hasLock = await asyncLock.WaitAsync(0, token);
+            Exception writeEx = null;
+            var hasLock = Interlocked.CompareExchange(ref semaphore, 1, 0) == 0;
             try
             {
                 if (hasLock)
@@ -581,20 +598,29 @@ namespace ServiceStack
                         }
                         catch (Exception ex)
                         {
-                            await HandleWriteExceptionAsync(frame, ex, token);
+                            writeEx = ex;
                         }
                     }
                 }
                 else
                 {
+                    var waitMs = GetThrottleMs();
+                    if (waitMs > 0)
+                        await Task.Delay(waitMs, token);
+
                     lock (buffer)
                         buffer.Append(frame);
                 }
             }
             finally
             {
-                if (hasLock && !IsDisposed)
-                    asyncLock.Release();
+                if (hasLock)
+                {
+                    Interlocked.CompareExchange(ref semaphore, 0, semaphore);
+
+                    if (writeEx != null)
+                        await HandleWriteExceptionAsync(frame, writeEx, token);
+                }
             }
 
             if (response.IsClosed)
@@ -605,7 +631,7 @@ namespace ServiceStack
 
         public void PublishRaw(string frame)
         {
-            if (IsDisposed)
+            if (Disposing)
                 return;
             if (response.IsClosed)
             {
@@ -613,7 +639,8 @@ namespace ServiceStack
                 return;
             }
 
-            var hasLock = asyncLock.Wait(0);
+            Exception writeEx = null;
+            var hasLock = Interlocked.CompareExchange(ref semaphore, 1, 0) == 0;
             try
             {
                 if (hasLock)
@@ -631,20 +658,29 @@ namespace ServiceStack
                         }
                         catch (Exception ex)
                         {
-                            TaskExt.RunSync(() => HandleWriteExceptionAsync(frame, ex));
+                            writeEx = ex;
                         }
                     }
                 }
                 else
                 {
+                    var waitMs = GetThrottleMs();
+                    if (waitMs > 0)
+                        Thread.Sleep(waitMs);
+
                     lock (buffer)
                         buffer.Append(frame);
                 }
             }
             finally
             {
-                if (hasLock && !IsDisposed)
-                    asyncLock.Release();
+                if (hasLock)
+                {
+                    Interlocked.CompareExchange(ref semaphore, 0, semaphore);
+
+                    if (writeEx != null)
+                        TaskExt.RunSync(() => HandleWriteExceptionAsync(frame, writeEx));
+                }
             }
 
             if (response.IsClosed)
@@ -689,7 +725,7 @@ namespace ServiceStack
             return UnsubscribeAsync();
         }
 
-        private bool CanWrite() => !IsDisposed && !response.IsClosed;
+        private bool CanWrite() => !Disposing && !response.IsClosed;
 
         [Obsolete("Use UnsubscribeAsync. Will be removed in future.")]
         public void Unsubscribe()
@@ -718,36 +754,41 @@ namespace ServiceStack
 
         public void Dispose()
         {
+            if (Disposing)
+                return;
+
+            Interlocked.CompareExchange(ref disposing, 1, 0);
+
             if (Interlocked.CompareExchange(ref isDisposed, 1, 0) == 0)
             {
-                bool hasLock = asyncLock.Wait(1000);
-                try
+
+                var i = 0;
+                while (Interlocked.CompareExchange(ref semaphore, 1, 0) != 0)
                 {
-                    if (hasLock)
-                    {
-                        try
-                        {
-                            response.EndHttpHandlerRequest(skipHeaders: true);
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.Error("Error ending subscription response", ex);
-                        }
-                    }
-                    else
-                    {
-                        var msg = "Failed to acquire asyncLock to dispose of " + GetType().Name;
-                        Log.Error(msg);
-                        System.Diagnostics.Debug.Fail(msg);
-                    }
-                }
-                finally
-                {
-                    if (hasLock)
-                        asyncLock.Release();
+                    Thread.Sleep(100);
+                    i += 100;
+                    if (DisposeMaxWaitMs != -1 && i >= DisposeMaxWaitMs)
+                        break;
                 }
 
-                asyncLock?.Dispose();
+                //var hasLock = asyncLock.Wait(DisposeMaxWaitMs);
+                var hasLock = i < DisposeMaxWaitMs;
+                if (hasLock)
+                {
+                    try
+                    {
+                        response.EndHttpHandlerRequest(skipHeaders: true);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error("Error ending subscription response", ex);
+                    }
+                }
+                else
+                {
+                    Log.Warn($"Could not acquire semaphore within {DisposeMaxWaitMs}ms");
+                }
+
                 OnDispose?.Invoke(this);
             }
         }
@@ -1492,7 +1533,7 @@ namespace ServiceStack
                 UnRegisterSubscription(subscription, subscription.UserName, UserNameSubscriptions);
                 UnRegisterSubscription(subscription, subscription.SessionId, SessionSubscriptions);
             }
-            
+
             pendingUnSubscriptions.Add(subscription);
         }
 
