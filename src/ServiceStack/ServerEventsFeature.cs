@@ -489,7 +489,7 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// How long to wait to obtain async lock before force disposing subscriptions connection
+        /// How long to wait to obtain lock before force disposing subscription connection
         /// </summary>
         public static int DisposeMaxWaitMs { get; set; } = 30 * 1000;
 
