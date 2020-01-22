@@ -914,19 +914,25 @@ namespace ServiceStack
 
         public void NotifyAll(string selector, object message)
         {
-            if (isDisposed) return;
+            if (isDisposed) 
+                return;
 
+            var body = Serialize(message);
             foreach (var sub in Subscriptions.ValuesWithoutLock())
             {
-                sub.Publish(selector, Serialize(message));
+                sub.Publish(selector, body);
             }
         }
 
         public async Task NotifyAllAsync(string selector, object message, CancellationToken token = default)
         {
+            if (isDisposed) 
+                return;
+
+            var body = Serialize(message);
             foreach (var sub in Subscriptions.ValuesWithoutLock())
             {
-                await sub.PublishAsync(selector, Serialize(message), token);
+                await sub.PublishAsync(selector, body, token);
             }
         }
 
@@ -938,7 +944,8 @@ namespace ServiceStack
 
         public void NotifyChannels(string[] channels, string selector, Dictionary<string, string> meta)
         {
-            if (isDisposed) return;
+            if (isDisposed) 
+                return;
 
             foreach (var channel in channels)
             {
@@ -948,7 +955,8 @@ namespace ServiceStack
 
         public async Task NotifyChannelsAsync(string[] channels, string selector, Dictionary<string, string> meta, CancellationToken token = default)
         {
-            if (isDisposed) return;
+            if (isDisposed) 
+                return;
 
             foreach (var channel in channels)
             {
@@ -1055,6 +1063,7 @@ namespace ServiceStack
                 return;
 
             var now = DateTime.UtcNow;
+            var body = Serialize(message);
 
             foreach (var sub in subs.KeysWithoutLock())
             {
@@ -1074,7 +1083,7 @@ namespace ServiceStack
                         Log.DebugFormat("[SSE-SERVER] Sending {0} msg to {1} on ({2})", selector, sub.SubscriptionId,
                             string.Join(", ", sub.Channels));
 
-                    sub.Publish(selector, Serialize(message));
+                    sub.Publish(selector, body);
                 }
             }
         }
@@ -1103,7 +1112,8 @@ namespace ServiceStack
                 Log.DebugFormat("[SSE-SERVER] Sending {0} msg to {1} on ({2})", selector, sub.SubscriptionId,
                     string.Join(", ", sub.Channels));
 
-            sub.Publish(selector, Serialize(message));
+            var body = Serialize(message);
+            sub.Publish(selector, body);
         }
 
         protected async Task NotifyAsync(ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> map, string key, 
@@ -1439,7 +1449,7 @@ namespace ServiceStack
                 {
                     if (connectArgs != null)
                     {
-                        var message = connectArgs.ToJson();
+                        var message = Serialize(connectArgs);
                         asyncTasks.Add(() => subscription.PublishAsync("cmd.onConnect", message, token));
                     }
 
