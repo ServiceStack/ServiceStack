@@ -491,13 +491,12 @@ namespace ServiceStack
         /// <summary>
         /// How long to wait to obtain lock before force disposing subscription connection
         /// </summary>
-        public static int DisposeMaxWaitMs { get; set; } = 30 * 1000;
+        public static int DisposeMaxWaitMs { get; set; } = -1;
 
         private long subscribed = 1;
         private long isDisposed = 0;
         private long disposing = 0;
 
-        // Don't access asyncLock or response if request is already ended
         public bool IsDisposed => Interlocked.Read(ref isDisposed) != 0;
         private bool Disposing => Interlocked.Read(ref disposing) != 0;
 
@@ -585,12 +584,12 @@ namespace ServiceStack
                 {
                     if (CanWrite())
                     {
-                        var pendingWrites = GetAndResetBuffer();
-                        if (pendingWrites != null)
-                            frame = pendingWrites + frame;
-
                         try
                         {
+                            var pendingWrites = GetAndResetBuffer();
+                            if (pendingWrites != null)
+                                frame = pendingWrites + frame;
+
                             if (OnPublishAsync != null)
                                 await OnPublishAsync(this, response, frame);
 
@@ -647,12 +646,12 @@ namespace ServiceStack
                 {
                     if (CanWrite())
                     {
-                        var pendingWrites = GetAndResetBuffer();
-                        if (pendingWrites != null)
-                            frame = pendingWrites + frame;
-
                         try
                         {
+                            var pendingWrites = GetAndResetBuffer();
+                            if (pendingWrites != null)
+                                frame = pendingWrites + frame;
+
                             OnPublish?.Invoke(this, response, frame);
                             WriteEvent(response, frame);
                         }
@@ -761,18 +760,16 @@ namespace ServiceStack
 
             if (Interlocked.CompareExchange(ref isDisposed, 1, 0) == 0)
             {
-
                 var i = 0;
                 while (Interlocked.CompareExchange(ref semaphore, 1, 0) != 0)
                 {
                     Thread.Sleep(100);
                     i += 100;
-                    if (DisposeMaxWaitMs != -1 && i >= DisposeMaxWaitMs)
+                    if (DisposeMaxWaitMs >= 0 && i >= DisposeMaxWaitMs)
                         break;
                 }
 
-                //var hasLock = asyncLock.Wait(DisposeMaxWaitMs);
-                var hasLock = i < DisposeMaxWaitMs;
+                var hasLock = DisposeMaxWaitMs < 0 || i < DisposeMaxWaitMs;
                 if (hasLock)
                 {
                     try
@@ -1116,10 +1113,11 @@ namespace ServiceStack
                 return;
 
             var subs = map.TryGet(key);
-            if (subs == null)
+            if (subs == null || subs.Count == 0)
                 return;
 
             var now = DateTime.UtcNow;
+            var body = Serialize(message);
 
             foreach (var sub in subs.KeysWithoutLock())
             {
@@ -1139,7 +1137,7 @@ namespace ServiceStack
                         Log.DebugFormat("[SSE-SERVER] Sending {0} msg to {1} on ({2})", selector, sub.SubscriptionId,
                             string.Join(", ", sub.Channels));
 
-                    await sub.PublishAsync(selector, Serialize(message), token);
+                    await sub.PublishAsync(selector, body, token);
                 }
             }
             await DoAsyncTasks(token);
@@ -1170,7 +1168,8 @@ namespace ServiceStack
                 Log.DebugFormat("[SSE-SERVER] Sending {0} msg to {1} on ({2})", selector, sub.SubscriptionId,
                     string.Join(", ", sub.Channels));
 
-            await sub.PublishAsync(selector, Serialize(message), token);
+            var body = Serialize(message);
+            await sub.PublishAsync(selector, body, token);
             await DoAsyncTasks(token);
         }
 
@@ -1439,7 +1438,10 @@ namespace ServiceStack
                 lock (subscription)
                 {
                     if (connectArgs != null)
-                        asyncTasks.Add(() => subscription.PublishAsync("cmd.onConnect", connectArgs.ToJson(), token));
+                    {
+                        var message = connectArgs.ToJson();
+                        asyncTasks.Add(() => subscription.PublishAsync("cmd.onConnect", message, token));
+                    }
 
                     subscription.OnUnsubscribeAsync = HandleUnsubscriptionAsync;
                     foreach (string channel in subscription.Channels ?? EventSubscription.UnknownChannel)
