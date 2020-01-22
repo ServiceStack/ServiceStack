@@ -35,6 +35,7 @@
             onError: function(msg,e) {
                 console.log("==== SSE ERROR ====");
                 console.error(e);
+                console.log(e.json);
             }
         },
         receivers: {
