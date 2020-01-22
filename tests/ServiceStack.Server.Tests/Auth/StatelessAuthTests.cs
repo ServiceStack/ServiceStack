@@ -177,7 +177,8 @@ namespace ServiceStack.Server.Tests.Auth
 
             return new AppHost
             {
-                Use = container => container.Register<IAuthRepository>(c => new MongoDbAuthRepository(mongoDatabase, true))
+                Use = container => container.Register<IAuthRepository>(c => 
+                    new MongoDbAuthRepository(mongoDatabase, true))
             };
         }
     }

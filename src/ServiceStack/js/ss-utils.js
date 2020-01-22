@@ -683,7 +683,15 @@
                 selector = selParts[1];
             }
             var json = parts[1];
-            var msg = json ? JSON.parse(json) : null;
+            var msg, fn;
+            try {
+                msg = json ? JSON.parse(json) : null;
+            } catch (e) {
+                e.json = json;
+                fn = $.ss.handlers["onError"];
+                if (fn)
+                    fn("JSON.parse() error", e);
+            }
 
             parts = $.ss.splitOnFirst(selector, '.');
             if (parts.length <= 1)
@@ -741,7 +749,7 @@
                     $.ss.updateSubscriberUrl = opt.updateSubscriberUrl;
                     $.ss.updateChannels((opt.channels || "").split(','));
                 }
-                var fn = $.ss.handlers[cmd];
+                fn = $.ss.handlers[cmd];
                 if (fn) {
                     fn.call(el || document.body, msg, e);
                 }
@@ -757,7 +765,7 @@
                 $.ss.invokeReceiver(r, cmd, el, msg, e, op);
             }
 
-            var fn = $.ss.handlers["onMessage"];
+            fn = $.ss.handlers["onMessage"];
             if (fn) fn.call(el || document.body, msg, e);
 
             if (opt.success) opt.success(selector, msg, e); //deprecated
