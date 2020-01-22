@@ -83,7 +83,9 @@ namespace ServiceStack
             }
         }
 
-        public static Dictionary<string, object> ToObjectDictionary(this IDataReader reader)
+        public static Dictionary<string, object> ToObjectDictionary(
+            this IDataReader reader,
+            Func<string, object, object> mapper = null)
         {
             Dictionary<string, object> to = null;
             var fieldCount = reader.FieldCount;
@@ -97,7 +99,9 @@ namespace ServiceStack
                     var value = reader.GetValue(i);
                     if (value == DBNull.Value)
                         continue;
-                    to[reader.GetName(i)] = value;
+                    string key = reader.GetName(i);
+                    value = mapper?.Invoke(key, value) ?? value;
+                    to[key] = value;
                 }
             }
             return to;
