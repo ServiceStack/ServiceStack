@@ -60,6 +60,7 @@ namespace CheckIIS
 
             while (true)
             {
+                // await Task.Delay(2, token);
                 Thread.Sleep(2);
                 await serverEvents.NotifyAllAsync("cmd.bombard", msg, token);
             }
@@ -76,6 +77,7 @@ namespace CheckIIS
 
             while (true)
             {
+                // await Task.Delay(2, token);
                 Thread.Sleep(2);
                 await serverEvents.NotifyAllAsync("cmd.MS", stuff, token);
             }
