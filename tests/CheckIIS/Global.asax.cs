@@ -1,74 +1,85 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
+using System.Web.Hosting;
 using System.Web.Optimization;
 using System.Web.Routing;
-using Funq;
 using ServiceStack;
 
 namespace CheckIIS
 {
-    public class Global : HttpApplication
+    public class SimpleMessage
     {
-        void Application_Start(object sender, EventArgs e)
+        public string MyMsg { get; set; }
+        public IList<string> Gifts { get; set; }
+    }
+
+    public class LongMessage
+    {
+        public string Msg { get; set; }
+    }
+
+    public class Global : System.Web.HttpApplication
+    {
+        protected void Application_Start(object sender, EventArgs e)
         {
-            new AppHost()
-                .Init();
+            new AppHost().Init();
+            RunServerEventsLoadTest();
 
             // Code that runs on application startup
-            RouteConfig.RegisterRoutes(RouteTable.Routes);
-            BundleConfig.RegisterBundles(BundleTable.Bundles);
+            // RouteConfig.RegisterRoutes(RouteTable.Routes);
+            // BundleConfig.RegisterBundles(BundleTable.Bundles);
         }
-    }
 
-    [Route("/hello")]
-    [Route("/hello/{Name}")]
-    public class Hello : IReturn<HelloResponse>
-    {
-        public string Name { get; set; }
-    }
-    public class HelloResponse
-    {
-        public string Result { get; set; }
-        public ResponseStatus ResponseStatus { get; set; }
-    }
-
-    public class AddInts : IReturn<AddIntsResponse>
-    {
-        public int A { get; set; }
-        public int B { get; set; }
-    }
-
-    public class AddIntsResponse
-    {
-        public int Result { get; set; }
-        public ResponseStatus ResponseStatus { get; set; }
-    }
-
-
-    public class MyServices : Service
-    {
-        public object Any(Hello request) => new HelloResponse
+        void RunServerEventsLoadTest()
         {
-            Result = $"Hi, {request.Name}!"
-        };
+            HostingEnvironment.QueueBackgroundWorkItem(LongMessage_SWithSleepAsync);
+            HostingEnvironment.QueueBackgroundWorkItem(GiftAwayAsync);
+        }
 
-        public object Any(AddInts request) => new AddIntsResponse {
-            Result = request.A + request.B
-        };
-    }
-   
-    public class AppHost : AppHostBase
-    {
-        public AppHost() 
-            : base(nameof(MyServices), typeof(MyServices).Assembly) {}
-
-        public override void Configure(Container container)
+        public async Task GiftAwayAsync(CancellationToken token)
         {
-            SetConfig(new HostConfig {
-                EnableAutoHtmlResponses = false,
-            });
+            var serverEvents = HostContext.TryResolve<IServerEvents>();
+
+            var myGifts = new List<string>
+            {
+                "On the first day of Christmas my true love gave to me: a Partridge in a Pear Tree.",
+                "On the second day of Christmas my true love gave to me: two Turtle Doves, and a Partridge in a Pear Tree.",
+                "On the third day of Christmas my true love gave to me: three French Hens, two Turtle Doves, and a Partridge in a Pear Tree.",
+                "On the fourth day of Christmas my true love gave to me: four Calling Birds, three French Hens, two Turtle Doves, and a Partridge in a Pear Tree.",
+                "On the fifth day of Christmas my true love gave to me: five Gold Rings, four Calling Birds, three French Hens, two Turtle Doves, and a Partridge in a Pear Tree."
+            };
             
-            Plugins.Add(new SoapFormat());
+            var msg = new SimpleMessage
+            {
+                MyMsg = "song",
+                Gifts = myGifts
+            };
+
+            while (true)
+            {
+                Thread.Sleep(2);
+                await serverEvents.NotifyAllAsync("cmd.bombard", msg, token);
+            }
+        }
+
+        public async Task LongMessage_SWithSleepAsync(CancellationToken token)
+        {
+            const int msgSize = 420 * 1024;
+            var serverEvents = HostContext.TryResolve<IServerEvents>();
+            var stuff = new LongMessage
+            {
+                Msg = $"size{msgSize}-{new string('S', msgSize)}"
+            };
+
+            while (true)
+            {
+                Thread.Sleep(2);
+                await serverEvents.NotifyAllAsync("cmd.MS", stuff, token);
+            }
         }
     }
+    
 }

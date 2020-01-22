@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="../Scripts/jquery-3.3.1.js"></script>
+    <script src="/api/js/ss-utils.js"></script>
+</head>
+<body>
+
+<script>
+    var source = new EventSource("/api/event-stream?channel=channel&t=" + new Date().getTime());
+
+    var msgCnt = 0;
+    var msgBatchCnt = 0;
+
+    $(source).handleServerEvents({
+        handlers: {
+            onConnect: function (sub) {
+                console.log("onConnect: " + sub.displayName);
+            },
+            onJoin: function (user) {
+                console.log("onJoin: " + user.displayName);
+            },
+            onLeave: function (user) {
+                console.log("onLeave: ", user.displayName);
+            },
+            onMessage: function (msg, e) {
+                ++msgCnt;
+                if ((msgCnt % 500) === 0) {
+                    ++msgBatchCnt;
+                    console.info("onMessage: " + msgBatchCnt);
+                }
+            },
+            onError: function(msg,e) {
+                console.log("==== SSE ERROR ====");
+                console.error(e);
+            }
+        },
+        receivers: {
+
+        }
+    });
+</script>
+
+<h1>Errors</h1>
+<div id="errors"></div>
+
+</body>
+</html>
