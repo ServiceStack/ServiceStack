@@ -138,7 +138,7 @@ namespace ServiceStack
         public static IRequest AllowSyncIO(this IRequest req)
         {
 #if NETSTANDARD
-            ((ServiceStack.Host.NetCore.NetCoreRequest) req).AllowSyncIO();
+            (req as ServiceStack.Host.NetCore.NetCoreRequest)?.AllowSyncIO();
 #endif
             return req;
         }
@@ -146,7 +146,7 @@ namespace ServiceStack
         public static IResponse AllowSyncIO(this IResponse res)
         {
 #if NETSTANDARD
-            ((ServiceStack.Host.NetCore.NetCoreResponse)res).AllowSyncIO();
+            (res as ServiceStack.Host.NetCore.NetCoreResponse)?.AllowSyncIO();
 #endif
             return res;
         }
