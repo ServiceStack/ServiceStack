@@ -36,6 +36,7 @@
                 console.log("==== SSE ERROR ====");
                 console.error(e);
                 console.log(e.json);
+                document.getElementById('errors').innerHTML += (e + '<br>' + e.json);
             }
         },
         receivers: {
