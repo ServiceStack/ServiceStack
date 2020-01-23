@@ -115,12 +115,38 @@ namespace ServiceStack
             httpRes.EndRequest();
         }
 
+#if NETSTANDARD
+        public static Microsoft.AspNetCore.Http.HttpRequest AllowSyncIO(this Microsoft.AspNetCore.Http.HttpRequest req)
+        {
+            req.HttpContext.AllowSyncIO();
+            return req;
+        }
+        public static Microsoft.AspNetCore.Http.HttpResponse AllowSyncIO(this Microsoft.AspNetCore.Http.HttpResponse res)
+        {
+            res.HttpContext.AllowSyncIO();
+            return res;
+        }
+        public static Microsoft.AspNetCore.Http.HttpContext AllowSyncIO(this Microsoft.AspNetCore.Http.HttpContext ctx)
+        {
+            // AllowSynchronousIO for sync SSE notifications https://github.com/aspnet/AspNetCore/issues/7644 
+            var feature = ctx.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
+            feature.AllowSynchronousIO = true;
+            return ctx;
+        }
+#endif
+
+        public static IRequest AllowSyncIO(this IRequest req)
+        {
+#if NETSTANDARD
+            ((ServiceStack.Host.NetCore.NetCoreRequest) req).AllowSyncIO();
+#endif
+            return req;
+        }
+
         public static IResponse AllowSyncIO(this IResponse res)
         {
 #if NETSTANDARD
-                // AllowSynchronousIO for sync SSE notifications https://github.com/aspnet/AspNetCore/issues/7644 
-                var feature = ((ServiceStack.Host.NetCore.NetCoreResponse)res).HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
-                feature.AllowSynchronousIO = true;
+            ((ServiceStack.Host.NetCore.NetCoreResponse)res).AllowSyncIO();
 #endif
             return res;
         }

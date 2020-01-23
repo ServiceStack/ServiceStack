@@ -200,7 +200,7 @@ namespace ServiceStack.Host.NetCore
         {
             get => BufferedStream != null;
             set => BufferedStream = value
-                ? BufferedStream ?? request.Body.CreateBufferedStream()
+                ? BufferedStream ?? request.AllowSyncIO().Body.CreateBufferedStream()
                 : null;
         }
 
@@ -211,9 +211,7 @@ namespace ServiceStack.Host.NetCore
                 request.EnableBuffering();
                 return BufferedStream.ReadBufferedStreamToEnd(this);
             }
-
-            Response.AllowSyncIO();
-            return request.Body.ReadToEnd();
+            return request.AllowSyncIO().Body.ReadToEnd();
         }
 
         public Task<string> GetRawBodyAsync()
