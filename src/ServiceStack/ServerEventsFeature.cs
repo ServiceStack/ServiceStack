@@ -50,7 +50,10 @@ namespace ServiceStack
         /// Only fired for async notifications. Calls sync OnPublish if exists by default.
         /// </summary>
         public Func<IEventSubscription, IResponse, string, Task> OnPublishAsync { get; set; }
-
+        /// <summary>
+        /// Replace the default ServiceStack.Text JSON Serializer with an alternative JSON Serializer
+        /// </summary>
+        public Func<object, string> Serialize { get; set; }
         public Action<IResponse, string> WriteEvent { get; private set; }
         public Func<IResponse, string, Task> WriteEventAsync { get; private set; }
 
@@ -92,6 +95,8 @@ namespace ServiceStack
                 }
             };
 
+            Serialize = JsonSerializer.SerializeToString;
+
             IdleTimeout = TimeSpan.FromSeconds(30);
             HeartbeatInterval = TimeSpan.FromSeconds(10);
             HouseKeepingInterval = TimeSpan.FromSeconds(5);
@@ -128,6 +133,7 @@ namespace ServiceStack
                     OnSubscribeAsync = OnSubscribeAsync,
                     OnUnsubscribeAsync = OnUnsubscribeAsync,
                     NotifyChannelOfSubscriptions = NotifyChannelOfSubscriptions,
+                    Serialize = Serialize,
                     OnError = OnError,
                 };
                 container.Register<IServerEvents>(broker);
@@ -533,12 +539,15 @@ namespace ServiceStack
         public Action<IEventSubscription, Exception> OnError { get; set; }
         public bool IsClosed => this.response.IsClosed;
 
-        StringBuilder buffer = new StringBuilder();
+        private readonly StringBuilder buffer = new StringBuilder();
         
         public void Pulse()
         {
             LastPulseAt = DateTime.UtcNow;
         }
+
+        private string jsonArgs;
+        public string JsonArgs => jsonArgs ?? (jsonArgs = SerializeDictionary(Meta));
 
         string CreateFrame(string selector, string message)
         {
@@ -751,6 +760,28 @@ namespace ServiceStack
             return TypeConstants.EmptyTask;
         }
 
+        public static string SerializeDictionary(Dictionary<string, string> map)
+        {
+            if (map == null)
+                return null;
+            var sw = new System.IO.StringWriter();
+            sw.Write('{');
+            var i = 0;
+            foreach (var entry in map)
+            {
+                if (entry.Value == null)
+                    continue;
+                if (i++ > 0)
+                    sw.Write(',');
+                Text.Json.JsonUtils.WriteString(sw, entry.Key);
+                sw.Write(':');
+                Text.Json.JsonUtils.WriteString(sw, entry.Value);
+            }
+            sw.Write('}');
+            var json = sw.ToString();
+            return json;
+        }
+
         public void Dispose()
         {
             if (Disposing)
@@ -761,10 +792,12 @@ namespace ServiceStack
             if (Interlocked.CompareExchange(ref isDisposed, 1, 0) == 0)
             {
                 var i = 0;
+                var retries = 0;
                 while (Interlocked.CompareExchange(ref semaphore, 1, 0) != 0)
                 {
-                    Thread.Sleep(100);
-                    i += 100;
+                    var waitMs = ExecUtils.CalculateFullJitterBackOffDelay(++retries, baseDelay:10, maxBackOffMs:5000);
+                    Thread.Sleep(waitMs);
+                    i += waitMs;
                     if (DisposeMaxWaitMs >= 0 && i >= DisposeMaxWaitMs)
                         break;
                 }
@@ -823,6 +856,8 @@ namespace ServiceStack
 
         Dictionary<string,string> ServerArgs { get; set; }
         Dictionary<string,string> ConnectArgs { get; set; }
+        
+        string JsonArgs { get; } 
     }
 
     public class SubscriptionInfo
@@ -859,7 +894,6 @@ namespace ServiceStack
         public Func<IEventSubscription, Task> NotifyUpdateAsync { get; set; }
         public Func<IEventSubscription, Task> NotifyHeartbeatAsync { get; set; }
         public Func<object, string> Serialize { get; set; }
-
         public bool NotifyChannelOfSubscriptions { get; set; }
 
         public ConcurrentDictionary<string, IEventSubscription> Subscriptions;
@@ -876,16 +910,11 @@ namespace ServiceStack
         {
             Reset();
 
-            NotifyJoinAsync = s => NotifyChannelsAsync(s.Channels, "cmd.onJoin", s.Meta);
-            NotifyLeaveAsync = s => NotifyChannelsAsync(s.Channels, "cmd.onLeave", s.Meta);
-            NotifyUpdateAsync = s => NotifyChannelsAsync(s.Channels, "cmd.onUpdate", s.Meta);
-            NotifyHeartbeatAsync = s => NotifySubscriptionAsync(s.SubscriptionId, "cmd.onHeartbeat", s.Meta);
-            Serialize = o => {
-                if (o == null)
-                    return null;
-                lock (o)
-                    return o.ToJson();
-            };
+            NotifyJoinAsync = s => NotifyChannelsAsync(s.Channels, "cmd.onJoin", s.JsonArgs);
+            NotifyLeaveAsync = s => NotifyChannelsAsync(s.Channels, "cmd.onLeave", s.JsonArgs);
+            NotifyUpdateAsync = s => NotifyChannelsAsync(s.Channels, "cmd.onUpdate", s.JsonArgs);
+            NotifyHeartbeatAsync = s => NotifyRawAsync(Subscriptions, s.SubscriptionId, "cmd.onHeartbeat", s.JsonArgs);
+            Serialize = JsonSerializer.SerializeToString;
 
             var appHost = HostContext.AppHost;
             var feature = appHost?.GetPlugin<ServerEventsFeature>();
@@ -941,33 +970,36 @@ namespace ServiceStack
             }
         }
 
+        public async Task NotifyAllJsonAsync(string selector, string json, CancellationToken token = default)
+        {
+            if (isDisposed) 
+                return;
+
+            foreach (var sub in Subscriptions.ValuesWithoutLock())
+            {
+                await sub.PublishAsync(selector, json, token);
+            }
+        }
+
+        public async Task NotifyChannelsAsync(string[] channels, string selector, string body, CancellationToken token = default)
+        {
+            if (isDisposed) 
+                return;
+
+            foreach (var channel in channels)
+            {
+                await NotifyRawAsync(ChannelSubscriptions, channel, channel + "@" + selector, body, channel, token);
+            }
+        }
+
         public void NotifySubscription(string subscriptionId, string selector, object message, string channel = null) =>
             Notify(Subscriptions, subscriptionId, selector, message, channel);
 
         public Task NotifySubscriptionAsync(string subscriptionId, string selector, object message, string channel = null, CancellationToken token = default) =>
             NotifyAsync(Subscriptions, subscriptionId, selector, message, channel, token);
 
-        public void NotifyChannels(string[] channels, string selector, Dictionary<string, string> meta)
-        {
-            if (isDisposed) 
-                return;
-
-            foreach (var channel in channels)
-            {
-                NotifyChannel(channel, selector, meta);
-            }
-        }
-
-        public async Task NotifyChannelsAsync(string[] channels, string selector, Dictionary<string, string> meta, CancellationToken token = default)
-        {
-            if (isDisposed) 
-                return;
-
-            foreach (var channel in channels)
-            {
-                await NotifyChannelAsync(channel, selector, meta, token);
-            }
-        }
+        public Task NotifySubscriptionJsonAsync(string subscriptionId, string selector, string json, string channel = null, CancellationToken token = default) =>
+            NotifyRawAsync(Subscriptions, subscriptionId, selector, json, channel, token);
 
         public void NotifyChannel(string channel, string selector, object message) =>
             Notify(ChannelSubscriptions, channel, channel + "@" + selector, message, channel);
@@ -975,11 +1007,16 @@ namespace ServiceStack
         public Task NotifyChannelAsync(string channel, string selector, object message, CancellationToken token = default) =>
             NotifyAsync(ChannelSubscriptions, channel, channel + "@" + selector, message, channel, token);
 
+        public Task NotifyChannelJsonAsync(string channel, string selector, string json, CancellationToken token = default) =>
+            NotifyRawAsync(ChannelSubscriptions, channel, channel + "@" + selector, json, channel, token);
+
         public void NotifyUserId(string userId, string selector, object message, string channel = null) =>
             Notify(UserIdSubscriptions, userId, selector, message, channel);
 
         public Task NotifyUserIdAsync(string userId, string selector, object message, string channel = null, CancellationToken token = default) =>
             NotifyAsync(UserIdSubscriptions, userId, selector, message, channel, token);
+        public Task NotifyUserIdJsonAsync(string userId, string selector, string json, string channel = null, CancellationToken token = default) =>
+            NotifyRawAsync(UserIdSubscriptions, userId, selector, json, channel, token);
 
 
         public void NotifyUserName(string userName, string selector, object message, string channel = null) =>
@@ -987,12 +1024,16 @@ namespace ServiceStack
 
         public Task NotifyUserNameAsync(string userName, string selector, object message, string channel = null, CancellationToken token = default) =>
             NotifyAsync(UserNameSubscriptions, userName, selector, message, channel, token);
+        public Task NotifyUserNameJsonAsync(string userName, string selector, string json, string channel = null, CancellationToken token = default) =>
+            NotifyRawAsync(UserNameSubscriptions, userName, selector, json, channel, token);
 
         public void NotifySession(string sessionId, string selector, object message, string channel = null) => 
             Notify(SessionSubscriptions, sessionId, selector, message, channel);
 
         public Task NotifySessionAsync(string sessionId, string selector, object message, string channel = null, CancellationToken token = default) =>
             NotifyAsync(SessionSubscriptions, sessionId, selector, message, channel, token);
+        public Task NotifySessionJsonAsync(string sessionId, string selector, string json, string channel = null, CancellationToken token = default) =>
+            NotifyRawAsync(SessionSubscriptions, sessionId, selector, json, channel, token);
 
 
         // Send Update Notification
@@ -1057,8 +1098,8 @@ namespace ServiceStack
             }
         }
 
-        protected void Notify(ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> map, string key, 
-            string selector, object message, string channel = null)
+        protected void NotifyRaw(ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> map, string key, 
+            string selector, string body, string channel = null)
         {
             if (isDisposed) 
                 return;
@@ -1068,7 +1109,6 @@ namespace ServiceStack
                 return;
 
             var now = DateTime.UtcNow;
-            var body = Serialize(message);
 
             foreach (var sub in subs.KeysWithoutLock())
             {
@@ -1081,7 +1121,7 @@ namespace ServiceStack
                                 string.Join(", ", sub.Channels));
 
                         expiredSubs.Add(sub);
-	                    continue;
+                        continue;
                     }
 
                     if (Log.IsDebugEnabled)
@@ -1092,6 +1132,10 @@ namespace ServiceStack
                 }
             }
         }
+
+        protected void Notify(ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> map,
+            string key, string selector, object message, string channel = null) =>
+            NotifyRaw(map, key, selector, Serialize(message), channel);
 
         protected void Notify(ConcurrentDictionary<string, IEventSubscription> map, string key, 
             string selector, object message, string channel = null)
@@ -1121,8 +1165,8 @@ namespace ServiceStack
             sub.Publish(selector, body);
         }
 
-        protected async Task NotifyAsync(ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> map, string key, 
-            string selector, object message, string channel = null, CancellationToken token=default)
+        protected async Task NotifyRawAsync(ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> map, string key,
+            string selector, string body, string channel = null, CancellationToken token = default)
         {
             if (isDisposed) 
                 return;
@@ -1132,7 +1176,6 @@ namespace ServiceStack
                 return;
 
             var now = DateTime.UtcNow;
-            var body = Serialize(message);
 
             foreach (var sub in subs.KeysWithoutLock())
             {
@@ -1158,8 +1201,12 @@ namespace ServiceStack
             await DoAsyncTasks(token);
         }
 
-        protected async Task NotifyAsync(ConcurrentDictionary<string, IEventSubscription> map, string key, 
-            string selector, object message, string channel = null, CancellationToken token=default)
+        protected Task NotifyAsync(ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> map, string key,
+            string selector, object message, string channel = null, CancellationToken token = default) =>
+            NotifyRawAsync(map, key, selector, Serialize(message), channel, token);
+
+        protected async Task NotifyRawAsync(ConcurrentDictionary<string, IEventSubscription> map, string key, 
+            string selector, string body, string channel = null, CancellationToken token=default)
         {
             if (isDisposed) 
                 return;
@@ -1183,10 +1230,13 @@ namespace ServiceStack
                 Log.DebugFormat("[SSE-SERVER] Sending {0} msg to {1} on ({2})", selector, sub.SubscriptionId,
                     string.Join(", ", sub.Channels));
 
-            var body = Serialize(message);
             await sub.PublishAsync(selector, body, token);
             await DoAsyncTasks(token);
         }
+
+        protected Task NotifyAsync(ConcurrentDictionary<string, IEventSubscription> map, string key,
+            string selector, object message, string channel = null, CancellationToken token = default) =>
+            NotifyRawAsync(map, key, selector, Serialize(message), channel, token);
 
         protected async Task FlushNopAsync(ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> map,
             string key, string channel = null, CancellationToken token=default)
@@ -1448,14 +1498,14 @@ namespace ServiceStack
 
             try
             {
+                var connectJson = EventSubscription.SerializeDictionary(connectArgs);
                 var asyncTasks = new List<Func<Task>>();
                 
                 lock (subscription)
                 {
                     if (connectArgs != null)
                     {
-                        var message = Serialize(connectArgs);
-                        asyncTasks.Add(() => subscription.PublishAsync("cmd.onConnect", message, token));
+                        asyncTasks.Add(() => subscription.PublishAsync("cmd.onConnect", connectJson, token));
                     }
 
                     subscription.OnUnsubscribeAsync = HandleUnsubscriptionAsync;
@@ -1643,21 +1693,27 @@ namespace ServiceStack
         // External API's
         void NotifyAll(string selector, object message);
         Task NotifyAllAsync(string selector, object message, CancellationToken token=default);
+        Task NotifyAllJsonAsync(string selector, string json, CancellationToken token=default);
 
         void NotifyChannel(string channel, string selector, object message);
         Task NotifyChannelAsync(string channel, string selector, object message, CancellationToken token=default);
+        Task NotifyChannelJsonAsync(string channel, string selector, string json, CancellationToken token=default);
 
         void NotifySubscription(string subscriptionId, string selector, object message, string channel = null);
         Task NotifySubscriptionAsync(string subscriptionId, string selector, object message, string channel = null, CancellationToken token=default);
+        Task NotifySubscriptionJsonAsync(string subscriptionId, string selector, string json, string channel = null, CancellationToken token=default);
 
         void NotifyUserId(string userId, string selector, object message, string channel = null);
         Task NotifyUserIdAsync(string userId, string selector, object message, string channel = null, CancellationToken token=default);
+        Task NotifyUserIdJsonAsync(string userId, string selector, string json, string channel = null, CancellationToken token=default);
 
         void NotifyUserName(string userName, string selector, object message, string channel = null);
         Task NotifyUserNameAsync(string userName, string selector, object message, string channel = null, CancellationToken token=default);
+        Task NotifyUserNameJsonAsync(string userName, string selector, string json, string channel = null, CancellationToken token=default);
 
         void NotifySession(string sessionId, string selector, object message, string channel = null);
         Task NotifySessionAsync(string sessionId, string selector, object message, string channel = null, CancellationToken token=default);
+        Task NotifySessionJsonAsync(string sessionId, string selector, string json, string channel = null, CancellationToken token=default);
 
         SubscriptionInfo GetSubscriptionInfo(string id);
 
