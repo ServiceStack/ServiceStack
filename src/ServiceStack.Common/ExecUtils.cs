@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Logging;
 using ServiceStack.Script;
 
@@ -154,6 +155,12 @@ namespace ServiceStack
         /// </summary>
         /// <param name="retriesAttempted"></param>
         public static void SleepBackOffMultiplier(int retriesAttempted) => TaskUtils.Sleep(CalculateFullJitterBackOffDelay(retriesAttempted));
+
+        /// <summary>
+        /// How long to wait before next retry using Exponential BackOff delay with Full Jitter.
+        /// </summary>
+        /// <param name="retriesAttempted"></param>
+        public static Task DelayBackOffMultiplierAsync(int retriesAttempted) => Task.Delay(CalculateFullJitterBackOffDelay(retriesAttempted));
 
         /// <summary>
         /// Exponential BackOff Delay with Full Jitter
