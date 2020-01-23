@@ -559,9 +559,9 @@ namespace ServiceStack
         {
             // throttle publisher if buffer gets too full
             lock (buffer)
-                return buffer.Length < 100 * 1024 
+                return buffer.Length < 1000 * 1024 
                     ? 0 
-                    : (int) Math.Ceiling(buffer.Length / 100d);
+                    : (int) Math.Ceiling(buffer.Length / 1000d);
         }
 
         public Task PublishAsync(string selector, string message, CancellationToken token = default) => 
@@ -880,7 +880,12 @@ namespace ServiceStack
             NotifyLeaveAsync = s => NotifyChannelsAsync(s.Channels, "cmd.onLeave", s.Meta);
             NotifyUpdateAsync = s => NotifyChannelsAsync(s.Channels, "cmd.onUpdate", s.Meta);
             NotifyHeartbeatAsync = s => NotifySubscriptionAsync(s.SubscriptionId, "cmd.onHeartbeat", s.Meta);
-            Serialize = o => o?.ToJson();
+            Serialize = o => {
+                if (o == null)
+                    return null;
+                lock (o)
+                    return o.ToJson();
+            };
 
             var appHost = HostContext.AppHost;
             var feature = appHost?.GetPlugin<ServerEventsFeature>();
