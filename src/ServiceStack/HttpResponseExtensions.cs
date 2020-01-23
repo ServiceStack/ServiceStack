@@ -121,11 +121,6 @@ namespace ServiceStack
             req.HttpContext.AllowSyncIO();
             return req;
         }
-        public static Microsoft.AspNetCore.Http.HttpResponse AllowSyncIO(this Microsoft.AspNetCore.Http.HttpResponse res)
-        {
-            res.HttpContext.AllowSyncIO();
-            return res;
-        }
         public static Microsoft.AspNetCore.Http.HttpContext AllowSyncIO(this Microsoft.AspNetCore.Http.HttpContext ctx)
         {
             // AllowSynchronousIO for sync SSE notifications https://github.com/aspnet/AspNetCore/issues/7644 
@@ -138,7 +133,7 @@ namespace ServiceStack
         public static IRequest AllowSyncIO(this IRequest req)
         {
 #if NETSTANDARD
-            (req as ServiceStack.Host.NetCore.NetCoreRequest)?.AllowSyncIO();
+            (req as ServiceStack.Host.NetCore.NetCoreRequest)?.HttpContext.AllowSyncIO();
 #endif
             return req;
         }
@@ -146,7 +141,7 @@ namespace ServiceStack
         public static IResponse AllowSyncIO(this IResponse res)
         {
 #if NETSTANDARD
-            (res as ServiceStack.Host.NetCore.NetCoreResponse)?.AllowSyncIO();
+            (res as ServiceStack.Host.NetCore.NetCoreResponse)?.HttpContext.AllowSyncIO();
 #endif
             return res;
         }
