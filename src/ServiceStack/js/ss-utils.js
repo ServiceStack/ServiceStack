@@ -668,12 +668,18 @@
             }
         }
     };
+    $.ss.onUnload = function () {
+        if ($.ss.unRegisterUrl) {
+            $.ajax({ type: 'POST', url: $.ss.unRegisterUrl, async: false });
+        }
+    };
     $.fn.handleServerEvents = function (opt) {
         $.ss.eventSource = this[0];
         $.ss.eventOptions = opt = opt || {};
         if (opt.handlers) {
             $.extend($.ss.handlers, opt.handlers || {});
         }
+        $(window).on("unload", $.ss.onUnload);
         function onMessage(e) {
             var parts = $.ss.splitOnFirst(e.data, ' ');
             var selector = parts[0];
@@ -741,11 +747,7 @@
                             setTimeout(sendHeartbeat, parseInt(opt.heartbeatIntervalMs) || 10000);
                         })($.ss.CONNECT_ID);
                     }
-                    if (opt.unRegisterUrl) {
-                        $(window).on("unload", function () {
-                            $.ajax({ type: 'POST', url: opt.unRegisterUrl, async: false });
-                        });
-                    }
+                    $.ss.unRegisterUrl = opt.unRegisterUrl;
                     $.ss.updateSubscriberUrl = opt.updateSubscriberUrl;
                     $.ss.updateChannels((opt.channels || "").split(','));
                 }
