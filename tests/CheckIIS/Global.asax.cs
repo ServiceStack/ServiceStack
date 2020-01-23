@@ -57,7 +57,7 @@ namespace CheckIIS
                 MyMsg = "song",
                 Gifts = myGifts
             };
-            var json = new ServerEventsFeature().Serialize(msg);
+            // var json = new ServerEventsFeature().Serialize(msg);
 
             while (true)
             {
@@ -76,7 +76,7 @@ namespace CheckIIS
             {
                 Msg = $"size{msgSize}-{new string('S', msgSize)}"
             };
-            var json = new ServerEventsFeature().Serialize(stuff);
+            // var json = new ServerEventsFeature().Serialize(stuff);
 
             while (true)
             {
