@@ -795,7 +795,9 @@ namespace ServiceStack
                 var retries = 0;
                 while (Interlocked.CompareExchange(ref semaphore, 1, 0) != 0)
                 {
-                    var waitMs = ExecUtils.CalculateFullJitterBackOffDelay(++retries, baseDelay:10, maxBackOffMs:5000);
+                    var waitMs = ++retries < 10
+                         ? ExecUtils.CalculateExponentialDelay(retries, baseDelay:5, maxBackOffMs:1000)
+                         : ExecUtils.CalculateFullJitterBackOffDelay(retries, baseDelay:10, maxBackOffMs:10000);
                     Thread.Sleep(waitMs);
                     i += waitMs;
                     if (DisposeMaxWaitMs >= 0 && i >= DisposeMaxWaitMs)
