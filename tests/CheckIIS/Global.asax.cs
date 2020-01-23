@@ -57,12 +57,14 @@ namespace CheckIIS
                 MyMsg = "song",
                 Gifts = myGifts
             };
+            var json = new ServerEventsFeature().Serialize(msg);
 
             while (true)
             {
                 // await Task.Delay(2, token);
                 Thread.Sleep(2);
                 await serverEvents.NotifyAllAsync("cmd.bombard", msg, token);
+                // await serverEvents.NotifyAllJsonAsync("cmd.bombard", json, token);
             }
         }
 
@@ -74,12 +76,14 @@ namespace CheckIIS
             {
                 Msg = $"size{msgSize}-{new string('S', msgSize)}"
             };
+            var json = new ServerEventsFeature().Serialize(stuff);
 
             while (true)
             {
                 // await Task.Delay(2, token);
                 Thread.Sleep(2);
                 await serverEvents.NotifyAllAsync("cmd.MS", stuff, token);
+                // await serverEvents.NotifyAllJsonAsync("cmd.MS", json, token);
             }
         }
     }
