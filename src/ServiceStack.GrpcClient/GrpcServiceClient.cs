@@ -715,8 +715,29 @@ namespace ServiceStack
         }
 
         //also forces static initializer
-        public static MetaType GetMetaType() => metaType 
-            ??= typeof(T).IsValueType ? null : GrpcConfig.TypeModel.Add(typeof(T), applyDefaultBehaviour:true); 
+        public static MetaType GetMetaType() => metaType
+            ??= typeof(T).IsValueType ? null : CreateMetaType();
+
+        private static MetaType CreateMetaType()
+        {
+            // check to see if this is a request DTO; if it is, we'll do things manually;
+            // do this by checking for the IReturn[Void|<T>] : IReturn API
+            bool isRequest = typeof(IReturn).IsAssignableFrom(typeof(T))
+                && typeof(T).GetInterfaces().Any(
+                x => x == typeof(IReturnVoid)
+                || x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IReturn<>));
+
+            if (!isRequest)
+            {
+                // regular type; let the serializer worry about the details
+                return GrpcConfig.TypeModel.Add(typeof(T), applyDefaultBehaviour: true);
+            }
+            // query type; flatten
+            var mt = GrpcConfig.TypeModel.Add(typeof(T), applyDefaultBehaviour: false);
+
+            return mt;
+
+        }
 
         public GrpcMarshaller() : base(Serialize, Deserialize) {}
 
