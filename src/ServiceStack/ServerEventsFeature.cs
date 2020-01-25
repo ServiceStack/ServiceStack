@@ -498,7 +498,7 @@ namespace ServiceStack
         /// <summary>
         /// How long to wait to obtain lock before force disposing subscription connection
         /// </summary>
-        public static int DisposeMaxWaitMs { get; set; } = -1;
+        public static int DisposeMaxWaitMs { get; set; } = 120 * 1000;
 
         private long subscribed = 1;
         private long isDisposed = 0;
