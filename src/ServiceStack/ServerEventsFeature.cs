@@ -10,6 +10,7 @@ using System.Web;
 using ServiceStack.Auth;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host.Handlers;
+using ServiceStack.Internal;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -476,7 +477,7 @@ namespace ServiceStack
     trigger.customEvent arg
     */
 
-    public class EventSubscription : SubscriptionInfo, IEventSubscription
+    public class EventSubscription : SubscriptionInfo, IEventSubscription, IServiceStackAsyncDisposable
     {
         private static ILog Log = LogManager.GetLogger(typeof(EventSubscription));
         public static string[] UnknownChannel = { "*" };
@@ -581,7 +582,7 @@ namespace ServiceStack
                 return;
             if (response.IsClosed)
             {
-                Dispose();
+                await DisposeAsync();
                 return;
             }
 
@@ -632,7 +633,7 @@ namespace ServiceStack
             }
 
             if (response.IsClosed)
-                Dispose();
+                await DisposeAsync();
         }
 
         public void Publish(string selector, string message) => PublishRaw(CreateFrame(selector, message));
@@ -756,8 +757,7 @@ namespace ServiceStack
                 if (fn != null)
                     return fn(this);
             }
-            Dispose();
-            return TypeConstants.EmptyTask;
+            return DisposeAsync();
         }
 
         public static string SerializeDictionary(Dictionary<string, string> map)
@@ -780,6 +780,50 @@ namespace ServiceStack
             sw.Write('}');
             var json = sw.ToString();
             return json;
+        }
+
+        Task IServiceStackAsyncDisposable.DisposeAsync() => DisposeAsync();
+        private async Task DisposeAsync()
+        {
+            if (Disposing)
+                return;
+
+            Interlocked.CompareExchange(ref disposing, 1, 0);
+
+            if (Interlocked.CompareExchange(ref isDisposed, 1, 0) == 0)
+            {
+                var i = 0;
+                var retries = 0;
+                while (Interlocked.CompareExchange(ref semaphore, 1, 0) != 0)
+                {
+                    var waitMs = ++retries < 10
+                         ? ExecUtils.CalculateExponentialDelay(retries, baseDelay: 5, maxBackOffMs: 1000)
+                         : ExecUtils.CalculateFullJitterBackOffDelay(retries, baseDelay: 10, maxBackOffMs: 10000);
+                    await Task.Delay(waitMs).ConfigureAwait(false);
+                    i += waitMs;
+                    if (DisposeMaxWaitMs >= 0 && i >= DisposeMaxWaitMs)
+                        break;
+                }
+
+                var hasLock = DisposeMaxWaitMs < 0 || i < DisposeMaxWaitMs;
+                if (hasLock)
+                {
+                    try
+                    {
+                        response.EndHttpHandlerRequest(skipHeaders: true);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error("Error ending subscription response", ex);
+                    }
+                }
+                else
+                {
+                    Log.Warn($"Could not acquire semaphore within {DisposeMaxWaitMs}ms");
+                }
+
+                OnDispose?.Invoke(this);
+            }
         }
 
         public void Dispose()
@@ -1084,7 +1128,7 @@ namespace ServiceStack
                     if (OnUnsubscribeAsync != null)
                         await OnUnsubscribeAsync(subscription);
 
-                    subscription.Dispose();
+                    await subscription.DisposeAsync();
 
                     if (NotifyChannelOfSubscriptions && subscription.Channels != null && NotifyLeaveAsync != null)
                         await NotifyLeaveAsync(subscription);
