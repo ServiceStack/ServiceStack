@@ -15,8 +15,8 @@ namespace ServiceStack.Internal
         {   // note: if a type clearly implements IServiceStackAsyncDisposable, overload
             // resolution will prefer IServiceStackAsyncDisposable over an extension method,
             // so we lose nothing by doing this
-            if (disposable is IServiceStackAsyncDisposable)
-                return disposable.DisposeAsync();
+            if (disposable is IServiceStackAsyncDisposable asyncDisposable)
+                return asyncDisposable.DisposeAsync();
             else
             {
                 disposable?.Dispose();
