@@ -72,7 +72,7 @@ namespace ServiceStack.Extensions.Tests
         [Test]
         public void Can_Serialize_QueryRockstars_TypeModel()
         {
-            var model = TypeModel.Create();
+            var model = RuntimeTypeModel.Create();
             
             //var metaType = model.Add(typeof(QueryBase), true);
             model[typeof(QueryBase)].AddSubType(101, typeof(QueryDb<Rockstar>));
