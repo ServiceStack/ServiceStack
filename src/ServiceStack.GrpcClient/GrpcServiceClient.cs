@@ -727,14 +727,13 @@ namespace ServiceStack
                 x => x == typeof(IReturnVoid)
                 || x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IReturn<>));
 
+            var mt = GrpcConfig.TypeModel.Add(typeof(T), applyDefaultBehaviour: true);
             if (!isRequest)
             {
                 // regular type; let the serializer worry about the details
-                return GrpcConfig.TypeModel.Add(typeof(T), applyDefaultBehaviour: true);
+                mt.ApplyFieldOffset(42);
             }
-            // query type; flatten
-            var mt = GrpcConfig.TypeModel.Add(typeof(T), applyDefaultBehaviour: false);
-
+            
             return mt;
 
         }
