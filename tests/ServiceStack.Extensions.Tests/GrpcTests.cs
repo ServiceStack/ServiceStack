@@ -820,10 +820,13 @@ namespace ServiceStack.Extensions.Tests
             AssertFiles(files);
         }
 
+        static string GetServiceProto<T>()
+            => GrpcConfig.TypeModel.GetSchema(GrpcMarshaller<T>.GetMetaType().Type, ProtoBuf.Meta.ProtoSyntax.Proto3);
+
         [Test]
         public void CheckServiceProto_BaseType()
         {
-            var schema = GrpcConfig.TypeModel.GetSchema(GrpcMarshaller<Foo>.GetMetaType().Type, ProtoBuf.Meta.ProtoSyntax.Proto3);
+            var schema = GetServiceProto<Foo>();
             Assert.AreEqual(@"syntax = ""proto3"";
 package ServiceStack.Extensions.Tests;
 
@@ -831,13 +834,13 @@ message Foo {
    string X = 1;
 }
 ", schema);
-        }
-
-        [Test]
-        public void CheckServiceProto_DerivedType()
-        {
-            var schema = GrpcConfig.TypeModel.GetSchema(GrpcMarshaller<Bar>.GetMetaType().Type, ProtoBuf.Meta.ProtoSyntax.Proto3);
-            Assert.AreEqual(@"syntax = ""proto3"";
+         }
+ 
+         [Test]
+         public void CheckServiceProto_DerivedType()
+         {
+             var schema = GetServiceProto<Bar>();
+             Assert.AreEqual(@"syntax = ""proto3"";
 package ServiceStack.Extensions.Tests;
 
 message Bar {
@@ -848,6 +851,26 @@ message Foo {
    oneof subtype {
       Bar Bar = 210304982;
    }
+}
+", schema);
+         }
+ 
+        [Test]
+        public void CheckServiceProto_QueryDb_ShouldBeOffset()
+        {
+            var schema = GetServiceProto<QueryFoos>();
+            Assert.AreEqual(@"syntax = ""proto3"";
+package ServiceStack.Extensions.Tests;
+
+message QueryFoos {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   string X = 33;
 }
 ", schema);
         }
@@ -864,6 +887,14 @@ message Foo {
         {
             [DataMember(Order = 2)]
             public string Y { get; set; }
+        }
+
+        [Route("/query/foos")]
+        [DataContract]
+        public class QueryFoos : QueryDb<Foo>
+        {
+            [DataMember(Order = 1)]
+            public string X { get; set; }
         }
     }
 }

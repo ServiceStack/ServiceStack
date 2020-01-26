@@ -1,9 +1,14 @@
+using Grpc.Core;
+using Grpc.Net.Client;
+using ProtoBuf.Grpc;
+using ProtoBuf.Meta;
+using ServiceStack.DataAnnotations;
+using ServiceStack.Text;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Net.Security;
 using System.Reflection;
@@ -11,12 +16,6 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
-using Grpc.Core;
-using Grpc.Net.Client;
-using ProtoBuf.Grpc;
-using ProtoBuf.Meta;
-using ServiceStack.DataAnnotations;
-using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -645,14 +644,10 @@ namespace ServiceStack
 
         public void PublishAll(IEnumerable<object> requestDtos) => PublishAllAsync(requestDtos).GetAwaiter().GetResult();
 
-        internal static bool IsRequestDto(Type type)
+        internal static bool IsQueryDto(Type type)
         {
-            // check to see if this is a request DTO; if it is, we'll do things manually;
-            // do this by checking for the IReturn[Void|<T>] : IReturn API
-            return type != null && typeof(IReturn).IsAssignableFrom(type)
-                && type.GetInterfaces().Any(
-                x => x == typeof(IReturnVoid)
-                || x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IReturn<>));
+            // check to see if this is a query DTO, i.e. inherits (directly or indirectly) from QueryBase
+            return type != null && !type.IsAbstract && typeof(QueryBase).IsAssignableFrom(type);
         }
     }
 
@@ -670,7 +665,7 @@ namespace ServiceStack
         {
             // https://github.com/protobuf-net/protobuf-net/wiki/Getting-Started#inheritance
             var baseType = typeof(T).BaseType;
-            if (baseType != typeof(object) && !GrpcServiceClient.IsRequestDto(typeof(T)))
+            if (baseType != typeof(object) && !GrpcServiceClient.IsQueryDto(typeof(T)))
             {
                 RegisterSubType(typeof(T));
             }
@@ -731,10 +726,18 @@ namespace ServiceStack
         private static MetaType CreateMetaType()
         {
             var mt = GrpcConfig.TypeModel.Add(typeof(T), applyDefaultBehaviour: true);
-            if (GrpcServiceClient.IsRequestDto(typeof(T)))
+            if (GrpcServiceClient.IsQueryDto(typeof(T)))
             {
-                // regular type; let the serializer worry about the details
-                mt.ApplyFieldOffset(42);
+                // query DTO; we'll flatten the query *into* this type, shifting everything
+                // by some reserved number
+                mt.ApplyFieldOffset(32);
+                mt.Add(1, nameof(QueryBase.Skip)) // manually build the extra members
+                    .Add(2, nameof(QueryBase.Take))
+                    .Add(3, nameof(QueryBase.OrderBy))
+                    .Add(4, nameof(QueryBase.OrderByDesc))
+                    .Add(5, nameof(QueryBase.Include))
+                    .Add(6, nameof(QueryBase.Fields))
+                    .AddField(7, nameof(QueryBase.Meta)).IsMap = true;
             }
             
             return mt;

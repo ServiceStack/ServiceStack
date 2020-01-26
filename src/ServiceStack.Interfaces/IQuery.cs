@@ -140,6 +140,9 @@ namespace ServiceStack
 
         [DataMember(Order = 7)]
         public virtual Dictionary<string, string> Meta { get; set; }
+
+        // note: the number of fields here must fit inside the reserved chunk
+        // from GrpcServiceClient; see CreateMetaType
     }
 
     public abstract class QueryDb<T> : QueryBase, IQueryDb<T>, IReturn<QueryResponse<T>> { }
