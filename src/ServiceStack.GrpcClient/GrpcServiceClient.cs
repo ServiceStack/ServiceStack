@@ -644,6 +644,16 @@ namespace ServiceStack
         public void Publish(object requestDto) => PublishAsync(requestDto).GetAwaiter().GetResult();
 
         public void PublishAll(IEnumerable<object> requestDtos) => PublishAllAsync(requestDtos).GetAwaiter().GetResult();
+
+        internal static bool IsRequestDto(Type type)
+        {
+            // check to see if this is a request DTO; if it is, we'll do things manually;
+            // do this by checking for the IReturn[Void|<T>] : IReturn API
+            return type != null && typeof(IReturn).IsAssignableFrom(type)
+                && type.GetInterfaces().Any(
+                x => x == typeof(IReturnVoid)
+                || x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IReturn<>));
+        }
     }
 
     public class GrpcMarshaller<T> : Marshaller<T>
@@ -660,7 +670,7 @@ namespace ServiceStack
         {
             // https://github.com/protobuf-net/protobuf-net/wiki/Getting-Started#inheritance
             var baseType = typeof(T).BaseType;
-            if (baseType != typeof(object))
+            if (baseType != typeof(object) && !GrpcServiceClient.IsRequestDto(typeof(T)))
             {
                 RegisterSubType(typeof(T));
             }
@@ -720,22 +730,14 @@ namespace ServiceStack
 
         private static MetaType CreateMetaType()
         {
-            // check to see if this is a request DTO; if it is, we'll do things manually;
-            // do this by checking for the IReturn[Void|<T>] : IReturn API
-            bool isRequest = typeof(IReturn).IsAssignableFrom(typeof(T))
-                && typeof(T).GetInterfaces().Any(
-                x => x == typeof(IReturnVoid)
-                || x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IReturn<>));
-
             var mt = GrpcConfig.TypeModel.Add(typeof(T), applyDefaultBehaviour: true);
-            if (!isRequest)
+            if (GrpcServiceClient.IsRequestDto(typeof(T)))
             {
                 // regular type; let the serializer worry about the details
                 mt.ApplyFieldOffset(42);
             }
             
             return mt;
-
         }
 
         public GrpcMarshaller() : base(Serialize, Deserialize) {}

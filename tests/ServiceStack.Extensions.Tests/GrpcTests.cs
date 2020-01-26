@@ -819,5 +819,51 @@ namespace ServiceStack.Extensions.Tests
             files = files.Where(x => x.ResponseStatus == null).ToList();
             AssertFiles(files);
         }
+
+        [Test]
+        public void CheckServiceProto_BaseType()
+        {
+            var schema = GrpcConfig.TypeModel.GetSchema(GrpcMarshaller<Foo>.GetMetaType().Type, ProtoBuf.Meta.ProtoSyntax.Proto3);
+            Assert.AreEqual(@"syntax = ""proto3"";
+package ServiceStack.Extensions.Tests;
+
+message Foo {
+   string X = 1;
+}
+", schema);
+        }
+
+        [Test]
+        public void CheckServiceProto_DerivedType()
+        {
+            var schema = GrpcConfig.TypeModel.GetSchema(GrpcMarshaller<Bar>.GetMetaType().Type, ProtoBuf.Meta.ProtoSyntax.Proto3);
+            Assert.AreEqual(@"syntax = ""proto3"";
+package ServiceStack.Extensions.Tests;
+
+message Bar {
+   string Y = 2;
+}
+message Foo {
+   string X = 1;
+   oneof subtype {
+      Bar Bar = 210304982;
+   }
+}
+", schema);
+        }
+
+        [DataContract]
+        public class Foo
+        {
+            [DataMember(Order = 1)]
+            public string X { get; set; }
+        }
+
+        [DataContract]
+        public class Bar : Foo
+        {
+            [DataMember(Order = 2)]
+            public string Y { get; set; }
+        }
     }
 }
