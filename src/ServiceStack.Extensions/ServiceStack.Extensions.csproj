@@ -13,7 +13,7 @@
         <PackageReference Include="Grpc.AspNetCore.Server" Version="2.26.0" />
         <PackageReference Include="Grpc.Core.Api" Version="2.26.0" />
         <PackageReference Include="System.Threading.Channels" Version="4.7.0" />
-        <PackageReference Include="protobuf-net" Version="2.4.4" />
+        <PackageReference Include="protobuf-net" Version="2.4.5" />
         
         <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
         <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
