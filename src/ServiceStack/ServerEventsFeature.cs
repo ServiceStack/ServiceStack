@@ -498,7 +498,7 @@ namespace ServiceStack
         /// <summary>
         /// How long to wait to obtain lock before force disposing subscription connection
         /// </summary>
-        public static int DisposeMaxWaitMs { get; set; } = 120 * 1000;
+        public static int DisposeMaxWaitMs { get; set; } = 30 * 1000;
 
         private long subscribed = 1;
         private long isDisposed = 0;
@@ -574,6 +574,8 @@ namespace ServiceStack
                     : (int) Math.Ceiling(buffer.Length / 1000d);
         }
 
+        private int threadIdWithLock = 0;
+
         public Task PublishAsync(string selector, string message, CancellationToken token = default) => 
             PublishRawAsync(CreateFrame(selector, message), token);
         public async Task PublishRawAsync(string frame, CancellationToken token = default)
@@ -592,6 +594,9 @@ namespace ServiceStack
             {
                 if (hasLock)
                 {
+#if DEBUG
+                    Interlocked.Exchange(ref threadIdWithLock, Thread.CurrentThread.ManagedThreadId);
+#endif
                     if (CanWrite())
                     {
                         try
@@ -626,6 +631,9 @@ namespace ServiceStack
                 if (hasLock)
                 {
                     Interlocked.CompareExchange(ref semaphore, 0, semaphore);
+#if DEBUG
+                    Interlocked.Exchange(ref threadIdWithLock, 0);
+#endif
 
                     if (writeEx != null)
                         await HandleWriteExceptionAsync(frame, writeEx, token);
@@ -799,6 +807,10 @@ namespace ServiceStack
                     var waitMs = ++retries < 10
                          ? ExecUtils.CalculateExponentialDelay(retries, baseDelay: 5, maxBackOffMs: 1000)
                          : ExecUtils.CalculateFullJitterBackOffDelay(retries, baseDelay: 10, maxBackOffMs: 10000);
+#if DEBUG
+                    var msg = $"threadIdWithLock: ${threadIdWithLock}, Current: ${Thread.CurrentThread.ManagedThreadId}, waitMs: ${waitMs}, total: ${i}";
+                    Log.Info(msg);
+#endif
                     await Task.Delay(waitMs).ConfigureAwait(false);
                     i += waitMs;
                     if (DisposeMaxWaitMs >= 0 && i >= DisposeMaxWaitMs)
@@ -806,20 +818,16 @@ namespace ServiceStack
                 }
 
                 var hasLock = DisposeMaxWaitMs < 0 || i < DisposeMaxWaitMs;
-                if (hasLock)
-                {
-                    try
-                    {
-                        response.EndHttpHandlerRequest(skipHeaders: true);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error("Error ending subscription response", ex);
-                    }
-                }
-                else
-                {
+                if (!hasLock)
                     Log.Warn($"Could not acquire semaphore within {DisposeMaxWaitMs}ms");
+
+                try
+                {
+                    response.EndHttpHandlerRequest(skipHeaders: true);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error ending subscription response", ex);
                 }
 
                 OnDispose?.Invoke(this);
