@@ -7,7 +7,7 @@ namespace ServiceStack
 {
     public static class GrpcConfig
     {
-        public static RuntimeTypeModel TypeModel { get; } = ProtoBuf.Meta.TypeModel.Create();
+        public static RuntimeTypeModel TypeModel { get; } = ProtoBuf.Meta.RuntimeTypeModel.Create();
 
         public static Func<Type, bool> IgnoreTypeModel { get; set; } = DefaultIgnoreTypes;
 

@@ -13,7 +13,7 @@ namespace ServiceStack.ProtoBuf
         }
 
         private static RuntimeTypeModel model;
-        public static RuntimeTypeModel Model => model ?? (model = TypeModel.Create());
+        public static RuntimeTypeModel Model => model ?? (model = RuntimeTypeModel.Create());
 
         public static void Serialize(IRequest requestContext, object dto, Stream outputStream)
         {
