@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Web;
-using System.Web.Hosting;
-using System.Web.Optimization;
-using System.Web.Routing;
 using ServiceStack;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Web.Hosting;
 
 namespace CheckIIS
 {
@@ -26,20 +23,74 @@ namespace CheckIIS
         protected void Application_Start(object sender, EventArgs e)
         {
             new AppHost().Init();
-            RunServerEventsLoadTest();
 
-            // Code that runs on application startup
-            // RouteConfig.RegisterRoutes(RouteTable.Routes);
-            // BundleConfig.RegisterBundles(BundleTable.Bundles);
+            TestCase6();
         }
 
-        void RunServerEventsLoadTest()
+        private void TestCase1()
         {
-            HostingEnvironment.QueueBackgroundWorkItem(LongMessage_SWithSleepAsync);
-            HostingEnvironment.QueueBackgroundWorkItem(GiftAwayAsync);
+            HostingEnvironment.QueueBackgroundWorkItem(LongMessage_SWithSleep2Async);
+            HostingEnvironment.QueueBackgroundWorkItem(GiftAwaySleep2Async);
         }
 
-        public async Task GiftAwayAsync(CancellationToken token)
+        private void TestCase2()
+        {
+            HostingEnvironment.QueueBackgroundWorkItem(LongMessage_SWithSleep2Async);
+            HostingEnvironment.QueueBackgroundWorkItem(GiftAwayDelay2Async);
+        }
+
+        private void TestCase3()
+        {
+            HostingEnvironment.QueueBackgroundWorkItem(LongMessage_SWithSleep200Async);
+            HostingEnvironment.QueueBackgroundWorkItem(GiftAwayDelay200Async);
+        }
+
+        private void TestCase4()
+        {
+            HostingEnvironment.QueueBackgroundWorkItem(LongMessage_SWithSleep2Async);
+            HostingEnvironment.QueueBackgroundWorkItem(GiftAwayDelay1Async);
+        }
+
+        private void TestCase5()
+        {
+            HostingEnvironment.QueueBackgroundWorkItem(LongMessage_SWithSleep2Async);
+            HostingEnvironment.QueueBackgroundWorkItem(GiftAwayDelay1Async);
+            HostingEnvironment.QueueBackgroundWorkItem(GiftAwayDelay2Async);
+        }
+
+        private void TestCase6()
+        {
+            HostingEnvironment.QueueBackgroundWorkItem(LongMessage_SWithSleep2Async);
+            HostingEnvironment.QueueBackgroundWorkItem(GiftAwayDelay1Async);
+            HostingEnvironment.QueueBackgroundWorkItem(GiftAwayDelay2Async);
+            HostingEnvironment.QueueBackgroundWorkItem(GiftAwayDelay1Async);
+        }
+
+        public async Task GiftAwayDelay200Async(CancellationToken cancellationToken)
+        {
+            await GiftAwayAsync(true, 200, cancellationToken);
+        }
+        public async Task GiftAwayDelay2Async(CancellationToken cancellationToken)
+        {
+            await GiftAwayAsync(true, 2, cancellationToken);
+        }
+        public async Task GiftAwayDelay1Async(CancellationToken cancellationToken)
+        {
+            await GiftAwayAsync(true, 1, cancellationToken);
+        }
+        public async Task GiftAwaySleep2Async(CancellationToken cancellationToken)
+        {
+            await GiftAwayAsync(false, 2, cancellationToken);
+        }
+        public async Task GiftAwaySleep200Async(CancellationToken cancellationToken)
+        {
+            await GiftAwayAsync(false, 200, cancellationToken);
+        }
+        public async Task GiftAwaySleep1Async(CancellationToken cancellationToken)
+        {
+            await GiftAwayAsync(false, 1, cancellationToken);
+        }
+        public async Task GiftAwayAsync(bool delay, int waitInMs, CancellationToken cancellationToken)
         {
             var serverEvents = HostContext.TryResolve<IServerEvents>();
 
@@ -51,24 +102,40 @@ namespace CheckIIS
                 "On the fourth day of Christmas my true love gave to me: four Calling Birds, three French Hens, two Turtle Doves, and a Partridge in a Pear Tree.",
                 "On the fifth day of Christmas my true love gave to me: five Gold Rings, four Calling Birds, three French Hens, two Turtle Doves, and a Partridge in a Pear Tree."
             };
-            
             var msg = new SimpleMessage
             {
                 MyMsg = "song",
                 Gifts = myGifts
             };
-            // var json = new ServerEventsFeature().Serialize(msg);
 
             while (true)
             {
-                // await Task.Delay(2, token);
-                Thread.Sleep(2);
-                await serverEvents.NotifyAllAsync("cmd.bombard", msg, token);
-                // await serverEvents.NotifyAllJsonAsync("cmd.bombard", json, token);
+                if (delay)
+                {
+                    await Task.Delay(waitInMs);
+                }
+                else
+                {
+                    Thread.Sleep(waitInMs);
+                }
+                await serverEvents.NotifyAllAsync("cmd.bombard", msg);
             }
+
         }
 
-        public async Task LongMessage_SWithSleepAsync(CancellationToken token)
+        public async Task LongMessage_SWithSleep1Async(CancellationToken cancellationToken)
+        {
+            await LongMessage_SAsync(false, 1, cancellationToken);
+        }
+        public async Task LongMessage_SWithSleep2Async(CancellationToken cancellationToken)
+        {
+            await LongMessage_SAsync(false, 2, cancellationToken);
+        }
+        public async Task LongMessage_SWithSleep200Async(CancellationToken cancellationToken)
+        {
+            await LongMessage_SAsync(false, 200, cancellationToken);
+        }
+        public async Task LongMessage_SAsync(bool delay, int waitInMs, CancellationToken cancellationToken)
         {
             const int msgSize = 420 * 1024;
             var serverEvents = HostContext.TryResolve<IServerEvents>();
@@ -76,16 +143,20 @@ namespace CheckIIS
             {
                 Msg = $"size{msgSize}-{new string('S', msgSize)}"
             };
-            // var json = new ServerEventsFeature().Serialize(stuff);
 
             while (true)
             {
-                // await Task.Delay(2, token);
-                Thread.Sleep(2);
-                await serverEvents.NotifyAllAsync("cmd.MS", stuff, token);
-                // await serverEvents.NotifyAllJsonAsync("cmd.MS", json, token);
+                if (delay)
+                {
+                    await Task.Delay(waitInMs);
+                }
+                else
+                {
+                    Thread.Sleep(waitInMs);
+                }
+                await serverEvents.NotifyAllAsync("cmd.MS", stuff);
             }
         }
+
     }
-    
 }
