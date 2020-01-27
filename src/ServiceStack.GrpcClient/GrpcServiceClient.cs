@@ -644,10 +644,13 @@ namespace ServiceStack
 
         public void PublishAll(IEnumerable<object> requestDtos) => PublishAllAsync(requestDtos).GetAwaiter().GetResult();
 
-        internal static bool IsQueryDto(Type type)
+        internal static bool IsRequestDto(Type type)
         {
-            // check to see if this is a query DTO, i.e. inherits (directly or indirectly) from QueryBase
-            return type != null && !type.IsAbstract && typeof(QueryBase).IsAssignableFrom(type);
+            // check to see if this is a request DTO that needs flattening over gRPC
+            // i.e. inherits (directly or indirectly) from IReturn{Void|<T>}
+            return type != null && !type.IsAbstract && typeof(IReturn).IsAssignableFrom(type)
+                && type.GetInterfaces().Any(iType => iType == typeof(IReturnVoid)
+                   || iType.IsGenericType && iType.GetGenericTypeDefinition() == typeof(IReturn<>));
         }
     }
 
@@ -665,7 +668,7 @@ namespace ServiceStack
         {
             // https://github.com/protobuf-net/protobuf-net/wiki/Getting-Started#inheritance
             var baseType = typeof(T).BaseType;
-            if (baseType != typeof(object) && !GrpcServiceClient.IsQueryDto(typeof(T)))
+            if (baseType != typeof(object) && !GrpcServiceClient.IsRequestDto(typeof(T)))
             {
                 RegisterSubType(typeof(T));
             }
@@ -726,18 +729,37 @@ namespace ServiceStack
         private static MetaType CreateMetaType()
         {
             var mt = GrpcConfig.TypeModel.Add(typeof(T), applyDefaultBehaviour: true);
-            if (GrpcServiceClient.IsQueryDto(typeof(T)))
+            if (GrpcServiceClient.IsRequestDto(typeof(T)))
             {
                 // query DTO; we'll flatten the query *into* this type, shifting everything
-                // by some reserved number
-                mt.ApplyFieldOffset(32);
-                mt.Add(1, nameof(QueryBase.Skip)) // manually build the extra members
-                    .Add(2, nameof(QueryBase.Take))
-                    .Add(3, nameof(QueryBase.OrderBy))
-                    .Add(4, nameof(QueryBase.OrderByDesc))
-                    .Add(5, nameof(QueryBase.Include))
-                    .Add(6, nameof(QueryBase.Fields))
-                    .AddField(7, nameof(QueryBase.Meta)).IsMap = true;
+                // by some reserved number per level, starting at the most base level
+
+                // walk backwards up the tree; at each level, offset everything by 100
+                // and copy over from the default model
+                Type current = typeof(T).BaseType;
+                while (current != null && current != typeof(object))
+                {
+                    mt.ApplyFieldOffset(100);
+                    var source = RuntimeTypeModel.Default[current]?.GetFields();
+                    foreach (var field in source)
+                    {
+                        var newField = mt.AddField(field.FieldNumber, field.Member?.Name ?? field.Name, field.ItemType, field.DefaultType);
+                        newField.DataFormat = field.DataFormat;
+                        newField.IsMap = field.IsMap;
+                        newField.IsPacked = field.IsPacked;
+                        newField.IsRequired = field.IsRequired;
+                        newField.IsStrict = field.IsStrict;
+                        newField.DefaultValue = field.DefaultValue;
+                        newField.MapKeyFormat = field.MapKeyFormat;
+                        newField.MapValueFormat = field.MapValueFormat;
+                        newField.Name = field.Name;
+                        newField.OverwriteList = field.OverwriteList;
+                        newField.SupportNull = field.SupportNull;
+                    }
+
+                    // keep going down the hierarchy
+                    current = current.BaseType;
+                }
             }
             
             return mt;

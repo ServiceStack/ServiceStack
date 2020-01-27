@@ -870,7 +870,21 @@ message QueryFoos {
    string Include = 5;
    string Fields = 6;
    map<string,string> Meta = 7;
-   string X = 33;
+   string X = 201;
+}
+", schema);
+        }
+
+        [Test]
+        public void CheckServiceProto_CustomRequestDto_ShouldBeOffset()
+        {
+            var schema = GetServiceProto<CustomRequestDto>();
+            Assert.AreEqual(@"syntax = ""proto3"";
+package ServiceStack.Extensions.Tests;
+
+message CustomRequestDto {
+   int32 PageName = 42;
+   string Name = 105;
 }
 ", schema);
         }
@@ -895,6 +909,20 @@ message QueryFoos {
         {
             [DataMember(Order = 1)]
             public string X { get; set; }
+        }
+
+        [DataContract]
+        public abstract class CustomRequestDtoBase : IReturnVoid
+        {
+            [DataMember(Order = 42, Name = "PageName")]
+            public int Page { get; set; }
+        }
+
+        [DataContract]
+        public class CustomRequestDto : CustomRequestDtoBase
+        {
+            [DataMember(Order = 5)]
+            public string Name { get; set; }
         }
     }
 }
