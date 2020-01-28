@@ -57,6 +57,10 @@ namespace ServiceStack
         public Func<object, string> Serialize { get; set; }
         public Action<IResponse, string> WriteEvent { get; private set; }
         public Func<IResponse, string, Task> WriteEventAsync { get; private set; }
+        /// <summary>
+        /// Invoked when a connection 
+        /// </summary>
+        public Action<IEventSubscription> OnHungConnection { get; set; }
 
         public Action<IEventSubscription, Exception> OnError { get; set; }
         public bool NotifyChannelOfSubscriptions { get; set; }
@@ -94,6 +98,12 @@ namespace ServiceStack
                     await MemoryProvider.Instance.WriteAsync(res.OutputStream, frame.AsMemory());
                     await res.FlushAsync();
                 }
+            };
+
+            OnHungConnection = sub => {
+                var mse = HostContext.Resolve<IServerEvents>().GetMemoryServerEvents();
+                mse?.RegisterHungConnection(sub);
+                OnError(sub, new TimeoutException("Hung connection was detected"));
             };
 
             Serialize = JsonSerializer.SerializeToString;
@@ -522,6 +532,7 @@ namespace ServiceStack
             var feature = HostContext.GetPlugin<ServerEventsFeature>();
             this.WriteEvent = feature.WriteEvent;
             this.WriteEventAsync = feature.WriteEventAsync;
+            this.OnHungConnection = feature.OnHungConnection;
         }
 
         public void UpdateChannels(string[] channels)
@@ -534,6 +545,7 @@ namespace ServiceStack
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
         public Action<IEventSubscription, IResponse, string> OnPublish { get; set; }
         public Func<IEventSubscription, IResponse, string, Task> OnPublishAsync { get; set; }
+        public Action<IEventSubscription> OnHungConnection { get; set; }
         public Action<IEventSubscription> OnDispose { get; set; }
         public Action<IResponse, string> WriteEvent { get; set; }
         public Func<IResponse, string, Task> WriteEventAsync { get; set; }
@@ -564,6 +576,7 @@ namespace ServiceStack
         }
 
         private long semaphore = 0;
+        public bool IsLocked => Interlocked.Read(ref semaphore) != 0;
 
         int GetThrottleMs()
         {
@@ -573,8 +586,10 @@ namespace ServiceStack
                     ? 0 
                     : (int) Math.Ceiling(buffer.Length / 1000d);
         }
-
+        
+#if DEBUG
         private int threadIdWithLock = 0;
+#endif        
 
         public Task PublishAsync(string selector, string message, CancellationToken token = default) => 
             PublishRawAsync(CreateFrame(selector, message), token);
@@ -596,7 +611,7 @@ namespace ServiceStack
                 {
 #if DEBUG
                     Interlocked.Exchange(ref threadIdWithLock, Thread.CurrentThread.ManagedThreadId);
-#endif
+#endif        
                     if (CanWrite())
                     {
                         try
@@ -633,7 +648,7 @@ namespace ServiceStack
                     Interlocked.CompareExchange(ref semaphore, 0, semaphore);
 #if DEBUG
                     Interlocked.Exchange(ref threadIdWithLock, 0);
-#endif
+#endif        
 
                     if (writeEx != null)
                         await HandleWriteExceptionAsync(frame, writeEx, token);
@@ -662,6 +677,9 @@ namespace ServiceStack
             {
                 if (hasLock)
                 {
+#if DEBUG
+                    Interlocked.Exchange(ref threadIdWithLock, Thread.CurrentThread.ManagedThreadId);
+#endif        
                     if (CanWrite())
                     {
                         try
@@ -694,6 +712,9 @@ namespace ServiceStack
                 if (hasLock)
                 {
                     Interlocked.CompareExchange(ref semaphore, 0, semaphore);
+#if DEBUG
+                    Interlocked.Exchange(ref threadIdWithLock, 0);
+#endif        
 
                     if (writeEx != null)
                         TaskExt.RunSync(() => HandleWriteExceptionAsync(frame, writeEx));
@@ -800,37 +821,30 @@ namespace ServiceStack
 
             if (Interlocked.CompareExchange(ref isDisposed, 1, 0) == 0)
             {
-                var i = 0;
+                var totalWaitMs = 0;
                 var retries = 0;
                 while (Interlocked.CompareExchange(ref semaphore, 1, 0) != 0)
                 {
-                    var waitMs = ++retries < 10
-                         ? ExecUtils.CalculateExponentialDelay(retries, baseDelay: 5, maxBackOffMs: 1000)
-                         : ExecUtils.CalculateFullJitterBackOffDelay(retries, baseDelay: 10, maxBackOffMs: 10000);
+                    var waitMs = ExecUtils.CalculateMemoryLockDelay(++retries);
 #if DEBUG
-                    var msg = $"threadIdWithLock: ${threadIdWithLock}, Current: ${Thread.CurrentThread.ManagedThreadId}, waitMs: ${waitMs}, total: ${i}";
-                    Log.Info(msg);
+                    var msg = $"threadIdWithLock: {threadIdWithLock}, Current: {Thread.CurrentThread.ManagedThreadId}, waitMs: {waitMs}, total: {totalWaitMs}";
+                    Log.Debug(msg);
 #endif
                     await Task.Delay(waitMs).ConfigureAwait(false);
-                    i += waitMs;
-                    if (DisposeMaxWaitMs >= 0 && i >= DisposeMaxWaitMs)
+                    totalWaitMs += waitMs;
+                    if (DisposeMaxWaitMs >= 0 && totalWaitMs >= DisposeMaxWaitMs)
                         break;
                 }
 
-                var hasLock = DisposeMaxWaitMs < 0 || i < DisposeMaxWaitMs;
+                var hasLock = DisposeMaxWaitMs < 0 || totalWaitMs < DisposeMaxWaitMs;
                 if (!hasLock)
-                    Log.Warn($"Could not acquire semaphore within {DisposeMaxWaitMs}ms");
-
-                try
                 {
-                    response.EndHttpHandlerRequest(skipHeaders: true);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error("Error ending subscription response", ex);
+                    Log.Error($"Hung connection detected: Could not acquire semaphore within {DisposeMaxWaitMs}ms.");
+                    OnHungConnection(this);
+                    return;
                 }
 
-                OnDispose?.Invoke(this);
+                Release();
             }
         }
 
@@ -843,38 +857,43 @@ namespace ServiceStack
 
             if (Interlocked.CompareExchange(ref isDisposed, 1, 0) == 0)
             {
-                var i = 0;
+                var totalWaitMs = 0;
                 var retries = 0;
                 while (Interlocked.CompareExchange(ref semaphore, 1, 0) != 0)
                 {
-                    var waitMs = ++retries < 10
-                         ? ExecUtils.CalculateExponentialDelay(retries, baseDelay:5, maxBackOffMs:1000)
-                         : ExecUtils.CalculateFullJitterBackOffDelay(retries, baseDelay:10, maxBackOffMs:10000);
+                    var waitMs = ExecUtils.CalculateMemoryLockDelay(++retries);
                     Thread.Sleep(waitMs);
-                    i += waitMs;
-                    if (DisposeMaxWaitMs >= 0 && i >= DisposeMaxWaitMs)
+                    totalWaitMs += waitMs;
+                    if (DisposeMaxWaitMs >= 0 && totalWaitMs >= DisposeMaxWaitMs)
                         break;
                 }
 
-                var hasLock = DisposeMaxWaitMs < 0 || i < DisposeMaxWaitMs;
-                if (hasLock)
+                var hasLock = DisposeMaxWaitMs < 0 || totalWaitMs < DisposeMaxWaitMs;
+                if (!hasLock)
                 {
-                    try
-                    {
-                        response.EndHttpHandlerRequest(skipHeaders: true);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error("Error ending subscription response", ex);
-                    }
-                }
-                else
-                {
-                    Log.Warn($"Could not acquire semaphore within {DisposeMaxWaitMs}ms");
+                    Log.Error($"Hung connection detected: Could not acquire semaphore within {DisposeMaxWaitMs}ms.");
+                    OnHungConnection(this);
+                    return;
                 }
 
-                OnDispose?.Invoke(this);
+                Release();
             }
+        }
+
+        public void Release()
+        {
+            try
+            {
+                response.EndHttpHandlerRequest(skipHeaders: true);
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Error ending subscription response", ex);
+            }
+            
+            var fn = OnDispose;
+            fn?.Invoke(this);
+            OnDispose = null;
         }
     }
 
@@ -1089,6 +1108,10 @@ namespace ServiceStack
         public Task NotifySessionJsonAsync(string sessionId, string selector, string json, string channel = null, CancellationToken token = default) =>
             NotifyRawAsync(SessionSubscriptions, sessionId, selector, json, channel, token);
 
+        public void RegisterHungConnection(IEventSubscription sub)
+        {
+            hungConnections.Add(sub);
+        }
 
         // Send Update Notification
         readonly ConcurrentBag<IEventSubscription> pendingSubscriptionUpdates = new ConcurrentBag<IEventSubscription>();
@@ -1102,14 +1125,23 @@ namespace ServiceStack
         // Generic Async Tasks
         readonly ConcurrentBag<Func<Task>> pendingAsyncTasks = new ConcurrentBag<Func<Task>>();
         
+        // Connections that are hung on their last write/flush, move here to free-up disposing thread 
+        readonly ConcurrentBag<IEventSubscription> hungConnections = new ConcurrentBag<IEventSubscription>();
+        
         public void QueueAsyncTask(Func<Task> task)
         {
             pendingAsyncTasks.Add(task);
         }
 
+        public MemoryServerEvents GetMemoryServerEvents() => this;
+
+        private long taskCounter;
         async Task DoAsyncTasks(CancellationToken token = default)
         {
-            if (pendingAsyncTasks.IsEmpty && pendingSubscriptionUpdates.IsEmpty && pendingUnSubscriptions.IsEmpty && expiredSubs.IsEmpty)
+            var doLongLastingTasks = Interlocked.Increment(ref taskCounter) % 20 == 0; 
+            
+            if (pendingAsyncTasks.IsEmpty && pendingSubscriptionUpdates.IsEmpty && pendingUnSubscriptions.IsEmpty && expiredSubs.IsEmpty 
+                && (!doLongLastingTasks || hungConnections.IsEmpty))
                 return;
             
             while (!pendingAsyncTasks.IsEmpty)
@@ -1148,6 +1180,32 @@ namespace ServiceStack
                 if (expiredSubs.TryTake(out var sub))
                 {
                     await sub.UnsubscribeAsync();
+                }
+            }
+
+            if (doLongLastingTasks && !hungConnections.IsEmpty)
+            {
+                // It's unlikely that a hung connection will be freed by ASP.NET, but we'll check it periodically and release it just in case
+                var stillHung = new List<IEventSubscription>();
+                while (!hungConnections.IsEmpty)
+                {
+                    if (hungConnections.TryTake(out var sub) && sub is EventSubscription eventSub)
+                    {
+                        if (eventSub.IsLocked)
+                        {
+                            stillHung.Add(sub);
+                        }
+                        else
+                        {
+                            Log.Info("Operation causing hung connection eventually completed, releasing connection...");
+                            eventSub.Release();
+                        }
+                    }
+                }
+
+                foreach (var sub in stillHung)
+                {
+                    hungConnections.Add(sub);
                 }
             }
         }
@@ -1792,6 +1850,8 @@ namespace ServiceStack
         Task UnsubscribeFromChannelsAsync(string subscriptionId, string[] channels, CancellationToken token=default);
 
         void QueueAsyncTask(Func<Task> task);
+
+        MemoryServerEvents GetMemoryServerEvents();
 
         // Client API's
         List<Dictionary<string, string>> GetSubscriptionsDetails(params string[] channels);
