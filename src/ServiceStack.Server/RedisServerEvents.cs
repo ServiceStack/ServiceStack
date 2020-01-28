@@ -383,6 +383,7 @@ namespace ServiceStack
         }
 
         public void QueueAsyncTask(Func<Task> task) => local.QueueAsyncTask(task);
+        public MemoryServerEvents GetMemoryServerEvents() => local;
 
         public List<Dictionary<string, string>> GetSubscriptionsDetails(params string[] channels)
         {
