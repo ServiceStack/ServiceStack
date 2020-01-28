@@ -539,6 +539,7 @@ namespace ServiceStack
         {
             this.Channels = channels;
             this.Meta["channels"] = string.Join(",", channels);
+            jsonArgs = null; //refresh
         }
 
         public Func<IEventSubscription, Task> OnUnsubscribeAsync { get; set; }
@@ -589,7 +590,8 @@ namespace ServiceStack
         
 #if DEBUG
         private int threadIdWithLock = 0;
-#endif        
+#endif
+        internal static long NotificationsSent = 0;
 
         public Task PublishAsync(string selector, string message, CancellationToken token = default) => 
             PublishRawAsync(CreateFrame(selector, message), token);
@@ -623,6 +625,7 @@ namespace ServiceStack
                             if (OnPublishAsync != null)
                                 await OnPublishAsync(this, response, frame);
 
+                            Interlocked.Increment(ref NotificationsSent);
                             await WriteEventAsync(response, frame);
                         }
                         catch (Exception ex)
@@ -677,9 +680,6 @@ namespace ServiceStack
             {
                 if (hasLock)
                 {
-#if DEBUG
-                    Interlocked.Exchange(ref threadIdWithLock, Thread.CurrentThread.ManagedThreadId);
-#endif        
                     if (CanWrite())
                     {
                         try
@@ -689,6 +689,8 @@ namespace ServiceStack
                                 frame = pendingWrites + frame;
 
                             OnPublish?.Invoke(this, response, frame);
+
+                            Interlocked.Increment(ref NotificationsSent);
                             WriteEvent(response, frame);
                         }
                         catch (Exception ex)
@@ -712,9 +714,6 @@ namespace ServiceStack
                 if (hasLock)
                 {
                     Interlocked.CompareExchange(ref semaphore, 0, semaphore);
-#if DEBUG
-                    Interlocked.Exchange(ref threadIdWithLock, 0);
-#endif        
 
                     if (writeEx != null)
                         TaskExt.RunSync(() => HandleWriteExceptionAsync(frame, writeEx));
@@ -1108,8 +1107,23 @@ namespace ServiceStack
         public Task NotifySessionJsonAsync(string sessionId, string selector, string json, string channel = null, CancellationToken token = default) =>
             NotifyRawAsync(SessionSubscriptions, sessionId, selector, json, channel, token);
 
+        public Dictionary<string, string> GetStats() => new Dictionary<string, string>
+        {
+            {nameof(TotalConnections), Interlocked.Read(ref TotalConnections).ToString()},
+            {nameof(TotalUnsubscriptions), Interlocked.Read(ref TotalUnsubscriptions).ToString()},
+            {nameof(EventSubscription.NotificationsSent), Interlocked.Read(ref EventSubscription.NotificationsSent).ToString()},
+            {nameof(HungConnectionsDetected), Interlocked.Read(ref HungConnectionsDetected).ToString()},
+            {nameof(HungConnectionsReleased), Interlocked.Read(ref HungConnectionsReleased).ToString()},
+        };
+
+        private long TotalConnections = 0;
+        private long TotalUnsubscriptions = 0;
+        private long HungConnectionsDetected;
+        private long HungConnectionsReleased;
+
         public void RegisterHungConnection(IEventSubscription sub)
         {
+            Interlocked.Increment(ref HungConnectionsDetected);
             hungConnections.Add(sub);
         }
 
@@ -1197,6 +1211,7 @@ namespace ServiceStack
                         }
                         else
                         {
+                            Interlocked.Increment(ref HungConnectionsReleased);
                             Log.Info("Operation causing hung connection eventually completed, releasing connection...");
                             eventSub.Release();
                         }
@@ -1639,6 +1654,8 @@ namespace ServiceStack
                         asyncTasks.Add(() => FlushNopToChannelsAsync(subscription.Channels, token));
                 }
 
+                Interlocked.Increment(ref TotalConnections);
+
                 foreach (var asyncTask in asyncTasks)
                 {
                     await asyncTask();
@@ -1713,6 +1730,8 @@ namespace ServiceStack
                 UnRegisterSubscription(subscription, subscription.SessionId, SessionSubscriptions);
             }
 
+            Interlocked.Increment(ref TotalUnsubscriptions);
+            
             pendingUnSubscriptions.Add(subscription);
         }
 
@@ -1864,6 +1883,9 @@ namespace ServiceStack
         void Reset();
         void Start();
         void Stop();
+        
+        // Observation APIs
+        Dictionary<string, string> GetStats();
     }
 
     public static class Selector
