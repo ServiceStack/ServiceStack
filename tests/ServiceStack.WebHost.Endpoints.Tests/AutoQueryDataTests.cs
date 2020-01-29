@@ -325,14 +325,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var q = AutoQuery.CreateQuery(dto, Request);
             q.Take(1);
-            return AutoQuery.Execute(dto, q);
+            return AutoQuery.Execute(dto, q, Request);
         }
 
         public object Any(QueryDataOverridedCustomRockstars dto)
         {
             var q = AutoQuery.CreateQuery(dto, Request.GetRequestParams(), Request);
             q.Take(1);
-            return AutoQuery.Execute(dto, q);
+            return AutoQuery.Execute(dto, q, Request);
         }
     }
 

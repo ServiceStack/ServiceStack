@@ -649,8 +649,11 @@ namespace ServiceStack
         
         private Dictionary<Type, GenericAutoQueryDb> genericAutoQueryCache = new Dictionary<Type, GenericAutoQueryDb>();
 
-        public IQueryResponse Execute(IQueryDb request, ISqlExpression q, IDbConnection db = null)
+        public IQueryResponse Execute(IQueryDb request, ISqlExpression q, IDbConnection db)
         {
+            if (db == null)
+                throw new ArgumentNullException(nameof(db));
+            
             var requestDtoType = request.GetType();
             
             Type fromType;

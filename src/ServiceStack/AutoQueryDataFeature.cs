@@ -61,8 +61,6 @@ namespace ServiceStack
         public IQueryData Dto { get; set; }
         public Dictionary<string, string> DynamicParams { get; set; }
         public IRequest Request { get; set; }
-        
-        public Type FromType { get; set; }
         public ITypedQueryData TypedQuery { get; set; }
     }
 
@@ -637,26 +635,32 @@ namespace ServiceStack
         public virtual object Exec<From>(IQueryData<From> dto)
         {
             DataQuery<From> q;
+            var requestParams = Request.GetRequestParams();
+            var ctx = new QueryDataContext { Dto = dto, DynamicParams = requestParams, Request = Request };
+            using var db = AutoQuery.GetDb<From>(ctx);
             using (Profiler.Current.Step("AutoQueryData.CreateQuery"))
             {
-                q = AutoQuery.CreateQuery(dto, Request.GetRequestParams(), Request);
+                q = AutoQuery.CreateQuery(dto, requestParams, Request, db);
             }
             using (Profiler.Current.Step("AutoQueryData.Execute"))
             {
-                return AutoQuery.Execute(dto, q);
+                return AutoQuery.Execute(dto, q, db);
             }
         }
 
         public virtual object Exec<From, Into>(IQueryData<From, Into> dto)
         {
             DataQuery<From> q;
+            var requestParams = Request.GetRequestParams();
+            var ctx = new QueryDataContext { Dto = dto, DynamicParams = requestParams, Request = Request };
+            using var db = AutoQuery.GetDb<From>(ctx);
             using (Profiler.Current.Step("AutoQueryData.CreateQuery"))
             {
-                q = AutoQuery.CreateQuery(dto, Request.GetRequestParams(), Request);
+                q = AutoQuery.CreateQuery(dto, requestParams, Request, db);
             }
             using (Profiler.Current.Step("AutoQueryData.Execute"))
             {
-                return AutoQuery.Execute(dto, q);
+                return AutoQuery.Execute(dto, q, db);
             }
         }
     }
@@ -839,6 +843,9 @@ namespace ServiceStack
 
         public DataQuery<From> CreateQuery<From>(IQueryData<From> dto, Dictionary<string, string> dynamicParams, IRequest req = null, IQueryDataSource db = null)
         {
+            if (db == null && req == null)
+                throw new ArgumentNullException(nameof(req));
+            
             using (db == null ? db = GetDb<From>(new QueryDataContext { Dto = dto, DynamicParams = dynamicParams, Request = req }) : null)
             {
                 var typedQuery = GetTypedQuery(dto.GetType(), typeof(From));
@@ -849,6 +856,9 @@ namespace ServiceStack
 
         public QueryResponse<From> Execute<From>(IQueryData<From> dto, DataQuery<From> q, IRequest req = null, IQueryDataSource db = null)
         {
+            if (db == null && req == null)
+                throw new ArgumentNullException(nameof(req));
+            
             using (db == null ? db = GetDb<From>(new QueryDataContext {Dto = dto, Request = req}) : null)
             {
                 var typedQuery = GetTypedQuery(dto.GetType(), typeof(From));
@@ -858,6 +868,9 @@ namespace ServiceStack
 
         public DataQuery<From> CreateQuery<From, Into>(IQueryData<From, Into> dto, Dictionary<string, string> dynamicParams, IRequest req = null, IQueryDataSource db = null)
         {
+            if (db == null && req == null)
+                throw new ArgumentNullException(nameof(req));
+            
             using (db == null ? db = GetDb<From>(new QueryDataContext {Dto = dto, DynamicParams = dynamicParams, Request = req}) : null)
             {
                 var typedQuery = GetTypedQuery(dto.GetType(), typeof(From));
@@ -868,6 +881,9 @@ namespace ServiceStack
 
         public QueryResponse<Into> Execute<From, Into>(IQueryData<From, Into> dto, DataQuery<From> q, IRequest req = null, IQueryDataSource db = null)
         {
+            if (db == null && req == null)
+                throw new ArgumentNullException(nameof(req));
+            
             using (db == null ? db = GetDb<From>(new QueryDataContext {Dto = dto, Request = req}) : null)
             {
                 var typedQuery = GetTypedQuery(dto.GetType(), typeof(From));
@@ -877,8 +893,11 @@ namespace ServiceStack
 
         public IDataQuery CreateQuery(IQueryData requestDto, Dictionary<string, string> dynamicParams, IRequest req = null, IQueryDataSource db = null)
         {
+            if (db == null && req == null)
+                throw new ArgumentNullException(nameof(req));
+            
             var ctx = CreateContext(requestDto, dynamicParams, req);
-            var fromType = ctx.FromType;
+            var fromType = GetFromType(requestDto.GetType());
             using (db == null ? db = GetDb(ctx, fromType) : null)
             {
                 var q = ctx.TypedQuery.CreateQuery(db);
@@ -891,7 +910,6 @@ namespace ServiceStack
             var requestDtoType = requestDto.GetType();
             var fromType = GetFromType(requestDtoType);
             return new QueryDataContext {Dto = requestDto, DynamicParams = dynamicParams, Request = req,
-                FromType = fromType,
                 TypedQuery = GetTypedQuery(requestDtoType, fromType)};
         }
 
@@ -899,6 +917,9 @@ namespace ServiceStack
 
         public IQueryResponse Execute(IQueryData request, IDataQuery q, IQueryDataSource db)
         {
+            if (db == null)
+                throw new ArgumentNullException(nameof(db));
+            
             var requestDtoType = request.GetType();
             
             Type fromType;

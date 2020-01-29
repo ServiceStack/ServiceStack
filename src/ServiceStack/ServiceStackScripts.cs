@@ -235,7 +235,8 @@ namespace ServiceStack
                 
                 var httpReq = req(scope);
                 var ctx = autoQuery.CreateContext(aqDto, reqParams, httpReq);
-                using var db = autoQuery.GetDb(ctx, ctx.FromType);
+                var fromType = autoQuery.GetFromType(aqDto.GetType());
+                using var db = autoQuery.GetDb(ctx, fromType);
                 var q = autoQuery.CreateQuery(aqDto, reqParams, httpReq, db);
                 var response = autoQuery.Execute(aqDto, q, db);
 

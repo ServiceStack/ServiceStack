@@ -420,7 +420,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public object Any(CustomQueryCacheMaxAgeDataRockstars query)
         {
-            return AutoQuery.Execute(query, AutoQuery.CreateQuery(query, Request));
+            return AutoQuery.Execute(query, AutoQuery.CreateQuery(query, Request), Request);
         }
     }
 }
