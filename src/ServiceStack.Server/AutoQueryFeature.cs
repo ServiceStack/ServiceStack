@@ -359,15 +359,21 @@ namespace ServiceStack
 
     public interface IAutoQueryDb
     {
+        IDbConnection GetDb(Type type, IRequest req = null);
+        
         ITypedQuery GetTypedQuery(Type dtoType, Type fromType);
 
         SqlExpression<From> CreateQuery<From>(IQueryDb<From> dto, Dictionary<string, string> dynamicParams, IRequest req = null);
+        SqlExpression<From> CreateQuery<From>(IDbConnection db, IQueryDb<From> dto, Dictionary<string, string> dynamicParams, IRequest req = null);
 
-        QueryResponse<From> Execute<From>(IQueryDb<From> model, SqlExpression<From> query);
+        QueryResponse<From> Execute<From>(IQueryDb<From> model, SqlExpression<From> query, IRequest req = null);
+        QueryResponse<From> Execute<From>(IDbConnection db, IQueryDb<From> model, SqlExpression<From> query);
 
         SqlExpression<From> CreateQuery<From, Into>(IQueryDb<From, Into> dto, Dictionary<string, string> dynamicParams, IRequest req = null);
+        SqlExpression<From> CreateQuery<From, Into>(IDbConnection db, IQueryDb<From, Into> dto, Dictionary<string, string> dynamicParams, IRequest req = null);
 
-        QueryResponse<Into> Execute<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query);
+        QueryResponse<Into> Execute<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query, IRequest req = null);
+        QueryResponse<Into> Execute<From, Into>(IDbConnection db, IQueryDb<From, Into> model, SqlExpression<From> query);
         
         ISqlExpression CreateQuery(IQueryDb dto, Dictionary<string, string> dynamicParams, IRequest req = null);
 
@@ -381,26 +387,28 @@ namespace ServiceStack
         public virtual object Exec<From>(IQueryDb<From> dto)
         {
             SqlExpression<From> q;
+            using var db = AutoQuery.GetDb(typeof(From), Request);
             using (Profiler.Current.Step("AutoQuery.CreateQuery"))
             {
-                q = AutoQuery.CreateQuery(dto, Request.GetRequestParams(), Request);
+                q = AutoQuery.CreateQuery(db, dto, Request.GetRequestParams(), Request);
             }
             using (Profiler.Current.Step("AutoQuery.Execute"))
             {
-                return AutoQuery.Execute(dto, q);
+                return AutoQuery.Execute(db, dto, q);
             }
         }
 
         public virtual object Exec<From, Into>(IQueryDb<From, Into> dto)
         {
             SqlExpression<From> q;
+            using var db = AutoQuery.GetDb(typeof(From), Request);
             using (Profiler.Current.Step("AutoQuery.CreateQuery"))
             {
-                q = AutoQuery.CreateQuery(dto, Request.GetRequestParams(), Request);
+                q = AutoQuery.CreateQuery(db, dto, Request.GetRequestParams(), Request);
             }
             using (Profiler.Current.Step("AutoQuery.Execute"))
             {
-                return AutoQuery.Execute(dto, q);
+                return AutoQuery.Execute(db, dto, q);
             }
         }
     }
@@ -418,7 +426,7 @@ namespace ServiceStack
         Dictionary<string, QueryDbFieldAttribute> EndsWithConventions { get; set; }
     }
 
-    public class AutoQuery : IAutoQueryDb, IAutoQueryOptions, IDisposable
+    public class AutoQuery : IAutoQueryDb, IAutoQueryOptions
     {
         public int? MaxLimit { get; set; }
         public bool IncludeTotal { get; set; }
@@ -432,15 +440,9 @@ namespace ServiceStack
         public Dictionary<string, QueryDbFieldAttribute> EndsWithConventions { get; set; }
 
         public string UseNamedConnection { get; set; }
-        public virtual IDbConnection Db { get; set; }
         public QueryFilterDelegate GlobalQueryFilter { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
         public List<Action<QueryDbFilterContext>> ResponseFilters { get; set; }
-
-        public virtual void Dispose()
-        {
-            Db?.Dispose();
-        }
 
         private static Dictionary<Type, ITypedQuery> TypedQueries = new Dictionary<Type, ITypedQuery>();
 
@@ -527,7 +529,7 @@ namespace ServiceStack
             return q;
         }
 
-        public QueryResponse<Into> ResponseFilter<From, Into>(QueryResponse<Into> response, SqlExpression<From> expr, IQueryDb dto)
+        public QueryResponse<Into> ResponseFilter<From, Into>(IDbConnection db, QueryResponse<Into> response, SqlExpression<From> expr, IQueryDb dto)
         {
             response.Meta = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -535,7 +537,7 @@ namespace ServiceStack
 
             var ctx = new QueryDbFilterContext
             {
-                Db = Db,
+                Db = db,
                 Commands = commands,
                 Dto = dto,
                 SqlExpression = expr,
@@ -564,7 +566,7 @@ namespace ServiceStack
 
                 response.Total = response.Meta.TryGetValue("COUNT(*)", out var total)
                     ? total.ToInt()
-                    : (int)Db.Count(expr); //fallback if it's not populated (i.e. if stripped by custom ResponseFilter)
+                    : (int)db.Count(expr); //fallback if it's not populated (i.e. if stripped by custom ResponseFilter)
 
                 //reduce payload on wire
                 if (totalCommand != null || !totalRequested)
@@ -588,45 +590,64 @@ namespace ServiceStack
         public IDbConnection GetDb<From>(IRequest req = null) => GetDb(typeof(From), req);
         public IDbConnection GetDb(Type type, IRequest req = null)
         {
-            if (Db != null)
-                return Db;
-
             var namedConnection = UseNamedConnection;
             var attr = type.FirstAttribute<NamedConnectionAttribute>();
             if (attr != null)
                 namedConnection = attr.Name;
 
-            Db = namedConnection == null 
+            return namedConnection == null 
                 ? HostContext.AppHost.GetDbConnection(req)
                 : HostContext.TryResolve<IDbConnectionFactory>().OpenDbConnection(namedConnection);
-
-            return Db;
         }
 
         public SqlExpression<From> CreateQuery<From>(IQueryDb<From> dto, Dictionary<string, string> dynamicParams, IRequest req = null)
         {
+            using var db = GetDb<From>(req);
+            return CreateQuery(db, dto, dynamicParams, req);
+        }
+
+        public SqlExpression<From> CreateQuery<From>(IDbConnection db, IQueryDb<From> dto, Dictionary<string, string> dynamicParams, IRequest req = null)
+        {
             var typedQuery = GetTypedQuery(dto.GetType(), typeof(From));
-            var q = typedQuery.CreateQuery(GetDb<From>(req));
+            var q = typedQuery.CreateQuery(db);
             return Filter<From>(typedQuery.AddToQuery(q, dto, dynamicParams, this), dto, req);
         }
 
-        public QueryResponse<From> Execute<From>(IQueryDb<From> model, SqlExpression<From> query)
+        public QueryResponse<From> Execute<From>(IQueryDb<From> model, SqlExpression<From> query, IRequest req = null)
+        {
+            using var db = GetDb<From>(req);
+            return Execute(db, model, query);
+        }
+
+        public QueryResponse<From> Execute<From>(IDbConnection db, IQueryDb<From> model, SqlExpression<From> query)
         {
             var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
-            return ResponseFilter(typedQuery.Execute<From>(GetDb<From>(), query), query, model);
+            return ResponseFilter(db, typedQuery.Execute<From>(db, query), query, model);
         }
 
         public SqlExpression<From> CreateQuery<From, Into>(IQueryDb<From, Into> dto, Dictionary<string, string> dynamicParams, IRequest req = null)
         {
+            using var db = GetDb<From>(req);
+            return CreateQuery(db, dto, dynamicParams, req);
+        }
+
+        public SqlExpression<From> CreateQuery<From, Into>(IDbConnection db, IQueryDb<From, Into> dto, Dictionary<string, string> dynamicParams, IRequest req = null)
+        {
             var typedQuery = GetTypedQuery(dto.GetType(), typeof(From));
-            var q = typedQuery.CreateQuery(GetDb<From>(req));
+            var q = typedQuery.CreateQuery(db);
             return Filter<From>(typedQuery.AddToQuery(q, dto, dynamicParams, this), dto, req);
         }
 
-        public QueryResponse<Into> Execute<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query)
+        public QueryResponse<Into> Execute<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query, IRequest req = null)
+        {
+            using var db = GetDb<From>(req);
+            return Execute(db, model, query);
+        }
+
+        public QueryResponse<Into> Execute<From, Into>(IDbConnection db, IQueryDb<From, Into> model, SqlExpression<From> query)
         {
             var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
-            return ResponseFilter(typedQuery.Execute<Into>(GetDb<From>(), query), query, model);
+            return ResponseFilter(db, typedQuery.Execute<Into>(db, query), query, model);
         }
 
         public ISqlExpression CreateQuery(IQueryDb requestDto, Dictionary<string, string> dynamicParams, IRequest req = null)
@@ -692,9 +713,10 @@ namespace ServiceStack
     {
         public override IQueryResponse ExecuteObject(AutoQuery autoQuery, IQueryDb request, ISqlExpression query)
         {
+            using var db = autoQuery.GetDb(request.GetType(), null);
             var typedQuery = autoQuery.GetTypedQuery(request.GetType(), typeof(From));
             var q = (SqlExpression<From>)query;
-            return autoQuery.ResponseFilter(typedQuery.Execute<Into>(autoQuery.Db, q), q, request);
+            return autoQuery.ResponseFilter(db, typedQuery.Execute<Into>(db, q), q, request);
         }
     }
 
