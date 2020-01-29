@@ -248,7 +248,7 @@ namespace Check.ServiceInterface
         {
             var q = AutoQuery.CreateQuery(dto, Request);
             //q.Take(1);
-            return AutoQuery.Execute(dto, q);
+            return AutoQuery.Execute(dto, q, Request);
         }
     }
 
@@ -258,6 +258,6 @@ namespace Check.ServiceInterface
         public IAutoQueryDb AutoQuery { get; set; }
 
         public QueryResponse<Rockstar> Any(QueryRockstarsCached request) =>
-            AutoQuery.Execute(request, AutoQuery.CreateQuery(request, Request));
+            AutoQuery.Execute(request, AutoQuery.CreateQuery(request, Request), Request);
     }
 }

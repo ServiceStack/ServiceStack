@@ -150,7 +150,7 @@ namespace ServiceStack
                     EndsWithConventions[key] = query;
             }
 
-            appHost.GetContainer().Register<IAutoQueryDb>(c => new AutoQuery
+            appHost.GetContainer().AddSingleton<IAutoQueryDb>(c => new AutoQuery
                 {
                     IgnoreProperties = IgnoreProperties,
                     IllegalSqlFragmentTokens = IllegalSqlFragmentTokens,
@@ -165,8 +165,7 @@ namespace ServiceStack
                     StartsWithConventions = StartsWithConventions,
                     EndsWithConventions = EndsWithConventions,
                     UseNamedConnection = UseNamedConnection,
-                })
-                .ReusedWithin(ReuseScope.None);
+                });
 
             appHost.Metadata.GetOperationAssemblies()
                 .Each(x => LoadFromAssemblies.Add(x));
@@ -359,25 +358,23 @@ namespace ServiceStack
 
     public interface IAutoQueryDb
     {
-        IDbConnection GetDb(Type type, IRequest req = null);
+        Type GetFromType(Type requestDtoType);
+        IDbConnection GetDb(Type fromType, IRequest req = null);
+        IDbConnection GetDb<From>(IRequest req = null);
         
         ITypedQuery GetTypedQuery(Type dtoType, Type fromType);
 
-        SqlExpression<From> CreateQuery<From>(IQueryDb<From> dto, Dictionary<string, string> dynamicParams, IRequest req = null);
-        SqlExpression<From> CreateQuery<From>(IDbConnection db, IQueryDb<From> dto, Dictionary<string, string> dynamicParams, IRequest req = null);
+        SqlExpression<From> CreateQuery<From>(IQueryDb<From> dto, Dictionary<string, string> dynamicParams, IRequest req = null, IDbConnection db = null);
 
-        QueryResponse<From> Execute<From>(IQueryDb<From> model, SqlExpression<From> query, IRequest req = null);
-        QueryResponse<From> Execute<From>(IDbConnection db, IQueryDb<From> model, SqlExpression<From> query);
+        QueryResponse<From> Execute<From>(IQueryDb<From> model, SqlExpression<From> query, IRequest req = null, IDbConnection db = null);
 
-        SqlExpression<From> CreateQuery<From, Into>(IQueryDb<From, Into> dto, Dictionary<string, string> dynamicParams, IRequest req = null);
-        SqlExpression<From> CreateQuery<From, Into>(IDbConnection db, IQueryDb<From, Into> dto, Dictionary<string, string> dynamicParams, IRequest req = null);
+        SqlExpression<From> CreateQuery<From, Into>(IQueryDb<From, Into> dto, Dictionary<string, string> dynamicParams, IRequest req = null, IDbConnection db = null);
 
-        QueryResponse<Into> Execute<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query, IRequest req = null);
-        QueryResponse<Into> Execute<From, Into>(IDbConnection db, IQueryDb<From, Into> model, SqlExpression<From> query);
+        QueryResponse<Into> Execute<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query, IRequest req = null, IDbConnection db = null);
         
-        ISqlExpression CreateQuery(IQueryDb dto, Dictionary<string, string> dynamicParams, IRequest req = null);
+        ISqlExpression CreateQuery(IQueryDb dto, Dictionary<string, string> dynamicParams, IRequest req, IDbConnection db);
 
-        IQueryResponse Execute(IQueryDb request, ISqlExpression q);
+        IQueryResponse Execute(IQueryDb request, ISqlExpression q, IDbConnection db);
     }
 
     public abstract class AutoQueryServiceBase : Service
@@ -387,28 +384,28 @@ namespace ServiceStack
         public virtual object Exec<From>(IQueryDb<From> dto)
         {
             SqlExpression<From> q;
-            using var db = AutoQuery.GetDb(typeof(From), Request);
+            using var db = AutoQuery.GetDb<From>(Request);
             using (Profiler.Current.Step("AutoQuery.CreateQuery"))
             {
-                q = AutoQuery.CreateQuery(db, dto, Request.GetRequestParams(), Request);
+                q = AutoQuery.CreateQuery(dto, Request.GetRequestParams(), Request, db);
             }
             using (Profiler.Current.Step("AutoQuery.Execute"))
             {
-                return AutoQuery.Execute(db, dto, q);
+                return AutoQuery.Execute(dto, q, db);
             }
         }
 
         public virtual object Exec<From, Into>(IQueryDb<From, Into> dto)
         {
             SqlExpression<From> q;
-            using var db = AutoQuery.GetDb(typeof(From), Request);
+            using var db = AutoQuery.GetDb<From>(Request);
             using (Profiler.Current.Step("AutoQuery.CreateQuery"))
             {
-                q = AutoQuery.CreateQuery(db, dto, Request.GetRequestParams(), Request);
+                q = AutoQuery.CreateQuery(dto, Request.GetRequestParams(), Request, db);
             }
             using (Profiler.Current.Step("AutoQuery.Execute"))
             {
-                return AutoQuery.Execute(db, dto, q);
+                return AutoQuery.Execute(dto, q, db);
             }
         }
     }
@@ -588,10 +585,10 @@ namespace ServiceStack
         }
 
         public IDbConnection GetDb<From>(IRequest req = null) => GetDb(typeof(From), req);
-        public IDbConnection GetDb(Type type, IRequest req = null)
+        public IDbConnection GetDb(Type fromType, IRequest req = null)
         {
             var namedConnection = UseNamedConnection;
-            var attr = type.FirstAttribute<NamedConnectionAttribute>();
+            var attr = fromType.FirstAttribute<NamedConnectionAttribute>();
             if (attr != null)
                 namedConnection = attr.Name;
 
@@ -600,68 +597,59 @@ namespace ServiceStack
                 : HostContext.TryResolve<IDbConnectionFactory>().OpenDbConnection(namedConnection);
         }
 
-        public SqlExpression<From> CreateQuery<From>(IQueryDb<From> dto, Dictionary<string, string> dynamicParams, IRequest req = null)
+        public SqlExpression<From> CreateQuery<From>(IQueryDb<From> dto, Dictionary<string, string> dynamicParams, IRequest req = null, IDbConnection db = null)
         {
-            using var db = GetDb<From>(req);
-            return CreateQuery(db, dto, dynamicParams, req);
+            using (db == null ? db = GetDb<From>(req) : null)
+            {
+                var typedQuery = GetTypedQuery(dto.GetType(), typeof(From));
+                var q = typedQuery.CreateQuery(db);
+                return Filter<From>(typedQuery.AddToQuery(q, dto, dynamicParams, this), dto, req);
+            }
         }
 
-        public SqlExpression<From> CreateQuery<From>(IDbConnection db, IQueryDb<From> dto, Dictionary<string, string> dynamicParams, IRequest req = null)
+        public QueryResponse<From> Execute<From>(IQueryDb<From> model, SqlExpression<From> query, IRequest req = null, IDbConnection db = null)
         {
-            var typedQuery = GetTypedQuery(dto.GetType(), typeof(From));
-            var q = typedQuery.CreateQuery(db);
-            return Filter<From>(typedQuery.AddToQuery(q, dto, dynamicParams, this), dto, req);
+            using (db == null ? db = GetDb<From>(req) : null)
+            {
+                var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
+                return ResponseFilter(db, typedQuery.Execute<From>(db, query), query, model);
+            }
         }
 
-        public QueryResponse<From> Execute<From>(IQueryDb<From> model, SqlExpression<From> query, IRequest req = null)
+        public SqlExpression<From> CreateQuery<From, Into>(IQueryDb<From, Into> dto, Dictionary<string, string> dynamicParams, IRequest req = null, IDbConnection db = null)
         {
-            using var db = GetDb<From>(req);
-            return Execute(db, model, query);
+            using (db == null ? db = GetDb<From>(req) : null)
+            {
+                var typedQuery = GetTypedQuery(dto.GetType(), typeof(From));
+                var q = typedQuery.CreateQuery(db);
+                return Filter<From>(typedQuery.AddToQuery(q, dto, dynamicParams, this), dto, req);
+            }
         }
 
-        public QueryResponse<From> Execute<From>(IDbConnection db, IQueryDb<From> model, SqlExpression<From> query)
+        public QueryResponse<Into> Execute<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query, IRequest req = null, IDbConnection db = null)
         {
-            var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
-            return ResponseFilter(db, typedQuery.Execute<From>(db, query), query, model);
+            using (db == null ? db = GetDb<From>(req) : null)
+            {
+                var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
+                return ResponseFilter(db, typedQuery.Execute<Into>(db, query), query, model);
+            }
         }
 
-        public SqlExpression<From> CreateQuery<From, Into>(IQueryDb<From, Into> dto, Dictionary<string, string> dynamicParams, IRequest req = null)
-        {
-            using var db = GetDb<From>(req);
-            return CreateQuery(db, dto, dynamicParams, req);
-        }
-
-        public SqlExpression<From> CreateQuery<From, Into>(IDbConnection db, IQueryDb<From, Into> dto, Dictionary<string, string> dynamicParams, IRequest req = null)
-        {
-            var typedQuery = GetTypedQuery(dto.GetType(), typeof(From));
-            var q = typedQuery.CreateQuery(db);
-            return Filter<From>(typedQuery.AddToQuery(q, dto, dynamicParams, this), dto, req);
-        }
-
-        public QueryResponse<Into> Execute<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query, IRequest req = null)
-        {
-            using var db = GetDb<From>(req);
-            return Execute(db, model, query);
-        }
-
-        public QueryResponse<Into> Execute<From, Into>(IDbConnection db, IQueryDb<From, Into> model, SqlExpression<From> query)
-        {
-            var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
-            return ResponseFilter(db, typedQuery.Execute<Into>(db, query), query, model);
-        }
-
-        public ISqlExpression CreateQuery(IQueryDb requestDto, Dictionary<string, string> dynamicParams, IRequest req = null)
+        public ISqlExpression CreateQuery(IQueryDb requestDto, Dictionary<string, string> dynamicParams, IRequest req = null, IDbConnection db = null)
         {
             var requestDtoType = requestDto.GetType();
             var fromType = GetFromType(requestDtoType);
-            var typedQuery = GetTypedQuery(requestDtoType, fromType);
-            var q = typedQuery.CreateQuery(GetDb(fromType));
-            return Filter(typedQuery.AddToQuery(q, requestDto, dynamicParams, this), requestDto, req);
+            using (db == null ? db = GetDb(fromType) : null)
+            {
+                var typedQuery = GetTypedQuery(requestDtoType, fromType);
+                var q = typedQuery.CreateQuery(db);
+                return Filter(typedQuery.AddToQuery(q, requestDto, dynamicParams, this), requestDto, req);
+            }
         }
         
         private Dictionary<Type, GenericAutoQueryDb> genericAutoQueryCache = new Dictionary<Type, GenericAutoQueryDb>();
 
-        public IQueryResponse Execute(IQueryDb request, ISqlExpression q)
+        public IQueryResponse Execute(IQueryDb request, ISqlExpression q, IDbConnection db = null)
         {
             var requestDtoType = request.GetType();
             
@@ -683,7 +671,7 @@ namespace ServiceStack
             }
 
             if (genericAutoQueryCache.TryGetValue(fromType, out GenericAutoQueryDb typedApi))
-                return typedApi.ExecuteObject(this, request, q);
+                return typedApi.ExecuteObject(this, request, q, db);
 
             var genericType = typeof(GenericAutoQueryDb<,>).MakeGenericType(fromType, intoType);
             var instance = genericType.CreateInstance<GenericAutoQueryDb>();
@@ -700,23 +688,25 @@ namespace ServiceStack
             } while (!ReferenceEquals(
                 Interlocked.CompareExchange(ref genericAutoQueryCache, newCache, snapshot), snapshot));
 
-            return instance.ExecuteObject(this, request, q);
+            return instance.ExecuteObject(this, request, q, db);
         }
     }
 
     internal abstract class GenericAutoQueryDb
     {
-        public abstract IQueryResponse ExecuteObject(AutoQuery autoQuery, IQueryDb request, ISqlExpression query);
+        public abstract IQueryResponse ExecuteObject(AutoQuery autoQuery, IQueryDb request, ISqlExpression query, IDbConnection db = null);
     }
     
     internal class GenericAutoQueryDb<From, Into> : GenericAutoQueryDb
     {
-        public override IQueryResponse ExecuteObject(AutoQuery autoQuery, IQueryDb request, ISqlExpression query)
+        public override IQueryResponse ExecuteObject(AutoQuery autoQuery, IQueryDb request, ISqlExpression query, IDbConnection db = null)
         {
-            using var db = autoQuery.GetDb(request.GetType(), null);
-            var typedQuery = autoQuery.GetTypedQuery(request.GetType(), typeof(From));
-            var q = (SqlExpression<From>)query;
-            return autoQuery.ResponseFilter(db, typedQuery.Execute<Into>(db, q), q, request);
+            using (db == null ? autoQuery.GetDb(request.GetType(), null) : null)
+            {
+                var typedQuery = autoQuery.GetTypedQuery(request.GetType(), typeof(From));
+                var q = (SqlExpression<From>)query;
+                return autoQuery.ResponseFilter(db, typedQuery.Execute<Into>(db, q), q, request);
+            }
         }
     }
 

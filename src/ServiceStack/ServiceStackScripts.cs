@@ -232,8 +232,12 @@ namespace ServiceStack
                     throw new ArgumentException("Request DTO is not an AutoQuery Data DTO: " + requestName);
                                 
                 var reqParams = objDictionary?.ToStringDictionary() ?? TypeConstants.EmptyStringDictionary;
-                var q = autoQuery.CreateQuery(aqDto, reqParams, req(scope));
-                var response = autoQuery.Execute(aqDto, q);
+                
+                var httpReq = req(scope);
+                var ctx = autoQuery.CreateContext(aqDto, reqParams, httpReq);
+                using var db = autoQuery.GetDb(ctx, ctx.FromType);
+                var q = autoQuery.CreateQuery(aqDto, reqParams, httpReq, db);
+                var response = autoQuery.Execute(aqDto, q, db);
 
                 return response;
             }
