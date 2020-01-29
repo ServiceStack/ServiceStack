@@ -779,7 +779,7 @@ namespace ServiceStack.Extensions.Tests
 
         public object Get(QueryChangeConnectionInfo query)
         {
-            return AutoQuery.Execute(query, AutoQuery.CreateQuery(query, Request));
+            return AutoQuery.Execute(query, AutoQuery.CreateQuery(query, Request), Request);
         }
     }
 
