@@ -16,7 +16,11 @@ namespace CheckRazorCore
 
         public new void ConfigureServices(IServiceCollection services)
         {
+#if DEBUG
+            services.AddMvc().AddRazorRuntimeCompilation();
+#else            
             services.AddMvc();
+#endif
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
