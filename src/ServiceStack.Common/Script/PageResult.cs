@@ -156,14 +156,30 @@ namespace ServiceStack.Script
         public int StackDepth { get; internal set; }
         
         /// <summary>
+        /// The Current StackDepth of rendering partials
+        /// </summary>
+        public int PartialStackDepth { get; internal set; }
+
+        /// <summary>
         /// Can be used to track number of Evaluations
         /// </summary>
         public long Evaluations { get; private set; }
-
+        
+        /// <summary>
+        /// Can be used to track number of Evaluations
+        /// </summary>
+        internal bool PageProcessed { get; set; }
+        
         public void AssertNextEvaluation()
         {
             if (Evaluations++ >= Context.MaxEvaluations)
                 throw new NotSupportedException($"Exceeded Max Evaluations of {Context.MaxEvaluations}. \nMaxEvaluations can be changed in `ScriptContext.MaxEvaluations`.");
+        }
+        
+        public void AssertNextPartial()
+        {
+            if (PartialStackDepth++ >= Context.MaxStackDepth)
+                throw new NotSupportedException($"Exceeded Max Partial StackDepth of {Context.MaxStackDepth}. \nMaxStackDepth can be changed in `ScriptContext.MaxStackDepth`.");
         }
 
         public void ResetIterations() => Evaluations = 0;
@@ -482,15 +498,24 @@ namespace ServiceStack.Script
         }
 
         public Task WritePageAsync(SharpPage page, SharpCodePage codePage,
-            ScriptScopeContext scope, CancellationToken token = default(CancellationToken))
+            ScriptScopeContext scope, CancellationToken token = default)
         {
-            if (page != null)
-                return WritePageAsync(page, scope, token);
+            try
+            {
+                AssertNextPartial();
+                
+                if (page != null)
+                    return WritePageAsync(page, scope, token);
 
-            return WriteCodePageAsync(codePage, scope, token);
+                return WriteCodePageAsync(codePage, scope, token);
+            }
+            finally
+            {
+                PartialStackDepth--;
+            }
         }
 
-        public async Task WritePageAsync(SharpPage page, ScriptScopeContext scope, CancellationToken token = default(CancellationToken))
+        public async Task WritePageAsync(SharpPage page, ScriptScopeContext scope, CancellationToken token = default)
         {
             if (PageTransformers.Count == 0)
             {

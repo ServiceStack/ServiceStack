@@ -1292,7 +1292,6 @@ namespace ServiceStack.Script
 
             if (target is IEnumerable objs && !(target is IDictionary) && !(target is string))
             {
-
                 var i = 0;
                 foreach (var item in objs)
                 {

@@ -58,6 +58,10 @@ namespace ServiceStack.Script
                 if (var.Binding?.Equals(ScriptConstants.Page) == true
                     && !scope.ScopedParams.ContainsKey(ScriptConstants.PartialArg))
                 {
+                    if (scope.PageResult.PageProcessed)
+                        throw new NotSupportedException("{{page}} can only be called once per render, in the Layout page.");
+                    scope.PageResult.PageProcessed = true;
+                    
                     await scope.PageResult.WritePageAsync(scope.PageResult.Page, scope.PageResult.CodePage, scope, token);
 
                     if (scope.PageResult.HaltExecution)
