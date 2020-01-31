@@ -180,8 +180,8 @@ namespace ServiceStack.Common.Tests.OAuth
             var service = GetRegistrationService(null, null, MimeTypes.Html);
 
             var request = GetValidRegistration();
-            request.Continue = "http://localhost/home";
 
+            service.Request.QueryString[Keywords.Continue] = "http://localhost/home";
             var response = service.Post(request) as HttpResult;
 
             Assert.That(response, Is.Not.Null);
@@ -195,7 +195,7 @@ namespace ServiceStack.Common.Tests.OAuth
             var service = GetRegistrationService(null, null, MimeTypes.Html);
 
             var request = GetValidRegistration();
-            request.Continue = string.Empty;
+            service.Request.QueryString[Keywords.Continue] = string.Empty;
 
             var response = service.Post(request);
 
@@ -209,7 +209,7 @@ namespace ServiceStack.Common.Tests.OAuth
             var service = GetRegistrationService(null, null, MimeTypes.Json);
 
             var request = GetValidRegistration();
-            request.Continue = "http://localhost/home";
+            service.Request.QueryString[Keywords.Continue] = "http://localhost/home";
 
             var response = service.Post(request);
 

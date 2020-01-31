@@ -28,7 +28,7 @@ namespace ServiceStack.Auth
             var userName = basicAuth.Value.Key;
             var password = basicAuth.Value.Value;
 
-            return Authenticate(authService, session, userName, password, request.Continue);
+            return Authenticate(authService, session, userName, password, authService.Request.GetReturnUrl());
         }
 
         public virtual void PreAuthenticate(IRequest req, IResponse res)

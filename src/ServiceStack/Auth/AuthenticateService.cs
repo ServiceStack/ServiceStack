@@ -219,16 +219,16 @@ namespace ServiceStack.Auth
                 if (request.provider == null && !session.IsAuthenticated)
                     throw HttpError.Unauthorized(ErrorMessages.NotAuthenticated.Localize(Request));
 
-                var referrerUrl = request.Continue
+                var returnUrl = Request.GetReturnUrl();
+                var referrerUrl = returnUrl
                     ?? session.ReferrerUrl
-                    ?? request.Continue
                     ?? base.Request.GetQueryStringOrForm(Keywords.ReturnUrl)
                     ?? this.Request.GetHeader(HttpHeaders.Referer)
                     ?? authProvider.CallbackUrl;
 
                 if (authFeature != null)
                 {
-                    if (!string.IsNullOrEmpty(request.Continue))
+                    if (!string.IsNullOrEmpty(returnUrl))
                         authFeature.ValidateRedirectLinks(Request, referrerUrl);
                 }
 

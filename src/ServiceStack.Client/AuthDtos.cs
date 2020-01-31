@@ -18,7 +18,8 @@ namespace ServiceStack
         [DataMember(Order = 5)] public string UserName { get; set; }
         [DataMember(Order = 6)] public string Password { get; set; }
         [DataMember(Order = 7)] public bool? RememberMe { get; set; }
-        [DataMember(Order = 8)] public string Continue { get; set; }
+        // For Web Requests only can use ?continue or ?returnUrl
+        // [DataMember(Order = 8)] public string Continue { get; set; }
         [DataMember(Order = 9)] public string ErrorView { get; set; }
 
         // digest auth
@@ -72,7 +73,8 @@ namespace ServiceStack
         [DataMember(Order = 6)] public string Password { get; set; }
         [DataMember(Order = 7)] public string ConfirmPassword { get; set; }
         [DataMember(Order = 8)] public bool? AutoLogin { get; set; }
-        [DataMember(Order = 9)] public string Continue { get; set; }
+        // For Web Requests only can use ?continue or ?returnUrl
+        // [DataMember(Order = 9)] public string Continue { get; set; }
         [DataMember(Order = 10)] public string ErrorView { get; set; }
         [DataMember(Order = 11)] public Dictionary<string, string> Meta { get; set; }
     }

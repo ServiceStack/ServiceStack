@@ -222,7 +222,7 @@ namespace ServiceStack.Auth
                     DisplayName = session.DisplayName
                         ?? session.UserName
                         ?? $"{session.FirstName} {session.LastName}".Trim(),
-                    ReferrerUrl = request.Continue,
+                    ReferrerUrl = authService.Request.GetReturnUrl(),
                 };
             }
         }

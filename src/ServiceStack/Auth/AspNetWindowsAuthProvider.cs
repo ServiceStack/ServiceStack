@@ -145,7 +145,7 @@ namespace ServiceStack.Auth
                     UserName = userName,
                     SessionId = session.Id,
                     DisplayName = session.DisplayName,
-                    ReferrerUrl = request.Continue
+                    ReferrerUrl = authService.Request.GetReturnUrl()
                 };
             }
 

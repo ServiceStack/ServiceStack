@@ -775,6 +775,10 @@ namespace ServiceStack
             return url;
         }
 
+        public static string GetReturnUrl(this IRequest req) =>
+            req.GetQueryStringOrForm(Keywords.Continue) ??
+            req.GetQueryStringOrForm(Keywords.ReturnUrl);
+
         public static string InferBaseUrl(this string absoluteUri, string fromPathInfo = null)
         {
             if (string.IsNullOrEmpty(fromPathInfo))

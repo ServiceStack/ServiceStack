@@ -43,7 +43,7 @@ namespace ServiceStack
                 if (redirect.StartsWith(req.GetBaseUrl()))
                     return;
                 
-                throw new ArgumentException(ErrorMessages.NoExternalRedirects, nameof(Authenticate.Continue));
+                throw new ArgumentException(ErrorMessages.NoExternalRedirects, Keywords.Continue);
             }
         }
 

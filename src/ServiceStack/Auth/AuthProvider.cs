@@ -88,7 +88,7 @@ namespace ServiceStack.Auth
             var feature = HostContext.GetPlugin<AuthFeature>();
 
             var session = service.GetSession();
-            var referrerUrl = request?.Continue
+            var referrerUrl = service.Request.GetReturnUrl()
                 ?? (feature.HtmlLogoutRedirect != null ? service.Request.ResolveAbsoluteUrl(feature.HtmlLogoutRedirect) : null)
                 ?? session.ReferrerUrl
                 ?? service.Request.GetHeader("Referer").NotLogoutUrl()
@@ -390,8 +390,7 @@ namespace ServiceStack.Auth
             var referrerUrl = session.ReferrerUrl;
             if (referrerUrl.IsNullOrEmpty())
             {
-                referrerUrl = request?.Continue
-                    ?? authService.Request.GetQueryStringOrForm(Keywords.ReturnUrl)
+                referrerUrl = authService.Request.GetReturnUrl()
                     ?? authService.Request.GetHeader("Referer");
             }
 
