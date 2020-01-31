@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Net;
 using System.Reflection;
+using System.Runtime.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -247,12 +248,19 @@ namespace CheckWebCore
     {
         public int Id { get; set; }
     }
+    
+    public enum EnumMemberTest
+    {
+        [EnumMember(Value="No ne")] None = 0,
+        [EnumMember(Value="Template")] Template = 1,
+    }
 
     public class Dummy
     {
         public Campaign Campaign { get; set; }
         public DataEvent DataEvent { get; set; }
         public ExtendsDictionary ExtendsDictionary { get; set; }
+        public EnumMemberTest EnumMemberTest { get; set; }
     }
    
     public class ExtendsDictionary : Dictionary<Guid, string> {
@@ -271,37 +279,36 @@ namespace CheckWebCore
         public ResponseStatus ResponseStatus { get; set; }
     }
 
-  [Route("/bookings/repeat",
-    Summary = "Create new bookings",
-    Notes =
-        "Create new bookings if you are authorized to do so.",
-    Verbs = "POST")]
-[ApiResponse(HttpStatusCode.Unauthorized, "You were unauthorized to call this service")]
-//[Restrict(VisibleLocalhostOnly = true)]
-public class CreateBookings : CreateBookingBase ,IReturn<CreateBookingsResponse>
-{
+    [Route("/bookings/repeat",
+        Summary = "Create new bookings",
+        Notes = "Create new bookings if you are authorized to do so.",
+        Verbs = "POST")]
+    [ApiResponse(HttpStatusCode.Unauthorized, "You were unauthorized to call this service")]
+    //[Restrict(VisibleLocalhostOnly = true)]
+    public class CreateBookings : CreateBookingBase ,IReturn<CreateBookingsResponse>
+    {
 
-    [ApiMember(
-    Description =
-    "Set the dates you want to book and it's quantities. It's an array of dates and quantities.",
-    IsRequired = true)]
-    public List<DatesToRepeat> DatesToRepeat { get; set; }
-}
+        [ApiMember(
+        Description =
+        "Set the dates you want to book and it's quantities. It's an array of dates and quantities.",
+        IsRequired = true)]
+        public List<DatesToRepeat> DatesToRepeat { get; set; }
+    }
 
-public class CreateBookingBase
-{
-    public int Id { get; set; }
-}
+    public class CreateBookingBase
+    {
+        public int Id { get; set; }
+    }
 
-public class CreateBookingsResponse
-{
-    public ResponseStatus ResponseStatus { get; set; }
-}
+    public class CreateBookingsResponse
+    {
+        public ResponseStatus ResponseStatus { get; set; }
+    }
 
-public class DatesToRepeat
-{
-    public int Ticks { get; set; }
-}
+    public class DatesToRepeat
+    {
+        public int Ticks { get; set; }
+    }
 
     //    [Authenticate]
     public class MyServices : Service
@@ -361,5 +368,28 @@ public class DatesToRepeat
             };
             return to;
         }
+
+        public object Any(ImpersonateUser request)
+        {
+            using (var service = base.ResolveService<AuthenticateService>()) //In Process
+            {
+                service.Post(new Authenticate { provider = "logout" });
+                
+                return service.Post(new Authenticate {
+                    provider = AuthenticateService.CredentialsProvider,
+                    UserName = request.UserName,
+                });
+            }
+        }
     }
+    
+    // [RequiredRole("Admin")]
+    [Restrict(InternalOnly=true)]
+    [Route("/impersonate/{UserName}")]
+    public class ImpersonateUser
+    {
+        public string UserName { get; set; }
+    }
+
 }
+
