@@ -13,6 +13,6 @@ namespace ServiceStack.Web
 
     public interface IStreamWriterAsync
     {
-        Task WriteToAsync(Stream responseStream, CancellationToken token = default(CancellationToken));
+        Task WriteToAsync(Stream responseStream, CancellationToken token = default);
     }
 }
