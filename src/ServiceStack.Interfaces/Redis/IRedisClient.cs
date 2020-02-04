@@ -81,7 +81,9 @@ namespace ServiceStack.Redis
         void SetValue(string key, string value);
         void SetValue(string key, string value, TimeSpan expireIn);
         bool SetValueIfNotExists(string key, string value);
+        bool SetValueIfNotExists(string key, string value, TimeSpan expireIn);
         bool SetValueIfExists(string key, string value);
+        bool SetValueIfExists(string key, string value, TimeSpan expireIn);
 
         string GetValue(string key);
         string GetAndSetValue(string key, string value);
