@@ -251,8 +251,9 @@ namespace CheckWebCore
     
     public enum EnumMemberTest
     {
-        [EnumMember(Value="No ne")] None = 0,
-        [EnumMember(Value="Template")] Template = 1,
+        [EnumMember(Value = "No ne")] None = 0,
+        [EnumMember(Value = "Template")] Template = 1,
+        [EnumMember(Value = "Rule")] Rule = 3,
     }
 
     public class Dummy

@@ -1306,5 +1306,12 @@ namespace ServiceStack.NativeTypes
         }
 
         public static bool IsServiceStackType(this Type type) => type.Namespace?.StartsWith("ServiceStack") == true;
+
+        public static string GetEnumMemberValue(this MetadataType type, int i)
+        {
+            return type.EnumMemberValues != null && i < type.EnumMemberValues.Count
+                ? type.EnumMemberValues[i]
+                : null;
+        }
     }
 }

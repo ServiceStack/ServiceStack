@@ -311,7 +311,8 @@ namespace ServiceStack.NativeTypes.VbNet
                         if (KeyWords.Contains(name))
                             name = $"[{name}]";
                         
-                        if (type.EnumMemberValues != null && type.EnumMemberValues[i] != name)
+                        var memberValue = type.GetEnumMemberValue(i);
+                        if (memberValue != null)
                         {
                             AppendAttributes(sb, new List<MetadataAttribute> {
                                 new MetadataAttribute {
@@ -319,7 +320,7 @@ namespace ServiceStack.NativeTypes.VbNet
                                     Args = new List<MetadataPropertyType> {
                                         new MetadataPropertyType {
                                             Name = "Value",
-                                            Value = type.EnumMemberValues[i],
+                                            Value = memberValue,
                                             Type = "String",
                                         }
                                     }
