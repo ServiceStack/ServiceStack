@@ -524,6 +524,7 @@ namespace ServiceStack
         public IRequest Request => this.response.Request;
 
         public long LastMessageId => Interlocked.Read(ref msgId);
+        public string[] MergedChannels { set; get; }
 
         public EventSubscription(IResponse response)
         {
@@ -537,7 +538,12 @@ namespace ServiceStack
 
         public void UpdateChannels(string[] channels)
         {
+            // combine old and new channels
+            var mergedChannels = new HashSet<string>(this.Channels);
+            channels.Each(x => mergedChannels.Add(x));
+            
             this.Channels = channels;
+            this.MergedChannels = mergedChannels.ToArray();
             this.Meta["channels"] = string.Join(",", channels);
             jsonArgs = null; //refresh
         }
@@ -903,6 +909,7 @@ namespace ServiceStack
         long LastMessageId { get; }
 
         string[] Channels { get; }
+        string[] MergedChannels { get; } //both current and previous channels
         string UserId { get; }
         string UserName { get; }
         string DisplayName { get; }
@@ -984,7 +991,7 @@ namespace ServiceStack
 
             NotifyJoinAsync = s => NotifyChannelsAsync(s.Channels, "cmd.onJoin", s.JsonArgs);
             NotifyLeaveAsync = s => NotifyChannelsAsync(s.Channels, "cmd.onLeave", s.JsonArgs);
-            NotifyUpdateAsync = s => NotifyChannelsAsync(s.Channels, "cmd.onUpdate", s.JsonArgs);
+            NotifyUpdateAsync = s => NotifyChannelsAsync(s.MergedChannels, "cmd.onUpdate", s.JsonArgs);
             NotifyHeartbeatAsync = s => NotifyRawAsync(Subscriptions, s.SubscriptionId, "cmd.onHeartbeat", s.JsonArgs);
             Serialize = JsonSerializer.SerializeToString;
 
