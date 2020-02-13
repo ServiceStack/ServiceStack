@@ -52,9 +52,13 @@ namespace ServiceStack
         /// </summary>
         public Func<IEventSubscription, IResponse, string, Task> OnPublishAsync { get; set; }
         /// <summary>
+        /// Fired when a subscription is updated
+        /// </summary>
+        public Func<IEventSubscription, Task> OnUpdateAsync { get; set; }
+        /// <summary>
         /// Replace the default ServiceStack.Text JSON Serializer with an alternative JSON Serializer
         /// </summary>
-        public Func<object, string> Serialize { get; set; }
+       public Func<object, string> Serialize { get; set; }
         public Action<IResponse, string> WriteEvent { get; private set; }
         public Func<IResponse, string, Task> WriteEventAsync { get; private set; }
         /// <summary>
@@ -143,6 +147,7 @@ namespace ServiceStack
                     HouseKeepingInterval = HouseKeepingInterval,
                     OnSubscribeAsync = OnSubscribeAsync,
                     OnUnsubscribeAsync = OnUnsubscribeAsync,
+                    OnUpdateAsync = OnUpdateAsync,
                     NotifyChannelOfSubscriptions = NotifyChannelOfSubscriptions,
                     Serialize = Serialize,
                     OnError = OnError,
@@ -967,6 +972,7 @@ namespace ServiceStack
 
         public Func<IEventSubscription, Task> OnSubscribeAsync { get; set; }
         public Func<IEventSubscription,Task> OnUnsubscribeAsync { get; set; }
+        public Func<IEventSubscription,Task> OnUpdateAsync { get; set; }
 
         public Func<IEventSubscription, Task> NotifyJoinAsync { get; set; }
         public Func<IEventSubscription, Task> NotifyLeaveAsync { get; set; }
@@ -1003,6 +1009,7 @@ namespace ServiceStack
                 HouseKeepingInterval = feature.HouseKeepingInterval;
                 OnSubscribeAsync = feature.OnSubscribeAsync;
                 OnUnsubscribeAsync = feature.OnUnsubscribeAsync;
+                OnUpdateAsync = feature.OnUpdateAsync;
                 NotifyChannelOfSubscriptions = feature.NotifyChannelOfSubscriptions;
             }
         }
@@ -1177,6 +1184,9 @@ namespace ServiceStack
             {
                 if (pendingSubscriptionUpdates.TryTake(out var sub))
                 {
+                    if (OnUpdateAsync != null)
+                        await OnUpdateAsync(sub);
+                    
                     if (NotifyUpdateAsync != null)
                         await NotifyUpdateAsync(sub);
                 }
@@ -1184,15 +1194,15 @@ namespace ServiceStack
             
             while (!pendingUnSubscriptions.IsEmpty)
             {
-                if (pendingUnSubscriptions.TryTake(out var subscription))
+                if (pendingUnSubscriptions.TryTake(out var sub))
                 {
                     if (OnUnsubscribeAsync != null)
-                        await OnUnsubscribeAsync(subscription);
+                        await OnUnsubscribeAsync(sub);
 
-                    await subscription.DisposeAsync();
+                    await sub.DisposeAsync();
 
-                    if (NotifyChannelOfSubscriptions && subscription.Channels != null && NotifyLeaveAsync != null)
-                        await NotifyLeaveAsync(subscription);
+                    if (NotifyChannelOfSubscriptions && sub.Channels != null && NotifyLeaveAsync != null)
+                        await NotifyLeaveAsync(sub);
                 }
             }
             

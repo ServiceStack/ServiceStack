@@ -40,6 +40,12 @@ namespace ServiceStack
             set => local.OnUnsubscribeAsync = value;
         }
 
+        public Func<IEventSubscription, Task> OnUpdateAsync
+        {
+            get => local.OnUpdateAsync;
+            set => local.OnUpdateAsync = value;
+        }
+
         public bool NotifyChannelOfSubscriptions
         {
             get => local.NotifyChannelOfSubscriptions;
