@@ -372,7 +372,7 @@ namespace ServiceStack.NativeTypes.VbNet
 
                 sb = sb.Indent();
 
-                AddConstuctor(sb, type, options);
+                AddConstructor(sb, type, options);
                 AddProperties(sb, type,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
                         && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
@@ -399,7 +399,7 @@ namespace ServiceStack.NativeTypes.VbNet
             return lastNS;
         }
 
-        private void AddConstuctor(StringBuilderWrapper sb, MetadataType type, CreateTypeOptions options)
+        private void AddConstructor(StringBuilderWrapper sb, MetadataType type, CreateTypeOptions options)
         {
             if (type.IsInterface())
                 return;

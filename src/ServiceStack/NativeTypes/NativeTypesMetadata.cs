@@ -403,6 +403,7 @@ namespace ServiceStack.NativeTypes
                 metaType.EnumNames = new List<string>();
                 metaType.EnumValues = new List<string>();
                 metaType.EnumMemberValues = new List<string>();
+                var enumDescriptions = new List<string>();
 
                 var isDefaultLayout = true;
                 var isIntEnum = JsConfig.TreatEnumAsInteger || type.IsEnumFlags();
@@ -414,6 +415,8 @@ namespace ServiceStack.NativeTypes
                     metaType.EnumMemberValues.Add(name);
 
                     var enumMember = GetEnumMember(type, name);
+                    var enumDesc = enumMember.GetDescription();
+                    enumDescriptions.Add(enumDesc);
 
                     var value = enumMember.GetRawConstantValue();
                     var enumValue = Convert.ToInt64(value).ToString();
@@ -426,6 +429,9 @@ namespace ServiceStack.NativeTypes
                     if (enumValue != i.ToString())
                         isDefaultLayout = false;
                 }
+
+                if (enumDescriptions.Any(x => !string.IsNullOrEmpty(x)))
+                    metaType.EnumDescriptions = enumDescriptions;
 
                 if (!isIntEnum && isDefaultLayout)
                     metaType.EnumValues = null;

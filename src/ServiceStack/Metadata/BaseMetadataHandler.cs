@@ -179,6 +179,7 @@ namespace ServiceStack.Metadata
                     sb.Append("<thead><tr>");
                     sb.Append("<th>Name</th>");
                     sb.Append("<th>Value</th>");
+                    sb.Append("<th></th>");
                     sb.Append("</tr></thead>");
                 }
                 
@@ -195,13 +196,15 @@ namespace ServiceStack.Metadata
                           .Append(!metadataType.EnumMemberValues.IsEmpty() 
                                 ? metadataType.EnumMemberValues[i]
                                 : metadataType.EnumValues[i])
-                          .Append("</td>");
+                          .Append("</td>")
+                          .Append($"<td>{metadataType.EnumDescriptions?[i]}</td>");
                     }
                     else
                     {
                         sb.Append("<td>")
                           .Append(metadataType.EnumNames[i])
-                          .Append("</td>");
+                          .Append("</td>")
+                          .Append($"<td>{metadataType.EnumDescriptions?[i]}</td>");
                     }
                     sb.Append("</tr>");
                 }
@@ -235,10 +238,13 @@ namespace ServiceStack.Metadata
                 var desc = p.Description;
                 if (!p.AllowableValues.IsEmpty())
                 {
-                    desc += "<h4>Allowable Values</h4>";
-                    desc += "<ul>";
-                    p.AllowableValues.Each(x => desc += $"<li>{x}</li>");
-                    desc += "</ul>";
+                    if (p.IsEnum != true)
+                    {
+                        desc += "<h4>Allowable Values</h4>";
+                        desc += "<ul>";
+                        p.AllowableValues.Each(x => desc += $"<li>{x}</li>");
+                        desc += "</ul>";
+                    }
                 }
                 if (p.AllowableMin != null)
                 {
