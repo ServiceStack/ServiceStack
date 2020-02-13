@@ -152,6 +152,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.GrpcClient", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckGrpc", "..\tests\CheckGrpc\CheckGrpc.csproj", "{BB5EE2B1-6663-4145-B1EC-92AED6FAD748}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckCoreApi", "..\tests\CheckCoreApi\CheckCoreApi.csproj", "{E0AF102A-4503-4768-A15F-AE3CFE05DD50}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -712,6 +714,18 @@ Global
 		{BB5EE2B1-6663-4145-B1EC-92AED6FAD748}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{BB5EE2B1-6663-4145-B1EC-92AED6FAD748}.Release|x86.ActiveCfg = Release|Any CPU
 		{BB5EE2B1-6663-4145-B1EC-92AED6FAD748}.Release|x86.Build.0 = Release|Any CPU
+		{E0AF102A-4503-4768-A15F-AE3CFE05DD50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0AF102A-4503-4768-A15F-AE3CFE05DD50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0AF102A-4503-4768-A15F-AE3CFE05DD50}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E0AF102A-4503-4768-A15F-AE3CFE05DD50}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E0AF102A-4503-4768-A15F-AE3CFE05DD50}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E0AF102A-4503-4768-A15F-AE3CFE05DD50}.Debug|x86.Build.0 = Debug|Any CPU
+		{E0AF102A-4503-4768-A15F-AE3CFE05DD50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0AF102A-4503-4768-A15F-AE3CFE05DD50}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0AF102A-4503-4768-A15F-AE3CFE05DD50}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E0AF102A-4503-4768-A15F-AE3CFE05DD50}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E0AF102A-4503-4768-A15F-AE3CFE05DD50}.Release|x86.ActiveCfg = Release|Any CPU
+		{E0AF102A-4503-4768-A15F-AE3CFE05DD50}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -752,6 +766,7 @@ Global
 		{CBC8FEA0-548D-4255-894D-8D8B79D572EA} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{E14395FD-F351-4E27-8AAD-294DF2B49AB1} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{BB5EE2B1-6663-4145-B1EC-92AED6FAD748} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
+		{E0AF102A-4503-4768-A15F-AE3CFE05DD50} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {55441DE1-559F-4064-BB8F-907A9E898A6C}
