@@ -48,31 +48,31 @@ namespace ServiceStack
         protected virtual IResponse Response => Request?.Response;
 
         private ICacheClient cache;
-        public virtual ICacheClient Cache => cache ?? (cache = HostContext.AppHost.GetCacheClient(Request));
+        public virtual ICacheClient Cache => cache ??= HostContext.AppHost.GetCacheClient(Request);
 
         private MemoryCacheClient localCache;
         /// <summary>
         /// Returns <see cref="MemoryCacheClient"></see>. cache is only persisted for this running app instance.
         /// </summary>
-        public virtual MemoryCacheClient LocalCache => localCache ?? (localCache = HostContext.AppHost.GetMemoryCacheClient(Request));
+        public virtual MemoryCacheClient LocalCache => localCache ??= HostContext.AppHost.GetMemoryCacheClient(Request);
 
         private IDbConnection db;
-        public virtual IDbConnection Db => db ?? (db = HostContext.AppHost.GetDbConnection(Request));
+        public virtual IDbConnection Db => db ??= HostContext.AppHost.GetDbConnection(Request);
 
         private IRedisClient redis;
-        public virtual IRedisClient Redis => redis ?? (redis = HostContext.AppHost.GetRedisClient(Request));
+        public virtual IRedisClient Redis => redis ??= HostContext.AppHost.GetRedisClient(Request);
 
         private IMessageProducer messageProducer;
-        public virtual IMessageProducer MessageProducer => messageProducer ?? (messageProducer = HostContext.AppHost.GetMessageProducer(Request));
+        public virtual IMessageProducer MessageProducer => messageProducer ??= HostContext.AppHost.GetMessageProducer(Request);
 
         private ISessionFactory sessionFactory;
         public virtual ISessionFactory SessionFactory => sessionFactory ?? (sessionFactory = TryResolve<ISessionFactory>()) ?? new SessionFactory(Cache);
 
         private IAuthRepository authRepository;
-        public virtual IAuthRepository AuthRepository => authRepository ?? (authRepository = HostContext.AppHost.GetAuthRepository(Request));
+        public virtual IAuthRepository AuthRepository => authRepository ??= HostContext.AppHost.GetAuthRepository(Request);
 
         private IServiceGateway gateway;
-        public virtual IServiceGateway Gateway => gateway ?? (gateway = HostContext.AppHost.GetServiceGateway(Request));
+        public virtual IServiceGateway Gateway => gateway ??= HostContext.AppHost.GetServiceGateway(Request);
 
         /// <summary>
         /// Cascading collection of virtual file sources, inc. Embedded Resources, File System, In Memory, S3
@@ -88,8 +88,8 @@ namespace ServiceStack
         /// Dynamic Session Bag
         /// </summary>
         private ISession session;
-        public virtual ISession SessionBag => session ?? (session = TryResolve<ISession>() //Easier to mock
-            ?? SessionFactory.GetOrCreateSession(Request, Response));
+        public virtual ISession SessionBag => session ??= TryResolve<ISession>() //Easier to mock
+            ?? SessionFactory.GetOrCreateSession(Request, Response);
 
         public virtual IAuthSession GetSession(bool reload = false)
         {

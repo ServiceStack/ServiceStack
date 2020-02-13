@@ -40,7 +40,7 @@ namespace ServiceStack
         public virtual IDbConnectionFactory DbFactory { get; set; }
 
         IDbConnection db;
-        public virtual IDbConnection Db => db ?? (db = DbFactory.OpenDbConnection());
+        public virtual IDbConnection Db => db ??= DbFactory.OpenDbConnection();
 
         public virtual void Dispose() => db?.Dispose();
     }
@@ -50,12 +50,12 @@ namespace ServiceStack
         public virtual IRedisClientsManager RedisManager { get; set; }
 
         private IRedisClient redis;
-        public virtual IRedisClient Redis => redis ?? (redis = RedisManager.GetClient());
+        public virtual IRedisClient Redis => redis ??= RedisManager.GetClient();
 
         private ICacheClient cache;
         public virtual ICacheClient Cache
         {
-            get => cache ?? (cache = RedisManager != null ? RedisManager.GetCacheClient() : ServiceStackHost.DefaultCache);
+            get => cache ??= RedisManager != null ? RedisManager.GetCacheClient() : ServiceStackHost.DefaultCache;
             set => cache = value;
         }
 
@@ -64,7 +64,7 @@ namespace ServiceStack
         private IMessageProducer messageProducer;
         public virtual IMessageProducer MessageProducer
         {
-            get => messageProducer ?? (messageProducer = MessageFactory.CreateMessageProducer());
+            get => messageProducer ??= MessageFactory.CreateMessageProducer();
             set => messageProducer = value;
         }
 
