@@ -303,6 +303,7 @@ namespace ServiceStack
         public string WebHostUrl { get; set; }
         public string WebHostPhysicalPath { get; set; }
         public string HandlerFactoryPath { get; set; }
+        public string PathBase { get; internal set; } // auto populated from HandlerFactoryPath
         public string DefaultRedirectPath { get; set; }
         public string MetadataRedirectPath { get; set; }
 

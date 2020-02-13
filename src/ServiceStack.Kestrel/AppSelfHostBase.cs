@@ -31,6 +31,26 @@ namespace ServiceStack
             Platforms.PlatformNetCore.HostInstance = this;
         }
 
+        private string pathBase;
+        public string PathBase
+        {
+            get => pathBase;
+            set
+            {
+                if (!string.IsNullOrEmpty(value))
+                {
+                    if (value[0] != '/')
+                        throw new Exception("PathBase must start with '/'");
+                    
+                    pathBase = value.TrimEnd('/');
+                }
+                else
+                {
+                    pathBase = null;
+                }
+            }
+        }
+
         IApplicationBuilder app;
         public IApplicationBuilder App => app;
         public IServiceProvider ApplicationServices => app?.ApplicationServices;
@@ -43,9 +63,9 @@ namespace ServiceStack
         {
             this.app = app;
 
-            if (pathBase != null)
+            if (!string.IsNullOrEmpty(PathBase))
             {
-                this.app.UsePathBase(pathBase);
+                this.app.UsePathBase(PathBase);
             }
 
             AppHostBase.BindHost(this, app);
@@ -57,15 +77,16 @@ namespace ServiceStack
             base.OnConfigLoad();
             if (app != null)
             {
+                Config.DebugMode = HostingEnvironment.IsDevelopment();
+                Config.HandlerFactoryPath = PathBase?.TrimStart('/');
+
                 //Initialize VFS
-                var env = app.ApplicationServices.GetService<IHostingEnvironment>();
-                Config.WebHostPhysicalPath = env.WebRootPath ?? env.ContentRootPath;
-                Config.DebugMode = env.IsDevelopment();
+                Config.WebHostPhysicalPath = HostingEnvironment.ContentRootPath;
 
                 if (VirtualFiles == null)
                 {
                     //Set VirtualFiles to point to ContentRootPath (Project Folder)
-                    VirtualFiles = new FileSystemVirtualFiles(env.ContentRootPath);
+                    VirtualFiles = new FileSystemVirtualFiles(HostingEnvironment.ContentRootPath);
                 }
                 AppHostBase.RegisterLicenseFromAppSettings(AppSettings);
                 Config.MetadataRedirectPath = "metadata";
@@ -176,7 +197,6 @@ namespace ServiceStack
             base.Init();
         }
 
-        private string pathBase;
         private string ParsePathBase(string urlBase)
         {
             var pos = urlBase.IndexOf('/', "https://".Length);
@@ -185,7 +205,7 @@ namespace ServiceStack
                 var afterHost = urlBase.Substring(pos);
                 if (afterHost.Length > 1)
                 {
-                    pathBase = afterHost;
+                    PathBase = afterHost;
                     return urlBase.Substring(0, pos + 1);
                 }
             }

@@ -3,14 +3,11 @@
 
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Funq;
@@ -32,8 +29,6 @@ using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 using ServiceStack.Redis;
-using ServiceStack.Script;
-using static System.String;
 
 namespace ServiceStack
 {
@@ -788,8 +783,16 @@ namespace ServiceStack
             if ((Feature.MsgPack & config.EnableFeatures) != Feature.MsgPack)
                 Plugins.RemoveAll(x => x is IMsgPackPlugin);  //external
 
-            if (config.HandlerFactoryPath != null)
-                config.HandlerFactoryPath = config.HandlerFactoryPath.TrimStart('/');
+            if (!string.IsNullOrEmpty(config.HandlerFactoryPath))
+            {
+                var handlerPath = config.HandlerFactoryPath.TrimStart('/');
+                config.HandlerFactoryPath = handlerPath; 
+                config.PathBase = handlerPath[0] != '/' ? '/' + handlerPath : null;
+            }
+            else
+            {
+                config.HandlerFactoryPath = null;
+            }
 
             if (config.UseCamelCase && JsConfig.TextCase == TextCase.Default)
                 ServiceStack.Text.Config.UnsafeInit(new Text.Config { TextCase = TextCase.CamelCase });
@@ -904,9 +907,9 @@ namespace ServiceStack
 
         private void AfterPluginsLoaded(string specifiedContentType)
         {
-            if (!IsNullOrEmpty(specifiedContentType))
+            if (!string.IsNullOrEmpty(specifiedContentType))
                 config.DefaultContentType = specifiedContentType;
-            else if (IsNullOrEmpty(config.DefaultContentType))
+            else if (string.IsNullOrEmpty(config.DefaultContentType))
                 config.DefaultContentType = MimeTypes.Json;
 
             Config.PreferredContentTypes.Remove(Config.DefaultContentType);

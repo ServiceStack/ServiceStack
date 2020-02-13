@@ -29,6 +29,7 @@ namespace ServiceStack.Script
         public const string Map = "map";
         public const string Request = "Request";
         public const string PathInfo = "PathInfo";
+        public const string PathBase = "PathBase";
         public const string PathArgs = "PathArgs";
         public const string AssetsBase = "assetsBase";
         public const string Format = "format";

@@ -1151,6 +1151,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                 : new Dictionary<string, object>();
             
             to[nameof(IRequest.RawUrl)] = request.RawUrl;
+            to[ScriptConstants.PathBase] = HostContext.Config.PathBase;
             to[ScriptConstants.PathInfo] = request.OriginalPathInfo;
             to[nameof(IRequest.AbsoluteUri)] = request.AbsoluteUri;
             to[nameof(IRequest.Verb)] = to["Method"] = request.Verb;
@@ -1216,6 +1217,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
         {
             args["Request"] = request;
             args[nameof(request.RawUrl)] = request.RawUrl;
+            args[ScriptConstants.PathBase] = HostContext.Config.PathBase;
             args[ScriptConstants.PathInfo] = request.OriginalPathInfo;
             args[nameof(request.AbsoluteUri)] = request.AbsoluteUri;
             args[nameof(request.Verb)] = args["Method"] = request.Verb;

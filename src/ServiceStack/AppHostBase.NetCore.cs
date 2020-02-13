@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using ServiceStack.Web;
@@ -29,6 +30,32 @@ namespace ServiceStack
             : base(serviceName, assembliesWithServices) 
         {
             Platforms.PlatformNetCore.HostInstance = this;
+            
+            //IIS Mapping / sometimes UPPER CASE https://serverfault.com/q/292335
+            var iisPathBase = Environment.GetEnvironmentVariable("ASPNETCORE_APPL_PATH");
+            if (!string.IsNullOrEmpty(iisPathBase) && !iisPathBase.Any(char.IsLower))
+                iisPathBase = iisPathBase.ToLower();
+            PathBase = iisPathBase;
+        }
+
+        private string pathBase;
+        public string PathBase
+        {
+            get => pathBase;
+            set
+            {
+                if (!string.IsNullOrEmpty(value))
+                {
+                    if (value[0] != '/')
+                        throw new Exception("PathBase must start with '/'");
+                    
+                    pathBase = value.TrimEnd('/');
+                }
+                else
+                {
+                    pathBase = null;
+                }
+            }
         }
 
         IApplicationBuilder app;
@@ -41,6 +68,12 @@ namespace ServiceStack
         public virtual void Bind(IApplicationBuilder app)
         {
             this.app = app;
+
+            if (!string.IsNullOrEmpty(PathBase))
+            {
+                this.app.UsePathBase(PathBase);
+            }
+
             BindHost(this, app);
             app.Use(ProcessRequest);
         }
@@ -85,10 +118,11 @@ namespace ServiceStack
             base.OnConfigLoad();
             if (app != null)
             {
+                Config.DebugMode = HostingEnvironment.IsDevelopment();
+                Config.HandlerFactoryPath = PathBase?.TrimStart('/');
+
                 //Initialize VFS
                 Config.WebHostPhysicalPath = HostingEnvironment.ContentRootPath;
-                Config.DebugMode = HostingEnvironment.IsDevelopment();
-                Config.HandlerFactoryPath = Environment.GetEnvironmentVariable($"ASPNETCORE_APPL_PATH"); //IIS Mapping / sometimes UPPER CASE https://serverfault.com/q/292335
 
                 if (VirtualFiles == null)
                 {

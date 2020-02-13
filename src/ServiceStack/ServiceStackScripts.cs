@@ -561,6 +561,7 @@ namespace ServiceStack
                     Sources = ViewUtils.ToStringList((IEnumerable) virtualPaths),
                     OutputTo = args.TryGetValue("out", out var oOut) ? oOut as string : null,
                     OutputWebPath = args.TryGetValue("outWebPath", out var oOutWebPath) ? oOutWebPath as string : null,
+                    PathBase = args.TryGetValue("pathBase", out var oPathBase) ? oPathBase as string : HostContext.Config.PathBase,
                     Minify = !args.TryGetValue("minify", out var oMinify) || oMinify is bool bMinify && bMinify,
                     SaveToDisk = args.TryGetValue("disk", out var oDisk) && oDisk is bool bDisk && bDisk,
                     Cache = !args.TryGetValue("cache", out var oCache) || oCache is bool bCache && bCache,
@@ -582,6 +583,7 @@ namespace ServiceStack
                     Sources = ViewUtils.ToStringList((IEnumerable) virtualPaths),
                     OutputTo = args.TryGetValue("out", out var oOut) ? oOut as string : null,
                     OutputWebPath = args.TryGetValue("outWebPath", out var oOutWebPath) ? oOutWebPath as string : null,
+                    PathBase = args.TryGetValue("pathBase", out var oPathBase) ? oPathBase as string : HostContext.Config.PathBase,
                     Minify = !args.TryGetValue("minify", out var oMinify) || oMinify is bool bMinify && bMinify,
                     SaveToDisk = args.TryGetValue("disk", out var oDisk) && oDisk is bool bDisk && bDisk,
                     Cache = !args.TryGetValue("cache", out var oCache) || oCache is bool bCache && bCache,
@@ -601,6 +603,7 @@ namespace ServiceStack
                     Sources = ViewUtils.ToStringList((IEnumerable) virtualPaths),
                     OutputTo = args.TryGetValue("out", out var oOut) ? oOut as string : null,
                     OutputWebPath = args.TryGetValue("outWebPath", out var oOutWebPath) ? oOutWebPath as string : null,
+                    PathBase = args.TryGetValue("pathBase", out var oPathBase) ? oPathBase as string : HostContext.Config.PathBase,
                     Minify = !args.TryGetValue("minify", out var oMinify) || oMinify is bool bMinify && bMinify,
                     SaveToDisk = args.TryGetValue("disk", out var oDisk) && oDisk is bool bDisk && bDisk,
                     Cache = !args.TryGetValue("cache", out var oCache) || oCache is bool bCache && bCache,
@@ -840,6 +843,9 @@ namespace ServiceStack
                 options.ActivePath = request.PathInfo;
             if (options.Attributes == null)
                 options.Attributes = request.GetUserAttributes();
+            var pathBase = HostContext.Config.PathBase;
+            if (!string.IsNullOrEmpty(pathBase))
+                options.BaseHref = pathBase;
                 
             return options;
         }

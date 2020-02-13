@@ -100,6 +100,12 @@ namespace ServiceStack
                 navOptions.ActivePath = scope.GetValue("PathInfo")?.ToString();
             if (navOptions.Attributes == null)
                 navOptions.Attributes = Context.GetServiceStackFilters().req(scope).GetUserAttributes();
+            if (navOptions.BaseHref == null)
+            {
+                var pathBase = HostContext.Config.PathBase;
+                if (!string.IsNullOrEmpty(pathBase))
+                    navOptions.BaseHref = pathBase;
+            }
 
             return navOptions;
         }

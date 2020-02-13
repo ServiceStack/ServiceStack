@@ -117,6 +117,7 @@ namespace CheckWebCore
 
             app.UseServiceStack(new AppHost
             {
+                PathBase = "/api",
                 AppSettings = new NetCoreAppSettings(Configuration)
             });
         }

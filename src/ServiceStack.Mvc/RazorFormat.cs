@@ -1068,6 +1068,7 @@ namespace ServiceStack.Mvc
             return new HtmlString(RazorViewExtensions.GetErrorHtml(GetErrorStatus()) ?? "");
         }
 
+        public string PathBase => AppHost.Config.PathBase;
         public IVirtualFiles VirtualFiles => HostContext.VirtualFiles;
         public IVirtualPathProvider VirtualFileSources => HostContext.VirtualFileSources;
 

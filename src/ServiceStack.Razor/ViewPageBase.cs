@@ -395,6 +395,7 @@ namespace ServiceStack.Razor
 
         public object ModelError { get; set; }
 
+        public string PathBase => AppHost.Config.PathBase;
         public IVirtualFiles VirtualFiles => HostContext.VirtualFiles;
         public IVirtualPathProvider VirtualFileSources => HostContext.VirtualFileSources;
 
