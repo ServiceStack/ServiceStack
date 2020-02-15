@@ -448,6 +448,11 @@ namespace ServiceStack.Caching
             });
         }
 
+        public void RemoveExpiredEntries()
+        {
+            Exec(db => db.Delete<TCacheEntry>(q => DateTime.UtcNow > q.ExpiryDate));
+        }
+
         public void RemoveByRegex(string regex)
         {
             throw new NotImplementedException();

@@ -7,7 +7,7 @@ namespace ServiceStack.Caching
     /// <summary>
     /// Decorates the ICacheClient (and its siblings) prefixing every key with the given prefix
     /// 
-    /// Usefull for multi-tenant environments
+    /// Useful for multi-tenant environments
     /// </summary>
     public class CacheClientWithPrefix : ICacheClient, ICacheClientExtended, IRemoveByPattern
     {
@@ -124,6 +124,11 @@ namespace ServiceStack.Caching
         public IEnumerable<string> GetKeysByPattern(string pattern)
         {
             return (cache as ICacheClientExtended)?.GetKeysByPattern(prefix + pattern);
+        }
+
+        public void RemoveExpiredEntries()
+        {
+            (cache as ICacheClientExtended)?.RemoveExpiredEntries();
         }
 
         public TimeSpan? GetTimeToLive(string key)

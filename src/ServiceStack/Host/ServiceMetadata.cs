@@ -492,9 +492,9 @@ namespace ServiceStack.Host
             var generator = new CSharpGenerator(typesConfig);
             types.Each(x =>
             {
-                x.DisplayType = x.DisplayType ?? generator.Type(x.Name, x.GenericArgs);
+                x.DisplayType ??= generator.Type(x.Name, x.GenericArgs);
                 x.Properties.Each(p =>
-                    p.DisplayType = p.DisplayType ?? generator.Type(p.Type, p.GenericArgs));
+                    p.DisplayType ??= generator.Type(p.Type, p.GenericArgs));
             });
 
             return types;
