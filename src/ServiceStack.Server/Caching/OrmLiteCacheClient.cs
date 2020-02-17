@@ -475,6 +475,7 @@ namespace ServiceStack.Caching
         public string Id { get; set; }
         [StringLength(StringLengthAttribute.MaxText)]
         public string Data { get; set; }
+        [Index]
         public DateTime? ExpiryDate { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime ModifiedDate { get; set; }
@@ -490,6 +491,7 @@ namespace ServiceStack.Caching
         [StringLength(StringLengthAttribute.MaxText)]
         public string Data { get; set; }
         public DateTime CreatedDate { get; set; }
+        [Index]
         public DateTime? ExpiryDate { get; set; }
         public DateTime ModifiedDate { get; set; }
     }
