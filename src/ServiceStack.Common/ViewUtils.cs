@@ -446,6 +446,9 @@ namespace ServiceStack
             return StringBuilderCache.ReturnAndFree(sb);
         }
         
+        /// <summary>
+        ///  Display a list of NavItem's
+        /// </summary>
         public static string Nav(List<NavItem> navItems, NavOptions options)
         {
             if (navItems.IsEmpty())
@@ -465,6 +468,9 @@ namespace ServiceStack
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Display a `nav-link` nav-item
+        /// </summary>
         public static string NavLink(NavItem navItem, NavOptions options)
         {
             var sb = StringBuilderCache.Allocate();
@@ -479,6 +485,9 @@ namespace ServiceStack
                     ? " active"
                     : "";
         
+        /// <summary>
+        /// Display a `nav-link` nav-item
+        /// </summary>
         public static void NavLink(StringBuilder sb, NavItem navItem, NavOptions options)
         {
             if (!navItem.ShowNav(options.Attributes))
@@ -641,6 +650,9 @@ namespace ServiceStack
             return text;
         }
         
+        /// <summary>
+        /// Emit HTML hidden input field for each specified Key/Value pair entry
+        /// </summary>
         public static string HtmlHiddenInputs(IEnumerable<KeyValuePair<string,object>> inputValues)
         {
             if (inputValues != null)
@@ -743,6 +755,10 @@ namespace ServiceStack
             return strings;
         }
 
+        /// <summary>
+        /// Show validation summary error message unless there's an error in exceptFor list of fields
+        /// as validation errors will be displayed along side the field instead
+        /// </summary>
         public static string ValidationSummary(ResponseStatus errorStatus, string exceptFor) =>
             ValidationSummary(errorStatus, ToVarNames(exceptFor), null); 
         public static string ValidationSummary(ResponseStatus errorStatus, ICollection<string> exceptFields, Dictionary<string,object> divAttrs)
@@ -766,6 +782,9 @@ namespace ServiceStack
         public static string ValidationSummaryCssClassNames = "alert alert-danger";
         public static string ValidationSuccessCssClassNames = "alert alert-success";
 
+        /// <summary>
+        /// Display a "Success Alert Box"
+        /// </summary>
         public static string ValidationSuccess(string message, Dictionary<string,object> divAttrs)
         {
             if (divAttrs == null)
@@ -777,6 +796,9 @@ namespace ServiceStack
             return HtmlScripts.htmlDiv(message, divAttrs).ToRawString();
         }
         
+        /// <summary>
+        /// Return an error message unless there's an error in fieldNames
+        /// </summary>
         public static string ErrorResponseExcept(ResponseStatus errorStatus, string fieldNames) =>
             ErrorResponseExcept(errorStatus, ToVarNames(fieldNames));
         public static string ErrorResponseExcept(ResponseStatus errorStatus, ICollection<string> fieldNames)
@@ -805,6 +827,9 @@ namespace ServiceStack
             return errorStatus.Message ?? errorStatus.ErrorCode;
         }
         
+        /// <summary>
+        /// Return an error message unless there are field errors
+        /// </summary>
         public static string ErrorResponseSummary(ResponseStatus errorStatus)
         {
             if (errorStatus == null)
@@ -815,6 +840,9 @@ namespace ServiceStack
                 : null;
         }
         
+        /// <summary>
+        /// Return an error for the specified field (if any)  
+        /// </summary>
         public static string ErrorResponse(ResponseStatus errorStatus, string fieldName)
         {
             if (fieldName == null)
