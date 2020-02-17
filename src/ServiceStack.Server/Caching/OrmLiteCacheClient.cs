@@ -402,8 +402,8 @@ namespace ServiceStack.Caching
             if (entry != null &&
                 entry.ExpiryDate != null && DateTime.UtcNow > entry.ExpiryDate)
             {
-                db.Delete<TCacheEntry>(q => DateTime.UtcNow > q.ExpiryDate);
-                return default(TCacheEntry);
+                db.DeleteById<TCacheEntry>(entry.Id);
+                return default;
             }
             return entry;
         }
