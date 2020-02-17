@@ -59,17 +59,27 @@ namespace Check.ServiceModel
         [DataMember]
         public string Name { get; set; }
 
-
         [ApiMember]
-        [ApiAllowableValues("ColorBasic", typeof(MyColorDesc))] //Enum
+        // [ApiAllowableValues("ColorBasic", typeof(MyColorDesc))] //Enum
         [DataMember]
         public MyColorBasic ColorBasic { get; set; }
+
+        [ApiMember]
+        // [ApiAllowableValues("NColorBasic", typeof(MyColorDesc))] //Enum
+        [DataMember]
+        public MyColorBasic? NColorBasic { get; set; }
 
 
         [ApiMember]
         [ApiAllowableValues("ColorDesc", typeof(MyColorDesc))] //Enum
         [DataMember]
         public MyColorDesc ColorDesc { get; set; }
+
+
+        [ApiMember]
+        [ApiAllowableValues("NColorDesc", typeof(MyColorDesc))] //Enum
+        [DataMember]
+        public MyColorDesc? NColorDesc { get; set; }
 
 
         [ApiMember]

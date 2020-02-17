@@ -238,13 +238,10 @@ namespace ServiceStack.Metadata
                 var desc = p.Description;
                 if (!p.AllowableValues.IsEmpty())
                 {
-                    if (p.IsEnum != true)
-                    {
-                        desc += "<h4>Allowable Values</h4>";
-                        desc += "<ul>";
-                        p.AllowableValues.Each(x => desc += $"<li>{x}</li>");
-                        desc += "</ul>";
-                    }
+                    desc += "<h4>Allowable Values</h4>";
+                    desc += "<ul>";
+                    p.AllowableValues.Each(x => desc += $"<li>{x}</li>");
+                    desc += "</ul>";
                 }
                 if (p.AllowableMin != null)
                 {
