@@ -387,7 +387,10 @@ namespace ServiceStack
             using var db = AutoQuery.GetDb<From>(Request);
             using (Profiler.Current.Step("AutoQuery.CreateQuery"))
             {
-                q = AutoQuery.CreateQuery(dto, Request.GetRequestParams(), Request, db);
+                var reqParams = Request.IsInProcessRequest()
+                    ? new Dictionary<string, string>()
+                    : Request.GetRequestParams();
+                q = AutoQuery.CreateQuery(dto, reqParams, Request, db);
             }
             using (Profiler.Current.Step("AutoQuery.Execute"))
             {
@@ -401,7 +404,10 @@ namespace ServiceStack
             using var db = AutoQuery.GetDb<From>(Request);
             using (Profiler.Current.Step("AutoQuery.CreateQuery"))
             {
-                q = AutoQuery.CreateQuery(dto, Request.GetRequestParams(), Request, db);
+                var reqParams = Request.IsInProcessRequest()
+                    ? new Dictionary<string, string>()
+                    : Request.GetRequestParams();
+                q = AutoQuery.CreateQuery(dto, reqParams, Request, db);
             }
             using (Profiler.Current.Step("AutoQuery.Execute"))
             {
