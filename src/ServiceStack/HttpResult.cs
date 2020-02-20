@@ -61,12 +61,13 @@ namespace ServiceStack
             if (!FileInfo.Exists)
                 throw HttpError.NotFound($"{FileInfo.Name} was not found");
 
-            if (!asAttachment) return;
+            if (!asAttachment) 
+                return;
 
-            var headerValue = $"attachment; filename=\"{fileResponse.Name}\"; size={fileResponse.Length}; " +
-                              $"creation-date={fileResponse.CreationTimeUtc.ToString("R").Replace(",", "")}; " +
-                              $"modification-date={fileResponse.LastWriteTimeUtc.ToString("R").Replace(",", "")}; " +
-                              $"read-date={fileResponse.LastAccessTimeUtc.ToString("R").Replace(",", "")}";
+            var headerValue = $"attachment; {HttpExt.GetDispositionFileName(fileResponse.Name)}; size={fileResponse.Length}; " +
+                $"creation-date={fileResponse.CreationTimeUtc.ToString("R").Replace(",", "")}; " +
+                $"modification-date={fileResponse.LastWriteTimeUtc.ToString("R").Replace(",", "")}; " +
+                $"read-date={fileResponse.LastAccessTimeUtc.ToString("R").Replace(",", "")}";
 
             this.Headers = new Dictionary<string, string>
             {
@@ -90,7 +91,7 @@ namespace ServiceStack
 
             if (!asAttachment) return;
 
-            var headerValue = $"attachment; filename=\"{fileResponse.Name}\"; size={fileResponse.Length}; modification-date={fileResponse.LastModified.ToString("R").Replace(",", "")}";
+            var headerValue = $"attachment; {HttpExt.GetDispositionFileName(fileResponse.Name)}; size={fileResponse.Length}; modification-date={fileResponse.LastModified.ToString("R").Replace(",", "")}";
 
             this.Headers = new Dictionary<string, string>
             {
