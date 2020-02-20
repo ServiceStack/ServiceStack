@@ -852,24 +852,27 @@ namespace ServiceStack.Script
                     if (value is Task<object> valueTask)
                         value = await valueTask;
                 }
-                catch (StopFilterExecutionException ex)
+                catch (Exception ex)
                 {
-                    LastFilterError = ex.InnerException;
+                    var stopEx = ex as StopFilterExecutionException;
+                    var useEx = stopEx?.InnerException ?? ex;
+                    
+                    LastFilterError = useEx;
                     LastFilterStackTrace = stackTrace.ToArray();
 
                     if (RethrowExceptions)
-                        throw ex.InnerException;
+                        throw useEx;
                     
                     var skipExecutingFilters = SkipExecutingFiltersIfError.GetValueOrDefault(Context.SkipExecutingFiltersIfError);
                     if (skipExecutingFilters)
                         this.SkipFilterExecution = true;
 
-                    var rethrow = ScriptConfig.FatalExceptions.Contains(ex.InnerException.GetType());
+                    var rethrow = ScriptConfig.FatalExceptions.Contains(useEx.GetType());
                     if (!rethrow)
                     {
                         string errorBinding = null;
 
-                        if (ex.Options is Dictionary<string, object> filterParams)
+                        if (stopEx?.Options is Dictionary<string, object> filterParams)
                         {
                             if (filterParams.TryGetValue(ScriptConstants.AssignError, out object assignError))
                             {
@@ -896,7 +899,7 @@ namespace ServiceStack.Script
 
                         if (!string.IsNullOrEmpty(errorBinding))
                         {
-                            scope.ScopedParams[errorBinding] = ex.InnerException;
+                            scope.ScopedParams[errorBinding] = useEx;
                             scope.ScopedParams[errorBinding + "StackTrace"] = stackTrace.Map(x => "   at " + x).Join(Environment.NewLine);
                             return string.Empty;
                         }
@@ -911,13 +914,13 @@ namespace ServiceStack.Script
                     if (exResult != null)
                         await scope.OutputStream.WriteAsync(Format.EncodeValue(exResult).ToUtf8Bytes(), token);
                     else if (rethrow)
-                        throw ex.InnerException;
+                        throw useEx;
 
                     var filterName = expr.GetDisplayName();
                     if (filterName.StartsWith("throw"))
-                        throw ex.InnerException;
+                        throw useEx;
 
-                    throw new TargetInvocationException($"Failed to invoke filter '{filterName}': {ex.InnerException.Message}", ex.InnerException);
+                    throw new TargetInvocationException($"Failed to invoke filter '{filterName}': {useEx.Message}", useEx);
                 }
             }
 

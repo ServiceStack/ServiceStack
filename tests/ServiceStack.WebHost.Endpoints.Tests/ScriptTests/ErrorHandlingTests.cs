@@ -2,6 +2,7 @@
 using NUnit.Framework;
 using ServiceStack.IO;
 using ServiceStack.Script;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 {
@@ -431,6 +432,27 @@ StackTrace:
 <b>is evaluated</b>
 
 <h1>After Error</h1>".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Can_continue_executing_filters_with_continueExecutingFiltersOnError_in_filterError()
+        {
+            var context = new ScriptContext
+            {
+                SkipExecutingFiltersIfError = true,
+            }.Init();
+            
+            context.VirtualFiles.WriteFile("page.html", @"
+{{ continueExecutingFiltersOnError }}
+{{ 'A' |> to => someVariable }}
+{{ someVariable |> toInt |> to => myInt }}
+myInt {{ myInt }}
+");
+
+            var page = context.GetPage("page");
+            var output = new PageResult(page).Result;
+            
+            Assert.That(output.Trim(), Is.EqualTo("myInt"));
         }
 
         [Test]

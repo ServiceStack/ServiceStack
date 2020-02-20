@@ -18,7 +18,7 @@ namespace ServiceStack.Script
         }
 
         private string nameString;
-        public string Name => nameString ?? (nameString = Callee is JsIdentifier identifier ? identifier.Name : null);
+        public string Name => nameString ??= Callee is JsIdentifier identifier ? identifier.Name : null;
 
         public static object InvokeDelegate(Delegate fn, object target, bool isMemberExpr, List<object> fnArgValues)
         {
