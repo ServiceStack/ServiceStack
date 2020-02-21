@@ -121,6 +121,11 @@ namespace ServiceStack.Script
         public string AssignExceptionsTo { get; set; }
 
         /// <summary>
+        /// What argument captured errors should be binded to
+        /// </summary>
+        public string CatchExceptionsIn { get; set; }
+
+        /// <summary>
         /// Whether to skip execution of all page filters and just write page string fragments
         /// </summary>
         public bool SkipFilterExecution { get; set; }
@@ -843,7 +848,7 @@ namespace ServiceStack.Script
                             else if (rethrow)
                                 throw;
 
-                            throw new TargetInvocationException($"Failed to invoke filter '{expr.GetDisplayName()}': {ex.Message}", ex);
+                            throw new TargetInvocationException($"Failed to invoke script method '{expr.GetDisplayName()}': {ex.Message}", ex);
                         }
 
                         return IgnoreResult.Value;
@@ -881,50 +886,56 @@ namespace ServiceStack.Script
                             else if (filterParams.TryGetValue(ScriptConstants.CatchError, out object catchError))
                             {
                                 errorBinding = catchError as string;
-                                SkipFilterExecution = false;
-                                LastFilterError = null;
-                                LastFilterStackTrace = null;
+                                ResetError();
                             }
                             if (filterParams.TryGetValue(ScriptConstants.IfErrorReturn, out object ifErrorReturn))
                             {
-                                SkipFilterExecution = false;
-                                LastFilterError = null;
-                                LastFilterStackTrace = null;
+                                ResetError();
                                 return ifErrorReturn;
                             }
                         }
 
                         if (errorBinding == null)
-                            errorBinding = AssignExceptionsTo ?? Context.AssignExceptionsTo;
+                            errorBinding = AssignExceptionsTo ?? CatchExceptionsIn ?? Context.AssignExceptionsTo;
 
                         if (!string.IsNullOrEmpty(errorBinding))
                         {
+                            if (CatchExceptionsIn != null)
+                                ResetError();
+                            
                             scope.ScopedParams[errorBinding] = useEx;
                             scope.ScopedParams[errorBinding + "StackTrace"] = stackTrace.Map(x => "   at " + x).Join(Environment.NewLine);
                             return string.Empty;
                         }
                     }
                     
+                    //continueExecutingFiltersOnError == false / skipExecutingFiltersOnError == true 
                     if (SkipExecutingFiltersIfError.HasValue || Context.SkipExecutingFiltersIfError)
                         return string.Empty;
                     
                     // rethrow exceptions which aren't handled
-
                     var exResult = Format.OnExpressionException(this, ex);
                     if (exResult != null)
                         await scope.OutputStream.WriteAsync(Format.EncodeValue(exResult).ToUtf8Bytes(), token);
-                    else if (rethrow)
+                    else if (rethrow || useEx is TargetInvocationException)
                         throw useEx;
 
                     var filterName = expr.GetDisplayName();
                     if (filterName.StartsWith("throw"))
                         throw useEx;
 
-                    throw new TargetInvocationException($"Failed to invoke filter '{filterName}': {useEx.Message}", useEx);
+                    throw new TargetInvocationException($"Failed to invoke script method '{filterName}': {useEx.Message}", useEx);
                 }
             }
 
             return UnwrapValue(value);
+        }
+
+        private void ResetError()
+        {
+            SkipFilterExecution = false;
+            LastFilterError = null;
+            LastFilterStackTrace = null;
         }
 
         private static object UnwrapValue(object value)
@@ -1019,7 +1030,7 @@ namespace ServiceStack.Script
                 if (binding.StartsWith("throw"))
                     throw;
 
-                throw new TargetInvocationException($"Failed to invoke filter '{binding}': {ex.Message}", ex);
+                throw new TargetInvocationException($"Failed to invoke script method '{binding}': {ex.Message}", ex);
             }
         }
 

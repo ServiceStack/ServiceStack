@@ -13,7 +13,6 @@ namespace ServiceStack.Script
         public static HashSet<Type> FatalExceptions { get; set; } = new HashSet<Type>
         {
             typeof(NotSupportedException),
-            typeof(System.Reflection.TargetInvocationException),
             typeof(NotImplementedException),
             typeof(StackOverflowException),
         };

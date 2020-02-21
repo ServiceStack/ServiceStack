@@ -16,6 +16,12 @@ namespace ServiceStack.Script
             return StopExecution.Value;
         }
 
+        public object catchError(ScriptScopeContext scope, string errorBinding)
+        {
+            scope.PageResult.CatchExceptionsIn = errorBinding;
+            return StopExecution.Value;
+        }
+
         public object assignErrorAndContinueExecuting(ScriptScopeContext scope, string errorBinding)
         {
             assignError(scope, errorBinding);

@@ -437,10 +437,7 @@ StackTrace:
         [Test]
         public void Can_continue_executing_filters_with_continueExecutingFiltersOnError_in_filterError()
         {
-            var context = new ScriptContext
-            {
-                SkipExecutingFiltersIfError = true,
-            }.Init();
+            var context = new ScriptContext().Init();
             
             context.VirtualFiles.WriteFile("page.html", @"
 {{ continueExecutingFiltersOnError }}
@@ -453,6 +450,23 @@ myInt {{ myInt }}
             var output = new PageResult(page).Result;
             
             Assert.That(output.Trim(), Is.EqualTo("myInt"));
+        }
+
+        [Test]
+        public void Can_continue_executing_filters_with_catchError()
+        {
+            var template = @"{{ 'ex' |> catchError }}
+Result = 
+```code
+'h1' |> lower |> to => elemType
+elemType |> toInt |> raw
+```";
+
+            var context = new ScriptContext().Init();
+            var dynamicPage = context.OneTimePage(template);
+            var pageResult = new PageResult(dynamicPage);
+            var output = pageResult.RenderScript();
+            Assert.That(output.Trim(), Is.EqualTo("Result ="));
         }
 
         [Test]

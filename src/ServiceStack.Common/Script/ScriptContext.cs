@@ -170,12 +170,12 @@ namespace ServiceStack.Script
         public bool RenderExpressionExceptions { get; set; }
 
         /// <summary>
-        /// What argument to assign Filter Exceptions to
+        /// What argument to assign Exceptions to
         /// </summary>
         public string AssignExceptionsTo { get; set; }
         
         /// <summary>
-        /// Whether to skip executing Filters if an Exception was thrown
+        /// Whether to skip executing expressions if an Exception was thrown
         /// </summary>
         public bool SkipExecutingFiltersIfError { get; set; }
 
