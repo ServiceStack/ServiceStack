@@ -46,7 +46,12 @@ namespace ServiceStack
 
     public interface IQueryData<From> : IQueryData { }
     public interface IQueryData<From, Into> : IQueryData { }
-
+    
+    public interface ICrud {}
+    public interface ICreateDb<T> : ICrud {}
+    public interface IUpdateDb<T> : ICrud {}
+    public interface IDeleteDb<T> : ICrud {}
+    
     public interface IJoin { }
     public interface IJoin<Source, Join1> : IJoin { }
     public interface IJoin<Source, Join1, Join2> : IJoin { }
