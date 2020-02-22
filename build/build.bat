@@ -1,5 +1,4 @@
-SET MSBUILD="C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe"
-
-REM %MSBUILD% build-common.proj /property:Configuration=Release;MinorVersion=4;PatchVersion=1
-REM %MSBUILD% build.proj /property:Configuration=Release;MinorVersion=4;PatchVersion=1
-%MSBUILD% build-core.proj /property:Configuration=Release;MinorVersion=4;PatchVersion=1
+for /f "usebackq tokens=*" %%i in (`vswhere.exe -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe`) do (
+  SET MSBUILD="%%i"
+)
+%MSBUILD% build.proj /property:Configuration=Release;MinorVersion=8;PatchVersion=1
