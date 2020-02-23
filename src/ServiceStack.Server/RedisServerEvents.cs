@@ -110,24 +110,30 @@ namespace ServiceStack
             UnRegisterExpiredSubscriptions();
         }
 
-        private void UnRegisterExpiredSubscriptions()
+        public void UnRegisterExpiredSubscriptions()
         {
             using (var redis = clientsManager.GetClient())
             {
                 var lastPulseBefore = (RedisPubSub.CurrentServerTime - Timeout).Ticks;
                 var expiredSubIds = redis.GetRangeFromSortedSetByLowestScore(
                     RedisIndex.ActiveSubscriptionsSet, 0, lastPulseBefore);
-                foreach (var id in expiredSubIds)
-                {
-                    NotifyRedis("unregister.id." + id, null, null);
-                }
+                
+                UnRegisterSubIds(redis, expiredSubIds);
+            }
+        }
 
-                //Force remove zombie subscriptions which have no listeners
-                var infos = GetSubscriptionInfos(redis, expiredSubIds);
-                foreach (var info in infos)
-                {
-                    RemoveSubscriptionFromRedis(info);
-                }
+        public void UnRegisterSubIds(IRedisClient redis, List<string> expiredSubIds)
+        {
+            foreach (var id in expiredSubIds)
+            {
+                NotifyRedis("unregister.id." + id, null, null);
+            }
+
+            //Force remove zombie subscriptions which have no listeners
+            var infos = GetSubscriptionInfos(redis, expiredSubIds);
+            foreach (var info in infos)
+            {
+                RemoveSubscriptionFromRedis(info);
             }
         }
 
