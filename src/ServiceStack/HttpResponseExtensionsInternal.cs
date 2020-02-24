@@ -85,6 +85,18 @@ namespace ServiceStack
                 return true;
             }
 
+            if (result is ReadOnlyMemory<byte> rom)
+            {
+                var len = (bodyPrefix?.Length).GetValueOrDefault() +
+                          rom.Length +
+                          (bodySuffix?.Length).GetValueOrDefault();
+                
+                if (bodyPrefix != null) await response.OutputStream.WriteAsync(bodyPrefix, token);
+                await response.OutputStream.WriteAsync(rom, token);
+                if (bodySuffix != null) await response.OutputStream.WriteAsync(bodySuffix, token);
+                return true;
+            }
+
             return false;
         }
 
@@ -293,11 +305,16 @@ namespace ServiceStack
                         if (httpResult != null)
                             result = httpResult.Response;
 
+                        ReadOnlyMemory<byte>? uf8Bytes = null;
                         if (result is string responseText)
+                            uf8Bytes = MemoryProvider.Instance.ToUtf8(responseText.AsSpan());
+                        else if (result is ReadOnlyMemory<char> rom)
+                            uf8Bytes = MemoryProvider.Instance.ToUtf8(rom.Span);
+
+                        if (uf8Bytes != null)
                         {
-                            var strBytes = responseText.ToUtf8Bytes();
                             var len = (bodyPrefix?.Length).GetValueOrDefault() +
-                                      strBytes.Length +
+                                      uf8Bytes.Value.Length +
                                       (bodySuffix?.Length).GetValueOrDefault();
 
                             response.SetContentLength(len);
@@ -312,7 +329,7 @@ namespace ServiceStack
                             if (bodyPrefix != null) 
                                 await response.OutputStream.WriteAsync(bodyPrefix, token);
 
-                            await response.OutputStream.WriteAsync(strBytes, token);
+                            await response.OutputStream.WriteAsync(uf8Bytes.Value, token);
 
                             if (bodySuffix != null) 
                                 await response.OutputStream.WriteAsync(bodySuffix, token);
