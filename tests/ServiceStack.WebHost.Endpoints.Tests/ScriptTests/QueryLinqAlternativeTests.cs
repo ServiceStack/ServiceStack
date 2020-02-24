@@ -29,7 +29,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
             Assert.That(context.EvaluateScript(@"
 Numbers < 5:
-{{ numbers | where('it < 5') | select('{{ it }}\n') }}").NormalizeNewLines(),
+{{ numbers |> where('it < 5') |> select('{{ it }}\n') }}").NormalizeNewLines(),
 
                 Is.EqualTo(@"
 Numbers < 5:
@@ -49,8 +49,8 @@ Numbers < 5:
             Assert.That(context.EvaluateScript(@"
 Sold out products:
 {{ products 
-   | where('it.UnitsInStock = 0') 
-   | select('{{ it.productName | raw }} is sold out!\n')
+   |> where('it.UnitsInStock == 0') 
+   |> select('{{ it.productName |> raw }} is sold out!\n')
 }}
 ").NormalizeNewLines(),
 
@@ -72,8 +72,8 @@ Perth Pasties is sold out!
             Assert.That(context.EvaluateScript(@"
 Sold out products:
 {{ products 
-   | where('product.UnitsInStock = 0', { it: 'product' }) 
-   | select('{{ product.productName | raw }} is sold out!\n', { it: 'product' })
+   |> where('product.UnitsInStock == 0', { it: 'product' }) 
+   |> select('{{ product.productName |> raw }} is sold out!\n', { it: 'product' })
 }}
 ").NormalizeNewLines(),
 
@@ -97,14 +97,14 @@ Perth Pasties is sold out!
 
             context.VirtualFiles.WriteFile("page.html", @"{{ 
   customers 
-  | where: it.Region = 'WA' 
-  | assignTo: waCustomers 
+  |> where: it.Region == 'WA' 
+  |> assignTo: waCustomers 
 }}
 Customers from Washington and their orders:
-{{ waCustomers | selectPartial('customer') }}");
+{{ waCustomers |> selectPartial('customer') }}");
 
-            context.VirtualFiles.WriteFile("customer.html", @"Customer {{ it.CustomerId }} {{ it.CompanyName | raw }}
-{{ it.Orders | select(""  Order {{ it.OrderId }}: {{ it.OrderDate | dateFormat | newLine }}"") }}");
+            context.VirtualFiles.WriteFile("customer.html", @"Customer {{ it.CustomerId }} {{ it.CompanyName |> raw }}
+{{ it.Orders |> select(""  Order {{ it.OrderId }}: {{ it.OrderDate |> dateFormat |> newLine }}"") }}");
 
             Assert.That(new PageResult(context.GetPage("page")).Result.NormalizeNewLines(),
                 Does.StartWith(@"
@@ -129,17 +129,17 @@ Customer TRAIH Trail's Head Gourmet Provisioners
 
             context.VirtualFiles.WriteFile("page.html", @"{{ 
   customers 
-  | where: it.Region = 'WA' 
-  | assignTo: waCustomers 
+  |> where: it.Region == 'WA' 
+  |> assignTo: waCustomers 
 }}
 Customers from Washington and their orders:
-{{ waCustomers | selectPartial: customer }}");
+{{ waCustomers |> selectPartial: customer }}");
 
             context.VirtualFiles.WriteFile("customer.html",
-                @"Customer {{ it.CustomerId }} {{ it.CompanyName | raw }}
-{{ it.Orders | selectPartial: order }}");
+                @"Customer {{ it.CustomerId }} {{ it.CompanyName |> raw }}
+{{ it.Orders |> selectPartial: order }}");
 
-            context.VirtualFiles.WriteFile("order.html", @"  Order {{ it.OrderId }}: {{ it.OrderDate | dateFormat}}
+            context.VirtualFiles.WriteFile("order.html", @"  Order {{ it.OrderId }}: {{ it.OrderDate |> dateFormat}}
 ");
 
             Assert.That(new PageResult(context.GetPage("page")).Result.NormalizeNewLines(),
@@ -165,11 +165,11 @@ Customer TRAIH Trail's Head Gourmet Provisioners
 
             context.VirtualFiles.WriteFile("page.html", @"{{ 
   customers 
-  | where: it.Region = 'WA' 
-  | assignTo: waCustomers 
+  |> where: it.Region == 'WA' 
+  |> assignTo: waCustomers 
 }}
 Customers from Washington and their orders:
-{{ waCustomers | selectPartial: customer }}");
+{{ waCustomers |> selectPartial: customer }}");
 
             context.VirtualFiles.WriteFile("customer.html",
                 @"
@@ -177,11 +177,11 @@ Customers from Washington and their orders:
 it: cust
 -->
 
-Customer {{ cust.CustomerId }} {{ cust.CompanyName | raw }}
-{{ cust.Orders | selectPartial('order', { it: 'order' })  }}");
+Customer {{ cust.CustomerId }} {{ cust.CompanyName |> raw }}
+{{ cust.Orders |> selectPartial('order', { it: 'order' })  }}");
 
             context.VirtualFiles.WriteFile("order.html",
-                "  Order {{ order.OrderId }}: {{ order.OrderDate | dateFormat}}\n");
+                "  Order {{ order.OrderId }}: {{ order.OrderDate |> dateFormat}}\n");
 
             Assert.That(new PageResult(context.GetPage("page")).Result.NormalizeNewLines(),
                 Does.StartWith(@"
@@ -207,9 +207,9 @@ Customer TRAIH Trail's Head Gourmet Provisioners
 
             Assert.That(context.EvaluateScript(@"
 Pairs where a < b:
-{{ numbersA | zip(numbersB)
-   | where: it[0] < it[1] 
-   | select: { it[0] } is less than { it[1] }\n 
+{{ numbersA |> zip(numbersB)
+   |> where: it[0] < it[1] 
+   |> select: { it[0] } is less than { it[1] }\n 
 }}
 ").NormalizeNewLines(),
 
@@ -245,10 +245,10 @@ Pairs where a < b:
 
             Assert.That(context.EvaluateScript(@"
 Pairs where a < b:
-{{ numbersA | zip(numbersB)
-   | let({ a: 'it[0]', b: 'it[1]' })  
-   | where: a < b 
-   | select: { a } is less than { b }\n 
+{{ numbersA |> zip(numbersB)
+   |> let({ a: 'it[0]', b: 'it[1]' })  
+   |> where: a < b 
+   |> select: { a } is less than { b }\n 
 }}
 ").NormalizeNewLines(),
 
@@ -279,13 +279,13 @@ Pairs where a < b:
             var context = CreateContext();
 
             var template = @"
-{{ '1997-01-01' | assignTo: cutoffDate }}
+{{ '1997-01-01' |> assignTo: cutoffDate }}
 {{ customers 
-   | where: it.Region = 'WA'
-   | zip: it.Orders
-   | let({ c: 'it[0]', o: 'it[1]' })
-   | where: o.OrderDate  >= cutoffDate 
-   | select: ({ c.CustomerId }, { o.OrderId })\n }}
+   |> where: it.Region == 'WA'
+   |> zip: it.Orders
+   |> let({ c: 'it[0]', o: 'it[1]' })
+   |> where: o.OrderDate  >= cutoffDate 
+   |> select: ({ c.CustomerId }, { o.OrderId })\n }}
 ".NormalizeNewLines();
             Assert.That(context.EvaluateScript(template).NormalizeNewLines(),
 
@@ -303,10 +303,10 @@ Pairs where a < b:
 
             Assert.That(context.EvaluateScript(@"
 First 3 orders in WA:
-{{ customers | zip: it.Orders 
-   | let({ c: 'it[0]', o: 'it[1]' })
-   | where: c.Region = 'WA'
-   | select: { [c.CustomerId, o.OrderId, o.OrderDate] | jsv }\n 
+{{ customers |> zip: it.Orders 
+   |> let({ c: 'it[0]', o: 'it[1]' })
+   |> where: c.Region == 'WA'
+   |> select: { [c.CustomerId, o.OrderId, o.OrderDate] |> jsv }\n 
 }}
 ").NormalizeNewLines(),
 
@@ -325,10 +325,10 @@ First 3 orders in WA:
 
             Assert.That(context.EvaluateScript(@"
 First 3 orders in WA:
-{{ customers | zip: it.Orders 
-   | let({ c: 'it[0]', o: 'it[1]' })
-   | where: c.Region = 'WA'
-   | select: { [c.CustomerId, o.OrderId, o.OrderDate] | json('DateHandler:ISO8601DateOnly') }\n 
+{{ customers |> zip: it.Orders 
+   |> let({ c: 'it[0]', o: 'it[1]' })
+   |> where: c.Region == 'WA'
+   |> select: { [c.CustomerId, o.OrderId, o.OrderDate] |> json('DateHandler:ISO8601DateOnly') }\n 
 }}
 ").NormalizeNewLines(),
 

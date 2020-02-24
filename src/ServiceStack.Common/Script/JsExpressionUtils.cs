@@ -134,11 +134,28 @@ namespace ServiceStack.Script
                 return literal;
             }
 
-            if (node is JsIdentifier identifier && peekLiteral.StartsWith("=>"))
+            if (node is JsIdentifier identifier)
             {
-                literal = peekLiteral.ParseArrowExpressionBody(new[]{ identifier }, out var arrowExpr);
-                token = arrowExpr;
-                return literal;
+                if (peekLiteral.StartsWith("=>"))
+                {
+                    literal = peekLiteral.ParseArrowExpressionBody(new[]{ identifier }, out var arrowExpr);
+                    token = arrowExpr;
+                    return literal;
+                }
+
+                var kind = identifier.Name == "var"
+                    ? JsVariableDeclarationKind.Var
+                    : identifier.Name == "let"
+                        ? JsVariableDeclarationKind.Let
+                        : identifier.Name == "const"
+                            ? JsVariableDeclarationKind.Const
+                            : (JsVariableDeclarationKind?)null;
+                if (kind != null)
+                {
+                    literal = peekLiteral.ParseVariableDeclaration(kind.Value, out var varDec);
+                    token = varDec;
+                    return literal;
+                }
             }
 
             peekLiteral = peekLiteral.AdvancePastWhitespace();
@@ -218,7 +235,7 @@ namespace ServiceStack.Script
                     throw new SyntaxErrorException($"Expected binary operator near: {literal.DebugLiteral()}");
 
                 var prec = JsTokenUtils.GetBinaryPrecedence(op.Token);
-                if (prec > 0)
+                if (prec > 0 || op == JsAssignment.Operator)
                 {
                     literal = literal.ParseJsToken(out JsToken rhs, filterExpression:filterExpression);
 
@@ -292,6 +309,9 @@ namespace ServiceStack.Script
             if (op is JsOr opOr)
                 return new JsLogicalExpression(lhs, opOr, rhs);
             
+            if (op == JsAssignment.Operator)
+                return new JsAssignmentExpression(lhs, JsAssignment.Operator, rhs);
+
             return new JsBinaryExpression(lhs, op, rhs);
         }
 

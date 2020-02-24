@@ -407,7 +407,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 Is.EqualTo("#0 1, #1 3, #2 5, "));
             Assert.That(context.EvaluateScript("{{#each num in numbers where isOdd(num)}}#{{index}} {{num}}, {{/each}}"), 
                 Is.EqualTo("#0 1, #1 3, #2 5, "));
-            Assert.That(context.EvaluateScript("{{#each people where Name = 'name2' and Age = 2 }}#{{index}} {{Name}}, {{Age}}{{/each}}"), 
+            Assert.That(context.EvaluateScript("{{#each people where Name == 'name2' and Age == 2 }}#{{index}} {{Name}}, {{Age}}{{/each}}"), 
                 Is.EqualTo("#0 name2, 2"));
             Assert.That(context.EvaluateScript("{{#each p in people where p.Name == 'name2' }}#{{index}} {{p.Name}}, {{p.Age}}{{/each}}"), 
                 Is.EqualTo("#0 name2, 2"));

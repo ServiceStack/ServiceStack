@@ -1118,21 +1118,23 @@ namespace ServiceStack.Script
 
             value = scope.ScopedParams != null && scope.ScopedParams.TryGetValue(name, out object obj)
                 ? obj
-                : Args.TryGetValue(name, out obj)
-                    ? obj
-                    : Page != null && Page.Args.TryGetValue(name, out obj)
+                : name == ScriptConstants.Global
+                    ? Args
+                    : Args.TryGetValue(name, out obj)
                         ? obj
-                        : CodePage != null && CodePage.Args.TryGetValue(name, out obj)
+                        : Page != null && Page.Args.TryGetValue(name, out obj)
                             ? obj
-                            : LayoutPage != null && LayoutPage.Args.TryGetValue(name, out obj)
+                            : CodePage != null && CodePage.Args.TryGetValue(name, out obj)
                                 ? obj
-                                : Context.Args.TryGetValue(name, out obj)
+                                : LayoutPage != null && LayoutPage.Args.TryGetValue(name, out obj)
                                     ? obj
-                                    : (invoker = GetFilterAsBinding(name, out ScriptMethods filter)) != null
-                                        ? InvokeFilter(invoker, filter, new object[0], name)
-                                        : (invoker = GetContextFilterAsBinding(name, out filter)) != null
-                                            ? InvokeFilter(invoker, filter, new object[]{ scope }, name)
-                                            : ((ret = false) ? (object)null : null);
+                                    : Context.Args.TryGetValue(name, out obj)
+                                        ? obj
+                                        : (invoker = GetFilterAsBinding(name, out ScriptMethods filter)) != null
+                                            ? InvokeFilter(invoker, filter, new object[0], name)
+                                            : (invoker = GetContextFilterAsBinding(name, out filter)) != null
+                                                ? InvokeFilter(invoker, filter, new object[] {scope}, name)
+                                                : ((ret = false) ? (object) null : null);
             return ret;
         }
         

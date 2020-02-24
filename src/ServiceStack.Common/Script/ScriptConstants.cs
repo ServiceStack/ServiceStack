@@ -35,6 +35,7 @@ namespace ServiceStack.Script
         public const string Format = "format";
         public const string BaseUrl = "BaseUrl";
         public const string PartialArg = "__partial";
+        public const string Global = "global";
 
         public static IRawString EmptyRawString { get; } = new RawString("");
         public static IRawString TrueRawString { get; } = new RawString("true");

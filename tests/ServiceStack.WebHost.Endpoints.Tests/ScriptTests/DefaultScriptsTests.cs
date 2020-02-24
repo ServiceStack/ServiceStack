@@ -1300,8 +1300,8 @@ dir-file: dir/dir-file.txt
             Assert.That(context.EvaluateScript("{{ one | endIfTruthy | use(1) | assignTo: one }}{{ one }}"), Is.EqualTo("1"));
             Assert.That(context.EvaluateScript("{{ 1 | endIf(true) }}"), Is.EqualTo(""));
             Assert.That(context.EvaluateScript("{{ 1 | endIf(false) }}"), Is.EqualTo("1"));
-            Assert.That(context.EvaluateScript("{{ 5 | times | endIfAny: it = 4\n | join }}"), Is.EqualTo(""));
-            Assert.That(context.EvaluateScript("{{ 5 | times | endIfAny: it = 5\n | join }}"), Is.EqualTo("0,1,2,3,4"));
+            Assert.That(context.EvaluateScript("{{ 5 | times | endIfAny: it == 4\n | join }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateScript("{{ 5 | times | endIfAny: it == 5\n | join }}"), Is.EqualTo("0,1,2,3,4"));
             Assert.That(context.EvaluateScript("{{ 5 | times | endIfAll: lt(it,4)\n | join }}"), Is.EqualTo("0,1,2,3,4"));
             Assert.That(context.EvaluateScript("{{ 5 | times | endIfAll: lt(it,5)\n | join }}"), Is.EqualTo(""));
 
@@ -1386,8 +1386,8 @@ dir-file: dir/dir-file.txt
             Assert.That(context.EvaluateScript("{{ 1 | onlyIf(true) }}"), Is.EqualTo("1"));
             Assert.That(context.EvaluateScript("{{ 5 | times | onlyIfAll: lt(it,4)\n | join }}"), Is.EqualTo(""));
             Assert.That(context.EvaluateScript("{{ 5 | times | onlyIfAll: lt(it,5)\n | join }}"), Is.EqualTo("0,1,2,3,4"));
-            Assert.That(context.EvaluateScript("{{ 5 | times | onlyIfAny: it = 4\n | join }}"), Is.EqualTo("0,1,2,3,4"));
-            Assert.That(context.EvaluateScript("{{ 5 | times | onlyIfAny: it = 5\n | join }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateScript("{{ 5 | times | onlyIfAny: it == 4\n | join }}"), Is.EqualTo("0,1,2,3,4"));
+            Assert.That(context.EvaluateScript("{{ 5 | times | onlyIfAny: it == 5\n | join }}"), Is.EqualTo(""));
 
             Assert.That(context.EvaluateScript("{{ 1   | onlyWhere: !isString(it) }}"), Is.EqualTo("1"));
             Assert.That(context.EvaluateScript("{{ 'a' | onlyWhere: !isString(it) }}"), Is.EqualTo(""));

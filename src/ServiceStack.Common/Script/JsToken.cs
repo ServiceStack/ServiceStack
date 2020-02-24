@@ -702,6 +702,42 @@ namespace ServiceStack.Script
             return literal;
         }
 
+        internal static ReadOnlySpan<char> ParseVariableDeclaration(this ReadOnlySpan<char> literal, JsVariableDeclarationKind kind, out JsVariableDeclaration token)
+        {
+            literal = literal.AdvancePastWhitespace();
+
+            var declarations = new List<JsDeclaration>();
+            while (true)
+            {
+                literal = literal.ParseIdentifier(out var id);
+                literal = literal.AdvancePastWhitespace();
+
+                if (literal.FirstCharEquals('='))
+                {
+                    literal = literal.Advance(1);
+                    literal = literal.ParseJsExpression(out var init);
+                    declarations.Add(new JsDeclaration((JsIdentifier)id, init));
+                }
+                else
+                {
+                    declarations.Add(new JsDeclaration((JsIdentifier)id, null));
+                }
+                
+                literal = literal.AdvancePastWhitespace();
+                if (!literal.FirstCharEquals(','))
+                    break;
+                
+                literal = literal.Advance(1);
+            }
+            
+            literal = literal.AdvancePastWhitespace();
+            if (literal.FirstCharEquals(';'))
+                literal = literal.Advance(1);
+            
+            token = new JsVariableDeclaration(kind, declarations.ToArray());
+            return literal;
+        }
+
         internal static ReadOnlySpan<char> ParseJsMemberExpression(this ReadOnlySpan<char> literal, ref JsToken node, bool filterExpression)
         {
             literal = literal.AdvancePastWhitespace();
@@ -844,7 +880,10 @@ namespace ServiceStack.Script
                         op = JsLessThan.Operator;
                         return literal.Advance(1);
                     case '=':
-                        op = JsEquals.Operator;
+                        if (ScriptConfig.AllowAssignmentExpressions)
+                            op = JsAssignment.Operator;
+                        else
+                            op = JsEquals.Operator;
                         return literal.Advance(1);
                     case '+':
                         op = JsAddition.Operator;

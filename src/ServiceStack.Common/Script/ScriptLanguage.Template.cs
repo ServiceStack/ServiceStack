@@ -709,11 +709,11 @@ namespace ServiceStack.Script
                             if (token != null)
                             {
                                 var indexType = pi.GetGetMethod()?.GetParameters().FirstOrDefault()?.ParameterType;
-                                if (indexType != typeof(object))
+                                if (indexType != typeof(object) && !(valueExpr is ConstantExpression ce && ce.Type == indexType))
                                 {
-                                    var evalAsInt = typeof(ScriptTemplateUtils).GetStaticMethod(nameof(EvaluateBindingAs))
+                                    var evalAsIndexType = typeof(ScriptTemplateUtils).GetStaticMethod(nameof(EvaluateBindingAs))
                                         .MakeGenericMethod(indexType);
-                                    valueExpr = Expression.Call(evalAsInt, scope, Expression.Constant(token));
+                                    valueExpr = Expression.Call(evalAsIndexType, scope, Expression.Constant(token));
                                 }
                             }
 
@@ -793,16 +793,41 @@ namespace ServiceStack.Script
             {
                 var mi = propItemExpr.Indexer.GetSetMethod();
                 var indexExpr = propItemExpr.Arguments[0];
-                body = Expression.Call(propItemExpr.Object, mi, indexExpr, valueToAssign);
+                if (propItemExpr.Indexer.PropertyType != typeof(object))
+                {
+                    var elType = propItemExpr.Indexer.DeclaringType.GetCollectionType();
+                    var convertToElementType = typeof(AutoMappingUtils).GetStaticMethod(nameof(AutoMappingUtils.ConvertTo), new[] { typeof(object) })
+                        .MakeGenericMethod(elType);
+                    
+                    body = Expression.Call(propItemExpr.Object, mi, indexExpr, 
+                        Expression.Call(convertToElementType, valueToAssign));
+                }
+                else
+                {
+                    body = Expression.Call(propItemExpr.Object, mi, indexExpr, valueToAssign);
+                }
             }
             else if (body is BinaryExpression binaryExpr && binaryExpr.NodeType == ExpressionType.ArrayIndex)
             {
                 var arrayInstance = binaryExpr.Left;
                 var indexExpr = binaryExpr.Right;
-                
-                body = Expression.Assign(
-                    Expression.ArrayAccess(arrayInstance, indexExpr), 
-                    valueToAssign);
+
+                if (arrayInstance.Type != typeof(object))
+                {
+                    var elType = arrayInstance.Type.GetElementType();
+                    var convertToElementType = typeof(AutoMappingUtils).GetStaticMethod(nameof(AutoMappingUtils.ConvertTo), new[] { typeof(object) })
+                        .MakeGenericMethod(elType);
+
+                    body = Expression.Assign(
+                        Expression.ArrayAccess(arrayInstance, indexExpr), 
+                        Expression.Call(convertToElementType, valueToAssign));
+                }
+                else
+                {
+                    body = Expression.Assign(
+                        Expression.ArrayAccess(arrayInstance, indexExpr), 
+                        valueToAssign);
+                }
             }
             else
             {

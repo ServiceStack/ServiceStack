@@ -50,10 +50,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         {
             Assert.That(context.EvaluateScript(@"
 Numbers < 5:
-{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] |> assignTo: numbers }}
 {{ numbers 
-   | where: it < 5 
-   | select: { it }\n 
+   |> where: it < 5 
+   |> select: { it }\n 
 }}").NormalizeNewLines(), 
                 
                 Is.EqualTo(@"
@@ -72,8 +72,8 @@ Numbers < 5:
             Assert.That(context.EvaluateScript(@"
 Sold out products:
 {{ products 
-    | where: it.UnitsInStock = 0 
-    | select: { it.productName | raw } is sold out!\n }}
+    |> where: it.UnitsInStock == 0 
+    |> select: { it.productName |> raw } is sold out!\n }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -92,8 +92,8 @@ Perth Pasties is sold out!
             Assert.That(context.EvaluateScript(@"
 In-stock products that cost more than 3.00:
 {{ products 
-    | where: it.UnitsInStock > 0 and it.UnitPrice > 3 
-    | select: { it.productName | raw } is in stock and costs more than 3.00.\n 
+    |> where: it.UnitsInStock > 0 and it.UnitPrice > 3 
+    |> select: { it.productName |> raw } is in stock and costs more than 3.00.\n 
 }}
 ").NormalizeNewLines(),
                 
@@ -109,18 +109,18 @@ Aniseed Syrup is in stock and costs more than 3.00.
         public void Linq04()
         {
             context.VirtualFiles.WriteFile("customer.html", @"
-Customer {{ it.CustomerId }} {{ it.CompanyName | raw }}
-{{ it.Orders | selectPartial: order }}");
+Customer {{ it.CustomerId }} {{ it.CompanyName |> raw }}
+{{ it.Orders |> selectPartial: order }}");
 
-            context.VirtualFiles.WriteFile("order.html", "  Order {{ it.OrderId }}: {{ it.OrderDate | dateFormat }}\n");
+            context.VirtualFiles.WriteFile("order.html", "  Order {{ it.OrderId }}: {{ it.OrderDate |> dateFormat }}\n");
             
             Assert.That(context.EvaluateScript(@"
 {{ customers 
-   | where: it.Region = 'WA' 
-   | assignTo: waCustomers 
+   |> where: it.Region == 'WA' 
+   |> assignTo: waCustomers 
 }}
 Customers from Washington and their orders:
-{{ waCustomers | selectPartial: customer }}
+{{ waCustomers |> selectPartial: customer }}
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -142,10 +142,10 @@ Customer TRAIH Trail's Head Gourmet Provisioners
         {
             Assert.That(context.EvaluateScript(@"
 Short digits:
-{{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: digits }}
+{{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] |> assignTo: digits }}
 {{ digits 
-   | where: it.Length < index
-   | select: The word {it} is shorter than its value.\n }}
+   |> where: it.Length < index
+   |> select: The word {it} is shorter than its value.\n }}
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -163,8 +163,8 @@ The word nine is shorter than its value.
         {
             Assert.That(context.EvaluateScript(@"
 Numbers + 1:
-{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
-{{ numbers | select: { it | incr }\n }}
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] |> assignTo: numbers }}
+{{ numbers |> select: { it |> incr }\n }}
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -187,7 +187,7 @@ Numbers + 1:
         {
             Assert.That(context.EvaluateScript(@"
 Product Names:
-{{ products | select: { it.ProductName | raw }\n }}
+{{ products |> select: { it.ProductName |> raw }\n }}
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -205,9 +205,9 @@ Chef Anton's Gumbo Mix
         {
             Assert.That(context.EvaluateScript(@"
 Number strings:
-{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
-{{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: strings }}
-{{ numbers | select: { strings[it] }\n }}
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] |> assignTo: numbers }}
+{{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] |> assignTo: strings }}
+{{ numbers |> select: { strings[it] }\n }}
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -229,8 +229,8 @@ zero
         public void Linq09()
         {
             Assert.That(context.EvaluateScript(@"
-{{ ['aPPLE', 'BlUeBeRrY', 'cHeRry'] | assignTo: words }}
-{{ words | select: Uppercase: { it | upper }, Lowercase: { it | lower }\n }}
+{{ ['aPPLE', 'BlUeBeRrY', 'cHeRry'] |> assignTo: words }}
+{{ words |> select: Uppercase: { it |> upper }, Lowercase: { it |> lower }\n }}
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -244,9 +244,9 @@ Uppercase: CHERRY, Lowercase: cherry
         public void Linq10()
         {
             Assert.That(context.EvaluateScript(@"
-{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
-{{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: strings }}
-{{ numbers | select: The digit { strings[it] } is { 'even' | if (isEven(it)) | otherwise('odd') }.\n }}
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] |> assignTo: numbers }}
+{{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] |> assignTo: strings }}
+{{ numbers |> select: The digit { strings[it] } is { 'even' |> if (isEven(it)) |> otherwise('odd') }.\n }}
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -268,7 +268,7 @@ The digit zero is even.
         {
             Assert.That(context.EvaluateScript(@"
 Product Info:
-{{ products | select: { it.ProductName | raw } is in the category { it.Category } and costs { it.UnitPrice | currency } per unit.\n }}
+{{ products |> select: { it.ProductName |> raw } is in the category { it.Category } and costs { it.UnitPrice |> currency } per unit.\n }}
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -284,8 +284,8 @@ Aniseed Syrup is in the category Condiments and costs $10.00 per unit.
         {
             Assert.That(context.EvaluateScript(@"
 Number: In-place?
-{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
-{{ numbers | select: { it }: { it | equals(index) | lower }\n }}
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] |> assignTo: numbers }}
+{{ numbers |> select: { it }: { it |> equals(index) |> lower }\n }}
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -308,11 +308,11 @@ Number: In-place?
         {
             Assert.That(context.EvaluateScript(@"
 Numbers < 5:
-{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
-{{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: digits }}
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] |> assignTo: numbers }}
+{{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] |> assignTo: digits }}
 {{ numbers
-   | where: it < 5 
-   | select: { digits[it] }\n 
+   |> where: it < 5 
+   |> select: { digits[it] }\n 
 }}
 ").NormalizeNewLines(),
                 
@@ -330,13 +330,13 @@ zero
         public void Linq14()
         {
             Assert.That(context.EvaluateScript(@"
-{{ [0, 2, 4, 5, 6, 8, 9] | assignTo: numbersA }}
-{{ [1, 3, 5, 7, 8] | assignTo: numbersB }}
+{{ [0, 2, 4, 5, 6, 8, 9] |> assignTo: numbersA }}
+{{ [1, 3, 5, 7, 8] |> assignTo: numbersB }}
 Pairs where a < b:
-{{ numbersA | zip(numbersB)
-   | let({ a: 'it[0]', b: 'it[1]' })  
-   | where: a < b 
-   | select: { a } is less than { b }\n 
+{{ numbersA |> zip(numbersB)
+   |> let({ a: 'it[0]', b: 'it[1]' })  
+   |> where: a < b 
+   |> select: { a } is less than { b }\n 
 }}
 ").NormalizeNewLines(),
                 
@@ -365,10 +365,10 @@ Pairs where a < b:
         public void Linq15()
         {
             Assert.That(context.EvaluateScript(@"
-{{ customers | zip => it.Orders
-   | let => { c: it[0], o: it[1] }
-   | where => o.Total < 500
-   | select: ({ c.CustomerId }, { o.OrderId }, { o.Total | format('0.0#') })\n }}
+{{ customers |> zip => it.Orders
+   |> let => { c: it[0], o: it[1] }
+   |> where => o.Total < 500
+   |> select: ({ c.CustomerId }, { o.OrderId }, { o.Total |> format('0.0#') })\n }}
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -383,10 +383,10 @@ Pairs where a < b:
         public void Linq15_literal()
         {
             Assert.That(context.EvaluateScript(@"
-{{ customers | zip: it.Orders
-   | let({ c: 'it[0]', o: 'it[1]' })
-   | where: o.Total < 500
-   | select: ({ c.CustomerId }, { o.OrderId }, { o.Total | format('0.0#') })\n }}
+{{ customers |> zip: it.Orders
+   |> let({ c: 'it[0]', o: 'it[1]' })
+   |> where: o.Total < 500
+   |> select: ({ c.CustomerId }, { o.OrderId }, { o.Total |> format('0.0#') })\n }}
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -401,10 +401,10 @@ Pairs where a < b:
         public void Linq16()
         {
             Assert.That(context.EvaluateScript(@"
-{{ customers | zip: it.Orders
-   | let({ c: 'it[0]', o: 'it[1]' })
-   | where: o.OrderDate >= '1998-01-01' 
-   | select: ({ c.CustomerId }, { o.OrderId }, { o.OrderDate })\n }}
+{{ customers |> zip: it.Orders
+   |> let({ c: 'it[0]', o: 'it[1]' })
+   |> where: o.OrderDate >= '1998-01-01' 
+   |> select: ({ c.CustomerId }, { o.OrderId }, { o.OrderDate })\n }}
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -420,10 +420,10 @@ Pairs where a < b:
         public void Linq17()
         {
             Assert.That(context.EvaluateScript(@"
-{{ customers | zip: it.Orders
-   | let({ c: 'it[0]', o: 'it[1]' })
-   | where: o.Total >= 2000 
-   | select: ({ c.CustomerId }, { o.OrderId }, { o.Total | format('0.0#') })\n }}
+{{ customers |> zip: it.Orders
+   |> let({ c: 'it[0]', o: 'it[1]' })
+   |> where: o.Total >= 2000 
+   |> select: ({ c.CustomerId }, { o.OrderId }, { o.Total |> format('0.0#') })\n }}
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -439,13 +439,13 @@ Pairs where a < b:
         public void Linq18()
         {
             var template = @"
-{{ '1997-01-01' | assignTo: cutoffDate }}
+{{ '1997-01-01' |> assignTo: cutoffDate }}
 {{ customers 
-   | where: it.Region = 'WA'
-   | zip: it.Orders
-   | let({ c: 'it[0]', o: 'it[1]' })
-   | where: o.OrderDate  >= cutoffDate 
-   | select: ({ c.CustomerId }, { o.OrderId })\n }}
+   |> where: it.Region == 'WA'
+   |> zip: it.Orders
+   |> let({ c: 'it[0]', o: 'it[1]' })
+   |> where: o.OrderDate  >= cutoffDate 
+   |> select: ({ c.CustomerId }, { o.OrderId })\n }}
 ";
             Assert.That(context.EvaluateScript(template.NormalizeNewLines()).NormalizeNewLines(),
                 
@@ -475,10 +475,10 @@ Pairs where a < b:
         {
             Assert.That(context.EvaluateScript(@"
 {{ customers 
-   | let({ cust: 'it', custIndex: 'index' })
-   | zip: cust.Orders
-   | let({ o: 'it[1]' })
-   | select: Customer #{ custIndex | incr } has an order with OrderID { o.OrderId }\n }}
+   |> let({ cust: 'it', custIndex: 'index' })
+   |> zip: cust.Orders
+   |> let({ o: 'it[1]' })
+   |> select: Customer #{ custIndex |> incr } has an order with OrderID { o.OrderId }\n }}
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -500,8 +500,8 @@ Customer #2 has an order with OrderID 10926
         {
             Assert.That(context.EvaluateScript(@"
 First 3 numbers:
-{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
-{{ numbers | take(3) | select: { it }\n }}
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] |> assignTo: numbers }}
+{{ numbers |> take(3) |> select: { it }\n }}
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -517,10 +517,10 @@ First 3 numbers:
         {
             Assert.That(context.EvaluateScript(@"
 First 3 orders in WA:
-{{ customers | zip: it.Orders 
-   | let({ c: 'it[0]', o: 'it[1]' })
-   | where: c.Region = 'WA'
-   | select: { [c.CustomerId, o.OrderId, o.OrderDate] | jsv }\n 
+{{ customers |> zip: it.Orders 
+   |> let({ c: 'it[0]', o: 'it[1]' })
+   |> where: c.Region == 'WA'
+   |> select: { [c.CustomerId, o.OrderId, o.OrderDate] |> jsv }\n 
 }}
 ").NormalizeNewLines(),
                 
@@ -537,8 +537,8 @@ First 3 orders in WA:
         {
             Assert.That(context.EvaluateScript(@"
 All but first 4 numbers:
-{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
-{{ numbers | skip(4) | select: { it }\n }}
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] |> assignTo: numbers }}
+{{ numbers |> skip(4) |> select: { it }\n }}
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -557,11 +557,11 @@ All but first 4 numbers:
         {
             Assert.That(context.EvaluateScript(@"
 All but first 2 orders in WA:
-{{ customers | zip: it.Orders
-   | let({ c: 'it[0]', o: 'it[1]' })
-   | where: c.Region = 'WA'
-   | skip(2)
-   | select: { [c.CustomerId, o.OrderId, o.OrderDate] | jsv }\n 
+{{ customers |> zip: it.Orders
+   |> let({ c: 'it[0]', o: 'it[1]' })
+   |> where: c.Region == 'WA'
+   |> skip(2)
+   |> select: { [c.CustomerId, o.OrderId, o.OrderDate] |> jsv }\n 
 }}
 ").NormalizeNewLines(),
                 
@@ -592,10 +592,10 @@ All but first 2 orders in WA:
         { 
             Assert.That(context.EvaluateScript(@"
 First numbers less than 6:
-{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] |> to => numbers }}
 {{ numbers 
-   | takeWhile: it < 6 
-   | select: { it }\n }}
+   |> takeWhile: it < 6 
+   |> select: { it }\n }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -612,10 +612,10 @@ First numbers less than 6:
         { 
             Assert.That(context.EvaluateScript(@"
 First numbers not less than their position:
-{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] |> assignTo: numbers }}
 {{ numbers 
-   | takeWhile: it >= index 
-   | select: { it }\n }}
+   |> takeWhile: it >= index 
+   |> select: { it }\n }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -630,10 +630,10 @@ First numbers not less than their position:
         { 
             Assert.That(context.EvaluateScript(@"
 All elements starting from first element divisible by 3:
-{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] |> assignTo: numbers }}
 {{ numbers 
-   | skipWhile: mod(it,3) != 0 
-   | select: { it }\n }}
+   |> skipWhile: mod(it,3) != 0 
+   |> select: { it }\n }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -653,10 +653,10 @@ All elements starting from first element divisible by 3:
         { 
             Assert.That(context.EvaluateScript(@"
 All elements starting from first element less than its position:
-{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] |> assignTo: numbers }}
 {{ numbers 
-   | skipWhile: it >= index 
-   | select: { it }\n }}
+   |> skipWhile: it >= index 
+   |> select: { it }\n }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -677,10 +677,10 @@ All elements starting from first element less than its position:
         { 
             Assert.That(context.EvaluateScript(@"
 The sorted list of words:
-{{ ['cherry', 'apple', 'blueberry'] | assignTo: words }}
+{{ ['cherry', 'apple', 'blueberry'] |> assignTo: words }}
 {{ words 
-   | orderBy: it 
-   | select: { it }\n }}
+   |> orderBy: it 
+   |> select: { it }\n }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -696,10 +696,10 @@ cherry
         { 
             Assert.That(context.EvaluateScript(@"
 The sorted list of words (by length):
-{{ ['cherry', 'apple', 'blueberry'] | assignTo: words }}
+{{ ['cherry', 'apple', 'blueberry'] |> assignTo: words }}
 {{ words 
-   | orderBy: it.Length 
-   | select: { it }\n }}
+   |> orderBy: it.Length 
+   |> select: { it }\n }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -715,8 +715,8 @@ blueberry
         { 
             Assert.That(context.EvaluateScript(@"
 {{ products 
-   | orderBy: it.ProductName 
-   | select: { it | jsv }\n }}
+   |> orderBy: it.ProductName 
+   |> select: { it |> jsv }\n }}
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -732,10 +732,10 @@ blueberry
         public void Linq31()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ ['aPPLE', 'AbAcUs', 'bRaNcH', 'BlUeBeRrY', 'ClOvEr', 'cHeRry'] | assignTo: words }}
+{{ ['aPPLE', 'AbAcUs', 'bRaNcH', 'BlUeBeRrY', 'ClOvEr', 'cHeRry'] |> assignTo: words }}
 {{ words 
-   | orderBy('it', { comparer }) 
-   | select: { it }\n }}
+   |> orderBy('it', { comparer }) 
+   |> select: { it }\n }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -753,10 +753,10 @@ ClOvEr
         { 
             Assert.That(context.EvaluateScript(@"
 The doubles from highest to lowest:
-{{ [1.7, 2.3, 1.9, 4.1, 2.9] | assignTo: doubles }}
+{{ [1.7, 2.3, 1.9, 4.1, 2.9] |> assignTo: doubles }}
 {{ doubles 
-   | orderByDescending: it 
-   | select: { it }\n }}
+   |> orderByDescending: it 
+   |> select: { it }\n }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -774,8 +774,8 @@ The doubles from highest to lowest:
         { 
             Assert.That(context.EvaluateScript(@"
 {{ products 
-   | orderByDescending: it.UnitsInStock
-   | select: { it | jsv }\n }}
+   |> orderByDescending: it.UnitsInStock
+   |> select: { it |> jsv }\n }}
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -791,10 +791,10 @@ The doubles from highest to lowest:
         public void Linq34()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ ['aPPLE', 'AbAcUs', 'bRaNcH', 'BlUeBeRrY', 'ClOvEr', 'cHeRry'] | assignTo: words }}
+{{ ['aPPLE', 'AbAcUs', 'bRaNcH', 'BlUeBeRrY', 'ClOvEr', 'cHeRry'] |> assignTo: words }}
 {{ words 
-   | orderByDescending('it', { comparer }) 
-   | select: { it }\n }}
+   |> orderByDescending('it', { comparer }) 
+   |> select: { it }\n }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -812,11 +812,11 @@ AbAcUs
         { 
             Assert.That(context.EvaluateScript(@"
 Sorted digits:
-{{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: digits }}
+{{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] |> assignTo: digits }}
 {{ digits 
-   | orderBy: it.length
-   | thenBy: it
-   | select: { it }\n }}
+   |> orderBy: it.length
+   |> thenBy: it
+   |> select: { it }\n }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -838,11 +838,11 @@ three
         public void Linq36()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ ['aPPLE', 'AbAcUs', 'bRaNcH', 'BlUeBeRrY', 'ClOvEr', 'cHeRry'] | assignTo: words }}
+{{ ['aPPLE', 'AbAcUs', 'bRaNcH', 'BlUeBeRrY', 'ClOvEr', 'cHeRry'] |> assignTo: words }}
 {{ words 
-   | orderBy: it.length
-   | thenBy('it', { comparer }) 
-   | select: { it }\n }}
+   |> orderBy: it.length
+   |> thenBy('it', { comparer }) 
+   |> select: { it }\n }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -860,9 +860,9 @@ BlUeBeRrY
         { 
             Assert.That(context.EvaluateScript(@"
 {{ products 
-   | orderBy: it.Category
-   | thenByDescending: it.UnitPrice
-   | select: { it | jsv }\n }}
+   |> orderBy: it.Category
+   |> thenByDescending: it.UnitPrice
+   |> select: { it |> jsv }\n }}
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -882,11 +882,11 @@ BlUeBeRrY
         public void Linq38()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ ['aPPLE', 'AbAcUs', 'bRaNcH', 'BlUeBeRrY', 'ClOvEr', 'cHeRry'] | assignTo: words }}
+{{ ['aPPLE', 'AbAcUs', 'bRaNcH', 'BlUeBeRrY', 'ClOvEr', 'cHeRry'] |> assignTo: words }}
 {{ words 
-   | orderBy: it.length
-   | thenByDescending('it', { comparer }) 
-   | select: { it }\n }}
+   |> orderBy: it.length
+   |> thenByDescending('it', { comparer }) 
+   |> select: { it }\n }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -904,11 +904,11 @@ BlUeBeRrY
         { 
             Assert.That(context.EvaluateScript(@"
 A backwards list of the digits with a second character of 'i':
-{{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: digits }}
+{{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] |> assignTo: digits }}
 {{ digits 
-   | where: it[1] = 'i'
-   | reverse
-   | select: { it }\n }}
+   |> where: it[1] == 'i'
+   |> reverse
+   |> select: { it }\n }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -924,11 +924,11 @@ five
         public void Linq40()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] |> assignTo: numbers }}
 {{ numbers 
-   | groupBy: mod(it,5)
-   | let({ remainder: 'it.Key', numbers: 'it' })
-   | select: Numbers with a remainder of { remainder } when divided by 5:\n{ numbers | select('{it}\n') } }}
+   |> groupBy: mod(it,5)
+   |> let({ remainder: 'it.Key', numbers: 'it' })
+   |> select: Numbers with a remainder of { remainder } when divided by 5:\n{ numbers |> select('{it}\n') } }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -954,11 +954,11 @@ Numbers with a remainder of 2 when divided by 5:
         public void Linq41()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ ['blueberry', 'chimpanzee', 'abacus', 'banana', 'apple', 'cheese'] | assignTo: words }}
+{{ ['blueberry', 'chimpanzee', 'abacus', 'banana', 'apple', 'cheese'] |> assignTo: words }}
 {{ words 
-   | groupBy: it[0]
-   | let({ firstLetter: 'it.Key', words: 'it' })
-   | select: Words that start with the letter '{firstLetter}':\n{ words | select('{it}\n') } }}
+   |> groupBy: it[0]
+   |> let({ firstLetter: 'it.Key', words: 'it' })
+   |> select: Words that start with the letter '{firstLetter}':\n{ words |> select('{it}\n') } }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -979,9 +979,9 @@ apple
         { 
             Assert.That(context.EvaluateScript(@"
 {{ products 
-   | groupBy: it.Category
-   | let({ category: 'it.Key', products: 'it' })
-   | select: {category}:\n{ products | select('{it | jsv}\n') } }}
+   |> groupBy: it.Category
+   |> let({ category: 'it.Key', products: 'it' })
+   |> select: {category}:\n{ products |> select('{it |> jsv}\n') } }}
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1009,11 +1009,11 @@ Condiments:
         { 
             context.VirtualFiles.WriteFile("month-orders.html", @"
 {{ year }}
-{{ monthGroups | scopeVars | select: { indent }{ month }\n{ 2 | indents }{ orders | jsv }\n }}");
+{{ monthGroups |> scopeVars |> select: { indent }{ month }\n{ 2 |> indents }{ orders |> jsv }\n }}");
             
             Assert.That(context.EvaluateScript(@"
 {{ customers 
-   | let({ 
+   |> let({ 
         companyName: 'it.CompanyName', 
         yearGroups: ""map (
                         groupBy(it.Orders, 'it.OrderDate.Year'),
@@ -1026,7 +1026,7 @@ Condiments:
                         }'
                     )"" 
      })
-   | select: \n# { companyName | raw }{ yearGroups | scopeVars | selectPartial('month-orders') } 
+   |> select: \n# { companyName |> raw }{ yearGroups |> scopeVars |> selectPartial('month-orders') } 
 }}
 ").NormalizeNewLines(),
                 
@@ -1058,11 +1058,11 @@ Condiments:
         { 
             context.VirtualFiles.WriteFile("month-orders.html", @"
 {{ year }}
-{{ monthGroups | scopeVars | select: { indent }{ month }\n{ 2 | indents }{ orders | jsv }\n }}");
+{{ monthGroups |> scopeVars |> select: { indent }{ month }\n{ 2 |> indents }{ orders |> jsv }\n }}");
             
             Assert.That(context.EvaluateScript(@"
 {{ customers 
-   | map => { 
+   |> map => { 
         companyName: it.CompanyName, 
         yearGroups: map (
             groupBy(it.Orders, it => it.OrderDate.Year),
@@ -1075,7 +1075,7 @@ Condiments:
             }
         ) 
      }
-   | select: \n# { it.companyName | raw }{ it.yearGroups | scopeVars | selectPartial('month-orders') } 
+   |> select: \n# { it.companyName |> raw }{ it.yearGroups |> scopeVars |> selectPartial('month-orders') } 
 }}
 ").NormalizeNewLines(),
                 
@@ -1106,10 +1106,10 @@ Condiments:
         public void Linq44()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ ['from   ', ' salt', ' earn ', '  last   ', ' near ', ' form  '] | assignTo: anagrams }}
+{{ ['from   ', ' salt', ' earn ', '  last   ', ' near ', ' form  '] |> assignTo: anagrams }}
 {{ anagrams 
-   | groupBy('trim(it)', { comparer: anagramComparer })
-   | select: { it | json }\n 
+   |> groupBy('trim(it)', { comparer: anagramComparer })
+   |> select: { it |> json }\n 
 }}
 ").NormalizeNewLines(),
                 
@@ -1124,10 +1124,10 @@ Condiments:
         public void Linq45()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ ['from   ', ' salt', ' earn ', '  last   ', ' near ', ' form  '] | assignTo: anagrams }}
+{{ ['from   ', ' salt', ' earn ', '  last   ', ' near ', ' form  '] |> assignTo: anagrams }}
 {{ anagrams 
-   | groupBy('trim(it)', { map: 'upper(it)', comparer: anagramComparer })
-   | select: { it | json }\n 
+   |> groupBy('trim(it)', { map: 'upper(it)', comparer: anagramComparer })
+   |> select: { it |> json }\n 
 }}
 ").NormalizeNewLines(),
                 
@@ -1143,8 +1143,8 @@ Condiments:
         { 
             Assert.That(context.EvaluateScript(@"
 Prime factors of 300:
-{{ [2, 2, 3, 5, 5] | assignTo: factorsOf300 }}
-{{ factorsOf300 | distinct | select: { it }\n }}
+{{ [2, 2, 3, 5, 5] |> assignTo: factorsOf300 }}
+{{ factorsOf300 |> distinct |> select: { it }\n }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -1161,9 +1161,9 @@ Prime factors of 300:
             Assert.That(context.EvaluateScript(@"
 Category names:
 {{ products 
-   | map: it.Category 
-   | distinct
-   | select: { it }\n }}
+   |> map: it.Category 
+   |> distinct
+   |> select: { it }\n }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -1183,10 +1183,10 @@ Grains/Cereals
         public void Linq48()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [ 0, 2, 4, 5, 6, 8, 9 ] | assignTo: numbersA }}
-{{ [ 1, 3, 5, 7, 8 ] | assignTo: numbersB }}
+{{ [ 0, 2, 4, 5, 6, 8, 9 ] |> assignTo: numbersA }}
+{{ [ 1, 3, 5, 7, 8 ] |> assignTo: numbersB }}
 Unique numbers from both arrays:
-{{ numbersA | union(numbersB) | select: { it }\n }}
+{{ numbersA |> union(numbersB) |> select: { it }\n }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -1209,15 +1209,15 @@ Unique numbers from both arrays:
         { 
             Assert.That(context.EvaluateScript(@"
 {{ products  
-   | map: it.ProductName[0] 
-   | assignTo: productFirstChars }}
+   |> map: it.ProductName[0] 
+   |> assignTo: productFirstChars }}
 {{ customers 
-   | map: it.CompanyName[0] 
-   | assignTo: customerFirstChars }}
+   |> map: it.CompanyName[0] 
+   |> assignTo: customerFirstChars }}
 Unique first letters from Product names and Customer names:
 {{ productFirstChars 
-   | union(customerFirstChars) 
-   | select: { it }\n }}
+   |> union(customerFirstChars) 
+   |> select: { it }\n }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -1253,10 +1253,10 @@ H
         public void Linq50()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [ 0, 2, 4, 5, 6, 8, 9 ] | assignTo: numbersA }}
-{{ [ 1, 3, 5, 7, 8 ] | assignTo: numbersB }}
+{{ [ 0, 2, 4, 5, 6, 8, 9 ] |> assignTo: numbersA }}
+{{ [ 1, 3, 5, 7, 8 ] |> assignTo: numbersB }}
 Common numbers shared by both arrays:
-{{ numbersA | intersect(numbersB) | select: { it }\n }}
+{{ numbersA |> intersect(numbersB) |> select: { it }\n }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -1271,15 +1271,15 @@ Common numbers shared by both arrays:
         { 
             Assert.That(context.EvaluateScript(@"
 {{ products  
-   | map: it.ProductName[0] 
-   | assignTo: productFirstChars }}
+   |> map: it.ProductName[0] 
+   |> assignTo: productFirstChars }}
 {{ customers 
-   | map: it.CompanyName[0] 
-   | assignTo: customerFirstChars }}
+   |> map: it.CompanyName[0] 
+   |> assignTo: customerFirstChars }}
 Common first letters from Product names and Customer names:
 {{ productFirstChars 
-   | intersect(customerFirstChars) 
-   | select: { it }\n }}
+   |> intersect(customerFirstChars) 
+   |> select: { it }\n }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -1310,10 +1310,10 @@ O
         public void Linq52()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [ 0, 2, 4, 5, 6, 8, 9 ] | assignTo: numbersA }}
-{{ [ 1, 3, 5, 7, 8 ] | assignTo: numbersB }}
+{{ [ 0, 2, 4, 5, 6, 8, 9 ] |> assignTo: numbersA }}
+{{ [ 1, 3, 5, 7, 8 ] |> assignTo: numbersB }}
 Numbers in first array but not second array:
-{{ numbersA | except(numbersB) | select: { it }\n }}
+{{ numbersA |> except(numbersB) |> select: { it }\n }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -1331,15 +1331,15 @@ Numbers in first array but not second array:
         { 
             Assert.That(context.EvaluateScript(@"
 {{ products  
-   | map: it.ProductName[0] 
-   | assignTo: productFirstChars }}
+   |> map: it.ProductName[0] 
+   |> assignTo: productFirstChars }}
 {{ customers 
-   | map: it.CompanyName[0] 
-   | assignTo: customerFirstChars }}
+   |> map: it.CompanyName[0] 
+   |> assignTo: customerFirstChars }}
 First letters from Product names, but not from Customer names:
 {{ productFirstChars 
-   | except(customerFirstChars) 
-   | select: { it }\n }}
+   |> except(customerFirstChars) 
+   |> select: { it }\n }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -1354,12 +1354,12 @@ Z
         public void Linq54()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [ 1.7, 2.3, 1.9, 4.1, 2.9 ] | assignTo: doubles }}
+{{ [ 1.7, 2.3, 1.9, 4.1, 2.9 ] |> assignTo: doubles }}
 Every other double from highest to lowest:
 {{ doubles 
-   | orderByDescending: it
-   | step({ by: 2 }) 
-   | select: { it }\n }}
+   |> orderByDescending: it
+   |> step({ by: 2 }) 
+   |> select: { it }\n }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -1374,12 +1374,12 @@ Every other double from highest to lowest:
         public void Linq55()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: words }}
+{{ [ 'cherry', 'apple', 'blueberry' ] |> assignTo: words }}
 The sorted word list:
 {{ words
-   | orderBy: it 
-   | toList 
-   | select: { it }\n }}
+   |> orderBy: it 
+   |> toList 
+   |> select: { it }\n }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -1394,12 +1394,12 @@ cherry
         public void Linq56()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [{name:'Alice', score:50}, {name: 'Bob', score:40}, {name:'Cathy', score:45}] | assignTo: scoreRecords }}
+{{ [{name:'Alice', score:50}, {name: 'Bob', score:40}, {name:'Cathy', score:45}] |> assignTo: scoreRecords }}
 Bob's score: 
 {{ scoreRecords 
-   | toDictionary: it.name
-   | get: Bob
-   | select: { it['name'] } = { it['score'] }
+   |> toDictionary: it.name
+   |> get: Bob
+   |> select: { it['name'] } = { it['score'] }
 }} 
 ").NormalizeNewLines(),
                 
@@ -1413,11 +1413,11 @@ Bob = 40
         public void Linq57()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [null, 1.0, 'two', 3, 'four', 5, 'six', 7.0] | assignTo: numbers }}
+{{ [null, 1.0, 'two', 3, 'four', 5, 'six', 7.0] |> assignTo: numbers }}
 Numbers stored as doubles:
 {{ numbers 
-   | of({ type: 'Double' })
-   | select: { it | format('#.0') }\n }} 
+   |> of({ type: 'Double' })
+   |> select: { it |> format('#.0') }\n }} 
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -1432,9 +1432,9 @@ Numbers stored as doubles:
         { 
             Assert.That(context.EvaluateScript(@"
 {{ products
-   | where: it.ProductId = 12 
-   | first
-   | select: { it | jsv } }}
+   |> where: it.ProductId == 12 
+   |> first
+   |> select: { it |> jsv } }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -1446,10 +1446,10 @@ Numbers stored as doubles:
         public void Linq59()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: strings }}
+{{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] |> assignTo: strings }}
 {{ strings
-   | first: it[0] = 'o'
-   | select: A string starting with 'o': { it } }}
+   |> first: it[0] == 'o'
+   |> select: A string starting with 'o': { it } }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -1461,8 +1461,8 @@ A string starting with 'o': one
         public void Linq61()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [] | assignTo: numbers }}
-{{ numbers | first | otherwise('null') }} 
+{{ [] |> assignTo: numbers }}
+{{ numbers |> first |> otherwise('null') }} 
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -1475,8 +1475,8 @@ null
         { 
             Assert.That(context.EvaluateScript(@"
 Product 789 exists: {{ products 
-   | first: it.ProductId = 789 
-   | isNotNull }} 
+   |> first: it.ProductId == 789 
+   |> isNotNull }} 
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -1488,11 +1488,11 @@ Product 789 exists: False
         public void Linq64()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [ 5, 4, 1, 3, 9, 8, 6, 7, 2, 0 ] | assignTo: numbers }} 
+{{ [ 5, 4, 1, 3, 9, 8, 6, 7, 2, 0 ] |> assignTo: numbers }} 
 {{ numbers
-   | where: it > 5
-   | elementAt(1) 
-   | select: Second number > 5: { it } }} 
+   |> where: it > 5
+   |> elementAt(1) 
+   |> select: Second number > 5: { it } }} 
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -1505,7 +1505,7 @@ Second number > 5: 8
         { 
             Assert.That(context.EvaluateScript(@"
 {{ range(100,50)
-   | select: The number {it} is { 'even' | if(isEven(it)) | otherwise('odd') }.\n }} 
+   |> select: The number {it} is { 'even' |> if(isEven(it)) |> otherwise('odd') }.\n }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1527,7 +1527,7 @@ The number 110 is even.
         public void Linq66()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ 10 | itemsOf(7) | select: {it}\n }} 
+{{ 10 |> itemsOf(7) |> select: {it}\n }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1548,10 +1548,10 @@ The number 110 is even.
         public void Linq67()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ ['believe', 'relief', 'receipt', 'field'] | assignTo: words }}
+{{ ['believe', 'relief', 'receipt', 'field'] |> assignTo: words }}
 {{ words 
-   | any: contains(it, 'ei')
-   | select: There is a word that contains in the list that contains 'ei': { it | lower } }} 
+   |> any: contains(it, 'ei')
+   |> select: There is a word that contains in the list that contains 'ei': { it |> lower } }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1563,10 +1563,10 @@ There is a word that contains in the list that contains 'ei': true".NormalizeNew
         {
             Assert.That(context.EvaluateScript(@"
 {{ products 
-   | groupBy: it.Category
-   | where: any(it, 'it.UnitsInStock = 0')
-   | let({ category: 'it.Key', products: 'it' }) 
-   | select: { category }\n{ products | jsv }\n }} 
+   |> groupBy: it.Category
+   |> where: any(it, 'it.UnitsInStock == 0')
+   |> let({ category: 'it.Key', products: 'it' }) 
+   |> select: { category }\n{ products |> jsv }\n }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1579,10 +1579,10 @@ Condiments
         public void Linq70()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [1, 11, 3, 19, 41, 65, 19] | assignTo: numbers }}
+{{ [1, 11, 3, 19, 41, 65, 19] |> assignTo: numbers }}
 {{ numbers 
-   | all: isOdd(it)
-   | select: The list contains only odd numbers: { it | lower } }} 
+   |> all: isOdd(it)
+   |> select: The list contains only odd numbers: { it |> lower } }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1594,10 +1594,10 @@ The list contains only odd numbers: true".NormalizeNewLines()));
         {
             Assert.That(context.EvaluateScript(@"
 {{ products 
-   | groupBy: it.Category
-   | where: all(it, 'it.UnitsInStock > 0')
-   | let({ category: 'it.Key', products: 'it' }) 
-   | select: { category }\n{ products | jsv }\n }} 
+   |> groupBy: it.Category
+   |> where: all(it, 'it.UnitsInStock > 0')
+   |> let({ category: 'it.Key', products: 'it' }) 
+   |> select: { category }\n{ products |> jsv }\n }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1610,8 +1610,8 @@ Beverages
         public void Linq73()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [2, 2, 3, 5, 5] | assignTo: factorsOf300 }}
-{{ factorsOf300 | distinct | count | select: There are {it} unique factors of 300. }} 
+{{ [2, 2, 3, 5, 5] |> assignTo: factorsOf300 }}
+{{ factorsOf300 |> distinct |> count |> select: There are {it} unique factors of 300. }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1622,10 +1622,10 @@ There are 3 unique factors of 300.".NormalizeNewLines()));
         public void Linq74()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] |> assignTo: numbers }}
 {{ numbers 
-   | count: isOdd(it) 
-   | select: There are {it} odd numbers in the list. }} 
+   |> count: isOdd(it) 
+   |> select: There are {it} odd numbers in the list. }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1637,8 +1637,8 @@ There are 5 odd numbers in the list.".NormalizeNewLines()));
         {
             Assert.That(context.EvaluateScript(@"
 {{ customers 
-   | let({ customerId: 'it.CustomerId', ordersCount: 'count(it.Orders)' }) 
-   | select: {customerId}, {ordersCount}\n }} 
+   |> let({ customerId: 'it.CustomerId', ordersCount: 'count(it.Orders)' }) 
+   |> select: {customerId}, {ordersCount}\n }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1657,9 +1657,9 @@ BLONP, 11
         {
             Assert.That(context.EvaluateScript(@"
 {{ products 
-   | groupBy: it.Category
-   | let({ category: 'it.Key', productCount: 'count(it)' }) 
-   | select: {category}, {productCount}\n }} 
+   |> groupBy: it.Category
+   |> let({ category: 'it.Key', productCount: 'count(it)' }) 
+   |> select: {category}, {productCount}\n }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1678,8 +1678,8 @@ Grains/Cereals, 7
         public void Linq78()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
-{{ numbers | sum | select: The sum of the numbers is {it}. }} 
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] |> assignTo: numbers }}
+{{ numbers |> sum |> select: The sum of the numbers is {it}. }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1690,10 +1690,10 @@ The sum of the numbers is 45.".NormalizeNewLines()));
         public void Linq79()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [ 'cherry', 'apple', 'blueberry'] | assignTo: words }}
+{{ [ 'cherry', 'apple', 'blueberry'] |> assignTo: words }}
 {{ words
-   | sum: it.Length 
-   | select: There are a total of {it} characters in these words. }} 
+   |> sum: it.Length 
+   |> select: There are a total of {it} characters in these words. }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1705,9 +1705,9 @@ There are a total of 20 characters in these words.".NormalizeNewLines()));
         {
             Assert.That(context.EvaluateScript(@"
 {{ products 
-   | groupBy: it.Category
-   | let({ category: 'it.Key', totalUnitsInStock: 'sum(it, `it.UnitsInStock`)' }) 
-   | select: {category}, {totalUnitsInStock}\n }} 
+   |> groupBy: it.Category
+   |> let({ category: 'it.Key', totalUnitsInStock: 'sum(it, `it.UnitsInStock`)' }) 
+   |> select: {category}, {totalUnitsInStock}\n }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1726,8 +1726,8 @@ Grains/Cereals, 308
         public void Linq81()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
-{{ numbers | min | select: The minimum number is {it}. }} 
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] |> assignTo: numbers }}
+{{ numbers |> min |> select: The minimum number is {it}. }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1738,10 +1738,10 @@ The minimum number is 0.".NormalizeNewLines()));
         public void Linq82()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: words }}
+{{ [ 'cherry', 'apple', 'blueberry' ] |> assignTo: words }}
 {{ words
-   | min: it.Length 
-   | select: The shortest word is {it} characters long. }} 
+   |> min: it.Length 
+   |> select: The shortest word is {it} characters long. }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1753,9 +1753,9 @@ The shortest word is 5 characters long.".NormalizeNewLines()));
         {
             Assert.That(context.EvaluateScript(@"
 {{ products 
-   | groupBy: it.Category
-   | let({ category: 'it.Key', cheapestPrice: 'min(it, `it.UnitPrice`)' }) 
-   | select: {category}, {cheapestPrice}\n }} 
+   |> groupBy: it.Category
+   |> let({ category: 'it.Key', cheapestPrice: 'min(it, `it.UnitPrice`)' }) 
+   |> select: {category}, {cheapestPrice}\n }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1775,14 +1775,14 @@ Grains/Cereals, 7
         {
             Assert.That(context.EvaluateScript(@"
 {{ products 
-   | groupBy: it.Category
-   | let({ 
+   |> groupBy: it.Category
+   |> let({ 
         g: 'it',
         minPrice: 'min(g, `it.UnitPrice`)', 
         category: 'g.Key', 
-        cheapestProducts: 'where(g, `it.UnitPrice = minPrice`)' 
+        cheapestProducts: 'where(g, `it.UnitPrice == minPrice`)' 
      })
-   | select: { category }\n{ cheapestProducts | jsv }\n }} 
+   |> select: { category }\n{ cheapestProducts |> jsv }\n }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1809,8 +1809,8 @@ Grains/Cereals
         public void Linq85()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
-{{ numbers | max | select: The maximum number is {it}. }} 
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] |> assignTo: numbers }}
+{{ numbers |> max |> select: The maximum number is {it}. }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1821,10 +1821,10 @@ The maximum number is 9.".NormalizeNewLines()));
         public void Linq86()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: words }}
+{{ [ 'cherry', 'apple', 'blueberry' ] |> assignTo: words }}
 {{ words
-   | max: it.Length 
-   | select: The longest word is {it} characters long. }} 
+   |> max: it.Length 
+   |> select: The longest word is {it} characters long. }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1836,9 +1836,9 @@ The longest word is 9 characters long.".NormalizeNewLines()));
         {
             Assert.That(context.EvaluateScript(@"
 {{ products 
-   | groupBy: it.Category
-   | let({ category: 'it.Key', mostExpensivePrice: 'max(it, `it.UnitPrice`)' }) 
-   | select: Category: {category}, MaximumPrice: {mostExpensivePrice}\n }} 
+   |> groupBy: it.Category
+   |> let({ category: 'it.Key', mostExpensivePrice: 'max(it, `it.UnitPrice`)' }) 
+   |> select: Category: {category}, MaximumPrice: {mostExpensivePrice}\n }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1858,14 +1858,14 @@ Category: Grains/Cereals, MaximumPrice: 38
         {
             Assert.That(context.EvaluateScript(@"
 {{ products 
-   | groupBy: it.Category
-   | let({ 
+   |> groupBy: it.Category
+   |> let({ 
         g: 'it',
         maxPrice: 'max(g, `it.UnitPrice`)', 
         category: 'g.Key', 
-        mostExpensiveProducts: 'where(g, `it.UnitPrice = maxPrice`)' 
+        mostExpensiveProducts: 'where(g, `it.UnitPrice == maxPrice`)' 
      })
-   | select: { category }\n{ mostExpensiveProducts | jsv }\n }} 
+   |> select: { category }\n{ mostExpensiveProducts |> jsv }\n }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1892,8 +1892,8 @@ Grains/Cereals
         public void Linq89()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
-{{ numbers | average | select: The average number is {it}. }} 
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] |> assignTo: numbers }}
+{{ numbers |> average |> select: The average number is {it}. }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1904,10 +1904,10 @@ The average number is 4.5.".NormalizeNewLines()));
         public void Linq90()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: words }}
+{{ [ 'cherry', 'apple', 'blueberry' ] |> assignTo: words }}
 {{ words
-   | average: it.Length 
-   | select: The average word length is {it} characters. }} 
+   |> average: it.Length 
+   |> select: The average word length is {it} characters. }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1919,9 +1919,9 @@ The average word length is 6.66666666666667 characters.".NormalizeNewLines()));
         {
             Assert.That(context.EvaluateScript(@"
 {{ products 
-   | groupBy: it.Category
-   | let({ category: 'it.Key', averagePrice: 'average(it, `it.UnitPrice`)' }) 
-   | select: Category: {category}, AveragePrice: {averagePrice}\n }} 
+   |> groupBy: it.Category
+   |> let({ category: 'it.Key', averagePrice: 'average(it, `it.UnitPrice`)' }) 
+   |> select: Category: {category}, AveragePrice: {averagePrice}\n }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1940,10 +1940,10 @@ Category: Grains/Cereals, AveragePrice: 20.25
         public void Linq92()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [1.7, 2.3, 1.9, 4.1, 2.9] | assignTo: doubles }}
+{{ [1.7, 2.3, 1.9, 4.1, 2.9] |> assignTo: doubles }}
 {{ doubles 
-   | reduce((accumulator,it) => accumulator * it,1)
-   | select: Total product of all numbers: { it | format('#.####') }. }} 
+   |> reduce((accumulator,it) => accumulator * it,1)
+   |> select: Total product of all numbers: { it |> format('#.####') }. }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1954,11 +1954,11 @@ Total product of all numbers: 88.3308".NormalizeNewLines()));
         public void Linq93()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [20, 10, 40, 50, 10, 70, 30] | assignTo: attemptedWithdrawals }}
+{{ [20, 10, 40, 50, 10, 70, 30] |> assignTo: attemptedWithdrawals }}
 {{ attemptedWithdrawals 
-   | reduce((balance, nextWithdrawal) => ((nextWithdrawal <= balance) ? (balance - nextWithdrawal) : balance), 
+   |> reduce((balance, nextWithdrawal) => ((nextWithdrawal <= balance) ? (balance - nextWithdrawal) : balance), 
             { initialValue: 100.0, })
-   | select: Ending balance: { it }. }} 
+   |> select: Ending balance: { it }. }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1969,10 +1969,10 @@ Ending balance: 20".NormalizeNewLines()));
         public void Linq94()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [0, 2, 4, 5, 6, 8, 9] | assignTo: numbersA }}
-{{ [1, 3, 5, 7, 8] | assignTo: numbersB }}
+{{ [0, 2, 4, 5, 6, 8, 9] |> assignTo: numbersA }}
+{{ [1, 3, 5, 7, 8] |> assignTo: numbersB }}
 All numbers from both arrays:
-{{ numbersA | concat(numbersB) | select: {it}\n }} 
+{{ numbersA |> concat(numbersB) |> select: {it}\n }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1996,10 +1996,10 @@ All numbers from both arrays:
         public void Linq95()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ customers | map('it.CompanyName') | assignTo: customerNames }}
-{{ products | map('it.ProductName') | assignTo: productNames }}
+{{ customers |> map('it.CompanyName') |> assignTo: customerNames }}
+{{ products |> map('it.ProductName') |> assignTo: productNames }}
 Customer and product names:
-{{ customerNames | concat(productNames) | select: { it | raw }\n }} 
+{{ customerNames |> concat(productNames) |> select: { it |> raw }\n }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -2017,9 +2017,9 @@ Blauer See Delikatessen
         public void Linq96()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: wordsA }}
-{{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: wordsB }}
-{{ wordsA | equivalentTo(wordsB) | select: The sequences match: { it | lower } }} 
+{{ [ 'cherry', 'apple', 'blueberry' ] |> assignTo: wordsA }}
+{{ [ 'cherry', 'apple', 'blueberry' ] |> assignTo: wordsB }}
+{{ wordsA |> equivalentTo(wordsB) |> select: The sequences match: { it |> lower } }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -2030,9 +2030,9 @@ The sequences match: true".NormalizeNewLines()));
         public void linq97()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: wordsA }}
-{{ [ 'apple', 'blueberry', 'cherry' ] | assignTo: wordsB }}
-{{ wordsA | equivalentTo(wordsB) | select: The sequences match: { it | lower } }} 
+{{ [ 'cherry', 'apple', 'blueberry' ] |> assignTo: wordsA }}
+{{ [ 'apple', 'blueberry', 'cherry' ] |> assignTo: wordsB }}
+{{ wordsA |> equivalentTo(wordsB) |> select: The sequences match: { it |> lower } }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -2043,9 +2043,9 @@ The sequences match: false".NormalizeNewLines()));
         public void Linq99()
         { 
             Assert.That(context.EvaluateScript(@"
-{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
-{{ 0 | assignTo: i }}
-{{ numbers | let({ i: 'incr(i)' }) | select: v = {index | incr}, i = {i}\n }} 
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] |> assignTo: numbers }}
+{{ 0 |> assignTo: i }}
+{{ numbers |> let({ i: 'incr(i)' }) |> select: v = {index |> incr}, i = {i}\n }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -2067,17 +2067,17 @@ v = 10, i = 10
         {
             // lowNumbers is assigned the result not a reusable query
             Assert.That(context.EvaluateScript(@"
-{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] |> assignTo: numbers }}
 {{ numbers 
-   | where: it <= 3
-   | assignTo: lowNumbers }}
+   |> where: it <= 3
+   |> assignTo: lowNumbers }}
 First run numbers <= 3:
-{{ lowNumbers | select: {it}\n }}
-{{ 10 | times | do: assign('numbers[index]', -numbers[index]) }}
+{{ lowNumbers |> select: {it}\n }}
+{{ 10 |> times |> do: assign('numbers[index]', -numbers[index]) }}
 Second run numbers <= 3:
-{{ lowNumbers | select: {it}\n }}
+{{ lowNumbers |> select: {it}\n }}
 Contents of numbers:
-{{ numbers | select: {it}\n }}
+{{ numbers |> select: {it}\n }}
 ").NormalizeNewLines(),
 
                 Does.StartWith(@"

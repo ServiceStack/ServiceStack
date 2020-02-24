@@ -78,7 +78,7 @@ Numbers < 5:
             Assert.That(context.EvaluateScript(@"
 Sold out products:
 {{ products 
-    |> where => it.UnitsInStock = 0 
+    |> where => it.UnitsInStock == 0 
     |> select: { it.productName |> raw } is sold out!\n }}
 ").NormalizeNewLines(),
                 
@@ -122,7 +122,7 @@ Customer {{ it.CustomerId }} {{ it.CompanyName |> raw }}
             
             Assert.That(context.EvaluateScript(@"
 {{ customers 
-   |> where => it.Region = 'WA' 
+   |> where => it.Region == 'WA' 
    |> to => waCustomers 
 }}
 Customers from Washington and their orders:
@@ -429,7 +429,7 @@ Pairs where a < b:
             var template = @"
 {{ '1997-01-01' |> to => cutoffDate }}
 {{ customers 
-   |> where => it.Region = 'WA'
+   |> where => it.Region == 'WA'
    |> zip => it.Orders
    |> let({ c: 'it[0]', o: 'it[1]' })
    |> where => o.OrderDate  >= cutoffDate 
@@ -507,7 +507,7 @@ First 3 numbers:
 First 3 orders in WA:
 {{ customers |> zip => it.Orders 
    |> let({ c: 'it[0]', o: 'it[1]' })
-   |> where => c.Region = 'WA'
+   |> where => c.Region == 'WA'
    |> select: { [c.CustomerId, o.OrderId, o.OrderDate] |> jsv }\n 
 }}
 ").NormalizeNewLines(),
@@ -547,7 +547,7 @@ All but first 4 numbers:
 All but first 2 orders in WA:
 {{ customers |> zip: it.Orders
    |> let({ c: 'it[0]', o: 'it[1]' })
-   |> where => c.Region = 'WA'
+   |> where => c.Region == 'WA'
    |> skip(2)
    |> select: { [c.CustomerId, o.OrderId, o.OrderDate] |> jsv }\n 
 }}
@@ -894,7 +894,7 @@ BlUeBeRrY
 A backwards list of the digits with a second character of 'i':
 {{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] |> to => digits }}
 {{ digits 
-   |> where => it[1] = 'i'
+   |> where => it[1] == 'i'
    |> reverse
    |> select: { it }\n }}
 ").NormalizeNewLines(),
@@ -1420,7 +1420,7 @@ Numbers stored as doubles:
         { 
             Assert.That(context.EvaluateScript(@"
 {{ products
-   |> where => it.ProductId = 12 
+   |> where => it.ProductId == 12 
    |> first
    |> select: { it |> jsv } }}
 ").NormalizeNewLines(),
@@ -1436,7 +1436,7 @@ Numbers stored as doubles:
             Assert.That(context.EvaluateScript(@"
 {{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] |> to => strings }}
 {{ strings
-   |> first => it[0] = 'o'
+   |> first => it[0] == 'o'
    |> select: A string starting with 'o': { it } }}
 ").NormalizeNewLines(),
                 
@@ -1463,7 +1463,7 @@ null
         { 
             Assert.That(context.EvaluateScript(@"
 Product 789 exists: {{ products 
-   |> first => it.ProductId = 789 
+   |> first => it.ProductId == 789 
    |> isNotNull }} 
 ").NormalizeNewLines(),
                 
@@ -1552,7 +1552,7 @@ There is a word that contains in the list that contains 'ei': true".NormalizeNew
             Assert.That(context.EvaluateScript(@"
 {{ products 
    |> groupBy => it.Category
-   |> where => any(it, 'it.UnitsInStock = 0')
+   |> where => any(it, 'it.UnitsInStock == 0')
    |> let({ category: 'it.Key', products: 'it' }) 
    |> select: { category }\n{ products |> jsv }\n }} 
 ").NormalizeNewLines(),
@@ -1768,7 +1768,7 @@ Grains/Cereals, 7
         g: 'it',
         minPrice: 'min(g, `it.UnitPrice`)', 
         category: 'g.Key', 
-        cheapestProducts: 'where(g, `it.UnitPrice = minPrice`)' 
+        cheapestProducts: 'where(g, `it.UnitPrice == minPrice`)' 
      })
    |> select: { category }\n{ cheapestProducts |> jsv }\n }} 
 ").NormalizeNewLines(),
@@ -1851,7 +1851,7 @@ Category: Grains/Cereals, MaximumPrice: 38
         g: 'it',
         maxPrice: 'max(g, `it.UnitPrice`)', 
         category: 'g.Key', 
-        mostExpensiveProducts: 'where(g, `it.UnitPrice = maxPrice`)' 
+        mostExpensiveProducts: 'where(g, `it.UnitPrice == maxPrice`)' 
      })
    |> select: { category }\n{ mostExpensiveProducts |> jsv }\n }} 
 ").NormalizeNewLines(),

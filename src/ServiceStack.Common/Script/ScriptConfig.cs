@@ -35,6 +35,7 @@ namespace ServiceStack.Script
         public static string DefaultTableClassName { get; set; } = "table";
         public static string DefaultErrorClassName { get; set; } = "alert alert-danger";
         public static bool AllowUnixPipeSyntax { get; set; } = true;
+        public static bool AllowAssignmentExpressions { get; set; } = true;
         
         public static CultureInfo CreateCulture()
         {
