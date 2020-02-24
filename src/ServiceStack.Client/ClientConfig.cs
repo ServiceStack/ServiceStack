@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 
 namespace ServiceStack
 {
@@ -12,5 +13,10 @@ namespace ServiceStack
             ServicePointManager.Expect100Continue = true;
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
         }
+
+        public static Func<string, string> EncodeDispositionFileName { get; set; } = DefaultEncodeDispositionFileName;
+
+        public static string DefaultEncodeDispositionFileName(string fileName) =>
+            fileName.UrlEncode().Replace("+", "%20");
     }
 }

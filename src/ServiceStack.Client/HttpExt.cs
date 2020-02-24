@@ -15,8 +15,13 @@ namespace ServiceStack
             return false;
         }
 
-        public static string GetDispositionFileName(string fileName) => !HasNonAscii(fileName)
-            ? $"filename=\"{fileName}\""
-            : $"filename=\"{fileName.UrlEncode()}\"; filename*=UTF-8''{fileName.UrlEncode()}";
+        public static string GetDispositionFileName(string fileName)
+        {
+            if (!HasNonAscii(fileName))
+                return $"filename=\"{fileName}\"";
+
+            var encodedFileName = ClientConfig.EncodeDispositionFileName(fileName);
+            return $"filename=\"{encodedFileName}\"; filename*=UTF-8''{encodedFileName}";
+        }
     }
 }
