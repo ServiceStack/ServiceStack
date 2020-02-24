@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack;
 using ServiceStack.Mvc;
+using ServiceStack.Text;
 using ServiceStack.Validation;
 
 namespace CheckRazorCore
@@ -68,6 +69,13 @@ namespace CheckRazorCore
         public string Layout { get; set; }
     }
 
+    [Route("/razor/bytes/{Path}")]
+    public class RazorViewBytes : IReturn<string>
+    {
+        public string Path { get; set; }
+        public string Layout { get; set; }
+    }
+
     [Route("/razor/content")]
     [Route("/razor/content/{Path}")]
     public class RazorContent : IReturn<string>
@@ -114,6 +122,17 @@ namespace CheckRazorCore
             var ret = await razor.RenderToHtmlAsync(view, new Hello { Name = "World" },
                 layout:request.Layout);
             return ret;
+        }
+
+        public async Task Any(RazorViewBytes request)
+        {
+            var razor = GetPlugin<RazorFormat>();
+            var view = razor.GetViewPage(request.Path);
+            if (view == null)
+                throw HttpError.NotFound("Razor view not found: " + request.Path);
+
+            await razor.WriteHtmlAsync(Response.OutputStream, view, new Hello { Name = "World" }, 
+                layout:request.Layout);
         }
 
         public async Task<object> Any(RazorContent request)
