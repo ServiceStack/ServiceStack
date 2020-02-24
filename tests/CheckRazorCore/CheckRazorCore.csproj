@@ -6,10 +6,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-<!--        <PackageReference Include="Microsoft.AspNetCore.App" />-->
-    </ItemGroup>
-
-    <ItemGroup>
       <!-- required for Razor compilation on change: https://docs.microsoft.com/en-us/aspnet/core/mvc/views/view-compilation?view=aspnetcore-3.1 -->
       <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="3.1.0" Condition="'$(Configuration)' == 'Debug'" />
         
