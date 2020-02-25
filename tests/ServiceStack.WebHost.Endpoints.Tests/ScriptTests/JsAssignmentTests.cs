@@ -19,6 +19,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             pageResult = new PageResult(context.OneTimePage("{{ var a = 1, b = 1 + 1 }}b == {{b}}"));
             output = pageResult.RenderScript();
             Assert.That(output, Is.EqualTo("b == 2"));
+
+            pageResult = new PageResult(context.OneTimePage("{{ var a = 1 }}:{{ a = 2 }}:a == {{a}}"));
+            output = pageResult.RenderScript();
+            Assert.That(output, Is.EqualTo(":2:a == 2"));
+            Assert.That(!pageResult.Args.ContainsKey("a"));
         }
         
         [Test]
