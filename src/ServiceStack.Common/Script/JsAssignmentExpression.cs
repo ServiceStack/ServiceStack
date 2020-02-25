@@ -41,6 +41,17 @@ namespace ServiceStack.Script
 
         private Action<ScriptScopeContext, object, object> assignFn;
 
+        private string EvalProperty(JsToken token, ScriptScopeContext scope)
+        {
+            switch (token)
+            {
+                case JsIdentifier id:
+                    return id.Name;
+                default:
+                    return JsonValue(token.Evaluate(scope));
+            }
+        }
+        
         public override object Evaluate(ScriptScopeContext scope)
         {
             var rhs = Right.Evaluate(scope);
@@ -59,30 +70,26 @@ namespace ServiceStack.Script
             }
             else if (Left is JsMemberExpression memberExpr)
             {
-                if (memberExpr.Object is JsIdentifier targetId)
-                {
-                    var target = scope.GetValue(targetId.Name);
-                    if (target == null)
-                        throw new ArgumentNullException(targetId.Name);
+                var target = memberExpr.Object.Evaluate(scope);
+                if (target == null)
+                    throw new ArgumentNullException(memberExpr.Object.ToRawString());
 
+                // Evaluate target then reduce to simple expression then compile assign expression using expression trees
+                var assignTargetExpr = memberExpr.Computed
+                    ? "obj[" + EvalProperty(memberExpr.Property, scope) + "]"
+                    : "obj." + EvalProperty(memberExpr.Property, scope);
+
+                if (assignFn == null)
+                {
+                    assignFn = scope.Context.GetAssignExpression(target.GetType(), assignTargetExpr.AsMemory());
                     if (assignFn == null)
-                    {
-                        if (memberExpr.Property is JsIdentifier propName)
-                        {
-                            assignFn = scope.Context.GetAssignExpression(
-                                target.GetType(), (targetId.Name + "." + propName.Name).AsMemory());
-                        }
-                        else
-                        {
-                            var strExpr = memberExpr.ToRawString();
-                            assignFn = scope.Context.GetAssignExpression(target.GetType(), strExpr.AsMemory());
-                        }
-                    }
-                    if (assignFn != null)
-                    {
-                        assignFn(scope, target, rhs);
-                        return rhs;
-                    }
+                        throw new NotSupportedException($"Could not create assignment expression for '{memberExpr.ToRawString()}'");
+                }
+
+                if (assignFn != null)
+                {
+                    assignFn(scope, target, rhs);
+                    return rhs;
                 }
             }
 

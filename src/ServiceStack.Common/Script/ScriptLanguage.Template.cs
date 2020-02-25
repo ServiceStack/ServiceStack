@@ -782,6 +782,10 @@ namespace ServiceStack.Script
             return body;
         }
 
+        private static readonly Type[] ObjectArg = { typeof(object) };
+        public static MethodInfo CreateConvertMethod(Type toType) =>
+            typeof(AutoMappingUtils).GetStaticMethod(nameof(AutoMappingUtils.ConvertTo), ObjectArg).MakeGenericMethod(toType);
+
         public static Action<ScriptScopeContext, object, object> CompileAssign(Type type, ReadOnlyMemory<char> expr)
         {
             var scope = Expression.Parameter(typeof(ScriptScopeContext), "scope");
@@ -795,12 +799,8 @@ namespace ServiceStack.Script
                 var indexExpr = propItemExpr.Arguments[0];
                 if (propItemExpr.Indexer.PropertyType != typeof(object))
                 {
-                    var elType = propItemExpr.Indexer.DeclaringType.GetCollectionType();
-                    var convertToElementType = typeof(AutoMappingUtils).GetStaticMethod(nameof(AutoMappingUtils.ConvertTo), new[] { typeof(object) })
-                        .MakeGenericMethod(elType);
-                    
                     body = Expression.Call(propItemExpr.Object, mi, indexExpr, 
-                        Expression.Call(convertToElementType, valueToAssign));
+                        Expression.Call(CreateConvertMethod(propItemExpr.Indexer.DeclaringType.GetCollectionType()), valueToAssign));
                 }
                 else
                 {
@@ -814,13 +814,9 @@ namespace ServiceStack.Script
 
                 if (arrayInstance.Type != typeof(object))
                 {
-                    var elType = arrayInstance.Type.GetElementType();
-                    var convertToElementType = typeof(AutoMappingUtils).GetStaticMethod(nameof(AutoMappingUtils.ConvertTo), new[] { typeof(object) })
-                        .MakeGenericMethod(elType);
-
                     body = Expression.Assign(
                         Expression.ArrayAccess(arrayInstance, indexExpr), 
-                        Expression.Call(convertToElementType, valueToAssign));
+                        Expression.Call(CreateConvertMethod(arrayInstance.Type.GetElementType()), valueToAssign));
                 }
                 else
                 {
@@ -829,10 +825,19 @@ namespace ServiceStack.Script
                         valueToAssign);
                 }
             }
-            else
+            else if (body is MemberExpression propExpr)
             {
-                throw new BindingExpressionException($"Assignment expression for '{expr}' not supported yet", "valueToAssign", expr.ToString());
+                if (propExpr.Type != typeof(object))
+                {
+                    body = Expression.Assign(propExpr, Expression.Call(CreateConvertMethod(propExpr.Type), valueToAssign));
+                }
+                else
+                {
+                    body = Expression.Assign(propExpr, valueToAssign);
+                }
             }
+            else 
+                throw new BindingExpressionException($"Assignment expression for '{expr}' not supported yet", "valueToAssign", expr.ToString());
 
             return Expression.Lambda<Action<ScriptScopeContext, object, object>>(body, scope, instance, valueToAssign).Compile();
         }
@@ -868,7 +873,7 @@ namespace ServiceStack.Script
             var converted = result.ConvertTo<T>();
             return converted;
         }
-
+        
         private static PropertyInfo AssertProperty(Type currType, string prop, ReadOnlyMemory<char> expr)
         {
             var pi = currType.GetProperty(prop);

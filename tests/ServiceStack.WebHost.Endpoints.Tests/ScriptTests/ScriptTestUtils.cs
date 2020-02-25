@@ -1,6 +1,6 @@
 ﻿namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 {
-    class Person
+    public class Person
     {
         public string Name { get; set; }
         public int Age { get; set; }
