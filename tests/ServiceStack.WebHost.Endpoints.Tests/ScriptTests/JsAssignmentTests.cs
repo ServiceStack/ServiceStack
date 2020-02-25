@@ -188,5 +188,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             assert("stringMap[1.isEven() ? 'a' : 'b'] == {{ stringMap[1.isEven() ? 'a' : 'b'] = 'D' }}", "stringMap[1.isEven() ? 'a' : 'b'] == D", 
                 args => ((Dictionary<string, string>)args["stringMap"])["b"], "D");
         }
+
+        [Test]
+        public void Variable_declarations_truncate_their_whitespace()
+        {
+            var context = new ScriptContext().Init();
+
+            var output = context.RenderScript(@"{{ var a = 1 }}
+{{ var b = 2 }}
+{{ var c = 3 }}
+a + b + c = {{ a + b + c }}");
+            
+            Assert.That(output, Is.EqualTo("a + b + c = 6"));
+        }
     }
 }

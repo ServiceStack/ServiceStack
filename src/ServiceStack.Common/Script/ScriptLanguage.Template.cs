@@ -540,7 +540,8 @@ namespace ServiceStack.Script
                         var lastExpr = varFragment.FilterExpressions?.LastOrDefault();
                         var filterName = lastExpr?.Name ??
                                          varFragment?.InitialExpression?.Name ?? varFragment.Binding;
-                        if (filterName != null && context.RemoveNewLineAfterFiltersNamed.Contains(filterName))
+                        if ((filterName != null && context.RemoveNewLineAfterFiltersNamed.Contains(filterName))
+                            || expr is JsVariableDeclaration)
                         {
                             lastPos += newLineLen;
                         }
