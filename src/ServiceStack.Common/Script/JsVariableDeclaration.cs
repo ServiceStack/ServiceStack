@@ -56,7 +56,7 @@ namespace ServiceStack.Script
             {
                 scope.ScopedParams[declaration.Id.Name] = declaration.Init.Evaluate(scope);
             }
-            return IgnoreResult.Value;
+            return JsNull.Value;
         }
 
         public override Dictionary<string, object> ToJsAst()

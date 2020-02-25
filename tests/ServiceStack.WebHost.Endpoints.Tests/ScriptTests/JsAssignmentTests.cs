@@ -201,5 +201,15 @@ a + b + c = {{ a + b + c }}");
             
             Assert.That(output, Is.EqualTo("a + b + c = 6"));
         }
+
+        [Test]
+        public void Variable_declarations_does_return_an_null_value()
+        {
+            var context = new ScriptContext().Init();
+
+            var output = context.RenderScript(@"{{ isNull(var a = 1) }}:{{a}}");
+            
+            Assert.That(output, Is.EqualTo("True:1"));
+        }
     }
 }
