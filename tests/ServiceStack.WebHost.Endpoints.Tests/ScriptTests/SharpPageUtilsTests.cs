@@ -621,6 +621,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(context.RenderScript("{{const a = 1, b = 1 + 2, c}}{{b}}"), Is.EqualTo("3"));
             Assert.That(context.RenderScript("{{var a = 1, b = 1 + 2, c}}{{c}}"), Is.EqualTo(""));
             Assert.That(context.RenderScript("{{let a = 1, b = 1 + 2,c,d='A'}}{{d}}"), Is.EqualTo("A"));
+            Assert.That(context.RenderScript("{{var a=1, b=1+2, c, d='A'}}{{d}}"), Is.EqualTo("A"));
+            
+            var expr = JS.expression("var a=1, b = 1 + 2, c, d='A'");
+            var str = expr.ToJsAstString();
         }
 
         [Test]

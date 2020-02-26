@@ -124,7 +124,7 @@ namespace ServiceStack.Script
             {
                 ["type"] = ToJsAstType(),
                 ["id"] = Id.Name,
-                ["init"] = Init.ToJsAst(),
+                ["init"] = Init?.ToJsAst(),
             };
             return to;
         }
