@@ -163,7 +163,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
             assert("nestedObjectMap['person'].Age == {{ nestedObjectMap['person'].Age = 30 }}", "nestedObjectMap['person'].Age == 30", 
                 args => ((Person)((Dictionary<string,object>)args["nestedObjectMap"])["person"]).Age, 30);
-            assert("nestedObjectMap['person'].Name == {{ nestedObjectMap['person'].Name = 'Eddie' }}", "nestedObjectMap['person'].Name == Eddie", 
+            assert("nestedObjectMap['per' + 'son'].Name == {{ nestedObjectMap['per' + 'son'].Name = 'Eddie' }}", "nestedObjectMap['per' + 'son'].Name == Eddie", 
                 args => ((Person)((Dictionary<string,object>)args["nestedObjectMap"])["person"]).Name, "Eddie");
             
             assert("nestedObjectMap.person.Age == {{ nestedObjectMap.person.Age = 30 }}", "nestedObjectMap.person.Age == 30", 
@@ -187,7 +187,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 args => ((GrandNestedPerson)args["grandNestedPerson"]).Nested.A.Name, "Eddie");
             
             
-            assert("intList[1+1] == {{ intList[1+1] = 4 }}", "intList[1+1] == 4", 
+            assert("intList[1.isOdd() ? 2 : 3] == {{ intList[1.isOdd() ? 2 : 3] = 4 }}", "intList[1.isOdd() ? 2 : 3] == 4", 
                 args => ((List<int>)args["intList"])[1+1], 4);
             
             assert("stringMap[1.isEven() ? 'a' : 'b'] == {{ stringMap[1.isEven() ? 'a' : 'b'] = 'D' }}", "stringMap[1.isEven() ? 'a' : 'b'] == D", 

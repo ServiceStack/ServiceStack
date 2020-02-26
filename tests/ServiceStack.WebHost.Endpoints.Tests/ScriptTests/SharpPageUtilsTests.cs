@@ -613,6 +613,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         }
 
         [Test]
+        public void Can_execute_variable_declarations()
+        {
+            var context = new ScriptContext().Init();
+            Assert.That(context.RenderScript("{{var a = 1}}{{a}}"), Is.EqualTo("1"));
+            Assert.That(context.RenderScript("{{let a = 1, b = 1 + 2}}{{b}}"), Is.EqualTo("3"));
+            Assert.That(context.RenderScript("{{const a = 1, b = 1 + 2, c}}{{b}}"), Is.EqualTo("3"));
+            Assert.That(context.RenderScript("{{var a = 1, b = 1 + 2, c}}{{c}}"), Is.EqualTo(""));
+            Assert.That(context.RenderScript("{{let a = 1, b = 1 + 2,c,d='A'}}{{d}}"), Is.EqualTo("A"));
+        }
+
+        [Test]
         public void Can_use_cleaner_whitespace_sensitive_syntax_for_string_arguments()
         {
             var fragments1 = ScriptTemplateUtils.ParseTemplate(

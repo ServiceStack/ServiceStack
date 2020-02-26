@@ -54,7 +54,7 @@ namespace ServiceStack.Script
         {
             foreach (var declaration in Declarations)
             {
-                scope.ScopedParams[declaration.Id.Name] = declaration.Init.Evaluate(scope);
+                scope.ScopedParams[declaration.Id.Name] = declaration.Init?.Evaluate(scope);
             }
             return JsNull.Value;
         }
