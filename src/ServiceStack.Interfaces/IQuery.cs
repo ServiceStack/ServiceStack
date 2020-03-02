@@ -50,6 +50,7 @@ namespace ServiceStack
     public interface ICrud {}
     public interface ICreateDb<Table> : ICrud {}
     public interface IUpdateDb<Table> : ICrud {}
+    public interface IPartialUpdateDb<Table> : IUpdateDb<Table> {}
     public interface IDeleteDb<Table> : ICrud {}
     public interface ISaveDb<Table> : ICrud {}
     
@@ -184,4 +185,20 @@ namespace ServiceStack
         [DataMember(Order = 5)]
         public virtual ResponseStatus ResponseStatus { get; set; }
     }
+    
+    /* AutoCrud */
+    
+    public enum AutoUpdateStyle
+    {
+        Always,
+        NonDefaults,
+    }
+    
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+    public class AutoUpdateAttribute : AttributeBase
+    {
+        public AutoUpdateStyle Style { get; set; }
+        public AutoUpdateAttribute(AutoUpdateStyle style) => Style = style;
+    }
+    
 }
