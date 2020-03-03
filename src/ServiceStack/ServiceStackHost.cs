@@ -29,6 +29,7 @@ using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 using ServiceStack.Redis;
+using ServiceStack.Script;
 
 namespace ServiceStack
 {
@@ -135,6 +136,7 @@ namespace ServiceStack
             };
             StartUpErrors = new List<ResponseStatus>();
             AsyncErrors = new List<ResponseStatus>();
+            DefaultScriptContext = new ScriptContext();
             PluginsLoaded = new List<string>();
             Plugins = new List<IPlugin> {
                 new HtmlFormat(),
@@ -299,6 +301,7 @@ namespace ServiceStack
             LogInitComplete();
 
             HttpHandlerFactory.Init();
+            DefaultScriptContext.Init();
 
             foreach (var callback in AfterInitCallbacks)
             {
@@ -588,6 +591,13 @@ namespace ServiceStack
 
         public List<Func<IRequest, object, Task>> GatewayResponseFiltersAsync { get; set; }
         internal Func<IRequest, object, Task>[] GatewayResponseFiltersAsyncArray;
+
+        public ScriptContext DefaultScriptContext { get; set; }
+
+        /// <summary>
+        /// Global #Script ScriptContext for AppHost. Returns SharpPagesFeature plugin or fallsback to DefaultScriptContext.
+        /// </summary>
+        public virtual ScriptContext GetScriptContext() => GetPlugin<SharpPagesFeature>() ?? DefaultScriptContext;
 
         /// <summary>
         /// Executed immediately before a Service is executed. Use return to change the request DTO used, must be of the same type.
