@@ -201,4 +201,16 @@ namespace ServiceStack
         public AutoUpdateAttribute(AutoUpdateStyle style) => Style = style;
     }
     
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+    public class AutoDefaultAttribute : AttributeBase
+    {
+        public object Value { get; set; }
+
+        /// <summary>
+        /// Create Default Value by Evaluating a #Script Expression.
+        /// Results are only evaluated once and cached globally in AppHost.GetScriptContext()
+        /// </summary>
+        public string Eval { get; set; }
+    }
+   
 }

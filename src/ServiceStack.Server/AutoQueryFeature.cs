@@ -7,13 +7,14 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.Serialization;
 using System.Threading;
-
+using System.Threading.Tasks;
 using Funq;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
 using ServiceStack.Data;
 using ServiceStack.Extensions;
 using ServiceStack.OrmLite;
+using ServiceStack.Script;
 using ServiceStack.Text;
 
 namespace ServiceStack
@@ -194,19 +195,25 @@ namespace ServiceStack
                 }
             }
 
-            var missingRequestTypes = scannedTypes
-                .Where(x => x.HasInterface(typeof(IQueryDb)))
-                .Where(x => !appHost.Metadata.OperationsMap.ContainsKey(x))
+            var missingQueryRequestTypes = scannedTypes
+                .Where(x => x.HasInterface(typeof(IQueryDb)) &&
+                                 !appHost.Metadata.OperationsMap.ContainsKey(x))
+                .ToList();
+            var missingCrudRequestTypes = scannedTypes
+                .Where(x => x.HasInterface(typeof(ICrud)) &&
+                            !appHost.Metadata.OperationsMap.ContainsKey(x))
                 .ToList();
 
-            if (missingRequestTypes.Count == 0)
+            if (missingQueryRequestTypes.Count == 0 && missingCrudRequestTypes.Count == 0)
                 return;
 
-            var serviceType = GenerateMissingServices(missingRequestTypes);
+            var serviceType = GenerateMissingQueryServices(missingQueryRequestTypes, missingCrudRequestTypes);
             appHost.RegisterService(serviceType);
         }
 
-        Type GenerateMissingServices(IEnumerable<Type> missingRequestTypes)
+
+        Type GenerateMissingQueryServices(
+            List<Type> missingQueryRequestTypes, List<Type> missingCrudRequestTypes)
         {
             var assemblyName = new AssemblyName { Name = "tmpAssembly" };
             var typeBuilder =
@@ -216,7 +223,7 @@ namespace ServiceStack
                     TypeAttributes.Public | TypeAttributes.Class,
                     AutoQueryServiceBaseType);
 
-            foreach (var requestType in missingRequestTypes)
+            foreach (var requestType in missingQueryRequestTypes)
             {
                 var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryDb<,>));
                 var hasExplicitInto = genericDef != null;
@@ -236,7 +243,8 @@ namespace ServiceStack
 
                 var genericArgs = genericDef.GetGenericArguments();
                 var mi = AutoQueryServiceBaseType.GetMethods()
-                    .First(x => x.GetGenericArguments().Length == genericArgs.Length);
+                    .First(x => x.Name == nameof(AutoQueryServiceBase.Exec) && 
+                                x.GetGenericArguments().Length == genericArgs.Length);
                 var genericMi = mi.MakeGenericMethod(genericArgs);
 
                 var queryType = hasExplicitInto
@@ -247,6 +255,59 @@ namespace ServiceStack
                 il.Emit(OpCodes.Ldarg_0);
                 il.Emit(OpCodes.Ldarg_1);
                 il.Emit(OpCodes.Box, queryType);
+                il.Emit(OpCodes.Callvirt, genericMi);
+                il.Emit(OpCodes.Ret);
+            }
+
+            Tuple<Type, Type> getCrudGenericDefTypes(Type requestType, Type crudType)
+            {
+                var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(crudType);
+                if (genericDef != null)
+                    return Tuple.Create(genericDef, crudType);
+                return null;
+            }
+            
+            foreach (var requestType in missingCrudRequestTypes)
+            {
+                var crudTypes = getCrudGenericDefTypes(requestType, typeof(ICreateDb<>))
+                    ?? getCrudGenericDefTypes(requestType, typeof(IUpdateDb<>))
+                    ?? getCrudGenericDefTypes(requestType, typeof(IDeleteDb<>))
+                    ?? getCrudGenericDefTypes(requestType, typeof(IPatchDb<>))
+                    ?? getCrudGenericDefTypes(requestType, typeof(ISaveDb<>));
+                
+                if (crudTypes == null)
+                    continue;
+
+                var genericDef = crudTypes.Item1;
+                var crudType = crudTypes.Item2;
+                var methodName = crudType.Name.LeftPart('`').Substring(1);
+                methodName = methodName.Substring(0, methodName.Length - 2);
+                
+                if (!requestType.HasInterface(typeof(IReturnVoid)) &&
+                    !requestType.IsOrHasGenericInterfaceTypeOf(typeof(IReturn<>)))
+                    throw new NotSupportedException($"'{requestType.Name}' I{methodName}Db<T> AutoQuery Service must implement IReturn<T> or IReturnVoid");
+                
+                var method = typeBuilder.DefineMethod("Any", MethodAttributes.Public | MethodAttributes.Virtual,
+                    CallingConventions.Standard,
+                    returnType: typeof(object),
+                    parameterTypes: new[] { requestType });
+
+                var il = method.GetILGenerator();
+
+                GenerateServiceFilter?.Invoke(requestType, typeBuilder, method, il);
+
+                var genericArgs = genericDef.GetGenericArguments();
+                var mi = AutoQueryServiceBaseType.GetMethods()
+                    .First(x => x.Name == methodName && 
+                           x.GetGenericArguments().Length == genericArgs.Length);
+                var genericMi = mi.MakeGenericMethod(genericArgs);
+
+                var crudTypeArg = crudType.MakeGenericType(genericArgs);
+
+                il.Emit(OpCodes.Nop);
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldarg_1);
+                il.Emit(OpCodes.Box, crudTypeArg);
                 il.Emit(OpCodes.Callvirt, genericMi);
                 il.Emit(OpCodes.Ret);
             }
@@ -412,6 +473,241 @@ namespace ServiceStack
             using (Profiler.Current.Step("AutoQuery.Execute"))
             {
                 return AutoQuery.Execute(dto, q, db);
+            }
+        }
+
+        private async Task<object> ExecAndReturnResponseAsync<Table>(object dto, IDbConnection db, Func<ExecContext,Task<object>> fn)
+        {
+            var responseType = HostContext.Metadata.GetOperation(dto.GetType())?.ResponseType;
+            var responseProps = responseType == null ? null : TypeProperties.Get(responseType);
+            var idProp = responseProps?.GetAccessor(Keywords.Id);
+            var resultProp = responseProps?.GetAccessor(Keywords.Result);
+
+            var idValue = await fn(new ExecContext(idProp, resultProp));
+            if (responseType == null)
+                return null;
+                
+            var response = responseType.CreateInstance();
+            idProp?.PublicSetter(response, idValue.ConvertTo(idProp.PropertyInfo.PropertyType));
+            if (resultProp != null)
+            {
+                var result = await db.SingleByIdAsync<Table>(idValue);
+                resultProp.PublicSetter(response, result.ConvertTo(resultProp.PropertyInfo.PropertyType));
+            }
+            return response;
+        }
+
+        internal struct ExecContext
+        {
+            internal PropertyAccessor IdProp;
+            internal PropertyAccessor ResultProp;
+            public ExecContext(PropertyAccessor idProp, PropertyAccessor resultProp)
+            {
+                IdProp = idProp;
+                ResultProp = resultProp;
+            }
+        }
+
+        /// <summary>
+        /// Inserts new entry into Table
+        /// </summary>
+        public virtual async Task<object> Create<Table>(ICreateDb<Table> dto)
+        {
+            //TODO: Allow Create to use Default Values
+            using var db = AutoQuery.GetDb<Table>(Request);
+            using (Profiler.Current.Step("AutoQuery.Create"))
+            {
+                var row = dto.ConvertTo<Table>();
+                var response = await ExecAndReturnResponseAsync<Table>(dto, db,async ctx => {
+                    var pkFieldDef = typeof(Table).GetModelMetadata()?.PrimaryKey;
+                    var isAutoId = pkFieldDef?.AutoId == true;
+                        var autoIntId = await db.InsertAsync(row, selectIdentity: ctx.IdProp != null || ctx.ResultProp != null);
+                        // [AutoId] Guid's populate the PK Property
+                        if (isAutoId)
+                            return pkFieldDef.GetValueFn(row);
+                        return autoIntId;
+                });
+                
+                return response;
+            }
+        }
+
+        /// <summary>
+        /// Updates entry into Table
+        /// </summary>
+        public virtual Task<object> Update<Table>(IUpdateDb<Table> dto)
+        {
+            var partialDefault = dto.GetType().FirstAttribute<AutoUpdateAttribute>()?.Style == AutoUpdateStyle.NonDefaults;
+            return UpdateInternalAsync<Table>(dto, partialDefault);
+        }
+
+        /// <summary>
+        /// Partially Updates entry into Table (Uses OrmLite UpdateNonDefaults behavior)
+        /// </summary>
+        public virtual Task<object> Patch<Table>(IPatchDb<Table> dto)
+        {
+            return UpdateInternalAsync<Table>(dto, partialDefault:true);
+        }
+
+        internal bool IsDefaultValue(object value) => IsDefaultValue(value, value?.GetType());
+        internal bool IsDefaultValue(object value, Type valueType) => value == null ||
+            valueType.IsValueType && value.Equals(valueType.GetDefaultValue());
+
+        private async Task<object> UpdateInternalAsync<Table>(object dto, bool partialDefault)
+        {
+            using var db = AutoQuery.GetDb<Table>(Request);
+            using (Profiler.Current.Step("AutoQuery.Update"))
+            {
+                var row = dto.ConvertTo<Table>();
+                var response = ExecAndReturnResponseAsync<Table>(dto, db,
+                    async ctx => {
+                        var pkFieldDef = typeof(Table).GetModelMetadata()?.PrimaryKey;
+                        if (pkFieldDef == null)
+                            throw new NotSupportedException($"Table '{row.GetType().Name}' does not have a primary key");
+                        var idValue = pkFieldDef.GetValue(row);
+                        var idType = idValue?.GetType();
+                        if (IsDefaultValue(idValue, idType))
+                            throw new NotSupportedException($"Primary Key is required for '{dto.GetType().Name}'");
+
+                        var dtoValues = ResolveDtoValues(dto, partialDefault);
+
+                        var rowsUpdated = await db.UpdateOnlyAsync<Table>(dtoValues);
+                        if (rowsUpdated == 0)
+                            throw new OptimisticConcurrencyException($"No rows were updated by '{dto.GetType().Name}'");
+
+                        return idValue;
+                    }); //TODO: UpdateOnly
+
+                return response;
+            }
+        }
+
+        private Dictionary<string, object> ResolveDtoValues(object dto, bool partialDefault=false)
+        {
+            var dtoValues = dto.ToObjectDictionary();
+
+            var dtoProps = TypeProperties.Get(dto.GetType());
+            Dictionary<string, AutoUpdateAttribute> updateAttrs = null;
+            Dictionary<string, AutoDefaultAttribute> defaultAttrs = null;
+            foreach (var pi in dtoProps.PublicPropertyInfos)
+            {
+                var updateAttr = pi.FirstAttribute<AutoUpdateAttribute>();
+                if (updateAttr != null)
+                {
+                    updateAttrs ??= new Dictionary<string, AutoUpdateAttribute>();
+                    updateAttrs[pi.Name] = updateAttr;
+                }
+
+                var defaultAttr = pi.FirstAttribute<AutoDefaultAttribute>();
+                if (defaultAttr != null)
+                {
+                    defaultAttrs ??= new Dictionary<string, AutoDefaultAttribute>();
+                    defaultAttrs[pi.Name] = defaultAttr;
+                }
+            }
+
+            if (partialDefault || updateAttrs != null || defaultAttrs != null)
+            {
+                List<string> removeKeys = null;
+                Dictionary<string, object> replaceValues = null;
+                var globalContext = HostContext.AppHost.GetScriptContext();
+
+                foreach (var entry in dtoValues)
+                {
+                    if (IsDefaultValue(entry.Value))
+                    {
+                        var handled = false;
+                        if (defaultAttrs != null && defaultAttrs.TryGetValue(entry.Key, out var defaultAttr))
+                        {
+                            if (defaultAttr.Value != null || defaultAttr.Eval != null)
+                            {
+                                if (defaultAttr.Value != null || defaultAttr.Eval != null)
+                                {
+                                    var defaultValue = defaultAttr.Value;
+                                    if (defaultAttr.Eval != null)
+                                    {
+                                        var key = nameof(AutoDefaultAttribute) + ".Eval:" + defaultAttr.Eval;
+                                        defaultValue = globalContext.Cache.GetOrAdd(key, k => {
+                                            var scope = new ScriptScopeContext(new PageResult(globalContext.EmptyPage), null,
+                                                null);
+                                            defaultAttr.Eval.ParseJsExpression(out var token);
+                                            return token.Evaluate(scope);
+                                        });
+                                    }
+
+                                    handled = true;
+                                    replaceValues ??= new Dictionary<string, object>();
+                                    replaceValues[entry.Key] = defaultValue;
+                                }
+                            }
+                        }
+                        if (!handled)
+                        {
+                            if (partialDefault ||
+                                (updateAttrs != null && updateAttrs.TryGetValue(entry.Key, out var attr) &&
+                                 attr.Style == AutoUpdateStyle.NonDefaults))
+                            {
+                                removeKeys ??= new List<string>();
+                                removeKeys.Add(entry.Key);
+                            }
+                        }
+                    }
+                }
+
+                if (removeKeys != null)
+                {
+                    foreach (var key in removeKeys)
+                    {
+                        dtoValues.RemoveKey(key);
+                    }
+                }
+
+                if (replaceValues != null)
+                {
+                    foreach (var entry in replaceValues)
+                    {
+                        dtoValues[entry.Key] = entry.Value;
+                    }
+                }
+            }
+
+            return dtoValues;
+        }
+
+        /// <summary>
+        /// Deletes entry into Table
+        /// </summary>
+        public virtual async Task<object> Delete<Table>(IDeleteDb<Table> dto)
+        {
+            using var db = AutoQuery.GetDb<Table>(Request);
+            using (Profiler.Current.Step("AutoQuery.Update"))
+            {
+                var response = await ExecAndReturnResponseAsync<Table>(dto, db,
+                    async ctx => {
+                        var dtoValues = ResolveDtoValues(dto);
+                        if (dtoValues.Count == 0)
+                            throw new NotSupportedException($"'{dto.GetType().Name}' did not contain any filters");
+
+                        return await db.DeleteAsync<Table>(dtoValues);
+                    });
+                
+                return response;
+            }
+        }
+
+        /// <summary>
+        /// Inserts or Updates entry into Table
+        /// </summary>
+        public virtual async Task<object> Save<Table>(ISaveDb<Table> dto)
+        {
+            using var db = AutoQuery.GetDb<Table>(Request);
+            using (Profiler.Current.Step("AutoQuery.Update"))
+            {
+                var row = dto.ConvertTo<Table>();
+                var response = await ExecAndReturnResponseAsync<Table>(dto, db,
+                    async ctx => await db.SaveAsync(row)); //TODO: Use Upsert when available
+                
+                return response;
             }
         }
     }
