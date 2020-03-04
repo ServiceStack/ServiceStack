@@ -598,7 +598,27 @@ namespace ServiceStack
         /// Global #Script ScriptContext for AppHost. Returns SharpPagesFeature plugin or fallsback to DefaultScriptContext.
         /// </summary>
         public virtual ScriptContext GetScriptContext() => GetPlugin<SharpPagesFeature>() ?? DefaultScriptContext;
-
+        
+        public virtual object EvalExpressionCached(string expr)
+        {
+            switch (expr)
+            {
+                case "now":
+                case "now()":
+                    return DateTime.Now;
+                case "utcNow":
+                case "utcNow()":
+                    return DateTime.UtcNow;
+            }
+            var evalValue = GetScriptContext().Cache.GetOrAdd("eval.expr:" + expr, key => {
+                var scope = new ScriptScopeContext(new PageResult(GetScriptContext().EmptyPage), null,null);
+                var exprSpan = key.AsSpan().RightPart(':');
+                exprSpan.ParseJsExpression(out var token);
+                return token.Evaluate(scope);
+            });
+            return evalValue;
+        }
+        
         /// <summary>
         /// Executed immediately before a Service is executed. Use return to change the request DTO used, must be of the same type.
         /// </summary>

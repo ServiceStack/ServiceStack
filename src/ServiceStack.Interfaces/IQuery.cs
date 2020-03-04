@@ -212,5 +212,12 @@ namespace ServiceStack
         /// </summary>
         public string Eval { get; set; }
     }
+    
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+    public class AutoMapAttribute : AttributeBase
+    {
+        public string To { get; set; }
+        public AutoMapAttribute(string to) => To = to ?? throw new ArgumentNullException(nameof(to));
+    }
    
 }
