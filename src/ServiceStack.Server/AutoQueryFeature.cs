@@ -650,12 +650,12 @@ namespace ServiceStack
                         var handled = false;
                         if (defaultAttrs != null && defaultAttrs.TryGetValue(entry.Key, out var defaultAttr))
                         {
-                            if (defaultAttr.Value != null || defaultAttr.Eval != null)
+                            if (defaultAttr.Value != null || defaultAttr.Expression != null)
                             {
-                                if (defaultAttr.Value != null || defaultAttr.Eval != null)
+                                if (defaultAttr.Value != null || defaultAttr.Expression != null)
                                 {
-                                    var defaultValue = defaultAttr.Eval != null
-                                        ? HostContext.AppHost.EvalExpressionCached(defaultAttr.Eval) 
+                                    var defaultValue = defaultAttr.Expression != null
+                                        ? HostContext.AppHost.EvalExpressionCached(defaultAttr.Expression) 
                                         : defaultAttr.Value;
 
                                     handled = true;

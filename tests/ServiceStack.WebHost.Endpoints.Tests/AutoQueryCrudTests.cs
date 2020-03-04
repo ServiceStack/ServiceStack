@@ -72,9 +72,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string LastName { get; set; }
         [AutoDefault(Value = 21)]
         public int? Age { get; set; }
-        [AutoDefault(Eval = "date(2001,1,1)")]
+        [AutoDefault(Expression = "date(2001,1,1)")]
         public DateTime DateOfBirth { get; set; }
-        [AutoDefault(Eval = "utcNow")]
+        [AutoDefault(Expression = "utcNow")]
         public DateTime? DateDied { get; set; }
         [AutoDefault(Value = global::ServiceStack.WebHost.Endpoints.Tests.LivingStatus.Dead)]
         public LivingStatus? LivingStatus { get; set; }
@@ -93,11 +93,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int? MapAge { get; set; }
         
         [AutoMap(nameof(RockstarAuto.DateOfBirth))]
-        [AutoDefault(Eval = "date(2001,1,1)")]
+        [AutoDefault(Expression = "date(2001,1,1)")]
         public DateTime MapDateOfBirth { get; set; }
 
         [AutoMap(nameof(RockstarAuto.DateDied))]
-        [AutoDefault(Eval = "utcNow")]
+        [AutoDefault(Expression = "utcNow")]
         public DateTime? MapDateDied { get; set; }
         
         [AutoMap(nameof(RockstarAuto.LivingStatus))]
@@ -129,9 +129,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string LastName { get; set; }
         [AutoDefault(Value = 21)]
         public int? Age { get; set; }
-        [AutoDefault(Eval = "date(2001,1,1)")]
+        [AutoDefault(Expression = "date(2001,1,1)")]
         public DateTime DateOfBirth { get; set; }
-        [AutoDefault(Eval = "utcNow")]
+        [AutoDefault(Expression = "utcNow")]
         public DateTime? DateDied { get; set; }
         [AutoUpdate(AutoUpdateStyle.NonDefaults), AutoDefault(Value = LivingStatus.Dead)]
         public LivingStatus LivingStatus { get; set; }

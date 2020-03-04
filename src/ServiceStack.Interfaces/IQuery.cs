@@ -210,7 +210,7 @@ namespace ServiceStack
         /// Create Default Value by Evaluating a #Script Expression.
         /// Results are only evaluated once and cached globally in AppHost.GetScriptContext()
         /// </summary>
-        public string Eval { get; set; }
+        public string Expression { get; set; }
     }
     
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
@@ -218,6 +218,15 @@ namespace ServiceStack
     {
         public string To { get; set; }
         public AutoMapAttribute(string to) => To = to ?? throw new ArgumentNullException(nameof(to));
+    }
+    
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
+    public class AutoPopulateAttribute : AttributeBase
+    {
+        public string Name { get; set; }
+        public object Value { get; set; }
+        public string Eval { get; set; }
+        public AutoPopulateAttribute(string name) => Name = name ?? throw new ArgumentNullException(nameof(name));
     }
    
 }
