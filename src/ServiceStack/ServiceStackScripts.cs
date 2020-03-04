@@ -259,6 +259,8 @@ namespace ServiceStack
        
         public object getUserSession(ScriptScopeContext scope) => req(scope).GetSession();
         public IAuthSession userSession(ScriptScopeContext scope) => req(scope).GetSession();
+        public string userAuthId(ScriptScopeContext scope) => req(scope).GetSession()?.UserAuthId;
+        public string userAuthName(ScriptScopeContext scope) => req(scope).GetSession()?.UserAuthName;
         
         public string userProfileUrl(ScriptScopeContext scope) => req(scope).GetSession().GetProfileUrl();
 
