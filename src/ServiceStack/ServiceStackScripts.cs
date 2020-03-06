@@ -42,7 +42,7 @@ namespace ServiceStack
         public GistVirtualFiles hostVfsGist() => HostContext.GistVirtualFiles;
 
         public IHttpRequest getHttpRequest(ScriptScopeContext scope) => req(scope);
-        internal IHttpRequest req(ScriptScopeContext scope) => scope.GetValue("Request") as IHttpRequest;
+        internal IHttpRequest req(ScriptScopeContext scope) => scope.GetValue(ScriptConstants.Request) as IHttpRequest;
 
         public object baseUrl(ScriptScopeContext scope) => req(scope).GetBaseUrl();
 

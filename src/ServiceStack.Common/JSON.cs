@@ -78,20 +78,39 @@ namespace ServiceStack
             return new ScriptScopeContext(new PageResult(context.EmptyPage), null, args);
         }
 
-        public static object eval(string js) => eval(js, CreateScope());
-        public static object eval(string js, ScriptScopeContext scope)
-        {
-            js.ParseJsExpression(out var token);
-            var result = token.Evaluate(scope);
-
-            return result;
-        }
-
+        /// <summary>
+        /// Parse JS Expression into an AST Token
+        /// </summary>
         public static JsToken expression(string js)
         {
             js.ParseJsExpression(out var token);
             return token;
         }
+
+        public static object eval(string js) => eval(js, CreateScope());
+        public static object eval(string js, ScriptScopeContext scope) => eval(js.AsSpan(), scope);
+        public static object eval(ReadOnlySpan<char> js, ScriptScopeContext scope)
+        {
+            js.ParseJsExpression(out var token);
+            return token.Evaluate(scope);
+        }
+
+        public static object eval(ScriptContext context, ReadOnlySpan<char> expr, Dictionary<string, object> args=null)
+        {
+            return eval(expr, new ScriptScopeContext(new PageResult(context.EmptyPage), null, args));
+        }
         
+        public const string EvalCacheKeyPrefix = "scriptvalue:";
+        public const string EvalAstCacheKeyPrefix = "scriptvalue.ast:";
+        
+        /// <summary>
+        /// Lightweight expression evaluator of a single JS Expression with results cached in global context cache
+        /// </summary>
+        public static object evalCached(ScriptContext context, string expr)
+        {
+            var evalValue = context.Cache.GetOrAdd(EvalCacheKeyPrefix + expr,
+                key => eval(context, expr.AsSpan()));
+            return evalValue;
+        }
     }
 }

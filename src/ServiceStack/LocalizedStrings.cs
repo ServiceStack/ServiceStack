@@ -50,6 +50,7 @@
         public const string Dynamic = nameof(Dynamic);
         public const string Id = nameof(Id);
         public const string Result = nameof(Result);
+        public const string RowVersion = nameof(RowVersion);
         public const string Count = nameof(Count);
     }
 

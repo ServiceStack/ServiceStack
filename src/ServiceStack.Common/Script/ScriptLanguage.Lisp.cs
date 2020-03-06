@@ -333,7 +333,15 @@ namespace ServiceStack.Script
             
             return ScriptLanguage.UnwrapValue(ret.Item2);
         }
-        
+
+        public static string EnsureReturn(string lisp)
+        {
+            // if code doesn't contain a return, wrap and return the expression
+            if ((lisp ?? throw new ArgumentNullException(nameof(lisp))).IndexOf("(return",StringComparison.Ordinal) == -1)
+                lisp = "(return (let () " + lisp + " ))";
+
+            return lisp;
+        }
     }
 
     internal static class Utils
@@ -894,7 +902,7 @@ namespace ServiceStack.Script
 
             public string ReplEval(ScriptContext context, Stream outputStream, string lisp, Dictionary<string, object> args=null)
             {
-                var returnResult = $"(return (let () {lisp} ))";
+                var returnResult = ScriptLispUtils.EnsureReturn(lisp);
                 var page = new PageResult(context.LispSharpPage(returnResult)) {
                     Args = {
                         [nameof(ScriptLisp)] = this

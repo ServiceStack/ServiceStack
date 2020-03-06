@@ -28,7 +28,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public const string SqlServerProvider = "SqlServer2012";
 
         public static string SqliteFileConnString = "~/App_Data/autoquery.sqlite".MapProjectPath();
-
+        
+        public Action<AutoQueryAppHost,Container> ConfigureFn { get; set; }
+        
         public override void Configure(Container container)
         {
             var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
@@ -178,6 +180,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 );
 
             Plugins.Add(autoQuery);
+            
+            ConfigureFn?.Invoke(this,container);
         }
 
         public static Rockstar[] SeedRockstars = new[] {

@@ -7,14 +7,11 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.Serialization;
 using System.Threading;
-using System.Threading.Tasks;
-using Funq;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
 using ServiceStack.Data;
 using ServiceStack.Extensions;
 using ServiceStack.OrmLite;
-using ServiceStack.Script;
 using ServiceStack.Text;
 
 namespace ServiceStack
@@ -30,7 +27,7 @@ namespace ServiceStack
         public IQueryResponse Response { get; set; }
     }
 
-    public class AutoQueryFeature : IPlugin, IPostInitPlugin
+    public partial class AutoQueryFeature : IPlugin, IPostInitPlugin
     {
         public HashSet<string> IgnoreProperties { get; set; }
         public HashSet<string> IllegalSqlFragmentTokens { get; set; }
@@ -438,7 +435,7 @@ namespace ServiceStack
         IQueryResponse Execute(IQueryDb request, ISqlExpression q, IDbConnection db);
     }
 
-    public abstract class AutoQueryServiceBase : Service
+    public abstract partial class AutoQueryServiceBase : Service
     {
         public IAutoQueryDb AutoQuery { get; set; }
 
@@ -473,270 +470,6 @@ namespace ServiceStack
             using (Profiler.Current.Step("AutoQuery.Execute"))
             {
                 return AutoQuery.Execute(dto, q, db);
-            }
-        }
-
-        private async Task<object> ExecAndReturnResponseAsync<Table>(object dto, IDbConnection db, Func<ExecContext,Task<object>> fn)
-        {
-            var responseType = HostContext.Metadata.GetOperation(dto.GetType())?.ResponseType;
-            var responseProps = responseType == null ? null : TypeProperties.Get(responseType);
-            var idProp = responseProps?.GetAccessor(Keywords.Id);
-            var countProp = responseProps?.GetAccessor(Keywords.Count);
-            var resultProp = responseProps?.GetAccessor(Keywords.Result);
-
-            var retValue = await fn(new ExecContext(idProp, resultProp, countProp));
-            if (responseType == null)
-                return null;
-                
-            var response = responseType.CreateInstance();
-            if (idProp != null)
-                idProp.PublicSetter(response, retValue.ConvertTo(idProp.PropertyInfo.PropertyType));
-            else
-                countProp?.PublicSetter(response, retValue.ConvertTo(countProp.PropertyInfo.PropertyType));
-
-            if (resultProp != null)
-            {
-                var result = await db.SingleByIdAsync<Table>(retValue);
-                resultProp.PublicSetter(response, result.ConvertTo(resultProp.PropertyInfo.PropertyType));
-            }
-            return response;
-        }
-
-        internal struct ExecContext
-        {
-            internal PropertyAccessor IdProp;
-            internal PropertyAccessor ResultProp;
-            internal PropertyAccessor CountProp;
-            public ExecContext(PropertyAccessor idProp, PropertyAccessor resultProp, PropertyAccessor countProp)
-            {
-                IdProp = idProp;
-                ResultProp = resultProp;
-                CountProp = countProp;
-            }
-        }
-
-        /// <summary>
-        /// Inserts new entry into Table
-        /// </summary>
-        public virtual async Task<object> Create<Table>(ICreateDb<Table> dto)
-        {
-            //TODO: Allow Create to use Default Values
-            using var db = AutoQuery.GetDb<Table>(Request);
-            using (Profiler.Current.Step("AutoQuery.Create"))
-            {
-                var response = await ExecAndReturnResponseAsync<Table>(dto, db,async ctx => {
-                    var dtoValues = ResolveDtoValues(dto);
-                    var pkFieldDef = typeof(Table).GetModelMetadata()?.PrimaryKey;
-                    var isAutoId = pkFieldDef?.AutoId == true;
-                        var autoIntId = await db.InsertAsync<Table>(dtoValues, selectIdentity: ctx.IdProp != null || ctx.ResultProp != null);
-                        // [AutoId] Guid's populate the PK Property
-                        if (isAutoId)
-                            return pkFieldDef.GetValue(dtoValues);
-                        return autoIntId;
-                });
-                
-                return response;
-            }
-        }
-
-        /// <summary>
-        /// Updates entry into Table
-        /// </summary>
-        public virtual Task<object> Update<Table>(IUpdateDb<Table> dto)
-        {
-            var partialDefault = dto.GetType().FirstAttribute<AutoUpdateAttribute>()?.Style == AutoUpdateStyle.NonDefaults;
-            return UpdateInternalAsync<Table>(dto, partialDefault);
-        }
-
-        /// <summary>
-        /// Partially Updates entry into Table (Uses OrmLite UpdateNonDefaults behavior)
-        /// </summary>
-        public virtual Task<object> Patch<Table>(IPatchDb<Table> dto)
-        {
-            return UpdateInternalAsync<Table>(dto, skipDefaults:true);
-        }
-
-        private async Task<object> UpdateInternalAsync<Table>(object dto, bool skipDefaults)
-        {
-            using var db = AutoQuery.GetDb<Table>(Request);
-            using (Profiler.Current.Step("AutoQuery.Update"))
-            {
-                var response = ExecAndReturnResponseAsync<Table>(dto, db,
-                    async ctx => {
-                        var dtoValues = ResolveDtoValues(dto, skipDefaults);
-                        var pkFieldDef = typeof(Table).GetModelMetadata()?.PrimaryKey;
-                        if (pkFieldDef == null || !dtoValues.TryGetValue(pkFieldDef.Name, out var idValue))
-                            throw new NotSupportedException($"Table '{typeof(Table).Name}' does not have a primary key");
-                        if (AutoMappingUtils.IsDefaultValue(idValue))
-                            throw new NotSupportedException($"Primary Key '{pkFieldDef.Name}' is required for '{dto.GetType().Name}'");
-
-                        // Should only update a Single Row
-                        var rowsUpdated = await db.UpdateOnlyAsync<Table>(dtoValues);
-                        if (rowsUpdated != 1)
-                            throw new OptimisticConcurrencyException($"{rowsUpdated} rows were updated by '{dto.GetType().Name}'");
-
-                        return idValue;
-                    }); //TODO: UpdateOnly
-
-                return response;
-            }
-        }
-
-        private Dictionary<string, object> ResolveDtoValues(object dto, bool skipDefaults=false)
-        {
-            var dtoValues = dto.ToObjectDictionary();
-
-            var dtoProps = TypeProperties.Get(dto.GetType());
-            Dictionary<string, AutoUpdateAttribute> updateAttrs = null;
-            Dictionary<string, AutoDefaultAttribute> defaultAttrs = null;
-            Dictionary<string, AutoMapAttribute> mapAttrs = null;
-            HashSet<string> nullableProps = null;
-
-            foreach (var pi in dtoProps.PublicPropertyInfos)
-            {
-                var allAttrs = pi.AllAttributes();
-                var updateAttr = allAttrs.OfType<AutoUpdateAttribute>().FirstOrDefault();
-                var propName = pi.Name;
-                
-                var mapAttr = allAttrs.OfType<AutoMapAttribute>().FirstOrDefault();
-                if (mapAttr != null)
-                {
-                    mapAttrs ??= new Dictionary<string, AutoMapAttribute>();
-                    mapAttrs[propName] = mapAttr;
-                    propName = mapAttr.To;
-                }
-
-                if (updateAttr != null)
-                {
-                    updateAttrs ??= new Dictionary<string, AutoUpdateAttribute>();
-                    updateAttrs[propName] = updateAttr;
-                }
-
-                var defaultAttr = allAttrs.OfType<AutoDefaultAttribute>().FirstOrDefault();
-                if (defaultAttr != null)
-                {
-                    defaultAttrs ??= new Dictionary<string, AutoDefaultAttribute>();
-                    defaultAttrs[propName] = defaultAttr;
-                }
-
-                if (Nullable.GetUnderlyingType(pi.PropertyType) != null)
-                {
-                    nullableProps ??= new HashSet<string>();
-                    nullableProps.Add(propName);
-                }
-            }
-
-            if (mapAttrs != null)
-            {
-                foreach (var entry in mapAttrs)
-                {
-                    if (dtoValues.TryRemove(entry.Key, out var value))
-                    {
-                        dtoValues[entry.Value.To] = value;
-                    }
-                }
-            }
-
-            if (skipDefaults || updateAttrs != null || defaultAttrs != null)
-            {
-                List<string> removeKeys = null;
-                Dictionary<string, object> replaceValues = null;
-
-                foreach (var entry in dtoValues)
-                {
-                    var isNullable = nullableProps?.Contains(entry.Key) == true;
-                    if (entry.Value == null || (!isNullable && AutoMappingUtils.IsDefaultValue(entry.Value)))
-                    {
-                        var handled = false;
-                        if (defaultAttrs != null && defaultAttrs.TryGetValue(entry.Key, out var defaultAttr))
-                        {
-                            if (defaultAttr.Value != null || defaultAttr.Expression != null)
-                            {
-                                if (defaultAttr.Value != null || defaultAttr.Expression != null)
-                                {
-                                    var defaultValue = defaultAttr.Expression != null
-                                        ? HostContext.AppHost.EvalExpressionCached(defaultAttr.Expression) 
-                                        : defaultAttr.Value;
-
-                                    handled = true;
-                                    replaceValues ??= new Dictionary<string, object>();
-                                    replaceValues[entry.Key] = defaultValue;
-                                }
-                            }
-                        }
-                        if (!handled)
-                        {
-                            if (skipDefaults ||
-                                (updateAttrs != null && updateAttrs.TryGetValue(entry.Key, out var attr) &&
-                                 attr.Style == AutoUpdateStyle.NonDefaults))
-                            {
-                                removeKeys ??= new List<string>();
-                                removeKeys.Add(entry.Key);
-                            }
-                        }
-                    }
-                }
-
-                if (removeKeys != null)
-                {
-                    foreach (var key in removeKeys)
-                    {
-                        dtoValues.RemoveKey(key);
-                    }
-                }
-
-                if (replaceValues != null)
-                {
-                    foreach (var entry in replaceValues)
-                    {
-                        dtoValues[entry.Key] = entry.Value;
-                    }
-                }
-            }
-
-            var populatorFn = AutoMappingUtils.GetPopulator(
-                typeof(Dictionary<string, object>), dto.GetType());
-            populatorFn?.Invoke(dtoValues, dto);
-
-            return dtoValues;
-        }
-
-        /// <summary>
-        /// Deletes entry into Table
-        /// </summary>
-        public virtual async Task<object> Delete<Table>(IDeleteDb<Table> dto)
-        {
-            using var db = AutoQuery.GetDb<Table>(Request);
-            using (Profiler.Current.Step("AutoQuery.Update"))
-            {
-                var response = await ExecAndReturnResponseAsync<Table>(dto, db,
-                    async ctx => {
-                        var dtoValues = ResolveDtoValues(dto, skipDefaults:true);
-                        
-                        //Should have at least 1 non-default filter
-                        if (dtoValues.Count == 0)
-                            throw new NotSupportedException($"'{dto.GetType().Name}' did not contain any filters");
-
-                        return await db.DeleteAsync<Table>(dtoValues);
-                    });
-                
-                return response;
-            }
-        }
-
-        /// <summary>
-        /// Inserts or Updates entry into Table
-        /// </summary>
-        public virtual async Task<object> Save<Table>(ISaveDb<Table> dto)
-        {
-            using var db = AutoQuery.GetDb<Table>(Request);
-            using (Profiler.Current.Step("AutoQuery.Update"))
-            {
-                var row = dto.ConvertTo<Table>();
-                var response = await ExecAndReturnResponseAsync<Table>(dto, db,
-                    async ctx => await db.SaveAsync(row)); //TODO: Use Upsert when available
-                
-                return response;
             }
         }
     }

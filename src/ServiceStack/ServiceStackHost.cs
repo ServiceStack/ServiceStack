@@ -136,7 +136,13 @@ namespace ServiceStack
             };
             StartUpErrors = new List<ResponseStatus>();
             AsyncErrors = new List<ResponseStatus>();
-            DefaultScriptContext = new ScriptContext();
+            DefaultScriptContext = new ScriptContext {
+                ScriptLanguages = { ScriptLisp.Language },
+                ScriptMethods = {
+                    new ProtectedScripts(),
+                    new ServiceStackScripts(),
+                }
+            };
             PluginsLoaded = new List<string>();
             Plugins = new List<IPlugin> {
                 new HtmlFormat(),
@@ -597,28 +603,75 @@ namespace ServiceStack
         /// <summary>
         /// Global #Script ScriptContext for AppHost. Returns SharpPagesFeature plugin or fallsback to DefaultScriptContext.
         /// </summary>
-        public virtual ScriptContext GetScriptContext() => GetPlugin<SharpPagesFeature>() ?? DefaultScriptContext;
-        
-        public virtual object EvalExpressionCached(string expr)
+        public ScriptContext ScriptContext => scriptContext ??= (GetPlugin<SharpPagesFeature>() ?? DefaultScriptContext);
+        private ScriptContext scriptContext;
+
+        /// <summary>
+        /// Evaluate Expressions in ServiceStack's ScriptContext.
+        /// Can be overriden if you want to customize how different expressions are evaluated.
+        /// </summary>
+        public virtual object EvalExpressionCached(string expr) => JS.evalCached(ScriptContext, expr);
+
+        /// <summary>
+        /// Evaluate a script value, `IScriptValue.Expression` results are cached globally.
+        /// If `IRequest` is provided, results from the same `IScriptValue.Eval` are cached per request. 
+        /// </summary>
+        public virtual object EvalScriptValue(IScriptValue scriptValue, IRequest req = null, Dictionary<string, object> args=null)
         {
-            switch (expr)
+            if (scriptValue == null)
+                throw new ArgumentNullException(nameof(scriptValue));
+
+            if (scriptValue.Value != null)
+                return scriptValue.Value;
+
+            if (scriptValue.Expression != null)
             {
-                case "now":
-                case "now()":
-                    return DateTime.Now;
-                case "utcNow":
-                case "utcNow()":
-                    return DateTime.UtcNow;
+                return !scriptValue.NoCache
+                    ? EvalExpressionCached(scriptValue.Expression)
+                    : JS.eval(scriptValue.Expression);
             }
-            var evalValue = GetScriptContext().Cache.GetOrAdd("eval.expr:" + expr, key => {
-                var scope = new ScriptScopeContext(new PageResult(GetScriptContext().EmptyPage), null,null);
-                var exprSpan = key.AsSpan().RightPart(':');
-                exprSpan.ParseJsExpression(out var token);
-                return token.Evaluate(scope);
-            });
-            return evalValue;
+            
+            if (scriptValue.Eval == null)
+                throw new ArgumentNullException(nameof(scriptValue));
+
+            var evalCode = ScriptCodeUtils.EnsureReturn(scriptValue.Eval);
+
+            object value = null;
+            var evalCacheKey = JS.EvalCacheKeyPrefix + evalCode;
+
+            if (!scriptValue.NoCache && req?.Items.TryGetValue(evalCacheKey, out value) == true)
+                return value;
+
+            // Cache AST Globally
+            var evalAstCacheKey = JS.EvalAstCacheKeyPrefix + evalCode;
+            var cachedCodePage = (SharpPage)ScriptContext.Cache.GetOrAdd(evalAstCacheKey, key =>
+                ScriptContext.CodeSharpPage(evalCode));
+            
+            var pageResult = new PageResult(cachedCodePage);
+            if (args != null)
+            {
+                foreach (var entry in args)
+                {
+                    pageResult.Args[entry.Key] = entry.Value;
+                }
+            }
+
+            if (req != null)
+            {
+                pageResult.Args[ScriptConstants.Request] = req;
+                pageResult.Args[ScriptConstants.Dto] = req.Dto;
+            }
+
+            if (pageResult.EvaluateResult(out var returnValue))
+                value = ScriptLanguage.UnwrapValue(returnValue);
+
+            if (!scriptValue.NoCache && req != null)
+                req.Items[evalCacheKey] = value;
+
+
+            return value;
         }
-        
+
         /// <summary>
         /// Executed immediately before a Service is executed. Use return to change the request DTO used, must be of the same type.
         /// </summary>

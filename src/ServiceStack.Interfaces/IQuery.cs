@@ -200,17 +200,18 @@ namespace ServiceStack
         public AutoUpdateStyle Style { get; set; }
         public AutoUpdateAttribute(AutoUpdateStyle style) => Style = style;
     }
-    
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-    public class AutoDefaultAttribute : AttributeBase
+
+    public abstract class AutoValueBase : AttributeBase, IScriptValue
     {
         public object Value { get; set; }
-
-        /// <summary>
-        /// Create Default Value by Evaluating a #Script Expression.
-        /// Results are only evaluated once and cached globally in AppHost.GetScriptContext()
-        /// </summary>
         public string Expression { get; set; }
+        public string Eval { get; set; }
+        public bool NoCache { get; set; }
+    }
+    
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+    public class AutoDefaultAttribute : AutoValueBase
+    {
     }
     
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
@@ -221,11 +222,13 @@ namespace ServiceStack
     }
     
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
-    public class AutoPopulateAttribute : AttributeBase
+    public class AutoPopulateAttribute : AutoValueBase
     {
+        /// <summary>
+        /// Name of Class Property to Populate
+        /// </summary>
         public string Name { get; set; }
-        public object Value { get; set; }
-        public string Eval { get; set; }
+        
         public AutoPopulateAttribute(string name) => Name = name ?? throw new ArgumentNullException(nameof(name));
     }
    
