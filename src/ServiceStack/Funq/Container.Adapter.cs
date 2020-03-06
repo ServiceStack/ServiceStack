@@ -129,9 +129,17 @@ namespace Funq
         public ServiceEntry<TService, Func<Container, TService>> GetServiceEntry<TService>() => 
             GetEntry<TService, Func<Container, TService>>(null, throwIfMissing: false);
 
+        public ServiceEntry<TService, Func<Container, TService>> GetServiceEntryNamed<TService>(string name) => 
+            GetEntry<TService, Func<Container, TService>>(name, throwIfMissing: false);
+
         public bool Exists<TService>()
         {
             var entry = GetEntry<TService, Func<Container, TService>>(null, throwIfMissing: false);
+            return entry != null;
+        }
+        public bool ExistsNamed<TService>(string name)
+        {
+            var entry = GetEntry<TService, Func<Container, TService>>(name, throwIfMissing: false);
             return entry != null;
         }
 
