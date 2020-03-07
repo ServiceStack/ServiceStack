@@ -937,7 +937,7 @@ Buzz
 
             string src = @"
 (doseq (i (range 1 100))
-  (println 
+  (println
     (cond ((and (zero? (mod i 3)) (zero? (mod i 5))) ""FizzBuzz"")
           ((zero? (mod i 3)) ""Fizz"")
           ((zero? (mod i 5)) ""Buzz"")
@@ -953,8 +953,8 @@ Buzz
           ((zero? (mod i 5)) ""Buzz"")
           (t i)))
 
-(doseq (x (map fizzbuzz (range 1 100))) (println x))
-;todo (clojure): (dorun println (map fizzbuzz (range 1 100))) ; do ";
+(dorun println (map fizzbuzz (range 1 100)))
+";
 
             output = context.RenderLisp(src);
             output.Print();

@@ -1434,6 +1434,17 @@ namespace ServiceStack.Script
                 Def("map-where", 3, (I, a) => EnumerableUtils.ToList(a[2]?.assertEnumerable()).Where(resolvePredicate(a[0], I)).Map(resolve1ArgFn(a[1], I)));
                 Def("where", 2, (I, a) => EnumerableUtils.ToList(a[1]?.assertEnumerable()).Where(resolvePredicate(a[0], I)).ToList());
 
+                Def("dorun", 2, (I, a) => {
+                    var converter = resolve1ArgFn(a[0], I);
+                    foreach (var x in a[1]?.assertEnumerable())
+                    {
+                        converter(x);
+                    } 
+                    return null;
+                });
+
+                Def("do", -1, (I, a) => enumerableArg(a).Cast<object>().Last());
+
                 Def("reduce", -2, (I, a) => {
                     var fn = resolve2ArgFn(a[0], I);
                     var varArgs = EnumerableUtils.ToList(a[1].assertEnumerable());
@@ -1762,8 +1773,11 @@ namespace ServiceStack.Script
                         COut.Write(s);
                     return null;
                 }
+
+                IEnumerable enumerableArg(object[] a) => a.Length > 0 && a[0] is Cell cell ? (IEnumerable) cell : a;
+                
                 Def("print", -1, (I, a) => {
-                    var c = (Cell) a[0];
+                    var c = enumerableArg(a);
                     foreach (var x in c)
                     {
                         print(I, Str(x, false)); 
@@ -1771,7 +1785,7 @@ namespace ServiceStack.Script
                     return I.Scope != null ? null : a.lastArg();
                 });
                 Def("println", -1, (I, a) => {
-                    var c = (Cell) a[0];
+                    var c = enumerableArg(a);
                     foreach (var x in c)
                     {
                         if (I.Scope != null)
@@ -1785,7 +1799,7 @@ namespace ServiceStack.Script
                 
                 // println with spaces
                 Def("printlns", -1, (I, a) => {
-                    var c = (Cell) a[0];
+                    var c = enumerableArg(a);
                     foreach (var x in c)
                     {
                         if (I.Scope != null)
@@ -1802,13 +1816,13 @@ namespace ServiceStack.Script
 
                 // html encodes
                 Def("pr", -1, (I, a) => {
-                    var c = (Cell) a[0];
+                    var c = enumerableArg(a);
                     foreach (var x in c)
                         print(I, I.Scope.Value.Context.DefaultMethods.htmlEncode(Str(x, false))); 
                     return I.Scope != null ? null : a.lastArg();
                 });
                 Def("prn", -1, (I, a) => {
-                    var c = (Cell) a[0];
+                    var c = enumerableArg(a);
                     foreach (var x in c)
                     {
                         if (I.Scope != null)
@@ -1821,7 +1835,7 @@ namespace ServiceStack.Script
                 });
                 
                 Def("dump", -1, (I, a) => {
-                    var c = (Cell) a[0];
+                    var c = enumerableArg(a);
                     var defaultScripts = I.AssertScope().Context.DefaultMethods;
                     foreach (var x in c)
                     {
@@ -1831,7 +1845,7 @@ namespace ServiceStack.Script
                     return null;
                 });
                 Def("dump-inline", -1, (I, a) => {
-                    var c = (Cell) a[0];
+                    var c = enumerableArg(a);
                     var defaultScripts = I.AssertScope().Context.DefaultMethods;
                     foreach (var x in c)
                     {

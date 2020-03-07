@@ -204,6 +204,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         }
 
         [Test]
+        public void LISP_do() //https://clojuredocs.org/clojure.core/dorun
+        {
+            var context = new ScriptContext {
+                ScriptLanguages = { ScriptLisp.Language }
+            }.Init();
+
+            Assert.That(context.EvaluateLisp(@"(return (do))"), Is.Null);
+            Assert.That(context.EvaluateLisp(@"(return (do ()))"), Is.Null);
+            Assert.That(context.EvaluateLisp(@"(return (do (+ 1 1) (+ 2 2) ))"), Is.EqualTo(4));
+            Assert.That(context.EvaluateLisp(@"(return (do (+ 1 1) (+ 2 2) nil ))"), Is.Null);
+        }
+
+        [Test]
         public void LISP_can_clojure_fn_data_list_args()
         {
             Assert.That(render(@"(defn f [] 0)(f)"), Is.EqualTo("0"));
