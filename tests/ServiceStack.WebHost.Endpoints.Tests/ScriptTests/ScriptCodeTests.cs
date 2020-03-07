@@ -884,5 +884,81 @@ remaining={{times}}";
                 Is.EqualTo("remaining=0"));
         }
 
+        [Test]
+        public void Can_eval_FizzBuzz_Script()
+        {
+            var context = new ScriptContext().Init();
+
+            string src = @"
+{{#each range(1,100)}}
+{{#if it % 3 == 0 && it % 5 == 0}}
+FizzBuzz
+{{else if it % 3 == 0}}
+Fizz
+{{else if it % 5 == 0}}
+Buzz
+{{else}}
+{{it}}
+{{/if}}
+{{/each}}
+";
+            var output = context.RenderScript(src);
+            output.Print();
+        }
+
+        [Test]
+        public void Can_eval_FizzBuzz_Code()
+        {
+            var context = new ScriptContext().Init();
+
+            string src = @"
+#each range(1,100)
+    #if it % 3 == 0 && it % 5 == 0
+        `FizzBuzz`
+    else if it % 3 == 0
+        `Fizz`
+    else if it % 5 == 0
+        `Buzz`
+    else
+        it
+    /if
+/each
+";
+            var output = context.RenderCode(src);
+            output.Print();
+        }
+
+        [Test]
+        public void Can_eval_FizzBuzz_Lisp()
+        {
+            var context = new ScriptContext {
+                ScriptLanguages = { ScriptLisp.Language }
+            }.Init();
+
+            string src = @"
+(doseq (i (range 1 100))
+  (println 
+    (cond ((and (zero? (mod i 3)) (zero? (mod i 5))) ""FizzBuzz"")
+          ((zero? (mod i 3)) ""Fizz"")
+          ((zero? (mod i 5)) ""Buzz"")
+          (t i))
+  ))";
+            var output = context.RenderLisp(src);
+            // output.Print();
+
+            src = @"
+(defn fizzbuzz [i]
+    (cond ((and (zero? (mod i 3)) (zero? (mod i 5))) ""FizzBuzz"")
+          ((zero? (mod i 3)) ""Fizz"")
+          ((zero? (mod i 5)) ""Buzz"")
+          (t i)))
+
+(doseq (x (map fizzbuzz (range 1 100))) (println x))
+;todo (clojure): (dorun println (map fizzbuzz (range 1 100))) ; do ";
+
+            output = context.RenderLisp(src);
+            output.Print();
+        }
+
     }
 }

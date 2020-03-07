@@ -507,13 +507,13 @@ namespace ServiceStack.Script
                     {
                         if (statementPos >= 0)
                         {
-                            elseBody = literal.Slice(statementPos, cursorPos - statementPos).Trim();
-                            var ret = literal.Slice(cursorPos);
+                            elseBody = literal.Slice(statementPos, (cursorPos - lineLength) - statementPos).Trim();
+                            var ret = literal.Slice(cursorPos - lineLength);
                             return ret;
                         }
 
-                        statementPos = cursorPos - lineLength + 4;
                         elseArgument = line.Slice(4).Trim();
+                        statementPos = cursorPos;
                     }
                 }
             }
