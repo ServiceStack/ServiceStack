@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
+using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Script;
 using ServiceStack.Text;
@@ -884,6 +885,26 @@ remaining={{times}}";
                 Is.EqualTo("remaining=0"));
         }
 
+        void AssertFizzBuzzOutput(string output)
+        {
+            Assert.That(output.NormalizeNewLines(), Does.StartWith(@"
+1
+2
+Fizz
+4
+Buzz
+Fizz
+7
+8
+Fizz
+Buzz
+11
+Fizz
+13
+14
+FizzBuzz".NormalizeNewLines()));
+        }
+        
         [Test]
         public void Can_eval_FizzBuzz_Script()
         {
@@ -903,7 +924,7 @@ Buzz
 {{/each}}
 ";
             var output = context.RenderScript(src);
-            output.Print();
+            AssertFizzBuzzOutput(output);
         }
 
         [Test]
@@ -914,18 +935,39 @@ Buzz
             string src = @"
 #each range(1,100)
     #if it % 3 == 0 && it % 5 == 0
-        `FizzBuzz`
+        'FizzBuzz'
     else if it % 3 == 0
-        `Fizz`
+        'Fizz'
     else if it % 5 == 0
-        `Buzz`
+        'Buzz'
     else
         it
     /if
 /each
 ";
             var output = context.RenderCode(src);
-            output.Print();
+            AssertFizzBuzzOutput(output);
+
+            src = @"
+#function fizzbuzz(it)
+    #if it % 3 == 0 && it % 5 == 0
+        'FizzBuzz' |> return
+    else if it % 3 == 0
+        'Fizz' |> return
+    else if it % 5 == 0
+        'Buzz' |> return
+    else
+        it |> return
+    /if
+/function
+
+#each range(1,100)
+  fizzbuzz(it)
+/each
+";
+            
+            output = context.RenderCode(src);
+            AssertFizzBuzzOutput(output);
         }
 
         [Test]
@@ -944,7 +986,7 @@ Buzz
           (t i))
   ))";
             var output = context.RenderLisp(src);
-            // output.Print();
+            AssertFizzBuzzOutput(output);
 
             src = @"
 (defn fizzbuzz [i]
@@ -957,7 +999,121 @@ Buzz
 ";
 
             output = context.RenderLisp(src);
-            output.Print();
+            AssertFizzBuzzOutput(output);
+        }
+
+        [Test]
+        public void Can_eval_FizzBuzz_combined()
+        {
+            var context = new ScriptContext {
+                ScriptLanguages = { ScriptLisp.Language },
+                Plugins = {
+                    new MarkdownScriptPlugin()
+                }
+            }.Init();
+
+            string src = @"
+{{#defn fizzbuzz [i] }}
+    (cond ((and (zero? (mod i 3)) (zero? (mod i 5))) ""FizzBuzz"")
+          ((zero? (mod i 3)) ""Fizz"")
+          ((zero? (mod i 5)) ""Buzz"")
+          (t i))
+{{/defn}}
+
+{{#capture md}}
+## FizzBuzz:
+{{#each range(1,100) }}
+  - {{ fizzbuzz(it) }}
+{{/each}}
+{{/capture}}
+
+{{ md |> markdown }}
+";
+           
+            var output = context.RenderScript(src);
+            Assert.That(output.NormalizeNewLines(), Does.StartWith(@"
+<h2>FizzBuzz:</h2>
+<ul>
+<li>1</li>
+<li>2</li>
+<li>Fizz</li>
+<li>4</li>
+<li>Buzz</li>
+<li>Fizz</li>
+<li>7</li>
+<li>8</li>
+<li>Fizz</li>
+<li>Buzz</li>
+<li>11</li>
+<li>Fizz</li>
+<li>13</li>
+<li>14</li>
+<li>FizzBuzz</li>".NormalizeNewLines()));
+        }
+
+        const string TemplateMix = @"
+Template:
+{{#each range(1,15) }}
+{{#if it % 3 == 0 && it % 5 == 0}}
+  FizzBuzz
+{{else if it % 3 == 0}}
+  Fizz
+{{else if it % 5 == 0}}
+  Buzz
+{{else}}
+  {{it}}
+{{/if}}
+{{/each}}
+
+Code:
+```code
+#each range(1,15)
+    #if it % 3 == 0 && it % 5 == 0
+        ""FizzBuzz""
+    else if it % 3 == 0
+        ""Fizz""
+    else if it % 5 == 0
+        ""Buzz""
+    else
+        it
+    /if
+/each
+```
+
+Lisp:
+```lisp
+(defn fizzbuzz [i]
+    (cond ((and (zero? (mod i 3)) (zero? (mod i 5))) ""FizzBuzz"")
+          ((zero? (mod i 3)) ""Fizz"")
+          ((zero? (mod i 5)) ""Buzz"")
+          (t i)))
+
+(dorun println (map fizzbuzz (range 1 15)))
+```
+";
+        [Test]
+        public void Can_use_multiple_code_blocks()
+        {
+            var context = new ScriptContext {
+                ScriptLanguages = { ScriptLisp.Language }
+            };
+
+            context.VirtualFiles.WriteFile("page.html", "{{#raw template}}\n" +
+                TemplateMix +
+            @"{{/raw}}
+            {{template}}");
+            context.Init();
+            
+            var output = context.RenderScript(TemplateMix);
+            Assert.That(output.NormalizeNewLines(), Does.Contain(@"Lisp:
+1
+2
+Fizz".NormalizeNewLines()));
+            
+            var pageResult = new PageResult(context.GetPage("page"));
+            output = pageResult.RenderScript();
+            Assert.That(output, Does.Contain("#each range(1,15)"));
+            Assert.That(output, Does.Contain("(defn fizzbuzz [i]"));
         }
 
     }

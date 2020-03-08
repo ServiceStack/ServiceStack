@@ -336,6 +336,7 @@ namespace ServiceStack.Script
             int startBlockPos = -1;
             var cursorPos = 0;
             var lastBlockPos = 0;
+            var inRawBlock = false;
             
             const int delim = 3; // '```'.length
 
@@ -343,6 +344,19 @@ namespace ServiceStack.Script
             {
                 var lineLength = line.Length;
                 line = line.AdvancePastWhitespace();
+
+                if (line.IndexOf("{{#raw") >= 0 && line.IndexOf("{{/raw}}") < 0)
+                {
+                    inRawBlock = true;
+                    continue;
+                }
+                if (line.IndexOf("{{/raw}}") >= 0)
+                {
+                    inRawBlock = false;
+                    continue;
+                }
+                if (inRawBlock)
+                    continue;
 
                 if (line.StartsWith("```"))
                 {
