@@ -630,9 +630,9 @@ namespace ServiceStack
                     ? EvalExpressionCached(scriptValue.Expression)
                     : JS.eval(scriptValue.Expression);
             }
-            
+
             if (scriptValue.Eval == null)
-                throw new ArgumentNullException(nameof(scriptValue));
+                return null;
 
             var evalCode = ScriptCodeUtils.EnsureReturn(scriptValue.Eval);
 

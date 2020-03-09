@@ -227,9 +227,35 @@ namespace ServiceStack
         /// <summary>
         /// Name of Class Property to Populate
         /// </summary>
-        public string Name { get; set; }
+        public string Field { get; set; }
         
-        public AutoPopulateAttribute(string name) => Name = name ?? throw new ArgumentNullException(nameof(name));
+        public AutoPopulateAttribute(string field) => Field = field ?? throw new ArgumentNullException(nameof(field));
+    }
+    
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
+    public class AutoFilterAttribute : AutoValueBase
+    {
+        /// <summary>
+        /// Name of Class Property to Filter
+        /// </summary>
+        public string Field { get; set; }
+
+        public string Operand { get; set; }
+        public string Template { get; set; }
+        public string ValueFormat { get; set; }
+
+        public bool IsNull
+        {
+            get => Template == "{Field} IS NULL";
+            set => Template = value ? Template = "{Field} IS NULL" : "{Field} IS NOT NULL";
+        }
+        public bool IsNotNull
+        {
+            get => Template == "{Field} IS NOT NULL";
+            set => Template = !value ? Template = "{Field} IS NULL" : "{Field} IS NOT NULL";
+        }
+
+        public AutoFilterAttribute(string field) => Field = field ?? throw new ArgumentNullException(nameof(field));
     }
    
 }

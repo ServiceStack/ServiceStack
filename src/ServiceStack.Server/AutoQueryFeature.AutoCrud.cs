@@ -289,7 +289,7 @@ namespace ServiceStack
             {
                 foreach (var populateAttr in meta.PopulateAttrs)
                 {
-                    dtoValues[populateAttr.Name] = appHost.EvalScriptValue(populateAttr, Request);
+                    dtoValues[populateAttr.Field] = appHost.EvalScriptValue(populateAttr, Request);
                 }
             }
 

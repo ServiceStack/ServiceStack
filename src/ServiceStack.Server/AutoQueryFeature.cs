@@ -806,6 +806,9 @@ namespace ServiceStack
         static readonly Dictionary<string, QueryDbFieldAttribute> QueryFieldMap =
             new Dictionary<string, QueryDbFieldAttribute>();
 
+        static readonly AutoFilterAttribute[] AutoFilters;
+        static readonly QueryDbFieldAttribute[] AutoFiltersDbFields;
+
         static TypedQuery()
         {
             foreach (var pi in typeof(QueryModel).GetPublicProperties())
@@ -816,6 +819,36 @@ namespace ServiceStack
                 var queryAttr = pi.FirstAttribute<QueryDbFieldAttribute>();
                 if (queryAttr != null)
                     QueryFieldMap[pi.Name] = queryAttr.Init();
+            }
+
+            var allAttrs = typeof(QueryModel).AllAttributes();
+            AutoFilters = allAttrs.OfType<AutoFilterAttribute>().ToArray();
+            AutoFiltersDbFields = new QueryDbFieldAttribute[AutoFilters.Length];
+
+            for (int i = 0; i < AutoFilters.Length; i++)
+            {
+                var filter = AutoFilters[i];
+                var dbField = AutoFiltersDbFields[i] = new QueryDbFieldAttribute {
+                    Field = filter.Field,
+                    Operand = filter.Operand,
+                    Template = filter.Template,
+                    ValueFormat = filter.ValueFormat,
+                    ValueStyle = ValueStyle.Single,
+                };
+                if (filter.Template.IndexOf("{Values}", StringComparison.Ordinal) >= 0)
+                {
+                    dbField.ValueStyle = ValueStyle.List;
+                }
+                else if (filter.Template.IndexOf("{Value1}", StringComparison.Ordinal) >= 0)
+                {
+                    dbField.ValueStyle = ValueStyle.Multiple;
+                    int arity = 1;
+                    while (filter.Template.IndexOf("{Value" + arity + "}", StringComparison.Ordinal) >= 0)
+                    {
+                        arity++;
+                    }
+                    dbField.ValueArity = arity;
+                }
             }
         }
 
@@ -850,6 +883,8 @@ namespace ServiceStack
                 if (attr?.Name == null) continue;
                 aliases[attr.Name] = pi.Name;
             }
+
+            AppendAutoFilters(q, dto, options);
 
             AppendTypedQueries(q, dto, dynamicParams, defaultTerm, options, aliases);
 
@@ -961,6 +996,28 @@ namespace ServiceStack
                         q.LeftJoin(joinTypes[i - 1], joinTypes[i]);
                     } 
                 }
+            }
+        }
+
+        private static void AppendAutoFilters(SqlExpression<From> q, IQueryDb dto, IAutoQueryOptions options)
+        {
+            if (AutoFilters.Length == 0)
+                return;
+            
+            var appHost = HostContext.AppHost;
+            for (var i = 0; i < AutoFilters.Length; i++)
+            {
+                var filter = AutoFilters[i];
+                var fieldDef = q.ModelDef.GetFieldDefinition(filter.Field);
+                if (fieldDef == null)
+                    throw new NotSupportedException($"{dto.GetType().Name} '{filter.Field}' AutoFilter was not found on '{typeof(From).Name}'");
+
+                var quotedColumn = q.DialectProvider.GetQuotedColumnName(q.ModelDef, fieldDef);
+
+                var value = appHost.EvalScriptValue(filter);
+
+                var dbField = AutoFiltersDbFields[i];
+                AddCondition(q, "AND", quotedColumn, value, dbField);
             }
         }
 
