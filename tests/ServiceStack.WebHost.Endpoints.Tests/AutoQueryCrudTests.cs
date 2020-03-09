@@ -10,7 +10,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    public class RockstarBase
+    public abstract class RockstarBase
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
@@ -37,7 +37,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         [AutoIncrement]
         public int Id { get; set; }
-        
         public DateTime CreatedDate { get; set; }
         public string CreatedBy { get; set; }
         public string CreatedInfo { get; set; }
@@ -45,7 +44,38 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string ModifiedBy { get; set; }
         public string ModifiedInfo { get; set; }
     }
-    
+
+    public abstract class AuditBase
+    {
+        public DateTime CreatedDate { get; set; }
+        [Required]
+        public string CreatedBy { get; set; }
+        [Required]
+        public string CreatedInfo { get; set; }
+
+        public DateTime ModifiedDate { get; set; }
+        [Required]
+        public string ModifiedBy { get; set; }
+        [Required]
+        public string ModifiedInfo { get; set; }
+
+        public DateTime? SoftDeletedDate { get; set; }
+        public string SoftDeletedBy { get; set; }
+        public string SoftDeletedInfo { get; set; }
+    }
+        
+    public class RockstarAuditSub : AuditBase
+    {
+        [AutoIncrement]
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public int? Age { get; set; }
+        public DateTime DateOfBirth { get; set; }
+        public DateTime? DateDied { get; set; }
+        public LivingStatus LivingStatus { get; set; }
+    }
+
     public class RockstarVersion : RockstarBase
     {
         [AutoIncrement]
@@ -82,6 +112,70 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [AutoPopulate(nameof(RockstarAudit.ModifiedInfo), Eval = "`${userSession.DisplayName} (${userSession.City})`")]
     public class CreateRockstarAudit : RockstarBase, ICreateDb<RockstarAudit>, IReturn<CreateRockstarWithIdResponse>
     {
+    }
+
+    public class RequestAuditBase
+    {
+        public DateTime? CreatedDate { get; set; } //needs to be nullable (i.e. optional) so it's not overridden
+        public string CreatedBy { get; set; }
+        public string CreatedInfo { get; set; }
+
+        public DateTime? ModifiedDate { get; set; }
+        public string ModifiedBy { get; set; }
+        public string ModifiedInfo { get; set; }
+
+        public DateTime? SoftDeletedDate { get; set; }
+        public string SoftDeletedBy { get; set; }
+        public string SoftDeletedInfo { get; set; }
+    }
+
+    [Authenticate]
+    [AutoPopulate(nameof(CreatedDate),  Eval = "utcNow")]
+    [AutoPopulate(nameof(CreatedBy),    Eval = "userAuthName")] //or userAuthId
+    [AutoPopulate(nameof(CreatedInfo),  Eval = "`${userSession.DisplayName} (${userSession.City})`")]
+    [AutoPopulate(nameof(ModifiedDate), Eval = "utcNow")]
+    [AutoPopulate(nameof(ModifiedBy),   Eval = "userAuthName")] //or userAuthId
+    [AutoPopulate(nameof(ModifiedInfo), Eval = "`${userSession.DisplayName} (${userSession.City})`")]
+    public class CreateAuditBase<Table,TResponse> : RequestAuditBase, ICreateDb<Table>, IReturn<TResponse>
+    {
+    }
+
+    [Authenticate]
+    [AutoPopulate(nameof(RockstarAudit.ModifiedDate), Eval = "utcNow")]
+    [AutoPopulate(nameof(RockstarAudit.ModifiedBy),   Eval = "userAuthName")] //or userAuthId
+    [AutoPopulate(nameof(RockstarAudit.ModifiedInfo), Eval = "`${userSession.DisplayName} (${userSession.City})`")]
+    public class UpdateAuditBase<Table,TResponse> : RequestAuditBase, IUpdateDb<Table>, IReturn<TResponse>
+    {
+    }
+
+    [Authenticate]
+    [AutoPopulate(nameof(SoftDeletedDate), Eval = "utcNow")]
+    [AutoPopulate(nameof(SoftDeletedBy),   Eval = "userAuthName")] //or userAuthId
+    [AutoPopulate(nameof(SoftDeletedInfo), Eval = "`${userSession.DisplayName} (${userSession.City})`")]
+    public class SoftDeleteAuditBase<Table,TResponse> : RequestAuditBase, IUpdateDb<Table>, IReturn<TResponse>
+    {
+    }
+    
+    public class CreateRockstarAuditSub : CreateAuditBase<RockstarAuditSub, CreateRockstarWithIdResponse>
+    {
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public int? Age { get; set; }
+        public DateTime DateOfBirth { get; set; }
+        public DateTime? DateDied { get; set; }
+        public LivingStatus LivingStatus { get; set; }
+    }
+    
+    public class UpdateRockstarAuditSub : UpdateAuditBase<RockstarAuditSub, EmptyResponse>
+    {
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public LivingStatus? LivingStatus { get; set; }
+    }
+    
+    public class SoftDeleteAuditSub : SoftDeleteAuditBase<RockstarAuditSub, EmptyResponse>
+    {
+        public int Id { get; set; }
     }
 
     public class CreateRockstarVersion : RockstarBase, ICreateDb<RockstarVersion>, IReturn<RockstarWithIdAndRowVersionResponse>
@@ -159,6 +253,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int Id { get; set; }
     }
 
+    [Authenticate]
     [AutoPopulate(nameof(RockstarAudit.ModifiedDate), Eval = "utcNow")]
     [AutoPopulate(nameof(RockstarAudit.ModifiedBy),   Eval = "userAuthName")] //or userAuthId
     [AutoPopulate(nameof(RockstarAudit.ModifiedInfo), Eval = "`${userSession.DisplayName} (${userSession.City})`")]
@@ -167,6 +262,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int Id { get; set; }
         public string FirstName { get; set; }
         public LivingStatus? LivingStatus { get; set; }
+    }
+
+    [Authenticate]
+    public class DeleteRockstarAudit : IDeleteDb<RockstarAudit>, IReturnVoid
+    {
+        public int Id { get; set; }
     }
 
     public class UpdateRockstarVersion : RockstarBase, IPatchDb<RockstarVersion>, IReturn<RockstarWithIdAndRowVersionResponse>
@@ -263,6 +364,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             
             using var db = appHost.TryResolve<IDbConnectionFactory>().OpenDbConnection();
             db.CreateTable<RockstarAudit>();
+            db.CreateTable<RockstarAuditSub>();
             db.CreateTable<RockstarAutoGuid>();
             db.CreateTable<RockstarVersion>();
 
@@ -696,6 +798,81 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(newRockstar.ModifiedDate.Date, Is.EqualTo(DateTime.UtcNow.Date));
             Assert.That(newRockstar.ModifiedBy, Is.EqualTo("manager"));
             Assert.That(newRockstar.ModifiedInfo, Is.EqualTo("The Manager (Perth)"));
+
+            authClient.Delete(new DeleteRockstarAudit {
+                Id = createResponse.Id,
+            });
+
+            newRockstar = db.SingleById<RockstarAudit>(createResponse.Id);
+            Assert.That(newRockstar, Is.Null);
+        }
+ 
+
+        [Test]
+        public void Can_CreateRockstarAuditAub()
+        {
+            var authClient = new JsonServiceClient(Config.ListeningOn);
+            authClient.Post(new Authenticate {
+                provider = "credentials",
+                UserName = "admin@email.com",
+                Password = "p@55wOrd",
+                RememberMe = true,
+            });
+ 
+            var createResponse = authClient.Post(new CreateRockstarAuditSub {
+                FirstName = "Create",
+                LastName = "Audit",
+                Age = 20,
+                DateOfBirth = new DateTime(2002,2,2),
+                LivingStatus = LivingStatus.Dead,
+            });
+            
+            using var db = appHost.GetDbConnection();
+            var newRockstar = db.SingleById<RockstarAuditSub>(createResponse.Id);
+            Assert.That(newRockstar.FirstName, Is.EqualTo("Create"));
+            Assert.That(newRockstar.LastName, Is.EqualTo("Audit"));
+            Assert.That(newRockstar.Age, Is.EqualTo(20));
+            Assert.That(newRockstar.DateOfBirth.Date, Is.EqualTo(new DateTime(2002,2,2).Date));
+            Assert.That(newRockstar.LivingStatus, Is.EqualTo(LivingStatus.Dead));
+            Assert.That(newRockstar.CreatedDate.Date, Is.EqualTo(DateTime.UtcNow.Date));
+            Assert.That(newRockstar.CreatedBy, Is.EqualTo("admin@email.com"));
+            Assert.That(newRockstar.CreatedInfo, Is.EqualTo("Admin User (London)"));
+            Assert.That(newRockstar.ModifiedDate.Date, Is.EqualTo(DateTime.UtcNow.Date));
+            Assert.That(newRockstar.ModifiedBy, Is.EqualTo("admin@email.com"));
+            Assert.That(newRockstar.ModifiedInfo, Is.EqualTo("Admin User (London)"));
+
+            authClient = new JsonServiceClient(Config.ListeningOn);
+            authClient.Post(new Authenticate {
+                provider = "credentials",
+                UserName = "manager",
+                Password = "p@55wOrd",
+                RememberMe = true,
+            });
+ 
+            authClient.Patch(new UpdateRockstarAuditSub {
+                Id = createResponse.Id,
+                FirstName = "Updated",
+                LivingStatus = LivingStatus.Alive,
+            });
+
+            newRockstar = db.SingleById<RockstarAuditSub>(createResponse.Id);
+            Assert.That(newRockstar.FirstName, Is.EqualTo("Updated"));
+            Assert.That(newRockstar.LivingStatus, Is.EqualTo(LivingStatus.Alive));
+            Assert.That(newRockstar.CreatedDate.Date, Is.EqualTo(DateTime.UtcNow.Date));
+            Assert.That(newRockstar.CreatedBy, Is.EqualTo("admin@email.com"));
+            Assert.That(newRockstar.CreatedInfo, Is.EqualTo("Admin User (London)"));
+            Assert.That(newRockstar.ModifiedDate.Date, Is.EqualTo(DateTime.UtcNow.Date));
+            Assert.That(newRockstar.ModifiedBy, Is.EqualTo("manager"));
+            Assert.That(newRockstar.ModifiedInfo, Is.EqualTo("The Manager (Perth)"));
+
+            authClient.Delete(new SoftDeleteAuditSub {
+                Id = createResponse.Id,
+            });
+
+            newRockstar = db.SingleById<RockstarAuditSub>(createResponse.Id);
+            Assert.That(newRockstar.SoftDeletedDate.Value.Date, Is.EqualTo(DateTime.UtcNow.Date));
+            Assert.That(newRockstar.SoftDeletedBy, Is.EqualTo("manager"));
+            Assert.That(newRockstar.SoftDeletedInfo, Is.EqualTo("The Manager (Perth)"));
         }
  
         [Test]
@@ -708,18 +885,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 DateOfBirth = new DateTime(2001,7,1),
                 LivingStatus = LivingStatus.Dead,
             });
-            
-            var response = client.Patch(new UpdateRockstarVersion {
-                Id = createResponse.Id, 
-                LastName = "UpdateVersion",
-                RowVersion = createResponse.RowVersion,
-            });
-
-            using var db = appHost.GetDbConnection();
-            var newRockstar = db.SingleById<RockstarVersion>(createResponse.Id);
-            Assert.That(newRockstar.RowVersion, Is.Not.EqualTo(default(uint)));
-            Assert.That(newRockstar.FirstName, Is.EqualTo("Create"));
-            Assert.That(newRockstar.LastName, Is.EqualTo("UpdateVersion"));
 
             try 
             {
@@ -734,7 +899,38 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Assert.That(ex.ErrorCode, Is.EqualTo(nameof(OptimisticConcurrencyException)));
             }
+            
+            var response = client.Patch(new UpdateRockstarVersion {
+                Id = createResponse.Id, 
+                LastName = "UpdateVersion3",
+                RowVersion = createResponse.RowVersion,
+            });
+
+            using var db = appHost.GetDbConnection();
+            var newRockstar = db.SingleById<RockstarVersion>(createResponse.Id);
+            Assert.That(newRockstar.RowVersion, Is.Not.EqualTo(default(uint)));
+            Assert.That(newRockstar.FirstName, Is.EqualTo("Create"));
+            Assert.That(newRockstar.LastName, Is.EqualTo("UpdateVersion3"));
+
+            try 
+            {
+                client.Patch(new UpdateRockstarVersion {
+                    Id = createResponse.Id, 
+                    LastName = "UpdateVersion4",
+                });
+                
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.ErrorCode, Is.EqualTo(nameof(OptimisticConcurrencyException)));
+            }
+            
         }
         
     }
+    
+    //TODO: Reusable policies (inherited AutoPopulate) field -> info { *ALL THE THINGS* }
+    //Declarative Validation / external providers / built-in UI?
+    //SPA AutoCrud / Grid Controls
 }
