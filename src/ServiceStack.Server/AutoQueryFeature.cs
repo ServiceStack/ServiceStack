@@ -222,6 +222,9 @@ namespace ServiceStack
 
             foreach (var requestType in missingQueryRequestTypes)
             {
+                if (requestType.IsAbstract || requestType.IsGenericType)
+                    continue;
+                
                 var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryDb<,>));
                 var hasExplicitInto = genericDef != null;
                 if (genericDef == null)
@@ -266,6 +269,9 @@ namespace ServiceStack
             
             foreach (var requestType in missingCrudRequestTypes)
             {
+                if (requestType.IsAbstract || requestType.IsGenericType)
+                    continue;
+                
                 var crudTypes = getCrudGenericDefTypes(requestType, typeof(ICreateDb<>))
                     ?? getCrudGenericDefTypes(requestType, typeof(IUpdateDb<>))
                     ?? getCrudGenericDefTypes(requestType, typeof(IDeleteDb<>))
