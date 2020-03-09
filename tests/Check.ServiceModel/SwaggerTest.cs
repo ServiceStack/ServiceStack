@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
@@ -86,5 +87,23 @@ namespace Check.ServiceModel
         [ApiAllowableValues("ColorFlags", typeof(MyColorFlags))] //Enum
         [DataMember]
         public MyColorFlags ColorFlags { get; set; }
+    }
+    
+    [Route("/swagger/search", "POST")]
+    public class SwaggerSearch : IReturn<EmptyResponse>
+    {
+        public List<SearchFilter> Filters { get; set; }
+    }
+
+    public class SearchFilter
+    {
+        [ApiMember(Name = "Field")]
+        public string Field { get; set; }
+
+        [ApiMember(Name = "Values")]
+        public List<string> Values { get; set; }
+
+        [ApiMember(Name = "Type")]
+        public string Type { get; set; }
     }
 }

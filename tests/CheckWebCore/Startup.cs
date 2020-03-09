@@ -311,6 +311,26 @@ namespace CheckWebCore
     {
         public int Ticks { get; set; }
     }
+    
+    
+    [Route("/swagger/search", "POST")]
+    public class SwaggerSearch : IReturn<EmptyResponse>, IPost
+    {
+        public List<SearchFilter> Filters { get; set; }
+    }
+
+    public class SearchFilter
+    {
+        [ApiMember(Name = "Field")]
+        public string Field { get; set; }
+
+        [ApiMember(Name = "Values")]
+        public List<string> Values { get; set; }
+
+        [ApiMember(Name = "Type")]
+        public string Type { get; set; }
+    }
+    
 
     //    [Authenticate]
     public class MyServices : Service
@@ -383,6 +403,8 @@ namespace CheckWebCore
                 });
             }
         }
+        
+        public object Any(SwaggerSearch request) => new EmptyResponse();
     }
     
     // [RequiredRole("Admin")]
