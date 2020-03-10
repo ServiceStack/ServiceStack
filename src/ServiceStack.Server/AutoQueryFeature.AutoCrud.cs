@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
+using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack
 {
@@ -16,7 +18,18 @@ namespace ServiceStack
 
     public abstract partial class AutoQueryServiceBase
     {
-        private async Task<object> ExecAndReturnResponseAsync<Table>(object dto, IDbConnection db, Func<ExecContext,Task<object>> fn)
+        internal struct ExecValue
+        {
+            internal object Id;
+            internal long? RowsUpdated;
+            public ExecValue(object id, long? rowsUpdated)
+            {
+                Id = id;
+                RowsUpdated = rowsUpdated;
+            }
+        }
+        
+        private async Task<object> ExecAndReturnResponseAsync<Table>(object dto, IDbConnection db, Func<ExecContext,Task<ExecValue>> fn)
         {
             var responseType = HostContext.Metadata.GetOperation(dto.GetType())?.ResponseType;
             var responseProps = responseType == null ? null : TypeProperties.Get(responseType);
@@ -25,26 +38,26 @@ namespace ServiceStack
             var resultProp = responseProps?.GetAccessor(Keywords.Result);
             var rowVersionProp = responseProps?.GetAccessor(Keywords.RowVersion);
 
-            var retValue = await fn(new ExecContext(idProp, resultProp, countProp, rowVersionProp));
+            var execValue = await fn(new ExecContext(idProp, resultProp, countProp, rowVersionProp));
             if (responseType == null)
                 return null;
 
             object idValue = null;
                 
             var response = responseType.CreateInstance();
-            if (idProp != null)
+            if (idProp != null && execValue.Id != null)
             {
-                idValue = retValue.ConvertTo(idProp.PropertyInfo.PropertyType);
+                idValue = execValue.Id.ConvertTo(idProp.PropertyInfo.PropertyType);
                 idProp.PublicSetter(response, idValue);
             }
-            else
+            if (countProp != null && execValue.RowsUpdated != null)
             {
-                countProp?.PublicSetter(response, retValue.ConvertTo(countProp.PropertyInfo.PropertyType));
+                countProp.PublicSetter(response, execValue.RowsUpdated.ConvertTo(countProp.PropertyInfo.PropertyType));
             }
 
-            if (resultProp != null)
+            if (resultProp != null && execValue.Id != null)
             {
-                var result = await db.SingleByIdAsync<Table>(retValue);
+                var result = await db.SingleByIdAsync<Table>(execValue.Id);
                 resultProp.PublicSetter(response, result.ConvertTo(resultProp.PropertyInfo.PropertyType));
             }
 
@@ -95,11 +108,17 @@ namespace ServiceStack
                     var dtoValues = ResolveDtoValues(dto);
                     var pkFieldDef = typeof(Table).GetModelMetadata()?.PrimaryKey;
                     var isAutoId = pkFieldDef?.AutoId == true;
-                        var autoIntId = await db.InsertAsync<Table>(dtoValues, selectIdentity: ctx.IdProp != null || ctx.ResultProp != null);
-                        // [AutoId] Guid's populate the PK Property
-                        if (isAutoId)
-                            return pkFieldDef.GetValue(dtoValues);
-                        return autoIntId;
+                    var selectIdentity = ctx.IdProp != null || ctx.ResultProp != null;
+                    var autoIntId = await db.InsertAsync<Table>(dtoValues, selectIdentity: selectIdentity);
+                    // [AutoId] Guid's populate the PK Property
+                    if (isAutoId)
+                        return new ExecValue(pkFieldDef.GetValue(dtoValues), selectIdentity ? 1 : autoIntId);
+
+                    return selectIdentity
+                        ? new ExecValue(autoIntId, 1)
+                        : pkFieldDef != null && dtoValues.TryGetValue(pkFieldDef.Name, out var idValue)
+                            ? new ExecValue(idValue, autoIntId)
+                            : new ExecValue(null, autoIntId);
                 });
                 
                 return response;
@@ -123,6 +142,62 @@ namespace ServiceStack
             return UpdateInternalAsync<Table>(dto, skipDefaults:true);
         }
 
+        internal bool GetAutoFilterExpressions(IDbConnection db, object dto, Dictionary<string, object> dtoValues, IRequest req, out string expr, out List<object> exprParams)
+        {
+            var meta = AutoCrudMetadata.Create(dto.GetType());
+            if (meta.AutoFilters != null)
+            {
+                var dialectProvider = db.GetDialectProvider();
+                var sb = StringBuilderCache.Allocate();
+                var exprParamsList = new List<object>();
+
+                //Update's require PK's, Delete's don't need to
+                if (dtoValues.TryRemove(meta.ModelDef.PrimaryKey.Name, out var idValue))
+                {
+                    var idColumn = dialectProvider.GetQuotedColumnName(meta.ModelDef, meta.ModelDef.PrimaryKey);
+                    sb.Append(idColumn + " = {0}");
+                    exprParamsList.Add(idValue);
+                }
+                
+                var appHost = HostContext.AppHost;
+                for (var i = 0; i < meta.AutoFilters.Count; i++)
+                {
+                    var filter = meta.AutoFilters[i];
+                    var dbAttr = meta.AutoFiltersDbFields[i];
+                    
+                    var fieldDef = meta.ModelDef.GetFieldDefinition(filter.Field);
+                    if (fieldDef == null)
+                        throw new NotSupportedException($"{dto.GetType().Name} '{filter.Field}' AutoFilter was not found on '{meta.ModelType.Name}'");
+
+                    var quotedColumn = dialectProvider.GetQuotedColumnName(meta.ModelDef, fieldDef);
+
+                    var value = appHost.EvalScriptValue(filter, req);
+                    
+                    var ret = ExprResult.CreateExpression("AND", quotedColumn, value, dbAttr);
+                    if (ret != null)
+                    {
+                        if (sb.Length > 0)
+                            sb.Append(" AND ");
+
+                        if (ret.Value.Format.IndexOf("{1}", StringComparison.Ordinal) >= 0)
+                            throw new NotSupportedException($"SQL Template '{ret.Value.Format}' with multiple arguments is not supported");
+                            
+                        var mergedFormat = ret.Value.Format.Replace("{0}", "{" + exprParamsList.Count + "}");
+                        sb.Append(mergedFormat);
+                        exprParamsList.Add(ret.Value.Value);
+                    }
+
+                    expr = StringBuilderCache.ReturnAndFree(sb);
+                    exprParams = exprParamsList;
+                    return true;
+                }
+            }
+
+            expr = null;
+            exprParams = null;
+            return false;
+        }
+
         private async Task<object> UpdateInternalAsync<Table>(object dto, bool skipDefaults)
         {
             using var db = AutoQuery.GetDb<Table>(Request);
@@ -138,11 +213,14 @@ namespace ServiceStack
                             throw new ArgumentNullException(pkFieldDef.Name);
                         
                         // Should only update a Single Row
-                        var rowsUpdated = await db.UpdateOnlyAsync<Table>(dtoValues);
+                        var rowsUpdated = GetAutoFilterExpressions(db, dto, dtoValues, Request, out var expr, out var exprParams) 
+                            ? await db.UpdateOnlyAsync<Table>(dtoValues, expr, exprParams.ToArray())
+                            : await db.UpdateOnlyAsync<Table>(dtoValues);
+
                         if (rowsUpdated != 1)
                             throw new OptimisticConcurrencyException($"{rowsUpdated} rows were updated by '{dto.GetType().Name}'");
 
-                        return idValue;
+                        return new ExecValue(idValue, rowsUpdated);
                     }); //TODO: UpdateOnly
 
                 return response;
@@ -152,8 +230,12 @@ namespace ServiceStack
         internal class AutoCrudMetadata
         {
             internal Type DtoType;
+            internal Type ModelType;
+            internal ModelDefinition ModelDef;
             internal TypeProperties DtoProps;
             internal List<AutoPopulateAttribute> PopulateAttrs;
+            internal List<AutoFilterAttribute> AutoFilters;
+            internal List<QueryDbFieldAttribute> AutoFiltersDbFields;
             internal Dictionary<string, AutoUpdateAttribute> UpdateAttrs;
             internal Dictionary<string, AutoDefaultAttribute> DefaultAttrs;
             internal Dictionary<string, AutoMapAttribute> MapAttrs;
@@ -163,6 +245,37 @@ namespace ServiceStack
             static readonly ConcurrentDictionary<Type, AutoCrudMetadata> cache = 
                 new ConcurrentDictionary<Type, AutoCrudMetadata>();
 
+            internal static Type GetModelType(Type requestType)
+            {
+                var intoTypeDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryDb<,>));
+                if (intoTypeDef != null)
+                {
+                    var args = intoTypeDef.GetGenericArguments();
+                    return args[1];
+                }
+            
+                var typeDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryDb<>));
+                if (typeDef != null)
+                {
+                    var args = typeDef.GetGenericArguments();
+                    return args[0];
+                }
+                
+                var crudTypes = AutoQueryFeature.GetCrudGenericDefTypes(requestType, typeof(ICreateDb<>))
+                    ?? AutoQueryFeature.GetCrudGenericDefTypes(requestType, typeof(IUpdateDb<>))
+                    ?? AutoQueryFeature.GetCrudGenericDefTypes(requestType, typeof(IDeleteDb<>))
+                    ?? AutoQueryFeature.GetCrudGenericDefTypes(requestType, typeof(IPatchDb<>))
+                    ?? AutoQueryFeature.GetCrudGenericDefTypes(requestType, typeof(ISaveDb<>));
+
+                if (crudTypes != null)
+                {
+                    var genericDef = crudTypes.Item1;
+                    return genericDef.GenericTypeArguments[0];
+                }
+
+                return null;
+            }
+
             internal static AutoCrudMetadata Create(Type dtoType)
             {
                 if (cache.TryGetValue(dtoType, out var to))
@@ -170,8 +283,12 @@ namespace ServiceStack
                 
                 to = new AutoCrudMetadata {
                     DtoType = dtoType,
+                    ModelType = GetModelType(dtoType),
                     DtoProps = TypeProperties.Get(dtoType),
                 };
+                if (to.ModelType != null)
+                    to.ModelDef = to.ModelType.GetModelMetadata();
+                
                 to.RowVersionGetter = to.DtoProps.GetPublicGetter(Keywords.RowVersion);
                 
                 var dtoAttrs = dtoType.AllAttributes();
@@ -181,6 +298,14 @@ namespace ServiceStack
                     {
                         to.PopulateAttrs ??= new List<AutoPopulateAttribute>();
                         to.PopulateAttrs.Add(populateAttr);
+                    }
+                    else if (dtoAttr is AutoFilterAttribute filterAttr)
+                    {
+                        to.AutoFilters ??= new List<AutoFilterAttribute>();
+                        to.AutoFiltersDbFields ??= new List<QueryDbFieldAttribute>();
+
+                        to.AutoFilters.Add(filterAttr);
+                        to.AutoFiltersDbFields.Add(ExprResult.ToDbFieldAttribute(filterAttr));
                     }
                 }
 
@@ -310,7 +435,7 @@ namespace ServiceStack
         public virtual async Task<object> Delete<Table>(IDeleteDb<Table> dto)
         {
             using var db = AutoQuery.GetDb<Table>(Request);
-            using (Profiler.Current.Step("AutoQuery.Update"))
+            using (Profiler.Current.Step("AutoQuery.Delete"))
             {
                 var response = await ExecAndReturnResponseAsync<Table>(dto, db,
                     async ctx => {
@@ -319,8 +444,40 @@ namespace ServiceStack
                         //Should have at least 1 non-default filter
                         if (dtoValues.Count == 0)
                             throw new NotSupportedException($"'{dto.GetType().Name}' did not contain any filters");
+                        
+                        var meta = AutoCrudMetadata.Create(dto.GetType());
+                        var pkFieldDef = meta.ModelDef.PrimaryKey;
+                        var idValue = pkFieldDef != null && dtoValues.TryGetValue(pkFieldDef.Name, out var oId)
+                            ? oId
+                            : null;
 
-                        return await db.DeleteAsync<Table>(dtoValues);
+                        // Should only update a Single Row
+                        if (GetAutoFilterExpressions(db, dto, dtoValues, Request, out var expr, out var exprParams))
+                        {
+                            //If there were Auto Filters, construct filter expression manually by adding any remaining DTO values
+                            foreach (var entry in dtoValues)
+                            {
+                                var fieldDef = meta.ModelDef.GetFieldDefinition(entry.Key);
+                                if (fieldDef == null)
+                                    throw new NotSupportedException($"Unknown '{entry.Key}' Field in '{dto.GetType().Name}' IDeleteDb<{typeof(Table).Name}> Request");
+                                
+                                if (expr.Length > 0)
+                                    expr += " AND ";
+
+                                var quotedColumn = db.GetDialectProvider().GetQuotedColumnName(meta.ModelDef, fieldDef);
+
+                                expr += quotedColumn + " = {" + exprParams.Count + "}";
+                                exprParams.Add(entry.Value);
+                            }
+
+                            var q = db.From<Table>();
+                            q.Where(expr, exprParams.ToArray());
+                            return new ExecValue(idValue, await db.DeleteAsync(q));
+                        }
+                        else
+                        {
+                            return new ExecValue(idValue, await db.DeleteAsync<Table>(dtoValues));
+                        }
                     });
                 
                 return response;
@@ -333,11 +490,23 @@ namespace ServiceStack
         public virtual async Task<object> Save<Table>(ISaveDb<Table> dto)
         {
             using var db = AutoQuery.GetDb<Table>(Request);
-            using (Profiler.Current.Step("AutoQuery.Update"))
+            using (Profiler.Current.Step("AutoQuery.Save"))
             {
                 var row = dto.ConvertTo<Table>();
                 var response = await ExecAndReturnResponseAsync<Table>(dto, db,
-                    async ctx => await db.SaveAsync(row)); //TODO: Use Upsert when available
+                    //TODO: Use Upsert when available
+                    fn: async ctx => {
+                        await db.SaveAsync(row);
+                        object idValue = null;
+                        var pkField = typeof(Table).GetModelMetadata().PrimaryKey;
+                        if (pkField != null)
+                        {
+                            var propGetter = TypeProperties.Get(dto.GetType()).GetPublicGetter(pkField.Name);
+                            if (propGetter != null)
+                                idValue = propGetter(dto);
+                        }
+                        return new ExecValue(idValue, 1);
+                    }); 
                 
                 return response;
             }

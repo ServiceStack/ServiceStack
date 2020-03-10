@@ -39,30 +39,51 @@ namespace ServiceStack
     public interface IOptions : IVerb { }
     public interface IStream : IVerb { }
 
+    /// <summary>
+    /// Marker interface to enforce recommended method signature on ServiceStack Services: object Any(T request)   
+    /// </summary>
     public interface IAny<T>
     {
         object Any(T request);
     }
+    /// <summary>
+    /// Marker interface to enforce recommended method signature on ServiceStack Services: object Get(T request)   
+    /// </summary>
     public interface IGet<T>
     {
         object Get(T request);
     }
+    /// <summary>
+    /// Marker interface to enforce recommended method signature on ServiceStack Services: object Post(T request)   
+    /// </summary>
     public interface IPost<T>
     {
         object Post(T request);
     }
+    /// <summary>
+    /// Marker interface to enforce recommended method signature on ServiceStack Services: object Put(T request)   
+    /// </summary>
     public interface IPut<T>
     {
         object Put(T request);
     }
+    /// <summary>
+    /// Marker interface to enforce recommended method signature on ServiceStack Services: object Delete(T request)   
+    /// </summary>
     public interface IDelete<T>
     {
         object Delete(T request);
     }
+    /// <summary>
+    /// Marker interface to enforce recommended method signature on ServiceStack Services: object Patch(T request)   
+    /// </summary>
     public interface IPatch<T>
     {
         object Patch(T request);
     }
+    /// <summary>
+    /// Marker interface to enforce recommended method signature on ServiceStack Services: object Options(T request)   
+    /// </summary>
     public interface IOptions<T>
     {
         object Options(T request);

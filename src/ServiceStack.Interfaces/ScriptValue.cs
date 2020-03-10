@@ -34,4 +34,13 @@ namespace ServiceStack
         public string Eval { get; set; }
         public bool NoCache { get; set; }
     }
+
+    public abstract class ScriptValueAttribute : AttributeBase, IScriptValue
+    {
+        public object Value { get; set; }
+        public string Expression { get; set; }
+        public string Eval { get; set; }
+        public bool NoCache { get; set; }
+    }
+    
 }

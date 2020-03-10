@@ -58,6 +58,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         string SoftDeletedInfo { get; set; }
     }
 
+    public interface IAuditTenant : IAudit
+    {
+        int TenantId { get; set; }
+    }
+
     public abstract class AuditBase : IAudit
     {
         public DateTime CreatedDate { get; set; }
@@ -78,8 +83,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string SoftDeletedInfo { get; set; }
     }
         
-    public class RockstarAuditSub : AuditBase
+    public class RockstarAuditTenant : AuditBase
     {
+        [Index]
+        public int TenantId { get; set; }
         [AutoIncrement]
         public int Id { get; set; }
         public string FirstName { get; set; }
@@ -124,7 +131,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [AutoPopulate(nameof(RockstarAudit.ModifiedDate), Eval = "utcNow")]
     [AutoPopulate(nameof(RockstarAudit.ModifiedBy),   Eval = "userAuthName")] //or userAuthId
     [AutoPopulate(nameof(RockstarAudit.ModifiedInfo), Eval = "`${userSession.DisplayName} (${userSession.City})`")]
-    public class CreateRockstarAudit : RockstarBase, ICreateDb<RockstarAudit>, IReturn<CreateRockstarWithIdResponse>
+    public class CreateRockstarAudit : RockstarBase, ICreateDb<RockstarAudit>, IReturn<RockstarWithIdResponse>
     {
     }
 
@@ -135,27 +142,35 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [AutoPopulate(nameof(IAudit.ModifiedDate), Eval = "utcNow")]
     [AutoPopulate(nameof(IAudit.ModifiedBy),   Eval = "userAuthName")] //or userAuthId
     [AutoPopulate(nameof(IAudit.ModifiedInfo), Eval = "`${userSession.DisplayName} (${userSession.City})`")]
-    public class CreateAuditBase<Table,TResponse> : ICreateDb<Table>, IReturn<TResponse>
-    {
-    }
+    public abstract class CreateAuditBase<Table,TResponse> : ICreateDb<Table>, IReturn<TResponse> {}
+
+    [AutoPopulate(nameof(IAuditTenant.TenantId), Eval = "httpRequest.Items.TenantId")]
+    public abstract class CreateAuditTenantBase<Table,TResponse> : CreateAuditBase<Table,TResponse> {}
 
     [Authenticate]
     [AutoPopulate(nameof(IAudit.ModifiedDate), Eval = "utcNow")]
     [AutoPopulate(nameof(IAudit.ModifiedBy),   Eval = "userAuthName")] //or userAuthId
     [AutoPopulate(nameof(IAudit.ModifiedInfo), Eval = "`${userSession.DisplayName} (${userSession.City})`")]
-    public class UpdateAuditBase<Table,TResponse> : IUpdateDb<Table>, IReturn<TResponse>
-    {
-    }
+    public abstract class UpdateAuditBase<Table,TResponse> : IUpdateDb<Table>, IReturn<TResponse> {}
+
+    [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId),  Eval = "httpRequest.Items.TenantId")]
+    public abstract class UpdateAuditTenantBase<Table,TResponse> : UpdateAuditBase<Table,TResponse> {}
 
     [Authenticate]
     [AutoPopulate(nameof(IAudit.SoftDeletedDate), Eval = "utcNow")]
     [AutoPopulate(nameof(IAudit.SoftDeletedBy),   Eval = "userAuthName")] //or userAuthId
     [AutoPopulate(nameof(IAudit.SoftDeletedInfo), Eval = "`${userSession.DisplayName} (${userSession.City})`")]
-    public class SoftDeleteAuditBase<Table,TResponse> : IUpdateDb<Table>, IReturn<TResponse>
-    {
-    }
+    public abstract class SoftDeleteAuditBase<Table,TResponse> : IUpdateDb<Table>, IReturn<TResponse> {}
     
-    public class CreateRockstarAuditSub : CreateAuditBase<RockstarAuditSub, RockstarWithIdAndResultResponse>
+    [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId),  Eval = "httpRequest.Items.TenantId")]
+    public abstract class SoftDeleteAuditTenantBase<Table,TResponse> : SoftDeleteAuditBase<Table,TResponse> {}
+    
+    [Authenticate]
+    [AutoFilter(QueryTerm.Ensure, nameof(IAudit.SoftDeletedDate), Template = SqlTemplate.IsNull)]
+    [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId),  Eval = "httpRequest.Items.TenantId")]
+    public abstract class QueryDbTenant<From, Into> : QueryDb<From, Into> {}
+
+    public class CreateRockstarAuditTenant : CreateAuditTenantBase<RockstarAuditTenant, RockstarWithIdAndResultResponse>
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
@@ -165,31 +180,53 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public LivingStatus LivingStatus { get; set; }
     }
     
-    public class UpdateRockstarAuditSub : UpdateAuditBase<RockstarAuditSub, RockstarWithIdAndResultResponse>
+    public class UpdateRockstarAuditTenant : UpdateAuditTenantBase<RockstarAuditTenant, RockstarWithIdAndResultResponse>
     {
         public int Id { get; set; }
         public string FirstName { get; set; }
         public LivingStatus? LivingStatus { get; set; }
     }
     
-    public class SoftDeleteAuditSub : SoftDeleteAuditBase<RockstarAuditSub, RockstarWithIdAndResultResponse>
+    public class SoftDeleteAuditTenant : SoftDeleteAuditTenantBase<RockstarAuditTenant, RockstarWithIdAndResultResponse>
     {
         public int Id { get; set; }
     }
 
-    [AutoFilter(nameof(AuditBase.SoftDeletedDate), IsNull = true)]
-    public class QueryRockstarAuditSub : QueryDb<RockstarAuditSub, RockstarAuto>
+    [Authenticate]
+    [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId),  Eval = "httpRequest.Items.TenantId")]
+    public class RealDeleteAuditTenant : IDeleteDb<RockstarAuditTenant>, IReturn<RockstarWithIdAndCountResponse>
+    {
+        public int Id { get; set; }
+        public int? Age { get; set; }
+    }
+
+    public class QueryRockstarAudit : QueryDbTenant<RockstarAuditTenant, RockstarAuto>
     {
         public int? Id { get; set; }
+    }
+
+    [QueryDb(QueryTerm.Or)]
+    [AutoFilter(QueryTerm.Ensure, nameof(AuditBase.SoftDeletedDate), SqlTemplate.IsNull)]
+    [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId),  Eval = "httpRequest.Items.TenantId")]
+    public class QueryRockstarAuditSubOr : QueryDb<RockstarAuditTenant, RockstarAuto>
+    {
+        public string FirstNameStartsWith { get; set; }
+        public int? AgeOlderThan { get; set; }
     }
 
     public class CreateRockstarVersion : RockstarBase, ICreateDb<RockstarVersion>, IReturn<RockstarWithIdAndRowVersionResponse>
     {
     }
     
-    public class CreateRockstarWithIdResponse
+    public class RockstarWithIdResponse
     {
         public int Id { get; set; }
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+    public class RockstarWithIdAndCountResponse
+    {
+        public int Id { get; set; }
+        public int Count { get; set; }
         public ResponseStatus ResponseStatus { get; set; }
     }
     
@@ -270,7 +307,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [Authenticate]
-    public class DeleteRockstarAudit : IDeleteDb<RockstarAudit>, IReturnVoid
+    public class DeleteRockstarAudit : IDeleteDb<RockstarAudit>, IReturn<RockstarWithIdAndCountResponse>
     {
         public int Id { get; set; }
     }
@@ -333,7 +370,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         private static readonly int TotalRockstars = AutoQueryAppHost.SeedRockstars.Length;
         private static readonly int TotalAlbums = AutoQueryAppHost.SeedAlbums.Length;
-
+        private const string TenantId = nameof(TenantId);
+        
         public AutoQueryCrudTests()
         {
             appHost = new AutoQueryAppHost {
@@ -362,6 +400,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                             DisplayName = "The Manager",
                             City = "Perth",
                         }, "p@55wOrd");
+                        
+                        host.GlobalRequestFilters.Add((req, res, dto) => {
+                            var userSession = req.SessionAs<AuthUserSession>();
+                            if (userSession.IsAuthenticated)
+                            {
+                                req.SetItem(TenantId, userSession.City switch {
+                                    "London" => 10,
+                                    "Perth"  => 10,
+                                    _        => 20,
+                                });
+                            }
+                        });
                     }
                 }
                 .Init()
@@ -369,7 +419,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             
             using var db = appHost.TryResolve<IDbConnectionFactory>().OpenDbConnection();
             db.CreateTable<RockstarAudit>();
-            db.CreateTable<RockstarAuditSub>();
+            db.CreateTable<RockstarAuditTenant>();
             db.CreateTable<RockstarAutoGuid>();
             db.CreateTable<RockstarVersion>();
 
@@ -814,7 +864,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
  
 
         [Test]
-        public void Can_CreateRockstarAuditSub()
+        public void Can_CreateRockstarAuditTenant()
         {
             var authClient = new JsonServiceClient(Config.ListeningOn);
             authClient.Post(new Authenticate {
@@ -824,7 +874,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 RememberMe = true,
             });
 
-            var createRequest = new CreateRockstarAuditSub {
+            var createRequest = new CreateRockstarAuditTenant {
                 FirstName = "Create",
                 LastName = "Audit",
                 Age = 20,
@@ -842,7 +892,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(result.LivingStatus, Is.EqualTo(createRequest.LivingStatus));
             
             using var db = appHost.GetDbConnection();
-            var newRockstar = db.SingleById<RockstarAuditSub>(createResponse.Id);
+            var newRockstar = db.SingleById<RockstarAuditTenant>(createResponse.Id);
+            Assert.That(newRockstar.TenantId, Is.EqualTo(10)); //admin.City London => 10
             Assert.That(newRockstar.FirstName, Is.EqualTo(createRequest.FirstName));
             Assert.That(newRockstar.LastName, Is.EqualTo(createRequest.LastName));
             Assert.That(newRockstar.Age, Is.EqualTo(createRequest.Age));
@@ -856,7 +907,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(newRockstar.ModifiedBy, Is.EqualTo("admin@email.com"));
             Assert.That(newRockstar.ModifiedInfo, Is.EqualTo("Admin User (London)"));
 
-            Assert.That(client.Get(new QueryRockstarAuditSub { Id = createResponse.Id }).Results.Count,
+            Assert.That(authClient.Get(new QueryRockstarAudit { Id = createResponse.Id }).Results.Count,
                 Is.EqualTo(1));
 
             authClient = new JsonServiceClient(Config.ListeningOn);
@@ -867,7 +918,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 RememberMe = true,
             });
 
-            var updateRequest = new UpdateRockstarAuditSub {
+            var updateRequest = new UpdateRockstarAuditTenant {
                 Id = createResponse.Id,
                 FirstName = "Updated",
                 LivingStatus = LivingStatus.Alive,
@@ -886,7 +937,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(updateResponse.Id, Is.EqualTo(createResponse.Id));
             assertUpdated(updateResponse.Result);
 
-            newRockstar = db.SingleById<RockstarAuditSub>(createResponse.Id);
+            newRockstar = db.SingleById<RockstarAuditTenant>(createResponse.Id);
             Assert.That(newRockstar.FirstName, Is.EqualTo("Updated"));
             Assert.That(newRockstar.LivingStatus, Is.EqualTo(LivingStatus.Alive));
             
@@ -896,21 +947,50 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(newRockstar.ModifiedDate.Date, Is.EqualTo(DateTime.UtcNow.Date));
             Assert.That(newRockstar.ModifiedBy, Is.EqualTo("manager"));
             Assert.That(newRockstar.ModifiedInfo, Is.EqualTo("The Manager (Perth)"));
+            
+            Assert.That(authClient.Get(new QueryRockstarAuditSubOr {
+                    FirstNameStartsWith = "Up",
+                    AgeOlderThan = 18,
+                }).Results.Count,
+                Is.EqualTo(1));
 
-            var softDeleteResponse = authClient.Delete(new SoftDeleteAuditSub {
+            var softDeleteResponse = authClient.Delete(new SoftDeleteAuditTenant {
                 Id = createResponse.Id,
             });
 
             Assert.That(softDeleteResponse.Id, Is.EqualTo(createResponse.Id));
             assertUpdated(softDeleteResponse.Result);
 
-            newRockstar = db.SingleById<RockstarAuditSub>(createResponse.Id);
+            newRockstar = db.SingleById<RockstarAuditTenant>(createResponse.Id);
             Assert.That(newRockstar.SoftDeletedDate.Value.Date, Is.EqualTo(DateTime.UtcNow.Date));
             Assert.That(newRockstar.SoftDeletedBy, Is.EqualTo("manager"));
             Assert.That(newRockstar.SoftDeletedInfo, Is.EqualTo("The Manager (Perth)"));
             
-            Assert.That(client.Get(new QueryRockstarAuditSub { Id = createResponse.Id }).Results.Count,
+            Assert.That(authClient.Get(new QueryRockstarAudit { Id = createResponse.Id }).Results.Count,
                 Is.EqualTo(0));
+            
+            Assert.That(authClient.Get(new QueryRockstarAuditSubOr {
+                    FirstNameStartsWith = "Up",
+                    AgeOlderThan = 18,
+                }).Results.Count,
+                Is.EqualTo(0));
+
+            var realDeleteResponse = authClient.Delete(new RealDeleteAuditTenant {
+                Id = createResponse.Id,
+                Age = 99 //non matching filter
+            });
+            Assert.That(realDeleteResponse.Id, Is.EqualTo(createResponse.Id));
+            Assert.That(realDeleteResponse.Count, Is.EqualTo(0));
+            newRockstar = db.SingleById<RockstarAuditTenant>(createResponse.Id);
+            Assert.That(newRockstar, Is.Not.Null);
+
+            realDeleteResponse = authClient.Delete(new RealDeleteAuditTenant {
+                Id = createResponse.Id,
+            });
+            Assert.That(realDeleteResponse.Id, Is.EqualTo(createResponse.Id));
+            Assert.That(realDeleteResponse.Count, Is.EqualTo(1));
+            newRockstar = db.SingleById<RockstarAuditTenant>(createResponse.Id);
+            Assert.That(newRockstar, Is.Null);
         }
  
         [Test]
@@ -963,12 +1043,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Assert.That(ex.ErrorCode, Is.EqualTo(nameof(OptimisticConcurrencyException)));
             }
-            
         }
-        
     }
     
     //TODO: Reusable policies (inherited AutoPopulate) field -> info { *ALL THE THINGS* }
+    //Multi Tenant Example
     //Declarative Validation / external providers / built-in UI?
     //SPA AutoCrud / Grid Controls
 }

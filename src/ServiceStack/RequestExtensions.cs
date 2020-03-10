@@ -205,7 +205,8 @@ namespace ServiceStack
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static object GetItem(this IRequest httpReq, string key)
         {
-            if (httpReq == null) return null;
+            if (httpReq == null) 
+                return null;
 
             httpReq.Items.TryGetValue(key, out var value);
             return value;

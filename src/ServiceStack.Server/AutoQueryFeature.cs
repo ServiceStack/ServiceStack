@@ -46,52 +46,45 @@ namespace ServiceStack
         public List<Action<QueryDbFilterContext>> ResponseFilters { get; set; }
         public Action<Type, TypeBuilder, MethodBuilder, ILGenerator> GenerateServiceFilter { get; set; }
 
-        public const string GreaterThanOrEqualFormat = "{Field} >= {Value}";
-        public const string GreaterThanFormat =        "{Field} > {Value}";
-        public const string LessThanFormat =           "{Field} < {Value}";
-        public const string LessThanOrEqualFormat =    "{Field} <= {Value}";
-        public const string NotEqualFormat =           "{Field} <> {Value}";
-        public const string CaseSensitiveLikeFormat =  "{Field} LIKE {Value}";
-        public const string CaseInsensitiveLikeFormat = "UPPER({Field}) LIKE UPPER({Value})";
 
         public Dictionary<string, string> ImplicitConventions = new Dictionary<string, string> 
         {
-            {"%Above%",         GreaterThanFormat},
-            {"Begin%",          GreaterThanFormat},
-            {"%Beyond%",        GreaterThanFormat},
-            {"%Over%",          GreaterThanFormat},
-            {"%OlderThan",      GreaterThanFormat},
-            {"%After%",         GreaterThanFormat},
-            {"OnOrAfter%",      GreaterThanOrEqualFormat},
-            {"%From%",          GreaterThanOrEqualFormat},
-            {"Since%",          GreaterThanOrEqualFormat},
-            {"Start%",          GreaterThanOrEqualFormat},
-            {"%Higher%",        GreaterThanOrEqualFormat},
-            {">%",              GreaterThanOrEqualFormat},
-            {"%>",              GreaterThanFormat},
-            {"%!",              NotEqualFormat},
+            {"%Above%",         SqlTemplate.GreaterThan},
+            {"Begin%",          SqlTemplate.GreaterThan},
+            {"%Beyond%",        SqlTemplate.GreaterThan},
+            {"%Over%",          SqlTemplate.GreaterThan},
+            {"%OlderThan",      SqlTemplate.GreaterThan},
+            {"%After%",         SqlTemplate.GreaterThan},
+            {"OnOrAfter%",      SqlTemplate.GreaterThanOrEqual},
+            {"%From%",          SqlTemplate.GreaterThanOrEqual},
+            {"Since%",          SqlTemplate.GreaterThanOrEqual},
+            {"Start%",          SqlTemplate.GreaterThanOrEqual},
+            {"%Higher%",        SqlTemplate.GreaterThanOrEqual},
+            {">%",              SqlTemplate.GreaterThanOrEqual},
+            {"%>",              SqlTemplate.GreaterThan},
+            {"%!",              SqlTemplate.NotEqual},
 
-            {"%GreaterThanOrEqualTo%", GreaterThanOrEqualFormat},
-            {"%GreaterThan%",          GreaterThanFormat},
-            {"%LessThan%",             LessThanFormat},
-            {"%LessThanOrEqualTo%",    LessThanOrEqualFormat},
-            {"%NotEqualTo",            NotEqualFormat},
+            {"%GreaterThanOrEqualTo%", SqlTemplate.GreaterThanOrEqual},
+            {"%GreaterThan%",          SqlTemplate.GreaterThan},
+            {"%LessThan%",             SqlTemplate.LessThan},
+            {"%LessThanOrEqualTo%",    SqlTemplate.LessThanOrEqual},
+            {"%NotEqualTo",            SqlTemplate.NotEqual},
 
-            {"Behind%",         LessThanFormat},
-            {"%Below%",         LessThanFormat},
-            {"%Under%",         LessThanFormat},
-            {"%Lower%",         LessThanFormat},
-            {"%Before%",        LessThanFormat},
-            {"%YoungerThan",    LessThanFormat},
-            {"OnOrBefore%",     LessThanOrEqualFormat},
-            {"End%",            LessThanOrEqualFormat},
-            {"Stop%",           LessThanOrEqualFormat},
-            {"To%",             LessThanOrEqualFormat},
-            {"Until%",          LessThanOrEqualFormat},
-            {"%<",              LessThanOrEqualFormat},
-            {"<%",              LessThanFormat},
+            {"Behind%",         SqlTemplate.LessThan},
+            {"%Below%",         SqlTemplate.LessThan},
+            {"%Under%",         SqlTemplate.LessThan},
+            {"%Lower%",         SqlTemplate.LessThan},
+            {"%Before%",        SqlTemplate.LessThan},
+            {"%YoungerThan",    SqlTemplate.LessThan},
+            {"OnOrBefore%",     SqlTemplate.LessThanOrEqual},
+            {"End%",            SqlTemplate.LessThanOrEqual},
+            {"Stop%",           SqlTemplate.LessThanOrEqual},
+            {"To%",             SqlTemplate.LessThanOrEqual},
+            {"Until%",          SqlTemplate.LessThanOrEqual},
+            {"%<",              SqlTemplate.LessThanOrEqual},
+            {"<%",              SqlTemplate.LessThan},
 
-            {"%Like%",          CaseInsensitiveLikeFormat },
+            {"%Like%",          SqlTemplate.CaseInsensitiveLike },
             {"%In",             "{Field} IN ({Values})"},
             {"%Ids",            "{Field} IN ({Values})"},
             {"%Between%",       "{Field} BETWEEN {Value1} AND {Value2}"},
@@ -102,9 +95,9 @@ namespace ServiceStack
 
         public Dictionary<string, QueryDbFieldAttribute> EndsWithConventions = new Dictionary<string, QueryDbFieldAttribute>
         {
-            { "StartsWith", new QueryDbFieldAttribute { Template = CaseInsensitiveLikeFormat, ValueFormat = "{0}%" }},
-            { "Contains", new QueryDbFieldAttribute { Template = CaseInsensitiveLikeFormat, ValueFormat = "%{0}%" }},
-            { "EndsWith", new QueryDbFieldAttribute { Template = CaseInsensitiveLikeFormat, ValueFormat = "%{0}" }},
+            { "StartsWith", new QueryDbFieldAttribute { Template = SqlTemplate.CaseInsensitiveLike, ValueFormat = "{0}%" }},
+            { "Contains", new QueryDbFieldAttribute { Template = SqlTemplate.CaseInsensitiveLike, ValueFormat = "%{0}%" }},
+            { "EndsWith", new QueryDbFieldAttribute { Template = SqlTemplate.CaseInsensitiveLike, ValueFormat = "%{0}" }},
         };
 
         public AutoQueryFeature()
@@ -127,13 +120,13 @@ namespace ServiceStack
         {
             if (StripUpperInLike)
             {
-                if (ImplicitConventions.TryGetValue("%Like%", out var convention) && convention == CaseInsensitiveLikeFormat)
-                    ImplicitConventions["%Like%"] = CaseSensitiveLikeFormat;
+                if (ImplicitConventions.TryGetValue("%Like%", out var convention) && convention == SqlTemplate.CaseInsensitiveLike)
+                    ImplicitConventions["%Like%"] = SqlTemplate.CaseSensitiveLike;
 
                 foreach (var attr in EndsWithConventions)
                 {
-                    if (attr.Value.Template == CaseInsensitiveLikeFormat)
-                        attr.Value.Template = CaseSensitiveLikeFormat;
+                    if (attr.Value.Template == SqlTemplate.CaseInsensitiveLike)
+                        attr.Value.Template = SqlTemplate.CaseSensitiveLike;
                 }
             }
 
@@ -208,6 +201,13 @@ namespace ServiceStack
             appHost.RegisterService(serviceType);
         }
 
+        internal static Tuple<Type, Type> GetCrudGenericDefTypes(Type requestType, Type crudType)
+        {
+            var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(crudType);
+            if (genericDef != null)
+                return Tuple.Create(genericDef, crudType);
+            return null;
+        }
 
         Type GenerateMissingQueryServices(
             List<Type> missingQueryRequestTypes, List<Type> missingCrudRequestTypes)
@@ -258,25 +258,17 @@ namespace ServiceStack
                 il.Emit(OpCodes.Callvirt, genericMi);
                 il.Emit(OpCodes.Ret);
             }
-
-            Tuple<Type, Type> getCrudGenericDefTypes(Type requestType, Type crudType)
-            {
-                var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(crudType);
-                if (genericDef != null)
-                    return Tuple.Create(genericDef, crudType);
-                return null;
-            }
             
             foreach (var requestType in missingCrudRequestTypes)
             {
                 if (requestType.IsAbstract || requestType.IsGenericType)
                     continue;
                 
-                var crudTypes = getCrudGenericDefTypes(requestType, typeof(ICreateDb<>))
-                    ?? getCrudGenericDefTypes(requestType, typeof(IUpdateDb<>))
-                    ?? getCrudGenericDefTypes(requestType, typeof(IDeleteDb<>))
-                    ?? getCrudGenericDefTypes(requestType, typeof(IPatchDb<>))
-                    ?? getCrudGenericDefTypes(requestType, typeof(ISaveDb<>));
+                var crudTypes = GetCrudGenericDefTypes(requestType, typeof(ICreateDb<>))
+                    ?? GetCrudGenericDefTypes(requestType, typeof(IUpdateDb<>))
+                    ?? GetCrudGenericDefTypes(requestType, typeof(IDeleteDb<>))
+                    ?? GetCrudGenericDefTypes(requestType, typeof(IPatchDb<>))
+                    ?? GetCrudGenericDefTypes(requestType, typeof(ISaveDb<>));
                 
                 if (crudTypes == null)
                     continue;
@@ -673,7 +665,7 @@ namespace ServiceStack
             {
                 var typedQuery = GetTypedQuery(dto.GetType(), typeof(From));
                 var q = typedQuery.CreateQuery(db);
-                return Filter<From>(typedQuery.AddToQuery(q, dto, dynamicParams, this), dto, req);
+                return Filter<From>(typedQuery.AddToQuery(q, dto, dynamicParams, this, req), dto, req);
             }
         }
 
@@ -692,7 +684,7 @@ namespace ServiceStack
             {
                 var typedQuery = GetTypedQuery(dto.GetType(), typeof(From));
                 var q = typedQuery.CreateQuery(db);
-                return Filter<From>(typedQuery.AddToQuery(q, dto, dynamicParams, this), dto, req);
+                return Filter<From>(typedQuery.AddToQuery(q, dto, dynamicParams, this, req), dto, req);
             }
         }
 
@@ -713,7 +705,7 @@ namespace ServiceStack
             {
                 var typedQuery = GetTypedQuery(requestDtoType, fromType);
                 var q = typedQuery.CreateQuery(db);
-                return Filter(typedQuery.AddToQuery(q, requestDto, dynamicParams, this), requestDto, req);
+                return Filter(typedQuery.AddToQuery(q, requestDto, dynamicParams, this, req), requestDto, req);
             }
         }
         
@@ -791,11 +783,132 @@ namespace ServiceStack
             ISqlExpression query,
             IQueryDb dto,
             Dictionary<string, string> dynamicParams,
-            IAutoQueryOptions options = null);
+            IAutoQueryOptions options = null,
+            IRequest req = null);
 
         QueryResponse<Into> Execute<Into>(
             IDbConnection db,
             ISqlExpression query);
+    }
+
+    internal struct ExprResult
+    {
+        internal string DefaultTerm;
+        internal string Format;
+        internal object Value;
+        public ExprResult(string defaultTerm, string format, object value)
+        {
+            DefaultTerm = defaultTerm;
+            Format = format;
+            Value = value;
+        }
+        
+        internal static ExprResult? CreateExpression(string defaultTerm, string quotedColumn, object value, QueryDbFieldAttribute implicitQuery)
+        {
+            var seq = value as IEnumerable;
+            if (value is string)
+                seq = null;
+
+            if (seq != null && value is ICollection collection && collection.Count == 0)
+                return null;
+
+            var format = seq == null
+                ? (value != null ? quotedColumn + " = {0}" : quotedColumn + " IS NULL")
+                : quotedColumn + " IN ({0})";
+            
+            if (implicitQuery != null)
+            {
+                var operand = implicitQuery.Operand ?? "=";
+                if (implicitQuery.Term == QueryTerm.Or)
+                    defaultTerm = "OR";
+                else if (implicitQuery.Term == QueryTerm.And)
+                    defaultTerm = "AND";
+
+                format = "(" + quotedColumn + " " + operand + " {0}" + ")";
+                if (implicitQuery.Template != null)
+                {
+                    format = implicitQuery.Template.Replace("{Field}", quotedColumn);
+
+                    if (implicitQuery.ValueStyle == ValueStyle.Multiple)
+                    {
+                        if (value == null)
+                            return null;
+                        if (seq == null)
+                            throw new ArgumentException($"{implicitQuery.Field} requires {implicitQuery.ValueArity} values");
+
+                        var args = new object[implicitQuery.ValueArity];
+                        int i = 0;
+                        foreach (var x in seq)
+                        {
+                            if (i < args.Length)
+                            {
+                                format = format.Replace("{Value" + (i + 1) + "}", "{" + i + "}");
+                                var arg = x;
+                                if (implicitQuery.ValueFormat != null)
+                                    arg = string.Format(implicitQuery.ValueFormat, arg);
+                                args[i++] = arg;
+                            }
+                        }
+
+                        return new ExprResult(defaultTerm, format, args);
+                    }
+
+                    if (implicitQuery.ValueStyle == ValueStyle.List)
+                    {
+                        if (value == null)
+                            return null;
+                        if (seq == null)
+                            throw new ArgumentException("{0} expects a list of values".Fmt(implicitQuery.Field));
+
+                        format = format.Replace("{Values}", "{0}");
+                        value = new SqlInValues(seq);
+                    }
+                    else
+                    {
+                        format = format.Replace("{Value}", "{0}");
+                    }
+
+                    if (implicitQuery.ValueFormat != null)
+                    {
+                        value = string.Format(implicitQuery.ValueFormat, value);
+                    }
+                }
+            }
+            else
+            {
+                if (seq != null)
+                    value = new SqlInValues(seq);
+            }
+
+            return new ExprResult(defaultTerm, format, value);
+        }
+
+        internal static QueryDbFieldAttribute ToDbFieldAttribute(AutoFilterAttribute filter)
+        {
+            var dbField = new QueryDbFieldAttribute {
+                Term = filter.Term,
+                Field = filter.Field,
+                Operand = filter.Operand,
+                Template = filter.Template,
+                ValueFormat = filter.ValueFormat,
+                ValueStyle = ValueStyle.Single,
+            };
+            if (filter.Template?.IndexOf("{Values}", StringComparison.Ordinal) >= 0)
+            {
+                dbField.ValueStyle = ValueStyle.List;
+            }
+            else if (filter.Template?.IndexOf("{Value1}", StringComparison.Ordinal) >= 0)
+            {
+                dbField.ValueStyle = ValueStyle.Multiple;
+                var arity = 1;
+                while (filter.Template.IndexOf("{Value" + arity + "}", StringComparison.Ordinal) >= 0)
+                {
+                    arity++;
+                }
+                dbField.ValueArity = arity;
+            }
+            return dbField;
+        }
     }
 
     public class TypedQuery<QueryModel, From> : ITypedQuery
@@ -828,27 +941,7 @@ namespace ServiceStack
             for (int i = 0; i < AutoFilters.Length; i++)
             {
                 var filter = AutoFilters[i];
-                var dbField = AutoFiltersDbFields[i] = new QueryDbFieldAttribute {
-                    Field = filter.Field,
-                    Operand = filter.Operand,
-                    Template = filter.Template,
-                    ValueFormat = filter.ValueFormat,
-                    ValueStyle = ValueStyle.Single,
-                };
-                if (filter.Template.IndexOf("{Values}", StringComparison.Ordinal) >= 0)
-                {
-                    dbField.ValueStyle = ValueStyle.List;
-                }
-                else if (filter.Template.IndexOf("{Value1}", StringComparison.Ordinal) >= 0)
-                {
-                    dbField.ValueStyle = ValueStyle.Multiple;
-                    int arity = 1;
-                    while (filter.Template.IndexOf("{Value" + arity + "}", StringComparison.Ordinal) >= 0)
-                    {
-                        arity++;
-                    }
-                    dbField.ValueArity = arity;
-                }
+                AutoFiltersDbFields[i] = ExprResult.ToDbFieldAttribute(filter);
             }
         }
 
@@ -858,7 +951,8 @@ namespace ServiceStack
             ISqlExpression query,
             IQueryDb dto, 
             Dictionary<string, string> dynamicParams,
-            IAutoQueryOptions options = null)
+            IAutoQueryOptions options = null,
+            IRequest req = null)
         {
             dynamicParams = new Dictionary<string, string>(dynamicParams, StringComparer.OrdinalIgnoreCase);
 
@@ -884,7 +978,7 @@ namespace ServiceStack
                 aliases[attr.Name] = pi.Name;
             }
 
-            AppendAutoFilters(q, dto, options);
+            AppendAutoFilters(q, dto, options, req);
 
             AppendTypedQueries(q, dto, dynamicParams, defaultTerm, options, aliases);
 
@@ -999,7 +1093,7 @@ namespace ServiceStack
             }
         }
 
-        private static void AppendAutoFilters(SqlExpression<From> q, IQueryDb dto, IAutoQueryOptions options)
+        private static void AppendAutoFilters(SqlExpression<From> q, IQueryDb dto, IAutoQueryOptions options, IRequest req)
         {
             if (AutoFilters.Length == 0)
                 return;
@@ -1014,7 +1108,7 @@ namespace ServiceStack
 
                 var quotedColumn = q.DialectProvider.GetQuotedColumnName(q.ModelDef, fieldDef);
 
-                var value = appHost.EvalScriptValue(filter);
+                var value = appHost.EvalScriptValue(filter, req);
 
                 var dbField = AutoFiltersDbFields[i];
                 AddCondition(q, "AND", quotedColumn, value, dbField);
@@ -1086,81 +1180,19 @@ namespace ServiceStack
 
         private static void AddCondition(SqlExpression<From> q, string defaultTerm, string quotedColumn, object value, QueryDbFieldAttribute implicitQuery)
         {
-            var seq = value as IEnumerable;
-            if (value is string)
-                seq = null;
-
-            if (seq != null && value is ICollection collection && collection.Count == 0)
+            var ret = ExprResult.CreateExpression(defaultTerm, quotedColumn, value, implicitQuery);
+            if (ret == null) 
                 return;
-
-            var format = seq == null 
-                ? (value != null ? quotedColumn + " = {0}" : quotedColumn + " IS NULL")
-                : quotedColumn + " IN ({0})";
-            if (implicitQuery != null)
+            
+            var result = ret.Value;
+            if (implicitQuery?.Term == QueryTerm.Ensure)
             {
-                var operand = implicitQuery.Operand ?? "=";
-                if (implicitQuery.Term == QueryTerm.Or)
-                    defaultTerm = "OR";
-                else if (implicitQuery.Term == QueryTerm.And)
-                    defaultTerm = "AND";
-
-                format = "(" + quotedColumn + " " + operand + " {0}" + ")";
-                if (implicitQuery.Template != null)
-                {
-                    format = implicitQuery.Template.Replace("{Field}", quotedColumn);
-
-                    if (implicitQuery.ValueStyle == ValueStyle.Multiple)
-                    {
-                        if (value == null)
-                            return;
-                        if (seq == null)
-                            throw new ArgumentException($"{implicitQuery.Field} requires {implicitQuery.ValueArity} values");
-
-                        var args = new object[implicitQuery.ValueArity];
-                        int i = 0;
-                        foreach (var x in seq)
-                        {
-                            if (i < args.Length)
-                            {
-                                format = format.Replace("{Value" + (i + 1) + "}", "{" + i + "}");
-                                var arg = x;
-                                if (implicitQuery.ValueFormat != null)
-                                    arg = string.Format(implicitQuery.ValueFormat, arg);
-                                args[i++] = arg;
-                            }
-                        }
-
-                        q.AddCondition(defaultTerm, format, args);
-                        return;
-                    }
-                    if (implicitQuery.ValueStyle == ValueStyle.List)
-                    {
-                        if (value == null)
-                            return;
-                        if (seq == null)
-                            throw new ArgumentException("{0} expects a list of values".Fmt(implicitQuery.Field));
-
-                        format = format.Replace("{Values}", "{0}");
-                        value = new SqlInValues(seq);
-                    }
-                    else
-                    {
-                        format = format.Replace("{Value}", "{0}");
-                    }
-
-                    if (implicitQuery.ValueFormat != null)
-                    {
-                        value = string.Format(implicitQuery.ValueFormat, value);
-                    }
-                }
+                q.Ensure(result.Format, result.Value);
             }
             else
             {
-                if (seq != null)
-                    value = new SqlInValues(seq);
+                q.AddCondition(result.DefaultTerm, result.Format, result.Value);
             }
-
-            q.AddCondition(defaultTerm, format, value);
         }
 
         class MatchQuery
