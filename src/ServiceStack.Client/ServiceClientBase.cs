@@ -1681,7 +1681,8 @@ namespace ServiceStack
                         }
 
                         outputStream.Write(newLine);
-                        if (fileCount == files.Length - 1) outputStream.Write(boundary + "--");
+                        if (fileCount == files.Length - 1) 
+                            outputStream.Write(boundary + "--");
                     }
                 }
 
@@ -1697,7 +1698,7 @@ namespace ServiceStack
             catch (Exception ex)
             {
                 // restore original position before retry
-                files[fileCount - 1].Stream.Seek(currentStreamPosition, SeekOrigin.Begin);
+                files.Last().Stream.Seek(currentStreamPosition, SeekOrigin.Begin);
 
                 if (!HandleResponseException(
                     ex, request, requestUri, createWebRequest,
