@@ -423,9 +423,9 @@ title: We encode < & >
                 ScriptMethods = { new ProtectedScripts() }
             }.Init();
 
-            context.VirtualFiles.WriteFile("_layout.html", "layout {{ page }} {{ 'layout-partial' | partial }}  {{ 'layout-file.txt' | includeFile }} ");
-            context.VirtualFiles.WriteFile("page.html", "page: partial {{ 'root-partial' | partial }}, file {{ 'file.txt' | includeFile }}, selectParital: {{ true | selectPartial: select-partial }}");
-            context.VirtualFiles.WriteFile("root-partial.html", "root-partial: partial {{ 'inner-partial' | partial }}, partial-file {{ 'partial-file.txt' | includeFile }}");
+            context.VirtualFiles.WriteFile("_layout.html", "layout {{ page }} {{ 'layout-partial' |> partial }}  {{ 'layout-file.txt' |> includeFile }} ");
+            context.VirtualFiles.WriteFile("page.html", "page: partial {{ 'root-partial' |> partial }}, file {{ 'file.txt' |> includeFile }}, selectParital: {{ true |> selectPartial: select-partial }}");
+            context.VirtualFiles.WriteFile("root-partial.html", "root-partial: partial {{ 'inner-partial' |> partial }}, partial-file {{ 'partial-file.txt' |> includeFile }}");
             context.VirtualFiles.WriteFile("file.txt", "file.txt");
             context.VirtualFiles.WriteFile("inner-partial.html", "inner-partial.html");
             context.VirtualFiles.WriteFile("partial-file.txt", "partial-file.txt");
@@ -469,7 +469,7 @@ title: We encode < & >
                 ScriptMethods = { new AsyncFilters() }
             }.Init();
 
-            var output = context.EvaluateScript("{{ 'foo' | reverseString }}");
+            var output = context.EvaluateScript("{{ 'foo' |> reverseString }}");
             Assert.That(output, Is.EqualTo("oof"));
         }
 
@@ -479,22 +479,22 @@ title: We encode < & >
             var context = new ScriptContext().Init();
             
             context.VirtualFiles.WriteFile("_layout.html", "<html><body>{{ page }}</body></html>");
-            context.VirtualFiles.WriteFile("page.html", "<pre>{{ 12.34 | currency }}</pre>");
-            context.VirtualFiles.WriteFile("page-nolayout.html", "<!--\nlayout: none\n-->\n<pre>{{ 12.34 | currency }}</pre>");
-            context.VirtualFiles.WriteFile("ignore-page.html", "<!--\nignore: page\n-->\n<pre>{{ 12.34 | currency }}</pre>");
-            context.VirtualFiles.WriteFile("ignore-template.html", "<!--\nignore: template\n-->\n<pre>{{ 12.34 | currency }}</pre>");
+            context.VirtualFiles.WriteFile("page.html", "<pre>{{ 12.34 |> currency }}</pre>");
+            context.VirtualFiles.WriteFile("page-nolayout.html", "<!--\nlayout: none\n-->\n<pre>{{ 12.34 |> currency }}</pre>");
+            context.VirtualFiles.WriteFile("ignore-page.html", "<!--\nignore: page\n-->\n<pre>{{ 12.34 |> currency }}</pre>");
+            context.VirtualFiles.WriteFile("ignore-template.html", "<!--\nignore: template\n-->\n<pre>{{ 12.34 |> currency }}</pre>");
             
             Assert.That(new PageResult(context.GetPage("page")).Result, Is.EqualTo("<html><body><pre>$12.34</pre></body></html>"));
             Assert.That(new PageResult(context.GetPage("page-nolayout")).Result, Is.EqualTo("<pre>$12.34</pre>"));
-            Assert.That(new PageResult(context.GetPage("ignore-page")).Result, Is.EqualTo("<html><body><pre>{{ 12.34 | currency }}</pre></body></html>"));
-            Assert.That(new PageResult(context.GetPage("ignore-template")).Result, Is.EqualTo("<pre>{{ 12.34 | currency }}</pre>"));
+            Assert.That(new PageResult(context.GetPage("ignore-page")).Result, Is.EqualTo("<html><body><pre>{{ 12.34 |> currency }}</pre></body></html>"));
+            Assert.That(new PageResult(context.GetPage("ignore-template")).Result, Is.EqualTo("<pre>{{ 12.34 |> currency }}</pre>"));
         }
 
         [Test]
         public void Can_comment_out_filters()
         {
             var context = new ScriptContext().Init();
-            context.VirtualFiles.WriteFile("page.html", "<pre>currency: {{* 12.34 | currency *}}, date: {{* now *}}</pre>");
+            context.VirtualFiles.WriteFile("page.html", "<pre>currency: {{* 12.34 |> currency *}}, date: {{* now *}}</pre>");
             
             Assert.That(new PageResult(context.GetPage("page")).Result, Is.EqualTo("<pre>currency: , date: </pre>"));
         }
@@ -514,7 +514,7 @@ title: We encode < & >
         public void Can_resolve_hidden_partials_without_prefix()
         {
             var context = new ScriptContext().Init();
-            context.VirtualFiles.WriteFile("page.html", "Page {{ 'menu' | partial }} {{ '_test-partial' | partial }}");
+            context.VirtualFiles.WriteFile("page.html", "Page {{ 'menu' |> partial }} {{ '_test-partial' |> partial }}");
             context.VirtualFiles.WriteFile("_menu-partial.html", "MENU");
             context.VirtualFiles.WriteFile("_test-partial.html", "TEST");
             

@@ -80,7 +80,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         {
             var context = new ScriptContext().Init();
 
-            var result = context.EvaluateScript("{{#function hi}}'hello' | return{{/function}}{{ hi() }}");
+            var result = context.EvaluateScript("{{#function hi}}'hello' |> return{{/function}}{{ hi() }}");
 
             Assert.That(result, Is.EqualTo("hello"));
         }
@@ -92,19 +92,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
             var result = context.Evaluate(@"
                 {{#function calc(a,b) }}
-                    a * b | to => c
-                    a + b + c | return
+                    a * b |> to => c
+                    a + b + c |> return
                 {{/function}}
-                {{ calc(1,2) | return }}");
+                {{ calc(1,2) |> return }}");
 
             Assert.That(result, Is.EqualTo(5));
 
             result = context.Evaluate(@"
                 {{#function calc(a,b) }}
-                    a * b | to => c
-                    a + b + c | return
+                    a * b |> to => c
+                    a + b + c |> return
                 {{/function}}
-                {{ 1.calc(2) | return }}");
+                {{ 1.calc(2) |> return }}");
 
             Assert.That(result, Is.EqualTo(5));
         }
@@ -123,7 +123,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                     )
                 {{/defn}}
                 {{ calc(3,4) }}
-                {{ calc(1,2) | return }}");
+                {{ calc(1,2) |> return }}");
 
             Assert.That(result, Is.EqualTo(5));
 
@@ -134,7 +134,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                     )
                 {{/defn}}
                 {{ calc(3,4) }}
-                {{ calc(1,2) | return }}");
+                {{ calc(1,2) |> return }}");
 
             Assert.That(result, Is.EqualTo(5));
 
@@ -145,7 +145,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                         (+ (fib (- n 1))
                            (fib (- n 2)) ))
                 {{/defn}}
-                {{ 10.fib() | return }}");
+                {{ 10.fib() |> return }}");
 
             Assert.That(result, Is.EqualTo(55));
         }
@@ -162,7 +162,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                     /if
                     return (fib(num-1) + fib(num-2))
                 {{/function}}
-                {{ fib(" + depth + ") | return }}";
+                {{ fib(" + depth + ") |> return }}";
 
             var result = context.Evaluate<int>(template(10));
 
@@ -209,23 +209,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             string result = null;
             result = context.Evaluate<string>(@"
                 {{#function info(o) }}
-                    o | getType | typeQualifiedName | return
+                    o |> getType |> typeQualifiedName |> return
                 {{/function}}
-                {{ 'System.Text.StringBuilder'.new() | info | return }}");
+                {{ 'System.Text.StringBuilder'.new() |> info |> return }}");
             Assert.That(result, Is.EqualTo("System.Text.StringBuilder"));
 
             result = context.Evaluate<string>( 
-                "{{ 'System.Text.StringBuilder'.new() | fn | return }}");
+                "{{ 'System.Text.StringBuilder'.new() |> fn |> return }}");
             Assert.That(result, Is.EqualTo("System.Text.StringBuilder"));
 
             result = context.Evaluate<string>( 
-                "{{ 'System.Text.StringBuilder'.new() | staticfn | return }}");
+                "{{ 'System.Text.StringBuilder'.new() |> staticfn |> return }}");
             Assert.That(result, Is.EqualTo("System.Text.StringBuilder"));
 
             result = context.Evaluate<string>( 
                 @"
-                {{ Constructor('ServiceStack.WebHost.Endpoints.Tests.ScriptTests.ClassTypeName(string)') | to => ctorfn }}
-                {{ 'System.Text.StringBuilder'.new() | ctorfn | toString | return }}");
+                {{ Constructor('ServiceStack.WebHost.Endpoints.Tests.ScriptTests.ClassTypeName(string)') |> to => ctorfn }}
+                {{ 'System.Text.StringBuilder'.new() |> ctorfn |> toString |> return }}");
             Assert.That(result, Is.EqualTo("System.Text.StringBuilder"));
         }
 

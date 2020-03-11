@@ -115,20 +115,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             JsStatement[] expr;
 
             expr = new[] {
-                new JsFilterExpressionStatement("1 | add(2)", new JsLiteral(1),
+                new JsFilterExpressionStatement("1 |> add(2)", new JsLiteral(1),
                     new JsCallExpression(new JsIdentifier("add"), new JsLiteral(2))),
             };
 
-            Assert.That(ParseCode("1 | add(2)"), Is.EqualTo(expr));
-            Assert.That(ParseCode("{{ 1 | add(2) }}"), Is.EqualTo(expr));
-            Assert.That(ParseCode(" \n {{ \n 1 | add(2) \n }} \n "), Is.EqualTo(expr));
+            Assert.That(ParseCode("1 |> add(2)"), Is.EqualTo(expr));
+            Assert.That(ParseCode("{{ 1 |> add(2) }}"), Is.EqualTo(expr));
+            Assert.That(ParseCode(" \n {{ \n 1 |> add(2) \n }} \n "), Is.EqualTo(expr));
 
             expr = new[] {
-                new JsFilterExpressionStatement("1 \n | \n add(2)", new JsLiteral(1),
+                new JsFilterExpressionStatement("1 \n |> \n add(2)", new JsLiteral(1),
                     new JsCallExpression(new JsIdentifier("add"), new JsLiteral(2))),
             };
 
-            Assert.That(ParseCode("{{ \n 1 \n | \n add(2) \n }}"), Is.EqualTo(expr));
+            Assert.That(ParseCode("{{ \n 1 \n |> \n add(2) \n }}"), Is.EqualTo(expr));
         }
 
         [Test]
@@ -284,9 +284,9 @@ else
 
             code = @"
 #if a > 1
-    `${a} > 1` | raw
+    `${a} > 1` |> raw
 else
-    `${a} <= 1` | raw
+    `${a} <= 1` |> raw
 /if
 ";
 
@@ -294,19 +294,19 @@ else
             Assert.That(result.Trim(), Is.EqualTo("1 <= 1"));
 
             code = @"
-range(5) | map => it + 1 | to => nums
+range(5) |> map => it + 1 |> to => nums
 #each a in nums
     #if a > 2
         #if a.isOdd() 
-            `${a} > 2 and odd` | raw
+            `${a} > 2 and odd` |> raw
         else
-            `${a} > 2 and even` | raw
+            `${a} > 2 and even` |> raw
         /if
     else
         #if a.isOdd() 
-            `${a} <= 2 and odd` | raw
+            `${a} <= 2 and odd` |> raw
         else
-            `${a} <= 2 and even` | raw
+            `${a} <= 2 and even` |> raw
         /if
     /if
 /each
@@ -319,22 +319,22 @@ range(5) | map => it + 1 | to => nums
 #function testValue(a) 
     #if a > 2
         #if a.isOdd() 
-            `${a} > 2 and odd` | return
+            `${a} > 2 and odd` |> return
         else
-            `${a} > 2 and even` | return
+            `${a} > 2 and even` |> return
         /if
     else
         #if a.isOdd() 
-            `${a} <= 2 and odd` | return
+            `${a} <= 2 and odd` |> return
         else
-            `${a} <= 2 and even` | return
+            `${a} <= 2 and even` |> return
         /if
     /if
 /function
 
-range(5) | map => it + 1 | to => nums
+range(5) |> map => it + 1 |> to => nums
 #each nums
-    it.testValue() | raw
+    it.testValue() |> raw
 /each
 ";
             
@@ -346,9 +346,9 @@ range(5) | map => it + 1 | to => nums
     return (a > 2 ? (a.isOdd() ? `${a} > 2 and odd`  : `${a} > 2 and even`) : (a.isOdd() ? `${a} <= 2 and odd` : `${a} <= 2 and even`)) 
 /function
 
-range(5) | map => it + 1 | to => nums
+range(5) |> map => it + 1 |> to => nums
 #each nums
-    it.testValue() | raw
+    it.testValue() |> raw
 /each
 ";
             
@@ -362,9 +362,9 @@ range(5) | map => it + 1 | to => nums
         : (a.isOdd() ? `${a} <= 2 and odd` : `${a} <= 2 and even`)) }} 
 /function
 
-range(5) | map => it + 1 | to => nums
+range(5) |> map => it + 1 |> to => nums
 #each nums
-    it.testValue() | raw
+    it.testValue() |> raw
 /each
 ";
             
@@ -479,7 +479,7 @@ out
 {{/each}}
 {{/capture}}
 
-text | markdown
+text |> markdown
 ");
             Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
 <h2>Title</h2>
@@ -496,7 +496,7 @@ text | markdown
                     Grape Fruit:  2
                     Rock Melon:   3                    
                 {{/keyvalues}}
-                dict | return
+                dict |> return
             ");
                 
             Assert.That(result, Is.EquivalentTo(new Dictionary<string, string> {
@@ -513,7 +513,7 @@ text | markdown
                     Grape Fruit,2,2
                     Rock Melon,3,3                 
                 {{/csv}}
-                list | return");
+                list |> return");
 
             Assert.That(result, Is.EquivalentTo(new List<List<string>> {
                 new List<string> { "Apples", "2", "2" },
@@ -554,8 +554,8 @@ text | markdown
  - List Item
 {{/partial}}
 
-'<h1>Title</h1>' | raw
-'content' | partial | markdown");
+'<h1>Title</h1>' |> raw
+'content' |> partial |> markdown");
          
             Assert.That(output.RemoveNewLines(), Is.EqualTo(@"<h1>Title</h1><ul><li>List Item</li></ul>".RemoveNewLines()));
 
@@ -571,10 +571,10 @@ text | markdown
             
             
             output = context.RenderCode(@"
-3 | to => times
+3 |> to => times
 {{#while times > 0}}
 {{times}} time{{times == 1 ? '' : 's'}}
-{{times - 1 | to => times}}
+{{times - 1 |> to => times}}
 {{/while}}
 ");
             
@@ -630,7 +630,7 @@ text | markdown
                     Grape Fruit:  2
                     Rock Melon:   3                    
                 /keyvalues
-                dict | return
+                dict |> return
             ";
             
             result = context.EvaluateCode(code);
@@ -649,7 +649,7 @@ text | markdown
                     Grape Fruit,2,2
                     Rock Melon,3,3                 
                 /csv
-                list | return";
+                list |> return";
             result = context.EvaluateCode(code);
             Assert.That(result, Is.EquivalentTo(new List<List<string>> {
                 new List<string> { "Apples", "2", "2" },
@@ -676,10 +676,10 @@ text | markdown
 
 
             code = @"
-                3 | to => times
+                3 |> to => times
                 #while times > 0
                     `${times} time${times == 1 ? '' : 's'}`
-                    times - 1 | to => times
+                    times - 1 |> to => times
                 /while";
             
             Assert.That(context.RenderCode(code).NormalizeNewLines(), Is.EqualTo("3 times\n2 times\n1 time"));
@@ -744,7 +744,7 @@ text | markdown
                     Grape Fruit:  2
                     Rock Melon:   3                    
                 /keyvalues
-                dict | return
+                dict |> return
             ".Replace("\r", "");
             var expectedKeyValues = new Dictionary<string, string> {
                 {"Apples", "2"},
@@ -762,7 +762,7 @@ text | markdown
                     Grape Fruit,2,2
                     Rock Melon,3,3                 
                 /csv
-                list | return".Replace("\r",""));
+                list |> return".Replace("\r",""));
 
             Assert.That(result, Is.EquivalentTo(new List<List<string>> {
                 new List<string> { "Apples", "2", "2" },
@@ -787,10 +787,10 @@ text | markdown
 
 
             code = @"
-                3 | to => times
+                3 |> to => times
                 #while times > 0
                     `${times} time${times == 1 ? '' : 's'}`
-                    times - 1 | to => times
+                    times - 1 |> to => times
                 /while".Replace("\r", "");
             Assert.That(context.RenderCode(code).NormalizeNewLines(), Is.EqualTo("3 times\n2 times\n1 time"));
             Assert.That(context.RenderCode(code.Trim()).NormalizeNewLines(), Is.EqualTo("3 times\n2 times\n1 time"));
@@ -866,10 +866,10 @@ text | markdown
             var context = new ScriptContext().Init();
 
             string template (string block) => "```" + block + @"
-                3 | to => times
+                3 |> to => times
                 #while times > 0
                     `${times} time${times == 1 ? '' : 's'}`
-                    times - 1 | to => times
+                    times - 1 |> to => times
                 /while
                 ```
 remaining={{times}}"; 

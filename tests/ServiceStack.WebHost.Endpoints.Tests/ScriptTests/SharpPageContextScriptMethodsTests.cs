@@ -20,13 +20,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
   <title>{{ title }}</title>
 </head>
 <body>
-{{ 'header' | partial({ id: 'the-page', message: 'in your header' }) }}
+{{ 'header' |> partial({ id: 'the-page', message: 'in your header' }) }}
 {{ page }}
 </body>");
 
             context.VirtualFiles.WriteFile("header.html", @"
-<header id='{{ id | otherwise('header') }}'>
-  {{ message | otherwise(defaultMessage) }}
+<header id='{{ id |> otherwise('header') }}'>
+  {{ message |> otherwise(defaultMessage) }}
 </header>");
 
             context.VirtualFiles.WriteFile("page.html", @"<h1>{{ title }}</h1>");
@@ -65,8 +65,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
   <title>{{ title }}</title>
 </head>
 <body>
-{{ 'my-partial' | partial({ title: 'with-partial', tag: 'h2' }) }}
-{{ myPartial | partial({ title: 'with-partial-binding', tag: 'h2' }) }}
+{{ 'my-partial' |> partial({ title: 'with-partial', tag: 'h2' }) }}
+{{ myPartial |> partial({ title: 'with-partial-binding', tag: 'h2' }) }}
 <footer>{{ title }}</footer>
 </body>");
             
@@ -105,8 +105,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
   <title>{{ title }}</title>
 </head>
 <body>
-{{ 'my-partial' | partial({ title: title, tag: headingTag }) }}
-{{ myPartial | partial({ title: partialTitle, tag: headingTag }) }}
+{{ 'my-partial' |> partial({ title: title, tag: headingTag }) }}
+{{ myPartial |> partial({ title: partialTitle, tag: headingTag }) }}
 </body>");
             
             context.VirtualFiles.WriteFile("my-partial.html", "<{{ tag }}>{{ title }}</{{ tag }}>");
@@ -150,17 +150,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
   <title>{{ title }}</title>
 </head>
 <body>
-{{ contextPartial | partial({ title: contextTitle, tag: contextTag, items: [a,b] }) }}
+{{ contextPartial |> partial({ title: contextTitle, tag: contextTag, items: [a,b] }) }}
 {{ page }}
 </body>");
             
             context.VirtualFiles.WriteFile("bind-partial.html", @"
-<{{ tag }}>{{ title | upper }}</{{ tag }}>
-<p>{{ items | join(', ') }}</p>");
+<{{ tag }}>{{ title |> upper }}</{{ tag }}>
+<p>{{ items |> join(', ') }}</p>");
             
             context.VirtualFiles.WriteFile("bind-page.html", @"
 <section>
-{{ pagePartial | partial({ tag: pageTag, items: items }) }}
+{{ pagePartial |> partial({ tag: pageTag, items: items }) }}
 </section>
 ");
             
@@ -207,10 +207,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 }
             }.Init();
             
-            Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{it}} </li>' | selectEach(letters) }} </ul>")).Result,
+            Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{it}} </li>' |> selectEach(letters) }} </ul>")).Result,
                 Is.EqualTo("<ul> <li> A </li><li> B </li><li> C </li> </ul>"));
 
-            Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{it}} </li>' | selectEach(numbers) }} </ul>")).Result,
+            Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{it}} </li>' |> selectEach(numbers) }} </ul>")).Result,
                 Is.EqualTo("<ul> <li> 1 </li><li> 2 </li><li> 3 </li> </ul>"));
         }
 
@@ -225,7 +225,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 }
             }.Init();
 
-            var result = context.EvaluateScript("<ul>\n{{ '<li> {{it}} </li>\n' | selectEach(letters) }}</ul>");
+            var result = context.EvaluateScript("<ul>\n{{ '<li> {{it}} </li>\n' |> selectEach(letters) }}</ul>");
             Assert.That(result.NormalizeNewLines(),
                 Is.EqualTo(@"<ul>
 <li> A </li>
@@ -249,7 +249,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 <html>
 <body>
 <header>
-<ul> {{ '<li> {{it}} </li>' | selectEach(numbers) }} </ul>
+<ul> {{ '<li> {{it}} </li>' |> selectEach(numbers) }} </ul>
 </header>
 <section>
 {{ page }}
@@ -257,7 +257,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 </body>
 </html>
 ");
-            context.VirtualFiles.WriteFile("page.html", "<ul> {{ '<li> {{it}} </li>' | selectEach(letters) }} </ul>");
+            context.VirtualFiles.WriteFile("page.html", "<ul> {{ '<li> {{it}} </li>' |> selectEach(letters) }} </ul>");
             
             var result = new PageResult(context.GetPage("page"))
             {
@@ -297,7 +297,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 }
             }.Init();
             
-            Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{ it.Object.Prop }} </li>' | selectEach(items) }} </ul>")).Result,
+            Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{ it.Object.Prop }} </li>' |> selectEach(items) }} </ul>")).Result,
                 Is.EqualTo("<ul> <li> A </li><li> B </li><li> C </li> </ul>"));
         }
 
@@ -317,11 +317,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 }
             }.Init();
             
-            Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{ item.Object.Prop }} </li>' | selectEach(items, { it: 'item' } ) }} </ul>")).Result,
+            Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{ item.Object.Prop }} </li>' |> selectEach(items, { it: 'item' } ) }} </ul>")).Result,
                 Is.EqualTo("<ul> <li> A </li><li> B </li><li> C </li> </ul>"));
             
             // Equivalent with select:
-            Assert.That(new PageResult(context.OneTimePage("<ul> {{ items | select: <li> { it.Object.Prop } </li> }} </ul>")).Result,
+            Assert.That(new PageResult(context.OneTimePage("<ul> {{ items |> select: <li> { it.Object.Prop } </li> }} </ul>")).Result,
                 Is.EqualTo("<ul> <li> A </li><li> B </li><li> C </li> </ul>"));
         }
 
@@ -338,7 +338,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                     }
                 }.Init();
              
-                Assert.That(new PageResult(context.OneTimePage("{{ ' - {{it}}\n' | selectEach(items) | markdown }}")).Result.RemoveAllWhitespace(), 
+                Assert.That(new PageResult(context.OneTimePage("{{ ' - {{it}}\n' |> selectEach(items) |> markdown }}")).Result.RemoveAllWhitespace(), 
                     Is.EqualTo("<ul><li>foo</li><li>bar</li><li>qux</li></ul>".RemoveAllWhitespace()));
             }
         }
@@ -348,9 +348,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         {
             var context = new ScriptContext().Init();
             
-            context.VirtualFiles.WriteFile("component.html", @"{{ files | toList | select: { it.Key }: { it.Value }\n }}");
+            context.VirtualFiles.WriteFile("component.html", @"{{ files |> toList |> select: { it.Key }: { it.Value }\n }}");
             
-            context.VirtualFiles.WriteFile("page.html", "{{ 'component' | partial({ files: { 'a': 'foo', 'b': 'bar' } }) }}");
+            context.VirtualFiles.WriteFile("page.html", "{{ 'component' |> partial({ files: { 'a': 'foo', 'b': 'bar' } }) }}");
             
             var output = new PageResult(context.GetPage("page")).Result;
             

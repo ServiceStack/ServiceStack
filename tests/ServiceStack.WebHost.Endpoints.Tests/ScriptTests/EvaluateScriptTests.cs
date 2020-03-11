@@ -18,12 +18,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 }
             }.Init();
 
-            Assert.That(context.Evaluate("{{ identity | return }}"), Is.EqualTo(identity));
-            Assert.That(context.Evaluate("{{ id | return }}", new ObjectDictionary {
+            Assert.That(context.Evaluate("{{ identity |> return }}"), Is.EqualTo(identity));
+            Assert.That(context.Evaluate("{{ id |> return }}", new ObjectDictionary {
                 ["id"] = identity,
             }), Is.EqualTo(identity));
 
-            Assert.That(context.Evaluate("{{ 1 + 1 | return }}"), Is.EqualTo(2));
+            Assert.That(context.Evaluate("{{ 1 + 1 |> return }}"), Is.EqualTo(2));
             Assert.That(context.Evaluate("{{ return(1 + 1) }}"), Is.EqualTo(2));
         }
 
@@ -37,12 +37,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 }
             }.Init();
 
-            Assert.That(await context.EvaluateAsync("{{ identity | return }}"), Is.EqualTo(identity));
-            Assert.That(await context.EvaluateAsync("{{ id | return }}", new ObjectDictionary {
+            Assert.That(await context.EvaluateAsync("{{ identity |> return }}"), Is.EqualTo(identity));
+            Assert.That(await context.EvaluateAsync("{{ id |> return }}", new ObjectDictionary {
                 ["id"] = identity,
             }), Is.EqualTo(identity));
 
-            Assert.That(await context.EvaluateAsync("{{ 1 + 1 | return }}"), Is.EqualTo(2));
+            Assert.That(await context.EvaluateAsync("{{ 1 + 1 |> return }}"), Is.EqualTo(2));
             Assert.That(await context.EvaluateAsync("{{ return(1 + 1) }}"), Is.EqualTo(2));
         }
 
@@ -53,7 +53,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
             try
             {
-                context.Evaluate("{{ 'fail' | throw }} {{ 1 | return }}");
+                context.Evaluate("{{ 'fail' |> throw }} {{ 1 |> return }}");
                 Assert.Fail("Should throw");
             }
             catch (ScriptException e)
@@ -65,7 +65,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
             try
             {
-                context.EvaluateScript("{{ 'fail' | throw }} {{ 1 | return }}");
+                context.EvaluateScript("{{ 'fail' |> throw }} {{ 1 |> return }}");
                 Assert.Fail("Should throw");
             }
             catch (ScriptException e)
@@ -83,7 +83,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
             try
             {
-                await context.EvaluateAsync("{{ 'fail' | throw }} {{ 1 | return }}");
+                await context.EvaluateAsync("{{ 'fail' |> throw }} {{ 1 |> return }}");
                 Assert.Fail("Should throw");
             }
             catch (ScriptException e)
@@ -95,7 +95,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
             try
             {
-                await context.EvaluateScriptAsync("{{ 'fail' | throw }} {{ 1 | return }}");
+                await context.EvaluateScriptAsync("{{ 'fail' |> throw }} {{ 1 |> return }}");
                 Assert.Fail("Should throw");
             }
             catch (ScriptException e)

@@ -83,13 +83,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var context = new ScriptContext().Init();
             context.VirtualFiles.WriteFile("index.txt", "file contents");
 
-            Assert.That(new PageResult(context.OneTimePage("{{ 'index.txt' | includeFile }}")).Result, 
+            Assert.That(new PageResult(context.OneTimePage("{{ 'index.txt' |> includeFile }}")).Result, 
                 Is.EqualTo(""));
 
             var feature = new SharpPagesFeature().Init();
             feature.VirtualFiles.WriteFile("index.txt", "file contents");
 
-            Assert.That(new PageResult(context.OneTimePage("{{ 'index.txt' | includeFile }}")).Result, 
+            Assert.That(new PageResult(context.OneTimePage("{{ 'index.txt' |> includeFile }}")).Result, 
                 Is.EqualTo(""));
         }
 
@@ -102,7 +102,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             }.Init();
             context.VirtualFiles.WriteFile("index.txt", "file contents");
             
-            Assert.That(new PageResult(context.OneTimePage("{{ 'index.txt' | includeFile }}")).Result, 
+            Assert.That(new PageResult(context.OneTimePage("{{ 'index.txt' |> includeFile }}")).Result, 
                 Is.EqualTo("file contents"));
         }
 
@@ -119,7 +119,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             }.Init();
             context.VirtualFiles.WriteFile("index.md", "## Markdown Heading");
             
-            Assert.That(new PageResult(context.OneTimePage("{{ 'index.md' | includeFile | markdown }}")).Result.Trim(), 
+            Assert.That(new PageResult(context.OneTimePage("{{ 'index.md' |> includeFile |> markdown }}")).Result.Trim(), 
                 Is.EqualTo("<h2>Markdown Heading</h2>"));
         }
 
@@ -130,43 +130,43 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var context = appHost.GetPlugin<SharpPagesFeature>();
 
             urlContents = new PageResult(context.OneTimePage(
-                "{{ baseUrl | addPath('includeUrl-echo') | addQueryString({ id:1, name:'foo'}) | includeUrl | htmlencode }}")).Result;
+                "{{ baseUrl |> addPath('includeUrl-echo') |> addQueryString({ id:1, name:'foo'}) |> includeUrl |> htmlencode }}")).Result;
             Assert.That(urlContents, Is.EqualTo("GET /includeUrl-echo?id=1&amp;name=foo"));
             
             urlContents = new PageResult(context.OneTimePage(
-                "{{ baseUrl | addPath('includeUrl-model') | addQueryString({ id:1, name:'foo'}) | includeUrl({ accept: 'application/json' }) }}")).Result;
+                "{{ baseUrl |> addPath('includeUrl-model') |> addQueryString({ id:1, name:'foo'}) |> includeUrl({ accept: 'application/json' }) }}")).Result;
             Assert.That(urlContents, Is.EqualTo("{\"Id\":1,\"Name\":\"foo\"}"));
             
             urlContents = new PageResult(context.OneTimePage(
-                "{{ baseUrl | addPath('includeUrl-model') | addQueryString({ id:1, name:'foo'}) | includeUrl({ dataType: 'json' }) }}")).Result;
+                "{{ baseUrl |> addPath('includeUrl-model') |> addQueryString({ id:1, name:'foo'}) |> includeUrl({ dataType: 'json' }) }}")).Result;
             Assert.That(urlContents, Is.EqualTo("{\"Id\":1,\"Name\":\"foo\"}"));
             
             urlContents = new PageResult(context.OneTimePage(
-                "{{ baseUrl | addPath('includeUrl-model') | includeUrl({ method:'POST', data: { id: 1, name: 'foo' }, accept: 'application/jsv' }) }}")).Result;
+                "{{ baseUrl |> addPath('includeUrl-model') |> includeUrl({ method:'POST', data: { id: 1, name: 'foo' }, accept: 'application/jsv' }) }}")).Result;
             Assert.That(urlContents, Is.EqualTo("{Id:1,Name:foo}"));
             
             urlContents = new PageResult(context.OneTimePage(
-                "{{ baseUrl | addPath('includeUrl-model') | includeUrl({ method:'POST', data: { id: 1, name: 'foo' }, accept: 'application/json', contentType: 'application/json' }) }}")).Result;
+                "{{ baseUrl |> addPath('includeUrl-model') |> includeUrl({ method:'POST', data: { id: 1, name: 'foo' }, accept: 'application/json', contentType: 'application/json' }) }}")).Result;
             Assert.That(urlContents, Is.EqualTo("{\"Id\":1,\"Name\":\"foo\"}"));
             
             urlContents = new PageResult(context.OneTimePage(
-                "{{ baseUrl | addPath('includeUrl-model') | includeUrl({ method:'POST', data: { id: 1, name: 'foo' }, dataType: 'json' }) }}")).Result;
+                "{{ baseUrl |> addPath('includeUrl-model') |> includeUrl({ method:'POST', data: { id: 1, name: 'foo' }, dataType: 'json' }) }}")).Result;
             Assert.That(urlContents, Is.EqualTo("{\"Id\":1,\"Name\":\"foo\"}"));
             
             urlContents = new PageResult(context.OneTimePage(
-                "{{ baseUrl | addPath('includeUrl-model') | includeUrl({ method:'POST', data: { id: 1, name: 'foo' }, dataType: 'jsv' }) }}")).Result;
+                "{{ baseUrl |> addPath('includeUrl-model') |> includeUrl({ method:'POST', data: { id: 1, name: 'foo' }, dataType: 'jsv' }) }}")).Result;
             Assert.That(urlContents, Is.EqualTo("{Id:1,Name:foo}"));
             
             urlContents = new PageResult(context.OneTimePage(
-                "{{ baseUrl | addPath('includeUrl-models') | includeUrl({ method:'POST', data: [{ id: 1, name: 'foo' }, { id: 2, name: 'bar' }], contentType:'application/json', accept: 'application/jsv' }) }}")).Result;
+                "{{ baseUrl |> addPath('includeUrl-models') |> includeUrl({ method:'POST', data: [{ id: 1, name: 'foo' }, { id: 2, name: 'bar' }], contentType:'application/json', accept: 'application/jsv' }) }}")).Result;
             Assert.That(urlContents, Is.EqualTo("[{Id:1,Name:foo},{Id:2,Name:bar}]"));
             
             urlContents = new PageResult(context.OneTimePage(
-                "{{ baseUrl | addPath('includeUrl-models') | includeUrl({ method:'POST', data: [{ id: 1, name: 'foo' }, { id: 2, name: 'bar' }], contentType:'application/jsv', accept: 'text/csv' }) }}")).Result.NormalizeNewLines();
+                "{{ baseUrl |> addPath('includeUrl-models') |> includeUrl({ method:'POST', data: [{ id: 1, name: 'foo' }, { id: 2, name: 'bar' }], contentType:'application/jsv', accept: 'text/csv' }) }}")).Result.NormalizeNewLines();
             Assert.That(urlContents, Is.EqualTo("Id,Name\n1,foo\n2,bar"));
             
             urlContents = new PageResult(context.OneTimePage(
-                "{{ baseUrl | addPath('includeUrl-models') | includeUrl({ method:'POST', data: [{ id: 1, name: 'foo' }, { id: 2, name: 'bar' }], dataType:'csv' }) }}")).Result.NormalizeNewLines();
+                "{{ baseUrl |> addPath('includeUrl-models') |> includeUrl({ method:'POST', data: [{ id: 1, name: 'foo' }, { id: 2, name: 'bar' }], dataType:'csv' }) }}")).Result.NormalizeNewLines();
             Assert.That(urlContents, Is.EqualTo("Id,Name\n1,foo\n2,bar"));
         }
 
@@ -176,7 +176,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var context = appHost.GetPlugin<SharpPagesFeature>();
             context.VirtualFiles.WriteFile("page.txt", "Original Content");
             
-            var includeFilePage = context.OneTimePage("{{ 'page.txt' | includeFile }}");
+            var includeFilePage = context.OneTimePage("{{ 'page.txt' |> includeFile }}");
             var fileContents = new PageResult(includeFilePage).Result;
             Assert.That(fileContents, Is.EqualTo("Original Content"));
 
@@ -191,17 +191,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var context = appHost.GetPlugin<SharpPagesFeature>();
             context.VirtualFiles.WriteFile("page.txt", "Original Content");
 
-            var urlWithDefaultCache = context.OneTimePage("{{ baseUrl | addPath('includeUrl-time') | includeUrlWithCache }}");
+            var urlWithDefaultCache = context.OneTimePage("{{ baseUrl |> addPath('includeUrl-time') |> includeUrlWithCache }}");
 
             var urlContents1 = new PageResult(urlWithDefaultCache).Result;
             var urlContents2 = new PageResult(urlWithDefaultCache).Result;
             Assert.That(urlContents1, Is.EqualTo(urlContents2));
 
-            Assert.That(new PageResult(context.OneTimePage("{{ 'page.txt' | includeFileWithCache }}")).Result, Is.EqualTo("Original Content"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'page.txt' |> includeFileWithCache }}")).Result, Is.EqualTo("Original Content"));
             context.VirtualFiles.WriteFile("page.txt", "Modified Content");
 
-            var fileWithCachePage = context.OneTimePage("{{ 'page.txt' | includeFileWithCache({ expiresInSecs: 1 }) }}");
-            var urlWithCache1Sec = context.OneTimePage("{{ baseUrl | addPath('includeUrl-time') | includeUrlWithCache({ expireInSecs: 1 }) }}");
+            var fileWithCachePage = context.OneTimePage("{{ 'page.txt' |> includeFileWithCache({ expiresInSecs: 1 }) }}");
+            var urlWithCache1Sec = context.OneTimePage("{{ baseUrl |> addPath('includeUrl-time') |> includeUrlWithCache({ expireInSecs: 1 }) }}");
             
             urlContents1 = new PageResult(urlWithCache1Sec).Result;
 
@@ -225,8 +225,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             context.VirtualFiles.WriteFile("file.txt", "File Contents");
 
             context.VirtualFiles.WriteFile("page.html", @"
-includeUrl = {{ baseUrl | addPath('includeUrl-time') | includeUrl }}
-includeFile = {{ 'file.txt' | includeFile }}
+includeUrl = {{ baseUrl |> addPath('includeUrl-time') |> includeUrl }}
+includeFile = {{ 'file.txt' |> includeFile }}
 ");
 
             Assert.Throws<NotSupportedException>(() => {
@@ -249,15 +249,15 @@ includeFile = {{ 'file.txt' | includeFile }}
             }.Init();
 
             var textContents = (ReadOnlyMemory<char>) context.Evaluate(@"
-{{ vfsMemory | to => memFs }}
+{{ vfsMemory |> to => memFs }}
 {{ memFs.writeFile('/dir/file.txt', text) }}
-{{ memFs.fileContents('/dir/file.txt') | return }}");
+{{ memFs.fileContents('/dir/file.txt') |> return }}");
             Assert.That(textContents.Span.SequenceEqual(text.AsSpan()));
 
             var byteContents = (ReadOnlyMemory<byte>) context.Evaluate(@"
-{{ vfsMemory | to => memFs }}
+{{ vfsMemory |> to => memFs }}
 {{ memFs.writeFile('/dir/file.bin', bytes) }}
-{{ memFs.fileContents('/dir/file.bin') | return }}");
+{{ memFs.fileContents('/dir/file.bin') |> return }}");
             Assert.That(byteContents.Span.SequenceEqual(bytes));
         }
 
@@ -270,7 +270,7 @@ includeFile = {{ 'file.txt' | includeFile }}
             
             var context = new ScriptContext().Init();
 
-            var output = context.EvaluateScript("{{ 12.345 | currency }}");
+            var output = context.EvaluateScript("{{ 12.345 |> currency }}");
             Assert.That(output, Is.EqualTo("$12.35"));
 
             Thread.CurrentThread.CurrentCulture = hold;

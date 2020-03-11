@@ -18,7 +18,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 }
             }.Init();
             
-            context.VirtualFiles.WriteFile("page-argument.html", "{{ 'partial-argument' | partial({ redis: redisConnection }) }}");
+            context.VirtualFiles.WriteFile("page-argument.html", "{{ 'partial-argument' |> partial({ redis: redisConnection }) }}");
             context.VirtualFiles.WriteFile("partial-argument.html", "{{ redis.host }}, {{ redis.port }}");
             
             var output = new PageResult(context.GetPage("page-argument")).Result;

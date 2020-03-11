@@ -102,42 +102,42 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 </html>
 ");
                 files.WriteFile("autoquery-data-products.html", @"
-{{ 'category,orderBy,take' | importRequestParams }}{{ { category, orderBy, take } | withoutNullValues | sendToAutoQuery('QueryProducts') 
-   | toResults | select: { it.ProductName }\n }}");
+{{ 'category,orderBy,take' |> importRequestParams }}{{ { category, orderBy, take } |> withoutNullValues |> sendToAutoQuery('QueryProducts') 
+   |> toResults |> select: { it.ProductName }\n }}");
 
                 files.WriteFile("autoquery-rockstars.html", @"
-{{ { qs.age, qs.orderBy, qs.take } | withoutNullValues | sendToAutoQuery('QueryTemplateRockstars') 
-   | toResults | select: { it.FirstName } { it.LastName }\n }}");
+{{ { qs.age, qs.orderBy, qs.take } |> withoutNullValues |> sendToAutoQuery('QueryTemplateRockstars') 
+   |> toResults |> select: { it.FirstName } { it.LastName }\n }}");
 
                 files.WriteFile("autoquery-customer.html", @"
-{{ { qs.customerId } | sendToAutoQuery('QueryCustomers') 
-     | toResults | select: { it.CustomerId }: { it.CompanyName }, { it.City }\n }}");
+{{ { qs.customerId } |> sendToAutoQuery('QueryCustomers') 
+     |> toResults |> select: { it.CustomerId }: { it.CompanyName }, { it.City }\n }}");
 
                 files.WriteFile("autoquery-customers.html", @"
-{{ { qs.countryIn, qs.orderBy } | sendToAutoQuery('QueryCustomers') 
-     | toResults | select: { it.CustomerId }: { it.CompanyName }, { it.Country }\n }}");
+{{ { qs.countryIn, qs.orderBy } |> sendToAutoQuery('QueryCustomers') 
+     |> toResults |> select: { it.CustomerId }: { it.CompanyName }, { it.Country }\n }}");
 
                 files.WriteFile("autoquery-top5-de-uk.html", @"
-{{ { countryIn:['UK','Germany'], orderBy:'customerId', take:5 } | sendToAutoQuery('QueryCustomers') 
-     | toResults | select: { it.CustomerId }: { it.CompanyName }, { it.Country }\n }}");
+{{ { countryIn:['UK','Germany'], orderBy:'customerId', take:5 } |> sendToAutoQuery('QueryCustomers') 
+     |> toResults |> select: { it.CustomerId }: { it.CompanyName }, { it.Country }\n }}");
                 
                 files.WriteFile("api/customers.html", @"
-{{ 'id,city,country' | importRequestParams }}
-{{ qs.limit ?? 100   | assignTo: limit }}
+{{ 'id,city,country' |> importRequestParams }}
+{{ qs.limit ?? 100   |> assignTo: limit }}
 
-{{ 'select CustomerId, CompanyName, City, Country from Customer' | assignTo: sql }}
+{{ 'select CustomerId, CompanyName, City, Country from Customer' |> assignTo: sql }}
 
-{{ PathArgs | endIfEmpty | useFmt('{0} where CustomerId = @id', sql) | dbSingle({ id: PathArgs[0] }) 
-            | return }}
+{{ PathArgs |> endIfEmpty |> useFmt('{0} where CustomerId = @id', sql) |> dbSingle({ id: PathArgs[0] }) 
+            |> return }}
 
-{{ id       | endIfEmpty | use('CustomerId = @id')   | addTo: filters }}
-{{ city     | endIfEmpty | use('City = @city')       | addTo: filters }}
-{{ country  | endIfEmpty | use('Country = @country') | addTo: filters }}
-{{ filters  | endIfEmpty | useFmt('{0} where {1}', sql, join(filters, ' and ')) | assignTo: sql }}
+{{ id       |> endIfEmpty |> use('CustomerId = @id')   |> addTo: filters }}
+{{ city     |> endIfEmpty |> use('City = @city')       |> addTo: filters }}
+{{ country  |> endIfEmpty |> use('Country = @country') |> addTo: filters }}
+{{ filters  |> endIfEmpty |> useFmt('{0} where {1}', sql, join(filters, ' and ')) |> assignTo: sql }}
 
-{{ sql      | appendFmt(' ORDER BY CompanyName {0}', sqlLimit(limit)) 
-            | dbSelect({ country, city, id }) 
-            | return }}
+{{ sql      |> appendFmt(' ORDER BY CompanyName {0}', sqlLimit(limit)) 
+            |> dbSelect({ country, city, id }) 
+            |> return }}
 ");
             }
         }
@@ -410,10 +410,10 @@ CONSH: Consolidated Holdings, UK
             }.Init();
             
             Assert.That(context.EvaluateScript("{{ isAuthenticated }}"), Is.EqualTo("True"));
-            Assert.That(context.EvaluateScript("{{ ifAuthenticated | show: Y }}"), Is.EqualTo("Y"));
-            Assert.That(context.EvaluateScript("{{ ifNotAuthenticated | show: N }}"), Is.EqualTo(""));
-            Assert.That(context.EvaluateScript("{{ 1 | onlyIfAuthenticated }}"), Is.EqualTo("1"));
-            Assert.That(context.EvaluateScript("{{ 1 | endIfAuthenticated }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateScript("{{ ifAuthenticated |> show: Y }}"), Is.EqualTo("Y"));
+            Assert.That(context.EvaluateScript("{{ ifNotAuthenticated |> show: N }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateScript("{{ 1 |> onlyIfAuthenticated }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateScript("{{ 1 |> endIfAuthenticated }}"), Is.EqualTo(""));
         }
 
         [Test]
@@ -425,10 +425,10 @@ CONSH: Consolidated Holdings, UK
             }.Init();
             
             Assert.That(context.EvaluateScript("{{ isAuthenticated }}"), Is.EqualTo("False"));
-            Assert.That(context.EvaluateScript("{{ ifAuthenticated | show: Y }}"), Is.EqualTo(""));
-            Assert.That(context.EvaluateScript("{{ ifNotAuthenticated | show: N }}"), Is.EqualTo("N"));
-            Assert.That(context.EvaluateScript("{{ 1 | onlyIfAuthenticated }}"), Is.EqualTo(""));
-            Assert.That(context.EvaluateScript("{{ 1 | endIfAuthenticated }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateScript("{{ ifAuthenticated |> show: Y }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateScript("{{ ifNotAuthenticated |> show: N }}"), Is.EqualTo("N"));
+            Assert.That(context.EvaluateScript("{{ 1 |> onlyIfAuthenticated }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateScript("{{ 1 |> endIfAuthenticated }}"), Is.EqualTo("1"));
         }
     }
 }

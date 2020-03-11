@@ -151,7 +151,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(context.EvaluateScript(@"{{ `\\ \n` }}"), 
                 Is.EqualTo("\\ \n"));
             
-            Assert.That(context.EvaluateScript(@"{{ `""#key"".replace(/\\s+/g,'')` | raw }}"), 
+            Assert.That(context.EvaluateScript(@"{{ `""#key"".replace(/\\s+/g,'')` |> raw }}"), 
                 Is.EqualTo(@"""#key"".replace(/\s+/g,'')"));
         }
 
@@ -174,12 +174,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(context.EvaluateScript("{{`a ${b + 1} c ${incr(d + 1)}`}}"), Is.EqualTo("a 3 c 6"));
             Assert.That(context.EvaluateScript("{{`\n`}}"), Is.EqualTo("\n"));
             Assert.That(context.EvaluateScript("{{`a\n${b}`}}"), Is.EqualTo("a\n2"));
-            Assert.That(context.EvaluateScript("{{`\"\"` | raw}}"), Is.EqualTo("\"\""));
-            Assert.That(context.EvaluateScript("{{`''` | raw}}"), Is.EqualTo("''"));
-            Assert.That(context.EvaluateScript("{{`a\"b\"c` | raw}}"), Is.EqualTo("a\"b\"c"));
-            Assert.That(context.EvaluateScript("{{`a'b'c` | raw}}"), Is.EqualTo("a'b'c"));
+            Assert.That(context.EvaluateScript("{{`\"\"` |> raw}}"), Is.EqualTo("\"\""));
+            Assert.That(context.EvaluateScript("{{`''` |> raw}}"), Is.EqualTo("''"));
+            Assert.That(context.EvaluateScript("{{`a\"b\"c` |> raw}}"), Is.EqualTo("a\"b\"c"));
+            Assert.That(context.EvaluateScript("{{`a'b'c` |> raw}}"), Is.EqualTo("a'b'c"));
 
-            Assert.That(context.EvaluateScript("{{`a\"b\"c` | appendTo: a}}{{ a | raw }}"), Is.EqualTo("a\"b\"c"));
+            Assert.That(context.EvaluateScript("{{`a\"b\"c` |> appendTo: a}}{{ a |> raw }}"), Is.EqualTo("a\"b\"c"));
             Assert.That(context.EvaluateScript("{{`${a}\\\\${b}`}}"), Is.EqualTo("1\\2"));
         }
     }

@@ -48,14 +48,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var context = new ScriptContext().Init();
 
             var code = @"
-['Name','Age'] | to => requiredProps
+['Name','Age'] |> to => requiredProps
 #each requiredProps
     #if !model[it]
         it.throwArgumentNullException()
     /if
 /each
 
-(Age < 13) | ifThrowArgumentException('Must be 13 or over', 'Age')
+(Age < 13) |> ifThrowArgumentException('Must be 13 or over', 'Age')
 ";
 
             try

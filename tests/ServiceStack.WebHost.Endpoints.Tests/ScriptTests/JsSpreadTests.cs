@@ -121,11 +121,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 }
             }.Init();
             
-            Assert.That(context.EvaluateScript("{{ [...a] | sum }}"), Is.EqualTo("3"));
+            Assert.That(context.EvaluateScript("{{ [...a] |> sum }}"), Is.EqualTo("3"));
             
-            Assert.That(context.EvaluateScript("{{ [...[2,1]] | sum }}"), Is.EqualTo("3"));
+            Assert.That(context.EvaluateScript("{{ [...[2,1]] |> sum }}"), Is.EqualTo("3"));
             
-            Assert.That(context.EvaluateScript("{{ [1, ...a, 4] | sum }}"), Is.EqualTo("8"));
+            Assert.That(context.EvaluateScript("{{ [1, ...a, 4] |> sum }}"), Is.EqualTo("8"));
         }
         
         [Test]
@@ -140,14 +140,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(context.EvaluateScript("{{ {...a}.b }}"), Is.EqualTo("2"));
             Assert.That(context.EvaluateScript("{{ {...{b:2,c:3}}.b }}"), Is.EqualTo("2"));
 
-            Assert.That(context.EvaluateScript("{{ {...a} | values | sum }}"), Is.EqualTo("5"));
-            Assert.That(context.EvaluateScript("{{ {...{b:2,c:3}} | values | sum }}"), Is.EqualTo("5"));
+            Assert.That(context.EvaluateScript("{{ {...a} |> values |> sum }}"), Is.EqualTo("5"));
+            Assert.That(context.EvaluateScript("{{ {...{b:2,c:3}} |> values |> sum }}"), Is.EqualTo("5"));
             
-            Assert.That(context.EvaluateScript("{{ { a:1, ...a, d:4} | values | sum }}"), Is.EqualTo("10"));
-            Assert.That(context.EvaluateScript("{{ { a:1, ...{b:2,c:3}, d:4} | values | sum }}"), Is.EqualTo("10"));
+            Assert.That(context.EvaluateScript("{{ { a:1, ...a, d:4} |> values |> sum }}"), Is.EqualTo("10"));
+            Assert.That(context.EvaluateScript("{{ { a:1, ...{b:2,c:3}, d:4} |> values |> sum }}"), Is.EqualTo("10"));
 
-            Assert.That(context.EvaluateScript("{{ { b:4, ...a, c:6} | values | sum }}"), Is.EqualTo("8"));
-            Assert.That(context.EvaluateScript("{{ { b:4, ...{b:2,c:3}, c:6} | values | sum }}"), Is.EqualTo("8"));
+            Assert.That(context.EvaluateScript("{{ { b:4, ...a, c:6} |> values |> sum }}"), Is.EqualTo("8"));
+            Assert.That(context.EvaluateScript("{{ { b:4, ...{b:2,c:3}, c:6} |> values |> sum }}"), Is.EqualTo("8"));
         }
 
         [Test]
@@ -190,8 +190,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(context.EvaluateScript("{{ Min2(...[20,10]) }}"), Is.EqualTo("10"));
             Assert.That(context.EvaluateScript("{{ Min2(...nums2) }}"), Is.EqualTo("10"));
             Assert.That(context.EvaluateScript("{{ Min3(...nums3) }}"), Is.EqualTo("1"));
-            Assert.That(context.EvaluateScript("{{ 1 | Min3(...[20,10]) }}"), Is.EqualTo("1"));
-            Assert.That(context.EvaluateScript("{{ 30 | Min3(...[20,10]) }}"), Is.EqualTo("10"));
+            Assert.That(context.EvaluateScript("{{ 1 |> Min3(...[20,10]) }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateScript("{{ 30 |> Min3(...[20,10]) }}"), Is.EqualTo("10"));
 
             Assert.That(context.EvaluateScript("{{ Min3(30,...[20,10]) }}"), Is.EqualTo("10"));
             Assert.That(context.EvaluateScript("{{ Min3(30,...nums2) }}"), Is.EqualTo("10"));

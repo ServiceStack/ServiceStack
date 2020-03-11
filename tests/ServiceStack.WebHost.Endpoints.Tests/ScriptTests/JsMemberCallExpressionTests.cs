@@ -357,14 +357,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         {
             var context = CreateScriptContext().Init();
             
-            Assert.That(context.EvaluateScript("{{ a.Nums.map(x => x * 2) | join }}"), Is.EqualTo("2,4,6"));
+            Assert.That(context.EvaluateScript("{{ a.Nums.map(x => x * 2) |> join }}"), Is.EqualTo("2,4,6"));
             Assert.That(context.EvaluateScript("{{ a.Nums.map(x => x * 2).count() }}"), Is.EqualTo("3"));
-            Assert.That(context.EvaluateScript("{{ a.Nums.map(x => x * 2).map(x => x.square()) | join }}"), Is.EqualTo("4,16,36"));
+            Assert.That(context.EvaluateScript("{{ a.Nums.map(x => x * 2).map(x => x.square()) |> join }}"), Is.EqualTo("4,16,36"));
             
-            Assert.That(context.EvaluateScript("{{ a.Int.times().map(x => x + 2) | join }}"), Is.EqualTo("2,3"));
-            Assert.That(context.EvaluateScript("{{ 'ABC'.repeat(3).count().divide(3).times().map(x => x + 2) | join }}"), Is.EqualTo("2,3,4"));
+            Assert.That(context.EvaluateScript("{{ a.Int.times().map(x => x + 2) |> join }}"), Is.EqualTo("2,3"));
+            Assert.That(context.EvaluateScript("{{ 'ABC'.repeat(3).count().divide(3).times().map(x => x + 2) |> join }}"), Is.EqualTo("2,3,4"));
             
-            Assert.That(context.EvaluateScript("{{ 3.times().map(x => x[x.isEven() ? 'decr' : 'incr']()) | join }}"), Is.EqualTo("-1,2,1"));
+            Assert.That(context.EvaluateScript("{{ 3.times().map(x => x[x.isEven() ? 'decr' : 'incr']()) |> join }}"), Is.EqualTo("-1,2,1"));
         }
 
         [Test]
