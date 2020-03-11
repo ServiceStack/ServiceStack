@@ -144,7 +144,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [AutoPopulate(nameof(IAudit.ModifiedInfo), Eval = "`${userSession.DisplayName} (${userSession.City})`")]
     public abstract class CreateAuditBase<Table,TResponse> : ICreateDb<Table>, IReturn<TResponse> {}
 
-    [AutoPopulate(nameof(IAuditTenant.TenantId), Eval = "httpRequest.Items.TenantId")]
+    [AutoPopulate(nameof(IAuditTenant.TenantId), Eval = "Request.Items.TenantId")]
     public abstract class CreateAuditTenantBase<Table,TResponse> : CreateAuditBase<Table,TResponse> {}
 
     [Authenticate]
@@ -153,7 +153,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [AutoPopulate(nameof(IAudit.ModifiedInfo), Eval = "`${userSession.DisplayName} (${userSession.City})`")]
     public abstract class UpdateAuditBase<Table,TResponse> : IUpdateDb<Table>, IReturn<TResponse> {}
 
-    [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId),  Eval = "httpRequest.Items.TenantId")]
+    [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId),  Eval = "Request.Items.TenantId")]
     public abstract class UpdateAuditTenantBase<Table,TResponse> : UpdateAuditBase<Table,TResponse> {}
 
     [Authenticate]
@@ -162,12 +162,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [AutoPopulate(nameof(IAudit.SoftDeletedInfo), Eval = "`${userSession.DisplayName} (${userSession.City})`")]
     public abstract class SoftDeleteAuditBase<Table,TResponse> : IUpdateDb<Table>, IReturn<TResponse> {}
     
-    [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId),  Eval = "httpRequest.Items.TenantId")]
+    [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId),  Eval = "Request.Items.TenantId")]
     public abstract class SoftDeleteAuditTenantBase<Table,TResponse> : SoftDeleteAuditBase<Table,TResponse> {}
     
     [Authenticate]
     [AutoFilter(QueryTerm.Ensure, nameof(IAudit.SoftDeletedDate), Template = SqlTemplate.IsNull)]
-    [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId),  Eval = "httpRequest.Items.TenantId")]
+    [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId),  Eval = "Request.Items.TenantId")]
     public abstract class QueryDbTenant<From, Into> : QueryDb<From, Into> {}
 
     public class CreateRockstarAuditTenant : CreateAuditTenantBase<RockstarAuditTenant, RockstarWithIdAndResultResponse>
@@ -193,7 +193,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [Authenticate]
-    [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId),  Eval = "httpRequest.Items.TenantId")]
+    [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId),  Eval = "Request.Items.TenantId")]
     public class RealDeleteAuditTenant : IDeleteDb<RockstarAuditTenant>, IReturn<RockstarWithIdAndCountResponse>
     {
         public int Id { get; set; }
@@ -207,7 +207,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     [QueryDb(QueryTerm.Or)]
     [AutoFilter(QueryTerm.Ensure, nameof(AuditBase.SoftDeletedDate), SqlTemplate.IsNull)]
-    [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId),  Eval = "httpRequest.Items.TenantId")]
+    [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId),  Eval = "Request.Items.TenantId")]
     public class QueryRockstarAuditSubOr : QueryDb<RockstarAuditTenant, RockstarAuto>
     {
         public string FirstNameStartsWith { get; set; }
@@ -1046,8 +1046,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
     
-    //TODO: Reusable policies (inherited AutoPopulate) field -> info { *ALL THE THINGS* }
-    //Multi Tenant Example
     //Declarative Validation / external providers / built-in UI?
     //SPA AutoCrud / Grid Controls
 }

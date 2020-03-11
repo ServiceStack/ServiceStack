@@ -346,5 +346,4 @@ namespace ServiceStack
         
         public AutoPopulateAttribute(string field) => Field = field ?? throw new ArgumentNullException(nameof(field));
     }
-   
 }
