@@ -174,17 +174,25 @@ namespace ServiceStack
                     var value = appHost.EvalScriptValue(filter, req);
                     
                     var ret = ExprResult.CreateExpression("AND", quotedColumn, value, dbAttr);
+
+
                     if (ret != null)
                     {
                         if (sb.Length > 0)
                             sb.Append(" AND ");
 
-                        if (ret.Value.Format.IndexOf("{1}", StringComparison.Ordinal) >= 0)
-                            throw new NotSupportedException($"SQL Template '{ret.Value.Format}' with multiple arguments is not supported");
-                            
-                        var mergedFormat = ret.Value.Format.Replace("{0}", "{" + exprParamsList.Count + "}");
-                        sb.Append(mergedFormat);
-                        exprParamsList.Add(ret.Value.Value);
+                        var exprResult = ret.Value;
+                        if (exprResult.Format.IndexOf("{1}", StringComparison.Ordinal) >= 0)
+                            throw new NotSupportedException($"SQL Template '{exprResult.Format}' with multiple arguments is not supported");
+
+                        if (exprResult.Values != null)
+                        {
+                            for (var index = 0; index < exprResult.Values.Length; index++)
+                            {
+                                sb.Append(exprResult.Format.Replace("{" + index + "}", "{" + exprParamsList.Count + "}"));
+                                exprParamsList.Add(exprResult.Values[index]);
+                            }
+                        }
                     }
 
                     expr = StringBuilderCache.ReturnAndFree(sb);

@@ -795,12 +795,12 @@ namespace ServiceStack
     {
         internal string DefaultTerm;
         internal string Format;
-        internal object Value;
-        public ExprResult(string defaultTerm, string format, object value)
+        internal object[] Values;
+        private ExprResult(string defaultTerm, string format, params object[] values)
         {
             DefaultTerm = defaultTerm;
             Format = format;
-            Value = value;
+            Values = values;
         }
         
         internal static ExprResult? CreateExpression(string defaultTerm, string quotedColumn, object value, QueryDbFieldAttribute implicitQuery)
@@ -1187,11 +1187,11 @@ namespace ServiceStack
             var result = ret.Value;
             if (implicitQuery?.Term == QueryTerm.Ensure)
             {
-                q.Ensure(result.Format, result.Value);
+                q.Ensure(result.Format, result.Values);
             }
             else
             {
-                q.AddCondition(result.DefaultTerm, result.Format, result.Value);
+                q.AddCondition(result.DefaultTerm, result.Format, result.Values);
             }
         }
 
