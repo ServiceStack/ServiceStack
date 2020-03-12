@@ -11,6 +11,7 @@ using ServiceStack.Host.Handlers;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Messaging;
+using ServiceStack.Script;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -331,6 +332,23 @@ namespace ServiceStack
         /// Publish Message to be processed by AppHost
         /// </summary>
         void PublishMessage<T>(IMessageProducer messageProducer, T message);
+        
+        /// <summary>
+        /// Global #Script ScriptContext for AppHost. Returns SharpPagesFeature plugin or fallsback to DefaultScriptContext.
+        /// </summary>
+        ScriptContext ScriptContext { get; }
+
+        /// <summary>
+        /// Evaluate Expressions in ServiceStack's ScriptContext.
+        /// Can be overriden if you want to customize how different expressions are evaluated.
+        /// </summary>
+        object EvalExpressionCached(string expr);
+
+        /// <summary>
+        /// Evaluate a script value, `IScriptValue.Expression` results are cached globally.
+        /// If `IRequest` is provided, results from the same `IScriptValue.Eval` are cached per request. 
+        /// </summary>
+        object EvalScriptValue(IScriptValue scriptValue, IRequest req = null, Dictionary<string, object> args = null);
     }
 
     public interface IHasAppHost

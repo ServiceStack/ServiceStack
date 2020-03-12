@@ -17,6 +17,11 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using ServiceStack.FluentValidation.Internal;
+using ServiceStack.FluentValidation.Validators;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.FluentValidation
@@ -27,6 +32,20 @@ namespace ServiceStack.FluentValidation
     /// <typeparam name="T">The type of the object being validated</typeparam>
     public abstract partial class AbstractValidator<T> : IRequiresRequest
     {
+        /// <summary>
+        /// Validators are auto-wired transient instances
+        /// </summary>
+        protected AbstractValidator()
+        {
+            if (ServiceStack.Validators.TypeRulesMap.TryGetValue(typeof(T), out var dtoRules))
+            {
+                foreach (var rule in dtoRules)
+                {
+                    Rules.Add(rule);
+                }
+            }
+        }
+
         public virtual IRequest Request { get; set; }
 
         public virtual IServiceGateway Gateway => HostContext.AppHost.GetServiceGateway(Request);

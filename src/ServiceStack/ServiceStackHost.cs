@@ -138,11 +138,7 @@ namespace ServiceStack
             AsyncErrors = new List<ResponseStatus>();
             DefaultScriptContext = new ScriptContext {
                 ScriptLanguages = { ScriptLisp.Language },
-                ScriptMethods = {
-                    new ProtectedScripts(),
-                    new ServiceStackScripts(),
-                }
-            };
+            }.InitForSharpPages(this);
             PluginsLoaded = new List<string>();
             Plugins = new List<IPlugin> {
                 new HtmlFormat(),
@@ -307,7 +303,6 @@ namespace ServiceStack
             LogInitComplete();
 
             HttpHandlerFactory.Init();
-            DefaultScriptContext.Init();
 
             foreach (var callback in AfterInitCallbacks)
             {
@@ -891,6 +886,8 @@ namespace ServiceStack
             delayedLoadPlugin = true;
             LoadPluginsInternal(plugins);
 
+            DefaultScriptContext.Init();
+
             AfterPluginsLoaded(specifiedContentType);
 
             GetPlugin<MetadataFeature>()?.AddDebugLink("Templates/license.html", "License Info");
@@ -929,7 +926,7 @@ namespace ServiceStack
 
             if (Config.StrictMode == true && !JsConfig.HasInit)
                 JsConfig.Init(); //Ensure JsConfig global config is not mutated after StartUp
-
+            
             if (config.LogUnobservedTaskExceptions)
             {
                 TaskScheduler.UnobservedTaskException += this.HandleUnobservedTaskException;

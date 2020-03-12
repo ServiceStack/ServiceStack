@@ -363,7 +363,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public ResponseStatus ResponseStatus { get; set; }
     }
 
-    public class AutoQueryCrudTests
+    public partial class AutoQueryCrudTests
     {
         private readonly ServiceStackHost appHost;
         public IServiceClient client;
@@ -371,6 +371,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         private static readonly int TotalRockstars = AutoQueryAppHost.SeedRockstars.Length;
         private static readonly int TotalAlbums = AutoQueryAppHost.SeedAlbums.Length;
         private const string TenantId = nameof(TenantId);
+
+        partial void OnConfigure(AutoQueryAppHost host, Funq.Container container);
         
         public AutoQueryCrudTests()
         {
@@ -412,6 +414,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                                 });
                             }
                         });
+                        OnConfigure(host, container);
                     }
                 }
                 .Init()
@@ -1045,7 +1048,4 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
     }
-    
-    //Declarative Validation / external providers / built-in UI?
-    //SPA AutoCrud / Grid Controls
 }

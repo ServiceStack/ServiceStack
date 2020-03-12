@@ -112,6 +112,8 @@ namespace ServiceStack
             }
             return null;
         }
+
+        public static bool IsEmpty(IEnumerable items) => EnumerableUtils.NullIfEmpty(items) == null;
     }
     
     public static class EnumerableExtensions

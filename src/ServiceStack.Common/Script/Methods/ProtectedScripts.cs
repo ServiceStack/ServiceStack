@@ -35,6 +35,12 @@ namespace ServiceStack.Script
             return instance;
         }
         
+        public object @default(string typeName)
+        {
+            var type = assertTypeOf(typeName);
+            return type.GetDefaultValue();
+        }
+
         public object @new(string typeName)
         {
             var type = @typeof(typeName);

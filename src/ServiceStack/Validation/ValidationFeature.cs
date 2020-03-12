@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using Funq;
 using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Results;
@@ -11,12 +12,13 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Validation
 {
-    public class ValidationFeature : IPlugin
+    public class ValidationFeature : IPlugin, IPostInitPlugin
     {
         public Func<IRequest, ValidationResult, object, object> ErrorResponseFilter { get; set; }
 
         public bool ScanAppHostAssemblies { get; set; } = true;
         public bool TreatInfoAndWarningsAsErrors { get; set; } = true;
+        public bool EnableValidationAttributes { get; set; } = true;
         
         /// <summary>
         /// Activate the validation mechanism, so every request DTO with an existing validator
@@ -65,6 +67,51 @@ namespace ServiceStack.Validation
                 appHost.GetContainer().RegisterValidators(((ServiceStackHost)appHost).ServiceAssemblies.ToArray());
             }
         }
+
+        public void AfterPluginsLoaded(IAppHost appHost)
+        {
+            if (EnableValidationAttributes)
+            {
+                var container = appHost.GetContainer();
+                var concreteValidators = new List<Type>();
+                var assemblyName = new AssemblyName { Name = "tmpAssembly" };
+                var dynamicModule = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run).DefineDynamicModule("tmpModule");
+                
+                foreach (var op in appHost.Metadata.Operations)
+                {
+                    try 
+                    {
+                        if (Validators.HasValidationAttributes(op.RequestType))
+                        {
+                            op.RequestTypeValidationRules = Validators.GetRules(op.RequestType);
+                            
+                            // We only need to register a new a Validator if it doesn't already exist for the Type 
+                            if (!ValidationExtensions.RegisteredDtoValidators.Contains(op.RequestType))
+                            {
+                                var typeValidatorBase = typeof(AbstractValidator<>).MakeGenericType(op.RequestType);
+
+                                var typeBuilder = dynamicModule.DefineType($"__{op.RequestType.Name}Validator",
+                                    TypeAttributes.Public | TypeAttributes.Class, typeValidatorBase);
+
+                                var typeValidator = typeBuilder.CreateTypeInfo().AsType();
+                                
+                                concreteValidators.Add(typeValidator);
+                            }
+                        }
+
+                        foreach (var validator in concreteValidators)
+                        {
+                            container.RegisterValidator(validator);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        throw;
+                    }
+                }
+            }
+        }
        
         /// <summary>
         /// Override to provide additional/less context about the Service Exception. 
@@ -88,6 +135,8 @@ namespace ServiceStack.Validation
 
     public static class ValidationExtensions
     {
+        public static HashSet<Type> RegisteredDtoValidators { get; } = new HashSet<Type>();
+        
         /// <summary>
         /// Auto-scans the provided assemblies for a <see cref="IValidator"/>
         /// and registers it in the provided IoC container.
@@ -129,6 +178,9 @@ namespace ServiceStack.Validation
             var validatorType = typeof(IValidator<>).GetCachedGenericType(dtoType);
 
             container.RegisterAutoWiredType(validator, validatorType, scope);
+
+            Validators.RegisterValidator(dtoType);
+            RegisteredDtoValidators.Add(dtoType);
         }
 
         public static bool HasAsyncValidators(this IValidator validator, ValidationContext context, string ruleSet=null)
