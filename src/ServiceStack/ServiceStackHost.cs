@@ -886,7 +886,9 @@ namespace ServiceStack
             delayedLoadPlugin = true;
             LoadPluginsInternal(plugins);
 
-            DefaultScriptContext.Init();
+            // If another ScriptContext is already registered, don't override it.
+            if (!Container.Exists<ISharpPages>())
+                DefaultScriptContext.Init();
 
             AfterPluginsLoaded(specifiedContentType);
 

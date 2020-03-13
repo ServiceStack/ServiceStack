@@ -302,15 +302,14 @@ namespace ServiceStack.Script
         }
 
         private SharpPage emptyPage;
-        public SharpPage EmptyPage => emptyPage ?? (emptyPage = OneTimePage("")); 
+        public SharpPage EmptyPage => emptyPage ??= OneTimePage(""); 
 
         
         private static InMemoryVirtualFile emptyFile;
         public InMemoryVirtualFile EmptyFile =>
-            emptyFile ?? (emptyFile = new InMemoryVirtualFile(SharpPages.TempFiles, SharpPages.TempDir) {
+            emptyFile ??= new InMemoryVirtualFile(SharpPages.TempFiles, SharpPages.TempDir) {
                 FilePath = "empty", TextContents = ""
-            }); 
-
+            }; 
         
         public SharpPage OneTimePage(string contents, string ext=null) 
             => Pages.OneTimePage(contents, ext ?? PageFormats.First().Extension);
