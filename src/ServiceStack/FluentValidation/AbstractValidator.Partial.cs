@@ -44,6 +44,32 @@ namespace ServiceStack.FluentValidation
                     Rules.Add(rule);
                 }
             }
+
+            var source = HostContext.TryResolve<IValidationSource>();
+            if (source != null)
+            {
+                var sourceRules = source.GetValidationRules(typeof(T)).ToList();
+                if (!sourceRules.IsEmpty())
+                {
+                    var typeRules = new List<IValidationRule>();
+                    foreach (var entry in sourceRules)
+                    {
+                        var pi = typeof(T).GetProperty(entry.Key);
+                        if (pi != null)
+                        {
+                            var propRule = ServiceStack.Validators.CreatePropertyRule(typeof(T), pi);
+                            typeRules.Add(propRule);
+                            var propValidators = (List<IPropertyValidator>) propRule.Validators;
+                            propValidators.AddRule(pi, entry.Value);
+                        }
+                    }
+
+                    foreach (var propertyValidator in typeRules)
+                    {
+                        Rules.Add(propertyValidator);
+                    }
+                }
+            }
         }
 
         public virtual IRequest Request { get; set; }

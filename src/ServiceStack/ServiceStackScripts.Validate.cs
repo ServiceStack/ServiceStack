@@ -82,42 +82,42 @@ namespace ServiceStack
             validators.AddRule(pi, attr);
         }
 
-        private static IValidationRule CreatePropertyRule(Type type, PropertyInfo pi)
+        public static IValidationRule CreatePropertyRule(Type type, PropertyInfo pi)
         {
             var fn = pi.CreateGetter();
             return new PropertyRule(pi, x => fn(x), null, CascadeMode, type, null);
         }
         
-        public static List<Action<PropertyInfo,ValidateAttribute>> RuleFilters { get; } = new List<Action<PropertyInfo,ValidateAttribute>>{
+        public static List<Action<PropertyInfo,IValidateRule>> RuleFilters { get; } = new List<Action<PropertyInfo,IValidateRule>>{
             AppendDefaultValueOnEmptyValidators,
         };
 
-        public static void AppendDefaultValueOnEmptyValidators(PropertyInfo pi, ValidateAttribute attr)
+        public static void AppendDefaultValueOnEmptyValidators(PropertyInfo pi, IValidateRule rule)
         {
-            if (attr.Validator == "Empty" || attr.Validator == "NotEmpty")
+            if (rule.Validator == "Empty" || rule.Validator == "NotEmpty")
             {
                 // Not/EmptyValidator has a required default constructor required to accurately determine empty for value types
                 if (pi.PropertyType.IsValueType && !pi.PropertyType.IsNullableType())
                 {
-                    attr.Validator += "(default('" + pi.PropertyType.Namespace + "." + pi.PropertyType.Name + "')";
+                    rule.Validator += "(default('" + pi.PropertyType.Namespace + "." + pi.PropertyType.Name + "')";
                 }
             }
         }
 
-        public static void AddRule(this List<IPropertyValidator> validators, PropertyInfo pi, ValidateAttribute attr)
+        public static void AddRule(this List<IPropertyValidator> validators, PropertyInfo pi, IValidateRule propRule)
         {
             foreach (var ruleFilter in RuleFilters)
             {
-                ruleFilter(pi, attr);
+                ruleFilter(pi, propRule);
             }
 
-            if (attr.Validator != null)
+            if (propRule.Validator != null)
             {
-                var ret = HostContext.AppHost.EvalExpressionCached(attr.Validator);
+                var ret = HostContext.AppHost.EvalExpressionCached(propRule.Validator);
                 if (ret == null)
                 {
                     throw new NotSupportedException(
-                        $"Could not resolve matching '{attr.Validator}` Validator Script Method. " +
+                        $"Could not resolve matching '{propRule.Validator}` Validator Script Method. " +
                         $"Ensure it's registered in AppHost.ScriptContext and called with correct number of arguments.");
                 }                
                     
@@ -135,7 +135,7 @@ namespace ServiceStack
                         }
                     }
                 }
-                else throw new NotSupportedException($"{attr.Validator} is not an IPropertyValidator");
+                else throw new NotSupportedException($"{propRule.Validator} is not an IPropertyValidator");
             }
         }
     }

@@ -886,7 +886,7 @@ namespace ServiceStack
             delayedLoadPlugin = true;
             LoadPluginsInternal(plugins);
 
-            // If another ScriptContext is already registered, don't override it.
+            // If another ScriptContext (i.e. SharpPagesFeature) is already registered, don't override its IOC registrations.
             if (!Container.Exists<ISharpPages>())
                 DefaultScriptContext.Init();
 

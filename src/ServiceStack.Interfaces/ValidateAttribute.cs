@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
+using ServiceStack.Caching;
+using ServiceStack.DataAnnotations;
 
 namespace ServiceStack
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-    public class ValidateRequestAttribute : AttributeBase
+    public class ValidateRequestAttribute : AttributeBase, IValidateRule
     {
         public ValidateRequestAttribute() { }
 
@@ -19,11 +22,16 @@ namespace ServiceStack
         public string Field { get; set; }
 
         /// <summary>
+        /// Expression to create a validator registered in Validators.Types
+        /// </summary>
+        public string Validator { get; set; }
+
+        /// <summary>
         /// Boolean #Script Code Expression to Test
         /// ARGS:
         ///   - Request: IRequest
         ///   -     dto: Request DTO
-        ///   -    name: Property Name
+        ///   -   field: Property Name
         ///   -      it: Property Value
         /// </summary>
         public string Test { get; set; }
@@ -44,14 +52,14 @@ namespace ServiceStack
         /// Return evaluated Error Message #Script Expression 
         ///   - Request: IRequest
         ///   -     dto: Request DTO
-        ///   -    name: Property Name
+        ///   -   field: Property Name
         ///   -      it: Property Value
         /// </summary>
         public string EvalMessage { get; set; }
     }
 
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
-    public class ValidateAttribute : AttributeBase
+    public class ValidateAttribute : AttributeBase, IValidateRule
     {
         public ValidateAttribute() {}
         public ValidateAttribute(string validator) => Validator = validator;
@@ -66,7 +74,7 @@ namespace ServiceStack
         /// ARGS:
         ///   - Request: IRequest
         ///   -     dto: Request DTO
-        ///   -    name: Property Name
+        ///   -   field: Property Name
         ///   -      it: Property Value
         /// </summary>
         public string Test { get; set; }
@@ -77,20 +85,74 @@ namespace ServiceStack
         public string ErrorCode { get; set; }
 
         /// <summary>
-        /// Custom Error Message to return
+        /// Refer to FluentValidation docs for Variable
         ///  - {PropertyName}
-        ///  - {Value}
+        ///  - {PropertyValue}
         /// </summary>
         public string Message { get; set; }
         
         /// <summary>
-        /// Return evaluated Error Message #Script Expression 
+        /// Return evaluated Error Message #Script Expression,  
         ///   - Request: IRequest
         ///   -     dto: Request DTO
-        ///   -    name: Property Name
+        ///   -   field: Property Name
         ///   -      it: Property Value
+        /// E.g. EvalMessage="field.endsWith('Date') ? `${it} is an invalid date` : `Invalid '${it}' value for: {field}`"
         /// </summary>
         public string EvalMessage { get; set; }
     }
 
+    public interface IValidateRule
+    {
+        string Validator { get; set; }
+        string Test { get; set; }
+        string ErrorCode { get; set; }
+        string Message { get; set; }
+        string EvalMessage { get; set; }
+    }
+
+    public class ValidateRuleBase : IValidateRule 
+    {
+        public string Validator { get; set; }
+        public string Test { get; set; }
+        public string ErrorCode { get; set; }
+        public string Message { get; set; }
+        public string EvalMessage { get; set; }
+    }
+
+    public interface IValidationSource
+    {
+        IEnumerable<KeyValuePair<string, IValidateRule>> GetValidationRules(Type type);
+    }
+
+    public interface IValidationSourceWriter
+    {
+        void SaveValidationRules(List<ValidateRule> validateRules);
+    }
+
+    /// <summary>
+    /// Data persistence Model 
+    /// </summary>
+    public class ValidateRule : ValidateRuleBase
+    {
+        [AutoIncrement]
+        public int Id { get; set; }
+        
+        /// <summary>
+        /// The name of the Type 
+        /// </summary>
+        [Required]
+        public string Type { get; set; }
+        
+        /// <summary>
+        /// The property field
+        /// </summary>
+        [Required]
+        public string Field { get; set; }
+        
+        /// <summary>
+        /// Results sorted in ascending SortOrder, Id
+        /// </summary>
+        public int SortOrder { get; set; }
+    }
 }

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Caching;
+using ServiceStack.Data;
 using ServiceStack.FluentValidation;
 using ServiceStack.Validation;
 
@@ -117,12 +119,65 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Validate("ScalePrecision(1,1)")]
         public decimal ScalePrecision { get; set; }
     }
+
+    public class DynamicValidationRules
+        : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
+    {
+        [Validate("NotNull")]
+        public string FirstName { get; set; }
+        
+        //[Validate("NotNull")] added in IValidationSource
+        public string LastName { get; set; }
+
+        // [Validate("[NotNull,InclusiveBetween(13,100)]")]
+        [Validate("NotNull")]
+        //[Validate("InclusiveBetween(13,100)")] added in IValidationSource
+        public int? Age { get; set; }
+     
+        [Validate("NotEmpty")]
+        public DateTime DateOfBirth { get; set; }
+     
+        public LivingStatus LivingStatus { get; set; }
+    }
+
+    public class CustomValidationErrors
+        : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
+    {
+        [Validate("NotNull", ErrorCode = "ZERROR")]
+        public string ErrorCode { get; set; }
+        
+        [Validate("InclusiveBetween(1,2)", ErrorCode = "ZERROR", 
+            Message = "{PropertyName} has to be between {From} and {To}, you: {PropertyValue}")]
+        public int ErrorCodeAndMessage { get; set; }
+
+        [Validate("NotNull", ErrorCode = "RuleMessage")]
+        public string ErrorCodeRule { get; set; }
+    }
     
     public partial class AutoQueryCrudTests
     {
+        private bool UseDbSource = true;
+        
         partial void OnConfigure(AutoQueryAppHost host, Container container)
         {
             host.Plugins.Add(new ValidationFeature());
+
+            if (UseDbSource)
+            {
+                container.Register<IValidationSource>(c => 
+                    new OrmLiteValidationSource(c.Resolve<IDbConnectionFactory>(), host.GetMemoryCacheClient()));
+            }
+            else
+            {
+                container.Register<IValidationSource>(new MemoryValidationSource());
+            }
+            
+            var validationSource = container.Resolve<IValidationSource>();
+            validationSource.InitSchema();
+            validationSource.SaveValidationRules(new List<ValidateRule> {
+                new ValidateRule { Type = nameof(DynamicValidationRules), Field = nameof(DynamicValidationRules.LastName), Validator = "NotNull" },
+                new ValidateRule { Type = nameof(DynamicValidationRules), Field = nameof(DynamicValidationRules.Age), Validator = "InclusiveBetween(13,100)" },
+            });
         }
 
         private static void AssertErrorResponse(WebServiceException ex)
@@ -182,6 +237,50 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             
             client.Post(new NoAbstractValidator {
+                FirstName = "A",
+                LastName = "B",
+                Age = 13,
+                DateOfBirth = new DateTime(2001,1,1),
+            });
+        }
+
+        [Test]
+        public void Does_validate_DynamicValidationRules_with_IValidationSource_rules()
+        {
+            try
+            {
+                var response = client.Post(new DynamicValidationRules {
+                    DateOfBirth = new DateTime(2001,1,1),
+                });
+                
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                AssertErrorResponse(ex);
+                Console.WriteLine(ex);
+            }
+
+            try
+            {
+                var response = client.Post(new DynamicValidationRules {
+                    FirstName = "A",
+                    LastName = "B",
+                    Age = 12,
+                    DateOfBirth = new DateTime(2001,1,1),
+                });
+                
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.ErrorCode, Is.EqualTo("InclusiveBetween"));
+                Assert.That(ex.ErrorMessage, Is.EqualTo("'Age' must be between 13 and 100. You entered 12."));
+                var status = ex.ResponseStatus;
+                Assert.That(status.Errors.Count, Is.EqualTo(1));
+            }
+            
+            client.Post(new DynamicValidationRules {
                 FirstName = "A",
                 LastName = "B",
                 Age = 13,
