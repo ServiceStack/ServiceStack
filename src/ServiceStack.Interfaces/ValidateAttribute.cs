@@ -44,18 +44,9 @@ namespace ServiceStack
         /// <summary>
         /// Custom Error Message to return
         ///  - {PropertyName}
-        ///  - {Value}
+        ///  - {PropertyValue}
         /// </summary>
         public string Message { get; set; }
-        
-        /// <summary>
-        /// Return evaluated Error Message #Script Expression 
-        ///   - Request: IRequest
-        ///   -     dto: Request DTO
-        ///   -   field: Property Name
-        ///   -      it: Property Value
-        /// </summary>
-        public string EvalMessage { get; set; }
     }
 
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
@@ -90,16 +81,6 @@ namespace ServiceStack
         ///  - {PropertyValue}
         /// </summary>
         public string Message { get; set; }
-        
-        /// <summary>
-        /// Return evaluated Error Message #Script Expression,  
-        ///   - Request: IRequest
-        ///   -     dto: Request DTO
-        ///   -   field: Property Name
-        ///   -      it: Property Value
-        /// E.g. EvalMessage="field.endsWith('Date') ? `${it} is an invalid date` : `Invalid '${it}' value for: {field}`"
-        /// </summary>
-        public string EvalMessage { get; set; }
     }
 
     public interface IValidateRule
@@ -108,7 +89,6 @@ namespace ServiceStack
         string Condition { get; set; }
         string ErrorCode { get; set; }
         string Message { get; set; }
-        string EvalMessage { get; set; }
     }
 
     public class ValidateRuleBase : IValidateRule 
@@ -117,7 +97,6 @@ namespace ServiceStack
         public string Condition { get; set; }
         public string ErrorCode { get; set; }
         public string Message { get; set; }
-        public string EvalMessage { get; set; }
     }
 
     public interface IValidationSource

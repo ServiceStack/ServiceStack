@@ -92,12 +92,18 @@ namespace ServiceStack
         public static object eval(ReadOnlySpan<char> js, ScriptScopeContext scope)
         {
             js.ParseJsExpression(out var token);
-            return token.Evaluate(scope);
+            return ScriptLanguage.UnwrapValue(token.Evaluate(scope));
         }
 
+        public static object eval(ScriptContext context, string expr, Dictionary<string, object> args = null) =>
+            eval(context, expr.AsSpan(), args);
         public static object eval(ScriptContext context, ReadOnlySpan<char> expr, Dictionary<string, object> args=null)
         {
             return eval(expr, new ScriptScopeContext(new PageResult(context.EmptyPage), null, args));
+        }
+        public static object eval(ScriptContext context, JsToken token, Dictionary<string, object> args=null)
+        {
+            return ScriptLanguage.UnwrapValue(token.Evaluate(new ScriptScopeContext(new PageResult(context.EmptyPage), null, args)));
         }
         
         public const string EvalCacheKeyPrefix = "scriptvalue:";

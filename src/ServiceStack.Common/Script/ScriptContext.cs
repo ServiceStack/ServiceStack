@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
@@ -618,6 +619,9 @@ namespace ServiceStack.Script
     public static class ScriptContextUtils
     {
         public static string ErrorNoReturn = "Script did not return a value. Use EvaluateScript() to return script output instead";
+        
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static void ThrowNoReturn() => throw new NotSupportedException("Script did not return a value");
 
         public static bool ShouldRethrow(Exception e) =>
             e is ScriptException;

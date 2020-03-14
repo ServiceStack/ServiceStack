@@ -19,6 +19,16 @@ namespace ServiceStack.Validation
         public bool ScanAppHostAssemblies { get; set; } = true;
         public bool TreatInfoAndWarningsAsErrors { get; set; } = true;
         public bool EnableValidationAttributes { get; set; } = true;
+
+        /// <summary>
+        /// Specify default ErrorCodes to use when custom validation conditions are invalid
+        /// </summary>
+        public Dictionary<string, string> ConditionErrorCodes => Validators.ConditionErrorCodes;
+
+        /// <summary>
+        /// Specify default Error Messages to use when Validators with these ErrorCode's are invalid
+        /// </summary>
+        public Dictionary<string, string> ErrorCodeMessages => Validators.ErrorCodeMessages;
         
         /// <summary>
         /// Activate the validation mechanism, so every request DTO with an existing validator

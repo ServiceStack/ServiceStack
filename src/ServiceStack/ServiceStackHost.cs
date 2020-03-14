@@ -606,6 +606,7 @@ namespace ServiceStack
         /// Can be overriden if you want to customize how different expressions are evaluated.
         /// </summary>
         public virtual object EvalExpressionCached(string expr) => JS.evalCached(ScriptContext, expr);
+        public virtual object EvalExpression(string expr) => JS.eval(ScriptContext, expr);
 
         /// <summary>
         /// Evaluate a script value, `IScriptValue.Expression` results are cached globally.
@@ -642,7 +643,15 @@ namespace ServiceStack
             var cachedCodePage = (SharpPage)ScriptContext.Cache.GetOrAdd(evalAstCacheKey, key =>
                 ScriptContext.CodeSharpPage(evalCode));
             
-            var pageResult = new PageResult(cachedCodePage);
+            value = EvalScript(new PageResult(cachedCodePage), req, args);
+            if (!scriptValue.NoCache && req != null)
+                req.Items[evalCacheKey] = value;
+
+            return value;
+        }
+
+        public virtual object EvalScript(PageResult pageResult, IRequest req = null, Dictionary<string, object> args=null)
+        {
             if (args != null)
             {
                 foreach (var entry in args)
@@ -657,14 +666,10 @@ namespace ServiceStack
                 pageResult.Args[ScriptConstants.Dto] = req.Dto;
             }
 
-            if (pageResult.EvaluateResult(out var returnValue))
-                value = ScriptLanguage.UnwrapValue(returnValue);
+            if (!pageResult.EvaluateResult(out var returnValue))
+                ScriptContextUtils.ThrowNoReturn();
 
-            if (!scriptValue.NoCache && req != null)
-                req.Items[evalCacheKey] = value;
-
-
-            return value;
+            return ScriptLanguage.UnwrapValue(returnValue);
         }
 
         /// <summary>
@@ -1135,7 +1140,7 @@ namespace ServiceStack
             return new ServiceRunner<TRequest>(this, actionContext);
         }
 
-        public virtual string ResolveLocalizedString(string text, IRequest request)
+        public virtual string ResolveLocalizedString(string text, IRequest request=null)
         {
             return text;
         }

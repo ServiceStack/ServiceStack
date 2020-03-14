@@ -143,15 +143,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class CustomValidationErrors
         : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
     {
+        // Just overrides ErrorCode
         [Validate("NotNull", ErrorCode = "ZERROR")]
-        public string ErrorCode { get; set; }
+        public string CustomErrorCode { get; set; }
         
+        // Overrides both ErrorCode & Message
         [Validate("InclusiveBetween(1,2)", ErrorCode = "ZERROR", 
             Message = "{PropertyName} has to be between {From} and {To}, you: {PropertyValue}")]
-        public int ErrorCodeAndMessage { get; set; }
+        public int CustomErrorCodeAndMessage { get; set; }
 
+        // Overrides ErrorCode & uses Message from Validators
         [Validate("NotNull", ErrorCode = "RuleMessage")]
         public string ErrorCodeRule { get; set; }
+
+        // Overrides ErrorCode & uses Message from Validators
+        [Validate(Condition = ValidationConditions.IsOdd)]
+        public int IsOddCondition { get; set; }
+    }
+
+    public static class ValidationConditions
+    {
+        public const string IsOdd = "it |> isOdd";
     }
     
     public partial class AutoQueryCrudTests
@@ -160,7 +172,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         
         partial void OnConfigure(AutoQueryAppHost host, Container container)
         {
-            host.Plugins.Add(new ValidationFeature());
+            host.Plugins.Add(new ValidationFeature {
+                ConditionErrorCodes = {
+                    [ValidationConditions.IsOdd] = "NotOdd",
+                },
+                ErrorCodeMessages = {
+                    ["NotOdd"] = "{PropertyName} must be odd",
+                    ["RuleMessage"] = "ErrorCodeMessages for RuleMessage",
+                }
+            });
 
             if (UseDbSource)
             {
@@ -245,7 +265,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Does_validate_DynamicValidationRules_with_IValidationSource_rules()
+        public void Does_validate_DynamicValidationRules_combined_with_IValidationSource_rules()
         {
             try
             {
@@ -352,6 +372,42 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 ValidationExceptionTests.AssertTriggerValidators(ex);
                 Console.WriteLine(ex);
+            }
+        }
+
+        [Test]
+        public void Does_use_CustomErrorMessages()
+        {
+            try
+            {
+                var response = client.Post(new CustomValidationErrors {
+                });
+                
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Console.WriteLine(ex);
+                var status = ex.ResponseStatus;
+                Assert.That(ex.ErrorCode, Is.EqualTo("ZERROR"));
+                Assert.That(ex.ErrorMessage, Is.EqualTo("'Custom Error Code' must not be empty."));
+                Assert.That(status.Errors.Count, Is.EqualTo(4));
+                
+                var fieldError = status.Errors.First(x => x.FieldName == nameof(CustomValidationErrors.CustomErrorCode));
+                Assert.That(fieldError.ErrorCode, Is.EqualTo("ZERROR"));
+                Assert.That(fieldError.Message, Is.EqualTo("'Custom Error Code' must not be empty."));
+                
+                fieldError = status.Errors.First(x => x.FieldName == nameof(CustomValidationErrors.CustomErrorCodeAndMessage));
+                Assert.That(fieldError.ErrorCode, Is.EqualTo("ZERROR"));
+                Assert.That(fieldError.Message, Is.EqualTo("Custom Error Code And Message has to be between 1 and 2, you: 0"));
+                
+                fieldError = status.Errors.First(x => x.FieldName == nameof(CustomValidationErrors.ErrorCodeRule));
+                Assert.That(fieldError.ErrorCode, Is.EqualTo("RuleMessage"));
+                Assert.That(fieldError.Message, Is.EqualTo("ErrorCodeMessages for RuleMessage"));
+                
+                fieldError = status.Errors.First(x => x.FieldName == nameof(CustomValidationErrors.IsOddCondition));
+                Assert.That(fieldError.ErrorCode, Is.EqualTo("NotOdd"));
+                Assert.That(fieldError.Message, Is.EqualTo("Is Odd Condition must be odd"));
             }
         }
     }

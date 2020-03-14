@@ -33,6 +33,7 @@ namespace ServiceStack.Script
         public const string PathArgs = "PathArgs";
         public const string Dto = "dto";
         public const string It = "it";
+        public const string Field = "field";
         public const string AssetsBase = "assetsBase";
         public const string Format = "format";
         public const string BaseUrl = "BaseUrl";

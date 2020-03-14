@@ -37,6 +37,10 @@ namespace ServiceStack.FluentValidation
         /// </summary>
         protected AbstractValidator()
         {
+            var appHost = HostContext.AppHost;
+            if (appHost == null) //Unit tests or stand-alone usage
+                return;
+            
             if (ServiceStack.Validators.TypeRulesMap.TryGetValue(typeof(T), out var dtoRules))
             {
                 foreach (var rule in dtoRules)
@@ -45,7 +49,7 @@ namespace ServiceStack.FluentValidation
                 }
             }
 
-            var source = HostContext.TryResolve<IValidationSource>();
+            var source = appHost.TryResolve<IValidationSource>();
             if (source != null)
             {
                 var sourceRules = source.GetValidationRules(typeof(T)).ToList();
