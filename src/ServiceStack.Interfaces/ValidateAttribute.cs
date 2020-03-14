@@ -13,7 +13,7 @@ namespace ServiceStack
         public ValidateRequestAttribute(string field, string test)
         {
             Field = field;
-            Test = test;
+            Condition = test;
         }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace ServiceStack
         ///   -   field: Property Name
         ///   -      it: Property Value
         /// </summary>
-        public string Test { get; set; }
+        public string Condition { get; set; }
 
         /// <summary>
         /// Custom ErrorCode to return 
@@ -77,7 +77,7 @@ namespace ServiceStack
         ///   -   field: Property Name
         ///   -      it: Property Value
         /// </summary>
-        public string Test { get; set; }
+        public string Condition { get; set; }
 
         /// <summary>
         /// Custom ErrorCode to return 
@@ -105,7 +105,7 @@ namespace ServiceStack
     public interface IValidateRule
     {
         string Validator { get; set; }
-        string Test { get; set; }
+        string Condition { get; set; }
         string ErrorCode { get; set; }
         string Message { get; set; }
         string EvalMessage { get; set; }
@@ -114,7 +114,7 @@ namespace ServiceStack
     public class ValidateRuleBase : IValidateRule 
     {
         public string Validator { get; set; }
-        public string Test { get; set; }
+        public string Condition { get; set; }
         public string ErrorCode { get; set; }
         public string Message { get; set; }
         public string EvalMessage { get; set; }
