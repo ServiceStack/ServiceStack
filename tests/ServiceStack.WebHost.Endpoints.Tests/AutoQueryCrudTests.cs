@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Data;
@@ -213,10 +214,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return response;
         }
         
-        public object Any(UpdateRockstarAuditTenantGateway request)
+        public async Task<object> Any(UpdateRockstarAuditTenantGateway request)
         {
             var gatewayRequest = request.ConvertTo<UpdateRockstarAuditTenant>();
-            var response = Gateway.Send(gatewayRequest);
+            var response = await Gateway.SendAsync(gatewayRequest);
             return response;
         }
     }

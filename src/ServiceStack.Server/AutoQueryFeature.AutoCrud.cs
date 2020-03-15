@@ -211,7 +211,7 @@ namespace ServiceStack
             using var db = AutoQuery.GetDb<Table>(Request);
             using (Profiler.Current.Step("AutoQuery.Update"))
             {
-                var response = ExecAndReturnResponseAsync<Table>(dto, db,
+                var response = await ExecAndReturnResponseAsync<Table>(dto, db,
                     async ctx => {
                         var dtoValues = ResolveDtoValues(dto, skipDefaults);
                         var pkFieldDef = typeof(Table).GetModelMetadata()?.PrimaryKey;
