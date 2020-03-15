@@ -187,6 +187,40 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public LivingStatus? LivingStatus { get; set; }
     }
     
+    public class CreateRockstarAuditTenantGateway : IReturn<RockstarWithIdAndResultResponse>
+    {
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public int? Age { get; set; }
+        public DateTime DateOfBirth { get; set; }
+        public DateTime? DateDied { get; set; }
+        public LivingStatus LivingStatus { get; set; }
+    }
+    
+    public class UpdateRockstarAuditTenantGateway : IReturn<RockstarWithIdAndResultResponse>
+    {
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public LivingStatus? LivingStatus { get; set; }
+    }
+    
+    public class AutoCrudGatewayServices : Service
+    {
+        public object Any(CreateRockstarAuditTenantGateway request)
+        {
+            var gatewayRequest = request.ConvertTo<CreateRockstarAuditTenant>();
+            var response = Gateway.Send(gatewayRequest);
+            return response;
+        }
+        
+        public object Any(UpdateRockstarAuditTenantGateway request)
+        {
+            var gatewayRequest = request.ConvertTo<UpdateRockstarAuditTenant>();
+            var response = Gateway.Send(gatewayRequest);
+            return response;
+        }
+    }
+    
     public class SoftDeleteAuditTenant : SoftDeleteAuditTenantBase<RockstarAuditTenant, RockstarWithIdAndResultResponse>
     {
         public int Id { get; set; }
@@ -864,7 +898,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             newRockstar = db.SingleById<RockstarAudit>(createResponse.Id);
             Assert.That(newRockstar, Is.Null);
         }
- 
 
         [Test]
         public void Can_CreateRockstarAuditTenant()
@@ -994,6 +1027,45 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(realDeleteResponse.Count, Is.EqualTo(1));
             newRockstar = db.SingleById<RockstarAuditTenant>(createResponse.Id);
             Assert.That(newRockstar, Is.Null);
+        }
+
+        [Test]
+        public void Can_CreateRockstarAuditTenantGateway_Gateway()
+        {
+            var authClient = new JsonServiceClient(Config.ListeningOn);
+            authClient.Post(new Authenticate {
+                provider = "credentials",
+                UserName = "admin@email.com",
+                Password = "p@55wOrd",
+                RememberMe = true,
+            });
+
+            var createRequest = new CreateRockstarAuditTenantGateway {
+                FirstName = "CreateGateway",
+                LastName = "Audit",
+                Age = 20,
+                DateOfBirth = new DateTime(2002,2,2),
+                LivingStatus = LivingStatus.Dead,
+            };
+
+            var createResponse = authClient.Post(createRequest);
+            Assert.That(createResponse.Id, Is.GreaterThan(0));
+            var result = createResponse.Result;
+
+            var updateRequest = new UpdateRockstarAuditTenantGateway {
+                Id = createResponse.Id,
+                FirstName = "UpdatedGateway",
+                LivingStatus = LivingStatus.Alive,
+            };
+            var updateResponse = authClient.Patch(updateRequest);
+            result = updateResponse.Result;
+            
+            Assert.That(updateResponse.Id, Is.EqualTo(createResponse.Id));
+            Assert.That(result.FirstName, Is.EqualTo(updateRequest.FirstName));
+            Assert.That(result.LastName, Is.EqualTo(createRequest.LastName));
+            Assert.That(result.Age, Is.EqualTo(createRequest.Age));
+            Assert.That(result.DateOfBirth.Date, Is.EqualTo(createRequest.DateOfBirth.Date));
+            Assert.That(result.LivingStatus, Is.EqualTo(updateRequest.LivingStatus));
         }
  
         [Test]
