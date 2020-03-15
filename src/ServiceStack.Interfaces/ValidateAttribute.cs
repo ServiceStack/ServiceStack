@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using ServiceStack.Caching;
 using ServiceStack.DataAnnotations;
 
@@ -70,6 +71,18 @@ namespace ServiceStack
         /// </summary>
         public string Condition { get; set; }
 
+        public string[] AllConditions
+        {
+            get => throw new NotSupportedException(nameof(AllConditions));
+            set => Condition = Combine("&&", value);
+        }
+
+        public string[] AnyConditions
+        {
+            get => throw new NotSupportedException(nameof(AnyConditions));
+            set => Condition = Combine("||", value);
+        }
+
         /// <summary>
         /// Custom ErrorCode to return 
         /// </summary>
@@ -81,6 +94,24 @@ namespace ServiceStack
         ///  - {PropertyValue}
         /// </summary>
         public string Message { get; set; }
+
+        public static string Combine(string comparand, params string[] conditions)
+        {
+            var sb = new StringBuilder();
+            var joiner = ") " + comparand + " ("; 
+            foreach (var condition in conditions)
+            {
+                if (string.IsNullOrEmpty(condition))
+                    continue;
+                if (sb.Length > 0)
+                    sb.Append(joiner);
+                sb.Append(condition);
+            }
+
+            sb.Insert(0, '(');
+            sb.Append(')');
+            return sb.ToString();
+        }
     }
 
     public interface IValidateRule

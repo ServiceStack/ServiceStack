@@ -2,35 +2,52 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Internal;
 using ServiceStack.FluentValidation.Resources;
 using ServiceStack.FluentValidation.Validators;
 using ServiceStack.Script;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
+    public class ScriptConditionValidator : PropertyValidator, INotNullValidator
+    {
+        private SharpPage Code { get; }
+        
+        public ScriptConditionValidator(SharpPage code) : base(new LanguageStringSource(nameof(PredicateValidator)))
+        {
+            Code = code;
+        }
+        
+        protected override bool IsValid(PropertyValidatorContext context)
+        {
+            var ret = HostContext.AppHost.EvalScript(context.ToPageResult(Code), context.ParentContext.Request);
+            return DefaultScripts.isTruthy(ret);
+        }
+    }
+    
     public static class Validators
     {
         public static NullValidator Null { get; } = new NullValidator();
         public static NotNullValidator NotNull { get; } = new NotNullValidator();
         public static NotEmptyValidator NotEmpty { get; } = new NotEmptyValidator(null);
         public static EmptyValidator Empty { get; } = new EmptyValidator(null);
-        
+
         public static CreditCardValidator CreditCard { get; } = new CreditCardValidator();
         public static EmailValidator Email { get; } = new EmailValidator();
 
-        public static Dictionary<Type, List<IValidationRule>> TypeRulesMap { get; } = new Dictionary<Type, List<IValidationRule>>();
-        
-        public static Dictionary<string, string> ConditionErrorCodes { get; } = new Dictionary<string, string>(); 
-        public static Dictionary<string, string> ErrorCodeMessages { get; } = new Dictionary<string, string>(); 
+        public static Dictionary<Type, List<IValidationRule>> TypeRulesMap { get; } =
+            new Dictionary<Type, List<IValidationRule>>();
+
+        public static Dictionary<string, string> ConditionErrorCodes { get; } = new Dictionary<string, string>();
+        public static Dictionary<string, string> ErrorCodeMessages { get; } = new Dictionary<string, string>();
 
         static readonly Func<CascadeMode> CascadeMode = () => ValidatorOptions.CascadeMode;
 
-        public static bool HasValidationAttributes(Type type) => type.HasAttribute<ValidateRequestAttribute>() || 
+        public static bool HasValidationAttributes(Type type) => type.HasAttribute<ValidateRequestAttribute>() ||
             type.GetPublicProperties().FirstOrDefault(x => x.HasAttribute<ValidateAttribute>()) != null;
-        
+
         /// <summary>
         /// Register declarative [Validate] validators.
         /// </summary>
@@ -62,12 +79,13 @@ namespace ServiceStack
                 TypeRulesMap[type] = typeRules;
                 return true;
             }
+
             return false;
         }
 
         public static List<IValidationRule> GetRules(Type type) => TypeRulesMap.TryGetValue(type, out var rules)
             ? rules
-            : TypeConstants<IValidationRule>.EmptyList; 
+            : TypeConstants<IValidationRule>.EmptyList;
 
         public static void AddRule(Type type, string name, ValidateAttribute attr) =>
             AddRule(type, type.GetProperty(name), attr);
@@ -91,10 +109,11 @@ namespace ServiceStack
             var fn = pi.CreateGetter();
             return new PropertyRule(pi, x => fn(x), null, CascadeMode, type, null);
         }
-        
-        public static List<Action<PropertyInfo,IValidateRule>> RuleFilters { get; } = new List<Action<PropertyInfo,IValidateRule>>{
-            AppendDefaultValueOnEmptyValidators,
-        };
+
+        public static List<Action<PropertyInfo, IValidateRule>> RuleFilters { get; } =
+            new List<Action<PropertyInfo, IValidateRule>> {
+                AppendDefaultValueOnEmptyValidators,
+            };
 
         public static void AppendDefaultValueOnEmptyValidators(PropertyInfo pi, IValidateRule rule)
         {
@@ -125,32 +144,38 @@ namespace ServiceStack
                 }
                 else
                 {
-                    if (propRule.Condition != null && ConditionErrorCodes.TryGetValue(propRule.Condition, out errorCode))
+                    if (propRule.Condition != null &&
+                        ConditionErrorCodes.TryGetValue(propRule.Condition, out errorCode))
                     {
                         validator.Options.ErrorCodeSource = new StaticStringSource(errorCode);
                     }
                 }
+
                 if (!string.IsNullOrEmpty(propRule.Message))
                 {
-                    validator.Options.ErrorMessageSource = new StaticStringSource(appHost.ResolveLocalizedString(propRule.Message));
+                    validator.Options.ErrorMessageSource =
+                        new StaticStringSource(appHost.ResolveLocalizedString(propRule.Message));
                 }
                 else if (errorCode != null && ErrorCodeMessages.TryGetValue(errorCode, out var errorMsg))
                 {
-                    validator.Options.ErrorMessageSource = new StaticStringSource(appHost.ResolveLocalizedString(errorMsg));
+                    validator.Options.ErrorMessageSource =
+                        new StaticStringSource(appHost.ResolveLocalizedString(errorMsg));
                 }
+
                 return validator;
             }
 
             if (propRule.Validator != null)
             {
-                var ret = appHost.EvalExpression(propRule.Validator); //Validators can't be cached due to custom code/msgs
+                var ret = appHost.EvalExpression(propRule
+                    .Validator); //Validators can't be cached due to custom code/msgs
                 if (ret == null)
                 {
                     throw new NotSupportedException(
                         $"Could not resolve matching '{propRule.Validator}` Validator Script Method. " +
                         $"Ensure it's registered in AppHost.ScriptContext and called with correct number of arguments.");
-                }                
-                    
+                }
+
                 if (ret is IPropertyValidator validator)
                 {
                     validators.Add(apply(validator));
@@ -171,7 +196,7 @@ namespace ServiceStack
             {
                 var evalCode = ScriptCodeUtils.EnsureReturn(propRule.Condition);
                 var page = appHost.ScriptContext.CodeSharpPage(evalCode);
-                validators.Add(apply(new ScriptValidator(page)));
+                validators.Add(apply(new ScriptConditionValidator(page)));
             }
         }
 
@@ -185,55 +210,5 @@ namespace ServiceStack
             };
             return to;
         }
-    }
-
-    public class ScriptValidator : PropertyValidator, INotNullValidator
-    {
-        private SharpPage Page { get; }
-        public ScriptValidator(SharpPage page) : base(new LanguageStringSource(nameof(ScriptValidator)))
-        {
-            Page = page;
-        }
-        protected override bool IsValid(PropertyValidatorContext context)
-        {
-            var ret = HostContext.AppHost.EvalScript(context.ToPageResult(Page), context.ParentContext.Request);
-            return DefaultScripts.isTruthy(ret);
-        }
-    }
-
-    public class ValidateScripts : ScriptMethods
-    {
-        public static ValidateScripts Instance = new ValidateScripts();
-        
-        //Note: Can't use singleton validators in-case ErrorCode/Messages are customized 
-
-        public IPropertyValidator Null() => new NullValidator();
-        public IPropertyValidator Empty() => new EmptyValidator(null);
-        public IPropertyValidator Empty(object defaultValue) => new EmptyValidator(defaultValue);
-        public IPropertyValidator Equal(object value) => new EqualValidator(value);
-        public IPropertyValidator NotNull() => new NotNullValidator();
-        public IPropertyValidator NotEmpty() => new NotEmptyValidator(null);
-        public IPropertyValidator NotEmpty(object defaultValue) => new NotEmptyValidator(defaultValue);
-        public IPropertyValidator NotEqual(object value) => new NotEqualValidator(value);
-
-        public IPropertyValidator CreditCard() => new CreditCardValidator();
-        public IPropertyValidator Email() => new EmailValidator();
-
-        public IPropertyValidator Length(int min, int max) => new LengthValidator(min, max);
-        public IPropertyValidator ExactLength(int length) => new ExactLengthValidator(length);
-        public IPropertyValidator MaximumLength(int max) => new MaximumLengthValidator(max);
-        public IPropertyValidator MinimumLength(int min) => new MinimumLengthValidator(min);
-        public IPropertyValidator InclusiveBetween(IComparable from, IComparable to) => new InclusiveBetweenValidator(from,to);
-        public IPropertyValidator ExclusiveBetween(IComparable from, IComparable to) => new ExclusiveBetweenValidator(from,to);
-
-        public IPropertyValidator LessThan(int value) => new LessThanValidator(value);
-        public IPropertyValidator LessThanOrEqual(int value) => new LessThanOrEqualValidator(value);
-        public IPropertyValidator GreaterThan(int value) => new GreaterThanValidator(value);
-        public IPropertyValidator GreaterThanOrEqual(int value) => new GreaterThanOrEqualValidator(value);
-        public IPropertyValidator ScalePrecision(int scale, int precision) => new ScalePrecisionValidator(scale, precision);
-
-        public IPropertyValidator RegularExpression(string regex) => new RegularExpressionValidator(regex, RegexOptions.Compiled);
-        
-        public IPropertyValidator Enum(Type enumType) => new EnumValidator(enumType);
     }
 }

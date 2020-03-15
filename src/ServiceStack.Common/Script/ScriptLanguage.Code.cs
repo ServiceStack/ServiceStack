@@ -153,9 +153,12 @@ namespace ServiceStack.Script
 
         public static string EnsureReturn(string code)
         {
+            if (code == null)
+                throw new ArgumentNullException(nameof(code));
+            
             // if code doesn't contain a return, wrap and return the expression
-            if ((code ?? throw new ArgumentNullException(nameof(code))).IndexOf(ScriptConstants.Return,StringComparison.Ordinal) == -1)
-                code = code + "|>" + ScriptConstants.Return;
+            if (code.IndexOf(ScriptConstants.Return,StringComparison.Ordinal) == -1)
+                code = ScriptConstants.Return + "(" + code + ")";
             return code;
         }
 

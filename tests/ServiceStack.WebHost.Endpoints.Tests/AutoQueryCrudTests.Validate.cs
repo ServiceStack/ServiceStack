@@ -159,11 +159,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         // Overrides ErrorCode & uses Message from Validators
         [Validate(Condition = ValidationConditions.IsOdd)]
         public int IsOddCondition { get; set; }
+
+        // Combined typed conditions + Error code
+        [Validate(AllConditions = new[]{ ValidationConditions.IsOdd, ValidationConditions.IsOver2Digits }, ErrorCode = "RuleMessage")]
+        public int IsOddAndOverTwoDigitsCondition { get; set; }
+
+        // Combined typed conditions + unknown error code
+        [Validate(AnyConditions = new[]{ ValidationConditions.IsOdd, ValidationConditions.IsOver2Digits })]
+        public int IsOddOrOverTwoDigitsCondition { get; set; }
     }
 
     public static class ValidationConditions
     {
-        public const string IsOdd = "it |> isOdd";
+        public const string IsOdd = "it.isOdd()";
+        public const string IsOver2Digits = "it.log() > 2";
     }
     
     public partial class AutoQueryCrudTests
@@ -380,8 +389,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             try
             {
-                var response = client.Post(new CustomValidationErrors {
-                });
+                var response = client.Post(new CustomValidationErrors());
                 
                 Assert.Fail("Should throw");
             }
@@ -391,7 +399,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var status = ex.ResponseStatus;
                 Assert.That(ex.ErrorCode, Is.EqualTo("ZERROR"));
                 Assert.That(ex.ErrorMessage, Is.EqualTo("'Custom Error Code' must not be empty."));
-                Assert.That(status.Errors.Count, Is.EqualTo(4));
+                Assert.That(status.Errors.Count, Is.EqualTo(typeof(CustomValidationErrors).GetProperties().Length));
                 
                 var fieldError = status.Errors.First(x => x.FieldName == nameof(CustomValidationErrors.CustomErrorCode));
                 Assert.That(fieldError.ErrorCode, Is.EqualTo("ZERROR"));
@@ -408,6 +416,45 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 fieldError = status.Errors.First(x => x.FieldName == nameof(CustomValidationErrors.IsOddCondition));
                 Assert.That(fieldError.ErrorCode, Is.EqualTo("NotOdd"));
                 Assert.That(fieldError.Message, Is.EqualTo("Is Odd Condition must be odd"));
+                
+                fieldError = status.Errors.First(x => x.FieldName == nameof(CustomValidationErrors.IsOddAndOverTwoDigitsCondition));
+                Assert.That(fieldError.ErrorCode, Is.EqualTo("RuleMessage"));
+                Assert.That(fieldError.Message, Is.EqualTo("ErrorCodeMessages for RuleMessage"));
+                
+                fieldError = status.Errors.First(x => x.FieldName == nameof(CustomValidationErrors.IsOddOrOverTwoDigitsCondition));
+                Assert.That(fieldError.ErrorCode, Is.EqualTo("ScriptCondition"));
+                Assert.That(fieldError.Message, Is.EqualTo("The specified condition was not met for 'Is Odd Or Over Two Digits Condition'."));
+            }
+        }
+
+        [Test]
+        public void Can_satisfy_combined_conditions()
+        {
+            try
+            {
+                var response = client.Post(new CustomValidationErrors {
+                    IsOddAndOverTwoDigitsCondition = 101
+                });
+
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.ResponseStatus.Errors.Count, Is.EqualTo(typeof(CustomValidationErrors).GetProperties().Length - 1));
+                Assert.That(ex.ResponseStatus.Errors.All(x => x.FieldName != nameof(CustomValidationErrors.IsOddAndOverTwoDigitsCondition)));
+            }
+            try
+            {
+                var response = client.Post(new CustomValidationErrors {
+                    IsOddOrOverTwoDigitsCondition = 102
+                });
+
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.ResponseStatus.Errors.Count, Is.EqualTo(typeof(CustomValidationErrors).GetProperties().Length - 1));
+                Assert.That(ex.ResponseStatus.Errors.All(x => x.FieldName != nameof(CustomValidationErrors.IsOddOrOverTwoDigitsCondition)));
             }
         }
     }
