@@ -164,6 +164,8 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AutoQueryCrudModels.cs" />
+    <Compile Include="AutoQueryCrudTests.ValidateModels.cs" />
     <Compile Include="HttpBenchmarks.cs">
       <DependentUpon>HttpBenchmarks.tt</DependentUpon>
       <AutoGen>True</AutoGen>

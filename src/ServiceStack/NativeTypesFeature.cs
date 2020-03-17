@@ -32,6 +32,8 @@ namespace ServiceStack
                     typeof(StringLengthAttribute),
                     typeof(AutoQueryViewerAttribute),
                     typeof(AutoQueryViewerFieldAttribute),
+                    typeof(ValidateRequestAttribute),
+                    typeof(ValidateAttribute),
                 },
                 ExportTypes = new HashSet<Type>
                 {

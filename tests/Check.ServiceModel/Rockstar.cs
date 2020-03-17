@@ -14,4 +14,11 @@ namespace Check.ServiceModel
         [Description("Возраст")]
         public int? Age { get; set; }
     }
+    
+    public enum LivingStatus
+    {
+        Alive,
+        Dead
+    }
+
 }
