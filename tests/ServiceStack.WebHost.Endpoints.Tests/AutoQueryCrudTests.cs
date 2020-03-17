@@ -89,6 +89,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             db.CreateTable<RockstarAuditTenant>();
             db.CreateTable<RockstarAutoGuid>();
             db.CreateTable<RockstarVersion>();
+            db.CreateTable<Bookmark>();
 
             AutoMapping.RegisterPopulator((Dictionary<string,object> target, CreateRockstarWithAutoGuid source) => {
                 if (source.FirstName == "Created")

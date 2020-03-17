@@ -31,8 +31,10 @@ namespace ServiceStack
                     var isAutoId = pkFieldDef?.AutoId == true;
                     var selectIdentity = ctx.IdProp != null || ctx.ResultProp != null;
                     var autoIntId = await db.InsertAsync<Table>(dtoValues, selectIdentity: selectIdentity);
-                    // [AutoId] Guid's populate the PK Property
-                    if (isAutoId)
+                    var providedId = pkFieldDef != null && dtoValues.ContainsKey(pkFieldDef.Name);
+                    
+                    // [AutoId] Guid's populate the PK Property or return Id if provided
+                    if (isAutoId || providedId)
                         return new ExecValue(pkFieldDef.GetValue(dtoValues), selectIdentity ? 1 : autoIntId);
 
                     return selectIdentity

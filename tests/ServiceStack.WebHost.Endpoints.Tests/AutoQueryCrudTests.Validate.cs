@@ -342,7 +342,37 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(ex.ErrorCode, Is.EqualTo("NotNull"));
                 Assert.That(ex.GetFieldErrors().Count, Is.EqualTo(1));
             }
-
         }
+
+        [Test]
+        public void Can_use_custom_Guid_Id_and_DateTimeOffset()
+        {
+            try
+            {
+                client.Post(new Authenticate {
+                    provider = "credentials",
+                    UserName = "admin@email.com",
+                    Password = "p@55wOrd",
+                    RememberMe = true,
+                });
+                
+                var response = client.Post(new CreateBookmark {
+                    Description = "Description", 
+                    Slug = "Slug", 
+                    Title = "Title", 
+                    Url = "Url", 
+                });
+                
+                Assert.That(response.Id, Is.Not.EqualTo(new Guid()));
+                Assert.That(response.Result.Id, Is.EqualTo(response.Id));
+                Assert.That(response.Result.Description, Is.EqualTo("Description"));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+        
     }
 }

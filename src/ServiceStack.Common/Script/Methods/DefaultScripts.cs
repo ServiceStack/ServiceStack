@@ -69,6 +69,9 @@ namespace ServiceStack.Script
         public DateTime now() => DateTime.Now;
         public DateTime utcNow() => DateTime.UtcNow;
 
+        public DateTimeOffset nowOffset() => DateTimeOffset.Now;
+        public DateTimeOffset utcNowOffset() => DateTimeOffset.UtcNow;
+
         public DateTime addTicks(DateTime target, int count) => target.AddTicks(count);
         public DateTime addMilliseconds(DateTime target, int count) => target.AddMilliseconds(count);
         public DateTime addSeconds(DateTime target, int count) => target.AddSeconds(count);
