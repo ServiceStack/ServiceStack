@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.Serialization;
 using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
 using ServiceStack.Data;
@@ -412,7 +413,7 @@ namespace ServiceStack
         }
     }
 
-    public interface IAutoQueryDb
+    public interface IAutoQueryDb : IAutoCrudDb
     {
         Type GetFromType(Type requestDtoType);
         IDbConnection GetDb(Type fromType, IRequest req = null);
@@ -431,6 +432,34 @@ namespace ServiceStack
         ISqlExpression CreateQuery(IQueryDb dto, Dictionary<string, string> dynamicParams, IRequest req, IDbConnection db);
 
         IQueryResponse Execute(IQueryDb request, ISqlExpression q, IDbConnection db);
+    }
+
+    public interface IAutoCrudDb
+    {
+        /// <summary>
+        /// Inserts new entry into Table
+        /// </summary>
+        Task<object> Create<Table>(ICreateDb<Table> dto, IRequest req);
+        
+        /// <summary>
+        /// Updates entry into Table
+        /// </summary>
+        Task<object> Update<Table>(IUpdateDb<Table> dto, IRequest req);
+        
+        /// <summary>
+        /// Partially Updates entry into Table (Uses OrmLite UpdateNonDefaults behavior)
+        /// </summary>
+        Task<object> Patch<Table>(IPatchDb<Table> dto, IRequest req);
+        
+        /// <summary>
+        /// Deletes entry from Table
+        /// </summary>
+        Task<object> Delete<Table>(IDeleteDb<Table> dto, IRequest req);
+
+        /// <summary>
+        /// Inserts or Updates entry into Table
+        /// </summary>
+        Task<object> Save<Table>(ISaveDb<Table> dto, IRequest req);
     }
 
     public abstract partial class AutoQueryServiceBase : Service
@@ -485,7 +514,7 @@ namespace ServiceStack
         Dictionary<string, QueryDbFieldAttribute> EndsWithConventions { get; set; }
     }
 
-    public class AutoQuery : IAutoQueryDb, IAutoQueryOptions
+    public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
     {
         public int? MaxLimit { get; set; }
         public bool IncludeTotal { get; set; }
