@@ -210,7 +210,7 @@ namespace ServiceStack.Validation
                     if (ruleSet != null && rule.RuleSets != null && !rule.RuleSets.Contains(ruleSet))
                         continue;
 
-                    if (rule.Validators.Any(x => x is AsyncPredicateValidator || x is AsyncValidatorBase ||  x.ShouldValidateAsynchronously(context)))
+                    if (rule.Validators.Any(x => x is AsyncPredicateValidator || x is AsyncValidatorBase ||  x.ShouldValidateAsync(context)))
                         return true;
                 }
             }
