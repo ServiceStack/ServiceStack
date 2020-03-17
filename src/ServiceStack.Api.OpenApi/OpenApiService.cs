@@ -102,6 +102,7 @@ namespace ServiceStack.Api.OpenApi
                 ResultScope = () => JsConfig.With(new Config
                 {
                     IncludeNullValues = false, 
+                    IncludeNullValuesInDictionaries = false,
                     IncludeTypeInfo = false, 
                     ExcludeTypeInfo = true,
                 })
