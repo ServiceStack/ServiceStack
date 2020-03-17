@@ -119,7 +119,7 @@ namespace ServiceStack
         public static Dictionary<string, string> ConditionErrorCodes { get; } = new Dictionary<string, string>();
         public static Dictionary<string, string> ErrorCodeMessages { get; } = new Dictionary<string, string>();
 
-        static readonly Func<CascadeMode> CascadeMode = () => ValidatorOptions.Global.CascadeMode;
+        static readonly Func<CascadeMode> CascadeMode = () => ValidatorOptions.CascadeMode;
 
         public static bool HasValidateRequestAttributes(Type type) => type.HasAttribute<ValidateRequestAttribute>();
 
