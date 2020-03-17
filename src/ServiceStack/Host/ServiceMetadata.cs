@@ -619,7 +619,9 @@ namespace ServiceStack.Host
         public List<string> RequiresAnyRole { get; set; }
         public List<string> RequiredPermissions { get; set; }
         public List<string> RequiresAnyPermission { get; set; }
-        public List<IValidationRule> RequestTypeValidationRules { get; set; }
+        
+        public List<ITypeValidationRule> RequestTypeValidationRules { get; set; }
+        public List<IValidationRule> RequestPropertyValidationRules { get; set; }
     }
 
     public class OperationDto

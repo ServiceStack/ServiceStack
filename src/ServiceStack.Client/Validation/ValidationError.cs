@@ -99,30 +99,18 @@ namespace ServiceStack.Validation
             return StringBuilderCache.ReturnAndFree(sb);
         }
 
-        public static ValidationError CreateException(Enum errorCode)
-        {
-            return new ValidationError(errorCode.ToString());
-        }
+        public static ValidationError CreateException(Enum errorCode) => 
+            new ValidationError(errorCode.ToString());
 
-        public static ValidationError CreateException(Enum errorCode, string errorMessage)
-        {
-            return new ValidationError(errorCode.ToString(), errorMessage);
-        }
+        public static ValidationError CreateException(Enum errorCode, string errorMessage) => 
+            new ValidationError(errorCode.ToString(), errorMessage);
 
-        public static ValidationError CreateException(Enum errorCode, string errorMessage, string fieldName)
-        {
-            return CreateException(errorCode.ToString(), errorMessage, fieldName);
-        }
+        public static ValidationError CreateException(Enum errorCode, string errorMessage, string fieldName) => 
+            CreateException(errorCode.ToString(), errorMessage, fieldName);
 
-        public static ValidationError CreateException(string errorCode)
-        {
-            return new ValidationError(errorCode);
-        }
+        public static ValidationError CreateException(string errorCode) => new ValidationError(errorCode);
 
-        public static ValidationError CreateException(string errorCode, string errorMessage)
-        {
-            return new ValidationError(errorCode, errorMessage);
-        }
+        public static ValidationError CreateException(string errorCode, string errorMessage) => new ValidationError(errorCode, errorMessage);
 
         public static ValidationError CreateException(string errorCode, string errorMessage, string fieldName)
         {
@@ -130,10 +118,7 @@ namespace ServiceStack.Validation
             return new ValidationError(new ValidationErrorResult(new List<ValidationErrorField> { error }));
         }
 
-        public static ValidationError CreateException(ValidationErrorField error)
-        {
-            return new ValidationError(error);
-        }
+        public static ValidationError CreateException(ValidationErrorField error) => new ValidationError(error);
 
         public static void ThrowIfNotValid(ValidationErrorResult validationResult)
         {
@@ -143,9 +128,7 @@ namespace ServiceStack.Validation
             }
         }
 
-        public ResponseStatus ToResponseStatus()
-        {
-            return ResponseStatusUtils.CreateResponseStatus(ErrorCode, Message, Violations);
-        }
+        public ResponseStatus ToResponseStatus() => 
+            ResponseStatusUtils.CreateResponseStatus(ErrorCode, Message, Violations);
     }
 }

@@ -7,7 +7,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public static class ValidationConditions
     {
         public const string IsOdd = "it.isOdd()";
-        public const string IsOver2Digits = "it.log() > 2";
+        public const string IsOver2Digits = "it.log10() > 2";
     }
     
     public class ValidateCreateRockstar 
@@ -168,4 +168,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Validate(AnyConditions = new[]{ ValidationConditions.IsOdd, ValidationConditions.IsOver2Digits })]
         public int IsOddOrOverTwoDigitsCondition { get; set; }
     }
+
+    [ValidateRequest(new[]{ "it.Test.isOdd()", "it.Test.log10() > 2" }, "RuleMessage")]
+    [ValidateRequest("it.Test.log10() > 3", "AssertFailed2", "2nd Assert Failed", StatusCode = 401)]
+    public class OnlyValidatesRequest
+        : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
+    {
+        // Combined typed conditions + Error code
+        public int Test { get; set; }
+
+        [Validate("NotNull")] //doesn't get validated if ValidateRequest is invalid
+        public string NotNull { get; set; }
+    }
+
 }

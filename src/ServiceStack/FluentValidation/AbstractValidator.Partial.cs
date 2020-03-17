@@ -41,7 +41,7 @@ namespace ServiceStack.FluentValidation
             if (appHost == null) //Unit tests or stand-alone usage
                 return;
             
-            if (ServiceStack.Validators.TypeRulesMap.TryGetValue(typeof(T), out var dtoRules))
+            if (ServiceStack.Validators.TypePropertyRulesMap.TryGetValue(typeof(T), out var dtoRules))
             {
                 foreach (var rule in dtoRules)
                 {

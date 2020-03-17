@@ -23,7 +23,10 @@ namespace ServiceStack.Validation
         private static async Task RequestFilterAsync(IRequest req, IResponse res, object requestDto,
             bool treatInfoAndWarningsAsErrors)
         {
-            var validator = ValidatorCache.GetValidator(req, requestDto.GetType());
+            var requestType = requestDto.GetType();
+            Validators.AssertTypeValidators(req, requestDto, requestType);
+
+            var validator = ValidatorCache.GetValidator(req, requestType);
             if (validator == null)
                 return;
 

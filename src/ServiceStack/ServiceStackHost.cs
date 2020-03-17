@@ -639,9 +639,7 @@ namespace ServiceStack
                 return value;
 
             // Cache AST Globally
-            var evalAstCacheKey = JS.EvalAstCacheKeyPrefix + evalCode;
-            var cachedCodePage = (SharpPage)ScriptContext.Cache.GetOrAdd(evalAstCacheKey, key =>
-                ScriptContext.CodeSharpPage(evalCode));
+            var cachedCodePage = JS.scriptCached(ScriptContext, evalCode);
             
             value = EvalScript(new PageResult(cachedCodePage), req, args);
             if (!scriptValue.NoCache && req != null)

@@ -293,5 +293,56 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(ex.ResponseStatus.Errors.All(x => x.FieldName != nameof(CustomValidationErrors.IsOddOrOverTwoDigitsCondition)));
             }
         }
+
+        [Test]
+        public void Does_OnlyValidatesRequest()
+        {
+            try
+            {
+                var response = client.Post(new OnlyValidatesRequest {
+                });
+
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo(400));
+                Assert.That(ex.ErrorCode, Is.EqualTo("RuleMessage"));
+                Assert.That(ex.ErrorMessage, Is.EqualTo("ErrorCodeMessages for RuleMessage"));
+                Assert.That(ex.GetFieldErrors().Count, Is.EqualTo(0));
+            }
+            
+            try
+            {
+                var response = client.Post(new OnlyValidatesRequest {
+                    Test = 101
+                });
+
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo(401));
+                Assert.That(ex.ErrorCode, Is.EqualTo("AssertFailed2"));
+                Assert.That(ex.ErrorMessage, Is.EqualTo("2nd Assert Failed"));
+                Assert.That(ex.GetFieldErrors().Count, Is.EqualTo(0));
+            }
+            
+            try
+            {
+                var response = client.Post(new OnlyValidatesRequest {
+                    Test = 1001
+                });
+
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo(400));
+                Assert.That(ex.ErrorCode, Is.EqualTo("NotNull"));
+                Assert.That(ex.GetFieldErrors().Count, Is.EqualTo(1));
+            }
+
+        }
     }
 }

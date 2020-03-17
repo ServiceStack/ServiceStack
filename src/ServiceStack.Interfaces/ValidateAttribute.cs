@@ -6,26 +6,27 @@ using ServiceStack.DataAnnotations;
 
 namespace ServiceStack
 {
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-    public class ValidateRequestAttribute : AttributeBase, IValidateRule
+    /// <summary>
+    /// Assert pre-conditions before DTO's Fluent Validation properties are evaluated
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
+    public class ValidateRequestAttribute : AttributeBase
     {
         public ValidateRequestAttribute() { }
 
-        public ValidateRequestAttribute(string field, string test)
+        public ValidateRequestAttribute(string condition, string errorCode=null, string message=null)
         {
-            Field = field;
-            Condition = test;
+            Condition = condition;
+            ErrorCode = errorCode;
+            Message = message;
         }
 
-        /// <summary>
-        /// The Name of Property to Validate and return
-        /// </summary>
-        public string Field { get; set; }
-
-        /// <summary>
-        /// Expression to create a validator registered in Validators.Types
-        /// </summary>
-        public string Validator { get; set; }
+        public ValidateRequestAttribute(string[] conditions, string errorCode=null, string message=null)
+        {
+            Condition = ValidateAttribute.Combine("&&", conditions);
+            ErrorCode = errorCode;
+            Message = message;
+        }
 
         /// <summary>
         /// Boolean #Script Code Expression to Test
@@ -48,6 +49,24 @@ namespace ServiceStack
         ///  - {PropertyValue}
         /// </summary>
         public string Message { get; set; }
+        
+        /// <summary>
+        /// Custom Status Code to return when invalid
+        /// </summary>
+        public int StatusCode { get; set; }
+        
+        public string[] AllConditions
+        {
+            get => throw new NotSupportedException(nameof(AllConditions));
+            set => Condition = ValidateAttribute.Combine("&&", value);
+        }
+
+        public string[] AnyConditions
+        {
+            get => throw new NotSupportedException(nameof(AnyConditions));
+            set => Condition = ValidateAttribute.Combine("||", value);
+        }
+        
     }
 
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = true)]

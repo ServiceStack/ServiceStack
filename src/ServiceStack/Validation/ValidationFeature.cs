@@ -18,7 +18,7 @@ namespace ServiceStack.Validation
 
         public bool ScanAppHostAssemblies { get; set; } = true;
         public bool TreatInfoAndWarningsAsErrors { get; set; } = true;
-        public bool EnableValidationAttributes { get; set; } = true;
+        public bool EnableDeclarativeValidation { get; set; } = true;
 
         /// <summary>
         /// Specify default ErrorCodes to use when custom validation conditions are invalid
@@ -80,7 +80,7 @@ namespace ServiceStack.Validation
 
         public void AfterPluginsLoaded(IAppHost appHost)
         {
-            if (EnableValidationAttributes)
+            if (EnableDeclarativeValidation)
             {
                 var container = appHost.GetContainer();
                 var concreteValidators = new List<Type>();
@@ -89,12 +89,18 @@ namespace ServiceStack.Validation
                 
                 foreach (var op in appHost.Metadata.Operations)
                 {
-                    try 
+                    try
                     {
-                        if (Validators.HasValidationAttributes(op.RequestType))
+                        var hasValidateRequestAttrs = Validators.HasValidateRequestAttributes(op.RequestType);
+                        if (hasValidateRequestAttrs)
                         {
-                            op.RequestTypeValidationRules = Validators.GetRules(op.RequestType);
-                            
+                            Validators.RegisterRequestRulesFor(op.RequestType);
+                            op.RequestTypeValidationRules = Validators.GetTypeRules(op.RequestType);
+                        }
+                        
+                        var hasValidateAttrs = Validators.HasValidateAttributes(op.RequestType);
+                        if (hasValidateAttrs)
+                        {
                             // We only need to register a new a Validator if it doesn't already exist for the Type 
                             if (!ValidationExtensions.RegisteredDtoValidators.Contains(op.RequestType))
                             {
@@ -107,11 +113,13 @@ namespace ServiceStack.Validation
                                 
                                 concreteValidators.Add(typeValidator);
                             }
-                        }
 
-                        foreach (var validator in concreteValidators)
-                        {
-                            container.RegisterValidator(validator);
+                            foreach (var validator in concreteValidators)
+                            {
+                                container.RegisterValidator(validator);
+                            }
+
+                            op.RequestPropertyValidationRules = Validators.GetPropertyRules(op.RequestType);
                         }
                     }
                     catch (Exception e)
@@ -189,7 +197,7 @@ namespace ServiceStack.Validation
 
             container.RegisterAutoWiredType(validator, validatorType, scope);
 
-            Validators.RegisterValidator(dtoType);
+            Validators.RegisterPropertyRulesFor(dtoType);
             RegisteredDtoValidators.Add(dtoType);
         }
 
@@ -202,7 +210,7 @@ namespace ServiceStack.Validation
                     if (ruleSet != null && rule.RuleSets != null && !rule.RuleSets.Contains(ruleSet))
                         continue;
 
-                    if (rule.Validators.Any(x => x is AsyncPredicateValidator || x is AsyncValidatorBase ||  x.ShouldValidateAsync(context)))
+                    if (rule.Validators.Any(x => x is AsyncPredicateValidator || x is AsyncValidatorBase ||  x.ShouldValidateAsynchronously(context)))
                         return true;
                 }
             }
