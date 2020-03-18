@@ -292,9 +292,10 @@ namespace ServiceStack
 
                 GenerateServiceFilter?.Invoke(requestType, typeBuilder, method, il);
 
+                var asyncMethod = methodName + "Async";
                 var genericArgs = genericDef.GetGenericArguments();
                 var mi = AutoQueryServiceBaseType.GetMethods()
-                    .First(x => x.Name == methodName && 
+                    .First(x => x.Name == asyncMethod && 
                            x.GetGenericArguments().Length == genericArgs.Length);
                 var genericMi = mi.MakeGenericMethod(genericArgs);
 
@@ -439,27 +440,27 @@ namespace ServiceStack
         /// <summary>
         /// Inserts new entry into Table
         /// </summary>
-        Task<object> Create<Table>(ICreateDb<Table> dto, IRequest req);
+        Task<object> CreateAsync<Table>(ICreateDb<Table> dto, IRequest req);
         
         /// <summary>
         /// Updates entry into Table
         /// </summary>
-        Task<object> Update<Table>(IUpdateDb<Table> dto, IRequest req);
+        Task<object> UpdateAsync<Table>(IUpdateDb<Table> dto, IRequest req);
         
         /// <summary>
         /// Partially Updates entry into Table (Uses OrmLite UpdateNonDefaults behavior)
         /// </summary>
-        Task<object> Patch<Table>(IPatchDb<Table> dto, IRequest req);
+        Task<object> PatchAsync<Table>(IPatchDb<Table> dto, IRequest req);
         
         /// <summary>
         /// Deletes entry from Table
         /// </summary>
-        Task<object> Delete<Table>(IDeleteDb<Table> dto, IRequest req);
+        Task<object> DeleteAsync<Table>(IDeleteDb<Table> dto, IRequest req);
 
         /// <summary>
         /// Inserts or Updates entry into Table
         /// </summary>
-        Task<object> Save<Table>(ISaveDb<Table> dto, IRequest req);
+        Task<object> SaveAsync<Table>(ISaveDb<Table> dto, IRequest req);
     }
 
     public abstract partial class AutoQueryServiceBase : Service

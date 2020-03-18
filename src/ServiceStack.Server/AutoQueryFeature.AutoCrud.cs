@@ -19,7 +19,7 @@ namespace ServiceStack
 
     public partial class AutoQuery : IAutoCrudDb
     {
-        public async Task<object> Create<Table>(ICreateDb<Table> dto, IRequest req)
+        public async Task<object> CreateAsync<Table>(ICreateDb<Table> dto, IRequest req)
         {
             //TODO: Allow Create to use Default Values
             using var db = GetDb<Table>(req);
@@ -47,18 +47,18 @@ namespace ServiceStack
             return response;
         }
 
-        public Task<object> Update<Table>(IUpdateDb<Table> dto, IRequest req)
+        public Task<object> UpdateAsync<Table>(IUpdateDb<Table> dto, IRequest req)
         {
             var skipDefaults = dto.GetType().FirstAttribute<AutoUpdateAttribute>()?.Style == AutoUpdateStyle.NonDefaults;
             return UpdateInternalAsync<Table>(req, dto, skipDefaults);
         }
 
-        public Task<object> Patch<Table>(IPatchDb<Table> dto, IRequest req)
+        public Task<object> PatchAsync<Table>(IPatchDb<Table> dto, IRequest req)
         {
             return UpdateInternalAsync<Table>(req, dto, skipDefaults:true);
         }
 
-        public async Task<object> Delete<Table>(IDeleteDb<Table> dto, IRequest req)
+        public async Task<object> DeleteAsync<Table>(IDeleteDb<Table> dto, IRequest req)
         {
             using var db = GetDb<Table>(req);
             using var profiler = Profiler.Current.Step("AutoQuery.Delete");
@@ -109,7 +109,7 @@ namespace ServiceStack
             return response;
         }
 
-        public async Task<object> Save<Table>(ISaveDb<Table> dto, IRequest req)
+        public async Task<object> SaveAsync<Table>(ISaveDb<Table> dto, IRequest req)
         {
             using var db = GetDb<Table>(req);
             using var profiler = Profiler.Current.Step("AutoQuery.Save");
@@ -512,26 +512,26 @@ namespace ServiceStack
         /// <summary>
         /// Inserts new entry into Table
         /// </summary>
-        public virtual Task<object> Create<Table>(ICreateDb<Table> dto) => AutoQuery.Create(dto, Request);
+        public virtual Task<object> CreateAsync<Table>(ICreateDb<Table> dto) => AutoQuery.CreateAsync(dto, Request);
 
         /// <summary>
         /// Updates entry into Table
         /// </summary>
-        public virtual Task<object> Update<Table>(IUpdateDb<Table> dto) => AutoQuery.Update(dto, Request);
+        public virtual Task<object> UpdateAsync<Table>(IUpdateDb<Table> dto) => AutoQuery.UpdateAsync(dto, Request);
 
         /// <summary>
         /// Partially Updates entry into Table (Uses OrmLite UpdateNonDefaults behavior)
         /// </summary>
-        public virtual Task<object> Patch<Table>(IPatchDb<Table> dto) => AutoQuery.Patch(dto, Request);
+        public virtual Task<object> PatchAsync<Table>(IPatchDb<Table> dto) => AutoQuery.PatchAsync(dto, Request);
 
         /// <summary>
         /// Deletes entry from Table
         /// </summary>
-        public virtual Task<object> Delete<Table>(IDeleteDb<Table> dto) => AutoQuery.Delete(dto, Request);
+        public virtual Task<object> DeleteAsync<Table>(IDeleteDb<Table> dto) => AutoQuery.DeleteAsync(dto, Request);
 
         /// <summary>
         /// Inserts or Updates entry into Table
         /// </summary>
-        public virtual Task<object> Save<Table>(ISaveDb<Table> dto) => AutoQuery.Save(dto, Request);
+        public virtual Task<object> SaveAsync<Table>(ISaveDb<Table> dto) => AutoQuery.SaveAsync(dto, Request);
     }
 }
