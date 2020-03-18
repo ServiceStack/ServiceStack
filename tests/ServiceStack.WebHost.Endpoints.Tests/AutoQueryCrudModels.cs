@@ -402,4 +402,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public ResponseStatus ResponseStatus { get; set; }
     }
 
+    public class CreateNamedRockstar : RockstarBase, ICreateDb<NamedRockstar>, IReturn<RockstarWithIdAndResultResponse>
+    {
+        public int Id { get; set; }
+    }
+
+    public class UpdateNamedRockstar : RockstarBase, IUpdateDb<NamedRockstar>, IReturn<RockstarWithIdAndResultResponse>
+    {
+        public int Id { get; set; }
+    }
+    
+    //[ConnectionInfo] on AutoCrudConnectionInfoServices
+    public class CreateConnectionInfoRockstar : RockstarBase, ICreateDb<NamedRockstar>, IReturn<RockstarWithIdAndResultResponse>
+    {
+        public int Id { get; set; }
+    }
+
+    public class UpdateConnectionInfoRockstar : RockstarBase, IUpdateDb<NamedRockstar>, IReturn<RockstarWithIdAndResultResponse>
+    {
+        public int Id { get; set; }
+    }
+
  }

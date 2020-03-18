@@ -45,6 +45,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    [ConnectionInfo(NamedConnection = AutoQueryAppHost.SqlServerNamedConnection)]
+    public class AutoCrudConnectionInfoServices : Service
+    {
+        public IAutoQueryDb AutoQuery { get; set; }
+
+        public Task<object> Any(CreateConnectionInfoRockstar request) => 
+            AutoQuery.CreateAsync(request, Request);
+
+        public Task<object> Any(UpdateConnectionInfoRockstar request) => 
+            AutoQuery.UpdateAsync(request, Request);
+    }
+
     public partial class AutoQueryCrudTests
     {
         private readonly ServiceStackHost appHost;
@@ -787,6 +799,82 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Assert.That(ex.ErrorCode, Is.EqualTo(nameof(OptimisticConcurrencyException)));
             }
+        }
+
+        [Test]
+        public void Can_NamedConnection_AutoCrud_Services()
+        {
+            var createRequest = new CreateNamedRockstar {
+                Id = 10,
+                FirstName = "Named",
+                LastName = "SqlServer",
+                Age = 20,
+                DateOfBirth = new DateTime(2001,1,1),
+                LivingStatus = LivingStatus.Alive,
+            };
+            
+            var createResponse = client.Post(createRequest);
+            Assert.That(createResponse.Id, Is.EqualTo(10));
+            Assert.That(createResponse.Result, Is.Not.Null);
+
+            using var db = appHost.Resolve<IDbConnectionFactory>()
+                .OpenDbConnection(AutoQueryAppHost.SqlServerNamedConnection);
+            
+            var newRockstar = db.Single<Rockstar>(x => x.LastName == "SqlServer");
+            Assert.That(newRockstar.FirstName, Is.EqualTo("Named"));
+
+            var updateRequest = new UpdateNamedRockstar {
+                Id = 10,
+                FirstName = "Updated",
+                Age = 21,
+                DateOfBirth = new DateTime(2001,1,1),
+                LivingStatus = LivingStatus.Dead,
+            };
+
+            var updateResponse = client.Put(updateRequest);
+
+            Assert.That(updateResponse.Id, Is.EqualTo(10));
+            Assert.That(updateResponse.Result.FirstName, Is.EqualTo("Updated"));
+            Assert.That(updateResponse.Result.Age, Is.EqualTo(21));
+            Assert.That(updateResponse.Result.LivingStatus, Is.EqualTo(LivingStatus.Dead));
+        }
+
+        [Test]
+        public void Can_ConnectionInfo_AutoCrud_Services()
+        {
+            var createRequest = new CreateConnectionInfoRockstar {
+                Id = 11,
+                FirstName = "Named",
+                LastName = "SqlServer",
+                Age = 20,
+                DateOfBirth = new DateTime(2001,1,1),
+                LivingStatus = LivingStatus.Alive,
+            };
+            
+            var createResponse = client.Post(createRequest);
+            Assert.That(createResponse.Id, Is.EqualTo(11));
+            Assert.That(createResponse.Result, Is.Not.Null);
+
+            using var db = appHost.Resolve<IDbConnectionFactory>()
+                .OpenDbConnection(AutoQueryAppHost.SqlServerNamedConnection);
+            
+            var newRockstar = db.Single<Rockstar>(x => x.LastName == "SqlServer");
+            Assert.That(newRockstar.FirstName, Is.EqualTo("Named"));
+
+            var updateRequest = new UpdateConnectionInfoRockstar {
+                Id = 11,
+                FirstName = "Updated",
+                Age = 21,
+                DateOfBirth = new DateTime(2001,1,1),
+                LivingStatus = LivingStatus.Dead,
+            };
+
+            var updateResponse = client.Put(updateRequest);
+
+            Assert.That(updateResponse.Id, Is.EqualTo(11));
+            Assert.That(updateResponse.Result.FirstName, Is.EqualTo("Updated"));
+            Assert.That(updateResponse.Result.Age, Is.EqualTo(21));
+            Assert.That(updateResponse.Result.LivingStatus, Is.EqualTo(LivingStatus.Dead));
         }
     }
 }
