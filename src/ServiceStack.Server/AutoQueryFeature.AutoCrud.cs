@@ -23,29 +23,28 @@ namespace ServiceStack
         {
             //TODO: Allow Create to use Default Values
             using var db = GetDb<Table>(req);
-            using (Profiler.Current.Step("AutoQuery.Create"))
-            {
-                var response = await ExecAndReturnResponseAsync<Table>(dto, db,async ctx => {
-                    var dtoValues = ResolveDtoValues(req, dto);
-                    var pkFieldDef = typeof(Table).GetModelMetadata()?.PrimaryKey;
-                    var isAutoId = pkFieldDef?.AutoId == true;
-                    var selectIdentity = ctx.IdProp != null || ctx.ResultProp != null;
-                    var autoIntId = await db.InsertAsync<Table>(dtoValues, selectIdentity: selectIdentity);
-                    var providedId = pkFieldDef != null && dtoValues.ContainsKey(pkFieldDef.Name);
-                    
-                    // [AutoId] Guid's populate the PK Property or return Id if provided
-                    if (isAutoId || providedId)
-                        return new ExecValue(pkFieldDef.GetValue(dtoValues), selectIdentity ? 1 : autoIntId);
+            using var profiler = Profiler.Current.Step("AutoQuery.Create");
 
-                    return selectIdentity
-                        ? new ExecValue(autoIntId, 1)
-                        : pkFieldDef != null && dtoValues.TryGetValue(pkFieldDef.Name, out var idValue)
-                            ? new ExecValue(idValue, autoIntId)
-                            : new ExecValue(null, autoIntId);
-                });
+            var response = await ExecAndReturnResponseAsync<Table>(dto, db,async ctx => {
+                var dtoValues = ResolveDtoValues(req, dto);
+                var pkFieldDef = typeof(Table).GetModelMetadata()?.PrimaryKey;
+                var isAutoId = pkFieldDef?.AutoId == true;
+                var selectIdentity = ctx.IdProp != null || ctx.ResultProp != null;
+                var autoIntId = await db.InsertAsync<Table>(dtoValues, selectIdentity: selectIdentity);
+                var providedId = pkFieldDef != null && dtoValues.ContainsKey(pkFieldDef.Name);
+                    
+                // [AutoId] Guid's populate the PK Property or return Id if provided
+                if (isAutoId || providedId)
+                    return new ExecValue(pkFieldDef.GetValue(dtoValues), selectIdentity ? 1 : autoIntId);
+
+                return selectIdentity
+                    ? new ExecValue(autoIntId, 1)
+                    : pkFieldDef != null && dtoValues.TryGetValue(pkFieldDef.Name, out var idValue)
+                        ? new ExecValue(idValue, autoIntId)
+                        : new ExecValue(null, autoIntId);
+            });
                 
-                return response;
-            }
+            return response;
         }
 
         public Task<object> Update<Table>(IUpdateDb<Table> dto, IRequest req)
@@ -62,78 +61,76 @@ namespace ServiceStack
         public async Task<object> Delete<Table>(IDeleteDb<Table> dto, IRequest req)
         {
             using var db = GetDb<Table>(req);
-            using (Profiler.Current.Step("AutoQuery.Delete"))
-            {
-                var response = await ExecAndReturnResponseAsync<Table>(dto, db,
-                    async ctx => {
-                        var dtoValues = ResolveDtoValues(req, dto, skipDefaults:true);
-                        
-                        //Should have at least 1 non-default filter
-                        if (dtoValues.Count == 0)
-                            throw new NotSupportedException($"'{dto.GetType().Name}' did not contain any filters");
-                        
-                        var meta = AutoCrudMetadata.Create(dto.GetType());
-                        var pkFieldDef = meta.ModelDef.PrimaryKey;
-                        var idValue = pkFieldDef != null && dtoValues.TryGetValue(pkFieldDef.Name, out var oId)
-                            ? oId
-                            : null;
+            using var profiler = Profiler.Current.Step("AutoQuery.Delete");
+            
+            var response = await ExecAndReturnResponseAsync<Table>(dto, db,
+                async ctx => {
+                    var dtoValues = ResolveDtoValues(req, dto, skipDefaults:true);
+                    
+                    //Should have at least 1 non-default filter
+                    if (dtoValues.Count == 0)
+                        throw new NotSupportedException($"'{dto.GetType().Name}' did not contain any filters");
+                    
+                    var meta = AutoCrudMetadata.Create(dto.GetType());
+                    var pkFieldDef = meta.ModelDef.PrimaryKey;
+                    var idValue = pkFieldDef != null && dtoValues.TryGetValue(pkFieldDef.Name, out var oId)
+                        ? oId
+                        : null;
 
-                        // Should only update a Single Row
-                        if (GetAutoFilterExpressions(db, dto, dtoValues, req, out var expr, out var exprParams))
+                    // Should only update a Single Row
+                    if (GetAutoFilterExpressions(db, dto, dtoValues, req, out var expr, out var exprParams))
+                    {
+                        //If there were Auto Filters, construct filter expression manually by adding any remaining DTO values
+                        foreach (var entry in dtoValues)
                         {
-                            //If there were Auto Filters, construct filter expression manually by adding any remaining DTO values
-                            foreach (var entry in dtoValues)
-                            {
-                                var fieldDef = meta.ModelDef.GetFieldDefinition(entry.Key);
-                                if (fieldDef == null)
-                                    throw new NotSupportedException($"Unknown '{entry.Key}' Field in '{dto.GetType().Name}' IDeleteDb<{typeof(Table).Name}> Request");
-                                
-                                if (expr.Length > 0)
-                                    expr += " AND ";
+                            var fieldDef = meta.ModelDef.GetFieldDefinition(entry.Key);
+                            if (fieldDef == null)
+                                throw new NotSupportedException($"Unknown '{entry.Key}' Field in '{dto.GetType().Name}' IDeleteDb<{typeof(Table).Name}> Request");
+                            
+                            if (expr.Length > 0)
+                                expr += " AND ";
 
-                                var quotedColumn = db.GetDialectProvider().GetQuotedColumnName(meta.ModelDef, fieldDef);
+                            var quotedColumn = db.GetDialectProvider().GetQuotedColumnName(meta.ModelDef, fieldDef);
 
-                                expr += quotedColumn + " = {" + exprParams.Count + "}";
-                                exprParams.Add(entry.Value);
-                            }
-
-                            var q = db.From<Table>();
-                            q.Where(expr, exprParams.ToArray());
-                            return new ExecValue(idValue, await db.DeleteAsync(q));
+                            expr += quotedColumn + " = {" + exprParams.Count + "}";
+                            exprParams.Add(entry.Value);
                         }
-                        else
-                        {
-                            return new ExecValue(idValue, await db.DeleteAsync<Table>(dtoValues));
-                        }
-                    });
-                
-                return response;
-            }
+
+                        var q = db.From<Table>();
+                        q.Where(expr, exprParams.ToArray());
+                        return new ExecValue(idValue, await db.DeleteAsync(q));
+                    }
+                    else
+                    {
+                        return new ExecValue(idValue, await db.DeleteAsync<Table>(dtoValues));
+                    }
+                });
+            
+            return response;
         }
 
         public async Task<object> Save<Table>(ISaveDb<Table> dto, IRequest req)
         {
             using var db = GetDb<Table>(req);
-            using (Profiler.Current.Step("AutoQuery.Save"))
-            {
-                var row = dto.ConvertTo<Table>();
-                var response = await ExecAndReturnResponseAsync<Table>(dto, db,
-                    //TODO: Use Upsert when available
-                    fn: async ctx => {
-                        await db.SaveAsync(row);
-                        object idValue = null;
-                        var pkField = typeof(Table).GetModelMetadata().PrimaryKey;
-                        if (pkField != null)
-                        {
-                            var propGetter = TypeProperties.Get(dto.GetType()).GetPublicGetter(pkField.Name);
-                            if (propGetter != null)
-                                idValue = propGetter(dto);
-                        }
-                        return new ExecValue(idValue, 1);
-                    }); 
+            using var profiler = Profiler.Current.Step("AutoQuery.Save");
+
+            var row = dto.ConvertTo<Table>();
+            var response = await ExecAndReturnResponseAsync<Table>(dto, db,
+                //TODO: Use Upsert when available
+                fn: async ctx => {
+                    await db.SaveAsync(row);
+                    object idValue = null;
+                    var pkField = typeof(Table).GetModelMetadata().PrimaryKey;
+                    if (pkField != null)
+                    {
+                        var propGetter = TypeProperties.Get(dto.GetType()).GetPublicGetter(pkField.Name);
+                        if (propGetter != null)
+                            idValue = propGetter(dto);
+                    }
+                    return new ExecValue(idValue, 1);
+                }); 
                 
-                return response;
-            }
+            return response;
         }
         
         internal struct ExecValue
@@ -515,7 +512,7 @@ namespace ServiceStack
         /// <summary>
         /// Inserts new entry into Table
         /// </summary>
-        public virtual async Task<object> Create<Table>(ICreateDb<Table> dto) => AutoQuery.Create(dto, Request);
+        public virtual Task<object> Create<Table>(ICreateDb<Table> dto) => AutoQuery.Create(dto, Request);
 
         /// <summary>
         /// Updates entry into Table
@@ -530,11 +527,11 @@ namespace ServiceStack
         /// <summary>
         /// Deletes entry from Table
         /// </summary>
-        public virtual async Task<object> Delete<Table>(IDeleteDb<Table> dto) => AutoQuery.Delete(dto, Request);
+        public virtual Task<object> Delete<Table>(IDeleteDb<Table> dto) => AutoQuery.Delete(dto, Request);
 
         /// <summary>
         /// Inserts or Updates entry into Table
         /// </summary>
-        public virtual async Task<object> Save<Table>(ISaveDb<Table> dto) => AutoQuery.Save(dto, Request);
+        public virtual Task<object> Save<Table>(ISaveDb<Table> dto) => AutoQuery.Save(dto, Request);
     }
 }

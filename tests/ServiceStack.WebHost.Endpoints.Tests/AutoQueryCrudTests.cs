@@ -12,16 +12,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 {
     public class AutoCrudGatewayServices : Service
     {
-        public object Any(CreateRockstarAuditTenantGateway request)
+        public async Task<object> Any(CreateRockstarAuditTenantGateway request)
         {
             var gatewayRequest = request.ConvertTo<CreateRockstarAuditTenant>();
-            var response = Gateway.Send(gatewayRequest);
+            var sync = Gateway.Send(gatewayRequest);
+            var response = await Gateway.SendAsync(gatewayRequest);
             return response;
         }
         
         public async Task<object> Any(UpdateRockstarAuditTenantGateway request)
         {
             var gatewayRequest = request.ConvertTo<UpdateRockstarAuditTenant>();
+            var sync = Gateway.Send(gatewayRequest);
+            var response = await Gateway.SendAsync(gatewayRequest);
+            return response;
+        }
+        
+        public async Task<object> Any(PatchRockstarAuditTenantGateway request)
+        {
+            var gatewayRequest = request.ConvertTo<PatchRockstarAuditTenant>();
+            var sync = Gateway.Send(gatewayRequest);
+            var response = await Gateway.SendAsync(gatewayRequest);
+            return response;
+        }
+        
+        public async Task<object> Any(RealDeleteAuditTenantGateway request)
+        {
+            var gatewayRequest = request.ConvertTo<RealDeleteAuditTenant>();
+            var sync = Gateway.Send(gatewayRequest);
             var response = await Gateway.SendAsync(gatewayRequest);
             return response;
         }
@@ -697,6 +715,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(result.Age, Is.EqualTo(createRequest.Age));
             Assert.That(result.DateOfBirth.Date, Is.EqualTo(createRequest.DateOfBirth.Date));
             Assert.That(result.LivingStatus, Is.EqualTo(updateRequest.LivingStatus));
+
+            var patchRequest = new PatchRockstarAuditTenantGateway {
+                Id = createResponse.Id,
+                FirstName = "PatchedGateway",
+                LivingStatus = LivingStatus.Alive,
+            };
+            var patchResponse = authClient.Patch(patchRequest);
+            result = patchResponse.Result;
+            
+            Assert.That(updateResponse.Id, Is.EqualTo(createResponse.Id));
+            Assert.That(result.FirstName, Is.EqualTo(patchRequest.FirstName));
+            Assert.That(result.LastName, Is.EqualTo(createRequest.LastName));
+            Assert.That(result.Age, Is.EqualTo(createRequest.Age));
+            Assert.That(result.DateOfBirth.Date, Is.EqualTo(createRequest.DateOfBirth.Date));
+            Assert.That(result.LivingStatus, Is.EqualTo(patchRequest.LivingStatus));
+
+            var deleteRequest = authClient.Delete(new RealDeleteAuditTenantGateway {
+                Id = createResponse.Id,
+            });
+            Assert.That(deleteRequest.Id, Is.EqualTo(createResponse.Id));
         }
  
         [Test]

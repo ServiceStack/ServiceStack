@@ -151,6 +151,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public abstract class UpdateAuditTenantBase<Table,TResponse> : UpdateAuditBase<Table,TResponse> {}
 
     [Authenticate]
+    [AutoPopulate(nameof(IAudit.ModifiedDate), Eval = "utcNow")]
+    [AutoPopulate(nameof(IAudit.ModifiedBy),   Eval = "userAuthName")] //or userAuthId
+    [AutoPopulate(nameof(IAudit.ModifiedInfo), Eval = "`${userSession.DisplayName} (${userSession.City})`")]
+    public abstract class PatchAuditBase<Table,TResponse> : IPatchDb<Table>, IReturn<TResponse> {}
+
+    [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId),  Eval = "Request.Items.TenantId")]
+    public abstract class PatchAuditTenantBase<Table,TResponse> : PatchAuditBase<Table,TResponse> {}
+
+    [Authenticate]
     [AutoPopulate(nameof(IAudit.SoftDeletedDate), Eval = "utcNow")]
     [AutoPopulate(nameof(IAudit.SoftDeletedBy),   Eval = "userAuthName")] //or userAuthId
     [AutoPopulate(nameof(IAudit.SoftDeletedInfo), Eval = "`${userSession.DisplayName} (${userSession.City})`")]
@@ -181,6 +190,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public LivingStatus? LivingStatus { get; set; }
     }
     
+    public class PatchRockstarAuditTenant : PatchAuditTenantBase<RockstarAuditTenant, RockstarWithIdAndResultResponse>
+    {
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public LivingStatus? LivingStatus { get; set; }
+    }
+    
     public class CreateRockstarAuditTenantGateway : IReturn<RockstarWithIdAndResultResponse>
     {
         public string FirstName { get; set; }
@@ -196,6 +212,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int Id { get; set; }
         public string FirstName { get; set; }
         public LivingStatus? LivingStatus { get; set; }
+    }
+    
+    public class PatchRockstarAuditTenantGateway : IReturn<RockstarWithIdAndResultResponse>
+    {
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public LivingStatus? LivingStatus { get; set; }
+    }
+    
+    public class RealDeleteAuditTenantGateway : IReturn<RockstarWithIdResponse>
+    {
+        public int Id { get; set; }
     }
     
     public class SoftDeleteAuditTenant : SoftDeleteAuditTenantBase<RockstarAuditTenant, RockstarWithIdAndResultResponse>
