@@ -33,6 +33,7 @@ using ServiceStack.Text;
 using ServiceStack.Validation;
 using ServiceStack.VirtualPath;
 using ServiceStack.Web;
+using ServiceStack.DataAnnotations;
 
 namespace CheckWeb
 {
@@ -684,6 +685,10 @@ namespace CheckWeb
         public object Any(InProcRequest1 request) => "InProcRequest1 response";
         public object Any(InProcRequest2 request) => "InProcRequest2 response";
     }
+
+    [Alias("Rockstar")]
+    [NamedConnection("SqlServer")]
+    public class NamedRockstar : Rockstar { }
 
     public class Global : System.Web.HttpApplication
     {

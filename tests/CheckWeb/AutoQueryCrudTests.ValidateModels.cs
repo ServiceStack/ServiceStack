@@ -9,7 +9,7 @@ namespace CheckWeb
     public static class ValidationConditions
     {
         public const string IsOdd = "it.isOdd()";
-        public const string IsOver2Digits = "it.log() > 2";
+        public const string IsOver2Digits = "it.log10() > 2";
     }
     
     public class ValidateCreateRockstar 
@@ -169,5 +169,58 @@ namespace CheckWeb
         // Combined typed conditions + unknown error code
         [Validate(AnyConditions = new[]{ ValidationConditions.IsOdd, ValidationConditions.IsOver2Digits })]
         public int IsOddOrOverTwoDigitsCondition { get; set; }
+    }
+
+    [ValidateRequest(new[]{ "it.Test.isOdd()", "it.Test.log10() > 2" }, "RuleMessage")]
+    [ValidateRequest("it.Test.log10() > 3", "AssertFailed2", "2nd Assert Failed", StatusCode = 401)]
+    public class OnlyValidatesRequest
+        : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
+    {
+        // Combined typed conditions + Error code
+        public int Test { get; set; }
+
+        [Validate("NotNull")] //doesn't get validated if ValidateRequest is invalid
+        public string NotNull { get; set; }
+    }
+
+    
+    public class DaoBase
+    {
+        public virtual Guid Id { get; set; }
+        public virtual DateTimeOffset CreateDate { get; set; }
+        public virtual string CreatedBy { get; set; }
+        public virtual DateTimeOffset ModifiedDate { get; set; }
+        public virtual string ModifiedBy { get; set; }
+    }
+    
+    public class Bookmark : DaoBase
+    {
+        public string Slug { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string Url { get; set; }
+    } 
+    
+    public class QueryBookmarks : QueryDb<Bookmark> { }
+
+    // custom script methods
+    [AutoPopulate(nameof(Bookmark.Id), Eval = "F('Guid.NewGuid')()")] 
+    [AutoPopulate(nameof(Bookmark.CreatedBy), Eval = "userAuthId")]
+    [AutoPopulate(nameof(Bookmark.CreateDate), Eval = "utcNowOffset")]
+    [AutoPopulate(nameof(Bookmark.ModifiedBy), Eval = "userAuthId")]
+    [AutoPopulate(nameof(Bookmark.ModifiedDate), Eval = "utcNowOffset")]
+    public class CreateBookmark : ICreateDb<Bookmark>, IReturn<CreateBookmarkResponse>
+    {
+        public string Slug { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string Url { get; set; }
+    }
+    
+    public class CreateBookmarkResponse
+    {
+        public Guid Id { get; set; }
+        public Bookmark Result { get; set; }
+        public ResponseStatus ResponseStatus { get; set; }
     }
 }

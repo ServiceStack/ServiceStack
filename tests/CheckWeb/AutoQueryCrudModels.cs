@@ -7,7 +7,7 @@ using ServiceStack.DataAnnotations;
 namespace CheckWeb
 {
    public abstract class RockstarBase
-    {
+   {
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public int? Age { get; set; }
@@ -62,15 +62,15 @@ namespace CheckWeb
     public abstract class AuditBase : IAudit
     {
         public DateTime CreatedDate { get; set; }
-        [System.ComponentModel.DataAnnotations.Required]
+        [Required]
         public string CreatedBy { get; set; }
-        [System.ComponentModel.DataAnnotations.Required]
+        [Required]
         public string CreatedInfo { get; set; }
 
         public DateTime ModifiedDate { get; set; }
-        [System.ComponentModel.DataAnnotations.Required]
+        [Required]
         public string ModifiedBy { get; set; }
-        [System.ComponentModel.DataAnnotations.Required]
+        [Required]
         public string ModifiedInfo { get; set; }
 
         [Index] //Check if Deleted
@@ -153,6 +153,15 @@ namespace CheckWeb
     public abstract class UpdateAuditTenantBase<Table,TResponse> : UpdateAuditBase<Table,TResponse> {}
 
     [Authenticate]
+    [AutoPopulate(nameof(IAudit.ModifiedDate), Eval = "utcNow")]
+    [AutoPopulate(nameof(IAudit.ModifiedBy),   Eval = "userAuthName")] //or userAuthId
+    [AutoPopulate(nameof(IAudit.ModifiedInfo), Eval = "`${userSession.DisplayName} (${userSession.City})`")]
+    public abstract class PatchAuditBase<Table,TResponse> : IPatchDb<Table>, IReturn<TResponse> {}
+
+    [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId),  Eval = "Request.Items.TenantId")]
+    public abstract class PatchAuditTenantBase<Table,TResponse> : PatchAuditBase<Table,TResponse> {}
+
+    [Authenticate]
     [AutoPopulate(nameof(IAudit.SoftDeletedDate), Eval = "utcNow")]
     [AutoPopulate(nameof(IAudit.SoftDeletedBy),   Eval = "userAuthName")] //or userAuthId
     [AutoPopulate(nameof(IAudit.SoftDeletedInfo), Eval = "`${userSession.DisplayName} (${userSession.City})`")]
@@ -183,6 +192,13 @@ namespace CheckWeb
         public LivingStatus? LivingStatus { get; set; }
     }
     
+    public class PatchRockstarAuditTenant : PatchAuditTenantBase<RockstarAuditTenant, RockstarWithIdAndResultResponse>
+    {
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public LivingStatus? LivingStatus { get; set; }
+    }
+    
     public class CreateRockstarAuditTenantGateway : IReturn<RockstarWithIdAndResultResponse>
     {
         public string FirstName { get; set; }
@@ -198,6 +214,18 @@ namespace CheckWeb
         public int Id { get; set; }
         public string FirstName { get; set; }
         public LivingStatus? LivingStatus { get; set; }
+    }
+    
+    public class PatchRockstarAuditTenantGateway : IReturn<RockstarWithIdAndResultResponse>
+    {
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public LivingStatus? LivingStatus { get; set; }
+    }
+    
+    public class RealDeleteAuditTenantGateway : IReturn<RockstarWithIdResponse>
+    {
+        public int Id { get; set; }
     }
     
     public class SoftDeleteAuditTenant : SoftDeleteAuditTenantBase<RockstarAuditTenant, RockstarWithIdAndResultResponse>
@@ -375,5 +403,27 @@ namespace CheckWeb
         public int Count { get; set; }
         public ResponseStatus ResponseStatus { get; set; }
     }
+
+    public class CreateNamedRockstar : RockstarBase, ICreateDb<NamedRockstar>, IReturn<RockstarWithIdAndResultResponse>
+    {
+        public int Id { get; set; }
+    }
+
+    public class UpdateNamedRockstar : RockstarBase, IUpdateDb<NamedRockstar>, IReturn<RockstarWithIdAndResultResponse>
+    {
+        public int Id { get; set; }
+    }
+    
+    //[ConnectionInfo] on AutoCrudConnectionInfoServices
+    public class CreateConnectionInfoRockstar : RockstarBase, ICreateDb<NamedRockstar>, IReturn<RockstarWithIdAndResultResponse>
+    {
+        public int Id { get; set; }
+    }
+
+    public class UpdateConnectionInfoRockstar : RockstarBase, IUpdateDb<NamedRockstar>, IReturn<RockstarWithIdAndResultResponse>
+    {
+        public int Id { get; set; }
+    }
+
 
  }

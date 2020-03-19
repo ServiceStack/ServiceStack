@@ -5,7 +5,7 @@ using ServiceStack.DataAnnotations;
 namespace ServiceStack.WebHost.Endpoints.Tests 
 {
    public abstract class RockstarBase
-    {
+   {
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public int? Age { get; set; }

@@ -147,6 +147,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var autoQuery = new AutoQueryFeature
                 {
                     MaxLimit = 100,
+                    // EnableAsync = false,
                     EnableRawSqlFilters = true,
                     ResponseFilters = {
                         ctx => {
