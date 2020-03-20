@@ -233,13 +233,13 @@ namespace ServiceStack
 
                 GenerateServiceFilter?.Invoke(requestType, typeBuilder, method, il);
 
-                var methodName = EnableAsync
+                var queryMethod = EnableAsync
                     ? nameof(AutoQueryServiceBase.ExecAsync)
                     : nameof(AutoQueryServiceBase.Exec);
                 
                 var genericArgs = genericDef.GetGenericArguments();
                 var mi = AutoQueryServiceBaseType.GetMethods()
-                    .First(x => x.Name == methodName && 
+                    .First(x => x.Name == queryMethod && 
                                 x.GetGenericArguments().Length == genericArgs.Length);
                 var genericMi = mi.MakeGenericMethod(genericArgs);
 
@@ -287,10 +287,13 @@ namespace ServiceStack
 
                 GenerateServiceFilter?.Invoke(requestType, typeBuilder, method, il);
 
-                var asyncMethod = methodName + "Async";
+                var crudMethod = EnableAsync
+                    ? methodName + "Async"
+                    : methodName;
+                
                 var genericArgs = genericDef.GetGenericArguments();
                 var mi = AutoQueryServiceBaseType.GetMethods()
-                    .First(x => x.Name == asyncMethod && 
+                    .First(x => x.Name == crudMethod && 
                            x.GetGenericArguments().Length == genericArgs.Length);
                 var genericMi = mi.MakeGenericMethod(genericArgs);
 
@@ -421,14 +424,24 @@ namespace ServiceStack
 
         QueryResponse<From> Execute<From>(IQueryDb<From> model, SqlExpression<From> query, IRequest req = null, IDbConnection db = null);
 
+        Task<QueryResponse<From>> ExecuteAsync<From>(IQueryDb<From> model, SqlExpression<From> query, IRequest req = null, IDbConnection db = null);
+
         SqlExpression<From> CreateQuery<From, Into>(IQueryDb<From, Into> dto, Dictionary<string, string> dynamicParams, IRequest req = null, IDbConnection db = null);
 
         QueryResponse<Into> Execute<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query, IRequest req = null, IDbConnection db = null);
+
+        Task<QueryResponse<Into>> ExecuteAsync<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query, IRequest req = null, IDbConnection db = null);
         
         ISqlExpression CreateQuery(IQueryDb dto, Dictionary<string, string> dynamicParams, IRequest req, IDbConnection db);
 
+        /// <summary>
+        /// Execute an AutoQuery Request 
+        /// </summary>
         IQueryResponse Execute(IQueryDb request, ISqlExpression q, IDbConnection db);
-        
+
+        /// <summary>
+        /// Execute an AutoQuery Request 
+        /// </summary>
         Task<IQueryResponse> ExecuteAsync(IQueryDb request, ISqlExpression q, IDbConnection db);
     }
 
@@ -437,25 +450,50 @@ namespace ServiceStack
         /// <summary>
         /// Inserts new entry into Table
         /// </summary>
+        object Create<Table>(ICreateDb<Table> dto, IRequest req);
+        
+        /// <summary>
+        /// Inserts new entry into Table Async
+        /// </summary>
         Task<object> CreateAsync<Table>(ICreateDb<Table> dto, IRequest req);
         
         /// <summary>
         /// Updates entry into Table
+        /// </summary>
+        object Update<Table>(IUpdateDb<Table> dto, IRequest req);
+        
+        /// <summary>
+        /// Updates entry into Table Async
         /// </summary>
         Task<object> UpdateAsync<Table>(IUpdateDb<Table> dto, IRequest req);
         
         /// <summary>
         /// Partially Updates entry into Table (Uses OrmLite UpdateNonDefaults behavior)
         /// </summary>
+        object Patch<Table>(IPatchDb<Table> dto, IRequest req);
+        
+        /// <summary>
+        /// Partially Updates entry into Table Async (Uses OrmLite UpdateNonDefaults behavior)
+        /// </summary>
         Task<object> PatchAsync<Table>(IPatchDb<Table> dto, IRequest req);
         
         /// <summary>
         /// Deletes entry from Table
         /// </summary>
+        object Delete<Table>(IDeleteDb<Table> dto, IRequest req);
+        
+        /// <summary>
+        /// Deletes entry from Table Async
+        /// </summary>
         Task<object> DeleteAsync<Table>(IDeleteDb<Table> dto, IRequest req);
 
         /// <summary>
         /// Inserts or Updates entry into Table
+        /// </summary>
+        object Save<Table>(ISaveDb<Table> dto, IRequest req);
+
+        /// <summary>
+        /// Inserts or Updates entry into Table Async
         /// </summary>
         Task<object> SaveAsync<Table>(ISaveDb<Table> dto, IRequest req);
     }
@@ -739,6 +777,15 @@ namespace ServiceStack
             }
         }
 
+        public async Task<QueryResponse<From>> ExecuteAsync<From>(IQueryDb<From> model, SqlExpression<From> query, IRequest req = null, IDbConnection db = null)
+        {
+            using (db == null ? db = GetDb<From>(req) : null)
+            {
+                var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
+                return ResponseFilter(db, await typedQuery.ExecuteAsync<From>(db, query), query, model);
+            }
+        }
+
         public SqlExpression<From> CreateQuery<From, Into>(IQueryDb<From, Into> dto, Dictionary<string, string> dynamicParams, IRequest req = null, IDbConnection db = null)
         {
             using (db == null ? db = GetDb<From>(req) : null)
@@ -755,6 +802,15 @@ namespace ServiceStack
             {
                 var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
                 return ResponseFilter(db, typedQuery.Execute<Into>(db, query), query, model);
+            }
+        }
+
+        public async Task<QueryResponse<Into>> ExecuteAsync<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query, IRequest req = null, IDbConnection db = null)
+        {
+            using (db == null ? db = GetDb<From>(req) : null)
+            {
+                var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
+                return ResponseFilter(db, await typedQuery.ExecuteAsync<Into>(db, query), query, model);
             }
         }
 

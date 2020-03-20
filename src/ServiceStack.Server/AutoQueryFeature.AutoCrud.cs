@@ -19,6 +19,34 @@ namespace ServiceStack
 
     public partial class AutoQuery : IAutoCrudDb
     {
+        public object Create<Table>(ICreateDb<Table> dto, IRequest req)
+        {
+            //TODO: Allow Create to use Default Values
+            using var db = GetDb<Table>(req);
+            using var profiler = Profiler.Current.Step("AutoQuery.Create");
+
+            var response = ExecAndReturnResponse<Table>(dto, db,ctx => {
+                var dtoValues = ResolveDtoValues(req, dto);
+                var pkFieldDef = typeof(Table).GetModelMetadata()?.PrimaryKey;
+                var isAutoId = pkFieldDef?.AutoId == true;
+                var selectIdentity = ctx.IdProp != null || ctx.ResultProp != null;
+                var autoIntId = db.Insert<Table>(dtoValues, selectIdentity: selectIdentity);
+                var providedId = pkFieldDef != null && dtoValues.ContainsKey(pkFieldDef.Name);
+                    
+                // [AutoId] Guid's populate the PK Property or return Id if provided
+                if (isAutoId || providedId)
+                    return new ExecValue(pkFieldDef.GetValue(dtoValues), selectIdentity ? 1 : autoIntId);
+
+                return selectIdentity
+                    ? new ExecValue(autoIntId, 1)
+                    : pkFieldDef != null && dtoValues.TryGetValue(pkFieldDef.Name, out var idValue)
+                        ? new ExecValue(idValue, autoIntId)
+                        : new ExecValue(null, autoIntId);
+            });
+                
+            return response;
+        }
+
         public async Task<object> CreateAsync<Table>(ICreateDb<Table> dto, IRequest req)
         {
             //TODO: Allow Create to use Default Values
@@ -47,15 +75,77 @@ namespace ServiceStack
             return response;
         }
 
+        public object Update<Table>(IUpdateDb<Table> dto, IRequest req)
+        {
+            var skipDefaults = dto.GetType().FirstAttribute<AutoUpdateAttribute>()?.Style == AutoUpdateStyle.NonDefaults;
+            return UpdateInternal<Table>(req, dto, skipDefaults);
+        }
+
         public Task<object> UpdateAsync<Table>(IUpdateDb<Table> dto, IRequest req)
         {
             var skipDefaults = dto.GetType().FirstAttribute<AutoUpdateAttribute>()?.Style == AutoUpdateStyle.NonDefaults;
             return UpdateInternalAsync<Table>(req, dto, skipDefaults);
         }
 
+        public object Patch<Table>(IPatchDb<Table> dto, IRequest req)
+        {
+            return UpdateInternal<Table>(req, dto, skipDefaults:true);
+        }
+
         public Task<object> PatchAsync<Table>(IPatchDb<Table> dto, IRequest req)
         {
             return UpdateInternalAsync<Table>(req, dto, skipDefaults:true);
+        }
+
+        public object Delete<Table>(IDeleteDb<Table> dto, IRequest req)
+        {
+            using var db = GetDb<Table>(req);
+            using var profiler = Profiler.Current.Step("AutoQuery.Delete");
+            
+            var response = ExecAndReturnResponse<Table>(dto, db,
+                ctx => {
+                    var dtoValues = ResolveDtoValues(req, dto, skipDefaults:true);
+                    
+                    //Should have at least 1 non-default filter
+                    if (dtoValues.Count == 0)
+                        throw new NotSupportedException($"'{dto.GetType().Name}' did not contain any filters");
+                    
+                    var meta = AutoCrudMetadata.Create(dto.GetType());
+                    var pkFieldDef = meta.ModelDef.PrimaryKey;
+                    var idValue = pkFieldDef != null && dtoValues.TryGetValue(pkFieldDef.Name, out var oId)
+                        ? oId
+                        : null;
+
+                    // Should only update a Single Row
+                    if (GetAutoFilterExpressions(db, dto, dtoValues, req, out var expr, out var exprParams))
+                    {
+                        //If there were Auto Filters, construct filter expression manually by adding any remaining DTO values
+                        foreach (var entry in dtoValues)
+                        {
+                            var fieldDef = meta.ModelDef.GetFieldDefinition(entry.Key);
+                            if (fieldDef == null)
+                                throw new NotSupportedException($"Unknown '{entry.Key}' Field in '{dto.GetType().Name}' IDeleteDb<{typeof(Table).Name}> Request");
+                            
+                            if (expr.Length > 0)
+                                expr += " AND ";
+
+                            var quotedColumn = db.GetDialectProvider().GetQuotedColumnName(meta.ModelDef, fieldDef);
+
+                            expr += quotedColumn + " = {" + exprParams.Count + "}";
+                            exprParams.Add(entry.Value);
+                        }
+
+                        var q = db.From<Table>();
+                        q.Where(expr, exprParams.ToArray());
+                        return new ExecValue(idValue, db.Delete(q));
+                    }
+                    else
+                    {
+                        return new ExecValue(idValue, db.Delete<Table>(dtoValues));
+                    }
+                });
+            
+            return response;
         }
 
         public async Task<object> DeleteAsync<Table>(IDeleteDb<Table> dto, IRequest req)
@@ -109,6 +199,30 @@ namespace ServiceStack
             return response;
         }
 
+        public object Save<Table>(ISaveDb<Table> dto, IRequest req)
+        {
+            using var db = GetDb<Table>(req);
+            using var profiler = Profiler.Current.Step("AutoQuery.Save");
+
+            var row = dto.ConvertTo<Table>();
+            var response = ExecAndReturnResponse<Table>(dto, db,
+                //TODO: Use t when available
+                fn: tx => {
+                    db.Save(row);
+                    object idValue = null;
+                    var pkField = typeof(Table).GetModelMetadata().PrimaryKey;
+                    if (pkField != null)
+                    {
+                        var propGetter = TypeProperties.Get(dto.GetType()).GetPublicGetter(pkField.Name);
+                        if (propGetter != null)
+                            idValue = propGetter(dto);
+                    }
+                    return new ExecValue(idValue, 1);
+                }); 
+                
+            return response;
+        }
+
         public async Task<object> SaveAsync<Table>(ISaveDb<Table> dto, IRequest req)
         {
             using var db = GetDb<Table>(req);
@@ -142,6 +256,57 @@ namespace ServiceStack
                 Id = id;
                 RowsUpdated = rowsUpdated;
             }
+        }
+        
+        private object ExecAndReturnResponse<Table>(object dto, IDbConnection db, Func<ExecContext,ExecValue> fn)
+        {
+            var responseType = HostContext.Metadata.GetOperation(dto.GetType())?.ResponseType;
+            var responseProps = responseType == null ? null : TypeProperties.Get(responseType);
+            var idProp = responseProps?.GetAccessor(Keywords.Id);
+            var countProp = responseProps?.GetAccessor(Keywords.Count);
+            var resultProp = responseProps?.GetAccessor(Keywords.Result);
+            var rowVersionProp = responseProps?.GetAccessor(Keywords.RowVersion);
+
+            var execValue = fn(new ExecContext(idProp, resultProp, countProp, rowVersionProp));
+            if (responseType == null)
+                return null;
+
+            object idValue = null;
+                
+            var response = responseType.CreateInstance();
+            if (idProp != null && execValue.Id != null)
+            {
+                idValue = execValue.Id.ConvertTo(idProp.PropertyInfo.PropertyType);
+                idProp.PublicSetter(response, idValue);
+            }
+            if (countProp != null && execValue.RowsUpdated != null)
+            {
+                countProp.PublicSetter(response, execValue.RowsUpdated.ConvertTo(countProp.PropertyInfo.PropertyType));
+            }
+
+            if (resultProp != null && execValue.Id != null)
+            {
+                var result = db.SingleById<Table>(execValue.Id);
+                resultProp.PublicSetter(response, result.ConvertTo(resultProp.PropertyInfo.PropertyType));
+            }
+
+            if (rowVersionProp != null)
+            {
+                if (AutoMappingUtils.IsDefaultValue(idValue))
+                {
+                    var modelDef = typeof(Table).GetModelMetadata();
+                    var dtoIdGetter = TypeProperties.Get(dto.GetType()).GetPublicGetter(modelDef.PrimaryKey.Name);
+                    if (dtoIdGetter != null)
+                        idValue = dtoIdGetter(dto);
+                }
+                if (AutoMappingUtils.IsDefaultValue(idValue))
+                    throw new NotSupportedException($"Could not resolve Primary Key from '{dto.GetType().Name}' to be able to resolve RowVersion");
+                
+                var rowVersion = db.GetRowVersion<Table>(idValue);
+                rowVersionProp.PublicSetter(response, rowVersion.ConvertTo(rowVersionProp.PropertyInfo.PropertyType));
+            }
+            
+            return response;
         }
         
         private async Task<object> ExecAndReturnResponseAsync<Table>(object dto, IDbConnection db, Func<ExecContext,Task<ExecValue>> fn)
@@ -272,6 +437,35 @@ namespace ServiceStack
             expr = null;
             exprParams = null;
             return false;
+        }
+
+        private object UpdateInternal<Table>(IRequest req, object dto, bool skipDefaults)
+        {
+            using var db = GetDb<Table>(req);
+            using (Profiler.Current.Step("AutoQuery.Update"))
+            {
+                var response = ExecAndReturnResponse<Table>(dto, db,
+                    ctx => {
+                        var dtoValues = ResolveDtoValues(req, dto, skipDefaults);
+                        var pkFieldDef = typeof(Table).GetModelMetadata()?.PrimaryKey;
+                        if (pkFieldDef == null)
+                            throw new NotSupportedException($"Table '{typeof(Table).Name}' does not have a primary key");
+                        if (!dtoValues.TryGetValue(pkFieldDef.Name, out var idValue) || AutoMappingUtils.IsDefaultValue(idValue))
+                            throw new ArgumentNullException(pkFieldDef.Name);
+                        
+                        // Should only update a Single Row
+                        var rowsUpdated = GetAutoFilterExpressions(db, dto, dtoValues, req, out var expr, out var exprParams) 
+                            ? db.UpdateOnly<Table>(dtoValues, expr, exprParams.ToArray())
+                            : db.UpdateOnly<Table>(dtoValues);
+
+                        if (rowsUpdated != 1)
+                            throw new OptimisticConcurrencyException($"{rowsUpdated} rows were updated by '{dto.GetType().Name}'");
+
+                        return new ExecValue(idValue, rowsUpdated);
+                    }); //TODO: UpdateOnly
+
+                return response;
+            }
         }
 
         private async Task<object> UpdateInternalAsync<Table>(IRequest req, object dto, bool skipDefaults)
@@ -509,29 +703,24 @@ namespace ServiceStack
 
     public abstract partial class AutoQueryServiceBase
     {
-        /// <summary>
-        /// Inserts new entry into Table
-        /// </summary>
+        public virtual object Create<Table>(ICreateDb<Table> dto) => AutoQuery.Create(dto, Request);
+
         public virtual Task<object> CreateAsync<Table>(ICreateDb<Table> dto) => AutoQuery.CreateAsync(dto, Request);
 
-        /// <summary>
-        /// Updates entry into Table
-        /// </summary>
+        public virtual object Update<Table>(IUpdateDb<Table> dto) => AutoQuery.Update(dto, Request);
+
         public virtual Task<object> UpdateAsync<Table>(IUpdateDb<Table> dto) => AutoQuery.UpdateAsync(dto, Request);
 
-        /// <summary>
-        /// Partially Updates entry into Table (Uses OrmLite UpdateNonDefaults behavior)
-        /// </summary>
+        public virtual object Patch<Table>(IPatchDb<Table> dto) => AutoQuery.Patch(dto, Request);
+
         public virtual Task<object> PatchAsync<Table>(IPatchDb<Table> dto) => AutoQuery.PatchAsync(dto, Request);
 
-        /// <summary>
-        /// Deletes entry from Table
-        /// </summary>
+        public virtual object Delete<Table>(IDeleteDb<Table> dto) => AutoQuery.Delete(dto, Request);
+
         public virtual Task<object> DeleteAsync<Table>(IDeleteDb<Table> dto) => AutoQuery.DeleteAsync(dto, Request);
 
-        /// <summary>
-        /// Inserts or Updates entry into Table
-        /// </summary>
+        public virtual object Save<Table>(ISaveDb<Table> dto) => AutoQuery.Save(dto, Request);
+
         public virtual Task<object> SaveAsync<Table>(ISaveDb<Table> dto) => AutoQuery.SaveAsync(dto, Request);
     }
 }
