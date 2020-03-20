@@ -95,6 +95,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         private static readonly int TotalRockstars = AutoQueryAppHost.SeedRockstars.Length;
         private static readonly int TotalAlbums = AutoQueryAppHost.SeedAlbums.Length;
         private const string TenantId = nameof(TenantId);
+        private static readonly byte[] AuthKey = AesUtils.CreateKey();
+        public static string JwtUserToken = null;
 
         partial void OnConfigure(AutoQueryAppHost host, Funq.Container container);
         
@@ -108,7 +110,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                         host.Plugins.Add(new AuthFeature(() => new AuthUserSession(), 
                             new IAuthProvider[] {
                                 new CredentialsAuthProvider(host.AppSettings),
+                                new JwtAuthProvider(host.AppSettings) {
+                                    RequireSecureConnection = false,
+                                    AuthKey = AuthKey,
+                                    CreatePayloadFilter = (obj, session) => {
+                                        obj[nameof(AuthUserSession.City)] = ((AuthUserSession)session).City;
+                                    }
+                                }, 
                             }));
+                        var jwtProvider = host.GetPlugin<AuthFeature>().AuthProviders.OfType<JwtAuthProvider>().First();
+                        JwtUserToken = jwtProvider.CreateJwtBearerToken(new AuthUserSession {
+                            Id = SessionExtensions.CreateRandomSessionId(),
+                            UserName = "jwtuser",
+                            FirstName = "JWT",
+                            LastName = "User",
+                            DisplayName = "JWT User",
+                            City = "Japan",
+                        });
                         
                         var authRepo = container.Resolve<IAuthRepository>();
                         authRepo.InitSchema();
@@ -149,6 +167,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                         mqService.RegisterHandler<UpdateRockstarAuditTenant>(host.ExecuteMessage);
                         mqService.RegisterHandler<PatchRockstarAuditTenant>(host.ExecuteMessage);
                         mqService.RegisterHandler<RealDeleteAuditTenant>(host.ExecuteMessage);
+                        mqService.RegisterHandler<CreateRockstarAuditMqToken>(host.ExecuteMessage);
                         host.AfterInitCallbacks.Add(_ => mqService.Start());
                         
                         OnConfigure(host, container);
@@ -941,7 +960,40 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             
             Assert.That(db.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(PatchRockstarAuditTenantMq)), Is.False);
         }
- 
+
+        [Test]
+        public void Can_CreateRockstarAuditMqToken_OneWay()
+        {
+            var createRequest = new CreateRockstarAuditMqToken {
+                BearerToken = JwtUserToken,
+                FirstName = nameof(CreateRockstarAuditMqToken),
+                LastName = "JWT",
+                Age = 20,
+                DateOfBirth = new DateTime(2002,2,2),
+                LivingStatus = LivingStatus.Dead,
+            };
+
+            client.SendOneWay(createRequest);
+            
+            using var db = appHost.GetDbConnection();
+
+            ExecUtils.RetryUntilTrue(() => 
+                    db.Exists<RockstarAudit>(x => x.FirstName == nameof(CreateRockstarAuditMqToken)),
+                TimeSpan.FromSeconds(2));
+
+            var result = db.Single<RockstarAudit>(x => x.FirstName == nameof(CreateRockstarAuditMqToken));
+            Assert.That(result.Id, Is.GreaterThan(0));
+            Assert.That(result.FirstName, Is.EqualTo(nameof(CreateRockstarAuditMqToken)));
+            Assert.That(result.LastName, Is.EqualTo("JWT"));
+            Assert.That(result.LivingStatus, Is.EqualTo(LivingStatus.Dead));
+            Assert.That(result.CreatedDate.Date, Is.EqualTo(DateTime.UtcNow.Date));
+            Assert.That(result.CreatedBy, Is.EqualTo("jwtuser"));
+            Assert.That(result.CreatedInfo, Is.EqualTo("JWT User (Japan)"));
+            Assert.That(result.ModifiedDate.Date, Is.EqualTo(DateTime.UtcNow.Date));
+            Assert.That(result.ModifiedBy, Is.EqualTo("jwtuser"));
+            Assert.That(result.ModifiedInfo, Is.EqualTo("JWT User (Japan)"));
+        }
+        
         [Test]
         public void Can_UpdateRockstarVersion()
         {

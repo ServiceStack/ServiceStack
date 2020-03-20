@@ -12,7 +12,7 @@ namespace ServiceStack
     
     public class AutoQueryScripts : ScriptMethods, IAutoQueryDbFilters
     {
-        private IHttpRequest req(ScriptScopeContext scope) => scope.GetValue("Request") as IHttpRequest;
+        private IRequest req(ScriptScopeContext scope) => scope.GetValue(ScriptConstants.Request) as IRequest;
         private ServiceStackHost appHost => HostContext.AppHost;
 
         public object sendToAutoQuery(ScriptScopeContext scope, string requestName) => 

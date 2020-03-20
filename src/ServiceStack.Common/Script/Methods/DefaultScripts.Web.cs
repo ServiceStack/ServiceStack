@@ -13,7 +13,7 @@ namespace ServiceStack.Script
     
     public partial class DefaultScripts
     {
-        internal IHttpRequest req(ScriptScopeContext scope) => scope.GetValue("Request") as IHttpRequest;
+        internal IRequest req(ScriptScopeContext scope) => scope.GetValue(ScriptConstants.Request) as IRequest;
 
         public bool matchesPathInfo(ScriptScopeContext scope, string pathInfo) => 
             scope.GetValue("PathInfo")?.ToString().TrimEnd('/') == pathInfo?.TrimEnd('/');

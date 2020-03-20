@@ -265,6 +265,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int Id { get; set; }
     }
     
+    [Authenticate]
+    [AutoPopulate(nameof(RockstarAudit.CreatedDate),  Eval = "utcNow")]
+    [AutoPopulate(nameof(RockstarAudit.CreatedBy),    Eval = "userAuthName")] //or userAuthId
+    [AutoPopulate(nameof(RockstarAudit.CreatedInfo),  Eval = "`${userSession.DisplayName} (${userSession.City})`")]
+    [AutoPopulate(nameof(RockstarAudit.ModifiedDate), Eval = "utcNow")]
+    [AutoPopulate(nameof(RockstarAudit.ModifiedBy),   Eval = "userAuthName")] //or userAuthId
+    [AutoPopulate(nameof(RockstarAudit.ModifiedInfo), Eval = "`${userSession.DisplayName} (${userSession.City})`")]
+    public class CreateRockstarAuditMqToken : RockstarBase, ICreateDb<RockstarAudit>, IReturn<RockstarWithIdResponse>, IHasBearerToken
+    {
+        public string BearerToken { get; set; }
+    }
+    
     
     [Authenticate]
     [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId),  Eval = "Request.Items.TenantId")]
