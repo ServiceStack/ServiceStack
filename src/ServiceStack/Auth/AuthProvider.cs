@@ -467,8 +467,7 @@ namespace ServiceStack.Auth
         {
             if (requestDto is IHasSessionId hasSession && hasSession.SessionId == null)
             {
-                var userSession = req.GetSession();
-                hasSession.SessionId = userSession.IsAuthenticated ? userSession.Id : null;
+                hasSession.SessionId = req.GetSessionId();
                 return hasSession.SessionId != null;
             }
             if (requestDto is IHasBearerToken hasToken && hasToken.BearerToken == null)
