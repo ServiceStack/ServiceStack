@@ -7,6 +7,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
+using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.Web;
 
@@ -458,6 +459,22 @@ namespace ServiceStack.Auth
             {
                 req.SetSessionId(hasSession.SessionId);
                 return true;
+            }
+            return false;
+        }
+
+        internal static bool PopulateRequestDtoIfAuthenticated(this IRequest req, object requestDto)
+        {
+            if (requestDto is IHasSessionId hasSession && hasSession.SessionId == null)
+            {
+                var userSession = req.GetSession();
+                hasSession.SessionId = userSession.IsAuthenticated ? userSession.Id : null;
+                return hasSession.SessionId != null;
+            }
+            if (requestDto is IHasBearerToken hasToken && hasToken.BearerToken == null)
+            {
+                hasToken.BearerToken = req.GetBearerToken();
+                return hasToken.BearerToken != null;
             }
             return false;
         }

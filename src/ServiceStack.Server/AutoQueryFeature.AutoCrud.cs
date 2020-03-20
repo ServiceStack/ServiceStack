@@ -487,6 +487,7 @@ namespace ServiceStack
             internal Dictionary<string, AutoMapAttribute> MapAttrs;
             internal HashSet<string> NullableProps;
             internal GetMemberDelegate RowVersionGetter;
+            internal List<string> RemoveDtoProps;
             
             static readonly ConcurrentDictionary<Type, AutoCrudMetadata> cache = 
                 new ConcurrentDictionary<Type, AutoCrudMetadata>();
@@ -584,11 +585,23 @@ namespace ServiceStack
                         to.NullableProps ??= new HashSet<string>();
                         to.NullableProps.Add(propName);
                     }
+
+                    if (IgnoreCrudProperties.Contains(pi.Name) && to.ModelDef.GetFieldDefinition(propName) == null)
+                    {
+                        to.RemoveDtoProps ??= new List<string>();
+                        to.RemoveDtoProps.Add(pi.Name);
+                    }
                 }
 
                 return cache[dtoType] = to;
             }
         }
+        
+        public static HashSet<string> IgnoreCrudProperties { get; } = new HashSet<string> {
+            nameof(IHasSessionId.SessionId),
+            nameof(IHasBearerToken.BearerToken),
+            nameof(IHasVersion.Version),
+        };
 
         private Dictionary<string, object> ResolveDtoValues(IRequest req, object dto, bool skipDefaults=false)
         {
@@ -606,11 +619,19 @@ namespace ServiceStack
                     }
                 }
             }
+            List<string> removeKeys = null;
+            if (meta.RemoveDtoProps != null)
+            {
+                foreach (var removeDtoProp in meta.RemoveDtoProps)
+                {
+                    removeKeys ??= new List<string>();
+                    removeKeys.Add(removeDtoProp);
+                }
+            }
 
             var appHost = HostContext.AppHost;
             if (skipDefaults || meta.UpdateAttrs != null || meta.DefaultAttrs != null)
             {
-                List<string> removeKeys = null;
                 Dictionary<string, object> replaceValues = null;
 
                 foreach (var entry in dtoValues)
@@ -639,20 +660,20 @@ namespace ServiceStack
                     }
                 }
                 
-                if (removeKeys != null)
-                {
-                    foreach (var key in removeKeys)
-                    {
-                        dtoValues.RemoveKey(key);
-                    }
-                }
-
                 if (replaceValues != null)
                 {
                     foreach (var entry in replaceValues)
                     {
                         dtoValues[entry.Key] = entry.Value;
                     }
+                }
+            }
+
+            if (removeKeys != null)
+            {
+                foreach (var key in removeKeys)
+                {
+                    dtoValues.RemoveKey(key);
                 }
             }
 

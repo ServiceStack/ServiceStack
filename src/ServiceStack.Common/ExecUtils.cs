@@ -74,7 +74,7 @@ namespace ServiceStack
             return default(TReturn);
         }
 
-        public static void RetryUntilTrue(Func<bool> action, TimeSpan? timeOut)
+        public static void RetryUntilTrue(Func<bool> action, TimeSpan? timeOut=null)
         {
             var i = 0;
             var firstAttempt = DateTime.UtcNow;

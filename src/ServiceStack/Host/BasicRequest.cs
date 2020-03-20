@@ -59,7 +59,7 @@ namespace ServiceStack.Host
         private string operationName;
         public string OperationName
         {
-            get => operationName ?? (operationName = Message.Body?.GetType().GetOperationName());
+            get => operationName ??= Message.Body?.GetType().GetOperationName();
             set => operationName = value;
         }
 
@@ -87,8 +87,7 @@ namespace ServiceStack.Host
         public RequestAttributes RequestAttributes { get; set; }
 
         private IRequestPreferences requestPreferences;
-        public IRequestPreferences RequestPreferences => 
-            requestPreferences ?? (requestPreferences = new RequestPreferences(this));
+        public IRequestPreferences RequestPreferences => requestPreferences ??= new RequestPreferences(this);
 
         public string ContentType { get; set; }
 
@@ -119,10 +118,7 @@ namespace ServiceStack.Host
         public bool UseBufferedStream { get; set; }
 
         private string body;
-        public string GetRawBody()
-        {
-            return body ?? (body = (Message.Body ?? "").Dump());
-        }
+        public string GetRawBody() => body ??= (Message.Body ?? "").Dump();
 
         public Task<string> GetRawBodyAsync() => Task.FromResult(GetRawBody());
 

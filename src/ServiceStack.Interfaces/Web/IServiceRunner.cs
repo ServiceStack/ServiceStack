@@ -14,11 +14,11 @@ namespace ServiceStack.Web
         void OnBeforeExecute(IRequest req, TRequest request, object service);
         object OnAfterExecute(IRequest req, object response, object service);
 
-        Task<object> HandleExceptionAsync(IRequest request, TRequest requestDto, Exception ex, object instance);
+        Task<object> HandleExceptionAsync(IRequest req, TRequest requestDto, Exception ex, object instance);
 
         Task<object> ExecuteAsync(IRequest req, object instance, TRequest requestDto);
 
         object Execute(IRequest req, object instance, IMessage<TRequest> request);
-        object ExecuteOneWay(IRequest requestContext, object instance, TRequest request);
+        object ExecuteOneWay(IRequest req, object instance, TRequest requestDto);
     }
 }

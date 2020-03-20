@@ -41,8 +41,8 @@ namespace ServiceStack
         public FileSystemVirtualFiles hostVfsFileSystem() => HostContext.FileSystemVirtualFiles;
         public GistVirtualFiles hostVfsGist() => HostContext.GistVirtualFiles;
 
-        public IHttpRequest httpRequest(ScriptScopeContext scope) => req(scope);
-        internal IHttpRequest req(ScriptScopeContext scope) => scope.GetValue(ScriptConstants.Request) as IHttpRequest;
+        public IHttpRequest httpRequest(ScriptScopeContext scope) => req(scope) as IHttpRequest;
+        internal IRequest req(ScriptScopeContext scope) => scope.GetValue(ScriptConstants.Request) as IRequest;
 
         public object requestItem(ScriptScopeContext scope, string key) => req(scope).GetItem(key);
 
