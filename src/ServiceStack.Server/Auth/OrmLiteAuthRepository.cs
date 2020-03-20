@@ -554,8 +554,16 @@ namespace ServiceStack.Auth
             });
         }
 
+        string AssertUserAuthId(string userAuthId)
+        {
+            if (userAuthId == null)
+                throw new ArgumentNullException(nameof(userAuthId));
+            return userAuthId;
+        }
+
         public virtual ICollection<string> GetRoles(string userAuthId)
         {
+            AssertUserAuthId(userAuthId);
             if (!UseDistinctRoleTables)
             {
                 var userAuth = GetUserAuth(userAuthId);
@@ -575,6 +583,7 @@ namespace ServiceStack.Auth
 
         public virtual ICollection<string> GetPermissions(string userAuthId)
         {
+            AssertUserAuthId(userAuthId);
             if (!UseDistinctRoleTables)
             {
                 var userAuth = GetUserAuth(userAuthId);
@@ -594,6 +603,7 @@ namespace ServiceStack.Auth
 
         public virtual void GetRolesAndPermissions(string userAuthId, out ICollection<string> roles, out ICollection<string> permissions)
         {
+            AssertUserAuthId(userAuthId);
             if (!UseDistinctRoleTables)
             {
                 var userAuth = GetUserAuth(userAuthId);

@@ -235,26 +235,26 @@ namespace ServiceStack.Auth
                 var manageRoles = AuthRepository as IManageRoles;
 
                 var alreadyAuthenticated = response == null;
-                response = response ?? new AuthenticateResponse {
+                response ??= new AuthenticateResponse {
                     UserId = session.UserAuthId,
                     UserName = session.UserAuthName,
                     DisplayName = session.DisplayName 
-                        ?? session.UserName 
-                        ?? $"{session.FirstName} {session.LastName}".Trim(),
+                                  ?? session.UserName 
+                                  ?? $"{session.FirstName} {session.LastName}".Trim(),
                     SessionId = session.Id,
                     ReferrerUrl = referrerUrl,
                 };
 
                 if (response is AuthenticateResponse authResponse)
                 {
-                    authResponse.ProfileUrl = authResponse.ProfileUrl ?? session.GetProfileUrl();
+                    authResponse.ProfileUrl ??= session.GetProfileUrl();
                     
-                    if (authFeature?.IncludeRolesInAuthenticateResponse == true)
+                    if (authFeature?.IncludeRolesInAuthenticateResponse == true && session.UserAuthId != null)
                     {
-                        authResponse.Roles = authResponse.Roles ?? (manageRoles != null
-                             ? manageRoles.GetRoles(session.UserAuthId)?.ToList()
-                             : session.Roles);
-                        authResponse.Permissions = authResponse.Permissions ?? (manageRoles != null
+                        authResponse.Roles ??= (manageRoles != null
+                            ? manageRoles.GetRoles(session.UserAuthId)?.ToList()
+                            : session.Roles);
+                        authResponse.Permissions ??= (manageRoles != null
                             ? manageRoles.GetPermissions(session.UserAuthId)?.ToList()
                             : session.Permissions);
                     }
