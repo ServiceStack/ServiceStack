@@ -463,7 +463,7 @@ namespace ServiceStack.Auth
             return false;
         }
 
-        internal static bool PopulateRequestDtoIfAuthenticated(this IRequest req, object requestDto)
+        public static bool PopulateRequestDtoIfAuthenticated(this IRequest req, object requestDto)
         {
             if (requestDto is IHasSessionId hasSession && hasSession.SessionId == null)
             {

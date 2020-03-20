@@ -49,14 +49,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Any(CreateRockstarAuditTenantMq request)
         {
             var mqRequest = request.ConvertTo<CreateRockstarAuditTenant>();
-            mqRequest.SessionId = GetSession().Id;
+            Request.PopulateRequestDtoIfAuthenticated(mqRequest);
             PublishMessage(mqRequest);
         }
         
         public void Any(UpdateRockstarAuditTenantMq request)
         {
             var mqRequest = request.ConvertTo<UpdateRockstarAuditTenant>();
-            mqRequest.SessionId = GetSession().Id;
+            Request.PopulateRequestDtoIfAuthenticated(mqRequest);
             PublishMessage(mqRequest);
         }
         
