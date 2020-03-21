@@ -317,7 +317,7 @@ namespace ServiceStack
         NonDefaults,
     }
     
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class AutoUpdateAttribute : AttributeBase
     {
         public AutoUpdateStyle Style { get; set; }

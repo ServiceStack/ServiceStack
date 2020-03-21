@@ -17,6 +17,71 @@ namespace ServiceStack
         
     }
 
+    public class AutoCrudContext
+    {
+        public IRequest Request { get; private set; }
+        public IDbConnection Db { get; private set; }
+        public IAutoCrudEvents Events { get; private set; }
+        public string Operation { get; set; }
+        public object Dto { get; private set; }
+        public Type ModelType { get; private set; }
+        public Type RequestType { get; private set; }
+        public Type ResponseType { get; private set; }
+        public ModelDefinition ModelDef { get; private set; }
+        public PropertyAccessor IdProp { get; private set; }
+        public PropertyAccessor ResultProp { get; private set; }
+        public PropertyAccessor CountProp { get; private set; }
+        public PropertyAccessor RowVersionProp { get; private set; }
+        
+        public object Id { get; set; }
+        
+        public long? RowsUpdated { get; set; }
+
+        internal void SetResult(AutoQuery.ExecValue result)
+        {
+            Id = result.Id;
+            RowsUpdated = result.RowsUpdated;
+        }
+        
+        internal GetMemberDelegate RequestIdGetter() => 
+            TypeProperties.Get(RequestType).GetPublicGetter(ModelDef.PrimaryKey.Name);
+        
+        internal void ThrowPrimaryKeyRequiredForRowVersion() =>
+            throw new NotSupportedException($"Could not resolve Primary Key from '{RequestType.Name}' to be able to resolve RowVersion");
+
+        internal static AutoCrudContext Create<Table>(IRequest request, IDbConnection db, object dto, string operation)
+        {
+            var appHost = HostContext.AppHost;
+            var requestType = dto?.GetType() ?? throw new ArgumentNullException(nameof(dto));
+            var responseType = appHost.Metadata.GetOperation(requestType)?.ResponseType;
+            var responseProps = responseType == null ? null : TypeProperties.Get(responseType);
+            return new AutoCrudContext {
+                Operation = operation,
+                Request = request ?? throw new ArgumentNullException(nameof(request)),
+                Db = db ?? throw new ArgumentNullException(nameof(db)),
+                Events = appHost.TryResolve<IAutoCrudEvents>(),
+                Dto = dto,
+                ModelType = typeof(Table),
+                RequestType = requestType,
+                ModelDef = typeof(Table).GetModelMetadata(),
+                ResponseType = responseType,
+                IdProp = responseProps?.GetAccessor(Keywords.Id),
+                CountProp = responseProps?.GetAccessor(Keywords.Count),
+                ResultProp = responseProps?.GetAccessor(Keywords.Result),
+                RowVersionProp = responseProps?.GetAccessor(Keywords.RowVersion),
+            };
+        }
+    }
+
+    public static class AutoCrudOperation
+    {
+        public const string Create = nameof(Create);
+        public const string Update = nameof(Update);
+        public const string Patch = nameof(Patch);
+        public const string Delete = nameof(Delete);
+        public const string Save = nameof(Save);
+    }
+
     public partial class AutoQuery : IAutoCrudDb
     {
         public object Create<Table>(ICreateDb<Table> dto, IRequest req)
@@ -25,7 +90,7 @@ namespace ServiceStack
             using var db = GetDb<Table>(req);
             using var profiler = Profiler.Current.Step("AutoQuery.Create");
 
-            var response = ExecAndReturnResponse<Table>(ExecContext.Create<Table>(req,db,dto),
+            var response = ExecAndReturnResponse<Table>(AutoCrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Create),
                 ctx => {
                     var dtoValues = ResolveDtoValues(req, dto);
                     var pkField = ctx.ModelDef.PrimaryKey;
@@ -44,7 +109,7 @@ namespace ServiceStack
             using var db = GetDb<Table>(req);
             using var profiler = Profiler.Current.Step("AutoQuery.Create");
 
-            var response = await ExecAndReturnResponseAsync<Table>(ExecContext.Create<Table>(req,db,dto),
+            var response = await ExecAndReturnResponseAsync<Table>(AutoCrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Create),
                 async ctx => {
                     var dtoValues = ResolveDtoValues(ctx.Request, ctx.Dto);
                     var pkField = ctx.ModelDef.PrimaryKey;
@@ -75,24 +140,22 @@ namespace ServiceStack
 
         public object Update<Table>(IUpdateDb<Table> dto, IRequest req)
         {
-            var skipDefaults = dto.GetType().FirstAttribute<AutoUpdateAttribute>()?.Style == AutoUpdateStyle.NonDefaults;
-            return UpdateInternal<Table>(req, dto, skipDefaults);
+            return UpdateInternal<Table>(req, dto,AutoCrudOperation.Update);
         }
 
         public Task<object> UpdateAsync<Table>(IUpdateDb<Table> dto, IRequest req)
         {
-            var skipDefaults = dto.GetType().FirstAttribute<AutoUpdateAttribute>()?.Style == AutoUpdateStyle.NonDefaults;
-            return UpdateInternalAsync<Table>(req, dto, skipDefaults);
+            return UpdateInternalAsync<Table>(req, dto, AutoCrudOperation.Update);
         }
 
         public object Patch<Table>(IPatchDb<Table> dto, IRequest req)
         {
-            return UpdateInternal<Table>(req, dto, skipDefaults:true);
+            return UpdateInternal<Table>(req, dto, AutoCrudOperation.Patch);
         }
 
         public Task<object> PatchAsync<Table>(IPatchDb<Table> dto, IRequest req)
         {
-            return UpdateInternalAsync<Table>(req, dto, skipDefaults:true);
+            return UpdateInternalAsync<Table>(req, dto, AutoCrudOperation.Patch);
         }
 
         public object Delete<Table>(IDeleteDb<Table> dto, IRequest req)
@@ -100,7 +163,7 @@ namespace ServiceStack
             using var db = GetDb<Table>(req);
             using var profiler = Profiler.Current.Step("AutoQuery.Delete");
             
-            var response = ExecAndReturnResponse<Table>(ExecContext.Create<Table>(req,db,dto),
+            var response = ExecAndReturnResponse<Table>(AutoCrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Delete),
                 ctx => {
                     var dtoValues = ResolveDtoValues(ctx.Request, ctx.Dto, skipDefaults:true);
                     var idValue = ctx.ModelDef.PrimaryKey != null && dtoValues.TryGetValue(ctx.ModelDef.PrimaryKey.Name, out var oId)
@@ -120,7 +183,7 @@ namespace ServiceStack
             using var db = GetDb<Table>(req);
             using var profiler = Profiler.Current.Step("AutoQuery.Delete");
             
-            var response = await ExecAndReturnResponseAsync<Table>(ExecContext.Create<Table>(req,db,dto),
+            var response = await ExecAndReturnResponseAsync<Table>(AutoCrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Delete),
                 async ctx => {
                     var dtoValues = ResolveDtoValues(req, dto, skipDefaults:true);
                     var idValue = ctx.ModelDef.PrimaryKey != null && dtoValues.TryGetValue(ctx.ModelDef.PrimaryKey.Name, out var oId)
@@ -135,7 +198,7 @@ namespace ServiceStack
             return response;
         }
 
-        internal SqlExpression<Table> DeleteInternal<Table>(ExecContext ctx, Dictionary<string, object> dtoValues)
+        internal SqlExpression<Table> DeleteInternal<Table>(AutoCrudContext ctx, Dictionary<string, object> dtoValues)
         {
             //Should have at least 1 non-default filter
             if (dtoValues.Count == 0)
@@ -173,7 +236,7 @@ namespace ServiceStack
             using var profiler = Profiler.Current.Step("AutoQuery.Save");
 
             var row = dto.ConvertTo<Table>();
-            var response = ExecAndReturnResponse<Table>(ExecContext.Create<Table>(req,db,dto),
+            var response = ExecAndReturnResponse<Table>(AutoCrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Save),
                 ctx => {
                     ctx.Db.Save(row);
                     return SaveInternal(dto, ctx);
@@ -188,7 +251,7 @@ namespace ServiceStack
             using var profiler = Profiler.Current.Step("AutoQuery.Save");
 
             var row = dto.ConvertTo<Table>();
-            var response = await ExecAndReturnResponseAsync<Table>(ExecContext.Create<Table>(req,db,dto),
+            var response = await ExecAndReturnResponseAsync<Table>(AutoCrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Save),
                 async ctx => {
                     await ctx.Db.SaveAsync(row);
                     return SaveInternal(dto, ctx);
@@ -197,7 +260,7 @@ namespace ServiceStack
             return response;
         }
 
-        private static ExecValue SaveInternal<Table>(ISaveDb<Table> dto, ExecContext ctx)
+        private static ExecValue SaveInternal<Table>(ISaveDb<Table> dto, AutoCrudContext ctx)
         {
             //TODO: Use Upsert when available
             object idValue = null;
@@ -223,135 +286,117 @@ namespace ServiceStack
             }
         }
         
-        private object ExecAndReturnResponse<Table>(ExecContext execContext, Func<ExecContext,ExecValue> fn)
+        private object ExecAndReturnResponse<Table>(AutoCrudContext context, Func<AutoCrudContext,ExecValue> fn)
         {
-            var execValue = fn(execContext);
-            if (execContext.ResponseType == null)
+            var trans = context.Events != null
+                ? context.Db.OpenTransaction()
+                : null;
+
+            using (trans)
+            {
+                context.SetResult(fn(context));
+                context.Events?.Record(context);
+                
+                trans?.Commit();
+            }
+            
+            if (context.ResponseType == null)
                 return null;
 
             object idValue = null;
                 
-            var response = execContext.ResponseType.CreateInstance();
-            if (execContext.IdProp != null && execValue.Id != null)
+            var response = context.ResponseType.CreateInstance();
+            if (context.IdProp != null && context.Id != null)
             {
-                idValue = execValue.Id.ConvertTo(execContext.IdProp.PropertyInfo.PropertyType);
-                execContext.IdProp.PublicSetter(response, idValue);
+                idValue = context.Id.ConvertTo(context.IdProp.PropertyInfo.PropertyType);
+                context.IdProp.PublicSetter(response, idValue);
             }
-            if (execContext.CountProp != null && execValue.RowsUpdated != null)
+            if (context.CountProp != null && context.RowsUpdated != null)
             {
-                execContext.CountProp.PublicSetter(response, execValue.RowsUpdated.ConvertTo(execContext.CountProp.PropertyInfo.PropertyType));
-            }
-
-            if (execContext.ResultProp != null && execValue.Id != null)
-            {
-                var result = execContext.Db.SingleById<Table>(execValue.Id);
-                execContext.ResultProp.PublicSetter(response, result.ConvertTo(execContext.ResultProp.PropertyInfo.PropertyType));
+                context.CountProp.PublicSetter(response, context.RowsUpdated.ConvertTo(context.CountProp.PropertyInfo.PropertyType));
             }
 
-            if (execContext.RowVersionProp != null)
+            if (context.ResultProp != null && context.Id != null)
+            {
+                var result = context.Db.SingleById<Table>(context.Id);
+                context.ResultProp.PublicSetter(response, result.ConvertTo(context.ResultProp.PropertyInfo.PropertyType));
+            }
+
+            if (context.RowVersionProp != null)
             {
                 if (AutoMappingUtils.IsDefaultValue(idValue))
                 {
-                    var dtoIdGetter = execContext.RequestIdGetter();
+                    var dtoIdGetter = context.RequestIdGetter();
                     if (dtoIdGetter != null)
-                        idValue = dtoIdGetter(execContext.Dto);
+                        idValue = dtoIdGetter(context.Dto);
                 }
                 if (AutoMappingUtils.IsDefaultValue(idValue))
-                    execContext.ThrowPrimaryKeyRequiredForRowVersion();
+                    context.ThrowPrimaryKeyRequiredForRowVersion();
                 
-                var rowVersion = execContext.Db.GetRowVersion<Table>(idValue);
-                execContext.RowVersionProp.PublicSetter(response, rowVersion.ConvertTo(execContext.RowVersionProp.PropertyInfo.PropertyType));
+                var rowVersion = context.Db.GetRowVersion<Table>(idValue);
+                context.RowVersionProp.PublicSetter(response, rowVersion.ConvertTo(context.RowVersionProp.PropertyInfo.PropertyType));
             }
             
             return response;
         }
 
-        private async Task<object> ExecAndReturnResponseAsync<Table>(ExecContext execContext, Func<ExecContext,Task<ExecValue>> fn)
+        private async Task<object> ExecAndReturnResponseAsync<Table>(AutoCrudContext context, Func<AutoCrudContext,Task<ExecValue>> fn)
         {
-            var execValue = await fn(execContext);
-            if (execContext.ResponseType == null)
+            var trans = context.Events != null
+                ? context.Db.OpenTransaction()
+                : null;
+
+            using (trans)
+            {
+                context.SetResult(await fn(context));
+                if (context.Events != null)
+                    await context.Events.RecordAsync(context);
+                
+                trans?.Commit();
+            }
+            
+            if (context.ResponseType == null)
                 return null;
 
             object idValue = null;
                 
-            var response = execContext.ResponseType.CreateInstance();
-            if (execContext.IdProp != null && execValue.Id != null)
+            var response = context.ResponseType.CreateInstance();
+            if (context.IdProp != null && context.Id != null)
             {
-                idValue = execValue.Id.ConvertTo(execContext.IdProp.PropertyInfo.PropertyType);
-                execContext.IdProp.PublicSetter(response, idValue);
+                idValue = context.Id.ConvertTo(context.IdProp.PropertyInfo.PropertyType);
+                context.IdProp.PublicSetter(response, idValue);
             }
-            if (execContext.CountProp != null && execValue.RowsUpdated != null)
+            if (context.CountProp != null && context.RowsUpdated != null)
             {
-                execContext.CountProp.PublicSetter(response, execValue.RowsUpdated.ConvertTo(execContext.CountProp.PropertyInfo.PropertyType));
-            }
-
-            if (execContext.ResultProp != null && execValue.Id != null)
-            {
-                var result = await execContext.Db.SingleByIdAsync<Table>(execValue.Id);
-                execContext.ResultProp.PublicSetter(response, result.ConvertTo(execContext.ResultProp.PropertyInfo.PropertyType));
+                context.CountProp.PublicSetter(response, context.RowsUpdated.ConvertTo(context.CountProp.PropertyInfo.PropertyType));
             }
 
-            if (execContext.RowVersionProp != null)
+            if (context.ResultProp != null && context.Id != null)
+            {
+                var result = await context.Db.SingleByIdAsync<Table>(context.Id);
+                context.ResultProp.PublicSetter(response, result.ConvertTo(context.ResultProp.PropertyInfo.PropertyType));
+            }
+
+            if (context.RowVersionProp != null)
             {
                 if (AutoMappingUtils.IsDefaultValue(idValue))
                 {
-                    var dtoIdGetter = execContext.RequestIdGetter();
+                    var dtoIdGetter = context.RequestIdGetter();
                     if (dtoIdGetter != null)
-                        idValue = dtoIdGetter(execContext.Dto);
+                        idValue = dtoIdGetter(context.Dto);
                 }
 
                 if (AutoMappingUtils.IsDefaultValue(idValue))
-                    execContext.ThrowPrimaryKeyRequiredForRowVersion();
+                    context.ThrowPrimaryKeyRequiredForRowVersion();
                 
-                var rowVersion = await execContext.Db.GetRowVersionAsync<Table>(idValue);
-                execContext.RowVersionProp.PublicSetter(response, rowVersion.ConvertTo(execContext.RowVersionProp.PropertyInfo.PropertyType));
+                var rowVersion = await context.Db.GetRowVersionAsync<Table>(idValue);
+                context.RowVersionProp.PublicSetter(response, rowVersion.ConvertTo(context.RowVersionProp.PropertyInfo.PropertyType));
             }
             
             return response;
         }
 
-        internal struct ExecContext
-        {
-            internal IRequest Request;
-            internal IDbConnection Db;
-            internal object Dto;
-            internal Type ModelType;
-            internal Type RequestType;
-            internal Type ResponseType;
-            internal ModelDefinition ModelDef;
-            internal PropertyAccessor IdProp;
-            internal PropertyAccessor ResultProp;
-            internal PropertyAccessor CountProp;
-            internal PropertyAccessor RowVersionProp;
-            
-            internal GetMemberDelegate RequestIdGetter() => 
-                TypeProperties.Get(RequestType).GetPublicGetter(ModelDef.PrimaryKey.Name);
-            
-            internal void ThrowPrimaryKeyRequiredForRowVersion() =>
-                throw new NotSupportedException($"Could not resolve Primary Key from '{RequestType.Name}' to be able to resolve RowVersion");
-
-            internal static ExecContext Create<Table>(IRequest request, IDbConnection db, object dto)
-            {
-                var requestType = dto?.GetType() ?? throw new ArgumentNullException(nameof(dto));
-                var responseType = HostContext.Metadata.GetOperation(requestType)?.ResponseType;
-                var responseProps = responseType == null ? null : TypeProperties.Get(responseType);
-                return new ExecContext {
-                    Request = request ?? throw new ArgumentNullException(nameof(request)),
-                    Db = db ?? throw new ArgumentNullException(nameof(db)),
-                    Dto = dto,
-                    ModelType = typeof(Table),
-                    RequestType = requestType,
-                    ModelDef = typeof(Table).GetModelMetadata(),
-                    ResponseType = responseType,
-                    IdProp = responseProps?.GetAccessor(Keywords.Id),
-                    CountProp = responseProps?.GetAccessor(Keywords.Count),
-                    ResultProp = responseProps?.GetAccessor(Keywords.Result),
-                    RowVersionProp = responseProps?.GetAccessor(Keywords.RowVersion),
-                };
-            }
-        }
-
-        internal bool GetAutoFilterExpressions(ExecContext ctx, Dictionary<string, object> dtoValues, out string expr, out List<object> exprParams)
+        internal bool GetAutoFilterExpressions(AutoCrudContext ctx, Dictionary<string, object> dtoValues, out string expr, out List<object> exprParams)
         {
             var meta = AutoCrudMetadata.Create(ctx.RequestType);
             if (meta.AutoFilters != null)
@@ -384,7 +429,6 @@ namespace ServiceStack
                     
                     var ret = ExprResult.CreateExpression("AND", quotedColumn, value, dbAttr);
 
-
                     if (ret != null)
                     {
                         if (sb.Length > 0)
@@ -415,12 +459,13 @@ namespace ServiceStack
             return false;
         }
 
-        private object UpdateInternal<Table>(IRequest req, object dto, bool skipDefaults)
+        private object UpdateInternal<Table>(IRequest req, object dto, string operation)
         {
+            var skipDefaults = operation == AutoCrudOperation.Patch;
             using var db = GetDb<Table>(req);
             using (Profiler.Current.Step("AutoQuery.Update"))
             {
-                var response = ExecAndReturnResponse<Table>(ExecContext.Create<Table>(req,db,dto),
+                var response = ExecAndReturnResponse<Table>(AutoCrudContext.Create<Table>(req,db,dto,operation),
                     ctx => {
                         var dtoValues = ResolveDtoValues(req, dto, skipDefaults);
                         var pkField = ctx.ModelDef?.PrimaryKey;
@@ -444,12 +489,13 @@ namespace ServiceStack
             }
         }
 
-        private async Task<object> UpdateInternalAsync<Table>(IRequest req, object dto, bool skipDefaults)
+        private async Task<object> UpdateInternalAsync<Table>(IRequest req, object dto, string operation)
         {
+            var skipDefaults = operation == AutoCrudOperation.Patch;
             using var db = GetDb<Table>(req);
             using (Profiler.Current.Step("AutoQuery.Update"))
             {
-                var response = await ExecAndReturnResponseAsync<Table>(ExecContext.Create<Table>(req,db,dto), 
+                var response = await ExecAndReturnResponseAsync<Table>(AutoCrudContext.Create<Table>(req,db,dto,operation), 
                     async ctx => {
                         var dtoValues = ResolveDtoValues(req, dto, skipDefaults);
                         var pkField = ctx.ModelDef?.PrimaryKey;

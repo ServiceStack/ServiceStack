@@ -410,12 +410,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int Id { get; set; }
     }
 
-    [AutoUpdate(AutoUpdateStyle.NonDefaults)]
-    public class UpdateRockstarNonDefaults : RockstarBase, IUpdateDb<RockstarAuto>, IReturn<EmptyResponse>
-    {
-        public int Id { get; set; }
-    }
-
     public class UpdateRockstarAdhocNonDefaults : IUpdateDb<RockstarAuto>, IReturn<EmptyResponse>
     {
         public int Id { get; set; }

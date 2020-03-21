@@ -8,9 +8,11 @@ using System.Reflection.Emit;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Auth;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
 using ServiceStack.Data;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Extensions;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
@@ -497,7 +499,7 @@ namespace ServiceStack
         /// </summary>
         Task<object> SaveAsync<Table>(ISaveDb<Table> dto, IRequest req);
     }
-
+    
     public abstract partial class AutoQueryServiceBase : Service
     {
         public IAutoQueryDb AutoQuery { get; set; }

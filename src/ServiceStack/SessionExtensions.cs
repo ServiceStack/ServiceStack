@@ -181,6 +181,9 @@ namespace ServiceStack
                 ? new HashSet<string>()
                 : sessionOptions.Split(',').ToHashSet();
         }
+        
+        public static string GetUserAuthName(this IAuthSession session) => session == null ? null
+            : session.UserAuthName ?? session.UserName ?? session.Email;
 
         public static void UpdateSession(this IAuthSession session, IUserAuth userAuth)
         {

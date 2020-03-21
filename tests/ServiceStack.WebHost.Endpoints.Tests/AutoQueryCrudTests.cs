@@ -104,9 +104,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             appHost = new AutoQueryAppHost {
                     ConfigureFn = (host,container) => {
+
+                        container.AddSingleton<IAutoCrudEvents>(c =>
+                            new OrmLiteAutoCrudEvents(c.Resolve<IDbConnectionFactory>()) {
+                                NamedConnections = { AutoQueryAppHost.SqlServerNamedConnection }
+                            });
+                        container.Resolve<IAutoCrudEvents>().InitSchema();
+                        
                         container.AddSingleton<IAuthRepository>(c =>
                             new InMemoryAuthRepository());
-
                         host.Plugins.Add(new AuthFeature(() => new AuthUserSession(), 
                             new IAuthProvider[] {
                                 new CredentialsAuthProvider(host.AppSettings),
@@ -118,6 +124,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                                     }
                                 }, 
                             }));
+                        
                         var jwtProvider = host.GetPlugin<AuthFeature>().AuthProviders.OfType<JwtAuthProvider>().First();
                         JwtUserToken = jwtProvider.CreateJwtBearerToken(new AuthUserSession {
                             Id = SessionExtensions.CreateRandomSessionId(),
@@ -337,33 +344,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             };
 
             var response = client.Patch(request);
-
-            using var db = appHost.GetDbConnection();
-            var newRockstar = db.SingleById<Rockstar>(createResponse.Id);
-            Assert.That(newRockstar.LastName, Is.EqualTo("UpdateResult"));
-            Assert.That(newRockstar.FirstName, Is.EqualTo(createRequest.FirstName));
-            Assert.That(newRockstar.Age, Is.EqualTo(createRequest.Age));
-            Assert.That(newRockstar.LivingStatus, Is.EqualTo(createRequest.LivingStatus));
-        }
- 
-        [Test]
-        public void Can_UpdateRockstarNonDefaults()
-        {
-            var createRequest = new CreateRockstarWithReturn {
-                FirstName = "UpdateReturn",
-                LastName = "Result",
-                Age = 20,
-                DateOfBirth = new DateTime(2001,7,1),
-                LivingStatus = LivingStatus.Dead,
-            };
-            var createResponse = client.Post(createRequest);
-            
-            var request = new UpdateRockstarNonDefaults {
-                Id = createResponse.Id, 
-                LastName = "UpdateResult",
-            };
-
-            var response = client.Put(request);
 
             using var db = appHost.GetDbConnection();
             var newRockstar = db.SingleById<Rockstar>(createResponse.Id);
@@ -625,6 +605,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_CreateRockstarAuditTenant()
         {
+            appHost.TryResolve<IAutoCrudEvents>()?.Clear();
             var authClient = new JsonServiceClient(Config.ListeningOn);
             authClient.Post(new Authenticate {
                 provider = "credentials",
@@ -750,6 +731,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(realDeleteResponse.Count, Is.EqualTo(1));
             newRockstar = db.SingleById<RockstarAuditTenant>(createResponse.Id);
             Assert.That(newRockstar, Is.Null);
+
+            var events = db.Select<AutoCrudEvent>();
+            // events.PrintDump();
+            Assert.That(events.Count(x => x.RequestType == nameof(CreateRockstarAuditTenant)), Is.EqualTo(1));
+            Assert.That(events.Count(x => x.RequestType == nameof(UpdateRockstarAuditTenant)), Is.EqualTo(1));
+            Assert.That(events.Count(x => x.RequestType == nameof(SoftDeleteAuditTenant)), Is.EqualTo(1));
+            Assert.That(events.Count(x => x.RequestType == nameof(RealDeleteAuditTenant)), Is.EqualTo(2));
         }
 
         [Test]

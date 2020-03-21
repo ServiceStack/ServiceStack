@@ -253,8 +253,7 @@ namespace ServiceStack.Host.AspNet
             string.IsNullOrEmpty(request.Headers[HttpHeaders.Accept]) ? null : request.Headers[HttpHeaders.Accept];
 
         private string remoteIp;
-        public string RemoteIp => 
-            remoteIp ?? (remoteIp = XForwardedFor ?? (XRealIp ?? request.UserHostAddress));
+        public string RemoteIp => remoteIp ??= XForwardedFor ?? (XRealIp ?? request.UserHostAddress);
 
         public string Authorization
         {
