@@ -2,6 +2,7 @@
 using System;
 using System.Reflection;
 using System.Web;
+using ServiceStack.Host;
 using ServiceStack.Host.AspNet;
 using ServiceStack.Web;
 
@@ -15,7 +16,9 @@ namespace ServiceStack
     {
         protected AppHostBase(string serviceName, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices)
-        { }
+        {
+            CookiesExtensions.Init();
+        }
 
         public override string ResolveAbsoluteUrl(string virtualPath, IRequest httpReq)
         {

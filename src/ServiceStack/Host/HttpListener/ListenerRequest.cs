@@ -87,7 +87,7 @@ namespace ServiceStack.Host.HttpListener
         public object Dto { get; set; }
 
         private string rawUrl;
-        public string RawUrl => rawUrl ?? (rawUrl = request.RawUrl.Replace("//", "/"));
+        public string RawUrl => rawUrl ??= request.RawUrl.Replace("//", "/");
 
         public string AbsoluteUri => request.Url.AbsoluteUri.TrimEnd('/');
 
@@ -104,9 +104,7 @@ namespace ServiceStack.Host.HttpListener
         public string Accept => string.IsNullOrEmpty(request.Headers[HttpHeaders.Accept]) ? null : request.Headers[HttpHeaders.Accept];
 
         private string remoteIp;
-        public string RemoteIp => remoteIp ??
-                                  (remoteIp = XForwardedFor ??
-                                              (XRealIp ?? request.RemoteEndPoint?.Address.ToString()));
+        public string RemoteIp => remoteIp ??= XForwardedFor ?? (XRealIp ?? request.RemoteEndPoint?.Address.ToString());
 
         public string Authorization => string.IsNullOrEmpty(request.Headers[HttpHeaders.Authorization]) ? null : request.Headers[HttpHeaders.Authorization];
 
@@ -117,12 +115,12 @@ namespace ServiceStack.Host.HttpListener
         public string[] AcceptTypes => request.AcceptTypes;
 
         private Dictionary<string, object> items;
-        public Dictionary<string, object> Items => items ?? (items = new Dictionary<string, object>());
+        public Dictionary<string, object> Items => items ??= new Dictionary<string, object>();
 
         private string responseContentType;
         public string ResponseContentType
         {
-            get => responseContentType ?? (responseContentType = this.GetResponseContentType());
+            get => responseContentType ??= this.GetResponseContentType();
             set
             {
                 this.responseContentType = value;
@@ -158,20 +156,19 @@ namespace ServiceStack.Host.HttpListener
         public string UserAgent => request.UserAgent;
 
         private NameValueCollection headers;
-        public NameValueCollection Headers => headers ?? (headers = request.Headers);
+        public NameValueCollection Headers => headers ??= request.Headers;
 
         private NameValueCollection queryString;
-        public NameValueCollection QueryString => queryString ?? (queryString = HttpUtility.ParseQueryString(request.Url.Query));
+        public NameValueCollection QueryString => queryString ??= HttpUtility.ParseQueryString(request.Url.Query);
 
         private NameValueCollection formData;
-        public NameValueCollection FormData => formData ?? (formData = this.Form);
+        public NameValueCollection FormData => formData ??= this.Form;
 
         public bool IsLocal => request.IsLocal;
 
         private string httpMethod;
-        public string HttpMethod => httpMethod
-            ?? (httpMethod = this.GetParamInRequestHeader(HttpHeaders.XHttpMethodOverride)
-            ?? request.HttpMethod);
+        public string HttpMethod => httpMethod ??= this.GetParamInRequestHeader(HttpHeaders.XHttpMethodOverride)
+            ?? request.HttpMethod;
 
         public string Verb => HttpMethod;
 
@@ -184,7 +181,7 @@ namespace ServiceStack.Host.HttpListener
 
         public string ContentType => request.ContentType;
 
-        public Encoding contentEncoding;
+        private Encoding contentEncoding;
         public Encoding ContentEncoding
         {
             get => contentEncoding ?? request.ContentEncoding;
@@ -303,10 +300,10 @@ namespace ServiceStack.Host.HttpListener
         }
 
         private IVirtualFile file;
-        public IVirtualFile GetFile() => file ?? (file = HostContext.VirtualFileSources.GetFile(PathInfo));
+        public IVirtualFile GetFile() => file ??= HostContext.VirtualFileSources.GetFile(PathInfo);
 
         private IVirtualDirectory dir;
-        public IVirtualDirectory GetDirectory() => dir ?? (dir = HostContext.VirtualFileSources.GetDirectory(PathInfo));
+        public IVirtualDirectory GetDirectory() => dir ??= HostContext.VirtualFileSources.GetDirectory(PathInfo);
 
         private bool? isDirectory;
         public bool IsDirectory
