@@ -69,7 +69,7 @@ namespace ServiceStack.Testing
         public RequestAttributes RequestAttributes { get; set; }
 
         private IRequestPreferences requestPreferences;
-        public IRequestPreferences RequestPreferences => requestPreferences ?? (requestPreferences = new RequestPreferences(this));
+        public IRequestPreferences RequestPreferences => requestPreferences ??= new RequestPreferences(this);
 
         public object Dto { get; set; }
         public string ContentType { get; set; }
@@ -155,8 +155,7 @@ namespace ServiceStack.Testing
         }
 
         private string remoteIp;
-        public string RemoteIp => 
-            remoteIp ?? (remoteIp = XForwardedFor ?? (XRealIp ?? UserHostAddress));
+        public string RemoteIp => remoteIp ??= XForwardedFor ?? (XRealIp ?? UserHostAddress);
 
         public string Authorization
         {

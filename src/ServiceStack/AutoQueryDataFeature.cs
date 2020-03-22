@@ -13,6 +13,7 @@ using Funq;
 using ServiceStack.Caching;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Extensions;
+using ServiceStack.Host;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Reflection;
 using ServiceStack.Web;
@@ -278,7 +279,7 @@ namespace ServiceStack
                 if (genericDef == null)
                     continue;
 
-                var method = typeBuilder.DefineMethod("Any", MethodAttributes.Public | MethodAttributes.Virtual,
+                var method = typeBuilder.DefineMethod(ActionContext.AnyMethod, MethodAttributes.Public | MethodAttributes.Virtual,
                     CallingConventions.Standard,
                     returnType: typeof(object),
                     parameterTypes: new[] { requestType });

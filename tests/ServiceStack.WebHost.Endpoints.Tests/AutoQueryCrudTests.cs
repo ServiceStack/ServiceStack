@@ -105,11 +105,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost = new AutoQueryAppHost {
                     ConfigureFn = (host,container) => {
 
-                        container.AddSingleton<IAutoCrudEvents>(c =>
-                            new OrmLiteAutoCrudEvents(c.Resolve<IDbConnectionFactory>()) {
+                        container.AddSingleton<ICrudEvents>(c =>
+                            new OrmLiteCrudEvents(c.Resolve<IDbConnectionFactory>()) {
                                 NamedConnections = { AutoQueryAppHost.SqlServerNamedConnection }
-                            });
-                        container.Resolve<IAutoCrudEvents>().InitSchema();
+                            }.Reset() //Drop and re-create AutoCrudEvent Table
+                        );
+                        container.Resolve<ICrudEvents>().InitSchema();
                         
                         container.AddSingleton<IAuthRepository>(c =>
                             new InMemoryAuthRepository());
@@ -206,6 +207,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public List<Rockstar> Rockstars => AutoQueryAppHost.SeedRockstars.ToList();
 
         public List<PagingTest> PagingTests => AutoQueryAppHost.SeedPagingTest.ToList();
+
+        private static JsonServiceClient CreateAuthClient()
+        {
+            var authClient = new JsonServiceClient(Config.ListeningOn);
+            authClient.Post(new Authenticate {
+                provider = "credentials",
+                UserName = "admin@email.com",
+                Password = "p@55wOrd",
+                RememberMe = true,
+            });
+            return authClient;
+        }
 
         [Test]
         public void Can_CreateRockstar()
@@ -603,43 +616,100 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public async Task Can_CreateRockstarAuditTenant_with_Events()
+        {
+            var dbEvents = (OrmLiteCrudEvents) appHost.Resolve<ICrudEvents>();
+            dbEvents.Clear();
+
+            var authClient = CreateAuthClient();
+            var id = CreateAndSoftDeleteRockstarAuditTenant(authClient);
+            
+            using var db = appHost.GetDbConnection();
+            
+            void assertState(RockstarAuditTenant result)
+            {
+                Assert.That(result.Id, Is.EqualTo(id));
+                Assert.That(result.FirstName, Is.EqualTo("Updated & Patched"));
+                Assert.That(result.LastName, Is.EqualTo("Audit"));
+                Assert.That(result.Age, Is.EqualTo(20));
+                Assert.That(result.DateOfBirth.Date, Is.EqualTo(new DateTime(2002, 2, 2).Date));
+                Assert.That(result.LivingStatus, Is.EqualTo(LivingStatus.Alive));
+
+                Assert.That(result.CreatedDate.Date, Is.EqualTo(DateTime.UtcNow.Date));
+                Assert.That(result.CreatedBy, Is.EqualTo("admin@email.com"));
+                Assert.That(result.CreatedInfo, Is.EqualTo("Admin User (London)"));
+                Assert.That(result.ModifiedDate.Date, Is.EqualTo(DateTime.UtcNow.Date));
+                Assert.That(result.ModifiedBy, Is.EqualTo("manager"));
+                Assert.That(result.ModifiedInfo, Is.EqualTo("The Manager (Perth)"));
+            }
+
+            var crudEvents = db.Select<CrudEvent>();
+            // events.PrintDump();
+            Assert.That(crudEvents.Count, Is.EqualTo(4));
+            Assert.That(crudEvents.Count(x => x.RequestType == nameof(CreateRockstarAuditTenant)), Is.EqualTo(1));
+            Assert.That(crudEvents.Count(x => x.RequestType == nameof(UpdateRockstarAuditTenant)), Is.EqualTo(1));
+            Assert.That(crudEvents.Count(x => x.RequestType == nameof(PatchRockstarAuditTenant)), Is.EqualTo(1));
+            Assert.That(crudEvents.Count(x => x.RequestType == nameof(SoftDeleteAuditTenant)), Is.EqualTo(1));
+
+            var newRockstar = db.SingleById<RockstarAuditTenant>(id);
+            assertState(newRockstar);
+
+            db.DeleteById<RockstarAuditTenant>(id);
+            Assert.That(db.SingleById<RockstarAuditTenant>(id), Is.Null);
+            
+            // OrmLiteUtils.PrintSql();
+
+            var eventsPlayer = new CrudEventsExecutor(appHost);
+            foreach (var crudEvent in dbEvents.GetEvents(db))
+            {
+                await eventsPlayer.ExecuteAsync(crudEvent);
+            }
+
+            crudEvents = db.Select<CrudEvent>();
+            Assert.That(crudEvents.Count, Is.EqualTo(4)); // Should not be any new events created by executor
+            
+            newRockstar = db.SingleById<RockstarAuditTenant>(id); //uses the same Id
+            assertState(newRockstar); // State should be the same
+        }
+
+        [Test]
         public void Can_CreateRockstarAuditTenant()
         {
-            appHost.TryResolve<IAutoCrudEvents>()?.Clear();
-            var authClient = new JsonServiceClient(Config.ListeningOn);
-            authClient.Post(new Authenticate {
-                provider = "credentials",
-                UserName = "admin@email.com",
-                Password = "p@55wOrd",
-                RememberMe = true,
-            });
+            var authClient = CreateAuthClient();
+            CreateAndSoftDeleteRockstarAuditTenant(authClient);
+        }
 
+        private int CreateAndSoftDeleteRockstarAuditTenant(JsonServiceClient authClient)
+        {
+            using var db = appHost.GetDbConnection();
+            db.DeleteAll<RockstarAuditTenant>();
+            
             var createRequest = new CreateRockstarAuditTenant {
                 FirstName = "Create",
                 LastName = "Audit",
                 Age = 20,
-                DateOfBirth = new DateTime(2002,2,2),
+                DateOfBirth = new DateTime(2002, 2, 2),
                 LivingStatus = LivingStatus.Dead,
             };
             var createResponse = authClient.Post(createRequest);
-            Assert.That(createResponse.Id, Is.GreaterThan(0));
+            var id = createResponse.Id;
+            Assert.That(id, Is.GreaterThan(0));
             var result = createResponse.Result;
-            
+
             Assert.That(result.FirstName, Is.EqualTo(createRequest.FirstName));
             Assert.That(result.LastName, Is.EqualTo(createRequest.LastName));
             Assert.That(result.Age, Is.EqualTo(createRequest.Age));
             Assert.That(result.DateOfBirth.Date, Is.EqualTo(createRequest.DateOfBirth.Date));
             Assert.That(result.LivingStatus, Is.EqualTo(createRequest.LivingStatus));
-            
-            using var db = appHost.GetDbConnection();
-            var newRockstar = db.SingleById<RockstarAuditTenant>(createResponse.Id);
+
+            var newRockstar = db.SingleById<RockstarAuditTenant>(id);
             Assert.That(newRockstar.TenantId, Is.EqualTo(10)); //admin.City London => 10
             Assert.That(newRockstar.FirstName, Is.EqualTo(createRequest.FirstName));
             Assert.That(newRockstar.LastName, Is.EqualTo(createRequest.LastName));
             Assert.That(newRockstar.Age, Is.EqualTo(createRequest.Age));
             Assert.That(newRockstar.DateOfBirth.Date, Is.EqualTo(createRequest.DateOfBirth.Date));
             Assert.That(newRockstar.LivingStatus, Is.EqualTo(createRequest.LivingStatus));
-            
+
             Assert.That(newRockstar.CreatedDate.Date, Is.EqualTo(DateTime.UtcNow.Date));
             Assert.That(newRockstar.CreatedBy, Is.EqualTo("admin@email.com"));
             Assert.That(newRockstar.CreatedInfo, Is.EqualTo("Admin User (London)"));
@@ -647,7 +717,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(newRockstar.ModifiedBy, Is.EqualTo("admin@email.com"));
             Assert.That(newRockstar.ModifiedInfo, Is.EqualTo("Admin User (London)"));
 
-            Assert.That(authClient.Get(new QueryRockstarAudit { Id = createResponse.Id }).Results.Count,
+            Assert.That(authClient.Get(new QueryRockstarAudit {Id = id}).Results.Count,
                 Is.EqualTo(1));
 
             authClient = new JsonServiceClient(Config.ListeningOn);
@@ -659,85 +729,97 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             });
 
             var updateRequest = new UpdateRockstarAuditTenant {
-                Id = createResponse.Id,
+                Id = id,
                 FirstName = "Updated",
                 LivingStatus = LivingStatus.Alive,
             };
-            var updateResponse = authClient.Patch(updateRequest);
+            var updateResponse = authClient.Put(updateRequest);
 
             void assertUpdated(RockstarAuto result)
             {
-                Assert.That(result.FirstName, Is.EqualTo(updateRequest.FirstName));
+                Assert.That(result.FirstName, Does.StartWith(updateRequest.FirstName));
                 Assert.That(result.LastName, Is.EqualTo(createRequest.LastName));
                 Assert.That(result.Age, Is.EqualTo(createRequest.Age));
                 Assert.That(result.DateOfBirth.Date, Is.EqualTo(createRequest.DateOfBirth.Date));
                 Assert.That(result.LivingStatus, Is.EqualTo(updateRequest.LivingStatus));
             }
-            
-            Assert.That(updateResponse.Id, Is.EqualTo(createResponse.Id));
+
+            Assert.That(updateResponse.Id, Is.EqualTo(id));
             assertUpdated(updateResponse.Result);
 
-            newRockstar = db.SingleById<RockstarAuditTenant>(createResponse.Id);
+            newRockstar = db.SingleById<RockstarAuditTenant>(id);
             Assert.That(newRockstar.FirstName, Is.EqualTo("Updated"));
             Assert.That(newRockstar.LivingStatus, Is.EqualTo(LivingStatus.Alive));
-            
+
             Assert.That(newRockstar.CreatedDate.Date, Is.EqualTo(DateTime.UtcNow.Date));
             Assert.That(newRockstar.CreatedBy, Is.EqualTo("admin@email.com"));
             Assert.That(newRockstar.CreatedInfo, Is.EqualTo("Admin User (London)"));
             Assert.That(newRockstar.ModifiedDate.Date, Is.EqualTo(DateTime.UtcNow.Date));
             Assert.That(newRockstar.ModifiedBy, Is.EqualTo("manager"));
             Assert.That(newRockstar.ModifiedInfo, Is.EqualTo("The Manager (Perth)"));
-            
+
             Assert.That(authClient.Get(new QueryRockstarAuditSubOr {
                     FirstNameStartsWith = "Up",
                     AgeOlderThan = 18,
                 }).Results.Count,
                 Is.EqualTo(1));
 
+            var patchRequest = new PatchRockstarAuditTenant {
+                Id = id,
+                FirstName = updateRequest.FirstName + " & Patched"
+            };
+            var patchResponse = authClient.Patch(patchRequest);
+            Assert.That(patchResponse.Result.FirstName, Is.EqualTo("Updated & Patched"));
+            assertUpdated(patchResponse.Result);
+
             var softDeleteResponse = authClient.Delete(new SoftDeleteAuditTenant {
-                Id = createResponse.Id,
+                Id = id,
             });
 
-            Assert.That(softDeleteResponse.Id, Is.EqualTo(createResponse.Id));
+            Assert.That(softDeleteResponse.Id, Is.EqualTo(id));
             assertUpdated(softDeleteResponse.Result);
 
-            newRockstar = db.SingleById<RockstarAuditTenant>(createResponse.Id);
+            newRockstar = db.SingleById<RockstarAuditTenant>(id);
             Assert.That(newRockstar.SoftDeletedDate.Value.Date, Is.EqualTo(DateTime.UtcNow.Date));
             Assert.That(newRockstar.SoftDeletedBy, Is.EqualTo("manager"));
             Assert.That(newRockstar.SoftDeletedInfo, Is.EqualTo("The Manager (Perth)"));
-            
-            Assert.That(authClient.Get(new QueryRockstarAudit { Id = createResponse.Id }).Results.Count,
+
+            Assert.That(authClient.Get(new QueryRockstarAudit {Id = id}).Results.Count,
                 Is.EqualTo(0));
-            
+
             Assert.That(authClient.Get(new QueryRockstarAuditSubOr {
                     FirstNameStartsWith = "Up",
                     AgeOlderThan = 18,
                 }).Results.Count,
                 Is.EqualTo(0));
 
+            return id;
+        }
+
+        [Test]
+        public void Can_CreateRockstarAuditTenant_with_RealDelete()
+        {
+            var authClient = CreateAuthClient();
+            var id = CreateAndSoftDeleteRockstarAuditTenant(authClient);
+
+            using var db = appHost.GetDbConnection();
+
             var realDeleteResponse = authClient.Delete(new RealDeleteAuditTenant {
-                Id = createResponse.Id,
+                Id = id,
                 Age = 99 //non matching filter
             });
-            Assert.That(realDeleteResponse.Id, Is.EqualTo(createResponse.Id));
+            Assert.That(realDeleteResponse.Id, Is.EqualTo(id));
             Assert.That(realDeleteResponse.Count, Is.EqualTo(0));
-            newRockstar = db.SingleById<RockstarAuditTenant>(createResponse.Id);
+            var newRockstar = db.SingleById<RockstarAuditTenant>(id);
             Assert.That(newRockstar, Is.Not.Null);
 
             realDeleteResponse = authClient.Delete(new RealDeleteAuditTenant {
-                Id = createResponse.Id,
+                Id = id,
             });
-            Assert.That(realDeleteResponse.Id, Is.EqualTo(createResponse.Id));
+            Assert.That(realDeleteResponse.Id, Is.EqualTo(id));
             Assert.That(realDeleteResponse.Count, Is.EqualTo(1));
-            newRockstar = db.SingleById<RockstarAuditTenant>(createResponse.Id);
+            newRockstar = db.SingleById<RockstarAuditTenant>(id);
             Assert.That(newRockstar, Is.Null);
-
-            var events = db.Select<AutoCrudEvent>();
-            // events.PrintDump();
-            Assert.That(events.Count(x => x.RequestType == nameof(CreateRockstarAuditTenant)), Is.EqualTo(1));
-            Assert.That(events.Count(x => x.RequestType == nameof(UpdateRockstarAuditTenant)), Is.EqualTo(1));
-            Assert.That(events.Count(x => x.RequestType == nameof(SoftDeleteAuditTenant)), Is.EqualTo(1));
-            Assert.That(events.Count(x => x.RequestType == nameof(RealDeleteAuditTenant)), Is.EqualTo(2));
         }
 
         [Test]

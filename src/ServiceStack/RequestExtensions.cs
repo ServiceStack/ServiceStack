@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
@@ -282,6 +284,51 @@ namespace ServiceStack
             request.Items[key] = disposable;
 #endif
         }
+
+        public static bool GetSessionFromSource(this IRequest request, string userAuthId, 
+            Action<IUserAuthRepository,IUserAuth> validator,
+            out IAuthSession session, out IEnumerable<string> roles, out IEnumerable<string> permissions)
+        {
+            session = null;
+            roles = permissions = null;
+
+            var userSessionSource = AuthenticateService.GetUserSessionSource();
+            if (userSessionSource != null)
+            {
+                session = userSessionSource.GetUserSession(userAuthId);
+                if (session == null)
+                    throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(request));
+
+                roles = session.Roles;
+                permissions = session.Permissions;
+                return true;
+            }
+
+            if (HostContext.AppHost.GetAuthRepository(request) is IUserAuthRepository userRepo)
+            {
+                using (userRepo as IDisposable)
+                {
+                    var userAuth = userRepo.GetUserAuth(userAuthId);
+                    if (userAuth == null)
+                        throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(request));
+
+                    validator?.Invoke(userRepo, userAuth);
+
+                    session = SessionFeature.CreateNewSession(request, SessionExtensions.CreateRandomSessionId());
+                    session.PopulateSession(userAuth, userRepo);
+
+                    if (userRepo is IManageRoles manageRoles && session.UserAuthId != null)
+                    {
+                        roles = manageRoles.GetRoles(session.UserAuthId);
+                        permissions = manageRoles.GetPermissions(session.UserAuthId);
+                    }
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
     }
 
     // Share same buffered impl/behavior across all Hosts

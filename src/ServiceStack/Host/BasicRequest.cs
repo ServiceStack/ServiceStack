@@ -34,10 +34,11 @@ namespace ServiceStack.Host
             RequestAttributes requestAttributes = RequestAttributes.LocalSubnet | RequestAttributes.MessageQueue)
         {
             Message = message ?? new Message();
+            Dto = Message.Body;
             ContentType = this.ResponseContentType = MimeTypes.Json;
             this.Headers = new NameValueCollection();
 
-            if (Message.Body != null)
+            if (Dto != null)
             {
                 PathInfo = "/json/oneway/" + OperationName;
                 RawUrl = AbsoluteUri = "mq://" + PathInfo;
@@ -54,12 +55,13 @@ namespace ServiceStack.Host
             this.QueryString = new NameValueCollection();
             this.FormData = new NameValueCollection();
             this.Files = TypeConstants<IHttpFile>.EmptyArray;
+            this.RemoteIp = IPAddress.IPv6Loopback.ToString();
         }
 
         private string operationName;
         public string OperationName
         {
-            get => operationName ??= Message.Body?.GetType().GetOperationName();
+            get => operationName ??= Dto?.GetType().GetOperationName();
             set => operationName = value;
         }
 
@@ -118,7 +120,7 @@ namespace ServiceStack.Host
         public bool UseBufferedStream { get; set; }
 
         private string body;
-        public string GetRawBody() => body ??= (Message.Body ?? "").Dump();
+        public string GetRawBody() => body ??= (Dto ?? "").ToJson();
 
         public Task<string> GetRawBodyAsync() => Task.FromResult(GetRawBody());
 

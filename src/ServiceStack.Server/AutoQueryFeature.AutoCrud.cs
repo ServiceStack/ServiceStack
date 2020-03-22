@@ -17,11 +17,11 @@ namespace ServiceStack
         
     }
 
-    public class AutoCrudContext
+    public class CrudContext
     {
         public IRequest Request { get; private set; }
         public IDbConnection Db { get; private set; }
-        public IAutoCrudEvents Events { get; private set; }
+        public ICrudEvents Events { get; private set; }
         public string Operation { get; set; }
         public object Dto { get; private set; }
         public Type ModelType { get; private set; }
@@ -49,17 +49,17 @@ namespace ServiceStack
         internal void ThrowPrimaryKeyRequiredForRowVersion() =>
             throw new NotSupportedException($"Could not resolve Primary Key from '{RequestType.Name}' to be able to resolve RowVersion");
 
-        internal static AutoCrudContext Create<Table>(IRequest request, IDbConnection db, object dto, string operation)
+        internal static CrudContext Create<Table>(IRequest request, IDbConnection db, object dto, string operation)
         {
             var appHost = HostContext.AppHost;
             var requestType = dto?.GetType() ?? throw new ArgumentNullException(nameof(dto));
             var responseType = appHost.Metadata.GetOperation(requestType)?.ResponseType;
             var responseProps = responseType == null ? null : TypeProperties.Get(responseType);
-            return new AutoCrudContext {
+            return new CrudContext {
                 Operation = operation,
                 Request = request ?? throw new ArgumentNullException(nameof(request)),
                 Db = db ?? throw new ArgumentNullException(nameof(db)),
-                Events = appHost.TryResolve<IAutoCrudEvents>(),
+                Events = appHost.TryResolve<ICrudEvents>(),
                 Dto = dto,
                 ModelType = typeof(Table),
                 RequestType = requestType,
@@ -80,7 +80,48 @@ namespace ServiceStack
         public const string Patch = nameof(Patch);
         public const string Delete = nameof(Delete);
         public const string Save = nameof(Save);
+
+        public static string ToHttpMethod(string operation) => operation switch {
+            Create => HttpMethods.Post,
+            Update => HttpMethods.Put,
+            Patch => HttpMethods.Patch,
+            Delete => HttpMethods.Delete,
+            Save => HttpMethods.Post,
+        };
+
+        public static AutoCrudDtoType? GetCrudGenericDefTypes(Type requestType, Type crudType)
+        {
+            var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(crudType);
+            if (genericDef != null)
+                return new AutoCrudDtoType(genericDef, crudType);
+            return null;
+        }
+
+        public static AutoCrudDtoType? GetAutoCrudDtoType(Type requestType)
+        {
+            var crudTypes = GetCrudGenericDefTypes(requestType, typeof(ICreateDb<>))
+                ?? GetCrudGenericDefTypes(requestType, typeof(IUpdateDb<>))
+                ?? GetCrudGenericDefTypes(requestType, typeof(IDeleteDb<>))
+                ?? GetCrudGenericDefTypes(requestType, typeof(IPatchDb<>))
+                ?? GetCrudGenericDefTypes(requestType, typeof(ISaveDb<>));
+            return crudTypes;
+        }
+        
+        public static AutoCrudDtoType AssertAutoCrudDtoType(Type requestType) =>
+            GetAutoCrudDtoType(requestType) ?? throw new NotSupportedException($"{requestType.Name} is not an ICrud Type");
     }
+
+    public struct AutoCrudDtoType
+    {
+        public Type GenericDef { get; }
+        public Type ModelType { get; }
+        public AutoCrudDtoType(Type genericDef, Type modelType)
+        {
+            GenericDef = genericDef;
+            ModelType = modelType;
+        }
+    }
+    
 
     public partial class AutoQuery : IAutoCrudDb
     {
@@ -90,12 +131,20 @@ namespace ServiceStack
             using var db = GetDb<Table>(req);
             using var profiler = Profiler.Current.Step("AutoQuery.Create");
 
-            var response = ExecAndReturnResponse<Table>(AutoCrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Create),
+            var response = ExecAndReturnResponse<Table>(CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Create),
                 ctx => {
                     var dtoValues = ResolveDtoValues(req, dto);
                     var pkField = ctx.ModelDef.PrimaryKey;
-                    var selectIdentity = ctx.IdProp != null || ctx.ResultProp != null;
-                    
+                    var selectIdentity = ctx.IdProp != null || ctx.ResultProp != null || ctx.Events != null;
+
+                    //Use same Id if being executed from id
+                    if (req.Items.TryGetValue(Keywords.EventModelId, out var eventId) && eventId != null 
+                        && !dtoValues.ContainsKey(pkField.Name))
+                    {
+                        dtoValues[pkField.Name] = eventId.ConvertTo(pkField.PropertyInfo.PropertyType);
+                        selectIdentity = false;
+                    }
+
                     var autoIntId = db.Insert<Table>(dtoValues, selectIdentity: selectIdentity);
                     return CreateInternal(dtoValues, pkField, selectIdentity, autoIntId);
                 });
@@ -109,11 +158,19 @@ namespace ServiceStack
             using var db = GetDb<Table>(req);
             using var profiler = Profiler.Current.Step("AutoQuery.Create");
 
-            var response = await ExecAndReturnResponseAsync<Table>(AutoCrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Create),
+            var response = await ExecAndReturnResponseAsync<Table>(CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Create),
                 async ctx => {
                     var dtoValues = ResolveDtoValues(ctx.Request, ctx.Dto);
                     var pkField = ctx.ModelDef.PrimaryKey;
-                    var selectIdentity = ctx.IdProp != null || ctx.ResultProp != null;
+                    var selectIdentity = ctx.IdProp != null || ctx.ResultProp != null || ctx.Events != null;
+
+                    //Use same Id if being executed from id
+                    if (req.Items.TryGetValue(Keywords.EventModelId, out var eventId) && eventId != null 
+                        && !dtoValues.ContainsKey(pkField.Name))
+                    {
+                        dtoValues[pkField.Name] = eventId.ConvertTo(pkField.PropertyInfo.PropertyType);
+                        selectIdentity = false;
+                    }
                     
                     var autoIntId = await db.InsertAsync<Table>(dtoValues, selectIdentity: selectIdentity);
                     return CreateInternal(dtoValues, pkField, selectIdentity, autoIntId);
@@ -163,7 +220,7 @@ namespace ServiceStack
             using var db = GetDb<Table>(req);
             using var profiler = Profiler.Current.Step("AutoQuery.Delete");
             
-            var response = ExecAndReturnResponse<Table>(AutoCrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Delete),
+            var response = ExecAndReturnResponse<Table>(CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Delete),
                 ctx => {
                     var dtoValues = ResolveDtoValues(ctx.Request, ctx.Dto, skipDefaults:true);
                     var idValue = ctx.ModelDef.PrimaryKey != null && dtoValues.TryGetValue(ctx.ModelDef.PrimaryKey.Name, out var oId)
@@ -183,7 +240,7 @@ namespace ServiceStack
             using var db = GetDb<Table>(req);
             using var profiler = Profiler.Current.Step("AutoQuery.Delete");
             
-            var response = await ExecAndReturnResponseAsync<Table>(AutoCrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Delete),
+            var response = await ExecAndReturnResponseAsync<Table>(CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Delete),
                 async ctx => {
                     var dtoValues = ResolveDtoValues(req, dto, skipDefaults:true);
                     var idValue = ctx.ModelDef.PrimaryKey != null && dtoValues.TryGetValue(ctx.ModelDef.PrimaryKey.Name, out var oId)
@@ -198,7 +255,7 @@ namespace ServiceStack
             return response;
         }
 
-        internal SqlExpression<Table> DeleteInternal<Table>(AutoCrudContext ctx, Dictionary<string, object> dtoValues)
+        internal SqlExpression<Table> DeleteInternal<Table>(CrudContext ctx, Dictionary<string, object> dtoValues)
         {
             //Should have at least 1 non-default filter
             if (dtoValues.Count == 0)
@@ -236,7 +293,7 @@ namespace ServiceStack
             using var profiler = Profiler.Current.Step("AutoQuery.Save");
 
             var row = dto.ConvertTo<Table>();
-            var response = ExecAndReturnResponse<Table>(AutoCrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Save),
+            var response = ExecAndReturnResponse<Table>(CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Save),
                 ctx => {
                     ctx.Db.Save(row);
                     return SaveInternal(dto, ctx);
@@ -251,7 +308,7 @@ namespace ServiceStack
             using var profiler = Profiler.Current.Step("AutoQuery.Save");
 
             var row = dto.ConvertTo<Table>();
-            var response = await ExecAndReturnResponseAsync<Table>(AutoCrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Save),
+            var response = await ExecAndReturnResponseAsync<Table>(CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Save),
                 async ctx => {
                     await ctx.Db.SaveAsync(row);
                     return SaveInternal(dto, ctx);
@@ -260,7 +317,7 @@ namespace ServiceStack
             return response;
         }
 
-        private static ExecValue SaveInternal<Table>(ISaveDb<Table> dto, AutoCrudContext ctx)
+        private static ExecValue SaveInternal<Table>(ISaveDb<Table> dto, CrudContext ctx)
         {
             //TODO: Use Upsert when available
             object idValue = null;
@@ -286,16 +343,18 @@ namespace ServiceStack
             }
         }
         
-        private object ExecAndReturnResponse<Table>(AutoCrudContext context, Func<AutoCrudContext,ExecValue> fn)
+        private object ExecAndReturnResponse<Table>(CrudContext context, Func<CrudContext,ExecValue> fn)
         {
-            var trans = context.Events != null
+            var ignoreEvent = context.Request.Items.ContainsKey(Keywords.IgnoreEvent);
+            var trans = context.Events != null && !ignoreEvent
                 ? context.Db.OpenTransaction()
                 : null;
 
             using (trans)
             {
                 context.SetResult(fn(context));
-                context.Events?.Record(context);
+                if (context.Events != null && !ignoreEvent)
+                    context.Events?.Record(context);
                 
                 trans?.Commit();
             }
@@ -340,17 +399,18 @@ namespace ServiceStack
             return response;
         }
 
-        private async Task<object> ExecAndReturnResponseAsync<Table>(AutoCrudContext context, Func<AutoCrudContext,Task<ExecValue>> fn)
+        private async Task<object> ExecAndReturnResponseAsync<Table>(CrudContext context, Func<CrudContext,Task<ExecValue>> fn)
         {
-            var trans = context.Events != null
+            var ignoreEvent = context.Request.Items.ContainsKey(Keywords.IgnoreEvent);
+            var trans = context.Events != null && !ignoreEvent
                 ? context.Db.OpenTransaction()
                 : null;
 
             using (trans)
             {
                 context.SetResult(await fn(context));
-                if (context.Events != null)
-                    await context.Events.RecordAsync(context);
+                if (context.Events != null && !ignoreEvent)
+                    context.Events?.Record(context);
                 
                 trans?.Commit();
             }
@@ -396,7 +456,7 @@ namespace ServiceStack
             return response;
         }
 
-        internal bool GetAutoFilterExpressions(AutoCrudContext ctx, Dictionary<string, object> dtoValues, out string expr, out List<object> exprParams)
+        internal bool GetAutoFilterExpressions(CrudContext ctx, Dictionary<string, object> dtoValues, out string expr, out List<object> exprParams)
         {
             var meta = AutoCrudMetadata.Create(ctx.RequestType);
             if (meta.AutoFilters != null)
@@ -465,7 +525,7 @@ namespace ServiceStack
             using var db = GetDb<Table>(req);
             using (Profiler.Current.Step("AutoQuery.Update"))
             {
-                var response = ExecAndReturnResponse<Table>(AutoCrudContext.Create<Table>(req,db,dto,operation),
+                var response = ExecAndReturnResponse<Table>(CrudContext.Create<Table>(req,db,dto,operation),
                     ctx => {
                         var dtoValues = ResolveDtoValues(req, dto, skipDefaults);
                         var pkField = ctx.ModelDef?.PrimaryKey;
@@ -495,7 +555,7 @@ namespace ServiceStack
             using var db = GetDb<Table>(req);
             using (Profiler.Current.Step("AutoQuery.Update"))
             {
-                var response = await ExecAndReturnResponseAsync<Table>(AutoCrudContext.Create<Table>(req,db,dto,operation), 
+                var response = await ExecAndReturnResponseAsync<Table>(CrudContext.Create<Table>(req,db,dto,operation), 
                     async ctx => {
                         var dtoValues = ResolveDtoValues(req, dto, skipDefaults);
                         var pkField = ctx.ModelDef?.PrimaryKey;
@@ -554,19 +614,8 @@ namespace ServiceStack
                     return args[0];
                 }
                 
-                var crudTypes = AutoQueryFeature.GetCrudGenericDefTypes(requestType, typeof(ICreateDb<>))
-                    ?? AutoQueryFeature.GetCrudGenericDefTypes(requestType, typeof(IUpdateDb<>))
-                    ?? AutoQueryFeature.GetCrudGenericDefTypes(requestType, typeof(IDeleteDb<>))
-                    ?? AutoQueryFeature.GetCrudGenericDefTypes(requestType, typeof(IPatchDb<>))
-                    ?? AutoQueryFeature.GetCrudGenericDefTypes(requestType, typeof(ISaveDb<>));
-
-                if (crudTypes != null)
-                {
-                    var genericDef = crudTypes.Item1;
-                    return genericDef.GenericTypeArguments[0];
-                }
-
-                return null;
+                var crudTypes = AutoCrudOperation.GetAutoCrudDtoType(requestType);
+                return crudTypes?.GenericDef.GenericTypeArguments[0];
             }
 
             internal static AutoCrudMetadata Create(Type dtoType)

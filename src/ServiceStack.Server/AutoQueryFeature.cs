@@ -14,6 +14,7 @@ using ServiceStack.Web;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Extensions;
+using ServiceStack.Host;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
 
@@ -195,14 +196,6 @@ namespace ServiceStack
             appHost.RegisterService(serviceType);
         }
 
-        internal static Tuple<Type, Type> GetCrudGenericDefTypes(Type requestType, Type crudType)
-        {
-            var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(crudType);
-            if (genericDef != null)
-                return Tuple.Create(genericDef, crudType);
-            return null;
-        }
-
         Type GenerateMissingQueryServices(
             List<Type> missingQueryRequestTypes, List<Type> missingCrudRequestTypes)
         {
@@ -226,7 +219,7 @@ namespace ServiceStack
                 if (genericDef == null)
                     continue;
 
-                var method = typeBuilder.DefineMethod("Any", MethodAttributes.Public | MethodAttributes.Virtual,
+                var method = typeBuilder.DefineMethod(ActionContext.AnyMethod, MethodAttributes.Public | MethodAttributes.Virtual,
                     CallingConventions.Standard,
                     returnType: typeof(object),
                     parameterTypes: new[] { requestType });
@@ -262,17 +255,13 @@ namespace ServiceStack
                 if (requestType.IsAbstract || requestType.IsGenericType)
                     continue;
                 
-                var crudTypes = GetCrudGenericDefTypes(requestType, typeof(ICreateDb<>))
-                    ?? GetCrudGenericDefTypes(requestType, typeof(IUpdateDb<>))
-                    ?? GetCrudGenericDefTypes(requestType, typeof(IDeleteDb<>))
-                    ?? GetCrudGenericDefTypes(requestType, typeof(IPatchDb<>))
-                    ?? GetCrudGenericDefTypes(requestType, typeof(ISaveDb<>));
+                var crudTypes = AutoCrudOperation.GetAutoCrudDtoType(requestType);
                 
                 if (crudTypes == null)
                     continue;
 
-                var genericDef = crudTypes.Item1;
-                var crudType = crudTypes.Item2;
+                var genericDef = crudTypes.Value.GenericDef;
+                var crudType = crudTypes.Value.ModelType;
                 var methodName = crudType.Name.LeftPart('`').Substring(1);
                 methodName = methodName.Substring(0, methodName.Length - 2);
                 
@@ -280,7 +269,7 @@ namespace ServiceStack
                     !requestType.IsOrHasGenericInterfaceTypeOf(typeof(IReturn<>)))
                     throw new NotSupportedException($"'{requestType.Name}' I{methodName}Db<T> AutoQuery Service must implement IReturn<T> or IReturnVoid");
                 
-                var method = typeBuilder.DefineMethod("Any", MethodAttributes.Public | MethodAttributes.Virtual,
+                var method = typeBuilder.DefineMethod(ActionContext.AnyMethod, MethodAttributes.Public | MethodAttributes.Virtual,
                     CallingConventions.Standard,
                     returnType: typeof(object),
                     parameterTypes: new[] { requestType });

@@ -33,6 +33,8 @@
         public const string HasPreAuthenticated = "__haspreauth";
         public const string HasLogged = "_logged";
         public const string DidAuthenticate = "__didauth";
+        public const string IgnoreEvent = "__ignoreevent";
+        public const string EventModelId = "__eventmodelid";
         public const string IRequest = "__irequest";
         public const string Attributes = "__attrs";
         public const string RequestDuration = "_requestDurationStopwatch";

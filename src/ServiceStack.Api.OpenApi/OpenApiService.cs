@@ -705,7 +705,7 @@ namespace ServiceStack.Api.OpenApi
                     .SelectMany(x => x.AllAttributes().OfType<AuthenticateAttribute>()).ToList();
 
                 authAttrs.AddRange(actions
-                    .Where(x => x.Name.ToUpperInvariant() == "ANY")
+                    .Where(x => x.Name.ToUpperInvariant() == ActionContext.AnyAction)
                     .SelectMany(x => x.AllAttributes<AuthenticateAttribute>())
                 );
 

@@ -9,6 +9,7 @@ namespace ServiceStack.Host
     public class ActionContext
     {
         public const string AnyAction = "ANY";
+        public const string AnyMethod = "Any";
 
         public string Id { get; set; }
         public Type RequestType { get; set; }
