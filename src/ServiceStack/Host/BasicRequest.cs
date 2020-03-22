@@ -120,7 +120,7 @@ namespace ServiceStack.Host
         public bool UseBufferedStream { get; set; }
 
         private string body;
-        public string GetRawBody() => body ??= (Dto ?? "").ToJson();
+        public string GetRawBody() => body ??= (Message.Body ?? "").Dump();
 
         public Task<string> GetRawBodyAsync() => Task.FromResult(GetRawBody());
 
@@ -150,7 +150,7 @@ namespace ServiceStack.Host
 
         public string[] AcceptTypes { get; set; }
 
-        public Stream InputStream { get; set; }
+        public Stream InputStream { get; set; } = Stream.Null;
 
         public long ContentLength => (GetRawBody() ?? "").Length;
 

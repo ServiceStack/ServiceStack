@@ -80,7 +80,7 @@ namespace ServiceStack
         /// </summary>
         public string RemoteIp { get; set; }
         /// <summary>
-        /// URN format: urn:{requesttype}:{EventId}
+        /// URN format: urn:{requesttype}:{ModelId}
         /// </summary>
         public string Urn { get; set; }
 
@@ -315,6 +315,14 @@ namespace ServiceStack
                     yield return result;
                 }
             } while (results.Count > 0);
+        }
+
+        public IEnumerable<T> GetEvents(IDbConnection db, string table, string id)
+        {
+            var q = db.From<T>()
+                .Where(x => x.Model == table && x.ModelId == id)
+                .OrderBy(x => x.Id);
+            return db.Select<T>(q);
         }
 
         /// <summary>

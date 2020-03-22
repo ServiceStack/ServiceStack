@@ -264,8 +264,8 @@ namespace ServiceStack.Razor.Managers
 
         private void PrepareAndSetModel(IRazorView page, IRequest httpReq, object dto)
         {
-            var hasModel = page as IHasModel;
-            if (hasModel == null) return;
+            if (!(page is IHasModel hasModel)) 
+                return;
 
             if (hasModel.ModelType == typeof(DynamicRequestObject))
                 dto = new DynamicRequestObject(httpReq, dto);
