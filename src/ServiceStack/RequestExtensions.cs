@@ -285,17 +285,6 @@ namespace ServiceStack
 #endif
         }
 
-        internal static void AssertIsAdminOrInDebugMode(this IRequest req, string adminRole=null, string authSecret=null)
-        {
-            if (!HostContext.DebugMode)
-            {
-                if (HostContext.Config.AdminAuthSecret == null || HostContext.Config.AdminAuthSecret != authSecret)
-                {
-                    RequiredRoleAttribute.AssertRequiredRoles(req, adminRole);
-                }
-            }
-        }
-
         public static bool GetSessionFromSource(this IRequest request, string userAuthId, 
             Action<IUserAuthRepository,IUserAuth> validator,
             out IAuthSession session, out IEnumerable<string> roles, out IEnumerable<string> permissions)
@@ -339,7 +328,20 @@ namespace ServiceStack
             
             return false;
         }
-        
+    }
+    
+    public static class RequestUtils
+    {
+        public static void AssertIsAdminOrDebugMode(IRequest req, string adminRole=null, string authSecret=null)
+        {
+            if (!HostContext.DebugMode)
+            {
+                if (HostContext.Config.AdminAuthSecret == null || HostContext.Config.AdminAuthSecret != authSecret)
+                {
+                    RequiredRoleAttribute.AssertRequiredRoles(req, adminRole);
+                }
+            }
+        }
     }
 
     // Share same buffered impl/behavior across all Hosts
