@@ -81,6 +81,17 @@ namespace ServiceStack
         public const string Patch = nameof(Patch);
         public const string Delete = nameof(Delete);
         public const string Save = nameof(Save);
+        
+        public static HashSet<string> All { get; } = new HashSet<string> {
+            Query,
+            Create,
+            Update,
+            Patch,
+            Delete,
+            Save,
+        };
+
+        public static bool IsOperation(string operation) => All.Contains(operation);
 
         public static string ToHttpMethod(string operation) => operation switch {
             Create => HttpMethods.Post,
