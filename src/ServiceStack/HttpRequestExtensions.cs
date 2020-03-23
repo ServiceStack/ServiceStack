@@ -45,7 +45,7 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Gets request paramater string value by looking in the following order:
+        /// Gets request parameter string value by looking in the following order:
         /// - QueryString[name]
         /// - FormData[name]
         /// - Cookies[name]
