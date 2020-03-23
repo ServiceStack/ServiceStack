@@ -11,4 +11,15 @@ namespace ServiceStack
         [DataMember(Order = 1)]
         public ResponseStatus ResponseStatus { get; set; }
     }
+    
+    [DataContract]
+    public class IdResponse : IHasResponseStatus
+    {
+        [DataMember(Order = 1)]
+        public string Id { get; set; }
+
+        [DataMember(Order = 2)]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+    
 }
