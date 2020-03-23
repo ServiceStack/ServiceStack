@@ -727,7 +727,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
             if (string.IsNullOrEmpty(request.Script))
                 return null;
 
-            var feature = HostContext.GetPlugin<SharpPagesFeature>();
+            var feature = HostContext.AssertPlugin<SharpPagesFeature>();
             RequestUtils.AssertIsAdminOrDebugMode(Request, adminRole: feature.MetadataDebugAdminRole, authSecret: request.AuthSecret);
 
             var appHost = HostContext.AppHost;

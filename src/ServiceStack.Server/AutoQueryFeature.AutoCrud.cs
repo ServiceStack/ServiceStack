@@ -75,6 +75,7 @@ namespace ServiceStack
 
     public static class AutoCrudOperation
     {
+        public const string Query = nameof(Query);
         public const string Create = nameof(Create);
         public const string Update = nameof(Update);
         public const string Patch = nameof(Patch);
