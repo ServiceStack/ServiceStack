@@ -728,13 +728,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                 return null;
 
             var feature = HostContext.GetPlugin<SharpPagesFeature>();
-            if (!HostContext.DebugMode)
-            {
-                if (HostContext.Config.AdminAuthSecret == null || HostContext.Config.AdminAuthSecret != request.AuthSecret)
-                {
-                    RequiredRoleAttribute.AssertRequiredRoles(Request, feature.MetadataDebugAdminRole);
-                }
-            }
+            Request.AssertIsAdminOrInDebugMode(adminRole: feature.MetadataDebugAdminRole, authSecret: request.AuthSecret);
 
             var appHost = HostContext.AppHost;
             var context = new ScriptContext
