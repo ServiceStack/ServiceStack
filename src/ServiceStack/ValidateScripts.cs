@@ -21,7 +21,7 @@ namespace ServiceStack
         public IPropertyValidator NotEqual(object value) => new NotEqualValidator(value);
 
         public IPropertyValidator CreditCard() => new CreditCardValidator();
-        public IPropertyValidator Email() => new EmailValidator();
+        public IPropertyValidator Email() => new AspNetCoreCompatibleEmailValidator();
 
         public IPropertyValidator Length(int min, int max) => new LengthValidator(min, max);
         public IPropertyValidator ExactLength(int length) => new ExactLengthValidator(length);
