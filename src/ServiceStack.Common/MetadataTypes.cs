@@ -54,6 +54,7 @@ namespace ServiceStack
         }
 
         public string BaseUrl { get; set; }
+        public string UsePath { get; set; }
         public bool MakePartial { get; set; }
         public bool MakeVirtual { get; set; }
         public bool MakeInternal { get; set; }
