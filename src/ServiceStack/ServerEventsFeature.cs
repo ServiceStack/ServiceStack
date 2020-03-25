@@ -107,7 +107,7 @@ namespace ServiceStack
             OnHungConnection = sub => {
                 var mse = HostContext.Resolve<IServerEvents>().GetMemoryServerEvents();
                 mse?.RegisterHungConnection(sub);
-                OnError(sub, new TimeoutException("Hung connection was detected"));
+                OnError?.Invoke(sub, new TimeoutException("Hung connection was detected"));
             };
 
             Serialize = JsonSerializer.SerializeToString;
@@ -572,7 +572,7 @@ namespace ServiceStack
         }
 
         private string jsonArgs;
-        public string JsonArgs => jsonArgs ?? (jsonArgs = SerializeDictionary(Meta));
+        public string JsonArgs => jsonArgs ??= SerializeDictionary(Meta);
 
         string CreateFrame(string selector, string message)
         {
