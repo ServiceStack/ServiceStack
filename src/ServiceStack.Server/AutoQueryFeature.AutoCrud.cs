@@ -73,68 +73,6 @@ namespace ServiceStack
         }
     }
 
-    public static class AutoCrudOperation
-    {
-        public const string Query = nameof(Query);
-        public const string Create = nameof(Create);
-        public const string Update = nameof(Update);
-        public const string Patch = nameof(Patch);
-        public const string Delete = nameof(Delete);
-        public const string Save = nameof(Save);
-        
-        public static HashSet<string> All { get; } = new HashSet<string> {
-            Query,
-            Create,
-            Update,
-            Patch,
-            Delete,
-            Save,
-        };
-
-        public static bool IsOperation(string operation) => All.Contains(operation);
-
-        public static string ToHttpMethod(string operation) => operation switch {
-            Create => HttpMethods.Post,
-            Update => HttpMethods.Put,
-            Patch => HttpMethods.Patch,
-            Delete => HttpMethods.Delete,
-            Save => HttpMethods.Post,
-        };
-
-        public static AutoCrudDtoType? GetCrudGenericDefTypes(Type requestType, Type crudType)
-        {
-            var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(crudType);
-            if (genericDef != null)
-                return new AutoCrudDtoType(genericDef, crudType);
-            return null;
-        }
-
-        public static AutoCrudDtoType? GetAutoCrudDtoType(Type requestType)
-        {
-            var crudTypes = GetCrudGenericDefTypes(requestType, typeof(ICreateDb<>))
-                ?? GetCrudGenericDefTypes(requestType, typeof(IUpdateDb<>))
-                ?? GetCrudGenericDefTypes(requestType, typeof(IDeleteDb<>))
-                ?? GetCrudGenericDefTypes(requestType, typeof(IPatchDb<>))
-                ?? GetCrudGenericDefTypes(requestType, typeof(ISaveDb<>));
-            return crudTypes;
-        }
-        
-        public static AutoCrudDtoType AssertAutoCrudDtoType(Type requestType) =>
-            GetAutoCrudDtoType(requestType) ?? throw new NotSupportedException($"{requestType.Name} is not an ICrud Type");
-    }
-
-    public struct AutoCrudDtoType
-    {
-        public Type GenericDef { get; }
-        public Type ModelType { get; }
-        public AutoCrudDtoType(Type genericDef, Type modelType)
-        {
-            GenericDef = genericDef;
-            ModelType = modelType;
-        }
-    }
-    
-
     public partial class AutoQuery : IAutoCrudDb
     {
         public object Create<Table>(ICreateDb<Table> dto, IRequest req)
