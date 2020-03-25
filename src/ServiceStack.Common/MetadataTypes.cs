@@ -119,6 +119,8 @@ namespace ServiceStack
 
     public class MetadataType : IMeta
     {
+        [IgnoreDataMember]
+        public Type Type { get; set; }
         public string Name { get; set; }
         public string Namespace { get; set; }
         public string[] GenericArgs { get; set; }
@@ -157,6 +159,8 @@ namespace ServiceStack
 
     public class MetadataTypeName
     {
+        [IgnoreDataMember]
+        public Type Type { get; set; }
         public string Name { get; set; }
         public string Namespace { get; set; }
         public string[] GenericArgs { get; set; }
