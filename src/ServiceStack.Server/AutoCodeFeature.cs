@@ -14,6 +14,7 @@ using ServiceStack.NativeTypes.Swift;
 using ServiceStack.NativeTypes.TypeScript;
 using ServiceStack.NativeTypes.VbNet;
 using ServiceStack.OrmLite;
+using ServiceStack.Web;
 
 namespace ServiceStack
 {
@@ -29,7 +30,7 @@ namespace ServiceStack
         };
         
         public string AccessRole { get; set; } = RoleNames.Admin;
-
+        
         internal ConcurrentDictionary<string, DbSchema> CachedDbSchemas { get; } 
             = new ConcurrentDictionary<string, DbSchema>();
 
@@ -89,17 +90,379 @@ namespace ServiceStack
 
             return results;
         }
+
+
+        public static string GenerateSourceCode(IRequest req, AutoCodeTypes request, 
+            MetadataTypesConfig typesConfig, MetadataTypes crudMetadataTypes)
+        {
+            var metadata = req.Resolve<INativeTypesMetadata>();
+            var src = request.Lang switch {
+                "csharp" => new CSharpGenerator(typesConfig).GetCode(crudMetadataTypes, req),
+                "fsharp" => new FSharpGenerator(typesConfig).GetCode(crudMetadataTypes, req),
+                "vbnet" => new VbNetGenerator(typesConfig).GetCode(crudMetadataTypes, req),
+                "typescript" => new TypeScriptGenerator(typesConfig).GetCode(crudMetadataTypes, req, metadata),
+                "dart" => new DartGenerator(typesConfig).GetCode(crudMetadataTypes, req, metadata),
+                "swift" => new SwiftGenerator(typesConfig).GetCode(crudMetadataTypes, req),
+                "java" => new JavaGenerator(typesConfig).GetCode(crudMetadataTypes, req, metadata),
+                "kotlin" => new KotlinGenerator(typesConfig).GetCode(crudMetadataTypes, req, metadata),
+                "typescript.d" => new FSharpGenerator(typesConfig).GetCode(crudMetadataTypes, req),
+            };
+            return src;
+        }
+        
+        public static string GenerateSource(IRequest req, AutoCodeTypes request)
+        {
+            if (string.IsNullOrEmpty(request.Include))
+                throw new ArgumentNullException(nameof(request.Include));
+            if (request.Include != "all" && request.Include != "new")
+                throw new ArgumentException(
+                    "'Include' must be either 'all' to include all AutoQuery Services or 'new' to include only missing Services and Types", 
+                    nameof(request.Include));
+            
+            var metadata = req.Resolve<INativeTypesMetadata>();
+            var feature = HostContext.AssertPlugin<AutoCodeFeature>();
+            RequestUtils.AssertIsAdminOrDebugMode(req, adminRole: feature.AccessRole, authSecret: request.AuthSecret);
+            
+            var dbFactory = req.TryResolve<IDbConnectionFactory>();
+            var results = request.NoCache == true 
+                ? GetTableSchemas(dbFactory, request.Schema, request.NamedConnection)
+                : feature.GetCachedDbSchema(dbFactory, request.Schema, request.NamedConnection).Tables;
+
+            request.BaseUrl ??= HostContext.GetPlugin<NativeTypesFeature>().MetadataTypesConfig.BaseUrl ?? req.GetBaseUrl();
+            if (request.MakePartial == null)
+                request.MakePartial = false;
+            if (request.MakeVirtual == null)
+                request.MakeVirtual = false;
+
+            var appHost = HostContext.AppHost;
+            var typesConfig = metadata.GetConfig(request);
+            typesConfig.UsePath = req.PathInfo;
+            var metadataTypes = metadata.GetMetadataTypes(req, typesConfig);
+            var serviceModelNs = appHost.GetType().Namespace + ".ServiceModel";
+            var typesNs = serviceModelNs + ".Types";
+            metadataTypes.Namespaces.Add(serviceModelNs);
+            metadataTypes.Namespaces.Add(typesNs);
+            metadataTypes.Namespaces = metadataTypes.Namespaces.Distinct().ToList();
+            
+            var crudVerbs = new Dictionary<string,string> {
+                { AutoCrudOperation.Query, HttpMethods.Get },
+                { AutoCrudOperation.Create, HttpMethods.Post },
+                { AutoCrudOperation.Update, HttpMethods.Put },
+                { AutoCrudOperation.Patch, HttpMethods.Patch },
+                { AutoCrudOperation.Delete, HttpMethods.Delete },
+                { AutoCrudOperation.Save, HttpMethods.Post },
+            };
+            var allVerbs = crudVerbs.Values.Distinct().ToArray();
+
+            var existingRoutes = new HashSet<Tuple<string,string>>();
+            foreach (var op in appHost.Metadata.Operations)
+            {
+                foreach (var route in op.Routes.Safe())
+                {
+                    var routeVerbs = route.Verbs.IsEmpty() ? allVerbs : route.Verbs;
+                    foreach (var verb in routeVerbs)
+                    {
+                        existingRoutes.Add(new Tuple<string, string>(route.Path, verb));
+                    }
+                }
+            }
+
+            var typesToGenerateMap = new Dictionary<string, TableSchema>();
+            foreach (var result in results)
+            {
+                var keysCount = result.Columns.Count(x => x.IsKey);
+                if (keysCount != 1) // Only support tables with 1 PK
+                    continue;
+                
+                typesToGenerateMap[result.Name] = result;
+            }
+            
+            var includeCrudServices = request.IncludeCrudServices ?? feature.IncludeCrudServices;
+            var includeCrudInterfaces = AutoCrudOperation.CrudInterfaceMetadataNames(includeCrudServices);
+            
+            //remove unnecessary
+            var existingTypes = new HashSet<string>();
+            var operations = new List<MetadataOperationType>();
+            var types = new List<MetadataType>();
+            
+            foreach (var op in metadataTypes.Operations)
+            {
+                if (op.Request.Implements?.Any(x => includeCrudInterfaces.Contains(x.Name)) == true)
+                {
+                    operations.Add(op);
+                }
+                existingTypes.Add(op.Request.Name);
+                if (op.Response != null)
+                    existingTypes.Add(op.Response.Name);
+            }
+            foreach (var metaType in metadataTypes.Types)
+            {
+                if (typesToGenerateMap.ContainsKey(metaType.Name))
+                {
+                    types.Add(metaType);
+                }
+                existingTypes.Add(metaType.Name);
+            }
+
+            var crudMetadataTypes = new MetadataTypes {
+                Config = metadataTypes.Config,
+                Namespaces = metadataTypes.Namespaces,
+                Operations = operations,
+                Types = types,
+            };
+            if (request.Include == "new")
+            {
+                crudMetadataTypes.Operations = new List<MetadataOperationType>();
+                crudMetadataTypes.Types = new List<MetadataType>();
+            }
+            
+            MetadataAttribute toAlias(string alias) => new MetadataAttribute {
+                Name = "Alias",
+                ConstructorArgs = new List<MetadataPropertyType> {
+                    new MetadataPropertyType { Name = "Name", Value = alias, Type = "string" },
+                }
+            };
+
+            List<MetadataPropertyType> toMetaProps(IEnumerable<ColumnSchema> columns, bool isModel=false)
+            {
+                var to = new List<MetadataPropertyType>();
+                foreach (var column in columns)
+                {
+                    var dataType = column.DataType;
+                    if (dataType == null)
+                        continue;
+                    if (dataType == typeof(string) && column.ColumnSize == 1)
+                        dataType = typeof(char);
+
+                    var isKey = column.IsKey || column.IsAutoIncrement;
+
+                    var prop = new MetadataPropertyType {
+                        Name = CSharpGenerator.SafeSymbolName(column.ColumnName),
+                        Type = dataType.GetMetadataPropertyType(),
+                        IsValueType = dataType.IsValueType ? true : (bool?) null,
+                        IsSystemType = dataType.IsSystemType() ? true : (bool?) null,
+                        IsEnum = dataType.IsEnum ? true : (bool?) null,
+                        TypeNamespace = dataType.Namespace,
+                    };
+                    
+                    if (dataType.IsValueType && column.AllowDBNull && !isKey)
+                    {
+                        prop.Type += "?";
+                    }
+                    
+                    var attrs = new List<MetadataAttribute>();
+                    if (isModel)
+                    {
+                        prop.TypeNamespace = typesNs;
+                        if (column.IsKey && column.ColumnName != IdUtils.IdField && !column.IsAutoIncrement)
+                            attrs.Add(new MetadataAttribute { Name = "PrimaryKey" });
+                        if (column.IsAutoIncrement)
+                            attrs.Add(new MetadataAttribute { Name = "AutoIncrement" });
+                        if (prop.Name != column.ColumnName)
+                            attrs.Add(toAlias(column.ColumnName));
+                        if (!dataType.IsValueType && !column.AllowDBNull && !isKey)
+                            attrs.Add(new MetadataAttribute { Name = "Required" });
+                    }
+
+                    if (attrs.Count > 0)
+                        prop.Attributes = attrs;
+                    
+                    to.Add(prop);
+                }
+                return to;
+            }
+
+            foreach (var entry in typesToGenerateMap)
+            {
+                var typeName = CSharpGenerator.SafeSymbolName(entry.Key);
+                var tableSchema = entry.Value;
+                if (includeCrudServices != null)
+                {
+                    var pkField = tableSchema.Columns.First(x => x.IsKey);
+                    var id = CSharpGenerator.SafeSymbolName(pkField.ColumnName);
+                    foreach (var operation in includeCrudServices)
+                    {
+                        if (!AutoCrudOperation.IsOperation(operation))
+                            continue;
+
+                        var requestType = operation + typeName;
+                        if (existingTypes.Contains(requestType))
+                            continue;
+
+                        var verb = crudVerbs[operation];
+                        var plural = Words.Pluralize(typeName).ToLower();
+                        var route = verb == "GET" || verb == "POST"
+                            ? "/" + plural
+                            : "/" + plural + "/{" + id + "}";
+                            
+                        var op = new MetadataOperationType {
+                            Actions = new List<string> { verb },
+                            Request = new MetadataType {
+                                Routes = new List<MetadataRoute> {
+                                },
+                                Name = requestType,
+                                Namespace = serviceModelNs,
+                                Implements = new [] { 
+                                    new MetadataTypeName {
+                                        Name = "I" + verb[0] + verb.Substring(1).ToLower(), //marker interface 
+                                    },
+                                },
+                            },
+                        };
+                        
+                        if (!existingRoutes.Contains(new Tuple<string, string>(route, verb)))
+                            op.Request.Routes.Add(new MetadataRoute { Path = route, Verbs = verb });
+
+                        if (verb == HttpMethods.Get)
+                        {
+                            op.Request.Inherits = new MetadataTypeName {
+                                Namespace = "ServiceStack",
+                                Name = "QueryDb`1",
+                                GenericArgs = new[] {typeName},
+                            };
+                            
+                            var uniqueRoute = "/" + plural + "/{" + id + "}";
+                            if (!existingRoutes.Contains(new Tuple<string, string>(uniqueRoute, verb)))
+                            {
+                                op.Request.Routes.Add(new MetadataRoute {
+                                    Path = uniqueRoute, 
+                                    Verbs = verb
+                                });
+                            }
+                        }
+                        else
+                        {
+                            op.Request.Implements = new List<MetadataTypeName>(op.Request.Implements) {
+                                new MetadataTypeName {
+                                    Name = $"I{operation}Db`1",
+                                    GenericArgs = new[] {
+                                        typeName,
+                                    }
+                                },
+                            }.ToArray();
+                            op.Response = new MetadataType {
+                                Name = "IdResponse",
+                                Namespace = "ServiceStack",
+                            };
+                        }
+
+                        var allProps = toMetaProps(tableSchema.Columns);
+                        switch (operation)
+                        {
+                            case AutoCrudOperation.Query:
+                                // Only Id Property (use implicit conventions)
+                                op.Request.Properties = new List<MetadataPropertyType> {
+                                    new MetadataPropertyType {
+                                        Name = id,
+                                        Type = pkField.DataType.Name + (pkField.DataType.IsValueType ? "?" : ""),
+                                        TypeNamespace = pkField.DataType.Namespace, 
+                                    }
+                                };
+                                break;
+                            case AutoCrudOperation.Create:
+                                // all props - AutoIncrement/AutoId PK
+                                var autoId = tableSchema.Columns.FirstOrDefault(x => x.IsAutoIncrement);
+                                if (autoId != null)
+                                {
+                                    op.Request.Properties = toMetaProps(tableSchema.Columns)
+                                        .Where(x => !x.Name.EqualsIgnoreCase(autoId.ColumnName)).ToList();
+                                }
+                                else
+                                {
+                                    op.Request.Properties = allProps;
+                                }
+                                break;
+                            case AutoCrudOperation.Update:
+                                // all props
+                                op.Request.Properties = allProps;
+                                break;
+                            case AutoCrudOperation.Patch:
+                                // all props
+                                op.Request.Properties = allProps;
+                                break;
+                            case AutoCrudOperation.Delete:
+                                // PK prop
+                                var pks = tableSchema.Columns.Where(x => x.IsKey).ToList();
+                                op.Request.Properties = toMetaProps(pks);
+                                break;
+                            case AutoCrudOperation.Save:
+                                // all props
+                                op.Request.Properties = allProps;
+                                break;
+                        }
+                        
+                        crudMetadataTypes.Operations.Add(op);
+                    }
+                }
+
+                if (!existingTypes.Contains(typeName))
+                {
+                    var modelType = new MetadataType {
+                        Name = typeName,
+                        Namespace = typesNs,
+                        Properties = toMetaProps(tableSchema.Columns, isModel:true),
+                    };
+                    if (typeName != tableSchema.Name)
+                    {
+                        modelType.Attributes = new List<MetadataAttribute> { 
+                            toAlias(tableSchema.Name)
+                        };
+                    }
+                    crudMetadataTypes.Types.Add(modelType);
+                }
+            }
+            
+            if (request.Lang == "typescript")
+            {
+                typesConfig.MakePropertiesOptional = false;
+                typesConfig.ExportAsTypes = true;
+            }
+            else if (request.Lang == "typescript.d")
+            {
+                typesConfig.MakePropertiesOptional = true;
+            }
+
+            var src = GenerateSourceCode(req, request, typesConfig, crudMetadataTypes);
+            return src;
+        }
     }
 
-    [Route("/autocode/{Lang}")]
+    [Route("/autocode/{Include}/{Lang}")]
     public class AutoCodeTypes : NativeTypesBase, IReturn<string>
     {
+        /// <summary>
+        /// Either 'all' to include all AutoQuery Services or 'new' to include only missing Services and Types
+        /// </summary>
+        public string Include { get; set; }
+        /// <summary>
+        /// The language you want
+        ///  csharp
+        ///  typescript
+        ///  java
+        ///  kotlin
+        ///  swift
+        ///  dart
+        ///  vbnet
+        ///  fsharp
+        ///  typescript.d
+        /// </summary>
         public string Lang { get; set; }
         public List<string> IncludeCrudServices { get; set; }
-        public bool? ExcludeExistingCrudServices { get; set; }
+        /// <summary>
+        /// The RDBMS Schema you want AutoQuery Services generated for
+        /// </summary>
         public string Schema { get; set; }
+        /// <summary>
+        /// The NamedConnection you want AutoQuery Services generated for
+        /// </summary>
         public string NamedConnection { get; set; }
+        /// <summary>
+        /// The Admin AuthSecret to access Service in Release mode
+        /// </summary>
         public string AuthSecret { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public bool? NoCache { get; set; }
     }
 
@@ -141,276 +504,20 @@ namespace ServiceStack
     [DefaultRequest(typeof(AutoCodeSchema))]
     public class AutoCodeTypesService : Service
     {
-        private string GetBaseUrl(string baseUrl) => 
-            baseUrl ?? HostContext.GetPlugin<NativeTypesFeature>().MetadataTypesConfig.BaseUrl ?? HostContext.AppHost.GetBaseUrl(Request);
-
-        public INativeTypesMetadata NativeTypesMetadata { get; set; }
-
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(AutoCodeTypes request)
         {
-            var feature = HostContext.AssertPlugin<AutoCodeFeature>();
-            RequestUtils.AssertIsAdminOrDebugMode(Request, adminRole: feature.AccessRole, authSecret: request.AuthSecret);
-            
-            var dbFactory = TryResolve<IDbConnectionFactory>();
-            var results = request.NoCache == true 
-                ? AutoCodeFeature.GetTableSchemas(dbFactory, request.Schema, request.NamedConnection)
-                : feature.GetCachedDbSchema(dbFactory, request.Schema, request.NamedConnection).Tables;
-            
-            request.BaseUrl = GetBaseUrl(request.BaseUrl);
-            if (request.MakePartial == null)
-                request.MakePartial = false;
-            if (request.MakeVirtual == null)
-                request.MakeVirtual = false;
-
-            var typesConfig = NativeTypesMetadata.GetConfig(request);
-            var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
-
-            var typesToGenerateMap = new Dictionary<string, TableSchema>();
-            foreach (var result in results)
+            try
             {
-                typesToGenerateMap[result.Name] = result;
-            }
-            
-            var includeCrudServices = request.IncludeCrudServices ?? feature.IncludeCrudServices;
-            var servicesToGenerate = new Dictionary<string, Tuple<string, TableSchema>>();
-            
-            //populate servicesToGenerate
-            foreach (var tableSchema in results)
-            {
-                if (includeCrudServices != null)
-                {
-                    foreach (var operation in includeCrudServices)
-                    {
-                        if (!AutoCrudOperation.IsOperation(operation))
-                            continue;
-
-                        var name = operation + tableSchema.Name;
-                        servicesToGenerate[name] = Tuple.Create(operation, tableSchema);
-                    }
-                }
-            }
-            
-            //remove unnecessary
-            var existingTypes = new HashSet<string>();
-            var operations = new List<MetadataOperationType>();
-            var types = new List<MetadataType>();
-            
-            foreach (var op in metadataTypes.Operations)
-            {
-                if (servicesToGenerate.ContainsKey(op.Request.Name))
-                {
-                    operations.Add(op);
-                    existingTypes.Add(op.Request.Name);
-                    if (op.Response != null)
-                        existingTypes.Add(op.Response.Name);
-                }
-            }
-            foreach (var metaType in metadataTypes.Types)
-            {
-                if (typesToGenerateMap.ContainsKey(metaType.Name))
-                {
-                    types.Add(metaType);
-                    existingTypes.Add(metaType.Name);
-                }
-            }
-
-            var crudMetadataTypes = new MetadataTypes {
-                Config = metadataTypes.Config,
-                Namespaces = metadataTypes.Namespaces,
-                Operations = operations,
-                Types = types,
-            };
-            if (request.ExcludeExistingCrudServices == true)
-            {
-                crudMetadataTypes.Operations = new List<MetadataOperationType>();
-                crudMetadataTypes.Types = new List<MetadataType>();
-            }
-            
-            var opActions = new Dictionary<string,List<string>> {
-                { AutoCrudOperation.Query, new List<string> { HttpMethods.Get } },
-                { AutoCrudOperation.Create, new List<string> { HttpMethods.Post } },
-                { AutoCrudOperation.Update, new List<string> { HttpMethods.Put } },
-                { AutoCrudOperation.Patch, new List<string> { HttpMethods.Patch } },
-                { AutoCrudOperation.Delete, new List<string> { HttpMethods.Delete } },
-                { AutoCrudOperation.Save, new List<string> { HttpMethods.Post } },
-            };
-
-            MetadataAttribute toAlias(string alias) => new MetadataAttribute {
-                Name = "Alias",
-                ConstructorArgs = new List<MetadataPropertyType> {
-                    new MetadataPropertyType {Name = "Name", Value = alias, Type = "string"},
-                }
-            };
-
-            List<MetadataPropertyType> toMetaProps(IEnumerable<ColumnSchema> columns, bool isModel=false)
-            {
-                var to = new List<MetadataPropertyType>();
-                foreach (var column in columns)
-                {
-                    var pi = column.DataType;
-                    if (pi == null)
-                        continue;
-
-                    var prop = new MetadataPropertyType {
-                        Name = column.ColumnName.SafeVarName(),
-                        Type = column.DataType.GetMetadataPropertyType(),
-                        IsValueType = pi.IsValueType ? true : (bool?) null,
-                        IsSystemType = pi.IsSystemType() ? true : (bool?) null,
-                        IsEnum = pi.IsEnum ? true : (bool?) null,
-                        TypeNamespace = pi.Namespace,
-                    };
-                    if (prop.Name != column.ColumnName)
-                    {
-                        prop.Attributes = new List<MetadataAttribute> { 
-                            toAlias(column.ColumnName)
-                        };
-                    }
-                    to.Add(prop);
-                }
-                return to;
-            }
-
-            foreach (var entry in typesToGenerateMap)
-            {
-                var tableName = entry.Key.SafeVarName();
-                var opName = tableName;
-                if (tableName.IndexOf('_') >= 0)
-                {
-                    var parts = opName.Split('_').Where(x => !string.IsNullOrEmpty(x));
-                    var pascalName = "";
-                    foreach (var part in parts)
-                    {
-                        pascalName += char.ToUpper(part[0]) + part.Substring(1);
-                    }
-                    opName = pascalName;
-                }
-                var tableSchema = entry.Value;
-                if (includeCrudServices != null)
-                {
-                    foreach (var operation in includeCrudServices)
-                    {
-                        if (!AutoCrudOperation.IsOperation(operation))
-                            continue;
-
-                        var requestType = operation + opName;
-                        if (existingTypes.Contains(requestType))
-                            continue;
-
-                        var verb = opActions[operation].First();
-                        var op = new MetadataOperationType {
-                            Actions = opActions[operation],
-                            Request = new MetadataType {
-                                Routes = new List<MetadataRoute> {
-                                    new MetadataRoute { Path = "/" + tableName.ToLower(), Verbs = verb }
-                                },
-                                Name = requestType,
-                                Implements = new [] { 
-                                    new MetadataTypeName {
-                                        Name = $"I{operation}Db`1", 
-                                        GenericArgs = new [] {
-                                            tableName,
-                                        }
-                                    },
-                                    new MetadataTypeName {
-                                        Name = "I" + verb[0] + verb.Substring(1).ToLower(), //marker interface 
-                                    },
-                                },
-                                ReturnVoidMarker = true,
-                            }
-                        };
-
-                        var allProps = toMetaProps(tableSchema.Columns);
-                        switch (operation)
-                        {
-                            case AutoCrudOperation.Query:
-                                // no properties
-                                break;
-                            case AutoCrudOperation.Create:
-                                // all props - AutoIncrement/AutoId PK
-                                var autoId = tableSchema.Columns.FirstOrDefault(x => x.IsAutoIncrement);
-                                if (autoId != null)
-                                {
-                                    op.Request.Properties = toMetaProps(tableSchema.Columns)
-                                        .Where(x => !x.Name.EqualsIgnoreCase(autoId.ColumnName)).ToList();
-                                }
-                                else
-                                {
-                                    op.Request.Properties = allProps;
-                                }
-                                break;
-                            case AutoCrudOperation.Update:
-                                // all props
-                                op.Request.Properties = allProps;
-                                break;
-                            case AutoCrudOperation.Patch:
-                                // all props
-                                op.Request.Properties = allProps;
-                                break;
-                            case AutoCrudOperation.Delete:
-                                // PK prop
-                                var pks = tableSchema.Columns.Where(x => x.IsKey).ToList();
-                                op.Request.Properties = toMetaProps(pks);
-                                break;
-                            case AutoCrudOperation.Save:
-                                // all props
-                                op.Request.Properties = allProps;
-                                break;
-                        }
-                        
-                        crudMetadataTypes.Operations.Add(op);
-                    }
-                }
-                
-                var modelType = new MetadataType {
-                    Name = tableName,
-                    Properties = toMetaProps(tableSchema.Columns, isModel:true),
-                };
-                if (tableName != tableSchema.Name)
-                {
-                    modelType.Attributes = new List<MetadataAttribute> { 
-                        toAlias(tableSchema.Name)
-                    };
-                }
-                crudMetadataTypes.Types.Add(modelType);
-            }
-            
-            if (request.Lang == "typescript")
-            {
-                typesConfig.MakePropertiesOptional = false;
-                typesConfig.ExportAsTypes = true;
-            }
-            else if (request.Lang == "typescript.d")
-            {
-                typesConfig.MakePropertiesOptional = true;
-            }
-
-            try 
-            { 
-                var src = GenerateSourceCode(request, typesConfig, crudMetadataTypes);
+                var src = AutoCodeFeature.GenerateSource(Request, request);
                 return src;
             }
             catch (Exception e)
             {
+                base.Response.StatusCode = e.ToStatusCode();
+                base.Response.StatusDescription = e.GetType().Name;
                 return e.ToString();
             }
-        }
-
-        private string GenerateSourceCode(AutoCodeTypes request, MetadataTypesConfig typesConfig,
-            MetadataTypes crudMetadataTypes)
-        {
-            var src = request.Lang switch {
-                "csharp" => new CSharpGenerator(typesConfig).GetCode(crudMetadataTypes, base.Request),
-                "fsharp" => new FSharpGenerator(typesConfig).GetCode(crudMetadataTypes, base.Request),
-                "vbnet" => new VbNetGenerator(typesConfig).GetCode(crudMetadataTypes, base.Request),
-                "typescript" => new TypeScriptGenerator(typesConfig).GetCode(crudMetadataTypes, base.Request, NativeTypesMetadata),
-                "dart" => new DartGenerator(typesConfig).GetCode(crudMetadataTypes, base.Request, NativeTypesMetadata),
-                "swift" => new SwiftGenerator(typesConfig).GetCode(crudMetadataTypes, base.Request),
-                "java" => new JavaGenerator(typesConfig).GetCode(crudMetadataTypes, base.Request, NativeTypesMetadata),
-                "kotlin" => new KotlinGenerator(typesConfig).GetCode(crudMetadataTypes, base.Request, NativeTypesMetadata),
-                "typescript.d" => new FSharpGenerator(typesConfig).GetCode(crudMetadataTypes, base.Request),
-            };
-            return src;
         }
     }
 
