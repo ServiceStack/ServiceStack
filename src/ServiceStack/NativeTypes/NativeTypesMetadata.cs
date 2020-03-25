@@ -957,6 +957,7 @@ namespace ServiceStack.NativeTypes
 
         const string NameWithReferencesWildCard = ".*";
         const string NamespaceWildCard = "/*";
+        const string ReferencesNameWildCard = "*.";
 
         public static List<string> GetIncludeList(MetadataTypes metadata, MetadataTypesConfig config)
         {
@@ -974,6 +975,11 @@ namespace ServiceStack.NativeTypes
             var typesToExpand = explicitTypes
                 .Where(s => s.Length > 2 && s.EndsWith(NameWithReferencesWildCard))
                 .Map(s => s.Substring(0, s.Length - 2));
+            
+            var reverseTypesToExpand = explicitTypes
+                .Where(s => s.Length > 2 && s.StartsWith(ReferencesNameWildCard))
+                .Map(s => s.Substring(2));
+            explicitTypes.AddRange(reverseTypesToExpand);
 
             if (typesToExpand.Count != 0 || NamespaceWildCard.Length != 0)
             {
@@ -1012,6 +1018,11 @@ namespace ServiceStack.NativeTypes
                     .Map(x => x.GenericArgs[0])
                     .ToHashSet()
                     .ToList();
+                var reverseTypeReferencesToInclude = metadata.Operations
+                    .Where(x => (x.Request.Inherits != null && reverseTypesToExpand.Contains(x.Request.Inherits.Name)) ||
+                            x.Response != null && reverseTypesToExpand.Contains(x.Response.Name) ||
+                            x.Request.Implements?.Any(i => crudInterfaces.Contains(i.Name) && reverseTypesToExpand.Contains(i.GenericArgs[0])) == true)
+                    .Select(x => x.Request.Name);
 
                 // GetReferencedTypes for both request + response objects
                 var referenceTypes = includedMetadataTypes
@@ -1024,6 +1035,7 @@ namespace ServiceStack.NativeTypes
                     .Union(includeTypesInNamespace)
                     .Union(typesToExpand)
                     .Union(crudTypeNamesForInclude)
+                    .Union(reverseTypeReferencesToInclude)
                     .Union(returnTypesForInclude.Select(x => x.Name))
                     .Distinct()
                     .ToList();
