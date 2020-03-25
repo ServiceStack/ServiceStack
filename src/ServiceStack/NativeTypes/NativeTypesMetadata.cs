@@ -316,6 +316,7 @@ namespace ServiceStack.NativeTypes
 
             return new MetadataTypeName
             {
+                Type = type,
                 Name = type.GetOperationName(),
                 Namespace = type.Namespace,
                 GenericArgs = type.IsGenericType
@@ -334,6 +335,7 @@ namespace ServiceStack.NativeTypes
 
             var metaType = new MetadataType
             {
+                Type = type,
                 Name = type.GetOperationName(),
                 Namespace = type.Namespace,
                 GenericArgs = type.IsGenericType ? GetGenericArgs(type) : null,
@@ -379,6 +381,7 @@ namespace ServiceStack.NativeTypes
                 metaType.Routes = routeAttrs.ConvertAll(x =>
                     new MetadataRoute
                     {
+                        RouteAttribute = x,
                         Path = x.Path,
                         Notes = x.Notes,
                         Summary = x.Summary,
@@ -458,6 +461,7 @@ namespace ServiceStack.NativeTypes
 
                 metaType.InnerTypes.Add(new MetadataTypeName    
                 {
+                    Type = innerType,
                     Name = innerType.GetOperationName(),
                     Namespace = innerType.Namespace,
                     GenericArgs = innerType.IsGenericType
@@ -484,6 +488,7 @@ namespace ServiceStack.NativeTypes
             || config.ExportTypes.ContainsMatch(x))
             .Map(x =>
                 new MetadataTypeName {
+                    Type = x,
                     Name = x.Name,
                     Namespace = x.Namespace,
                     GenericArgs = GetGenericArgs(x),
@@ -585,13 +590,15 @@ namespace ServiceStack.NativeTypes
 
         public MetadataAttribute ToMetadataAttribute(Attribute attr)
         {
-            var firstCtor = attr.GetType().GetConstructors()
+            var attrType = attr.GetType();
+            var firstCtor = attrType.GetConstructors()
                 //.OrderBy(x => x.GetParameters().Length)
                 .FirstOrDefault();
-            var emptyCtor = attr.GetType().GetConstructor(Type.EmptyTypes);
+            var emptyCtor = attrType.GetConstructor(Type.EmptyTypes);
             var metaAttr = new MetadataAttribute
             {
-                Name = attr.GetType().Name.Replace("Attribute", ""),
+                Attribute = attr,
+                Name = attrType.Name.Replace("Attribute", ""),
                 ConstructorArgs = firstCtor != null
                     ? firstCtor.GetParameters().ToList().ConvertAll(ToProperty)
                     : null,
@@ -662,6 +669,7 @@ namespace ServiceStack.NativeTypes
 
             var property = new MetadataPropertyType
             {
+                PropertyType = pi.PropertyType,
                 Name = pi.Name,
                 Attributes = ToAttributes(pi.GetCustomAttributes(false)),
                 Type = pi.PropertyType.GetMetadataPropertyType(),
@@ -739,6 +747,7 @@ namespace ServiceStack.NativeTypes
             var propertyAttrs = pi.AllAttributes();
             var property = new MetadataPropertyType
             {
+                PropertyType = pi.ParameterType,
                 Name = pi.Name,
                 Attributes = ToAttributes(propertyAttrs),
                 Type = pi.ParameterType.GetOperationName(),
@@ -795,6 +804,7 @@ namespace ServiceStack.NativeTypes
 
             return new MetadataTypeName
             {
+                Type = type.Type,
                 Name = type.Name,
                 Namespace = type.Namespace,
                 GenericArgs = type.GenericArgs
@@ -807,6 +817,7 @@ namespace ServiceStack.NativeTypes
 
             return new MetadataType
             {
+                Type = type.Type,
                 Name = type.Name,
                 Namespace = type.Namespace,
                 GenericArgs = type.GenericArgs
@@ -1053,6 +1064,7 @@ namespace ServiceStack.NativeTypes
         {
             var attr = new MetadataAttribute
             {
+                Attribute = route.RouteAttribute,
                 Name = "Route",
                 ConstructorArgs = new List<MetadataPropertyType>
                 {
@@ -1063,7 +1075,11 @@ namespace ServiceStack.NativeTypes
             if (route.Verbs != null)
             {
                 attr.ConstructorArgs.Add(
-                    new MetadataPropertyType { Type = "string", Value = route.Verbs });
+                    new MetadataPropertyType {
+                        PropertyType = typeof(string),
+                        Type = "string", 
+                        Value = route.Verbs,
+                    });
             }
 
             return attr;
@@ -1136,7 +1152,7 @@ namespace ServiceStack.NativeTypes
             if (metadataTypeName == null)
                 return null;
             var metaDataType = allTypes.Where(x => x.Name == metadataTypeName.Name &&
-                                                   x.Namespace == metadataTypeName.Namespace)
+                                              x.Namespace == metadataTypeName.Namespace)
                 .FirstNonDefault();
             return metaDataType;
         }

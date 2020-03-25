@@ -168,6 +168,8 @@ namespace ServiceStack
 
     public class MetadataRoute
     {
+        [IgnoreDataMember]
+        public RouteAttribute RouteAttribute { get; set; }
         public string Path { get; set; }
         public string Verbs { get; set; }
         public string Notes { get; set; }
@@ -190,6 +192,8 @@ namespace ServiceStack
 
     public class MetadataPropertyType
     {
+        [IgnoreDataMember]
+        public Type PropertyType { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }
         public bool? IsValueType { get; set; }
@@ -214,6 +218,8 @@ namespace ServiceStack
 
     public class MetadataAttribute
     {
+        [IgnoreDataMember]
+        public Attribute Attribute { get; set; }
         public string Name { get; set; }
         public List<MetadataPropertyType> ConstructorArgs { get; set; }
         public List<MetadataPropertyType> Args { get; set; }
