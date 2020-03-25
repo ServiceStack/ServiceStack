@@ -272,6 +272,18 @@ namespace ServiceStack.NativeTypes
                     }
                 }
 
+                // Include Types defined in AutoCrud interfaces
+                if (genericBaseTypeDef == null && type.HasInterface(typeof(ICrud)))
+                {
+                    foreach (var iface in type.GetInterfaces())
+                    {
+                        if (iface.IsGenericType && iface.HasInterface(typeof(ICrud)))
+                        {
+                            registerTypeFn(iface.GetGenericArguments()[0]);
+                        }
+                    }
+                }
+
                 if (!config.ExcludeImplementedInterfaces)
                 {
                     foreach (var iface in type.GetInterfaces())
