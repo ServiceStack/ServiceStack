@@ -36,6 +36,40 @@ namespace ServiceStack
         void ThrowIfNotValid(object dto, IRequest request = null);
     }
 
+    public class HasRolesValidator : ITypeValidationRule
+    {
+        private readonly string[] roles;
+        public HasRolesValidator(string role) => this.roles = new []{ role ?? throw new ArgumentNullException(nameof(role)) };
+        public HasRolesValidator(string[] roles) => this.roles = roles ?? throw new ArgumentNullException(nameof(roles));
+
+        public bool IsValid(object dto, IRequest request = null)
+        {
+            return request != null && RequiredRoleAttribute.HasRequiredRoles(request, roles);
+        }
+
+        public void ThrowIfNotValid(object dto, IRequest request = null)
+        {
+            RequiredRoleAttribute.AssertRequiredRoles(request, roles);
+        }
+    }
+
+    public class HasPermissionsValidator : ITypeValidationRule
+    {
+        private readonly string[] permissions;
+        public HasPermissionsValidator(string permission) => this.permissions = new []{ permission ?? throw new ArgumentNullException(nameof(permission)) };
+        public HasPermissionsValidator(string[] permissions) => this.permissions = permissions ?? throw new ArgumentNullException(nameof(permissions));
+
+        public bool IsValid(object dto, IRequest request = null)
+        {
+            return request != null && RequiredPermissionAttribute.HasRequiredPermissions(request, permissions);
+        }
+
+        public void ThrowIfNotValid(object dto, IRequest request = null)
+        {
+            RequiredPermissionAttribute.AssertRequiredPermissions(request, permissions);
+        }
+    }
+
     public class ScriptValidator : ITypeValidationRule
     {
         public static string DefaultErrorCode { get; set; } = "InvalidRequest";
@@ -140,10 +174,10 @@ namespace ServiceStack
         public static bool RegisterRequestRulesFor(Type type)
         {
             var appHost = HostContext.AppHost;
-            var requestAttrs = type.AllAttributes<ValidateRequestAttribute>();
+            var requestAttrs = type.AllAttributes();
             var to = new List<ITypeValidationRule>();
 
-            foreach (var attr in requestAttrs)
+            foreach (var attr in requestAttrs.OfType<ValidateRequestAttribute>())
             {
                 if (string.IsNullOrEmpty(attr.Condition))
                     continue;
