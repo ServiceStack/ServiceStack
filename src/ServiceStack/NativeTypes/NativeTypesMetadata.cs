@@ -1004,9 +1004,30 @@ namespace ServiceStack.NativeTypes
                     .Where(x => x.Response != null && includeSet.Contains(x.Response.Name))
                     .Map(x => x.Response);
 
+                var crudInterfaces = AutoCrudOperation.CrudInterfaceMetadataNames().ToHashSet();
+                var crudTypeNamesForInclude = metadata.Operations
+                    .SelectMany(x => x.Request.Implements)
+                    .Where(x => x != null && crudInterfaces.Contains(x.Name))
+                    .Map(x => x.GenericArgs[0]);
+
+                var typesMap = new Dictionary<string, MetadataType>();
+                foreach (var op in metadata.Operations)
+                {
+                    typesMap[op.Request.Name] = op.Request;
+                    if (op.Response != null)
+                        typesMap[op.Response.Name] = op.Response;
+                }
+                foreach (var type in metadata.Types)
+                {
+                    typesMap[type.Name] = type;
+                }
+                var crudTypesForInclude = crudTypeNamesForInclude
+                    .Map(x => typesMap.TryGetValue(x, out var metaType) ? metaType : null);
+
                 // GetReferencedTypes for both request + response objects
                 var referenceTypes = includedMetadataTypes
                     .Union(returnTypesForInclude)
+                    .Union(crudTypesForInclude)
                     .Where(x => x != null)
                     .SelectMany(x => x.GetReferencedTypeNames());
 
