@@ -45,7 +45,12 @@ namespace ServiceStack
                     typeof(IMeta),
                     typeof(IHasSessionId),
                     typeof(IHasBearerToken),
-                    typeof(IHasVersion)
+                    typeof(IHasVersion),
+                    typeof(ICreateDb<>),
+                    typeof(IUpdateDb<>),
+                    typeof(IPatchDb<>),
+                    typeof(IDeleteDb<>),
+                    typeof(ISaveDb<>),
                 },
                 IgnoreTypes = new HashSet<Type>
                 {
