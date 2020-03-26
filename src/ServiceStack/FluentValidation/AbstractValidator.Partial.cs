@@ -30,7 +30,7 @@ namespace ServiceStack.FluentValidation
     /// Base class for entity validator classes.
     /// </summary>
     /// <typeparam name="T">The type of the object being validated</typeparam>
-    public abstract partial class AbstractValidator<T> : IRequiresRequest
+    public abstract partial class AbstractValidator<T> : IRequiresRequest, IHasTypeValidators
     {
         /// <summary>
         /// Validators are auto-wired transient instances
@@ -58,6 +58,13 @@ namespace ServiceStack.FluentValidation
                     var typeRules = new List<IValidationRule>();
                     foreach (var entry in sourceRules)
                     {
+                        var isTypeValidator = entry.Key == null;
+                        if (isTypeValidator)
+                        {
+                            ServiceStack.Validators.AddTypeValidator(TypeValidators, entry.Value);
+                            continue;
+                        }
+                        
                         var pi = typeof(T).GetProperty(entry.Key);
                         if (pi != null)
                         {
@@ -75,6 +82,8 @@ namespace ServiceStack.FluentValidation
                 }
             }
         }
+
+        public List<ITypeValidator> TypeValidators { get; } = new List<ITypeValidator>();
 
         public virtual IRequest Request { get; set; }
 

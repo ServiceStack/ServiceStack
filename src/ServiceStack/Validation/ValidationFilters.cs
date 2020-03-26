@@ -32,6 +32,14 @@ namespace ServiceStack.Validation
 
             using (validator as IDisposable)
             {
+                if (validator is IHasTypeValidators hasTypeValidators && hasTypeValidators.TypeValidators.Count > 0)
+                {
+                    foreach (var scriptValidator in hasTypeValidators.TypeValidators)
+                    {
+                        scriptValidator.ThrowIfNotValid(requestDto, req);
+                    }
+                }
+                    
                 try
                 {
                     var validationResult = await validator.ValidateAsync(req, requestDto);

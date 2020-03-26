@@ -118,7 +118,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
     }
 
-    [Authenticate]
+    [ValidateRequest("IsAuthenticated")]
     [AutoPopulate(nameof(RockstarAudit.CreatedDate),  Eval = "utcNow")]
     [AutoPopulate(nameof(RockstarAudit.CreatedBy),    Eval = "userAuthName")] //or userAuthId
     [AutoPopulate(nameof(RockstarAudit.CreatedInfo),  Eval = "`${userSession.DisplayName} (${userSession.City})`")]
@@ -129,7 +129,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
     }
 
-    [Authenticate]
+    [ValidateRequest("IsAuthenticated")]
     [AutoPopulate(nameof(IAudit.CreatedDate),  Eval = "utcNow")]
     [AutoPopulate(nameof(IAudit.CreatedBy),    Eval = "userAuthName")] //or userAuthId
     [AutoPopulate(nameof(IAudit.CreatedInfo),  Eval = "`${userSession.DisplayName} (${userSession.City})`")]
@@ -141,7 +141,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [AutoPopulate(nameof(IAuditTenant.TenantId), Eval = "Request.Items.TenantId")]
     public abstract class CreateAuditTenantBase<Table,TResponse> : CreateAuditBase<Table,TResponse> {}
 
-    [Authenticate]
+    [ValidateRequest("IsAuthenticated")]
     [AutoPopulate(nameof(IAudit.ModifiedDate), Eval = "utcNow")]
     [AutoPopulate(nameof(IAudit.ModifiedBy),   Eval = "userAuthName")] //or userAuthId
     [AutoPopulate(nameof(IAudit.ModifiedInfo), Eval = "`${userSession.DisplayName} (${userSession.City})`")]
@@ -150,7 +150,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId),  Eval = "Request.Items.TenantId")]
     public abstract class UpdateAuditTenantBase<Table,TResponse> : UpdateAuditBase<Table,TResponse> {}
 
-    [Authenticate]
+    [ValidateRequest("IsAuthenticated")]
     [AutoPopulate(nameof(IAudit.ModifiedDate), Eval = "utcNow")]
     [AutoPopulate(nameof(IAudit.ModifiedBy),   Eval = "userAuthName")] //or userAuthId
     [AutoPopulate(nameof(IAudit.ModifiedInfo), Eval = "`${userSession.DisplayName} (${userSession.City})`")]
@@ -159,7 +159,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId),  Eval = "Request.Items.TenantId")]
     public abstract class PatchAuditTenantBase<Table,TResponse> : PatchAuditBase<Table,TResponse> {}
 
-    [Authenticate]
+    [ValidateRequest("IsAuthenticated")]
     [AutoPopulate(nameof(IAudit.SoftDeletedDate), Eval = "utcNow")]
     [AutoPopulate(nameof(IAudit.SoftDeletedBy),   Eval = "userAuthName")] //or userAuthId
     [AutoPopulate(nameof(IAudit.SoftDeletedInfo), Eval = "`${userSession.DisplayName} (${userSession.City})`")]
@@ -168,7 +168,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId),  Eval = "Request.Items.TenantId")]
     public abstract class SoftDeleteAuditTenantBase<Table,TResponse> : SoftDeleteAuditBase<Table,TResponse> {}
     
-    [Authenticate]
+    [ValidateRequest("IsAuthenticated")]
     [AutoFilter(QueryTerm.Ensure, nameof(IAudit.SoftDeletedDate), Template = SqlTemplate.IsNull)]
     [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId),  Eval = "Request.Items.TenantId")]
     public abstract class QueryDbTenant<From, Into> : QueryDb<From, Into> {}

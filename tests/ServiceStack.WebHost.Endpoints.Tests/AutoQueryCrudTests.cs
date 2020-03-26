@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Auth;
+using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.Messaging;
 using ServiceStack.OrmLite;
@@ -144,6 +145,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                             Email = "admin@email.com", 
                             DisplayName = "Admin User",
                             City = "London",
+                            Roles = new List<string> {
+                                RoleNames.Admin
+                            }
                         }, "p@55wOrd");
                         
                         authRepo.CreateUserAuth(new UserAuth {
@@ -151,6 +155,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                             UserName = "manager", 
                             DisplayName = "The Manager",
                             City = "Perth",
+                            Roles = new List<string> {
+                                "Employee",
+                                "Manager",
+                            }
+                        }, "p@55wOrd");
+                        
+                        authRepo.CreateUserAuth(new UserAuth {
+                            Id = 3,
+                            Email = "employee@email.com", 
+                            DisplayName = "An Employee",
+                            City = "Manhattan",
+                            Roles = new List<string> {
+                                "Employee",
+                            }
                         }, "p@55wOrd");
                         
                         void AddTenantId(IRequest req, IResponse res, object dto)

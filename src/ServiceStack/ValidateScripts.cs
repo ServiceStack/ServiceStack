@@ -1,5 +1,6 @@
 using System;
 using System.Text.RegularExpressions;
+using ServiceStack.Configuration;
 using ServiceStack.FluentValidation.Validators;
 using ServiceStack.Script;
 
@@ -46,5 +47,13 @@ namespace ServiceStack
             new RegularExpressionValidator(regex, RegexOptions.Compiled);
 
         public IPropertyValidator Enum(Type enumType) => new EnumValidator(enumType);
+        
+        public ITypeValidator IsAuthenticated() => new IsAuthenticatedValidator();
+        public ITypeValidator IsAuthenticated(string provider) => new IsAuthenticatedValidator(provider);
+        public ITypeValidator IsAdmin() => new HasRolesValidator(RoleNames.Admin);
+        public ITypeValidator HasRole(string role) => new HasRolesValidator(role);
+        public ITypeValidator HasRoles(string[] roles) => new HasRolesValidator(roles);
+        public ITypeValidator HasPermission(string permission) => new HasPermissionsValidator(permission);
+        public ITypeValidator HasPermissions(string[] permission) => new HasPermissionsValidator(permission);
     }
 }

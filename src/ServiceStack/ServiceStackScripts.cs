@@ -274,8 +274,14 @@ namespace ServiceStack
 
         public bool isAuthenticated(ScriptScopeContext scope)
         {
-            var authSession = userSession(scope);
-            return authSession?.IsAuthenticated == true;
+            var request = req(scope);
+            return request != null && AuthenticateAttribute.Authenticate(request, request.GetSession());
+        }
+
+        public bool isAuthenticated(ScriptScopeContext scope, string provider)
+        {
+            var request = req(scope);
+            return request != null && AuthenticateAttribute.Authenticate(request);
         }
 
         public object redirectTo(ScriptScopeContext scope, string path)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using ServiceStack.Auth;
 using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Internal;
 using ServiceStack.FluentValidation.Resources;
@@ -30,122 +31,10 @@ namespace ServiceStack
         }
     }
 
-    public interface ITypeValidationRule 
-    {
-        bool IsValid(object dto, IRequest request = null);
-        void ThrowIfNotValid(object dto, IRequest request = null);
-    }
-
-    public class HasRolesValidator : ITypeValidationRule
-    {
-        private readonly string[] roles;
-        public HasRolesValidator(string role) => this.roles = new []{ role ?? throw new ArgumentNullException(nameof(role)) };
-        public HasRolesValidator(string[] roles) => this.roles = roles ?? throw new ArgumentNullException(nameof(roles));
-
-        public bool IsValid(object dto, IRequest request = null)
-        {
-            return request != null && RequiredRoleAttribute.HasRequiredRoles(request, roles);
-        }
-
-        public void ThrowIfNotValid(object dto, IRequest request = null)
-        {
-            RequiredRoleAttribute.AssertRequiredRoles(request, roles);
-        }
-    }
-
-    public class HasPermissionsValidator : ITypeValidationRule
-    {
-        private readonly string[] permissions;
-        public HasPermissionsValidator(string permission) => this.permissions = new []{ permission ?? throw new ArgumentNullException(nameof(permission)) };
-        public HasPermissionsValidator(string[] permissions) => this.permissions = permissions ?? throw new ArgumentNullException(nameof(permissions));
-
-        public bool IsValid(object dto, IRequest request = null)
-        {
-            return request != null && RequiredPermissionAttribute.HasRequiredPermissions(request, permissions);
-        }
-
-        public void ThrowIfNotValid(object dto, IRequest request = null)
-        {
-            RequiredPermissionAttribute.AssertRequiredPermissions(request, permissions);
-        }
-    }
-
-    public class ScriptValidator : ITypeValidationRule
-    {
-        public static string DefaultErrorCode { get; set; } = "InvalidRequest";
-        public static string DefaultErrorMessage { get; set; } = "`The specified condition was not met for '${TypeName}'.`";
-
-        public SharpPage Code { get; }
-        public string Condition { get; }
-        public string ErrorCode { get; }
-        public string Message { get; }
-        
-        public int StatusCode { get; set; }
-        
-        public ScriptValidator(SharpPage code, string condition, string errorCode=null, string message=null)
-        {
-            Code = code ?? throw new ArgumentNullException(nameof(code));
-            Condition = condition ?? throw new ArgumentNullException(nameof(condition));
-            ErrorCode = errorCode;
-            Message = message;
-        }
-
-        public bool IsValid(object dto, IRequest request = null)
-        {
-            var pageResult = new PageResult(Code) {
-                Args = {
-                    [ScriptConstants.It] = dto,
-                }
-            };
-            var ret = HostContext.AppHost.EvalScript(pageResult, request);
-            return DefaultScripts.isTruthy(ret);
-        }
-
-        public void ThrowIfNotValid(object dto, IRequest request = null)
-        {
-            if (IsValid(dto, request))
-                return;
-
-            var appHost = HostContext.AppHost;
-
-            var errorCode = ErrorCode ?? DefaultErrorCode;
-            var messageExpr = Message != null
-                ? appHost.ResolveLocalizedString(Message)
-                : Validators.ErrorCodeMessages.TryGetValue(errorCode, out var msg)
-                    ? appHost.ResolveLocalizedString(msg)
-                    : appHost.ResolveLocalizedString(DefaultErrorMessage);
-
-            string errorMsg = messageExpr;
-            if (messageExpr.IndexOf('`') >= 0)
-            {
-                var msgToken = JS.expressionCached(appHost.ScriptContext, messageExpr);
-                errorMsg = (string) msgToken.Evaluate(JS.CreateScope(new Dictionary<string, object> {
-                    [ScriptConstants.It] = dto,
-                    [ScriptConstants.Request] = request,
-                    ["TypeName"] = dto.GetType().Name,
-                })) ?? DefaultErrorMessage;
-            }
-
-            var statusCode = StatusCode >= 400
-                ? StatusCode
-                : 400; //BadRequest
-            
-            throw new HttpError(statusCode, errorCode, errorMsg);
-        }
-    }
-    
     public static class Validators
     {
-        public static NullValidator Null { get; } = new NullValidator();
-        public static NotNullValidator NotNull { get; } = new NotNullValidator();
-        public static NotEmptyValidator NotEmpty { get; } = new NotEmptyValidator(null);
-        public static EmptyValidator Empty { get; } = new EmptyValidator(null);
-
-        public static CreditCardValidator CreditCard { get; } = new CreditCardValidator();
-        public static EmailValidator Email { get; } = new EmailValidator();
-
-        public static Dictionary<Type, List<ITypeValidationRule>> TypeRulesMap { get; } =
-            new Dictionary<Type, List<ITypeValidationRule>>();
+        public static Dictionary<Type, List<ITypeValidator>> TypeRulesMap { get; } =
+            new Dictionary<Type, List<ITypeValidator>>();
 
         public static Dictionary<Type, List<IValidationRule>> TypePropertyRulesMap { get; } =
             new Dictionary<Type, List<IValidationRule>>();
@@ -170,23 +59,26 @@ namespace ServiceStack
                 }
             }
         }
+        
+        static void ThrowNoValidator(string validator) =>
+            throw new NotSupportedException(
+                $"Could not resolve matching '{validator}` Validator Script Method. " +
+                $"Ensure it's registered in AppHost.ScriptContext and called with correct number of arguments.");
+        static void ThrowInvalidValidator(string validator, string validatorType) =>
+            throw new NotSupportedException($"{validator} is not an `{validatorType}`");
+        static void ThrowInvalidValidate() =>
+            throw new NotSupportedException("[Validate] does not have a Validator or Condition");
+        static void ThrowInvalidValidateRequest() =>
+            throw new NotSupportedException("[ValidateRequest] does not have a Validator or Condition");
 
         public static bool RegisterRequestRulesFor(Type type)
         {
-            var appHost = HostContext.AppHost;
             var requestAttrs = type.AllAttributes();
-            var to = new List<ITypeValidationRule>();
+            var to = new List<ITypeValidator>();
 
             foreach (var attr in requestAttrs.OfType<ValidateRequestAttribute>())
             {
-                if (string.IsNullOrEmpty(attr.Condition))
-                    continue;
-                
-                var evalCode = ScriptCodeUtils.EnsureReturn(attr.Condition);
-                var code = appHost.ScriptContext.CodeSharpPage(evalCode);
-                to.Add(new ScriptValidator(code, attr.Condition, attr.ErrorCode, attr.Message) {
-                    StatusCode = attr.StatusCode,
-                });
+                AddTypeValidator(to, attr);
             }
 
             if (to.Count > 0)
@@ -195,6 +87,42 @@ namespace ServiceStack
                 return true;
             }
             return false;
+        }
+
+        public static void AddTypeValidator(List<ITypeValidator> to, IValidateRule attr)
+        {
+            var appHost = HostContext.AppHost;
+            if (!string.IsNullOrEmpty(attr.Condition))
+            {
+                var evalCode = ScriptCodeUtils.EnsureReturn(attr.Condition);
+                var code = appHost.ScriptContext.CodeSharpPage(evalCode);
+                to.Add(new ScriptValidator(code, attr.Condition).Init(attr));
+            }
+            else if (!string.IsNullOrEmpty(attr.Validator))
+            {
+                var ret = appHost.EvalExpression(attr
+                    .Validator); //Validators can't be cached due to custom code/msgs
+                if (ret == null)
+                    ThrowNoValidator(attr.Validator);
+
+                if (ret is ITypeValidator validator)
+                {
+                    to.Add(validator.Init(attr));
+                }
+                else if (ret is List<object> objs)
+                {
+                    foreach (var o in objs)
+                    {
+                        if (o is ITypeValidator itemValidator)
+                        {
+                            to.Add(itemValidator.Init(attr));
+                        }
+                        else ThrowInvalidValidator(attr.Validator, nameof(ITypeValidator));
+                    }
+                }
+                else ThrowInvalidValidator(attr.Validator, nameof(ITypeValidator));
+            }
+            else ThrowInvalidValidateRequest();
         }
 
         /// <summary>
@@ -232,9 +160,9 @@ namespace ServiceStack
             return false;
         }
 
-        public static List<ITypeValidationRule> GetTypeRules(Type type) => TypeRulesMap.TryGetValue(type, out var rules)
+        public static List<ITypeValidator> GetTypeRules(Type type) => TypeRulesMap.TryGetValue(type, out var rules)
             ? rules
-            : TypeConstants<ITypeValidationRule>.EmptyList;
+            : TypeConstants<ITypeValidator>.EmptyList;
 
         public static List<IValidationRule> GetPropertyRules(Type type) => TypePropertyRulesMap.TryGetValue(type, out var rules)
             ? rules
@@ -323,11 +251,7 @@ namespace ServiceStack
                 var ret = appHost.EvalExpression(propRule
                     .Validator); //Validators can't be cached due to custom code/msgs
                 if (ret == null)
-                {
-                    throw new NotSupportedException(
-                        $"Could not resolve matching '{propRule.Validator}` Validator Script Method. " +
-                        $"Ensure it's registered in AppHost.ScriptContext and called with correct number of arguments.");
-                }
+                    ThrowNoValidator(propRule.Validator);
 
                 if (ret is IPropertyValidator validator)
                 {
@@ -341,9 +265,10 @@ namespace ServiceStack
                         {
                             validators.Add(apply(itemValidator));
                         }
+                        else ThrowInvalidValidator(propRule.Validator, nameof(IPropertyValidator));
                     }
                 }
-                else throw new NotSupportedException($"{propRule.Validator} is not an IPropertyValidator");
+                else ThrowInvalidValidator(propRule.Validator, nameof(IPropertyValidator));
             }
             else if (!string.IsNullOrEmpty(propRule.Condition))
             {
@@ -351,6 +276,7 @@ namespace ServiceStack
                 var page = appHost.ScriptContext.CodeSharpPage(evalCode);
                 validators.Add(apply(new ScriptConditionValidator(page)));
             }
+            else ThrowInvalidValidate();
         }
 
         public static PageResult ToPageResult(this PropertyValidatorContext context, SharpPage page)

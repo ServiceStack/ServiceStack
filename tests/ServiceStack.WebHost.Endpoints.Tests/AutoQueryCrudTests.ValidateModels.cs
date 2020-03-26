@@ -169,8 +169,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int IsOddOrOverTwoDigitsCondition { get; set; }
     }
 
-    [ValidateRequest(new[]{ "it.Test.isOdd()", "it.Test.log10() > 2" }, "RuleMessage")]
-    [ValidateRequest("it.Test.log10() > 3", "AssertFailed2", "2nd Assert Failed", StatusCode = 401)]
+    [ValidateRequest("IsAuthenticated")]
+    [ValidateRequest("HasRole('Manager')")]
+    public class TestAuthValidators
+        : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
+    {
+        [Validate("NotNull")] //doesn't get validated if ValidateRequest is invalid
+        public string NotNull { get; set; }
+    }
+
+    [ValidateRequest("[IsAuthenticated,HasRole('Manager')]")]
+    public class TestMultiAuthValidators
+        : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
+    {
+        [Validate("NotNull")] //doesn't get validated if ValidateRequest is invalid
+        public string NotNull { get; set; }
+    }
+
+    [ValidateRequest(Conditions = new[]{ "it.Test.isOdd()", "it.Test.log10() > 2" }, ErrorCode = "RuleMessage")]
+    [ValidateRequest(Condition = "it.Test.log10() > 3", ErrorCode = "AssertFailed2", Message = "2nd Assert Failed", StatusCode = 401)]
     public class OnlyValidatesRequest
         : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
     {

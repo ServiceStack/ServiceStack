@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Caching;
@@ -40,6 +41,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var validationSource = container.Resolve<IValidationSource>();
             validationSource.InitSchema();
             validationSource.SaveValidationRules(new List<ValidateRule> {
+                new ValidateRule { Type = nameof(DynamicValidationRules), Validator = "IsAuthenticated" },
                 new ValidateRule { Type = nameof(DynamicValidationRules), Field = nameof(DynamicValidationRules.LastName), Validator = "NotNull" },
                 new ValidateRule { Type = nameof(DynamicValidationRules), Field = nameof(DynamicValidationRules.Age), Validator = "InclusiveBetween(13,100)" },
             });
@@ -114,7 +116,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             try
             {
-                var response = client.Post(new DynamicValidationRules {
+                var anonClient = new JsonServiceClient(Config.ListeningOn);
+                var response = anonClient.Post(new DynamicValidationRules {
+                    DateOfBirth = new DateTime(2001,1,1),
+                });
+                
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo((int) HttpStatusCode.Unauthorized));
+                Assert.That(ex.ErrorCode, Is.EqualTo(nameof(HttpStatusCode.Unauthorized)));
+            }
+            
+            var authClient = CreateAuthClient();
+            try
+            {
+                var response = authClient.Post(new DynamicValidationRules {
                     DateOfBirth = new DateTime(2001,1,1),
                 });
                 
@@ -128,7 +146,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             try
             {
-                var response = client.Post(new DynamicValidationRules {
+                var response = authClient.Post(new DynamicValidationRules {
                     FirstName = "A",
                     LastName = "B",
                     Age = 12,
@@ -145,7 +163,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(status.Errors.Count, Is.EqualTo(1));
             }
             
-            client.Post(new DynamicValidationRules {
+            authClient.Post(new DynamicValidationRules {
                 FirstName = "A",
                 LastName = "B",
                 Age = 13,
@@ -371,6 +389,157 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Console.WriteLine(e);
                 throw;
+            }
+        }
+
+        [Test]
+        public void Does_validate_TestAuthValidators()
+        {
+            try
+            {
+                var anonClient = new JsonServiceClient(Config.ListeningOn);
+                anonClient.Post(new TestAuthValidators());
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException e)
+            {
+                Assert.That(e.StatusCode, Is.EqualTo(401));
+                Assert.That(e.ErrorCode, Is.EqualTo("Unauthorized"));
+                Assert.That(e.ErrorMessage, Is.EqualTo("Not Authenticated"));
+            }
+
+            try
+            {
+                var employeeClient = new JsonServiceClient(Config.ListeningOn);
+                
+                employeeClient.Post(new Authenticate {
+                    provider = "credentials",
+                    UserName = "employee@email.com",
+                    Password = "p@55wOrd",
+                    RememberMe = true,
+                });
+
+                employeeClient.Post(new TestAuthValidators());
+            }
+            catch (WebServiceException e)
+            {
+                Assert.That(e.StatusCode, Is.EqualTo(403));
+                Assert.That(e.ErrorCode, Is.EqualTo("Forbidden"));
+                Assert.That(e.ErrorMessage, Is.EqualTo("Invalid Role"));
+            }
+
+            try
+            {
+                var managerClient = new JsonServiceClient(Config.ListeningOn);
+                
+                managerClient.Post(new Authenticate {
+                    provider = "credentials",
+                    UserName = "manager",
+                    Password = "p@55wOrd",
+                    RememberMe = true,
+                });
+
+                managerClient.Post(new TestAuthValidators());
+            }
+            catch (WebServiceException e)
+            {
+                Assert.That(e.StatusCode, Is.EqualTo(400));
+                Assert.That(e.ErrorCode, Is.EqualTo("NotNull"));
+            }
+
+            try
+            {
+                var adminClient = new JsonServiceClient(Config.ListeningOn);
+                
+                adminClient.Post(new Authenticate {
+                    provider = "credentials",
+                    UserName = "admin@email.com",
+                    Password = "p@55wOrd",
+                    RememberMe = true,
+                });
+
+                adminClient.Post(new TestAuthValidators());
+            }
+            catch (WebServiceException e)
+            {
+                Assert.That(e.StatusCode, Is.EqualTo(400));
+                Assert.That(e.ErrorCode, Is.EqualTo("NotNull"));
+            }
+        }
+        
+
+        [Test]
+        public void Does_validate_TestMultiAuthValidators()
+        {
+            try
+            {
+                var anonClient = new JsonServiceClient(Config.ListeningOn);
+                anonClient.Post(new TestMultiAuthValidators());
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException e)
+            {
+                Assert.That(e.StatusCode, Is.EqualTo(401));
+                Assert.That(e.ErrorCode, Is.EqualTo("Unauthorized"));
+                Assert.That(e.ErrorMessage, Is.EqualTo("Not Authenticated"));
+            }
+
+            try
+            {
+                var employeeClient = new JsonServiceClient(Config.ListeningOn);
+                
+                employeeClient.Post(new Authenticate {
+                    provider = "credentials",
+                    UserName = "employee@email.com",
+                    Password = "p@55wOrd",
+                    RememberMe = true,
+                });
+
+                employeeClient.Post(new TestMultiAuthValidators());
+            }
+            catch (WebServiceException e)
+            {
+                Assert.That(e.StatusCode, Is.EqualTo(403));
+                Assert.That(e.ErrorCode, Is.EqualTo("Forbidden"));
+                Assert.That(e.ErrorMessage, Is.EqualTo("Invalid Role"));
+            }
+
+            try
+            {
+                var managerClient = new JsonServiceClient(Config.ListeningOn);
+                
+                managerClient.Post(new Authenticate {
+                    provider = "credentials",
+                    UserName = "manager",
+                    Password = "p@55wOrd",
+                    RememberMe = true,
+                });
+
+                managerClient.Post(new TestMultiAuthValidators());
+            }
+            catch (WebServiceException e)
+            {
+                Assert.That(e.StatusCode, Is.EqualTo(400));
+                Assert.That(e.ErrorCode, Is.EqualTo("NotNull"));
+            }
+
+            try
+            {
+                var adminClient = new JsonServiceClient(Config.ListeningOn);
+                
+                adminClient.Post(new Authenticate {
+                    provider = "credentials",
+                    UserName = "admin@email.com",
+                    Password = "p@55wOrd",
+                    RememberMe = true,
+                });
+
+                adminClient.Post(new TestMultiAuthValidators());
+            }
+            catch (WebServiceException e)
+            {
+                Assert.That(e.StatusCode, Is.EqualTo(400));
+                Assert.That(e.ErrorCode, Is.EqualTo("NotNull"));
             }
         }
         

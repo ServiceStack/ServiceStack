@@ -480,7 +480,7 @@ namespace ServiceStack.Auth
                 {
                     if (RemoveInvalidTokenCookie && req.Cookies.ContainsKey(Keywords.TokenCookie))
                     {
-                        (req.Response as IHttpResponse)?.Cookies.DeleteCookie(Keywords.TokenCookie);
+                        (res as IHttpResponse)?.Cookies.DeleteCookie(Keywords.TokenCookie);
                     }
 
                     throw;

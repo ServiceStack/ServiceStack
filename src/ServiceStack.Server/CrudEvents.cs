@@ -198,7 +198,9 @@ namespace ServiceStack
                 {
                     throw new NotSupportedException("An AuthRepository or IUserSessionSource is required Execute Authenticated AutoCrudEvents");
                 }
-                
+
+                if (session.UserAuthName == null)
+                    session.UserAuthName = session.UserName ?? session.Email;
                 if (session.Roles == null)
                     session.Roles = roles?.ToList();
                 if (session.Permissions == null)

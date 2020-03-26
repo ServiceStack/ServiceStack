@@ -620,7 +620,7 @@ namespace ServiceStack.Host
         public List<string> RequiredPermissions { get; set; }
         public List<string> RequiresAnyPermission { get; set; }
         
-        public List<ITypeValidationRule> RequestTypeValidationRules { get; set; }
+        public List<ITypeValidator> RequestTypeValidationRules { get; set; }
         public List<IValidationRule> RequestPropertyValidationRules { get; set; }
     }
 

@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
+using ServiceStack.Host;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -82,6 +83,41 @@ namespace ServiceStack
 
                 await AuthProvider.HandleFailedAuth(authProviders[0], session, req, res);
             }
+        }
+
+        public static bool Authenticate(IRequest req, object requestDto=null, IAuthSession session=null, IAuthProvider[] authProviders=null)
+        {
+            session ??= (req ?? throw new ArgumentNullException(nameof(req))).GetSession();
+            authProviders ??= AuthenticateService.GetAuthProviders();
+            var authValidate = HostContext.GetPlugin<AuthFeature>()?.OnAuthenticateValidate;
+            var ret = authValidate?.Invoke(req);
+            if (ret != null)
+                return false;
+
+            req.PopulateFromRequestIfHasSessionId(requestDto);
+
+            if (!req.Items.ContainsKey(Keywords.HasPreAuthenticated))
+            {
+                var mockResponse = new BasicRequest().Response;
+                req.Items[Keywords.HasPreAuthenticated] = true;
+                foreach (var authWithRequest in authProviders.OfType<IAuthWithRequest>())
+                {
+                    authWithRequest.PreAuthenticate(req, mockResponse);
+                    if (mockResponse.IsClosed)
+                        return false;
+                }
+            }
+            
+            return session != null && authProviders.Any(x => session.IsAuthorized(x.Provider));
+        }
+
+        public static void AssertAuthenticated(IRequest req, object requestDto=null, IAuthSession session=null, IAuthProvider[] authProviders=null)
+        {
+            authProviders ??= AuthenticateService.GetAuthProviders();
+            if (Authenticate(req, requestDto:requestDto, session:session, authProviders:authProviders))
+                return;
+
+            throw new HttpError(403, ErrorMessages.NotAuthenticated.Localize(req));
         }
 
         internal static Task PreAuthenticateAsync(IRequest req, IEnumerable<IAuthProvider> authProviders)

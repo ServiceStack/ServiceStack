@@ -10,23 +10,15 @@ namespace ServiceStack
     /// Assert pre-conditions before DTO's Fluent Validation properties are evaluated
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
-    public class ValidateRequestAttribute : AttributeBase
+    public class ValidateRequestAttribute : AttributeBase, IValidateRule
     {
-        public ValidateRequestAttribute() { }
-
-        public ValidateRequestAttribute(string condition, string errorCode=null, string message=null)
-        {
-            Condition = condition;
-            ErrorCode = errorCode;
-            Message = message;
-        }
-
-        public ValidateRequestAttribute(string[] conditions, string errorCode=null, string message=null)
-        {
-            Condition = ValidateAttribute.Combine("&&", conditions);
-            ErrorCode = errorCode;
-            Message = message;
-        }
+        public ValidateRequestAttribute() {}
+        public ValidateRequestAttribute(string validator) => Validator = validator;
+        
+        /// <summary>
+        /// Script Expression to create an IPropertyValidator registered in Validators.Types
+        /// </summary>
+        public string Validator { get; set; }
 
         /// <summary>
         /// Boolean #Script Code Expression to Test
@@ -37,6 +29,15 @@ namespace ServiceStack
         ///   -      it: Property Value
         /// </summary>
         public string Condition { get; set; }
+
+        /// <summary>
+        /// Combine multiple conditions
+        /// </summary>
+        public string[] Conditions
+        {
+            get => new []{ Condition };
+            set => Condition = ValidateAttribute.Combine("&&", value);
+        }
 
         /// <summary>
         /// Custom ErrorCode to return 
@@ -76,7 +77,7 @@ namespace ServiceStack
         public ValidateAttribute(string validator) => Validator = validator;
         
         /// <summary>
-        /// Expression to create a validator registered in Validators.Types
+        /// Script Expression to create an IPropertyValidator registered in Validators.Types
         /// </summary>
         public string Validator { get; set; }
 
@@ -174,9 +175,8 @@ namespace ServiceStack
         public string Type { get; set; }
         
         /// <summary>
-        /// The property field
+        /// The property field for Property Validators, null for Type Validators 
         /// </summary>
-        [Required]
         public string Field { get; set; }
         
         /// <summary>
