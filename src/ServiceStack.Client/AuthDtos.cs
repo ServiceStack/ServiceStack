@@ -320,6 +320,7 @@ namespace ServiceStack
     [DataContract]
     public class GetNavItems : IReturn<GetNavItemsResponse>
     {
+        [DataMember(Order = 1)]
         public string Name { get; set; }
     }
 
