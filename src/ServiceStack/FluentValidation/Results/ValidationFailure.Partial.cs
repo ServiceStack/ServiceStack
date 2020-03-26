@@ -19,12 +19,15 @@ namespace ServiceStack.FluentValidation.Results
         public static Dictionary<string, string> ErrorCodeAliases = new Dictionary<string, string>
         {
             { "ExactLength", "Length" },
+            { "AspNetCoreCompatibleEmail", "Email" },
         };
 
         //ServiceStack uses 'NotNull' instead of FluentValidation 7's 'NotNullValidator' ErrorCode
         public static string ServiceStackErrorCodeResolver(string errorCode)
         {
-            var ssCode = errorCode?.Replace("Validator", "");
+            var ssCode = errorCode?.EndsWith("Validator") == true
+                ? errorCode.Substring(0, errorCode.Length - "Validator".Length)
+                : errorCode;
 
             return ssCode != null && ErrorCodeAliases.TryGetValue(ssCode, out var errorCodeAlias) 
                 ? errorCodeAlias
