@@ -128,13 +128,13 @@ namespace ServiceStack
                 ? GetTableSchemas(dbFactory, request.Schema, request.NamedConnection)
                 : feature.GetCachedDbSchema(dbFactory, request.Schema, request.NamedConnection).Tables;
 
-            request.BaseUrl ??= HostContext.GetPlugin<NativeTypesFeature>().MetadataTypesConfig.BaseUrl ?? req.GetBaseUrl();
+            var appHost = HostContext.AppHost;
+            request.BaseUrl ??= HostContext.GetPlugin<NativeTypesFeature>().MetadataTypesConfig.BaseUrl ?? appHost.GetBaseUrl(req);
             if (request.MakePartial == null)
                 request.MakePartial = false;
             if (request.MakeVirtual == null)
                 request.MakeVirtual = false;
 
-            var appHost = HostContext.AppHost;
             var typesConfig = metadata.GetConfig(request);
             typesConfig.UsePath = req.PathInfo;
             var metadataTypes = metadata.GetMetadataTypes(req, typesConfig);
