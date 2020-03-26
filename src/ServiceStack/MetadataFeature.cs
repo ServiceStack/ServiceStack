@@ -118,11 +118,18 @@ namespace ServiceStack
     {
         public object Get(GetNavItems request)
         {
-            return new GetNavItemsResponse {
-                BaseUrl = Request.GetBaseUrl(),
-                Results = ViewUtils.NavItems,
-                NavItemsMap = ViewUtils.NavItemsMap,
-            };
+            return request.Name != null
+                ? new GetNavItemsResponse {
+                    BaseUrl = Request.GetBaseUrl(),
+                    Results = ViewUtils.NavItemsMap.TryGetValue(request.Name, out var navItems)
+                        ? navItems
+                        : TypeConstants<NavItem>.EmptyList,
+                }
+                : new GetNavItemsResponse {
+                    BaseUrl = Request.GetBaseUrl(),
+                    Results = ViewUtils.NavItems,
+                    NavItemsMap = ViewUtils.NavItemsMap,
+                };
         }
     }
 

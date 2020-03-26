@@ -313,11 +313,15 @@ namespace ServiceStack
         [DataMember(Order = 2)] public Dictionary<string, string> Meta { get; set; }
         [DataMember(Order = 3)] public ResponseStatus ResponseStatus { get; set; }
     }
-    
+
     [ExcludeMetadata]
-    [Route("/metadata/nav")]
+    [Route("/metadata/nav", "GET")]
+    [Route("/metadata/nav/{Name}", "GET")]
     [DataContract]
-    public class GetNavItems : IReturn<GetNavItemsResponse> {}
+    public class GetNavItems : IReturn<GetNavItemsResponse>
+    {
+        public string Name { get; set; }
+    }
 
     [DataContract]
     public class GetNavItemsResponse : IMeta
