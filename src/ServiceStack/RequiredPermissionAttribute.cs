@@ -116,9 +116,6 @@ namespace ServiceStack
             if (HostContext.HasValidAuthSecret(req))
                 return true;
 
-            if (session != null && session.IsAuthenticated)
-                return true;
-
             return false;
         }
 

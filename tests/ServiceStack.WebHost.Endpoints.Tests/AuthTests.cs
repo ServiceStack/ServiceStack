@@ -381,9 +381,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class AuthTests
     {
-        protected virtual string VirtualDirectory { get { return ""; } }
-        protected virtual string ListeningOn { get { return "http://localhost:1337/"; } }
-        protected virtual string WebHostUrl { get { return "http://mydomain.com"; } }
+        protected virtual string VirtualDirectory => "";
+        protected virtual string ListeningOn => "http://localhost:1337/";
+        protected virtual string WebHostUrl => "http://mydomain.com";
 
         public const string UserName = "user";
         public const string Password = "p@55word";
