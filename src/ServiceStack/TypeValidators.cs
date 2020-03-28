@@ -14,8 +14,8 @@ namespace ServiceStack
         string ErrorCode { get; set; }
         string Message { get; set; }
         int? StatusCode { get; set; }
-        Task<bool> IsValidAsync(object dto, IRequest request = null);
-        Task ThrowIfNotValidAsync(object dto, IRequest request = null);
+        Task<bool> IsValidAsync(object dto, IRequest request);
+        Task ThrowIfNotValidAsync(object dto, IRequest request);
     }
 
     public interface IHasTypeValidators
@@ -51,7 +51,7 @@ namespace ServiceStack
         
         public IsAuthenticatedValidator(string provider) : this() => Provider = provider;
 
-        public override bool IsValid(object dto, IRequest request = null)
+        public override bool IsValid(object dto, IRequest request)
         {
             return request != null && AuthenticateAttribute.Authenticate(request, requestDto:dto, 
                 authProviders:AuthenticateService.GetAuthProviders(this.Provider));
@@ -74,13 +74,13 @@ namespace ServiceStack
             };
         }
 
-        public override bool IsValid(object dto, IRequest request = null)
+        public override bool IsValid(object dto, IRequest request)
         {
             return request != null && IsAuthenticatedValidator.Instance.IsValid(dto, request) 
                                    && RequiredRoleAttribute.HasRequiredRoles(request, roles);
         }
 
-        public override async Task ThrowIfNotValidAsync(object dto, IRequest request = null)
+        public override async Task ThrowIfNotValidAsync(object dto, IRequest request)
         {
             await IsAuthenticatedValidator.Instance.ThrowIfNotValidAsync(dto, request);
             
@@ -107,13 +107,13 @@ namespace ServiceStack
             };
         }
 
-        public override bool IsValid(object dto, IRequest request = null)
+        public override bool IsValid(object dto, IRequest request)
         {
             return request != null && IsAuthenticatedValidator.Instance.IsValid(dto, request) 
                                    && RequiredPermissionAttribute.HasRequiredPermissions(request, permissions);
         }
 
-        public override async Task ThrowIfNotValidAsync(object dto, IRequest request = null)
+        public override async Task ThrowIfNotValidAsync(object dto, IRequest request)
         {
             await IsAuthenticatedValidator.Instance.ThrowIfNotValidAsync(dto, request);
             
@@ -135,7 +135,7 @@ namespace ServiceStack
             Condition = condition ?? throw new ArgumentNullException(nameof(condition));
         }
 
-        public override async Task<bool> IsValidAsync(object dto, IRequest request = null)
+        public override async Task<bool> IsValidAsync(object dto, IRequest request)
         {
             var pageResult = new PageResult(Code) {
                 Args = {
@@ -211,13 +211,13 @@ namespace ServiceStack
 
         protected string ResolveErrorCode() => ErrorCode ?? DefaultErrorCode;
 
-        public virtual bool IsValid(object dto, IRequest request = null) =>
+        public virtual bool IsValid(object dto, IRequest request) =>
             throw new NotImplementedException();
 
-        public virtual Task<bool> IsValidAsync(object dto, IRequest request = null) 
+        public virtual Task<bool> IsValidAsync(object dto, IRequest request) 
             => Task.FromResult(IsValid(dto, request)); 
 
-        public virtual async Task ThrowIfNotValidAsync(object dto, IRequest request = null)
+        public virtual async Task ThrowIfNotValidAsync(object dto, IRequest request)
         {
             if (await IsValidAsync(dto, request))
                 return;
