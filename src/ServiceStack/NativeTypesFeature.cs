@@ -99,10 +99,14 @@ namespace ServiceStack
              new NativeTypesMetadata(HostContext.AppHost.Metadata, MetadataTypesConfig))
             .GetGenerator();
         
+        public MetadataTypesGenerator DefaultGenerator { get; private set; }
+        
         public void Register(IAppHost appHost)
         {
-            appHost.Register<INativeTypesMetadata>(
-                new NativeTypesMetadata(appHost.Metadata, MetadataTypesConfig));
+            var nativeTypesMeta = new NativeTypesMetadata(appHost.Metadata, MetadataTypesConfig);
+            appHost.Register<INativeTypesMetadata>(nativeTypesMeta);
+
+            DefaultGenerator = nativeTypesMeta.GetGenerator();
 
             appHost.RegisterService<NativeTypesService>();
         }
