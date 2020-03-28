@@ -21,6 +21,13 @@ namespace ServiceStack
             Save,
         };
 
+        public static List<string> Read { get; } = new List<string> {
+            Query,
+        };
+
+        private static string[] readInterfaces;
+        public static string[] ReadInterfaces => readInterfaces ??= CrudInterfaceMetadataNames(Read).ToArray();
+
         public static List<string> Write { get; } = new List<string> {
             Create,
             Update,
@@ -28,6 +35,9 @@ namespace ServiceStack
             Delete,
             Save,
         };
+
+        private static string[] writeInterfaces;
+        public static string[] WriteInterfaces => writeInterfaces ??= CrudInterfaceMetadataNames(Write).ToArray();
 
         public static bool IsOperation(string operation) => All.Contains(operation);
 
