@@ -657,10 +657,12 @@ namespace ServiceStack.NativeTypes
 
         public List<PropertyInfo> Properties(Attribute attr)
         {
-            return attr.GetType().GetPublicProperties()
-                .Where(property => property.Name != "TypeId")
-                .OrderBy(property => property.Name)
-                .ToList();
+            var props = attr.GetType().GetPublicProperties()
+                .Where(property => property.Name != "TypeId" && !property.HasAttribute<IgnoreAttribute>());
+                
+            return attr.GetType().FirstAttribute<TagAttribute>()?.Name == "PropertyOrder"
+                ? props.ToList()
+                : props.OrderBy(property => property.Name).ToList();
         }
 
         public List<MetadataPropertyType> NonDefaultProperties(Attribute attr)

@@ -10,6 +10,7 @@ namespace ServiceStack
     /// Assert pre-conditions before DTO's Fluent Validation properties are evaluated
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
+    [Tag("PropertyOrder")]
     public class ValidateRequestAttribute : AttributeBase, IValidateRule
     {
         public ValidateRequestAttribute() {}
@@ -33,6 +34,7 @@ namespace ServiceStack
         /// <summary>
         /// Combine multiple conditions
         /// </summary>
+        [Ignore]
         public string[] Conditions
         {
             get => new []{ Condition };
@@ -56,12 +58,14 @@ namespace ServiceStack
         /// </summary>
         public int StatusCode { get; set; }
         
+        [Ignore]
         public string[] AllConditions
         {
             get => throw new NotSupportedException(nameof(AllConditions));
             set => Condition = ValidateAttribute.Combine("&&", value);
         }
 
+        [Ignore]
         public string[] AnyConditions
         {
             get => throw new NotSupportedException(nameof(AnyConditions));
@@ -91,12 +95,14 @@ namespace ServiceStack
         /// </summary>
         public string Condition { get; set; }
 
+        [Ignore]
         public string[] AllConditions
         {
             get => throw new NotSupportedException(nameof(AllConditions));
             set => Condition = Combine("&&", value);
         }
 
+        [Ignore]
         public string[] AnyConditions
         {
             get => throw new NotSupportedException(nameof(AnyConditions));

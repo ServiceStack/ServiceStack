@@ -409,7 +409,7 @@ namespace ServiceStack
         }
 
         public static readonly Dictionary<char, string> EscapedCharMap = new Dictionary<char, string> {
-            {'\'', @"\'"},
+            // {'\'', @"\'"},
             {'\"', "\\\""},
             {'\\', @"\\"},
             {'\0', @"\0"},

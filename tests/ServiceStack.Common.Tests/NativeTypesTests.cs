@@ -3,6 +3,8 @@ using System;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
+using ServiceStack.Host;
+using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.NativeTypes.Java;
 using ServiceStack.Text;
 
@@ -336,6 +338,44 @@ namespace ServiceStack.Common.Tests
             
             Assert.That(enumNames, Is.EquivalentTo(new[]{ "Equals", "NotEqual" }));
             Assert.That(enumValues, Is.EquivalentTo(new[]{ "0", "1" }));
+        }
+
+        [Test]
+        public void Can_write_ValidateRequestAttribute()
+        {
+            var gen = appHost.AssertPlugin<NativeTypesFeature>().DefaultGenerator;
+            var attr = new ValidateRequestAttribute("HasRole('Accounts')") {
+                ErrorCode = "ExCode",
+                Message = "'Id' Is Required",
+            };
+            var metaAttr = gen.ToAttribute(attr);
+            string argValue(string name) => metaAttr.Args.First(x => x.Name == name).Value;
+            Assert.That(metaAttr.Name, Is.EqualTo("ValidateRequest"));
+            Assert.That(metaAttr.Args.Count, Is.EqualTo(3));
+            Assert.That(argValue(nameof(ValidateRequestAttribute.Validator)), Is.EqualTo("HasRole('Accounts')"));
+            Assert.That(argValue(nameof(ValidateRequestAttribute.ErrorCode)), Is.EqualTo("ExCode"));
+            Assert.That(argValue(nameof(ValidateRequestAttribute.Message)), Is.EqualTo("'Id' Is Required"));
+            
+            var csharp = new CSharpGenerator(new MetadataTypesConfig {
+                DefaultNamespaces = new List<string> {
+                    "ServiceStack"
+                }
+            });
+            var src = csharp.GetCode(new MetadataTypes {
+                Types = new List<MetadataType> {
+                    new MetadataType {
+                        Name = "TheType",
+                        Attributes = new List<MetadataAttribute> {
+                            metaAttr,
+                        }
+                    }
+                }
+            }, new BasicRequest());
+            
+            src.Print();
+            
+            Assert.That(src, Does.Contain(
+            "[ValidateRequest(Validator=\"HasRole('Accounts')\", ErrorCode=\"ExCode\", Message=\"'Id' Is Required\")]"));
         }
     }
 
