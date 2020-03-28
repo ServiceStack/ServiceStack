@@ -375,7 +375,7 @@ namespace ServiceStack.Common.Tests
             src.Print();
             
             Assert.That(src, Does.Contain(
-            "[ValidateRequest(Validator=\"HasRole('Accounts')\", ErrorCode=\"ExCode\", Message=\"'Id' Is Required\")]"));
+            "[ValidateRequest(\"HasRole('Accounts')\", ErrorCode=\"ExCode\", Message=\"'Id' Is Required\")]"));
         }
     }
 

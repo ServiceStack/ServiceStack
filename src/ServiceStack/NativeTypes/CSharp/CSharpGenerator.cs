@@ -448,6 +448,11 @@ namespace ServiceStack.NativeTypes.CSharp
                 sb.AppendLine($"public {virt}ExtensionDataObject ExtensionData {{ get; set; }}");
             }
         }
+        
+        public static Dictionary<string,string[]> AttributeConstructorArgs { get; set; } = new Dictionary<string, string[]> {
+            ["ValidateRequest"] = new[] { nameof(ValidateRequestAttribute.Validator) },
+            ["Validate"] = new[] { nameof(ValidateRequestAttribute.Validator) },
+        };
 
         public bool AppendAttributes(StringBuilderWrapper sb, List<MetadataAttribute> attributes)
         {
@@ -474,11 +479,17 @@ namespace ServiceStack.NativeTypes.CSharp
                     }
                     else if (attr.Args != null)
                     {
+                        AttributeConstructorArgs.TryGetValue(attr.Name, out var attrCtorArgs);
+                        
                         foreach (var attrArg in attr.Args)
                         {
                             if (args.Length > 0)
                                 args.Append(", ");
-                            args.Append($"{attrArg.Name}={TypeValue(attrArg.Type, attrArg.Value)}");
+                            
+                            if (attrCtorArgs?.Contains(attrArg.Name) == true)
+                                args.Append(TypeValue(attrArg.Type, attrArg.Value));
+                            else
+                                args.Append($"{attrArg.Name}={TypeValue(attrArg.Type, attrArg.Value)}");
                         }
                     }
                     sb.AppendLine($"[{attr.Name}({StringBuilderCacheAlt.ReturnAndFree(args)})]");
