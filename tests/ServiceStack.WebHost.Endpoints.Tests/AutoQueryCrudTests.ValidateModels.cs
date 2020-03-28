@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ServiceStack.FluentValidation;
+using ServiceStack.Model;
 
 namespace ServiceStack.WebHost.Endpoints.Tests 
 {
@@ -189,6 +190,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class TestIsAdmin
         : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
     {
+        [Validate("NotNull")] //doesn't get validated if ValidateRequest is invalid
+        public string NotNull { get; set; }
+    }
+
+    [ValidateRequest(Condition = "!dbExistsSync('SELECT * FROM RockstarAlbum WHERE RockstarId = @Id', { dto.Id })", 
+        ErrorCode = "HasForeignKeyReferences")]
+    public class TestDbCondition
+        : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
+    {
+        public int Id { get; set; }
+        
+        [Validate("NotNull")] //doesn't get validated if ValidateRequest is invalid
+        public string NotNull { get; set; }
+    }
+
+    [ValidateRequest("NoRockstarAlbumReferences")]
+    public class TestDbValidator
+        : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>, IHasId<int>
+    {
+        public int Id { get; set; }
+        
         [Validate("NotNull")] //doesn't get validated if ValidateRequest is invalid
         public string NotNull { get; set; }
     }

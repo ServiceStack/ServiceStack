@@ -2,12 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Caching;
 using ServiceStack.Data;
 using ServiceStack.FluentValidation;
+using ServiceStack.Model;
+using ServiceStack.OrmLite;
+using ServiceStack.Script;
 using ServiceStack.Validation;
+using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -18,6 +23,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         
         partial void OnConfigure(AutoQueryAppHost host, Container container)
         {
+            host.ScriptContext.ScriptMethods.AddRange(new ScriptMethods[] {
+                new DbScriptsAsync(),
+                new MyValidators(), 
+            });
+
             host.Plugins.Add(new ValidationFeature {
                 ConditionErrorCodes = {
                     [ValidationConditions.IsOdd] = "NotOdd",
@@ -592,7 +602,92 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(e.StatusCode, Is.EqualTo(400));
                 Assert.That(e.ErrorCode, Is.EqualTo("NotNull"));
             }
+        }
+
+        [Test]
+        public void Does_validate_TestDbCondition()
+        {
+            using var db = appHost.Resolve<IDbConnectionFactory>().OpenDbConnection();
+            db.DropAndCreateTable<RockstarAlbum>();
             
+            try
+            {
+                db.Insert(new RockstarAlbum { Id = 1, Name = "An Album", Genre = "Pop", RockstarId = 1 });
+                var response = client.Post(new TestDbCondition {
+                    Id = 1,
+                });
+            }
+            catch (WebServiceException e)
+            {
+                Assert.That(e.StatusCode, Is.EqualTo(400));
+                Assert.That(e.ErrorCode, Is.EqualTo("HasForeignKeyReferences"));
+            }
+            
+            try
+            {
+                db.Delete<RockstarAlbum>(x => x.RockstarId == 1);
+                var response = client.Post(new TestDbCondition {
+                    Id = 1,
+                });
+            }
+            catch (WebServiceException e)
+            {
+                Assert.That(e.StatusCode, Is.EqualTo(400));
+                Assert.That(e.ErrorCode, Is.EqualTo("NotNull")); //success!
+            }
+        }
+
+        class NoRockstarAlbumReferences : TypeValidatorBase
+        {
+            public NoRockstarAlbumReferences() 
+                : base("HasForeignKeyReferences", "Has RockstarAlbum References") {}
+
+            public override async Task<bool> IsValidAsync(object dto, IRequest request = null)
+            {
+                //Example of dynamic access using compiled accessor delegates
+                //var id = TypeProperties.Get(dto.GetType()).GetPublicGetter("Id")(dto).ConvertTo<int>();
+                var id = ((IHasId<int>) dto).Id;
+                using var db = HostContext.AppHost.GetDbConnection(request);
+                return !(await db.ExistsAsync<RockstarAlbum>(x => x.RockstarId == id));
+            }
+        }
+
+        public class MyValidators : ScriptMethods
+        {
+            public ITypeValidator NoRockstarAlbumReferences() => new NoRockstarAlbumReferences();
+        }
+
+        [Test]
+        public void Does_validate_TestDbValidator()
+        {
+            using var db = appHost.Resolve<IDbConnectionFactory>().OpenDbConnection();
+            db.DropAndCreateTable<RockstarAlbum>();
+            
+            try
+            {
+                db.Insert(new RockstarAlbum { Id = 1, Name = "An Album", Genre = "Pop", RockstarId = 1 });
+                var response = client.Post(new TestDbValidator {
+                    Id = 1,
+                });
+            }
+            catch (WebServiceException e)
+            {
+                Assert.That(e.StatusCode, Is.EqualTo(400));
+                Assert.That(e.ErrorCode, Is.EqualTo("HasForeignKeyReferences"));
+            }
+            
+            try
+            {
+                db.Delete<RockstarAlbum>(x => x.RockstarId == 1);
+                var response = client.Post(new TestDbValidator {
+                    Id = 1,
+                });
+            }
+            catch (WebServiceException e)
+            {
+                Assert.That(e.StatusCode, Is.EqualTo(400));
+                Assert.That(e.ErrorCode, Is.EqualTo("NotNull")); //success!
+            }
         }
         
     }

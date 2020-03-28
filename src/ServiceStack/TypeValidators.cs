@@ -135,14 +135,14 @@ namespace ServiceStack
             Condition = condition ?? throw new ArgumentNullException(nameof(condition));
         }
 
-        public override bool IsValid(object dto, IRequest request = null)
+        public override async Task<bool> IsValidAsync(object dto, IRequest request = null)
         {
             var pageResult = new PageResult(Code) {
                 Args = {
                     [ScriptConstants.It] = dto,
                 }
             };
-            var ret = HostContext.AppHost.EvalScript(pageResult, request);
+            var ret = await HostContext.AppHost.EvalScriptAsync(pageResult, request);
             return DefaultScripts.isTruthy(ret);
         }
     }
@@ -214,7 +214,7 @@ namespace ServiceStack
         public virtual bool IsValid(object dto, IRequest request = null) =>
             throw new NotImplementedException();
 
-        public Task<bool> IsValidAsync(object dto, IRequest request = null) 
+        public virtual Task<bool> IsValidAsync(object dto, IRequest request = null) 
             => Task.FromResult(IsValid(dto, request)); 
 
         public virtual async Task ThrowIfNotValidAsync(object dto, IRequest request = null)

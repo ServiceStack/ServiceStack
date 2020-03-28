@@ -1580,8 +1580,11 @@ namespace ServiceStack.Script
         public object unwrap(object value)
         {
             if (value is Task t)
+            {
+                if (value is Task<object> taskObj)
+                    return taskObj.GetAwaiter().GetResult();
                 return t.GetResult();
-
+            }
             return value;
         }
         public object sync(object value) => unwrap(value);

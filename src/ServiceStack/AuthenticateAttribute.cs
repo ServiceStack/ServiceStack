@@ -87,6 +87,9 @@ namespace ServiceStack
 
         public static bool Authenticate(IRequest req, object requestDto=null, IAuthSession session=null, IAuthProvider[] authProviders=null)
         {
+            if (HostContext.HasValidAuthSecret(req))
+                return true;
+
             session ??= (req ?? throw new ArgumentNullException(nameof(req))).GetSession();
             authProviders ??= AuthenticateService.GetAuthProviders();
             var authValidate = HostContext.GetPlugin<AuthFeature>()?.OnAuthenticateValidate;
