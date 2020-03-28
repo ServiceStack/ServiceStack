@@ -425,7 +425,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Assert.That(e.StatusCode, Is.EqualTo(403));
                 Assert.That(e.ErrorCode, Is.EqualTo("Forbidden"));
-                Assert.That(e.ErrorMessage, Is.EqualTo("Invalid Role"));
+                Assert.That(e.ErrorMessage, Is.EqualTo("Manager Role Required"));
             }
 
             try
@@ -501,7 +501,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Assert.That(e.StatusCode, Is.EqualTo(403));
                 Assert.That(e.ErrorCode, Is.EqualTo("Forbidden"));
-                Assert.That(e.ErrorMessage, Is.EqualTo("Invalid Role"));
+                Assert.That(e.ErrorMessage, Is.EqualTo("Manager Role Required"));
             }
 
             try
@@ -541,6 +541,58 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(e.StatusCode, Is.EqualTo(400));
                 Assert.That(e.ErrorCode, Is.EqualTo("NotNull"));
             }
+        }
+
+        [Test]
+        public void Does_validate_TestIsAdmin()
+        {
+            var userNames = new[] { "employee@email.com", "manager" };
+            foreach (var userName in userNames)
+            {
+                var userClient = new JsonServiceClient(Config.ListeningOn);
+                if (userName != null)
+                {
+                    try
+                    {
+                        var managerClient = new JsonServiceClient(Config.ListeningOn);
+                
+                        managerClient.Post(new Authenticate {
+                            provider = "credentials",
+                            UserName = "manager",
+                            Password = "p@55wOrd",
+                            RememberMe = true,
+                        });
+
+                        managerClient.Post(new TestIsAdmin());
+                    }
+                    catch (WebServiceException e)
+                    {
+                        Assert.That(e.StatusCode, Is.EqualTo(403));
+                        Assert.That(e.ErrorCode, Is.EqualTo("Forbidden"));
+                        Assert.That(e.ErrorMessage, Is.EqualTo("Admin Role Required"));
+                    }
+                }
+            }
+
+            try
+            {
+                var adminClient = new JsonServiceClient(Config.ListeningOn);
+                
+                adminClient.Post(new Authenticate {
+                    provider = "credentials",
+                    UserName = "admin@email.com",
+                    Password = "p@55wOrd",
+                    RememberMe = true,
+                });
+
+                adminClient.Post(new TestIsAdmin());
+            }
+            catch (WebServiceException e)
+            {
+                Assert.That(e.StatusCode, Is.EqualTo(400));
+                Assert.That(e.ErrorCode, Is.EqualTo("NotNull"));
+            }
+            
         }
         
     }

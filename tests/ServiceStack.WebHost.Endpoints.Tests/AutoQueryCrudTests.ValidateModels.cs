@@ -169,7 +169,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int IsOddOrOverTwoDigitsCondition { get; set; }
     }
 
-    [ValidateRequest("IsAuthenticated")]
     [ValidateRequest("HasRole('Manager')")]
     public class TestAuthValidators
         : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
@@ -180,6 +179,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     [ValidateRequest("[IsAuthenticated,HasRole('Manager')]")]
     public class TestMultiAuthValidators
+        : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
+    {
+        [Validate("NotNull")] //doesn't get validated if ValidateRequest is invalid
+        public string NotNull { get; set; }
+    }
+
+    [ValidateRequest("IsAdmin")]
+    public class TestIsAdmin
         : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
     {
         [Validate("NotNull")] //doesn't get validated if ValidateRequest is invalid

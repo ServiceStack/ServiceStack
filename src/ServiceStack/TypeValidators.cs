@@ -12,7 +12,7 @@ namespace ServiceStack
     {
         string ErrorCode { get; set; }
         string Message { get; set; }
-        int StatusCode { get; set; }
+        int? StatusCode { get; set; }
         bool IsValid(object dto, IRequest request = null);
         void ThrowIfNotValid(object dto, IRequest request = null);
     }
@@ -41,10 +41,12 @@ namespace ServiceStack
 
     public class IsAuthenticatedValidator : TypeValidatorBase
     {
+        public static string DefaultErrorMessage { get; set; } = ErrorMessages.NotAuthenticated;
+        public static IsAuthenticatedValidator Instance { get; } = new IsAuthenticatedValidator();
         public string Provider { get; }
 
         public IsAuthenticatedValidator()
-            : base(nameof(HttpStatusCode.Unauthorized), ErrorMessages.NotAuthenticated, 401) {}
+            : base(nameof(HttpStatusCode.Unauthorized), DefaultErrorMessage, 401) {}
         
         public IsAuthenticatedValidator(string provider) : this() => Provider = provider;
 
@@ -57,37 +59,67 @@ namespace ServiceStack
 
     public class HasRolesValidator : TypeValidatorBase
     {
+        public static string DefaultErrorMessage { get; set; } = "`${roles.join(', ')} Role${roles.length > 1 ? 's' : ''} Required`";
+        
         private readonly string[] roles;
         public HasRolesValidator(string role) 
             : this(new []{ role ?? throw new ArgumentNullException(nameof(role)) }) {}
         public HasRolesValidator(string[] roles)
-            : base(nameof(HttpStatusCode.Forbidden), ErrorMessages.InvalidRole, 403)
+            : base(nameof(HttpStatusCode.Forbidden), DefaultErrorMessage, 403)
         {
             this.roles = roles ?? throw new ArgumentNullException(nameof(roles));
+            this.ContextArgs = new Dictionary<string, object> {
+                [nameof(roles)] = roles
+            };
         }
 
         public override bool IsValid(object dto, IRequest request = null)
         {
-            return request != null && AuthenticateAttribute.Authenticate(request,requestDto:dto) 
+            return request != null && IsAuthenticatedValidator.Instance.IsValid(dto, request) 
                                    && RequiredRoleAttribute.HasRequiredRoles(request, roles);
+        }
+
+        public override void ThrowIfNotValid(object dto, IRequest request = null)
+        {
+            IsAuthenticatedValidator.Instance.ThrowIfNotValid(dto, request);
+            
+            if (RequiredRoleAttribute.HasRequiredRoles(request, roles))
+                return;
+
+            throw new HttpError(ResolveStatusCode(), ResolveErrorCode(), ResolveErrorMessage(request, dto));
         }
     }
 
     public class HasPermissionsValidator : TypeValidatorBase
     {
+        public static string DefaultErrorMessage { get; set; } = "`${permissions.join(', ')} Permission${permissions.length > 1 ? 's' : ''} Required`";
+
         private readonly string[] permissions;
         public HasPermissionsValidator(string permission) 
             : this(new []{ permission ?? throw new ArgumentNullException(nameof(permission)) }) {}
         public HasPermissionsValidator(string[] permissions)
-            : base(nameof(HttpStatusCode.Forbidden), ErrorMessages.InvalidPermission, 403)
+            : base(nameof(HttpStatusCode.Forbidden), DefaultErrorMessage, 403)
         {
             this.permissions = permissions ?? throw new ArgumentNullException(nameof(permissions));
+            this.ContextArgs = new Dictionary<string, object> {
+                [nameof(permissions)] = permissions
+            };
         }
 
         public override bool IsValid(object dto, IRequest request = null)
         {
-            return request != null && AuthenticateAttribute.Authenticate(request,requestDto:dto) 
+            return request != null && IsAuthenticatedValidator.Instance.IsValid(dto, request) 
                                    && RequiredPermissionAttribute.HasRequiredPermissions(request, permissions);
+        }
+
+        public override void ThrowIfNotValid(object dto, IRequest request = null)
+        {
+            IsAuthenticatedValidator.Instance.ThrowIfNotValid(dto, request);
+            
+            if (RequiredPermissionAttribute.HasRequiredPermissions(request, permissions))
+                return;
+
+            throw new HttpError(ResolveStatusCode(), ResolveErrorCode(), ResolveErrorMessage(request, dto));
         }
     }
 
@@ -118,18 +150,22 @@ namespace ServiceStack
     {
         public string ErrorCode { get; set; }
         public string Message { get; set; }
-        public int StatusCode { get; set; }
+        public int? StatusCode { get; set; }
 
         public string DefaultErrorCode { get; set; } = "InvalidRequest";
         public string DefaultMessage { get; set; } = "`The specified condition was not met for '${TypeName}'.`";
+        public int? DefaultStatusCode { get; set; }
+        
+        public Dictionary<string,object> ContextArgs { get; set; }
 
-        protected TypeValidatorBase(string errorCode=null, string message=null, int statusCode = 400)
+        protected TypeValidatorBase(string errorCode=null, string message=null, int? statusCode = null)
         {
             if (!string.IsNullOrEmpty(errorCode))
                 DefaultErrorCode = errorCode;
             if (!string.IsNullOrEmpty(message))
                 DefaultMessage = message;
-            StatusCode = statusCode;
+            if (statusCode != null)
+                DefaultStatusCode = statusCode;
         }
 
         protected string ResolveErrorMessage(IRequest request, object dto)
@@ -146,11 +182,19 @@ namespace ServiceStack
             if (messageExpr.IndexOf('`') >= 0)
             {
                 var msgToken = JS.expressionCached(appHost.ScriptContext, messageExpr);
-                errorMsg = (string) msgToken.Evaluate(JS.CreateScope(new Dictionary<string, object> {
+                var args = new Dictionary<string, object> {
                     [ScriptConstants.It] = dto,
                     [ScriptConstants.Request] = request,
                     ["TypeName"] = dto.GetType().Name,
-                })) ?? Message ?? DefaultMessage;
+                };
+                if (ContextArgs != null)
+                {
+                    foreach (var entry in ContextArgs)
+                    {
+                        args[entry.Key] = entry.Value;
+                    }
+                }
+                errorMsg = (string) msgToken.Evaluate(JS.CreateScope(args)) ?? Message ?? DefaultMessage;
             }
 
             return errorMsg;
@@ -160,9 +204,11 @@ namespace ServiceStack
         {
             var statusCode = StatusCode >= 400
                 ? StatusCode
-                : 400; //BadRequest
-            return statusCode;
+                : DefaultStatusCode;
+            return statusCode ?? 400; //BadRequest;
         }
+
+        protected string ResolveErrorCode() => ErrorCode ?? DefaultErrorCode;
 
         public abstract bool IsValid(object dto, IRequest request = null);
 
@@ -171,8 +217,7 @@ namespace ServiceStack
             if (IsValid(dto, request))
                 return;
 
-            var errorMsg = ResolveErrorMessage(request, dto);
-            throw new HttpError(ResolveStatusCode(), ErrorCode ?? DefaultErrorCode, errorMsg);
+            throw new HttpError(ResolveStatusCode(), ResolveErrorCode(), ResolveErrorMessage(request, dto));
         }
     }
 }
