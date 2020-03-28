@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using ServiceStack.DataAnnotations;
 
@@ -224,5 +225,25 @@ namespace ServiceStack
         public string Name { get; set; }
         public List<MetadataPropertyType> ConstructorArgs { get; set; }
         public List<MetadataPropertyType> Args { get; set; }
+    }
+
+    public static class MetadataTypeExtensions
+    {
+        public static bool InheritsAny(this MetadataType type, params string[] typeNames) =>
+            type.Inherits != null && typeNames.Contains(type.Inherits.Name);
+
+        public static bool ImplementsAny(this MetadataType type, params string[] typeNames) =>
+            type.Implements != null && type.Implements.Any(i =>
+                i.GenericArgs?.Length > 0 && i.GenericArgs.Any(typeNames.Contains));
+
+        public static bool ReferencesAny(this MetadataOperationType op, params string[] typeNames) =>
+            op.Request.Inherits != null && (typeNames.Contains(op.Request.Inherits.Name) || 
+                op.Request.Inherits.GenericArgs?.Length > 0 && op.Request.Inherits.GenericArgs.Any(typeNames.Contains)) ||
+            op.Response != null && (typeNames.Contains(op.Response.Name) || 
+                (op.Response.GenericArgs?.Length > 0 && op.Response.GenericArgs.Any(typeNames.Contains))) ||
+            op.Request.Implements != null && op.Request.Implements.Any(i => 
+                i.GenericArgs?.Length > 0 && i.GenericArgs.Any(typeNames.Contains)) ||
+            op.Response?.Inherits != null && (typeNames.Contains(op.Response.Inherits.Name) || 
+                op.Response.Inherits.GenericArgs?.Length > 0 && op.Response.Inherits.GenericArgs.Any(typeNames.Contains));
     }
 }

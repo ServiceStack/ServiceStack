@@ -978,7 +978,7 @@ namespace ServiceStack.NativeTypes
             
             var reverseTypesToExpand = explicitTypes
                 .Where(s => s.Length > 2 && s.StartsWith(ReferencesNameWildCard))
-                .Map(s => s.Substring(2));
+                .Map(s => s.Substring(2)).ToArray();
             explicitTypes.AddRange(reverseTypesToExpand);
 
             if (typesToExpand.Count != 0 || NamespaceWildCard.Length != 0)
@@ -1019,13 +1019,7 @@ namespace ServiceStack.NativeTypes
                     .ToHashSet()
                     .ToList();
                 var reverseTypeReferencesToInclude = metadata.Operations
-                    .Where(x => (x.Request.Inherits != null && reverseTypesToExpand.Contains(x.Request.Inherits.Name)) ||
-                        x.Response != null && (reverseTypesToExpand.Contains(x.Response.Name) || 
-                            (x.Response.GenericArgs?.Length > 0 && x.Response.GenericArgs.Any(a => reverseTypesToExpand.Contains(a)))) ||
-                        x.Request.Implements?.Any(i => 
-                            i.GenericArgs?.Length > 0 && i.GenericArgs.Any(a => reverseTypesToExpand.Contains(a))) == true ||
-                        x.Request.Inherits != null && (reverseTypesToExpand.Contains(x.Request.Inherits.Name) ||
-                            x.Request.Inherits.GenericArgs?.Length > 0 && x.Request.Inherits.GenericArgs.Any(a => reverseTypesToExpand.Contains(a))))
+                    .Where(x => x.ReferencesAny(reverseTypesToExpand))
                     .Select(x => x.Request.Name);
 
                 // GetReferencedTypes for both request + response objects
