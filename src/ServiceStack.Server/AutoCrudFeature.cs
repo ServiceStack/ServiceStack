@@ -19,7 +19,7 @@ using ServiceStack.Web;
 namespace ServiceStack
 {
     //TODO: persist AutoCrud
-    public class AutoCodeFeature : IPlugin
+    public class AutoCrudFeature : IPlugin
     {
         public List<string> IncludeCrudServices { get; set; } = new List<string> {
             AutoCrudOperation.Query,
@@ -29,19 +29,20 @@ namespace ServiceStack
             AutoCrudOperation.Delete,
         };
         
+        public Action<MetadataTypes, MetadataTypesConfig, IRequest> MetadataTypesFilter { get; set; }
+        public Action<MetadataType, IRequest> TypeFilter { get; set; }
+        public Action<MetadataOperationType, IRequest> OperationFilter { get; set; }
+        
         public string AccessRole { get; set; } = RoleNames.Admin;
         
-        internal ConcurrentDictionary<string, DbSchema> CachedDbSchemas { get; } 
-            = new ConcurrentDictionary<string, DbSchema>();
+        internal ConcurrentDictionary<Tuple<string,string>, DbSchema> CachedDbSchemas { get; } 
+            = new ConcurrentDictionary<Tuple<string,string>, DbSchema>();
 
         private const string NoSchema = "__noschema";
 
         public DbSchema GetCachedDbSchema(IDbConnectionFactory dbFactory, string schema=null, string namedConnection=null)
         {
-            var key = schema ?? NoSchema;
-            if (namedConnection != null)
-                key += "::" + namedConnection;
-
+            var key = new Tuple<string, string>(schema ?? NoSchema, namedConnection);
             return CachedDbSchemas.GetOrAdd(key, k => {
 
                 var tables = GetTableSchemas(dbFactory, schema, namedConnection);
@@ -109,8 +110,28 @@ namespace ServiceStack
             };
             return src;
         }
-        
+
         public static string GenerateSource(IRequest req, AutoCodeTypes request)
+        {
+            var ret = ResolveMetadataTypes(req, request);
+            var crudMetadataTypes = ret.Item1;
+            var typesConfig = ret.Item2;
+            
+            if (request.Lang == "typescript")
+            {
+                typesConfig.MakePropertiesOptional = false;
+                typesConfig.ExportAsTypes = true;
+            }
+            else if (request.Lang == "typescript.d")
+            {
+                typesConfig.MakePropertiesOptional = true;
+            }
+
+            var src = GenerateSourceCode(req, request, typesConfig, crudMetadataTypes);
+            return src;
+        }
+        
+        public static Tuple<MetadataTypes,MetadataTypesConfig> ResolveMetadataTypes(IRequest req, AutoCodeTypes request)
         {
             if (string.IsNullOrEmpty(request.Include))
                 throw new ArgumentNullException(nameof(request.Include));
@@ -120,7 +141,7 @@ namespace ServiceStack
                     nameof(request.Include));
             
             var metadata = req.Resolve<INativeTypesMetadata>();
-            var feature = HostContext.AssertPlugin<AutoCodeFeature>();
+            var feature = HostContext.AssertPlugin<AutoCrudFeature>();
             RequestUtils.AssertIsAdminOrDebugMode(req, adminRole: feature.AccessRole, authSecret: request.AuthSecret);
             
             var dbFactory = req.TryResolve<IDbConnectionFactory>();
@@ -411,23 +432,31 @@ namespace ServiceStack
                     crudMetadataTypes.Types.Add(modelType);
                 }
             }
-            
-            if (request.Lang == "typescript")
+
+            if (feature.OperationFilter != null)
             {
-                typesConfig.MakePropertiesOptional = false;
-                typesConfig.ExportAsTypes = true;
-            }
-            else if (request.Lang == "typescript.d")
-            {
-                typesConfig.MakePropertiesOptional = true;
+                foreach (var op in crudMetadataTypes.Operations)
+                {
+                    feature.OperationFilter(op, req);
+                }
             }
 
-            var src = GenerateSourceCode(req, request, typesConfig, crudMetadataTypes);
-            return src;
+            if (feature.TypeFilter != null)
+            {
+                foreach (var type in crudMetadataTypes.Types)
+                {
+                    feature.TypeFilter(type, req);
+                }
+            }
+            
+            feature.MetadataTypesFilter?.Invoke(crudMetadataTypes, typesConfig, req);
+            
+            return new Tuple<MetadataTypes, MetadataTypesConfig>(crudMetadataTypes, typesConfig);
         }
+        
     }
 
-    [Route("/autocode/{Include}/{Lang}")]
+    [Route("/autocrud/{Include}/{Lang}")]
     public class AutoCodeTypes : NativeTypesBase, IReturn<string>
     {
         /// <summary>
@@ -466,8 +495,8 @@ namespace ServiceStack
         public bool? NoCache { get; set; }
     }
 
-    [Route("/autocode/schema")]
-    [Route("/autocode/schema/{Schema}")]
+    [Route("/autocrud/schema")]
+    [Route("/autocrud/schema/{Schema}")]
     public class AutoCodeSchema : IReturn<AutoCodeSchemaResponse>
     {
         public string Schema { get; set; }
@@ -509,7 +538,7 @@ namespace ServiceStack
         {
             try
             {
-                var src = AutoCodeFeature.GenerateSource(Request, request);
+                var src = AutoCrudFeature.GenerateSource(Request, request);
                 return src;
             }
             catch (Exception e)
@@ -526,17 +555,48 @@ namespace ServiceStack
     {
         public object Any(AutoCodeSchema request)
         {
-            var feature = HostContext.AssertPlugin<AutoCodeFeature>();
+            var feature = HostContext.AssertPlugin<AutoCrudFeature>();
             RequestUtils.AssertIsAdminOrDebugMode(Request, adminRole: feature.AccessRole, authSecret: request.AuthSecret);
             
             var dbFactory = TryResolve<IDbConnectionFactory>();
             var results = request.NoCache == true 
-                ? AutoCodeFeature.GetTableSchemas(dbFactory, request.Schema, request.NamedConnection)
+                ? AutoCrudFeature.GetTableSchemas(dbFactory, request.Schema, request.NamedConnection)
                 : feature.GetCachedDbSchema(dbFactory, request.Schema, request.NamedConnection).Tables;
 
             return new AutoCodeSchemaResponse {
                 Results = results,
             };
+        }
+    }
+
+    public static class AutoCrudUtils
+    {
+        public static MetadataAttribute ToAttribute(string name, Dictionary<string, object> args = null, Attribute attr = null) =>
+            new MetadataAttribute {
+                Name = name,
+                Attribute = attr,
+                Args = args?.Map(x => new MetadataPropertyType {
+                    Name = x.Key,
+                    Value = x.Value?.ToString(),
+                    Type = x.Value?.GetType().Name,
+                })
+            }; 
+        
+        public static MetadataType AddAttribute(this MetadataType type, string name, Dictionary<string, object> args = null, Attribute attr = null)
+        {
+            var metaAttr = ToAttribute(name, args, attr);
+            type.Attributes ??= new List<MetadataAttribute>();
+            type.Attributes.Add(metaAttr);
+            return type;
+        }
+        
+        public static MetadataType AddAttribute(this MetadataType type, Attribute attr)
+        {
+            var nativeTypesGen = HostContext.AssertPlugin<NativeTypesFeature>().DefaultGenerator;
+            var metaAttr = nativeTypesGen.ToMetadataAttribute(attr);
+            type.Attributes ??= new List<MetadataAttribute>();
+            type.Attributes.Add(metaAttr);
+            return type;
         }
     }
 }
