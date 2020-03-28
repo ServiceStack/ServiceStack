@@ -637,7 +637,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
-        class NoRockstarAlbumReferences : TypeValidatorBase
+        class NoRockstarAlbumReferences : TypeValidator
         {
             public NoRockstarAlbumReferences() 
                 : base("HasForeignKeyReferences", "Has RockstarAlbum References") {}

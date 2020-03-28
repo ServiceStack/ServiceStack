@@ -40,7 +40,7 @@ namespace ServiceStack
         }
     }
 
-    public class IsAuthenticatedValidator : TypeValidatorBase
+    public class IsAuthenticatedValidator : TypeValidator
     {
         public static string DefaultErrorMessage { get; set; } = ErrorMessages.NotAuthenticated;
         public static IsAuthenticatedValidator Instance { get; } = new IsAuthenticatedValidator();
@@ -58,7 +58,7 @@ namespace ServiceStack
         }
     }
 
-    public class HasRolesValidator : TypeValidatorBase
+    public class HasRolesValidator : TypeValidator
     {
         public static string DefaultErrorMessage { get; set; } = "`${roles.join(', ')} Role${roles.length > 1 ? 's' : ''} Required`";
         
@@ -91,7 +91,7 @@ namespace ServiceStack
         }
     }
 
-    public class HasPermissionsValidator : TypeValidatorBase
+    public class HasPermissionsValidator : TypeValidator
     {
         public static string DefaultErrorMessage { get; set; } = "`${permissions.join(', ')} Permission${permissions.length > 1 ? 's' : ''} Required`";
 
@@ -124,7 +124,7 @@ namespace ServiceStack
         }
     }
 
-    public class ScriptValidator : TypeValidatorBase
+    public class ScriptValidator : TypeValidator
     {
         public SharpPage Code { get; }
         public string Condition { get; }
@@ -147,7 +147,7 @@ namespace ServiceStack
         }
     }
     
-    public abstract class TypeValidatorBase : ITypeValidator
+    public abstract class TypeValidator : ITypeValidator
     {
         public string ErrorCode { get; set; }
         public string Message { get; set; }
@@ -159,7 +159,7 @@ namespace ServiceStack
         
         public Dictionary<string,object> ContextArgs { get; set; }
 
-        protected TypeValidatorBase(string errorCode=null, string message=null, int? statusCode = null)
+        protected TypeValidator(string errorCode=null, string message=null, int? statusCode = null)
         {
             if (!string.IsNullOrEmpty(errorCode))
                 DefaultErrorCode = errorCode;
