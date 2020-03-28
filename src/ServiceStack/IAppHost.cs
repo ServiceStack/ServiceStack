@@ -342,6 +342,12 @@ namespace ServiceStack
         /// Evaluate Expressions in ServiceStack's ScriptContext.
         /// Can be overriden if you want to customize how different expressions are evaluated.
         /// </summary>
+        object EvalExpression(string expr);
+
+        /// <summary>
+        /// Evaluate Expressions in ServiceStack's ScriptContext.
+        /// Can be overriden if you want to customize how different expressions are evaluated.
+        /// </summary>
         object EvalExpressionCached(string expr);
 
         /// <summary>
@@ -349,6 +355,13 @@ namespace ServiceStack
         /// If `IRequest` is provided, results from the same `IScriptValue.Eval` are cached per request. 
         /// </summary>
         object EvalScriptValue(IScriptValue scriptValue, IRequest req = null, Dictionary<string, object> args = null);
+
+        /// <summary>
+        /// Evaluate a script value, `IScriptValue.Expression` results are cached globally.
+        /// If `IRequest` is provided, results from the same `IScriptValue.Eval` are cached per request. 
+        /// </summary>
+        Task<object> EvalScriptValueAsync(IScriptValue scriptValue, IRequest req = null, Dictionary<string, object> args = null);
+
     }
 
     public interface IHasAppHost

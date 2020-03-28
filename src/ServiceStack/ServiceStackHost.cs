@@ -614,21 +614,8 @@ namespace ServiceStack
         /// </summary>
         public virtual object EvalScriptValue(IScriptValue scriptValue, IRequest req = null, Dictionary<string, object> args=null)
         {
-            if (scriptValue == null)
-                throw new ArgumentNullException(nameof(scriptValue));
-
-            if (scriptValue.Value != null)
-                return scriptValue.Value;
-
-            if (scriptValue.Expression != null)
-            {
-                return !scriptValue.NoCache
-                    ? EvalExpressionCached(scriptValue.Expression)
-                    : JS.eval(scriptValue.Expression);
-            }
-
-            if (scriptValue.Eval == null)
-                return null;
+            if (ResolveScriptValue(scriptValue, out var exprValue)) 
+                return exprValue;
 
             var evalCode = ScriptCodeUtils.EnsureReturn(scriptValue.Eval);
 
@@ -641,11 +628,63 @@ namespace ServiceStack
             // Cache AST Globally
             var cachedCodePage = JS.scriptCached(ScriptContext, evalCode);
             
-            value = EvalScript(new PageResult(cachedCodePage), req, args);
+            var evalCodeValue = EvalScript(new PageResult(cachedCodePage), req, args);
             if (!scriptValue.NoCache && req != null)
-                req.Items[evalCacheKey] = value;
+                req.Items[evalCacheKey] = evalCodeValue;
 
-            return value;
+            return evalCodeValue;
+        }
+
+        /// <summary>
+        /// Evaluate a script value, `IScriptValue.Expression` results are cached globally.
+        /// If `IRequest` is provided, results from the same `IScriptValue.Eval` are cached per request. 
+        /// </summary>
+        public virtual async Task<object> EvalScriptValueAsync(IScriptValue scriptValue, IRequest req = null, Dictionary<string, object> args=null)
+        {
+            if (ResolveScriptValue(scriptValue, out var exprValue)) 
+                return exprValue;
+
+            var evalCode = ScriptCodeUtils.EnsureReturn(scriptValue.Eval);
+
+            object value = null;
+            var evalCacheKey = JS.EvalCacheKeyPrefix + evalCode;
+
+            if (!scriptValue.NoCache && req?.Items.TryGetValue(evalCacheKey, out value) == true)
+                return value;
+
+            // Cache AST Globally
+            var cachedCodePage = JS.scriptCached(ScriptContext, evalCode);
+            
+            var evalCodeValue = await EvalScriptAsync(new PageResult(cachedCodePage), req, args);
+            if (!scriptValue.NoCache && req != null)
+                req.Items[evalCacheKey] = evalCodeValue;
+
+            return evalCodeValue;
+        }
+
+        private bool ResolveScriptValue(IScriptValue scriptValue, out object exprValue)
+        {
+            if (scriptValue == null)
+                throw new ArgumentNullException(nameof(scriptValue));
+
+            if (scriptValue.Value != null)
+            {
+                exprValue = scriptValue.Value;
+                return true;
+            }
+
+            if (scriptValue.Expression != null)
+            {
+                {
+                    exprValue = !scriptValue.NoCache
+                        ? EvalExpressionCached(scriptValue.Expression)
+                        : JS.eval(scriptValue.Expression);
+                    return true;
+                }
+            }
+
+            exprValue = null;
+            return scriptValue.Eval == null;
         }
 
         private static void InitPageResult(PageResult pageResult, IRequest req, Dictionary<string, object> args)

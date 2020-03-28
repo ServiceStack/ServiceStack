@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.FluentValidation;
@@ -24,7 +25,16 @@ namespace ServiceStack
         {
             Code = code;
         }
-        
+
+        //public override bool ShouldValidateAsynchronously(ValidationContext context) => true;
+        public override bool ShouldValidateAsync(ValidationContext context) => true;
+
+        protected override async Task<bool> IsValidAsync(PropertyValidatorContext context, CancellationToken cancellation)
+        {
+            var ret = await HostContext.AppHost.EvalScriptAsync(context.ToPageResult(Code), context.ParentContext.Request);
+            return DefaultScripts.isTruthy(ret);
+        }
+
         protected override bool IsValid(PropertyValidatorContext context)
         {
             var ret = HostContext.AppHost.EvalScript(context.ToPageResult(Code), context.ParentContext.Request);
