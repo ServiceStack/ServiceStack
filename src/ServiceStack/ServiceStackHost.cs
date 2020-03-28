@@ -648,7 +648,7 @@ namespace ServiceStack
             return value;
         }
 
-        public virtual object EvalScript(PageResult pageResult, IRequest req = null, Dictionary<string, object> args=null)
+        private static void InitPageResult(PageResult pageResult, IRequest req, Dictionary<string, object> args)
         {
             if (args != null)
             {
@@ -663,11 +663,27 @@ namespace ServiceStack
                 pageResult.Args[ScriptConstants.Request] = req;
                 pageResult.Args[ScriptConstants.Dto] = req.Dto;
             }
+        }
+
+        public virtual object EvalScript(PageResult pageResult, IRequest req = null, Dictionary<string, object> args=null)
+        {
+            InitPageResult(pageResult, req, args);
 
             if (!pageResult.EvaluateResult(out var returnValue))
                 ScriptContextUtils.ThrowNoReturn();
 
             return ScriptLanguage.UnwrapValue(returnValue);
+        }
+
+        public virtual async Task<object> EvalScriptAsync(PageResult pageResult, IRequest req = null, Dictionary<string, object> args=null)
+        {
+            InitPageResult(pageResult, req, args);
+
+            var ret = await pageResult.EvaluateResultAsync();
+            if (!ret.Item1)
+                ScriptContextUtils.ThrowNoReturn();
+
+            return ScriptLanguage.UnwrapValue(ret.Item2);
         }
 
         /// <summary>
@@ -1386,6 +1402,7 @@ namespace ServiceStack
                     Container = null;
                 }
 
+                AuthenticateService.Reset();
                 JS.UnConfigure();
                 JsConfig.Reset(); //Clears Runtime Attributes
 

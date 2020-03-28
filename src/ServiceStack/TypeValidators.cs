@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.FluentValidation.Internal;
 using ServiceStack.Script;
@@ -13,8 +14,8 @@ namespace ServiceStack
         string ErrorCode { get; set; }
         string Message { get; set; }
         int? StatusCode { get; set; }
-        bool IsValid(object dto, IRequest request = null);
-        void ThrowIfNotValid(object dto, IRequest request = null);
+        Task<bool> IsValidAsync(object dto, IRequest request = null);
+        Task ThrowIfNotValidAsync(object dto, IRequest request = null);
     }
 
     public interface IHasTypeValidators
@@ -79,9 +80,9 @@ namespace ServiceStack
                                    && RequiredRoleAttribute.HasRequiredRoles(request, roles);
         }
 
-        public override void ThrowIfNotValid(object dto, IRequest request = null)
+        public override async Task ThrowIfNotValidAsync(object dto, IRequest request = null)
         {
-            IsAuthenticatedValidator.Instance.ThrowIfNotValid(dto, request);
+            await IsAuthenticatedValidator.Instance.ThrowIfNotValidAsync(dto, request);
             
             if (RequiredRoleAttribute.HasRequiredRoles(request, roles))
                 return;
@@ -112,9 +113,9 @@ namespace ServiceStack
                                    && RequiredPermissionAttribute.HasRequiredPermissions(request, permissions);
         }
 
-        public override void ThrowIfNotValid(object dto, IRequest request = null)
+        public override async Task ThrowIfNotValidAsync(object dto, IRequest request = null)
         {
-            IsAuthenticatedValidator.Instance.ThrowIfNotValid(dto, request);
+            await IsAuthenticatedValidator.Instance.ThrowIfNotValidAsync(dto, request);
             
             if (RequiredPermissionAttribute.HasRequiredPermissions(request, permissions))
                 return;
@@ -210,11 +211,15 @@ namespace ServiceStack
 
         protected string ResolveErrorCode() => ErrorCode ?? DefaultErrorCode;
 
-        public abstract bool IsValid(object dto, IRequest request = null);
+        public virtual bool IsValid(object dto, IRequest request = null) =>
+            throw new NotImplementedException();
 
-        public virtual void ThrowIfNotValid(object dto, IRequest request = null)
+        public Task<bool> IsValidAsync(object dto, IRequest request = null) 
+            => Task.FromResult(IsValid(dto, request)); 
+
+        public virtual async Task ThrowIfNotValidAsync(object dto, IRequest request = null)
         {
-            if (IsValid(dto, request))
+            if (await IsValidAsync(dto, request))
                 return;
 
             throw new HttpError(ResolveStatusCode(), ResolveErrorCode(), ResolveErrorMessage(request, dto));

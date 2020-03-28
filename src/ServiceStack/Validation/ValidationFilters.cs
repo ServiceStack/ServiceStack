@@ -24,7 +24,7 @@ namespace ServiceStack.Validation
             bool treatInfoAndWarningsAsErrors)
         {
             var requestType = requestDto.GetType();
-            Validators.AssertTypeValidators(req, requestDto, requestType);
+            await Validators.AssertTypeValidatorsAsync(req, requestDto, requestType);
 
             var validator = ValidatorCache.GetValidator(req, requestType);
             if (validator == null)
@@ -36,7 +36,7 @@ namespace ServiceStack.Validation
                 {
                     foreach (var scriptValidator in hasTypeValidators.TypeValidators)
                     {
-                        scriptValidator.ThrowIfNotValid(requestDto, req);
+                        await scriptValidator.ThrowIfNotValidAsync(requestDto, req);
                     }
                 }
                     

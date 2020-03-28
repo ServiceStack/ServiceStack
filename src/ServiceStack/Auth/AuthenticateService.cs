@@ -44,13 +44,20 @@ namespace ServiceStack.Auth
         public static bool HtmlRedirectReturnPathOnly { get; internal set; }
         
         public static Func<AuthFilterContext, object> AuthResponseDecorator { get; internal set; }
-        internal static IAuthProvider[] AuthProviders = TypeConstants<IAuthProvider>.EmptyArray;
-        internal static IAuthWithRequest[] AuthWithRequestProviders = TypeConstants<IAuthWithRequest>.EmptyArray;
-        internal static IAuthResponseFilter[] AuthResponseFilters = TypeConstants<IAuthResponseFilter>.EmptyArray;
+        internal static IAuthProvider[] AuthProviders;
+        internal static IAuthWithRequest[] AuthWithRequestProviders;
+        internal static IAuthResponseFilter[] AuthResponseFilters;
 
         static AuthenticateService()
         {
+            Reset();
+        }
+
+        internal static void Reset()
+        {
             CurrentSessionFactory = () => new AuthUserSession();
+            AuthProviders = TypeConstants<IAuthProvider>.EmptyArray;
+            AuthResponseFilters = TypeConstants<IAuthResponseFilter>.EmptyArray;
         }
 
         /// <summary>

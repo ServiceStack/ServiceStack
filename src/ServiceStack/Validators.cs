@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Internal;
@@ -49,13 +50,13 @@ namespace ServiceStack
 
         public static bool HasValidateAttributes(Type type) => type.GetPublicProperties().Any(x => x.HasAttribute<ValidateAttribute>());
 
-        public static void AssertTypeValidators(IRequest req, object requestDto, Type requestType)
+        public static async Task AssertTypeValidatorsAsync(IRequest req, object requestDto, Type requestType)
         {
             if (TypeRulesMap.TryGetValue(requestType, out var typeValidators))
             {
                 foreach (var scriptValidator in typeValidators)
                 {
-                    scriptValidator.ThrowIfNotValid(requestDto, req);
+                    await scriptValidator.ThrowIfNotValidAsync(requestDto, req);
                 }
             }
         }
