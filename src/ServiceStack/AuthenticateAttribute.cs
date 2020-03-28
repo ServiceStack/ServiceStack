@@ -108,13 +108,14 @@ namespace ServiceStack
                 }
             }
             
-            return session != null && authProviders.Any(x => session.IsAuthorized(x.Provider));
+            return session != null && (authProviders.Length > 0 
+                       ? authProviders.Any(x => session.IsAuthorized(x.Provider))
+                       : session.IsAuthenticated);
         }
 
         public static void AssertAuthenticated(IRequest req, object requestDto=null, IAuthSession session=null, IAuthProvider[] authProviders=null)
         {
-            authProviders ??= AuthenticateService.GetAuthProviders();
-            if (Authenticate(req, requestDto:requestDto, session:session, authProviders:authProviders))
+            if (Authenticate(req, requestDto:requestDto, session:session))
                 return;
 
             throw new HttpError(403, ErrorMessages.NotAuthenticated.Localize(req));

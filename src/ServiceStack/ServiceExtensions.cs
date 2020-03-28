@@ -127,20 +127,7 @@ namespace ServiceStack
             return SessionFeature.GetOrCreateSession<TUserSession>(req.GetCacheClient(), req, req.Response);
         }
 
-        public static bool IsAuthenticated(this IRequest req)
-        {
-            //Sync with [Authenticate] impl
-            if (HostContext.HasValidAuthSecret(req))
-                return true;
-            
-            var authProviders = AuthenticateService.GetAuthProviders();
-            AuthenticateAttribute.PreAuthenticateAsync(req, authProviders).Wait();
-            if (req.Response.IsClosed)
-                return false;
-            
-            var session = req.GetSession();
-            return session != null && authProviders.Any(x => session.IsAuthorized(x.Provider));
-        }
+        public static bool IsAuthenticated(this IRequest req) => AuthenticateAttribute.Authenticate(req, req.Dto);
 
         public static IAuthSession GetSession(this IRequest httpReq, bool reload = false)
         {
