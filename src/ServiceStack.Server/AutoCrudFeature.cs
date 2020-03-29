@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
+using ServiceStack.DataAnnotations;
 using ServiceStack.NativeTypes;
 using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.NativeTypes.Dart;
@@ -21,7 +22,7 @@ namespace ServiceStack
     //TODO: persist AutoCrud
     public class AutoCrudFeature : IPlugin
     {
-        public List<string> IncludeCrudServices { get; set; } = new List<string> {
+        public List<string> IncludeCrudOperations { get; set; } = new List<string> {
             AutoCrudOperation.Query,
             AutoCrudOperation.Create,
             AutoCrudOperation.Update,
@@ -29,16 +30,43 @@ namespace ServiceStack
             AutoCrudOperation.Delete,
         };
         
+        /// <summary>
+        /// Generate services 
+        /// </summary>
+        public List<AutoCodeServices> GenerateMissingServices { get; set; } = new List<AutoCodeServices>();
+        
         public Action<MetadataTypes, MetadataTypesConfig, IRequest> MetadataTypesFilter { get; set; }
         public Action<MetadataType, IRequest> TypeFilter { get; set; }
-        public Action<MetadataOperationType, IRequest> OperationFilter { get; set; }
+        public Action<MetadataOperationType, IRequest> ServiceFilter { get; set; }
+        
+        public Func<MetadataType, bool> IncludeType { get; set; }
+        public Func<MetadataOperationType, bool> IncludeService { get; set; }
         
         public string AccessRole { get; set; } = RoleNames.Admin;
         
         internal ConcurrentDictionary<Tuple<string,string>, DbSchema> CachedDbSchemas { get; } 
             = new ConcurrentDictionary<Tuple<string,string>, DbSchema>();
+        
+        string Localize(string s) => HostContext.AppHost?.ResolveLocalizedString(s, null) ?? s;
 
+        
+        public Dictionary<Type, string[]> ServiceRoutes { get; set; }
+        
         private const string NoSchema = "__noschema";
+
+        public AutoCrudFeature()
+        {
+            ServiceRoutes = new Dictionary<Type, string[]> {
+                { typeof(AutoCrudTypesService), new[]
+                {
+                    "/" + Localize("autocrud") + "/{Include}/{Lang}",
+                } },
+                { typeof(AutoCrudSchemaService), new[] {
+                    "/" + Localize("autocrud") + "/" + Localize("schema"),
+                    "/" + Localize("autocrud") + "/" + Localize("schema") + "/{Schema}",
+                } },
+            };
+        }
 
         public DbSchema GetCachedDbSchema(IDbConnectionFactory dbFactory, string schema=null, string namedConnection=null)
         {
@@ -56,7 +84,10 @@ namespace ServiceStack
 
         public void Register(IAppHost appHost)
         {
-            appHost.RegisterService(typeof(AutoCodeSchemaService));
+            foreach (var registerService in ServiceRoutes)
+            {
+                appHost.RegisterService(registerService.Key, registerService.Value);
+            }
         }
 
         public static List<TableSchema> GetTableSchemas(IDbConnectionFactory dbFactory, string schema=null, string namedConnection=null)
@@ -142,7 +173,6 @@ namespace ServiceStack
             
             var metadata = req.Resolve<INativeTypesMetadata>();
             var feature = HostContext.AssertPlugin<AutoCrudFeature>();
-            RequestUtils.AssertIsAdminOrDebugMode(req, adminRole: feature.AccessRole, authSecret: request.AuthSecret);
             
             var dbFactory = req.TryResolve<IDbConnectionFactory>();
             var results = request.NoCache == true 
@@ -198,7 +228,7 @@ namespace ServiceStack
                 typesToGenerateMap[result.Name] = result;
             }
             
-            var includeCrudServices = request.IncludeCrudServices ?? feature.IncludeCrudServices;
+            var includeCrudServices = request.IncludeCrudOperations ?? feature.IncludeCrudOperations;
             var includeCrudInterfaces = AutoCrudOperation.CrudInterfaceMetadataNames(includeCrudServices);
             
             //remove unnecessary
@@ -423,21 +453,30 @@ namespace ServiceStack
                         Namespace = typesNs,
                         Properties = toMetaProps(tableSchema.Columns, isModel:true),
                     };
+                    if (request.NamedConnection != null)
+                        modelType.AddAttribute(new NamedConnectionAttribute(request.NamedConnection));
+                    if (request.Schema != null)
+                        modelType.AddAttribute(new SchemaAttribute(request.Schema));
                     if (typeName != tableSchema.Name)
-                    {
-                        modelType.Attributes = new List<MetadataAttribute> { 
-                            toAlias(tableSchema.Name)
-                        };
-                    }
+                        modelType.AddAttribute(new AliasAttribute(tableSchema.Name));
                     crudMetadataTypes.Types.Add(modelType);
                 }
             }
 
-            if (feature.OperationFilter != null)
+            if (feature.IncludeService != null)
+            {
+                crudMetadataTypes.Operations = crudMetadataTypes.Operations.Where(feature.IncludeService).ToList();
+            }
+            if (feature.IncludeType != null)
+            {
+                crudMetadataTypes.Types = crudMetadataTypes.Types.Where(feature.IncludeType).ToList();
+            }
+
+            if (feature.ServiceFilter != null)
             {
                 foreach (var op in crudMetadataTypes.Operations)
                 {
-                    feature.OperationFilter(op, req);
+                    feature.ServiceFilter(op, req);
                 }
             }
 
@@ -456,7 +495,49 @@ namespace ServiceStack
         
     }
 
-    [Route("/autocrud/{Include}/{Lang}")]
+    /// <summary>
+    /// Instruction for which AutoCrud Services to generate
+    /// </summary>
+    public class AutoCodeServices
+    {
+        /// <summary>
+        /// Which AutoCrud Operations to include:
+        /// - Query
+        /// - Create
+        /// - Update
+        /// - Patch
+        /// - Delete
+        /// </summary>
+        public List<string> IncludeCrudOperations { get; set; }
+
+        /// <summary>
+        /// The RDBMS Schema you want AutoQuery Services generated for
+        /// </summary>
+        public string Schema { get; set; }
+        
+        /// <summary>
+        /// The NamedConnection you want AutoQuery Services generated for
+        /// </summary>
+        public string NamedConnection { get; set; }
+        
+        /// <summary>
+        /// Include additional C# namespaces
+        /// </summary>
+        public List<string> AddNamespaces { get; set; }
+        
+        /// <summary>
+        /// Is used as a Whitelist to specify only the types you would like to have code-generated, see:
+        /// https://docs.servicestack.net/csharp-add-servicestack-reference#includetypes
+        /// </summary>
+        public List<string> IncludeTypes { get; set; }
+        
+        /// <summary>
+        /// Is used as a Blacklist to specify which types you would like excluded from being generated. see:
+        /// https://docs.servicestack.net/csharp-add-servicestack-reference#excludetypes
+        /// </summary>
+        public List<string> ExcludeTypes { get; set; }
+    }
+
     public class AutoCodeTypes : NativeTypesBase, IReturn<string>
     {
         /// <summary>
@@ -476,7 +557,15 @@ namespace ServiceStack
         ///  typescript.d
         /// </summary>
         public string Lang { get; set; }
-        public List<string> IncludeCrudServices { get; set; }
+        /// <summary>
+        /// Which AutoCrud Operations to include:
+        /// - Query
+        /// - Create
+        /// - Update
+        /// - Patch
+        /// - Delete
+        /// </summary>
+        public List<string> IncludeCrudOperations { get; set; }
         /// <summary>
         /// The RDBMS Schema you want AutoQuery Services generated for
         /// </summary>
@@ -490,13 +579,11 @@ namespace ServiceStack
         /// </summary>
         public string AuthSecret { get; set; }
         /// <summary>
-        /// 
+        /// Do not use cached DB Table Schemas, re-fetch latest 
         /// </summary>
         public bool? NoCache { get; set; }
     }
 
-    [Route("/autocrud/schema")]
-    [Route("/autocrud/schema/{Schema}")]
     public class AutoCodeSchema : IReturn<AutoCodeSchemaResponse>
     {
         public string Schema { get; set; }
@@ -530,14 +617,18 @@ namespace ServiceStack
         public string ErrorMessage { get; set; }
     }
     
-    [DefaultRequest(typeof(AutoCodeSchema))]
-    public class AutoCodeTypesService : Service
+    [Restrict(VisibilityTo = RequestAttributes.None)]
+    [DefaultRequest(typeof(AutoCodeTypes))]
+    public class AutoCrudTypesService : Service
     {
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(AutoCodeTypes request)
         {
             try
             {
+                var feature = HostContext.AssertPlugin<AutoCrudFeature>();
+                RequestUtils.AssertIsAdminOrDebugMode(base.Request, adminRole: feature.AccessRole, authSecret: request.AuthSecret);
+                
                 var src = AutoCrudFeature.GenerateSource(Request, request);
                 return src;
             }
@@ -550,8 +641,9 @@ namespace ServiceStack
         }
     }
 
+    [Restrict(VisibilityTo = RequestAttributes.None)]
     [DefaultRequest(typeof(AutoCodeSchema))]
-    public class AutoCodeSchemaService : Service
+    public class AutoCrudSchemaService : Service
     {
         public object Any(AutoCodeSchema request)
         {
