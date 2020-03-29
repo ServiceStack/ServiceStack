@@ -67,16 +67,14 @@ namespace ServiceStack.Host.NetCore
         public object OriginalRequest => request;
 
         private IResponse response;
-        public IResponse Response =>
-            response ?? (response = new NetCoreResponse(this, context.Response));
+        public IResponse Response => response ??= new NetCoreResponse(this, context.Response);
 
         public string OperationName { get; set; }
         public string Verb => HttpMethod;
         public RequestAttributes RequestAttributes { get; set; }
 
         private IRequestPreferences requestPreferences;
-        public IRequestPreferences RequestPreferences =>
-            requestPreferences ?? (requestPreferences = new RequestPreferences(this));
+        public IRequestPreferences RequestPreferences => requestPreferences ??= new RequestPreferences(this);
 
         public object Dto { get; set; }
         public string ContentType => request.ContentType;
@@ -101,7 +99,7 @@ namespace ServiceStack.Host.NetCore
         private string responseContentType;
         public string ResponseContentType
         {
-            get => responseContentType ?? (responseContentType = this.GetResponseContentType());
+            get => responseContentType ??= this.GetResponseContentType();
             set
             {
                 this.responseContentType = value;
@@ -150,10 +148,10 @@ namespace ServiceStack.Host.NetCore
         public Dictionary<string, object> Items { get; }
 
         private NameValueCollection headers;
-        public NameValueCollection Headers => headers ?? (headers = new NetCoreHeadersCollection(request.Headers));
+        public NameValueCollection Headers => headers ??= new NetCoreHeadersCollection(request.Headers);
 
         private NameValueCollection queryString;
-        public NameValueCollection QueryString => queryString ?? (queryString = new NetCoreQueryStringCollection(request.Query));
+        public NameValueCollection QueryString => queryString ??= new NetCoreQueryStringCollection(request.Query);
 
         private NameValueCollection formData;
         public NameValueCollection FormData
@@ -270,9 +268,8 @@ namespace ServiceStack.Host.NetCore
         public IHttpResponse HttpResponse { get; }
 
         private string httpMethod;
-        public string HttpMethod => httpMethod
-            ?? (httpMethod = this.GetParamInRequestHeader(HttpHeaders.XHttpMethodOverride)
-            ?? request.Method);
+        public string HttpMethod => httpMethod ??= this.GetParamInRequestHeader(HttpHeaders.XHttpMethodOverride)
+                                                   ?? request.Method;
 
         public string XForwardedFor =>
             string.IsNullOrEmpty(request.Headers[HttpHeaders.XForwardedFor])
@@ -300,15 +297,14 @@ namespace ServiceStack.Host.NetCore
                 : request.Headers[HttpHeaders.Accept].ToString();
 
         private string remoteIp;
-        public string RemoteIp => 
-            remoteIp ?? (remoteIp = XForwardedFor ?? (XRealIp ?? UserHostAddress));
+        public string RemoteIp => remoteIp ??= XForwardedFor ?? (XRealIp ?? UserHostAddress);
 
         
         private IVirtualFile file;
-        public IVirtualFile GetFile() => file ?? (file = HostContext.VirtualFileSources.GetFile(PathInfo));
+        public IVirtualFile GetFile() => file ??= HostContext.VirtualFileSources.GetFile(PathInfo);
 
         private IVirtualDirectory dir;
-        public IVirtualDirectory GetDirectory() => dir ?? (dir = HostContext.VirtualFileSources.GetDirectory(PathInfo));
+        public IVirtualDirectory GetDirectory() => dir ??= HostContext.VirtualFileSources.GetDirectory(PathInfo);
 
         private bool? isDirectory;
         public bool IsDirectory

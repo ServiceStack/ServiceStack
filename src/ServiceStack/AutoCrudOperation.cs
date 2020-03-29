@@ -12,6 +12,14 @@ namespace ServiceStack
         public const string Delete = nameof(Delete);
         public const string Save = nameof(Save);
 
+        public static List<string> Default { get; } = new List<string> {
+            Query,
+            Create,
+            Update,
+            Patch,
+            Delete,
+        };
+
         public static HashSet<string> All { get; } = new HashSet<string> {
             Query,
             Create,
