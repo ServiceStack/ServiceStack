@@ -61,7 +61,7 @@ namespace ServiceStack
         ///  - /autocrud/schema - Default DB
         ///  - /autocrud/schema/{Schema} - Specified DB Schema
         /// </summary>
-        public GenerateCrudServices GenerateCrudServices { get; set; }
+        public IGenerateCrudServices GenerateCrudServices { get; set; }
 
         public Dictionary<string, string> ImplicitConventions = new Dictionary<string, string> 
         {
@@ -175,22 +175,17 @@ namespace ServiceStack
                 appHost.LoadPlugin(new AutoQueryMetadataFeature { MaxLimit = MaxLimit });
             
             //CRUD Services
-            if (GenerateCrudServices != null)
-            {
-                foreach (var registerService in GenerateCrudServices.ServiceRoutes)
-                {
-                    appHost.RegisterService(registerService.Key, registerService.Value);
-                }
-
-                foreach (var genInstruction in GenerateCrudServices.CreateServices)
-                {
-                }
-            }
+            GenerateCrudServices?.Register(appHost);
         }
 
         public void AfterPluginsLoaded(IAppHost appHost)
         {
             var scannedTypes = new List<Type>();
+            
+            var crudServices = GenerateCrudServices?.GenerateMissingServices(this);
+            if (crudServices != null)
+                scannedTypes.AddRange(crudServices);
+
             foreach (var assembly in LoadFromAssemblies)
             {
                 try
