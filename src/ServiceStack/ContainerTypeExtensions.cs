@@ -8,7 +8,7 @@ namespace ServiceStack
 {
     
 #if NETSTANDARD2_0        
-    public interface IHasServiceScope
+    public interface IHasServiceScope : IServiceProvider
     {
         Microsoft.Extensions.DependencyInjection.IServiceScope ServiceScope { get; set; }
     }

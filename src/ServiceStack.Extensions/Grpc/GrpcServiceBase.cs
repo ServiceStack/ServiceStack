@@ -83,6 +83,7 @@ namespace ServiceStack
                 PopulateRequestFromHeaders(request, context.CallOptions.Headers);
 
             var req = new GrpcRequest(context, request, method);
+            using var scope = req.StartScope();
             var ret = await RpcGateway.ExecuteAsync<TResponse>(request, req);
             if (req.Response.Dto == null)
                 req.Response.Dto = ret;
@@ -133,6 +134,7 @@ namespace ServiceStack
             using var disposableService = service as IDisposable;
             
             var req = new GrpcRequest(context, request, HttpMethods.Post);
+            using var scope = req.StartScope();
             var res = req.Response;
 
             if (service is IRequiresRequest requiresRequest)
