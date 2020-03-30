@@ -53,6 +53,16 @@ namespace ServiceStack
         public List<Action<QueryDbFilterContext>> ResponseFilters { get; set; }
         public Action<Type, TypeBuilder, MethodBuilder, ILGenerator> GenerateServiceFilter { get; set; }
 
+        /// <summary>
+        /// Enable code-gen of CRUD Services for registered database in any supported Add ServiceStack Reference Language:
+        ///  - /autocrud/{Include}/{Lang}
+        /// 
+        /// View DB Schema Services:
+        ///  - /autocrud/schema - Default DB
+        ///  - /autocrud/schema/{Schema} - Specified DB Schema
+        /// </summary>
+        public GenerateCrudServices GenerateCrudServices { get; set; }
+
         public Dictionary<string, string> ImplicitConventions = new Dictionary<string, string> 
         {
             {"%Above%",         SqlTemplate.GreaterThan},
@@ -163,6 +173,19 @@ namespace ServiceStack
 
             if (EnableAutoQueryViewer && appHost.GetPlugin<AutoQueryMetadataFeature>() == null)
                 appHost.LoadPlugin(new AutoQueryMetadataFeature { MaxLimit = MaxLimit });
+            
+            //CRUD Services
+            if (GenerateCrudServices != null)
+            {
+                foreach (var registerService in GenerateCrudServices.ServiceRoutes)
+                {
+                    appHost.RegisterService(registerService.Key, registerService.Value);
+                }
+
+                foreach (var genInstruction in GenerateCrudServices.CreateServices)
+                {
+                }
+            }
         }
 
         public void AfterPluginsLoaded(IAppHost appHost)
