@@ -31,7 +31,7 @@ namespace ServiceStack
         private IEnumerable<KeyValuePair<string, IValidateRule>> GetDbValidationRules(Type type)
         {
             using var db = DbFactory.OpenDbConnection();
-            var rows = db.Select<ValidateRule>(x => x.Type == type.Name);
+            var rows = db.Select<ValidateRule>(x => x.Type == type.Name && x.SuspendedDate == null);
             var to = rows.Map(x => new KeyValuePair<string, IValidateRule>(x.Field, x));
             return to;
         }
@@ -46,7 +46,16 @@ namespace ServiceStack
         {
             using var db = DbFactory.OpenDbConnection();
             db.SaveAll(validateRules);
-            Cache?.RemoveByPattern(nameof(IValidationSource) + ".*");
+            ClearValidationSourceCache();
+        }
+
+        private void ClearValidationSourceCache() => Cache?.RemoveByPattern(nameof(IValidationSource) + ".*");
+
+        public void DeleteValidationRules(params int[] ids)
+        {
+            using var db = DbFactory.OpenDbConnection();
+            db.DeleteByIds<ValidateRule>(ids);
+            ClearValidationSourceCache();
         }
 
         public void Clear()

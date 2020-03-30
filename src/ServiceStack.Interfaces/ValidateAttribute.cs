@@ -164,6 +164,7 @@ namespace ServiceStack
     public interface IValidationSourceWriter
     {
         void SaveValidationRules(List<ValidateRule> validateRules);
+        void DeleteValidationRules(params int[] ids);
     }
 
     /// <summary>
@@ -189,5 +190,17 @@ namespace ServiceStack
         /// Results sorted in ascending SortOrder, Id
         /// </summary>
         public int SortOrder { get; set; }
+        
+        public string CreatedBy { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        
+        public string ModifiedBy { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+        
+        public string SuspendedBy { get; set; }
+        [Index]
+        public DateTime? SuspendedDate { get; set; }
+
+        public string Notes { get; set; }
     }
 }

@@ -13,7 +13,7 @@ namespace ServiceStack
         public IEnumerable<KeyValuePair<string, IValidateRule>> GetValidationRules(Type type)
         {
             return TypeRulesMap.TryGetValue(type.Name, out var rules)
-                ? rules
+                ? rules.Where(x => ((ValidateRule)x.Value).SuspendedDate == null).ToArray()
                 : TypeConstants<KeyValuePair<string, IValidateRule>>.EmptyArray;
         }
 
@@ -45,6 +45,27 @@ namespace ServiceStack
                         .Select(x => new KeyValuePair<string,IValidateRule>(x.Field, x))
                         .ToArray();
                     TypeRulesMap[group.Key] = newTypeRules;
+                }
+            }
+        }
+
+        public void DeleteValidationRules(params int[] ids)
+        {
+            lock (semaphore)
+            {
+                var replace = new Dictionary<string, KeyValuePair<string, IValidateRule>[]>();
+                foreach (var entry in TypeRulesMap)
+                {
+                    if (entry.Value.Any(x => ids.Contains(((ValidateRule) x.Value).Id)))
+                    {
+                        replace[entry.Key] = entry.Value
+                            .Where(x => !ids.Contains(((ValidateRule) x.Value).Id)).ToArray();
+                    }
+                }
+
+                foreach (var entry in replace)
+                {
+                    TypeRulesMap[entry.Key] = entry.Value;
                 }
             }
         }
