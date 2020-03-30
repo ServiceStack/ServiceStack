@@ -12,13 +12,20 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host
 {
-    public class BasicRequest : IRequest, IHasResolver, IHasVirtualFiles
+    public class BasicRequest : IRequest, IHasResolver, IHasVirtualFiles, IServiceProvider
+#if NETSTANDARD2_0
+    , IHasServiceScope
+#endif    
     {
         public object Dto { get; set; }
         public IMessage Message { get; set; }
         public object OriginalRequest { get; private set; }
         public IResponse Response { get; set; }
-
+        
+#if NETSTANDARD2_0
+        public Microsoft.Extensions.DependencyInjection.IServiceScope ServiceScope { get; set; }
+#endif
+        
         private IResolver resolver;
         public IResolver Resolver
         {
@@ -67,7 +74,23 @@ namespace ServiceStack.Host
 
         public T TryResolve<T>()
         {
+#if NETSTANDARD2_0
+            if (ServiceScope != null)
+            {
+                var instance = ServiceScope.ServiceProvider.GetService(typeof(T));
+                if (instance != null)
+                    return (T)instance;
+            }
+#endif
+
             return this.TryResolveInternal<T>();
+        }
+
+        public object GetService(Type serviceType)
+        {
+            var mi = typeof(BasicRequest).GetMethod(nameof(TryResolve));
+            var genericMi = mi.MakeGenericMethod(serviceType);
+            return genericMi.Invoke(this, TypeConstants.EmptyObjectArray);
         }
 
         public string UserHostAddress { get; set; }
@@ -174,5 +197,5 @@ namespace ServiceStack.Host
         public bool IsFile { get; set; }
         
         public bool IsDirectory { get; set; }
-   }
+    }
 }

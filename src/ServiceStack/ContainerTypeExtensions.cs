@@ -5,6 +5,14 @@ using Funq;
 
 namespace ServiceStack
 {
+    
+#if NETSTANDARD2_0        
+    public interface IHasServiceScope
+    {
+        Microsoft.Extensions.DependencyInjection.IServiceScope ServiceScope { get; set; }
+    }
+#endif
+    
     public static class ContainerTypeExtensions
     {
         /// <summary>

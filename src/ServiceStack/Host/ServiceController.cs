@@ -560,6 +560,12 @@ namespace ServiceStack.Host
         public object ExecuteMessage(IMessage dto, IRequest req)
         {
             RequestContext.Instance.StartRequestContext();
+#if NETSTANDARD2_0
+            var serviceProvider = req as IHasServiceScope;
+            using var scope = serviceProvider != null ? req.CreateScope() : null;
+            if (serviceProvider != null)
+                serviceProvider.ServiceScope = scope;
+#endif
             
             req.PopulateFromRequestIfHasSessionId(dto.Body);
 

@@ -9,10 +9,38 @@ using TestsConfig = ServiceStack.Server.Tests.Config;
 
 namespace ServiceStack.Server.Tests.Messaging
 {
+    public interface IScopedDep
+    {
+    }
+    public class ScopedDep : IScopedDep
+    {
+        private static int timesCalled;
+        public static int TimesCalled
+        {
+            get => timesCalled;
+            set => timesCalled = value;
+        }
+
+        public ScopedDep()
+        {
+            Interlocked.Increment(ref timesCalled);
+        }
+    }
+    
     public class MqAppHost : AppSelfHostBase
     {
         public MqAppHost()
             : base(typeof(MqAppHost).Name, typeof(MqAppHostServices).Assembly) {}
+        
+        
+#if NETCORE
+        public override void Configure(Microsoft.Extensions.DependencyInjection.IServiceCollection services)
+        {
+            Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions
+                .AddScoped<IScopedDep, ScopedDep>(services);
+        }
+#endif
+        
 
         public override void Configure(Container container)
         {
@@ -21,6 +49,8 @@ namespace ServiceStack.Server.Tests.Messaging
             mqServer.RegisterHandler<MqCustomException>(
                 ExecuteMessage,
                 HandleMqCustomException);
+
+            mqServer.RegisterHandler<MqScopeDep>(ExecuteMessage);
 
             container.Register<IMessageService>(c => mqServer);
             mqServer.Start();
@@ -63,6 +93,8 @@ namespace ServiceStack.Server.Tests.Messaging
         public string Message { get; set; }
     }
 
+    public class MqScopeDep : IReturnVoid {}
+
     public class MqAppHostServices : Service
     {
         public static int TimesCalled = 0;
@@ -72,6 +104,17 @@ namespace ServiceStack.Server.Tests.Messaging
             TimesCalled++;
             throw new CustomException("ERROR: " + request.Message);
         }
+
+#if NETCORE
+        public void Any(MqScopeDep request)
+        {
+            var instance1 = Request.TryResolve<IScopedDep>();
+            var instance2 = Request.ResolveScoped<IScopedDep>();
+            if (instance1 != instance2)
+                throw new Exception("instance1 != instance2");
+        }
+#endif
+        
     }
 
     public class MqAppHostTests
@@ -107,5 +150,29 @@ namespace ServiceStack.Server.Tests.Messaging
                 Assert.That(appHost.LastCustomException.Message, Is.EqualTo("ERROR: foo"));
             }
         }
+
+#if NETCORE
+        [Test]
+        public void Can_resolve_scoped_deps()
+        {
+            ScopedDep.TimesCalled = 0;
+            
+            using (var mqClient = appHost.TryResolve<IMessageService>().CreateMessageQueueClient())
+            {
+                mqClient.Publish(new MqScopeDep());
+
+                Thread.Sleep(1000);
+
+                Assert.That(ScopedDep.TimesCalled, Is.EqualTo(1));
+
+                mqClient.Publish(new MqScopeDep());
+
+                Thread.Sleep(1000);
+
+                Assert.That(ScopedDep.TimesCalled, Is.EqualTo(2));
+            }
+        }
+#endif
+        
     }
 }
