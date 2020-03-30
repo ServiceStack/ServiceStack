@@ -561,15 +561,12 @@ namespace ServiceStack.Host
         {
             RequestContext.Instance.StartRequestContext();
 #if NETSTANDARD2_0
-            var serviceProvider = req as IHasServiceScope;
-            using var scope = serviceProvider != null ? req.CreateScope() : null;
-            if (serviceProvider != null)
-                serviceProvider.ServiceScope = scope;
+            using var scope = req.StartScope();
 #endif
             
             req.PopulateFromRequestIfHasSessionId(dto.Body);
 
-            req.Dto = appHost.ApplyRequestConvertersAsync(req, dto.Body).Result;
+            req.Dto = appHost.ApplyRequestConvertersAsync(req, dto.Body).GetAwaiter().GetResult();
             if (appHost.ApplyMessageRequestFilters(req, req.Response, dto.Body))
                 return req.Response.Dto;
 
@@ -578,7 +575,7 @@ namespace ServiceStack.Host
             if (response is Task taskResponse)
                 response = taskResponse.GetResult();
 
-            response = appHost.ApplyResponseConvertersAsync(req, response).Result;
+            response = appHost.ApplyResponseConvertersAsync(req, response).GetAwaiter().GetResult();
 
             if (appHost.ApplyMessageResponseFilters(req, req.Response, response))
                 response = req.Response.Dto;
