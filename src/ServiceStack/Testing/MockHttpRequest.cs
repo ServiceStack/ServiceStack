@@ -12,6 +12,9 @@ using ServiceStack.Web;
 namespace ServiceStack.Testing
 {
     public class MockHttpRequest : IHttpRequest, IHasResolver, IHasVirtualFiles
+#if NETSTANDARD2_0
+        , IHasServiceScope
+#endif    
     {
         private IResolver resolver;
         public IResolver Resolver
@@ -19,6 +22,10 @@ namespace ServiceStack.Testing
             get => resolver ?? Service.GlobalResolver;
             set => resolver = value;
         }
+        
+#if NETSTANDARD2_0
+        public Microsoft.Extensions.DependencyInjection.IServiceScope ServiceScope { get; set; }
+#endif
 
         public MockHttpRequest()
         {
@@ -51,7 +58,23 @@ namespace ServiceStack.Testing
 
         public T TryResolve<T>()
         {
+#if NETSTANDARD2_0
+            if (ServiceScope != null)
+            {
+                var instance = ServiceScope.ServiceProvider.GetService(typeof(T));
+                if (instance != null)
+                    return (T)instance;
+            }
+#endif
+
             return this.TryResolveInternal<T>();
+        }
+
+        public object GetService(Type serviceType)
+        {
+            var mi = typeof(BasicRequest).GetMethod(nameof(TryResolve));
+            var genericMi = mi.MakeGenericMethod(serviceType);
+            return genericMi.Invoke(this, TypeConstants.EmptyObjectArray);
         }
 
         public AuthUserSession RemoveSession()

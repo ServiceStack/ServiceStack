@@ -12,7 +12,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host
 {
-    public class BasicRequest : IRequest, IHasResolver, IHasVirtualFiles, IServiceProvider
+    public class BasicRequest : IRequest, IHasResolver, IHasVirtualFiles
 #if NETSTANDARD2_0
     , IHasServiceScope
 #endif    
