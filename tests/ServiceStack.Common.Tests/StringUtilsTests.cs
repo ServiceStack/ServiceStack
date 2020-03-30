@@ -57,5 +57,16 @@ Werde Teil unseres Teams und gestalte aktiv die technische Zukunft der weltweit 
             var actual = encoded.StripHtml().ConvertHtmlCodes();
             Assert.AreEqual(expected, actual);
         }
+
+        [Test]
+        public void Does_convert_snake_case_to_PascalCase()
+        {
+            Assert.That(StringUtils.SnakeCaseToPascalCase(""), Is.EqualTo(""));
+            Assert.That(StringUtils.SnakeCaseToPascalCase("a"), Is.EqualTo("A"));
+            Assert.That(StringUtils.SnakeCaseToPascalCase("a_b"), Is.EqualTo("AB"));
+            Assert.That(StringUtils.SnakeCaseToPascalCase("a1_b2"), Is.EqualTo("A1B2"));
+            Assert.That(StringUtils.SnakeCaseToPascalCase("aa_bb"), Is.EqualTo("AaBb"));
+            Assert.That(StringUtils.SnakeCaseToPascalCase("aaBb"), Is.EqualTo("AaBb"));
+        }
     }
 }

@@ -191,6 +191,14 @@ namespace ServiceStack
             var metadataTypes = metadata.GetMetadataTypes(req, typesConfig);
             var serviceModelNs = appHost.GetType().Namespace + ".ServiceModel";
             var typesNs = serviceModelNs + ".Types";
+
+            //Put NamedConnections Types in their own Namespace
+            if (request.NamedConnection != null)
+            {
+                serviceModelNs += "." + StringUtils.SnakeCaseToPascalCase(request.NamedConnection);
+                typesNs = serviceModelNs;
+            }
+            
             metadataTypes.Namespaces.Add(serviceModelNs);
             metadataTypes.Namespaces.Add(typesNs);
             metadataTypes.Namespaces = metadataTypes.Namespaces.Distinct().ToList();
@@ -288,7 +296,7 @@ namespace ServiceStack
                     var isKey = column.IsKey || column.IsAutoIncrement;
 
                     var prop = new MetadataPropertyType {
-                        Name = CSharpGenerator.SafeSymbolName(column.ColumnName),
+                        Name = StringUtils.SnakeCaseToPascalCase(column.ColumnName),
                         Type = dataType.GetMetadataPropertyType(),
                         IsValueType = dataType.IsValueType ? true : (bool?) null,
                         IsSystemType = dataType.IsSystemType() ? true : (bool?) null,
@@ -325,12 +333,12 @@ namespace ServiceStack
 
             foreach (var entry in typesToGenerateMap)
             {
-                var typeName = CSharpGenerator.SafeSymbolName(entry.Key);
+                var typeName = StringUtils.SnakeCaseToPascalCase(entry.Key);
                 var tableSchema = entry.Value;
                 if (includeCrudServices != null)
                 {
                     var pkField = tableSchema.Columns.First(x => x.IsKey);
-                    var id = CSharpGenerator.SafeSymbolName(pkField.ColumnName);
+                    var id = StringUtils.SnakeCaseToPascalCase(pkField.ColumnName);
                     foreach (var operation in includeCrudServices)
                     {
                         if (!AutoCrudOperation.IsOperation(operation))

@@ -667,22 +667,6 @@ namespace ServiceStack.NativeTypes.CSharp
 
             return true;
         }
-
-        public static string SafeSymbolName(string name)
-        {
-            var csharpName = name.SafeVarName();
-            if (csharpName.IndexOf('_') >= 0)
-            {
-                var parts = csharpName.Split('_').Where(x => !string.IsNullOrEmpty(x));
-                var pascalName = "";
-                foreach (var part in parts)
-                {
-                    pascalName += char.ToUpper(part[0]) + part.Substring(1);
-                }
-                return pascalName;
-            }
-            return csharpName;
-        }
     }
 
     public static class CSharpGeneratorExtensions
