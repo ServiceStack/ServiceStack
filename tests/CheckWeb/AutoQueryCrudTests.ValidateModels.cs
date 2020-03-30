@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Check.ServiceModel;
 using ServiceStack;
 using ServiceStack.FluentValidation;
+using ServiceStack.Model;
 
 namespace CheckWeb
 {
@@ -171,8 +172,53 @@ namespace CheckWeb
         public int IsOddOrOverTwoDigitsCondition { get; set; }
     }
 
-    [ValidateRequest(new[]{ "it.Test.isOdd()", "it.Test.log10() > 2" }, "RuleMessage")]
-    [ValidateRequest("it.Test.log10() > 3", "AssertFailed2", "2nd Assert Failed", StatusCode = 401)]
+    [ValidateRequest("HasRole('Manager')")]
+    public class TestAuthValidators
+        : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
+    {
+        [Validate("NotNull")] //doesn't get validated if ValidateRequest is invalid
+        public string NotNull { get; set; }
+    }
+
+    [ValidateRequest("[IsAuthenticated,HasRole('Manager')]")]
+    public class TestMultiAuthValidators
+        : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
+    {
+        [Validate("NotNull")] //doesn't get validated if ValidateRequest is invalid
+        public string NotNull { get; set; }
+    }
+
+    [ValidateRequest("IsAdmin")]
+    public class TestIsAdmin
+        : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
+    {
+        [Validate("NotNull")] //doesn't get validated if ValidateRequest is invalid
+        public string NotNull { get; set; }
+    }
+
+    [ValidateRequest(Condition = "!dbExistsSync('SELECT * FROM RockstarAlbum WHERE RockstarId = @Id', { dto.Id })", 
+        ErrorCode = "HasForeignKeyReferences")]
+    public class TestDbCondition
+        : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
+    {
+        public int Id { get; set; }
+        
+        [Validate("NotNull")] //doesn't get validated if ValidateRequest is invalid
+        public string NotNull { get; set; }
+    }
+
+    [ValidateRequest("NoRockstarAlbumReferences")]
+    public class TestDbValidator
+        : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>, IHasId<int>
+    {
+        public int Id { get; set; }
+        
+        [Validate("NotNull")] //doesn't get validated if ValidateRequest is invalid
+        public string NotNull { get; set; }
+    }
+
+    // [ValidateRequest(Conditions = new[]{ "it.Test.isOdd()", "it.Test.log10() > 2" }, ErrorCode = "RuleMessage")]
+    [ValidateRequest(Condition = "it.Test.log10() > 3", ErrorCode = "AssertFailed2", Message = "2nd Assert Failed", StatusCode = 401)]
     public class OnlyValidatesRequest
         : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
     {
@@ -222,5 +268,5 @@ namespace CheckWeb
         public Guid Id { get; set; }
         public Bookmark Result { get; set; }
         public ResponseStatus ResponseStatus { get; set; }
-    }
+    }    
 }
