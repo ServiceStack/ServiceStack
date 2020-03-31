@@ -497,7 +497,7 @@ namespace ServiceStack.Auth
         /// <summary>
         /// Return token payload which is both verified and still valid
         /// </summary>
-        public JsonObject GetValidJwtPayload(IRequest req, string jwt)
+        public virtual JsonObject GetValidJwtPayload(IRequest req, string jwt)
         {
             var verifiedPayload = GetVerifiedJwtPayload(req, jwt.Split('.'));
             var invalidError = GetInvalidJwtPayloadError(verifiedPayload);
@@ -509,7 +509,7 @@ namespace ServiceStack.Auth
         /// <summary>
         /// Return token payload which has been verified to be created using the configured encryption key.
         /// </summary>
-        public JsonObject GetVerifiedJwtPayload(IRequest req, string[] parts)
+        public virtual JsonObject GetVerifiedJwtPayload(IRequest req, string[] parts)
         {
             if (parts.Length == 3)
             {
@@ -545,7 +545,7 @@ namespace ServiceStack.Auth
             throw new ArgumentException(ErrorMessages.TokenInvalid.Localize(req));
         }
 
-        public JsonObject GetVerifiedJwePayload(IRequest req, string[] parts)
+        public virtual JsonObject GetVerifiedJwePayload(IRequest req, string[] parts)
         {
             if (!VerifyJwePayload(req, parts, out var iv, out var cipherText, out var cryptKey))
                 return null;
@@ -565,7 +565,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public bool VerifyJwePayload(IRequest req, string[] parts, out byte[] iv, out byte[] cipherText, out byte[] cryptKey)
+        public virtual bool VerifyJwePayload(IRequest req, string[] parts, out byte[] iv, out byte[] cipherText, out byte[] cryptKey)
         {
             var jweHeaderBase64Url = parts[0];
             var jweEncKeyBase64Url = parts[1];
@@ -620,7 +620,7 @@ namespace ServiceStack.Auth
             return false;
         }
 
-        public IAuthSession ConvertJwtToSession(IRequest req, string jwt)
+        public virtual IAuthSession ConvertJwtToSession(IRequest req, string jwt)
         {
             if (jwt == null)
                 throw new ArgumentNullException(nameof(jwt));
@@ -639,7 +639,7 @@ namespace ServiceStack.Auth
             return session;
         }
 
-        public IAuthSession CreateSessionFromPayload(IRequest req, JsonObject jwtPayload)
+        public virtual IAuthSession CreateSessionFromPayload(IRequest req, JsonObject jwtPayload)
         {
             AssertJwtPayloadIsValid(jwtPayload);
 
@@ -703,7 +703,7 @@ namespace ServiceStack.Auth
             return null;
         }
 
-        public bool VerifyPayload(IRequest req, string algorithm, byte[] bytesToSign, byte[] sentSignatureBytes)
+        public virtual bool VerifyPayload(IRequest req, string algorithm, byte[] bytesToSign, byte[] sentSignatureBytes)
         {
             var isHmac = HmacAlgorithms.ContainsKey(algorithm);
             var isRsa = RsaSignAlgorithms.ContainsKey(algorithm);
