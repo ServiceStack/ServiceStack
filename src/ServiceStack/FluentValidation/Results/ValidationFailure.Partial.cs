@@ -25,9 +25,7 @@ namespace ServiceStack.FluentValidation.Results
         //ServiceStack uses 'NotNull' instead of FluentValidation 7's 'NotNullValidator' ErrorCode
         public static string ServiceStackErrorCodeResolver(string errorCode)
         {
-            var ssCode = errorCode?.EndsWith("Validator") == true
-                ? errorCode.Substring(0, errorCode.Length - "Validator".Length)
-                : errorCode;
+            var ssCode = errorCode.RemoveValidatorSuffix();
 
             return ssCode != null && ErrorCodeAliases.TryGetValue(ssCode, out var errorCodeAlias) 
                 ? errorCodeAlias

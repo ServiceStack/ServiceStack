@@ -23,23 +23,6 @@ namespace ServiceStack
         List<ITypeValidator> TypeValidators { get; }
     }
 
-    public static class TypeValidatorUtils
-    {
-        public static ITypeValidator Init(this ITypeValidator validator, IValidateRule rule)
-        {
-            if (rule.ErrorCode != null)
-                validator.ErrorCode = rule.ErrorCode;
-            if (rule.Message != null)
-                validator.Message = rule.Message;
-            if (rule is ValidateRequestAttribute attr)
-            {
-                if (attr.StatusCode != default)
-                    validator.StatusCode = attr.StatusCode;
-            }
-            return validator;
-        }
-    }
-
     public class IsAuthenticatedValidator : TypeValidator
     {
         public static string DefaultErrorMessage { get; set; } = ErrorMessages.NotAuthenticated;

@@ -471,6 +471,11 @@ namespace ServiceStack
                 : safeVarName;
         }
 
+        public static string RemoveSuffix(string name, string suffix) => name == null ? null :
+            name.EndsWith(suffix)
+                ? name.Substring(0, name.Length - suffix.Length)
+                : name;
+
         static readonly Regex StripHtmlUnicodeRegEx =
             new Regex(@"&(#)?([xX])?([^ \f\n\r\t\v;]+);", RegexOptions.Compiled);
 

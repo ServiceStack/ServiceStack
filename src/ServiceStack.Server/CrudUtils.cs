@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ServiceStack.Data;
 using ServiceStack.NativeTypes;
 using ServiceStack.OrmLite;
@@ -60,6 +61,14 @@ namespace ServiceStack
             return type;
         }
 
+        public static MetadataType AddAttributeIfNotExists<T>(this MetadataType type, T attr, Func<T, bool> test)
+            where T : Attribute
+        {
+            return type.Attributes?.Any(x => x.Attribute is T t && test(t)) == true 
+                ? type 
+                : AddAttribute(type, attr);
+        }
+
         public static MetadataPropertyType AddAttribute(this MetadataPropertyType propType, Attribute attr)
         {
             var nativeTypesGen = HostContext.AssertPlugin<NativeTypesFeature>().DefaultGenerator;
@@ -67,6 +76,14 @@ namespace ServiceStack
             propType.Attributes ??= new List<MetadataAttribute>();
             propType.Attributes.Add(metaAttr);
             return propType;
+        }
+
+        public static MetadataPropertyType AddAttributeIfNotExists<T>(this MetadataPropertyType propType, T attr, Func<T, bool> test)
+            where T : Attribute
+        {
+            return propType.Attributes?.Any(x => x.Attribute is T t && test(t)) == true 
+                ? propType 
+                : AddAttribute(propType, attr);
         }
     }
 

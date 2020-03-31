@@ -610,7 +610,7 @@ namespace ServiceStack.NativeTypes
             var metaAttr = new MetadataAttribute
             {
                 Attribute = attr,
-                Name = attrType.Name.Replace("Attribute", ""),
+                Name = attr.GetAttributeName(),
                 ConstructorArgs = firstCtor != null
                     ? firstCtor.GetParameters().ToList().ConvertAll(ToProperty)
                     : null,
@@ -1369,5 +1369,8 @@ namespace ServiceStack.NativeTypes
                 ? type.EnumMemberValues[i]
                 : null;
         }
+
+        public static string GetAttributeName(this Attribute attr) => 
+            StringUtils.RemoveSuffix(attr.GetType().Name, "Attribute");
     }
 }
