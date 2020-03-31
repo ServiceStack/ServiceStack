@@ -123,6 +123,9 @@ namespace ServiceStack
     {
         [IgnoreDataMember]
         public Type Type { get; set; }
+        [IgnoreDataMember]
+        public Dictionary<string, object> Items { get; set; }
+        
         public string Name { get; set; }
         public string Namespace { get; set; }
         public string[] GenericArgs { get; set; }
