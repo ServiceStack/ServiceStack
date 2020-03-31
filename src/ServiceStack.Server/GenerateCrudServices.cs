@@ -8,6 +8,7 @@ using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
+using ServiceStack.FluentValidation.Internal;
 using ServiceStack.Host;
 using ServiceStack.NativeTypes;
 using ServiceStack.NativeTypes.CSharp;
@@ -118,23 +119,6 @@ namespace ServiceStack
         static string ResolveRequestType(Dictionary<string, MetadataType> existingTypesMap, MetadataOperationType op, CrudCodeGenTypes requestDto,
             out string modifier)
         {
-            Tuple<string, string> splitCrudOperation(string requestType)
-            {
-                if (requestType.StartsWith(AutoCrudOperation.Query))
-                    return new Tuple<string, string>(AutoCrudOperation.Query, requestType.Substring(AutoCrudOperation.Query.Length));
-                if (requestType.StartsWith(AutoCrudOperation.Create))
-                    return new Tuple<string, string>(AutoCrudOperation.Create, requestType.Substring(AutoCrudOperation.Create.Length));
-                if (requestType.StartsWith(AutoCrudOperation.Update))
-                    return new Tuple<string, string>(AutoCrudOperation.Update, requestType.Substring(AutoCrudOperation.Update.Length));
-                if (requestType.StartsWith(AutoCrudOperation.Patch))
-                    return new Tuple<string, string>(AutoCrudOperation.Patch, requestType.Substring(AutoCrudOperation.Patch.Length));
-                if (requestType.StartsWith(AutoCrudOperation.Delete))
-                    return new Tuple<string, string>(AutoCrudOperation.Delete, requestType.Substring(AutoCrudOperation.Delete.Length));
-                if (requestType.StartsWith(AutoCrudOperation.Save))
-                    return new Tuple<string, string>(AutoCrudOperation.Save, requestType.Substring(AutoCrudOperation.Save.Length));
-                throw new NotSupportedException($"Unknown Crud operation '{requestType}'");
-            }
-
             modifier = null;
             if (existingTypesMap.ContainsKey(op.Request.Name))
             {
@@ -142,17 +126,18 @@ namespace ServiceStack
                 if (requestDto.NamedConnection == null && requestDto.Schema == null)
                     return null;
                         
-                var crudOp = splitCrudOperation(op.Request.Name);
-                var newRequestName = crudOp.Item1 + (modifier = StringUtils.SnakeCaseToPascalCase(requestDto.NamedConnection ?? requestDto.Schema)) + crudOp.Item2;
+                var method = op.Request.Name.SplitPascalCase().LeftPart(' ');
+                var suffix = op.Request.Name.Substring(method.Length);
+                var newRequestName = method + (modifier = StringUtils.SnakeCaseToPascalCase(requestDto.NamedConnection ?? requestDto.Schema)) + suffix;
                 if (existingTypesMap.ContainsKey(newRequestName))
                 {
                     if (requestDto.NamedConnection == null || requestDto.Schema == null)
                         return null;
                             
-                    newRequestName = crudOp.Item1 + (modifier = StringUtils.SnakeCaseToPascalCase(requestDto.Schema)) + crudOp.Item2;
+                    newRequestName = method + (modifier = StringUtils.SnakeCaseToPascalCase(requestDto.Schema)) + suffix;
                     if (existingTypesMap.ContainsKey(newRequestName))
                     {
-                        newRequestName = crudOp.Item1 + (modifier = StringUtils.SnakeCaseToPascalCase(requestDto.NamedConnection + requestDto.Schema)) + crudOp.Item2;
+                        newRequestName = method + (modifier = StringUtils.SnakeCaseToPascalCase(requestDto.NamedConnection + requestDto.Schema)) + suffix;
                         if (existingTypesMap.ContainsKey(newRequestName))
                             return null;
                     }
@@ -165,6 +150,7 @@ namespace ServiceStack
         public List<Type> GenerateMissingServices(AutoQueryFeature feature)
         {
             var types = new List<Type>();
+            // return types;
 
             var assemblyName = new AssemblyName { Name = "tmpCrudAssembly" };
             var dynModule = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run)
@@ -208,9 +194,9 @@ namespace ServiceStack
                     var newType = CreateOrGetType(dynModule, metaType, metadataTypes, existingMetaTypesMap, generatedTypes);
                     types.Add(newType);
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    Console.WriteLine(e);
+                    appHost.NotifyStartupException(ex);
                 }
             }
 
@@ -256,9 +242,10 @@ namespace ServiceStack
 
         private static readonly Dictionary<string, Type> ServiceStackModelTypes = new Dictionary<string, Type> {
             { nameof(UserAuth), typeof(UserAuth) },
-            { nameof(IUserAuth), typeof(IUserAuth) },
+            { nameof(IUserAuth), typeof(IUserAuth) },                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
             { nameof(UserAuthDetails), typeof(UserAuthDetails) },
             { nameof(IUserAuthDetails), typeof(IUserAuthDetails) },
+            { nameof(UserAuthRole), typeof(UserAuthRole) },
             { nameof(AuthUserSession), typeof(AuthUserSession) },
             { nameof(IAuthSession), typeof(IAuthSession) },
         };
@@ -306,7 +293,43 @@ namespace ServiceStack
             if (appType != null)
                 return appType;
 
-            return null;
+            return HostContext.AppHost.ScriptContext.ProtectedMethods.@typeof(fullTypeName);
+        }
+
+        private static Type AssertResolveType(Tuple<string, string> typeKey, Dictionary<Tuple<string, string>, Type> generatedTypes)
+        {
+            var ret = ResolveType(typeKey, generatedTypes);
+            if (ret == null)
+                ThrowCouldNotResolveType(typeKey.Item1 + '.' + typeKey.Item2);
+            return ret;
+        }
+
+        private static ConstructorInfo ciRoute2 = typeof(RouteAttribute).GetConstructors().First(ci => ci.GetParameters().Length == 2);
+
+        private static Dictionary<string, Type> attributesMap;
+        static Dictionary<string, Type> AttributesMap
+        {
+            get
+            {
+                if (attributesMap != null)
+                    return attributesMap;
+            
+                attributesMap = new Dictionary<string, Type>();
+
+                foreach (var type in typeof(RouteAttribute).Assembly.GetTypes())
+                {
+                    if (typeof(Attribute).IsAssignableFrom(type))
+                        attributesMap[StringUtils.RemoveSuffix(type.Name, "Attribute")] = type;
+                }
+
+                foreach (var type in typeof(AuthenticateAttribute).Assembly.GetTypes())
+                {
+                    if (typeof(Attribute).IsAssignableFrom(type))
+                        attributesMap[StringUtils.RemoveSuffix(type.Name, "Attribute")] = type;
+                }
+
+                return attributesMap;
+            }
         }
 
         private static Type CreateOrGetType(ModuleBuilder dynModule, MetadataType metaType, 
@@ -335,10 +358,184 @@ namespace ServiceStack
             
             var typeBuilder = dynModule.DefineType(metaType.Namespace + "." + metaType.Name,
                 TypeAttributes.Public | TypeAttributes.Class, baseType);
+
+            foreach (var route in metaType.Routes.Safe())
+            {
+                var routeAttr = new CustomAttributeBuilder(ciRoute2, new object[]{ route.Path, route.Verbs });
+                typeBuilder.SetCustomAttribute(routeAttr);
+            }
+
+            foreach (var metaAttr in metaType.Attributes.Safe())
+            {
+                var attrBuilder = CreateCustomAttributeBuilder(metaAttr, generatedTypes);
+                typeBuilder.SetCustomAttribute(attrBuilder);
+            }
+
+            foreach (var metaProp in metaType.Properties.Safe())
+            {
+                var returnType = metaProp.PropertyType ??
+                    AssertResolveType(keyNs(metaProp.TypeNamespace, metaProp.Type), generatedTypes);
+                var propBuilder = typeBuilder.DefineProperty(metaProp.Name, PropertyAttributes.HasDefault,
+                    CallingConventions.Any, returnType, null);
+                
+                foreach (var metaAttr in metaProp.Attributes.Safe())
+                {
+                    var attrBuilder = CreateCustomAttributeBuilder(metaAttr, generatedTypes);
+                    propBuilder.SetCustomAttribute(attrBuilder);
+                }
+
+                CreatePublicPropertyBody(typeBuilder, propBuilder);
+            }
             
             var newType = typeBuilder.CreateTypeInfo().AsType();
             generatedTypes[key(newType)] = newType;
             return newType;
+        }
+        
+        private static void CreatePublicPropertyBody(TypeBuilder typeBuilder, PropertyBuilder propertyBuilder)
+        {
+            const MethodAttributes attributes = 
+                MethodAttributes.Public | 
+                MethodAttributes.HideBySig | 
+                MethodAttributes.SpecialName | 
+                MethodAttributes.Virtual |
+                MethodAttributes.Final;
+            
+            var getField = typeBuilder.DefineField("_" + propertyBuilder.Name.ToCamelCase(), propertyBuilder.PropertyType, FieldAttributes.Private);
+
+            var getterBuilder = typeBuilder.DefineMethod("get_" + propertyBuilder.Name, attributes, propertyBuilder.PropertyType, Type.EmptyTypes);
+
+            // Code generation
+            var ilgen = getterBuilder.GetILGenerator();
+
+            ilgen.Emit(OpCodes.Ldarg_0);
+            ilgen.Emit(OpCodes.Ldfld, getField); // returning the firstname field
+            ilgen.Emit(OpCodes.Ret);
+            
+            var setterBuilder = typeBuilder.DefineMethod("set_" + propertyBuilder.Name,
+                attributes, null, new[] { propertyBuilder.PropertyType });
+
+            ilgen = setterBuilder.GetILGenerator();
+
+            ilgen.Emit(OpCodes.Ldarg_0);
+            ilgen.Emit(OpCodes.Ldarg_1);
+            ilgen.Emit(OpCodes.Stfld, setterBuilder);
+            ilgen.Emit(OpCodes.Ret);
+
+            propertyBuilder.SetGetMethod(getterBuilder);
+            propertyBuilder.SetSetMethod(setterBuilder);
+        }
+
+        private static CustomAttributeBuilder CreateCustomAttributeBuilder(MetadataAttribute metaAttr,
+            Dictionary<Tuple<string, string>, Type> generatedTypes)
+        {
+            var attrType = metaAttr.Attribute?.GetType();
+            if (attrType == null && !AttributesMap.TryGetValue(metaAttr.Name, out attrType))
+                throw new NotSupportedException($"Could not resolve Attribute '{metaAttr.Name}'");
+
+            var args = new List<object>();
+            ConstructorInfo ciAttr;
+            var useCtorArgs = metaAttr.ConstructorArgs?.Count > 0; 
+            if (useCtorArgs)
+            {
+                var argCount = metaAttr.ConstructorArgs.Count;
+                ciAttr = attrType.GetConstructors().FirstOrDefault(ci => ci.GetParameters().Length == argCount)
+                         ?? throw new NotSupportedException(
+                             $"Could not resolve Attribute '{metaAttr.Name}' Constructor with {argCount} parameters");
+
+                foreach (var argType in metaAttr.ConstructorArgs)
+                {
+                    var argValue = argType.ConvertTo(ResolveType(argType.Type, generatedTypes));
+                    args.Add(argValue);
+                }
+                var attrBuilder = new CustomAttributeBuilder(ciAttr, args.ToArray());
+                return attrBuilder;
+            }
+            else
+            {
+                ciAttr = attrType.GetConstructors().FirstOrDefault(ci => ci.GetParameters().Length == 0)
+                         ?? throw new NotSupportedException($"Attribute '{metaAttr.Name}' does not have a default Constructor");
+                
+                var propInfos = new List<PropertyInfo>();
+                if (metaAttr.Args != null)
+                {
+                    foreach (var argType in metaAttr.Args)
+                    {
+                        propInfos.Add(attrType.GetProperty(argType.Name));
+                        var argValue = argType.ConvertTo(ResolveType(argType.Type, generatedTypes));
+                        args.Add(argValue);
+                    }
+                }
+
+                var attrBuilder = new CustomAttributeBuilder(ciAttr, TypeConstants.EmptyObjectArray, propInfos.ToArray(), args.ToArray());
+                return attrBuilder;
+            }
+        }
+
+        string ResolveModelType(MetadataOperationType op)
+        {
+            var baseGenericArg = op.Request.Inherits?.GenericArgs?.FirstOrDefault(); //e.g. QueryDb<From> or base class
+            if (baseGenericArg != null)
+                return baseGenericArg;
+
+            var interfaceArg = op.Request.Implements?.Where(x => x.GenericArgs?.Length > 0).FirstOrDefault()?.GenericArgs[0];
+            return interfaceArg;
+        }
+
+        void ReplaceModelType(MetadataTypes metadataTypes, string fromType, string toType)
+        {
+            foreach (var op in metadataTypes.Operations)
+            {
+                ReplaceModelType(op.Request, fromType, toType);
+                ReplaceModelType(op.Response, fromType, toType);
+            }
+            foreach (var metadataType in metadataTypes.Types)
+            {
+                ReplaceModelType(metadataType, fromType, toType);
+            }
+        }
+
+        void ReplaceModelType(MetadataType metadataType, string fromType, string toType)
+        {
+            if (metadataType == null)
+                return;
+
+            static void ReplaceGenericArgs(string[] genericArgs, string fromType, string toType)
+            {
+                if (genericArgs == null) 
+                    return;
+                
+                for (var i = 0; i < genericArgs.Length; i++)
+                {
+                    var arg = genericArgs[i];
+                    if (arg == fromType)
+                        genericArgs[i] = toType;
+                }
+            }
+
+            if (metadataType.Name == fromType)
+            {
+                //need to preserve DB Name if changing Type Name
+                var dbTableName = metadataType.Items != null && metadataType.Items.TryGetValue(nameof(TableSchema), out var oScehma)
+                        && oScehma is TableSchema schema
+                    ? schema.Name
+                    : metadataType.Name;
+                    
+                metadataType.AddAttributeIfNotExists(new AliasAttribute(dbTableName), attr => true);
+                metadataType.Name = toType;
+            }
+            
+            if (metadataType.Inherits != null)
+            {
+                if (metadataType.Inherits.Name == fromType)
+                    metadataType.Inherits.Name = toType;
+                var genericArgs = metadataType.Inherits.GenericArgs;
+                ReplaceGenericArgs(genericArgs, fromType, toType);
+            }
+            foreach (var iface in metadataType.Implements.Safe())
+            {
+                ReplaceGenericArgs(iface.GenericArgs, fromType, toType);
+            }
         }
 
         internal List<MetadataType> GetMissingTypesToCreate(out Dictionary<Tuple<string, string>, MetadataType> typesMap)
@@ -363,15 +560,21 @@ namespace ServiceStack
                 var ret = ResolveMetadataTypes(requestDto, req);
                 foreach (var op in ret.Item1.Operations)
                 {
-                    var newName = ResolveRequestType(existingTypesMap, op, requestDto, out var modifier);
-                    if (newName == null)
+                    var requestName = ResolveRequestType(existingTypesMap, op, requestDto, out var modifier);
+                    if (requestName == null)
                         continue;
-                    if (op.Request.Name != newName)
+                    if (op.Request.Name != requestName)
                     {
-                        op.Request.Name = newName;
+                        op.Request.Name = requestName;
                         foreach (var route in op.Request.Routes.Safe())
                         {
                             route.Path = ("/" + modifier + "/" + route.Path.Substring(1)).ToLower();
+                        }
+
+                        var modelType = ResolveModelType(op);
+                        if (modelType != null)
+                        {
+                            ReplaceModelType(ret.Item1, modelType, modifier + modelType);
                         }
                     }
 
@@ -681,6 +884,9 @@ namespace ServiceStack
 
                     var prop = new MetadataPropertyType {
                         PropertyType = dataType,
+                        Items = !isModel ? null : new Dictionary<string, object> {
+                            [nameof(ColumnSchema)] = column,
+                        },
                         Name = StringUtils.SnakeCaseToPascalCase(column.ColumnName),
                         Type = dataType.GetMetadataPropertyType(),
                         IsValueType = dataType.IsValueType ? true : (bool?) null,
@@ -859,6 +1065,9 @@ namespace ServiceStack
                         Name = typeName,
                         Namespace = typesNs,
                         Properties = toMetaProps(tableSchema.Columns, isModel:true),
+                        Items = new Dictionary<string, object> {
+                            [nameof(TableSchema)] = tableSchema,
+                        }
                     };
                     if (request.NamedConnection != null)
                         modelType.AddAttribute(new NamedConnectionAttribute(request.NamedConnection));
