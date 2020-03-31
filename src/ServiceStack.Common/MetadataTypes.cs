@@ -199,6 +199,8 @@ namespace ServiceStack
     {
         [IgnoreDataMember]
         public Type PropertyType { get; set; }
+        [IgnoreDataMember]
+        public Dictionary<string, object> Items { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }
         public bool? IsValueType { get; set; }
