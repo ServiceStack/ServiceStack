@@ -421,6 +421,17 @@ namespace ServiceStack.Host
                 }
             }
 
+            foreach (var iface in type.GetInterfaces())
+            {
+                if (iface.IsGenericType && !iface.IsGenericTypeDefinition)
+                {
+                    foreach (var arg in iface.GetGenericArguments())
+                    {
+                        AddReferencedTypes(to, arg);
+                    }
+                }
+            }
+
             foreach (var pi in type.GetSerializableProperties())
             {
                 if (to.Contains(pi.PropertyType))
