@@ -56,8 +56,11 @@ namespace ServiceStack
                 {
                     foreach (var arg in iface.GetGenericArguments())
                     {
-                        refTypes.Add(arg);
-                        AddReferencedTypes(arg, refTypes);
+                        if (!refTypes.Contains(arg))
+                        {
+                            refTypes.Add(arg);
+                            AddReferencedTypes(arg, refTypes);
+                        }
                     }
                 }
             }
