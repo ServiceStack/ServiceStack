@@ -164,6 +164,7 @@ namespace ServiceStack
 
     public interface IValidationSourceAdmin
     {
+        Task<List<ValidationRule>> GetAllValidateRulesAsync(string typeName);
         Task SaveValidationRulesAsync(List<ValidationRule> validateRules);
         Task<List<ValidationRule>> GetValidateRulesByIdsAsync(params int[] ids);
         Task DeleteValidationRulesAsync(params int[] ids);

@@ -25,6 +25,15 @@ namespace ServiceStack
         private readonly object semaphore = new object();
         internal static int IdCounter;
 
+        public Task<List<ValidationRule>> GetAllValidateRulesAsync(string typeName)
+        {
+            var ret = TypeRulesMap.TryGetValue(typeName, out var rules)
+                ? rules
+                : TypeConstants<KeyValuePair<string, IValidateRule>>.EmptyArray;
+            
+            return ret.Map(x => (ValidationRule)x.Value).InTask();
+        }
+
         public Task SaveValidationRulesAsync(List<ValidationRule> validateRules)
         {
             lock (semaphore)
@@ -109,6 +118,15 @@ namespace ServiceStack
             {
                 requiresSchema.InitSchema();
             }
+        }
+
+        public static async Task<List<ValidationRule>> GetAllValidateRulesAsync(this IValidationSource source, string typeName)
+        {
+            if (source is IValidationSourceAdmin sourceAdmin)
+                return await sourceAdmin.GetAllValidateRulesAsync(typeName);
+
+            ThrowNotValidationSourceAdmin(source);
+            return null;
         }
 
         public static Task SaveValidationRulesAsync(this IValidationSource source, List<ValidationRule> validateRules)

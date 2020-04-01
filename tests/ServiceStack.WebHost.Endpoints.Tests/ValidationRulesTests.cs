@@ -185,7 +185,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             typeRules = client.Get(new GetValidationRules {
                 AuthSecret = AuthSecret, Type = nameof(ValidationRulesTest)
             });
-            Assert.That(typeRules.Results.All(x => x.Field != nameof(ValidationRulesTest.Id)));
+            Assert.That(typeRules.Results.First(x => x.Field == nameof(ValidationRulesTest.Id)).SuspendedDate, 
+                Is.Not.Null);
 
             // Same as not having last rule
             try

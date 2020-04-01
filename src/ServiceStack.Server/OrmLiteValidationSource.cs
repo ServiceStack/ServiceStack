@@ -57,6 +57,13 @@ namespace ServiceStack
             db.CreateTableIfNotExists<ValidationRule>();
         }
 
+        public async Task<List<ValidationRule>> GetAllValidateRulesAsync(string typeName)
+        {
+            using var db = OpenDbConnection();
+            var rows = await db.SelectAsync<ValidationRule>(x => x.Type == typeName);
+            return rows;
+        }
+
         public async Task SaveValidationRulesAsync(List<ValidationRule> validateRules)
         {
             using var db = OpenDbConnection();

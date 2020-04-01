@@ -175,8 +175,7 @@ namespace ServiceStack.Validation
                 throw HttpError.NotFound(request.Type);
             
             return new GetValidationRulesResponse {
-                Results = ValidationSource.GetValidationRules(type)
-                    .Map(x => (ValidationRule)x.Value),
+                Results = await ValidationSource.GetAllValidateRulesAsync(request.Type),
             };
         }
     }
@@ -207,6 +206,8 @@ namespace ServiceStack.Validation
                     var dtoType = appHost.Metadata.FindDtoType(rule.Type);
                     if (dtoType != null)
                     {
+                        container.RegisterNewValidatorIfNotExists(dtoType);
+                    }
                 
                     if (rule.CreatedBy == null)
                     {
