@@ -445,7 +445,8 @@ namespace ServiceStack
 
                 foreach (var argType in metaAttr.ConstructorArgs)
                 {
-                    var argValue = argType.ConvertTo(ResolveType(argType.Type, generatedTypes));
+                    var ctorAttrType = ResolveType(argType.Type, generatedTypes);
+                    var argValue = argType.Value.ConvertTo(ctorAttrType);
                     args.Add(argValue);
                 }
                 var attrBuilder = new CustomAttributeBuilder(ciAttr, args.ToArray());
@@ -462,7 +463,8 @@ namespace ServiceStack
                     foreach (var argType in metaAttr.Args)
                     {
                         propInfos.Add(attrType.GetProperty(argType.Name));
-                        var argValue = argType.ConvertTo(ResolveType(argType.Type, generatedTypes));
+                        var piAttrType = ResolveType(argType.Type, generatedTypes);
+                        var argValue = argType.Value.ConvertTo(piAttrType);
                         args.Add(argValue);
                     }
                 }
@@ -516,12 +518,12 @@ namespace ServiceStack
             if (metadataType.Name == fromType)
             {
                 //need to preserve DB Name if changing Type Name
-                var dbTableName = metadataType.Items != null && metadataType.Items.TryGetValue(nameof(TableSchema), out var oScehma)
-                        && oScehma is TableSchema schema
+                var dbTableName = metadataType.Items != null && metadataType.Items.TryGetValue(nameof(TableSchema), out var oSchema)
+                        && oSchema is TableSchema schema
                     ? schema.Name
                     : metadataType.Name;
                     
-                metadataType.AddAttributeIfNotExists(new AliasAttribute(dbTableName), attr => true);
+                metadataType.AddAttributeIfNotExists(new AliasAttribute(dbTableName));
                 metadataType.Name = toType;
             }
             
