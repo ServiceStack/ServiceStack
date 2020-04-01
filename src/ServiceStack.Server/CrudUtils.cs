@@ -61,10 +61,10 @@ namespace ServiceStack
             return type;
         }
 
-        public static MetadataType AddAttributeIfNotExists<T>(this MetadataType type, T attr, Func<T, bool> test)
+        public static MetadataType AddAttributeIfNotExists<T>(this MetadataType type, T attr, Func<T, bool> test=null)
             where T : Attribute
         {
-            return type.Attributes?.Any(x => x.Attribute is T t && test(t)) == true 
+            return type.Attributes?.Any(x => x.Attribute is T t && (test == null || test(t))) == true 
                 ? type 
                 : AddAttribute(type, attr);
         }
@@ -78,10 +78,10 @@ namespace ServiceStack
             return propType;
         }
 
-        public static MetadataPropertyType AddAttributeIfNotExists<T>(this MetadataPropertyType propType, T attr, Func<T, bool> test)
+        public static MetadataPropertyType AddAttributeIfNotExists<T>(this MetadataPropertyType propType, T attr, Func<T, bool> test=null)
             where T : Attribute
         {
-            return propType.Attributes?.Any(x => x.Attribute is T t && test(t)) == true 
+            return propType.Attributes?.Any(x => x.Attribute is T t && (test == null || test(t))) == true 
                 ? propType 
                 : AddAttribute(propType, attr);
         }
