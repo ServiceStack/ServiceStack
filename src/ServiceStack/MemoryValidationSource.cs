@@ -2,64 +2,90 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using ServiceStack.Auth;
 
 namespace ServiceStack
 {
-    public class MemoryValidationSource : IValidationSource, IValidationSourceWriter
+    public class MemoryValidationSource : IValidationSource, IValidationSourceAdmin, IClearable
     {
         public static readonly ConcurrentDictionary<string, KeyValuePair<string, IValidateRule>[]> TypeRulesMap =
             new ConcurrentDictionary<string, KeyValuePair<string, IValidateRule>[]>();
 
         public IEnumerable<KeyValuePair<string, IValidateRule>> GetValidationRules(Type type)
         {
-            return TypeRulesMap.TryGetValue(type.Name, out var rules)
-                ? rules.Where(x => ((ValidateRule)x.Value).SuspendedDate == null).ToArray()
+            var ret = TypeRulesMap.TryGetValue(type.Name, out var rules)
+                ? rules.Where(x => ((ValidationRule)x.Value).SuspendedDate == null).ToArray()
                 : TypeConstants<KeyValuePair<string, IValidateRule>>.EmptyArray;
+            
+            return ret;
         }
 
         private readonly object semaphore = new object();
+        internal static int IdCounter;
 
-        public void SaveValidationRules(List<ValidateRule> validateRules)
+        public Task SaveValidationRulesAsync(List<ValidationRule> validateRules)
         {
             lock (semaphore)
             {
                 var typeGroup = validateRules.ToLookup(x => x.Type);
                 foreach (var group in typeGroup)
                 {
-                    var propMap = new Dictionary<string, ValidateRule>();
-                    if (TypeRulesMap.TryGetValue(group.Key, out var typeRules))
+                    var typeRules = TypeRulesMap.TryGetValue(group.Key, out var existingRules)
+                        ? new List<KeyValuePair<string, IValidateRule>>(existingRules)
+                        : new List<KeyValuePair<string, IValidateRule>>();
+
+                    
+                    foreach (var rule in group)
                     {
-                        foreach (var entry in typeRules)
+                        if (rule.Id != default && typeRules.Any(x => ((ValidationRule) x.Value).Id == rule.Id))
                         {
-                            var rule = (ValidateRule) entry.Value;
-                            propMap[rule.Field] = rule;
+                            var existingRule = typeRules.First(x => ((ValidationRule) x.Value).Id == rule.Id);
+                            typeRules.Remove(existingRule);
+                            typeRules.Add(new KeyValuePair<string, IValidateRule>(existingRule.Key, rule));
+                        }
+                        else
+                        {
+                            rule.Id = Interlocked.Increment(ref IdCounter);
+                            typeRules.Add(new KeyValuePair<string, IValidateRule>(rule.Field, rule));
                         }
                     }
 
-                    foreach (var newRule in group)
-                    {
-                        propMap[newRule.Field] = newRule; //override property rule
-                    }
-
-                    var newTypeRules = propMap.Values.OrderBy(x => x.SortOrder)
-                        .Select(x => new KeyValuePair<string,IValidateRule>(x.Field, x))
+                    var newTypeRules = typeRules.OrderBy(x => ((ValidationRule)x.Value).SortOrder)
+                        .ThenBy(x => ((ValidationRule)x.Value).Id)
                         .ToArray();
                     TypeRulesMap[group.Key] = newTypeRules;
                 }
             }
+            return TypeConstants.EmptyTask;
         }
 
-        public void DeleteValidationRules(params int[] ids)
+        public Task<List<ValidationRule>> GetValidateRulesByIdsAsync(params int[] ids)
+        {
+            var to = new List<ValidationRule>();
+            foreach (var entry in TypeRulesMap)
+            {
+                foreach (var propRule in entry.Value)
+                {
+                    if (propRule.Value is ValidationRule rule && ids.Contains(rule.Id))
+                        to.Add(rule);
+                }
+            }
+            return Task.FromResult(to);
+        }
+
+        public Task DeleteValidationRulesAsync(params int[] ids)
         {
             lock (semaphore)
             {
                 var replace = new Dictionary<string, KeyValuePair<string, IValidateRule>[]>();
                 foreach (var entry in TypeRulesMap)
                 {
-                    if (entry.Value.Any(x => ids.Contains(((ValidateRule) x.Value).Id)))
+                    if (entry.Value.Any(x => ids.Contains(((ValidationRule) x.Value).Id)))
                     {
                         replace[entry.Key] = entry.Value
-                            .Where(x => !ids.Contains(((ValidateRule) x.Value).Id)).ToArray();
+                            .Where(x => !ids.Contains(((ValidationRule) x.Value).Id)).ToArray();
                     }
                 }
 
@@ -68,6 +94,7 @@ namespace ServiceStack
                     TypeRulesMap[entry.Key] = entry.Value;
                 }
             }
+            return TypeConstants.EmptyTask;
         }
 
         public void Clear() => TypeRulesMap.Clear();
@@ -84,13 +111,33 @@ namespace ServiceStack
             }
         }
 
-        public static void SaveValidationRules(this IValidationSource source, List<ValidateRule> validateRules)
+        public static Task SaveValidationRulesAsync(this IValidationSource source, List<ValidationRule> validateRules)
         {
-            if (source is IValidationSourceWriter sourceWriter)
-            {
-                sourceWriter.SaveValidationRules(validateRules);
-            }
-            else throw new NotSupportedException($"{source.GetType().Name} does not implement IValidationSourceWriter");
+            if (source is IValidationSourceAdmin sourceAdmin)
+                return sourceAdmin.SaveValidationRulesAsync(validateRules);
+            
+            ThrowNotValidationSourceAdmin(source);
+            return null;
         }
+
+        public static async Task DeleteValidationRulesAsync(this IValidationSource source, params int[] ids)
+        {
+            if (source is IValidationSourceAdmin sourceAdmin)
+                await sourceAdmin.DeleteValidationRulesAsync(ids);
+            else
+                ThrowNotValidationSourceAdmin(source);
+        }
+
+        public static async Task<List<ValidationRule>> GetValidateRulesByIdsAsync(this IValidationSource source, params int[] ids)
+        {
+            if (source is IValidationSourceAdmin sourceAdmin)
+                return await sourceAdmin.GetValidateRulesByIdsAsync(ids);
+
+            ThrowNotValidationSourceAdmin(source);
+            return null;
+        }
+
+        private static void ThrowNotValidationSourceAdmin(IValidationSource source) => 
+            throw new NotSupportedException($"{source.GetType().Name} does not implement IValidationSourceAdmin");
     }
 }

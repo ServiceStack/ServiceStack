@@ -86,33 +86,33 @@ namespace ServiceStack
 
             return dataType;
         }
-        
-        string Localize(string s) => HostContext.AppHost?.ResolveLocalizedString(s, null) ?? s;
 
-        public Dictionary<Type, string[]> ServiceRoutes { get; set; }
-        
+        public Dictionary<Type, string[]> ServiceRoutes { get; set; } = new Dictionary<Type, string[]> {
+            { typeof(CrudCodeGenTypesService), new[]
+            {
+                "/" + "crud".Localize() + "/{Include}/{Lang}",
+            } },
+            { typeof(CrudTablesService), new[] {
+                "/" + "crud".Localize() + "/" + "tables".Localize(),
+                "/" + "crud".Localize() + "/" + "tables".Localize() + "/{Schema}",
+            } },
+        };
+
         private const string NoSchema = "__noschema";
 
         public GenerateCrudServices()
         {
-            ServiceRoutes = new Dictionary<Type, string[]> {
-                { typeof(CrudCodeGenTypesService), new[]
-                {
-                    "/" + Localize("crud") + "/{Include}/{Lang}",
-                } },
-                { typeof(CrudTablesService), new[] {
-                    "/" + Localize("crud") + "/" + Localize("tables"),
-                    "/" + Localize("crud") + "/" + Localize("tables") + "/{Schema}",
-                } },
-            };
             ResolveColumnType = DefaultResolveColumnType;
         }
 
         public void Register(IAppHost appHost)
         {
-            foreach (var registerService in ServiceRoutes)
+            if (AccessRole != null)
             {
-                appHost.RegisterService(registerService.Key, registerService.Value);
+                foreach (var registerService in ServiceRoutes)
+                {
+                    appHost.RegisterService(registerService.Key, registerService.Value);
+                }
             }
         }
 
@@ -1125,7 +1125,7 @@ namespace ServiceStack
             try
             {
                 var genServices = HostContext.AssertPlugin<AutoQueryFeature>().GenerateCrudServices;
-                RequestUtils.AssertIsAdminOrDebugMode(base.Request, adminRole: genServices.AccessRole, authSecret: request.AuthSecret);
+                RequestUtils.AssertAccessRoleOrDebugMode(base.Request, accessRole: genServices.AccessRole, authSecret: request.AuthSecret);
                 
                 var src = GenerateCrudServices.GenerateSource(Request, request);
                 return src;
@@ -1139,8 +1139,6 @@ namespace ServiceStack
         }
     }
     
-    public class GetMissingTypesToCreate {}
-
     [Restrict(VisibilityTo = RequestAttributes.None)]
     [DefaultRequest(typeof(CrudTables))]
     public class CrudTablesService : Service
@@ -1148,7 +1146,7 @@ namespace ServiceStack
         public object Any(CrudTables request)
         {
             var genServices = HostContext.AssertPlugin<AutoQueryFeature>().GenerateCrudServices;
-            RequestUtils.AssertIsAdminOrDebugMode(Request, adminRole: genServices.AccessRole, authSecret: request.AuthSecret);
+            RequestUtils.AssertAccessRoleOrDebugMode(Request, accessRole: genServices.AccessRole, authSecret: request.AuthSecret);
             
             var dbFactory = TryResolve<IDbConnectionFactory>();
             var results = request.NoCache == true 
@@ -1160,6 +1158,8 @@ namespace ServiceStack
             };
         }
 #if DEBUG
+        public class GetMissingTypesToCreate {}
+
         public object Any(GetMissingTypesToCreate request) => ((GenerateCrudServices) HostContext
             .AssertPlugin<AutoQueryFeature>()
             .GenerateCrudServices).GetMissingTypesToCreate(out _);

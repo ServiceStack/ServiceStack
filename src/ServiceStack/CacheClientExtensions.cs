@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ServiceStack.Caching;
 using ServiceStack.Web;
 using System.Globalization;
+using System.Threading.Tasks;
 
 namespace ServiceStack
 {
@@ -308,6 +309,18 @@ namespace ServiceStack
             return value;
         }
 
+        public static async Task<T> GetOrCreateAsync<T>(this ICacheClient cache,
+            string key, Func<Task<T>> createFn)
+        {
+            var value = cache.Get<T>(key);
+            if (Equals(value, default(T)))
+            {
+                value = await createFn();
+                cache.Set(key, value);
+            }
+            return value;
+        }
+
         public static T GetOrCreate<T>(this ICacheClient cache,
             string key, TimeSpan expiresIn, Func<T> createFn)
         {
@@ -315,6 +328,18 @@ namespace ServiceStack
             if (Equals(value, default(T)))
             {
                 value = createFn();
+                cache.Set(key, value, expiresIn);
+            }
+            return value;
+        }
+
+        public static async Task<T> GetOrCreateAsync<T>(this ICacheClient cache,
+            string key, TimeSpan expiresIn, Func<Task<T>> createFn)
+        {
+            var value = cache.Get<T>(key);
+            if (Equals(value, default(T)))
+            {
+                value = await createFn();
                 cache.Set(key, value, expiresIn);
             }
             return value;

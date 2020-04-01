@@ -332,14 +332,22 @@ namespace ServiceStack
     
     public static class RequestUtils
     {
-        public static void AssertIsAdminOrDebugMode(IRequest req, string adminRole=null, string authSecret=null)
+        public static void AssertAccessRoleOrDebugMode(IRequest req, string accessRole=null, string authSecret=null)
         {
             if (!HostContext.DebugMode)
             {
                 if (HostContext.Config.AdminAuthSecret == null || HostContext.Config.AdminAuthSecret != authSecret)
                 {
-                    RequiredRoleAttribute.AssertRequiredRoles(req, adminRole);
+                    RequiredRoleAttribute.AssertRequiredRoles(req, accessRole);
                 }
+            }
+        }
+
+        public static void AssertAccessRole(IRequest req, string accessRole=null, string authSecret=null)
+        {
+            if (HostContext.Config.AdminAuthSecret == null || HostContext.Config.AdminAuthSecret != authSecret)
+            {
+                RequiredRoleAttribute.AssertRequiredRoles(req, accessRole);
             }
         }
     }

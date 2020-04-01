@@ -440,4 +440,41 @@ namespace ServiceStack
         [DataMember(Order = 1)]
         public Dictionary<string, string> Params { get; set; }
     }
+    
+    //Validation Rules
+    [DataContract]
+    public class GetValidationRules : IReturn<GetValidationRulesResponse>
+    {
+        [DataMember(Order = 1)]
+        public string AuthSecret { get; set; }
+        [DataMember(Order = 2)]
+        public string Type { get; set; }
+    }
+    [DataContract]
+    public class GetValidationRulesResponse
+    {
+        [DataMember(Order = 1)]
+        public List<ValidationRule> Results { get; set; }
+        [DataMember(Order = 2)]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+    [DataContract]
+    public class ModifyValidationRules : IReturnVoid
+    {
+        [DataMember(Order = 1)]
+        public string AuthSecret { get; set; }
+        [DataMember(Order = 2)]
+        public List<ValidationRule> SaveRules { get; set; }
+
+        [DataMember(Order = 3)]
+        public int[] DeleteRuleIds { get; set; }
+
+        [DataMember(Order = 4)]
+        public int[] SuspendRuleIds { get; set; }
+
+        [DataMember(Order = 5)]
+        public int[] UnsuspendRuleIds { get; set; }
+
+    }
+    
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using ServiceStack.Caching;
 using ServiceStack.DataAnnotations;
 
@@ -148,7 +149,7 @@ namespace ServiceStack
         string Message { get; set; }
     }
 
-    public class ValidateRuleBase : IValidateRule 
+    public class ValidateRule : IValidateRule 
     {
         public string Validator { get; set; }
         public string Condition { get; set; }
@@ -161,16 +162,17 @@ namespace ServiceStack
         IEnumerable<KeyValuePair<string, IValidateRule>> GetValidationRules(Type type);
     }
 
-    public interface IValidationSourceWriter
+    public interface IValidationSourceAdmin
     {
-        void SaveValidationRules(List<ValidateRule> validateRules);
-        void DeleteValidationRules(params int[] ids);
+        Task SaveValidationRulesAsync(List<ValidationRule> validateRules);
+        Task<List<ValidationRule>> GetValidateRulesByIdsAsync(params int[] ids);
+        Task DeleteValidationRulesAsync(params int[] ids);
     }
 
     /// <summary>
     /// Data persistence Model 
     /// </summary>
-    public class ValidateRule : ValidateRuleBase
+    public class ValidationRule : ValidateRule
     {
         [AutoIncrement]
         public int Id { get; set; }
@@ -202,5 +204,42 @@ namespace ServiceStack
         public DateTime? SuspendedDate { get; set; }
 
         public string Notes { get; set; }
+
+        protected bool Equals(ValidationRule other)
+        {
+            return Id == other.Id &&
+                   Type == other.Type && Field == other.Field && SortOrder == other.SortOrder &&
+                   CreatedBy == other.CreatedBy && Nullable.Equals(CreatedDate, other.CreatedDate) &&
+                   ModifiedBy == other.ModifiedBy && Nullable.Equals(ModifiedDate, other.ModifiedDate) &&
+                   SuspendedBy == other.SuspendedBy && Nullable.Equals(SuspendedDate, other.SuspendedDate) &&
+                   Notes == other.Notes;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((ValidationRule) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = Id;
+                hashCode = (hashCode * 397) ^ (Type != null ? Type.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Field != null ? Field.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ SortOrder;
+                hashCode = (hashCode * 397) ^ (CreatedBy != null ? CreatedBy.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ CreatedDate.GetHashCode();
+                hashCode = (hashCode * 397) ^ (ModifiedBy != null ? ModifiedBy.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ ModifiedDate.GetHashCode();
+                hashCode = (hashCode * 397) ^ (SuspendedBy != null ? SuspendedBy.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ SuspendedDate.GetHashCode();
+                hashCode = (hashCode * 397) ^ (Notes != null ? Notes.GetHashCode() : 0);
+                return hashCode;
+            }
+        }
     }
 }

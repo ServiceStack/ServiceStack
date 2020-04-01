@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Host;
@@ -121,8 +122,17 @@ namespace ServiceStack
             if (Authenticate(req, requestDto:requestDto, session:session))
                 return;
 
-            throw new HttpError(403, ErrorMessages.NotAuthenticated.Localize(req));
+            ThrowNotAuthenticated(req);
         }
+
+        public static void ThrowNotAuthenticated(IRequest req=null) => 
+            throw new HttpError(401, nameof(HttpStatusCode.Unauthorized), ErrorMessages.NotAuthenticated.Localize(req));
+
+        public static void ThrowInvalidRole(IRequest req=null) => 
+            throw new HttpError(403, nameof(HttpStatusCode.Forbidden), ErrorMessages.InvalidRole.Localize(req));
+
+        public static void ThrowInvalidPermission(IRequest req=null) => 
+            throw new HttpError(403, nameof(HttpStatusCode.Forbidden), ErrorMessages.InvalidPermission.Localize(req));
 
         internal static Task PreAuthenticateAsync(IRequest req, IEnumerable<IAuthProvider> authProviders)
         {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.FluentValidation;
@@ -65,10 +66,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public class ValidationRulesTest : IReturn<ValidationRulesTest>
+    {
+        public string Id { get; set; }
+        public string AuthSecret { get; set; }
+    }
+
     public class ValidationService : Service
     {
         public object Any(TriggerValidators request) => request;
         public object Any(ValidatorIssues request) => request;
+
+        public object Any(ValidationRulesTest request) => request;
     }
 
     public class ValidationExceptionTests
@@ -80,7 +89,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public override void Configure(Container container)
             {
                 Plugins.Add(new ValidationFeature());
-
+                
                 container.RegisterValidator(typeof(TriggerValidatorsValidator));
                 container.RegisterValidator(typeof(ValidatorIssuesValidator));
             }
@@ -182,5 +191,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(errors.First(x => x.FieldName == "ValidTo").ErrorCode, Is.EqualTo("GreaterThanOrEqual"));
             }
         }
+
     }
 }

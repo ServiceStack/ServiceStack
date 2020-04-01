@@ -346,8 +346,12 @@ namespace ServiceStack.Host
                     : RequestAttributes.External);
         }
 
+        private HashSet<Type> allDtos;
         public HashSet<Type> GetAllDtos()
         {
+            if (allDtos != null)
+                return allDtos;
+            
             var to = new HashSet<Type>();
             var ops = OperationsMap.Values;
             foreach (var op in ops)
@@ -355,7 +359,39 @@ namespace ServiceStack.Host
                 AddReferencedTypes(to, op.RequestType);
                 AddReferencedTypes(to, op.ResponseType);
             }
-            return to;
+            return allDtos = to;
+        }
+
+        private Dictionary<string, Type> dtoTypesMap;
+        private HashSet<string> duplicateTypeNames;
+        public Type FindDtoType(string typeName)
+        {
+            var opType = GetOperationType(typeName ?? throw new ArgumentNullException(nameof(typeName)));
+            if (opType != null)
+                return opType;
+
+            if (dtoTypesMap == null)
+            {
+                var typesMap = new Dictionary<string, Type>();
+                duplicateTypeNames = new HashSet<string>();
+
+                foreach (var dto in GetAllDtos())
+                {
+                    if (typesMap.ContainsKey(dto.Name))
+                    {
+                        duplicateTypeNames.Add(dto.Name);
+                        continue;
+                    }
+                    typesMap[dto.Name] = dto;
+                }
+                dtoTypesMap = typesMap;
+            }
+
+            if (duplicateTypeNames.Contains(typeName))
+                throw new Exception($"There are multiple DTO Types named '{typeName}'");
+                
+            dtoTypesMap.TryGetValue(typeName, out var dtoType);
+            return dtoType;
         }
 
         public RestPath FindRoute(string pathInfo, string method = HttpMethods.Get)

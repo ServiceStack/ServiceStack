@@ -728,7 +728,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                 return null;
 
             var feature = HostContext.AssertPlugin<SharpPagesFeature>();
-            RequestUtils.AssertIsAdminOrDebugMode(Request, adminRole: feature.MetadataDebugAdminRole, authSecret: request.AuthSecret);
+            RequestUtils.AssertAccessRoleOrDebugMode(Request, accessRole: feature.MetadataDebugAdminRole, authSecret: request.AuthSecret);
 
             var appHost = HostContext.AppHost;
             var context = new ScriptContext

@@ -50,10 +50,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             
             var validationSource = container.Resolve<IValidationSource>();
             validationSource.InitSchema();
-            validationSource.SaveValidationRules(new List<ValidateRule> {
-                new ValidateRule { Type = nameof(DynamicValidationRules), Validator = "IsAuthenticated" },
-                new ValidateRule { Type = nameof(DynamicValidationRules), Field = nameof(DynamicValidationRules.LastName), Validator = "NotNull" },
-                new ValidateRule { Type = nameof(DynamicValidationRules), Field = nameof(DynamicValidationRules.Age), Validator = "InclusiveBetween(13,100)" },
+            validationSource.SaveValidationRulesAsync(new List<ValidationRule> {
+                new ValidationRule { Type = nameof(DynamicValidationRules), Validator = "IsAuthenticated" },
+                new ValidationRule { Type = nameof(DynamicValidationRules), Field = nameof(DynamicValidationRules.LastName), Validator = "NotNull" },
+                new ValidationRule { Type = nameof(DynamicValidationRules), Field = nameof(DynamicValidationRules.Age), Validator = "InclusiveBetween(13,100)" },
             });
         }
 

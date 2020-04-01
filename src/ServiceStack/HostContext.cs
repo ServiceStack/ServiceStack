@@ -214,7 +214,7 @@ namespace ServiceStack
         private static string defaultOperationNamespace;
         public static string DefaultOperationNamespace
         {
-            get => defaultOperationNamespace ?? (defaultOperationNamespace = GetDefaultNamespace());
+            get => defaultOperationNamespace ??= GetDefaultNamespace();
             set => defaultOperationNamespace = value;
         }
 

@@ -100,10 +100,8 @@ namespace ServiceStack
             return !ssHost.HasStarted;
         }
 
-        public static string Localize(this string text, IRequest request)
-        {
-            return HostContext.AppHost.ResolveLocalizedString(text, request);
-        }
+        public static string Localize(this string text, IRequest request=null) => 
+            HostContext.AppHost?.ResolveLocalizedString(text, request) ?? text;
 
         public static IAppHost Start(this IAppHost appHost, IEnumerable<string> urlBases)
         {

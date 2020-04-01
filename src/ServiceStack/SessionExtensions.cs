@@ -185,6 +185,9 @@ namespace ServiceStack
         public static string GetUserAuthName(this IAuthSession session) => session == null ? null
             : session.UserAuthName ?? session.UserName ?? session.Email;
 
+        public static string GetUserAuthIdOrName(this IAuthSession session) => session == null ? null
+            : session.UserAuthId ?? session.UserAuthName ?? session.UserName ?? session.Email;
+
         public static void UpdateSession(this IAuthSession session, IUserAuth userAuth)
         {
             if (userAuth == null || session == null) return;

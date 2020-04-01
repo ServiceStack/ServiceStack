@@ -158,15 +158,13 @@ namespace ServiceStack
                 }
             }
         }
-
-        string Localize(string s) => HostContext.AppHost?.ResolveLocalizedString(s, null) ?? s;
         
         [Obsolete("The /authenticate alias routes are no longer added by default")]
         public AuthFeature RemoveAuthenticateAliasRoutes()
         {
             ServiceRoutes[typeof(AuthenticateService)] = new[] {
-                "/" + Localize(LocalizedStrings.Auth),
-                "/" + Localize(LocalizedStrings.Auth) + "/{provider}",
+                "/" + LocalizedStrings.Auth.Localize(),
+                "/" + LocalizedStrings.Auth.Localize() + "/{provider}",
             };
             return this;
         }
@@ -178,10 +176,10 @@ namespace ServiceStack
         public AuthFeature AddAuthenticateAliasRoutes()
         {
             ServiceRoutes[typeof(AuthenticateService)] = new[] {
-                "/" + Localize(LocalizedStrings.Auth),
-                "/" + Localize(LocalizedStrings.Auth) + "/{provider}",
-                "/" + Localize(LocalizedStrings.Authenticate),
-                "/" + Localize(LocalizedStrings.Authenticate) + "/{provider}",
+                "/" + LocalizedStrings.Auth.Localize(),
+                "/" + LocalizedStrings.Auth.Localize() + "/{provider}",
+                "/" + LocalizedStrings.Authenticate.Localize(),
+                "/" + LocalizedStrings.Authenticate.Localize() + "/{provider}",
             };
             return this;
         }
@@ -194,14 +192,14 @@ namespace ServiceStack
             ServiceRoutes = new Dictionary<Type, string[]> {
                 { typeof(AuthenticateService), new[]
                     {
-                        "/" + Localize(LocalizedStrings.Auth),
-                        "/" + Localize(LocalizedStrings.Auth) + "/{provider}",
+                        "/" + LocalizedStrings.Auth.Localize(),
+                        "/" + LocalizedStrings.Auth.Localize() + "/{provider}",
                     } },
-                { typeof(AssignRolesService), new[]{ "/" + Localize(LocalizedStrings.AssignRoles) } },
-                { typeof(UnAssignRolesService), new[]{ "/" + Localize(LocalizedStrings.UnassignRoles) } },
+                { typeof(AssignRolesService), new[]{ "/" + LocalizedStrings.AssignRoles.Localize() } },
+                { typeof(UnAssignRolesService), new[]{ "/" + LocalizedStrings.UnassignRoles.Localize() } },
             };
 
-            this.HtmlRedirect = htmlRedirect ?? "~/" + Localize(LocalizedStrings.Login);
+            this.HtmlRedirect = htmlRedirect ?? "~/" + LocalizedStrings.Login.Localize();
             this.CreateDigestAuthHashes = authProviders.Any(x => x is DigestAuthProvider);
         }
 

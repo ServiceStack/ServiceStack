@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using ServiceStack.Redis;
 using ServiceStack.Redis.Generic;
 
@@ -15,6 +16,11 @@ namespace ServiceStack.Auth
     public interface IClearable
     {
         void Clear();		
+    }
+
+    public interface IClearableAsync
+    {
+        Task ClearAsync();		
     }
 
     public interface IRedisClientFacade : IDisposable

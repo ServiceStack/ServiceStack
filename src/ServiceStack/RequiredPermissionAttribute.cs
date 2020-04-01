@@ -80,11 +80,11 @@ namespace ServiceStack
             if (HasAllPermissions(req, session, requiredPermissions))
                 return;
 
-            var statusCode = session != null && session.IsAuthenticated
-                ? (int)HttpStatusCode.Forbidden
-                : (int)HttpStatusCode.Unauthorized;
-
-            throw new HttpError(statusCode, ErrorMessages.InvalidPermission.Localize(req));
+            var isAuthenticated = session != null && session.IsAuthenticated;
+            if (!isAuthenticated)
+                ThrowNotAuthenticated(req);
+            else
+                ThrowInvalidPermission(req);
         }
 
         public static bool HasRequiredPermissions(IRequest req, string[] requiredPermissions) =>  HasAllPermissions(req, req.GetSession(), requiredPermissions);
@@ -115,6 +115,8 @@ namespace ServiceStack
             
             if (HostContext.HasValidAuthSecret(req))
                 return true;
+
+            AssertAuthenticated(req, requestDto:req.Dto, session:session);
 
             return false;
         }

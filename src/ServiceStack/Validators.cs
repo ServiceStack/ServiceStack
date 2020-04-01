@@ -245,13 +245,11 @@ namespace ServiceStack
 
                 if (!string.IsNullOrEmpty(propRule.Message))
                 {
-                    validator.Options.ErrorMessageSource =
-                        new StaticStringSource(appHost.ResolveLocalizedString(propRule.Message));
+                    validator.Options.ErrorMessageSource = new StaticStringSource(propRule.Message.Localize());
                 }
                 else if (errorCode != null && ErrorCodeMessages.TryGetValue(errorCode, out var errorMsg))
                 {
-                    validator.Options.ErrorMessageSource =
-                        new StaticStringSource(appHost.ResolveLocalizedString(errorMsg));
+                    validator.Options.ErrorMessageSource = new StaticStringSource(errorMsg.Localize());
                 }
 
                 return validator;

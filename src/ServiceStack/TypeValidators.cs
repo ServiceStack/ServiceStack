@@ -157,10 +157,10 @@ namespace ServiceStack
             var appHost = HostContext.AppHost;
             var errorCode = ErrorCode ?? DefaultErrorCode;
             var messageExpr = Message != null
-                ? appHost.ResolveLocalizedString(Message)
+                ? Message.Localize(request)
                 : Validators.ErrorCodeMessages.TryGetValue(errorCode, out var msg)
-                    ? appHost.ResolveLocalizedString(msg)
-                    : appHost.ResolveLocalizedString(DefaultMessage ?? errorCode.SplitPascalCase());
+                    ? msg.Localize(request)
+                    : (DefaultMessage ?? errorCode.SplitPascalCase()).Localize(request);
 
             string errorMsg = messageExpr;
             if (messageExpr.IndexOf('`') >= 0)

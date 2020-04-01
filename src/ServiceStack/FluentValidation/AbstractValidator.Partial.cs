@@ -26,6 +26,8 @@ using ServiceStack.Web;
 
 namespace ServiceStack.FluentValidation
 {
+    public class DefaultValidator<T> : AbstractValidator<T> {}
+    
     /// <summary>
     /// Base class for entity validator classes.
     /// </summary>

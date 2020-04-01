@@ -168,6 +168,8 @@ namespace ServiceStack
                 typeof(ScriptAdminService),
                 typeof(RequestLogsService),
                 typeof(AutoQueryMetadataService),
+                typeof(Validation.GetValidationRulesService),
+                typeof(Validation.ModifyValidationRulesService),
             };
 
             JsConfig.InitStatics();
