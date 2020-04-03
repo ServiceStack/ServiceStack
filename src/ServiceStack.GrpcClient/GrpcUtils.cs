@@ -7,6 +7,7 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Grpc.Core;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -132,6 +133,14 @@ namespace ServiceStack
             {
                 response = await auc.ResponseAsync;
                 status = response.GetResponseStatus();
+
+                if (response is AuthenticateResponse authResponse)
+                {
+                    if (!string.IsNullOrEmpty(authResponse.BearerToken))
+                        config.BearerToken = authResponse.BearerToken;
+                    else if (!string.IsNullOrEmpty(authResponse.SessionId))
+                        config.SessionId = authResponse.SessionId;
+                }
             }
             catch (RpcException ex)
             {

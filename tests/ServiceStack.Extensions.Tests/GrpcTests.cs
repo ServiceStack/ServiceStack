@@ -821,7 +821,7 @@ namespace ServiceStack.Extensions.Tests
         }
 
         static string GetServiceProto<T>()
-            => GrpcConfig.TypeModel.GetSchema(GrpcMarshaller<T>.GetMetaType().Type, ProtoBuf.Meta.ProtoSyntax.Proto3);
+            => GrpcConfig.TypeModel.GetSchema(MetaTypeConfig<T>.GetMetaType().Type, ProtoBuf.Meta.ProtoSyntax.Proto3);
 
         [Test]
         public void CheckServiceProto_BaseType()

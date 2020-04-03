@@ -21,7 +21,7 @@ namespace ServiceStack
         public static string DefaultServerStreamServiceNameResolver(string requestName) => 
             "Server" + requestName;
         
-        public static MetaType Register<T>() => GrpcMarshaller<T>.GetMetaType();
+        public static MetaType Register<T>() => MetaTypeConfig<T>.GetMetaType();
         
         public static string GetServiceName(string verb, string requestName) => ServiceNameResolver(verb, requestName);
 
@@ -37,7 +37,7 @@ namespace ServiceStack
 
             if (!FnCache.TryGetValue(type, out var fn))
             {
-                var grpc = typeof(GrpcMarshaller<>).MakeGenericType(type);
+                var grpc = typeof(MetaTypeConfig<>).MakeGenericType(type);
                 var mi = grpc.GetMethod("GetMetaType", BindingFlags.Static | BindingFlags.Public);
                 FnCache[type] = fn = (Func<MetaType>) mi.CreateDelegate(typeof(Func<MetaType>));
             }

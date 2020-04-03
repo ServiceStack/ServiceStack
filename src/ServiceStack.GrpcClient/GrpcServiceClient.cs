@@ -16,6 +16,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Logging;
 
 namespace ServiceStack
 {
@@ -653,10 +654,14 @@ namespace ServiceStack
                    || iType.IsGenericType && iType.GetGenericTypeDefinition() == typeof(IReturn<>));
         }
     }
-
-    public class GrpcMarshaller<T> : Marshaller<T>
+    
+    public static class MetaTypeConfig
     {
-        public static Marshaller<T> Instance { get; set; } = new GrpcMarshaller<T>();
+    }
+    
+    public class MetaTypeConfig<T>
+    {
+        public static MetaTypeConfig<T> Instance { get; set; } = new MetaTypeConfig<T>();
 
         public static MetaType metaType;
 
@@ -664,7 +669,7 @@ namespace ServiceStack
         //The smallest field number you can specify is 1, and the largest is 2^29-1 or 536,870,911. 
         private const int MaxFieldId = 536870911; // 2^29-1
 
-        static GrpcMarshaller()
+        static MetaTypeConfig()
         {
             // https://github.com/protobuf-net/protobuf-net/wiki/Getting-Started#inheritance
             var baseType = typeof(T).BaseType;
@@ -736,25 +741,31 @@ namespace ServiceStack
 
                 // walk backwards up the tree; at each level, offset everything by 100
                 // and copy over from the default model
+                var log = LogManager.GetLogger(typeof(MetaTypeConfig<T>));
                 Type current = typeof(T).BaseType;
                 while (current != null && current != typeof(object))
                 {
-                    mt.ApplyFieldOffset(100);
+                    try
+                    {
+                        mt.ApplyFieldOffset(100);
+                    }
+                    catch (Exception e)
+                    {
+                        log.Error($"Error in CreateMetaType() for '{current.Name}' when 'ApplyFieldOffset(100)': {e.Message}", e);
+                        throw;
+                    }
                     var source = RuntimeTypeModel.Default[current]?.GetFields();
                     foreach (var field in source)
                     {
-                        var newField = mt.AddField(field.FieldNumber, field.Member?.Name ?? field.Name, field.ItemType, field.DefaultType);
-                        newField.DataFormat = field.DataFormat;
-                        newField.IsMap = field.IsMap;
-                        newField.IsPacked = field.IsPacked;
-                        newField.IsRequired = field.IsRequired;
-                        newField.IsStrict = field.IsStrict;
-                        newField.DefaultValue = field.DefaultValue;
-                        newField.MapKeyFormat = field.MapKeyFormat;
-                        newField.MapValueFormat = field.MapValueFormat;
-                        newField.Name = field.Name;
-                        newField.OverwriteList = field.OverwriteList;
-                        newField.SupportNull = field.SupportNull;
+                        try
+                        {
+                            AddField(mt, field);
+                        }
+                        catch (Exception e)
+                        {
+                            log.Error($"Error in CreateMetaType() for '{current.Name}' when adding field '{field.Name}': {e.Message}", e);
+                            throw;
+                        }
                     }
 
                     // keep going down the hierarchy
@@ -763,6 +774,36 @@ namespace ServiceStack
             }
             
             return mt;
+        }
+
+        private static void AddField(MetaType mt, ValueMember field)
+        {
+            var newField = mt.AddField(field.FieldNumber,
+                field.Member?.Name ?? field.Name,
+                field.ItemType ?? field.MemberType,
+                field.DefaultType);
+            newField.DataFormat = field.DataFormat;
+            newField.IsMap = field.IsMap;
+            newField.IsPacked = field.IsPacked;
+            newField.IsRequired = field.IsRequired;
+            newField.IsStrict = field.IsStrict;
+            newField.DefaultValue = field.DefaultValue;
+            newField.MapKeyFormat = field.MapKeyFormat;
+            newField.MapValueFormat = field.MapValueFormat;
+            newField.Name = field.Name;
+            newField.OverwriteList = field.OverwriteList;
+            newField.SupportNull = field.SupportNull;
+        }
+    }
+
+    public class GrpcMarshaller<T> : Marshaller<T>
+    {
+        public static Marshaller<T> Instance { get; set; } = new GrpcMarshaller<T>();
+
+        static GrpcMarshaller()
+        {
+            //Static class is never initiated before GrpcFeature.RegisterDtoTypes() is called
+            var @break = "HERE";
         }
 
         public GrpcMarshaller() : base(Serialize, Deserialize) {}

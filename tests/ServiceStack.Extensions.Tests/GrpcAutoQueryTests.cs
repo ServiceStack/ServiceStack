@@ -846,6 +846,13 @@ namespace ServiceStack.Extensions.Tests
 
         public const string AspNetBaseUri = "http://localhost:50000/";
         public const string AspNetServiceStackBaseUri = AspNetBaseUri + "api";
+
+        public static GrpcServiceClient GetInsecureClient()
+        {
+            GrpcClientFactory.AllowUnencryptedHttp2 = true;
+            var client = new GrpcServiceClient(BaseUri);
+            return client;
+        }
     }
 
     public class AutoQueryAppHost : AppSelfHostBase
@@ -858,7 +865,8 @@ namespace ServiceStack.Extensions.Tests
         public const string SqlServerProvider = "SqlServer2012";
 
         public static string SqliteFileConnString = "~/App_Data/autoquery.sqlite".MapProjectPath();
-
+        
+        public Action<AutoQueryAppHost,Container> ConfigureFn { get; set; }
 
         public override void ConfigureKestrel(KestrelServerOptions options)
         {
@@ -1028,6 +1036,8 @@ namespace ServiceStack.Extensions.Tests
                 );
 
             Plugins.Add(autoQuery);
+            
+            ConfigureFn?.Invoke(this,container);
         }
 
         public static Rockstar[] SeedRockstars = new[] {

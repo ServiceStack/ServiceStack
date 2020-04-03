@@ -216,12 +216,7 @@ namespace ServiceStack.Extensions.Tests
             return response.RefreshToken;
         }
 
-        private static GrpcServiceClient GetClient()
-        {
-            GrpcClientFactory.AllowUnencryptedHttp2 = true;
-            var client = new GrpcServiceClient(TestsConfig.BaseUri);
-            return client;
-        }
+        private static GrpcServiceClient GetClient() => TestsConfig.GetInsecureClient();
 
         protected virtual async Task<GrpcServiceClient> GetClientWithRefreshToken(string refreshToken = null, string accessToken = null)
         {
