@@ -718,6 +718,10 @@ namespace ServiceStack
                 request.MakeVirtual = false;
             if (request.InitializeCollections == null)
                 request.InitializeCollections = false;
+            if (request.AddDataContractAttributes == null) //required for gRPC
+                request.AddDataContractAttributes = true;
+            if (request.AddIndexesToDataMembers == null) //required for gRPC
+                request.AddIndexesToDataMembers = true;
 
             var typesConfig = metadata.GetConfig(request);
             typesConfig.UsePath = req.PathInfo;

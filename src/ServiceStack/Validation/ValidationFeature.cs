@@ -91,7 +91,8 @@ namespace ServiceStack.Validation
                 ValidationSource.InitSchema();
             }
 
-            var hasValidationSource = (ValidationSource ?? appHost.TryResolve<IValidationSource>()) != null; 
+            var container = appHost.GetContainer();
+            var hasValidationSource = ValidationSource != null || container.Exists<IValidationSource>(); 
             if (hasValidationSource && AccessRole != null)
             {
                 foreach (var registerService in ServiceRoutes)
@@ -102,7 +103,7 @@ namespace ServiceStack.Validation
 
             if (ScanAppHostAssemblies)
             {
-                appHost.GetContainer().RegisterValidators(((ServiceStackHost)appHost).ServiceAssemblies.ToArray());
+                container.RegisterValidators(((ServiceStackHost)appHost).ServiceAssemblies.ToArray());
             }
         }
 
@@ -111,8 +112,7 @@ namespace ServiceStack.Validation
             if (EnableDeclarativeValidation)
             {
                 var container = appHost.GetContainer();
-                var assemblyName = new AssemblyName { Name = "tmpAssembly" };
-                var dynamicModule = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run).DefineDynamicModule("tmpModule");
+                var hasDynamicRules = ValidationSource != null || container.Exists<IValidationSource>(); 
                 
                 foreach (var op in appHost.Metadata.Operations)
                 {
@@ -126,7 +126,7 @@ namespace ServiceStack.Validation
                         }
                         
                         var hasValidateAttrs = Validators.HasValidateAttributes(op.RequestType);
-                        if (hasValidateAttrs)
+                        if (hasDynamicRules || hasValidateAttrs)
                         {
                             container.RegisterNewValidatorIfNotExists(op.RequestType);
                             op.RequestPropertyValidationRules = Validators.GetPropertyRules(op.RequestType);
@@ -202,12 +202,6 @@ namespace ServiceStack.Validation
                 {
                     if (rule.Type == null)
                         throw new ArgumentNullException(nameof(rule.Type));
-
-                    var dtoType = appHost.Metadata.FindDtoType(rule.Type);
-                    if (dtoType != null)
-                    {
-                        container.RegisterNewValidatorIfNotExists(dtoType);
-                    }
                 
                     if (rule.CreatedBy == null)
                     {

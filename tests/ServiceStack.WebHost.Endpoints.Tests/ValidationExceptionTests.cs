@@ -121,7 +121,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException ex)
             {
                 //ex.ResponseStatus.PrintDump();
-                AssertTriggerValidators(ex);
+                ex.AssertTriggerValidators();
             }
         }
 
@@ -148,28 +148,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return request;
         }
 
-        public static void AssertTriggerValidators(WebServiceException ex)
-        {
-            var errors = ex.ResponseStatus.Errors;
-            Assert.That(errors.First(x => x.FieldName == "CreditCard").ErrorCode, Is.EqualTo("CreditCard"));
-            Assert.That(errors.First(x => x.FieldName == "Email").ErrorCode, Is.EqualTo("Email"));
-            Assert.That(errors.First(x => x.FieldName == "Email").ErrorCode, Is.EqualTo("Email"));
-            Assert.That(errors.First(x => x.FieldName == "Empty").ErrorCode, Is.EqualTo("Empty"));
-            Assert.That(errors.First(x => x.FieldName == "Equal").ErrorCode, Is.EqualTo("Equal"));
-            Assert.That(errors.First(x => x.FieldName == "ExclusiveBetween").ErrorCode, Is.EqualTo("ExclusiveBetween"));
-            Assert.That(errors.First(x => x.FieldName == "GreaterThan").ErrorCode, Is.EqualTo("GreaterThan"));
-            Assert.That(errors.First(x => x.FieldName == "GreaterThanOrEqual").ErrorCode, Is.EqualTo("GreaterThanOrEqual"));
-            Assert.That(errors.First(x => x.FieldName == "InclusiveBetween").ErrorCode, Is.EqualTo("InclusiveBetween"));
-            Assert.That(errors.First(x => x.FieldName == "Length").ErrorCode, Is.EqualTo("Length"));
-            Assert.That(errors.First(x => x.FieldName == "LessThan").ErrorCode, Is.EqualTo("LessThan"));
-            Assert.That(errors.First(x => x.FieldName == "LessThanOrEqual").ErrorCode, Is.EqualTo("LessThanOrEqual"));
-            Assert.That(errors.First(x => x.FieldName == "NotEmpty").ErrorCode, Is.EqualTo("NotEmpty"));
-            Assert.That(errors.First(x => x.FieldName == "NotEqual").ErrorCode, Is.EqualTo("NotEqual"));
-            Assert.That(errors.First(x => x.FieldName == "Null").ErrorCode, Is.EqualTo("Null"));
-            Assert.That(errors.First(x => x.FieldName == "RegularExpression").ErrorCode, Is.EqualTo("RegularExpression"));
-            Assert.That(errors.First(x => x.FieldName == "ScalePrecision").ErrorCode, Is.EqualTo("ScalePrecision"));
-        }
-
         [Test]
         public void Does_handle_reported_issues_correctly()
         {
@@ -191,6 +169,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(errors.First(x => x.FieldName == "ValidTo").ErrorCode, Is.EqualTo("GreaterThanOrEqual"));
             }
         }
-
     }
+    
 }
