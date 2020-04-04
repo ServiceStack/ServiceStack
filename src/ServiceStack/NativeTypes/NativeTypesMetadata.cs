@@ -611,9 +611,9 @@ namespace ServiceStack.NativeTypes
 
         public MetadataAttribute ToMetadataAttribute(Attribute attr)
         {
-            if (attr is IMetaAttributeConverter converter)
+            if (attr is IReflectAttributeConverter converter)
             {
-                var ret = converter.ToMetaAttribute();
+                var ret = converter.ToReflectAttribute();
                 if (ret != null)
                 {
                     MetadataPropertyType metaProp(KeyValuePair<PropertyInfo, object> entry)

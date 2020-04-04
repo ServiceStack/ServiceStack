@@ -13,7 +13,7 @@ namespace ServiceStack
     ///		each request DTO, to map multiple paths to the service.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-    public class RouteAttribute : AttributeBase, IMetaAttributeConverter
+    public class RouteAttribute : AttributeBase, IReflectAttributeConverter
     {
         /// <summary>
         /// 	<para>Initializes an instance of the <see cref="RouteAttribute"/> class.</para>
@@ -157,14 +157,14 @@ namespace ServiceStack
             }
         }
         
-        public MetaAttribute ToMetaAttribute()
+        public ReflectAttribute ToReflectAttribute()
         {
             if (Summary == null && Notes == null && Matches == null && Priority == default)
             {
                 //Return ideal Constructor Args 
                 if (Path != null && Verbs != null)
                 {
-                    return new MetaAttribute {
+                    return new ReflectAttribute {
                         ConstructorArgs = new List<KeyValuePair<PropertyInfo, object>> {
                             new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Path)), Path),
                             new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Verbs)), Verbs),
@@ -172,7 +172,7 @@ namespace ServiceStack
                     };
                 }
 
-                return new MetaAttribute {
+                return new ReflectAttribute {
                     ConstructorArgs = new List<KeyValuePair<PropertyInfo, object>> {
                         new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Path)), Path),
                     }
@@ -180,7 +180,7 @@ namespace ServiceStack
             }
 
             //Otherwise return Property Args
-            var to = new MetaAttribute {
+            var to = new ReflectAttribute {
                 PropertyArgs = new List<KeyValuePair<PropertyInfo, object>> {
                     new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Path)), Path),
                 }

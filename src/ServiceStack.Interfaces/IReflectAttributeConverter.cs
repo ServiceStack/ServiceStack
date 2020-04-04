@@ -4,12 +4,12 @@ using System.Reflection;
 
 namespace ServiceStack
 {
-    public interface IMetaAttributeConverter
+    public interface IReflectAttributeConverter
     {
-        MetaAttribute ToMetaAttribute();
+        ReflectAttribute ToReflectAttribute();
     }
 
-    public class MetaAttribute
+    public class ReflectAttribute
     {
         public string Name { get; set; }
         public List<KeyValuePair<PropertyInfo, object>> ConstructorArgs { get; set; }
