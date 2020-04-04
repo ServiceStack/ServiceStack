@@ -107,6 +107,7 @@ namespace ServiceStack.NativeTypes
         {
             var metadata = new MetadataTypes
             {
+                ServiceName = HostContext.ServiceName,
                 Config = config,
             };
 
@@ -134,7 +135,6 @@ namespace ServiceStack.NativeTypes
 
                 var opType = new MetadataOperationType
                 {
-                    ServiceName = HostContext.ServiceName,
                     Actions = operation.Actions,
                     Request = ToType(operation.RequestType),
                     Response = ToType(operation.ResponseType),

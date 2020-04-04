@@ -106,6 +106,7 @@ namespace ServiceStack
             Namespaces = new List<string>();
         }
 
+        public string ServiceName { get; set; }
         public MetadataTypesConfig Config { get; set; }
         public List<string> Namespaces { get; set; }
         public List<MetadataType> Types { get; set; }
@@ -114,7 +115,6 @@ namespace ServiceStack
 
     public class MetadataOperationType
     {
-        public string ServiceName { get; set; }
         public MetadataType Request { get; set; }
         public MetadataType Response { get; set; }
         public List<string> Actions { get; set; }
