@@ -190,7 +190,7 @@ namespace ServiceStack
             foreach (var metaType in metadataTypes)
             {
                 try 
-                { 
+                {
                     var newType = CreateOrGetType(dynModule, metaType, metadataTypes, existingMetaTypesMap, generatedTypes);
                     types.Add(newType);
                 }
@@ -358,12 +358,6 @@ namespace ServiceStack
             
             var typeBuilder = dynModule.DefineType(metaType.Namespace + "." + metaType.Name,
                 TypeAttributes.Public | TypeAttributes.Class, baseType);
-
-            foreach (var route in metaType.Routes.Safe())
-            {
-                var routeAttr = new CustomAttributeBuilder(ciRoute2, new object[]{ route.Path, route.Verbs });
-                typeBuilder.SetCustomAttribute(routeAttr);
-            }
 
             foreach (var metaAttr in metaType.Attributes.Safe())
             {
@@ -568,7 +562,7 @@ namespace ServiceStack
                     if (op.Request.Name != requestName)
                     {
                         op.Request.Name = requestName;
-                        foreach (var route in op.Request.Routes.Safe())
+                        foreach (var route in op.Routes.Safe())
                         {
                             route.Path = ("/" + modifier + "/" + route.Path.Substring(1)).ToLower();
                         }
@@ -578,6 +572,11 @@ namespace ServiceStack
                         {
                             ReplaceModelType(ret.Item1, modelType, modifier + modelType);
                         }
+                    }
+
+                    foreach (var route in op.Routes.Safe())
+                    {
+                        op.Request.AddAttribute(new RouteAttribute(route.Path, route.Verbs));
                     }
 
                     addType(op.Request);
@@ -963,9 +962,8 @@ namespace ServiceStack
                             
                         var op = new MetadataOperationType {
                             Actions = new List<string> { verb },
+                            Routes = new List<MetadataRoute> {},
                             Request = new MetadataType {
-                                Routes = new List<MetadataRoute> {
-                                },
                                 Name = requestType,
                                 Namespace = serviceModelNs,
                                 Implements = new [] { 
@@ -974,10 +972,11 @@ namespace ServiceStack
                                     },
                                 },
                             },
+                            DataModel = new MetadataTypeName { Name = typeName },
                         };
                         
                         if (!existingRoutes.Contains(new Tuple<string, string>(route, verb)))
-                            op.Request.Routes.Add(new MetadataRoute { Path = route, Verbs = verb });
+                            op.Routes.Add(new MetadataRoute { Path = route, Verbs = verb });
 
                         if (verb == HttpMethods.Get)
                         {
@@ -986,11 +985,12 @@ namespace ServiceStack
                                 Name = "QueryDb`1",
                                 GenericArgs = new[] {typeName},
                             };
+                            op.ViewModel = new MetadataTypeName { Name = typeName };
                             
                             var uniqueRoute = "/" + plural + "/{" + id + "}";
                             if (!existingRoutes.Contains(new Tuple<string, string>(uniqueRoute, verb)))
                             {
-                                op.Request.Routes.Add(new MetadataRoute {
+                                op.Routes.Add(new MetadataRoute {
                                     Path = uniqueRoute, 
                                     Verbs = verb
                                 });

@@ -114,9 +114,18 @@ namespace ServiceStack
 
     public class MetadataOperationType
     {
-        public List<string> Actions { get; set; }
+        public string ServiceName { get; set; }
         public MetadataType Request { get; set; }
         public MetadataType Response { get; set; }
+        public List<string> Actions { get; set; }
+        public List<MetadataRoute> Routes { get; set; }
+        public MetadataTypeName DataModel { get; set; }
+        public MetadataTypeName ViewModel { get; set; }
+        public bool RequiresAuthentication { get; set; }
+        public List<string> RequiredRoles { get; set; }
+        public List<string> RequiresAnyRole { get; set; }
+        public List<string> RequiredPermissions { get; set; }
+        public List<string> RequiresAnyPermission { get; set; }
     }
 
     public class MetadataType : IMeta
@@ -141,8 +150,6 @@ namespace ServiceStack
         public bool? IsAbstract { get; set; }
 
         public MetadataTypeName ReturnMarkerTypeName { get; set; }
-
-        public List<MetadataRoute> Routes { get; set; }
 
         public MetadataDataContract DataContract { get; set; }
 
@@ -255,5 +262,12 @@ namespace ServiceStack
             (op.Response?.Inherits != null && (typeNames.Contains(op.Response.Inherits.Name) ||
                                                op.Response.Inherits.GenericArgs?.Length > 0 &&
                                                op.Response.Inherits.GenericArgs.Any(typeNames.Contains)));
+
+        public static List<MetadataRoute> GetRoutes(this List<MetadataOperationType> operations, MetadataType type) =>
+            operations.FirstOrDefault(x => ReferenceEquals(x.Request, type))?.Routes ?? operations.GetRoutes(type.Name);
+        public static List<MetadataRoute> GetRoutes(this List<MetadataOperationType> operations, string typeName)
+        {
+            return operations.FirstOrDefault(x => x.Request.Name == typeName)?.Routes;
+        }
     }
 }

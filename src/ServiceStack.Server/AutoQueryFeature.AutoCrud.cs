@@ -548,26 +548,6 @@ namespace ServiceStack
             static readonly ConcurrentDictionary<Type, AutoCrudMetadata> cache = 
                 new ConcurrentDictionary<Type, AutoCrudMetadata>();
 
-            internal static Type GetModelType(Type requestType)
-            {
-                var intoTypeDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryDb<,>));
-                if (intoTypeDef != null)
-                {
-                    var args = intoTypeDef.GetGenericArguments();
-                    return args[1];
-                }
-            
-                var typeDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryDb<>));
-                if (typeDef != null)
-                {
-                    var args = typeDef.GetGenericArguments();
-                    return args[0];
-                }
-                
-                var crudTypes = AutoCrudOperation.GetAutoCrudDtoType(requestType);
-                return crudTypes?.GenericDef.GenericTypeArguments[0];
-            }
-
             internal static AutoCrudMetadata Create(Type dtoType)
             {
                 if (cache.TryGetValue(dtoType, out var to))
@@ -575,7 +555,7 @@ namespace ServiceStack
                 
                 to = new AutoCrudMetadata {
                     DtoType = dtoType,
-                    ModelType = GetModelType(dtoType),
+                    ModelType = AutoCrudOperation.GetModelType(dtoType),
                     DtoProps = TypeProperties.Get(dtoType),
                 };
                 if (to.ModelType != null)

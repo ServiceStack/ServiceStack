@@ -219,6 +219,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                         lastNS = AppendType(ref sb, type, lastNS,
                             new CreateTypeOptions
                             {
+                                Routes = metadata.Operations.GetRoutes(type),
                                 ImplementsFn = () =>
                                 {
                                     if (!Config.AddReturnMarker
@@ -284,9 +285,9 @@ namespace ServiceStack.NativeTypes.TypeScript
         {
             sb.AppendLine();
             AppendComments(sb, type.Description);
-            if (type.Routes != null)
+            if (options?.Routes != null)
             {
-                AppendAttributes(sb, type.Routes.ConvertAll(x => x.ToMetadataAttribute()));
+                AppendAttributes(sb, options.Routes.ConvertAll(x => x.ToMetadataAttribute()));
             }
             AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);

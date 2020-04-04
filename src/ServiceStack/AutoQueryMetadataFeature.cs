@@ -193,7 +193,7 @@ namespace ServiceStack
         public object Any(AutoQueryMetadata request)
         {
             if (NativeTypesMetadata == null)
-                throw new NotSupportedException("AutoQueryViewer requries NativeTypesFeature");
+                throw new NotSupportedException("AutoQueryViewer requires NativeTypesFeature");
 
             var feature = HostContext.GetPlugin<AutoQueryMetadataFeature>();
             var config = feature.AutoQueryViewerConfig;

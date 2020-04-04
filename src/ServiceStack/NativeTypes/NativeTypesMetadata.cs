@@ -134,9 +134,17 @@ namespace ServiceStack.NativeTypes
 
                 var opType = new MetadataOperationType
                 {
+                    ServiceName = HostContext.ServiceName,
                     Actions = operation.Actions,
                     Request = ToType(operation.RequestType),
                     Response = ToType(operation.ResponseType),
+                    DataModel = ToTypeName(operation.DataModelType),
+                    ViewModel = ToTypeName(operation.ViewModelType),
+                    RequiresAuthentication = operation.RequiresAuthentication,
+                    RequiredRoles = operation.RequiredRoles,
+                    RequiresAnyRole = operation.RequiresAnyRole,
+                    RequiredPermissions = operation.RequiredPermissions,
+                    RequiresAnyPermission = operation.RequiresAnyPermission,
                 };
                 metadata.Operations.Add(opType);
                 opTypes.Add(operation.RequestType);
@@ -152,6 +160,20 @@ namespace ServiceStack.NativeTypes
                     {
                         opTypes.Add(operation.ResponseType);
                     }
+                }
+                
+                var routeAttrs = HostContext.AppHost.GetRouteAttributes(operation.RequestType).ToList();
+                if (routeAttrs.Count > 0)
+                {
+                    opType.Routes = routeAttrs.ConvertAll(x =>
+                        new MetadataRoute
+                        {
+                            RouteAttribute = x,
+                            Path = x.Path,
+                            Notes = x.Notes,
+                            Summary = x.Summary,
+                            Verbs = x.Verbs,
+                        });
                 }
             }
 
@@ -385,20 +407,6 @@ namespace ServiceStack.NativeTypes
                     var returnType = genericMarker.GetGenericArguments().First();
                     metaType.ReturnMarkerTypeName = ToTypeName(returnType);
                 }
-            }
-
-            var routeAttrs = HostContext.AppHost.GetRouteAttributes(type).ToList();
-            if (routeAttrs.Count > 0)
-            {
-                metaType.Routes = routeAttrs.ConvertAll(x =>
-                    new MetadataRoute
-                    {
-                        RouteAttribute = x,
-                        Path = x.Path,
-                        Notes = x.Notes,
-                        Summary = x.Summary,
-                        Verbs = x.Verbs,
-                    });
             }
 
             metaType.Description = type.GetDescription();
@@ -803,6 +811,7 @@ namespace ServiceStack.NativeTypes
 
     public class CreateTypeOptions
     {
+        public List<MetadataRoute> Routes { get; set; }
         public Func<string> ImplementsFn { get; set; }
         public bool IsRequest { get; set; }
         public bool IsResponse { get; set; }

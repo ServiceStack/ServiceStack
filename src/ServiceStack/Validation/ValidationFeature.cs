@@ -122,14 +122,14 @@ namespace ServiceStack.Validation
                         if (hasValidateRequestAttrs)
                         {
                             Validators.RegisterRequestRulesFor(op.RequestType);
-                            op.RequestTypeValidationRules = Validators.GetTypeRules(op.RequestType);
+                            op.AddRequestTypeValidationRules(Validators.GetTypeRules(op.RequestType));
                         }
                         
                         var hasValidateAttrs = Validators.HasValidateAttributes(op.RequestType);
                         if (hasDynamicRules || hasValidateAttrs)
                         {
                             container.RegisterNewValidatorIfNotExists(op.RequestType);
-                            op.RequestPropertyValidationRules = Validators.GetPropertyRules(op.RequestType);
+                            op.AddRequestPropertyValidationRules(Validators.GetPropertyRules(op.RequestType));
                         }
                     }
                     catch (Exception e)

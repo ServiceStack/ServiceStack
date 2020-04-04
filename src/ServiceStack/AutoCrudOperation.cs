@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace ServiceStack
@@ -81,6 +82,49 @@ namespace ServiceStack
 
         public static List<string> CrudInterfaceMetadataNames(List<string> operations = null) =>
             (operations ?? Write).Map(x => $"I{x}Db`1");
+
+        public static Type GetModelType(Type requestType)
+        {
+            if (requestType == null)
+                return null;
+            
+            var aqTypeDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryDb<>))
+                ?? requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryDb<,>));
+            if (aqTypeDef != null)
+            {
+                var args = aqTypeDef.GetGenericArguments();
+                return args[0];
+            }
+                
+            var crudTypes = GetAutoCrudDtoType(requestType);
+            return crudTypes?.GenericDef.GenericTypeArguments[0];
+        }
+
+        public static Type GetViewModelType(Type requestType, Type responseType)
+        {
+            var intoTypeDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryDb<,>));
+            if (intoTypeDef != null)
+                return intoTypeDef.GetGenericArguments()[1];
+            
+            var typeDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryDb<>));
+            if (typeDef != null)
+                return typeDef.GetGenericArguments()[0];
+
+            var queryResponseDef = responseType.GetTypeWithGenericTypeDefinitionOf(typeof(QueryResponse<>));
+            if (queryResponseDef != null)
+                return queryResponseDef.GetGenericArguments()[0];
+
+            var responseProps = TypeProperties.Get(responseType);
+            var resultProp = responseProps.GetPublicProperty("Result");
+            if (resultProp != null)
+                return resultProp.PropertyType;
+
+            var resultsProp = responseProps.GetPublicProperty("Results");
+            if (resultsProp != null && typeof(IEnumerable).IsAssignableFrom(resultsProp.PropertyType))
+                return resultsProp.PropertyType.GetCollectionType();
+
+            return null;
+        }
     }
     
     public struct AutoCrudDtoType

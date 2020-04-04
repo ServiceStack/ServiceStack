@@ -655,6 +655,8 @@ namespace ServiceStack.Host
         public Type RequestType { get; set; }
         public Type ServiceType { get; set; }
         public Type ResponseType { get; set; }
+        public Type DataModelType => AutoCrudOperation.GetModelType(RequestType);
+        public Type ViewModelType => AutoCrudOperation.GetViewModelType(RequestType, ResponseType);
         public RestrictAttribute RestrictTo { get; set; }
         public List<string> Actions { get; set; }
         public List<RestPath> Routes { get; set; }
@@ -667,8 +669,46 @@ namespace ServiceStack.Host
         public List<string> RequiredPermissions { get; set; }
         public List<string> RequiresAnyPermission { get; set; }
         
-        public List<ITypeValidator> RequestTypeValidationRules { get; set; }
-        public List<IValidationRule> RequestPropertyValidationRules { get; set; }
+        public List<ITypeValidator> RequestTypeValidationRules { get; private set; }
+        public List<IValidationRule> RequestPropertyValidationRules { get; private set; }
+
+        public void AddRequestTypeValidationRules(List<ITypeValidator> typeValidators)
+        {
+            if (typeValidators != null)
+            {
+                RequestTypeValidationRules ??= new List<ITypeValidator>();
+                RequestTypeValidationRules.AddRange(typeValidators);
+
+                var authValidators = typeValidators.OfType<IAuthTypeValidator>().ToList();
+                if (authValidators.Count > 0)
+                {
+                    RequiresAuthentication = true;
+
+                    var rolesValidators = authValidators.OfType<HasRolesValidator>();
+                    foreach (var validator in rolesValidators)
+                    {
+                        RequiredRoles ??= new List<string>();
+                        validator.Roles.Each(x => RequiredRoles.AddIfNotExists(x));
+                    }
+
+                    var permsValidators = authValidators.OfType<HasPermissionsValidator>();
+                    foreach (var validator in permsValidators)
+                    {
+                        RequiredPermissions ??= new List<string>();
+                        validator.Permissions.Each(x => RequiredPermissions.AddIfNotExists(x));
+                    }
+                }
+            }
+        }
+
+        public void AddRequestPropertyValidationRules(List<IValidationRule> propertyValidators)
+        {
+            if (propertyValidators != null)
+            {
+                RequestPropertyValidationRules ??= new List<IValidationRule>();
+                RequestPropertyValidationRules.AddRange(propertyValidators);
+            }
+        }
     }
 
     public class OperationDto
@@ -767,7 +807,7 @@ namespace ServiceStack.Host
             foreach (var member in members)
             {
                 var memattr = member.AllAttributes<ApiMemberAttribute>()
-                    .Select(x => { x.Name = x.Name ?? member.Name; return x; });
+                    .Select(x => { x.Name ??= member.Name; return x; });
 
                 attrs.AddRange(memattr);
             }

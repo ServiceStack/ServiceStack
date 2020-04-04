@@ -133,8 +133,7 @@ namespace ServiceStack.NativeTypes.FSharp
                     if (!existingTypes.Contains(fullTypeName))
                     {
                         MetadataType response = null;
-                        MetadataOperationType operation;
-                        if (requestTypesMap.TryGetValue(type, out operation))
+                        if (requestTypesMap.TryGetValue(type, out var operation))
                         {
                             response = operation.Response;
                         }
@@ -142,6 +141,7 @@ namespace ServiceStack.NativeTypes.FSharp
                         lastNS = AppendType(ref sb, type, lastNS,
                             new CreateTypeOptions
                             {
+                                Routes = metadata.Operations.GetRoutes(type),
                                 ImplementsFn = () =>
                                 {
                                     if (!Config.AddReturnMarker
@@ -202,9 +202,9 @@ namespace ServiceStack.NativeTypes.FSharp
 
             sb.AppendLine();
             AppendComments(sb, type.Description);
-            if (type.Routes != null)
+            if (options?.Routes != null)
             {
-                AppendAttributes(sb, type.Routes.ConvertAll(x => x.ToMetadataAttribute()));
+                AppendAttributes(sb, options.Routes.ConvertAll(x => x.ToMetadataAttribute()));
             }
             AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);
