@@ -611,6 +611,26 @@ namespace ServiceStack.NativeTypes
 
         public MetadataAttribute ToMetadataAttribute(Attribute attr)
         {
+            if (attr is IMetaAttributeConverter converter)
+            {
+                var ret = converter.ToMetaAttribute();
+                if (ret != null)
+                {
+                    MetadataPropertyType metaProp(KeyValuePair<PropertyInfo, object> entry)
+                    {
+                        var to = ToProperty(entry.Key);
+                        to.Value = PropertyStringValue(entry.Key, entry.Value);
+                        return to;
+                    }
+                    
+                    return new MetadataAttribute {
+                        Name = ret.Name ?? attr.GetAttributeName(),
+                        ConstructorArgs = ret.ConstructorArgs?.Map(metaProp),
+                        Args = ret.Args?.Map(metaProp),
+                    };
+                }
+            }
+            
             var attrType = attr.GetType();
             var firstCtor = attrType.GetConstructors()
                 //.OrderBy(x => x.GetParameters().Length)
@@ -743,18 +763,7 @@ namespace ServiceStack.NativeTypes
                 var value = pi.GetValue(instance, null);
                 if (value != null && !value.Equals(ignoreIfValue))
                 {
-                    if (pi.PropertyType.IsEnum)
-                    {
-                        return "{0}.{1}".Fmt(pi.PropertyType.Name, value);
-                    }
-                    if (pi.PropertyType == typeof(Type))
-                    {
-                        var type = (Type) value;
-                        return $"typeof({type.FullName})";
-                    }
-
-                    var strValue = value as string;
-                    return strValue ?? value.ToJson();
+                    return PropertyStringValue(pi, value);
                 }
             }
             catch (Exception ex)
@@ -763,6 +772,23 @@ namespace ServiceStack.NativeTypes
             }
 
             return null;
+        }
+
+        public static string PropertyStringValue(PropertyInfo pi, object value)
+        {
+            if (pi.PropertyType.IsEnum)
+            {
+                return "{0}.{1}".Fmt(pi.PropertyType.Name, value);
+            }
+
+            if (pi.PropertyType == typeof(Type))
+            {
+                var type = (Type) value;
+                return $"typeof({type.FullName})";
+            }
+
+            var strValue = value as string;
+            return strValue ?? value.ToJson();
         }
 
         public MetadataPropertyType ToProperty(ParameterInfo pi)

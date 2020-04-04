@@ -2,6 +2,8 @@
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace ServiceStack
 {
@@ -11,7 +13,7 @@ namespace ServiceStack
     ///		each request DTO, to map multiple paths to the service.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-    public class RouteAttribute : AttributeBase
+    public class RouteAttribute : AttributeBase, IMetaAttributeConverter
     {
         /// <summary>
         /// 	<para>Initializes an instance of the <see cref="RouteAttribute"/> class.</para>
@@ -154,8 +156,25 @@ namespace ServiceStack
                 return hashCode;
             }
         }
+        
+        public MetaAttribute ToMetaAttribute()
+        {
+            if (Summary == null && Notes == null && Priority == 0 && Matches == null)
+            {
+                //If has both constructor args, return that 
+                if (Path != null && Verbs != null)
+                {
+                    return new MetaAttribute {
+                        ConstructorArgs = new List<KeyValuePair<PropertyInfo, object>> {
+                            new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Path)), Path),
+                            new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Verbs)), Verbs),
+                        }
+                    };
+                }
+            }
+            return null;
+        }
     }
-
 
     /// <summary>
     /// Fallback routes have the lowest precedence, i.e. after normal Routes, static files or any matching Catch All Handlers.

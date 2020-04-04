@@ -19,6 +19,7 @@ using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.Mvc;
+using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.NativeTypes.TypeScript;
 using ServiceStack.Text;
 using ServiceStack.Validation;
@@ -181,6 +182,12 @@ namespace CheckWebCore
                     return metaAttr;
                 });
             
+
+            CSharpGenerator.TypeFilter = (type, args) => {
+                if (type == "ResponseBase`1" && args[0] == "Dictionary<String,List`1>")
+                    return "ResponseBase<Dictionary<string,List<object>>>";
+                return null;
+            };
 
             TypeScriptGenerator.TypeFilter = (type, args) => {
                 if (type == "ResponseBase`1" && args[0] == "Dictionary<String,List`1>")
@@ -352,8 +359,8 @@ namespace CheckWebCore
 
         public object Any(TestAuth request) => request;
 
-        [Authenticate]
-        public object Any(Session request) => SessionAs<AuthUserSession>();
+        // [Authenticate]
+        // public object Any(Session request) => SessionAs<AuthUserSession>();
 
         public object Any(Throw request) => HttpError.Conflict("Conflict message");
 //        public object Any(Throw request) => new HttpResult
