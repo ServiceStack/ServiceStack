@@ -207,7 +207,7 @@ namespace CheckWeb
         public string NotNull { get; set; }
     }
 
-    [ValidateRequest("NoRockstarAlbumReferences")]
+    // [ValidateRequest("NoRockstarAlbumReferences")]
     public class TestDbValidator
         : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>, IHasId<int>
     {

@@ -181,16 +181,16 @@ namespace ServiceStack.NativeTypes.Swift
                                 ImplementsFn = () =>
                                 {
                                     if (!Config.AddReturnMarker
-                                        && !type.ReturnVoidMarker
-                                        && type.ReturnMarkerTypeName == null)
+                                        && operation?.ReturnVoidMarker != true
+                                        && operation?.ReturnMarkerTypeName == null)
                                         return null;
 
-                                    if (type.ReturnVoidMarker)
-                                        return "IReturnVoid";
-                                    if (type.ReturnMarkerTypeName != null)
-                                        return ReturnType("IReturn`1", new[] { Type(type.ReturnMarkerTypeName) });
+                                    if (operation?.ReturnVoidMarker == true)
+                                        return nameof(IReturnVoid);
+                                    if (operation?.ReturnMarkerTypeName != null)
+                                        return Type("IReturn`1", new[] { Type(type.ReturnMarkerTypeName) });
                                     return response != null
-                                        ? ReturnType("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
+                                        ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
                                         : null;
                                 },
                                 IsRequest = true,

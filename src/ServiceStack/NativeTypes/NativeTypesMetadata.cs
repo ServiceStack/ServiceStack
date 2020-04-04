@@ -146,6 +146,7 @@ namespace ServiceStack.NativeTypes
                     RequiredPermissions = operation.RequiredPermissions,
                     RequiresAnyPermission = operation.RequiresAnyPermission,
                 };
+                opType.Request.RequestType = opType;
                 metadata.Operations.Add(opType);
                 opTypes.Add(operation.RequestType);
 
@@ -161,7 +162,24 @@ namespace ServiceStack.NativeTypes
                         opTypes.Add(operation.ResponseType);
                     }
                 }
-                
+
+                if (operation.RequestType.GetTypeWithInterfaceOf(typeof(IReturnVoid)) != null)
+                {
+                    opType.ReturnVoidMarker = true;
+                }
+                else
+                {
+                    var genericMarker = operation.RequestType != typeof(IReturn<>)
+                        ? operation.RequestType.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>))
+                        : null;
+
+                    if (genericMarker != null)
+                    {
+                        var returnType = genericMarker.GetGenericArguments().First();
+                        opType.ReturnMarkerTypeName = ToTypeName(returnType);
+                    }
+                }
+
                 var routeAttrs = HostContext.AppHost.GetRouteAttributes(operation.RequestType).ToList();
                 if (routeAttrs.Count > 0)
                 {
@@ -390,23 +408,6 @@ namespace ServiceStack.NativeTypes
                 !type.HasInterface(typeof(IService)))
             {
                 metaType.Inherits = ToTypeName(type.BaseType);
-            }
-
-            if (type.GetTypeWithInterfaceOf(typeof(IReturnVoid)) != null)
-            {
-                metaType.ReturnVoidMarker = true;
-            }
-            else
-            {
-                var genericMarker = type != typeof(IReturn<>)
-                    ? type.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>))
-                    : null;
-
-                if (genericMarker != null)
-                {
-                    var returnType = genericMarker.GetGenericArguments().First();
-                    metaType.ReturnMarkerTypeName = ToTypeName(returnType);
-                }
             }
 
             metaType.Description = type.GetDescription();
@@ -1278,8 +1279,7 @@ namespace ServiceStack.NativeTypes
             var typeDeps = deps.GetValues(type.Name);
             foreach (var typeDep in typeDeps)
             {
-                MetadataType depType;
-                if (!typesMap.TryGetValue(typeDep, out depType)
+                if (!typesMap.TryGetValue(typeDep, out var depType)
                     || considered.Contains(typeDep))
                     continue;
 

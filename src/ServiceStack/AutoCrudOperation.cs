@@ -110,18 +110,21 @@ namespace ServiceStack
             if (typeDef != null)
                 return typeDef.GetGenericArguments()[0];
 
-            var queryResponseDef = responseType.GetTypeWithGenericTypeDefinitionOf(typeof(QueryResponse<>));
-            if (queryResponseDef != null)
-                return queryResponseDef.GetGenericArguments()[0];
+            if (responseType != null)
+            {
+                var queryResponseDef = responseType.GetTypeWithGenericTypeDefinitionOf(typeof(QueryResponse<>));
+                if (queryResponseDef != null)
+                    return queryResponseDef.GetGenericArguments()[0];
 
-            var responseProps = TypeProperties.Get(responseType);
-            var resultProp = responseProps.GetPublicProperty("Result");
-            if (resultProp != null)
-                return resultProp.PropertyType;
+                var responseProps = TypeProperties.Get(responseType);
+                var resultProp = responseProps.GetPublicProperty("Result");
+                if (resultProp != null)
+                    return resultProp.PropertyType;
 
-            var resultsProp = responseProps.GetPublicProperty("Results");
-            if (resultsProp != null && typeof(IEnumerable).IsAssignableFrom(resultsProp.PropertyType))
-                return resultsProp.PropertyType.GetCollectionType();
+                var resultsProp = responseProps.GetPublicProperty("Results");
+                if (resultsProp != null && typeof(IEnumerable).IsAssignableFrom(resultsProp.PropertyType))
+                    return resultsProp.PropertyType.GetCollectionType();
+            }
 
             return null;
         }

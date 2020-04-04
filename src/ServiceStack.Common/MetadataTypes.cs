@@ -118,6 +118,8 @@ namespace ServiceStack
         public MetadataType Request { get; set; }
         public MetadataType Response { get; set; }
         public List<string> Actions { get; set; }
+        public bool ReturnVoidMarker { get; set; }
+        public MetadataTypeName ReturnMarkerTypeName { get; set; }
         public List<MetadataRoute> Routes { get; set; }
         public MetadataTypeName DataModel { get; set; }
         public MetadataTypeName ViewModel { get; set; }
@@ -134,6 +136,12 @@ namespace ServiceStack
         public Type Type { get; set; }
         [IgnoreDataMember]
         public Dictionary<string, object> Items { get; set; }
+        [IgnoreDataMember, Obsolete("Use MetadataOperationType")]
+        public MetadataOperationType RequestType { get; set; }
+        [IgnoreDataMember, Obsolete("Use MetadataOperationType.ReturnVoidMarker")]
+        public bool ReturnVoidMarker => RequestType?.ReturnVoidMarker == true;
+        [IgnoreDataMember, Obsolete("Use MetadataOperationType.ReturnMarkerTypeName")]
+        public MetadataTypeName ReturnMarkerTypeName => RequestType?.ReturnMarkerTypeName;
         
         public string Name { get; set; }
         public string Namespace { get; set; }
@@ -142,15 +150,11 @@ namespace ServiceStack
         public MetadataTypeName[] Implements { get; set; }
         public string DisplayType { get; set; }
         public string Description { get; set; }
-        public bool ReturnVoidMarker { get; set; }
         public bool? IsNested { get; set; }
         public bool? IsEnum { get; set; }
         public bool? IsEnumInt { get; set; }
         public bool? IsInterface { get; set; }
         public bool? IsAbstract { get; set; }
-
-        public MetadataTypeName ReturnMarkerTypeName { get; set; }
-
         public MetadataDataContract DataContract { get; set; }
 
         public List<MetadataPropertyType> Properties { get; set; }

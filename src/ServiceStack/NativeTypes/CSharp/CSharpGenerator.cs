@@ -178,13 +178,13 @@ namespace ServiceStack.NativeTypes.CSharp
                                 ImplementsFn = () =>
                                     {
                                         if (!Config.AddReturnMarker
-                                            && !type.ReturnVoidMarker
-                                            && type.ReturnMarkerTypeName == null)
+                                            && operation?.ReturnVoidMarker != true
+                                            && operation?.ReturnMarkerTypeName == null)
                                             return null;
 
-                                        if (type.ReturnVoidMarker)
-                                            return "IReturnVoid";
-                                        if (type.ReturnMarkerTypeName != null)
+                                        if (operation?.ReturnVoidMarker == true)
+                                            return nameof(IReturnVoid);
+                                        if (operation?.ReturnMarkerTypeName != null)
                                             return Type("IReturn`1", new[] { Type(type.ReturnMarkerTypeName) });
                                         return response != null
                                             ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })

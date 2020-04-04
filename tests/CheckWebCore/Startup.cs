@@ -182,15 +182,15 @@ namespace CheckWebCore
                 });
             
 
-//            TypeScriptGenerator.TypeFilter = (type, args) => {
-//                if (type == "ResponseBase`1" && args[0] == "Dictionary<String,List`1>")
-//                    return "ResponseBase<Map<string,Array<any>>>";
-//                return null;
-//            };
+            TypeScriptGenerator.TypeFilter = (type, args) => {
+                if (type == "ResponseBase`1" && args[0] == "Dictionary<String,List`1>")
+                    return "ResponseBase<Map<string,Array<any>>>";
+                return null;
+            };
 
-//            TypeScriptGenerator.DeclarationTypeFilter = (type, args) => {
-//                return null;
-//            };
+            TypeScriptGenerator.DeclarationTypeFilter = (type, args) => {
+                return null;
+            };
 
 
             //GetPlugin<SvgFeature>().ValidateFn = req => Config.DebugMode; // only allow in DebugMode
