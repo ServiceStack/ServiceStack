@@ -136,12 +136,12 @@ namespace ServiceStack
         public Type Type { get; set; }
         [IgnoreDataMember]
         public Dictionary<string, object> Items { get; set; }
-        [IgnoreDataMember, Obsolete("Use MetadataOperationType")]
+        [IgnoreDataMember]
         public MetadataOperationType RequestType { get; set; }
-        [IgnoreDataMember, Obsolete("Use MetadataOperationType.ReturnVoidMarker")]
-        public bool ReturnVoidMarker => RequestType?.ReturnVoidMarker == true;
-        [IgnoreDataMember, Obsolete("Use MetadataOperationType.ReturnMarkerTypeName")]
-        public MetadataTypeName ReturnMarkerTypeName => RequestType?.ReturnMarkerTypeName;
+        // [IgnoreDataMember, Obsolete("Use MetadataOperationType.ReturnVoidMarker")]
+        // public bool ReturnVoidMarker => RequestType?.ReturnVoidMarker == true;
+        // [IgnoreDataMember, Obsolete("Use MetadataOperationType.ReturnMarkerTypeName")]
+        // public MetadataTypeName ReturnMarkerTypeName => RequestType?.ReturnMarkerTypeName;
         
         public string Name { get; set; }
         public string Namespace { get; set; }

@@ -185,7 +185,7 @@ namespace ServiceStack.NativeTypes.CSharp
                                         if (operation?.ReturnVoidMarker == true)
                                             return nameof(IReturnVoid);
                                         if (operation?.ReturnMarkerTypeName != null)
-                                            return Type("IReturn`1", new[] { Type(type.ReturnMarkerTypeName) });
+                                            return Type("IReturn`1", new[] { Type(operation.ReturnMarkerTypeName) });
                                         return response != null
                                             ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
                                             : null;

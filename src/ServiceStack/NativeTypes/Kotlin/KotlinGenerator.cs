@@ -224,7 +224,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                                     if (operation?.ReturnVoidMarker == true)
                                         return nameof(IReturnVoid);
                                     if (operation?.ReturnMarkerTypeName != null)
-                                        return Type("IReturn`1", new[] { Type(type.ReturnMarkerTypeName) });
+                                        return Type("IReturn`1", new[] { Type(operation.ReturnMarkerTypeName) });
                                     return response != null
                                         ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
                                         : null;
@@ -269,7 +269,7 @@ namespace ServiceStack.NativeTypes.Kotlin
         {
             return metadata.GetAllMetadataTypes().Any(x => KotlinGeneratorExtensions.KotlinKeyWords.Contains(x.Name)
                 || x.Properties.Safe().Any(p => p.DataMember != null && p.DataMember.Name != null)
-                || (x.ReturnMarkerTypeName != null && x.ReturnMarkerTypeName.Name.IndexOf('`') >= 0)); //uses TypeToken<T>
+                || (x.RequestType?.ReturnMarkerTypeName != null && x.RequestType?.ReturnMarkerTypeName.Name.IndexOf('`') >= 0)); //uses TypeToken<T>
         }
 
         private static bool ReferencesStream(MetadataTypes metadata)

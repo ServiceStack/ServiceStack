@@ -281,7 +281,7 @@ namespace ServiceStack.NativeTypes.Dart
                 defaultImports.AddIfNotExists("dart:collection");
             }
             if (allTypes.Any(x => x.Properties?.Any(p => p.Type == "Byte[]") == true)
-                || requestTypes.Any(x => x.ReturnMarkerTypeName?.Name == "Byte[]")
+                || requestTypes.Any(x => x.RequestType?.ReturnMarkerTypeName?.Name == "Byte[]")
                 || responseTypes.Any(x => x.Name == "Byte[]"))
             {
                 defaultImports.AddIfNotExists("dart:typed_data");
@@ -326,7 +326,7 @@ namespace ServiceStack.NativeTypes.Dart
                                     if (operation?.ReturnVoidMarker == true)
                                         return nameof(IReturnVoid);
                                     if (operation?.ReturnMarkerTypeName != null)
-                                        return Type("IReturn`1", new[] { Type(type.ReturnMarkerTypeName) });
+                                        return Type("IReturn`1", new[] { Type(operation.ReturnMarkerTypeName) });
                                     return response != null
                                         ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
                                         : null;

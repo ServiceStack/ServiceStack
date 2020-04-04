@@ -852,8 +852,8 @@ namespace ServiceStack.NativeTypes
         {
             var allTypes = metadata.Operations.Where(x => x.Request != null).Select(x => x.Request)
                 .Union(metadata.Operations.Where(x => x.Response != null).Select(x => x.Response))
-                .Union(metadata.Operations.Where(x => x.Request?.ReturnMarkerTypeName != null).Select(
-                    x => x.Request.ReturnMarkerTypeName.ToMetadataType()))
+                .Union(metadata.Operations.Where(x => x.ReturnMarkerTypeName != null).Select(
+                    x => x.ReturnMarkerTypeName.ToMetadataType()))
                 .Union(metadata.Types);
             
             return allTypes.ToList();
@@ -1008,8 +1008,8 @@ namespace ServiceStack.NativeTypes
                     .ToList();
 
                 var includeSet = includedMetadataTypes
-                    .Where(x => x.ReturnMarkerTypeName != null)
-                    .Select(x => x.ReturnMarkerTypeName.Name)
+                    .Where(x => x.RequestType?.ReturnMarkerTypeName != null)
+                    .Select(x => x.RequestType.ReturnMarkerTypeName.Name)
                     .ToHashSet();
 
                 var includedResponses = metadata.Operations
@@ -1224,12 +1224,13 @@ namespace ServiceStack.NativeTypes
             {
                 var typeName = type.Name;
 
-                if (type.ReturnMarkerTypeName != null)
+                var returnMarker = type.RequestType?.ReturnMarkerTypeName;
+                if (returnMarker != null)
                 {
-                    if (!type.ReturnMarkerTypeName.GenericArgs.IsEmpty())
-                        type.ReturnMarkerTypeName.GenericArgs.Each(x => deps.Push(typeName, x));
+                    if (!returnMarker.GenericArgs.IsEmpty())
+                        type.RequestType.ReturnMarkerTypeName.GenericArgs.Each(x => deps.Push(typeName, x));
                     else
-                        deps.Push(typeName, type.ReturnMarkerTypeName.Name);
+                        deps.Push(typeName, returnMarker.Name);
                 }
                 if (type.Inherits != null)
                 {

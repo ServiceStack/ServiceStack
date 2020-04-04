@@ -225,14 +225,14 @@ namespace ServiceStack.NativeTypes.Java
                                 ImplementsFn = () =>
                                 {
                                     if (!Config.AddReturnMarker
-                                        && !type.ReturnVoidMarker
-                                        && type.ReturnMarkerTypeName == null)
+                                        && operation?.ReturnVoidMarker != true
+                                        && operation?.ReturnMarkerTypeName == null)
                                         return null;
 
-                                    if (type.ReturnVoidMarker)
-                                        return "IReturnVoid";
-                                    if (type.ReturnMarkerTypeName != null)
-                                        return Type("IReturn`1", new[] { Type(type.ReturnMarkerTypeName) });
+                                    if (operation?.ReturnVoidMarker == true)
+                                        return nameof(IReturnVoid);
+                                    if (operation?.ReturnMarkerTypeName != null)
+                                        return Type("IReturn`1", new[] { Type(operation.ReturnMarkerTypeName) });
                                     return response != null
                                         ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
                                         : null;
@@ -281,7 +281,7 @@ namespace ServiceStack.NativeTypes.Java
             return metadata.GetAllMetadataTypes()
                 .Any(x => x.Properties.Safe().Any(p => JavaGeneratorExtensions.JavaKeyWords.Contains(p.Name.PropertyStyle()))
                     || x.Properties.Safe().Any(p => p.DataMember?.Name != null)
-                    || (x.ReturnMarkerTypeName != null && x.ReturnMarkerTypeName.Name.IndexOf('`') >= 0) //uses TypeToken<T>
+                    || (x.RequestType?.ReturnMarkerTypeName != null && x.RequestType?.ReturnMarkerTypeName.Name.IndexOf('`') >= 0) //uses TypeToken<T>
                 );
         }
 
