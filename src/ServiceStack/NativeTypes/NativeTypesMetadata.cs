@@ -626,7 +626,7 @@ namespace ServiceStack.NativeTypes
                     return new MetadataAttribute {
                         Name = ret.Name ?? attr.GetAttributeName(),
                         ConstructorArgs = ret.ConstructorArgs?.Map(metaProp),
-                        Args = ret.Args?.Map(metaProp),
+                        Args = ret.PropertyArgs?.Map(metaProp),
                     };
                 }
             }

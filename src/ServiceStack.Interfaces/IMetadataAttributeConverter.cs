@@ -13,6 +13,6 @@ namespace ServiceStack
     {
         public string Name { get; set; }
         public List<KeyValuePair<PropertyInfo, object>> ConstructorArgs { get; set; }
-        public List<KeyValuePair<PropertyInfo, object>> Args { get; set; }
+        public List<KeyValuePair<PropertyInfo, object>> PropertyArgs { get; set; }
     }
 }

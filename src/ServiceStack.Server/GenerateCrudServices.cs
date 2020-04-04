@@ -272,8 +272,20 @@ namespace ServiceStack
             return HostContext.AppHost.ScriptContext.ProtectedMethods.@typeof(typeName);
         }
 
+        private static Type AssertResolveType(string typeName, Dictionary<Tuple<string, string>, Type> generatedTypes)
+        {
+            var ret = ResolveType(typeName, generatedTypes);
+            if (ret == null)
+                ThrowCouldNotResolveType(typeName);
+            return ret;
+        }
+
         private static Type ResolveType(Tuple<string,string> typeKey, Dictionary<Tuple<string, string>, Type> generatedTypes)
         {
+            var hasNs = typeKey.Item1 != null;
+            if (!hasNs)
+                return ResolveType(typeKey.Item2, generatedTypes);
+            
             if (generatedTypes.TryGetValue(typeKey, out var existingType))
                 return existingType;
 
@@ -298,13 +310,15 @@ namespace ServiceStack
 
         private static Type AssertResolveType(Tuple<string, string> typeKey, Dictionary<Tuple<string, string>, Type> generatedTypes)
         {
+            var hasNs = typeKey.Item1 != null;
+            if (!hasNs)
+                return AssertResolveType(typeKey.Item2, generatedTypes);
+                
             var ret = ResolveType(typeKey, generatedTypes);
             if (ret == null)
                 ThrowCouldNotResolveType(typeKey.Item1 + '.' + typeKey.Item2);
             return ret;
         }
-
-        private static ConstructorInfo ciRoute2 = typeof(RouteAttribute).GetConstructors().First(ci => ci.GetParameters().Length == 2);
 
         private static Dictionary<string, Type> attributesMap;
         static Dictionary<string, Type> AttributesMap
@@ -355,9 +369,40 @@ namespace ServiceStack
                 }
                 baseType = baseType.MakeGenericType(argTypes.ToArray());
             }
+
+            var interfaceTypes = new List<Type>();
+            var returnMarker = metaType.RequestType?.ReturnMarkerTypeName;
+            if (returnMarker != null && returnMarker.Name != "QueryResponse`1")
+            {
+                var responseType = CreateOrGetType(dynModule, returnMarker, metadataTypes, existingMetaTypesMap, generatedTypes);
+                if (responseType == null)
+                    ThrowCouldNotResolveType(returnMarker.Name);
+                
+                interfaceTypes.Add(typeof(IReturn<>).MakeGenericType(responseType));
+            }
+            else if (metaType.RequestType?.ReturnVoidMarker == true)
+            {
+                interfaceTypes.Add(typeof(IReturnVoid));
+            }
+            
+            foreach (var metaIface in metaType.Implements.Safe())
+            {
+                var ifaceType = CreateOrGetType(dynModule, metaIface, metadataTypes, existingMetaTypesMap, generatedTypes);
+                if (ifaceType.IsGenericTypeDefinition)
+                {
+                    var argTypes = new List<Type>();
+                    foreach (var typeName in metaIface.GenericArgs.Safe())
+                    {
+                        var argType = CreateOrGetType(dynModule, typeName, metadataTypes, existingMetaTypesMap, generatedTypes);
+                        argTypes.Add(argType);
+                    }
+                    ifaceType = ifaceType.MakeGenericType(argTypes.ToArray());
+                }
+                interfaceTypes.Add(ifaceType);
+            }
             
             var typeBuilder = dynModule.DefineType(metaType.Namespace + "." + metaType.Name,
-                TypeAttributes.Public | TypeAttributes.Class, baseType);
+                TypeAttributes.Public | TypeAttributes.Class, baseType, interfaceTypes.ToArray());
 
             foreach (var metaAttr in metaType.Attributes.Safe())
             {
@@ -663,6 +708,8 @@ namespace ServiceStack
                 "java" => new JavaGenerator(typesConfig).GetCode(crudMetadataTypes, req, metadata),
                 "kotlin" => new KotlinGenerator(typesConfig).GetCode(crudMetadataTypes, req, metadata),
                 "typescript.d" => new FSharpGenerator(typesConfig).GetCode(crudMetadataTypes, req),
+                _ => throw new NotSupportedException($"Unknown language '{request.Lang}', Supported languages: " +
+                                                     $"csharp, typescript, dart, swift, java, kotlin, vbnet, fsharp")
             };
             return src;
         }
@@ -974,6 +1021,7 @@ namespace ServiceStack
                             },
                             DataModel = new MetadataTypeName { Name = typeName },
                         };
+                        op.Request.RequestType = op;
                         
                         if (!existingRoutes.Contains(new Tuple<string, string>(route, verb)))
                             op.Routes.Add(new MetadataRoute { Path = route, Verbs = verb });
@@ -983,7 +1031,12 @@ namespace ServiceStack
                             op.Request.Inherits = new MetadataTypeName {
                                 Namespace = "ServiceStack",
                                 Name = "QueryDb`1",
-                                GenericArgs = new[] {typeName},
+                                GenericArgs = new[] { typeName },
+                            };
+                            op.ReturnMarkerTypeName = new MetadataTypeName {
+                                Namespace = "ServiceStack",
+                                Name = "QueryResponse`1",
+                                GenericArgs = new[] { typeName },
                             };
                             op.ViewModel = new MetadataTypeName { Name = typeName };
                             
@@ -1000,15 +1053,20 @@ namespace ServiceStack
                         {
                             op.Request.Implements = new List<MetadataTypeName>(op.Request.Implements) {
                                 new MetadataTypeName {
+                                    Namespace = "ServiceStack",
                                     Name = $"I{operation}Db`1",
                                     GenericArgs = new[] {
                                         typeName,
                                     }
                                 },
                             }.ToArray();
-                            op.Response = new MetadataType {
-                                Name = "IdResponse",
+                            op.ReturnMarkerTypeName = new MetadataTypeName {
                                 Namespace = "ServiceStack",
+                                Name = "IdResponse",
+                            };
+                            op.Response = new MetadataType {
+                                Namespace = "ServiceStack",
+                                Name = "IdResponse",
                             };
                         }
 

@@ -159,9 +159,9 @@ namespace ServiceStack
         
         public MetaAttribute ToMetaAttribute()
         {
-            if (Summary == null && Notes == null && Priority == 0 && Matches == null)
+            if (Summary == null && Notes == null && Matches == null && Priority == default)
             {
-                //If has both constructor args, return that 
+                //Return ideal Constructor Args 
                 if (Path != null && Verbs != null)
                 {
                     return new MetaAttribute {
@@ -171,8 +171,31 @@ namespace ServiceStack
                         }
                     };
                 }
+
+                return new MetaAttribute {
+                    ConstructorArgs = new List<KeyValuePair<PropertyInfo, object>> {
+                        new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Path)), Path),
+                    }
+                };
             }
-            return null;
+
+            //Otherwise return Property Args
+            var to = new MetaAttribute {
+                PropertyArgs = new List<KeyValuePair<PropertyInfo, object>> {
+                    new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Path)), Path),
+                }
+            };
+            if (Verbs != null)
+                to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Verbs)), Verbs));
+            if (Summary != null)
+                to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Summary)), Summary));
+            if (Notes != null)
+                to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Notes)), Notes));
+            if (Matches != null)
+                to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Matches)), Matches));
+            if (Priority != default)
+                to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Priority)), Priority));
+            return to;
         }
     }
 
