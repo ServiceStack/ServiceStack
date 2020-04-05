@@ -16,7 +16,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Validation
 {
-    public class ValidationFeature : IPlugin, IPostInitPlugin
+    public class ValidationFeature : IPlugin, IAfterInitAppHost
     {
         public Func<IRequest, ValidationResult, object, object> ErrorResponseFilter { get; set; }
 
@@ -107,7 +107,7 @@ namespace ServiceStack.Validation
             }
         }
 
-        public void AfterPluginsLoaded(IAppHost appHost)
+        public void AfterInit(IAppHost appHost)
         {
             if (EnableDeclarativeValidation)
             {
@@ -116,26 +116,18 @@ namespace ServiceStack.Validation
                 
                 foreach (var op in appHost.Metadata.Operations)
                 {
-                    try
+                    var hasValidateRequestAttrs = Validators.HasValidateRequestAttributes(op.RequestType);
+                    if (hasValidateRequestAttrs)
                     {
-                        var hasValidateRequestAttrs = Validators.HasValidateRequestAttributes(op.RequestType);
-                        if (hasValidateRequestAttrs)
-                        {
-                            Validators.RegisterRequestRulesFor(op.RequestType);
-                            op.AddRequestTypeValidationRules(Validators.GetTypeRules(op.RequestType));
-                        }
-                        
-                        var hasValidateAttrs = Validators.HasValidateAttributes(op.RequestType);
-                        if (hasDynamicRules || hasValidateAttrs)
-                        {
-                            container.RegisterNewValidatorIfNotExists(op.RequestType);
-                            op.AddRequestPropertyValidationRules(Validators.GetPropertyRules(op.RequestType));
-                        }
+                        Validators.RegisterRequestRulesFor(op.RequestType);
+                        op.AddRequestTypeValidationRules(Validators.GetTypeRules(op.RequestType));
                     }
-                    catch (Exception e)
+                        
+                    var hasValidateAttrs = Validators.HasValidateAttributes(op.RequestType);
+                    if (hasDynamicRules || hasValidateAttrs)
                     {
-                        Console.WriteLine(e);
-                        throw;
+                        container.RegisterNewValidatorIfNotExists(op.RequestType);
+                        op.AddRequestPropertyValidationRules(Validators.GetPropertyRules(op.RequestType));
                     }
                 }
             }
