@@ -188,7 +188,9 @@ namespace ServiceStack
 
             var filters = HostContext.GetPlugin<MetadataFeature>()?.AppMetadataFilters;
             filters?.Add((meta, req) => {
-                meta.Plugins.AutoQuery.ViewerConventions = ViewerConventions;
+                meta.Plugins.AutoQuery = new AutoQueryInfo {
+                    ViewerConventions = ViewerConventions,
+                };
             });
 
             if (EnableAutoQueryViewer && appHost.GetPlugin<AutoQueryMetadataFeature>() == null)
