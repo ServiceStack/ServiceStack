@@ -38,7 +38,8 @@ namespace ServiceStack.Host
 
         public void Add(Type serviceType, Type requestType, Type responseType)
         {
-            if (requestType.IsArray) return; //Custom AutoBatched requests
+            if (requestType.IsArray) 
+                return; //Custom AutoBatched requests
             
             this.ServiceTypes.Add(serviceType);
             this.RequestTypes.Add(requestType);
@@ -86,7 +87,8 @@ namespace ServiceStack.Host
                 && x.ServiceType.FullName != "ServiceStack.Api.Swagger.SwaggerApiService"
                 && x.ServiceType.FullName != "ServiceStack.Api.Swagger.SwaggerResourcesService"
                 && x.ServiceType.FullName != "ServiceStack.Api.OpenApi.OpenApiService"
-                && x.ServiceType.Name != "__AutoQueryServices");
+                && x.ServiceType.Name != "__AutoQueryServices"
+                && x.ServiceType.Name != "__AutoQueryDataServices");
 
             LicenseUtils.AssertValidUsage(LicenseFeature.ServiceStack, QuotaType.Operations, nonCoreServicesCount);
         }

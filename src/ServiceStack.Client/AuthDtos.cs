@@ -337,6 +337,10 @@ namespace ServiceStack
         public ResponseStatus ResponseStatus { get; set; }
     }
 
+    [ExcludeMetadata]
+    [DataContract]
+    public class MetadataApp { }
+
     [DataContract]
     public class GetFile : IReturn<FileContent>, IGet
     {

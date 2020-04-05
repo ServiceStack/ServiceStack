@@ -157,9 +157,6 @@ namespace ServiceStack
         }
     }
 
-    [Exclude(Feature.Soap)]
-    public class MetadataApp { }
-
     [DefaultRequest(typeof(MetadataApp))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public class MetadataAppService : Service

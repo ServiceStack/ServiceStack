@@ -302,6 +302,7 @@ namespace ServiceStack.NativeTypes
             typeof(NavItem),
             typeof(GetNavItems),
             typeof(GetNavItemsResponse),
+            typeof(MetadataApp),
             typeof(GetFile),
             typeof(FileContent),
             typeof(StreamFiles), // gRPC Server Stream
