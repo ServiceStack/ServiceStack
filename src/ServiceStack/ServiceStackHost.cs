@@ -164,6 +164,7 @@ namespace ServiceStack
                 typeof(MetadataDebugService),
                 typeof(ServerEventsSubscribersService),
                 typeof(ServerEventsUnRegisterService),
+                typeof(MetadataAppService),
                 typeof(MetadataNavService),
                 typeof(ScriptAdminService),
                 typeof(RequestLogsService),

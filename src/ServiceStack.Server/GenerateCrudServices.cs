@@ -109,10 +109,7 @@ namespace ServiceStack
         {
             if (AccessRole != null)
             {
-                foreach (var registerService in ServiceRoutes)
-                {
-                    appHost.RegisterService(registerService.Key, registerService.Value);
-                }
+                appHost.RegisterServices(ServiceRoutes);
             }
         }
 

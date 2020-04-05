@@ -23,7 +23,6 @@ namespace ServiceStack
         Func<MetadataType, bool> IncludeType { get; set; }
         Func<MetadataOperationType, bool> IncludeService { get; set; }
         string AccessRole { get; set; }
-        Dictionary<Type, string[]> ServiceRoutes { get; set; }
         DbSchema GetCachedDbSchema(IDbConnectionFactory dbFactory, string schema = null, string namedConnection = null);
         void Register(IAppHost appHost);
         List<Type> GenerateMissingServices(AutoQueryFeature feature);

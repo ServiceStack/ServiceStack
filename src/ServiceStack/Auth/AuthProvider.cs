@@ -236,8 +236,6 @@ namespace ServiceStack.Auth
             return null;
         }
 
-        public virtual NavItem GetNavItem() => null;
-
         protected virtual IAuthRepository GetAuthRepository(IRequest req)
         {
             return HostContext.AppHost.GetAuthRepository(req);

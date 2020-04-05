@@ -315,8 +315,6 @@ namespace ServiceStack
     }
 
     [ExcludeMetadata]
-    [Route("/metadata/nav", "GET")]
-    [Route("/metadata/nav/{Name}", "GET")]
     [DataContract]
     public class GetNavItems : IReturn<GetNavItemsResponse>
     {

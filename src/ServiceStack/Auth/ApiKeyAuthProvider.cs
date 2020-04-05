@@ -331,10 +331,7 @@ namespace ServiceStack.Auth
             if (!(authRepo is IManageApiKeys apiRepo))
                 throw new NotSupportedException(authRepo.GetType().Name + " does not implement IManageApiKeys");
 
-            foreach (var registerService in ServiceRoutes)
-            {
-                appHost.RegisterService(registerService.Key, registerService.Value);
-            }
+            appHost.RegisterServices(ServiceRoutes);
 
             feature.AuthEvents.Add(new ApiKeyAuthEvents(this));
 

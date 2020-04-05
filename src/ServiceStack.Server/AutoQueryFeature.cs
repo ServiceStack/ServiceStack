@@ -116,6 +116,21 @@ namespace ServiceStack
             { "EndsWith", new QueryDbFieldAttribute { Template = SqlTemplate.CaseInsensitiveLike, ValueFormat = "%{0}" }},
         };
 
+        public List<AutoQueryConvention> ViewerConventions { get; set; } = new List<AutoQueryConvention> 
+        {
+            new AutoQueryConvention {Name = "=", Value = "%"},
+            new AutoQueryConvention {Name = "!=", Value = "%!"},
+            new AutoQueryConvention {Name = ">=", Value = ">%"},
+            new AutoQueryConvention {Name = ">", Value = "%>"},
+            new AutoQueryConvention {Name = "<=", Value = "%<"},
+            new AutoQueryConvention {Name = "<", Value = "<%"},
+            new AutoQueryConvention {Name = "In", Value = "%In"},
+            new AutoQueryConvention {Name = "Between", Value = "%Between"},
+            new AutoQueryConvention {Name = "Starts With", Value = "%StartsWith", Types = "string"},
+            new AutoQueryConvention {Name = "Contains", Value = "%Contains", Types = "string"},
+            new AutoQueryConvention {Name = "Ends With", Value = "%EndsWith", Types = "string"},
+        };
+
         public AutoQueryFeature()
         {
             ResponseFilters = new List<Action<QueryDbFilterContext>> { IncludeAggregates };
@@ -169,6 +184,11 @@ namespace ServiceStack
             ((ServiceStackHost)appHost).ServiceAssemblies.Each(x => {
                 if (!LoadFromAssemblies.Contains(x))
                     LoadFromAssemblies.Add(x);
+            });
+
+            var filters = HostContext.GetPlugin<MetadataFeature>()?.AppMetadataFilters;
+            filters?.Add((meta, req) => {
+                meta.Plugins.AutoQuery.ViewerConventions = ViewerConventions;
             });
 
             if (EnableAutoQueryViewer && appHost.GetPlugin<AutoQueryMetadataFeature>() == null)

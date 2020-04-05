@@ -52,24 +52,12 @@ namespace ServiceStack
         }
     }
 
-    public class AutoQueryViewerConfig : IMeta
+    public class AutoQueryViewerConfig : AppInfo
     {
         /// <summary>
         /// The BaseUrl of the ServiceStack instance (inferred)
         /// </summary>
         public string ServiceBaseUrl { get; set; }
-        /// <summary>
-        /// Name of the ServiceStack Instance (inferred)
-        /// </summary>
-        public string ServiceName { get; set; }
-        /// <summary>
-        /// Textual description of the AutoQuery Services (shown in Home Services list)
-        /// </summary>
-        public string ServiceDescription { get; set; }
-        /// <summary>
-        /// Icon for this ServiceStack Instance (shown in Home Services list)
-        /// </summary>
-        public string ServiceIconUrl { get; set; }
         /// <summary>
         /// The different Content Type formats to display
         /// </summary>
@@ -103,37 +91,6 @@ namespace ServiceStack
         /// The search text which should be populated by default
         /// </summary>
         public string DefaultSearchText { get; set; }
-
-        /// <summary>
-        /// Link to your website users can click to find out more about you
-        /// </summary>
-        public string BrandUrl { get; set; }
-        /// <summary>
-        /// A custom logo or image that users can click on to visit your site
-        /// </summary>
-        public string BrandImageUrl { get; set; }
-        /// <summary>
-        /// The default color of text
-        /// </summary>
-        public string TextColor { get; set; }
-        /// <summary>
-        /// The default color of links
-        /// </summary>
-        public string LinkColor { get; set; }
-        /// <summary>
-        /// The default background color of each screen
-        /// </summary>
-        public string BackgroundColor { get; set; }
-        /// <summary>
-        /// The default background image of each screen anchored to the bottom left
-        /// </summary>
-        public string BackgroundImageUrl { get; set; }
-        /// <summary>
-        /// The default icon for each of your AutoQuery Services
-        /// </summary>
-        public string IconUrl { get; set; }
-
-        public Dictionary<string, string> Meta { get; set; }
     }
 
     [Exclude(Feature.Soap)]
@@ -153,13 +110,6 @@ namespace ServiceStack
         public int QueryCount { get; set; }
 
         public Dictionary<string, string> Meta { get; set; }
-    }
-
-    public class AutoQueryConvention
-    {
-        public string Name { get; set; }
-        public string Value { get; set; }
-        public string Types { get; set; }
     }
 
     public class AutoQueryOperation : IMeta

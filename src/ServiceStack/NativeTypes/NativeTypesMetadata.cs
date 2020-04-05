@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
-using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.Logging;
@@ -107,7 +106,6 @@ namespace ServiceStack.NativeTypes
         {
             var metadata = new MetadataTypes
             {
-                ServiceName = HostContext.ServiceName,
                 Config = config,
             };
 

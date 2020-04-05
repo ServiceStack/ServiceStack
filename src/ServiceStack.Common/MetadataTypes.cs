@@ -96,7 +96,6 @@ namespace ServiceStack
         public List<string> IgnoreTypesInNamespaces { get; set; }
     }
 
-    [Exclude(Feature.Soap)]
     public class MetadataTypes
     {
         public MetadataTypes()
@@ -106,11 +105,99 @@ namespace ServiceStack
             Namespaces = new List<string>();
         }
 
-        public string ServiceName { get; set; }
         public MetadataTypesConfig Config { get; set; }
         public List<string> Namespaces { get; set; }
         public List<MetadataType> Types { get; set; }
         public List<MetadataOperationType> Operations { get; set; }
+    }
+
+    public class AppMetadata
+    {
+        public AppInfo App { get; set; }
+        public Dictionary<string, string> ContentTypeFormats { get; set; }
+        public List<MetaAuthProvider> AuthProviders { get; set; }
+        public PluginInfo Plugins { get; set; }
+        public MetadataTypes Api { get; set; }
+    }
+
+    public class PluginInfo
+    {
+        public AutoQueryInfo AutoQuery { get; set; }
+    }
+
+    public class AutoQueryInfo
+    {
+        public List<AutoQueryConvention> ViewerConventions { get; set; }
+    }
+
+    public class AutoQueryConvention
+    {
+        public string Name { get; set; }
+        public string Value { get; set; }
+        public string Types { get; set; }
+    }
+
+    /// <summary>
+    /// App Info and 
+    /// </summary>
+    public class AppInfo : IMeta
+    {
+        /// <summary>
+        /// The App's BaseUrl
+        /// </summary>
+        public string BaseUrl { get; set; }
+        /// <summary>
+        /// Name of the ServiceStack Instance
+        /// </summary>
+        public string ServiceName { get; set; }
+        /// <summary>
+        /// Textual description of the ServiceStack App (shown in Home Services list)
+        /// </summary>
+        public string ServiceDescription { get; set; }
+        /// <summary>
+        /// Icon for this ServiceStack App (shown in Home Services list)
+        /// </summary>
+        public string ServiceIconUrl { get; set; }
+        /// <summary>
+        /// Link to your website users can click to find out more about you
+        /// </summary>
+        public string BrandUrl { get; set; }
+        /// <summary>
+        /// A custom logo or image that users can click on to visit your site
+        /// </summary>
+        public string BrandImageUrl { get; set; }
+        /// <summary>
+        /// The default color of text
+        /// </summary>
+        public string TextColor { get; set; }
+        /// <summary>
+        /// The default color of links
+        /// </summary>
+        public string LinkColor { get; set; }
+        /// <summary>
+        /// The default background color of each screen
+        /// </summary>
+        public string BackgroundColor { get; set; }
+        /// <summary>
+        /// The default background image of each screen anchored to the bottom left
+        /// </summary>
+        public string BackgroundImageUrl { get; set; }
+        /// <summary>
+        /// The default icon for each of your App's Services
+        /// </summary>
+        public string IconUrl { get; set; }
+
+        /// <summary>
+        /// Custom User-Defined Attributes
+        /// </summary>
+        public Dictionary<string, string> Meta { get; set; }
+    }
+
+    public class MetaAuthProvider
+    {
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public NavItem NavItem { get; set; }
     }
 
     public class MetadataOperationType

@@ -21,7 +21,7 @@ namespace ServiceStack
         public static string ServiceStackPath = null;
 
         private static HostConfig instance;
-        public static HostConfig Instance => instance ?? (instance = NewInstance());
+        public static HostConfig Instance => instance ??= NewInstance();
 
         public static HostConfig ResetInstance()
         {
@@ -190,6 +190,7 @@ namespace ServiceStack
             //Get a copy of the singleton already partially configured
             this.WsdlServiceNamespace = instance.WsdlServiceNamespace;
             this.ApiVersion = instance.ApiVersion;
+            this.AppInfo = instance.AppInfo;
             this.EmbeddedResourceSources = instance.EmbeddedResourceSources;
             this.EmbeddedResourceBaseTypes = instance.EmbeddedResourceBaseTypes;
             this.EmbeddedResourceTreatAsFiles = instance.EmbeddedResourceTreatAsFiles;
@@ -263,6 +264,8 @@ namespace ServiceStack
 
         public string WsdlServiceNamespace { get; set; }
         public string ApiVersion { get; set; }
+        
+        public AppInfo AppInfo { get; set; }
 
         private RequestAttributes metadataVisibility;
         public RequestAttributes MetadataVisibility
@@ -391,8 +394,7 @@ namespace ServiceStack
         public FallbackRestPathDelegate FallbackRestPath { get; set; }
 
         private HashSet<string> razorNamespaces;
-        public HashSet<string> RazorNamespaces => razorNamespaces 
-            ?? (razorNamespaces = Platform.Instance.GetRazorNamespaces());
+        public HashSet<string> RazorNamespaces => razorNamespaces ??= Platform.Instance.GetRazorNamespaces();
 
     }
 

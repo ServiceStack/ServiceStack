@@ -774,14 +774,8 @@ namespace ServiceStack.Auth
 
             if (KeyId == null)
                 KeyId = GetKeyId(null);
-                
-            if (ServiceRoutes != null) 
-            {
-                foreach (var registerService in ServiceRoutes)
-                {
-                    appHost.RegisterService(registerService.Key, registerService.Value);
-                }
-            }
+             
+            appHost.RegisterServices(ServiceRoutes);
 
             feature.AuthResponseDecorator = AuthenticateResponseDecorator;
         }

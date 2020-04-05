@@ -235,10 +235,7 @@ namespace ServiceStack
                         StrictModeCodes.CyclicalUserSession);
             }
 
-            foreach (var registerService in ServiceRoutes)
-            {
-                appHost.RegisterService(registerService.Key, registerService.Value);
-            }
+            appHost.RegisterServices(ServiceRoutes);
 
             var sessionFeature = RegisterPlugins.OfType<SessionFeature>().First();
             sessionFeature.SessionExpiry = SessionExpiry;

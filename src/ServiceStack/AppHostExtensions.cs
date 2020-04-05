@@ -14,6 +14,17 @@ namespace ServiceStack
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(AppHostExtensions));
 
+        public static void RegisterServices(this IAppHost appHost, Dictionary<Type, string[]> serviceRoutes)
+        {
+            if (serviceRoutes == null)
+                return;
+            
+            foreach (var registerService in serviceRoutes)
+            {
+                appHost.RegisterService(registerService.Key, registerService.Value);
+            }
+        }
+
         public static void RegisterService<TService>(this IAppHost appHost, params string[] atRestPaths)
         {
             appHost.RegisterService(typeof(TService), atRestPaths);
