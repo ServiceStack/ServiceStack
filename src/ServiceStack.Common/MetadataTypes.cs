@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using ServiceStack.DataAnnotations;
 
 namespace ServiceStack
 {
@@ -146,6 +145,11 @@ namespace ServiceStack
         /// The App's BaseUrl
         /// </summary>
         public string BaseUrl { get; set; }
+
+        /// <summary>
+        /// The ServiceStack Version
+        /// </summary>
+        public string ServiceStackVersion => Text.Env.VersionString;
         /// <summary>
         /// Name of the ServiceStack Instance
         /// </summary>
