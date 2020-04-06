@@ -58,6 +58,7 @@ namespace ServiceStack.NativeTypes.Dart
             {"Stream", "Uint8List"},
             {"HttpWebResponse", "Uint8List"},
             {"IDictionary", "dynamic"},
+            {"Type", "String"},
         };
         private static string declaredEmptyString = "\"\"";
         private static readonly Dictionary<string, string> defaultValues = new Dictionary<string, string>

@@ -57,6 +57,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"IDictionary", "any"},
             {"OrderedDictionary", "any"},
             {"Uri", "string"},
+            {"Type", "string"},
         };
         private static string declaredEmptyString = "''";
         private static readonly Dictionary<string, string> primitiveDefaultValues = new Dictionary<string, string>

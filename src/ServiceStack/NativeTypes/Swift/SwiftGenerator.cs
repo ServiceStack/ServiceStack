@@ -55,6 +55,7 @@ namespace ServiceStack.NativeTypes.Swift
             {"Double", "Double"},
             {"Decimal", "Double"},
             {"Stream", "Data"},
+            {"Type", "String"},
         }.ToConcurrentDictionary();
 
         public static TypeFilterDelegate TypeFilter { get; set; }
