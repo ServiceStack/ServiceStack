@@ -45,6 +45,7 @@ namespace ServiceStack
         public static List<string> ExcludePatterns { get; } = new List<string> {
             "*.sqlite",
             "*.db",
+            "*.ts", //watch on generated .js instead
         };
         
         public static TimeSpan LongPollDuration = TimeSpan.FromSeconds(60);
