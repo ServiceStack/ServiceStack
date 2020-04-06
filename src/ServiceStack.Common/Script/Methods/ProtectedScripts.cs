@@ -226,7 +226,7 @@ namespace ServiceStack.Script
             
             var key = "type:" + typeName;
 
-            Type cookType(Type type, List<string> genericArgs, bool isArray)
+            Type cookType(Type type, List<string> genericArgs, bool isArray, bool isNullable)
             {
                 if (type.IsGenericType)
                 {
@@ -243,7 +243,9 @@ namespace ServiceStack.Script
                     type = type.MakeArrayType();
                 }
             
-                return type;
+                return isNullable
+                    ? typeof(Nullable<>).MakeGenericType(type)
+                    : type;
             }
             
             Type onlyTypeOf(string _typeName)
@@ -262,17 +264,20 @@ namespace ServiceStack.Script
                     genericArgs = typeGenericArgs(_typeName);
                     _typeName = _typeName.LeftPart('<') + '`' + Math.Max(genericArgs.Count, 1);
                 }
-
+                var isNullable = _typeName.EndsWith("?");
+                if (isNullable)
+                    _typeName = _typeName.Substring(0, _typeName.Length - 1);
+                
                 if (_typeName.IndexOf('.') >= 0)
                 {
                     if (Context.ScriptTypeQualifiedNameMap.TryGetValue(_typeName, out var type))
-                        return cookType(type, genericArgs, isArray);
+                        return cookType(type, genericArgs, isArray, isNullable);
 
                     if (Context.AllowScriptingOfAllTypes)
                     {
                         type = AssemblyUtils.FindType(_typeName);
                         if (type != null)
-                            return cookType(type, genericArgs, isArray);
+                            return cookType(type, genericArgs, isArray, isNullable);
                     }
                 }
                 else
@@ -300,23 +305,27 @@ namespace ServiceStack.Script
                         _ => null,
                     };
                     if (ret != null)
-                        return ret;
+                    {
+                        return isNullable
+                            ? typeof(Nullable<>).MakeGenericType(ret)
+                            : ret;
+                    }
 
                     if (Context.ScriptTypeNameMap.TryGetValue(_typeName, out var type))
-                        return cookType(type, genericArgs, isArray);
+                        return cookType(type, genericArgs, isArray, isNullable);
                 }
 
                 foreach (var ns in Context.ScriptNamespaces)
                 {
                     var lookupType = ns + "." + _typeName;
                     if (Context.ScriptTypeQualifiedNameMap.TryGetValue(lookupType, out var type))
-                        return cookType(type, genericArgs, isArray);
+                        return cookType(type, genericArgs, isArray, isNullable);
                     
                     if (Context.AllowScriptingOfAllTypes)
                     {
                         type = AssemblyUtils.FindType(lookupType);
                         if (type != null)
-                            return cookType(type, genericArgs, isArray);
+                            return cookType(type, genericArgs, isArray, isNullable);
                     }
                 }
 
