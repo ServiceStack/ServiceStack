@@ -110,23 +110,33 @@ namespace ServiceStack
         public List<MetadataOperationType> Operations { get; set; }
     }
 
-    public class AppMetadata
+    public class AppMetadata : IMeta
     {
         public AppInfo App { get; set; }
         public Dictionary<string, string> ContentTypeFormats { get; set; }
-        public List<MetaAuthProvider> AuthProviders { get; set; }
         public PluginInfo Plugins { get; set; }
         public MetadataTypes Api { get; set; }
+        public Dictionary<string, string> Meta { get; set; }
     }
 
-    public class PluginInfo
+    public class PluginInfo : IMeta
     {
+        public List<string> Loaded { get; set; }
+        public AuthInfo Auth { get; set; }
         public AutoQueryInfo AutoQuery { get; set; }
+        public Dictionary<string, string> Meta { get; set; }
     }
 
-    public class AutoQueryInfo
+    public class AuthInfo : IMeta
+    {
+        public List<MetaAuthProvider> AuthProviders { get; set; }
+        public Dictionary<string, string> Meta { get; set; }
+    }
+
+    public class AutoQueryInfo : IMeta
     {
         public List<AutoQueryConvention> ViewerConventions { get; set; }
+        public Dictionary<string, string> Meta { get; set; }
     }
 
     public class AutoQueryConvention

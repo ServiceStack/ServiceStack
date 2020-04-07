@@ -11,8 +11,9 @@ namespace ServiceStack
     /// <summary>
     /// Transparently Proxy requests through to downstream HTTP Servers
     /// </summary>
-    public class ProxyFeature : IPlugin
+    public class ProxyFeature : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.Proxy;
         private readonly Func<IHttpRequest, bool> matchingRequests;
         public readonly Func<IHttpRequest, string> ResolveUrl;
 

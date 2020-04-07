@@ -81,8 +81,9 @@ namespace ServiceStack
     }
 
     [Priority(10)]
-    public class GrpcFeature : IPlugin, IPostInitPlugin
+    public class GrpcFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.Grpc;
         public string ServicesName { get; set; } = "GrpcServices";
         public Type GrpcServicesBaseType { get; set; } = typeof(GrpcServiceBase);
         

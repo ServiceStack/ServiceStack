@@ -91,8 +91,7 @@ namespace ServiceStack.Auth
             var holdSessionId = session.Id;
             session.PopulateWith(userAuth);  
             session.Id = holdSessionId;
-            session.UserAuthId = session.UserAuthId ??
-                (userAuth.Id != default ? userAuth.Id.ToString(CultureInfo.InvariantCulture) : null);
+            session.UserAuthId ??= (userAuth.Id != default ? userAuth.Id.ToString(CultureInfo.InvariantCulture) : null);
             session.IsAuthenticated = true;
 
             var hadUserAuthId = session.UserAuthId != null;

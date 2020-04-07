@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Web;
-using ServiceStack.DataAnnotations;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Metadata;
 using ServiceStack.NativeTypes;
-using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class MetadataFeature : IPlugin
+    public class MetadataFeature : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.Metadata;
         public string PluginLinksTitle { get; set; }
         public Dictionary<string, string> PluginLinks { get; set; }
 
@@ -20,7 +19,7 @@ namespace ServiceStack
         public Action<IndexOperationsControl> IndexPageFilter { get; set; }
         public Action<OperationControl> DetailPageFilter { get; set; }
         
-        public List<Action<AppMetadata, IRequest>> AppMetadataFilters { get; } = new List<Action<AppMetadata, IRequest>>();
+        public List<Action<AppMetadata>> AppMetadataFilters { get; } = new List<Action<AppMetadata>>();
 
         public bool ShowResponseStatusInMetadataPages { get; set; }
 
@@ -172,12 +171,9 @@ namespace ServiceStack
             var response = new AppMetadata {
                 App = appHost.Config.AppInfo ?? new AppInfo(),
                 ContentTypeFormats = appHost.ContentTypes.ContentTypeFormats,
-                AuthProviders = Auth.AuthenticateService.GetAuthProviders().Map(x => new MetaAuthProvider {
-                    Type = x.GetType().Name,
-                    Name = x.Provider,
-                    NavItem = (x as Auth.AuthProvider)?.NavItem,
-                }),
-                Plugins = new PluginInfo(),
+                Plugins = new PluginInfo {
+                    Loaded = appHost.GetMetadataPluginIds(),
+                },
                 Api = metadataTypes,
             };
             
@@ -188,7 +184,7 @@ namespace ServiceStack
 
             foreach (var fn in HostContext.AssertPlugin<MetadataFeature>().AppMetadataFilters)
             {
-                fn(response, Request);
+                fn(response);
             }
             
             return response;

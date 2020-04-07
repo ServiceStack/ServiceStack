@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Configuration;
 using System.Diagnostics;
 using System.Threading;
 using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class CancellableRequestsFeature : IPlugin
+    public class CancellableRequestsFeature : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.CancelRequests;
         public string AtPath { get; set; }
 
         internal ConcurrentDictionary<string, ICancellableRequest> RequestsMap = new ConcurrentDictionary<string, ICancellableRequest>();

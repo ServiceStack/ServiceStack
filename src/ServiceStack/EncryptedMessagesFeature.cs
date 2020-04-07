@@ -33,8 +33,9 @@ namespace ServiceStack
         }
     }
 
-    public class EncryptedMessagesFeature : IPlugin
+    public class EncryptedMessagesFeature : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.EncryptedMessaging;
         public static readonly string RequestItemsIv = "_encryptIv";
         public static readonly string RequestItemsCryptKey = "_encryptCryptKey";
         public static readonly string RequestItemsAuthKey = "_encryptAuthKey";

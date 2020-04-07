@@ -2,8 +2,9 @@
 
 namespace ServiceStack
 {
-    public class MiniProfilerFeature : IPlugin
+    public class MiniProfilerFeature : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.MiniProfiler;
         public MiniProfilerFeature()
         {
             Profiler.Current = new MiniProfilerAdapter();

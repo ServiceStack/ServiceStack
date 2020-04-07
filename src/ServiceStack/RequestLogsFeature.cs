@@ -6,8 +6,9 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class RequestLogsFeature : IPlugin
+    public class RequestLogsFeature : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.RequestLogs;
         /// <summary>
         /// RequestLogs service Route, default is /requestlogs
         /// </summary>

@@ -12,8 +12,9 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class SoapFormat : IPlugin
+    public class SoapFormat : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.Soap;
         public bool DisableSoap11 { get; set; }
         public bool DisableSoap12 { get; set; }
         

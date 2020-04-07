@@ -8,11 +8,9 @@ using System.Reflection.Emit;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using ServiceStack.Auth;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
 using ServiceStack.Data;
-using ServiceStack.DataAnnotations;
 using ServiceStack.Extensions;
 using ServiceStack.Host;
 using ServiceStack.OrmLite;
@@ -31,8 +29,9 @@ namespace ServiceStack
         public IQueryResponse Response { get; set; }
     }
 
-    public partial class AutoQueryFeature : IPlugin, IPostInitPlugin
+    public partial class AutoQueryFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.AutoQuery;
         private static readonly string[] DefaultIgnoreProperties = 
             {"Skip", "Take", "OrderBy", "OrderByDesc", "Fields", "_select", "_from", "_join", "_where"};
         public HashSet<string> IgnoreProperties { get; set; } = new HashSet<string>(DefaultIgnoreProperties, StringComparer.OrdinalIgnoreCase);
@@ -186,8 +185,7 @@ namespace ServiceStack
                     LoadFromAssemblies.Add(x);
             });
 
-            var filters = HostContext.GetPlugin<MetadataFeature>()?.AppMetadataFilters;
-            filters?.Add((meta, req) => {
+            appHost.AddToAppMetadata(meta => {
                 meta.Plugins.AutoQuery = new AutoQueryInfo {
                     ViewerConventions = ViewerConventions,
                 };

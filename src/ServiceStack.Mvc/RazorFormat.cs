@@ -6,20 +6,16 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
-using ServiceStack;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
@@ -29,18 +25,17 @@ using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
-using ServiceStack.Platforms;
 using ServiceStack.Redis;
 using ServiceStack.Script;
-using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 using ServiceStack.Text;
 using ActionContext = Microsoft.AspNetCore.Mvc.ActionContext;
 
 namespace ServiceStack.Mvc
 {
-    public class RazorFormat : IPlugin, Html.IViewEngine
+    public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.Razor;
         public static ILog log = LogManager.GetLogger(typeof(RazorFormat));
 
         public static string DefaultLayout { get; set; } = "_Layout";

@@ -47,8 +47,9 @@ namespace ServiceStack
         }
     }
     
-    public class SharpPagesFeature : ScriptContext, IPlugin, IViewEngine
+    public class SharpPagesFeature : ScriptContext, IPlugin, IViewEngine, Model.IHasStringId
     {
+        public string Id { get; set; } = ServiceStack.Plugins.SharpPages;
         public bool? EnableHotReload { get; set; }
 
         public bool DisablePageBasedRouting { get; set; }

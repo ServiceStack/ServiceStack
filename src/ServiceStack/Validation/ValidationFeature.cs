@@ -2,22 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Funq;
 using ServiceStack.Configuration;
 using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Results;
 using ServiceStack.FluentValidation.Validators;
-using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Validation
 {
-    public class ValidationFeature : IPlugin, IAfterInitAppHost
+    public class ValidationFeature : IPlugin, IAfterInitAppHost, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.Validation;
         public Func<IRequest, ValidationResult, object, object> ErrorResponseFilter { get; set; }
 
         public bool ScanAppHostAssemblies { get; set; } = true;

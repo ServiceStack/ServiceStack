@@ -5,8 +5,9 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class WebSudoFeature : IPlugin, IAuthEvents
+    public class WebSudoFeature : IPlugin, IAuthEvents, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.WebSudo;
         public const string SessionCopyRequestItemKey = "__copy-of-request-session";
 
         public WebSudoFeature()

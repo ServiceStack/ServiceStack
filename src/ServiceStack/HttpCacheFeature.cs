@@ -9,8 +9,9 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class HttpCacheFeature : IPlugin
+    public class HttpCacheFeature : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.HttpCache;
         public TimeSpan DefaultMaxAge { get; set; }
         public TimeSpan DefaultExpiresIn { get; set; }
 

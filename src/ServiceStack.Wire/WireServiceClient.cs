@@ -7,6 +7,7 @@ namespace ServiceStack.Wire
     using ServiceStack.Web;
     using ServiceStack.Text;
 
+    [Obsolete("Use better supported formats like ProtoBuf or MsgPack")]
     public class WireServiceClient : ServiceClientBase
     {
         public override string Format => "x-wire";
@@ -50,6 +51,7 @@ namespace ServiceStack.Wire
         public override StreamDeserializerDelegate StreamDeserializer => WireFormat.Deserialize;
     }
     
+    [Obsolete("Use better supported formats like ProtoBuf or MsgPack")]
     public class WireFormat : IPlugin, IWirePlugin
     {
         public static Serializer WireSerializer = new Serializer(new SerializerOptions(

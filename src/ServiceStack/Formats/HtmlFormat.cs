@@ -1,14 +1,14 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.Serialization;
 using ServiceStack.Web;
 
 namespace ServiceStack.Formats
 {
-    public class HtmlFormat : IPlugin
+    public class HtmlFormat : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.Html;
         public static string TitleFormat
             = @"{0} Snapshot of {1}";
 

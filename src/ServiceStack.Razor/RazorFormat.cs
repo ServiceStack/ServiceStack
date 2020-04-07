@@ -17,8 +17,9 @@ namespace ServiceStack.Razor
 {
     using System.Reflection;
 
-    public class RazorFormat : IPlugin, IRazorPlugin, IRazorConfig
+    public class RazorFormat : IPlugin, IRazorPlugin, IRazorConfig, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.Razor;
         public const string TemplatePlaceHolder = "@RenderBody()";
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(RazorFormat));

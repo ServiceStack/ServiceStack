@@ -1,7 +1,54 @@
 ﻿using System;
+using ServiceStack.Web;
 
 namespace ServiceStack
 {
+    public static class Plugins
+    {
+        public const string Grpc = "grpc";
+        public const string Cors = "cors";
+        public const string AutoQuery = "autoquery";
+        public const string AutoQueryData = "autoquerydata";
+        public const string AutoQueryMetadata = "autoquerymeta";
+        public const string NativeTypes = "ssref";
+        public const string Auth = "auth";
+        public const string Csv = "csv";
+        public const string Html = "html";
+        public const string HttpCache = "httpcache";
+        public const string LispTcpServer = "lisptcp";
+        public const string EncryptedMessaging = "cryptmsg";
+        public const string Metadata = "metadata";
+        public const string MsgPack = "msgpack";
+        public const string OpenApi = "openapi";
+        public const string Postman = "postman";
+        public const string PredefinedRoutes = "autoroutes";
+        public const string ProtoBuf = "protobuf";
+        public const string Razor = "razor";
+        public const string Register = "register";
+        public const string RequestInfo = "reqinfo";
+        public const string Proxy = "proxy";
+        public const string RequestLogs = "reqlogs";
+        public const string ServerEvents = "sse";
+        public const string Session = "session";
+        public const string SharpPages = "sharp";
+        public const string Sitemap = "sitemap";
+        public const string Soap = "soap";
+        public const string Svg = "svg";
+        public const string Validation = "validation";
+        public const string WebSudo = "websudo";
+        public const string CancelRequests = "reqcancel";
+        public const string Swagger = "swagger";
+        public const string MiniProfiler = "miniprofiler";
+        public const string HotReload = "hotreload";
+        public const string RedisErrorLogs = "redislogs";
+
+        public static void AddToAppMetadata(this IAppHost appHost, Action<AppMetadata> fn)
+        {
+            var filters = appHost.GetPlugin<MetadataFeature>()?.AppMetadataFilters;
+            filters?.Add(fn);
+        }
+    }
+    
     /// <summary>
     /// Callback for Plugins to register necessary handlers with ServiceStack
     /// </summary>

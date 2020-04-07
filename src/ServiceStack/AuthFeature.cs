@@ -11,8 +11,9 @@ namespace ServiceStack
     /// <summary>
     /// Enable the authentication feature and configure the AuthService.
     /// </summary>
-    public class AuthFeature : IPlugin, IPostInitPlugin
+    public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.Auth;
         //http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
         public Regex ValidUserNameRegEx = AuthFeatureExtensions.ValidUserNameRegEx;
 
@@ -261,6 +262,16 @@ namespace ServiceStack
                 ViewUtils.NavItemsMap["auth"] = navItems = new List<NavItem>();
 
             navItems.AddRange(authNavItems);
+
+            appHost.AddToAppMetadata(meta => {
+                meta.Plugins.Auth = new AuthInfo {
+                    AuthProviders = AuthenticateService.GetAuthProviders().Map(x => new MetaAuthProvider {
+                        Type = x.GetType().Name,
+                        Name = x.Provider,
+                        NavItem = (x as AuthProvider)?.NavItem,
+                    })
+                };
+            });
         }
 
         public void AfterPluginsLoaded(IAppHost appHost)

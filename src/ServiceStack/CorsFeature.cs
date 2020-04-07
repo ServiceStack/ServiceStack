@@ -9,8 +9,9 @@ namespace ServiceStack
     /// Plugin adds support for Cross-origin resource sharing (CORS, see http://www.w3.org/TR/access-control/). 
     /// CORS allows to access resources from different domain which usually forbidden by origin policy. 
     /// </summary>
-    public class CorsFeature : IPlugin
+    public class CorsFeature : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.Cors;
         public const string DefaultOrigin = "*";
         public const string DefaultMethods = "GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD";
         public const string DefaultHeaders = "Content-Type";

@@ -26,6 +26,7 @@ using ServiceStack.IO;
 using ServiceStack.Messaging;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler;
+using ServiceStack.Model;
 using ServiceStack.Redis;
 using ServiceStack.Serialization;
 using ServiceStack.Support.WebHost;
@@ -809,6 +810,12 @@ namespace ServiceStack
 
             var utf8Bytes = html.ToUtf8Bytes();
             await outputStream.WriteAsync(utf8Bytes, 0, utf8Bytes.Length);
+        }
+
+        public virtual List<string> GetMetadataPluginIds()
+        {
+            var pluginIds = Plugins.OfType<IHasStringId>().Map(x => x.Id);
+            return pluginIds;
         }
     }
 

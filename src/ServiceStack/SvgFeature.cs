@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Net.Sockets;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.Host.Handlers;
@@ -16,9 +13,9 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    
-    public class SvgFeature : IPlugin, IPostInitPlugin
+    public class SvgFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.Svg;
         /// <summary>
         /// RequestLogs service Route, default is /metadata/svg
         /// </summary>

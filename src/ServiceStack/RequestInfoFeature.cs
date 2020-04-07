@@ -3,8 +3,9 @@ using ServiceStack.Host.Handlers;
 
 namespace ServiceStack
 {
-    public class RequestInfoFeature : IPlugin
+    public class RequestInfoFeature : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.RequestInfo;
         public void Register(IAppHost appHost)
         {
             appHost.CatchAllHandlers.Add(ProcessRequest);

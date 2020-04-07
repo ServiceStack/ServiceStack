@@ -6,8 +6,9 @@ namespace ServiceStack
     /// <summary>
     /// Enable the Registration feature and configure the RegistrationService.
     /// </summary>
-    public class RegistrationFeature : IPlugin
+    public class RegistrationFeature : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.Register;
         public string AtRestPath { get; set; }
         
         public ValidateFn ValidateFn 

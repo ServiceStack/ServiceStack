@@ -6,8 +6,9 @@ using ServiceStack.NativeTypes;
 
 namespace ServiceStack
 {
-    public class NativeTypesFeature : IPlugin
+    public class NativeTypesFeature : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.NativeTypes;
         public MetadataTypesConfig MetadataTypesConfig { get; set; }
 
         public static bool DisableTokenVerification { get; set; }

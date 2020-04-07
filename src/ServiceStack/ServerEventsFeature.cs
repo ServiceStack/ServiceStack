@@ -17,8 +17,9 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class ServerEventsFeature : IPlugin
+    public class ServerEventsFeature : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.ServerEvents;
         public string StreamPath { get; set; }
         public string HeartbeatPath { get; set; }
         public string SubscribersPath { get; set; }

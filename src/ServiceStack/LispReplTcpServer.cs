@@ -13,8 +13,9 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class LispReplTcpServer : IPlugin, IPreInitPlugin, IAfterInitAppHost, IDisposable
+    public class LispReplTcpServer : IPlugin, IPreInitPlugin, IAfterInitAppHost, IDisposable, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.LispTcpServer;
         private static ILog Log = LogManager.GetLogger(typeof(LispReplTcpServer));
         
         private int port;

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using MsgPack;
@@ -60,8 +59,9 @@ namespace ServiceStack.MsgPack
         object Convert(object instance);
     }
 
-    public class MsgPackFormat : IPlugin, IMsgPackPlugin
+    public class MsgPackFormat : IPlugin, IMsgPackPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.MsgPack;
         public void Register(IAppHost appHost)
         {
             appHost.ContentTypes.Register(MimeTypes.MsgPack,

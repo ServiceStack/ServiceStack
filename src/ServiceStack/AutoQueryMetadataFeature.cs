@@ -6,8 +6,9 @@ using ServiceStack.NativeTypes;
 
 namespace ServiceStack
 {
-    public class AutoQueryMetadataFeature : IPlugin
+    public class AutoQueryMetadataFeature : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.AutoQueryMetadata;
         public AutoQueryViewerConfig AutoQueryViewerConfig { get; set; }
         public Action<AutoQueryMetadataResponse> MetadataFilter { get; set; }
         public List<Type> ExportTypes { get; set; } 
