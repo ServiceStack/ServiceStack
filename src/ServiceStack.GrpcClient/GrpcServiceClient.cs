@@ -16,7 +16,6 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
-using ServiceStack.Logging;
 
 namespace ServiceStack
 {
@@ -729,71 +728,7 @@ namespace ServiceStack
 
         //also forces static initializer
         public static MetaType GetMetaType() => metaType
-            ??= typeof(T).IsValueType ? null : CreateMetaType();
-
-        private static MetaType CreateMetaType()
-        {
-            var mt = GrpcConfig.TypeModel.Add(typeof(T), applyDefaultBehaviour: true);
-            if (GrpcServiceClient.IsRequestDto(typeof(T)))
-            {
-                // query DTO; we'll flatten the query *into* this type, shifting everything
-                // by some reserved number per level, starting at the most base level
-
-                // walk backwards up the tree; at each level, offset everything by 100
-                // and copy over from the default model
-                var log = LogManager.GetLogger(typeof(MetaTypeConfig<T>));
-                Type current = typeof(T).BaseType;
-                while (current != null && current != typeof(object))
-                {
-                    try
-                    {
-                        mt.ApplyFieldOffset(100);
-                    }
-                    catch (Exception e)
-                    {
-                        log.Error($"Error in CreateMetaType() for '{current.Name}' when 'ApplyFieldOffset(100)': {e.Message}", e);
-                        throw;
-                    }
-                    var source = RuntimeTypeModel.Default[current]?.GetFields();
-                    foreach (var field in source)
-                    {
-                        try
-                        {
-                            AddField(mt, field);
-                        }
-                        catch (Exception e)
-                        {
-                            log.Error($"Error in CreateMetaType() for '{current.Name}' when adding field '{field.Name}': {e.Message}", e);
-                            throw;
-                        }
-                    }
-
-                    // keep going down the hierarchy
-                    current = current.BaseType;
-                }
-            }
-            
-            return mt;
-        }
-
-        private static void AddField(MetaType mt, ValueMember field)
-        {
-            var newField = mt.AddField(field.FieldNumber,
-                field.Member?.Name ?? field.Name,
-                field.ItemType ?? field.MemberType,
-                field.DefaultType);
-            newField.DataFormat = field.DataFormat;
-            newField.IsMap = field.IsMap;
-            newField.IsPacked = field.IsPacked;
-            newField.IsRequired = field.IsRequired;
-            newField.IsStrict = field.IsStrict;
-            newField.DefaultValue = field.DefaultValue;
-            newField.MapKeyFormat = field.MapKeyFormat;
-            newField.MapValueFormat = field.MapValueFormat;
-            newField.Name = field.Name;
-            newField.OverwriteList = field.OverwriteList;
-            newField.SupportNull = field.SupportNull;
-        }
+            ??= typeof(T).IsValueType ? null : GrpcConfig.TypeModel[typeof(T)];
     }
 
     public class GrpcMarshaller<T> : Marshaller<T>

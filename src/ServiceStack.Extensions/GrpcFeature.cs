@@ -311,15 +311,7 @@ namespace ServiceStack
             // All DTO Types with inheritance need to be registered in GrpcMarshaller<T> / GrpcUtils.TypeModel
             foreach (var dto in allDtos)
             {
-                try
-                {
-                    GrpcConfig.Register(dto);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    // throw;
-                }
+                GrpcConfig.Register(dto);
             }
         }
 
