@@ -2,12 +2,87 @@ using System;
 using System.Collections.Concurrent;
 using System.Reflection;
 using ProtoBuf.Meta;
+using ServiceStack.Logging;
 
 namespace ServiceStack
 {
     public static class GrpcConfig
     {
-        public static RuntimeTypeModel TypeModel { get; } = ProtoBuf.Meta.RuntimeTypeModel.Create();
+        public static RuntimeTypeModel TypeModel { get; }
+
+        static GrpcConfig()
+        {
+            var model = RuntimeTypeModel.Create();
+            model.AfterApplyDefaultBehaviour += OnAfterApplyDefaultBehaviour;
+            TypeModel = model;
+        }
+
+        private static void OnAfterApplyDefaultBehaviour(object sender, TypeAddedEventArgs args)
+        {
+            if (GrpcServiceClient.IsRequestDto(args.Type))
+            {
+                // query DTO; we'll flatten the query *into* this type, shifting everything
+                // by some reserved number per level, starting at the most base level
+
+                // walk backwards up the tree; at each level, offset everything by 100
+                // and copy over from the default model
+                var log = LogManager.GetLogger(typeof(MetaTypeConfig<>).MakeGenericType(args.Type));
+                Type current = args.Type.BaseType;
+                var mt = args.MetaType;
+                while (current != null && current != typeof(object))
+                {
+                    try
+                    {
+                        mt.ApplyFieldOffset(100);
+                    }
+                    catch (Exception e)
+                    {
+                        log.Error($"Error in CreateMetaType() for '{current.Name}' when 'ApplyFieldOffset(100)': {e.Message}", e);
+                        throw;
+                    }
+                    var source = RuntimeTypeModel.Default[current]?.GetFields();
+                    foreach (var field in source)
+                    {
+                        try
+                        {
+                            AddField(mt, field);
+                        }
+                        catch (Exception e)
+                        {
+                            log.Error($"Error in CreateMetaType() for '{current.Name}' when adding field '{field.Name}': {e.Message}", e);
+                            throw;
+                        }
+                    }
+
+                    // keep going down the hierarchy
+                    current = current.BaseType;
+                }
+            }
+            static void AddField(MetaType mt, ValueMember field)
+            {
+                try
+                {
+                    var newField = mt.AddField(field.FieldNumber,
+                        field.Member?.Name ?? field.Name,
+                        field.ItemType,
+                        field.DefaultType);
+                    newField.DataFormat = field.DataFormat;
+                    newField.IsMap = field.IsMap;
+                    newField.IsPacked = field.IsPacked;
+                    newField.IsRequired = field.IsRequired;
+                    newField.IsStrict = field.IsStrict;
+                    newField.DefaultValue = field.DefaultValue;
+                    newField.MapKeyFormat = field.MapKeyFormat;
+                    newField.MapValueFormat = field.MapValueFormat;
+                    newField.Name = field.Name;
+                    newField.OverwriteList = field.OverwriteList;
+                    newField.SupportNull = field.SupportNull;
+                } catch(Exception ex)
+                {
+                    throw new InvalidOperationException($"Error adding field {field.Member?.Name}: {ex.Message}", ex);
+                }
+            }
+        }
 
         public static Func<Type, bool> IgnoreTypeModel { get; set; } = DefaultIgnoreTypes;
 
