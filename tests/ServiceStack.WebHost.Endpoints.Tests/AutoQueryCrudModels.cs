@@ -224,7 +224,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public LivingStatus? LivingStatus { get; set; }
     }
     
-    public class RealDeleteAuditTenantGateway : IReturn<RockstarWithIdResponse>
+    public class RealDeleteAuditTenantGateway : IReturn<RockstarWithIdAndCountResponse>
     {
         public int Id { get; set; }
     }

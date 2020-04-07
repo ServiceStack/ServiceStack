@@ -58,6 +58,24 @@ namespace ServiceStack
             Save   => HttpMethods.Post,
         };
 
+        public static string ToHttpMethod(Type requestType)
+        {
+            if (requestType.IsOrHasGenericInterfaceTypeOf(typeof(ICreateDb<>)))
+                return HttpMethods.Post;
+            if (requestType.IsOrHasGenericInterfaceTypeOf(typeof(IUpdateDb<>)))
+                return HttpMethods.Put;
+            if (requestType.IsOrHasGenericInterfaceTypeOf(typeof(IDeleteDb<>)))
+                return HttpMethods.Delete;
+            if (requestType.IsOrHasGenericInterfaceTypeOf(typeof(IPatchDb<>)))
+                return HttpMethods.Patch;
+            if (requestType.IsOrHasGenericInterfaceTypeOf(typeof(ISaveDb<>)))
+                return HttpMethods.Post;
+            if (typeof(IQueryDb).IsAssignableFrom(requestType))
+                return HttpMethods.Get;
+
+            return null;
+        }
+
         public static AutoCrudDtoType? GetCrudGenericDefTypes(Type requestType, Type crudType)
         {
             var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(crudType);

@@ -7,7 +7,7 @@
 
     <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
 <!-- TODO GET AutoQuery CRUD to work after existing tests have been resolved -->
-<!--        <DefineConstants>$(DefineConstants);AUTOQUERY_CRUD</DefineConstants>-->
+        <DefineConstants>$(DefineConstants);AUTOQUERY_CRUD</DefineConstants>
     </PropertyGroup>
 
 

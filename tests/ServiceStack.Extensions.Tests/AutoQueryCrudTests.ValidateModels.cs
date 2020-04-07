@@ -302,11 +302,11 @@ namespace ServiceStack.Extensions.Tests
         [DataMember(Order = 1)]
         public virtual Guid Id { get; set; }
         [DataMember(Order = 2)]
-        public virtual DateTimeOffset CreateDate { get; set; }
+        public virtual DateTime CreateDate { get; set; }
         [DataMember(Order = 3)]
         public virtual string CreatedBy { get; set; }
         [DataMember(Order = 4)]
-        public virtual DateTimeOffset ModifiedDate { get; set; }
+        public virtual DateTime ModifiedDate { get; set; }
         [DataMember(Order = 5)]
         public virtual string ModifiedBy { get; set; }
     }
@@ -328,11 +328,11 @@ namespace ServiceStack.Extensions.Tests
     public class QueryBookmarks : QueryDb<Bookmark> { }
 
     // custom script methods
-    [AutoPopulate(nameof(Bookmark.Id), Eval = "F('Guid.NewGuid')()")] 
+    [AutoPopulate(nameof(Bookmark.Id), Eval = "nguid")] 
     [AutoPopulate(nameof(Bookmark.CreatedBy), Eval = "userAuthId")]
-    [AutoPopulate(nameof(Bookmark.CreateDate), Eval = "utcNowOffset")]
+    [AutoPopulate(nameof(Bookmark.CreateDate), Eval = "utcNow")]
     [AutoPopulate(nameof(Bookmark.ModifiedBy), Eval = "userAuthId")]
-    [AutoPopulate(nameof(Bookmark.ModifiedDate), Eval = "utcNowOffset")]
+    [AutoPopulate(nameof(Bookmark.ModifiedDate), Eval = "utcNow")]
     [DataContract]
     public class CreateBookmark : ICreateDb<Bookmark>, IReturn<CreateBookmarkResponse>
     {

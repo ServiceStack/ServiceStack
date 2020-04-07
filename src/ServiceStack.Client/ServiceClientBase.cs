@@ -551,6 +551,24 @@ namespace ServiceStack
             }
         }
 
+        public static string ToHttpMethod(Type requestType)
+        {
+            if (requestType.IsOrHasGenericInterfaceTypeOf(typeof(ICreateDb<>)))
+                return HttpMethods.Post;
+            if (requestType.IsOrHasGenericInterfaceTypeOf(typeof(IUpdateDb<>)))
+                return HttpMethods.Put;
+            if (requestType.IsOrHasGenericInterfaceTypeOf(typeof(IDeleteDb<>)))
+                return HttpMethods.Delete;
+            if (requestType.IsOrHasGenericInterfaceTypeOf(typeof(IPatchDb<>)))
+                return HttpMethods.Patch;
+            if (requestType.IsOrHasGenericInterfaceTypeOf(typeof(ISaveDb<>)))
+                return HttpMethods.Post;
+            if (typeof(IQuery).IsAssignableFrom(requestType))
+                return HttpMethods.Get;
+
+            return null;
+        }
+
         public virtual TResponse Send<TResponse>(object request)
         {
             if (typeof(TResponse) == typeof(object))
@@ -568,6 +586,24 @@ namespace ServiceStack
                     return Delete<TResponse>(request);
                 if (request is IPatch)
                     return Patch<TResponse>(request);
+            }
+
+            if (request is IQuery)
+                return Get<TResponse>(request);
+            if (request is ICrud)
+            {
+                var crudMethod = ToHttpMethod(request.GetType());
+                if (crudMethod != null)
+                {
+                    return crudMethod switch {
+                        HttpMethods.Post => Post<TResponse>(request),
+                        HttpMethods.Put => Put<TResponse>(request),
+                        HttpMethods.Delete => Delete<TResponse>(request),
+                        HttpMethods.Patch => Patch<TResponse>(request),
+                        HttpMethods.Get => Get<TResponse>(request),
+                        _ => throw new NotSupportedException("Unknown " + crudMethod),
+                    };
+                }
             }
 
             var httpMethod = HttpMethod ?? DefaultHttpMethod;

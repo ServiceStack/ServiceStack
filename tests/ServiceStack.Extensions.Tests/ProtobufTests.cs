@@ -28,6 +28,26 @@ namespace ServiceStack.Extensions.Tests
         public virtual string Include { get; set; }
     }
     
+    [DataContract]
+    public abstract class HiddenBase
+    {
+        [DataMember(Order = 1)]
+        public string FirstName { get; set; }
+        [DataMember(Order = 2)]
+        public LivingStatus LivingStatus { get; set; }
+    }
+
+    [DataContract]
+    public class Shadowed : HiddenBase
+    {
+        [DataMember(Order = 1)]
+        public int Id { get; set; }
+        [DataMember(Order = 2)]
+        public new string FirstName { get; set; }
+        [DataMember(Order = 3)]
+        public new LivingStatus? LivingStatus { get; set; } //overridden property
+    }
+
     public class ProtobufTests
     {
         public T Serialize<T>(T dto, TypeModel model = null)
@@ -121,6 +141,18 @@ namespace ServiceStack.Extensions.Tests
             };
             var toDto = SerializeGrpc(dto);
             Assert.That(toDto.Body, Is.EqualTo(dto.Body));
+        }
+
+        [Test]
+        public void Can_serialize_hidden_property()
+        {
+            var dto = new Shadowed {
+                Id = 1,
+                FirstName = "Updated",
+                LivingStatus = LivingStatus.Dead,
+            };
+            var toDto = SerializeGrpc(dto);
+            Assert.That(toDto.LivingStatus, Is.EqualTo(dto.LivingStatus));
         }
     }
 }

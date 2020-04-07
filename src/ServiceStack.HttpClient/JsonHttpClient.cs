@@ -645,6 +645,24 @@ namespace ServiceStack
                     return PatchAsync<TResponse>(request, token);
             }
 
+            if (request is IQuery)
+                return GetAsync<TResponse>(request, token);
+            if (request is ICrud)
+            {
+                var crudMethod = ServiceClientBase.ToHttpMethod(request.GetType());
+                if (crudMethod != null)
+                {
+                    return crudMethod switch {
+                        HttpMethods.Post => PostAsync<TResponse>(request, token),
+                        HttpMethods.Put => PutAsync<TResponse>(request, token),
+                        HttpMethods.Delete => DeleteAsync<TResponse>(request, token),
+                        HttpMethods.Patch => PatchAsync<TResponse>(request, token),
+                        HttpMethods.Get => GetAsync<TResponse>(request, token),
+                        _ => throw new NotSupportedException("Unknown " + crudMethod),
+                    };
+                }
+            }
+
             var httpMethod = ServiceClientBase.GetExplicitMethod(request) ?? DefaultHttpMethod;
             var requestUri = ResolveUrl(httpMethod, UrlResolver == null
                 ? this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name

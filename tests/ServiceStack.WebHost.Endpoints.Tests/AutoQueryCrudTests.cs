@@ -423,7 +423,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             try
             {
-                client.Post(new UpdateRockstar {
+                client.Put(new UpdateRockstar {
                     Id = 100,
                     LastName = "UpdateRockstar",
                 });
@@ -790,7 +790,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(patchResponse.Result.FirstName, Is.EqualTo("Updated & Patched"));
             assertUpdated(patchResponse.Result);
 
-            var softDeleteResponse = authClient.Delete(new SoftDeleteAuditTenant {
+            var softDeleteResponse = authClient.Put(new SoftDeleteAuditTenant {
                 Id = id,
             });
 
@@ -868,7 +868,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 FirstName = "UpdatedGateway",
                 LivingStatus = LivingStatus.Alive,
             };
-            var updateResponse = authClient.Patch(updateRequest);
+            var updateResponse = authClient.Put(updateRequest);
             result = updateResponse.Result;
             
             Assert.That(updateResponse.Id, Is.EqualTo(createResponse.Id));
@@ -932,7 +932,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 FirstName = nameof(UpdateRockstarAuditTenantMq),
                 LivingStatus = LivingStatus.Alive,
             };
-            authClient.Patch(updateRequest);
+            authClient.Put(updateRequest);
 
             ExecUtils.RetryUntilTrue(() => 
                     db.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(UpdateRockstarAuditTenantMq)),

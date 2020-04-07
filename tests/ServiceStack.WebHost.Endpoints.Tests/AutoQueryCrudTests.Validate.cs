@@ -16,6 +16,25 @@ using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
+    public class NoRockstarAlbumReferences : TypeValidator
+    {
+        public NoRockstarAlbumReferences() 
+            : base("HasForeignKeyReferences", "Has RockstarAlbum References") {}
+
+        public override async Task<bool> IsValidAsync(object dto, IRequest request = null)
+        {
+            //Example of dynamic access using compiled accessor delegates
+            //var id = TypeProperties.Get(dto.GetType()).GetPublicGetter("Id")(dto).ConvertTo<int>();
+            var id = ((IHasId<int>) dto).Id;
+            using var db = HostContext.AppHost.GetDbConnection(request);
+            return !(await db.ExistsAsync<RockstarAlbum>(x => x.RockstarId == id));
+        }
+    }
+
+    public class MyValidators : ScriptMethods
+    {
+        public ITypeValidator NoRockstarAlbumReferences() => new NoRockstarAlbumReferences();
+    }
 
     public partial class AutoQueryCrudTests
     {
@@ -635,26 +654,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(e.StatusCode, Is.EqualTo(400));
                 Assert.That(e.ErrorCode, Is.EqualTo("NotNull")); //success!
             }
-        }
-
-        class NoRockstarAlbumReferences : TypeValidator
-        {
-            public NoRockstarAlbumReferences() 
-                : base("HasForeignKeyReferences", "Has RockstarAlbum References") {}
-
-            public override async Task<bool> IsValidAsync(object dto, IRequest request = null)
-            {
-                //Example of dynamic access using compiled accessor delegates
-                //var id = TypeProperties.Get(dto.GetType()).GetPublicGetter("Id")(dto).ConvertTo<int>();
-                var id = ((IHasId<int>) dto).Id;
-                using var db = HostContext.AppHost.GetDbConnection(request);
-                return !(await db.ExistsAsync<RockstarAlbum>(x => x.RockstarId == id));
-            }
-        }
-
-        public class MyValidators : ScriptMethods
-        {
-            public ITypeValidator NoRockstarAlbumReferences() => new NoRockstarAlbumReferences();
         }
 
         [Test]

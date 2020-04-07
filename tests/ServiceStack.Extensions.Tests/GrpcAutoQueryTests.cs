@@ -15,6 +15,7 @@ using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Logging;
 using ServiceStack.OrmLite;
+using ServiceStack.Script;
 using ServiceStack.Text;
 using ServiceStack.Validation;
 
@@ -852,6 +853,17 @@ namespace ServiceStack.Extensions.Tests
             GrpcClientFactory.AllowUnencryptedHttp2 = true;
             var client = new GrpcServiceClient(BaseUri);
             return client;
+        }
+    }
+
+    public static class TestUtils
+    {
+        public static void AddRequiredConfig(this ScriptContext context)
+        {
+            context.ScriptMethods.AddRange(new ScriptMethods[] {
+                new DbScriptsAsync(),
+                new MyValidators(), 
+            });
         }
     }
 

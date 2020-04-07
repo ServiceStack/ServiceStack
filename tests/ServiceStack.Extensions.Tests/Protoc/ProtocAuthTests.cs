@@ -75,7 +75,7 @@ namespace ServiceStack.Extensions.Tests.Protoc
                 AfterInitCallbacks.Add(host => {
                     
                     var authRepo = GetAuthRepository();
-                    (authRepo as InMemoryAuthRepository).Clear();
+                    (authRepo as InMemoryAuthRepository)?.Clear();
                     
                     authRepo.CreateUserAuth(new UserAuth
                     {
@@ -96,6 +96,8 @@ namespace ServiceStack.Extensions.Tests.Protoc
                     liveKey = apiKeys.First(x => x.Environment == "live");
                     testKey = apiKeys.First(x => x.Environment == "test");
                 });
+                
+                ScriptContext.AddRequiredConfig();
             }
 
             public override void Configure(IServiceCollection services)

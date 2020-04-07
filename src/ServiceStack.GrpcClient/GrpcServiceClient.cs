@@ -252,39 +252,46 @@ namespace ServiceStack
         {
             if (requestDto == null)
                 throw new ArgumentNullException(nameof(requestDto));
-            
-            var authIncluded = GrpcUtils.InitRequestDto(Config, requestDto);
-            var options = new CallOptions().Init(Config, noAuth:authIncluded);
 
-            GrpcClientConfig.GlobalRequestFilter?.Invoke(options);
-            Config.RequestFilter?.Invoke(options);
-
-            var callInvoker = Config.Channel.CreateCallInvoker();
-            var fn = ResolveExecute<TResponse>(requestDto);
-            using var auc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, Config.ServicesName, methodName, options, null);
-
-            var (response, status, headers) = await GrpcUtils.GetResponseAsync(Config, auc);
-
-            if (status?.ErrorCode != null)
+            try 
             {
-                if (await RetryRequest(Config, auc.GetStatus().StatusCode, status, callInvoker))
-                {
-                    options = new CallOptions().Init(Config, noAuth:authIncluded);
-                    using var retryAuc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, Config.ServicesName, methodName, options, null);
-                    var (retryResponse, retryStatus, retryHeaders) = await GrpcUtils.GetResponseAsync(Config, retryAuc);
-                    if (retryStatus?.ErrorCode == null)
-                        return retryResponse;
-                }
-                
-                throw new WebServiceException(status.Message) {
-                    StatusCode = ResponseCallContext.GetHttpStatus(headers),
-                    ResponseDto = response as object ?? new EmptyResponse { ResponseStatus = status },
-                    ResponseHeaders = GrpcUtils.ResolveHeaders(headers),
-                    State = auc.GetStatus(),
-                };
-            }
+                var authIncluded = GrpcUtils.InitRequestDto(Config, requestDto);
+                var options = new CallOptions().Init(Config, noAuth:authIncluded);
 
-            return response;
+                GrpcClientConfig.GlobalRequestFilter?.Invoke(options);
+                Config.RequestFilter?.Invoke(options);
+
+                var callInvoker = Config.Channel.CreateCallInvoker();
+                var fn = ResolveExecute<TResponse>(requestDto);
+                using var auc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, Config.ServicesName, methodName, options, null);
+
+                var (response, status, headers) = await GrpcUtils.GetResponseAsync(Config, auc);
+
+                if (status?.ErrorCode != null)
+                {
+                    if (await RetryRequest(Config, auc.GetStatus().StatusCode, status, callInvoker))
+                    {
+                        options = new CallOptions().Init(Config, noAuth:authIncluded);
+                        using var retryAuc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, Config.ServicesName, methodName, options, null);
+                        var (retryResponse, retryStatus, retryHeaders) = await GrpcUtils.GetResponseAsync(Config, retryAuc);
+                        if (retryStatus?.ErrorCode == null)
+                            return retryResponse;
+                    }
+                
+                    throw new WebServiceException(status.Message) {
+                        StatusCode = ResponseCallContext.GetHttpStatus(headers),
+                        ResponseDto = response as object ?? new EmptyResponse { ResponseStatus = status },
+                        ResponseHeaders = GrpcUtils.ResolveHeaders(headers),
+                        State = auc.GetStatus(),
+                    };
+                }
+
+                return response;
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
         }
 
         public async Task<List<TResponse>> ExecuteAll<TResponse>(object[] requestDtos,
@@ -455,7 +462,30 @@ namespace ServiceStack
                     return Methods.Patch;
             }
 
+            if (request is IQuery)
+                return HttpMethods.Get;
+            if (request is ICrud)
+                return ToHttpMethod(request.GetType()) ?? DefaultMethod;
+                
             return DefaultMethod;
+        }
+        
+        static string ToHttpMethod(Type requestType)
+        {
+            if (requestType.IsOrHasGenericInterfaceTypeOf(typeof(ICreateDb<>)))
+                return HttpMethods.Post;
+            if (requestType.IsOrHasGenericInterfaceTypeOf(typeof(IUpdateDb<>)))
+                return HttpMethods.Put;
+            if (requestType.IsOrHasGenericInterfaceTypeOf(typeof(IDeleteDb<>)))
+                return HttpMethods.Delete;
+            if (requestType.IsOrHasGenericInterfaceTypeOf(typeof(IPatchDb<>)))
+                return HttpMethods.Patch;
+            if (requestType.IsOrHasGenericInterfaceTypeOf(typeof(ISaveDb<>)))
+                return HttpMethods.Post;
+            if (typeof(IQuery).IsAssignableFrom(requestType))
+                return HttpMethods.Get;
+
+            return null;
         }
 
         string GetMethodName(string verb, object requestDto) => GrpcConfig.GetServiceName(verb, requestDto.GetType().Name); 
@@ -531,11 +561,11 @@ namespace ServiceStack
         public TResponse Put<TResponse>(object requestDto) => PutAsync<TResponse>(requestDto).GetAwaiter().GetResult();
 
         public void Put(IReturnVoid requestDto) => PutAsync(requestDto).GetAwaiter().GetResult();
-        public TResponse Patch<TResponse>(IReturn<TResponse> requestDto) => PutAsync(requestDto).GetAwaiter().GetResult();
+        public TResponse Patch<TResponse>(IReturn<TResponse> requestDto) => PatchAsync(requestDto).GetAwaiter().GetResult();
 
-        public TResponse Patch<TResponse>(object requestDto) => PutAsync<TResponse>(requestDto).GetAwaiter().GetResult();
+        public TResponse Patch<TResponse>(object requestDto) => PatchAsync<TResponse>(requestDto).GetAwaiter().GetResult();
 
-        public void Patch(IReturnVoid requestDto) => PutAsync(requestDto).GetAwaiter().GetResult();
+        public void Patch(IReturnVoid requestDto) => PatchAsync(requestDto).GetAwaiter().GetResult();
 
         public TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> requestDto) =>
             CustomMethodAsync(httpVerb, requestDto).GetAwaiter().GetResult();

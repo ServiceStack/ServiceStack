@@ -235,10 +235,10 @@ namespace ServiceStack.Extensions.Tests
     public abstract class QueryDbTenant<From, Into> : QueryDb<From, Into> { }
 
     [DataContract]
-    public class CreateRockstarAuditTenant : CreateAuditTenantBase<RockstarAuditTenant, RockstarWithIdAndResultResponse>, IHasSessionId
+    public class CreateRockstarAuditTenant : CreateAuditTenantBase<RockstarAuditTenant, RockstarWithIdAndResultResponse>, IHasBearerToken
     {
         [DataMember(Order = 1)]
-        public string SessionId { get; set; } //Authenticate MQ Requests
+        public string BearerToken { get; set; } //Authenticate MQ Requests
         [DataMember(Order = 2)]
         public string FirstName { get; set; }
         [DataMember(Order = 3)]
@@ -254,10 +254,10 @@ namespace ServiceStack.Extensions.Tests
     }
 
     [DataContract]
-    public class UpdateRockstarAuditTenant : UpdateAuditTenantBase<RockstarAuditTenant, RockstarWithIdAndResultResponse>, IHasSessionId
+    public class UpdateRockstarAuditTenant : UpdateAuditTenantBase<RockstarAuditTenant, RockstarWithIdAndResultResponse>, IHasBearerToken
     {
         [DataMember(Order = 1)]
-        public string SessionId { get; set; } //Authenticate MQ Requests
+        public string BearerToken { get; set; } //Authenticate MQ Requests
         [DataMember(Order = 2)]
         public int Id { get; set; }
         [DataMember(Order = 3)]
@@ -267,10 +267,10 @@ namespace ServiceStack.Extensions.Tests
     }
 
     [DataContract]
-    public class PatchRockstarAuditTenant : PatchAuditTenantBase<RockstarAuditTenant, RockstarWithIdAndResultResponse>, IHasSessionId
+    public class PatchRockstarAuditTenant : PatchAuditTenantBase<RockstarAuditTenant, RockstarWithIdAndResultResponse>, IHasBearerToken
     {
         [DataMember(Order = 1)]
-        public string SessionId { get; set; } //Authenticate MQ Requests
+        public string BearerToken { get; set; } //Authenticate MQ Requests
         [DataMember(Order = 2)]
         public int Id { get; set; }
         [DataMember(Order = 3)]
@@ -319,7 +319,7 @@ namespace ServiceStack.Extensions.Tests
     }
 
     [DataContract]
-    public class RealDeleteAuditTenantGateway : IReturn<RockstarWithIdResponse>, IDelete
+    public class RealDeleteAuditTenantGateway : IReturn<RockstarWithIdAndCountResponse>, IDelete
     {
         [DataMember(Order = 1)]
         public int Id { get; set; }
@@ -352,7 +352,7 @@ namespace ServiceStack.Extensions.Tests
 
     [Authenticate]
     [DataContract]
-    public class UpdateRockstarAuditTenantMq : IReturnVoid
+    public class UpdateRockstarAuditTenantMq : IPut, IReturnVoid
     {
         [DataMember(Order = 1)]
         public int Id { get; set; }
@@ -363,7 +363,7 @@ namespace ServiceStack.Extensions.Tests
     }
 
     [DataContract]
-    public class PatchRockstarAuditTenantMq : IReturnVoid
+    public class PatchRockstarAuditTenantMq : IPatch, IReturnVoid
     {
         [DataMember(Order = 1)]
         public int Id { get; set; }
@@ -374,7 +374,7 @@ namespace ServiceStack.Extensions.Tests
     }
 
     [DataContract]
-    public class RealDeleteAuditTenantMq : IReturnVoid
+    public class RealDeleteAuditTenantMq : IDelete, IReturnVoid
     {
         [DataMember(Order = 1)]
         public int Id { get; set; }
@@ -397,11 +397,11 @@ namespace ServiceStack.Extensions.Tests
 
     [Authenticate]
     [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId), Eval = "Request.Items.TenantId")]
-    public class RealDeleteAuditTenant : IDeleteDb<RockstarAuditTenant>, IReturn<RockstarWithIdAndCountResponse>,
-        IHasSessionId
+    [DataContract]
+    public class RealDeleteAuditTenant : IDeleteDb<RockstarAuditTenant>, IReturn<RockstarWithIdAndCountResponse>, IHasBearerToken
     {
         [DataMember(Order = 1)]
-        public string SessionId { get; set; } //Authenticate MQ Requests
+        public string BearerToken { get; set; } //Authenticate MQ Requests
         [DataMember(Order = 2)]
         public int Id { get; set; }
         [DataMember(Order = 3)]
@@ -556,11 +556,17 @@ namespace ServiceStack.Extensions.Tests
     public class UpdateRockstarAudit : RockstarBase, IPatchDb<RockstarAudit>, IReturn<EmptyResponse>
     {
         [DataMember(Order = 1)]
+        // [DataMember(Order = 11)]
         public int Id { get; set; }
         [DataMember(Order = 2)]
+        // [DataMember(Order = 12)]
         public new string FirstName { get; set; }
-        [DataMember(Order = 3)]
-        public new LivingStatus? LivingStatus { get; set; }
+        
+        //1. Commenting out property resolves issue
+        //2. When using 1,2 index throws Grpc.Core.RpcException: Status(StatusCode=Unknown, Detail="Exception was thrown by handler.")
+        //3. When Index changed to 11,12 causes empty DTO to be sent
+        [DataMember(Order = 13)]
+        public new LivingStatus? LivingStatus { get; set; } //overridden property
     }
 
     [Authenticate]

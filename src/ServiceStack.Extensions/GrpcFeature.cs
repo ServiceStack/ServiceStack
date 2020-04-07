@@ -283,31 +283,6 @@ namespace ServiceStack
 
         private static void RegisterDtoTypes(IEnumerable<Type> allDtos)
         {
-            /* Test DTOS that fail with:
-             
-             System.InvalidOperationException: The type cannot be changed once a serializer has been generated for ServiceStack.Extensions.Tests.QueryOverridedRockstars
-               at ProtoBuf.Meta.MetaType.ThrowIfFrozen() in C:\projects\protobuf-net\src\protobuf-net\Meta\MetaType.cs:line 375
-
-            var errorDtoNames = "QueryOverridedRockstars,QueryOverridedCustomRockstars,QueryCaseInsensitiveOrderBy,StreamMovies,QueryCustomRockstarsReferences,QueryRockstarAlbumsCustomLeftJoin,QueryChangeConnectionInfo".Split(',');
-            
-            // Registering failing DTOs first still doesn't resolve the issue where they've been frozen after "serializer has been generated"?  
-            foreach (var dto in allDtos)
-            {
-                if (errorDtoNames.Contains(dto.Name))
-                {
-                    try
-                    {
-                        GrpcConfig.Register(dto);
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                        // throw;
-                    }
-                }
-            }
-            */
-
             // All DTO Types with inheritance need to be registered in GrpcMarshaller<T> / GrpcUtils.TypeModel
             foreach (var dto in allDtos)
             {
@@ -357,10 +332,18 @@ namespace ServiceStack
                         }
                         else
                         {
-                            var anyMethods = GenerateMethodsForAny(op.RequestType);
-                            if (!anyMethods.IsEmpty())
+                            var crudMethod = AutoCrudOperation.ToHttpMethod(op.RequestType);
+                            if (crudMethod != null)
                             {
-                                methods.AddRange(anyMethods);
+                                methods.Add(crudMethod);
+                            }
+                            else
+                            {
+                                var anyMethods = GenerateMethodsForAny(op.RequestType);
+                                if (!anyMethods.IsEmpty())
+                                {
+                                    methods.AddRange(anyMethods);
+                                }
                             }
                         }
                     }
