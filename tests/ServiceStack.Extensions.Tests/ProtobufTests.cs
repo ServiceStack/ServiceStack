@@ -152,6 +152,8 @@ namespace ServiceStack.Extensions.Tests
                 LivingStatus = LivingStatus.Dead,
             };
             var toDto = SerializeGrpc(dto);
+            Assert.That(toDto.Id, Is.EqualTo(dto.Id));
+            Assert.That(toDto.FirstName, Is.EqualTo(dto.FirstName));
             Assert.That(toDto.LivingStatus, Is.EqualTo(dto.LivingStatus));
         }
     }
