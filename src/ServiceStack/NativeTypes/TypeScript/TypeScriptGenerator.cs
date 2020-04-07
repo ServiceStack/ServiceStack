@@ -116,7 +116,7 @@ namespace ServiceStack.NativeTypes.TypeScript
         /// <summary>
         /// Whether property should be marked optional
         /// </summary>
-        public Func<MetadataTypesConfig, MetadataType, MetadataPropertyType, bool?> IsPropertyOptional { get; set; } =
+        public static Func<MetadataTypesConfig, MetadataType, MetadataPropertyType, bool?> IsPropertyOptional { get; set; } =
             DefaultIsPropertyOptional;
 
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
