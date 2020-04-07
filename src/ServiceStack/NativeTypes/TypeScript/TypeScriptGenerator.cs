@@ -113,6 +113,12 @@ namespace ServiceStack.NativeTypes.TypeScript
         
         public HashSet<string> AddedDeclarations { get; set; } = new HashSet<string>();
 
+        /// <summary>
+        /// Whether property should be marked optional
+        /// </summary>
+        public Func<MetadataTypesConfig, MetadataType, MetadataPropertyType, bool?> IsPropertyOptional { get; set; } =
+            DefaultIsPropertyOptional;
+
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
             var typeNamespaces = new HashSet<string>();
@@ -503,21 +509,13 @@ namespace ServiceStack.NativeTypes.TypeScript
                     if (wasAdded) sb.AppendLine();
 
                     var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
-                    var optional = "";
-                    if (propType.EndsWith("?"))
-                    {
+                    var optionalProperty = propType.EndsWith("?");
+                    if (optionalProperty)
                         propType = propType.Substring(0, propType.Length - 1);
-                        optional = "?";
-                    }
 
-                    if (Config.MakePropertiesOptional)
-                        optional = "?";
-
-                    if (prop.Attributes.Safe().FirstOrDefault(x => x.Name == "Required") != null)
-                        optional = "";
-
-                    if (Config.ExportAsTypes && !type.IsInterface.GetValueOrDefault())
-                        optional = "";
+                    var optional = IsPropertyOptional(Config, type, prop) ?? optionalProperty
+                        ? "?"
+                        : "";
 
                     wasAdded = AppendComments(sb, prop.Description);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
@@ -534,6 +532,17 @@ namespace ServiceStack.NativeTypes.TypeScript
                 sb.AppendLine(modifier + "{0}{1}: ResponseStatus;".Fmt(
                     typeof(ResponseStatus).Name.PropertyStyle(), Config.ExportAsTypes ? "" : "?"));
             }
+        }
+
+        public static bool? DefaultIsPropertyOptional(MetadataTypesConfig config, MetadataType type, MetadataPropertyType prop)
+        {
+            if (prop.Attributes.Safe().FirstOrDefault(x => x.Name == "Required") != null)
+                return false;
+            
+            if (config.MakePropertiesOptional)
+                return true;
+
+            return null;
         }
 
         public bool AppendAttributes(StringBuilderWrapper sb, List<MetadataAttribute> attributes)
