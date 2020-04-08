@@ -709,17 +709,15 @@ namespace ServiceStack
 
                 // find all other sub-types in the same assembly, and eagerly register them
                 var allTypes = typeof(T).Assembly.GetTypes(); // TODO: cache this?
+                Type[] typeArgs = new Type[1];
+                foreach(var subType in allTypes)
                 {
-                    Type[] typeArgs = new Type[1];
-                    foreach(var subType in allTypes)
+                    if (subType.BaseType == typeof(T))
                     {
-                        if (subType.BaseType == typeof(T))
-                        {
-                            // touch MetaTypeConfig<subType>.Instance to force it to register if not already
-                            typeArgs[0] = subType;
-                            _ = typeof(MetaTypeConfig<>).MakeGenericType(typeArgs)
-                                .GetProperty(nameof(Instance))?.GetValue(null);
-                        }
+                        // touch MetaTypeConfig<subType>.Instance to force it to register if not already
+                        typeArgs[0] = subType;
+                        _ = typeof(MetaTypeConfig<>).MakeGenericType(typeArgs)
+                            .GetProperty(nameof(Instance))?.GetValue(null);
                     }
                 }
             }
