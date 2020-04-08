@@ -27,9 +27,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 }
             };
 
-            var reponseWasAutoHandled = mockResponse.WriteToResponse(httpResult, MimeTypes.Html);
+            var responseWasAutoHandled = mockResponse.WriteToResponse(httpResult, MimeTypes.Html);
 
-            Assert.That(reponseWasAutoHandled.Result, Is.True);
+            Assert.That(responseWasAutoHandled.Result, Is.True);
 
             var writtenString = mockResponse.ReadAsString();
             Assert.That(writtenString, Is.EqualTo(customText));
@@ -55,9 +55,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 }
             };
 
-            var reponseWasAutoHandled = mockResponse.WriteToResponse(httpResult, MimeTypes.Html);
+            var responseWasAutoHandled = mockResponse.WriteToResponse(httpResult, MimeTypes.Html);
 
-            Assert.That(reponseWasAutoHandled.Result, Is.True);
+            Assert.That(responseWasAutoHandled.Result, Is.True);
 
             var writtenString = mockResponse.ReadAsString();
             Assert.That(writtenString, Is.EqualTo(customText));
@@ -77,9 +77,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 RequestContext = mockRequest
             };
 
-            var reponseWasAutoHandled = mockResponse.WriteToResponse(httpResult, MimeTypes.Html);
+            var responseWasAutoHandled = mockResponse.WriteToResponse(httpResult, MimeTypes.Html);
 
-            Assert.That(reponseWasAutoHandled.Result, Is.True);
+            Assert.That(responseWasAutoHandled.Result, Is.True);
 
             var statusDesc = mockResponse.StatusDescription;
             Assert.That(mockResponse.StatusCode, Is.EqualTo((int)System.Net.HttpStatusCode.Accepted));
@@ -93,8 +93,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var httpResult = new HttpResult { StatusDescription = null };
 
-            var reponseWasAutoHandled = mockResponse.WriteToResponse(httpResult, MimeTypes.Html);
-            Assert.That(reponseWasAutoHandled.Result, Is.True);
+            var responseWasAutoHandled = mockResponse.WriteToResponse(httpResult, MimeTypes.Html);
+            Assert.That(responseWasAutoHandled.Result, Is.True);
 
             Assert.IsNotNull(mockResponse.StatusDescription);
         }
@@ -112,11 +112,38 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 ResultScope = () => JsConfig.With(new Text.Config { IncludeNullValues = true })
             };
 
-            var reponseWasAutoHandled = mockResponse.WriteToResponse(httpResult, MimeTypes.Html);
-            Assert.That(reponseWasAutoHandled.Result, Is.True);
+            var responseWasAutoHandled = mockResponse.WriteToResponse(httpResult, MimeTypes.Html);
+            Assert.That(responseWasAutoHandled.Result, Is.True);
 
             Assert.That(mockResponse.ReadAsString(), Is.EqualTo("{\"Text\":null}").Or.EqualTo("{\"text\":null}"));
         }
+
+        [Test]
+        public void Can_parse_ExtractHttpRanges()
+        {
+            void assertRange(long start, long expectedStart, long end, long expectedEnd)
+            {
+                Assert.That(start, Is.EqualTo(expectedStart));
+                Assert.That(end, Is.EqualTo(expectedEnd));
+            }
+            
+            "bytes=0-".ExtractHttpRanges(100, out var rangeStart, out var rangeEnd);
+            assertRange(rangeStart, 0, rangeEnd, 99);
+            "bytes=0-99".ExtractHttpRanges(100, out rangeStart, out rangeEnd);
+            assertRange(rangeStart, 0, rangeEnd, 99);
+            "bytes=1-2".ExtractHttpRanges(100, out rangeStart, out rangeEnd);
+            assertRange(rangeStart, 1, rangeEnd, 2);
+            "bytes=-50".ExtractHttpRanges(100, out rangeStart, out rangeEnd);
+            assertRange(rangeStart, 49, rangeEnd, 99);
+
+            Assert.Throws<HttpError>(() =>
+                "".ExtractHttpRanges(100, out rangeStart, out rangeEnd));
+            Assert.Throws<HttpError>(() =>
+                "-100".ExtractHttpRanges(100, out rangeStart, out rangeEnd));
+            Assert.Throws<HttpError>(() =>
+                "0-10,10-20".ExtractHttpRanges(100, out rangeStart, out rangeEnd));
+        }
+
     }
 
 }
