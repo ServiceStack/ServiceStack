@@ -223,8 +223,8 @@ namespace ServiceStack
         /// Dynamic Session Bag
         /// </summary>
         private ISession session;
-        public virtual ISession SessionBag => session ?? (session = TryResolve<ISession>() //Easier to mock
-            ?? SessionFactory.GetOrCreateSession(Request, Response));
+        public virtual ISession SessionBag => session ??= TryResolve<ISession>() //Easier to mock
+            ?? SessionFactory.GetOrCreateSession(Request, Response);
 
         public virtual IAuthSession GetSession(bool reload = false)
         {

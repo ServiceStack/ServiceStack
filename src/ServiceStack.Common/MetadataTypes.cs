@@ -135,6 +135,7 @@ namespace ServiceStack
 
     public class AutoQueryInfo : IMeta
     {
+        public int? MaxLimit { get; set; }
         public List<AutoQueryConvention> ViewerConventions { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }

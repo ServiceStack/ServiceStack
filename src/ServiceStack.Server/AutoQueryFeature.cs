@@ -187,6 +187,7 @@ namespace ServiceStack
 
             appHost.AddToAppMetadata(meta => {
                 meta.Plugins.AutoQuery = new AutoQueryInfo {
+                    MaxLimit = MaxLimit,
                     ViewerConventions = ViewerConventions,
                 };
             });
