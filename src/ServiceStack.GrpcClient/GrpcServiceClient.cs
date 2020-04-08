@@ -702,9 +702,26 @@ namespace ServiceStack
         {
             // https://github.com/protobuf-net/protobuf-net/wiki/Getting-Started#inheritance
             var baseType = typeof(T).BaseType;
-            if (baseType != typeof(object) && !GrpcServiceClient.IsRequestDto(typeof(T)))
+            if (!GrpcServiceClient.IsRequestDto(typeof(T)))
             {
-                RegisterSubType(typeof(T));
+                if (baseType != typeof(object)) 
+                    RegisterSubType(typeof(T));
+
+                // find all other sub-types in the same assembly, and eagerly register them
+                var allTypes = typeof(T).Assembly.GetTypes(); // TODO: cache this?
+                {
+                    Type[] typeArgs = new Type[1];
+                    foreach(var subType in allTypes)
+                    {
+                        if (subType.BaseType == typeof(T))
+                        {
+                            // touch MetaTypeConfig<subType>.Instance to force it to register if not already
+                            typeArgs[0] = subType;
+                            _ = typeof(MetaTypeConfig<>).MakeGenericType(typeArgs)
+                                .GetProperty(nameof(Instance))?.GetValue(null);
+                        }
+                    }
+                }
             }
             if (typeof(T).IsGenericType)
             {

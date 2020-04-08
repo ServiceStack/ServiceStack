@@ -830,17 +830,23 @@ namespace ServiceStack.Extensions.Tests
             Assert.AreEqual(@"syntax = ""proto3"";
 package ServiceStack.Extensions.Tests;
 
+message Bar {
+   string Y = 2;
+}
 message Foo {
    string X = 1;
+   oneof subtype {
+      Bar Bar = 210304982;
+   }
 }
 ", schema);
-         }
+        }
  
-         [Test]
-         public void CheckServiceProto_DerivedType()
-         {
-             var schema = GetServiceProto<Bar>();
-             Assert.AreEqual(@"syntax = ""proto3"";
+        [Test]
+        public void CheckServiceProto_DerivedType()
+        {
+            var schema = GetServiceProto<Bar>();
+            Assert.AreEqual(@"syntax = ""proto3"";
 package ServiceStack.Extensions.Tests;
 
 message Bar {
@@ -853,7 +859,7 @@ message Foo {
    }
 }
 ", schema);
-         }
+        }
  
         [Test]
         public void CheckServiceProto_QueryDb_ShouldBeOffset()
