@@ -38,7 +38,7 @@ namespace ServiceStack.Templates
             var templatePath = GetTemplatePath(templateName);
             var file = HostContext.VirtualFileSources.GetFile(templatePath);
             if (file == null)
-                throw new FileNotFoundException("Could not load HTML template embedded resource: " + templatePath, templateName);
+                throw new FileNotFoundException("Could not load HTML template: " + templatePath, templateName);
 
             var contents = file.ReadAllText();
             return contents;

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Authenticated Session</title>
+    <link rel="stylesheet" href="${BaseUrl}/css/bootstrap.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        a#logo {
+            position: absolute;
+            top: 4px;
+            right: 0;
+            width: 50px;
+            height: 50px;
+            background-size: 42px 42px;
+            background-repeat: no-repeat;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E %3Cstyle%3E .path%7B%7D %3C/style%3E %3Cg id='servicestack-svg'%3E%3Cpath fill='%23ffffff' class='path' stroke='null' d='m16.564516,43.33871c16.307057,2.035887 54.629638,20.41875 60.67742,46.306452l-78.241936,0c19.859879,-1.616734 36.825605,-27.344758 17.564516,-46.306452zm6.387097,-30.33871c6.446976,7.105645 9.520766,16.74617 9.26129,26.666129c16.546573,6.726411 41.376412,24.690121 46.625807,49.979033l19.161291,0c-8.123589,-43.132863 -54.529839,-73.551412 -75.048388,-76.645162z' /%3E%3C/g%3E%3C/svg%3E");
+        }
+        h1 {
+            color: #FFF;
+            font-size: 26px;
+            font-weight: normal;
+            margin: 0;
+            padding: 0 0 0 15px;
+            line-height: 48px;
+            min-height: 48px;
+            border-radius: 0px;
+            border-bottom: 1px solid #191e23;
+            background: #2c3742; /* Old browsers */
+            background: linear-gradient(to bottom,  #2c3742 0%,#28303a 100%); /* W3C */
+        }
+        .stacktrace {
+            background: #f1f1f1;
+            padding: 1em;
+            margin: 1em 0 .5em 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            white-space: pre-wrap;
+        }
+        #session img {
+            max-width: 200px;
+            max-height: 200px;
+        }
+        td,th {
+            vertical-align: top;
+        }
+        button {
+            user-select: auto !important;
+        }
+        .sel {
+            cursor: pointer;
+        }
+        .btn-datauri {
+            padding-left: 10px;
+            max-height: 24px;
+        }
+        .btn-datauri small {
+            padding-left: 10px;
+            max-width: 100px;
+            max-height: 24px;
+        }
+        .copy-datauri {
+            position: absolute;
+            margin-top: 3px;
+            width: 60px;
+            height: 24px;
+            max-width: 60px;
+            max-height: 24px;
+            overflow: hidden;
+            border-color: #ffc907;
+        }
+        .copy-datauri:hover {
+        }
+        .copy-datauri span {
+            opacity: 0;
+        }
+        .oauth b {
+            font-weight: normal !important;
+        }
+    </style>
+    <script>var model = ${Dto}</script>
+</head>
+<body>
+<a id="logo" href="https://servicestack.net" title="ServiceStack"></a>
+<h1 id="title">Authenticated Session</h1>
+
+<div id="error"></div>
+<div id="session" class="pt-5 ml-3"></div>
+
+<script>
+    var BASE_URL = "${BaseUrl}";
+    if (!Array.isArray) {
+        Array.isArray = function(arg) {
+            return Object.prototype.toString.call(arg) === '[object Array]';
+        };
+    }
+    function normalizeKey (key) {
+        return typeof key == "string" ? key.toLowerCase().replace(/_/g, '') : key;
+    }
+    function normalize (dto, deep) {
+        if (Array.isArray(dto)) {
+            if (!deep) return dto;
+            var to = [];
+            for (var i = 0; i < dto.length; i++) {
+                to[i] = normalize(dto[i], deep);
+            }
+            return to;
+        }
+        if (typeof dto != "object") return dto;
+        var o = {};
+        for (var k in dto) {
+            o[normalizeKey(k)] = deep ? normalize(dto[k], deep) : dto[k];
+        }
+        return o;
+    }
+    function splitCase(t) {
+        return typeof t != 'string' ? t : t.replace(/([A-Z]|[0-9]+)/g, ' $1').replace(/_/g, ' ');
+    }
+    function toPascalCase(s) { return !s ? s : s.charAt(0).toUpperCase() + s.substring(1); }
+    function humanize(s) { return !s || s.indexOf(' ') >= 0 ? toPascalCase(s) : toPascalCase(splitCase(s)); }
+
+    var $ = function(id) { return document.querySelector(id); };
+
+    var sb = [];
+    var normalized = normalize(model,true);
+
+    var error = normalized.responsestatus;
+    if (error && error.errorcode) {
+        $('#title').innerHTML = error.errorcode;
+        $('#error').innerHTML = ('<div class="alert alert-danger m-3">' + error.message +
+            (error.stacktrace ? '<div class="stacktrace">' + error.stacktrace + '</div>' : '') +
+            '</div>');
+    } else {
+        var name = normalized.displayname || normalized.username;
+        document.title = name + ' Session';
+        sb.push('<table><tr><td class="text-center" style="width:300px">');
+        sb.push('<img src="' + (normalized.profileurl || BASE_URL + '/metadata/svg/male-color.svg') + '">');
+        sb.push('<h2>' + name + '</h2>');
+        sb.push('</td><td class="info"><table class="table">');
+
+        var sbTokens = [];
+        for (var k in model) {
+            if (!model.hasOwnProperty(k) || !model[k]) continue;
+            var v = model[k];
+            var cmpKey = normalizeKey(k);
+            if (cmpKey === 'responsestatus' || cmpKey === 'profileurl') continue;
+            if (cmpKey === 'meta')
+            {
+                for (var name in v) {
+                    if (name.endsWith('-tokens')) {
+                        sbTokens.push('<tr><th>' + name.substring(0, name.length = '-token'.length) + '</th>');
+                        sbTokens.push('<td><b>' + v[name] + '</b></td>');
+                        sbTokens.push('<td style="width:100px"><span class="btn-datauri">');
+                        sbTokens.push('<button class="sel btn copy-datauri" onclick="copy(this)">');
+                        sbTokens.push('<span>' + v[name] + '</span>');
+                        sbTokens.push('</button>');
+                        sbTokens.push('<small>copy</small></span>');
+                        sbTokens.push('</td></tr>');
+                    } else {
+                        sb.push('<tr><th>' + humanize(k) + '</th><td>' + str + '</td></tr>');
+                    }
+                }
+            }
+            else
+            {
+                var str = Array.isArray(v)
+                    ? v.join(', ')
+                    : typeof v == "string" || typeof v == "boolean" || typeof v == "number"
+                        ? v
+                        : JSON.stringify(v);
+                sb.push('<tr><th>' + humanize(k) + '</th><td>' + str + '</td>');
+            }
+        }
+        sb.push('</table></td></table>');
+
+        if (sbTokens.length > 0) {
+            sb.push('<table class="oauth table table-striped" style="width:auto;min-width:700px">');
+            sb.push('<thead><tr><th colspan="3">OAuth Tokens</th></thead><tbody>');
+            sb.push(sbTokens.join(''));
+            sb.push('</tbody></table>');
+        }
+
+        $('#session').innerHTML = sb.join('');
+    }
+
+    function copy(el) {
+        if (window.getSelection) {
+            var range = document.createRange();
+            range.selectNodeContents(el);
+            var sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+            document.execCommand("copy");
+            var btnText = el.parentElement.querySelector('small');
+            if (btnText) {
+                btnText.innerHTML = 'copied!';
+            }
+        }
+    }
+
+</script>
+</body>
+</html>

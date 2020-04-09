@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using ServiceStack.Serialization;
@@ -18,6 +19,30 @@ namespace ServiceStack.Formats
         public static bool Humanize = true;
 
         private IAppHost AppHost { get; set; }
+        
+        public Dictionary<string, string> PathTemplates { get; set; } = new Dictionary<string, string> {
+            { "/" + LocalizedStrings.Auth.Localize(), "/Templates/Auth.html" }
+        };
+        
+        public Func<IRequest, string> ResolveTemplate { get; set; }
+
+        public string DefaultResolveTemplate(IRequest req)
+        {
+            if (PathTemplates != null && PathTemplates.TryGetValue(req.PathInfo, out var templatePath))
+            {
+                var file = HostContext.VirtualFileSources.GetFile(templatePath);
+                if (file == null)
+                    throw new FileNotFoundException($"Could not load HTML template '{templatePath}'", templatePath);
+
+                return file.ReadAllText();
+            }
+            return null;
+        }
+
+        public HtmlFormat()
+        {
+            ResolveTemplate = DefaultResolveTemplate;
+        }
 
         public void Register(IAppHost appHost)
         {
@@ -99,8 +124,9 @@ namespace ServiceStack.Formats
                 var now = DateTime.UtcNow;
                 var requestName = req.OperationName ?? dto.GetType().GetOperationName();
 
-                html = Templates.HtmlTemplates.GetHtmlFormatTemplate()
+                html = (ResolveTemplate?.Invoke(req) ?? Templates.HtmlTemplates.GetHtmlFormatTemplate())
                     .Replace("${Dto}", json)
+                    .Replace("${BaseUrl}", req.GetBaseUrl().TrimEnd('/'))
                     .Replace("${Title}", string.Format(TitleFormat, requestName, now))
                     .Replace("${MvcIncludes}", MiniProfiler.Profiler.RenderIncludes().ToString())
                     .Replace("${Header}", string.Format(HtmlTitleFormat, requestName, now))
