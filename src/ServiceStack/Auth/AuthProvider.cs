@@ -387,15 +387,16 @@ namespace ServiceStack.Auth
                 request = authService.Request.Dto as Authenticate;
 
             var referrerUrl = session.ReferrerUrl;
-            if (referrerUrl.IsNullOrEmpty())
-            {
-                referrerUrl = authService.Request.GetReturnUrl()
-                    ?? authService.Request.GetHeader("Referer");
-            }
+            if (!string.IsNullOrEmpty(referrerUrl))
+                return referrerUrl;
+
+            referrerUrl = authService.Request.GetReturnUrl()
+                          ?? authService.Request.GetHeader("Referer");
+            if (!string.IsNullOrEmpty(referrerUrl))
+                return referrerUrl;
 
             var requestUri = authService.Request.AbsoluteUri;
-            if (referrerUrl.IsNullOrEmpty()
-                || referrerUrl.IndexOf("/auth", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (requestUri.IndexOf("/auth", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 referrerUrl = this.RedirectUrl
                     ?? authService.Request.GetBaseUrl()
