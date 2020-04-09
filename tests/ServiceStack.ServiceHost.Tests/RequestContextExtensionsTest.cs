@@ -43,7 +43,9 @@ namespace ServiceStack.ServiceHost.Tests
             {
                 var dto = new TestDto { Name = "test" };
 
-                var httpReq = new MockHttpRequest();
+                var httpReq = new MockHttpRequest {
+                    PathInfo = "/"
+                };
                 httpReq.Headers.Add(HttpHeaders.AcceptEncoding, "gzip,deflate,sdch");
                 httpReq.ResponseContentType = contentType;
 
