@@ -111,6 +111,8 @@ namespace ServiceStack
 
         public bool IncludeRolesInAuthenticateResponse { get; set; } = true;
 
+        public bool IncludeOAuthTokensInAuthenticateResponse { get; set; }
+
         /// <summary>
         /// Allow or deny all GET Authenticate Requests
         /// </summary>

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Net;
@@ -255,15 +256,31 @@ namespace ServiceStack.Auth
                 if (response is AuthenticateResponse authResponse)
                 {
                     authResponse.ProfileUrl ??= session.GetProfileUrl();
-                    
-                    if (authFeature?.IncludeRolesInAuthenticateResponse == true && session.UserAuthId != null)
+
+                    if (session.UserAuthId != null && authFeature != null)
                     {
-                        authResponse.Roles ??= (manageRoles != null
-                            ? manageRoles.GetRoles(session.UserAuthId)?.ToList()
-                            : session.Roles);
-                        authResponse.Permissions ??= (manageRoles != null
-                            ? manageRoles.GetPermissions(session.UserAuthId)?.ToList()
-                            : session.Permissions);
+                        if (authFeature.IncludeRolesInAuthenticateResponse)
+                        {
+                            authResponse.Roles ??= (manageRoles != null
+                                ? manageRoles.GetRoles(session.UserAuthId)?.ToList()
+                                : session.Roles);
+                            authResponse.Permissions ??= (manageRoles != null
+                                ? manageRoles.GetPermissions(session.UserAuthId)?.ToList()
+                                : session.Permissions);
+                        }
+                        if (authFeature.IncludeOAuthTokensInAuthenticateResponse && AuthRepository != null)
+                        {
+                            var authDetails = AuthRepository.GetUserAuthDetails(session.UserAuthId);
+                            if (authDetails?.Count > 0)
+                            {
+                                authResponse.Meta ??= new Dictionary<string, string>();
+                                foreach (var authDetail in authDetails.Where(x => x.AccessTokenSecret != null))
+                                {
+                                    authDetail.Meta[authDetail.Provider + "-tokens"] = authDetail.AccessTokenSecret
+                                        + (authDetail.AccessToken != null ? ':' + authDetail.AccessToken : ""); 
+                                }
+                            }
+                        }
                     }
 
                     var authCtx = new AuthFilterContext {
