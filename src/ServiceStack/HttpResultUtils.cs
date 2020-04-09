@@ -102,8 +102,10 @@ namespace ServiceStack
                     : contentLength - 1;
             }
 
-            if (rangeStart < 0 || rangeEnd > contentLength - 1)
-                throw new HttpError(HttpStatusCode.RequestedRangeNotSatisfiable, $"HTTP Range '{rangeHeader}' exceeds content length '{contentLength}'");
+            if (rangeStart < 0)
+                rangeStart = 0;
+            if (rangeEnd > contentLength - 1)
+                rangeEnd = contentLength - 1;
         }
 
         /// <summary>

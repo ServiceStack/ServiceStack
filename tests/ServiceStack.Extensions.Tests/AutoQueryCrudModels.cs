@@ -565,8 +565,8 @@ namespace ServiceStack.Extensions.Tests
         //1. Commenting out property resolves issue
         //2. When using 1,2 index throws Grpc.Core.RpcException: Status(StatusCode=Unknown, Detail="Exception was thrown by handler.")
         //3. When Index changed to 11,12 causes empty DTO to be sent
-        [DataMember(Order = 13)]
-        public new LivingStatus? LivingStatus { get; set; } //overridden property
+        // [DataMember(Order = 13)]
+        // public new LivingStatus? LivingStatus { get; set; } //overridden property
     }
 
     [Authenticate]

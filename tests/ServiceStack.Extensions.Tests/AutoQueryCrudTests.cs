@@ -615,7 +615,7 @@ namespace ServiceStack.Extensions.Tests
             authClient.Patch(new UpdateRockstarAudit {
                 Id = createResponse.Id,
                 FirstName = "Updated",
-                LivingStatus = LivingStatus.Alive,
+                // LivingStatus = LivingStatus.Alive,
             });
 
             newRockstar = db.SingleById<RockstarAudit>(createResponse.Id);
