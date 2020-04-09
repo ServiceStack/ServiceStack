@@ -268,6 +268,7 @@ namespace ServiceStack
             appHost.AddToAppMetadata(meta => {
                 meta.Plugins.Auth = new AuthInfo {
                     HasAuthSecret = appHost.Config.AdminAuthSecret != null,
+                    HasAuthRepository = appHost.GetContainer().Exists<IAuthRepository>(),
                     IncludesRoles = IncludeRolesInAuthenticateResponse,
                     IncludesOAuthTokens = IncludeOAuthTokensInAuthenticateResponse,
                     AuthProviders = AuthenticateService.GetAuthProviders().Map(x => new MetaAuthProvider {
