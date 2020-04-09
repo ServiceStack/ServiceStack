@@ -130,6 +130,8 @@ namespace ServiceStack
     public class AuthInfo : IMeta
     {
         public bool HasAuthSecret { get; set; }
+        public bool IncludesRoles { get; set; }
+        public bool IncludesOAuthTokens { get; set; }
         public List<MetaAuthProvider> AuthProviders { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
