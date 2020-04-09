@@ -386,12 +386,11 @@ namespace ServiceStack.Auth
             if (request == null)
                 request = authService.Request.Dto as Authenticate;
 
-            var referrerUrl = session.ReferrerUrl;
+            var referrerUrl = authService.Request.GetReturnUrl() ?? session.ReferrerUrl;
             if (!string.IsNullOrEmpty(referrerUrl))
                 return referrerUrl;
 
-            referrerUrl = authService.Request.GetReturnUrl()
-                          ?? authService.Request.GetHeader("Referer");
+            referrerUrl = authService.Request.GetHeader("Referer");
             if (!string.IsNullOrEmpty(referrerUrl))
                 return referrerUrl;
 
