@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using ProtoBuf.Grpc.Client;
 using ServiceStack.Auth;
 using ServiceStack.Validation;
 
@@ -48,7 +49,7 @@ namespace ServiceStack.Extensions.Tests.Issues
         };
     }
 
-    public class GrpcServiceIssues
+    public partial class GrpcServiceIssues
     {
         public class AppHost : AppSelfHostBase
         {
@@ -80,25 +81,35 @@ namespace ServiceStack.Extensions.Tests.Issues
             }
         }
 
+        public static readonly int Port = 20000;
+        public static readonly string BaseUri = $"http://localhost:{Port}";
+        public static readonly string ListeningOn = BaseUri + "/";
+
         private readonly ServiceStackHost appHost;
         public GrpcServiceIssues()
         {
             appHost = new AppHost()
                 .Init()
-                .Start(TestsConfig.ListeningOn);
+                .Start(ListeningOn);
         }
 
         [OneTimeTearDown]
         public void OneTimeTearDown() => appHost.Dispose();
 
+        public static GrpcServiceClient CreateClient()
+        {
+            GrpcClientFactory.AllowUnencryptedHttp2 = true;
+            var client = new GrpcServiceClient(BaseUri);
+            return client;
+        }
+
         [Test]
         public async Task Can_call_EndsWithSuffixRequest()
         {
-            var client = TestsConfig.GetInsecureClient();
+            var client = CreateClient();
             var request = new EndsWithSuffixRequest { Suffix = "TheSuffix" };
             var response = await client.GetAsync(request);
             Assert.That(response.Result.Suffix, Is.EqualTo(request.Suffix));
         }
-
     }
 }
