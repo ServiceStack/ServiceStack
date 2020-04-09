@@ -138,7 +138,7 @@ namespace ServiceStack.NativeTypes
                     Response = ToType(operation.ResponseType),
                     DataModel = ToTypeName(operation.DataModelType),
                     ViewModel = ToTypeName(operation.ViewModelType),
-                    RequiresAuthentication = operation.RequiresAuthentication,
+                    RequiresAuth = operation.RequiresAuthentication,
                     RequiredRoles = operation.RequiredRoles,
                     RequiresAnyRole = operation.RequiresAnyRole,
                     RequiredPermissions = operation.RequiredPermissions,
@@ -163,7 +163,7 @@ namespace ServiceStack.NativeTypes
 
                 if (operation.RequestType.GetTypeWithInterfaceOf(typeof(IReturnVoid)) != null)
                 {
-                    opType.ReturnVoidMarker = true;
+                    opType.ReturnsVoid = true;
                 }
                 else
                 {
@@ -174,7 +174,7 @@ namespace ServiceStack.NativeTypes
                     if (genericMarker != null)
                     {
                         var returnType = genericMarker.GetGenericArguments().First();
-                        opType.ReturnMarkerTypeName = ToTypeName(returnType);
+                        opType.ReturnType = ToTypeName(returnType);
                     }
                 }
 
@@ -876,8 +876,8 @@ namespace ServiceStack.NativeTypes
         {
             var allTypes = metadata.Operations.Where(x => x.Request != null).Select(x => x.Request)
                 .Union(metadata.Operations.Where(x => x.Response != null).Select(x => x.Response))
-                .Union(metadata.Operations.Where(x => x.ReturnMarkerTypeName != null).Select(
-                    x => x.ReturnMarkerTypeName.ToMetadataType()))
+                .Union(metadata.Operations.Where(x => x.ReturnType != null).Select(
+                    x => x.ReturnType.ToMetadataType()))
                 .Union(metadata.Types);
             
             return allTypes.ToList();
@@ -1032,8 +1032,8 @@ namespace ServiceStack.NativeTypes
                     .ToList();
 
                 var includeSet = includedMetadataTypes
-                    .Where(x => x.RequestType?.ReturnMarkerTypeName != null)
-                    .Select(x => x.RequestType.ReturnMarkerTypeName.Name)
+                    .Where(x => x.RequestType?.ReturnType != null)
+                    .Select(x => x.RequestType.ReturnType.Name)
                     .ToHashSet();
 
                 var includedResponses = metadata.Operations
@@ -1248,11 +1248,11 @@ namespace ServiceStack.NativeTypes
             {
                 var typeName = type.Name;
 
-                var returnMarker = type.RequestType?.ReturnMarkerTypeName;
+                var returnMarker = type.RequestType?.ReturnType;
                 if (returnMarker != null)
                 {
                     if (!returnMarker.GenericArgs.IsEmpty())
-                        type.RequestType.ReturnMarkerTypeName.GenericArgs.Each(x => deps.Push(typeName, x));
+                        type.RequestType.ReturnType.GenericArgs.Each(x => deps.Push(typeName, x));
                     else
                         deps.Push(typeName, returnMarker.Name);
                 }

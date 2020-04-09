@@ -225,14 +225,14 @@ namespace ServiceStack.NativeTypes.Java
                                 ImplementsFn = () =>
                                 {
                                     if (!Config.AddReturnMarker
-                                        && operation?.ReturnVoidMarker != true
-                                        && operation?.ReturnMarkerTypeName == null)
+                                        && operation?.ReturnsVoid != true
+                                        && operation?.ReturnType == null)
                                         return null;
 
-                                    if (operation?.ReturnVoidMarker == true)
+                                    if (operation?.ReturnsVoid == true)
                                         return nameof(IReturnVoid);
-                                    if (operation?.ReturnMarkerTypeName != null)
-                                        return Type("IReturn`1", new[] { Type(operation.ReturnMarkerTypeName) });
+                                    if (operation?.ReturnType != null)
+                                        return Type("IReturn`1", new[] { Type(operation.ReturnType) });
                                     return response != null
                                         ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
                                         : null;
@@ -281,7 +281,7 @@ namespace ServiceStack.NativeTypes.Java
             return metadata.GetAllMetadataTypes()
                 .Any(x => x.Properties.Safe().Any(p => JavaGeneratorExtensions.JavaKeyWords.Contains(p.Name.PropertyStyle()))
                     || x.Properties.Safe().Any(p => p.DataMember?.Name != null)
-                    || (x.RequestType?.ReturnMarkerTypeName != null && x.RequestType?.ReturnMarkerTypeName.Name.IndexOf('`') >= 0) //uses TypeToken<T>
+                    || (x.RequestType?.ReturnType != null && x.RequestType?.ReturnType.Name.IndexOf('`') >= 0) //uses TypeToken<T>
                 );
         }
 

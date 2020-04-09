@@ -368,7 +368,7 @@ namespace ServiceStack
             }
 
             var interfaceTypes = new List<Type>();
-            var returnMarker = metaType.RequestType?.ReturnMarkerTypeName;
+            var returnMarker = metaType.RequestType?.ReturnType;
             if (returnMarker != null && returnMarker.Name != "QueryResponse`1")
             {
                 var responseType = CreateOrGetType(dynModule, returnMarker, metadataTypes, existingMetaTypesMap, generatedTypes);
@@ -377,7 +377,7 @@ namespace ServiceStack
                 
                 interfaceTypes.Add(typeof(IReturn<>).MakeGenericType(responseType));
             }
-            else if (metaType.RequestType?.ReturnVoidMarker == true)
+            else if (metaType.RequestType?.ReturnsVoid == true)
             {
                 interfaceTypes.Add(typeof(IReturnVoid));
             }
@@ -1030,7 +1030,7 @@ namespace ServiceStack
                                 Name = "QueryDb`1",
                                 GenericArgs = new[] { typeName },
                             };
-                            op.ReturnMarkerTypeName = new MetadataTypeName {
+                            op.ReturnType = new MetadataTypeName {
                                 Namespace = "ServiceStack",
                                 Name = "QueryResponse`1",
                                 GenericArgs = new[] { typeName },
@@ -1057,7 +1057,7 @@ namespace ServiceStack
                                     }
                                 },
                             }.ToArray();
-                            op.ReturnMarkerTypeName = new MetadataTypeName {
+                            op.ReturnType = new MetadataTypeName {
                                 Namespace = "ServiceStack",
                                 Name = "IdResponse",
                             };

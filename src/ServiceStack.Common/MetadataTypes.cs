@@ -129,6 +129,7 @@ namespace ServiceStack
 
     public class AuthInfo : IMeta
     {
+        public bool HasAuthSecret { get; set; }
         public List<MetaAuthProvider> AuthProviders { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
@@ -220,12 +221,12 @@ namespace ServiceStack
         public MetadataType Request { get; set; }
         public MetadataType Response { get; set; }
         public List<string> Actions { get; set; }
-        public bool ReturnVoidMarker { get; set; }
-        public MetadataTypeName ReturnMarkerTypeName { get; set; }
+        public bool ReturnsVoid { get; set; }
+        public MetadataTypeName ReturnType { get; set; }
         public List<MetadataRoute> Routes { get; set; }
         public MetadataTypeName DataModel { get; set; }
         public MetadataTypeName ViewModel { get; set; }
-        public bool RequiresAuthentication { get; set; }
+        public bool RequiresAuth { get; set; }
         public List<string> RequiredRoles { get; set; }
         public List<string> RequiresAnyRole { get; set; }
         public List<string> RequiredPermissions { get; set; }
