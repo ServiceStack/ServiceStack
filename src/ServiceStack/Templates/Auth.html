@@ -122,6 +122,7 @@
     }
     function toPascalCase(s) { return !s ? s : s.charAt(0).toUpperCase() + s.substring(1); }
     function humanize(s) { return !s || s.indexOf(' ') >= 0 ? toPascalCase(s) : toPascalCase(splitCase(s)); }
+    function splitOnFirst(s, c) { if (!s) return [s]; var pos = s.indexOf(c); return pos >= 0 ? [s.substring(0, pos), s.substring(pos + 1)] : [s]; }
 
     var $ = function(id) { return document.querySelector(id); };
 
@@ -152,7 +153,7 @@
             {
                 for (var name in v) {
                     if (name.endsWith('-tokens')) {
-                        sbTokens.push('<tr><th>' + name.substring(0, name.length = '-tokens'.length) + '</th>');
+                        sbTokens.push('<tr><th>' + splitOnFirst(name,'-')[0] + '</th>');
                         sbTokens.push('<td><b>' + v[name] + '</b></td>');
                         sbTokens.push('<td style="width:100px"><span class="btn-datauri">');
                         sbTokens.push('<button class="sel btn copy-datauri" onclick="copy(this)">');
