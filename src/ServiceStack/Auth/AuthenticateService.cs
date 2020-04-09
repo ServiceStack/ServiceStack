@@ -276,8 +276,8 @@ namespace ServiceStack.Auth
                                 authResponse.Meta ??= new Dictionary<string, string>();
                                 foreach (var authDetail in authDetails.Where(x => x.AccessTokenSecret != null))
                                 {
-                                    authDetail.Meta[authDetail.Provider + "-tokens"] = authDetail.AccessTokenSecret
-                                        + (authDetail.AccessToken != null ? ':' + authDetail.AccessToken : ""); 
+                                    authResponse.Meta[authDetail.Provider + "-tokens"] = authDetail.AccessTokenSecret + 
+                                        (authDetail.AccessToken != null ? ':' + authDetail.AccessToken : ""); 
                                 }
                             }
                         }
