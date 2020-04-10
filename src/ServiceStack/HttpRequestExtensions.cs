@@ -775,9 +775,14 @@ namespace ServiceStack
             return url;
         }
 
-        public static string GetReturnUrl(this IRequest req) =>
-            req.GetQueryStringOrForm(Keywords.Continue) ??
-            req.GetQueryStringOrForm(Keywords.ReturnUrl);
+        public static string GetReturnUrl(this IRequest req)
+        {
+            var redirectUrl = req.GetQueryStringOrForm(Keywords.Continue) ??
+                              req.GetQueryStringOrForm(Keywords.ReturnUrl);
+            if (redirectUrl != null)
+                HostContext.GetPlugin<AuthFeature>()?.ValidateRedirectLinks?.Invoke(req, redirectUrl);
+            return redirectUrl;
+        }
 
         public static string InferBaseUrl(this string absoluteUri, string fromPathInfo = null)
         {

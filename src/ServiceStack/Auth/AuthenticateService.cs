@@ -329,7 +329,7 @@ namespace ServiceStack.Auth
 
                 if (ex is HttpError)
                 {
-                    var errorReferrerUrl = this.Request.GetHeader(HttpHeaders.Referer);
+                    var errorReferrerUrl = this.Request.GetReturnUrl() ?? this.Request.GetHeader(HttpHeaders.Referer);
                     if (isHtml && errorReferrerUrl != null)
                     {
                         errorReferrerUrl = errorReferrerUrl.SetParam("f", ex.Message.Localize(Request));

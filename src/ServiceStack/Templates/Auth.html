@@ -81,6 +81,33 @@
         .oauth b {
             font-weight: normal !important;
         }
+        .avatar {
+            width: 300px;
+        }
+        @media (max-width: 720px) {
+            #session {
+                padding-top: 1em !important;
+            }
+            #session img {
+                max-width: 150px;
+                max-height: 150px;
+            }
+            .avatar {
+                width: 220px;
+            }
+            .h2, h2 {
+                font-size: 1.5rem;
+            }
+        }
+        .svg-xs, .svg-sm, .svg-md, .svg-lg, .svg-2x, .svg-3x, .svg-4x, .svg-5x, .svg-6x, .svg-7x, .svg-8x, .svg-9x, .svg-10x, .svg-11x, .svg-12x, .svg-13x, .svg-14x {
+            background-position:0;background-repeat:no-repeat;display: inline-block;background-size: contain;vertical-align: middle;}
+        .svg-xs {width:12px;height:12px}.svg-sm {width:14px;height:14px}.svg-md {width:18px;height:18px}.svg-lg {width:24px;height:24px}.svg-2x {width:32px;height:32px}
+        .svg-3x {width:48px;height:48px}.svg-4x {width:64px;height:64px}.svg-5x {width:80px;height:80px}.svg-6x {width:96px;height:96px}.svg-7x {width:112px;height:112px}
+        .svg-8x {width:128px;height:128px}.svg-9x {width:144px;height:144px}.svg-10x {width:160px;height:160px}.svg-11x {width:180px;height:180px}
+        .svg-12x {width:204px;height:204px}.svg-13x {width:232px;height:232px}.svg-14x {width:264px;height:264px}
+        .svg-chevron-right, .fa-chevron-right {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23212121' width='48px' height='48px'%3E     %3Cpath d='M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z'/%3E     %3Cpath d='M0 0h24v24H0z' fill='none'/%3E %3C/svg%3E");
+        }
     </style>
     <script>var model = ${Dto}</script>
 </head>
@@ -92,7 +119,10 @@
 <div id="session" class="pt-5 ml-3"></div>
 
 <script>
-    var BASE_URL = "${BaseUrl}";
+    var BaseUrl = "${BaseUrl}";
+    var LoginPath = "${AuthRedirect}";
+    var AllowOrigins = ("${AllowOrigins}" || "https://localhost:5001").split(';');
+
     if (!Array.isArray) {
         Array.isArray = function(arg) {
             return Object.prototype.toString.call(arg) === '[object Array]';
@@ -129,17 +159,28 @@
     var sb = [];
     var normalized = normalize(model,true);
 
+    function showStackTrace() {
+        console.log('showStackTrace');
+        document.querySelector('.btn-stacktrace').style.display = 'none';
+        document.querySelector('.stacktrace').style.display = 'block';
+    }
+
     var error = normalized.responsestatus;
     if (error && error.errorcode) {
         $('#title').innerHTML = error.errorcode;
-        $('#error').innerHTML = ('<div class="alert alert-danger m-3">' + error.message +
-            (error.stacktrace ? '<div class="stacktrace">' + error.stacktrace + '</div>' : '') +
+        var errorHtml = ('<div class="alert alert-danger m-3">' + error.message +
+            (error.stacktrace ?
+                '<div><button class="btn btn-link btn-stacktrace" style="margin-left: -1em" onclick="showStackTrace()">' +
+                '<i class="svg-chevron-right svg-lg mb-1" title="expand"></i>StackTrace</button>' +
+                '<div class="stacktrace" style="display:none">' + error.stacktrace + '</div></div>' : '') +
             '</div>');
+        errorHtml += '<p class="ml-4"><a href="' + BaseUrl + '">home</a>' + (LoginPath ? ' | <a href="' + LoginPath + '">login</a>' : '') + '</p>';
+        $('#error').innerHTML = errorHtml;
     } else {
         var name = normalized.displayname || normalized.username;
         document.title = name + ' Session';
-        sb.push('<table><tr><td class="text-center" style="width:300px">');
-        sb.push('<img src="' + (normalized.profileurl || BASE_URL + '/metadata/svg/male-color.svg') + '">');
+        sb.push('<table><tr><td class="text-center avatar">');
+        sb.push('<img src="' + (normalized.profileurl || BaseUrl + '/metadata/svg/male-color.svg') + '">');
         sb.push('<h2>' + name + '</h2>');
         sb.push('</td><td class="info"><table class="table">');
 
@@ -153,10 +194,11 @@
             {
                 for (var name in v) {
                     if (name.endsWith('-tokens')) {
-                        sbTokens.push('<tr><th>' + splitOnFirst(name,'-')[0] + '</th>');
+                        var provider = splitOnFirst(name,'-')[0];
+                        sbTokens.push('<tr><th>' + provider + '</th>');
                         sbTokens.push('<td><b>' + v[name] + '</b></td>');
                         sbTokens.push('<td style="width:100px">');
-                        sbTokens.push('<span class="btn-copy"><button class="sel btn copy-text" onclick="copy(this)">');
+                        sbTokens.push('<span class="btn-copy"><button class="sel btn copy-text" onclick="copy(this,\'' + normalizeKey(provider) + '\')">');
                         sbTokens.push('<span>' + v[name] + '</span>');
                         sbTokens.push('</button>');
                         sbTokens.push('<small>copy</small></span>');
@@ -174,7 +216,7 @@
                         ? v
                         : JSON.stringify(v);
                 if (cmpKey === 'sessionid') {
-                    str += '<span class="btn-copy"><button class="sel btn copy-text" onclick="copy(this)">' +
+                    str += '<span class="btn-copy"><button class="sel btn copy-text" onclick="copy(this,\'' + cmpKey + '\')">' +
                         '<span>' + str + '</span>' +
                         '</button><small>copy</small></span>';
                 }
@@ -193,7 +235,7 @@
         $('#session').innerHTML = sb.join('');
     }
 
-    function copy(el) {
+    function copy(el,provider) {
         if (window.getSelection) {
             var range = document.createRange();
             range.selectNodeContents(el);
@@ -204,6 +246,18 @@
             var btnText = el.parentElement.querySelector('small');
             if (btnText) {
                 btnText.innerHTML = 'copied!';
+            }
+
+            if (window.parent) {
+                for (var i=0; i<AllowOrigins.length; i++) {
+                    try {
+                        var origin = AllowOrigins[i];
+                        var msg = { };
+                        msg[provider] = sel.toString();
+                        window.parent.postMessage({ copy: msg }, origin);
+                    } catch (e) {
+                    }
+                }
             }
         }
     }
