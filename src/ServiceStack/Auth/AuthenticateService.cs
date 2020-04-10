@@ -330,7 +330,7 @@ namespace ServiceStack.Auth
                 if (ex is HttpError)
                 {
                     var errorReferrerUrl = this.Request.GetReturnUrl() ?? this.Request.GetHeader(HttpHeaders.Referer);
-                    if (isHtml && errorReferrerUrl != null)
+                    if (isHtml && errorReferrerUrl != null && Request.GetParam(Keywords.NoRedirect) == null)
                     {
                         errorReferrerUrl = errorReferrerUrl.SetParam("f", ex.Message.Localize(Request));
                         return HttpResult.Redirect(errorReferrerUrl);

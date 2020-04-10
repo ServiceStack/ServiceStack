@@ -18,8 +18,9 @@
         public static string SessionOptionsKey = "ss-opt";
         public static string TokenCookie = "ss-tok";
         public static string ApiKeyParam = "apikey";
-        public static string Redirect = "redirect";
         public static string Continue = "continue";
+        public static string Redirect = "redirect";
+        public static string NoRedirect = "noredirect";
         public static string ReturnUrl = nameof(ReturnUrl); //.NET Core default convention
         public static string AutoBatchIndex = nameof(AutoBatchIndex);
         public static string SoapMessage = nameof(SoapMessage);
