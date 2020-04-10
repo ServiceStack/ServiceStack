@@ -7,7 +7,7 @@
     <style>
         body {
             margin: 0;
-            padding: 0;
+            padding: 0 0 50px 0;
             color: #333;
         }
         a#logo {
@@ -81,6 +81,15 @@
         .oauth b {
             font-weight: normal !important;
         }
+        .oauth {
+            width: auto;
+            min-width: 700px;
+        }
+        .oauth .c2 {
+            max-width: 700px;
+            overflow: hidden;
+            white-space: nowrap;
+        }
         .avatar {
             width: 300px;
         }
@@ -97,6 +106,12 @@
             }
             .h2, h2 {
                 font-size: 1.5rem;
+            }
+            .oauth {
+                min-width: 650px;
+            }
+            .oauth .c2 {
+                max-width: 450px;
             }
         }
         .svg-xs, .svg-sm, .svg-md, .svg-lg, .svg-2x, .svg-3x, .svg-4x, .svg-5x, .svg-6x, .svg-7x, .svg-8x, .svg-9x, .svg-10x, .svg-11x, .svg-12x, .svg-13x, .svg-14x {
@@ -195,9 +210,9 @@
                 for (var name in v) {
                     if (name.endsWith('-tokens')) {
                         var provider = splitOnFirst(name,'-')[0];
-                        sbTokens.push('<tr><th>' + provider + '</th>');
-                        sbTokens.push('<td><b>' + v[name] + '</b></td>');
-                        sbTokens.push('<td style="width:100px">');
+                        sbTokens.push('<tr><th class="c1">' + provider + '</th>');
+                        sbTokens.push('<td class="c2"><b title="' + v[name] + '">' + v[name] + '</b></td>');
+                        sbTokens.push('<td class="c3" style="width:100px">');
                         sbTokens.push('<span class="btn-copy"><button class="sel btn copy-text" onclick="copy(this,\'' + normalizeKey(provider) + '\')">');
                         sbTokens.push('<span>' + v[name] + '</span>');
                         sbTokens.push('</button>');
@@ -226,7 +241,7 @@
         sb.push('</table></td></table>');
 
         if (sbTokens.length > 0) {
-            sb.push('<table class="oauth table table-striped" style="width:auto;min-width:700px">');
+            sb.push('<table class="oauth table table-striped">');
             sb.push('<thead><tr><th colspan="3">OAuth Tokens</th></thead><tbody>');
             sb.push(sbTokens.join(''));
             sb.push('</tbody></table>');
