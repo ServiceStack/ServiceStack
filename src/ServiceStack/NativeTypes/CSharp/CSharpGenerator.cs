@@ -337,7 +337,7 @@ namespace ServiceStack.NativeTypes.CSharp
                 AddConstructor(sb, type, options);
                 AddProperties(sb, type,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
-                        && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
+                        && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)));
 
                 foreach (var innerTypeRef in type.InnerTypes.Safe())
                 {

@@ -271,7 +271,7 @@ namespace ServiceStack.NativeTypes.FSharp
 
                 AddProperties(sb, type,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
-                        && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
+                        && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)));
 
                 if (sb.Length == startLen)
                     sb.AppendLine(type.IsInterface() ? "interface end" : "class end");

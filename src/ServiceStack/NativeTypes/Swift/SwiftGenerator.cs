@@ -239,9 +239,9 @@ namespace ServiceStack.NativeTypes.Swift
         //Use built-in types already in net.servicestack.client package
         public static HashSet<string> IgnoreTypeNames = new HashSet<string>
         {
-            typeof(ResponseStatus).Name,
-            typeof(ResponseError).Name,
-            typeof(ErrorResponse).Name,
+            nameof(ResponseStatus),
+            nameof(ResponseError),
+            nameof(ErrorResponse),
         };
 
         private List<string> RemoveIgnoredTypes(MetadataTypes metadata)
@@ -390,7 +390,7 @@ namespace ServiceStack.NativeTypes.Swift
                 AddProperties(sb, type,
                     initCollections: !type.IsInterface() && Config.InitializeCollections,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
-                        && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
+                        && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)));
 
                 sb = sb.UnIndent();
                 sb.AppendLine("}");
@@ -683,7 +683,7 @@ namespace ServiceStack.NativeTypes.Swift
                 if (wasAdded) sb.AppendLine();
 
                 AppendDataMember(sb, null, dataMemberIndex++);
-                sb.AppendLine("public var {0}:ResponseStatus?".Fmt(typeof(ResponseStatus).Name.PropertyStyle()));
+                sb.AppendLine("public var {0}:ResponseStatus?".Fmt(nameof(ResponseStatus).PropertyStyle()));
             }
         }
 

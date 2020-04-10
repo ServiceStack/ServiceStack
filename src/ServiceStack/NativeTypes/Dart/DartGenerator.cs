@@ -539,7 +539,7 @@ namespace ServiceStack.NativeTypes.Dart
 
                 AddProperties(sb, type,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
-                                           && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
+                                           && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)));
 
                 if (isClass)
                 {
@@ -834,7 +834,7 @@ namespace ServiceStack.NativeTypes.Dart
                 if (wasAdded) sb.AppendLine();
 
                 AppendDataMember(sb, null, dataMemberIndex++);
-                sb.AppendLine($"ResponseStatus {typeof(ResponseStatus).Name.PropertyStyle().PropertyName()};");
+                sb.AppendLine($"ResponseStatus {nameof(ResponseStatus).PropertyStyle().PropertyName()};");
             }
         }
 

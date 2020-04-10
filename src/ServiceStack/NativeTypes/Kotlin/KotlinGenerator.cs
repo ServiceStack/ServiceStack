@@ -280,9 +280,9 @@ namespace ServiceStack.NativeTypes.Kotlin
         //Use built-in types already in net.servicestack.client package
         public static HashSet<string> IgnoreTypeNames = new HashSet<string>
         {
-            typeof(ResponseStatus).Name,
-            typeof(ResponseError).Name,
-            typeof(ErrorResponse).Name,
+            nameof(ResponseStatus),
+            nameof(ResponseError),
+            nameof(ErrorResponse),
         }; 
 
         private List<string> RemoveIgnoredTypes(MetadataTypes metadata)
@@ -403,7 +403,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                 AddProperties(sb, type,
                     initCollections: !type.IsInterface() && Config.InitializeCollections,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
-                        && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
+                        && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)));
 
                 if (responseTypeExpression != null)
                 {
@@ -467,7 +467,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                 if (wasAdded) sb.AppendLine();
 
                 AppendDataMember(sb, null, dataMemberIndex++);
-                sb.AppendLine($"var {typeof(ResponseStatus).Name.PropertyStyle()}:ResponseStatus?{defaultValue}");
+                sb.AppendLine($"var {nameof(ResponseStatus).PropertyStyle()}:ResponseStatus?{defaultValue}");
             }
         }
         

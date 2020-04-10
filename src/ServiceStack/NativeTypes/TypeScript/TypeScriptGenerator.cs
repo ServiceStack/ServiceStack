@@ -465,7 +465,7 @@ namespace ServiceStack.NativeTypes.TypeScript
 
                 AddProperties(sb, type,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
-                        && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
+                        && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)));
 
                 if (EmitPartialConstructors && Config.ExportAsTypes && isClass)
                 {
@@ -511,6 +511,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                     if (optionalProperty)
                         propType = propType.Substring(0, propType.Length - 1);
 
+                    propType = PropertyTypeFilter?.Invoke(Config, type, prop) ?? propType;
                     var optional = IsPropertyOptional(Config, type, prop) ?? optionalProperty
                         ? "?"
                         : "";
@@ -528,7 +529,7 @@ namespace ServiceStack.NativeTypes.TypeScript
 
                 AppendDataMember(sb, null, dataMemberIndex++);
                 sb.AppendLine(modifier + "{0}{1}: ResponseStatus;".Fmt(
-                    typeof(ResponseStatus).Name.PropertyStyle(), Config.ExportAsTypes ? "" : "?"));
+                    nameof(ResponseStatus).PropertyStyle(), Config.ExportAsTypes ? "" : "?"));
             }
         }
 

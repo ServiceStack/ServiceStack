@@ -293,9 +293,9 @@ namespace ServiceStack.NativeTypes.Java
         //Use built-in types already in net.servicestack.client package
         public static HashSet<string> IgnoreTypeNames = new HashSet<string>
         {
-            typeof(ResponseStatus).Name,
-            typeof(ResponseError).Name,
-            typeof(ErrorResponse).Name,
+            nameof(ResponseStatus),
+            nameof(ResponseError),
+            nameof(ErrorResponse),
         }; 
 
         private List<string> RemoveIgnoredTypes(MetadataTypes metadata)
@@ -423,7 +423,7 @@ namespace ServiceStack.NativeTypes.Java
 
                 AddProperties(sb, type,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
-                        && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name),
+                        && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)),
                     addPropertyAccessors: addPropertyAccessors,
                     settersReturnType: settersReturnType);
 
@@ -496,7 +496,7 @@ namespace ServiceStack.NativeTypes.Java
                 if (wasAdded) sb.AppendLine();
 
                 AppendDataMember(sb, null, dataMemberIndex++);
-                sb.AppendLine("public ResponseStatus {0} = null;".Fmt(typeof(ResponseStatus).Name.PropertyStyle()));
+                sb.AppendLine("public ResponseStatus {0} = null;".Fmt(nameof(ResponseStatus).PropertyStyle()));
 
                 if (addPropertyAccessors)
                     sbAccessors.AppendPropertyAccessor("ResponseStatus", "ResponseStatus", settersReturnType);
