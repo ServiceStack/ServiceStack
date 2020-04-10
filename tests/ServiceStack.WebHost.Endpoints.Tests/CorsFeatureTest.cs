@@ -74,7 +74,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             new JsvServiceClient(Config.AbsoluteBaseUri)
         };
 
-        [Test, Ignore("Debug Only")]
+        [Ignore("Debug Only")]
         public void RunFor5Mins()
         {
             Thread.Sleep(TimeSpan.FromMinutes(5));

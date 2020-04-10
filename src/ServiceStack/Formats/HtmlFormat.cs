@@ -133,7 +133,7 @@ namespace ServiceStack.Formats
                     .Replace("${ServiceUrl}", url)
                     .Replace("${Humanize}", Humanize.ToString().ToLower())
                     .Replace("${AuthRedirect}", req.ResolveAbsoluteUrl(AppHost.GetPlugin<AuthFeature>()?.HtmlRedirect))
-                    .Replace("${AllowOrigins}", AppHost.GetPlugin<CorsFeature>()?.AllowOriginWhitelist.Join(";"));
+                    .Replace("${AllowOrigins}", AppHost.GetPlugin<CorsFeature>()?.AllowOriginWhitelist?.Join(";"));
             }
             
             await ((ServiceStackHost)AppHost).WriteAutoHtmlResponseAsync(req, response, html, outputStream);
