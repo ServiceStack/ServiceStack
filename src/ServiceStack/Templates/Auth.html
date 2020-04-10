@@ -54,16 +54,16 @@
         .sel {
             cursor: pointer;
         }
-        .btn-datauri {
+        .btn-copy {
             padding-left: 10px;
             max-height: 24px;
         }
-        .btn-datauri small {
+        .btn-copy small {
             padding-left: 10px;
             max-width: 100px;
             max-height: 24px;
         }
-        .copy-datauri {
+        .copy-text {
             position: absolute;
             margin-top: 3px;
             width: 60px;
@@ -73,9 +73,9 @@
             overflow: hidden;
             border-color: #ffc907;
         }
-        .copy-datauri:hover {
+        .copy-text:hover {
         }
-        .copy-datauri span {
+        .copy-text span {
             opacity: 0;
         }
         .oauth b {
@@ -155,8 +155,8 @@
                     if (name.endsWith('-tokens')) {
                         sbTokens.push('<tr><th>' + splitOnFirst(name,'-')[0] + '</th>');
                         sbTokens.push('<td><b>' + v[name] + '</b></td>');
-                        sbTokens.push('<td style="width:100px"><span class="btn-datauri">');
-                        sbTokens.push('<button class="sel btn copy-datauri" onclick="copy(this)">');
+                        sbTokens.push('<td style="width:100px">');
+                        sbTokens.push('<span class="btn-copy"><button class="sel btn copy-text" onclick="copy(this)">');
                         sbTokens.push('<span>' + v[name] + '</span>');
                         sbTokens.push('</button>');
                         sbTokens.push('<small>copy</small></span>');
@@ -173,6 +173,11 @@
                     : typeof v == "string" || typeof v == "boolean" || typeof v == "number"
                         ? v
                         : JSON.stringify(v);
+                if (cmpKey === 'sessionid') {
+                    str += '<span class="btn-copy"><button class="sel btn copy-text" onclick="copy(this)">' +
+                        '<span>' + str + '</span>' +
+                        '</button><small>copy</small></span>';
+                }
                 sb.push('<tr><th>' + humanize(k) + '</th><td>' + str + '</td>');
             }
         }
