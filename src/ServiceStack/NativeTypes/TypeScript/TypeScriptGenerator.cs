@@ -113,6 +113,8 @@ namespace ServiceStack.NativeTypes.TypeScript
         
         public HashSet<string> AddedDeclarations { get; set; } = new HashSet<string>();
 
+        public static Func<MetadataTypesConfig, MetadataType, MetadataPropertyType, string> PropertyTypeFilter { get; set; }
+
         /// <summary>
         /// Whether property should be marked optional
         /// </summary>
@@ -512,6 +514,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                         propType = propType.Substring(0, propType.Length - 1);
 
                     propType = PropertyTypeFilter?.Invoke(Config, type, prop) ?? propType;
+
                     var optional = IsPropertyOptional(Config, type, prop) ?? optionalProperty
                         ? "?"
                         : "";
