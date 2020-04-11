@@ -129,10 +129,10 @@ namespace ServiceStack
 
     public class AuthInfo : IMeta
     {
-        public bool HasAuthSecret { get; set; }
-        public bool HasAuthRepository { get; set; }
-        public bool IncludesRoles { get; set; }
-        public bool IncludesOAuthTokens { get; set; }
+        public bool? HasAuthSecret { get; set; }
+        public bool? HasAuthRepository { get; set; }
+        public bool? IncludesRoles { get; set; }
+        public bool? IncludesOAuthTokens { get; set; }
         public List<MetaAuthProvider> AuthProviders { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
@@ -140,6 +140,10 @@ namespace ServiceStack
     public class AutoQueryInfo : IMeta
     {
         public int? MaxLimit { get; set; }
+        public bool? RawSqlFilters { get; set; }
+        public bool? AutoQueryViewer { get; set; }
+        public bool? Async { get; set; }
+        public bool? OrderByPrimaryKey { get; set; }
         public List<AutoQueryConvention> ViewerConventions { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }

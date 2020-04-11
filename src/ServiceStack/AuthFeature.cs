@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using ServiceStack.Auth;
+using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -267,10 +268,10 @@ namespace ServiceStack
 
             appHost.AddToAppMetadata(meta => {
                 meta.Plugins.Auth = new AuthInfo {
-                    HasAuthSecret = appHost.Config.AdminAuthSecret != null,
-                    HasAuthRepository = appHost.GetContainer().Exists<IAuthRepository>(),
-                    IncludesRoles = IncludeRolesInAuthenticateResponse,
-                    IncludesOAuthTokens = IncludeOAuthTokensInAuthenticateResponse,
+                    HasAuthSecret = (appHost.Config.AdminAuthSecret != null).NullIfFalse(),
+                    HasAuthRepository = appHost.GetContainer().Exists<IAuthRepository>().NullIfFalse(),
+                    IncludesRoles = IncludeRolesInAuthenticateResponse.NullIfFalse(),
+                    IncludesOAuthTokens = IncludeOAuthTokensInAuthenticateResponse.NullIfFalse(),
                     AuthProviders = AuthenticateService.GetAuthProviders().Map(x => new MetaAuthProvider {
                         Type = x.GetType().Name,
                         Name = x.Provider,

@@ -891,5 +891,7 @@ namespace ServiceStack.Host
 
         public static bool Has(this Feature feature, Feature flag) => 
             (flag & feature) != 0;
+
+        public static bool? NullIfFalse(this bool value) => value ? true : (bool?)null;
     }
 }

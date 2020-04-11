@@ -188,6 +188,10 @@ namespace ServiceStack
             appHost.AddToAppMetadata(meta => {
                 meta.Plugins.AutoQuery = new AutoQueryInfo {
                     MaxLimit = MaxLimit,
+                    RawSqlFilters = EnableRawSqlFilters.NullIfFalse(),
+                    Async = EnableAsync.NullIfFalse(),
+                    AutoQueryViewer = EnableAutoQueryViewer.NullIfFalse(),
+                    OrderByPrimaryKey = OrderByPrimaryKeyOnPagedQuery.NullIfFalse(),
                     ViewerConventions = ViewerConventions,
                 };
             });
