@@ -148,19 +148,20 @@ namespace ServiceStack
             }
 
             var res = (IHttpResponse) httpReq.Response;
+            await ProxyToResponse(res, webReq);
+        }
+
+        public async Task ProxyToResponse(IHttpResponse res, HttpWebRequest webReq)
+        {
             try
             {
-                using (var webRes = (HttpWebResponse) await webReq.GetResponseAsync())
-                {
-                    await CopyToResponse(res, webRes);
-                }
+                using var webRes = (HttpWebResponse) await webReq.GetResponseAsync();
+                await CopyToResponse(res, webRes);
             }
             catch (WebException webEx)
             {
-                using (var errorResponse = (HttpWebResponse) webEx.Response)
-                {
-                    await CopyToResponse(res, errorResponse);
-                }
+                using var errorResponse = (HttpWebResponse) webEx.Response;
+                await CopyToResponse(res, errorResponse);
             }
         }
 
