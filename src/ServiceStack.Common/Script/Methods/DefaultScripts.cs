@@ -1313,11 +1313,11 @@ namespace ServiceStack.Script
         
         public object removeKeyFromDictionary(IDictionary dictionary, object keyToRemove)
         {
-            var removeKeys = keyToRemove is IEnumerable e
+            var removeKeys = keyToRemove is IEnumerable e && !(keyToRemove is string)
                 ? e.Map(x => x)
                 : null;
             
-            foreach (var key in dictionary.Keys)
+            foreach (var key in EnumerableUtils.ToList(dictionary.Keys))
             {
                 if (removeKeys != null)
                 {
@@ -1337,11 +1337,12 @@ namespace ServiceStack.Script
         
         public object remove(object target, object keysToRemove)
         {
-            var removeKeys = keysToRemove is IEnumerable eKeys
-                ? eKeys.Map(x => x)
-                : null;
+            var removeKeys = keysToRemove is string s
+                ? (IEnumerable) new[] {s}
+                : keysToRemove is IEnumerable eKeys
+                    ? eKeys.Map(x => x)
+                    : null;
 
-            var stringKey = keysToRemove as string;
             var stringKeys = removeKeys?.OfType<string>().ToArray();
             if (stringKeys.IsEmpty())
                 stringKeys = null;

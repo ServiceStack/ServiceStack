@@ -2086,5 +2086,21 @@ dir-file: dir/dir-file.txt
             Assert.That(context.Evaluate("{{ flatten([[1,2],[3,4]]) |> return }}"), Is.EqualTo(new[]{ 1, 2, 3, 4 }));
         }
 
+        [Test]
+        public void Can_removeKeyFromDictionary()
+        {
+            var context = new ScriptContext().Init();
+            var output = context.RenderScript(@"```code|q
+sample = {}
+sample.myKey1 = 1
+sample.myKey2 = 2
+sample |> remove('myKey1')
+sample |> removeKeyFromDictionary('myKey2')
+```
+{{ sample.myKey }}".NormalizeNewLines());
+            
+            Assert.That(output, Is.EqualTo(""));
+        }
+
     }
 }
