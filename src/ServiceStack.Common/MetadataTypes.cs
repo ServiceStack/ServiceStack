@@ -141,10 +141,12 @@ namespace ServiceStack
     public class AutoQueryInfo : IMeta
     {
         public int? MaxLimit { get; set; }
+        public bool? UntypedQueries { get; set; }
         public bool? RawSqlFilters { get; set; }
         public bool? AutoQueryViewer { get; set; }
         public bool? Async { get; set; }
         public bool? OrderByPrimaryKey { get; set; }
+        public string NamedConnection { get; set; }
         public List<AutoQueryConvention> ViewerConventions { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
