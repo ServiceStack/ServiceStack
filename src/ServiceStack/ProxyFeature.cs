@@ -100,9 +100,11 @@ namespace ServiceStack
             }
         }
 
-        public virtual async Task ProxyRequestAsync(IHttpRequest httpReq, string url)
+        public virtual async Task ProxyRequestAsync(IHttpRequest httpReq, string url) => 
+            await ProxyRequestAsync(httpReq, (HttpWebRequest)WebRequest.Create(url));
+
+        public async Task ProxyRequestAsync(IHttpRequest httpReq, HttpWebRequest webReq)
         {
-            var webReq = (HttpWebRequest)WebRequest.Create(url);
             webReq.Method = httpReq.Verb;
             webReq.ContentType = httpReq.ContentType;
             webReq.Accept = httpReq.Accept;
@@ -144,17 +146,18 @@ namespace ServiceStack
                     await inputStream.WriteToAsync(requestStream);
                 }
             }
-            var res = (IHttpResponse)httpReq.Response;
+
+            var res = (IHttpResponse) httpReq.Response;
             try
             {
-                using (var webRes = (HttpWebResponse)await webReq.GetResponseAsync())
+                using (var webRes = (HttpWebResponse) await webReq.GetResponseAsync())
                 {
                     await CopyToResponse(res, webRes);
                 }
             }
             catch (WebException webEx)
             {
-                using (var errorResponse = (HttpWebResponse)webEx.Response)
+                using (var errorResponse = (HttpWebResponse) webEx.Response)
                 {
                     await CopyToResponse(res, errorResponse);
                 }
