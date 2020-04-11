@@ -81,7 +81,9 @@ namespace ServiceStack
         public Action<IHttpResponse, HttpWebResponse> ProxyResponseFilter { get; set; }
         public Func<IHttpRequest, Stream, Task<Stream>> TransformRequest { get; set; }
         public Func<IHttpResponse, Stream, Task<Stream>> TransformResponse { get; set; }
-        public HashSet<string> IgnoreResponseHeaders { get; set; }
+        public HashSet<string> IgnoreResponseHeaders { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+            HttpHeaders.TransferEncoding
+        };
 
         public override Task ProcessRequestAsync(IRequest req, IResponse response, string operationName)
         {
