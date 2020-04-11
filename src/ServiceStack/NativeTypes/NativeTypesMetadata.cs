@@ -392,11 +392,11 @@ namespace ServiceStack.NativeTypes
                 Implements = ToInterfaces(type),
                 Attributes = ToAttributes(type),
                 Properties = ToProperties(type),
-                IsNested = type.IsNested ? true : (bool?)null,
-                IsEnum = type.IsEnum ? true : (bool?)null,
-                IsEnumInt = JsConfig.TreatEnumAsInteger || type.IsEnumFlags() ? true : (bool?)null,
-                IsInterface = type.IsInterface ? true : (bool?)null,
-                IsAbstract = type.IsAbstract ? true : (bool?)null,
+                IsNested = type.IsNested.NullIfFalse(),
+                IsEnum = type.IsEnum.NullIfFalse(),
+                IsEnumInt = (JsConfig.TreatEnumAsInteger || type.IsEnumFlags()).NullIfFalse(),
+                IsInterface = type.IsInterface.NullIfFalse(),
+                IsAbstract = type.IsAbstract.NullIfFalse(),
             };
 
             if (type.BaseType != null && 
@@ -530,7 +530,8 @@ namespace ServiceStack.NativeTypes
                          !(config.ExportTypes.ContainsMatch(type) && JsConfig.TreatValueAsRefTypes.ContainsMatch(type))) 
                 || type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>))
                 ? null
-                : GetInstancePublicProperties(type).Select(x => ToProperty(x)).ToList();
+                : GetInstancePublicProperties(type).Select(x => ToProperty(x))
+                    .ToList().PopulatePrimaryKey();
 
             return props == null || props.Count == 0 ? null : props;
         }
@@ -710,13 +711,14 @@ namespace ServiceStack.NativeTypes
 
             var property = new MetadataPropertyType
             {
+                PropertyInfo = pi,
                 PropertyType = pi.PropertyType,
                 Name = pi.Name,
                 Attributes = ToAttributes(pi.GetCustomAttributes(false)),
                 Type = pi.PropertyType.GetMetadataPropertyType(),
-                IsValueType = pi.PropertyType.IsValueType ? true : (bool?)null,
-                IsSystemType = pi.PropertyType.IsSystemType() ? true : (bool?)null,
-                IsEnum = pi.PropertyType.IsEnum ? true : (bool?)null,
+                IsValueType = pi.PropertyType.IsValueType.NullIfFalse(),
+                IsSystemType = pi.PropertyType.IsSystemType().NullIfFalse(),
+                IsEnum = pi.PropertyType.IsEnum.NullIfFalse(),
                 TypeNamespace = pi.PropertyType.Namespace,
                 DataMember = ToDataMember(pi.GetDataMember()),
                 GenericArgs = genericArgs,
@@ -798,9 +800,9 @@ namespace ServiceStack.NativeTypes
                 Name = pi.Name,
                 Attributes = ToAttributes(propertyAttrs),
                 Type = pi.ParameterType.GetOperationName(),
-                IsValueType = pi.ParameterType.IsValueType ? true : (bool?)null,
-                IsSystemType = pi.ParameterType.IsSystemType() ? true : (bool?)null,
-                IsEnum = pi.ParameterType.IsEnum ? true : (bool?)null,
+                IsValueType = pi.ParameterType.IsValueType.NullIfFalse(),
+                IsSystemType = pi.ParameterType.IsSystemType().NullIfFalse(),
+                IsEnum = pi.ParameterType.IsEnum.NullIfFalse(),
                 TypeNamespace = pi.ParameterType.Namespace,
                 Description = pi.GetDescription(),
             };
@@ -815,9 +817,9 @@ namespace ServiceStack.NativeTypes
             var metaAttr = new MetadataDataMember
             {
                 Name = attr.Name,
-                EmitDefaultValue = attr.EmitDefaultValue != true ? attr.EmitDefaultValue : (bool?)null,
+                EmitDefaultValue = attr.EmitDefaultValue.NullIfFalse(),
                 Order = attr.Order >= 0 ? attr.Order : (int?)null,
-                IsRequired = attr.IsRequired != false ? attr.IsRequired : (bool?)null,
+                IsRequired = attr.IsRequired.NullIfFalse(),
             };
 
             return metaAttr;
@@ -846,6 +848,72 @@ namespace ServiceStack.NativeTypes
 
     public static class MetadataExtensions
     {
+        public static List<MetadataPropertyType> PopulatePrimaryKey(this List<MetadataPropertyType> props)
+        {
+            //sync with https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/src/ServiceStack.OrmLite/OrmLiteConfigExtensions.cs
+            var hasPkAttr = props
+                .FirstOrDefault(p => p.PropertyType?.HasAttributeCached<PrimaryKeyAttribute>() == true);
+
+            if (hasPkAttr != null)
+            {
+                hasPkAttr.IsPrimaryKey = true;
+            }
+            else
+            {
+                static bool CheckForIdField(IEnumerable<PropertyInfo> objProperties)
+                {
+                    // Not using Linq.Where() and manually iterating through objProperties just to avoid dependencies on System.Xml??
+                    foreach (var objProperty in objProperties)
+                    {
+                        if (objProperty.Name != Keywords.Id) continue;
+                        return true;
+                    }
+                    return false;
+                }
+
+                var objProperties = props
+                    .Where(x => x.PropertyInfo != null).Map(x => x.PropertyInfo);
+                if (objProperties.Count == 0)
+                    return props;
+
+                var i = 0;
+                foreach (var prop in props)
+                {
+                    var propertyInfo = prop.PropertyInfo;
+                    if (propertyInfo == null) 
+                        continue;
+                    
+                    var isNullableType = propertyInfo.PropertyType.IsNullableType();
+                    
+                    var propertyType = isNullableType
+                        ? Nullable.GetUnderlyingType(propertyInfo.PropertyType)
+                        : propertyInfo.PropertyType;
+                    
+                    var referenceAttr = propertyInfo.FirstAttribute<ReferenceAttribute>();
+                    var isReference = referenceAttr != null && propertyType.IsClass;
+                    var isIgnored = propertyInfo.HasAttributeCached<IgnoreAttribute>() || isReference;
+
+                    var isFirst = !isIgnored && i++ == 0;
+
+                    var isAutoId = propertyInfo.HasAttributeCached<AutoIdAttribute>();
+                    
+                    var hasIdField = CheckForIdField(objProperties);
+                    
+                    var isPrimaryKey = (hasPkAttr == null && (propertyInfo.Name == Keywords.Id || (!hasIdField && isFirst)))
+                                       || propertyInfo.HasAttributeNamed(typeof(PrimaryKeyAttribute).Name)
+                                       || isAutoId;
+
+                    if (isPrimaryKey)
+                    {
+                        prop.IsPrimaryKey = true;
+                        return props;
+                    }
+                }
+            }
+            
+            return props;
+        }
+
         public static MetadataTypeName ToMetadataTypeName(this MetadataType type)
         {
             if (type == null) return null;

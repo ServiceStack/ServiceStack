@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 namespace ServiceStack
@@ -319,6 +320,8 @@ namespace ServiceStack
     public class MetadataPropertyType
     {
         [IgnoreDataMember]
+        public PropertyInfo PropertyInfo { get; set; }
+        [IgnoreDataMember]
         public Type PropertyType { get; set; }
         [IgnoreDataMember]
         public Dictionary<string, object> Items { get; set; }
@@ -327,6 +330,7 @@ namespace ServiceStack
         public bool? IsValueType { get; set; }
         public bool? IsSystemType { get; set; }
         public bool? IsEnum { get; set; }
+        public bool? IsPrimaryKey { get; set; }
         public string TypeNamespace { get; set; }
         public string[] GenericArgs { get; set; }
         public string Value { get; set; }
