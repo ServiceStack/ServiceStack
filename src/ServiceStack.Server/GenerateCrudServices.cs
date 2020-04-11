@@ -437,7 +437,7 @@ namespace ServiceStack
                 MethodAttributes.Virtual |
                 MethodAttributes.Final;
             
-            var getField = typeBuilder.DefineField("_" + propertyBuilder.Name.ToCamelCase(), propertyBuilder.PropertyType, FieldAttributes.Private);
+            var fb = typeBuilder.DefineField("_" + propertyBuilder.Name.ToCamelCase(), propertyBuilder.PropertyType, FieldAttributes.Private);
 
             var getterBuilder = typeBuilder.DefineMethod("get_" + propertyBuilder.Name, attributes, propertyBuilder.PropertyType, Type.EmptyTypes);
 
@@ -445,7 +445,7 @@ namespace ServiceStack
             var ilgen = getterBuilder.GetILGenerator();
 
             ilgen.Emit(OpCodes.Ldarg_0);
-            ilgen.Emit(OpCodes.Ldfld, getField); // returning the firstname field
+            ilgen.Emit(OpCodes.Ldfld, fb); // returning the firstname field
             ilgen.Emit(OpCodes.Ret);
             
             var setterBuilder = typeBuilder.DefineMethod("set_" + propertyBuilder.Name,
@@ -455,7 +455,7 @@ namespace ServiceStack
 
             ilgen.Emit(OpCodes.Ldarg_0);
             ilgen.Emit(OpCodes.Ldarg_1);
-            ilgen.Emit(OpCodes.Stfld, setterBuilder);
+            ilgen.Emit(OpCodes.Stfld, fb);
             ilgen.Emit(OpCodes.Ret);
 
             propertyBuilder.SetGetMethod(getterBuilder);

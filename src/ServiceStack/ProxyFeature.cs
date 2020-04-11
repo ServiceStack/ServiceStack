@@ -169,6 +169,9 @@ namespace ServiceStack
 
         public virtual async Task CopyToResponse(IHttpResponse res, HttpWebResponse webRes)
         {
+            if (webRes == null)
+                return;
+            
             res.StatusCode = (int) webRes.StatusCode;
             res.StatusDescription = webRes.StatusDescription;
             res.ContentType = webRes.ContentType;
