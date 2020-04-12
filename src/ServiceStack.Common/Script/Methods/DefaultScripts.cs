@@ -1467,8 +1467,8 @@ namespace ServiceStack.Script
         }
 
         private static readonly string[] InternalKeys = { ScriptConstants.It, ScriptConstants.PartialArg };
-        public object ownProperties(IDictionary<string, object> target) =>
-            withoutKeys(target, InternalKeys);
+        public object ownProps(IDictionary<string, object> target) =>
+            toList((IEnumerable<KeyValuePair<string,object>>)withoutKeys(target, InternalKeys));
 
         public object withoutKeys(IDictionary<string, object> target, object keys)
         {
