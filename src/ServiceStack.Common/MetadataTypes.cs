@@ -146,6 +146,7 @@ namespace ServiceStack
         public bool? AutoQueryViewer { get; set; }
         public bool? Async { get; set; }
         public bool? OrderByPrimaryKey { get; set; }
+        public bool? CrudEvents { get; set; }
         public string NamedConnection { get; set; }
         public List<AutoQueryConvention> ViewerConventions { get; set; }
         public Dictionary<string, string> Meta { get; set; }

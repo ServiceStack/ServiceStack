@@ -160,7 +160,8 @@ namespace ServiceStack
                     EndsWithConventions[key] = query;
             }
 
-            appHost.GetContainer().AddSingleton<IAutoQueryDb>(c => new AutoQuery
+            var container = appHost.GetContainer();
+            container.AddSingleton<IAutoQueryDb>(c => new AutoQuery
                 {
                     IgnoreProperties = IgnoreProperties,
                     IllegalSqlFragmentTokens = IllegalSqlFragmentTokens,
@@ -193,6 +194,7 @@ namespace ServiceStack
                     Async = EnableAsync.NullIfFalse(),
                     AutoQueryViewer = EnableAutoQueryViewer.NullIfFalse(),
                     OrderByPrimaryKey = OrderByPrimaryKeyOnPagedQuery.NullIfFalse(),
+                    CrudEvents = container.Exists<ICrudEvents>().NullIfFalse(),
                     NamedConnection = UseNamedConnection,
                     ViewerConventions = ViewerConventions,
                 };
