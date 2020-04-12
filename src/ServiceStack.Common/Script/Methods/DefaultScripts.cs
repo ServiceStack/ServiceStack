@@ -782,7 +782,7 @@ namespace ServiceStack.Script
                 }
             }
 
-            pageParams["it"] = pageParams;
+            pageParams[ScriptConstants.It] = pageParams;
             pageParams[ScriptConstants.PartialArg] = page;
 
             await scope.WritePageAsync(page, codePage, pageParams);
@@ -1465,6 +1465,10 @@ namespace ServiceStack.Script
             }
             return to;
         }
+
+        private static readonly string[] InternalKeys = { ScriptConstants.It, ScriptConstants.PartialArg };
+        public object ownProperties(IDictionary<string, object> target) =>
+            withoutKeys(target, InternalKeys);
 
         public object withoutKeys(IDictionary<string, object> target, object keys)
         {
