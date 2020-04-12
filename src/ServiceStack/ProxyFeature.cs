@@ -107,6 +107,29 @@ namespace ServiceStack
 
         public async Task ProxyRequestAsync(IHttpRequest httpReq, HttpWebRequest webReq)
         {
+            InitWebRequest(httpReq, webReq);
+
+            ProxyRequestFilter?.Invoke(httpReq, webReq);
+
+            if (httpReq.ContentLength > 0)
+            {
+                var inputStream = httpReq.InputStream;
+                if (TransformRequest != null)
+                    inputStream = await TransformRequest(httpReq, inputStream) ?? inputStream;
+
+                using (inputStream)
+                using (var requestStream = await webReq.GetRequestStreamAsync())
+                {
+                    await inputStream.WriteToAsync(requestStream);
+                }
+            }
+
+            var res = (IHttpResponse) httpReq.Response;
+            await ProxyToResponse(res, webReq);
+        }
+
+        public static void InitWebRequest(IHttpRequest httpReq, HttpWebRequest webReq)
+        {
             webReq.Method = httpReq.Verb;
             webReq.ContentType = httpReq.ContentType;
             webReq.Accept = httpReq.Accept;
@@ -133,24 +156,6 @@ namespace ServiceStack
 
                 webReq.Headers[header] = httpReq.Headers[header];
             }
-
-            ProxyRequestFilter?.Invoke(httpReq, webReq);
-
-            if (httpReq.ContentLength > 0)
-            {
-                var inputStream = httpReq.InputStream;
-                if (TransformRequest != null)
-                    inputStream = await TransformRequest(httpReq, inputStream) ?? inputStream;
-
-                using (inputStream)
-                using (var requestStream = await webReq.GetRequestStreamAsync())
-                {
-                    await inputStream.WriteToAsync(requestStream);
-                }
-            }
-
-            var res = (IHttpResponse) httpReq.Response;
-            await ProxyToResponse(res, webReq);
         }
 
         public async Task ProxyToResponse(IHttpResponse res, HttpWebRequest webReq)
