@@ -308,6 +308,11 @@ namespace ServiceStack
             session.Set(typeof(T).Name, value);
         }
 
+        public static void Remove<T>(this ISession session)
+        {
+            session.Remove(typeof(T).Name);
+        }
+
         public static void DeleteSessionCookies(this IResponse response)
         {
             if (!(response is IHttpResponse httpRes)) return;
