@@ -125,6 +125,7 @@ namespace ServiceStack
         public List<string> Loaded { get; set; }
         public AuthInfo Auth { get; set; }
         public AutoQueryInfo AutoQuery { get; set; }
+        public ValidationInfo Validation { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
 
@@ -149,6 +150,15 @@ namespace ServiceStack
         public bool? CrudEvents { get; set; }
         public string NamedConnection { get; set; }
         public List<AutoQueryConvention> ViewerConventions { get; set; }
+        public Dictionary<string, string> Meta { get; set; }
+    }
+
+    public class ValidationInfo : IMeta
+    {
+        public bool? HasValidationSource { get; set; }
+        public bool? HasValidationSourceAdmin { get; set; }
+        public Dictionary<string,string[]> ServiceRoutes { get; set; }
+        
         public Dictionary<string, string> Meta { get; set; }
     }
 

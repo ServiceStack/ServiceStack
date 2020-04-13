@@ -8,6 +8,7 @@ using ServiceStack.Configuration;
 using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Results;
 using ServiceStack.FluentValidation.Validators;
+using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -103,6 +104,14 @@ namespace ServiceStack.Validation
             {
                 container.RegisterValidators(((ServiceStackHost)appHost).ServiceAssemblies.ToArray());
             }
+            
+            appHost.AddToAppMetadata(metadata => {
+                metadata.Plugins.Validation = new ValidationInfo {
+                    HasValidationSource = hasValidationSource.NullIfFalse(), 
+                    HasValidationSourceAdmin = (ValidationSource is IValidationSourceAdmin).NullIfFalse(),
+                    ServiceRoutes = ServiceRoutes.ToMetadataServiceRoutes(),
+                };
+            });
         }
 
         public void AfterInit(IAppHost appHost)
@@ -305,7 +314,7 @@ namespace ServiceStack.Validation
                     if (ruleSet != null && rule.RuleSets != null && !rule.RuleSets.Contains(ruleSet))
                         continue;
 
-                    if (rule.Validators.Any(x => x is AsyncPredicateValidator || x is AsyncValidatorBase ||  x.ShouldValidateAsync(context)))
+                    if (rule.Validators.Any(x => x is AsyncPredicateValidator || x is AsyncValidatorBase ||  x.ShouldValidateAsynchronously(context)))
                         return true;
                 }
             }

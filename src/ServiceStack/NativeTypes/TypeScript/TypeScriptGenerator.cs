@@ -126,12 +126,14 @@ namespace ServiceStack.NativeTypes.TypeScript
         /// </summary>
         public static bool UseNullableProperties
         {
-            get => IsPropertyOptional == DefaultIsPropertyOptional;
             set
             {
-                IsPropertyOptional = (gen, type, prop) => false;
-                PropertyTypeFilter = (gen, type, prop) => 
-                     gen.GetPropertyType(prop, out _) + "|null";
+                if (value)
+                {
+                    IsPropertyOptional = (gen, type, prop) => false;
+                    PropertyTypeFilter = (gen, type, prop) => 
+                        gen.GetPropertyType(prop, out var isNullable) + "|null";
+                }
             }
         }
 

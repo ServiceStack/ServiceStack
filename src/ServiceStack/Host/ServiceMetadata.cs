@@ -893,5 +893,16 @@ namespace ServiceStack.Host
             (flag & feature) != 0;
 
         public static bool? NullIfFalse(this bool value) => value ? true : (bool?)null;
+
+        public static Dictionary<string, string[]> ToMetadataServiceRoutes(this Dictionary<Type, string[]> serviceRoutes)
+        {
+            var to = new Dictionary<string,string[]>();
+            foreach (var entry in serviceRoutes.Safe())
+            {
+                to[entry.Key.Name] = entry.Value;
+            }
+            return to;
+        }
     }
+    
 }
