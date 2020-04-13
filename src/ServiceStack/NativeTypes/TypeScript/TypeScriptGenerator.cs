@@ -26,7 +26,7 @@ namespace ServiceStack.NativeTypes.TypeScript
 
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
-
+        
         public static List<string> DefaultImports = new List<string>
         {
         };
@@ -120,6 +120,20 @@ namespace ServiceStack.NativeTypes.TypeScript
         /// </summary>
         public static Func<TypeScriptGenerator, MetadataType, MetadataPropertyType, bool?> IsPropertyOptional { get; set; } =
             DefaultIsPropertyOptional;
+
+        /// <summary>
+        /// Helper to make Nullable properties
+        /// </summary>
+        public static bool UseNullableProperties
+        {
+            get => IsPropertyOptional == DefaultIsPropertyOptional;
+            set
+            {
+                IsPropertyOptional = (gen, type, prop) => false;
+                PropertyTypeFilter = (gen, type, prop) => 
+                     gen.GetPropertyType(prop, out _) + "|null";
+            }
+        }
 
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
@@ -495,6 +509,15 @@ namespace ServiceStack.NativeTypes.TypeScript
             return lastNS;
         }
 
+        public virtual string GetPropertyType(MetadataPropertyType prop, out bool isNullable)
+        {
+            var propType = Type(prop.GetTypeName(Config, AllTypes), prop.GenericArgs);
+            var optionalProperty = propType.EndsWith("?");
+            if (optionalProperty)
+                propType = propType.Substring(0, propType.Length - 1);
+            return propType;
+        }
+
         public void AddProperties(StringBuilderWrapper sb, MetadataType type, bool includeResponseStatus)
         {
             var wasAdded = false;
@@ -508,11 +531,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 {
                     if (wasAdded) sb.AppendLine();
 
-                    var propType = Type(prop.GetTypeName(Config, AllTypes), prop.GenericArgs);
-                    var optionalProperty = propType.EndsWith("?");
-                    if (optionalProperty)
-                        propType = propType.Substring(0, propType.Length - 1);
-
+                    var propType = GetPropertyType(prop, out var optionalProperty);
                     propType = PropertyTypeFilter?.Invoke(this, type, prop) ?? propType;
 
                     var optional = IsPropertyOptional(this, type, prop) ?? optionalProperty
