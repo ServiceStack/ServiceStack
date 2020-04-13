@@ -108,7 +108,7 @@ namespace ServiceStack.Validation
             appHost.AddToAppMetadata(metadata => {
                 metadata.Plugins.Validation = new ValidationInfo {
                     HasValidationSource = hasValidationSource.NullIfFalse(), 
-                    HasValidationSourceAdmin = (ValidationSource is IValidationSourceAdmin).NullIfFalse(),
+                    HasValidationSourceAdmin = (container.Resolve<IValidationSource>() is IValidationSourceAdmin).NullIfFalse(),
                     ServiceRoutes = ServiceRoutes.ToMetadataServiceRoutes(),
                 };
             });
