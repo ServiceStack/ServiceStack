@@ -146,6 +146,7 @@ namespace ServiceStack.Script
         {
             var token = arrowExpr.Body;
 
+            scope = scope.Clone();
             if (target is IList list)
             {
                 var itemBinding = arrowExpr.Params[0].Name;

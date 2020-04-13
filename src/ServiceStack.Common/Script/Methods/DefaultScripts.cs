@@ -214,6 +214,7 @@ namespace ServiceStack.Script
             var scopedParams = scope.GetParamsWithItemBinding(nameof(count), scopeOptions, out string itemBinding);
 
             var expr = literal.GetCachedJsExpression(scope);
+            scope = scope.Clone();
             scope.AddItemToScope(itemBinding, target);
             var result = expr.EvaluateToBool(scope);
 
@@ -257,6 +258,7 @@ namespace ServiceStack.Script
             var scopedParams = scope.GetParamsWithItemBinding(nameof(count), scopeOptions, out string itemBinding);
 
             var expr = literal.GetCachedJsExpression(scope);
+            scope = scope.Clone();
             scope.AddItemToScope(itemBinding, target);
             var result = expr.EvaluateToBool(scope);
 
@@ -940,6 +942,7 @@ namespace ServiceStack.Script
             var items = target.AssertEnumerable(nameof(toDictionary));
             var token = scope.AssertExpression(nameof(map), expression, scopeOptions, out var itemBinding);
 
+            scope = scope.Clone();
             return items.ToDictionary(item => token.Evaluate(scope.AddItemToScope(itemBinding, item)));
         }
 
@@ -1117,6 +1120,7 @@ namespace ServiceStack.Script
         {
             var token = scope.AssertExpression(nameof(map), expression, scopeOptions, out var itemBinding);
 
+            scope = scope.Clone();
             if (target is IEnumerable items && !(target is IDictionary) && !(target is string))
             {
                 var i = 0;
@@ -1295,6 +1299,7 @@ namespace ServiceStack.Script
             
             pageParams[ScriptConstants.PartialArg] = page;
 
+            scope = scope.Clone();
             if (target is IEnumerable objs && !(target is IDictionary) && !(target is string))
             {
                 var i = 0;
@@ -1466,9 +1471,20 @@ namespace ServiceStack.Script
             return to;
         }
 
-        private static readonly string[] InternalKeys = { ScriptConstants.It, ScriptConstants.PartialArg };
-        public object ownProps(IDictionary<string, object> target) =>
-            toList((IEnumerable<KeyValuePair<string,object>>)withoutKeys(target, InternalKeys));
+        private static readonly HashSet<string> InternalKeys = new HashSet<string> {
+            ScriptConstants.It, ScriptConstants.PartialArg };
+        
+        public object ownProps(IEnumerable<KeyValuePair<string,object>> target)
+        {
+            var to = new List<KeyValuePair<string, object>>();
+            foreach (var entry in target)
+            {
+                if (InternalKeys.Contains(entry.Key))
+                    continue;
+                to.Add(entry);
+            }
+            return to;
+        }
 
         public object withoutKeys(IDictionary<string, object> target, object keys)
         {

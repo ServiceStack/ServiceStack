@@ -144,6 +144,7 @@ namespace ServiceStack.Script
             Type itemType = null;
             if (expression != null)
             {
+                scope = scope.Clone();
                 var expr = scope.AssertExpression(filterName, expression, scopeOptions, out var itemBinding);
 
                 foreach (var item in items)
@@ -206,6 +207,7 @@ namespace ServiceStack.Script
                     : 0;
 
             var i = 0;
+            scope = scope.Clone();
             foreach (var item in items)
             {
                 if (item == null) continue;
@@ -641,6 +643,7 @@ namespace ServiceStack.Script
                 }
                 else throw new NotSupportedException($"map expression in '{nameof(groupBy)}' must be a string or arrow expression");
 
+                scope = scope.Clone();
                 var result = items.GroupBy(
                     item => expr.Evaluate(scope.AddItemToScope(itemBinding, item)),
                     item => mapExpr.Evaluate(scope.AddItemToScope(mapBinding, item)),

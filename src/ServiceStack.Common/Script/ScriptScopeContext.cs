@@ -34,6 +34,11 @@ namespace ServiceStack.Script
         {
             return new Templates.TemplateScopeContext(from.PageResult, from.OutputStream, from.ScopedParams);
         }
+
+        public ScriptScopeContext Clone()
+        {
+            return new ScriptScopeContext(PageResult, OutputStream, new Dictionary<string, object>(ScopedParams));
+        }
     }
 
     public class ScopeVars : Dictionary<string, object>

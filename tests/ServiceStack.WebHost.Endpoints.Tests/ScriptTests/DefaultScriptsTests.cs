@@ -2102,5 +2102,21 @@ sample |> removeKeyFromDictionary('myKey2')
             Assert.That(output, Is.EqualTo(""));
         }
 
+        [Test]
+        public void Can_use_ownProps()
+        {
+            var context = new ScriptContext().Init();
+
+            var output = context.RenderScript(@"
+{{#partial test}}
+{{ it |> ownProps |> map => it.Key |> jsv }}|{{ it.ownProps().map(x => x.Key).jsv() }}
+{{/partial}}
+{{ 'test' | partial({ A:1, B:2 }) }}".NormalizeNewLines());
+
+            output.Print();
+            
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo("[A,B]|[A,B]"));
+        }
+
     }
 }
