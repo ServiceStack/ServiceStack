@@ -512,8 +512,8 @@ namespace ServiceStack.NativeTypes.TypeScript
         public virtual string GetPropertyType(MetadataPropertyType prop, out bool isNullable)
         {
             var propType = Type(prop.GetTypeName(Config, AllTypes), prop.GenericArgs);
-            var optionalProperty = propType.EndsWith("?");
-            if (optionalProperty)
+            isNullable = propType.EndsWith("?");
+            if (isNullable)
                 propType = propType.Substring(0, propType.Length - 1);
             return propType;
         }
