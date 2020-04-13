@@ -1,6 +1,6 @@
 /* Options:
-Date: 2018-05-19 18:46:53
-Version: 5.00
+Date: 2019-10-04 15:16:43
+Version: 5.7
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://test.servicestack.net
 
@@ -144,7 +144,7 @@ namespace testdtos
     }
 
     public partial class CustomUserSession
-        : AuthUserSession
+        : AuthUserSession, IMeta
     {
         [DataMember]
         public virtual string CustomName { get; set; }
@@ -684,6 +684,27 @@ namespace testdtos
         public virtual AllCollectionTypes AllCollectionTypes { get; set; }
     }
 
+    ///<summary>
+    ///Description on HelloAll type
+    ///</summary>
+    [DataContract]
+    public partial class HelloAnnotated
+        : IReturn<HelloAnnotatedResponse>
+    {
+        [DataMember]
+        public virtual string Name { get; set; }
+    }
+
+    ///<summary>
+    ///Description on HelloAllResponse type
+    ///</summary>
+    [DataContract]
+    public partial class HelloAnnotatedResponse
+    {
+        [DataMember]
+        public virtual string Result { get; set; }
+    }
+
     public partial class HelloArray
         : IReturn<ArrayResult[]>
     {
@@ -722,11 +743,6 @@ namespace testdtos
         : IReturn<HelloVerbResponse>, IDelete
     {
         public virtual int Id { get; set; }
-    }
-
-    public partial class HelloExternal
-    {
-        public virtual string Name { get; set; }
     }
 
     public partial class HelloGet
@@ -1100,6 +1116,13 @@ namespace testdtos
     {
         public virtual string Result { get; set; }
         public virtual ResponseStatus ResponseStatus { get; set; }
+    }
+
+    public partial class RestrictedAttributes
+    {
+        public virtual int Id { get; set; }
+        public virtual string Name { get; set; }
+        public virtual Hello Hello { get; set; }
     }
 
     [Route("/return/bytes")]

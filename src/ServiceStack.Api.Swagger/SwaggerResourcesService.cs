@@ -103,7 +103,7 @@ namespace ServiceStack.Api.Swagger
             ResourcesResponseFilter?.Invoke(result);
 
             return new HttpResult(result) {
-                ResultScope = () => JsConfig.With(includeNullValues:false)
+                ResultScope = () => JsConfig.With(new Config { IncludeNullValues = false })
             };
         }
 

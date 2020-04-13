@@ -3,7 +3,7 @@
     <CoreCompileDependsOn>$(CoreCompileDependsOn);RazorGeneratorOutput</CoreCompileDependsOn>
   </PropertyGroup>
 
-  <UsingTask TaskName="ServiceStack.Razor.BuildTask.RazorGeneratorBuildTask" AssemblyFile="ServiceStack.Razor.BuildTask.dll" />
+  <UsingTask TaskName="ServiceStack.Razor.BuildTask.RazorGeneratorBuildTask" AssemblyFile="..\tools\ServiceStack.Razor.BuildTask.dll" />
 
   <Target Name="RazorGeneratorOutput">
 	<ItemGroup>

@@ -1,0 +1,22 @@
+<h2>Razor + Ajax Forms with jQuery Validation Examples</h2>
+
+@if (IsAuthenticated)
+{
+    <div>
+        Hi @GetSession().DisplayName!
+        <ul>
+            <li><a href="contacts/">Manage Contacts</a></li>
+            <li><a href="/auth/logout">Sign Out</a></li>
+        </ul>
+    </div>
+}
+else
+{
+    <p>
+        You're not authenticated, please Sign In:
+    </p>
+    <ul>
+        <li><a href="login">Sign In</a></li>
+        <li><a href="register">Register new User</a></li>
+    </ul>
+}

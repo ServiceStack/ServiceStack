@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using NUnit.Framework;
 using ServiceStack.IO;
@@ -10,7 +12,7 @@ using ServiceStack.VirtualPath;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    public class FileSystemVirtualPathProviderTests : VirtualPathProviderTests
+    public class FileSystemVirtualPathProviderTests : AppendVirtualFilesTests
     {
         private static string RootDir = "~/App_Data/files".MapProjectPath();
 
@@ -28,7 +30,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    public class MemoryVirtualFilesTests : VirtualPathProviderTests
+    public class MemoryVirtualFilesTests : AppendVirtualFilesTests
     {
         public override IVirtualPathProvider GetPathProvider()
         {
@@ -36,6 +38,53 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    [Ignore("Integration Tests")]
+    public class GistVirtualFilesTests : VirtualPathProviderTests
+    {
+        public static readonly string GistId = "a9cfcdced0002e82be20ea6314fb41d6";
+        public static readonly string AccessToken = Environment.GetEnvironmentVariable("GITHUB_GIST_TOKEN");
+
+        public override IVirtualPathProvider GetPathProvider()
+        {
+            return new GistVirtualFiles(GistId, AccessToken);
+        }
+    }
+
+    public abstract class AppendVirtualFilesTests : VirtualPathProviderTests
+    {
+        [Test]
+        public void Does_append_to_file()
+        {
+            var pathProvider = GetPathProvider();
+            
+            pathProvider.DeleteFile("original.txt");
+            pathProvider.WriteFile("original.txt", "original\n");
+
+            pathProvider.AppendFile("original.txt", "New Line1\n");
+            pathProvider.AppendFile("original.txt", "New Line2\n");
+
+            var contents = pathProvider.GetFile("original.txt").ReadAllText();
+            Assert.That(contents, Is.EqualTo("original\nNew Line1\nNew Line2\n"));
+            
+            pathProvider.DeleteFile("original.txt");
+        }
+
+        [Test]
+        public void Does_append_to_file_bytes()
+        {
+            var pathProvider = GetPathProvider();
+            pathProvider.DeleteFile("original.bin");
+            pathProvider.WriteFile("original.bin", "original\n".ToUtf8Bytes());
+
+            pathProvider.AppendFile("original.bin", "New Line1\n".ToUtf8Bytes());
+            pathProvider.AppendFile("original.bin", "New Line2\n".ToUtf8Bytes());
+
+            var contents = pathProvider.GetFile("original.bin").ReadAllBytes();
+            Assert.That(contents, Is.EquivalentTo("original\nNew Line1\nNew Line2\n".ToUtf8Bytes()));
+            
+            pathProvider.DeleteFile("original.bin");
+        }
+    }
 
     [TestFixture]
     public abstract class VirtualPathProviderTests
@@ -98,7 +147,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             pathProvider.WriteFile(filePath, "file2");
             file.Refresh();
 
-            //Can be too quick and share same modifieddate sometimes, try again with a delay
+            //Can be too quick and share same modified date sometimes, try again with a delay
             if (file.LastModified == prevLastModified)
             {
                 Thread.Sleep(1000);
@@ -160,7 +209,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 "testdir/c.txt",
             };
 
-            testdirFileNames.Each(x => pathProvider.WriteFile(x, "textfile"));
+            var to = new Dictionary<string, string>();
+            testdirFileNames.Each(x => to[x] = "textfile");
+            pathProvider.WriteFiles(to);
 
             var testdir = pathProvider.GetDirectory("testdir");
             var filePaths = testdir.Files.Map(x => x.VirtualPath);
@@ -191,7 +242,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 "e/testfile-e1.txt",
             };
 
-            allFilePaths.Each(x => pathProvider.WriteFile(x, x.SplitOnLast('.').First().SplitOnLast('/').Last()));
+            var to = new Dictionary<string, string>();
+            allFilePaths.Each(x => to[x] = x.SplitOnLast('.').First().SplitOnLast('/').Last());
+            pathProvider.WriteFiles(to);
 
             Assert.That(allFilePaths.All(x => pathProvider.IsFile(x)));
             Assert.That(new[] { "a", "a/b", "a/b/c", "a/d", "e" }.All(x => pathProvider.IsDirectory(x)));
@@ -286,7 +339,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 "a/b/c/d/e/f/g/testfile-abcdefg1.txt",
             };
 
-            allFilePaths.Each(x => pathProvider.WriteFile(x, x.SplitOnLast('.').First().SplitOnLast('/').Last()));
+            var to = new Dictionary<string, string>();
+            allFilePaths.Each(x => to[x] = x.SplitOnLast('.').First().SplitOnLast('/').Last());
+            pathProvider.WriteFiles(to);
 
             Assert.That(pathProvider.GetDirectory("a/b/c").GetAllMatchingFiles("testfile-abc1.txt").Count(), Is.EqualTo(1));
             Assert.That(pathProvider.GetDirectory("a/b").GetAllMatchingFiles("testfile-abc1.txt").Count(), Is.EqualTo(1));
@@ -299,38 +354,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(pathProvider.GetDirectory("a/b/c").GetAllMatchingFiles("testfile-abcdefg1.txt").Count(), Is.EqualTo(1));
             Assert.That(pathProvider.GetDirectory("a/b").GetAllMatchingFiles("testfile-abcdefg1.txt").Count(), Is.EqualTo(1));
             Assert.That(pathProvider.GetDirectory("a").GetAllMatchingFiles("testfile-abcdefg1.txt").Count(), Is.EqualTo(1));
-        }
-
-        [Test]
-        public void Does_append_to_file()
-        {
-            var pathProvider = GetPathProvider();
-            pathProvider.DeleteFile("original.txt");
-            pathProvider.WriteFile("original.txt", "original\n");
-
-            pathProvider.AppendFile("original.txt", "New Line1\n");
-            pathProvider.AppendFile("original.txt", "New Line2\n");
-
-            var contents = pathProvider.GetFile("original.txt").ReadAllText();
-            Assert.That(contents, Is.EqualTo("original\nNew Line1\nNew Line2\n"));
-            
-            pathProvider.DeleteFile("original.txt");
-        }
-
-        [Test]
-        public void Does_append_to_file_bytes()
-        {
-            var pathProvider = GetPathProvider();
-            pathProvider.DeleteFile("original.bin");
-            pathProvider.WriteFile("original.bin", "original\n".ToUtf8Bytes());
-
-            pathProvider.AppendFile("original.bin", "New Line1\n".ToUtf8Bytes());
-            pathProvider.AppendFile("original.bin", "New Line2\n".ToUtf8Bytes());
-
-            var contents = pathProvider.GetFile("original.bin").ReadAllBytes();
-            Assert.That(contents, Is.EquivalentTo("original\nNew Line1\nNew Line2\n".ToUtf8Bytes()));
-            
-            pathProvider.DeleteFile("original.bin");
         }
 
         [Test]
@@ -354,6 +377,53 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             vfs.DeleteFile("a/b/c/file.txt");
         }
 
+        [Test]
+        public void Does_write_binary_file()
+        {
+            var pathProvider = GetPathProvider();
+
+            var bytes = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            
+            pathProvider.WriteFile("original.bin", bytes);
+            pathProvider.WriteFile("a/b/c/original.bin", bytes);
+
+            var contents = pathProvider.GetFile("original.bin").ReadAllBytes();
+            Assert.That(contents, Is.EquivalentTo(bytes));
+
+            contents = pathProvider.GetFile("a/b/c/original.bin").ReadAllBytes();
+            Assert.That(contents, Is.EquivalentTo(bytes));
+
+            pathProvider.DeleteFiles(new[]{ "original.bin", "a/b/c/original.bin" });
+        }
+
+        [Test]
+        public void GetContents_of_Binary_File_returns_ReadOnlyMemory_byte()
+        {
+            var pathProvider = GetPathProvider();
+
+            var bytes = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            
+            pathProvider.WriteFile("original.bin", new ReadOnlyMemory<byte>(bytes));
+            
+            var contents = (ReadOnlyMemory<byte>) pathProvider.GetFile("original.bin").GetContents();
+            
+            Assert.That(contents.Span.SequenceEqual(bytes.AsSpan()));
+        }
+
+        [Test]
+        public void GetContents_of_Text_File_returns_ReadOnlyMemory_char()
+        {
+            var pathProvider = GetPathProvider();
+
+            var text = "abcdef";
+            
+            pathProvider.WriteFile("original.txt", text.AsMemory());
+            
+            var contents = (ReadOnlyMemory<char>) pathProvider.GetFile("original.txt").GetContents();
+            
+            Assert.That(contents.Span.SequenceEqual(text.AsSpan()));
+        }
+       
         public void AssertContents(IVirtualDirectory dir,
             string[] expectedFilePaths, string[] expectedDirPaths)
         {

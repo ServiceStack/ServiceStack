@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Web.UI;
 using Funq;
 using NUnit.Framework;
@@ -68,13 +69,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void OperationControl_render_creates_link_back_to_main_page_using_WebHostUrl_when_set()
+        public async Task OperationControl_render_creates_link_back_to_main_page_using_WebHostUrl_when_set()
         {
             appHost.Config.WebHostUrl = "https://host.example.com/_api";
 
             using (var ms = MemoryStreamFactory.GetStream())
             {
-                operationControl.Render(ms);
+                await operationControl.RenderAsync(ms);
     
                 string html = ms.ReadToEnd();
                 Assert.IsTrue(html.Contains("<a href=\"https://host.example.com/_api/metadata\">&lt;back to all web services</a>"));
@@ -82,11 +83,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void OperationControl_render_creates_link_back_to_main_page_using_relative_uri_when_WebHostUrl_not_set()
+        public async Task OperationControl_render_creates_link_back_to_main_page_using_relative_uri_when_WebHostUrl_not_set()
         {
             using (var ms = MemoryStreamFactory.GetStream())
             {
-                operationControl.Render(ms);
+                await operationControl.RenderAsync(ms);
                 string html = ms.ReadToEnd();
                 Assert.That(html, Does.Contain("<a href=\"http://localhost/metadata\">&lt;back to all web services</a>"));
             }

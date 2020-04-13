@@ -1,0 +1,9 @@
+{{ `/validation/vuetify/login?continue=${PathInfo}`
+   | redirectIfNotAuthenticated }}
+
+<div style="text-align:right">
+    <small class="body-2">
+        {{ userSession.DisplayName }}
+        | <a href="/auth/logout?continue=/validation/vuetify/">Sign Out</a>
+    </small>
+</div>

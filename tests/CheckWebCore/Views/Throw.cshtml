@@ -1,0 +1,11 @@
+@model HelloResponse
+
+<p>View Page for <a href="/throw">/throw</a> API</p>
+
+<h1>@Model</h1>
+
+<h3>IsError: @IsError</h3>
+
+<h3>GetErrorStatus(): @GetErrorStatus()</h3>
+
+@if (RenderErrorIfAny()) { return; }

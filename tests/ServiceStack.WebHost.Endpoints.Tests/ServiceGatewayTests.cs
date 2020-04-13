@@ -537,7 +537,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(ex.StatusDescription, Is.EqualTo("NotEmpty"));
                 Assert.That(ex.ErrorCode, Is.EqualTo("NotEmpty"));
                 Assert.That(ex.ResponseStatus.ErrorCode, Is.EqualTo("NotEmpty"));
-                Assert.That(ex.ResponseStatus.Message, Is.EqualTo("'Required' should not be empty."));
+                Assert.That(ex.ResponseStatus.Message, Is.EqualTo("'Required' must not be empty."));
             }
         }
 

@@ -56,11 +56,14 @@ namespace ServiceStack
             if (baseUrl != null)
                 return baseUrl.NormalizeScheme(useHttps);
 
-            baseUrl = httpReq.AbsoluteUri.InferBaseUrl(fromPathInfo: httpReq.PathInfo);
-            if (baseUrl != null)
-                return baseUrl.NormalizeScheme(useHttps);
-
             var handlerPath = Config.HandlerFactoryPath;
+            baseUrl = httpReq.AbsoluteUri.InferBaseUrl(fromPathInfo: httpReq.PathInfo);
+
+            if (baseUrl != null)
+            {
+                if (handlerPath == null || baseUrl.EndsWith(handlerPath))
+                    return baseUrl.NormalizeScheme(useHttps);
+            }
 
             var aspReq = (HttpRequestBase)httpReq.OriginalRequest;
             baseUrl = aspReq.Url.Scheme + "://" + aspReq.Url.Authority +

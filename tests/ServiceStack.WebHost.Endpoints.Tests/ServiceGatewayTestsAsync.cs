@@ -5,8 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.FluentValidation;
+using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Text;
+using ServiceStack.Validation;
 using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -61,6 +64,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class SGPublishAllAsyncPostExternalVoid : IReturnVoid, IPost
     {
         public string Value { get; set; }
+    }
+
+    public class SGMultiGatewayRequests : IReturn<SGMultiGatewayRequests>, IPost
+    {
+        public int Times { get; set; }
+        public int Delay { get; set; }
+        public string Value { get; set; }
+    }
+
+    public class SGMInternalMultiGatewayRequests : IReturn<SGMInternalMultiGatewayRequests>, IPost
+    {
+        public int Delay { get; set; }
+        public string Value { get; set; }
+    }
+
+    public class SGMInternalMultiGatewayRequestsValidator : AbstractValidator<SGMInternalMultiGatewayRequests>
+    {
+        public SGMInternalMultiGatewayRequestsValidator()
+        {
+            RuleFor(x => x.Value)
+                .CustomAsync((x,ctx,cancel) => Gateway.SendAsync(new SGAsyncPostInternal()));
+        }
     }
 
     public class ServiceGatewayAsyncServices : Service
@@ -139,6 +164,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             });
 
             await Gateway.PublishAllAsync(requests);
+        }
+
+        public async Task<object> Any(SGMultiGatewayRequests request)
+        {
+            for (var i = 0; i < request.Times; i++)
+            {
+                await Gateway.SendAsync(new SGMInternalMultiGatewayRequests {
+                    Delay = request.Delay
+                });
+            }
+            return request;
+        }
+
+        public async Task<object> Any(SGMInternalMultiGatewayRequests request)
+        {
+            if (!Request.IsInProcessRequest())
+                throw new Exception("Gateway Request is not in process");
+
+            await Task.Delay(request.Delay);
+            return request;
         }
     }
 
@@ -367,6 +412,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public override void Configure(Container container)
             {
                 container.Register<IMessageFactory>(c => new MessageFactory());
+                
+                Plugins.Add(new ValidationFeature());
             }
         }
 
@@ -374,8 +421,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             return new AllInternalAppHost();
         }
-    }
 
+        [Test]
+        public async Task Verify_all_internal_gateway_requests_are_marked_as_in_process()
+        {
+            await client.GetAsync(new SGMultiGatewayRequests { Times = 3, Delay = 10 });
+        }
+    }
 
     public abstract class ServiceGatewayAsyncTests
     {
@@ -405,7 +457,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         protected abstract ServiceStackHost CreateAppHost();
 
-        readonly IServiceClient client;
+        protected readonly IServiceClient client;
         private readonly ServiceStackHost appHost;
         public ServiceGatewayAsyncTests()
         {
@@ -417,10 +469,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [OneTimeTearDown]
-        public void TestFixtureTearDown()
-        {
-            appHost.Dispose();
-        }
+        public void TestFixtureTearDown() => appHost.Dispose();
 
         [Test]
         public void Does_SGSendAsyncInternal()

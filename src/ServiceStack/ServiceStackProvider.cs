@@ -5,6 +5,7 @@ using System.Linq;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
+using ServiceStack.FluentValidation;
 using ServiceStack.Messaging;
 using ServiceStack.Redis;
 using ServiceStack.Web;
@@ -101,6 +102,19 @@ namespace ServiceStack
                 return true;
             }
         }
+
+        /// <summary>
+        /// Resolve ServiceStack Validator in external ServiceStack provider class like ServiceStackController 
+        /// </summary>
+        public static IValidator<T> ResolveValidator<T>(this IHasServiceStackProvider provider)
+        {
+            var validator = provider.ServiceStackProvider.TryResolve<IValidator<T>>();
+            if (validator is IRequiresRequest requiresReq)
+            {
+                requiresReq.Request = provider.ServiceStackProvider.Request;
+            }
+            return validator;
+        }
     }
 
     public class ServiceStackProvider : IServiceStackProvider
@@ -148,8 +162,7 @@ namespace ServiceStack
         public object Execute(object requestDto)
         {
             var response = HostContext.ServiceController.Execute(requestDto, Request);
-            var ex = response as Exception;
-            if (ex != null)
+            if (response is Exception ex)
                 throw ex;
 
             return response;
@@ -163,8 +176,7 @@ namespace ServiceStack
         public object Execute(IRequest request)
         {
             var response = HostContext.ServiceController.Execute(request, applyFilters:true);
-            var ex = response as Exception;
-            if (ex != null)
+            if (response is Exception ex)
                 throw ex;
 
             return response;

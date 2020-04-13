@@ -90,7 +90,7 @@ namespace ServiceStack.Configuration
                 ? new List<string>() 
                 : ConfigUtils.GetListFromAppSettingValue(value);
         }
-
+        
         public virtual IDictionary<string, string> GetDictionary(string key)
         {
             var value = GetString(key);
@@ -100,8 +100,21 @@ namespace ServiceStack.Configuration
             }
             catch (Exception ex)
             {
-                var message = $"The {key} setting had an invalid dictionary format. " +
-                              $"The correct format is of type \"Key1:Value1,Key2:Value2\"";
+                var message = $"The {key} setting had an invalid Key/Value format: \"Key1:Value1,Key2:Value2\"";
+                throw new ConfigurationErrorsException(message, ex);
+            }
+        }
+
+        public virtual List<KeyValuePair<string, string>> GetKeyValuePairs(string key)
+        {
+            var value = GetString(key);
+            try
+            {
+                return ConfigUtils.GetKeyValuePairsFromAppSettingValue(value);
+            }
+            catch (Exception ex)
+            {
+                var message = $"The {key} setting had an invalid Key/Value format: \"Key1:Value1,Key2:Value2\"";
                 throw new ConfigurationErrorsException(message, ex);
             }
         }
@@ -180,5 +193,18 @@ namespace ServiceStack.Configuration
             var value = settings.GetString(name);
             return value;
         }
+
+        public static string GetConnectionString(this IAppSettings appSettings, string name)
+        {
+#if NETSTANDARD2_0
+            return appSettings is NetCoreAppSettings config
+                ? config.GetConnectionString(name)
+                : appSettings.GetString("ConnectionStrings:" + name);
+#else
+            return System.Configuration.ConfigurationManager.ConnectionStrings[name]?.ConnectionString;
+#endif
+        }
+
+        
     }
 }

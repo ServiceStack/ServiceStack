@@ -18,9 +18,7 @@
 
 namespace ServiceStack.FluentValidation.Validators {
 	using System;
-	using System.Linq.Expressions;
 	using System.Reflection;
-	using Attributes;
 	using Internal;
 	using Resources;
 

@@ -285,7 +285,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             container.Register(c => new PocoDynamo(
                 new AmazonDynamoDBClient("keyId", "key", new AmazonDynamoDBConfig
                 {
-                    ServiceURL = "http://localhost:8000",
+                    ServiceURL = Tests.Config.DynamoDbServiceURL,
                 }))
                 .RegisterTable<Rockstar>()
                 .RegisterTable<RockstarAlbum>()

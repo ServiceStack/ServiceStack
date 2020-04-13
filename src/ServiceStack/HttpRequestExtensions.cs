@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization;
+using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Web;
 using ServiceStack.Data;
@@ -69,6 +70,9 @@ namespace ServiceStack
             return null;
         }
 
+        public static string GetQueryStringOrForm(this IRequest httpReq, string name) =>
+            httpReq.QueryString[name] ?? httpReq.FormData[name];
+
         public static string GetParentAbsolutePath(this IRequest httpReq)
         {
             return httpReq.GetAbsolutePath().ToParentPath();
@@ -116,8 +120,7 @@ namespace ServiceStack
         public static string GetUrlHostName(this IRequest httpReq)
         {
 #if !NETSTANDARD2_0
-            var aspNetReq = httpReq as ServiceStack.Host.AspNet.AspNetRequest;
-            if (aspNetReq != null)
+            if (httpReq is ServiceStack.Host.AspNet.AspNetRequest aspNetReq)
             {
                 return aspNetReq.UrlHostName;
             }
@@ -135,12 +138,12 @@ namespace ServiceStack
         public static string GetPhysicalPath(this IRequest httpReq) => HostContext.ResolvePhysicalPath(httpReq.PathInfo, httpReq);
 
         public static IVirtualNode GetVirtualNode(this IRequest httpReq) => httpReq is IHasVirtualFiles vfsReq ?
-            (vfsReq.IsFile 
+            (vfsReq.IsFile
                 ? (IVirtualNode) vfsReq.GetFile()
                 : vfsReq.IsDirectory
                     ? vfsReq.GetDirectory()
                 : null)
-            : (IVirtualNode) HostContext.VirtualFileSources.GetFile(httpReq.PathInfo) ?? // non HTTP Requests 
+            : (IVirtualNode) HostContext.VirtualFileSources.GetFile(httpReq.PathInfo) ?? // non HTTP Requests
               HostContext.VirtualFileSources.GetDirectory(httpReq.PathInfo);
 
         public static string GetDirectoryPath(this IRequest request)
@@ -297,7 +300,7 @@ namespace ServiceStack
             var errorResponse = DtoUtils.CreateErrorResponse(requestDto, validationError);
             if (feature?.ErrorResponseFilter != null)
             {
-                errorResponse = feature.ErrorResponseFilter(validationResult, errorResponse);
+                errorResponse = feature.ErrorResponseFilter(validationResult.Request, validationResult, errorResponse);
             }
 
             var status = errorResponse.GetResponseStatus();
@@ -529,56 +532,6 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Duplicate Params are given a unique key by appending a #1 suffix
-        /// </summary>
-        public static Dictionary<string, string> GetRequestParams(this IRequest request)
-        {
-            var map = new Dictionary<string, string>();
-
-            foreach (var name in request.QueryString.AllKeys)
-            {
-                if (name == null) continue; //thank you ASP.NET
-
-                var values = request.QueryString.GetValues(name);
-                if (values.Length == 1)
-                {
-                    map[name] = values[0];
-                }
-                else
-                {
-                    for (var i = 0; i < values.Length; i++)
-                    {
-                        map[name + (i == 0 ? "" : "#" + i)] = values[i];
-                    }
-                }
-            }
-
-            if ((request.Verb == HttpMethods.Post || request.Verb == HttpMethods.Put)
-                && request.FormData != null)
-            {
-                foreach (var name in request.FormData.AllKeys)
-                {
-                    if (name == null) continue; //thank you ASP.NET
-
-                    var values = request.FormData.GetValues(name);
-                    if (values.Length == 1)
-                    {
-                        map[name] = values[0];
-                    }
-                    else
-                    {
-                        for (var i = 0; i < values.Length; i++)
-                        {
-                            map[name + (i == 0 ? "" : "#" + i)] = values[i];
-                        }
-                    }
-                }
-            }
-
-            return map;
-        }
-
-        /// <summary>
         /// Duplicate params have their values joined together in a comma-delimited string
         /// </summary>
         public static Dictionary<string, string> GetFlattenedRequestParams(this IRequest request)
@@ -654,8 +607,7 @@ namespace ServiceStack
                 if (format.Contains("jsv")) return MimeTypes.Jsv;
             }
 
-            string contentType;
-            HostContext.ContentTypes.ContentTypeFormats.TryGetValue(format, out contentType);
+            HostContext.ContentTypes.ContentTypeFormats.TryGetValue(format, out var contentType);
 
             return contentType;
         }
@@ -667,8 +619,7 @@ namespace ServiceStack
         public static object ResolveItem(this IRequest httpReq,
             string itemKey, Func<IRequest, object> resolveFn)
         {
-            object cachedItem;
-            if (httpReq.Items.TryGetValue(itemKey, out cachedItem))
+            if (httpReq.Items.TryGetValue(itemKey, out var cachedItem))
                 return cachedItem;
 
             var item = resolveFn(httpReq);
@@ -677,6 +628,8 @@ namespace ServiceStack
             return item;
         }
 
+        private static readonly string[] FormContentTypes = { MimeTypes.FormUrlEncoded, MimeTypes.MultiPartFormData };
+
         public static string GetResponseContentType(this IRequest httpReq)
         {
             var specifiedContentType = GetQueryStringContentType(httpReq);
@@ -684,7 +637,7 @@ namespace ServiceStack
 
             var acceptContentTypes = httpReq.AcceptTypes;
             var defaultContentType = httpReq.ContentType;
-            if (httpReq.HasAnyOfContentTypes(MimeTypes.FormUrlEncoded, MimeTypes.MultiPartFormData))
+            if (httpReq.HasAnyOfContentTypes(FormContentTypes))
             {
                 defaultContentType = HostContext.Config.DefaultContentType;
             }
@@ -753,22 +706,42 @@ namespace ServiceStack
 
         public static void SetView(this IRequest httpReq, string viewName)
         {
-            httpReq.SetItem("View", viewName);
+            if (string.IsNullOrEmpty(viewName))
+                return;
+            httpReq.SetItem(Keywords.View, viewName);
         }
 
         public static string GetView(this IRequest httpReq)
         {
-            return httpReq.GetItem("View") as string;
+            return httpReq.GetItem(Keywords.View) as string;
+        }
+
+        /// <summary>
+        /// Specify the View to render HTML error responses with 
+        /// </summary>
+        public static void SetErrorView(this IRequest httpReq, string viewName)
+        {
+            if (string.IsNullOrEmpty(viewName))
+                return;
+            httpReq.SetItem(Keywords.ErrorView, viewName);
+        }
+
+        /// <summary>
+        /// Get the View to render HTML error responses with 
+        /// </summary>
+        public static string GetErrorView(this IRequest httpReq)
+        {
+            return httpReq.GetItem(Keywords.ErrorView) as string;
         }
 
         public static void SetTemplate(this IRequest httpReq, string templateName)
         {
-            httpReq.SetItem("Template", templateName);
+            httpReq.SetItem(Keywords.Template, templateName);
         }
 
         public static string GetTemplate(this IRequest httpReq)
         {
-            return httpReq.GetItem("Template") as string;
+            return httpReq.GetItem(Keywords.Template) as string;
         }
 
         public static string ResolveAbsoluteUrl(this IRequest httpReq, string virtualPath=null)
@@ -1108,6 +1081,54 @@ namespace ServiceStack
                 default:
                     throw new NotSupportedException($"Unknown IHttpRequest property '{name}'");
             }
+        }
+
+        public static void EachRequest<T>(this IRequest httpReq, Action<T> action)
+        {
+            if (!(httpReq.Dto is IEnumerable<T> requests))
+                return;
+
+            requests.Each((i, dto) =>
+            {
+                httpReq.Items[Keywords.AutoBatchIndex] = i;
+                action(dto);
+            });
+
+            httpReq.Items.Remove(Keywords.AutoBatchIndex);
+        }
+
+        public static IEnumerable<Claim> GetClaims(this IRequest req)
+        {
+#if NETSTANDARD2_0
+            if (req.OriginalRequest is Microsoft.AspNetCore.Http.HttpRequest httpReq)
+                return httpReq.HttpContext.User?.Claims;
+#else
+            if (req.OriginalRequest is HttpRequestBase httpReq
+                && httpReq.RequestContext.HttpContext.User is ClaimsPrincipal principal)
+                return principal.Claims;
+#endif
+            return TypeConstants<Claim>.EmptyArray;
+        }
+
+        public static bool HasRole(this IEnumerable<Claim> claims, string role) => claims.HasClaim("role", role);
+
+        public static bool HasScope(this IEnumerable<Claim> claims, string scope) => claims.HasClaim("scope", scope);
+
+        public static bool HasClaim(this IEnumerable<Claim> claims, string type, string value)
+        {
+            foreach (var claim in claims)
+            {
+                if (claim.Type == type && claim.Value == value)
+                    return true;
+            }
+            return false;
+        }
+
+        public static bool CanReadRequestBody(this IRequest req)
+        {
+            if (req is IHasBufferedStream hasStream)
+                return hasStream.BufferedStream.CanRead;
+            return true;
         }
     }
 }

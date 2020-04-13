@@ -143,8 +143,8 @@ namespace ServiceStack.Auth
 
             jwtPayload.SetAudience(Audiences);
 
-            var hashAlgoritm = GetHashAlgorithm(req);
-            var refreshToken = CreateJwt(jwtHeader, jwtPayload, hashAlgoritm);
+            var hashAlgorithm = GetHashAlgorithm(req);
+            var refreshToken = CreateJwt(jwtHeader, jwtPayload, hashAlgorithm);
             return refreshToken;
         }
 
@@ -300,7 +300,7 @@ namespace ServiceStack.Auth
                 jwtPayload["preferred_username"] = session.UserAuthName;
 
             var profileUrl = session.GetProfileUrl();
-            if (profileUrl != null && profileUrl != AuthMetadataProvider.DefaultNoProfileImgUrl)
+            if (profileUrl != null && profileUrl != Svg.GetDataUri(Svg.Icons.DefaultProfile))
                 jwtPayload["picture"] = profileUrl;
 
             var combinedRoles = new List<string>(session.Roles.Safe());
@@ -334,18 +334,26 @@ namespace ServiceStack.Auth
                 Request.ResponseContentType = MimeTypes.Json;
 
             var token = Request.GetJwtToken();
-            if (string.IsNullOrEmpty(token))
+            IAuthSession session = null;
+            var includeTokensInResponse = jwtAuthProvider.IncludeJwtInConvertSessionToTokenResponse;
+            var createFromSession = string.IsNullOrEmpty(token);
+            if (createFromSession || includeTokensInResponse)
             {
-                var session = Request.GetSession();
-                token = jwtAuthProvider.CreateJwtBearerToken(Request, session);
+                session = Request.GetSession();
+
+                if (createFromSession)
+                    token = jwtAuthProvider.CreateJwtBearerToken(Request, session);
 
                 if (!request.PreserveSession)
                     Request.RemoveSession(session.Id);
             }
 
             return new HttpResult(new ConvertSessionToTokenResponse {
-                AccessToken = jwtAuthProvider.IncludeJwtInConvertSessionToTokenResponse
+                AccessToken = includeTokensInResponse
                     ? token
+                    : null,
+                RefreshToken = createFromSession && includeTokensInResponse && !request.PreserveSession
+                    ? jwtAuthProvider.CreateJwtRefreshToken(Request, session.UserAuthId, jwtAuthProvider.ExpireRefreshTokensIn)
                     : null
             })
             {
@@ -359,7 +367,7 @@ namespace ServiceStack.Auth
             };
         }
     }
-
+    
     [DefaultRequest(typeof(GetAccessToken))]
     public class GetAccessTokenService : Service
     {
@@ -386,6 +394,9 @@ namespace ServiceStack.Auth
             {
                 throw new ArgumentException(ex.Message);
             }
+
+            if (jwtPayload == null)
+                throw new ArgumentException(ErrorMessages.TokenInvalid.Localize(Request));
 
             jwtAuthProvider.AssertJwtPayloadIsValid(jwtPayload);
 
@@ -417,7 +428,7 @@ namespace ServiceStack.Auth
                     throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(Request));
 
                 session = SessionFeature.CreateNewSession(Request, SessionExtensions.CreateRandomSessionId());
-                jwtAuthProvider.PopulateSession(userRepo, userAuth, session);
+                session.PopulateSession(userAuth, userRepo);
 
                 if (userRepo is IManageRoles manageRoles && session.UserAuthId != null)
                 {
@@ -430,9 +441,23 @@ namespace ServiceStack.Auth
 
             var accessToken = jwtAuthProvider.CreateJwtBearerToken(Request, session, roles, perms);
 
-            return new GetAccessTokenResponse
+            var response = new GetAccessTokenResponse
             {
                 AccessToken = accessToken
+            };
+
+            if (request.UseTokenCookie != true)
+                return response;
+            
+            return new HttpResult(new GetAccessTokenResponse())
+            {
+                Cookies = {
+                    new Cookie(Keywords.TokenCookie, accessToken, Cookies.RootPath) {
+                        HttpOnly = true,
+                        Secure = Request.IsSecureConnection,
+                        Expires = DateTime.UtcNow.Add(jwtAuthProvider.ExpireTokensIn),
+                    }
+                }
             };
         }
     }

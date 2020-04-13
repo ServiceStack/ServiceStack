@@ -25,6 +25,12 @@ namespace ServiceStack.Auth
         void DeleteUserAuth(string userAuthId);
     }
 
+    public interface IQueryUserAuth
+    {
+        List<IUserAuth> GetUserAuths(string orderBy = null, int? skip = null, int? take = null);
+        List<IUserAuth> SearchUserAuths(string query, string orderBy = null, int? skip = null, int? take = null);
+    }
+
     public interface ICustomUserAuth
     {
         IUserAuth CreateUserAuth();
@@ -35,6 +41,7 @@ namespace ServiceStack.Auth
     {
         ICollection<string> GetRoles(string userAuthId);
         ICollection<string> GetPermissions(string userAuthId);
+        void GetRolesAndPermissions(string userAuthId, out ICollection<string> roles, out ICollection<string> permissions);
 
         bool HasRole(string userAuthId, string role);
         bool HasPermission(string userAuthId, string permission);

@@ -1,10 +1,10 @@
-﻿#if !NETSTANDARD2_0
-using ServiceStack.FluentValidation.Internal;
-using ServiceStack.FluentValidation.Validators;
-
-namespace FluentValidation.Mvc {
+﻿#if !NETSTANDARD
+namespace ServiceStack.FluentValidation.Mvc {
 	using System.Collections.Generic;
 	using System.Web.Mvc;
+	using Internal;
+	using Resources;
+	using Validators;
 
 	internal class RegularExpressionFluentValidationPropertyValidator : FluentValidationPropertyValidator {
 		IRegularExpressionValidator RegexValidator {
@@ -19,8 +19,19 @@ namespace FluentValidation.Mvc {
 		public override IEnumerable<ModelClientValidationRule> GetClientValidationRules() {
 			if (!ShouldGenerateClientSideRules()) yield break;
 
-			var formatter = new MessageFormatter().AppendPropertyName(Rule.GetDisplayName());
-			string message = formatter.BuildMessage(RegexValidator.ErrorMessageSource.GetString(Metadata));
+			if (string.IsNullOrEmpty(RegexValidator.Expression)) yield break;
+
+			var formatter = ValidatorOptions.MessageFormatterFactory().AppendPropertyName(Rule.GetDisplayName());
+			string message;
+			try {
+				message = Validator.Options.ErrorMessageSource.GetString(null);
+			}
+			catch (FluentValidationMessageFormatException) {
+				// Use provided a message that contains placeholders based on object properties. We can't use that here, so just fall back to the default. 
+				message = ValidatorOptions.LanguageManager.GetStringForValidator<RegularExpressionValidator>();
+			}
+			message = formatter.BuildMessage(message);
+
 			yield return new ModelClientValidationRegexRule(message, RegexValidator.Expression);
 		}
 	}

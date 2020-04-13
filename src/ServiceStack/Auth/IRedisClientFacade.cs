@@ -36,6 +36,7 @@ namespace ServiceStack.Auth
         List<T> GetByIds(IEnumerable ids);
         void DeleteById(string id);
         void DeleteByIds(IEnumerable ids);
+        List<T> GetAll(int? skip=null, int? take=null);
     }
 
     public class RedisClientManagerFacade : IRedisClientManagerFacade
@@ -94,6 +95,21 @@ namespace ServiceStack.Auth
                 public void DeleteByIds(IEnumerable ids)
                 {
                     redisTypedClient.DeleteByIds(ids);
+                }
+
+                public List<T> GetAll(int? skip=null, int? take=null)
+                {
+                    if (skip != null || take != null)
+                    {
+                        var keys = redisTypedClient.TypeIdsSet.GetAll().OrderBy(x => x).AsEnumerable();
+                        if (skip != null)
+                            keys = keys.Skip(skip.Value);
+                        if (take != null)
+                            keys = keys.Take(take.Value);
+                        return redisTypedClient.GetByIds(keys).ToList();
+                    }
+                    
+                    return redisTypedClient.GetAll().ToList();
                 }
             }
 

@@ -57,6 +57,37 @@ namespace ServiceStack.Auth
 
     public interface IAuthSessionExtended : IAuthSession
     {
+        string Company { get; set; }
+        string PrimaryEmail { get; set; }
+        DateTime? BirthDate { get; set; }
+        string Address { get; set; }
+        string Address2 { get; set; }
+        string City { get; set; }
+        string State { get; set; }
+        string PostalCode { get; set; }
+        string Country { get; set; }
+        string PhoneNumber { get; set; }
+        string BirthDateRaw { get; set; }
+        string Gender { get; set; }
+        
+        //Claims https://docs.microsoft.com/en-us/previous-versions/windows-identity-foundation/ee727097(v=msdn.10)
+        List<string> Audiences { get; set; }
+        List<string> Scopes { get; set; }
+        string Dns { get; set; }
+        string Rsa { get; set; }
+        string Sid { get; set; }
+        string Hash { get; set; }
+        string HomePhone { get; set; }
+        string MobilePhone { get; set; }
+        string Webpage { get; set; }
+
+        //IdentityUser<TKey>
+        bool? EmailConfirmed { get; set; }
+        bool? PhoneNumberConfirmed { get; set; }
+        bool? TwoFactorEnabled { get; set; }
+        string SecurityStamp { get; set; }
+        string Type { get; set; }
+        
         /// <summary>
         /// Fired before Session is resolved
         /// </summary>

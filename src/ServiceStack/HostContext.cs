@@ -104,6 +104,31 @@ namespace ServiceStack
         /// </summary>
         public static IVirtualPathProvider VirtualFileSources => AssertAppHost().VirtualFileSources;
 
+        /// <summary>
+        /// The WebRoot VFS Directory of VirtualFilesSources
+        /// </summary>
+        public static IVirtualDirectory RootDirectory => AssertAppHost().RootDirectory;
+
+        /// <summary>
+        /// The ContentRoot VFS Directory of VirtualFiles
+        /// </summary>
+        public static IVirtualDirectory ContentRootDirectory => AssertAppHost().ContentRootDirectory;
+
+        /// <summary>
+        /// The FileSystem VirtualFiles provider in VirtualFileSources
+        /// </summary>
+        public static FileSystemVirtualFiles FileSystemVirtualFiles => AssertAppHost().VirtualFileSources.GetFileSystemVirtualFiles();
+
+        /// <summary>
+        /// The Memory VirtualFiles provider in VirtualFileSources
+        /// </summary>
+        public static MemoryVirtualFiles MemoryVirtualFiles => AssertAppHost().VirtualFileSources.GetMemoryVirtualFiles();
+
+        /// <summary>
+        /// The GistVirtualFiles provider in VirtualFileSources (if any)
+        /// </summary>
+        public static GistVirtualFiles GistVirtualFiles => AssertAppHost().VirtualFileSources.GetGistVirtualFiles();
+
         public static ICacheClient Cache => TryResolve<ICacheClient>();
 
         public static MemoryCacheClient LocalCache => TryResolve<MemoryCacheClient>();
@@ -222,14 +247,15 @@ namespace ServiceStack
             return AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex);
         }
 
-        public static async Task RaiseAndHandleUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
+        public static async Task RaiseAndHandleException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
         {
-            await AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex);
+            if (!httpReq.Items.ContainsKey(nameof(ServiceStackHost.OnServiceException)))
+                await AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex);
 
             if (httpRes.IsClosed)
                 return;
 
-            await AssertAppHost().HandleUncaughtException(httpReq, httpRes, operationName, ex);
+            await AssertAppHost().HandleResponseException(httpReq, httpRes, operationName, ex);
         }
 
 #if !NETSTANDARD2_0

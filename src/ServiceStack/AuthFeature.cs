@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using ServiceStack.Auth;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack
 {
@@ -17,28 +18,78 @@ namespace ServiceStack
 
         public Func<string, bool> IsValidUsernameFn { get; set; }
 
+        /// <summary>
+        /// Fired before any [Authenticate] or [Required*] Auth Attribute is validated.
+        /// Return non-null IHttpResult to write to response and short-circuit request.
+        /// </summary>
+        public Func<IRequest, IHttpResult> OnAuthenticateValidate { get; set; }
+
+        /// <summary>
+        /// Custom Validation Function in AuthenticateService 
+        /// </summary>
+        public ValidateFn ValidateFn { get; set; }
+
+        public Action<IRequest, string> ValidateRedirectLinks { get; set; } = NoExternalRedirects;
+
+        public static void AllowAllRedirects(IRequest req, string redirect) {}
+        public static void NoExternalRedirects(IRequest req, string redirect)
+        {
+            redirect = redirect?.Trim();
+            if (string.IsNullOrEmpty(redirect))
+                return;
+
+            if (redirect.StartsWith("//") || redirect.IndexOf("://", StringComparison.Ordinal) >= 0)
+            {
+                if (redirect.StartsWith(req.GetBaseUrl()))
+                    return;
+                
+                throw new ArgumentException(ErrorMessages.NoExternalRedirects, nameof(Authenticate.Continue));
+            }
+        }
+
         private readonly Func<IAuthSession> sessionFactory;
         private IAuthProvider[] authProviders;
+        public IAuthProvider[] AuthProviders => authProviders;
 
         public Dictionary<Type, string[]> ServiceRoutes { get; set; }
 
-        public List<IPlugin> RegisterPlugins { get; set; }
+        public List<IPlugin> RegisterPlugins { get; set; } = new List<IPlugin> {
+            new SessionFeature()
+        };
 
-        public List<IAuthEvents> AuthEvents { get; set; }
+        public List<IAuthEvents> AuthEvents { get; set; } = new List<IAuthEvents>();
 
+        /// <summary>
+        /// Login path to redirect to
+        /// </summary>
         public string HtmlRedirect { get; set; }
+
+        /// <summary>
+        /// Redirect path to when Access by Authenticated User is Denied
+        /// </summary>
+        public string HtmlRedirectAccessDenied { get; set; }
+        
+        /// <summary>
+        /// What queryString param to capture redirect param on
+        /// </summary>
+        public string HtmlRedirectReturnParam { get; set; } = LocalizedStrings.Redirect;
+
+        /// <summary>
+        /// Whether to only capture return path or absolute URL (default)
+        /// </summary>
+        public bool HtmlRedirectReturnPathOnly { get; set; }
 
         public string HtmlLogoutRedirect { get; set; }
 
-        public bool IncludeAuthMetadataProvider { get; set; }
+        public bool IncludeAuthMetadataProvider { get; set; } = true;
 
-        public bool ValidateUniqueEmails { get; set; }
+        public bool ValidateUniqueEmails { get; set; } = true;
 
         public bool ValidateUniqueUserNames { get; set; }
 
-        public bool DeleteSessionCookiesOnLogout { get; set; }
+        public bool DeleteSessionCookiesOnLogout { get; set; } = true;
 
-        public bool GenerateNewSessionCookiesOnAuthentication { get; set; }
+        public bool GenerateNewSessionCookiesOnAuthentication { get; set; } = true;
         
         /// <summary>
         /// Whether to Create Digest Auth MD5 Hash when Creating/Updating Users.
@@ -56,6 +107,26 @@ namespace ServiceStack
         public TimeSpan? PermanentSessionExpiry { get; set; }
 
         public int? MaxLoginAttempts { get; set; }
+
+        public bool IncludeRolesInAuthenticateResponse { get; set; } = true;
+
+        /// <summary>
+        /// Allow or deny all GET Authenticate Requests
+        /// </summary>
+        public Func<IRequest, bool> AllowGetAuthenticateRequests { get; set; } = DefaultAllowGetAuthenticateRequests;
+
+        public static bool DefaultAllowGetAuthenticateRequests(IRequest req)
+        {
+            var provider = (req.Dto as Authenticate)?.provider;
+            
+            if (string.IsNullOrEmpty(provider) ||  // Allows empty /auth requests to check if Authenticated                 
+                AuthenticateService.LogoutAction.EqualsIgnoreCase(provider)) // allows /auth/logout
+                return true;
+                   
+            var authProvider = AuthenticateService.GetAuthProvider(provider);
+            return authProvider  == null ||        // throw unknown provider in AuthService 
+                   authProvider is OAuthProvider;  // Allow all OAuth Providers by default 
+        }
 
         public Func<AuthFilterContext, object> AuthResponseDecorator { get; set; }
 
@@ -88,36 +159,49 @@ namespace ServiceStack
             }
         }
 
+        string Localize(string s) => HostContext.AppHost?.ResolveLocalizedString(s, null) ?? s;
+        
+        [Obsolete("The /authenticate alias routes are no longer added by default")]
+        public AuthFeature RemoveAuthenticateAliasRoutes()
+        {
+            ServiceRoutes[typeof(AuthenticateService)] = new[] {
+                "/" + Localize(LocalizedStrings.Auth),
+                "/" + Localize(LocalizedStrings.Auth) + "/{provider}",
+            };
+            return this;
+        }
+
+        /// <summary>
+        /// Add /authenticate and /authenticate/{provider} alias routes
+        /// </summary>
+        /// <returns></returns>
+        public AuthFeature AddAuthenticateAliasRoutes()
+        {
+            ServiceRoutes[typeof(AuthenticateService)] = new[] {
+                "/" + Localize(LocalizedStrings.Auth),
+                "/" + Localize(LocalizedStrings.Auth) + "/{provider}",
+                "/" + Localize(LocalizedStrings.Authenticate),
+                "/" + Localize(LocalizedStrings.Authenticate) + "/{provider}",
+            };
+            return this;
+        }
+        
         public AuthFeature(Func<IAuthSession> sessionFactory, IAuthProvider[] authProviders, string htmlRedirect = null)
         {
             this.sessionFactory = sessionFactory;
             this.authProviders = authProviders;
-
-            string Localize(string s) => HostContext.AppHost?.ResolveLocalizedString(s, null) ?? s;
 
             ServiceRoutes = new Dictionary<Type, string[]> {
                 { typeof(AuthenticateService), new[]
                     {
                         "/" + Localize(LocalizedStrings.Auth),
                         "/" + Localize(LocalizedStrings.Auth) + "/{provider}",
-                        "/" + Localize(LocalizedStrings.Authenticate),
-                        "/" + Localize(LocalizedStrings.Authenticate) + "/{provider}",
                     } },
                 { typeof(AssignRolesService), new[]{ "/" + Localize(LocalizedStrings.AssignRoles) } },
                 { typeof(UnAssignRolesService), new[]{ "/" + Localize(LocalizedStrings.UnassignRoles) } },
             };
 
-            RegisterPlugins = new List<IPlugin> {
-                new SessionFeature()
-            };
-
-            AuthEvents = new List<IAuthEvents>();
-
             this.HtmlRedirect = htmlRedirect ?? "~/" + Localize(LocalizedStrings.Login);
-            this.IncludeAuthMetadataProvider = true;
-            this.ValidateUniqueEmails = true;
-            this.DeleteSessionCookiesOnLogout = true;
-            this.GenerateNewSessionCookiesOnAuthentication = true;
             this.CreateDigestAuthHashes = authProviders.Any(x => x is DigestAuthProvider);
         }
 
@@ -130,7 +214,7 @@ namespace ServiceStack
             if (hasRegistered)
                 throw new Exception("AuthFeature has already been registered");
             
-            this.authProviders = new List<IAuthProvider>(this.authProviders) {
+            this.authProviders = new List<IAuthProvider>(this.AuthProviders) {
                 authProvider
             }.ToArray();
         }
@@ -140,7 +224,7 @@ namespace ServiceStack
         public void Register(IAppHost appHost)
         {
             hasRegistered = true;
-            AuthenticateService.Init(sessionFactory, authProviders);
+            AuthenticateService.Init(sessionFactory, AuthProviders);
 
             var unitTest = appHost == null;
             if (unitTest) return;
@@ -167,10 +251,21 @@ namespace ServiceStack
             if (IncludeAuthMetadataProvider && appHost.TryResolve<IAuthMetadataProvider>() == null)
                 appHost.Register<IAuthMetadataProvider>(new AuthMetadataProvider());
 
-            authProviders.OfType<IAuthPlugin>().Each(x => x.Register(appHost, this));
+            AuthProviders.OfType<IAuthPlugin>().Each(x => x.Register(appHost, this));
 
             AuthenticateService.HtmlRedirect = HtmlRedirect;
+            AuthenticateService.HtmlRedirectAccessDenied = HtmlRedirectAccessDenied;
+            AuthenticateService.HtmlRedirectReturnParam = HtmlRedirectReturnParam;
+            AuthenticateService.HtmlRedirectReturnPathOnly = HtmlRedirectReturnPathOnly;            
             AuthenticateService.AuthResponseDecorator = AuthResponseDecorator;
+            if (ValidateFn != null)
+                AuthenticateService.ValidateFn = ValidateFn;
+
+            var authNavItems = AuthProviders.Select(x => (x as AuthProvider)?.NavItem).Where(x => x != null);
+            if (!ViewUtils.NavItemsMap.TryGetValue("auth", out var navItems))
+                ViewUtils.NavItemsMap["auth"] = navItems = new List<NavItem>();
+
+            navItems.AddRange(authNavItems);
         }
 
         public void AfterPluginsLoaded(IAppHost appHost)

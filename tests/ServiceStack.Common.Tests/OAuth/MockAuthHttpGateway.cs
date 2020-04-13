@@ -141,6 +141,16 @@ namespace ServiceStack.Common.Tests.OAuth
             throw new System.NotImplementedException();
         }
 
+        public string DownloadMicrosoftUserInfo(string accessToken)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public string CreateMicrosoftPhotoUrl(string accessToken, string savePhotoSize = null)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public string DownloadYammerUserInfo(string yammerUserId)
         {
             yammerUserId.ThrowIfNullOrEmpty("yammerUserId");
@@ -160,7 +170,7 @@ namespace ServiceStack.Common.Tests.OAuth
         }
 
         public bool VerifyTwitterAccessToken(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret,
-            out string userId)
+            out string userId, out string email)
         {
             throw new System.NotImplementedException();
         }

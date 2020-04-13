@@ -9,11 +9,10 @@ using Check.ServiceInterface;
 using Funq;
 using ServiceStack;
 using ServiceStack.Api.OpenApi;
-using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Mvc;
-using ServiceStack.OrmLite;
+//using ServiceStack.OrmLite; // ref source packages 
 using ServiceStack.Redis;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -32,17 +31,35 @@ namespace CheckMvc
             
             Plugins.Add(new MiniProfilerFeature());
 
-            container.Register<IRedisClientsManager>(c =>
-                new RedisManagerPool());
+//            container.Register<IRedisClientsManager>(c =>
+//                new RedisManagerPool());
 
-            container.Register(c => c.Resolve<IRedisClientsManager>().GetCacheClient());
+//            container.Register(c => c.Resolve<IRedisClientsManager>().GetCacheClient());
 
             SetConfig(new HostConfig { DebugMode = true });
             
-            Plugins.Add(new TemplatePagesFeature());
+            Plugins.Add(new SharpPagesFeature());
             
             Plugins.Add(new OpenApiFeature());
         }
+    }
+
+    public class TestGateway : IReturn<TestGatewayResponse>
+    {
+        public string Name { get; set; }
+    }
+
+    public class TestGatewayResponse
+    {
+        public string Result { get; set; }
+        
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    public class TestGatewayService : Service
+    {
+        public object Any(TestGateway request) =>
+            throw HttpError.NotFound("NotFound");
     }
 
     public class SmrImportServices : Service
@@ -87,6 +104,28 @@ namespace CheckMvc
 
         public Stream RequestStream { get; set; }
     }
+
+    [ServiceStack.Route("/urlcheck")]
+    [ServiceStack.Route("/urlcheck/{Name}")]
+    public class UrlCheck : IReturn<UrlCheckResponse>
+    {
+        public string Name { get; set; }
+    }
+
+    public class UrlCheckResponse
+    {
+        public string Result { get; set; }
+    }
+
+    public class MyServices : Service
+    {
+        public object Any(UrlCheck request)
+        {
+            return new UrlCheckResponse {
+                Result = request.ToAbsoluteUri()
+            };
+        }
+    }
     
     // Note: For instructions on enabling IIS6 or IIS7 classic mode, 
     // visit http://go.microsoft.com/?LinkId=9394801
@@ -96,12 +135,14 @@ namespace CheckMvc
 
         protected void Application_Start()
         {
-            DbFactory = new OrmLiteConnectionFactory(
-                ConfigurationManager.AppSettings["connectionString"],
-                SqlServerDialect.Provider);
+//            DbFactory = new OrmLiteConnectionFactory(
+//                ConfigurationManager.AppSettings["connectionString"],
+//                SqlServerDialect.Provider);
 
-            JsConfig.DateHandler = DateHandler.ISO8601;
-            JsConfig.EmitCamelCaseNames = true;
+            JsConfig.Init(new ServiceStack.Text.Config {
+                TextCase = TextCase.CamelCase,
+                DateHandler = DateHandler.ISO8601,
+            });
 
             AreaRegistration.RegisterAllAreas();
 

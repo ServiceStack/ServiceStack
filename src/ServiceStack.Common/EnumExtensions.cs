@@ -1,9 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
+using System.Linq;
 
 namespace ServiceStack
 {
+    public static class EnumUtils
+    {
+        public static IEnumerable<T> GetValues<T>() where T : Enum => Enum.GetValues(typeof(T)).Cast<T>();
+    }
+    
     public static class EnumExtensions
     {
         /// <summary>
@@ -20,7 +25,6 @@ namespace ServiceStack
         /// </summary>
         /// <param name="enum"></param>
         /// <returns></returns>
-#if !(NETFX_CORE)
         public static string ToDescription(this Enum @enum)
         {
             var type = @enum.GetType();
@@ -37,7 +41,11 @@ namespace ServiceStack
 
             return @enum.ToString();
         }
-#endif
+            
+        public static List<KeyValuePair<string, string>> ToKeyValuePairs<T>(this IEnumerable<T> enums) where T : Enum
+            => enums.Map(x => new KeyValuePair<string,string>(
+                x.ToString(),
+                x.ToDescription()));
 
         public static List<string> ToList(this Enum @enum)
         {

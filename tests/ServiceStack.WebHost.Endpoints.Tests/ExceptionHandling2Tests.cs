@@ -12,22 +12,17 @@ using ServiceStack.Logging;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-
     [Route("/reqstars")]
     [DataContract]
     public class Reqstar //: IReturn<List<Reqstar>>
     {
-        [DataMember(Order = 1)]
-        public int Id { get; set; }
+        [DataMember(Order = 1)] public int Id { get; set; }
 
-        [DataMember(Order = 2)]
-        public string FirstName { get; set; }
+        [DataMember(Order = 2)] public string FirstName { get; set; }
 
-        [DataMember(Order = 3)]
-        public string LastName { get; set; }
+        [DataMember(Order = 3)] public string LastName { get; set; }
 
-        [DataMember(Order = 4)]
-        public int? Age { get; set; }
+        [DataMember(Order = 4)] public int? Age { get; set; }
     }
 
     //New: No special naming convention
@@ -37,24 +32,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [DataContract]
     public class SearchReqstars2 : IReturn<ReqstarsResponse>
     {
-        [DataMember(Order = 1)]
-        public int? Age { get; set; }
+        [DataMember(Order = 1)] public int? Age { get; set; }
     }
 
     [DataContract]
     public class ReqstarsResponse
     {
-        [DataMember(Order = 1)]
-        public int Total { get; set; }
+        [DataMember(Order = 1)] public int Total { get; set; }
 
-        [DataMember(Order = 2)]
-        public int? Aged { get; set; }
+        [DataMember(Order = 2)] public int? Aged { get; set; }
 
-        [DataMember(Order = 3)]
-        public List<Reqstar> Results { get; set; }
+        [DataMember(Order = 3)] public List<Reqstar> Results { get; set; }
 
-        [DataMember(Order = 4)]
-        public ResponseStatus ResponseStatus { get; set; }
+        [DataMember(Order = 4)] public ResponseStatus ResponseStatus { get; set; }
     }
 
     //Naming convention:{Request DTO}Response
@@ -64,25 +54,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [DataContract]
     public class SearchReqstars : IReturn<SearchReqstarsResponse>
     {
-        [DataMember(Order = 1)]
-        public int? Age { get; set; }
+        [DataMember(Order = 1)] public int? Age { get; set; }
     }
 
 
     [DataContract]
     public class SearchReqstarsResponse
     {
-        [DataMember(Order = 1)]
-        public int Total { get; set; }
+        [DataMember(Order = 1)] public int Total { get; set; }
 
-        [DataMember(Order = 2)]
-        public int? Aged { get; set; }
+        [DataMember(Order = 2)] public int? Aged { get; set; }
 
-        [DataMember(Order = 3)]
-        public List<Reqstar> Results { get; set; }
+        [DataMember(Order = 3)] public List<Reqstar> Results { get; set; }
 
-        [DataMember(Order = 4)]
-        public ResponseStatus ResponseStatus { get; set; }
+        [DataMember(Order = 4)] public ResponseStatus ResponseStatus { get; set; }
     }
 
     public class ReqstarsService : IService
@@ -99,9 +84,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Total = 2,
                 Aged = 10,
-                Results = new List<Reqstar> {
-                    new Reqstar { Id = 1, FirstName = "Max", LastName = "Meier", Age = 10 },
-                    new Reqstar { Id = 2, FirstName = "Susan", LastName = "Stark", Age = 10 }
+                Results = new List<Reqstar>
+                {
+                    new Reqstar {Id = 1, FirstName = "Max", LastName = "Meier", Age = 10},
+                    new Reqstar {Id = 2, FirstName = "Susan", LastName = "Stark", Age = 10}
                 }
             };
 
@@ -120,9 +106,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Total = 2,
                 Aged = 10,
-                Results = new List<Reqstar> {
-                    new Reqstar { Id = 1, FirstName = "Max", LastName = "Meier", Age = 10 },
-                    new Reqstar { Id = 2, FirstName = "Susan", LastName = "Stark", Age = 10 }
+                Results = new List<Reqstar>
+                {
+                    new Reqstar {Id = 1, FirstName = "Max", LastName = "Meier", Age = 10},
+                    new Reqstar {Id = 2, FirstName = "Susan", LastName = "Stark", Age = 10}
                 }
             };
 
@@ -190,7 +177,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Category("OldNamingConvention")]
         public void OldNamingConv_Get_ExpectingResults(IRestClient client)
         {
-            var response = client.Get(new SearchReqstars { Age = 10 });
+            var response = client.Get(new SearchReqstars {Age = 10});
 
             Assert.AreEqual(2, response.Total);
         }
@@ -204,7 +191,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             try
             {
-                client.Get(new SearchReqstars { Age = -1 });
+                client.Get(new SearchReqstars {Age = -1});
             }
             catch (WebServiceException ex)
             {
@@ -220,7 +207,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Category("OldNamingConvention")]
         public void OldNamingConv_Post_ExpectingResults(IRestClient client)
         {
-            var response = client.Post(new SearchReqstars { Age = 10 });
+            var response = client.Post(new SearchReqstars {Age = 10});
 
             Assert.AreEqual(2, response.Total);
         }
@@ -234,7 +221,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             try
             {
-                client.Post(new SearchReqstars { Age = -1 });
+                client.Post(new SearchReqstars {Age = -1});
             }
             catch (WebServiceException ex)
             {
@@ -251,7 +238,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Category("NoNamingConvention")]
         public void NoNamingConv_Get_ExpectingResults(IRestClient client)
         {
-            var response = client.Get(new SearchReqstars2 { Age = 10 });
+            var response = client.Get(new SearchReqstars2 {Age = 10});
 
             Assert.AreEqual(2, response.Total);
         }
@@ -265,7 +252,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             try
             {
-                client.Get(new SearchReqstars2 { Age = -1 });
+                client.Get(new SearchReqstars2 {Age = -1});
             }
             catch (WebServiceException ex)
             {
@@ -281,7 +268,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Category("NoNamingConvention")]
         public void NoNamingConv_Post_ExpectingResults(IRestClient client)
         {
-            var response = client.Post(new SearchReqstars2 { Age = 10 });
+            var response = client.Post(new SearchReqstars2 {Age = 10});
 
             Assert.AreEqual(2, response.Total);
         }
@@ -295,7 +282,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             try
             {
-                client.Post(new SearchReqstars2 { Age = -1 });
+                client.Post(new SearchReqstars2 {Age = -1});
             }
             catch (WebServiceException ex)
             {
@@ -303,6 +290,5 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.AreEqual("Invalid Age", ex.ErrorMessage, "Wrong message");
             }
         }
-
     }
 }

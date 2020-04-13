@@ -44,7 +44,9 @@ namespace ServiceStack.AuthWeb.Tests
                 db.Insert(Rockstar.SeedData);
             }
 
-            JsConfig.EmitCamelCaseNames = true;
+            JsConfig.Init(new Text.Config {
+                TextCase = TextCase.CamelCase
+            });
 
             //Register Typed Config some services might need to access
             var appSettings = new AppSettings();

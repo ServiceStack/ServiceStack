@@ -172,7 +172,7 @@ namespace ServiceStack.Host.Handlers
 
             try
             {
-                await HostContext.RaiseAndHandleUncaughtException(httpReq, httpRes, operationName, ex);
+                await HostContext.RaiseAndHandleException(httpReq, httpRes, operationName, ex);
             }
             catch (Exception writeErrorEx)
             {

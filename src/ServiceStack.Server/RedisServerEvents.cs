@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
 using ServiceStack.Text;
@@ -27,16 +28,16 @@ namespace ServiceStack
             set => local.HouseKeepingInterval = value;
         }
 
-        public Action<IEventSubscription> OnSubscribe
+        public Func<IEventSubscription, Task> OnSubscribeAsync
         {
-            get => local.OnSubscribe;
-            set => local.OnSubscribe = value;
+            get => local.OnSubscribeAsync;
+            set => local.OnSubscribeAsync = value;
         }
 
-        public Action<IEventSubscription> OnUnsubscribe
+        public Func<IEventSubscription, Task> OnUnsubscribeAsync
         {
-            get => local.OnUnsubscribe;
-            set => local.OnUnsubscribe = value;
+            get => local.OnUnsubscribeAsync;
+            set => local.OnUnsubscribeAsync = value;
         }
 
         public bool NotifyChannelOfSubscriptions
@@ -63,7 +64,7 @@ namespace ServiceStack
             public static string SessionSet = "sse:session:{0}";
         }
 
-        public IRedisClientsManager clientsManager;
+        public readonly IRedisClientsManager clientsManager;
 
         public IRedisPubSubServer RedisPubSub { get; set; }
 
@@ -79,10 +80,10 @@ namespace ServiceStack
 
             local = new MemoryServerEvents
             {
-                NotifyJoin = HandleOnJoin,
-                NotifyLeave = HandleOnLeave,
-                NotifyUpdate = HandleOnUpdate,
-                NotifyHeartbeat = HandleOnHeartbeat,
+                NotifyJoinAsync = HandleOnJoinAsync,
+                NotifyLeaveAsync = HandleOnLeaveAsync,
+                NotifyUpdateAsync = HandleOnUpdate,
+                NotifyHeartbeatAsync = NotifyHeartbeatAsync,
                 Serialize = HandleSerialize,
             };
 
@@ -92,8 +93,8 @@ namespace ServiceStack
             {
                 Timeout = feature.IdleTimeout;
                 HouseKeepingInterval = feature.HouseKeepingInterval;
-                OnSubscribe = feature.OnSubscribe;
-                OnUnsubscribe = feature.OnUnsubscribe;
+                OnSubscribeAsync = feature.OnSubscribeAsync;
+                OnSubscribeAsync = feature.OnSubscribeAsync;
                 NotifyChannelOfSubscriptions = feature.NotifyChannelOfSubscriptions;
             }
         }
@@ -134,32 +135,30 @@ namespace ServiceStack
         public RedisServerEvents(IRedisClientsManager clientsManager)
             : this(new RedisPubSubServer(clientsManager, Topic)) { }
 
-        void HandleOnJoin(IEventSubscription sub)
+        Task HandleOnJoinAsync(IEventSubscription sub)
         {
-            NotifyChannels(sub.Channels, "cmd.onJoin", sub.Meta);
+            return NotifyChannelsAsync(sub.Channels, "cmd.onJoin", sub.Meta);
         }
 
-        void HandleOnLeave(IEventSubscription sub)
+        Task HandleOnLeaveAsync(IEventSubscription sub)
         {
             var info = sub.GetInfo();
             RemoveSubscriptionFromRedis(info);
 
-            NotifyChannels(sub.Channels, "cmd.onLeave", sub.Meta);
+            return NotifyChannelsAsync(sub.Channels, "cmd.onLeave", sub.Meta);
         }
 
-        void HandleOnUpdate(IEventSubscription sub)
+        Task HandleOnUpdate(IEventSubscription sub)
         {
             using (var redis = clientsManager.GetClient())
             {
                 StoreSubscriptionInfo(redis, sub.GetInfo());
             }
-            NotifyChannels(sub.Channels, "cmd.onUpdate", sub.Meta);
+            return NotifyChannelsAsync(sub.Channels, "cmd.onUpdate", sub.Meta);
         }
 
-        void HandleOnHeartbeat(IEventSubscription sub)
-        {
-            NotifySubscription(sub.SubscriptionId, "cmd.onHeartbeat", sub.Meta);
-        }
+        Task NotifyHeartbeatAsync(IEventSubscription sub) =>
+            NotifySubscriptionAsync(sub.SubscriptionId, "cmd.onHeartbeat", sub.Meta);
 
         private void RemoveSubscriptionFromRedis(SubscriptionInfo info)
         {
@@ -188,13 +187,12 @@ namespace ServiceStack
 
         string HandleSerialize(object o)
         {
-            return (string)o; //Already a seiralized JSON string
+            return (string)o; //Already a serialized JSON string
         }
 
-        public void NotifyAll(string selector, object message)
-        {
-            NotifyRedis("notify.all", selector, message);
-        }
+        public void NotifyAll(string selector, object message) => NotifyRedis("notify.all", selector, message);
+
+        public Task NotifyAllAsync(string selector, object message, CancellationToken token = default) => NotifyRedisAsync("notify.all", selector, message, token:token);
 
         public void NotifyChannels(string[] channels, string selector, Dictionary<string, string> meta)
         {
@@ -205,30 +203,40 @@ namespace ServiceStack
             }
         }
 
-        public void NotifyChannel(string channel, string selector, object message)
+        public Task NotifyChannelsAsync(string[] channels, string selector, Dictionary<string, string> meta, CancellationToken token=default)
         {
-            NotifyRedis("notify.channel." + channel, selector, message);
+            NotifyChannels(channels, selector, meta);
+            return TypeConstants.EmptyTask;
         }
 
-        public void NotifySubscription(string subscriptionId, string selector, object message, string channel = null)
-        {
+        public void NotifyChannel(string channel, string selector, object message) => NotifyRedis("notify.channel." + channel, selector, message);
+
+        public Task NotifyChannelAsync(string channel, string selector, object message, CancellationToken token = default) =>
+            NotifyRedisAsync("notify.channel." + channel, selector, message);
+
+        public void NotifySubscription(string subscriptionId, string selector, object message, string channel = null) =>
             NotifyRedis("notify.subscription." + subscriptionId, selector, message, channel);
-        }
 
-        public void NotifyUserId(string userId, string selector, object message, string channel = null)
-        {
+        public Task NotifySubscriptionAsync(string subscriptionId, string selector, object message, string channel = null, CancellationToken token = default) =>
+            NotifyRedisAsync("notify.subscription." + subscriptionId, selector, message, channel);
+
+        public void NotifyUserId(string userId, string selector, object message, string channel = null) => 
             NotifyRedis("notify.userid." + userId, selector, message, channel);
-        }
 
-        public void NotifyUserName(string userName, string selector, object message, string channel = null)
-        {
+        public Task NotifyUserIdAsync(string userId, string selector, object message, string channel = null, CancellationToken token = default) =>
+            NotifyRedisAsync("notify.userid." + userId, selector, message, channel);
+
+        public void NotifyUserName(string userName, string selector, object message, string channel = null) => 
             NotifyRedis("notify.username." + userName, selector, message, channel);
-        }
 
-        public void NotifySession(string sessionId, string selector, object message, string channel = null)
-        {
+        public Task NotifyUserNameAsync(string userName, string selector, object message, string channel = null, CancellationToken token = default) =>
+            NotifyRedisAsync("notify.username." + userName, selector, message, channel);
+
+        public void NotifySession(string sessionId, string selector, object message, string channel = null) =>
             NotifyRedis("notify.session." + sessionId, selector, message, channel);
-        }
+
+        public Task NotifySessionAsync(string sessionId, string selector, object message, string channel = null, CancellationToken token = default) =>
+            NotifyRedisAsync("notify.session." + sessionId, selector, message, channel);
 
         public SubscriptionInfo GetSubscriptionInfo(string id)
         {
@@ -251,7 +259,7 @@ namespace ServiceStack
             }
         }
 
-        public void Register(IEventSubscription sub, Dictionary<string, string> connectArgs = null)
+        public async Task RegisterAsync(IEventSubscription sub, Dictionary<string, string> connectArgs = null, CancellationToken token=default)
         {
             if (sub == null)
                 throw new ArgumentNullException(nameof(sub));
@@ -263,9 +271,9 @@ namespace ServiceStack
             }
 
             if (connectArgs != null)
-                sub.Publish("cmd.onConnect", connectArgs.ToJson());
+                await sub.PublishAsync("cmd.onConnect", connectArgs.ToJson(), token);
 
-            local.Register(sub);
+            await local.RegisterAsync(sub, token: token);
         }
 
         private void StoreSubscriptionInfo(IRedisClient redis, SubscriptionInfo info)
@@ -300,6 +308,12 @@ namespace ServiceStack
             NotifyRedis("unregister.id." + subscriptionId, null, null);
         }
 
+        public Task UnRegisterAsync(string subscriptionId, CancellationToken token = default)
+        {
+            UnRegister(subscriptionId);
+            return TypeConstants.EmptyTask;
+        }
+
         public long GetNextSequence(string sequenceId)
         {
             using (var redis = clientsManager.GetClient())
@@ -308,10 +322,9 @@ namespace ServiceStack
             }
         }
 
-        public int RemoveExpiredSubscriptions()
-        {
-            return local.RemoveExpiredSubscriptions();
-        }
+        public int RemoveExpiredSubscriptions() => local.RemoveExpiredSubscriptions();
+
+        public Task<int> RemoveExpiredSubscriptionsAsync(CancellationToken token=default) => local.RemoveExpiredSubscriptionsAsync(token);
 
         public void SubscribeToChannels(string subscriptionId, string[] channels)
         {
@@ -320,6 +333,12 @@ namespace ServiceStack
                 return;
 
             NotifyRedis("subscribe.id." + subscriptionId, null, channels.Join(","));
+        }
+
+        public Task SubscribeToChannelsAsync(string subscriptionId, string[] channels, CancellationToken token = default)
+        {
+            SubscribeToChannels(subscriptionId, channels);
+            return TypeConstants.EmptyTask;
         }
 
         public void UnsubscribeFromChannels(string subscriptionId, string[] channels)
@@ -340,6 +359,14 @@ namespace ServiceStack
 
             NotifyRedis("unsubscribe.id." + subscriptionId, null, channels.Join(","));
         }
+
+        public Task UnsubscribeFromChannelsAsync(string subscriptionId, string[] channels, CancellationToken token = default)
+        {
+            UnsubscribeFromChannels(subscriptionId, channels);
+            return TypeConstants.EmptyTask;
+        }
+
+        public void QueueAsyncTask(Func<Task> task) => local.QueueAsyncTask(task);
 
         public List<Dictionary<string, string>> GetSubscriptionsDetails(params string[] channels)
         {
@@ -409,20 +436,20 @@ namespace ServiceStack
             }
         }
 
-        public bool Pulse(string subscriptionId)
+        public Task<bool> PulseAsync(string subscriptionId, CancellationToken token=default)
         {
             using (var redis = clientsManager.GetClient())
             {
                 var info = redis.Get<SubscriptionInfo>(RedisIndex.Subscription.Fmt(subscriptionId));
                 if (info == null)
-                    return false;
+                    return TypeConstants.FalseTask;
 
                 redis.AddItemToSortedSet(RedisIndex.ActiveSubscriptionsSet,
                     info.SubscriptionId, RedisPubSub.CurrentServerTime.Ticks);
 
                 NotifyRedis("pulse.id." + subscriptionId, null, null);
 
-                return true;
+                return TypeConstants.TrueTask;
             }
         }
 
@@ -454,6 +481,12 @@ namespace ServiceStack
             local.Stop();
         }
 
+        protected Task NotifyRedisAsync(string key, string selector, object message, string channel = null, CancellationToken token=default)
+        {
+            NotifyRedis(key, selector, message, channel);
+            return TypeConstants.EmptyTask;
+        }
+        
         protected void NotifyRedis(string key, string selector, object message, string channel = null)
         {
             using (var redis = clientsManager.GetClient())
@@ -572,7 +605,7 @@ namespace ServiceStack
         {
             try
             {
-                foreach (var entry in local.Subcriptions)
+                foreach (var entry in local.Subscriptions)
                 {
                     var info = local.GetSubscriptionInfo(entry.Key);
                     if (info != null)
@@ -583,7 +616,7 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
-                Log.Warn("Error trying to remove local.Subcriptions during Dispose()...", ex);
+                Log.Warn("Error trying to remove local.Subscriptions during Dispose()...", ex);
             }
 
             RedisPubSub?.Dispose();

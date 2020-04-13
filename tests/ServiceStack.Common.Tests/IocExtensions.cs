@@ -13,8 +13,7 @@ namespace ServiceStack.Common.Tests
                     continue;
 
                 var dep = mi.Invoke(instance, new object[0]);
-                var requiresRequest = dep as IRequiresRequest;
-                if (requiresRequest != null)
+                if (dep is IRequiresRequest requiresRequest)
                 {
                     requiresRequest.Request = req;
                     requiresRequest.InjectRequestIntoDependencies(req);

@@ -112,6 +112,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         }
 
         [Test]
+        public void Can_Send_Secure_Restriced_Encrypted_Message_with_ServiceClients()
+        {
+            var client = CreateClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get(new GetPublicKey()));
+
+            var response = encryptedClient.Send(new HelloSecureRestricted { Name = "World" });
+
+            Assert.That(response.Result, Is.EqualTo("Hello, World!"));
+        }
+
+        [Test]
         public void Can_Send_Encrypted_OneWay_Message_with_ServiceClients()
         {
             var client = CreateClient();
@@ -338,8 +349,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
             var request = new HelloSecure { Name = "World" };
 
-            byte[] cryptKey, authKey, iv;
-            AesUtils.CreateCryptAuthKeysAndIv(out cryptKey, out authKey, out iv);
+            AesUtils.CreateCryptAuthKeysAndIv(out var cryptKey, out var authKey, out var iv);
 
             var cryptAuthKeys = cryptKey.Combine(authKey);
 
@@ -380,8 +390,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
             var request = new HelloSecure { Name = "World" };
 
-            byte[] cryptKey, authKey, iv;
-            AesUtils.CreateCryptAuthKeysAndIv(out cryptKey, out authKey, out iv);
+            AesUtils.CreateCryptAuthKeysAndIv(out var cryptKey, out var authKey, out var iv);
 
             var cryptAuthKeys = cryptKey.Combine(authKey);
 
@@ -430,8 +439,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
             var request = new HelloSecure { Name = "World" };
 
-            byte[] cryptKey, iv;
-            AesUtils.CreateKeyAndIv(out cryptKey, out iv);
+            AesUtils.CreateKeyAndIv(out var cryptKey, out var iv);
 
             byte[] authKey = AesUtils.CreateKey();
 
@@ -516,8 +524,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         {
             var msg = new HelloSecure { Name = "World" };
 
-            byte[] cryptKey, iv;
-            AesUtils.CreateKeyAndIv(out cryptKey, out iv);
+            AesUtils.CreateKeyAndIv(out var cryptKey, out var iv);
 
             var encryptedText = AesUtils.Encrypt(msg.ToJson(), cryptKey, iv);
 
@@ -533,8 +540,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         {
             var msg = new HelloSecure { Name = "World" };
 
-            byte[] cryptKey, iv;
-            AesUtils.CreateKeyAndIv(out cryptKey, out iv);
+            AesUtils.CreateKeyAndIv(out var cryptKey, out var iv);
 
             var encryptedBytes = AesUtils.Encrypt(msg.ToJson().ToUtf8Bytes(), cryptKey, iv);
 
@@ -553,8 +559,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             var msg = timestamp + " POST " + request.GetType().Name + " " + request.ToJson();
             var msgBytes = msg.ToUtf8Bytes();
 
-            byte[] cryptKey, authKey, iv;
-            AesUtils.CreateCryptAuthKeysAndIv(out cryptKey, out authKey, out iv);
+            AesUtils.CreateCryptAuthKeysAndIv(out var cryptKey, out var authKey, out var iv);
 
             var encryptedBytes = AesUtils.Encrypt(msgBytes, cryptKey, iv);
 
@@ -621,8 +626,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             var request = new HelloSecure { Name = "World" };
             var msgBytes = request.ToJson().ToUtf8Bytes();
 
-            byte[] masterKey, iv;
-            AesUtils.CreateKeyAndIv(out masterKey, out iv);
+            AesUtils.CreateKeyAndIv(out var masterKey, out var iv);
 
             var sha512KeyBytes = masterKey.ToSha512HashBytes();
 

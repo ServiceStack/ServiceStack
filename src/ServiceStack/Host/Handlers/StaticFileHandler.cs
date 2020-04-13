@@ -110,11 +110,12 @@ namespace ServiceStack.Host.Handlers
             {
                 var node = this.VirtualNode ?? request.GetVirtualNode();
                 var file = node as IVirtualFile;
+                var appHost = HostContext.AppHost;
                 if (file == null)
                 {
                     if (node is IVirtualDirectory dir)
                     {
-                        file = dir.GetDefaultDocument(HostContext.AppHost.Config.DefaultDocuments);
+                        file = dir.GetDefaultDocument(appHost.Config.DefaultDocuments);
                         if (file != null && HostContext.Config.RedirectToDefaultDocuments)
                         {
                             r.Redirect(request.GetPathUrl() + '/' + file.Name);
@@ -131,13 +132,13 @@ namespace ServiceStack.Host.Handlers
                         {
                             //Create a case-insensitive file index of all host files
                             if (allFiles == null)
-                                allFiles = CreateFileIndex(HostContext.VirtualFileSources.RootDirectory.RealPath);
+                                allFiles = CreateFileIndex(appHost.RootDirectory.RealPath);
                             if (allDirs == null)
-                                allDirs = CreateDirIndex(HostContext.VirtualFileSources.RootDirectory.RealPath);
+                                allDirs = CreateDirIndex(appHost.RootDirectory.RealPath);
 
                             if (allFiles.TryGetValue(fileName.ToLower(), out fileName))
                             {
-                                file = HostContext.VirtualFileSources.GetFile(fileName);
+                                file = appHost.VirtualFileSources.GetFile(fileName);
                             }
                         }
 
@@ -154,8 +155,7 @@ namespace ServiceStack.Host.Handlers
 
                 file.Refresh(); //refresh FileInfo, DateModified, Length
 
-                TimeSpan maxAge;
-                if (r.ContentType != null && HostContext.Config.AddMaxAgeForStaticMimeTypes.TryGetValue(r.ContentType, out maxAge))
+                if (r.ContentType != null && appHost.Config.AddMaxAgeForStaticMimeTypes.TryGetValue(r.ContentType, out var maxAge))
                 {
                     r.AddHeader(HttpHeaders.CacheControl, "max-age=" + maxAge.TotalSeconds);
                 }
@@ -165,13 +165,15 @@ namespace ServiceStack.Host.Handlers
                     r.ContentType = MimeTypes.GetMimeType(file.Name);
                     r.StatusCode = (int)HttpStatusCode.NotModified;
                     r.StatusDescription = HttpStatusCode.NotModified.ToString();
+
+                    ResponseFilter?.Invoke(request, r, file);
                     return;
                 }
 
                 try
                 {
                     var encoding = request.GetCompressionType();
-                    var shouldCompress = encoding != null && HostContext.AppHost.ShouldCompressFile(file);
+                    var shouldCompress = encoding != null && appHost.ShouldCompressFile(file);
                     r.AddHeaderLastModified(file.LastModified);
                     r.ContentType = MimeTypes.GetMimeType(file.Name);
 
@@ -220,12 +222,12 @@ namespace ServiceStack.Host.Handlers
                         return;
                     }
 
-                    if (HostContext.Config.AllowPartialResponses)
+                    if (appHost.Config.AllowPartialResponses)
                         r.AddHeader(HttpHeaders.AcceptRanges, "bytes");
                     long contentLength = file.Length;
                     long rangeStart, rangeEnd;
                     var rangeHeader = request.Headers[HttpHeaders.Range];
-                    if (HostContext.Config.AllowPartialResponses && rangeHeader != null)
+                    if (appHost.Config.AllowPartialResponses && rangeHeader != null)
                     {
                         rangeHeader.ExtractHttpRanges(contentLength, out rangeStart, out rangeEnd);
 
@@ -252,7 +254,7 @@ namespace ServiceStack.Host.Handlers
                             {
                                 r.SetContentLength(contentLength);
                                 await fs.CopyToAsync(outputStream, BufferSize);
-                                outputStream.Flush();
+                                await outputStream.FlushAsync();
                             }
                             else
                             {
@@ -271,7 +273,7 @@ namespace ServiceStack.Host.Handlers
                     if (ex.ErrorCode == 1229)
                         return;
                     //Error: 1229 is "An operation was attempted on a nonexistent network connection"
-                    //This exception occures when http stream is terminated by web browser because user
+                    //This exception occurs when http stream is terminated by web browser because user
                     //seek video forward and new http request will be sent by browser
                     //with attribute in header "Range: bytes=newSeekPosition-"
                     throw;

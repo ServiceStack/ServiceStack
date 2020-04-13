@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.Serialization;
-using ServiceStack.Templates;
 using ServiceStack.Web;
 
 namespace ServiceStack.Formats
@@ -19,9 +18,6 @@ namespace ServiceStack.Formats
         public static bool Humanize = true;
 
         private IAppHost AppHost { get; set; }
-
-        public const string ModelKey = "Model";
-        public const string ErrorStatusKey = "__errorStatus";
 
         public void Register(IAppHost appHost)
         {
@@ -47,7 +43,7 @@ namespace ServiceStack.Formats
                 if (res.StatusCode >= 400)
                 {
                     var responseStatus = response.GetResponseStatus();
-                    req.Items[ErrorStatusKey] = responseStatus;
+                    req.Items[Keywords.ErrorStatus] = responseStatus;
                 }
 
                 if (response is CompressedResult)
@@ -103,7 +99,7 @@ namespace ServiceStack.Formats
                 var now = DateTime.UtcNow;
                 var requestName = req.OperationName ?? dto.GetType().GetOperationName();
 
-                html = HtmlTemplates.GetHtmlFormatTemplate()
+                html = Templates.HtmlTemplates.GetHtmlFormatTemplate()
                     .Replace("${Dto}", json)
                     .Replace("${Title}", string.Format(TitleFormat, requestName, now))
                     .Replace("${MvcIncludes}", MiniProfiler.Profiler.RenderIncludes().ToString())
@@ -111,9 +107,8 @@ namespace ServiceStack.Formats
                     .Replace("${ServiceUrl}", url)
                     .Replace("${Humanize}", Humanize.ToString().ToLower());
             }
-
-            var utf8Bytes = html.ToUtf8Bytes();
-            await outputStream.WriteAsync(utf8Bytes, 0, utf8Bytes.Length);
+            
+            await ((ServiceStackHost)AppHost).WriteAutoHtmlResponseAsync(req, response, html, outputStream);
         }
     }
 }

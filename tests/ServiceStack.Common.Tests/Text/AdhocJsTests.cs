@@ -43,7 +43,7 @@ namespace ServiceStack.Common.Tests.Text
 		[Test]
 		public void Can_Serialize_Array_with_nulls()
 		{
-            using (JsConfig.With(includeNullValues:true))
+            using (JsConfig.With(new Config { IncludeNullValues = true }))
             {
                 var t = new {
                     Name = "MyName",

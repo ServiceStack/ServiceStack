@@ -17,9 +17,30 @@
 #endregion
 
 namespace ServiceStack.FluentValidation {
+	using System;
 	using System.Collections.Generic;
 	using Internal;
 
+	/// <summary>
+	/// Defines a validation context.
+	/// </summary>
+	public interface IValidationContext {
+		/// <summary>
+		/// The object currently being validated.
+		/// </summary>
+		object InstanceToValidate { get; }
+		
+		/// <summary>
+		/// The value of the property being validated.
+		/// </summary>
+		object PropertyValue { get; }
+		
+		/// <summary>
+		/// Parent validation context.
+		/// </summary>
+		IValidationContext ParentContext { get; }
+	}
+	
 	/// <summary>
 	/// Validation context
 	/// </summary>
@@ -49,14 +70,41 @@ namespace ServiceStack.FluentValidation {
 		/// The object to validate
 		/// </summary>
 		public new T InstanceToValidate { get; private set; }
+
+		/// <summary>
+		/// Gets or creates generic validation context from non-generic validation context.
+		/// </summary>
+		/// <param name="context"></param>
+		/// <returns></returns>
+		/// <exception cref="ArgumentNullException"></exception>
+		/// <exception cref="NotSupportedException"></exception>
+		public static ValidationContext<T> GetFromNoNGenericContext(ValidationContext context) {
+			if (context == null) throw new ArgumentNullException(nameof(context));
+
+			// Already of the correct type.
+			if (context is ValidationContext<T> c) {
+				return c;
+			}
+			
+			// Parameters match
+			if (context.InstanceToValidate is T) {
+				return context.ToGeneric<T>();
+			}
+			
+			throw new NotSupportedException("context.InstanceToValidate is not of type " + typeof(T).FullName);
+		}
 	}
 
 	/// <summary>
 	/// Validation context
 	/// </summary>
-	public partial class ValidationContext {
+	public partial class ValidationContext : IValidationContext {
+		private IValidationContext _parentContext;
 
-		public Dictionary<string, object> RootContextData { get; internal set; } = new Dictionary<string, object>();
+		/// <summary>
+		/// Additional data associated with the validation request.
+		/// </summary>
+		public IDictionary<string, object> RootContextData { get; private set; } = new Dictionary<string, object>();
 
 		/// <summary>
 		/// Creates a new validation context
@@ -101,6 +149,14 @@ namespace ServiceStack.FluentValidation {
 		/// </summary>
 		public virtual bool IsChildCollectionContext { get; internal set; }
 
+
+		// root level context doesn't know about properties.
+		object IValidationContext.PropertyValue => null;
+
+		// This is the root context so it doesn't have a parent. 
+		// Explicit implementation so it's not exposed necessarily.
+		IValidationContext IValidationContext.ParentContext => _parentContext;
+
 		/// <summary>
 		/// Creates a new ValidationContext based on this one
 		/// </summary>
@@ -110,7 +166,9 @@ namespace ServiceStack.FluentValidation {
 		/// <returns></returns>
 		public ValidationContext Clone(PropertyChain chain = null, object instanceToValidate = null, IValidatorSelector selector = null) {
 			return new ValidationContext(instanceToValidate ?? this.InstanceToValidate, chain ?? this.PropertyChain, selector ?? this.Selector) {
-				RootContextData = RootContextData
+				Request = Request,
+				RootContextData = RootContextData,
+				_parentContext = this,
 			};
 		}
 
@@ -118,26 +176,46 @@ namespace ServiceStack.FluentValidation {
 		/// Creates a new validation context for use with a child validator
 		/// </summary>
 		/// <param name="instanceToValidate"></param>
+		/// <param name="preserveParentContext"></param>
+		/// <param name="selector"></param>
 		/// <returns></returns>
-		public ValidationContext CloneForChildValidator(object instanceToValidate) {
-			return new ValidationContext(instanceToValidate, PropertyChain, Selector) {
+		public ValidationContext CloneForChildValidator(object instanceToValidate, bool preserveParentContext = false, IValidatorSelector selector = null) {
+			return new ValidationContext(instanceToValidate, PropertyChain, selector ?? Selector) {
+				Request = Request,
 				IsChildContext = true,
 				RootContextData = RootContextData,
-                Request = Request
-            };
+				_parentContext = preserveParentContext ? this : null
+			};
 		}
 
 		/// <summary>
 		/// Creates a new validation context for use with a child collection validator
 		/// </summary>
 		/// <param name="instanceToValidate"></param>
+		/// <param name="preserveParentContext"></param>
 		/// <returns></returns>
-		public ValidationContext CloneForChildCollectionValidator(object instanceToValidate) {
+		public ValidationContext CloneForChildCollectionValidator(object instanceToValidate, bool preserveParentContext = false) {
 			return new ValidationContext(instanceToValidate, null, Selector) {
+				Request = Request,
 				IsChildContext = true,
 				IsChildCollectionContext = true,
-			    RootContextData = RootContextData,
-			    Request = Request
+				RootContextData = RootContextData,
+				_parentContext = preserveParentContext ? this : null
+			};
+		}
+
+		/// <summary>
+		/// Converts a non-generic ValidationContext to a generic version.
+		/// No type check is performed.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <returns></returns>
+		internal ValidationContext<T> ToGeneric<T>() {
+			return new ValidationContext<T>((T)InstanceToValidate, PropertyChain, Selector) {
+				Request = Request,
+				IsChildContext = IsChildContext,
+				RootContextData = RootContextData,
+				_parentContext = _parentContext
 			};
 		}
 

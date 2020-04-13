@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using ServiceStack.Host.Handlers;
 using ServiceStack.IO;
 using ServiceStack.Api.OpenApi.Specification;
+using ServiceStack.Auth;
 
 namespace ServiceStack.Api.OpenApi
 {
@@ -43,6 +45,40 @@ namespace ServiceStack.Api.OpenApi
 
         public bool DisableSwaggerUI { get; set; }
 
+        public Dictionary<string, OpenApiSecuritySchema> SecurityDefinitions { get; set; }
+
+        public Dictionary<string, List<string>> OperationSecurity { get; set; }
+
+        public bool UseBearerSecurity
+        {
+            set
+            {
+                SecurityDefinitions = new Dictionary<string, OpenApiSecuritySchema> {
+                    { "Bearer", new OpenApiSecuritySchema {
+                        Type = "apiKey",
+                        Name = "Authorization",
+                        In = "header",
+                    } }
+                };
+                OperationSecurity = new Dictionary<string, List<string>> {
+                    { "Bearer", new List<string>() }
+                };
+            }
+        }
+
+        public bool UseBasicSecurity
+        {
+            set
+            {
+                SecurityDefinitions = new Dictionary<string, OpenApiSecuritySchema> {
+                    { "basic", new OpenApiSecuritySchema { Type = "basic" } }
+                };
+                OperationSecurity = new Dictionary<string, List<string>> {
+                    { "basic", new List<string>() }
+                };
+            }
+        }
+
         public OpenApiFeature()
         {
             Tags = new List<OpenApiTag>();
@@ -50,7 +86,7 @@ namespace ServiceStack.Api.OpenApi
             InlineSchemaTypesInNamespaces = new List<string>();
         }
 
-        public void Configure(IAppHost appHost)
+        public void BeforePluginsLoaded(IAppHost appHost)
         {
             appHost.Config.EmbeddedResourceSources.Add(typeof(OpenApiFeature).Assembly);
         }
@@ -59,6 +95,16 @@ namespace ServiceStack.Api.OpenApi
         {
             if (ResourceFilterPattern != null)
                 OpenApiService.resourceFilterRegex = new Regex(ResourceFilterPattern, RegexOptions.Compiled);
+
+            if (SecurityDefinitions == null && OperationSecurity == null)
+            {
+                var useBasicAuth = appHost.GetPlugin<AuthFeature>()?.AuthProviders
+                   ?.Any(x => x.Provider == AuthenticateService.BasicProvider) == true;
+                if (!useBasicAuth)
+                    UseBearerSecurity = true;
+                else
+                    UseBasicSecurity = true;
+            }
 
             OpenApiService.UseCamelCaseSchemaPropertyNames = UseCamelCaseSchemaPropertyNames;
             OpenApiService.UseLowercaseUnderscoreSchemaPropertyNames = UseLowercaseUnderscoreSchemaPropertyNames;
@@ -69,6 +115,8 @@ namespace ServiceStack.Api.OpenApi
             OpenApiService.SchemaPropertyFilter = SchemaPropertyFilter;
             OpenApiService.AnyRouteVerbs = AnyRouteVerbs.ToArray();
             OpenApiService.InlineSchemaTypesInNamespaces = InlineSchemaTypesInNamespaces.ToArray();
+            OpenApiService.SecurityDefinitions = SecurityDefinitions;
+            OpenApiService.OperationSecurity = OperationSecurity;
 
             appHost.RegisterService(typeof(OpenApiService), "/openapi");
 
@@ -83,12 +131,14 @@ namespace ServiceStack.Api.OpenApi
                 {
                     IVirtualFile indexFile;
                     IVirtualFile patchFile = null;
+                    IVirtualFile patchPreLoadFile = null;
                     switch (pathInfo)
                     {
                         case "/swagger-ui/":
                         case "/swagger-ui/default.html":
                             indexFile = appHost.VirtualFileSources.GetFile("/swagger-ui/index.html");
                             patchFile = appHost.VirtualFileSources.GetFile("/swagger-ui/patch.js");
+                            patchPreLoadFile = appHost.VirtualFileSources.GetFile("/swagger-ui/patch-preload.js");
                             break;
                         default:
                             indexFile = null;
@@ -98,10 +148,11 @@ namespace ServiceStack.Api.OpenApi
                     {
                         var html = indexFile.ReadAllText();
                         var injectJs = patchFile?.ReadAllText();
+                        var injectPreloadJs = patchPreLoadFile?.ReadAllText();
 
                         return new CustomResponseHandler((req, res) =>
                         {
-                            res.ContentType = MimeTypes.Html;
+                            res.ContentType = MimeTypes.HtmlUtf8; //use alt HTML ContentType so it's not overridden when Feature.Html is removed
                             var resourcesUrl = req.ResolveAbsoluteUrl("~/openapi");
                             html = html.Replace("http://petstore.swagger.io/v2/swagger.json", resourcesUrl)
                                 .Replace("ApiDocs", HostContext.ServiceName)
@@ -110,6 +161,11 @@ namespace ServiceStack.Api.OpenApi
 
                             if (LogoUrl != null)
                                 html = html.Replace("images/logo_small.png", LogoUrl);
+
+                            if (injectPreloadJs != null)
+                            {
+                                html = html.Replace("window.swaggerUi.load();", injectPreloadJs + "\n\n      window.swaggerUi.load();");
+                            }
 
                             if (injectJs != null)
                             {

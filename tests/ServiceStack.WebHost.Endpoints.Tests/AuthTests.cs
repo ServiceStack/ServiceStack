@@ -325,7 +325,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Plugins.Add(new AuthFeature(() => new CustomUserSession(),
                 GetAuthProviders(), "~/" + AuthTests.LoginUrl)
             {
-                RegisterPlugins = { new WebSudoFeature() }
+                AllowGetAuthenticateRequests = req => true,
+                RegisterPlugins = { new WebSudoFeature() },
             });
 
             container.Register(new MemoryCacheClient());
@@ -660,7 +661,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public async Task Does_work_with_CredentailsAuth_Async()
+        public async Task Does_work_with_CredentialsAuth_Async()
         {
             var client = GetClient();
 
@@ -966,15 +967,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             try
             {
                 client.Send<SecureResponse>(request);
-            } catch (WebServiceException ex)
-            {
+            } 
 #if NETCORE
+            catch (WebServiceException ex)
+            {
                 //AllowAutoRedirect=false is not implemented in .NET Core and throws NotFound exception
                 if (ex.StatusCode == (int)HttpStatusCode.Found)
                     return;
-#endif
                 throw;
-            } 
+            }
+#else
+            catch (WebServiceException) {}
+#endif
 
             var locationUri = new Uri(lastResponseLocationHeader);
             var loginPath = "/".CombineWith(VirtualDirectory).CombineWith(LoginUrl);
@@ -996,19 +1000,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             try
             {
                 client.Send<SecureResponse>(request);
-            } catch (WebServiceException ex)
-            {
+            }
 #if NETCORE
+            catch (WebServiceException ex)
+            {
                 //AllowAutoRedirect=false is not implemented in .NET Core and throws NotFound exception
                 if (ex.StatusCode == (int)HttpStatusCode.Found)
                     return;
-#endif
-                throw;
             }
+#else
+            catch (WebServiceException) {}
+#endif
 
             var locationUri = new Uri(lastResponseLocationHeader);
             var queryString = HttpUtility.ParseQueryString(locationUri.Query);
-            var redirectQueryString = queryString["redirect"];
+            var redirectQueryString = queryString[Keywords.Redirect];
             var redirectUri = new Uri(redirectQueryString);
 
             // Should contain the url attempted to access before the redirect to the login page.
@@ -1037,19 +1043,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             try
             {
                 client.Get(request);
-            } catch (WebServiceException ex)
-            {
+            }
 #if NETCORE
+            catch (WebServiceException ex)
+            {
                 //AllowAutoRedirect=false is not implemented in .NET Core and throws NotFound exception
                 if (ex.StatusCode == (int)HttpStatusCode.Found)
                     return;
-#endif
-                throw;
             }
+#else
+            catch (WebServiceException) {}
+#endif
 
             var locationUri = new Uri(lastResponseLocationHeader);
             var locationUriQueryString = HttpUtility.ParseQueryString(locationUri.Query);
-            var redirectQueryItem = locationUriQueryString["redirect"];
+            var redirectQueryItem = locationUriQueryString[Keywords.Redirect];
             var redirectUri = new Uri(redirectQueryItem);
 
             // Should contain the url attempted to access before the redirect to the login page,
@@ -1079,15 +1087,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     Password = PasswordForSessionRedirect,
                     RememberMe = true,
                 });
-            } catch (WebServiceException ex)
-            {
-#if NETCORE
-                //AllowAutoRedirect=false is not implemented in .NET Core and throws NotFound exception
-                if (ex.StatusCode == (int)HttpStatusCode.Redirect)
-                    return;
-#endif
-                throw;
             }
+#if NETCORE
+            catch (WebServiceException ex)
+            {
+                //AllowAutoRedirect=false is not implemented in .NET Core and throws NotFound exception
+                if (ex.StatusCode == (int)HttpStatusCode.Found)
+                    return;
+            }
+#else
+            catch (WebServiceException) {}
+#endif
 
             Assert.That(lastResponseLocationHeader, Is.EqualTo(SessionRedirectUrl));
         }

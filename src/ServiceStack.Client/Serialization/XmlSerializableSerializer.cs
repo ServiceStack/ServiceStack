@@ -35,5 +35,14 @@ namespace ServiceStack.Serialization
                 throw new SerializationException($"Error serializing object of type {from.GetType().FullName}", ex);
             }
         }
+        
+        public void SerializeToStream(object obj, Stream stream)
+        {
+            using (var xw = XmlWriter.Create(stream, XmlWriterSettings))
+            {
+                var ser = new XmlSerializerWrapper(obj.GetType());
+                ser.WriteObject(xw, obj);
+            }
+        }
     }
 }

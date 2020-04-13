@@ -79,9 +79,21 @@ namespace ServiceStack.NativeTypes.VbNet
             "Mod",
         };
 
+        public static TypeFilterDelegate TypeFilter { get; set; }
+
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
         public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types;
+        
+        /// <summary>
+        /// Add Code to top of generated code
+        /// </summary>
+        public static AddCodeDelegate InsertCodeFilter { get; set; }
+
+        /// <summary>
+        /// Add Code to bottom of generated code
+        /// </summary>
+        public static AddCodeDelegate AddCodeFilter { get; set; }
 
         public string GetCode(MetadataTypes metadata, IRequest request)
         {
@@ -109,7 +121,7 @@ namespace ServiceStack.NativeTypes.VbNet
             var sb = new StringBuilderWrapper(sbInner);
             sb.AppendLine("' Options:");
             sb.AppendLine("'Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
-            sb.AppendLine("'Version: {0}".Fmt(Env.ServiceStackVersion));
+            sb.AppendLine("'Version: {0}".Fmt(Env.VersionString));
             sb.AppendLine("'Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("''")));
             sb.AppendLine("'BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine("'");
@@ -176,6 +188,10 @@ namespace ServiceStack.NativeTypes.VbNet
 
             orderedTypes = FilterTypes(orderedTypes);
 
+            var insertCode = InsertCodeFilter?.Invoke(orderedTypes, Config);
+            if (insertCode != null)
+                sb.AppendLine(insertCode);
+
             foreach (var type in orderedTypes)
             {
                 var fullTypeName = type.GetFullName();
@@ -236,6 +252,10 @@ namespace ServiceStack.NativeTypes.VbNet
             if (lastNS != null)
                 sb.AppendLine("End Namespace");
 
+            var addCode = AddCodeFilter?.Invoke(allTypes, Config);
+            if (addCode != null)
+                sb.AppendLine(addCode);
+            
             sb = sb.UnIndent();
             sb.AppendLine("End Namespace");
 
@@ -291,9 +311,24 @@ namespace ServiceStack.NativeTypes.VbNet
                         if (KeyWords.Contains(name))
                             name = $"[{name}]";
                         
-                        sb.AppendLine(value == null
-                            ? name
-                            : $"{name} = {value}");
+                        if (type.EnumMemberValues != null && type.EnumMemberValues[i] != name)
+                        {
+                            AppendAttributes(sb, new List<MetadataAttribute> {
+                                new MetadataAttribute {
+                                    Name = "EnumMember",
+                                    Args = new List<MetadataPropertyType> {
+                                        new MetadataPropertyType {
+                                            Name = "Value",
+                                            Value = type.EnumMemberValues[i],
+                                            Type = "String",
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                        sb.AppendLine(value == null 
+                            ? $"{name},"
+                            : $"{name} = {value},");
                     }
                 }
 
@@ -519,6 +554,10 @@ namespace ServiceStack.NativeTypes.VbNet
 
         public string Type(string type, string[] genericArgs, bool includeNested = false)
         {
+            var useType = TypeFilter?.Invoke(type, genericArgs);
+            if (useType != null)
+                return useType;
+
             if (genericArgs != null)
             {
                 if (type == "Nullable`1")

@@ -10,7 +10,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
     {
         private const string ListeningOn = Config.ServiceStackBaseUri;
 
-        protected abstract IRestClientAsync CreateServiceClient();
+        protected abstract IHttpRestClientAsync CreateServiceClient();
 
         [Test]
         public async Task Can_call_GetAsync_on_GetFactorial_using_RestClientAsync()
@@ -104,7 +104,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         [TestFixture]
         public class JsonAsyncRestServiceClientTests : AsyncRestClientTests
         {
-            protected override IRestClientAsync CreateServiceClient()
+            protected override IHttpRestClientAsync CreateServiceClient()
             {
                 return new JsonServiceClient(ListeningOn);
             }
@@ -113,7 +113,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         [TestFixture]
         public class JsvAsyncRestServiceClientTests : AsyncRestClientTests
         {
-            protected override IRestClientAsync CreateServiceClient()
+            protected override IHttpRestClientAsync CreateServiceClient()
             {
                 return new JsvServiceClient(ListeningOn);
             }
@@ -122,7 +122,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         [TestFixture]
         public class XmlAsyncRestServiceClientTests : AsyncRestClientTests
         {
-            protected override IRestClientAsync CreateServiceClient()
+            protected override IHttpRestClientAsync CreateServiceClient()
             {
                 return new XmlServiceClient(ListeningOn);
             }

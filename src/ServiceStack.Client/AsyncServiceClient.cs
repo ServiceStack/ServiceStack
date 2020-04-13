@@ -47,6 +47,8 @@ namespace ServiceStack
         public string RefreshToken { get; set; }
 
         public string RefreshTokenUri { get; set; }
+        
+        public bool UseTokenCookie { get; set; }
 
         public static int BufferSize = 8192;
 
@@ -121,6 +123,8 @@ namespace ServiceStack
 
         public bool ShareCookiesWithBrowser { get; set; }
 
+        public IWebProxy Proxy { get; set; }
+
         public int Version { get; set; }
 
         public string SessionId { get; set; }
@@ -160,6 +164,7 @@ namespace ServiceStack
             }
 
             var webReq = this.CreateHttpWebRequest(requestUri);
+            if (webReq != null && Proxy != null) webReq.Proxy = Proxy;
 
             var timedOut = false;
             ITimer timer = null;
@@ -333,15 +338,20 @@ namespace ServiceStack
                     {
                         if (RefreshToken != null)
                         {
-                            var refreshRequest = new GetAccessToken {RefreshToken = RefreshToken};
-                            var uri = this.RefreshTokenUri ??
-                                      this.BaseUri.CombineWith(refreshRequest.ToPostUrl());
+                            var refreshRequest = new GetAccessToken {
+                                RefreshToken = RefreshToken,
+                                UseTokenCookie = UseTokenCookie,
+                            };                        
+                            var uri = this.RefreshTokenUri ?? this.BaseUri.CombineWith(refreshRequest.ToPostUrl());
 
                             GetAccessTokenResponse tokenResponse;
                             try
                             {
-                                tokenResponse = uri.PostJsonToUrl(refreshRequest)
-                                    .FromJson<GetAccessTokenResponse>();
+                                tokenResponse = uri.PostJsonToUrl(refreshRequest, requestFilter: req => {
+                                    if (UseTokenCookie) {
+                                        req.CookieContainer = CookieContainer;
+                                    }
+                                }).FromJson<GetAccessTokenResponse>();
                             }
                             catch (WebException refreshEx)
                             {
@@ -356,18 +366,30 @@ namespace ServiceStack
                             }
 
                             var accessToken = tokenResponse?.AccessToken;
-                            if (string.IsNullOrEmpty(accessToken))
-                                throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
-
                             var refreshClient = webReq = (HttpWebRequest) WebRequest.Create(requestUri);
-                            if (this.CookieContainer.GetTokenCookie(BaseUri) != null)
+                            var tokenCookie = this.CookieContainer.GetTokenCookie(BaseUri);
+
+                            if (UseTokenCookie)
                             {
-                                this.CookieContainer.SetTokenCookie(accessToken, BaseUri);
-                                refreshClient.CookieContainer.SetTokenCookie(BaseUri, accessToken);
+                                if (tokenCookie == null)
+                                    throw new RefreshTokenException("Could not retrieve new AccessToken Cooke from: " + uri);
+                            
+                                refreshClient.CookieContainer.SetTokenCookie(BaseUri, tokenCookie);
                             }
                             else
                             {
-                                refreshClient.AddBearerToken(this.BearerToken = accessToken);
+                                if (string.IsNullOrEmpty(accessToken))
+                                    throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
+
+                                if (tokenCookie != null)
+                                {
+                                    this.CookieContainer.SetTokenCookie(accessToken, BaseUri);
+                                    refreshClient.CookieContainer.SetTokenCookie(BaseUri, accessToken);
+                                }
+                                else
+                                {
+                                    refreshClient.AddBearerToken(this.BearerToken = accessToken);
+                                }
                             }
 
                             return await SendWebRequestAsync<T>(httpMethod, absoluteUrl, request, token, recall: true).ConfigureAwait(false);

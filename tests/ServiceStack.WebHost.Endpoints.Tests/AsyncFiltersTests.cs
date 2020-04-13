@@ -395,12 +395,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var status = ex.ResponseStatus;
 
                 Assert.That(status.ErrorCode, Is.EqualTo("NotEmpty"));
-                Assert.That(status.Message, Is.EqualTo("'Name' should not be empty."));
+                Assert.That(status.Message, Is.EqualTo("'Name' must not be empty."));
 
                 Assert.That(status.Errors.Count, Is.EqualTo(2));
                 Assert.That(status.Errors[0].ErrorCode, Is.EqualTo("NotEmpty"));
                 Assert.That(status.Errors[0].FieldName, Is.EqualTo("Name"));
-                Assert.That(status.Errors[0].Message, Is.EqualTo("'Name' should not be empty."));
+                Assert.That(status.Errors[0].Message, Is.EqualTo("'Name' must not be empty."));
 
                 Assert.That(status.Errors[1].ErrorCode, Is.EqualTo("GreaterThan"));
                 Assert.That(status.Errors[1].FieldName, Is.EqualTo("Age"));

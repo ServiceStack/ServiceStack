@@ -1,4 +1,4 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
-//applies to entire .dll
-//[assembly: CLSCompliant(true)]
+[assembly: CLSCompliant(true)]

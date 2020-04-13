@@ -21,7 +21,7 @@ namespace ServiceStack
             return new HashSet<string>();
         }
 
-        public virtual void InitHostConifg(HostConfig config) {}
+        public virtual void InitHostConfig(HostConfig config) {}
 
         public virtual string GetNullableAppSetting(string key)
         {

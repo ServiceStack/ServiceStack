@@ -1,4 +1,4 @@
-﻿#if !NETSTANDARD2_0
+﻿#if !NETSTANDARD
 
 using System.Web;
 using System.Web.Routing;

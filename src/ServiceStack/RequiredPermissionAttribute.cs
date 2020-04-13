@@ -50,7 +50,7 @@ namespace ServiceStack
                     return;
             }
 
-            if (DoHtmlRedirectIfConfigured(req, res))
+            if (DoHtmlRedirectAccessDeniedIfConfigured(req, res))
                 return;
 
             res.StatusCode = (int)HttpStatusCode.Forbidden;

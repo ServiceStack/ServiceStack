@@ -33,7 +33,7 @@ namespace ServiceStack
         public string Description { get; set; }
 
         /// <summary>
-        /// If set to true, the response is default for all non-explicity defined status codes 
+        /// If set to true, the response is default for all non-explicitly defined status codes 
         /// </summary>
         public bool IsDefaultResponse { get; set; }
 

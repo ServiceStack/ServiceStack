@@ -18,26 +18,23 @@
 
 namespace ServiceStack.FluentValidation.Validators {
 	using System;
-	using System.Linq.Expressions;
 	using System.Reflection;
-	using Attributes;
 	using Internal;
 	using Resources;
-	using Results;
 
 	/// <summary>
 	/// Base class for all comparison validators
 	/// </summary>
 	public abstract class AbstractComparisonValidator : PropertyValidator, IComparisonValidator {
 
-		readonly Func<object, object> valueToCompareFunc;
+		readonly Func<object, object> _valueToCompareFunc;
 
 		/// <summary>
 		/// </summary>
 		/// <param name="value"></param>
 		/// <param name="errorSource"></param>
 		protected AbstractComparisonValidator(IComparable value, IStringSource errorSource) : base(errorSource) {
-			value.Guard("value must not be null.");
+			value.Guard("value must not be null.", nameof(value));
 			ValueToCompare = value;
 		}
 
@@ -47,7 +44,7 @@ namespace ServiceStack.FluentValidation.Validators {
 		/// <param name="member"></param>
 		/// <param name="errorSource"></param>
 		protected AbstractComparisonValidator(Func<object, object> valueToCompareFunc, MemberInfo member, IStringSource errorSource) : base(errorSource) { 
-			this.valueToCompareFunc = valueToCompareFunc;
+			this._valueToCompareFunc = valueToCompareFunc;
 			this.MemberToCompare = member;
 		}
 
@@ -67,15 +64,16 @@ namespace ServiceStack.FluentValidation.Validators {
 
 			if (!IsValid((IComparable)context.PropertyValue, value)) {
 				context.MessageFormatter.AppendArgument("ComparisonValue", value);
+				context.MessageFormatter.AppendArgument("ComparisonProperty", MemberToCompare == null ? "" : MemberToCompare.Name);
 				return false;
 			}
 
 			return true;
 		}
 
-		private IComparable GetComparisonValue(PropertyValidatorContext context) {
-			if(valueToCompareFunc != null) {
-				return (IComparable)valueToCompareFunc(context.Instance);
+		public IComparable GetComparisonValue(PropertyValidatorContext context) {
+			if(_valueToCompareFunc != null) {
+				return (IComparable)_valueToCompareFunc(context.Instance);
 			}
 
 			return (IComparable)ValueToCompare;

@@ -16,7 +16,7 @@ namespace ServiceStack.Server.Tests.Caching
             var cache = new OrmLiteCacheClient
             {
                 DbFactory = new OrmLiteConnectionFactory(
-                    Config.SqlServerBuildDb, SqlServerDialect.Provider)
+                    Config.SqlServerConnString, SqlServerDialect.Provider)
             };
 
             using (var db = cache.DbFactory.Open())
@@ -96,7 +96,7 @@ namespace ServiceStack.Server.Tests.Caching
             var cache = new OrmLiteCacheClient<SqlServer2014MemoryOptimizedCacheEntry>
             {
                 DbFactory = new OrmLiteConnectionFactory(
-                    Config.SqlServerBuildDb, SqlServer2014Dialect.Provider)
+                    Config.SqlServerConnString, SqlServer2014Dialect.Provider)
             };
 
             using (var db = cache.DbFactory.Open())
@@ -132,7 +132,7 @@ namespace ServiceStack.Server.Tests.Caching
             var cache = new OrmLiteCacheClient<SqlServer2016MemoryOptimizedCacheEntry>
             {
                 DbFactory = new OrmLiteConnectionFactory(
-                    Config.SqlServerBuildDb, SqlServer2016Dialect.Provider)
+                    Config.SqlServerConnString, SqlServer2016Dialect.Provider)
             };
 
             using (var db = cache.DbFactory.Open())

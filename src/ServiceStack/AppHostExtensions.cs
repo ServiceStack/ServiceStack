@@ -27,7 +27,7 @@ namespace ServiceStack
         public static void AddPluginsFromAssembly(this IAppHost appHost, params Assembly[] assembliesWithPlugins)
         {
             var ssHost = (ServiceStackHost)appHost;
-            foreach (Assembly assembly in assembliesWithPlugins)
+            foreach (var assembly in assembliesWithPlugins)
             {
                 var pluginTypes =
                     from t in assembly.GetExportedTypes()
@@ -54,6 +54,15 @@ namespace ServiceStack
         public static T GetPlugin<T>(this IAppHost appHost) where T : class, IPlugin
         {
             return appHost.Plugins.FirstOrDefault(x => x is T) as T;
+        }
+
+        public static T AssertPlugin<T>(this IAppHost appHost) where T : class, IPlugin
+        {
+            var plugin = appHost.Plugins.FirstOrDefault(x => x is T) as T;
+            if (plugin == null)
+                throw new NotSupportedException($"Required Plugin '{typeof(T).Name}' was not registered");
+
+            return plugin;
         }
 
         public static bool HasPlugin<T>(this IAppHost appHost) where T : class, IPlugin

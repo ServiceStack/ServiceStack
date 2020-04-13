@@ -1,11 +1,11 @@
-﻿#if !NETSTANDARD2_0
-using ServiceStack.FluentValidation.Internal;
-using ServiceStack.FluentValidation.Validators;
-
-namespace FluentValidation.Mvc {
+﻿#if !NETSTANDARD
+namespace ServiceStack.FluentValidation.Mvc {
 	using System.Collections.Generic;
 	using System.Reflection;
 	using System.Web.Mvc;
+	using Internal;
+	using Resources;
+	using Validators;
 
 	internal class EqualToFluentValidationPropertyValidator : FluentValidationPropertyValidator {
 		EqualValidator EqualValidator {
@@ -25,13 +25,28 @@ namespace FluentValidation.Mvc {
 				// If propertyToCompare is null then we're either comparing against a literal value, a field or a method call.
 				// We only care about property comparisons in this case.
 
-				var formatter = new MessageFormatter()
+				var comparisonDisplayName =
+					ValidatorOptions.DisplayNameResolver(Rule.TypeToValidate, propertyToCompare, null)
+					?? propertyToCompare.Name.SplitPascalCase();
+
+				var formatter = ValidatorOptions.MessageFormatterFactory()
 					.AppendPropertyName(Rule.GetDisplayName())
-					.AppendArgument("PropertyValue", propertyToCompare.Name);
+					.AppendArgument("ComparisonValue", comparisonDisplayName);
 
 
-				string message = formatter.BuildMessage(EqualValidator.ErrorMessageSource.GetString(Metadata));
+				string message;
+				try {
+					message = EqualValidator.Options.ErrorMessageSource.GetString(null);
+					
+				}
+				catch (FluentValidationMessageFormatException) {
+					// User provided a message that contains placeholders based on object properties. We can't use that here, so just fall back to the default. 
+					message = ValidatorOptions.LanguageManager.GetStringForValidator<EqualValidator>();
+				}
+				message = formatter.BuildMessage(message);
+#pragma warning disable 618
 				yield return new ModelClientValidationEqualToRule(message, CompareAttribute.FormatPropertyForClientValidation(propertyToCompare.Name)) ;
+#pragma warning restore 618
 			}
 		}
 	}

@@ -29,9 +29,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public decimal ScalePrecision { get; set; }
     }
 
-    public class TriggerValidatorsValidtor : AbstractValidator<TriggerValidators>
+    public class TriggerValidatorsValidator : AbstractValidator<TriggerValidators>
     {
-        public TriggerValidatorsValidtor()
+        public TriggerValidatorsValidator()
         {
             RuleFor(x => x.CreditCard).CreditCard();
             RuleFor(x => x.Email).EmailAddress();
@@ -81,7 +81,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Plugins.Add(new ValidationFeature());
 
-                container.RegisterValidator(typeof(TriggerValidatorsValidtor));
+                container.RegisterValidator(typeof(TriggerValidatorsValidator));
                 container.RegisterValidator(typeof(ValidatorIssuesValidator));
             }
         }
@@ -99,7 +99,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         protected virtual JsonServiceClient GetClient() => new JsonServiceClient(Config.ListeningOn);
 
         [Test]
-        public void Triggering_all_validtors_returns_right_ErrorCode()
+        public void Triggering_all_validators_returns_right_ErrorCode()
         {
             var client = GetClient();
             var request = new TriggerValidators

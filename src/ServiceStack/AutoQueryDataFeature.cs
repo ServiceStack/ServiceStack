@@ -12,6 +12,7 @@ using System.Threading;
 using Funq;
 using ServiceStack.Caching;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Extensions;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Reflection;
 using ServiceStack.Web;
@@ -83,6 +84,7 @@ namespace ServiceStack
         public bool EnableAutoQueryViewer { get; set; }
         public bool OrderByPrimaryKeyOnPagedQuery { get; set; }
         public Type AutoQueryServiceBaseType { get; set; }
+        public QueryDataFilterDelegate GlobalQueryFilter { get; set; }
         public Dictionary<Type, QueryDataFilterDelegate> QueryFilters { get; set; }
         public List<Action<QueryDataFilterContext>> ResponseFilters { get; set; }
         public Action<TypeBuilder, MethodBuilder, Type> GenerateServiceFilter { get; set; }
@@ -221,6 +223,7 @@ namespace ServiceStack
                     IncludeTotal = IncludeTotal,
                     EnableUntypedQueries = EnableUntypedQueries,
                     OrderByPrimaryKeyOnLimitQuery = OrderByPrimaryKeyOnPagedQuery,
+                    GlobalQueryFilter = GlobalQueryFilter,
                     QueryFilters = QueryFilters,
                     ResponseFilters = ResponseFilters,
                     StartsWithConventions = StartsWithConventions,
@@ -245,19 +248,19 @@ namespace ServiceStack
         {
             var scannedTypes = LoadFromAssemblies.SelectMany(x => x.GetTypes());
 
-            var misingRequestTypes = scannedTypes
+            var missingRequestTypes = scannedTypes
                 .Where(x => x.HasInterface(typeof(IQueryData)))
                 .Where(x => !appHost.Metadata.OperationsMap.ContainsKey(x))
                 .ToList();
 
-            if (misingRequestTypes.Count == 0)
+            if (missingRequestTypes.Count == 0)
                 return;
 
-            var serviceType = GenerateMissingServices(misingRequestTypes);
+            var serviceType = GenerateMissingServices(missingRequestTypes);
             appHost.RegisterService(serviceType);
         }
 
-        Type GenerateMissingServices(IEnumerable<Type> misingRequestTypes)
+        Type GenerateMissingServices(IEnumerable<Type> missingRequestTypes)
         {
             var assemblyName = new AssemblyName { Name = "tmpAssembly" };
             var typeBuilder =
@@ -267,7 +270,7 @@ namespace ServiceStack
                     TypeAttributes.Public | TypeAttributes.Class,
                     AutoQueryServiceBaseType);
 
-            foreach (var requestType in misingRequestTypes)
+            foreach (var requestType in missingRequestTypes)
             {
                 var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryData<,>));
                 var hasExplicitInto = genericDef != null;
@@ -674,6 +677,7 @@ namespace ServiceStack
         public Dictionary<string, QueryDataField> EndsWithConventions { get; set; }
 
         public virtual IQueryDataSource Db { get; set; }
+        public QueryDataFilterDelegate GlobalQueryFilter { get; set; }
         public Dictionary<Type, QueryDataFilterDelegate> QueryFilters { get; set; }
         public List<Action<QueryDataFilterContext>> ResponseFilters { get; set; }
 
@@ -724,6 +728,8 @@ namespace ServiceStack
 
         public DataQuery<From> Filter<From>(IDataQuery q, IQueryData dto, IRequest req)
         {
+            GlobalQueryFilter?.Invoke(q, dto, req);
+
             if (QueryFilters == null)
                 return (DataQuery<From>)q;
 
@@ -743,6 +749,8 @@ namespace ServiceStack
 
         public IDataQuery Filter(IDataQuery q, IQueryData dto, IRequest req)
         {
+            GlobalQueryFilter?.Invoke(q, dto, req);
+
             if (QueryFilters == null)
                 return q;
 
@@ -1408,11 +1416,10 @@ namespace ServiceStack
 
             if (match == null)
             {
-                string alias;
-                if (aliases.TryGetValue(name, out alias))
+                if (aliases.TryGetValue(name, out var alias))
                     match = GetQueryMatch(q, alias, options);
 
-                if (match == null && JsConfig.EmitLowercaseUnderscoreNames && name.Contains("_"))
+                if (match == null && JsConfig.TextCase == TextCase.SnakeCase && name.Contains("_"))
                     match = GetQueryMatch(q, name.Replace("_", ""), options);
             }
 
@@ -1491,8 +1498,7 @@ namespace ServiceStack
 
             if (attr.Condition != null)
             {
-                QueryCondition queryCondition;
-                if (!feature.ConditionsAliases.TryGetValue(attr.Condition, out queryCondition))
+                if (!feature.ConditionsAliases.TryGetValue(attr.Condition, out var queryCondition))
                     throw new NotSupportedException($"No Condition registered with name '{attr.Condition}' on [QueryDataField({attr.Field ?? pi.Name})]");
 
                 to.QueryCondition = queryCondition;
@@ -1511,12 +1517,12 @@ namespace ServiceStack
             return autoQuery.CreateQuery(model, request.GetRequestParams(), request, db);
         }
 
-        public static IQueryDataSource<T> MemorySource<T>(this QueryDataContext ctx, IEnumerable<T> soruce)
+        public static IQueryDataSource<T> MemorySource<T>(this QueryDataContext ctx, IEnumerable<T> source)
         {
-            return new MemoryDataSource<T>(ctx, soruce);
+            return new MemoryDataSource<T>(ctx, source);
         }
 
-        public static IQueryDataSource<T> MemorySource<T>(this QueryDataContext ctx, Func<IEnumerable<T>> soruceFn, ICacheClient cache, TimeSpan? expiresIn = null, string cacheKey = null)
+        public static IQueryDataSource<T> MemorySource<T>(this QueryDataContext ctx, Func<IEnumerable<T>> sourceFn, ICacheClient cache, TimeSpan? expiresIn = null, string cacheKey = null)
         {
             if (cacheKey == null)
                 cacheKey = "aqd:" + typeof(T).Name;
@@ -1525,7 +1531,7 @@ namespace ServiceStack
             if (cachedResults != null)
                 return new MemoryDataSource<T>(ctx, cachedResults);
 
-            var results = soruceFn();
+            var results = sourceFn();
             var source = new MemoryDataSource<T>(ctx, results);
             return source.CacheMemorySource(cache, cacheKey, expiresIn);
         }

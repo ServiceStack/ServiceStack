@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using System.Web.UI;
 using ServiceStack.Host;
-using ServiceStack.Templates;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -120,7 +120,7 @@ namespace ServiceStack.Metadata
             return icons;
         }
 
-        public void Render(Stream output)
+        public Task RenderAsync(Stream output)
         {
             var operationsPart = new TableTemplate
             {
@@ -193,8 +193,8 @@ namespace ServiceStack.Metadata
                         : "";
             }
 
-            var renderedTemplate = HtmlTemplates.Format(
-                HtmlTemplates.GetIndexOperationsTemplate(),
+            var renderedTemplate = Templates.HtmlTemplates.Format(
+                Templates.HtmlTemplates.GetIndexOperationsTemplate(),
                 this.Title,
                 this.XsdServiceTypesIndex,
                 operationsPart,
@@ -205,7 +205,7 @@ namespace ServiceStack.Metadata
                 Env.VersionString,
                 startupErrors);
 
-            output.Write(renderedTemplate);
+            return output.WriteAsync(renderedTemplate);
         }
 
         public Dictionary<string, string> ToAbsoluteUrls(Dictionary<string, string> linksMap)

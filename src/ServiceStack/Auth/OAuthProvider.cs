@@ -1,5 +1,8 @@
+using System;
 using System.Linq;
+using System.Net;
 using ServiceStack.Configuration;
+using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
@@ -28,6 +31,9 @@ namespace ServiceStack.Auth
             this.AccessTokenUrl = appSettings.Get($"oauth.{oAuthProvider}.AccessTokenUrl", authRealm + "oauth/access_token");
             this.SaveExtendedUserInfo = appSettings.Get($"oauth.{oAuthProvider}.SaveExtendedUserInfo", true);
 
+            this.UserProfileUrl = appSettings.GetNullableString($"oauth.{oAuthProvider}.UserProfileUrl");
+            this.VerifyTokenUrl = appSettings.GetNullableString($"oauth.{oAuthProvider}.VerifyTokenUrl");
+
             this.OAuthUtils = new OAuthAuthorizer(this);
             this.AuthHttpGateway = new AuthHttpGateway();
         }
@@ -39,6 +45,10 @@ namespace ServiceStack.Auth
         public string RequestTokenUrl { get; set; }
         public string AuthorizeUrl { get; set; }
         public string AccessTokenUrl { get; set; }
+
+        public string UserProfileUrl { get; set; }
+        public string VerifyTokenUrl { get; set; }
+
         public OAuthAuthorizer OAuthUtils { get; set; }
 
 
@@ -50,6 +60,15 @@ namespace ServiceStack.Auth
             }
 
             return session != null && session.IsAuthenticated && !string.IsNullOrEmpty(tokens?.AccessTokenSecret);
+        }
+        
+        protected virtual void AssertValidState()
+        {
+            if (string.IsNullOrEmpty(ConsumerKey))
+                throw new Exception($"oauth.{Provider}.ConsumerKey is required");
+
+            if (string.IsNullOrEmpty(ConsumerSecret))
+                throw new Exception($"oauth.{Provider}.ConsumerSecret is required");
         }
 
         /// <summary>
@@ -71,8 +90,21 @@ namespace ServiceStack.Auth
         /// <returns></returns>
         protected IAuthTokens Init(IServiceBase authService, ref IAuthSession session, Authenticate request)
         {
+            AssertValidState();
+
             if (this.CallbackUrl.IsNullOrEmpty())
                 this.CallbackUrl = authService.Request.AbsoluteUri;
+
+            if (HostContext.Config?.UseSameSiteCookies == true)
+            {
+                var state = authService.Request.QueryString[Keywords.State];
+                if (!string.IsNullOrEmpty(state))
+                {
+                    (authService.Request.Response as IHttpResponse)?.ClearCookies();
+                    authService.Request.CreateTemporarySessionId(state);
+                    session = authService.Request.GetSession(reload:true);
+                }
+            }
 
             session.ReferrerUrl = GetReferrerUrl(authService, session, request);
 

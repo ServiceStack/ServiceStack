@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Web.Mvc;
+using dtos;
 using ServiceStack;
 using ServiceStack.Mvc;
 
@@ -30,7 +31,7 @@ namespace CheckMvc.Controllers
             return new HomeViewModel
             {
                 Name = name,
-                Counter = Redis.IncrementValue("counter:" + name),
+                //Counter = Redis.IncrementValue("counter:" + name),
                 Json = new TestObj
                 {
                     Id = 1,
@@ -46,7 +47,29 @@ namespace CheckMvc.Controllers
 
         public ActionResult Contact()
         {
+            try
+            {
+                var request = new TestGateway {Name = "MVC"};
+                var gateway = HostContext.AppHost.GetServiceGateway(HostContext.GetCurrentRequest());
+                var response = gateway.Send(request);
+                //within above call the validator throws exception
+            }
+            catch (WebServiceException ex)
+            {
+                // no longer reaches here
+                if (ex.ResponseStatus.ErrorCode == "NotFound")
+                    return HttpNotFound();
+                throw;
+            }
+            
             return View(GetViewModel("Contact"));
+        }
+
+        public ActionResult Hello()
+        {
+            var uri = new GetExample().ToAbsoluteUri();
+            ViewBag.Message = uri;
+            return View();
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ServiceStack.FluentValidation.Results;
 using ServiceStack.Validation;
 
@@ -15,12 +16,24 @@ namespace ServiceStack
         /// <returns></returns>
         public static ValidationErrorResult ToErrorResult(this ValidationResult result)
         {
+            Dictionary<string, string> ToStringDictionary(ValidationFailure error)
+            {
+                try
+                {
+                    return error.FormattedMessagePlaceholderValues.ToStringDictionary();
+                }
+                catch (Exception e)
+                {
+                    return null;
+                }
+            }
+
             var validationResult = new ValidationErrorResult();
             foreach (var error in result.Errors)
             {
                 validationResult.Errors.Add(new ValidationErrorField(error.ErrorCode, error.PropertyName, error.ErrorMessage, error.AttemptedValue)
                 {
-                    Meta = error.CustomState as Dictionary<string, string> ?? error.FormattedMessagePlaceholderValues.ToStringDictionary()
+                    Meta = error.CustomState as Dictionary<string, string> ?? ToStringDictionary(error)
                 });
             }
 

@@ -1,0 +1,35 @@
+<h3>Register New User</h3>
+
+<form action="/register" method="post" class="col-lg-7">
+    <div class="form-group" data-validation-summary="displayName,email,password,confirmPassword"></div>
+
+    <div class="form-group">
+        <input class="form-control form-control-lg" name="displayName" type="text" placeholder="Display Name">
+    </div>
+    <div class="form-group">
+        <input class="form-control form-control-lg" name="email" type="text" placeholder="Email">
+    </div>
+    <div class="form-group">
+        <input class="form-control form-control-lg" name="password" type="password" placeholder="Password">
+    </div>
+    <div class="form-group">
+        <input class="form-control form-control-lg" name="confirmPassword" type="password" placeholder="Confirm Password">
+    </div>
+    <div class="form-group">
+        <input type="checkbox" id="autoLogin" name="autoLogin" value="true" checked>
+        <label for="autoLogin" class="form-check-label">Auto Login</label>
+    </div>
+    <div class="form-group">
+        <button class="btn btn-lg btn-primary" type="submit">Register</button>
+    </div>
+    <div class="form-group">
+        <b>Quick Populate:</b>
+        <div class="quicklist">
+            <span data-click="newUser:new@user.com">new@user.com</span>
+        </div>
+    </div>
+</form>
+
+{{#capture appendTo scripts}}
+<script src="register.js"></script>
+{{/capture}}

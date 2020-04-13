@@ -42,9 +42,18 @@ namespace ServiceStack.Auth
         public CredentialsAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name) { }
 
+        public IUserAuthRepository GetUserAuthRepository(IRequest request)
+        {
+            var authRepo = (IUserAuthRepository)HostContext.AppHost.GetAuthRepository(request);
+            if (authRepo == null)
+                throw new Exception(ErrorMessages.AuthRepositoryNotExists);
+
+            return authRepo;
+        }
+        
         public virtual bool TryAuthenticate(IServiceBase authService, string userName, string password)
         {
-            var authRepo = (IUserAuthRepository)HostContext.AppHost.GetAuthRepository(authService.Request);
+            var authRepo = GetUserAuthRepository(authService.Request);
             using (authRepo as IDisposable)
             {
                 var session = authService.GetSession();
@@ -53,7 +62,7 @@ namespace ServiceStack.Auth
                     if (IsAccountLocked(authRepo, userAuth))
                         throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(authService.Request));
 
-                    PopulateSession(authRepo, userAuth, session);
+                    session.PopulateSession(userAuth, authRepo);
 
                     return true;
                 }
@@ -135,7 +144,7 @@ namespace ServiceStack.Auth
         protected virtual object AuthenticatePrivateRequest(
             IServiceBase authService, IAuthSession session, string userName, string password, string referrerUrl)
         {
-            var authRepo = (IUserAuthRepository)HostContext.AppHost.GetAuthRepository(authService.Request);
+            var authRepo = GetUserAuthRepository(authService.Request);
             using (authRepo as IDisposable)
             {
                 var userAuth = authRepo.GetUserAuthByUserName(userName);
@@ -145,7 +154,7 @@ namespace ServiceStack.Auth
                 if (IsAccountLocked(authRepo, userAuth))
                     throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(authService.Request));
 
-                PopulateSession(authRepo, userAuth, session);
+                session.PopulateSession(userAuth, authRepo);
 
                 session.IsAuthenticated = true;
 
@@ -177,7 +186,18 @@ namespace ServiceStack.Auth
                 LoadUserAuthFilter?.Invoke(userSession, tokens, authInfo);
             }
 
-            var authRepo = HostContext.AppHost.GetAuthRepository(authService.Request);
+            if (session is IAuthSessionExtended authSession)
+            {
+                var failed = authSession.Validate(authService, session, tokens, authInfo)
+                    ?? AuthEvents.Validate(authService, session, tokens, authInfo);
+                if (failed != null)
+                {
+                    authService.RemoveSession();
+                    return failed;
+                }
+            }
+
+            var authRepo = GetAuthRepository(authService.Request);
             using (authRepo as IDisposable)
             {
                 if (CustomValidationFilter != null)
@@ -207,7 +227,7 @@ namespace ServiceStack.Auth
                         authInfo.ForEach((x, y) => tokens.Items[x] = y);
                         session.UserAuthId = authRepo.CreateOrMergeAuthSession(session, tokens).UserAuthId.ToString();
                     }
-
+                    
                     foreach (var oAuthToken in session.GetAuthTokens())
                     {
                         var authProvider = AuthenticateService.GetAuthProvider(oAuthToken.Provider);

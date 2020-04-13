@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Host.NetCore;
 using ServiceStack.IO;
@@ -19,8 +21,10 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public abstract class AppSelfHostBase : ServiceStackHost
+    public abstract class AppSelfHostBase : ServiceStackHost, IConfigureServices, IRequireConfiguration
     {
+        public IConfiguration Configuration { get; set; }
+        
         protected AppSelfHostBase(string serviceName, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices) 
         {
@@ -28,6 +32,8 @@ namespace ServiceStack
         }
 
         IApplicationBuilder app;
+        public IApplicationBuilder App => app;
+        public IServiceProvider ApplicationServices => app?.ApplicationServices;
 
         public virtual void Bind(IApplicationBuilder app)
         {
@@ -52,8 +58,11 @@ namespace ServiceStack
                 Config.WebHostPhysicalPath = env.WebRootPath ?? env.ContentRootPath;
                 Config.DebugMode = env.IsDevelopment();
 
-                //Set VirtualFiles to point to ContentRootPath (Project Folder)
-                VirtualFiles = new FileSystemVirtualFiles(env.ContentRootPath);
+                if (VirtualFiles == null)
+                {
+                    //Set VirtualFiles to point to ContentRootPath (Project Folder)
+                    VirtualFiles = new FileSystemVirtualFiles(env.ContentRootPath);
+                }
                 AppHostBase.RegisterLicenseFromAppSettings(AppSettings);
                 Config.MetadataRedirectPath = "metadata";
             }
@@ -71,9 +80,9 @@ namespace ServiceStack
             if (!string.IsNullOrEmpty(mode))
             {
                 var includedInPathInfo = pathInfo.IndexOf(mode, StringComparison.Ordinal) == 1;
-                var includedInPathPase = context.Request.PathBase.HasValue &&
+                var includedInPathBase = context.Request.PathBase.HasValue &&
                                          context.Request.PathBase.Value.IndexOf(mode, StringComparison.Ordinal) == 1;
-                if (!includedInPathInfo && !includedInPathPase)
+                if (!includedInPathInfo && !includedInPathBase)
                 {
                     await next();
                     return;
@@ -199,29 +208,42 @@ namespace ServiceStack
 
         public virtual IWebHostBuilder ConfigureHost(IWebHostBuilder host, string[] urlBases)
         {
-            return host.UseKestrel()
+            return host.UseKestrel(ConfigureKestrel)
                 .UseContentRoot(System.IO.Directory.GetCurrentDirectory())
                 .UseWebRoot(System.IO.Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
                 .UseUrls(urlBases);
         }
+        
+        public virtual void ConfigureKestrel(KestrelServerOptions options) {}
 
         /// <summary>
         /// Override to Configure .NET Core dependencies
         /// </summary>
-        public virtual void ConfigureServices(IServiceCollection services) {}
+        public virtual void Configure(IServiceCollection services) {}
 
         /// <summary>
-        /// Override to Confgiure .NET Core App
+        /// Override to Configure .NET Core App
         /// </summary>
-        public virtual void Configure(IApplicationBuilder app, IHostingEnvironment env) {}
+        public virtual void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        {
+            Configure(app);
+        }
+        
+        public virtual void Configure(IApplicationBuilder app) {}
 
         public static AppSelfHostBase HostInstance => (AppSelfHostBase)Platforms.PlatformNetCore.HostInstance;
 
         protected class Startup
         {
-            public void ConfigureServices(IServiceCollection services) =>
-                HostInstance.ConfigureServices(services);
+            public IConfiguration Configuration { get; }
+            public Startup(IConfiguration configuration) => Configuration = configuration;
+
+            public void ConfigureServices(IServiceCollection services)
+            {
+                HostInstance.Configuration = Configuration;
+                HostInstance.Configure(services);
+            }
 
             public virtual void Configure(IApplicationBuilder app, IHostingEnvironment env)
             {

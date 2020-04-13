@@ -1,0 +1,80 @@
+<!--
+title: SVG Preview
+-->
+
+<div><b>Brand Icons:</b> https://github.com/simple-icons/simple-icons</div>
+<div><b>SVG Encoder:</b> https://yoksel.github.io/url-encoder/</div>
+
+<style>
+#svg-auth {
+    background: #CCCCCC;
+}
+#svg-auth, #svg-auth-path, #svg-icons {
+    width: 100%;
+    padding: 10px;
+    height: 420px;
+}
+#svg-auth .svg, #svg-auth-path .svg, #svg-icons .svg {
+    width: 200px;
+    height: 200px;
+    display: inline-block;
+    background-size:200px 200px;
+    background-position:0px 0px;
+    background-repeat:no-repeat;
+}
+</style>
+
+{{ 'navitems,svg-auth' | cssIncludes }}
+
+<h4 class="my-3">svg-auth</h4>
+
+<code>
+.svg-custom, .svg-servicestack, .svg-twitter, .svg-github, .svg-google, .svg-facebook, .svg-microsoft, .svg-linkedin
+.fa-custom, .fa-servicestack, .fa-twitter, .fa-github, .fa-google, .fa-facebook, .fa-microsoft, .fa-linkedin
+</code>
+
+<div id="svg-auth" class="my-3">
+    <div class="svg svg-servicestack"></div>
+    <div class="svg svg-twitter"></div>
+    <div class="svg svg-github"></div>
+    <div class="svg svg-google"></div>
+    <div class="svg svg-facebook"></div>
+    <div class="svg svg-microsoft"></div>
+    <div class="svg svg-linkedin"></div>
+</div>
+
+<div>
+    {{ 'navitems,svg-auth' | cssIncludes | replace('svg-','svgdark-') | replace('ffffff','343a40') | raw }}        
+    
+    <div id="svg-auth-path" class="my-3">
+        <div class="svg svgdark-servicestack"></div>
+        <div class="svg svgdark-twitter"></div>
+        <div class="svg svgdark-github"></div>
+        <div class="svg svgdark-google"></div>
+        <div class="svg svgdark-facebook"></div>
+        <div class="svg svgdark-microsoft"></div>
+        <div class="svg svgdark-linkedin"></div>
+    </div>
+</div>
+
+    
+{{ 'svg-icons' | cssIncludes }}
+
+<h4 class="my-3">svg-icons</h4>
+
+<code>
+    .svg-male, .svg-female, .svg-male-business, .svg-female-business, .svg-male-color, .svg-female-color, .svg-users
+    .fa-male, .fa-female, .fa-male-business, .fa-female-business, .fa-male-color, .fa-female-color, .fa-users
+</code>
+
+<div id="svg-icons" class="my-3">
+    <div class="svg svg-male"></div>
+    <div class="svg svg-female"></div>
+    <div class="svg svg-male-business"></div>
+    <div class="svg svg-female-business"></div>
+    <div class="svg svg-male-color"></div>
+    <div class="svg svg-female-color"></div>
+    <div class="svg svg-icons"></div>
+</div>
+
+

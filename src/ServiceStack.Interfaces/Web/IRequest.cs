@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 
 namespace ServiceStack.Web
@@ -75,7 +76,7 @@ namespace ServiceStack.Web
         string ResponseContentType { get; set; }
 
         /// <summary>
-        /// Whether the ResponseContentType has been explicitly overrided or whether it was just the default
+        /// Whether the ResponseContentType has been explicitly overriden or whether it was just the default
         /// </summary>
         bool HasExplicitResponseContentType { get; }
 
@@ -108,6 +109,12 @@ namespace ServiceStack.Web
         /// </summary>
         /// <returns></returns>
         string GetRawBody();
+
+        /// <summary>
+        /// The entire string contents of Request.InputStream async
+        /// </summary>
+        /// <returns></returns>
+        Task<string> GetRawBodyAsync();
 
         /// <summary>
         /// Relative URL containing /path/info?query=string

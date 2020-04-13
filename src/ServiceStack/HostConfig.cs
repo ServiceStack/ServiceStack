@@ -38,6 +38,7 @@ namespace ServiceStack
                 EmbeddedResourceBaseTypes = new[] { HostContext.AppHost.GetType(), typeof(Service) }.ToList(),
                 EmbeddedResourceTreatAsFiles = new HashSet<string>(),
                 EnableAccessRestrictions = true,
+                EnableAutoHtmlResponses = true,
                 WebHostPhysicalPath = "~".MapServerPath(),
                 HandlerFactoryPath = ServiceStackPath,
                 MetadataRedirectPath = null,
@@ -47,6 +48,7 @@ namespace ServiceStack
                 },
                 AllowJsonpRequests = true,
                 AllowRouteContentTypeExtensions = true,
+                BufferSyncSerializers = Env.IsNetCore3,
                 AllowNonHttpOnlyCookies = false,
                 DebugMode = false,
                 StrictMode = Env.StrictMode,
@@ -61,8 +63,8 @@ namespace ServiceStack
                     "default.ashx",
                 },
                 GlobalResponseHeaders = new Dictionary<string, string> {
-                    { "Vary", "Accept" },
-                    { "X-Powered-By", Env.ServerUserAgent },
+                    { HttpHeaders.Vary, "Accept" },
+                    { HttpHeaders.XPoweredBy, Env.ServerUserAgent },
                 },
                 IsMobileRegex = new Regex("Mobile|iP(hone|od|ad)|Android|BlackBerry|IEMobile|Kindle|(hpw|web)OS|Fennec|Minimo|Opera M(obi|ini)|Blazer|Dolfin|Dolphin|Skyfire|Zune", RegexOptions.Compiled),
                 RequestRules = new Dictionary<string, Func<IHttpRequest, bool>> {
@@ -94,7 +96,7 @@ namespace ServiceStack
                     "avi", "divx", "m3u", "mov", "mp3", "mpeg", "mpg", "qt", "vob", "wav", "wma", "wmv",
                     "flv", "swf", "xap", "xaml", "ogg", "ogv", "mp4", "webm", "eot", "ttf", "woff", "woff2", "map",
                     "xls", "xla", "xlsx", "xltx", "doc", "dot", "docx", "dotx", "ppt", "pps", "ppa", "pptx", "potx", 
-                    "dll", "wasm"
+                    "wasm"
                 },
                 CompressFilesWithExtensions = new HashSet<string>(),
                 AllowFilePaths = new List<string>
@@ -125,7 +127,8 @@ namespace ServiceStack
                 MapExceptionToStatusCode = new Dictionary<Type, int>(),
                 UseSaltedHash = false,
                 FallbackPasswordHashers = new List<IPasswordHasher>(),
-                OnlySendSessionCookiesSecurely = false,
+                UseSameSiteCookies = false,
+                UseSecureCookies = true,   // good default to have, but needed if UseSameSiteCookies=true 
                 AllowSessionIdsInHttpParams = false,
                 AllowSessionCookies = true,
                 RestrictAllCookiesToDomain = null,
@@ -157,7 +160,7 @@ namespace ServiceStack
                 IgnoreWarningsOnPropertyNames = new List<string> {
                     Keywords.Format, Keywords.Callback, Keywords.Debug, Keywords.AuthSecret, Keywords.JsConfig,
                     Keywords.IgnorePlaceHolder, Keywords.Version, Keywords.VersionAbbr, Keywords.Version.ToPascalCase(),
-                    Keywords.ApiKeyParam, Keywords.Code, 
+                    Keywords.ApiKeyParam, Keywords.Code, Keywords.Redirect, Keywords.Continue, "s", "f"
                 },
                 XmlWriterSettings = new XmlWriterSettings
                 {
@@ -175,7 +178,7 @@ namespace ServiceStack
 #endif
             };
 
-            Platform.Instance.InitHostConifg(config);
+            Platform.Instance.InitHostConfig(config);
 
             return config;
         }
@@ -191,10 +194,10 @@ namespace ServiceStack
             this.EmbeddedResourceBaseTypes = instance.EmbeddedResourceBaseTypes;
             this.EmbeddedResourceTreatAsFiles = instance.EmbeddedResourceTreatAsFiles;
             this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
+            this.EnableAutoHtmlResponses = instance.EnableAutoHtmlResponses;
             this.ServiceEndpointsMetadataConfig = instance.ServiceEndpointsMetadataConfig;
             this.SoapServiceName = instance.SoapServiceName;
             this.XmlWriterSettings = instance.XmlWriterSettings;
-            this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
             this.WebHostUrl = instance.WebHostUrl;
             this.WebHostPhysicalPath = instance.WebHostPhysicalPath;
             this.DefaultRedirectPath = instance.DefaultRedirectPath;
@@ -204,6 +207,7 @@ namespace ServiceStack
             this.PreferredContentTypes = instance.PreferredContentTypes;
             this.AllowJsonpRequests = instance.AllowJsonpRequests;
             this.AllowRouteContentTypeExtensions = instance.AllowRouteContentTypeExtensions;
+            this.BufferSyncSerializers = instance.BufferSyncSerializers;
             this.DebugMode = instance.DebugMode;
             this.StrictMode = instance.StrictMode;
             this.DefaultDocuments = instance.DefaultDocuments;
@@ -228,7 +232,7 @@ namespace ServiceStack
             this.MapExceptionToStatusCode = instance.MapExceptionToStatusCode;
             this.UseSaltedHash = instance.UseSaltedHash;
             this.FallbackPasswordHashers = instance.FallbackPasswordHashers;
-            this.OnlySendSessionCookiesSecurely = instance.OnlySendSessionCookiesSecurely;
+            this.UseSecureCookies = instance.UseSecureCookies;
             this.AllowSessionIdsInHttpParams = instance.AllowSessionIdsInHttpParams;
             this.AllowSessionCookies = instance.AllowSessionCookies;
             this.RestrictAllCookiesToDomain = instance.RestrictAllCookiesToDomain;
@@ -236,6 +240,7 @@ namespace ServiceStack
             this.MetadataVisibility = instance.MetadataVisibility;
             this.Return204NoContentForEmptyResponse = instance.Return204NoContentForEmptyResponse;
             this.AllowNonHttpOnlyCookies = instance.AllowNonHttpOnlyCookies;
+            this.UseSameSiteCookies = instance.UseSameSiteCookies;
             this.AllowJsConfig = instance.AllowJsConfig;
             this.AllowPartialResponses = instance.AllowPartialResponses;
             this.IgnoreWarningsOnAllProperties = instance.IgnoreWarningsOnAllProperties;
@@ -275,8 +280,9 @@ namespace ServiceStack
         internal string[] PreferredContentTypesArray = TypeConstants.EmptyStringArray; //use array at runtime
         public bool AllowJsonpRequests { get; set; }
         public bool AllowRouteContentTypeExtensions { get; set; }
-        public bool DebugMode { get; set; }
+        public bool BufferSyncSerializers { get; set; }
 
+        public bool DebugMode { get; set; }
         public bool? StrictMode { get; set; }
 
         public string DebugAspNetHostEnvironment { get; set; }
@@ -304,6 +310,7 @@ namespace ServiceStack
         public string SoapServiceName { get; set; }
         public XmlWriterSettings XmlWriterSettings { get; set; }
         public bool EnableAccessRestrictions { get; set; }
+        public bool EnableAutoHtmlResponses { get; set; }
         public bool UseBclJsonSerializers { get; set; }
         public Regex IsMobileRegex { get; set; }
         public Dictionary<string, Func<IHttpRequest, bool>> RequestRules { get; set; }
@@ -347,7 +354,9 @@ namespace ServiceStack
         /// </summary>
         public List<IPasswordHasher> FallbackPasswordHashers { get; private set; }
 
-        public bool OnlySendSessionCookiesSecurely { get; set; }
+        [Obsolete("Use UseSecureCookies")]
+        public bool OnlySendSessionCookiesSecurely { set => UseSecureCookies = value; }
+        public bool UseSecureCookies { get; set; }
         public bool AllowSessionIdsInHttpParams { get; set; }
         public bool AllowSessionCookies { get; set; }
         public string RestrictAllCookiesToDomain { get; set; }
@@ -357,6 +366,7 @@ namespace ServiceStack
         public bool AllowJsConfig { get; set; }
         public bool AllowPartialResponses { get; set; }
         public bool AllowNonHttpOnlyCookies { get; set; }
+        public bool UseSameSiteCookies { get; set; }
         public bool AllowAclUrlReservation { get; set; }
         public bool AddRedirectParamsToQueryString { get; set; }
         public bool RedirectToDefaultDocuments { get; set; }

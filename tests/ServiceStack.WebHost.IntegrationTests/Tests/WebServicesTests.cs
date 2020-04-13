@@ -1,5 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
+using System.Runtime.Serialization;
+using System.ServiceModel.Channels;
+using System.Xml;
 using NUnit.Framework;
 using ServiceStack.Common.Tests;
 using ServiceStack.Text;
@@ -44,6 +48,15 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
             var expectedValue = TestString.ToRot13();
             Assert.That(response.Result, Is.EqualTo(expectedValue));
+        }
+
+        [Test]
+        public void Does_Execute_AddInts()
+        {
+            var client = CreateNewServiceClient();
+            var response = client.Send<AddIntsResponse>(new AddInts { A = 1, B = 2 });
+
+            Assert.That(response.Result, Is.EqualTo(3));
         }
 
         [Test]
@@ -108,10 +121,10 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
                 var response = (ErrorResponse)webEx.ResponseDto;
                 var status = response.ResponseStatus;
                 Assert.That(status.ErrorCode, Is.EqualTo("NotEmpty"));
-                Assert.That(status.Message, Is.EqualTo("'Value' should not be empty."));
+                Assert.That(status.Message, Is.EqualTo("'Value' must not be empty."));
                 Assert.That(status.Errors[0].ErrorCode, Is.EqualTo("NotEmpty"));
                 Assert.That(status.Errors[0].FieldName, Is.EqualTo("Value"));
-                Assert.That(status.Errors[0].Message, Is.EqualTo("'Value' should not be empty."));
+                Assert.That(status.Errors[0].Message, Is.EqualTo("'Value' must not be empty."));
             }
         }
 
@@ -181,7 +194,77 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         protected override IServiceClient CreateNewServiceClient()
         {
             return new Soap12ServiceClient(ServiceClientBaseUri);
+//            return new Soap12ServiceClient("http://test.servicestack.net");
         }
-    }
 
+        [Test]
+        public void Call_AddInts()
+        {
+            var soap = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+<s:Envelope xmlns:s=""http://www.w3.org/2003/05/soap-envelope"" xmlns:a=""http://www.w3.org/2005/08/addressing"">
+   <s:Header>
+      <a:Action s:mustUnderstand=""1"">AddInts</a:Action>
+      <a:MessageID>urn:uuid:e6be43e0-c120-4ba8-920e-7ecaa1823fd2</a:MessageID>
+      <a:ReplyTo>
+         <a:Address>http://www.w3.org/2005/08/addressing/anonymous</a:Address>
+      </a:ReplyTo>
+      <a:To s:mustUnderstand=""1"">http://localhost:50000/api/Soap12</a:To>
+   </s:Header>
+   <s:Body>
+      <AddInts xmlns=""http://schemas.servicestack.net/types"" xmlns:i=""http://www.w3.org/2001/XMLSchema-instance"">
+         <A>1</A>
+         <B>2</B>
+      </AddInts>
+   </s:Body>
+</s:Envelope>";
+
+            var responseXml = ServiceClientBaseUri.CombineWith("/soap12")
+                .PostToUrl(soap, requestFilter:req => req.ContentType = "application/soap+xml; charset=utf-8");
+            
+            responseXml.Print();
+            Assert.That(responseXml, Does.Contain("<Result>3</Result>"));
+        }
+
+        [Test]
+        public void Sending_invalid_request_returns_invalid_response()
+        {
+            var soap = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+<s:Envelope xmlns:s=""http://www.w3.org/2003/05/soap-envelope"" xmlns:a=""http://www.w3.org/2005/08/addressing"">
+   <s:Header>
+      <a:Action s:mustUnderstand=""1"">AddInts</a:Action>
+      <a:MessageID>urn:uuid:e6be43e0-c120-4ba8-920e-7ecaa1823fd2</a:MessageID>
+      <a:ReplyTo>
+         <a:Address>http://www.w3.org/2005/08/addressing/anonymous</a:Address>
+      </a:ReplyTo>
+      <a:To s:mustUnderstand=""1"">http://localhost:50000/api/Soap12</a:To>
+   </s:Header>
+   <s:Body>
+      <AddInts xmlns=""http://schemas.servicestack.net/types"" xmlns:i=""http://www.w3.org/2001/XMLSchema-instance"">
+         <A>not a</A>
+         <B>number</B>
+      </AddInts>
+   </s:Body>
+</s:Envelope>";
+
+            var responseXml = ServiceClientBaseUri.CombineWith("/soap12")
+                .PostToUrl(soap, requestFilter: req => req.ContentType = "application/soap+xml; charset=utf-8");
+                
+            var doc = new XmlDocument();
+            doc.LoadXml(responseXml);
+
+            var responseMsg = Message.CreateMessage(new XmlNodeReader(doc), int.MaxValue,
+                MessageVersion.Soap12WSAddressingAugust2004);
+
+            using (var reader = responseMsg.GetReaderAtBodyContents())
+            {
+                var bodyXml = reader.ReadOuterXml();
+                var responseType = typeof(AddIntsResponse);
+                var response = (AddIntsResponse)Serialization.DataContractSerializer.Instance.DeserializeFromString(bodyXml, responseType);
+
+                Assert.That(response.ResponseStatus.ErrorCode, Is.EqualTo(nameof(SerializationException)));
+                Assert.That(response.ResponseStatus.Message, Does.Contain("Error trying to deserialize requestType:"));
+            }
+        }
+        
+    }
 }

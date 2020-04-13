@@ -1,0 +1,19 @@
+<!--
+title: General Error Page
+-->
+
+<p>
+    Oops there was an error...
+</p>
+
+<h2>Error Vars</h2>
+
+{{#raw}}<h3>{{errorStatus | htmldump}}</h3>{{/raw}}
+
+{{errorStatus | htmldump}}
+
+{{#raw}}<h3>{{error | htmlErrorMessage}}</h3>{{/raw}}
+{{error | htmlErrorMessage}}
+
+{{#raw}}<h3>{{error | htmlError}}</h3>{{/raw}}
+{{error | htmlError}}

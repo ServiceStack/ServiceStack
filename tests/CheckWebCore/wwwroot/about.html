@@ -2,6 +2,24 @@
 title: About Us
 -->
 
+<div class="svg-users svg-8x ml-2"></div>
+<div class="bg-dark svg-servicestack svg-8x ml-2"></div>
+
 <p>
     About Us page.
 </p>
+
+<button onclick="go()">Go</button>
+<div id="result"></div>
+
+<script>
+    function go() {
+        $.ajax({
+            url: '/contact',
+            crossDomain: true,
+            success: function (r) {
+                $("#result").html(r);
+            }
+        })
+    }
+</script>

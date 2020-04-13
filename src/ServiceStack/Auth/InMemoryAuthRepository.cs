@@ -6,18 +6,33 @@ using System.Threading;
 
 namespace ServiceStack.Auth
 {
+    public class InMemoryAuthRepository : InMemoryAuthRepository<UserAuth, UserAuthDetails>
+    {
+    }
+
+    public interface IMemoryAuthRepository
+        : IUserAuthRepository, IClearable, IManageApiKeys, ICustomUserAuth
+    {
+        Dictionary<string, HashSet<string>> Sets { get; }
+        Dictionary<string, Dictionary<string, string>> Hashes { get; }
+    }
+
     /// <summary>
     /// Thread-safe In memory UserAuth data store so it can be used without a dependency on Redis.
     /// </summary>
-    public class InMemoryAuthRepository : RedisAuthRepository
+    public class InMemoryAuthRepository<TUserAuth, TUserAuthDetails> 
+        : RedisAuthRepository<TUserAuth, TUserAuthDetails>, IMemoryAuthRepository
+        where TUserAuth : class, IUserAuth
+        where TUserAuthDetails : class, IUserAuthDetails
     {
-        public static readonly InMemoryAuthRepository Instance = new InMemoryAuthRepository();
+        public static readonly InMemoryAuthRepository<TUserAuth, TUserAuthDetails> Instance = 
+            new InMemoryAuthRepository<TUserAuth, TUserAuthDetails>();
 
-        protected Dictionary<string, HashSet<string>> Sets { get; set; }
-        protected Dictionary<string, Dictionary<string, string>> Hashes { get; set; }
+        public Dictionary<string, HashSet<string>> Sets { get; set; }
+        public Dictionary<string, Dictionary<string, string>> Hashes { get; set; }
         internal List<IClearable> TrackedTypes = new List<IClearable>();
 
-        class TypedData<T> : IClearable
+        internal class TypedData<T> : IClearable
         {
             internal static TypedData<T> Instance = new TypedData<T>();
 
@@ -37,6 +52,7 @@ namespace ServiceStack.Auth
             }
         }
 
+
         public InMemoryAuthRepository()
             : base(new InMemoryManagerFacade(Instance))
         {
@@ -44,11 +60,11 @@ namespace ServiceStack.Auth
             this.Hashes = new Dictionary<string, Dictionary<string, string>>();
         }
 
-        class InMemoryManagerFacade : IRedisClientManagerFacade
+        internal class InMemoryManagerFacade : IRedisClientManagerFacade
         {
-            private readonly InMemoryAuthRepository root;
+            private readonly IMemoryAuthRepository root;
 
-            public InMemoryManagerFacade(InMemoryAuthRepository root)
+            public InMemoryManagerFacade(IMemoryAuthRepository root)
             {
                 this.root = root;
             }
@@ -66,20 +82,20 @@ namespace ServiceStack.Auth
             }
         }
 
-        class InMemoryClientFacade : IRedisClientFacade
+        internal class InMemoryClientFacade : IRedisClientFacade
         {
-            private readonly InMemoryAuthRepository root;
+            private readonly IMemoryAuthRepository root;
 
-            public InMemoryClientFacade(InMemoryAuthRepository root)
+            public InMemoryClientFacade(IMemoryAuthRepository root)
             {
                 this.root = root;
             }
 
             class InMemoryTypedClientFacade<T> : ITypedRedisClientFacade<T>
             {
-                private readonly InMemoryAuthRepository root;
+                private readonly IMemoryAuthRepository root;
 
-                public InMemoryTypedClientFacade(InMemoryAuthRepository root)
+                public InMemoryTypedClientFacade(IMemoryAuthRepository root)
                 {
                     this.root = root;
                 }
@@ -126,6 +142,24 @@ namespace ServiceStack.Auth
                     lock (TypedData<T>.Instance.Items)
                     {
                         TypedData<T>.Instance.Items.RemoveAll(x => idsSet.Contains(x.ToId().ToString()));
+                    }
+                }
+
+                public List<T> GetAll(int? skip=null, int? take=null)
+                {
+                    lock (TypedData<T>.Instance.Items)
+                    {
+                        if (skip != null || take != null)
+                        {
+                            var to = TypedData<T>.Instance.Items.AsEnumerable();
+                            if (skip != null)
+                                to = to.Skip(skip.Value);
+                            if (take != null)
+                                to = to.Take(take.Value);
+                            return to.ToList();
+                        }
+
+                        return TypedData<T>.Instance.Items.ToList();
                     }
                 }
             }
@@ -232,4 +266,110 @@ namespace ServiceStack.Auth
             }
         }
     }
+    
+    public static class AuthRepositoryUtils
+    {
+        public static string ParseOrderBy(string orderBy, out bool desc)
+        {
+            desc = false;
+            if (string.IsNullOrEmpty(orderBy))
+                return null;
+            
+            if (orderBy.IndexOf(' ') >= 0)
+            {
+                desc = orderBy.LastRightPart(' ').EqualsIgnoreCase("DESC");
+                orderBy = orderBy.LeftPart(' ');
+            }
+            else if (orderBy[0] == '-')
+            {
+                orderBy = orderBy.Substring(1);
+                desc = true;
+            }
+
+            return orderBy;
+        }
+        
+        public static IEnumerable<TUserAuth> SortAndPage<TUserAuth>(this IEnumerable<TUserAuth> q, string orderBy, int? skip, int? take)
+            where TUserAuth : IUserAuth
+        {
+            if (!string.IsNullOrEmpty(orderBy))
+            {
+                orderBy = ParseOrderBy(orderBy, out var desc);
+
+                if (orderBy.EqualsIgnoreCase(nameof(IUserAuth.Id)))
+                {
+                    q = desc 
+                        ? q.OrderByDescending(x => x.Id)
+                        : q.OrderBy(x => x.Id);
+                }
+                else if (orderBy.EqualsIgnoreCase(nameof(IUserAuth.PrimaryEmail)))
+                {
+                    q = desc 
+                        ? q.OrderByDescending(x => x.PrimaryEmail)
+                        : q.OrderBy(x => x.PrimaryEmail);
+                }
+                else if (orderBy.EqualsIgnoreCase(nameof(IUserAuth.CreatedDate)))
+                {
+                    q = desc 
+                        ? q.OrderByDescending(x => x.CreatedDate)
+                        : q.OrderBy(x => x.CreatedDate);
+                }
+                else if (orderBy.EqualsIgnoreCase(nameof(IUserAuth.ModifiedDate)))
+                {
+                    q = desc 
+                        ? q.OrderByDescending(x => x.ModifiedDate)
+                        : q.OrderBy(x => x.ModifiedDate);
+                }
+                else if (orderBy.EqualsIgnoreCase(nameof(IUserAuth.LockedDate)))
+                {
+                    q = desc 
+                        ? q.OrderByDescending(x => x.LockedDate)
+                        : q.OrderBy(x => x.LockedDate);
+                }
+                else if (orderBy.EqualsIgnoreCase(nameof(IUserAuthDetailsExtended.UserName)))
+                {
+                    q = desc
+                        ? q.OrderByDescending(x => x is IUserAuthDetailsExtended u ? u.UserName : null)
+                        : q.OrderBy(x => x is IUserAuthDetailsExtended u ? u.UserName : null);
+                }
+                else if (orderBy.EqualsIgnoreCase(nameof(IUserAuthDetailsExtended.DisplayName)))
+                {
+                    q = desc
+                        ? q.OrderByDescending(x => x is IUserAuthDetailsExtended u ? u.DisplayName : null)
+                        : q.OrderBy(x => x is IUserAuthDetailsExtended u ? u.DisplayName : null);
+                }
+                else if (orderBy.EqualsIgnoreCase(nameof(IUserAuthDetailsExtended.FirstName)))
+                {
+                    q = desc
+                        ? q.OrderByDescending(x => x is IUserAuthDetailsExtended u ? u.FirstName : null)
+                        : q.OrderBy(x => x is IUserAuthDetailsExtended u ? u.FirstName : null);
+                }
+                else if (orderBy.EqualsIgnoreCase(nameof(IUserAuthDetailsExtended.LastName)))
+                {
+                    q = desc
+                        ? q.OrderByDescending(x => x is IUserAuthDetailsExtended u ? u.LastName : null)
+                        : q.OrderBy(x => x is IUserAuthDetailsExtended u ? u.LastName : null);
+                }
+                else if (orderBy.EqualsIgnoreCase(nameof(IUserAuthDetailsExtended.Email)))
+                {
+                    q = desc
+                        ? q.OrderByDescending(x => x is IUserAuthDetailsExtended u ? u.Email : null)
+                        : q.OrderBy(x => x is IUserAuthDetailsExtended u ? u.Email : null);
+                }
+                else if (orderBy.EqualsIgnoreCase(nameof(IUserAuthDetailsExtended.Company)))
+                {
+                    q = desc
+                        ? q.OrderByDescending(x => x is IUserAuthDetailsExtended u ? u.Company : null)
+                        : q.OrderBy(x => x is IUserAuthDetailsExtended u ? u.Company : null);
+                }
+            }
+            
+            if (skip != null)
+                q = q.Skip(skip.Value);
+            if (take != null)
+                q = q.Take(take.Value);
+
+            return q;
+        }
+    }    
 }

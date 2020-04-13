@@ -9,6 +9,12 @@ namespace ServiceStack
     public delegate object ObjectActivator(params object[] args);
 
     public delegate object MethodInvoker(object instance, params object[] args);
+    
+    public delegate object StaticMethodInvoker(params object[] args);
+    
+    public delegate void ActionInvoker(object instance, params object[] args);
+    
+    public delegate void StaticActionInvoker(params object[] args);
 
     public static class TypeExtensions
     {
@@ -99,7 +105,9 @@ namespace ServiceStack
             }
 
             var newExp = Expression.New(ctor, exprArgs);
-            var lambda = Expression.Lambda(typeof(ObjectActivator), newExp, paramArgs);
+            var lambda = Expression.Lambda(typeof(ObjectActivator), 
+                Expression.Convert(newExp, typeof(object)), 
+                paramArgs);
 
             var ctorFn = (ObjectActivator)lambda.Compile();
             return ctorFn;
@@ -127,14 +135,11 @@ namespace ServiceStack
             return fn;
         }
 
-        public static MethodInvoker GetInvokerToCache(MethodInfo method)
+        private static Expression[] CreateInvokerParamExpressions(MethodInfo method, ParameterExpression paramArgs)
         {
-            var pi = method.GetParameters();
-            var paramInstance = Expression.Parameter(typeof(object), "instance");
-            var paramArgs = Expression.Parameter(typeof(object[]), "args");
-
             var convertFromMethod = typeof(TypeExtensions).GetStaticMethod(nameof(ConvertFromObject));
 
+            var pi = method.GetParameters();
             var exprArgs = new Expression[pi.Length];
             for (int i = 0; i < pi.Length; i++)
             {
@@ -144,8 +149,37 @@ namespace ServiceStack
                 var convertParam = convertFromMethod.MakeGenericMethod(paramType);
                 exprArgs[i] = Expression.Call(convertParam, paramAccessorExp);
             }
+
+            return exprArgs;
+        }
+
+        private static string UseCorrectInvokerErrorMessage(MethodInfo method)
+        {
+            var invokerName = method.ReturnType == typeof(void) 
+                ? (method.IsStatic ? nameof(GetStaticActionInvoker) : nameof(GetActionInvoker)) 
+                : (method.IsStatic ? nameof(GetStaticInvoker) : nameof(GetInvoker));
+            var invokerType = method.ReturnType == typeof(void) 
+                ? (method.IsStatic ? nameof(StaticMethodInvoker) : nameof(MethodInvoker)) 
+                : (method.IsStatic ? nameof(StaticActionInvoker) : nameof(ActionInvoker));
+            var methodType = method.ReturnType == typeof(void)
+                ? (method.IsStatic ? "static void methods" : "instance void methods")
+                : (method.IsStatic ? "static methods" : "instance methods"); 
+            return $"Use {invokerName} to create a {invokerType} for invoking {methodType}";
+        }
+
+        public static MethodInvoker GetInvokerToCache(MethodInfo method)
+        {
+            if (method.IsStatic)
+                throw new NotSupportedException(UseCorrectInvokerErrorMessage(method));
             
-            var methodCall = Expression.Call(Expression.TypeAs(paramInstance, method.DeclaringType), method, exprArgs);
+            var paramInstance = Expression.Parameter(typeof(object), "instance");
+            var paramArgs = Expression.Parameter(typeof(object[]), "args");
+
+            var exprArgs = CreateInvokerParamExpressions(method, paramArgs);
+            
+            var methodCall = method.DeclaringType.IsValueType 
+                ? Expression.Call(Expression.Convert(paramInstance, method.DeclaringType), method, exprArgs)
+                : Expression.Call(Expression.TypeAs(paramInstance, method.DeclaringType), method, exprArgs);
 
             var convertToMethod = typeof(TypeExtensions).GetStaticMethod(nameof(ConvertToObject));
             var convertReturn = convertToMethod.MakeGenericMethod(method.ReturnType);
@@ -158,10 +192,95 @@ namespace ServiceStack
             var fn = (MethodInvoker)lambda.Compile();
             return fn;
         }
-        
-        static Dictionary<MethodInfo, MethodInvoker> invokerCache =
-            new Dictionary<MethodInfo, MethodInvoker>();
 
+        public static StaticMethodInvoker GetStaticInvokerToCache(MethodInfo method)
+        {
+            if (!method.IsStatic || method.ReturnType == typeof(void))
+                throw new NotSupportedException(UseCorrectInvokerErrorMessage(method));
+            
+            var paramArgs = Expression.Parameter(typeof(object[]), "args");
+
+            var exprArgs = CreateInvokerParamExpressions(method, paramArgs);
+
+            var methodCall = Expression.Call(method, exprArgs);
+
+            var convertToMethod = typeof(TypeExtensions).GetStaticMethod(nameof(ConvertToObject));
+            var convertReturn = convertToMethod.MakeGenericMethod(method.ReturnType);
+            
+            var lambda = Expression.Lambda(typeof(StaticMethodInvoker), 
+                Expression.Call(convertReturn, methodCall), 
+                paramArgs);
+
+            var fn = (StaticMethodInvoker)lambda.Compile();
+            return fn;
+        }
+
+        public static ActionInvoker GetActionInvokerToCache(MethodInfo method)
+        {
+            if (method.IsStatic || method.ReturnType != typeof(void))
+                throw new NotSupportedException(UseCorrectInvokerErrorMessage(method));
+
+            var paramInstance = Expression.Parameter(typeof(object), "instance");
+            var paramArgs = Expression.Parameter(typeof(object[]), "args");
+
+            var exprArgs = CreateInvokerParamExpressions(method, paramArgs);
+            
+            var methodCall = method.DeclaringType.IsValueType 
+                ? Expression.Call(Expression.Convert(paramInstance, method.DeclaringType), method, exprArgs)
+                : Expression.Call(Expression.TypeAs(paramInstance, method.DeclaringType), method, exprArgs);
+
+            var lambda = Expression.Lambda(typeof(ActionInvoker), 
+                methodCall, 
+                paramInstance, 
+                paramArgs);
+
+            var fn = (ActionInvoker)lambda.Compile();
+            return fn;
+        }
+
+        public static StaticActionInvoker GetStaticActionInvokerToCache(MethodInfo method)
+        {
+            if (!method.IsStatic || method.ReturnType != typeof(void))
+                throw new NotSupportedException(UseCorrectInvokerErrorMessage(method));
+
+            var paramArgs = Expression.Parameter(typeof(object[]), "args");
+
+            var exprArgs = CreateInvokerParamExpressions(method, paramArgs);
+            
+            var methodCall = Expression.Call(method, exprArgs);
+
+            var lambda = Expression.Lambda(typeof(StaticActionInvoker), 
+                methodCall, 
+                paramArgs);
+
+            var fn = (StaticActionInvoker)lambda.Compile();
+            return fn;
+        }
+        
+        static Dictionary<MethodInfo, MethodInvoker> invokerCache = new Dictionary<MethodInfo, MethodInvoker>();
+
+        /// <summary>
+        /// Create the correct Invoker Delegate Type based on the type of Method
+        /// </summary>
+        public static Delegate GetInvokerDelegate(this MethodInfo method)
+        {
+            if (!method.IsStatic)
+            {
+                if (method.ReturnType != typeof(void))
+                    return method.GetInvoker();
+                
+                return method.GetActionInvoker();
+            }
+
+            if (method.ReturnType != typeof(void))
+                return method.GetStaticInvoker();
+            
+            return method.GetStaticActionInvoker();
+        }
+
+        /// <summary>
+        /// Create an Invoker for public instance methods
+        /// </summary>
         public static MethodInvoker GetInvoker(this MethodInfo method)
         {
             if (invokerCache.TryGetValue(method, out var fn))
@@ -177,6 +296,78 @@ namespace ServiceStack
 
             } while (!ReferenceEquals(
                 Interlocked.CompareExchange(ref invokerCache, newCache, snapshot), snapshot));
+
+            return fn;
+        }
+        
+        static Dictionary<MethodInfo, StaticMethodInvoker> staticInvokerCache = new Dictionary<MethodInfo, StaticMethodInvoker>();
+
+        /// <summary>
+        /// Create an Invoker for public static methods
+        /// </summary>
+        public static StaticMethodInvoker GetStaticInvoker(this MethodInfo method)
+        {
+            if (staticInvokerCache.TryGetValue(method, out var fn))
+                return fn;
+
+            fn = GetStaticInvokerToCache(method);
+
+            Dictionary<MethodInfo, StaticMethodInvoker> snapshot, newCache;
+            do
+            {
+                snapshot = staticInvokerCache;
+                newCache = new Dictionary<MethodInfo, StaticMethodInvoker>(staticInvokerCache) { [method] = fn };
+
+            } while (!ReferenceEquals(
+                Interlocked.CompareExchange(ref staticInvokerCache, newCache, snapshot), snapshot));
+
+            return fn;
+        }
+        
+        static Dictionary<MethodInfo, ActionInvoker> actionInvokerCache = new Dictionary<MethodInfo, ActionInvoker>();
+
+        /// <summary>
+        /// Create an Invoker for public instance void methods
+        /// </summary>
+        public static ActionInvoker GetActionInvoker(this MethodInfo method)
+        {
+            if (actionInvokerCache.TryGetValue(method, out var fn))
+                return fn;
+
+            fn = GetActionInvokerToCache(method);
+
+            Dictionary<MethodInfo, ActionInvoker> snapshot, newCache;
+            do
+            {
+                snapshot = actionInvokerCache;
+                newCache = new Dictionary<MethodInfo, ActionInvoker>(actionInvokerCache) { [method] = fn };
+
+            } while (!ReferenceEquals(
+                Interlocked.CompareExchange(ref actionInvokerCache, newCache, snapshot), snapshot));
+
+            return fn;
+        }
+        
+        static Dictionary<MethodInfo, StaticActionInvoker> staticActionInvokerCache = new Dictionary<MethodInfo, StaticActionInvoker>();
+
+        /// <summary>
+        /// Create an Invoker for public static void methods
+        /// </summary>
+        public static StaticActionInvoker GetStaticActionInvoker(this MethodInfo method)
+        {
+            if (staticActionInvokerCache.TryGetValue(method, out var fn))
+                return fn;
+
+            fn = GetStaticActionInvokerToCache(method);
+
+            Dictionary<MethodInfo, StaticActionInvoker> snapshot, newCache;
+            do
+            {
+                snapshot = staticActionInvokerCache;
+                newCache = new Dictionary<MethodInfo, StaticActionInvoker>(staticActionInvokerCache) { [method] = fn };
+
+            } while (!ReferenceEquals(
+                Interlocked.CompareExchange(ref staticActionInvokerCache, newCache, snapshot), snapshot));
 
             return fn;
         }

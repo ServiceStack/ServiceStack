@@ -253,10 +253,11 @@ namespace ServiceStack.Razor.Compilation
             //Compile the code
             var results = _codeDomProvider.CompileAssemblyFromDom(@params, razorResults.GeneratedCode);
 
-            var tempFilesMarkedForDeletion = new TempFileCollection(null); 
-            @params.TempFiles
-                   .OfType<string>()
-                   .Each(file => tempFilesMarkedForDeletion.AddFile(file, false));
+            var tempFilesMarkedForDeletion = new TempFileCollection(null);
+            foreach (var file in @params.TempFiles.OfType<string>())
+            {
+                tempFilesMarkedForDeletion.AddFile(file, false);
+            }
 
             using (tempFilesMarkedForDeletion)
             {

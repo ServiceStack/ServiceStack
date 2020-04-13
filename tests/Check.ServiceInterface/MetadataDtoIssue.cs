@@ -4,6 +4,7 @@ using ServiceStack.DataAnnotations;
 
 namespace Check.ServiceInterface
 {
+    [References(typeof(acsprofileResponse))]
     [Route("/api/acsprofiles", "POST,PUT,PATCH,DELETE")]
     [Route("/api/acsprofiles/{profileId}")]
     [Alias("ACSProfiles")]
@@ -12,7 +13,6 @@ namespace Check.ServiceInterface
         [PrimaryKey]
         public string profileId { get; set; }
 
-        [Required]
         [StringLength(20)]
         public string shortName { get; set; }
 

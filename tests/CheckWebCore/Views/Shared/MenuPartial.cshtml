@@ -1,0 +1,7 @@
+<div class="collapse navbar-collapse" id="navbarResponsive">
+    <ul class="navbar-nav ml-auto">
+       @foreach (var item in @Html.MenuItems()) {
+           <li class="nav-item @(item.Href == Request.PathInfo ? "active" : "")"><a class="nav-link" href="@item.Href">@item.Label</a></li>
+       }
+    </ul>
+</div>

@@ -103,33 +103,79 @@ namespace Check.ServiceModel.Operations
     public class HelloWithEnum
     {
         public EnumType EnumProp { get; set; }
+        public EnumTypeFlags EnumTypeFlags { get; set; }
+
         public EnumWithValues EnumWithValues { get; set; }
         public EnumType? NullableEnumProp { get; set; }
 
         public EnumFlags EnumFlags { get; set; }
+        public EnumAsInt EnumAsInt { get; set; }
         public EnumStyle EnumStyle { get; set; }
+        public EnumStyleMembers EnumStyleMembers { get; set; }
+    }
+
+    public class HelloWithEnumList
+    {
+        public List<EnumType> EnumProp { get; set; }
+        public List<EnumWithValues> EnumWithValues { get; set; }
+        public List<EnumType?> NullableEnumProp { get; set; }
+
+        public List<EnumFlags> EnumFlags { get; set; }
+        public List<EnumStyle> EnumStyle { get; set; }
+    }
+
+    public class HelloWithEnumMap
+    {
+        public Dictionary<EnumType,EnumType> EnumProp { get; set; }
+        public Dictionary<EnumWithValues,EnumWithValues> EnumWithValues { get; set; }
+        public Dictionary<EnumType?,EnumType?> NullableEnumProp { get; set; }
+
+        public Dictionary<EnumFlags,EnumFlags> EnumFlags { get; set; }
+        public Dictionary<EnumStyle,EnumStyle> EnumStyle { get; set; }
     }
 
     public enum EnumType
     {
         Value1,
-        Value2
+        Value2,
+        Value3,
+    }
+
+    [Flags]
+    public enum EnumTypeFlags
+    {
+        Value1,
+        Value2,
+        Value3,
     }
 
     public enum EnumWithValues
     {
+        None = 0,
+        [EnumMember(Value = "Member 1")]
         Value1 = 1,
-        Value2 = 2
+        [Description("Member 2")]
+        Value2 = 2,
     }
 
     [Flags]
     public enum EnumFlags
     {
         Value0 = 0,
+        [EnumMember(Value = "Value 1")]
         Value1 = 1,
+        [Description("Value 2")]
         Value2 = 2,
-        Value3 = 3,
+        Value3 = 4,
         Value123 = Value1 | Value2 | Value3,
+    }
+
+    [EnumAsInt]
+    public enum EnumAsInt
+    {
+        Value1 = 1000,
+        Value2 = 2000,
+        Value3 = 3000,
     }
 
     public enum EnumStyle
@@ -140,6 +186,22 @@ namespace Check.ServiceModel.Operations
         camelCase,
         camelUPPER,
         PascalUPPER,
+    }
+
+    public enum EnumStyleMembers
+    {
+        [EnumMember(Value = "lower")]
+        Lower,
+        [EnumMember(Value = "UPPER")]
+        Upper,
+        [EnumMember(Value = "PascalCase")]
+        PascalCase,
+        [EnumMember(Value = "camelCase")]
+        CamelCase,
+        [EnumMember(Value = "camelUPPER")]
+        CamelUpper,
+        [EnumMember(Value = "PascalUPPER")]
+        PascalUpper,
     }
 
     [Restrict(InternalOnly = true)]

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using NUnit.Framework;
@@ -19,6 +20,24 @@ namespace ServiceStack.Common.Tests
 
         readonly string[] StringValues = new[] { "A", "B", "C" };
         readonly string[] NoStringValues = new string[] { };
+
+        [Test]
+        public void Can_FirstOrDefault()
+        {
+            Assert.That(EnumerableUtils.FirstOrDefault(IntValues), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Can_Skip()
+        {
+            Assert.That(EnumerableUtils.Skip(IntValues,1), Is.EqualTo(new[]{ 2, 3 }));
+        }
+
+        [Test]
+        public void Can_Take()
+        {
+            Assert.That(EnumerableUtils.Take(IntValues, 2), Is.EqualTo(new[]{ 1, 2 }));
+        }
 
         [Test]
         public void Can_Join()

@@ -1,7 +1,10 @@
+#bower deps
+**/wwwroot/lib/
 bin/
 obj/
 .idea/
 latest/
+node_modules/
 /env-vars.bat
 *.suo
 #ignore thumbnails created by windows

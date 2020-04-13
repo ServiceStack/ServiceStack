@@ -50,6 +50,29 @@ namespace ServiceStack.Server.Tests
                     resolveUrl: req => "http://chat.servicestack.net" + req.RawUrl.Replace("/chat", "/"))
                 );
 
+                Plugins.Add(new ProxyFeature(
+                    matchingRequests: req => req.PathInfo.StartsWith("/proxy"),
+                    resolveUrl: req => req.RawUrl.Replace("/proxy/", ""))
+                {
+                    IgnoreResponseHeaders = { "X-Frame-Options" },
+                    TransformResponse = async (res, responseStream) => {
+                        var enc = res.GetHeader(HttpHeaders.ContentEncoding);
+                        var useStream = responseStream;
+                        if (enc != null)
+                            useStream = responseStream.Decompress(enc);
+                        
+                        using (var reader = new StreamReader(useStream,Encoding.UTF8))
+                        {
+                            var responseBody = await reader.ReadToEndAsync();
+                            var replacedBody = responseBody.Replace("http://","/proxy/http://");
+                            replacedBody = replacedBody.Replace("https://", "/proxy/https://");
+
+                            var bytes = replacedBody.ToUtf8Bytes();
+                            return MemoryStreamFactory.GetStream(enc != null ? bytes.CompressBytes(enc) : bytes);
+                        }
+                    }
+                });
+
                 //Allow this proxy server to issue ss-id/ss-pid Session Cookies
                 //Plugins.Add(new SessionFeature());
             }
@@ -372,6 +395,16 @@ namespace ServiceStack.Server.Tests
             html.Length.Print();
             
             Assert.That(html.Length, Is.GreaterThan(1000));
+        }
+
+//        [Ignore("Ephemeral external host + state dependency"), Test]
+        public void Can_rewrite_compressed_proxy_responses()
+        {
+            var url = ListeningOn.CombineWith("proxy/https://www.theverge.com");
+            var response = url.GetStringFromUrl();
+            response.Print();
+            
+            Assert.That(response, Does.Contain("/proxy/https://"));
         }
     }
 }

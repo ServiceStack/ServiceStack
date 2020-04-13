@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.1</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.Mvc\ServiceStack.Mvc.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
+      <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="wwwroot\js\default.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\vue\dist\vue.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\vue\dist\vue.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\vue\types\index.d.ts" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\vue\types\options.d.ts" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\vue\types\plugin.d.ts" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\vue\types\vnode.d.ts" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\vue\types\vue.d.ts" />
+    </ItemGroup>
+
+</Project>

@@ -25,8 +25,15 @@ namespace ServiceStack.Auth {
             SecureKey = appSettings.GetString("oauth.vkcom.SecureKey");
             Scope = appSettings.GetString("oauth.vkcom.Scope");
             ApiVersion = appSettings.GetString("oauth.vkcom.ApiVersion");
-
             AccessTokenUrl = TokenUrl;
+
+            NavItem = new NavItem {
+                Href = "/auth/" + Name,
+                Label = "Sign in with VK",
+                Id = "btn-" + Name,
+                ClassName = "btn-social btn-vk",
+                IconClass = "fab svg-vk",
+            };
         }
 
         public string ApplicationId { get; set; }
@@ -130,7 +137,7 @@ namespace ServiceStack.Auth {
         }
 
         /// <summary>
-        /// If previous attemts failes, the subsequential calls 
+        /// If previous attempts fails, the sequential calls 
         /// build up code value like "code1,code2,code3"
         /// so we need the last one only
         /// </summary>

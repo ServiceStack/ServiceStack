@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Threading;
+using System.Threading.Tasks;
 using Funq;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
@@ -296,7 +297,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 			return Post(request);
 		}
 
-		public object Post(MoviesZip request)
+		public Task<object> Post(MoviesZip request)
 		{
 		    using (var db = DbFactory.Open())
 		    {
@@ -307,7 +308,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
                         : db.Select<Movie>("Genres LIKE {0}", "%" + request.Genre + "%")
                 };
 
-                return Request.ToOptimizedResult(response);
+                return Request.ToOptimizedResultAsync(response);
             }
 		}
 	}

@@ -21,7 +21,7 @@ using ServiceStack.Redis.Pipeline;
 namespace ServiceStack.Redis
 {
     public interface IRedisClient
-        : IEntityStore, ICacheClientExtended
+        : IEntityStore, ICacheClientExtended, IRemoveByPattern
     {
         //Basic Redis Connection operations
         long Db { get; set; }

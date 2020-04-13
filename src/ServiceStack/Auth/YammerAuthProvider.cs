@@ -53,6 +53,14 @@ namespace ServiceStack.Auth
             this.ClientId = appSettings.GetString("oauth.yammer.ClientId");
             this.ClientSecret = appSettings.GetString("oauth.yammer.ClientSecret");
             this.PreAuthUrl = appSettings.GetString("oauth.yammer.PreAuthUrl");
+
+            NavItem = new NavItem {
+                Href = "/auth/" + Name,
+                Label = "Sign in with Yammer",
+                Id = "btn-" + Name,
+                ClassName = "btn-social btn-yammer",
+                IconClass = "fab svg-yammer",
+            };
         }
 
         /// <summary>
@@ -209,6 +217,7 @@ namespace ServiceStack.Auth
                 {
                     obj.Each(x => authInfo[x.Key] = x.Value);
                 }
+                userSession.UserAuthName = tokens.Email;
             }
             catch (Exception ex)
             {

@@ -1,0 +1,1 @@
+console.log('patch-preload.js', window.swaggerUi);

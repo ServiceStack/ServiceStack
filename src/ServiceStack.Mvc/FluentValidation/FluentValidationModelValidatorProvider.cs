@@ -1,4 +1,4 @@
-#if !NETSTANDARD2_0
+#if !NETSTANDARD
 #region License
 // Copyright (c) Jeremy Skinner (http://www.jeremyskinner.co.uk)
 // 
@@ -14,19 +14,18 @@
 // See the License for the specific language governing permissions and 
 // limitations under the License.
 // 
-// The latest version of this file can be found at http://www.codeplex.com/FluentValidation
+// The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
-using ServiceStack.FluentValidation;
-using ServiceStack.FluentValidation.Attributes;
-using ServiceStack.FluentValidation.Internal;
-using ServiceStack.FluentValidation.Validators;
-
-namespace FluentValidation.Mvc {
+namespace ServiceStack.FluentValidation.Mvc {
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Web.Mvc;
+	using Attributes;
+	using Internal;
+	using Resources;
+	using Validators;
 
 	public delegate ModelValidator FluentValidationModelValidationFactory(ModelMetadata metadata, ControllerContext context, PropertyRule rule, IPropertyValidator validator);
 
@@ -45,6 +44,8 @@ namespace FluentValidation.Mvc {
 			{ typeof(IRegularExpressionValidator), (metadata, context, rule, validator) => new RegularExpressionFluentValidationPropertyValidator(metadata, context, rule, validator) },
 			{ typeof(ILengthValidator), (metadata, context, rule, validator) => new StringLengthFluentValidationPropertyValidator(metadata, context, rule, validator)},
 			{ typeof(InclusiveBetweenValidator), (metadata, context, rule, validator) => new RangeFluentValidationPropertyValidator(metadata, context, rule, validator) },
+			{ typeof(GreaterThanOrEqualValidator), (metadata, context, rule, validator) => new MinFluentValidationPropertyValidator(metadata, context, rule, validator) },
+			{ typeof(LessThanOrEqualValidator), (metadata, context, rule, validator) => new MaxFluentValidationPropertyValidator(metadata, context, rule, validator) },
 			{ typeof(EqualValidator), (metadata, context, rule, validator) => new EqualToFluentValidationPropertyValidator(metadata, context, rule, validator) },
 			{ typeof(CreditCardValidator), (metadata, context, description, validator) => new CreditCardFluentValidationPropertyValidator(metadata, context, description, validator) }
 		};
@@ -75,14 +76,22 @@ namespace FluentValidation.Mvc {
 		}
 
 		public override IEnumerable<ModelValidator> GetValidators(ModelMetadata metadata, ControllerContext context) {
-			if (IsValidatingProperty(metadata)) {
-				return GetValidatorsForProperty(metadata, context, ValidatorFactory.GetValidator(metadata.ContainerType));
-			}
+			IValidator validator = CreateValidator(metadata, context);
 
-			return GetValidatorsForModel(metadata, context, ValidatorFactory.GetValidator(metadata.ModelType));
+			if (IsValidatingProperty(metadata)) {
+				return GetValidatorsForProperty(metadata, context, validator);
+			}
+			return GetValidatorsForModel(metadata, context, validator);
 		}
 
-		IEnumerable<ModelValidator> GetValidatorsForProperty(ModelMetadata metadata, ControllerContext context, IValidator validator) {
+		protected virtual IValidator CreateValidator(ModelMetadata metadata, ControllerContext context) {
+			if (IsValidatingProperty(metadata)) {
+				return ValidatorFactory.GetValidator(metadata.ContainerType);
+			}
+			return ValidatorFactory.GetValidator(metadata.ModelType);
+		}
+
+		protected IEnumerable<ModelValidator> GetValidatorsForProperty(ModelMetadata metadata, ControllerContext context, IValidator validator) {
 			var modelValidators = new List<ModelValidator>();
 
 			if (validator != null) {
@@ -90,9 +99,11 @@ namespace FluentValidation.Mvc {
 
 				var validatorsWithRules = from rule in descriptor.GetRulesForMember(metadata.PropertyName)
 										  let propertyRule = (PropertyRule)rule
+										  where propertyRule.Condition == null && propertyRule.AsyncCondition == null
 										  let validators = rule.Validators
 										  where validators.Any()
 										  from propertyValidator in validators
+										  where propertyValidator.Options.Condition == null && propertyValidator.Options.AsyncCondition == null
 										  let modelValidatorForProperty = GetModelValidator(metadata, context, propertyRule, propertyValidator)
 										  where modelValidatorForProperty != null
 										  select modelValidatorForProperty;
@@ -115,7 +126,7 @@ namespace FluentValidation.Mvc {
 			return modelValidators;
 		}
 
-		private ModelValidator GetModelValidator(ModelMetadata meta, ControllerContext context, PropertyRule rule, IPropertyValidator propertyValidator) {
+		protected virtual ModelValidator GetModelValidator(ModelMetadata meta, ControllerContext context, PropertyRule rule, IPropertyValidator propertyValidator) {
 			var type = propertyValidator.GetType();
 			
 			var factory = validatorFactories
@@ -126,19 +137,24 @@ namespace FluentValidation.Mvc {
 			return factory(meta, context, rule, propertyValidator);
 		}
 
-		ModelValidator CreateNotNullValidatorForProperty(ModelMetadata metadata, ControllerContext cc) {
-			return new RequiredFluentValidationPropertyValidator(metadata, cc, null, new NotNullValidator());
+		protected virtual ModelValidator CreateNotNullValidatorForProperty(ModelMetadata metadata, ControllerContext cc) {
+
+			var fakeRule = new PropertyRule(null, x => metadata.Model, null, null, metadata.ModelType, null) {
+				PropertyName = metadata.PropertyName,
+				DisplayName = new StaticStringSource(metadata.GetDisplayName()),
+			};
+			return new RequiredFluentValidationPropertyValidator(metadata, cc, fakeRule, new NotNullValidator());
 		}
 
 
 
-		IEnumerable<ModelValidator> GetValidatorsForModel(ModelMetadata metadata, ControllerContext context, IValidator validator) {
+		protected virtual IEnumerable<ModelValidator> GetValidatorsForModel(ModelMetadata metadata, ControllerContext context, IValidator validator) {
 			if (validator != null) {
 				yield return new FluentValidationModelValidator(metadata, context, validator);
 			}
 		}
 
-		bool IsValidatingProperty(ModelMetadata metadata) {
+		protected virtual bool IsValidatingProperty(ModelMetadata metadata) {
 			return metadata.ContainerType != null && !string.IsNullOrEmpty(metadata.PropertyName);
 		}
 	}

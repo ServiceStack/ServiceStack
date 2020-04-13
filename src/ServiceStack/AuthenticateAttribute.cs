@@ -69,7 +69,7 @@ namespace ServiceStack
             
             req.PopulateFromRequestIfHasSessionId(requestDto);
 
-            PreAuthenticate(req, authProviders);
+            await PreAuthenticateAsync(req, authProviders);
 
             if (res.IsClosed)
                 return;
@@ -84,8 +84,15 @@ namespace ServiceStack
             }
         }
 
-        internal static void PreAuthenticate(IRequest req, IEnumerable<IAuthProvider> authProviders)
+        internal static Task PreAuthenticateAsync(IRequest req, IEnumerable<IAuthProvider> authProviders)
         {
+            var authValidate = HostContext.GetPlugin<AuthFeature>()?.OnAuthenticateValidate;
+            var ret = authValidate?.Invoke(req);
+            if (ret != null)
+            {
+                return req.Response.WriteToResponse(req, ret);
+            }
+
             //Call before GetSession so Exceptions can bubble
             if (!req.Items.ContainsKey(Keywords.HasPreAuthenticated))
             {
@@ -94,9 +101,10 @@ namespace ServiceStack
                 {
                     authWithRequest.PreAuthenticate(req, req.Response);
                     if (req.Response.IsClosed)
-                        return;
+                        return TypeConstants.EmptyTask;
                 }
             }
+            return TypeConstants.EmptyTask;
         }
 
         protected bool DoHtmlRedirectIfConfigured(IRequest req, IResponse res, bool includeRedirectParam = false)
@@ -110,16 +118,46 @@ namespace ServiceStack
             return false;
         }
 
+        protected bool DoHtmlRedirectAccessDeniedIfConfigured(IRequest req, IResponse res, bool includeRedirectParam = false)
+        {
+            var htmlRedirect = this.HtmlRedirect ?? AuthenticateService.HtmlRedirectAccessDenied ?? AuthenticateService.HtmlRedirect;
+            if (htmlRedirect != null && req.ResponseContentType.MatchesContentType(MimeTypes.Html))
+            {
+                DoHtmlRedirect(htmlRedirect, req, res, includeRedirectParam);
+                return true;
+            }
+            return false;
+        }
+
         public static void DoHtmlRedirect(string redirectUrl, IRequest req, IResponse res, bool includeRedirectParam)
+        {
+            var url = GetHtmlRedirectUrl(req, redirectUrl, includeRedirectParam);
+            res.RedirectToUrl(url);
+        }
+
+        public static string GetHtmlRedirectUrl(IRequest req) => GetHtmlRedirectUrl(req,
+            AuthenticateService.HtmlRedirectAccessDenied ?? AuthenticateService.HtmlRedirect,
+            includeRedirectParam: true);
+        
+        public static string GetHtmlRedirectUrl(IRequest req, string redirectUrl, bool includeRedirectParam)
         {
             var url = req.ResolveAbsoluteUrl(redirectUrl);
             if (includeRedirectParam)
             {
-                var absoluteRequestPath = req.ResolveAbsoluteUrl("~" + req.PathInfo + ToQueryString(req.QueryString));
-                url = url.AddQueryParam(HostContext.ResolveLocalizedString(LocalizedStrings.Redirect), absoluteRequestPath);
-            }
+                var redirectPath = !AuthenticateService.HtmlRedirectReturnPathOnly
+                    ? req.ResolveAbsoluteUrl("~" + req.PathInfo + ToQueryString(req.QueryString))
+                    : req.PathInfo + ToQueryString(req.QueryString);
 
-            res.RedirectToUrl(url);
+                var returnParam = HostContext.ResolveLocalizedString(AuthenticateService.HtmlRedirectReturnParam) ??
+                                  HostContext.ResolveLocalizedString(LocalizedStrings.Redirect);
+
+                if (url.IndexOf("?" + returnParam, StringComparison.OrdinalIgnoreCase) == -1 &&
+                    url.IndexOf("&" + returnParam, StringComparison.OrdinalIgnoreCase) == -1)
+                {
+                    return url.AddQueryParam(returnParam, redirectPath);
+                }
+            }
+            return url;
         }
 
         private static string ToQueryString(NameValueCollection queryStringCollection)

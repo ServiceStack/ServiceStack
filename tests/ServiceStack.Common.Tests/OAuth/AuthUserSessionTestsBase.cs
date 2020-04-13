@@ -1,7 +1,6 @@
 ﻿#if !NETCORE_SUPPORT
 using System;
 using System.Collections.Generic;
-using Moq;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
@@ -46,7 +45,32 @@ namespace ServiceStack.Common.Tests.OAuth
             };
         }
 
-        protected Mock<IServiceBase> mockService;
+        public class MockService : IServiceBase
+        {
+            public IAuthRepository AuthRepo { get; set; }
+            public IRequest Request { get; set; }
+            
+            
+            public T TryResolve<T>()
+            {
+                if (typeof(T) == typeof(IAuthRepository))
+                    return (T)AuthRepo;
+                
+                throw new NotImplementedException();
+            }
+
+            public IResolver GetResolver()
+            {
+                return this;
+            }
+
+            public T ResolveService<T>()
+            {
+                throw new NotImplementedException();
+            }
+        }
+            
+
         protected BasicRequest requestContext;
         protected IServiceBase service;
 
@@ -84,8 +108,7 @@ namespace ServiceStack.Common.Tests.OAuth
             }
             catch { /*ignore*/ }
 
-            var appsettingsMock = new Mock<IAppSettings>();
-            var appSettings = appsettingsMock.Object;
+            var appSettings = new DictionarySettings();
 
             new AuthFeature(null, new IAuthProvider[] {
                 new CredentialsAuthProvider(),
@@ -95,16 +118,16 @@ namespace ServiceStack.Common.Tests.OAuth
             })
             .Register(null);
 
-            mockService = new Mock<IServiceBase>();
-            mockService.Setup(x => x.TryResolve<IAuthRepository>()).Returns(userAuthRepository);
             requestContext = new BasicRequest
             {
                 Headers = {
                     {"X-ss-id", SessionExtensions.CreateRandomSessionId() }
                 }
             };
-            mockService.Setup(x => x.Request).Returns(requestContext);
-            service = mockService.Object;
+            service = new MockService {
+                AuthRepo = userAuthRepository,
+                Request = requestContext 
+            };
 
             RegisterDto = new Register
             {

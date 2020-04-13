@@ -29,7 +29,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [TearDown]
         public void TearDown()
         {
-            Licensing.RegisterLicense(new AppSettings().GetString("servicestack:license"));
+//            Licensing.RegisterLicense(new AppSettings().GetString("servicestack:license"));
+            Licensing.RegisterLicense(Environment.GetEnvironmentVariable("SERVICESTACK_LICENSE"));
         }
 
         [Test]
@@ -59,7 +60,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
-        [Ignore("TODO: Ingore reason"), Test]
+        [Ignore("TODO: Ignore reason"), Test]
         public void Allows_MegaDto_through_ServiceClient()
         {
             using (var appHost = new LicenseTestsAppHost(typeof(MegaDtoService)))
@@ -89,7 +90,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public class FreeUsageRabbitMqClientTests : LicenseUsageTests
     {
-        [Test]
+        [Ignore("Integration Test"), Test]
         public void Allows_MegaDto_through_RabbitMqClients()
         {
             var mqFactory = new RabbitMqMessageFactory(connectionString: Config.RabbitMQConnString);
@@ -142,7 +143,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Allows_registration_of_11_operations()
         {
-            Licensing.RegisterLicense(new AppSettings().GetString("servicestack:license"));
+//            Licensing.RegisterLicense(new AppSettings().GetString("servicestack:license"));
+            Licensing.RegisterLicense(Environment.GetEnvironmentVariable("SERVICESTACK_LICENSE"));
 
             using (var appHost = new LicenseTestsAppHost(typeof(Services10), typeof(Service1)))
             {
@@ -275,6 +277,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public override void Configure(Container container)
             {
                 Plugins.RemoveAll(x => x is NativeTypesFeature);
+                GetPlugin<MetadataFeature>().EnableNav = false;
             }
         }
 

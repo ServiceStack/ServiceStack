@@ -21,6 +21,11 @@ namespace ServiceStack.Redis
         Action<string, string> OnMessage { get; set; }
 
         /// <summary>
+        /// Registered handler called when each message is received
+        /// </summary>
+        Action<string, byte[]> OnMessageBytes { get; set; }
+
+        /// <summary>
         /// Registered handler called when each channel is unsubscribed
         /// </summary>
         Action<string> OnUnSubscribe { get; set; }

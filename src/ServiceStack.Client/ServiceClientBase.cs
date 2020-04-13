@@ -66,7 +66,7 @@ namespace ServiceStack
         public NameValueCollection Headers { get; private set; }
 
         public const string DefaultHttpMethod = HttpMethods.Post;
-        public static string DefaultUserAgent = "ServiceStack .NET Client " + Env.ServiceStackVersion;
+        public static string DefaultUserAgent = "ServiceStack .NET Client " + Env.VersionString;
 
         readonly AsyncServiceClient asyncClient;
 
@@ -287,9 +287,12 @@ namespace ServiceStack
             set => asyncClient.ShareCookiesWithBrowser = this.shareCookiesWithBrowser = value;
         }
 
-#if !SL5
-        public IWebProxy Proxy { get; set; }
-#endif
+        private IWebProxy proxy;
+        public IWebProxy Proxy
+        {
+            get => this.proxy;
+            set => asyncClient.Proxy = this.proxy = value;
+        }
 
         private ICredentials credentials;
 
@@ -385,6 +388,20 @@ namespace ServiceStack
             }
         }
         private string refreshTokenUri;
+
+        /// <summary>
+        /// Whether new AccessToken from GetAccessToken should return BearerToken in Response DTO or Cookie
+        /// </summary>
+        public bool UseTokenCookie
+        {
+            get => useTokenCookie;
+            set
+            {
+                useTokenCookie = value;
+                asyncClient.UseTokenCookie = value;
+            }
+        }
+        private bool useTokenCookie;
 
         /// <summary>
         /// The request filter is called before any request.
@@ -619,13 +636,25 @@ namespace ServiceStack
                 {
                     if (RefreshToken != null)
                     {
-                        var refreshRequest = new GetAccessToken { RefreshToken = RefreshToken };
+                        var refreshRequest = new GetAccessToken {
+                            RefreshToken = RefreshToken,
+                            UseTokenCookie = UseTokenCookie,
+                        };                        
                         var uri = this.RefreshTokenUri ?? this.BaseUri.CombineWith(refreshRequest.ToPostUrl());
+
+                        if (this.UseTokenCookie)
+                        {
+                            this.BearerToken = null;
+                        }
 
                         GetAccessTokenResponse tokenResponse;
                         try
                         {
-                            tokenResponse = uri.PostJsonToUrl(refreshRequest).FromJson<GetAccessTokenResponse>();
+                            tokenResponse = uri.PostJsonToUrl(refreshRequest, requestFilter: req => {
+                                if (UseTokenCookie) {
+                                    req.CookieContainer = CookieContainer;
+                                }
+                            }).FromJson<GetAccessTokenResponse>();
                         }
                         catch (WebException refreshEx)
                         {
@@ -640,18 +669,30 @@ namespace ServiceStack
                         }
 
                         var accessToken = tokenResponse?.AccessToken;
-                        if (string.IsNullOrEmpty(accessToken))
-                            throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
-
                         var refreshClient = (HttpWebRequest) createWebRequest();
-                        if (this.GetTokenCookie() != null)
+                        var tokenCookie = this.GetTokenCookie();
+                        
+                        if (UseTokenCookie)
                         {
-                            this.SetTokenCookie(accessToken);
-                            refreshClient.CookieContainer.SetTokenCookie(BaseUri, accessToken);
+                            if (tokenCookie == null)
+                                throw new RefreshTokenException("Could not retrieve new AccessToken Cooke from: " + uri);
+                            
+                            refreshClient.CookieContainer.SetTokenCookie(BaseUri, tokenCookie);
                         }
                         else
                         {
-                            refreshClient.AddBearerToken(this.BearerToken = accessToken);
+                            if (string.IsNullOrEmpty(accessToken))
+                                throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
+
+                            if (tokenCookie != null)
+                            {
+                                this.SetTokenCookie(accessToken);
+                                refreshClient.CookieContainer.SetTokenCookie(BaseUri, accessToken);
+                            }
+                            else
+                            {
+                                refreshClient.AddBearerToken(this.BearerToken = accessToken);
+                            }
                         }
 
                         var refreshResponse = getResponse(refreshClient);
@@ -671,7 +712,7 @@ namespace ServiceStack
                     return true;
                 }
             }
-            catch (WebServiceException /*retrhow*/)
+            catch (WebServiceException /*rethrow*/)
             {
                 throw;
             }
@@ -893,7 +934,9 @@ namespace ServiceStack
                 client.Method = httpMethod;
                 PclExportClient.Instance.AddHeader(client, Headers);
 
-                if (Proxy != null) client.Proxy = Proxy;
+                if (Proxy != null) 
+                    client.Proxy = Proxy;
+                
                 PclExport.Instance.Config(client,
                     allowAutoRedirect: AllowAutoRedirect,
                     timeout: this.Timeout,
@@ -1988,6 +2031,12 @@ namespace ServiceStack
             return sessionId;
         }
 
+        public static string GetOptions(this IServiceClient client)
+        {
+            client.GetCookieValues().TryGetValue("ss-opt", out var sessionId);
+            return sessionId;
+        }
+
         public static void SetSessionId(this IServiceClient client, string sessionId)
         {
             if (sessionId == null)
@@ -2002,6 +2051,14 @@ namespace ServiceStack
                 return;
 
             client.SetCookie("ss-pid", sessionId, expiresIn: TimeSpan.FromDays(365 * 20));
+        }
+
+        public static void SetOptions(this IServiceClient client, string options)
+        {
+            if (options == null)
+                return;
+
+            client.SetCookie("ss-opt", options);
         }
 
         public static string GetTokenCookie(this IServiceClient client)

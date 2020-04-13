@@ -14,8 +14,8 @@ namespace ServiceStack.Metadata
             get
             {
                 var endpointConfig = MetadataConfig.Soap12;
-                var endpontPath = ResponseMessage != null ? endpointConfig.SyncReplyUri : endpointConfig.AsyncOneWayUri;
-                return $"{endpontPath}";
+                var endpointPath = ResponseMessage != null ? endpointConfig.SyncReplyUri : endpointConfig.AsyncOneWayUri;
+                return $"{endpointPath}";
             }
         }
 

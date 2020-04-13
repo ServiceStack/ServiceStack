@@ -32,10 +32,26 @@ namespace ServiceStack
         public Action<IEventSubscription, IRequest> OnCreated { get; set; }
         public Action<IEventSubscription, Dictionary<string, string>> OnConnect { get; set; }
         public Action<IEventSubscription> OnSubscribe { get; set; }
+        /// <summary>
+        /// Calls sync OnSubscribe if exists by default
+        /// </summary>
+        public Func<IEventSubscription, Task> OnSubscribeAsync { get; set; }
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
+        /// <summary>
+        /// Calls sync OnUnsubscribe if exists by default
+        /// </summary>
+        public Func<IEventSubscription,Task> OnUnsubscribeAsync { get; set; }
+        /// <summary>
+        /// Fired for both Sync/Async Notifications 
+        /// </summary>
         public Action<IEventSubscription, IResponse, string> OnPublish { get; set; }
+        /// <summary>
+        /// Only fired for async notifications. Calls sync OnPublish if exists by default.
+        /// </summary>
+        public Func<IEventSubscription, IResponse, string, Task> OnPublishAsync { get; set; }
 
         public Action<IResponse, string> WriteEvent { get; private set; }
+        public Func<IResponse, string, Task> WriteEventAsync { get; private set; }
 
         public Action<IEventSubscription, Exception> OnError { get; set; }
         public bool NotifyChannelOfSubscriptions { get; set; }
@@ -51,9 +67,28 @@ namespace ServiceStack
 
             WriteEvent = (res, frame) =>
             {
-                var bytes = frame.ToUtf8Bytes();
-                res.OutputStream.Write(bytes, 0, bytes.Length);
-                res.Flush();
+                if (res is IWriteEvent writeEvent)
+                {
+                    writeEvent.WriteEvent(frame);
+                }
+                else
+                {
+                    MemoryProvider.Instance.Write(res.AllowSyncIO().OutputStream, frame.AsMemory());
+                    res.Flush();
+                }
+            };
+
+            WriteEventAsync = async (res, frame) => 
+            {
+                if (res is IWriteEventAsync writeEvent)
+                {
+                    await writeEvent.WriteEventAsync(frame);
+                }
+                else
+                {
+                    await MemoryProvider.Instance.WriteAsync(res.OutputStream, frame.AsMemory());
+                    await res.FlushAsync();
+                }
             };
 
             IdleTimeout = TimeSpan.FromSeconds(30);
@@ -62,6 +97,21 @@ namespace ServiceStack
 
             NotifyChannelOfSubscriptions = true;
             ValidateUserAddress = true;
+
+            OnSubscribeAsync = sub => {
+                OnSubscribe?.Invoke(sub);
+                return TypeConstants.EmptyTask;
+            };
+
+            OnUnsubscribeAsync = sub => {
+                OnUnsubscribe?.Invoke(sub);
+                return TypeConstants.EmptyTask;
+            };
+
+            OnPublishAsync = (sub, res, msg) => {
+                OnPublish?.Invoke(sub, res, msg);
+                return TypeConstants.EmptyTask;
+            };
         }
 
         public void Register(IAppHost appHost)
@@ -74,8 +124,8 @@ namespace ServiceStack
                 {
                     IdleTimeout = IdleTimeout,
                     HouseKeepingInterval = HouseKeepingInterval,
-                    OnSubscribe = OnSubscribe,
-                    OnUnsubscribe = OnUnsubscribe,
+                    OnSubscribeAsync = OnSubscribeAsync,
+                    OnUnsubscribeAsync = OnUnsubscribeAsync,
                     NotifyChannelOfSubscriptions = NotifyChannelOfSubscriptions,
                     OnError = OnError,
                 };
@@ -122,21 +172,24 @@ namespace ServiceStack
         public static int RemoveExpiredSubscriptionsEvery { get; } = 1000;
         private static int ConnectionsCount = 0;
 
-        public override Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
+        public override async Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
         {
             if (HostContext.ApplyCustomHandlerRequestFilters(req, res))
-                return TypeConstants.EmptyTask;
+                return;
 
-            var feature = HostContext.GetPlugin<ServerEventsFeature>();
+            var feature = HostContext.AssertPlugin<ServerEventsFeature>();
 
             var session = req.GetSession();
             if (feature.LimitToAuthenticatedUsers && !session.IsAuthenticated)
-                return session.ReturnFailedAuthentication(req);
+            {
+                await session.ReturnFailedAuthentication(req);
+                return;
+            }
 
             var serverEvents = req.TryResolve<IServerEvents>();
             if ((Interlocked.Increment(ref ConnectionsCount) % RemoveExpiredSubscriptionsEvery) == 0)
             {
-                serverEvents.RemoveExpiredSubscriptions();
+                await serverEvents.RemoveExpiredSubscriptionsAsync();
             }
 
             res.ContentType = MimeTypes.ServerSentEvents;
@@ -147,7 +200,7 @@ namespace ServiceStack
 
             feature.OnInit?.Invoke(req);
 
-            res.Flush();
+            await res.FlushAsync();
 
             var userAuthId = session?.UserAuthId;
             var anonUserId = serverEvents.GetNextSequence("anonUser");
@@ -183,6 +236,7 @@ namespace ServiceStack
                 IsAuthenticated = session != null && session.IsAuthenticated,
                 UserAddress = req.UserHostAddress,
                 OnPublish = feature.OnPublish,
+                OnPublishAsync = feature.OnPublishAsync,
                 OnError = feature.OnError,
                 Meta = {
                     { "userId", userId },
@@ -190,7 +244,7 @@ namespace ServiceStack
                     { "displayName", displayName },
                     { "channels", string.Join(",", channels) },
                     { "createdAt", now.ToUnixTimeMs().ToString() },
-                    { AuthMetadataProvider.ProfileUrlKey, session.GetProfileUrl() ?? AuthMetadataProvider.DefaultNoProfileImgUrl },
+                    { AuthMetadataProvider.ProfileUrlKey, session.GetProfileUrl() ?? Svg.GetDataUri(Svg.Icons.DefaultProfile) },
                 },
                 ServerArgs = new Dictionary<string, string>(),
             };
@@ -199,7 +253,7 @@ namespace ServiceStack
             feature.OnCreated?.Invoke(subscription, req);
 
             if (req.Response.IsClosed)
-                return TypeConstants.EmptyTask; //Allow short-circuiting in OnCreated callback
+                return; //Allow short-circuiting in OnCreated callback
 
             var heartbeatUrl = feature.HeartbeatPath != null
                 ? req.ResolveAbsoluteUrl("~/".CombineWith(feature.HeartbeatPath)).AddQueryParam("id", subscriptionId)
@@ -223,22 +277,37 @@ namespace ServiceStack
 
             feature.OnConnect?.Invoke(subscription, subscription.ConnectArgs);
 
-            serverEvents.Register(subscription, subscription.ConnectArgs);
+            await serverEvents.RegisterAsync(subscription, subscription.ConnectArgs);
 
+            if (req.Response is IWriteEventAsync) // gRPC
+            {
+                subscription.OnDispose = sub =>
+                {
+                    try
+                    {
+                        (sub as EventSubscription)?.EndRequestIfDisposed();
+                    } catch { }
+                };
+                return;
+            }
+            
             var tcs = new TaskCompletionSource<bool>();
 
-            subscription.OnDispose = _ =>
+            subscription.OnDispose = sub =>
             {
                 try
                 {
-                    res.EndHttpHandlerRequest(skipHeaders: true);
-                }
-                catch { }
+                    (sub as EventSubscription)?.EndRequestIfDisposed();
+                } catch { }
+
+                if (!res.IsClosed)
+                    System.Diagnostics.Debug.Fail("Should already be closed");
+
                 if (!tcs.Task.IsCompleted)
                     tcs.SetResult(true);
             };
 
-            return tcs.Task;
+            await tcs.Task;
         }
 
         static string AddSessionParamsIfAny(string url, IRequest req)
@@ -262,22 +331,22 @@ namespace ServiceStack
     {
         public override bool RunAsAsync() { return true; }
 
-        public override Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
+        public override async Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
         {
             if (HostContext.ApplyCustomHandlerRequestFilters(req, res))
-                return TypeConstants.EmptyTask;
+                return;
 
             res.ApplyGlobalResponseHeaders();
 
             var serverEvents = req.TryResolve<IServerEvents>();
 
-            serverEvents.RemoveExpiredSubscriptions();
+            await serverEvents.RemoveExpiredSubscriptionsAsync();
 
             var feature = HostContext.GetPlugin<ServerEventsFeature>();
             feature.OnHeartbeatInit?.Invoke(req);
 
             if (req.Response.IsClosed)
-                return TypeConstants.EmptyTask;
+                return;
 
             var subscriptionId = req.QueryString["id"];
             var subscription = serverEvents.GetSubscriptionInfo(subscriptionId);
@@ -285,25 +354,19 @@ namespace ServiceStack
             {
                 res.StatusCode = 404;
                 res.StatusDescription = ErrorMessages.SubscriptionNotExistsFmt.Fmt(subscriptionId.SafeInput());
-                res.EndHttpHandlerRequest(skipHeaders: true);
-                return TypeConstants.EmptyTask;
             }
-
-            if (!feature.CanAccessSubscription(req, subscription))
+            else if (!feature.CanAccessSubscription(req, subscription))
             {
                 res.StatusCode = 403;
                 res.StatusDescription = "Invalid User Address";
-                res.EndHttpHandlerRequest(skipHeaders: true);
-                return TypeConstants.EmptyTask;
             }
-
-            if (!serverEvents.Pulse(subscriptionId))
+            else if (!await serverEvents.PulseAsync(subscriptionId))
             {
                 res.StatusCode = 404;
                 res.StatusDescription = ErrorMessages.SubscriptionNotExistsFmt.Fmt(subscriptionId.SafeInput());
             }
-            res.EndHttpHandlerRequest(skipHeaders: true);
-            return TypeConstants.EmptyTask;
+            
+            await res.EndHttpHandlerRequestAsync(skipHeaders: true);
         }
     }
 
@@ -342,7 +405,7 @@ namespace ServiceStack
     {
         public IServerEvents ServerEvents { get; set; }
 
-        public object Any(UnRegisterEventSubscriber request)
+        public async Task<object> Any(UnRegisterEventSubscriber request)
         {
             var subscription = ServerEvents.GetSubscriptionInfo(request.Id);
 
@@ -353,12 +416,12 @@ namespace ServiceStack
             if (!feature.CanAccessSubscription(base.Request, subscription))
                 throw HttpError.Forbidden(ErrorMessages.SubscriptionForbiddenFmt.Fmt(request.Id.SafeInput()));
 
-            ServerEvents.UnRegister(subscription.SubscriptionId);
+            await ServerEvents.UnRegisterAsync(subscription.SubscriptionId);
 
             return subscription.Meta;
         }
 
-        public object Any(UpdateEventSubscriber request)
+        public async Task<object> Any(UpdateEventSubscriber request)
         {
             var subscription = ServerEvents.GetSubscriptionInfo(request.Id);
 
@@ -370,9 +433,9 @@ namespace ServiceStack
                 throw HttpError.Forbidden(ErrorMessages.SubscriptionForbiddenFmt.Fmt(request.Id.SafeInput()));
 
             if (request.UnsubscribeChannels != null)
-                ServerEvents.UnsubscribeFromChannels(subscription.SubscriptionId, request.UnsubscribeChannels);
+                await ServerEvents.UnsubscribeFromChannelsAsync(subscription.SubscriptionId, request.UnsubscribeChannels);
             if (request.SubscribeChannels != null)
-                ServerEvents.SubscribeToChannels(subscription.SubscriptionId, request.SubscribeChannels);
+                await ServerEvents.SubscribeToChannelsAsync(subscription.SubscriptionId, request.SubscribeChannels);
 
             return new UpdateEventSubscriberResponse();
         }
@@ -413,7 +476,13 @@ namespace ServiceStack
         private long LastPulseAtTicks = DateTime.UtcNow.Ticks;
         public DateTime LastPulseAt
         {
-            get => new DateTime(Interlocked.Read(ref LastPulseAtTicks), DateTimeKind.Utc);
+            get
+            {
+                // assume gRPC connection is always active unless response is closed
+                return !response.IsClosed && (response is IWriteEvent || response is IWriteEventAsync)
+                   ? DateTime.UtcNow 
+                   : new DateTime(Interlocked.Read(ref LastPulseAtTicks), DateTimeKind.Utc);
+            }
             set => Interlocked.Exchange(ref LastPulseAtTicks, value.Ticks);
         }
 
@@ -435,6 +504,7 @@ namespace ServiceStack
             this.Meta = new Dictionary<string, string>();
             var feature = HostContext.GetPlugin<ServerEventsFeature>();
             this.WriteEvent = feature.WriteEvent;
+            this.WriteEventAsync = feature.WriteEventAsync;
         }
 
         public void UpdateChannels(string[] channels)
@@ -443,16 +513,19 @@ namespace ServiceStack
             this.Meta["channels"] = string.Join(",", channels);
         }
 
+        public Func<IEventSubscription, Task> OnUnsubscribeAsync { get; set; }
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
-        public Action<IEventSubscription> OnDispose { get; set; }
         public Action<IEventSubscription, IResponse, string> OnPublish { get; set; }
+        public Func<IEventSubscription, IResponse, string, Task> OnPublishAsync { get; set; }
+        public Action<IEventSubscription> OnDispose { get; set; }
         public Action<IResponse, string> WriteEvent { get; set; }
+        public Func<IResponse, string, Task> WriteEventAsync { get; set; }
         public Action<IEventSubscription, Exception> OnError { get; set; }
         public bool IsClosed => this.response.IsClosed;
         public bool IsDisposed => isDisposed;
 
         StringBuilder buffer = new StringBuilder();
-
+        
         public void Pulse()
         {
             LastPulseAt = DateTime.UtcNow;
@@ -471,15 +544,15 @@ namespace ServiceStack
             Publish(selector, null);
         }
 
-        public void Publish(string selector, string message) => PublishRaw(CreateFrame(selector, message));
+        readonly SemaphoreSlim asyncLock = new SemaphoreSlim(1);
 
-        public void PublishRaw(string frame)
+        public Task PublishAsync(string selector, string message, CancellationToken token = default) => 
+            PublishRawAsync(CreateFrame(selector, message));
+        public async Task PublishRawAsync(string frame, CancellationToken token = default)
         {
-            bool acquiredLock = false;
             try
             {
-                Monitor.TryEnter(response, ref acquiredLock);
-                if (acquiredLock)
+                if (asyncLock.Wait(0))
                 {
                     if (!EndRequestIfDisposed())
                     {
@@ -489,11 +562,14 @@ namespace ServiceStack
 
                         try
                         {
-                            WriteEvent(response, frame);
+                            if (OnPublishAsync != null)
+                                await OnPublishAsync(this, response, frame);
+                            
+                            await WriteEventAsync(response, frame);
                         }
                         catch (Exception ex)
                         {
-                            HandleWriteException(response, frame, ex);
+                            await HandleWriteExceptionAsync(frame, ex, token);
                         }
 
                         EndRequestIfDisposed();
@@ -507,8 +583,46 @@ namespace ServiceStack
             }
             finally
             {
-                if (acquiredLock)
-                    Monitor.Exit(response);
+                asyncLock.Release();
+            }
+        }
+
+        public void Publish(string selector, string message) => PublishRaw(CreateFrame(selector, message));
+
+        public void PublishRaw(string frame)
+        {
+            try
+            {
+                if (asyncLock.Wait(0))
+                {
+                    if (!EndRequestIfDisposed())
+                    {
+                        var pendingWrites = GetAndResetBuffer();
+                        if (pendingWrites != null)
+                            frame = pendingWrites + frame;
+
+                        try
+                        {
+                            OnPublish?.Invoke(this, response, frame);
+                            WriteEvent(response, frame);
+                        }
+                        catch (Exception ex)
+                        {
+                            TaskExt.RunSync(() => HandleWriteExceptionAsync(frame, ex));
+                        }
+
+                        EndRequestIfDisposed();
+                    }
+                }
+                else
+                {
+                    lock (buffer)
+                        buffer.Append(frame);
+                }
+            }
+            finally
+            {
+                asyncLock.Release();
             }
         }
 
@@ -525,7 +639,7 @@ namespace ServiceStack
             }
         }
 
-        void HandleWriteException(IResponse response, string frame, Exception ex)
+        Task HandleWriteExceptionAsync(string frame, Exception ex, CancellationToken token=default)
         {
             if (ex != null)
             {
@@ -547,10 +661,10 @@ namespace ServiceStack
                 }
             }
 
-            Unsubscribe();
+            return UnsubscribeAsync();
         }
 
-        bool EndRequestIfDisposed()
+        internal bool EndRequestIfDisposed()
         {
             if (!isDisposed) return false;
             if (response.IsClosed) return true;
@@ -569,15 +683,29 @@ namespace ServiceStack
             return true;
         }
 
+        [Obsolete("Use UnsubscribeAsync. Will be removed in future.")]
         public void Unsubscribe()
         {
             if (Interlocked.CompareExchange(ref subscribed, 0, 1) == 1)
             {
-                var fn = OnUnsubscribe;
-                OnUnsubscribe = null;
-                fn?.Invoke(this);
+                var fn = OnUnsubscribeAsync;
+                OnUnsubscribeAsync = null;
+                response.Request.TryResolve<IServerEvents>()?.QueueAsyncTask(() => fn(this));
             }
             Dispose();
+        }
+
+        public Task UnsubscribeAsync()
+        {
+            if (Interlocked.CompareExchange(ref subscribed, 0, 1) == 1)
+            {
+                var fn = OnUnsubscribeAsync;
+                OnUnsubscribeAsync = null;
+                if (fn != null)
+                    return fn(this);
+            }
+            Dispose();
+            return TypeConstants.EmptyTask;
         }
 
         public void Dispose()
@@ -587,20 +715,7 @@ namespace ServiceStack
 
             isDisposed = true;
 
-            bool acquiredLock = false;
-            try
-            {
-                Monitor.TryEnter(response, ref acquiredLock);
-                if (acquiredLock)
-                    EndRequestIfDisposed();
-
-                // else PublishRaw has it, end at end of PublishRaw or next time it's run
-            }
-            finally
-            {
-                if (acquiredLock)
-                    Monitor.Exit(response);
-            }
+            EndRequestIfDisposed();
 
             OnDispose?.Invoke(this);
         }
@@ -624,11 +739,16 @@ namespace ServiceStack
 
         void UpdateChannels(string[] channels);
 
+        Func<IEventSubscription, Task> OnUnsubscribeAsync { get; set; }
         Action<IEventSubscription> OnUnsubscribe { get; set; }
+        [Obsolete("Use UnsubscribeAsync. Will be removed in future.")]
         void Unsubscribe();
+        Task UnsubscribeAsync();
 
         void Publish(string selector, string message);
+        Task PublishAsync(string selector, string message, CancellationToken token=default);
         void PublishRaw(string frame);
+        Task PublishRawAsync(string frame, CancellationToken token=default);
         void Pulse();
 
         Dictionary<string,string> ServerArgs { get; set; }
@@ -661,22 +781,22 @@ namespace ServiceStack
         public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromSeconds(30);
         public TimeSpan HouseKeepingInterval { get; set; } = TimeSpan.FromSeconds(5);
 
-        public Action<IEventSubscription> OnSubscribe { get; set; }
-        public Action<IEventSubscription> OnUnsubscribe { get; set; }
+        public Func<IEventSubscription, Task> OnSubscribeAsync { get; set; }
+        public Func<IEventSubscription,Task> OnUnsubscribeAsync { get; set; }
 
-        public Action<IEventSubscription> NotifyJoin { get; set; }
-        public Action<IEventSubscription> NotifyLeave { get; set; }
-        public Action<IEventSubscription> NotifyUpdate { get; set; }
-        public Action<IEventSubscription> NotifyHeartbeat { get; set; }
+        public Func<IEventSubscription, Task> NotifyJoinAsync { get; set; }
+        public Func<IEventSubscription, Task> NotifyLeaveAsync { get; set; }
+        public Func<IEventSubscription, Task> NotifyUpdateAsync { get; set; }
+        public Func<IEventSubscription, Task> NotifyHeartbeatAsync { get; set; }
         public Func<object, string> Serialize { get; set; }
 
         public bool NotifyChannelOfSubscriptions { get; set; }
 
-        public ConcurrentDictionary<string, IEventSubscription> Subcriptions;
-        public ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> ChannelSubcriptions;
-        public ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> UserIdSubcriptions;
-        public ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> UserNameSubcriptions;
-        public ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> SessionSubcriptions;
+        public ConcurrentDictionary<string, IEventSubscription> Subscriptions;
+        public ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> ChannelSubscriptions;
+        public ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> UserIdSubscriptions;
+        public ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> UserNameSubscriptions;
+        public ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> SessionSubscriptions;
 
         public Action<IEventSubscription, Exception> OnError { get; set; }
 
@@ -686,10 +806,10 @@ namespace ServiceStack
         {
             Reset();
 
-            NotifyJoin = s => NotifyChannels(s.Channels, "cmd.onJoin", s.Meta);
-            NotifyLeave = s => NotifyChannels(s.Channels, "cmd.onLeave", s.Meta);
-            NotifyUpdate = s => NotifyChannels(s.Channels, "cmd.onUpdate", s.Meta);
-            NotifyHeartbeat = s => NotifySubscription(s.SubscriptionId, "cmd.onHeartbeat", s.Meta);
+            NotifyJoinAsync = s => NotifyChannelsAsync(s.Channels, "cmd.onJoin", s.Meta);
+            NotifyLeaveAsync = s => NotifyChannelsAsync(s.Channels, "cmd.onLeave", s.Meta);
+            NotifyUpdateAsync = s => NotifyChannelsAsync(s.Channels, "cmd.onUpdate", s.Meta);
+            NotifyHeartbeatAsync = s => NotifySubscriptionAsync(s.SubscriptionId, "cmd.onHeartbeat", s.Meta);
             Serialize = o => o?.ToJson();
 
             var appHost = HostContext.AppHost;
@@ -698,19 +818,19 @@ namespace ServiceStack
             {
                 IdleTimeout = feature.IdleTimeout;
                 HouseKeepingInterval = feature.HouseKeepingInterval;
-                OnSubscribe = feature.OnSubscribe;
-                OnUnsubscribe = feature.OnUnsubscribe;
+                OnSubscribeAsync = feature.OnSubscribeAsync;
+                OnUnsubscribeAsync = feature.OnUnsubscribeAsync;
                 NotifyChannelOfSubscriptions = feature.NotifyChannelOfSubscriptions;
             }
         }
 
         public void Reset()
         {
-            Subcriptions = new ConcurrentDictionary<string, IEventSubscription>();
-            ChannelSubcriptions = new ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>>();
-            UserIdSubcriptions = new ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>>();
-            UserNameSubcriptions = new ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>>();
-            SessionSubcriptions = new ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>>();
+            Subscriptions = new ConcurrentDictionary<string, IEventSubscription>();
+            ChannelSubscriptions = new ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>>();
+            UserIdSubscriptions = new ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>>();
+            UserNameSubscriptions = new ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>>();
+            SessionSubscriptions = new ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>>();
         }
 
         public void Start()
@@ -726,16 +846,25 @@ namespace ServiceStack
         {
             if (isDisposed) return;
 
-            foreach (var sub in Subcriptions.ValuesWithoutLock())
+            foreach (var sub in Subscriptions.ValuesWithoutLock())
             {
                 sub.Publish(selector, Serialize(message));
             }
         }
 
-        public void NotifySubscription(string subscriptionId, string selector, object message, string channel = null)
+        public async Task NotifyAllAsync(string selector, object message, CancellationToken token = default)
         {
-            Notify(Subcriptions, subscriptionId, selector, message, channel);
+            foreach (var sub in Subscriptions.ValuesWithoutLock())
+            {
+                await sub.PublishAsync(selector, Serialize(message), token);
+            }
         }
+
+        public void NotifySubscription(string subscriptionId, string selector, object message, string channel = null) =>
+            Notify(Subscriptions, subscriptionId, selector, message, channel);
+
+        public Task NotifySubscriptionAsync(string subscriptionId, string selector, object message, string channel = null, CancellationToken token = default) =>
+            NotifyAsync(Subscriptions, subscriptionId, selector, message, channel, token);
 
         public void NotifyChannels(string[] channels, string selector, Dictionary<string, string> meta)
         {
@@ -747,36 +876,114 @@ namespace ServiceStack
             }
         }
 
-        public void NotifyChannel(string channel, string selector, object message)
-        {
-            Notify(ChannelSubcriptions, channel, channel + "@" + selector, message, channel);
-        }
-
-        public void NotifyUserId(string userId, string selector, object message, string channel = null)
-        {
-            Notify(UserIdSubcriptions, userId, selector, message, channel);
-        }
-
-        public void NotifyUserName(string userName, string selector, object message, string channel = null)
-        {
-            Notify(UserNameSubcriptions, userName, selector, message, channel);
-        }
-
-        public void NotifySession(string sessionId, string selector, object message, string channel = null)
-        {
-            Notify(SessionSubcriptions, sessionId, selector, message, channel);
-        }
-
-        protected void Notify(ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> map,
-            string key, string selector, object message, string channel = null)
+        public async Task NotifyChannelsAsync(string[] channels, string selector, Dictionary<string, string> meta, CancellationToken token = default)
         {
             if (isDisposed) return;
+
+            foreach (var channel in channels)
+            {
+                await NotifyChannelAsync(channel, selector, meta, token);
+            }
+        }
+
+        public void NotifyChannel(string channel, string selector, object message) =>
+            Notify(ChannelSubscriptions, channel, channel + "@" + selector, message, channel);
+
+        public Task NotifyChannelAsync(string channel, string selector, object message, CancellationToken token = default) =>
+            NotifyAsync(ChannelSubscriptions, channel, channel + "@" + selector, message, channel, token);
+
+        public void NotifyUserId(string userId, string selector, object message, string channel = null) =>
+            Notify(UserIdSubscriptions, userId, selector, message, channel);
+
+        public Task NotifyUserIdAsync(string userId, string selector, object message, string channel = null, CancellationToken token = default) =>
+            NotifyAsync(UserIdSubscriptions, userId, selector, message, channel, token);
+
+
+        public void NotifyUserName(string userName, string selector, object message, string channel = null) =>
+            Notify(UserNameSubscriptions, userName, selector, message, channel);
+
+        public Task NotifyUserNameAsync(string userName, string selector, object message, string channel = null, CancellationToken token = default) =>
+            NotifyAsync(UserNameSubscriptions, userName, selector, message, channel, token);
+
+        public void NotifySession(string sessionId, string selector, object message, string channel = null) => 
+            Notify(SessionSubscriptions, sessionId, selector, message, channel);
+
+        public Task NotifySessionAsync(string sessionId, string selector, object message, string channel = null, CancellationToken token = default) =>
+            NotifyAsync(SessionSubscriptions, sessionId, selector, message, channel, token);
+
+
+        // Send Update Notification
+        readonly ConcurrentBag<IEventSubscription> pendingSubscriptionUpdates = new ConcurrentBag<IEventSubscription>();
+
+        // Full Unsubscription + Notifications
+        readonly ConcurrentBag<IEventSubscription> pendingUnSubscriptions = new ConcurrentBag<IEventSubscription>();
+        
+        // Just Unsubscribe
+        readonly ConcurrentBag<IEventSubscription> expiredSubs = new ConcurrentBag<IEventSubscription>();
+        
+        // Generic Async Tasks
+        readonly ConcurrentBag<Func<Task>> pendingAsyncTasks = new ConcurrentBag<Func<Task>>();
+        
+        public void QueueAsyncTask(Func<Task> task)
+        {
+            pendingAsyncTasks.Add(task);
+        }
+
+        async Task DoAsyncTasks(CancellationToken token = default)
+        {
+            if (pendingAsyncTasks.IsEmpty && pendingSubscriptionUpdates.IsEmpty && pendingUnSubscriptions.IsEmpty && expiredSubs.IsEmpty)
+                return;
+            
+            while (!pendingAsyncTasks.IsEmpty)
+            {
+                if (pendingAsyncTasks.TryTake(out var asyncTask))
+                {
+                    await asyncTask();
+                }
+            }
+            
+            while (!pendingSubscriptionUpdates.IsEmpty)
+            {
+                if (pendingSubscriptionUpdates.TryTake(out var sub))
+                {
+                    if (NotifyUpdateAsync != null)
+                        await NotifyUpdateAsync(sub);
+                }
+            }
+            
+            while (!pendingUnSubscriptions.IsEmpty)
+            {
+                if (pendingUnSubscriptions.TryTake(out var subscription))
+                {
+                    if (OnUnsubscribeAsync != null)
+                        await OnUnsubscribeAsync(subscription);
+
+                    subscription.Dispose();
+
+                    if (NotifyChannelOfSubscriptions && subscription.Channels != null && NotifyLeaveAsync != null)
+                        await NotifyLeaveAsync(subscription);
+                }
+            }
+            
+            while (!expiredSubs.IsEmpty)
+            {
+                if (expiredSubs.TryTake(out var sub))
+                {
+                    await sub.UnsubscribeAsync();
+                }
+            }
+        }
+
+        protected void Notify(ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> map, string key, 
+            string selector, object message, string channel = null)
+        {
+            if (isDisposed) 
+                return;
 
             var subs = map.TryGet(key);
             if (subs == null)
                 return;
 
-            var expired = new List<IEventSubscription>();
             var now = DateTime.UtcNow;
 
             foreach (var sub in subs.KeysWithoutLock())
@@ -789,7 +996,7 @@ namespace ServiceStack
                             Log.DebugFormat("[SSE-SERVER] Expired {0} Sub {1} on ({2})", selector, sub.SubscriptionId,
                                 string.Join(", ", sub.Channels));
 
-                        expired.Add(sub);
+                        expiredSubs.Add(sub);
 	                    continue;
                     }
 
@@ -800,43 +1007,10 @@ namespace ServiceStack
                     sub.Publish(selector, Serialize(message));
                 }
             }
-
-            foreach (var sub in expired)
-            {
-                sub.Unsubscribe();
-            }
         }
 
-        protected void FlushNop(ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> map,
-            string key, string channel = null)
-        {
-            var subs = map.TryGet(key);
-            if (subs == null)
-                return;
-
-            var expired = new List<IEventSubscription>();
-            var now = DateTime.UtcNow;
-
-            foreach (var sub in subs.KeysWithoutLock())
-            {
-                if (sub.HasChannel(channel))
-                {
-                    if (now - sub.LastPulseAt > IdleTimeout)
-                    {
-                        expired.Add(sub);
-                    }
-                    sub.PublishRaw("\n");
-                }
-            }
-
-            foreach (var sub in expired)
-            {
-                sub.Unsubscribe();
-            }
-        }
-
-        protected void Notify(ConcurrentDictionary<string, IEventSubscription> map, string key, string selector,
-            object message, string channel = null)
+        protected void Notify(ConcurrentDictionary<string, IEventSubscription> map, string key, 
+            string selector, object message, string channel = null)
         {
             if (isDisposed) return;
 
@@ -851,7 +1025,7 @@ namespace ServiceStack
                     Log.DebugFormat("[SSE-SERVER] Expired {0} Sub {1} on ({2})", selector, sub.SubscriptionId,
                         string.Join(", ", sub.Channels));
 
-                sub.Unsubscribe();
+                expiredSubs.Add(sub);
                 return;
             }
 
@@ -862,7 +1036,111 @@ namespace ServiceStack
             sub.Publish(selector, Serialize(message));
         }
 
+        protected async Task NotifyAsync(ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> map, string key, 
+            string selector, object message, string channel = null, CancellationToken token=default)
+        {
+            if (isDisposed) 
+                return;
+
+            var subs = map.TryGet(key);
+            if (subs == null)
+                return;
+
+            var now = DateTime.UtcNow;
+
+            foreach (var sub in subs.KeysWithoutLock())
+            {
+                if (sub.HasChannel(channel))
+                {
+                    if (now - sub.LastPulseAt > IdleTimeout || sub.IsClosed)
+                    {
+                        if (Log.IsDebugEnabled)
+                            Log.DebugFormat("[SSE-SERVER] Expired {0} Sub {1} on ({2})", selector, sub.SubscriptionId,
+                                string.Join(", ", sub.Channels));
+
+                        expiredSubs.Add(sub);
+                        continue;
+                    }
+
+                    if (Log.IsDebugEnabled)
+                        Log.DebugFormat("[SSE-SERVER] Sending {0} msg to {1} on ({2})", selector, sub.SubscriptionId,
+                            string.Join(", ", sub.Channels));
+
+                    await sub.PublishAsync(selector, Serialize(message), token);
+                }
+            }
+            await DoAsyncTasks(token);
+        }
+
+        protected async Task NotifyAsync(ConcurrentDictionary<string, IEventSubscription> map, string key, 
+            string selector, object message, string channel = null, CancellationToken token=default)
+        {
+            if (isDisposed) 
+                return;
+
+            var sub = map.TryGet(key);
+            if (sub == null || !sub.HasChannel(channel))
+                return;
+
+            var now = DateTime.UtcNow;
+            if (now - sub.LastPulseAt > IdleTimeout)
+            {
+                if (Log.IsDebugEnabled)
+                    Log.DebugFormat("[SSE-SERVER] Expired {0} Sub {1} on ({2})", selector, sub.SubscriptionId,
+                        string.Join(", ", sub.Channels));
+
+                expiredSubs.Add(sub);
+                return;
+            }
+
+            if (Log.IsDebugEnabled)
+                Log.DebugFormat("[SSE-SERVER] Sending {0} msg to {1} on ({2})", selector, sub.SubscriptionId,
+                    string.Join(", ", sub.Channels));
+
+            await sub.PublishAsync(selector, Serialize(message), token);
+            await DoAsyncTasks(token);
+        }
+
+        protected async Task FlushNopAsync(ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> map,
+            string key, string channel = null, CancellationToken token=default)
+        {
+            var subs = map.TryGet(key);
+            if (subs == null)
+                return;
+
+            var now = DateTime.UtcNow;
+
+            foreach (var sub in subs.KeysWithoutLock())
+            {
+                if (sub.HasChannel(channel))
+                {
+                    if (now - sub.LastPulseAt > IdleTimeout)
+                    {
+                        expiredSubs.Add(sub);
+                    }
+                    await sub.PublishRawAsync("\n", token);
+                }
+            }
+            await DoAsyncTasks(token);
+        }
+
         public bool Pulse(string id)
+        {
+            if (isDisposed) 
+                return false;
+
+            var sub = GetSubscription(id);
+            if (sub == null)
+                return false;
+            sub.Pulse();
+
+            if (NotifyHeartbeatAsync != null)
+                pendingAsyncTasks.Add(() => NotifyHeartbeatAsync(sub));
+
+            return true;
+        }
+
+        public async Task<bool> PulseAsync(string id, CancellationToken token=default)
         {
             if (isDisposed) return false;
 
@@ -871,7 +1149,8 @@ namespace ServiceStack
                 return false;
             sub.Pulse();
 
-            NotifyHeartbeat?.Invoke(sub);
+            if (NotifyHeartbeatAsync != null)
+                await NotifyHeartbeatAsync(sub);
 
             return true;
         }
@@ -881,7 +1160,7 @@ namespace ServiceStack
             if (id == null)
                 return null;
 
-            var sub = Subcriptions.TryGet(id);
+            var sub = Subscriptions.TryGet(id);
             return sub;
         }
 
@@ -895,7 +1174,7 @@ namespace ServiceStack
             var subInfos = new List<SubscriptionInfo>();
             if (userId == null) return subInfos;
 
-            var subs = UserIdSubcriptions.TryGet(userId);
+            var subs = UserIdSubscriptions.TryGet(userId);
             if (subs == null)
             {
                 return subInfos;
@@ -931,22 +1210,25 @@ namespace ServiceStack
             if (now - LastCleanAt <= HouseKeepingInterval)
                 return -1;
 
-            var expired = new List<IEventSubscription>();
             LastCleanAt = now;
-            foreach (var sub in Subcriptions.ValuesWithoutLock())
+            var count = 0;
+            foreach (var sub in Subscriptions.ValuesWithoutLock())
             {
                 if (now - sub.LastPulseAt > IdleTimeout)
                 {
-                    expired.Add(sub);
+                    count++;
+                    expiredSubs.Add(sub);
                 }
             }
 
-            foreach (var sub in expired)
-            {
-                sub.Unsubscribe();
-            }
+            return count;
+        }
 
-            return expired.Count;
+        public async Task<int> RemoveExpiredSubscriptionsAsync(CancellationToken token = default)
+        {
+            var count = RemoveExpiredSubscriptions();
+            await DoAsyncTasks(token);
+            return count;
         }
 
         public void SubscribeToChannels(string subscriptionId, string[] channels)
@@ -971,14 +1253,21 @@ namespace ServiceStack
                         continue;
 
                     subChannels.Add(channel);
-                    RegisterSubscription(sub, channel, ChannelSubcriptions);
+                    RegisterSubscription(sub, channel, ChannelSubscriptions);
                 }
 
                 sub.UpdateChannels(subChannels.ToArray());
-
-                if (NotifyChannelOfSubscriptions)
-                    NotifyUpdate?.Invoke(sub);
             }
+
+            if (NotifyChannelOfSubscriptions && NotifyUpdateAsync != null)
+                pendingSubscriptionUpdates.Add(sub);
+        }
+
+        public Task SubscribeToChannelsAsync(string subscriptionId, string[] channels, CancellationToken token = default)
+        {
+            SubscribeToChannels(subscriptionId, channels);
+            
+            return DoAsyncTasks(token);
         }
 
         public void UnsubscribeFromChannels(string subscriptionId, string[] channels)
@@ -1001,7 +1290,7 @@ namespace ServiceStack
                     if (!sub.Channels.Contains(channel))
                         continue;
 
-                    UnRegisterSubscription(sub, channel, ChannelSubcriptions);
+                    UnRegisterSubscription(sub, channel, ChannelSubscriptions);
                 }
 
                 var subChannels = sub.Channels.ToList();
@@ -1009,9 +1298,16 @@ namespace ServiceStack
 
                 sub.UpdateChannels(subChannels.ToArray());
 
-                if (NotifyChannelOfSubscriptions)
-                    NotifyUpdate?.Invoke(sub);
+                if (NotifyChannelOfSubscriptions && NotifyUpdateAsync != null)
+                    pendingSubscriptionUpdates.Add(sub);
             }
+        }
+
+        public Task UnsubscribeFromChannelsAsync(string subscriptionId, string[] channels, CancellationToken token = default)
+        {
+            UnsubscribeFromChannels(subscriptionId, channels);
+
+            return DoAsyncTasks(token);
         }
 
         public List<Dictionary<string, string>> GetSubscriptionsDetails(params string[] channels)
@@ -1021,7 +1317,7 @@ namespace ServiceStack
 
             foreach (var channel in channels)
             {
-                var subs = ChannelSubcriptions.TryGet(channel);
+                var subs = ChannelSubscriptions.TryGet(channel);
                 if (subs == null)
                     continue;
 
@@ -1041,7 +1337,7 @@ namespace ServiceStack
         public List<Dictionary<string, string>> GetAllSubscriptionsDetails()
         {
             var ret = new List<Dictionary<string, string>>();
-            foreach (var sub in Subcriptions.ValuesWithoutLock())
+            foreach (var sub in Subscriptions.ValuesWithoutLock())
             {
                 ret.Add(sub.Meta);
             }
@@ -1051,40 +1347,49 @@ namespace ServiceStack
         public List<SubscriptionInfo> GetAllSubscriptionInfos()
         {
             var ret = new List<SubscriptionInfo>();
-            foreach (var sub in Subcriptions.ValuesWithoutLock())
+            foreach (var sub in Subscriptions.ValuesWithoutLock())
             {
                 ret.Add(sub.GetInfo());
             }
             return ret;
         }
 
-        public void Register(IEventSubscription subscription, Dictionary<string, string> connectArgs = null)
+        public async Task RegisterAsync(IEventSubscription subscription, Dictionary<string, string> connectArgs = null, CancellationToken token=default)
         {
-            if (isDisposed) return;
+            if (isDisposed) 
+                return;
 
             try
             {
+                var asyncTasks = new List<Func<Task>>();
+                
                 lock (subscription)
                 {
                     if (connectArgs != null)
-                        subscription.Publish("cmd.onConnect", connectArgs.ToJson());
+                        asyncTasks.Add(() => subscription.PublishAsync("cmd.onConnect", connectArgs.ToJson(), token));
 
-                    subscription.OnUnsubscribe = HandleUnsubscription;
+                    subscription.OnUnsubscribeAsync = HandleUnsubscriptionAsync;
                     foreach (string channel in subscription.Channels ?? EventSubscription.UnknownChannel)
                     {
-                        RegisterSubscription(subscription, channel, ChannelSubcriptions);
+                        RegisterSubscription(subscription, channel, ChannelSubscriptions);
                     }
-                    RegisterSubscription(subscription, subscription.SubscriptionId, Subcriptions);
-                    RegisterSubscription(subscription, subscription.UserId, UserIdSubcriptions);
-                    RegisterSubscription(subscription, subscription.UserName, UserNameSubcriptions);
-                    RegisterSubscription(subscription, subscription.SessionId, SessionSubcriptions);
+                    RegisterSubscription(subscription, subscription.SubscriptionId, Subscriptions);
+                    RegisterSubscription(subscription, subscription.UserId, UserIdSubscriptions);
+                    RegisterSubscription(subscription, subscription.UserName, UserNameSubscriptions);
+                    RegisterSubscription(subscription, subscription.SessionId, SessionSubscriptions);
 
-                    OnSubscribe?.Invoke(subscription);
+                    if (OnSubscribeAsync != null)
+                        asyncTasks.Add(() => OnSubscribeAsync(subscription));
 
-                    if (NotifyChannelOfSubscriptions && subscription.Channels != null && NotifyJoin != null)
-                        NotifyJoin(subscription);
+                    if (NotifyChannelOfSubscriptions && subscription.Channels != null && NotifyJoinAsync != null)
+                        asyncTasks.Add(() => NotifyJoinAsync(subscription));
                     else if (FlushNopOnSubscription)
-                        FlushNopToChannels(subscription.Channels);
+                        asyncTasks.Add(() => FlushNopToChannelsAsync(subscription.Channels, token));
+                }
+
+                foreach (var asyncTask in asyncTasks)
+                {
+                    await asyncTask();
                 }
             }
             catch (Exception ex)
@@ -1096,7 +1401,7 @@ namespace ServiceStack
             }
         }
 
-        public void FlushNopToChannels(string[] channels)
+        public async Task FlushNopToChannelsAsync(string[] channels, CancellationToken token=default)
         {
             if (isDisposed) return;
 
@@ -1106,7 +1411,7 @@ namespace ServiceStack
             //ref: https://forums.servicestack.net/t/serversentevents-with-notifychannelofsubscriptions-set-to-false-leaks-requests/2552/2
             foreach (var channel in channels)
             {
-                FlushNop(ChannelSubcriptions, channel, channel);
+                await FlushNopAsync(ChannelSubscriptions, channel, channel, token);
             }
         }
 
@@ -1129,13 +1434,54 @@ namespace ServiceStack
             subs.TryAdd(subscription, true);
         }
 
-        public void UnRegister(string subscriptionId)
+        public void UnRegister(string subscriptionId, CancellationToken token=default)
         {
             var subscription = GetSubscription(subscriptionId);
             if (subscription == null)
                 return;
 
             HandleUnsubscription(subscription);
+        }
+        
+        void HandleUnsubscription(IEventSubscription subscription)
+        {
+            if (isDisposed) 
+                return;
+
+            lock (subscription)
+            {
+                foreach (var channel in subscription.Channels ?? EventSubscription.UnknownChannel)
+                {
+                    UnRegisterSubscription(subscription, channel, ChannelSubscriptions);
+                }
+                
+                UnRegisterSubscription(subscription, subscription.SubscriptionId, Subscriptions);
+                UnRegisterSubscription(subscription, subscription.UserId, UserIdSubscriptions);
+                UnRegisterSubscription(subscription, subscription.UserName, UserNameSubscriptions);
+                UnRegisterSubscription(subscription, subscription.SessionId, SessionSubscriptions);
+            }
+            
+            pendingUnSubscriptions.Add(subscription);
+        }
+
+        public Task UnRegisterAsync(string subscriptionId, CancellationToken token=default)
+        {
+            var subscription = GetSubscription(subscriptionId);
+            if (subscription == null)
+                return TypeConstants.EmptyTask;
+
+            return HandleUnsubscriptionAsync(subscription, token);
+        }
+
+        Task HandleUnsubscriptionAsync(IEventSubscription subscription) => HandleUnsubscriptionAsync(subscription, CancellationToken.None);
+        async Task HandleUnsubscriptionAsync(IEventSubscription subscription, CancellationToken token)
+        {
+            if (isDisposed) 
+                return;
+
+            HandleUnsubscription(subscription);
+
+            await DoAsyncTasks(token);
         }
 
         void UnRegisterSubscription(IEventSubscription subscription, string key,
@@ -1169,59 +1515,59 @@ namespace ServiceStack
             map.TryRemove(key, out _);
         }
 
-        void HandleUnsubscription(IEventSubscription subscription)
+        public async Task DisposeAsync()
         {
             if (isDisposed) return;
+            isDisposed = true;
 
-            lock (subscription)
+            var allSubs = Subscriptions.ValuesWithoutLock().ToArray();
+            foreach (var sub in allSubs)
             {
-                foreach (var channel in subscription.Channels ?? EventSubscription.UnknownChannel)
-                {
-                    UnRegisterSubscription(subscription, channel, ChannelSubcriptions);
-                }
-                UnRegisterSubscription(subscription, subscription.SubscriptionId, Subcriptions);
-                UnRegisterSubscription(subscription, subscription.UserId, UserIdSubcriptions);
-                UnRegisterSubscription(subscription, subscription.UserName, UserNameSubcriptions);
-                UnRegisterSubscription(subscription, subscription.SessionId, SessionSubcriptions);
-
-                OnUnsubscribe?.Invoke(subscription);
+                await sub.UnsubscribeAsync();
             }
 
-            subscription.Dispose();
-
-            if (NotifyChannelOfSubscriptions && subscription.Channels != null)
-                NotifyLeave?.Invoke(subscription);
+            Reset();
         }
-
+        
         public void Dispose()
         {
             if (isDisposed) return;
             isDisposed = true;
 
-            var allSubs = Subcriptions.ValuesWithoutLock().ToArray();
-            foreach (var sub in allSubs)
-            {
-                sub.Unsubscribe();
-            }
-
-            Reset();
+            TaskExt.RunSync(DisposeAsync);
         }
+    }
+
+    public interface IWriteEvent
+    {
+        void WriteEvent(string msg);
+    }
+
+    public interface IWriteEventAsync
+    {
+        Task WriteEventAsync(string msg, CancellationToken token = default);
     }
 
     public interface IServerEvents : IDisposable
     {
         // External API's
         void NotifyAll(string selector, object message);
+        Task NotifyAllAsync(string selector, object message, CancellationToken token=default);
 
         void NotifyChannel(string channel, string selector, object message);
+        Task NotifyChannelAsync(string channel, string selector, object message, CancellationToken token=default);
 
         void NotifySubscription(string subscriptionId, string selector, object message, string channel = null);
+        Task NotifySubscriptionAsync(string subscriptionId, string selector, object message, string channel = null, CancellationToken token=default);
 
         void NotifyUserId(string userId, string selector, object message, string channel = null);
+        Task NotifyUserIdAsync(string userId, string selector, object message, string channel = null, CancellationToken token=default);
 
         void NotifyUserName(string userName, string selector, object message, string channel = null);
+        Task NotifyUserNameAsync(string userName, string selector, object message, string channel = null, CancellationToken token=default);
 
         void NotifySession(string sessionId, string selector, object message, string channel = null);
+        Task NotifySessionAsync(string sessionId, string selector, object message, string channel = null, CancellationToken token=default);
 
         SubscriptionInfo GetSubscriptionInfo(string id);
 
@@ -1230,24 +1576,29 @@ namespace ServiceStack
         List<SubscriptionInfo> GetAllSubscriptionInfos();
 
         // Admin API's
-        void Register(IEventSubscription subscription, Dictionary<string, string> connectArgs = null);
+        Task RegisterAsync(IEventSubscription subscription, Dictionary<string, string> connectArgs = null, CancellationToken token=default);
 
-        void UnRegister(string subscriptionId);
+        Task  UnRegisterAsync(string subscriptionId, CancellationToken token=default);
 
         long GetNextSequence(string sequenceId);
 
         int RemoveExpiredSubscriptions();
+        Task<int> RemoveExpiredSubscriptionsAsync(CancellationToken token = default);
 
         void SubscribeToChannels(string subscriptionId, string[] channels);
+        Task SubscribeToChannelsAsync(string subscriptionId, string[] channels, CancellationToken token=default);
 
         void UnsubscribeFromChannels(string subscriptionId, string[] channels);
+        Task UnsubscribeFromChannelsAsync(string subscriptionId, string[] channels, CancellationToken token=default);
+
+        void QueueAsyncTask(Func<Task> task);
 
         // Client API's
         List<Dictionary<string, string>> GetSubscriptionsDetails(params string[] channels);
 
         List<Dictionary<string, string>> GetAllSubscriptionsDetails();
 
-        bool Pulse(string subscriptionId);
+        Task<bool> PulseAsync(string subscriptionId, CancellationToken token=default);
 
         // Clear all Registrations
         void Reset();
@@ -1305,35 +1656,40 @@ namespace ServiceStack
             return false;
         }
 
-        public static void NotifyAll(this IServerEvents server, object message)
-        {
+        public static void NotifyAll(this IServerEvents server, object message) => 
             server.NotifyAll(Selector.Id(message.GetType()), message);
-        }
+        public static Task NotifyAllAsync(this IServerEvents server, object message, CancellationToken token=default) => 
+            server.NotifyAllAsync(Selector.Id(message.GetType()), message, token);
 
-        public static void NotifyChannel(this IServerEvents server, string channel, object message)
-        {
+        public static void NotifyChannel(this IServerEvents server, string channel, object message) => 
             server.NotifyChannel(channel, Selector.Id(message.GetType()), message);
-        }
 
-        public static void NotifySubscription(this IServerEvents server, string subscriptionId, object message, string channel = null)
-        {
+        public static Task NotifyChannelAsync(this IServerEvents server, string channel, object message, CancellationToken token=default) => 
+            server.NotifyChannelAsync(channel, Selector.Id(message.GetType()), message, token);
+
+        public static void NotifySubscription(this IServerEvents server, string subscriptionId, object message, string channel = null) => 
             server.NotifySubscription(subscriptionId, Selector.Id(message.GetType()), message, channel);
-        }
 
-        public static void NotifyUserId(this IServerEvents server, string userId, object message, string channel = null)
-        {
+        public static Task NotifySubscriptionAsync(this IServerEvents server, string subscriptionId, object message, string channel = null, CancellationToken token=default) => 
+            server.NotifySubscriptionAsync(subscriptionId, Selector.Id(message.GetType()), message, channel, token);
+
+        public static void NotifyUserId(this IServerEvents server, string userId, object message, string channel = null) => 
             server.NotifyUserId(userId, Selector.Id(message.GetType()), message, channel);
-        }
 
-        public static void NotifyUserName(this IServerEvents server, string userName, object message, string channel = null)
-        {
+        public static Task NotifyUserIdAsync(this IServerEvents server, string userId, object message, string channel = null, CancellationToken token=default) => 
+            server.NotifyUserIdAsync(userId, Selector.Id(message.GetType()), message, channel, token);
+
+        public static void NotifyUserName(this IServerEvents server, string userName, object message, string channel = null) => 
             server.NotifyUserName(userName, Selector.Id(message.GetType()), message, channel);
-        }
 
-        public static void NotifySession(this IServerEvents server, string sspid, object message, string channel = null)
-        {
+        public static Task NotifyUserNameAsync(this IServerEvents server, string userName, object message, string channel = null, CancellationToken token=default) => 
+            server.NotifyUserNameAsync(userName, Selector.Id(message.GetType()), message, channel, token);
+
+        public static void NotifySession(this IServerEvents server, string sspid, object message, string channel = null) => 
             server.NotifySession(sspid, Selector.Id(message.GetType()), message, channel);
-        }
+
+        public static Task NotifySessionAsync(this IServerEvents server, string sspid, object message, string channel = null, CancellationToken token=default) => 
+            server.NotifySessionAsync(sspid, Selector.Id(message.GetType()), message, channel, token);
 
         internal static TElement TryGet<TKey, TElement>(this ConcurrentDictionary<TKey, TElement> dic, TKey key)
         {

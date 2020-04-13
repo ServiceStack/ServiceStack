@@ -269,9 +269,70 @@ namespace CheckWeb
         public string Name { get; set; }
         public string ProjectId { get; set; }
     }
+    
+    [Route(
+        "/surveys/{surveyId}/sendouts/{sendoutId}/respondents",
+        HttpMethods.Post,
+        Summary = "Adding Respondents",
+        Notes = "Add a new Respondent with optional background data to a Sendout."
+    )]
+    //[Exclude(Feature.Metadata)]	// hide from OpenAPI
+    //[RateLimitedPerUser]
+    public class AddRespondentRequest : IReturn<AddRespondentResponse>
+    {
+        [ApiMember(Name = "surveyId",
+            Description = "Remarks: SurveyId of requested Survey.",
+            ParameterType = "path",
+            DataType = "integer", Format = "int32",
+            IsRequired = true
+        )]
+        public int surveyId { get; set; }
 
+        [ApiMember(Name = "sendoutId",
+            Description = "Remarks: SendoutId of Sendout to which a respondent is added.",
+            ParameterType = "path",
+            DataType = "integer", 
+            Format = "int32",
+            IsRequired = true
+        )]
+        public int sendoutId { get; set; }
+
+        [ApiMember(Name = "contactDetails",
+            Description = "Remarks: Valid email address, SMS recipient or login identifier.",
+            ParameterType = "query",
+            DataType = "string",
+            IsRequired = false
+        )]
+        public string contactDetails { get; set; }
+
+        [ApiMember(Name = "sendMail",
+            Description = "Remarks: Indicates whether Netigate should send the survey link to the respondent, or if you distribute it yourself.",
+            DataType = "boolean",
+            ParameterType = "query",
+            IsRequired = false
+        )]
+        public bool sendMail { get; set; }
+
+        [ApiMember(Name = "backgroundData",
+            Description = "Remarks: Key = BGDataLabelId, Value = respondent's background data (not empty or null)",
+            ParameterType = "query",
+            //DataType = "object",
+            IsRequired = false
+        )]
+        public Dictionary<int, string> backgroundData { get; set; }
+    }
+
+    public class AddRespondentResponse
+    {
+        public int RespondentId { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public string SurveyURL { get; set; }
+    }
+    
     public class SwaggerTestService : Service
     {
+        public object Any(AddRespondentRequest request) => new AddRespondentResponse();
         public object Any(SwaggerTest request) => request;
 
         public object Post(SwaggerTest2 request) => request;

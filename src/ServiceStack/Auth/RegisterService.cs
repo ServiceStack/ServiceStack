@@ -22,6 +22,11 @@ namespace ServiceStack.Auth
                 () =>
                 {
                     RuleFor(x => x.Password).NotEmpty();
+                    RuleFor(x => x.ConfirmPassword)
+                        .Equal(x => x.Password)
+                        .When(x => x.ConfirmPassword != null)
+                        .WithErrorCode(nameof(ErrorMessages.PasswordsShouldMatch))
+                        .WithMessage(ErrorMessages.PasswordsShouldMatch.Localize(base.Request));
                     RuleFor(x => x.UserName).NotEmpty().When(x => x.Email.IsNullOrEmpty());
                     RuleFor(x => x.Email).NotEmpty().EmailAddress().When(x => x.UserName.IsNullOrEmpty());
                     RuleFor(x => x.UserName)
@@ -53,12 +58,13 @@ namespace ServiceStack.Auth
                 ApplyTo.Put,
                 () =>
                 {
-                    RuleFor(x => x.UserName).NotEmpty();
-                    RuleFor(x => x.Email).NotEmpty();
+                    RuleFor(x => x.UserName).NotEmpty().When(x => x.Email.IsNullOrEmpty());
+                    RuleFor(x => x.Email).NotEmpty().EmailAddress().When(x => x.UserName.IsNullOrEmpty());
                 });
         }
     }
 
+    [ErrorView(nameof(Register.ErrorView))]
     [DefaultRequest(typeof(Register))]
     public class RegisterService : Service
     {
@@ -71,7 +77,7 @@ namespace ServiceStack.Auth
         public IAuthEvents AuthEvents { get; set; }
 
         /// <summary>
-        /// Update an existing registraiton
+        /// Update an existing registration
         /// </summary>
         public object Put(Register request)
         {
@@ -83,12 +89,19 @@ namespace ServiceStack.Auth
         /// </summary>
         public object Post(Register request)
         {
-            if (HostContext.GetPlugin<AuthFeature>()?.SaveUserNamesInLowerCase == true)
+            var authFeature = GetPlugin<AuthFeature>();
+            if (authFeature != null)
             {
-                if (request.UserName != null)
-                    request.UserName = request.UserName.ToLower();
-                if (request.Email != null)
-                    request.Email = request.Email.ToLower();
+                if (authFeature.SaveUserNamesInLowerCase == true)
+                {
+                    if (request.UserName != null)
+                        request.UserName = request.UserName.ToLower();
+                    if (request.Email != null)
+                        request.Email = request.Email.ToLower();
+                }
+
+                if (!string.IsNullOrEmpty(request.Continue))
+                    authFeature.ValidateRedirectLinks(Request, request.Continue);
             }
             
             var validateResponse = ValidateFn?.Invoke(this, HttpMethods.Post, request);
@@ -97,27 +110,26 @@ namespace ServiceStack.Auth
 
             RegisterResponse response = null;
             var session = this.GetSession();
-            bool registerNewUser;
-            IUserAuth user;
+            var newUserAuth = ToUserAuth(AuthRepository, request);
 
-            var authRepo = HostContext.AppHost.GetAuthRepository(base.Request);
-            var newUserAuth = ToUserAuth(authRepo, request);
-            using (authRepo as IDisposable)
+            var existingUser = session.IsAuthenticated ? AuthRepository.GetUserAuth(session, null) : null;
+            var registerNewUser = existingUser == null;
+
+            if (!registerNewUser && !AllowUpdates)
+                throw new NotSupportedException(ErrorMessages.RegisterUpdatesDisabled.Localize(Request));
+            
+            if (!HostContext.AppHost.GlobalRequestFiltersAsync.Contains(ValidationFilters.RequestFilterAsync)) //Already gets run
+                RegistrationValidator?.ValidateAndThrow(request, registerNewUser ? ApplyTo.Post : ApplyTo.Put);
+            
+            var user = registerNewUser
+                ? AuthRepository.CreateUserAuth(newUserAuth, request.Password)
+                : AuthRepository.UpdateUserAuth(existingUser, newUserAuth, request.Password);
+
+            if (registerNewUser)
             {
-                var existingUser = session.IsAuthenticated ? authRepo.GetUserAuth(session, null) : null;
-                registerNewUser = existingUser == null;
-
-                if (!HostContext.AppHost.GlobalRequestFiltersAsyncArray.Contains(ValidationFilters.RequestFilterAsync)) //Already gets run
-                {
-                    RegistrationValidator?.ValidateAndThrow(request, registerNewUser ? ApplyTo.Post : ApplyTo.Put);
-                }
-                
-                if (!registerNewUser && !AllowUpdates)
-                    throw new NotSupportedException(ErrorMessages.RegisterUpdatesDisabled.Localize(Request));
-
-                user = registerNewUser
-                    ? authRepo.CreateUserAuth(newUserAuth, request.Password)
-                    : authRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password);
+                session.PopulateSession(user);
+                session.OnRegistered(Request, session, this);
+                AuthEvents?.OnRegistered(this.Request, session, this);
             }
 
             if (request.AutoLogin.GetValueOrDefault())
@@ -129,7 +141,7 @@ namespace ServiceStack.Auth
                             provider = CredentialsAuthProvider.Name,
                             UserName = request.UserName ?? request.Email,
                             Password = request.Password,
-                            Continue = request.Continue
+                            Continue = request.Continue ?? base.Request.GetQueryStringOrForm(Keywords.ReturnUrl)
                         });
 
                     if (authResponse is IHttpError)
@@ -148,16 +160,6 @@ namespace ServiceStack.Auth
                         };
                     }
                 }
-            }
-
-            if (registerNewUser)
-            {
-                session = this.GetSession();
-                if (!request.AutoLogin.GetValueOrDefault())
-                    session.PopulateSession(user, new List<IAuthTokens>());
-
-                session.OnRegistered(Request, session, this);
-                AuthEvents?.OnRegistered(this.Request, session, this);
             }
 
             if (response == null)
@@ -191,7 +193,7 @@ namespace ServiceStack.Auth
                 ? customUserAuth.CreateUserAuth()
                 : new UserAuth();
 
-            to.PopulateInstance(request);
+            to.PopulateWithNonDefaultValues(request);
             to.PrimaryEmail = request.Email;
             return to;
         }

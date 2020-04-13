@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.IO;
 using ServiceStack.Messaging;
@@ -123,11 +124,19 @@ namespace ServiceStack.Host
             return body ?? (body = (Message.Body ?? "").Dump());
         }
 
+        public Task<string> GetRawBodyAsync() => Task.FromResult(GetRawBody());
+
         public string RawUrl { get; set; }
 
         public string RemoteIp { get; set; }
 
-        public string Authorization { get; set; }
+        public string Authorization
+        {
+            get => string.IsNullOrEmpty(Headers[HttpHeaders.Authorization])
+                ? null
+                : Headers[HttpHeaders.Authorization];
+            set => Headers[HttpHeaders.Authorization] = value;
+        }
 
         public bool IsSecureConnection
         {

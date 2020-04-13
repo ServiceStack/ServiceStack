@@ -28,7 +28,7 @@ namespace ServiceStack
 
         /// <summary>
         /// Dispose all disposables in the tracker.
-        /// If disposable is still alive alose <see cref="HostContext"></see>.Release() is called to release the object.
+        /// If disposable is still alive also <see cref="HostContext"></see>.Release() is called to release the object.
         /// </summary>
         public void Dispose()
         {

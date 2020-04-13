@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,10 +37,9 @@ namespace ServiceStack.Auth
         
         public Func<IAuthRepository, IUserAuth, IAuthTokens, bool> AccountLockedValidator { get; set; }
 
-        public static string UrlFilter(AuthProvider provider, string url)
-        {
-            return url;
-        }
+        public static string UrlFilter(AuthProvider provider, string url) => url;
+
+        public NavItem NavItem { get; set; }
 
         protected AuthProvider()
         {
@@ -106,10 +106,12 @@ namespace ServiceStack.Auth
             }
 
             if (service.Request.ResponseContentType == MimeTypes.Html && !string.IsNullOrEmpty(referrerUrl))
-                return service.Redirect(LogoutUrlFilter(this, referrerUrl.SetParam("s", "-1")));
+                return service.Redirect(LogoutUrlFilter(this, referrerUrl));
 
             return new AuthenticateResponse();
         }
+
+        public HashSet<string> ExcludeAuthInfoItems { get; set; } = new HashSet<string>(new[]{ "user_id", "email", "username", "name", "first_name", "last_name", "email" }, StringComparer.OrdinalIgnoreCase);
 
         public virtual IHttpResult OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
@@ -129,12 +131,19 @@ namespace ServiceStack.Auth
                 if (tokens.Items == null)
                     tokens.Items = new Dictionary<string, string>();
 
-                authInfo.ForEach((x, y) => tokens.Items[x] = y);
+                foreach (var entry in authInfo)
+                {
+                    if (ExcludeAuthInfoItems.Contains(entry.Key)) 
+                        continue;
+
+                    tokens.Items[entry.Key] = entry.Value;
+                }
             }
 
             if (session is IAuthSessionExtended authSession)
             {
-                var failed = authSession.Validate(authService, session, tokens, authInfo);
+                var failed = authSession.Validate(authService, session, tokens, authInfo)
+                    ?? AuthEvents.Validate(authService, session, tokens, authInfo);
                 if (failed != null)
                 {
                     authService.RemoveSession();
@@ -225,6 +234,8 @@ namespace ServiceStack.Auth
 
             return null;
         }
+
+        public virtual NavItem GetNavItem() => null;
 
         protected virtual IAuthRepository GetAuthRepository(IRequest req)
         {
@@ -378,33 +389,24 @@ namespace ServiceStack.Auth
 
             var referrerUrl = session.ReferrerUrl;
             if (referrerUrl.IsNullOrEmpty())
+            {
                 referrerUrl = request?.Continue
+                    ?? authService.Request.GetQueryStringOrForm(Keywords.ReturnUrl)
                     ?? authService.Request.GetHeader("Referer");
+            }
 
             var requestUri = authService.Request.AbsoluteUri;
             if (referrerUrl.IsNullOrEmpty()
                 || referrerUrl.IndexOf("/auth", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
                 referrerUrl = this.RedirectUrl
                     ?? authService.Request.GetBaseUrl()
                     ?? requestUri.InferBaseUrl();
+            }
 
             return referrerUrl;
         }
-
-        public void PopulateSession(IUserAuthRepository authRepo, IUserAuth userAuth, IAuthSession session)
-        {
-            if (authRepo == null)
-                return;
-
-            var holdSessionId = session.Id;
-            session.PopulateWith(userAuth); //overwrites session.Id
-            session.Id = holdSessionId;
-            session.IsAuthenticated = true;
-            session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
-            session.ProviderOAuthAccess = authRepo.GetUserAuthDetails(session.UserAuthId)
-                .ConvertAll(x => (IAuthTokens)x);
-        }
-
+        
         protected virtual object ConvertToClientError(object failedResult, bool isHtml)
         {
             if (!isHtml)

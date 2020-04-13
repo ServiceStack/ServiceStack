@@ -4,7 +4,7 @@ namespace ServiceStack.Html
 {
     public static class Minifiers
     {
-        public static ICompressor JavaScript = new JSMinifier();
+        public static ICompressor JavaScript = new JSMinifierFactory();
         public static ICompressor Css = new CssMinifier();
 
         public static ICompressor Html = new HtmlCompressor();
@@ -18,6 +18,11 @@ namespace ServiceStack.Html
         };
     }
 
+    class JSMinifierFactory : ICompressor
+    {
+        public string Compress(string source) => new JSMinifier().Compress(source);
+    }
+
     public class BasicHtmlMinifier : ICompressor
     {
         static Regex BetweenScriptTagsRegEx = new Regex(@"<script[^>]*>[\w|\t|\r|\W]*?</script>", RegexOptions.Compiled);
@@ -29,12 +34,12 @@ namespace ServiceStack.Html
             if (html == null)
                 return html;
 
-            var mymatch = BetweenScriptTagsRegEx.Matches(html);
+            var matches = BetweenScriptTagsRegEx.Matches(html);
             html = BetweenScriptTagsRegEx.Replace(html, string.Empty);
             html = BetweenTagsRegex.Replace(html, string.Empty);
 
             var str = string.Empty;
-            foreach (Match match in mymatch)
+            foreach (Match match in matches)
             {
                 str += match.ToString();
             }

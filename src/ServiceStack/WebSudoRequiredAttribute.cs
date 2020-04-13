@@ -33,7 +33,7 @@ namespace ServiceStack
             {
                 if (session != null && session.HasRole("Admin", authRepo)
                     || (this.HasWebSudo(req, session as IWebSudoAuthSession)
-                    || this.DoHtmlRedirectIfConfigured(req, res)))
+                    || this.DoHtmlRedirectAccessDeniedIfConfigured(req, res)))
                     return;
             }
 

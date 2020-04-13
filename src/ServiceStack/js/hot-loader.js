@@ -16,7 +16,7 @@ var __lastEtag = "";
             uri.replace(re, strip ? '' : '$1' + key + "=" + value + '$2') :
             strip ? uri : uri + (uri.indexOf('?') !== -1 ? "&" : "?") + key + "=" + value
     }
-    fetch("/hotreload/templates.json?path=" + encodeURIComponent(location.pathname) + "&eTag=" + __lastEtag)
+    fetch("/hotreload/page.json?path=" + encodeURIComponent(location.pathname) + "&eTag=" + __lastEtag)
         .then(function(res){
             if (res.status !== 200) {
                 console.log("hotreload failed: " + res.status)

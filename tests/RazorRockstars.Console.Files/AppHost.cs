@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using Funq;
 using ServiceStack;
-using ServiceStack.Api.Swagger;
+using ServiceStack.Api.OpenApi;
 using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
@@ -43,7 +43,7 @@ namespace RazorRockstars.Console.Files
             if (EnableMarkdown)
                 Plugins.Add(new MarkdownFormat());
             
-            Plugins.Add(new SwaggerFeature());
+            Plugins.Add(new OpenApiFeature());
             Plugins.Add(new RequestInfoFeature());
             Plugins.Add(new RequestLogsFeature());
             Plugins.Add(new ServerEventsFeature());

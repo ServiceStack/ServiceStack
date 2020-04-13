@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Funq;
 using NUnit.Framework;
@@ -79,6 +80,36 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Does_log_autobatch_request()
+        {
+            var client = new JsonServiceClient(Config.ListeningOn)
+            {
+                RequestFilter = req => req.Referer = Config.ListeningOn
+            };
+
+            var request = new[]
+            {
+                new RequestLogsTest { Name = "foo1" },
+                new RequestLogsTest { Name = "bar1" }
+            };
+            var response = client.SendAll(request);
+
+            var json = Config.ListeningOn.CombineWith("requestlogs").GetJsonFromUrl();
+            var requestLogs = json.FromJson<RequestLogsResponse>();
+            var requestLog = requestLogs.Results.First();
+
+            var loggedRequests = requestLog.RequestDto.ConvertTo<List<RequestLogsTest>>();
+
+            Assert.That(request is IEnumerable<RequestLogsTest>);
+            Assert.That(loggedRequests is IEnumerable<RequestLogsTest>);
+
+            Assert.That(loggedRequests.First().Name, Is.EqualTo("foo1"));
+            Assert.That(loggedRequests.Last().Name, Is.EqualTo("bar1"));
+
+            Assert.That(requestLog.Referer, Is.EqualTo(Config.ListeningOn));
+        }
+
+        [Test]
         public void Does_log_Error_request()
         {
             var client = new JsonServiceClient(Config.ListeningOn)
@@ -116,5 +147,62 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(requestLog.Referer, Is.EqualTo(Config.ListeningOn));
         }
 
+        [Test]
+        public void Does_log_error_response()
+        {
+            var client = new JsonServiceClient(Config.ListeningOn)
+            {
+                RequestFilter = req => req.Referer = Config.ListeningOn
+            };
+
+            try
+            {
+                var response = client.Get(new RequestLogsErrorTest { Message = "foo2" });
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.Message, Is.EqualTo("Error: foo2"));
+                var json = Config.ListeningOn.CombineWith("requestlogs").GetJsonFromUrl();
+                var requestLogs = json.FromJson<RequestLogsResponse>();
+                var requestLog = requestLogs.Results.First();
+                var request = (RequestLogsErrorTest)requestLog.RequestDto;
+                Assert.That(requestLog.ErrorResponse != null);
+                Assert.That(requestLog.ErrorResponse is ErrorResponse);
+                var responseStatus = requestLog.ErrorResponse.GetResponseStatus();
+                Assert.That(responseStatus.Message == "Error: foo2");
+            }
+        }
+
+        [Test]
+        public void Does_log_autobatch_error_response()
+        {
+            var client = new JsonServiceClient(Config.ListeningOn)
+            {
+                RequestFilter = req => req.Referer = Config.ListeningOn
+            };
+
+            var request = new[]
+            {
+                new RequestLogsErrorTest { Message = "foo1" },
+                new RequestLogsErrorTest { Message = "bar1" }
+            };
+
+            try
+            {
+                var response = client.SendAll(request);
+            }
+            catch (WebServiceException ex)
+            {
+
+                var json = Config.ListeningOn.CombineWith("requestlogs").GetJsonFromUrl();
+                var requestLogs = json.FromJson<RequestLogsResponse>();
+                var requestLog = requestLogs.Results.First();
+
+                Assert.That(requestLog.ErrorResponse != null);
+                Assert.That(requestLog.ErrorResponse is ErrorResponse);
+                var responseStatus = requestLog.ErrorResponse.GetResponseStatus();
+                Assert.That(responseStatus.Message == "Error: foo1");
+            }
+        }
     }
 }

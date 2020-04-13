@@ -1,4 +1,5 @@
 #region License
+
 // Copyright (c) Jeremy Skinner (http://www.jeremyskinner.co.uk)
 // 
 // Licensed under the Apache License, Version 2.0 (the "License"); 
@@ -14,43 +15,39 @@
 // limitations under the License.
 // 
 // The latest version of this file can be found at https://github.com/JeremySkinner/FluentValidation
+
 #endregion
 
 namespace ServiceStack.FluentValidation.Validators {
+	using System;
 	using System.Collections;
 	using Resources;
 	using System.Linq;
 
-    public class EmptyValidator : PropertyValidator, IEmptyValidator {
-		readonly object defaultValueForType;
+	public class EmptyValidator : PropertyValidator, IEmptyValidator {
+		readonly object _defaultValueForType;
 
 		public EmptyValidator(object defaultValueForType) : base(new LanguageStringSource(nameof(EmptyValidator))) {
-			this.defaultValueForType = defaultValueForType;
+			_defaultValueForType = defaultValueForType;
 		}
 
 		protected override bool IsValid(PropertyValidatorContext context) {
-			if (!(context.PropertyValue == null
-			    || IsInvalidString(context.PropertyValue)
-			    || IsEmptyCollection(context.PropertyValue)
-			    || Equals(context.PropertyValue, defaultValueForType))) {
-				return false;
+			switch (context.PropertyValue) {
+				case null: 
+				case string s when string.IsNullOrWhiteSpace(s):
+				case ICollection c when c.Count == 0:
+				case Array a when a.Length == 0:
+				case IEnumerable e when !e.Cast<object>().Any():
+					return true;
 			}
 
-			return true;
-		}
-
-		bool IsEmptyCollection(object propertyValue) {
-			var collection = propertyValue as IEnumerable;
-		    return collection != null && !collection.Cast<object>().Any();
-		}
-
-		bool IsInvalidString(object value) {
-			if (value is string) {
-				return string.IsNullOrWhiteSpace(value as string);
+			if (Equals(context.PropertyValue, _defaultValueForType)) {
+				return true;
 			}
+			
 			return false;
 		}
-    }
+	}
 
 	public interface IEmptyValidator : IPropertyValidator {
 	}

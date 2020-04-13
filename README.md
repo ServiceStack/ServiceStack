@@ -1,53 +1,52 @@
-Follow [@ServiceStack](https://twitter.com/servicestack) or join the [Google+ Community](https://plus.google.com/communities/112445368900682590445)
-for updates, or [StackOverflow](http://stackoverflow.com/questions/ask) or the [Customer Forums](https://forums.servicestack.net/) for support.
+Follow [@ServiceStack](https://twitter.com/servicestack) or [view the docs](https://docs.servicestack.net), use [StackOverflow](http://stackoverflow.com/questions/ask) or the [Customer Forums](https://forums.servicestack.net/) for support.
 
-> View the [Release Notes](https://servicestack.net/release-notes) for latest features or see [servicestack.net/features](https://servicestack.net/features) for an overview.
+> View the [Release Notes](https://docs.servicestack.net/release-notes-history) for latest features or see [servicestack.net/features](https://servicestack.net/features) for an overview.
 
 ### Simple, Fast, Versatile and full-featured Services Framework
 
 ServiceStack is a simple, fast, versatile and highly-productive full-featured [Web](http://razor.servicestack.net) and 
-[Web Services](http://docs.servicestack.net/web-services.html) Framework that's 
-thoughtfully-architected to [reduce artificial complexity](http://docs.servicestack.net/why-not-odata.html#why-not-complexity) and promote 
-[remote services best-practices](http://docs.servicestack.net/advantages-of-message-based-web-services.html) 
-with a [message-based design](http://docs.servicestack.net/what-is-a-message-based-web-service.html) 
+[Web Services](https://docs.servicestack.net/web-services.html) Framework that's 
+thoughtfully-architected to [reduce artificial complexity](https://docs.servicestack.net/why-not-odata.html#why-not-complexity) and promote 
+[remote services best-practices](https://docs.servicestack.net/advantages-of-message-based-web-services.html) 
+with a [message-based design](https://docs.servicestack.net/what-is-a-message-based-web-service.html) 
 that allows for maximum re-use that can leverage an integrated 
-[Service Gateway](http://docs.servicestack.net/service-gateway.html) 
+[Service Gateway](https://docs.servicestack.net/service-gateway.html) 
 for the creation of loosely-coupled 
-[Modularized Service](http://docs.servicestack.net/modularizing-services.html) Architectures.
+[Modularized Service](https://docs.servicestack.net/modularizing-services.html) Architectures.
 ServiceStack Services are consumable via an array of built-in fast data formats (inc. 
 [JSON](https://github.com/ServiceStack/ServiceStack.Text), 
 XML, 
-[CSV](http://docs.servicestack.net/csv-format.html), 
-[JSV](http://docs.servicestack.net/json-jsv-and-xml.html), 
-[ProtoBuf](http://docs.servicestack.net/protobuf-format.html), 
-[Wire](http://docs.servicestack.net/wire-format.html) and 
-[MsgPack](http://docs.servicestack.net/messagepack-format.html)) 
-as well as XSD/WSDL for [SOAP endpoints](http://docs.servicestack.net/soap-support.html) and 
-[Rabbit MQ](http://docs.servicestack.net/rabbit-mq.html), 
-[Redis MQ](http://docs.servicestack.net/messaging-and-redis.html) and
+[CSV](https://docs.servicestack.net/csv-format.html), 
+[JSV](https://docs.servicestack.net/json-jsv-and-xml.html), 
+[ProtoBuf](https://docs.servicestack.net/protobuf-format.html), 
+[Wire](https://docs.servicestack.net/wire-format.html) and 
+[MsgPack](https://docs.servicestack.net/messagepack-format.html)) 
+as well as XSD/WSDL for [SOAP endpoints](https://docs.servicestack.net/soap-support.html) and 
+[Rabbit MQ](https://docs.servicestack.net/rabbit-mq.html), 
+[Redis MQ](https://docs.servicestack.net/messaging-and-redis.html) and
 [Amazon SQS](https://github.com/ServiceStack/ServiceStack.Aws#sqsmqserver) MQ hosts. 
 
 Its design and simplicity focus offers an unparalleled suite of productivity features that can be declaratively enabled 
 without code, from creating fully queryable Web API's with just a single Typed Request DTO with
-[Auto Query](http://docs.servicestack.net/autoquery.html) supporting 
+[Auto Query](https://docs.servicestack.net/autoquery.html) supporting 
 [every major RDBMS](https://github.com/ServiceStack/ServiceStack.OrmLite#8-flavours-of-ormlite-is-on-nuget) 
 to the built-in support for
-[Auto Batched Requests](http://docs.servicestack.net/auto-batched-requests.html) 
-or effortlessly enabling rich [HTTP Caching](http://docs.servicestack.net/http-caching.html) and
-[Encrypted Messaging](http://docs.servicestack.net/encrypted-messaging.html) 
-for all your existing services via [Plugins](http://docs.servicestack.net/plugins.html).
+[Auto Batched Requests](https://docs.servicestack.net/auto-batched-requests.html) 
+or effortlessly enabling rich [HTTP Caching](https://docs.servicestack.net/http-caching.html) and
+[Encrypted Messaging](https://docs.servicestack.net/encrypted-messaging.html) 
+for all your existing services via [Plugins](https://docs.servicestack.net/plugins.html).
 
 Your same Services also serve as the Controller in ServiceStack's [Smart Razor Views](http://razor.servicestack.net/)
 reducing the effort to serve both 
 [Web and Single Page Apps](https://github.com/ServiceStackApps/LiveDemos) as well as 
 [Rich Desktop and Mobile Clients](https://github.com/ServiceStackApps/HelloMobile) that are able to deliver instant interactive 
-experiences using ServiceStack's real-time [Server Events](http://docs.servicestack.net/server-events.html).
+experiences using ServiceStack's real-time [Server Events](https://docs.servicestack.net/server-events.html).
 
 ServiceStack Services also maximize productivity for consumers providing an 
-[instant end-to-end typed API without code-gen](http://docs.servicestack.net/csharp-client.html) enabling
+[instant end-to-end typed API without code-gen](https://docs.servicestack.net/csharp-client.html) enabling
 the most productive development experience for developing .NET to .NET Web Services.
 
-### [Generate Instant Typed APIs from within all Major IDEs!](http://docs.servicestack.net/add-servicestack-reference.html)
+### [Generate Instant Typed APIs from within all Major IDEs!](https://docs.servicestack.net/add-servicestack-reference.html)
 
 ServiceStack now integrates with all Major IDE's used for creating the best native experiences on the most popular platforms 
 to enable a highly productive dev workflow for consuming Web Services, making ServiceStack the ideal back-end choice for powering 
@@ -59,49 +58,49 @@ as well as targetting the most popular .NET PCL platforms including Xamarin.iOS,
 #### [VS.NET integration with ServiceStackVS](https://visualstudiogallery.msdn.microsoft.com/5bd40817-0986-444d-a77d-482e43a48da7)
 
 Providing instant Native Typed API's for 
-[C#](http://docs.servicestack.net/csharp-add-servicestack-reference.html), 
-[TypeScript](http://docs.servicestack.net/typescript-add-servicestack-reference.html),
-[F#](http://docs.servicestack.net/fsharp-add-servicestack-reference.html) and 
-[VB.NET](http://docs.servicestack.net/vbnet-add-servicestack-reference.html) 
+[C#](https://docs.servicestack.net/csharp-add-servicestack-reference.html), 
+[TypeScript](https://docs.servicestack.net/typescript-add-servicestack-reference.html),
+[F#](https://docs.servicestack.net/fsharp-add-servicestack-reference.html) and 
+[VB.NET](https://docs.servicestack.net/vbnet-add-servicestack-reference.html) 
 directly in Visual Studio for the 
 [most popular .NET platforms](https://github.com/ServiceStackApps/HelloMobile) including iOS and Android using 
 [Xamarin.iOS](https://github.com/ServiceStackApps/HelloMobile#xamarinios-client) and 
 [Xamarin.Android](https://github.com/ServiceStackApps/HelloMobile#xamarinandroid-client) on Windows.
 
-#### [Xamarin Studio integration with ServiceStackXS](http://docs.servicestack.net/csharp-add-servicestack-reference.html#xamarin-studio)
+#### [Xamarin Studio integration with ServiceStackXS](https://docs.servicestack.net/csharp-add-servicestack-reference.html#xamarin-studio)
 
-Providing [C# Native Types](http://docs.servicestack.net/csharp-add-servicestack-reference.html) 
+Providing [C# Native Types](https://docs.servicestack.net/csharp-add-servicestack-reference.html) 
 support for developing iOS and Android mobile Apps using 
 [Xamarin.iOS](https://github.com/ServiceStackApps/HelloMobile#xamarinios-client) and 
 [Xamarin.Android](https://github.com/ServiceStackApps/HelloMobile#xamarinandroid-client) with 
 [Xamarin Studio](https://www.xamarin.com/studio) on OSX. The **ServiceStackXS** plugin also provides a rich web service 
 development experience developing Client applications with 
-[Mono Develop on Linux](http://docs.servicestack.net/csharp-add-servicestack-reference.html#xamarin-studio-for-linux)
+[Mono Develop on Linux](https://docs.servicestack.net/csharp-add-servicestack-reference.html#xamarin-studio-for-linux)
 
-#### [Xcode integration with ServiceStackXC Plugin](http://docs.servicestack.net/swift-add-servicestack-reference.html)
+#### [Xcode integration with ServiceStackXC Plugin](https://docs.servicestack.net/swift-add-servicestack-reference.html)
 
-Providing [an instant Native Typed API in Swift](http://docs.servicestack.net/swift-add-servicestack-reference.html) 
+Providing [an instant Native Typed API in Swift](https://docs.servicestack.net/swift-add-servicestack-reference.html) 
 including generic Service Clients enabling a highly-productive workflow and effortless consumption of Web Services from 
 native iOS and OSX Applications - directly from within Xcode!
 
-#### [Android Studio integration with ServiceStackIDEA](http://docs.servicestack.net/java-add-servicestack-reference.html)
+#### [Android Studio integration with ServiceStackIDEA](https://docs.servicestack.net/java-add-servicestack-reference.html)
 
-Providing [an instant Native Typed API in Java](http://docs.servicestack.net/java-add-servicestack-reference.html) 
-and [Kotlin](http://docs.servicestack.net/kotlin-add-servicestack-reference.html)
+Providing [an instant Native Typed API in Java](https://docs.servicestack.net/java-add-servicestack-reference.html) 
+and [Kotlin](https://docs.servicestack.net/kotlin-add-servicestack-reference.html)
 including idiomatic Java Generic Service Clients supporting Sync and Async Requests by levaraging Android's AsyncTasks to enable the creation of services-rich and responsive native Java or Kotlin Mobile Apps on the Android platform - directly from within Android Studio!
 
-#### [IntelliJ integration with ServiceStackIDEA](http://docs.servicestack.net/java-add-servicestack-reference.html#install-servicestack-idea-from-the-plugin-repository)
+#### [IntelliJ integration with ServiceStackIDEA](https://docs.servicestack.net/java-add-servicestack-reference.html#install-servicestack-idea-from-the-plugin-repository)
 
 The ServiceStack IDEA plugin is installable directly from IntelliJ's Plugin repository and enables seamless integration with IntelliJ Java Maven projects for genearting a Typed API to quickly and effortlessly consume remote ServiceStack Web Services from pure cross-platform Java or Kotlin Clients.
 
 #### [Eclipse integration with ServiceStackEclipse](https://github.com/ServiceStack/ServiceStack.Java/tree/master/src/ServiceStackEclipse#eclipse-integration-with-servicestack)
 
-The unmatched productivity offered by [Java Add ServiceStack Reference](http://docs.servicestack.net/java-add-servicestack-reference.html) is also available in the 
+The unmatched productivity offered by [Java Add ServiceStack Reference](https://docs.servicestack.net/java-add-servicestack-reference.html) is also available in the 
 [ServiceStackEclipse IDE Plugin](https://github.com/ServiceStack/ServiceStack.Java/tree/master/src/ServiceStackEclipse#eclipse-integration-with-servicestack) that's installable 
 from the [Eclipse MarketPlace](https://marketplace.eclipse.org/content/servicestackeclipse) to provide deep integration of Add ServiceStack Reference with Eclipse Java Maven Projects
 enabling Java Developers to effortlessly Add and Update the references of their evolving remote ServiceStack Web Services.
 
-#### [servicestack-cli - Simple command-line utilities for ServiceStack](http://docs.servicestack.net/add-servicestack-reference.html#simple-command-line-utilities-for-servicestack)
+#### [servicestack-cli - Simple command-line utilities for ServiceStack](https://docs.servicestack.net/add-servicestack-reference.html#simple-command-line-utilities-for-servicestack)
 
 In addition to our growing list of supported IDE's, the [servicestack-cli](https://github.com/ServiceStack/servicestack-cli)
 cross-platform command-line npm scripts makes it easy for build servers, automated tasks and command-line runners of your 
@@ -216,7 +215,7 @@ public class CustomerService : Service
 
 ```
 
-### [Calling the above REST Service from any C#/.NET Client](http://docs.servicestack.net/csharp-add-servicestack-reference.html)
+### [Calling the above REST Service from any C#/.NET Client](https://docs.servicestack.net/csharp-add-servicestack-reference.html)
 
 > No code-gen required, can re-use above Server DTOs:
 
@@ -248,18 +247,18 @@ all = client.Get(new GetCustomers());                             // Count = 0
 
 Same code also works with [Android, iOS, Xamarin.Forms, UWP and WPF clients](https://github.com/ServiceStackApps/HelloMobile).
 
-> [F#](http://docs.servicestack.net/fsharp-add-servicestack-reference.html) and 
-[VB.NET](http://docs.servicestack.net/vbnet-add-servicestack-reference.html) can re-use same 
-[.NET Service Clients](http://docs.servicestack.net/csharp-client.html) and DTO's
+> [F#](https://docs.servicestack.net/fsharp-add-servicestack-reference.html) and 
+[VB.NET](https://docs.servicestack.net/vbnet-add-servicestack-reference.html) can re-use same 
+[.NET Service Clients](https://docs.servicestack.net/csharp-client.html) and DTO's
 
-### [Calling from TypeScript](http://docs.servicestack.net/typescript-add-servicestack-reference.html#ideal-typed-message-based-api)
+### [Calling from TypeScript](https://docs.servicestack.net/typescript-add-servicestack-reference.html#ideal-typed-message-based-api)
 
 ```ts
 const client = new JsonServiceClient(baseUrl);
 const { results } = await client.get(new GetCustomers());
 ```
 
-### [Calling from Swift](http://docs.servicestack.net/swift-add-servicestack-reference.html#jsonserviceclientswift)
+### [Calling from Swift](https://docs.servicestack.net/swift-add-servicestack-reference.html#jsonserviceclientswift)
 
 ```swift
 let client = JsonServiceClient(baseUrl: BaseUri)
@@ -270,7 +269,7 @@ client.getAsync(GetCustomers())
     }
 ```
 
-### [Calling from Java](http://docs.servicestack.net/java-add-servicestack-reference.html#jsonserviceclient-usage)
+### [Calling from Java](https://docs.servicestack.net/java-add-servicestack-reference.html#jsonserviceclient-usage)
 
 ```java
 JsonServiceClient client = new JsonServiceClient(BaseUri);
@@ -279,7 +278,7 @@ GetCustomersResponse response = client.get(new GetCustomers());
 List<Customer> results = response.results; 
 ```
 
-### [Calling from Kotlin](http://docs.servicestack.net/kotlin-add-servicestack-reference.html#jsonserviceclient-usage)
+### [Calling from Kotlin](https://docs.servicestack.net/kotlin-add-servicestack-reference.html#jsonserviceclient-usage)
 
 ```kotlin
 val client = JsonServiceClient(BaseUri)
@@ -288,7 +287,7 @@ val response = client.get(GetCustomers())
 val results = response.results
 ```
 
-### [Calling from Dart](http://docs.servicestack.net/dart-add-servicestack-reference)
+### [Calling from Dart](https://docs.servicestack.net/dart-add-servicestack-reference)
 
 ```dart
 var client = new JsonServiceClient(BaseUri);
@@ -297,7 +296,7 @@ var response = await client.get(GetCustomers());
 var results = client.results;
 ```
 
-### [Calling from jQuery using TypeScript Definitions](http://docs.servicestack.net/typescript-add-servicestack-reference.html#typescript-interface-definitions)
+### [Calling from jQuery using TypeScript Definitions](https://docs.servicestack.net/typescript-add-servicestack-reference.html#typescript-interface-definitions)
 
 ```js
 $.getJSON($.ss.createUrl("/customers", request), request, (r: GetCustomersResponse) => {
@@ -325,9 +324,9 @@ That's all the application code required to create and consume a simple database
 
 ## Getting Started
 
- * [Start with the **Getting Started** section](http://docs.servicestack.net/create-your-first-webservice.html)
+ * [Start with the **Getting Started** section](https://docs.servicestack.net/create-your-first-webservice.html)
  * [Example Apps and Demos](https://github.com/ServiceStackApps/LiveDemos)
- * [Community resources](http://docs.servicestack.net/community-resources.html)
+ * [Community resources](https://docs.servicestack.net/community-resources.html)
 
 ### [Release Notes](https://servicestack.net/release-notes)
 
@@ -352,7 +351,7 @@ Alternative commercial licensing is also available, see https://servicestack.net
 
 ## Contributing
 
-Contributors need to approve the [Contributor License Agreement](https://docs.google.com/forms/d/16Op0fmKaqYtxGL4sg7w_g-cXXyCoWjzppgkuqzOeKyk/viewform) before any code will be reviewed, see the [Contributing docs](http://docs.servicestack.net/contributing.html) for more details. All contributions must include tests verifying the desired behavior.
+Contributors need to approve the [Contributor License Agreement](https://docs.google.com/forms/d/16Op0fmKaqYtxGL4sg7w_g-cXXyCoWjzppgkuqzOeKyk/viewform) before any code will be reviewed, see the [Contributing docs](https://docs.servicestack.net/contributing.html) for more details. All contributions must include tests verifying the desired behavior.
 
 ## OSS Libraries used
 

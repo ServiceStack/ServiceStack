@@ -7,6 +7,10 @@ namespace ServiceStack.RabbitMq
     public class RabbitMqMessageFactory : IMessageFactory
     {
         public ConnectionFactory ConnectionFactory { get; private set; }
+        
+        public Action<RabbitMqQueueClient> MqQueueClientFilter { get; set; }
+        public Action<RabbitMqProducer> MqProducerFilter { get; set; }
+        
         public Action<string, IBasicProperties, IMessage> PublishMessageFilter { get; set; }
         public Action<string, BasicGetResult> GetMessageFilter { get; set; }
 
@@ -41,7 +45,7 @@ namespace ServiceStack.RabbitMq
             if (password != null)
                 ConnectionFactory.Password = password;
 
-            if (connectionString.StartsWith("amqp://"))
+            if (connectionString.StartsWith("amqp://") || connectionString.StartsWith("amqps://"))
             {
                 ConnectionFactory.Uri = new Uri(connectionString);
             }
@@ -65,20 +69,24 @@ namespace ServiceStack.RabbitMq
 
         public virtual IMessageQueueClient CreateMessageQueueClient()
         {
-            return new RabbitMqQueueClient(this) {
+            var client = new RabbitMqQueueClient(this) {
                 RetryCount = RetryCount,
                 PublishMessageFilter = PublishMessageFilter,
                 GetMessageFilter = GetMessageFilter,
             };
+            MqQueueClientFilter?.Invoke(client);
+            return client;
         }
 
         public virtual IMessageProducer CreateMessageProducer()
         {
-            return new RabbitMqProducer(this) {
+            var client = new RabbitMqProducer(this) {
                 RetryCount = RetryCount,
                 PublishMessageFilter = PublishMessageFilter,
                 GetMessageFilter = GetMessageFilter,
             };
+            MqProducerFilter?.Invoke(client);
+            return client;
         }
 
         public virtual void Dispose()

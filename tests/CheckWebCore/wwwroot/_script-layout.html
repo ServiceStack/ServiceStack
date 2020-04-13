@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>{{title}}</title>
+
+{{ 'bootstrap' | cssIncludes }}
+    
+<style>
+a#logo {
+    position: absolute;
+    top: 4px;
+    right: 0;
+    width: 50px;
+    height: 50px;
+    background-size: 42px 42px;
+    background-repeat: no-repeat;
+    background-image: url("{{ 'servicestack' | svgDataUri }}");
+}
+.icons {
+    display: block;
+    float: right;
+}
+h1 {
+    color: #FFF;
+    font-size: 26px;
+    font-weight: normal;
+    margin: 0;
+    padding: 0 0 0 15px;
+    line-height: 48px;
+    min-height: 48px;
+    border-radius: 0px;
+    border-bottom: 1px solid #191e23;
+    background: #2c3742; /* Old browsers */
+    background: -moz-linear-gradient(top,  #2c3742 0%, #28303a 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#2c3742), color-stop(100%,#28303a)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top,  #2c3742 0%,#28303a 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top,  #2c3742 0%,#28303a 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top,  #2c3742 0%,#28303a 100%); /* IE10+ */
+    background: linear-gradient(to bottom,  #2c3742 0%,#28303a 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c3742', endColorstr='#28303a',GradientType=0 ); /* IE6-9 */
+}
+#lnk-back {
+    position: absolute;
+    top: 50px;
+    left: 10px;
+}
+#lnk-back:hover {
+    text-decoration: none;
+}
+</style>
+</head>
+<body>
+    <a id="logo" href="https://servicestack.net" title="ServiceStack {{envServiceStackVersion}}"></a>
+    <h1>{{title}}</h1>
+
+    {{page}}
+
+</body>
+</html>

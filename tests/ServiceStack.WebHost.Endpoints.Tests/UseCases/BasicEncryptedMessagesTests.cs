@@ -2,6 +2,7 @@
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
+using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Text;
@@ -15,9 +16,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
         public override void Configure(Container container)
         {
-            RequestConverters.Add(async (req, requestDto) => {
-                var encRequest = requestDto as BasicEncryptedMessage;
-                if (encRequest == null)
+            RequestConverters.Add((req, requestDto) => {
+                if (!(requestDto is BasicEncryptedMessage encRequest))
                     return null;
 
                 var requestType = Metadata.GetOperationType(encRequest.OperationName);
@@ -26,19 +26,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
                 req.Items["_encrypt"] = encRequest;
 
-                return request;
+                return Task.FromResult(request);
             });
 
-            ResponseConverters.Add(async (req, response) => {
+            ResponseConverters.Add((req, response) => {
                 if (!req.Items.ContainsKey("_encrypt"))
-                    return null;
+                    return TypeConstants.EmptyTask;
 
                 var encResponse = RsaUtils.Encrypt(response.ToJson(), SecureConfig.PublicKeyXml);
-                return new BasicEncryptedMessageResponse
+                return Task.FromResult((object)new BasicEncryptedMessageResponse
                 {
                     OperationName = response.GetType().Name,
                     EncryptedBody = encResponse
-                };
+                });
             });
         }
     }

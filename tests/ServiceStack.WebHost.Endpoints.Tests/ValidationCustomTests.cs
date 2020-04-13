@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.FluentValidation;
@@ -97,7 +98,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             try
             {
-                var response = client.Get(new CustomValidation { Name = "Joan" });
+                using(var response = client.Get<HttpWebResponse>(new CustomValidation { Name = "Joan" })){}
                 Assert.Fail("Should throw");
             }
             catch (WebServiceException ex)
@@ -125,7 +126,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             try
             {
-                var response = client.Get(new CustomValidation());
+                using (var response = client.Get<HttpWebResponse>(new CustomValidation())) {}
                 Assert.Fail("Should throw");
             }
             catch (WebServiceException ex)
@@ -133,12 +134,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var status = ex.GetResponseStatus();
 
                 Assert.That(status.ErrorCode, Is.EqualTo("NotEmpty"));
-                Assert.That(status.Message, Is.EqualTo("'Name' should not be empty."));
+                Assert.That(status.Message, Is.EqualTo("'Name' must not be empty."));
                 Assert.That(status.Errors.Count, Is.EqualTo(2));
 
                 Assert.That(status.Errors[0].ErrorCode, Is.EqualTo("NotEmpty"));
                 Assert.That(status.Errors[0].FieldName, Is.EqualTo("Name"));
-                Assert.That(status.Errors[0].Message, Is.EqualTo("'Name' should not be empty."));
+                Assert.That(status.Errors[0].Message, Is.EqualTo("'Name' must not be empty."));
 
                 Assert.That(status.Errors[1].ErrorCode, Is.EqualTo("NotFound"));
                 Assert.That(status.Errors[1].FieldName, Is.EqualTo("Name:0"));

@@ -1,8 +1,10 @@
 ﻿#if !NETCORE_SUPPORT
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Auth;
 using ServiceStack.FluentValidation;
 using ServiceStack.Messaging;
 using ServiceStack.Messaging.Redis;
@@ -10,10 +12,11 @@ using ServiceStack.RabbitMq;
 using ServiceStack.Redis;
 using ServiceStack.Text;
 using ServiceStack.Validation;
+using ServiceStack.Web;
 
 namespace ServiceStack.Common.Tests.Messaging
 {
-    [TestFixture]
+    [TestFixture, Ignore("Can cause CI to hang")]
     public class RedisMqServerAppHostTests : MqServerAppHostTests
     {
         public RedisMqServerAppHostTests()
@@ -28,7 +31,7 @@ namespace ServiceStack.Common.Tests.Messaging
         }
     }
 
-    [TestFixture]
+    [TestFixture, Ignore("Can cause CI to hang")]
     public class RabbitMqServerAppHostTests : MqServerAppHostTests
     {
         public RabbitMqServerAppHostTests()
@@ -50,7 +53,9 @@ namespace ServiceStack.Common.Tests.Messaging
 
         public override IMessageService CreateMqServer(int retryCount = 1)
         {
-            return new RabbitMqServer { RetryCount = 1 };
+            return new RabbitMqServer(TestsConfig.RabbitMqHost) {
+                RetryCount = 1
+            };
         }
     }
 

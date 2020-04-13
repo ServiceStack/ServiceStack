@@ -146,37 +146,51 @@ namespace ServiceStack.NativeTypes.Dart
             "QueryDb2<From,Into>",
             "QueryResponse<T>",
             "List<UserApiKey>",
-            "Authenticate",
-            "AuthenticateResponse",
-            "Register",
-            "RegisterResponse",
-            "AssignRoles",
-            "AssignRolesResponse",
-            "UnAssignRoles",
-            "UnAssignRolesResponse",
-            "CancelRequest",
-            "CancelRequestResponse",
-            "UpdateEventSubscriber",
-            "UpdateEventSubscriberResponse",
-            "GetEventSubscribers",
-            "GetApiKeys",
-            "GetApiKeysResponse",
-            "RegenerateApiKeys",
-            "RegenerateApiKeysResponse",
-            "UserApiKey",
-            "ConvertSessionToToken",
-            "ConvertSessionToTokenResponse",
-            "GetAccessToken",
-            "GetAccessTokenResponse",
+            nameof(Authenticate),
+            nameof(AuthenticateResponse),
+            nameof(Register),
+            nameof(RegisterResponse),
+            nameof(AssignRoles),
+            nameof(AssignRolesResponse),
+            nameof(UnAssignRoles),
+            nameof(UnAssignRolesResponse),
+            nameof(CancelRequest),
+            nameof(CancelRequestResponse),
+            nameof(UpdateEventSubscriber),
+            nameof(UpdateEventSubscriberResponse),
+            nameof(GetEventSubscribers),
+            nameof(GetApiKeys),
+            nameof(GetApiKeysResponse),
+            nameof(RegenerateApiKeys),
+            nameof(RegenerateApiKeysResponse),
+            nameof(UserApiKey),
+            nameof(ConvertSessionToToken),
+            nameof(ConvertSessionToTokenResponse),
+            nameof(GetAccessToken),
+            nameof(GetAccessTokenResponse),
+            "List<NavItem>",
+            "Map<String,List<NavItem>>",
+            nameof(NavItem),
+            nameof(GetNavItems),
+            nameof(GetNavItemsResponse),
         };
         
+        public static TypeFilterDelegate TypeFilter { get; set; }
+
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
-        public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types)
-        {
-            return types.OrderTypesByDeps();
-        }
-        
+        public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types.OrderTypesByDeps();
+
+        /// <summary>
+        /// Add Code to top of generated code
+        /// </summary>
+        public static AddCodeDelegate InsertCodeFilter { get; set; }
+
+        /// <summary>
+        /// Add Code to bottom of generated code
+        /// </summary>
+        public static AddCodeDelegate AddCodeFilter { get; set; }
+
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
             var typeNamespaces = new HashSet<string>();
@@ -196,7 +210,7 @@ namespace ServiceStack.NativeTypes.Dart
             var sb = new StringBuilderWrapper(sbInner);
             sb.AppendLine("/* Options:");
             sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
-            sb.AppendLine("Version: {0}".Fmt(Env.ServiceStackVersion));
+            sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
             sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
@@ -272,6 +286,10 @@ namespace ServiceStack.NativeTypes.Dart
             
             defaultImports.Each(x => sb.AppendLine($"import '{x}';"));
 
+            var insertCode = InsertCodeFilter?.Invoke(allTypes, Config);
+            if (insertCode != null)
+                sb.AppendLine(insertCode);
+
             existingTypeInfos = new HashSet<string>(IgnoreTypeInfosFor);
             sbTypeInfos = new StringBuilder();
             var dtosName = Config.GlobalNamespace ?? new Uri(Config.BaseUrl).Host;
@@ -337,6 +355,10 @@ namespace ServiceStack.NativeTypes.Dart
                     existingTypes.Add(fullTypeName);
                 }
             }
+
+            var addCode = AddCodeFilter?.Invoke(allTypes, Config);
+            if (addCode != null)
+                sb.AppendLine(addCode);
 
             if (existingTypes.Count > 0)
             {
@@ -918,6 +940,10 @@ namespace ServiceStack.NativeTypes.Dart
 
         public string Type(string type, string[] genericArgs)
         {
+            var useType = TypeFilter?.Invoke(type, genericArgs);
+            if (useType != null)
+                return useType;
+
             if (genericArgs != null)
             {
                 if (type == "Nullable`1")
@@ -1111,9 +1137,12 @@ namespace ServiceStack.NativeTypes.Dart
         {
             var sb = new StringBuilder();
 
+            if (node.Text == "Nullable")
+                return TypeAlias(node.Children[0].Text);
+            
             if (node.Text == "Dictionary")
                 node.Text = "Map";
-            if (node.Text == "HashSet")
+            else if (node.Text == "HashSet")
                 node.Text = "Set";
             if (conflictTypeNames.Contains(node.Text + "`" + node.Children.Count))
                 node.Text += node.Children.Count;
@@ -1252,9 +1281,9 @@ namespace ServiceStack.NativeTypes.Dart
 
         public static string PropertyStyle(this string name)
         {
-            var formattedName = JsConfig.EmitCamelCaseNames
+            var formattedName = JsConfig.TextCase == TextCase.CamelCase
                 ? name.ToCamelCase()
-                : JsConfig.EmitLowercaseUnderscoreNames
+                : JsConfig.TextCase == TextCase.SnakeCase
                     ? name.ToLowercaseUnderscore()
                     : name;
 

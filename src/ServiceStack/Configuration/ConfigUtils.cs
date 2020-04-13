@@ -85,7 +85,19 @@ namespace ServiceStack.Configuration
             }
             return dictionary;
         }
+        
+        public static List<KeyValuePair<string, string>> GetKeyValuePairsFromAppSettingValue(string appSettingValue)
+        {
+            var to = new List<KeyValuePair<string, string>>();
 
+            foreach (var item in appSettingValue.Split(ItemSeperator))
+            {
+                var keyValuePair = item.Split(KeyValueSeperator);
+                to.Add(new KeyValuePair<string, string>(keyValuePair[KeyIndex], keyValuePair[ValueIndex]));
+            }
+            return to;
+        }
+        
         private static Dictionary<string, string> appSettings;
 
         public static Dictionary<string, string> GetAppSettingsMap()

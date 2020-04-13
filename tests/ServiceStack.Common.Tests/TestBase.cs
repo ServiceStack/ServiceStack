@@ -403,6 +403,21 @@ namespace ServiceStack.Common.Tests
                 throw new NotImplementedException();
             }
 
+            public Task<TResponse> PatchAsync<TResponse>(IReturn<TResponse> requestDto)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<TResponse> PatchAsync<TResponse>(object requestDto)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task PatchAsync(IReturnVoid requestDto)
+            {
+                throw new NotImplementedException();
+            }
+
             public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request,
                 CancellationToken token = new CancellationToken())
             {

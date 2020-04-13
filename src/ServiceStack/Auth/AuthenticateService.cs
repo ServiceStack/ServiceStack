@@ -19,6 +19,7 @@ namespace ServiceStack.Auth
     public delegate object ValidateFn(IServiceBase service, string httpMethod, object requestDto);
 
     [DefaultRequest(typeof(Authenticate))]
+    [ErrorView(nameof(ServiceStack.Authenticate.ErrorView))]
     public class AuthenticateService : Service
     {
         public const string BasicProvider = "basic";
@@ -29,6 +30,7 @@ namespace ServiceStack.Auth
         public const string CredentialsAliasProvider = "login";
         public const string LogoutAction = "logout";
         public const string DigestProvider = "digest";
+        public const string IdentityProvider = "identity";
 
         public static Func<IAuthSession> CurrentSessionFactory { get; set; }
         public static ValidateFn ValidateFn { get; set; }
@@ -36,6 +38,11 @@ namespace ServiceStack.Auth
         public static string DefaultOAuthProvider { get; private set; }
         public static string DefaultOAuthRealm { get; private set; }
         public static string HtmlRedirect { get; internal set; }
+        
+        public static string HtmlRedirectAccessDenied { get; internal set; }
+        public static string HtmlRedirectReturnParam { get; internal set; }
+        public static bool HtmlRedirectReturnPathOnly { get; internal set; }
+        
         public static Func<AuthFilterContext, object> AuthResponseDecorator { get; internal set; }
         internal static IAuthProvider[] AuthProviders = TypeConstants<IAuthProvider>.EmptyArray;
         internal static IAuthWithRequest[] AuthWithRequestProviders = TypeConstants<IAuthWithRequest>.EmptyArray;
@@ -148,6 +155,12 @@ namespace ServiceStack.Auth
 
         public object Get(Authenticate request)
         {
+            var allowGetAuthRequests = HostContext.AssertPlugin<AuthFeature>().AllowGetAuthenticateRequests;
+
+            // null == allow all Auth Requests or 
+            if (allowGetAuthRequests != null && !allowGetAuthRequests(Request))
+                throw new NotSupportedException("GET Authenticate requests are disabled, to enable set AuthFeature.AllowGetAuthenticateRequests = req => true");
+            
             return Post(request);
         }
 
@@ -160,6 +173,8 @@ namespace ServiceStack.Auth
                 var validationResponse = ValidateFn(this, Request.Verb, request);
                 if (validationResponse != null) return validationResponse;
             }
+
+            var authFeature = GetPlugin<AuthFeature>();
 
             if (request.RememberMe.HasValue)
             {
@@ -206,8 +221,18 @@ namespace ServiceStack.Auth
 
                 var referrerUrl = request.Continue
                     ?? session.ReferrerUrl
+                    ?? request.Continue
+                    ?? base.Request.GetQueryStringOrForm(Keywords.ReturnUrl)
                     ?? this.Request.GetHeader(HttpHeaders.Referer)
                     ?? authProvider.CallbackUrl;
+
+                if (authFeature != null)
+                {
+                    if (!string.IsNullOrEmpty(request.Continue))
+                        authFeature.ValidateRedirectLinks(Request, referrerUrl);
+                }
+
+                var manageRoles = AuthRepository as IManageRoles;
 
                 var alreadyAuthenticated = response == null;
                 response = response ?? new AuthenticateResponse {
@@ -222,11 +247,24 @@ namespace ServiceStack.Auth
 
                 if (response is AuthenticateResponse authResponse)
                 {
+                    authResponse.ProfileUrl = authResponse.ProfileUrl ?? session.GetProfileUrl();
+                    
+                    if (authFeature?.IncludeRolesInAuthenticateResponse == true)
+                    {
+                        authResponse.Roles = authResponse.Roles ?? (manageRoles != null
+                             ? manageRoles.GetRoles(session.UserAuthId)?.ToList()
+                             : session.Roles);
+                        authResponse.Permissions = authResponse.Permissions ?? (manageRoles != null
+                            ? manageRoles.GetPermissions(session.UserAuthId)?.ToList()
+                            : session.Permissions);
+                    }
+
                     var authCtx = new AuthFilterContext {
                         AuthService = this,
                         AuthProvider = authProvider,
                         AuthRequest = request,
                         AuthResponse = authResponse,
+                        ReferrerUrl = referrerUrl,
                         Session = session,
                         AlreadyAuthenticated = alreadyAuthenticated,
                         DidAuthenticate = Request.Items.ContainsKey(Keywords.DidAuthenticate),
@@ -239,7 +277,9 @@ namespace ServiceStack.Auth
 
                     if (AuthResponseDecorator != null)
                     {
-                        return AuthResponseDecorator(authCtx);
+                        var authDecoratorResponse = AuthResponseDecorator(authCtx);
+                        if (authDecoratorResponse != response)
+                            return authDecoratorResponse;                        
                     }
                 }
 
@@ -258,13 +298,19 @@ namespace ServiceStack.Auth
 
                 return response;
             }
-            catch (HttpError ex)
+            catch (Exception ex)
             {
-                var errorReferrerUrl = this.Request.GetHeader(HttpHeaders.Referer);
-                if (isHtml && errorReferrerUrl != null)
+                if (isHtml && Request.GetErrorView() != null)
+                    return ex;
+
+                if (ex is HttpError)
                 {
-                    errorReferrerUrl = errorReferrerUrl.SetParam("f", ex.Message.Localize(Request));
-                    return HttpResult.Redirect(errorReferrerUrl);
+                    var errorReferrerUrl = this.Request.GetHeader(HttpHeaders.Referer);
+                    if (isHtml && errorReferrerUrl != null)
+                    {
+                        errorReferrerUrl = errorReferrerUrl.SetParam("f", ex.Message.Localize(Request));
+                        return HttpResult.Redirect(errorReferrerUrl);
+                    }
                 }
 
                 throw;
@@ -275,7 +321,7 @@ namespace ServiceStack.Auth
         /// Public API entry point to authenticate via code
         /// </summary>
         /// <param name="request"></param>
-        /// <returns>null; if already autenticated otherwise a populated instance of AuthResponse</returns>
+        /// <returns>null; if already authenticated otherwise a populated instance of AuthResponse</returns>
         public AuthenticateResponse Authenticate(Authenticate request)
         {
             //Remove HTML Content-Type to avoid auth providers issuing browser re-directs
@@ -316,15 +362,16 @@ namespace ServiceStack.Auth
         /// <summary>
         /// The specified <paramref name="session"/> may change as a side-effect of this method. If
         /// subsequent code relies on current <see cref="IAuthSession"/> data be sure to reload
-        /// the session istance via <see cref="ServiceExtensions.GetSession(IServiceBase,bool)"/>.
+        /// the session instance via <see cref="ServiceExtensions.GetSession(IServiceBase,bool)"/>.
         /// </summary>
         private object Authenticate(Authenticate request, string provider, IAuthSession session, IAuthProvider oAuthConfig)
         {
             if (request.provider == null && request.UserName == null)
                 return null; //Just return sessionInfo if no provider or username is given
 
-            var authFeature = HostContext.GetPlugin<AuthFeature>();
-            var generateNewCookies = authFeature == null || authFeature.GenerateNewSessionCookiesOnAuthentication;
+            var authFeature = GetPlugin<AuthFeature>();
+            var generateNewCookies = (authFeature == null || authFeature.GenerateNewSessionCookiesOnAuthentication)
+                && request.oauth_token == null && request.State == null; //keep existing session during OAuth flow
 
             if (generateNewCookies)
                 this.Request.GenerateNewSessionCookies(session);

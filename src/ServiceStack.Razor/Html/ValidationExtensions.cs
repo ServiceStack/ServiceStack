@@ -181,6 +181,8 @@ namespace ServiceStack.Html
 
         // ValidationSummary
 
+        public static MvcHtmlString ErrorSummary(this HtmlHelper htmlHelper) => ValidationSummary(htmlHelper, false /* excludePropertyErrors */);
+
         public static MvcHtmlString ValidationSummary(this HtmlHelper htmlHelper)
         {
             return ValidationSummary(htmlHelper, false /* excludePropertyErrors */);

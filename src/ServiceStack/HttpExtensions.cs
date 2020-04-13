@@ -99,7 +99,7 @@ namespace ServiceStack
             var req = httpRes.Request;
             if (req != null && !req.Items.ContainsKey(Keywords.HasLogged))
             {
-                HostContext.TryResolve<IRequestLogger>()?.Log(req, req.Dto, null, TimeSpan.Zero);
+                HostContext.TryResolve<IRequestLogger>()?.Log(req, req.Dto, httpRes.Dto, TimeSpan.Zero);
             }
 
             if (!skipClose && !httpRes.IsClosed) 
@@ -120,7 +120,7 @@ namespace ServiceStack
             var req = httpRes.Request;
             if (req != null && !req.Items.ContainsKey(Keywords.HasLogged))
             {
-                HostContext.TryResolve<IRequestLogger>()?.Log(req, req.Dto, null, TimeSpan.Zero);
+                HostContext.TryResolve<IRequestLogger>()?.Log(req, req.Dto, httpRes.Dto, TimeSpan.Zero);
             }
 
             if (!skipClose && !httpRes.IsClosed) 

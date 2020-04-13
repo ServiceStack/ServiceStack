@@ -237,7 +237,7 @@ namespace ServiceStack.Api.Swagger
 
             return new HttpResult(result)
             {
-                ResultScope = () => JsConfig.With(includeNullValues: false)
+                ResultScope = () => JsConfig.With(new Config { IncludeNullValues = false })
             };
         }
 

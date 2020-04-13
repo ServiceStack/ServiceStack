@@ -164,7 +164,9 @@ namespace ServiceStack.Host
 #else                                                  
                         : AssemblyUtils.FindType(requestType.FullName + ResponseDtoSuffix);
 #endif
-                    if (responseType?.Name == "Task`1" && responseType.GetGenericArguments()[0] != typeof(object))
+                    if (responseType == typeof(Task))
+                        responseType = null;
+                    else if (responseType?.Name == "Task`1" && responseType.GetGenericArguments()[0] != typeof(object))
                         responseType = responseType.GetGenericArguments()[0];
                     
                     RegisterRestPaths(requestType);
@@ -201,6 +203,26 @@ namespace ServiceStack.Host
                 && !serviceType.ContainsGenericParameters;
         }
 
+        public static bool IsServiceAction(MethodInfo mi)
+        {
+            if (mi.IsGenericMethod || mi.GetParameters().Length != 1)
+                return false;
+
+            var paramType = mi.GetParameters()[0].ParameterType;
+            if (paramType.IsValueType || paramType == typeof(string))
+                return false;
+
+            var actionName = mi.Name.ToUpper();
+            if (!HttpMethods.AllVerbs.Contains(actionName) &&
+                actionName != ActionContext.AnyAction &&
+                !HttpMethods.AllVerbs.Any(verb =>
+                    ContentTypes.KnownFormats.Any(format => actionName.EqualsIgnoreCase(verb + format))) &&
+                !ContentTypes.KnownFormats.Any(format => actionName.EqualsIgnoreCase(ActionContext.AnyAction + format)))
+                return false;
+            
+            return true;
+        }
+
         public readonly Dictionary<string, List<RestPath>> RestPathMap = new Dictionary<string, List<RestPath>>();
 
         private static RestPath fallbackRestPath = null;
@@ -210,7 +232,10 @@ namespace ServiceStack.Host
             var attrs = appHost.GetRouteAttributes(requestType);
             foreach (RouteAttribute attr in attrs)
             {
-                var restPath = new RestPath(requestType, attr.Path, attr.Verbs, attr.Summary, attr.Notes, attr.Matches);
+                var restPath = new RestPath(requestType, attr.Path, attr.Verbs, attr.Summary, attr.Notes, attr.Matches)
+                {
+                    Priority = attr.Priority
+                };
 
                 if (attr is FallbackRouteAttribute defaultAttr)
                 {
@@ -446,31 +471,39 @@ namespace ServiceStack.Host
                 InjectRequestContext(service, request);
 
                 object response = null;
+
+                object Release(object result)
+                {
+                    //Gets disposed by AppHost or ContainerAdapter if set
+                    if (result is Task taskResponse)
+                    {
+                        return HostContext.Async.ContinueWith(request, taskResponse, task => {
+                            appHost.Release(service);
+                            return taskResponse.GetResult();
+                        });
+                    }
+                    appHost.Release(service);
+                    return result;
+                }
+                
                 try
                 {
                     requestDto = appHost.OnPreExecuteServiceFilter(service, requestDto, request, request.Response);
 
                     if (request.Dto == null) // Don't override existing batched DTO[]
-                        request.Dto = requestDto; 
+                        request.Dto = requestDto;
 
                     //Executes the service and returns the result
                     response = serviceExec(request, requestDto);
 
                     response = appHost.OnPostExecuteServiceFilter(service, response, request, request.Response);
 
-                    return response;
+                    return Release(response);
                 }
-                finally
+                catch (Exception)
                 {
-                    //Gets disposed by AppHost or ContainerAdapter if set
-                    if (response is Task taskResponse)
-                    {
-                        HostContext.Async.ContinueWith(request, taskResponse, task => appHost.Release(service));
-                    }
-                    else
-                    {
-                        appHost.Release(service);
-                    }
+                    Release(response);
+                    throw;
                 }
             }
             catch (TargetInvocationException tex)
@@ -708,13 +741,11 @@ namespace ServiceStack.Host
                     }
                     return ret;
                 }
-
-                return applyFilters ? await ApplyResponseFiltersAsync(response, req) : response;
             }
 
-            return applyFilters
-                ? await ApplyResponseFiltersAsync(response, req)
-                : response;
+            if (applyFilters)
+                return await ApplyResponseFiltersAsync(response, req); 
+            return response;
         }
 
         public virtual ServiceExecFn GetService(Type requestType)
@@ -746,6 +777,8 @@ namespace ServiceStack.Host
 
                 var firstDto = dtosList[0];
 
+                req.Items[Keywords.AutoBatchIndex] = 0;
+
                 var firstResponse = handlerFn(req, firstDto);
                 if (firstResponse is Exception)
                 {
@@ -764,6 +797,7 @@ namespace ServiceStack.Host
                     for (var i = 1; i < dtosList.Count; i++)
                     {
                         var dto = dtosList[i];
+                        req.Items[Keywords.AutoBatchIndex] = i;
                         var response = handlerFn(req, dto);
                         //short-circuit on first error
                         if (response is Exception)
@@ -774,6 +808,7 @@ namespace ServiceStack.Host
 
                         ret[i] = response;
                     }
+                    req.Items.Remove(Keywords.AutoBatchIndex);
                     req.SetAutoBatchCompletedHeader(dtosList.Count);
                     return ret;
                 }
@@ -788,6 +823,8 @@ namespace ServiceStack.Host
                     //short-circuit on first error and don't exec any more handlers
                     if (firstAsyncError != null)
                         return firstAsyncError;
+
+                    req.Items[Keywords.AutoBatchIndex] = i;
 
                     asyncResponses[i] = i == 0
                         ? asyncResponse //don't re-execute first request
@@ -804,7 +841,7 @@ namespace ServiceStack.Host
                 var batchResponse = HostContext.Async.ContinueWith(req, task, x => {
                     if (firstAsyncError != null)
                         return (object)firstAsyncError;
-
+                    req.Items.Remove(Keywords.AutoBatchIndex);
                     req.SetAutoBatchCompletedHeader(dtosList.Count);
                     return (object) asyncResponses;
                 }); //return error or completed responses
@@ -815,8 +852,10 @@ namespace ServiceStack.Host
 
         public void AssertServiceRestrictions(Type requestType, RequestAttributes actualAttributes)
         {
-            if (!appHost.Config.EnableAccessRestrictions) return;
-            if ((RequestAttributes.InProcess & actualAttributes) == RequestAttributes.InProcess) return;
+            if (!appHost.Config.EnableAccessRestrictions) 
+                return;
+            if ((RequestAttributes.InProcess & actualAttributes) == RequestAttributes.InProcess) 
+                return;
 
             var hasNoAccessRestrictions = !requestServiceAttrs.TryGetValue(requestType, out var restrictAttr)
                 || restrictAttr.HasNoAccessRestrictions;

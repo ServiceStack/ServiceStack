@@ -2,7 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using ServiceStack.IO;
+using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 
 namespace ServiceStack.VirtualPath
@@ -13,7 +16,7 @@ namespace ServiceStack.VirtualPath
 
         public IVirtualPathProvider VirtualPathProvider { get; set; }
 
-        public string Extension => Name.LastRightPart('.');
+        public virtual string Extension => Name.LastRightPart('.');
 
         public IVirtualDirectory Directory { get; set; }
 
@@ -22,6 +25,7 @@ namespace ServiceStack.VirtualPath
         public virtual string RealPath => GetRealPathToRoot();
         public virtual bool IsDirectory => false;
         public abstract DateTime LastModified { get; }
+        
         public abstract long Length { get; }
 
         protected AbstractVirtualFileBase(IVirtualPathProvider owningProvider, IVirtualDirectory directory)
@@ -61,6 +65,18 @@ namespace ServiceStack.VirtualPath
         }
 
         public abstract Stream OpenRead();
+
+        public virtual object GetContents()
+        {
+            using (var stream = OpenRead())
+            {
+                var romBytes = stream.ReadFullyAsMemory();
+                if (MimeTypes.IsBinary(MimeTypes.GetMimeType(Extension)))
+                    return romBytes;
+
+                return MemoryProvider.Instance.FromUtf8(romBytes.Span);
+            }
+        }
 
         protected virtual string GetVirtualPathToRoot()
         {
@@ -121,6 +137,73 @@ namespace ServiceStack
             }
             return false;
         }
+        
+        public static IVirtualDirectory[] GetAllRootDirectories(this IVirtualPathProvider vfs) => vfs is MultiVirtualFiles mvfs
+            ? mvfs.ChildProviders.Select(x => x.RootDirectory).ToArray()
+            : new[] { vfs.RootDirectory };
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T GetVirtualFileSource<T>(this IVirtualPathProvider vfs) where T : class => vfs as T ??
+            (vfs is MultiVirtualFiles mvfs ? mvfs.ChildProviders.FirstOrDefault(x => x is T) as T : null);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static MemoryVirtualFiles GetMemoryVirtualFiles(this IVirtualPathProvider vfs) =>
+            vfs.GetVirtualFileSource<MemoryVirtualFiles>();
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static FileSystemVirtualFiles GetFileSystemVirtualFiles(this IVirtualPathProvider vfs) =>
+            vfs.GetVirtualFileSource<FileSystemVirtualFiles>();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GistVirtualFiles GetGistVirtualFiles(this IVirtualPathProvider vfs) =>
+            vfs.GetVirtualFileSource<GistVirtualFiles>();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ResourceVirtualFiles GetResourceVirtualFiles(this IVirtualPathProvider vfs) =>
+            vfs.GetVirtualFileSource<ResourceVirtualFiles>();
+
+        public static ReadOnlyMemory<char> GetTextContentsAsMemory(this IVirtualFile file)
+        {
+            var contents = file.GetContents();
+            var span = contents is ReadOnlyMemory<char> rom
+                ? rom
+                : contents is string s
+                    ? s.AsMemory()
+                    : file.ReadAllText().AsMemory();
+            return span;
+        }
+
+        public static ReadOnlyMemory<byte> GetBytesContentsAsMemory(this IVirtualFile file)
+        {
+            var contents = file.GetContents();
+            var span = contents is ReadOnlyMemory<byte> rom
+                ? rom
+                : contents is ReadOnlyMemory<char> romChars
+                    ? MemoryProvider.Instance.ToUtf8(romChars.Span)
+                    : contents is string s
+                        ? MemoryProvider.Instance.ToUtf8(s.AsSpan())
+                        : file.ReadAllBytes().AsMemory();
+            return span;
+        }
+
+        public static byte[] GetBytesContentsAsBytes(this IVirtualFile file)
+        {
+            if (file is InMemoryVirtualFile m)
+                return m.ByteContents ?? MemoryProvider.Instance.ToUtf8Bytes(m.TextContents.AsSpan());
+            if (file is GistVirtualFile g && g.Stream != null)
+                return ((MemoryStream) g.Stream).GetBufferAsBytes();
+
+            var contents = file.GetContents();
+            var bytes = contents is ReadOnlyMemory<byte> rom
+                ? rom.ToArray()
+                : contents is ReadOnlyMemory<char> romChars
+                    ? MemoryProvider.Instance.ToUtf8(romChars.Span).ToArray()
+                    : contents is string s
+                        ? MemoryProvider.Instance.ToUtf8(s.AsSpan()).ToArray()
+                        : file.ReadAllBytes();
+            return bytes;
+        }
+
     }
     
 }

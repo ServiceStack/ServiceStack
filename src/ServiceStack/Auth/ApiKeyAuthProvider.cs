@@ -142,6 +142,7 @@ namespace ServiceStack.Auth
             {
                 InitSchema = appSettings.Get("apikey.InitSchema", true);
                 RequireSecureConnection = appSettings.Get("apikey.RequireSecureConnection", true);
+                AllowInHttpParams = appSettings.Get("apikey.AllowInHttpParams", false);
 
                 var env = appSettings.GetString("apikey.Environments");
                 if (env != null)
@@ -202,7 +203,7 @@ namespace ServiceStack.Auth
                 if (IsAccountLocked(authRepo, userAuth))
                     throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(authService.Request));
 
-                PopulateSession(authRepo as IUserAuthRepository, userAuth, session);
+                session.PopulateSession(userAuth, authRepo);
 
                 if (session.UserAuthName == null)
                     session.UserAuthName = userAuth.UserName ?? userAuth.Email;

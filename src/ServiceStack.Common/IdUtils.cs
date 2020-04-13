@@ -180,6 +180,11 @@ namespace ServiceStack
             return $"urn:{type.Name.ToLowerInvariant()}:{id}";
         }
 
+        public static string CreateUrn(string type, object id)
+        {
+            return $"urn:{type.ToLowerInvariant()}:{id}";
+        }
+
         public static string CreateUrn<T>(this T entity)
         {
             var id = GetId(entity);

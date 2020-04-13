@@ -33,22 +33,53 @@ namespace ServiceStack.Messaging
         /// <summary>
         /// If you only want to enable priority queue handlers (and threads) for specific msg types
         /// </summary>
-        public string[] PriortyQueuesWhitelist { get; set; }
+        public string[] PriorityQueuesWhitelist { get; set; }
 
         /// <summary>
         /// Create workers for priority queues
         /// </summary>
-        public bool EnablePriortyQueues
+        public bool EnablePriorityQueues
         {
-            set => PriortyQueuesWhitelist = value ? null : TypeConstants.EmptyStringArray;
+            set => PriorityQueuesWhitelist = value ? null : TypeConstants.EmptyStringArray;
         }
+
+        [Obsolete("Use PriorityQueuesWhitelist")]
+        public string[] PriortyQueuesWhitelist
+        {
+            get => PriorityQueuesWhitelist;
+            set => PriorityQueuesWhitelist = value;
+        }
+        [Obsolete("Use EnablePriorityQueues")]
+        public bool EnablePriortyQueues { set => EnablePriorityQueues = value; }
 
         /// <summary>
         /// Opt-in to only publish responses on this white list. 
         /// Publishes all responses by default.
         /// </summary>
         public string[] PublishResponsesWhitelist { get; set; }
+
+        /// <summary>
+        /// Don't publish any response messages
+        /// </summary>
+        public bool DisablePublishingResponses
+        {
+            set => PublishResponsesWhitelist = value ? TypeConstants.EmptyStringArray : null;
+        }
         
+        /// <summary>
+        /// Opt-in to only publish .outq messages on this white list. 
+        /// Publishes all responses by default.
+        /// </summary>
+        public string[] PublishToOutqWhitelist { get; set; }
+
+        /// <summary>
+        /// Don't publish any messages to .outq
+        /// </summary>
+        public bool DisablePublishingToOutq
+        {
+            set => PublishToOutqWhitelist = value ? TypeConstants.EmptyStringArray : null;
+        }
+
         /// <summary>
         /// Subscribe to messages sent to .outq
         /// </summary>
@@ -67,7 +98,7 @@ namespace ServiceStack.Messaging
 
         public BackgroundMqService()
         {
-            EnablePriortyQueues = false;
+            EnablePriorityQueues = false;
             mqClient = new BackgroundMqClient(this);
             MessageFactory = new BackgroundMqMessageFactory(mqClient);
         }
@@ -112,6 +143,7 @@ namespace ServiceStack.Messaging
                 RequestFilter = this.RequestFilter,
                 ResponseFilter = this.ResponseFilter,
                 PublishResponsesWhitelist = PublishResponsesWhitelist,
+                PublishToOutqWhitelist = PublishToOutqWhitelist,
                 RetryCount = RetryCount,
             };
         }
@@ -126,6 +158,39 @@ namespace ServiceStack.Messaging
                 workers.Each(x => total.Add(x.GetStats()));
                 return total;
             }
+        }
+
+        public IMqWorker[] GetWorkers(string queueName)
+        {
+            var ret = new List<IMqWorker>();
+
+            if (workers != null)
+            {
+                lock (workers)
+                {
+                    foreach (var worker in workers)
+                    {
+                        if (worker.QueueName != queueName)
+                            continue;
+
+                        ret.Add(worker);
+                    }
+                }
+            }
+
+            return ret.ToArray();
+        }
+
+        public IMqWorker[] GetAllWorkers()
+        {
+            if (workers != null)
+            {
+                lock (workers)
+                {
+                    return workers.ToArray();
+                }
+            }
+            return TypeConstants<IMqWorker>.EmptyArray;
         }
 
         public string GetStatus() => workers != null ? nameof(WorkerStatus.Started) : nameof(WorkerStatus.Stopped);
@@ -254,7 +319,6 @@ namespace ServiceStack.Messaging
             }
             else
             {
-
                 var started = DateTime.UtcNow;
     
                 if (Log.IsDebugEnabled)
@@ -308,8 +372,8 @@ namespace ServiceStack.Messaging
                     var collection = entry.Value;
                     var queueNames = new QueueNames(msgType);
 
-                    if (PriortyQueuesWhitelist == null
-                        || PriortyQueuesWhitelist.Any(x => x == msgType.Name))
+                    if (PriorityQueuesWhitelist == null
+                        || PriorityQueuesWhitelist.Any(x => x == msgType.Name))
                     {
                         collection.ThreadCount.Times(i => 
                             workerBuilder.Add(collection.CreateWorker(queueNames.Priority)));
@@ -397,6 +461,8 @@ namespace ServiceStack.Messaging
         void Clear(string queueName);
 
         string GetDescription();
+
+        Dictionary<string,long> GetDescriptionMap();
     }
  
     public interface IMqWorker : IDisposable
@@ -558,6 +624,24 @@ namespace ServiceStack.Messaging
             return StringBuilderCache.ReturnAndFree(sb);
         }
 
+        public Dictionary<string, long> GetDescriptionMap()
+        {
+            var to = new Dictionary<string,long> {
+                [nameof(ThreadCount)] = ThreadCount,
+                ["TotalMessagesAdded"] = Interlocked.Read(ref totalMessagesAdded),
+                ["TotalMessagesTaken"] = Interlocked.Read(ref totalMessagesTaken),
+                ["TotalOutQMessagesAdded"] = Interlocked.Read(ref totalOutQMessagesAdded),
+                ["TotalDlQMessagesAdded"] = Interlocked.Read(ref totalDlQMessagesAdded),
+            };
+
+            foreach (var entry in queueMap)
+            {
+                to[entry.Key] = entry.Value.Count;
+            }
+
+            return to;
+        }
+        
         //Called when AppHost is disposing
         public void Dispose()
         {

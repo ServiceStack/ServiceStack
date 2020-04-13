@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -50,18 +51,21 @@ namespace ServiceStack.IO
                 .FirstOrDefault(file => file != null);
         }
 
-        public override IVirtualDirectory GetDirectory(string virtualPath)
-        {
-            return ChildProviders.Select(p => p.GetDirectory(virtualPath))
-                .FirstOrDefault(dir => dir != null);
-        }
+        public override IVirtualDirectory GetDirectory(string virtualPath) => 
+            MultiVirtualDirectory.ToVirtualDirectory(ChildProviders.Select(p => p.GetDirectory(virtualPath)).Where(dir => dir != null));
 
-        public override IEnumerable<IVirtualFile> GetAllMatchingFiles(string globPattern, int maxDepth = Int32.MaxValue)
+        public override IEnumerable<IVirtualFile> GetAllMatchingFiles(string globPattern, int maxDepth = int.MaxValue)
         {
             return ChildProviders.SelectMany(p => p.GetAllMatchingFiles(globPattern, maxDepth))
                 .Distinct();
         }
 
+        public override IEnumerable<IVirtualFile> GetAllFiles()
+        {
+            return ChildProviders.SelectMany(x => x.GetAllFiles())
+                .Distinct();
+        }
+        
         public override IEnumerable<IVirtualFile> GetRootFiles()
         {
             return ChildProviders.SelectMany(x => x.GetRootFiles());
@@ -86,7 +90,6 @@ namespace ServiceStack.IO
         {
             var sb = new List<string>();
             ChildProviders.Each(x => sb.Add(x.ToString()));
-
             return string.Join(", ", sb.ToArray());
         }
 
@@ -133,6 +136,111 @@ namespace ServiceStack.IO
         public void DeleteFolder(string dirPath)
         {
             ChildVirtualFiles.Each(x => x.DeleteFolder(dirPath));
+        }
+    }
+
+    public class MultiVirtualDirectory : IVirtualDirectory
+    {
+        public static IVirtualDirectory ToVirtualDirectory(IEnumerable<IVirtualDirectory> dirs)
+        {
+            var arr = dirs.ToArray();
+            return arr.Length == 0
+                ? null
+                : arr.Length == 1
+                    ? arr[0]
+                    : new MultiVirtualDirectory(arr);
+        }
+
+        private readonly IVirtualDirectory[] dirs;
+
+        public MultiVirtualDirectory(IVirtualDirectory[] dirs)
+        {
+            if (dirs.Length == 0)
+                throw new ArgumentNullException(nameof(dirs));
+
+            this.dirs = dirs;
+        }
+
+        public IVirtualDirectory Directory => this;
+        public string Name => this.First().Name;
+        public string VirtualPath => this.First().VirtualPath;
+        public string RealPath => this.First().RealPath;
+        public bool IsDirectory => true;
+        public DateTime LastModified => this.First().LastModified;
+
+        public IEnumerator<IVirtualNode> GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public bool IsRoot => this.dirs.First().IsRoot;
+
+        public IVirtualDirectory ParentDirectory =>
+            ToVirtualDirectory(dirs.SelectMany(x => x.ParentDirectory).Where(x => x != null).Cast<IVirtualDirectory>());
+
+        public IEnumerable<IVirtualFile> Files => dirs.SelectMany(x => x.Files);
+
+        public IEnumerable<IVirtualDirectory> Directories => dirs.SelectMany(x => x.Directories);
+
+        public IVirtualFile GetFile(string virtualPath)
+        {
+            foreach (var dir in dirs)
+            {
+                var file = dir.GetFile(virtualPath);
+                if (file != null)
+                    return file;
+            }
+            return null;
+        }
+
+        public IVirtualFile GetFile(Stack<string> virtualPath)
+        {
+            foreach (var dir in dirs)
+            {
+                var file = dir.GetFile(virtualPath);
+                if (file != null)
+                    return file;
+            }
+            return null;
+        }
+
+        public IVirtualDirectory GetDirectory(string virtualPath)
+        {
+            foreach (var dir in dirs)
+            {
+                var sub = dir.GetDirectory(virtualPath);
+                if (sub != null)
+                    return sub;
+            }
+            return null;
+        }
+
+        public IVirtualDirectory GetDirectory(Stack<string> virtualPath)
+        {
+            foreach (var dir in dirs)
+            {
+                var sub = dir.GetDirectory(virtualPath);
+                if (sub != null)
+                    return sub;
+            }
+            return null;
+        }
+
+        public IEnumerable<IVirtualFile> GetAllMatchingFiles(string globPattern, int maxDepth = Int32.MaxValue)
+        {
+            foreach (var dir in dirs)
+            {
+                var files = dir.GetAllMatchingFiles(globPattern, maxDepth);
+                foreach (var file in files)
+                {
+                    yield return file;
+                }
+            }
         }
     }
 }

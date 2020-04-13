@@ -22,12 +22,12 @@ namespace ServiceStack.AspNet
         }
 
         /// <summary>
-        /// Default redirct URL if [Authenticate] attribute doesn't permit access.
+        /// Default redirect URL if [Authenticate] attribute doesn't permit access.
         /// </summary>
         public virtual string UnauthorizedRedirectUrl => HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect();
 
         /// <summary>
-        /// Default redirct URL if Required Role or Permission attributes doesn't permit access.
+        /// Default redirect URL if Required Role or Permission attributes doesn't permit access.
         /// </summary>
         public virtual string ForbiddenRedirectUrl => HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect();
 
@@ -39,9 +39,9 @@ namespace ServiceStack.AspNet
             if (!this.IsAuthorized(authAttr))
             {
                 var authError = authAttr?.HtmlRedirect != null
-                    ? authAttr.HtmlRedirect.AddQueryParam("redirect", Request.Url.PathAndQuery)
+                    ? authAttr.HtmlRedirect.AddQueryParam(Keywords.Redirect, Request.Url.PathAndQuery)
                     : UnauthorizedRedirectUrl != null 
-                        ? $"{UnauthorizedRedirectUrl}?redirect={Request.Url.PathAndQuery.UrlEncode()}#f=Unauthorized"
+                        ? $"{UnauthorizedRedirectUrl}?{Keywords.Redirect}={Request.Url.PathAndQuery.UrlEncode()}#f=Unauthorized"
                         : null;
 
                 if (authError != null)
@@ -63,9 +63,9 @@ namespace ServiceStack.AspNet
                 page.AllAttributes<RequiresAnyPermissionAttribute>()))
             {
                 var authError = authAttr?.HtmlRedirect != null
-                    ? authAttr.HtmlRedirect.AddQueryParam("redirect", Request.Url.PathAndQuery)
+                    ? authAttr.HtmlRedirect.AddQueryParam(Keywords.Redirect, Request.Url.PathAndQuery)
                     : ForbiddenRedirectUrl != null 
-                        ? $"{ForbiddenRedirectUrl}?redirect={Request.Url.PathAndQuery.UrlEncode()}#f=Forbidden"
+                        ? $"{ForbiddenRedirectUrl}?{Keywords.Redirect}={Request.Url.PathAndQuery.UrlEncode()}#f=Forbidden"
                         : null;
 
                 if (authError != null)

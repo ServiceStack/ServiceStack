@@ -55,6 +55,16 @@ namespace ServiceStack.Web
         Type[] HideRequestBodyForRequestDtoTypes { get; set; }
 
         /// <summary>
+        /// Customize Request Log Entry
+        /// </summary>
+        Action<IRequest, RequestLogEntry> RequestLogFilter { get; set; }
+
+        /// <summary>
+        /// Change what DateTime to use for the current Date (defaults to UtcNow)
+        /// </summary>
+        Func<DateTime> CurrentDateFn { get; set; }
+
+        /// <summary>
         /// Log a request
         /// </summary>
         /// <param name="request">The RequestContext</param>

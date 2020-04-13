@@ -9,7 +9,8 @@ namespace ServiceStack.Auth
     {
         public object Post(UnAssignRoles request)
         {
-            RequiredRoleAttribute.AssertRequiredRoles(Request, RoleNames.Admin);
+            if (!Request.IsInProcessRequest())
+                RequiredRoleAttribute.AssertRequiredRoles(Request, RoleNames.Admin);
 
             if (string.IsNullOrEmpty(request.UserName))
                 throw new ArgumentNullException(nameof(request.UserName));

@@ -1,4 +1,4 @@
-#if !NETSTANDARD2_0
+#if !NETSTANDARD
 #region License
 // Copyright (c) Jeremy Skinner (http://www.jeremyskinner.co.uk)
 // 
@@ -14,14 +14,13 @@
 // See the License for the specific language governing permissions and 
 // limitations under the License.
 // 
-// The latest version of this file can be found at http://www.codeplex.com/FluentValidation
+// The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
-using ServiceStack.FluentValidation.Results;
-
-namespace FluentValidation.Mvc {
+namespace ServiceStack.FluentValidation.Mvc {
 	using System.Globalization;
 	using System.Web.Mvc;
+	using Results;
 
 	public static class ValidationResultExtension {
 		/// <summary>
@@ -34,12 +33,28 @@ namespace FluentValidation.Mvc {
 			if (!result.IsValid) {
 				foreach (var error in result.Errors) {
 					string key = string.IsNullOrEmpty(prefix) ? error.PropertyName : prefix + "." + error.PropertyName;
-					modelState.AddModelError(key, error.ErrorMessage);
-					//To work around an issue with MVC: SetModelValue must be called if AddModelError is called.
-					modelState.SetModelValue(key, new ValueProviderResult(error.AttemptedValue ?? "", (error.AttemptedValue ?? "").ToString(), CultureInfo.CurrentCulture));
+
+					if (modelState.ContainsKey(key)) {
+						modelState[key].Errors.Add(error.ErrorMessage);
+					}
+					else {
+						modelState.AddModelError(key, error.ErrorMessage);
+						//To work around an issue with MVC: SetModelValue must be called if AddModelError is called.
+						modelState.SetModelValue(key, new ValueProviderResult(error.AttemptedValue ?? "", (error.AttemptedValue ?? "").ToString(), CultureInfo.CurrentCulture));
+					}
 				}
 			}
 		}
+
+		/// <summary>
+		/// Sets the rulests used when generating clientside messages.
+		/// </summary>
+		/// <param name="context">Http context</param>
+		/// <param name="ruleSets">Array of ruleset names</param>
+		public static void SetRulesetForClientsideMessages(this ControllerContext context, params string[] ruleSets)  {
+			context.HttpContext.Items["_FV_ClientSideRuleSet"] = ruleSets;
+		}
+
 	}
 }
 #endif

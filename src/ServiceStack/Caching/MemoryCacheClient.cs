@@ -65,8 +65,7 @@ namespace ServiceStack.Caching
         /// </summary>
         private bool CacheAdd(string key, object value, DateTime? expiresAt = null)
         {
-            CacheEntry entry;
-            if (this.TryGetValue(key, out entry)) return false;
+            if (this.TryGetValue(key, out var entry)) return false;
 
             entry = new CacheEntry(value, expiresAt);
             this.Set(key, entry);
@@ -87,8 +86,7 @@ namespace ServiceStack.Caching
         /// </summary>
         private bool CacheSet(string key, object value, DateTime? expiresAt = null, long? checkLastModified = null)
         {
-            CacheEntry entry;
-            if (!this.TryGetValue(key, out entry))
+            if (!this.TryGetValue(key, out var entry))
             {
                 entry = new CacheEntry(value, expiresAt);
                 this.Set(key, entry);
@@ -121,8 +119,7 @@ namespace ServiceStack.Caching
 
         public bool Remove(string key)
         {
-            CacheEntry item;
-            return this.memory.TryRemove(key, out item);
+            return this.memory.TryRemove(key, out _);
         }
 
         public void RemoveAll(IEnumerable<string> keys)
@@ -142,16 +139,14 @@ namespace ServiceStack.Caching
 
         public object Get(string key)
         {
-            long lastModifiedTicks;
-            return Get(key, out lastModifiedTicks);
+            return Get(key, out _);
         }
 
         public object Get(string key, out long lastModifiedTicks)
         {
             lastModifiedTicks = 0;
 
-            CacheEntry cacheEntry;
-            if (this.memory.TryGetValue(key, out cacheEntry))
+            if (this.memory.TryGetValue(key, out var cacheEntry))
             {
                 if (cacheEntry.HasExpired)
                 {
@@ -173,8 +168,7 @@ namespace ServiceStack.Caching
 
         private long UpdateCounter(string key, long value)
         {
-            CacheEntry cacheEntry;
-            if (this.memory.TryGetValue(key, out cacheEntry))
+            if (this.memory.TryGetValue(key, out var cacheEntry))
             {
                 try
                 {
@@ -331,23 +325,25 @@ namespace ServiceStack.Caching
         public void RemoveByRegex(string pattern)
         {
             var regex = new Regex(pattern);
-            var enumerator = this.memory.GetEnumerator();
-            var keysToRemove = new List<string>();
-            try
+            using (var enumerator = this.memory.GetEnumerator())
             {
-                while (enumerator.MoveNext())
+                var keysToRemove = new List<string>();
+                try
                 {
-                    var current = enumerator.Current;
-                    if (regex.IsMatch(current.Key) || current.Value.HasExpired)
+                    while (enumerator.MoveNext())
                     {
-                        keysToRemove.Add(current.Key);
+                        var current = enumerator.Current;
+                        if (regex.IsMatch(current.Key) || current.Value.HasExpired)
+                        {
+                            keysToRemove.Add(current.Key);
+                        }
                     }
+                    RemoveAll(keysToRemove);
                 }
-                RemoveAll(keysToRemove);
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"Error trying to remove items from cache with this {pattern} pattern", ex);
+                catch (Exception ex)
+                {
+                    Log.Error($"Error trying to remove items from cache with this {pattern} pattern", ex);
+                }
             }
         }
 
@@ -361,40 +357,42 @@ namespace ServiceStack.Caching
         public List<string> GetKeysByRegex(string pattern)
         {
             var regex = new Regex(pattern);
-            var enumerator = this.memory.GetEnumerator();
-            var keys = new List<string>();
-            var expiredKeys = new List<string>();
-            try
+            using (var enumerator = this.memory.GetEnumerator())
             {
-                while (enumerator.MoveNext())
+                var keys = new List<string>();
+                var expiredKeys = new List<string>();
+                try
                 {
-                    var current = enumerator.Current;
-                    if (!regex.IsMatch(current.Key))
-                        continue;
+                    while (enumerator.MoveNext())
+                    {
+                        var current = enumerator.Current;
+                        if (!regex.IsMatch(current.Key))
+                            continue;
 
-                    if (current.Value.HasExpired)
-                    {
-                        expiredKeys.Add(current.Key);
+                        if (current.Value.HasExpired)
+                        {
+                            expiredKeys.Add(current.Key);
+                        }
+                        else
+                        {
+                            keys.Add(current.Key);
+                        }
                     }
-                    else
-                    {
-                        keys.Add(current.Key);
-                    }
+
+                    RemoveAll(expiredKeys);
                 }
-
-                RemoveAll(expiredKeys);
+                catch (Exception ex)
+                {
+                    Log.Error($"Error trying to remove items from cache with this {pattern} pattern", ex);
+                }
+                return keys;
             }
-            catch (Exception ex)
-            {
-                Log.Error($"Error trying to remove items from cache with this {pattern} pattern", ex);
-            }
-            return keys;
         }
 
         public void RemoveExpiredEntries()
         {
             var expiredKeys = new List<string>();
-            var enumerator = this.memory.GetEnumerator();
+            using (var enumerator = this.memory.GetEnumerator())
             while (enumerator.MoveNext())
             {
                 var current = enumerator.Current;
@@ -409,8 +407,7 @@ namespace ServiceStack.Caching
 
         public TimeSpan? GetTimeToLive(string key)
         {
-            CacheEntry cacheEntry;
-            if (this.memory.TryGetValue(key, out cacheEntry))
+            if (this.memory.TryGetValue(key, out var cacheEntry))
             {
                 if (cacheEntry.ExpiresAt == null)
                     return TimeSpan.MaxValue;

@@ -7,11 +7,22 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    {{#if debug}}<script>{{ '/js/hot-loader.js' | includeFile }}</script>{{/if}}
-    <link rel="stylesheet" href="/assets/css/bootstrap.css">
-    <link rel="stylesheet" href="/assets/css/default.css">
+    
+    {{#noop}}
+    {{ false | assignTo: debug }}
+    {{/noop}}
+    
+    {{ (debug ? '' : '[hash].min') | assignTo: min }}
+
+    {{ ['!/assets/css/default.css','/assets/css/','/css/buttons.css','/css/svg-auth.css','/css/svg-icons.css']
+       | bundleCss({ disk:!debug, out:`/css/lib.bundle${min}.css` }) }}
+
+    {{ ['/assets/css/default.css']
+       | bundleCss({ minify:!debug, cache:!debug, disk:!debug, out:`/css/bundle${min}.css` }) }}
+
 </head>
 <body>
+    <i hidden>{{ '/js/hot-fileloader.js' | ifDebugIncludeScript }}</i>
 
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
@@ -24,29 +35,60 @@
                 aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
-          {{ 'menu' | partial }}
+          {{* 'menu' | partial *}}
+          {{ navbar }}
         </div>
     </nav>
 
     <!-- Page Content -->
-    <div class="container">
+    <div class="container" style="padding: 1em 0">
       <div class="row">
-        <div class="col-lg-12 text-center">
-          <h1 class="mt-5">{{ title }}</h1>
+        <div class="col-lg-12">
+          {{#if title}}<h1 class="mt-5">{{ title }}</h1>{{/if}}
           {{ page }}
         </div>
       </div>
     </div>
 
-    <h4 style="position:absolute; bottom: 20px; width: 100%; text-align: center">
-      <a href="http://templates.servicestack.net">Learn about ServiceStack Templates</a>
-    </h4>
+    <script>
+        var exports = window;
+        var IMPORT = {
+            jquery: '$',
+            vue: function(){
+                var e = require('Vue');
+                e.Vue = e; // workaround TypeScript not allowing default imports  
+                return e;
+            }
+        };
+        window.require = function(name) {
+            var w = IMPORT[name];
+            if (w) return typeof w == "function" ? w() : typeof w == 'string' ? exports[w] : w;
+            return exports[name] || exports;
+        };
+    </script>
 
-    <script src="/assets/js/jquery.min.js"></script>
-    <script src="/assets/js/bootstrap.min.js"></script>
-    <script src="/assets/js/default.js"></script>
+    {{ [
+        '!/assets/js/dtos.js',
+        '!/assets/js/default.js',
+        'content:/src/source.js',
+        'content:/src/components/',
+        '/assets/js/jquery.min.js',
+        '/assets/js/popper.min.js',
+        '/assets/js/',
+        '/lib/@servicestack/client/index.js',
+    ] | bundleJs({ minify:!debug, cache:!debug, disk:!debug, out:`/js/lib.bundle${min}.js` }) }}
+
+
+    {{ [
+        '/assets/js/dtos.js',
+        '/assets/js/default.js',
+    ] | bundleJs({ minify:!debug, cache:!debug, disk:!debug, out:`/js/bundle${min}.js` }) }}
+
+    <script src="/js/ss-utils.js"></script>
 
     {{ scripts | raw }}
+
+    <div>Copyright &copy; {{ now | dateFormat('yyyy') }}</div>
 
 </body>
 </html>

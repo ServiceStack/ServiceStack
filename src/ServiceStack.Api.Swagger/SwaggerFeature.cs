@@ -45,7 +45,7 @@ namespace ServiceStack.Api.Swagger
             AnyRouteVerbs = new List<string> { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
         }
 
-        public void Configure(IAppHost appHost)
+        public void BeforePluginsLoaded(IAppHost appHost)
         {
             appHost.Config.EmbeddedResourceSources.Add(typeof(SwaggerFeature).Assembly);
         }
@@ -104,7 +104,7 @@ namespace ServiceStack.Api.Swagger
 
                     return new CustomResponseHandler((req, res) =>
                     {
-                        res.ContentType = MimeTypes.Html;
+                        res.ContentType = MimeTypes.HtmlUtf8; //use alt HTML ContentType so it's not overridden when Feature.Html is removed
                         var resourcesUrl = req.ResolveAbsoluteUrl("~/resources");
                         var logoHref = LogoHref ?? "./";
                         html = html.Replace("http://petstore.swagger.io/v2/swagger.json", resourcesUrl)

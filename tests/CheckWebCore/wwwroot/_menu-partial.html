@@ -1,0 +1,11 @@
+{{ menuItems | assignTo: links }}
+
+<div class="collapse navbar-collapse" id="navbarResponsive">
+    <ul class="navbar-nav ml-auto">
+        {{#each links}}
+        <li {{ {active: startsWithPathInfo(Href)} | htmlClass }}>
+            <a class="nav-link" href="{{Href}}">{{Label}}</a>
+        </li>
+        {{/each}}
+    </ul>
+</div>

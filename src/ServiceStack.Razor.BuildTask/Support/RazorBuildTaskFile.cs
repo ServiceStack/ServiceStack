@@ -29,25 +29,18 @@ namespace ServiceStack.Razor.BuildTask.Support
 
         public DateTime LastModified { get; private set; }
 
-        public string GetFileHash()
-        {
-            throw new NotImplementedException();
-        }
+        public string GetFileHash() => throw new NotImplementedException();
 
         public Stream OpenRead()
         {
             return File.OpenRead(this.RealPath);
         }
 
-        public StreamReader OpenText()
-        {
-            throw new NotImplementedException();
-        }
+        public StreamReader OpenText() => throw new NotImplementedException();
 
-        public string ReadAllText()
-        {
-            throw new NotImplementedException();
-        }
+        public string ReadAllText() => throw new NotImplementedException();
+
+        public object GetContents() => throw new NotImplementedException();
 
         public void Refresh() {}
 

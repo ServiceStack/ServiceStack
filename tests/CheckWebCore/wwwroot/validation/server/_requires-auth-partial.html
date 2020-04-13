@@ -1,0 +1,9 @@
+{{ `/validation/server/login?continue=${PathInfo}`
+   | redirectIfNotAuthenticated }}
+
+<div style="text-align:right">
+    <small class="text-muted">
+        {{ userSession.DisplayName }} 
+        | <a href="/auth/logout?continue=/validation/server/">Sign Out</a>
+    </small>
+</div>

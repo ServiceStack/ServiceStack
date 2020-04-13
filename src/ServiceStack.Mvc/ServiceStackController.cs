@@ -11,7 +11,7 @@ using ServiceStack.Text;
 using ServiceStack.Web;
 using System.Web;
 
-#if !NETSTANDARD2_0
+#if !NETSTANDARD
     using ServiceStack.Host.AspNet;
     using System.Web.Mvc;
     using System.Web.Routing;
@@ -38,7 +38,7 @@ namespace ServiceStack.Mvc
         public static string DefaultAction = "Index";
 
         /// <summary>
-        /// Default redirct URL if [Authenticate] attribute doesn't permit access.
+        /// Default redirect URL if [Authenticate] attribute doesn't permit access.
         /// </summary>
         public virtual string UnauthorizedRedirectUrl => 
             HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect();
@@ -61,7 +61,7 @@ namespace ServiceStack.Mvc
         }
 
         /// <summary>
-        /// Default redirct URL if Required Role or Permission attributes doesn't permit access.
+        /// Default redirect URL if Required Role or Permission attributes doesn't permit access.
         /// </summary>
         public virtual string ForbiddenRedirectUrl => 
             HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect();
@@ -94,7 +94,7 @@ namespace ServiceStack.Mvc
                 action = "Unauthorized"
             }));
 
-#if !NETSTANDARD2_0
+#if !NETSTANDARD
         public static Func<System.Web.Routing.RequestContext, ServiceStackController> CatchAllController;
 
         protected virtual ActionResult InvokeDefaultAction(HttpContextBase httpContext)
@@ -160,7 +160,7 @@ namespace ServiceStack.Mvc
         private IServiceStackProvider serviceStackProvider;
         public virtual IServiceStackProvider ServiceStackProvider => 
             serviceStackProvider ?? (serviceStackProvider = 
-#if !NETSTANDARD2_0
+#if !NETSTANDARD
             new ServiceStackProvider(new AspNetRequest(base.HttpContext, GetType().Name)));
 #else
             new ServiceStackProvider(new NetCoreRequest(base.HttpContext, GetType().Name)));
@@ -226,7 +226,7 @@ namespace ServiceStack.Mvc
             HostContext.AppHost.OnEndRequest(ServiceStackRequest);
     }
 
-#if !NETSTANDARD2_0
+#if !NETSTANDARD
     public class ServiceStackJsonResult : JsonResult
     {
         public override void ExecuteResult(ControllerContext context)

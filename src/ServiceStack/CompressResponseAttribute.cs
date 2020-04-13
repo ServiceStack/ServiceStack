@@ -11,6 +11,8 @@ namespace ServiceStack
         {
             if (response is Exception)
                 return;
+            if (req.IsInProcessRequest())
+                return;
 
             var httpResult = response as IHttpResult;
             var src = httpResult != null ? httpResult.Response : response;

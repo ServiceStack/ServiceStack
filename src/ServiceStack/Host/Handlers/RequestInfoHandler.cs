@@ -94,6 +94,9 @@ namespace ServiceStack.Host.Handlers
         public string RootDirectoryPath { get; set; }
 
         [DataMember]
+        public string ContentRootDirectoryPath { get; set; }
+
+        [DataMember]
         public string CurrentDirectory { get; set; }
 
         [DataMember]
@@ -202,6 +205,9 @@ namespace ServiceStack.Host.Handlers
 
         public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
+            if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
+                return TypeConstants.EmptyTask;
+
             var response = this.RequestInfo ?? GetRequestInfo(httpReq);
             response.HandlerFactoryArgs = HttpHandlerFactory.DebugLastHandlerArgs;
             response.DebugString = "";
@@ -274,7 +280,8 @@ namespace ServiceStack.Host.Handlers
         public static RequestInfoResponse GetRequestInfo(IRequest httpReq)
         {
             int.TryParse(httpReq.QueryString["virtualPathCount"], out var virtualPathCount);
-            var hostType = HostContext.AppHost.GetType();
+            var appHost = HostContext.AppHost;
+            var hostType = appHost.GetType();
 
             var ipv4Addr = "";
             foreach (var entry in ServiceStackHandlerBase.NetworkInterfaceIpv4Addresses)
@@ -292,23 +299,25 @@ namespace ServiceStack.Host.Handlers
                 ipv6Address += new IPAddress(addr);
             }
 
+            var config = HostContext.Config;
             var response = new RequestInfoResponse
             {
                 Usage = "append '?debug=requestinfo' to any querystring. Optional params: virtualPathCount",
-                Host = HostContext.ServiceName + "_" + HostContext.Config.DebugHttpListenerHostEnvironment + "_" + Env.ServerUserAgent,
-                HostType = "{0} ({1})".Fmt(HostContext.IsAspNetHost ? "ASP.NET" : "SelfHost", hostType.BaseType?.Name ?? hostType.Name),
-                StartedAt = HostContext.AppHost.StartedAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                Host = HostContext.ServiceName + "_" + config.DebugHttpListenerHostEnvironment + "_" + Env.ServerUserAgent,
+                HostType = $"{(HostContext.IsAspNetHost ? "ASP.NET" : "SelfHost")} ({hostType.BaseType?.Name ?? hostType.Name})",
+                StartedAt = appHost.StartedAt.ToString("yyyy-MM-dd HH:mm:ss"),
                 Date = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
                 ServiceName = HostContext.ServiceName,
-                HandlerFactoryPath = HostContext.Config.HandlerFactoryPath,
+                HandlerFactoryPath = config.HandlerFactoryPath,
                 UserHostAddress = httpReq.UserHostAddress,
                 HttpMethod = httpReq.Verb,
                 AbsoluteUri = httpReq.AbsoluteUri,
-                WebHostUrl = HostContext.Config.WebHostUrl,
+                WebHostUrl = config.WebHostUrl,
                 ApplicationBaseUrl = httpReq.GetBaseUrl(),
-                ResolveAbsoluteUrl = HostContext.AppHost.ResolveAbsoluteUrl("~/resolve", httpReq),
-                RootDirectoryPath = HostContext.VirtualFileSources.RootDirectory.RealPath,
-                StripApplicationVirtualPath = HostContext.Config.StripApplicationVirtualPath,
+                ResolveAbsoluteUrl = appHost.ResolveAbsoluteUrl("~/resolve", httpReq),
+                RootDirectoryPath = appHost.RootDirectory.RealPath,
+                ContentRootDirectoryPath = appHost.ContentRootDirectory.RealPath,
+                StripApplicationVirtualPath = config.StripApplicationVirtualPath,
                 CurrentDirectory = Directory.GetCurrentDirectory(),
                 RawUrl = httpReq.RawUrl,
                 PathInfo = httpReq.PathInfo,
@@ -324,29 +333,29 @@ namespace ServiceStack.Host.Handlers
                 RequestAttributes = httpReq.GetAttributes().ToString(),
                 Ipv4Addresses = ipv4Addr,
                 Ipv6Addresses = ipv6Address,
-                PluginsLoaded = HostContext.AppHost.PluginsLoaded,
-                StartUpErrors = HostContext.AppHost.StartUpErrors,
-                AsyncErrors = HostContext.AppHost.AsyncErrors,
+                PluginsLoaded = appHost.PluginsLoaded,
+                StartUpErrors = appHost.StartUpErrors,
+                AsyncErrors = appHost.AsyncErrors,
                 LastRequestInfo = LastRequestInfo,
-                VirtualPathProviderFiles = HostContext.AppHost.VirtualFileSources.GetAllMatchingFiles("*").Take(virtualPathCount).Map(x => x.RealPath),
+                VirtualPathProviderFiles = appHost.VirtualFileSources.GetAllMatchingFiles("*").Take(virtualPathCount).Map(x => x.RealPath),
                 Stats = new Dictionary<string, string> {
-                    {"RawHttpHandlers", HostContext.AppHost.RawHttpHandlersArray.Length.ToString() },
-                    {"PreRequestFilters", HostContext.AppHost.PreRequestFiltersArray.Length.ToString() },
-                    {"RequestBinders", HostContext.AppHost.RequestBinders.Count.ToString() },
-                    {"GlobalRequestFilters", HostContext.AppHost.GlobalRequestFiltersArray.Length.ToString() },
-                    {"GlobalRequestFiltersAsync", HostContext.AppHost.GlobalRequestFiltersAsyncArray.Length.ToString() },
-                    {"GlobalResponseFilters", HostContext.AppHost.GlobalResponseFiltersArray.Length.ToString() },
-                    {"GlobalResponseFiltersAsync", HostContext.AppHost.GlobalResponseFiltersAsyncArray.Length.ToString() },
-                    {"CatchAllHandlers", HostContext.AppHost.CatchAllHandlersArray.Length.ToString() },
-                    {"Plugins", HostContext.AppHost.Plugins.Count.ToString() },
-                    {"ViewEngines", HostContext.AppHost.ViewEngines.Count.ToString() },
-                    {"RequestTypes", HostContext.AppHost.Metadata.RequestTypes.Count.ToString() },
-                    {"ResponseTypes", HostContext.AppHost.Metadata.ResponseTypes.Count.ToString() },
-                    {"ServiceTypes", HostContext.AppHost.Metadata.ServiceTypes.Count.ToString() },
-                    {"RestPaths", HostContext.AppHost.RestPaths.Count.ToString() },
-                    {"ContentTypes", HostContext.AppHost.ContentTypes.ContentTypeFormats.Count.ToString() },
-                    {"EnableFeatures", HostContext.Config.EnableFeatures.ToString() },
-                    {"VirtualPathProvider", HostContext.AppHost.VirtualFileSources.ToString() }
+                    {"RawHttpHandlers", appHost.RawHttpHandlersArray.Length.ToString() },
+                    {"PreRequestFilters", appHost.PreRequestFiltersArray.Length.ToString() },
+                    {"RequestBinders", appHost.RequestBinders.Count.ToString() },
+                    {"GlobalRequestFilters", appHost.GlobalRequestFiltersArray.Length.ToString() },
+                    {"GlobalRequestFiltersAsync", appHost.GlobalRequestFiltersAsyncArray.Length.ToString() },
+                    {"GlobalResponseFilters", appHost.GlobalResponseFiltersArray.Length.ToString() },
+                    {"GlobalResponseFiltersAsync", appHost.GlobalResponseFiltersAsyncArray.Length.ToString() },
+                    {"CatchAllHandlers", appHost.CatchAllHandlersArray.Length.ToString() },
+                    {"Plugins", appHost.Plugins.Count.ToString() },
+                    {"ViewEngines", appHost.ViewEngines.Count.ToString() },
+                    {"RequestTypes", appHost.Metadata.RequestTypes.Count.ToString() },
+                    {"ResponseTypes", appHost.Metadata.ResponseTypes.Count.ToString() },
+                    {"ServiceTypes", appHost.Metadata.ServiceTypes.Count.ToString() },
+                    {"RestPaths", appHost.RestPaths.Count.ToString() },
+                    {"ContentTypes", appHost.ContentTypes.ContentTypeFormats.Count.ToString() },
+                    {"EnableFeatures", config.EnableFeatures.ToString() },
+                    {"VirtualPathProvider", appHost.VirtualFileSources.ToString() }
                 },
             };
             return response;

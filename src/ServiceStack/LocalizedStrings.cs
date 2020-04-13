@@ -12,27 +12,41 @@
         public static string Ignore = "ignore";
         public static string IgnorePlaceHolder = "_";
         public static string Bare = "bare";
-        public static string SoapMessage = "SoapMessage";
-        public static string Route = "__route";
-        public static string InvokeVerb = "__verb";
-        public static string DbInfo = "__dbinfo";
-        public static string CacheInfo = "__cacheinfo";
-        public static string ApiKey = "__apikey";
-        public static string ApiKeyParam = "apikey";
-        public static string Session = "__session";
         public static string JsConfig = "jsconfig";
         public static string SessionId = "ss-id";
         public static string PermanentSessionId = "ss-pid";
         public static string SessionOptionsKey = "ss-opt";
         public static string TokenCookie = "ss-tok";
-        public static string HasPreAuthenticated = "__haspreauth";
-        public static string HasLogged = "_logged";
-        public static string DidAuthenticate = "__didauth";
-        public static string IRequest = "__irequest";
-        public static string RequestDuration = "_requestDurationStopwatch";
-        public static string Code = "code";
-        public static string View = "View";
-        public static string Template = "Template";
+        public static string ApiKeyParam = "apikey";
+        public static string Redirect = "redirect";
+        public static string Continue = "continue";
+        public static string ReturnUrl = nameof(ReturnUrl); //.NET Core default convention
+        public static string AutoBatchIndex = nameof(AutoBatchIndex);
+        public static string SoapMessage = nameof(SoapMessage);
+
+        public const string Route = "__route";
+        public const string InvokeVerb = "__verb";
+        public const string DbInfo = "__dbinfo";
+        public const string CacheInfo = "__cacheinfo";
+        public const string ApiKey = "__apikey";
+        public const string Session = "__session";
+        public const string HasPreAuthenticated = "__haspreauth";
+        public const string HasLogged = "_logged";
+        public const string DidAuthenticate = "__didauth";
+        public const string IRequest = "__irequest";
+        public const string Attributes = "__attrs";
+        public const string RequestDuration = "_requestDurationStopwatch";
+        public const string Code = "code";
+        public const string State = "state";
+        public const string View = "View";
+        public const string ErrorView = "ErrorView";
+        public const string Template = "Template";
+        public const string Error = "__error";
+        public const string ErrorStatus = "__errorStatus";
+        public const string Authorization = "__authorization";
+        public const string Model = "Model";
+        public const string HttpStatus = "httpstatus";
+        public const string GrpcResponseStatus = "responsestatus-bin";
     }
 
     public static class LocalizedStrings
@@ -50,6 +64,7 @@
     {
         //Auth Errors
         public static string UnknownAuthProviderFmt = "No configuration was added for OAuth provider '{0}'";
+        public static string NoExternalRedirects = "External Redirects are not permitted";
 
         public static string InvalidBasicAuthCredentials = "Invalid BasicAuth Credentials";
         public static string WindowsAuthFailed = "Windows Auth Failed";
@@ -73,12 +88,16 @@
         public static string InvalidRole = "Invalid Role";
         public static string InvalidPermission = "Invalid Permission";
 
+        public static string ClaimDoesNotExistFmt = "Claim '{0}' with '{1}' does not exist";
+
+
         //Register
         public static string UserNotExists = "User does not exist";
-        public static string AuthRepositoryNotExists = "No IAuthRepository registered or failed to resolve. Check your IoC registrations.";
+        public static string AuthRepositoryNotExists = "No IAuthRepository registered in IoC or failed to resolve.";
         public static string UsernameAlreadyExists = "Username already exists";
         public static string EmailAlreadyExists = "Email already exists";
-        public static string RegisterUpdatesDisabled = "Updating User Info is not enabled";
+        public static string RegisterUpdatesDisabled = "Updating existing User is not enabled. Sign out to register a new User.";
+        public static string PasswordsShouldMatch = "Passwords should match!";
 
         //AuthRepo
         public static string UserAlreadyExistsTemplate1 = "User '{0}' already exists";

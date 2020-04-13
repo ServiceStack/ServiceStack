@@ -1,9 +1,7 @@
-#if !NETSTANDARD2_0
-using ServiceStack.FluentValidation;
-using ServiceStack.FluentValidation.Results;
-
-namespace FluentValidation.Mvc {
+#if !NETSTANDARD
+namespace ServiceStack.FluentValidation.Mvc {
 	using System.Web.Mvc;
+	using Results;
 
 	/// <summary>
 	/// Specifies an interceptor that can be used to provide hooks that will be called before and after MVC validation occurs.

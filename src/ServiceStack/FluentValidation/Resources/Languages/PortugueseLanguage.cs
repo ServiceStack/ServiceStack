@@ -20,15 +20,16 @@ namespace ServiceStack.FluentValidation.Resources {
 	using Validators;
 
 	internal class PortugueseLanguage : Language {
-		public override string Name => "pt";
+		public const string Culture = "pt";
+		public override string Name => Culture;
 
 		public PortugueseLanguage() {
 			Translate<EmailValidator>("'{PropertyName}' é um endereço de email inválido.");
 			Translate<GreaterThanOrEqualValidator>("'{PropertyName}' deve ser superior ou igual a '{ComparisonValue}'.");
 			Translate<GreaterThanValidator>("'{PropertyName}' deve ser superior a '{ComparisonValue}'.");
 			Translate<LengthValidator>("'{PropertyName}' deve ter {MinLength} a {MaxLength} caracteres. Introduziu {TotalLength} caracteres.");
-			Translate<MinimumLengthValidator>("'{PropertyName}' deve ser superior a {MinLength} caracteres. Introduziu {TotalLength} caracteres.");
-			Translate<MaximumLengthValidator>("'{PropertyName}' deve ser inferior a {MaxLength} caracteres. Introduziu {TotalLength} caracteres.");
+			Translate<MinimumLengthValidator>("'{PropertyName}' deve ser maior ou igual a caracteres {MinLength}. Você digitou caracteres {TotalLength}.");
+			Translate<MaximumLengthValidator>("'{PropertyName}' deve ser menor ou igual a caracteres {MaxLength}. Você digitou caracteres {TotalLength}.");
 			Translate<LessThanOrEqualValidator>("'{PropertyName}' deve ser inferior ou igual a '{ComparisonValue}'.");
 			Translate<LessThanValidator>("'{PropertyName}' deve ser inferior a '{ComparisonValue}'.");
 			Translate<NotEmptyValidator>("'{PropertyName}' deve ser definido.");
@@ -41,7 +42,17 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<ExactLengthValidator>("'{PropertyName}' deve ter o comprimento de {MaxLength} caracteres. Introduziu {TotalLength} caracteres.");
 			Translate<ExclusiveBetweenValidator>("'{PropertyName}' deve estar entre {From} e {To} (exclusivo). Introduziu {Value}.");
 			Translate<InclusiveBetweenValidator>("'{PropertyName}' deve estar entre {From} e {To}. Introduziu {Value}.");
-
+			Translate<CreditCardValidator>("'{PropertyName}' não é um número de cartão de crédito válido.");
+			Translate<ScalePrecisionValidator>("'{PropertyName}' pode não ser mais do que dígitos {ExpectedPrecision} no total, com permissão para decimais de {ExpectedScale}. {Digits} dígitos e {ActualScale} decimais foram encontrados.");
+			Translate<EmptyValidator>("'{PropertyName}' deve estar vazio.");
+			Translate<NullValidator>("'{PropertyName}' deve estar vazio.");
+			Translate<EnumValidator>("'{PropertyName}' possui um intervalo de valores que não inclui '{PropertyValue}'.");
+			// Additional fallback messages used by clientside validation integration.
+			Translate("Length_Simple", "'{PropertyName}' deve ter {MinLength} a {MaxLength} caracteres.");
+			Translate("MinimumLength_Simple", "'{PropertyName}' deve ser maior ou igual a caracteres {MinLength}.");
+			Translate("MaximumLength_Simple", "'{PropertyName}' deve ser menor ou igual a caracteres {MaxLength}.");
+			Translate("ExactLength_Simple", "'{PropertyName}' deve ter o comprimento de {MaxLength} caracteres.");
+			Translate("InclusiveBetween_Simple", "'{PropertyName}' deve estar entre {From} e {To}.");
 		}
 	}
 }

@@ -57,6 +57,8 @@ namespace ServiceStack.NativeTypes.Swift
             {"Stream", "Data"},
         }.ToConcurrentDictionary();
 
+        public static TypeFilterDelegate TypeFilter { get; set; }
+
         public static HashSet<string> OverrideInitForBaseClasses = new HashSet<string> {
             "NSObject"
         };
@@ -64,6 +66,16 @@ namespace ServiceStack.NativeTypes.Swift
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
         public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types;
+        
+        /// <summary>
+        /// Add Code to top of generated code
+        /// </summary>
+        public static AddCodeDelegate InsertCodeFilter { get; set; }
+
+        /// <summary>
+        /// Add Code to bottom of generated code
+        /// </summary>
+        public static AddCodeDelegate AddCodeFilter { get; set; }
 
         public string GetCode(MetadataTypes metadata, IRequest request)
         {
@@ -84,7 +96,7 @@ namespace ServiceStack.NativeTypes.Swift
             sb.AppendLine("/* Options:");
             sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
             sb.AppendLine("SwiftVersion: 4.0");
-            sb.AppendLine("Version: {0}".Fmt(Env.ServiceStackVersion));
+            sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
             sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
@@ -140,6 +152,10 @@ namespace ServiceStack.NativeTypes.Swift
                 .Map(x => x.Name);
 
             defaultImports.Each(x => sb.AppendLine($"import {x}"));
+
+            var insertCode = InsertCodeFilter?.Invoke(allTypes, Config);
+            if (insertCode != null)
+                sb.AppendLine(insertCode);
 
             //ServiceStack core interfaces
             foreach (var type in allTypes)
@@ -207,6 +223,10 @@ namespace ServiceStack.NativeTypes.Swift
                 sb.AppendLine();
                 sb.AppendLine(sbExt.ToString());
             }
+
+            var addCode = AddCodeFilter?.Invoke(allTypes, Config);
+            if (addCode != null)
+                sb.AppendLine(addCode);
 
             return StringBuilderCache.ReturnAndFree(sbInner);
         }
@@ -762,10 +782,9 @@ namespace ServiceStack.NativeTypes.Swift
 
         MetadataType CreateType(Type type)
         {
-            var nativeTypes = HostContext.TryResolve<INativeTypesMetadata>() as NativeTypesMetadata;
-            if (nativeTypes != null)
+            if (HostContext.TryResolve<INativeTypesMetadata>() is NativeTypesMetadata nativeTypes)
             {
-                var typesGenerator = nativeTypes.GetMetadataTypesGenerator(Config);
+                var typesGenerator = nativeTypes.GetGenerator(Config);
                 return typesGenerator.ToType(type);
             }
 
@@ -816,6 +835,10 @@ namespace ServiceStack.NativeTypes.Swift
 
         public string Type(string type, string[] genericArgs)
         {
+            var useType = TypeFilter?.Invoke(type, genericArgs);
+            if (useType != null)
+                return useType;
+
             if (!genericArgs.IsEmpty())
             {
                 if (type == "Nullable`1")

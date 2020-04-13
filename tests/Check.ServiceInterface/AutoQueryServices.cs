@@ -246,7 +246,7 @@ namespace Check.ServiceInterface
         //Override with custom impl
         public QueryResponse<Rockstar> Any(QueryRockstars dto)
         {
-            var q = AutoQuery.CreateQuery(dto, Request.GetRequestParams(), Request);
+            var q = AutoQuery.CreateQuery(dto, Request);
             //q.Take(1);
             return AutoQuery.Execute(dto, q);
         }
@@ -258,6 +258,6 @@ namespace Check.ServiceInterface
         public IAutoQueryDb AutoQuery { get; set; }
 
         public QueryResponse<Rockstar> Any(QueryRockstarsCached request) =>
-            AutoQuery.Execute(request, AutoQuery.CreateQuery(request, Request.GetRequestParams()));
+            AutoQuery.Execute(request, AutoQuery.CreateQuery(request, Request));
     }
 }

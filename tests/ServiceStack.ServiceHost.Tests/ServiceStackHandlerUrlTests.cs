@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -62,10 +63,9 @@ namespace ServiceStack.ServiceHost.Tests
             public NameValueCollection FormData { get; private set; }
             public bool UseBufferedStream { get; set; }
 
-            public string GetRawBody()
-            {
-                throw new NotImplementedException();
-            }
+            public string GetRawBody() => throw new NotImplementedException();
+
+            public Task<string> GetRawBodyAsync() => throw new NotImplementedException(); 
 
             public string RawUrl { get; private set; }
             public string AbsoluteUri { get; set; }

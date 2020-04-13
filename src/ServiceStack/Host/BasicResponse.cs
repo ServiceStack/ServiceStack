@@ -6,10 +6,10 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host
 {
-    public class BasicResponse : IResponse
+    public class BasicResponse : IResponse, IHasHeaders
     {
         private readonly BasicRequest requestContext;
-        private Dictionary<string, string> Headers { get; }
+        public Dictionary<string, string> Headers { get; }
 
         public BasicResponse(BasicRequest requestContext)
         {

@@ -70,7 +70,6 @@ namespace ServiceStack
         /// adds auto-wiring to the specified type.
         /// The reuse scope is set to none (transient).
         /// </summary>
-        /// <param name="serviceTypes"></param>
         public static void RegisterAutoWiredType(this Container container, string name, Type serviceType,
             ReuseScope scope = ReuseScope.None)
         {

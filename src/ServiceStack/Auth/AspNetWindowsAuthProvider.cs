@@ -40,6 +40,13 @@ namespace ServiceStack.Auth
                     .SelectMany(x => x.RequiredRoles);
 
                 requiredRoles.Each(x => AllRoles.AddIfNotExists(x));
+
+                var requireAnyRoles = host.Metadata.OperationsMap
+                    .SelectMany(x => x.Key.AllAttributes<RequiresAnyRoleAttribute>()
+                        .Concat(x.Value.ServiceType.AllAttributes<RequiresAnyRoleAttribute>()))
+                    .SelectMany(x => x.RequiredRoles);
+
+                requireAnyRoles.Each(x => AllRoles.AddIfNotExists(x));
             });
         }
 

@@ -56,6 +56,8 @@ namespace ServiceStack
 
         public static ICacheClient GetCacheClient(this IRequest request) => HostContext.AppHost.GetCacheClient(request);
 
+        public static ICacheClient GetMemoryCacheClient(this IRequest request) => HostContext.AppHost.GetMemoryCacheClient(request);
+
         public static void SaveSession(this IServiceBase service, IAuthSession session, TimeSpan? expiresIn = null)
         {
             if (service == null || session == null) return;
@@ -132,7 +134,7 @@ namespace ServiceStack
                 return true;
             
             var authProviders = AuthenticateService.GetAuthProviders();
-            AuthenticateAttribute.PreAuthenticate(req, authProviders);
+            AuthenticateAttribute.PreAuthenticateAsync(req, authProviders).Wait();
             if (req.Response.IsClosed)
                 return false;
             
@@ -152,9 +154,9 @@ namespace ServiceStack
                     return mockSession;
             }
 
-            object oSession = null;
-            if (!reload)
-                httpReq.Items.TryGetValue(Keywords.Session, out oSession);
+            httpReq.Items.TryGetValue(Keywords.Session, out var oSession);
+            if (reload && (oSession as IAuthSession)?.FromToken != true) // can't reload FromToken sessions from cache
+                oSession = null;
 
             if (oSession == null && !httpReq.Items.ContainsKey(Keywords.HasPreAuthenticated))
             {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-#if !NETSTANDARD2_0
+#if !NETSTANDARD
     using System.Web.Mvc;
 #else
     using Microsoft.AspNetCore.Mvc;
@@ -27,7 +27,7 @@ namespace ServiceStack.Mvc
             if (!ssController.IsAuthorized(authAttr))
             {
                 var authError = authAttr?.HtmlRedirect != null
-                    ? new RedirectResult(authAttr.HtmlRedirect.AddQueryParam("redirect", ssController.Request.GetPathAndQuery()))
+                    ? new RedirectResult(authAttr.HtmlRedirect.AddQueryParam(Keywords.Redirect, ssController.Request.GetPathAndQuery()))
                     : ssController.AuthenticationErrorResult;
 
                 filterContext.Result = authError;
@@ -42,7 +42,7 @@ namespace ServiceStack.Mvc
             if (!ssController.HasAccess(roleAttrs, anyRoleAttrs, permAttrs, anyPermAttrs))
             {
                 var authError = authAttr?.HtmlRedirect != null
-                    ? new RedirectResult(authAttr.HtmlRedirect.AddQueryParam("redirect", ssController.Request.GetPathAndQuery()))
+                    ? new RedirectResult(authAttr.HtmlRedirect.AddQueryParam(Keywords.Redirect, ssController.Request.GetPathAndQuery()))
                     : ssController.ForbiddenErrorResult;
 
                 filterContext.Result = authError;
@@ -54,7 +54,7 @@ namespace ServiceStack.Mvc
         {
             var attrs = new List<T>();
 
-#if !NETSTANDARD2_0
+#if !NETSTANDARD
             var attr = filterContext.ActionDescriptor
                 .GetCustomAttributes(typeof(T), true)
                 .FirstOrDefault() as T;

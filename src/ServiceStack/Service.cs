@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
@@ -13,7 +14,7 @@ namespace ServiceStack
     /// <summary>
     /// Generic + Useful IService base class
     /// </summary>
-    public class Service : IService, IServiceBase, IDisposable
+    public class Service : IService, IServiceBase, IDisposable, IServiceFilters
     {
         public static IResolver GlobalResolver { get; set; }
 
@@ -32,6 +33,9 @@ namespace ServiceStack
                 ? default(T)
                 : this.GetResolver().TryResolve<T>();
         }
+
+        public T GetPlugin<T>() where T : class, IPlugin  => GetResolver()?.TryResolve<T>() ?? HostContext.GetPlugin<T>();
+        public T AssertPlugin<T>() where T : class, IPlugin  => GetResolver()?.TryResolve<T>() ?? HostContext.AssertPlugin<T>();
 
         public virtual T ResolveService<T>()
         {
@@ -106,7 +110,7 @@ namespace ServiceStack
                 if (Equals(mockSession, default(TUserSession)))
                     mockSession = TryResolve<IAuthSession>() is TUserSession 
                         ? (TUserSession)TryResolve<IAuthSession>() 
-                        : default(TUserSession);
+                        : default;
 
                 if (!Equals(mockSession, default(TUserSession)))
                     return mockSession;
@@ -141,6 +145,10 @@ namespace ServiceStack
 
             Request.ReleaseIfInProcessRequest();
         }
+
+        public virtual void OnBeforeExecute(object requestDto) {}
+        public virtual object OnAfterExecute(object response) => response;
+        public virtual Task<object> OnExceptionAsync(object requestDto, Exception ex) => TypeConstants.EmptyTask;
     }
 
 }

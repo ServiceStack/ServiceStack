@@ -65,7 +65,10 @@ namespace ServiceStack.IO
         {
             var realFilePath = RootDir.RealPath.CombineWith(filePath);
             EnsureDirectory(Path.GetDirectoryName(realFilePath));
-            File.WriteAllBytes(realFilePath, stream.ReadFully());
+            using (var fs = File.Open(realFilePath, FileMode.Create, FileAccess.Write))
+            {
+                stream.WriteTo(fs);
+            }
         }
 
         public void WriteFiles(IEnumerable<IVirtualFile> files, Func<IVirtualFile, string> toPath = null)
@@ -110,8 +113,42 @@ namespace ServiceStack.IO
         public void DeleteFolder(string dirPath)
         {
             var realPath = RootDir.RealPath.CombineWith(dirPath);
+#if NETSTANDARD2_0
+            // Doesn't properly recursively delete nested dirs/files on .NET Core (win at least)
+            if (Directory.Exists(realPath))
+                DeleteDirectoryRecursive(realPath);
+#else
             if (Directory.Exists(realPath))
                 Directory.Delete(realPath, recursive: true);
+#endif
         }
+        
+        public static void DeleteDirectoryRecursive(string path)
+        {
+            //modified from https://stackoverflow.com/a/1703799/85785
+            foreach (var directory in Directory.GetDirectories(path))
+            {
+                var files = Directory.GetFiles(directory);
+                foreach (var file in files)
+                {
+                    File.SetAttributes(file, FileAttributes.Normal);
+                }
+
+                DeleteDirectoryRecursive(directory);
+            }
+
+            try
+            {
+                Directory.Delete(path, true);
+            }
+            catch (IOException) 
+            {
+                Directory.Delete(path, true);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Directory.Delete(path, true);
+            }
+        }        
     }
 }

@@ -68,6 +68,16 @@ namespace ServiceStack
         /// Limit logging to only Service Requests
         /// </summary>
         public bool LimitToServiceRequests { get; set; }
+        
+        /// <summary>
+        /// Customize Request Log Entry
+        /// </summary>
+        public Action<IRequest, RequestLogEntry> RequestLogFilter { get; set; }
+
+        /// <summary>
+        /// Change what DateTime to use for the current Date (defaults to UtcNow)
+        /// </summary>
+        public Func<DateTime> CurrentDateFn { get; set; } = () => DateTime.UtcNow;
 
         public RequestLogsFeature(int capacity) : this()
         {
@@ -101,6 +111,8 @@ namespace ServiceStack
             requestLogger.EnableErrorTracking = EnableErrorTracking;
             requestLogger.ExcludeRequestDtoTypes = ExcludeRequestDtoTypes;
             requestLogger.HideRequestBodyForRequestDtoTypes = HideRequestBodyForRequestDtoTypes;
+            requestLogger.RequestLogFilter = RequestLogFilter;
+            requestLogger.CurrentDateFn = CurrentDateFn;
 
             appHost.Register(requestLogger);
 
@@ -108,6 +120,11 @@ namespace ServiceStack
             {
                 appHost.PreRequestFilters.Insert(0, (httpReq, httpRes) =>
                 {
+#if NETSTANDARD2_0
+                    // https://forums.servicestack.net/t/unexpected-end-of-stream-when-uploading-to-aspnet-core/6478/6
+                    if (httpReq.ContentType.MatchesContentType(MimeTypes.MultiPartFormData))
+                        return;                    
+#endif
                     httpReq.UseBufferedStream = EnableRequestBodyTracking;
                 });
             }

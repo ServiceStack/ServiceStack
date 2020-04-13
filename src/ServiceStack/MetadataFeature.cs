@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Web;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Metadata;
 
@@ -19,6 +20,8 @@ namespace ServiceStack
 
         public bool ShowResponseStatusInMetadataPages { get; set; }
 
+        public bool EnableNav { get; set; } = true;
+
         public MetadataFeature()
         {
 
@@ -34,6 +37,12 @@ namespace ServiceStack
         public void Register(IAppHost appHost)
         {
             appHost.CatchAllHandlers.Add(ProcessRequest);
+
+            if (EnableNav)
+            {
+                ViewUtils.Load(appHost.AppSettings);
+                appHost.RegisterService<MetadataNavService>();
+            }
         }
 
         public virtual IHttpHandler ProcessRequest(string httpMethod, string pathInfo, string filePath)
@@ -101,6 +110,19 @@ namespace ServiceStack
                     break;
             }
             return null;
+        }
+    }
+
+    [Restrict(VisibilityTo = RequestAttributes.None)]
+    public class MetadataNavService : Service
+    {
+        public object Get(GetNavItems request)
+        {
+            return new GetNavItemsResponse {
+                BaseUrl = Request.GetBaseUrl(),
+                Results = ViewUtils.NavItems,
+                NavItemsMap = ViewUtils.NavItemsMap,
+            };
         }
     }
 

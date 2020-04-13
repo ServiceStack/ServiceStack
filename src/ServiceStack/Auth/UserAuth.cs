@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
 
@@ -159,9 +160,12 @@ namespace ServiceStack.Auth
                 if (instance.Items == null)
                     instance.Items = new Dictionary<string, string>();
 
-                foreach (var entry in tokens.Items)
+                if (instance.Items != tokens.Items)
                 {
-                    instance.Items[entry.Key] = entry.Value;
+                    foreach (var entry in tokens.Items)
+                    {
+                        instance.Items[entry.Key] = entry.Value;
+                    }
                 }
             }
 
@@ -415,10 +419,12 @@ namespace ServiceStack.Auth
                         authSession.FacebookUserName = entry.Value;
                         break;
                     case "given_name":
+                    case "GivenName":
                     case "FirstName":
                         session.FirstName = entry.Value;
                         break;
                     case "family_name":
+                    case "Surname":
                     case "LastName":
                         session.LastName = entry.Value;
                         break;
@@ -485,8 +491,101 @@ namespace ServiceStack.Auth
                     case "Tag":
                         authSession.Tag = long.Parse(entry.Value);
                         break;
+                    case "Dns":
+                        authSession.Dns = entry.Value;
+                        break;
+                    case "Rsa":
+                        authSession.Rsa = entry.Value;
+                        break;
+                    case "Sid":
+                        authSession.Sid = entry.Value;
+                        break;
+                    case "Hash":
+                        authSession.Hash = entry.Value;
+                        break;
+                    case "HomePhone":
+                        authSession.HomePhone = entry.Value;
+                        break;
+                    case "MobilePhone":
+                        authSession.MobilePhone = entry.Value;
+                        break;
+                    case "Webpage":
+                        authSession.Webpage = entry.Value;
+                        break;
+                    case "EmailConfirmed":
+                        authSession.EmailConfirmed = entry.Value.FromJsv<bool>();
+                        break;
+                    case "PhoneNumberConfirmed":
+                        authSession.PhoneNumberConfirmed = entry.Value.FromJsv<bool>();
+                        break;
+                    case "TwoFactorEnabled":
+                        authSession.TwoFactorEnabled = entry.Value.FromJsv<bool>();
+                        break;
+                    case "SecurityStamp":
+                        authSession.SecurityStamp = entry.Value;
+                        break;
                 }
             }
+        }
+        
+        public static List<Claim> ConvertSessionToClaims(this IAuthSession session,
+            string issuer = null, string roleClaimType=ClaimTypes.Role, string permissionClaimType="perm")
+        {
+            var claims = new List<Claim>();
+
+            void addClaim(string type, string value)
+            {
+                if (value == null)
+                    return;
+
+                claims.Add(new Claim(type, value, ClaimValueTypes.String, issuer));
+            }
+
+            addClaim(ClaimTypes.NameIdentifier, session.Id);
+            addClaim(ClaimTypes.Email, session.Email);
+            addClaim(ClaimTypes.Name, session.UserAuthName);
+            addClaim(ClaimTypes.GivenName, session.FirstName);
+            addClaim(ClaimTypes.Surname, session.LastName);
+            addClaim(ClaimTypes.AuthenticationMethod, session.AuthProvider);
+
+            if (session is IAuthSessionExtended sessionExt)
+            {
+                addClaim(ClaimTypes.StreetAddress, sessionExt.Address);
+                addClaim(ClaimTypes.Locality, sessionExt.City);
+                addClaim(ClaimTypes.StateOrProvince, sessionExt.State);
+                addClaim(ClaimTypes.PostalCode, sessionExt.PostalCode);
+                addClaim(ClaimTypes.Country, sessionExt.Country);
+                addClaim(ClaimTypes.HomePhone, sessionExt.HomePhone);
+                addClaim(ClaimTypes.MobilePhone, sessionExt.MobilePhone);
+                addClaim(ClaimTypes.DateOfBirth, sessionExt.BirthDateRaw ?? sessionExt.BirthDate?.ToShortDateString());
+                addClaim(ClaimTypes.Gender, sessionExt.Gender);
+                addClaim(ClaimTypes.Dns, sessionExt.Dns);
+                addClaim(ClaimTypes.Rsa, sessionExt.Rsa);
+                addClaim(ClaimTypes.Sid, sessionExt.Sid);
+                addClaim(ClaimTypes.Hash, sessionExt.Hash);
+                addClaim(ClaimTypes.HomePhone, sessionExt.HomePhone);
+                addClaim(ClaimTypes.MobilePhone, sessionExt.MobilePhone);
+                addClaim(ClaimTypes.OtherPhone, sessionExt.PhoneNumber);
+                addClaim(ClaimTypes.Webpage, sessionExt.Webpage);
+            }
+
+            if (session.Roles != null)
+            {
+                foreach (var role in session.Roles)
+                {
+                    addClaim(roleClaimType, role);
+                }
+            }
+
+            if (session.Permissions != null)
+            {
+                foreach (var permission in session.Permissions)
+                {
+                    addClaim(permissionClaimType, permission);
+                }
+            }
+ 
+            return claims;
         }
     }
 

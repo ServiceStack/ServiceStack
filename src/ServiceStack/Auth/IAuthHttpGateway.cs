@@ -1,35 +1,35 @@
 using System;
 using System.Net;
+using ServiceStack.Logging;
 using ServiceStack.Text;
 
 namespace ServiceStack.Auth
 {
     public interface IAuthHttpGateway
     {
-        bool VerifyTwitterAccessToken(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, out string userId);
+        bool VerifyTwitterAccessToken(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, out string userId, out string email);
         string DownloadTwitterUserInfo(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, string twitterUserId);
 
         bool VerifyFacebookAccessToken(string appId, string accessToken);
         string DownloadFacebookUserInfo(string facebookCode, params string[] fields);
 
-        bool VerifyGoogleAccessToken(string consumerKey, string accessToken);
-        string DownloadGoogleUserInfo(string accessToken);
-
-        string DownloadYammerUserInfo(string yammerUserId);
         string DownloadGithubUserInfo(string accessToken);
         string DownloadGithubUserEmailsInfo(string accessToken);
+        string DownloadGoogleUserInfo(string accessToken);
+        string DownloadMicrosoftUserInfo(string accessToken);
+        string CreateMicrosoftPhotoUrl(string accessToken, string savePhotoSize=null);
+        string DownloadYammerUserInfo(string yammerUserId);
     }
 
     public class AuthHttpGateway : IAuthHttpGateway
     {
+        protected static readonly ILog Log = LogManager.GetLogger(typeof(AuthHttpGateway));
+
         public static string TwitterUserUrl = "https://api.twitter.com/1.1/users/lookup.json?user_id={0}";
         public static string TwitterVerifyCredentialsUrl = "https://api.twitter.com/1.1/account/verify_credentials.json?include_email=true";
 
         public static string FacebookUserUrl = "https://graph.facebook.com/v2.8/me?access_token={0}";
         public static string FacebookVerifyTokenUrl = "https://graph.facebook.com/v2.8/app?access_token={0}";
-
-        public static string GoogleUserUrl = "https://www.googleapis.com/oauth2/v2/userinfo";
-        public static string GoogleVerifyTokenUrl = "https://www.googleapis.com/oauth2/v2/tokeninfo?access_token={0}";
 
         public static string YammerUserUrl = "https://www.yammer.com/api/v1/users/{0}.json";
 
@@ -44,18 +44,21 @@ namespace ServiceStack.Auth
                 TwitterUserUrl.Fmt(twitterUserId));
         }
 
-        public bool VerifyTwitterAccessToken(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, out string userId)
+        public bool VerifyTwitterAccessToken(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, 
+            out string userId, out string email)
         {
             try
             {
                 var json = GetJsonFromOAuthUrl(consumerKey, consumerSecret, accessToken, accessTokenSecret, TwitterVerifyCredentialsUrl);
                 var obj = JsonObject.Parse(json);
                 userId = obj.Get("id_str");
+                email = obj.Get("email");
                 return !string.IsNullOrEmpty(userId);
             }
             catch
             {
                 userId = null;
+                email = null;
                 return false;
             }
         }
@@ -114,22 +117,6 @@ namespace ServiceStack.Auth
             return json;
         }
 
-        public bool VerifyGoogleAccessToken(string consumerKey, string accessToken)
-        {
-            var url = GoogleVerifyTokenUrl.Fmt(accessToken);
-            var json = url.GetJsonFromUrl();
-            var obj = JsonObject.Parse(json);
-            var issuedTo = obj["issued_to"];
-            return issuedTo == consumerKey;
-        }
-
-        public string DownloadGoogleUserInfo(string accessToken)
-        {
-            var url = GoogleUserUrl.AddQueryParam("access_token", accessToken);
-            string json = url.GetJsonFromUrl();
-            return json;
-        }
-
         public string DownloadGithubUserInfo(string accessToken)
         {
             if (string.IsNullOrEmpty(accessToken))
@@ -154,6 +141,54 @@ namespace ServiceStack.Auth
                 httpReq => PclExport.Instance.SetUserAgent(httpReq, ServiceClientBase.DefaultUserAgent));
 
             return json;
+        }
+
+        public string DownloadGoogleUserInfo(string accessToken)
+        {
+            var json = GoogleAuthProvider.DefaultUserProfileUrl
+                .AddQueryParam("access_token", accessToken)
+                .GetJsonFromUrl();
+
+            return json;
+        }
+
+        public string DownloadMicrosoftUserInfo(string accessToken)
+        {
+            var json = MicrosoftGraphAuthProvider.DefaultUserProfileUrl
+                .GetJsonFromUrl(requestFilter:req => req.AddBearerToken(accessToken));
+            return json;
+        }
+
+        public string CreateMicrosoftPhotoUrl(string accessToken, string savePhotoSize=null)
+        {
+            try 
+            { 
+                using (var origStream = MicrosoftGraphAuthProvider.PhotoUrl
+                    .GetStreamFromUrl(requestFilter:req => req.AddBearerToken(accessToken)))
+                using (var origImage = System.Drawing.Image.FromStream(origStream))
+                {
+                    var parts = savePhotoSize?.Split('x');
+                    var width = origImage.Width;
+                    var height = origImage.Height;
+
+                    if (parts != null && parts.Length > 0)
+                        int.TryParse(parts[0], out width);
+
+                    if (parts != null && parts.Length > 1)
+                        int.TryParse(parts[1], out height);
+
+                    using (var resizedImage = origImage.ResizeToPng(width, height))
+                    {
+                        var base64 = Convert.ToBase64String(resizedImage.GetBuffer(), 0, (int) resizedImage.Length);
+                        return "data:image/png;base64," + base64;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warn($"Could not retrieve '{MicrosoftGraphAuthProvider.Name}' photo", ex);
+                return null;
+            }
         }
 
         /// <summary>

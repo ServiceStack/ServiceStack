@@ -260,9 +260,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
             {
                 var status = ex.ResponseStatus;
                 Assert.That(status.ErrorCode, Is.EqualTo("NotEmpty"));
-                Assert.That(status.Message, Is.EqualTo("'User' should not be empty."));
+                Assert.That(status.Message, Is.EqualTo("'User' must not be empty."));
                 Assert.That(status.Errors[0].FieldName, Is.EqualTo("User"));
-                Assert.That(status.Errors[0].Message, Is.EqualTo("'User' should not be empty."));
+                Assert.That(status.Errors[0].Message, Is.EqualTo("'User' must not be empty."));
             }
         }
 
@@ -442,11 +442,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
                 var errorFields = response.ResponseStatus.Errors;
                 Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
                 Assert.That(ex.StatusDescription, Is.EqualTo("NotEqual"));
-                Assert.That(response.ResponseStatus.Message, Is.EqualTo("'Id' should not be equal to '0'."));
+                Assert.That(response.ResponseStatus.Message, Is.EqualTo("'Id' must not be equal to '0'."));
                 Assert.That(errorFields.Count, Is.EqualTo(1));
                 Assert.That(errorFields[0].ErrorCode, Is.EqualTo("NotEqual"));
                 Assert.That(errorFields[0].FieldName, Is.EqualTo("Id"));
-                Assert.That(errorFields[0].Message, Is.EqualTo("'Id' should not be equal to '0'."));
+                Assert.That(errorFields[0].Message, Is.EqualTo("'Id' must not be equal to '0'."));
             }
         }
 

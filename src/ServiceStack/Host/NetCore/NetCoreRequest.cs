@@ -1,5 +1,7 @@
-﻿#if NETSTANDARD2_0
+﻿
 
+using System.Threading.Tasks;
+#if NETSTANDARD2_0
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,10 +18,11 @@ using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Configuration;
 using ServiceStack.IO;
 using ServiceStack.NetCore;
+using ServiceStack.Text;
 
 namespace ServiceStack.Host.NetCore
 {
-    public class NetCoreRequest : IHttpRequest, IHasResolver, IHasVirtualFiles
+    public class NetCoreRequest : IHttpRequest, IHasResolver, IHasVirtualFiles, IServiceProvider, IHasBufferedStream
     {
         public static ILog log = LogManager.GetLogger(typeof(NetCoreRequest));
 
@@ -54,6 +57,11 @@ namespace ServiceStack.Host.NetCore
 
             return this.TryResolveInternal<T>();
         }
+
+        public object GetService(Type serviceType) => context.RequestServices.GetService(serviceType);
+
+        public HttpContext HttpContext => context;
+        public HttpRequest HttpRequest => request;
 
         public object OriginalRequest => request;
 
@@ -199,11 +207,23 @@ namespace ServiceStack.Host.NetCore
         {
             if (BufferedStream != null)
             {
-                request.EnableRewind();
+                request.EnableBuffering();
                 return BufferedStream.ReadBufferedStreamToEnd(this);
             }
 
+            Response.AllowSyncIO();
             return request.Body.ReadToEnd();
+        }
+
+        public Task<string> GetRawBodyAsync()
+        {
+            if (BufferedStream != null)
+            {
+                request.EnableBuffering();
+                return Task.FromResult(BufferedStream.ReadBufferedStreamToEnd(this));
+            }
+
+            return request.Body.ReadToEndAsync();
         }
 
         public long ContentLength => request.ContentLength.GetValueOrDefault();

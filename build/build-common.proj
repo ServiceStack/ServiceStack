@@ -1,4 +1,6 @@
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Default"
+         xmlns='http://schemas.microsoft.com/developer/msbuild/2003' ToolsVersion="4.0">
   <Import Project="$(MSBuildProjectDirectory)/build.tasks" />
 
   <PropertyGroup>
@@ -11,7 +13,7 @@
     <BuildSolutionDir>$(MSBuildProjectDirectory)/..</BuildSolutionDir>
     <SrcDir>$(BuildSolutionDir)/src</SrcDir>
     <Configuration Condition="$(Configuration) == ''">Release</Configuration>
-    <Version>$(MajorVersion).$(MinorVersion).$(PatchVersion).0</Version>
+    <NuGetPackageDir>$(BuildSolutionDir)/NuGet/</NuGetPackageDir>
     <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)</PackageVersion>
   </PropertyGroup>
 
@@ -22,64 +24,84 @@
     </DoBuildSolutionsDependsOn>
   </PropertyGroup>
 
-  <Target Name="Default" DependsOnTargets="$(DoBuildSolutionsDependsOn)" />
-
-  <Target Name="TeamCityBuild">
-    <CallTarget Targets="UpdateVersion" />
-    <CallTarget Targets="Default" />
-  </Target>
-
   <Target Name="BeforeBuildSolutions">
     <Message Text="*****Before building solution*****" Importance="high"/>
     <CallTarget Targets="UpdateVersion" />
   </Target>
 
   <Target Name="BuildSolutions">
+    <CallTarget Targets="ClearNuGetRestoreCaches" />
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj" Targets="Restore" />
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Client/ServiceStack.Client.csproj" Targets="Restore" />
+    <MSBuild Projects="$(SrcDir)/ServiceStack.HttpClient/ServiceStack.HttpClient.csproj" Targets="Restore" />
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Common/ServiceStack.Common.csproj" Targets="Restore" />
+    <MSBuild Projects="$(SrcDir)/ServiceStack/ServiceStack.csproj" Targets="Restore" />
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Kestrel/ServiceStack.Kestrel.csproj" Targets="Restore" />
+  </Target>
+
+  <!-- need to remove old caches from nuget restore from .Core csproj's -->
+  <Target Name="ClearNuGetRestoreCaches">
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.Interfaces/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.Client/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.HttpClient/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.Common/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.Kestrel/obj" />
   </Target>
 
   <Target Name="UpdateVersion">
+    <!-- Update Version -->
     <ItemGroup>
-      <!-- Add Version to AssemblyFileVersion -->
-      <RegexTransform Include="$(SrcDir)/**/AssemblyInfo.cs">
-        <Find>AssemblyFileVersion\(\"\d+\.\d+\.\d+\.\d+\"\)</Find>
-        <ReplaceWith>AssemblyFileVersion("$(Version)")</ReplaceWith>
+      <RegexTransform Include="$(BuildSolutionDir)/src/Directory.Build.props;$(BuildSolutionDir)/tests/Directory.Build.props">
+        <Find>&lt;Version&gt;[^&lt;]*</Find>
+        <ReplaceWith>&lt;Version&gt;$(PackageVersion)</ReplaceWith>
       </RegexTransform>
     </ItemGroup>
 
     <RegexTransform Items="@(RegexTransform)" />
   </Target>
 
-  <Target Name="BuildCommon">
+  <Target Name="Default" DependsOnTargets="$(DoBuildSolutionsDependsOn)">
 
     <!-- ServiceStack.Interfaces -->
-
     <MSBuild Projects="$(SrcDir)/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj"
-             Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
 
     <!-- ServiceStack.Client -->
-
     <MSBuild Projects="$(SrcDir)/ServiceStack.Client/ServiceStack.Client.csproj"
-             Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
 
     <!-- ServiceStack.HttpClient -->
-
     <MSBuild Projects="$(SrcDir)/ServiceStack.HttpClient/ServiceStack.HttpClient.csproj"
-            Targets="Build"
-            Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
 
     <!-- ServiceStack.Common -->
-
     <MSBuild Projects="$(SrcDir)/ServiceStack.Common/ServiceStack.Common.csproj"
-             Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
 
     <!-- ServiceStack -->
-
     <MSBuild Projects="$(SrcDir)/ServiceStack/ServiceStack.csproj"
-             Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.Kestrel --><!-- used in ServiceStack.Azure.Tests.csproj -->
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Kestrel/ServiceStack.Kestrel.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+
+    <!-- Copy all *.nupkg to /NuGet -->
+    <ItemGroup>
+      <NugetPackagesToMove Include="$(BuildSolutionDir)/src/**/bin/$(Configuration)/*.nupkg"/>
+    </ItemGroup>
+    <Move SourceFiles="@(NugetPackagesToMove)" DestinationFolder="$(NuGetPackageDir)" />
+
+    <!-- leave .sln in optimal state then NuGet restore .sln to build -->
+    <CallTarget Targets="ClearNuGetRestoreCaches" />
 
   </Target>
 

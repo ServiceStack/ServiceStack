@@ -32,7 +32,7 @@ namespace ServiceStack
             this.errorLogsPattern = errorLogsPattern ?? "requestlogs/{year}-{month}/{year}-{month}-{day}-errors.csv";
             this.appendEverySecs = appendEvery ?? TimeSpan.FromSeconds(1);
 
-            var lastEntry = ReadLastEntry(GetLogFilePath(this.requestLogsPattern, DateTime.UtcNow));
+            var lastEntry = ReadLastEntry(GetLogFilePath(this.requestLogsPattern, CurrentDateFn()));
             if (lastEntry != null)
                 requestId = lastEntry.Id;
 
@@ -93,7 +93,7 @@ namespace ServiceStack
                     }
                 }
 
-                var now = DateTime.UtcNow;
+                var now = CurrentDateFn();
                 if (logsSnapshot != null)
                 {
                     var logFile = GetLogFilePath(requestLogsPattern, now);
@@ -157,7 +157,7 @@ namespace ServiceStack
 
         public override List<RequestLogEntry> GetLatestLogs(int? take)
         {
-            var logFile = files.GetFile(GetLogFilePath(this.requestLogsPattern, DateTime.UtcNow));
+            var logFile = files.GetFile(GetLogFilePath(this.requestLogsPattern, CurrentDateFn()));
             if (logFile.Exists())
             {
                 using (var reader = logFile.OpenText())

@@ -11,13 +11,14 @@ var __qs = (function (qs) {
     return params;
 })(document.location.search);
 (function shouldReload(){
+    var PATTERN = '';
     function _replace(uri, key, value, strip) {
         var re = new RegExp("([?&])" + key + "=.*?(&|$)", "i")
         return uri.match(re) ?
             uri.replace(re, strip ? '' : '$1' + key + "=" + value + '$2') :
             strip ? uri : uri + (uri.indexOf('?') !== -1 ? "&" : "?") + key + "=" + value
     }
-    fetch("/hotreload/files.json?pattern=" + encodeURIComponent(__qs.pattern || '') + "&eTag=" + __lastFileEtag)
+    fetch("/hotreload/files.json?pattern=" + encodeURIComponent(__qs.pattern || PATTERN) + "&eTag=" + __lastFileEtag)
         .then(function(res){
             if (res.status !== 200) {
                 console.log("hotreload failed: " + res.status)

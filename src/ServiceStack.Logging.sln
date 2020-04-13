@@ -18,15 +18,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{CA7CF53F
 		..\build\build.bat = ..\build\build.bat
 		..\build\build.proj = ..\build\build.proj
 		..\build\build.tasks = ..\build\build.tasks
-		..\NuGet\ServiceStack.Logging.Elmah\servicestack.logging.elmah.nuspec = ..\NuGet\ServiceStack.Logging.Elmah\servicestack.logging.elmah.nuspec
-		..\NuGet\ServiceStack.Logging.EntLib5\servicestack.logging.entlib5.nuspec = ..\NuGet\ServiceStack.Logging.EntLib5\servicestack.logging.entlib5.nuspec
-		..\NuGet\ServiceStack.Logging.EventLog\servicestack.logging.eventlog.nuspec = ..\NuGet\ServiceStack.Logging.EventLog\servicestack.logging.eventlog.nuspec
-		..\NuGet\ServiceStack.Logging.Log4Net.Core\servicestack.logging.log4net.core.nuspec = ..\NuGet\ServiceStack.Logging.Log4Net.Core\servicestack.logging.log4net.core.nuspec
-		..\NuGet\ServiceStack.Logging.Log4Net\servicestack.logging.log4net.nuspec = ..\NuGet\ServiceStack.Logging.Log4Net\servicestack.logging.log4net.nuspec
-		..\NuGet\ServiceStack.Logging.NLog\servicestack.logging.nlog.nuspec = ..\NuGet\ServiceStack.Logging.NLog\servicestack.logging.nlog.nuspec
-		..\NuGet\ServiceStack.Logging.Serilog\servicestack.logging.serilog.nuspec = ..\NuGet\ServiceStack.Logging.Serilog\servicestack.logging.serilog.nuspec
-		..\NuGet\ServiceStack.Logging.Slack\servicestack.logging.slack.nuspec = ..\NuGet\ServiceStack.Logging.Slack\servicestack.logging.slack.nuspec
-		..\NuGet\ServiceStack.Logging.NLog.Core\servicestack.logging.nlog.core.nuspec = ..\NuGet\ServiceStack.Logging.NLog.Core\servicestack.logging.nlog.core.nuspec
+		Directory.Build.props = Directory.Build.props
+		ServiceStack.Logging.Log4Net\ServiceStack.Logging.Log4Net.Core.csproj = ServiceStack.Logging.Log4Net\ServiceStack.Logging.Log4Net.Core.csproj
+		ServiceStack.Logging.NLog\ServiceStack.Logging.NLog.Core.csproj = ServiceStack.Logging.NLog\ServiceStack.Logging.NLog.Core.csproj
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Logging.EntLib5", "ServiceStack.Logging.EntLib5\ServiceStack.Logging.EntLib5.csproj", "{EDD72ADC-327C-4152-B84B-B48552311534}"

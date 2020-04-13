@@ -13,7 +13,7 @@ namespace ServiceStack
 {
     /// <summary>
     /// Abstraction to provide a context per request.
-    /// in spnet.web its equivalent to <see cref="System.Web.HttpContext"></see>.Current.Items falls back to CallContext
+    /// in aspnet.web its equivalent to <see cref="System.Web.HttpContext"></see>.Current.Items falls back to CallContext
     /// </summary>
     public class RequestContext
     {
@@ -141,12 +141,12 @@ namespace ServiceStack
             if (instance == null) return;
             if (instance is IService) return; //IService's are already disposed right after they've been executed
 
-            DisposableTracker dispsableTracker = null;
+            DisposableTracker disposableTracker = null;
             if (!Items.Contains(DisposableTracker.HashId))
-                Items[DisposableTracker.HashId] = dispsableTracker = new DisposableTracker();
-            if (dispsableTracker == null)
-                dispsableTracker = (DisposableTracker)Items[DisposableTracker.HashId];
-            dispsableTracker.Add(instance);
+                Items[DisposableTracker.HashId] = disposableTracker = new DisposableTracker();
+            if (disposableTracker == null)
+                disposableTracker = (DisposableTracker)Items[DisposableTracker.HashId];
+            disposableTracker.Add(instance);
         }
 
         /// <summary>

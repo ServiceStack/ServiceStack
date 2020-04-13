@@ -20,28 +20,39 @@ namespace ServiceStack.FluentValidation.Resources {
 	using Validators;
 
 	internal class TurkishLanguage : Language {
-		public override string Name => "tr";
+		public const string Culture = "tr";
+		public override string Name => Culture;
 
 		public TurkishLanguage() {
-			Translate<EmailValidator>("'{PropertyName}'  geçerli email adresi değil.");
+			Translate<EmailValidator>("'{PropertyName}'  geçerli bir e-posta adresi değil.");
 			Translate<GreaterThanOrEqualValidator>("'{PropertyName}' değeri '{ComparisonValue}' değerinden büyük veya eşit olmalı.");
 			Translate<GreaterThanValidator>("'{PropertyName}' değeri '{ComparisonValue}' değerinden büyük olmalı.");
-			Translate<LengthValidator>("'{PropertyName}' değeri  {MinLength} ve {MaxLength} arasında karakter uzunluğunda olmalı . Toplam {TotalLength} adet karakter girdiniz.");
-			Translate<MinimumLengthValidator>("'{PropertyName}' değeri {MinLength} ve 1000 arasında karakter uzunluğunda olmalı . Toplam {TotalLength} adet karakter girdiniz.");
-			Translate<MaximumLengthValidator>("'{PropertyName}' değeri 0 ve {MaxLength} arasında karakter uzunluğunda olmalı . Toplam {TotalLength} adet karakter girdiniz.");
-			Translate<LessThanOrEqualValidator>("'{PropertyName}' değeri '{ComparisonValue}' değerinden küçük veya eşit olmalı.");
-			Translate<LessThanValidator>("'{PropertyName}' değeri  '{ComparisonValue}' değerinden küçük olmalı.");
-			Translate<NotEmptyValidator>("'{PropertyName}' değeri boş olmamalı.");
-			Translate<NotEqualValidator>("'{PropertyName}' değeri '{ComparisonValue}' değerine eşit olmamalı.");
-			Translate<NotNullValidator>("'{PropertyName}' değeri boş olamaz.");
+			Translate<LengthValidator>("'{PropertyName}', {MinLength} ve {MaxLength} arasında karakter uzunluğunda olmalı . Toplam {TotalLength} adet karakter girdiniz.");
+			Translate<MinimumLengthValidator>("'{PropertyName}', {MinLength} karakterden büyük veya eşit olmalıdır. {TotalLength} karakter girdiniz.");
+			Translate<MaximumLengthValidator>("'{PropertyName}', {MaxLength} karakterden küçük veya eşit olmalıdır. {TotalLength} karakter girdiniz.");
+			Translate<LessThanOrEqualValidator>("'{PropertyName}', '{ComparisonValue}' değerinden küçük veya eşit olmalı.");
+			Translate<LessThanValidator>("'{PropertyName}', '{ComparisonValue}' değerinden küçük olmalı.");
+			Translate<NotEmptyValidator>("'{PropertyName}' boş olmamalı.");
+			Translate<NotEqualValidator>("'{PropertyName}', '{ComparisonValue}' değerine eşit olmamalı.");
+			Translate<NotNullValidator>("'{PropertyName}' boş olamaz.");
 			Translate<PredicateValidator>("Belirtilen durum '{PropertyName}' için geçerli değil.");
 			Translate<AsyncPredicateValidator>("Belirtilen durum '{PropertyName}' için geçerli değil.");
 			Translate<RegularExpressionValidator>("'{PropertyName}' değerinin formatı doğru değil.");
-			Translate<EqualValidator>("'{PropertyName}' değeri '{ComparisonValue}' değerine eşit olmalı.");
-			Translate<ExactLengthValidator>("'{PropertyName}' değeri {MaxLength} karakter uzunluğunda olmalı. {TotalLength} adet karakter girdiniz.");
-			Translate<InclusiveBetweenValidator>("'{PropertyName}' değeri {From} ve {To} arasında olmalı. {Value} değerini girdiniz.");
-			Translate<ExclusiveBetweenValidator>("'{PropertyName}' değeri {From} ve {To} (dahil değil) arasında olmalı. {Value} değerini girdiniz.");
-			Translate<CreditCardValidator>("'{PropertyName}' geçerli kredi kartı numarası değil.");
+			Translate<EqualValidator>("'{PropertyName}', '{ComparisonValue}' değerine eşit olmalı.");
+			Translate<ExactLengthValidator>("'{PropertyName}', {MaxLength} karakter uzunluğunda olmalı. {TotalLength} adet karakter girdiniz.");
+			Translate<InclusiveBetweenValidator>("'{PropertyName}', {From} ve {To} arasında olmalı. {Value} değerini girdiniz.");
+			Translate<ExclusiveBetweenValidator>("'{PropertyName}', {From} ve {To} (dahil değil) arasında olmalı. {Value} değerini girdiniz.");
+			Translate<CreditCardValidator>("'{PropertyName}' geçerli bir kredi kartı numarası değil.");
+			Translate<ScalePrecisionValidator>("'{PropertyName}', {ExpectedScale} ondalıkları için toplamda {ExpectedPrecision} rakamdan fazla olamaz. {Digits} basamak ve {ActualScale} basamak bulundu.");
+			Translate<EmptyValidator>("'{PropertyName}' boş olmalıdır.");
+			Translate<NullValidator>("'{PropertyName}' boş olmalıdır.");
+			Translate<EnumValidator>("'{PropertyName}', '{PropertyValue}' içermeyen bir değer aralığı içeriyor.");
+			// Additional fallback messages used by clientside validation integration.
+			Translate("Length_Simple", "'{PropertyName}', {MinLength} ve {MaxLength} arasında karakter uzunluğunda olmalı.");
+			Translate("MinimumLength_Simple", "'{PropertyName}', {MinLength} karakterden büyük veya eşit olmalıdır.");
+			Translate("MaximumLength_Simple", "'{PropertyName}', {MaxLength} karakterden küçük veya eşit olmalıdır.");
+			Translate("ExactLength_Simple", "'{PropertyName}', {MaxLength} karakter uzunluğunda olmalı.");
+			Translate("InclusiveBetween_Simple", "'{PropertyName}', {From} ve {To} arasında olmalı.");
 		}
 	}
 }

@@ -162,6 +162,7 @@ namespace ServiceStack
                     var request = JsonSerializer.DeserializeFromString(requestJson, requestType);
 
                     req.RequestAttributes |= RequestAttributes.Secure;
+                    req.RequestAttributes &= ~RequestAttributes.InSecure;
                     req.Items[RequestItemsCryptKey] = cryptKey;
                     req.Items[RequestItemsAuthKey] = authKey;
                     req.Items[RequestItemsIv] = iv;

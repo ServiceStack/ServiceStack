@@ -30,8 +30,15 @@ namespace ServiceStack.Auth
             ApplicationId = appSettings.GetString("oauth.Odnoklassniki.ApplicationId");
             PublicKey = appSettings.GetString("oauth.Odnoklassniki.PublicKey");
             SecretKey = appSettings.GetString("oauth.Odnoklassniki.SecretKey");
-
             AccessTokenUrl = TokenUrl;
+
+            NavItem = new NavItem {
+                Href = "/auth/" + Name,
+                Label = "Sign in with Odnoklassniki",
+                Id = "btn-" + Name,
+                ClassName = "btn-social btn-odnoklassniki",
+                IconClass = "fab svg-odnoklassniki",
+            };
         }
 
         public string ApplicationId { get; set; }

@@ -120,7 +120,7 @@ namespace ServiceStack.Server.Tests.Auth
         {
             var dynamoClient = new AmazonDynamoDBClient("keyId", "key", new AmazonDynamoDBConfig
             {
-                ServiceURL = ConfigUtils.GetAppSetting("DynamoDbUrl", "http://localhost:8000"),
+                ServiceURL = Environment.GetEnvironmentVariable("CI_DYNAMODB") ?? "http://localhost:8000",
             });
 
             return dynamoClient;

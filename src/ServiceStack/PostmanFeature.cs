@@ -140,8 +140,7 @@ namespace ServiceStack
 
             var headers = feature.Headers ?? ("Accept: " + MimeTypes.Json);
 
-            var httpRes = Response as IHttpResponse;
-            if (httpRes != null)
+            if (Response is IHttpResponse httpRes)
             {
                 if (request.ssopt != null
                     || request.sspid != null
@@ -164,7 +163,7 @@ namespace ServiceStack
                 if (request.ssid != null)
                 {
                     httpRes.Cookies.AddSessionCookie(SessionFeature.SessionId, request.ssid,
-                        (HostContext.Config.OnlySendSessionCookiesSecurely && Request.IsSecureConnection));
+                        (HostContext.Config.UseSecureCookies && Request.IsSecureConnection));
                 }
             }
 
@@ -323,9 +322,8 @@ namespace ServiceStack
                 suffix = $"<{string.Join(",", args.ToArray())}>";
             }
 
-            string frindlyName;
-            return feature.FriendlyTypeNames.TryGetValue(typeName, out frindlyName)
-                ? frindlyName + suffix
+            return feature.FriendlyTypeNames.TryGetValue(typeName, out var friendlyName)
+                ? friendlyName + suffix
                 : typeName + suffix;
         }
 

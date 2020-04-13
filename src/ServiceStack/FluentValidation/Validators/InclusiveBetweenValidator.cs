@@ -18,7 +18,6 @@
 
 namespace ServiceStack.FluentValidation.Validators {
 	using System;
-	using Attributes;
 	using Internal;
 	using Resources;
 
@@ -28,13 +27,13 @@ namespace ServiceStack.FluentValidation.Validators {
 			From = from;
 
 			if (Comparer.GetComparisonResult(to, from) == -1) {
-				throw new ArgumentOutOfRangeException("to", "To should be larger than from.");
+				throw new ArgumentOutOfRangeException(nameof(to), "To should be larger than from.");
 			}
 
 		}
 
-		public IComparable From { get; private set; }
-		public IComparable To { get; private set; }
+		public IComparable From { get; }
+		public IComparable To { get; }
 
 		protected override bool IsValid(PropertyValidatorContext context) {
 			var propertyValue = (IComparable)context.PropertyValue;

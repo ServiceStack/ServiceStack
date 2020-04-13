@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <PackageId>ServiceStack.Interfaces.Core</PackageId>
+        <AssemblyName>ServiceStack.Interfaces</AssemblyName>
+        <RootNamespace>ServiceStack.Interfaces</RootNamespace>
+        <TargetFrameworks>netstandard2.0</TargetFrameworks>
+        <Title>ServiceStack.Interfaces .NET Standard 2.0</Title>
+        <PackageDescription>
+            Lightweight and implementation-free interfaces for DTO's, providers and adapters.
+        </PackageDescription>
+        <PackageTags>ServiceStack;Common;Framework;Clients;ServiceClients;Gateway</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+        <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
+    </ItemGroup>
+
+</Project>

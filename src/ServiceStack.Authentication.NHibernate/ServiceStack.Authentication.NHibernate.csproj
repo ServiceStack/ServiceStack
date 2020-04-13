@@ -1,27 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net45</TargetFramework>
-    <AssemblyName>ServiceStack.Authentication.NHibernate</AssemblyName>
     <PackageId>ServiceStack.Authentication.NHibernate</PackageId>
-    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
-    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
-    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
-    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
-    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' != 'Debug' ">
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Optimize>true</Optimize>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DebugType>portable</DebugType>
+    <AssemblyName>ServiceStack.Authentication.NHibernate</AssemblyName>
+    <TargetFrameworks>net45</TargetFrameworks>
+    <Title>An NHibernate IUserAuthRepository to persist User registration and auth info in any RDBMS NHibernate supports</Title>
+    <PackageDescription>
+      An NHibernate IUserAuthRepository to persist User registration and authentication info in any RDBMS NHibernate supports.
+      Implements ServiceStack's built-in AuthProvider Model:
+      https://docs.servicestack.net/authentication-and-authorization
+      inc. Twitter, Facebook, Basic, Digest, Credentials Auth modes out-of-the-box.
+    </PackageDescription>
+    <PackageTags>ServiceStack;Authentication;Authorization;NHibernate;SQLServer;Sqlite;Oracle;MySql;PostgreSQL;POCO;Code-First</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,16 +19,7 @@
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
-  </ItemGroup>
-
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
-    <DefineConstants>$(DefineConstants);NET45</DefineConstants>
-    <SignAssembly>True</SignAssembly>
-    <DelaySign>False</DelaySign>
-    <AssemblyOriginatorKeyFile>../servicestack.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+    <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
     <PackageReference Include="FluentNHibernate" Version="2.0.3.0" />
     <PackageReference Include="Iesi.Collections" Version="4.0.2" />
     <PackageReference Include="NHibernate" Version="4.1.1.4000" />
@@ -49,7 +30,6 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
   </ItemGroup>
 
 </Project>

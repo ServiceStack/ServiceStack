@@ -22,7 +22,7 @@ namespace ServiceStack
         {
             this.RequiredRoles = roles.ToList();
             this.ApplyTo = applyTo;
-            this.Priority = (int)RequestFilterPriority.RequiredRole;
+            this.Priority = (int)RequestFilterPriority.RequiredRole;            
         }
 
         public RequiredRoleAttribute(params string[] roles)
@@ -40,7 +40,7 @@ namespace ServiceStack
             if (HasAllRoles(req, req.GetSession(), RequiredRoles))
                 return;
 
-            if (DoHtmlRedirectIfConfigured(req, res))
+            if (DoHtmlRedirectAccessDeniedIfConfigured(req, res))
                 return;
 
             res.StatusCode = (int)HttpStatusCode.Forbidden;

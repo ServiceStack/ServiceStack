@@ -14,7 +14,7 @@ namespace ServiceStack.Auth
     public class FacebookAuthProvider : OAuthProvider
     {
         public const string Name = "facebook";
-        public static string Realm = "https://graph.facebook.com/v2.8/";
+        public static string Realm = "https://graph.facebook.com/v3.2/";
         public static string PreAuthUrl = "https://www.facebook.com/dialog/oauth";
         public static string[] DefaultFields = { "id", "name", "first_name", "last_name", "email" };
 
@@ -23,6 +23,8 @@ namespace ServiceStack.Auth
         public string[] Permissions { get; set; }
         public string[] Fields { get; set; }
 
+        public bool RetrieveUserPicture { get; set; } = true;
+
         public FacebookAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name, "AppId", "AppSecret")
         {
@@ -30,6 +32,14 @@ namespace ServiceStack.Auth
             this.AppSecret = appSettings.GetString("oauth.facebook.AppSecret");
             this.Permissions = appSettings.Get("oauth.facebook.Permissions", TypeConstants.EmptyStringArray);
             this.Fields = appSettings.Get("oauth.facebook.Fields", DefaultFields);
+
+            NavItem = new NavItem {
+                Href = "/auth/" + Name,
+                Label = "Sign in with Facebook",
+                Id = "btn-" + Name,
+                ClassName = "btn-social btn-facebook",
+                IconClass = "fab svg-facebook",
+            };
         }
 
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
@@ -69,7 +79,7 @@ namespace ServiceStack.Auth
             var isPreAuthCallback = !code.IsNullOrEmpty();
             if (!isPreAuthCallback)
             {
-                var preAuthUrl = $"{PreAuthUrl}?client_id={AppId}&redirect_uri={this.CallbackUrl.UrlEncode()}&scope={string.Join(",", Permissions)}";
+                var preAuthUrl = $"{PreAuthUrl}?client_id={AppId}&redirect_uri={this.CallbackUrl.UrlEncode()}&scope={string.Join(",", Permissions)}&{Keywords.State}={session.Id}";
 
                 this.SaveSession(authService, session, SessionExpiry);
                 return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
@@ -122,15 +132,25 @@ namespace ServiceStack.Auth
                 tokens.LastName = authInfo.Get("last_name");
                 tokens.Email = authInfo.Get("email");
 
-                var json = AuthHttpGateway.DownloadFacebookUserInfo(tokens.AccessTokenSecret, "picture");
-                var obj = JsonObject.Parse(json);
-                var picture = obj.Object("picture");
-                var data = picture?.Object("data");
-                if (data != null)
+                if (RetrieveUserPicture)
                 {
-                    if (data.TryGetValue("url", out var profileUrl))
-                        tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl.SanitizeOAuthUrl();
+                    var json = AuthHttpGateway.DownloadFacebookUserInfo(tokens.AccessTokenSecret, "picture");
+                    var obj = JsonObject.Parse(json);
+                    var picture = obj.Object("picture");
+                    var data = picture?.Object("data");
+                    if (data != null)
+                    {
+                        if (data.TryGetValue("url", out var profileUrl))
+                        {
+                            tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl.SanitizeOAuthUrl();
+                            
+                            if (string.IsNullOrEmpty(userSession.ProfileUrl))
+                                userSession.ProfileUrl = profileUrl.SanitizeOAuthUrl();
+                        }
+                    }
                 }
+
+                userSession.UserAuthName = tokens.Email;
             }
             catch (Exception ex)
             {
@@ -142,8 +162,7 @@ namespace ServiceStack.Auth
 
         public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
         {
-            var userSession = authSession as AuthUserSession;
-            if (userSession == null) return;
+            if (!(authSession is AuthUserSession userSession)) return;
 
             userSession.FacebookUserId = tokens.UserId ?? userSession.FacebookUserId;
             userSession.FacebookUserName = tokens.UserName ?? userSession.FacebookUserName;
@@ -152,5 +171,6 @@ namespace ServiceStack.Auth
             userSession.LastName = tokens.LastName ?? userSession.LastName;
             userSession.PrimaryEmail = tokens.Email ?? userSession.PrimaryEmail ?? userSession.Email;
         }
+        
     }
 }

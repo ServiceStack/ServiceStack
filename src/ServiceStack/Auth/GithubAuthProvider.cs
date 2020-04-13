@@ -14,7 +14,13 @@ namespace ServiceStack.Auth
     {
         public const string Name = "github";
         public static string Realm = "https://github.com/login/";
-        public static string PreAuthUrl = "https://github.com/login/oauth/authorize";
+        
+        public const string DefaultPreAuthUrl = "https://github.com/login/oauth/authorize";
+        public const string DefaultVerifyAccessTokenUrl = "https://api.github.com/applications/{0}/tokens/{1}";
+
+        public string PreAuthUrl { get; set; }
+
+        public string VerifyAccessTokenUrl { get; set; }
 
         static GithubAuthProvider() {}
 
@@ -24,7 +30,17 @@ namespace ServiceStack.Auth
             ClientId = appSettings.GetString("oauth.github.ClientId");
             ClientSecret = appSettings.GetString("oauth.github.ClientSecret");
             Scopes = appSettings.Get("oauth.github.Scopes", new[] { "user" });
+            PreAuthUrl = DefaultPreAuthUrl;
+            VerifyAccessTokenUrl = DefaultVerifyAccessTokenUrl;            
             ClientConfig.ConfigureTls12();
+
+            NavItem = new NavItem {
+                Href = "/auth/" + Name,
+                Label = "Sign in with GitHub",
+                Id = "btn-" + Name,
+                ClassName = "btn-social btn-github",
+                IconClass = "fab svg-github",
+            };
         }
 
         public string ClientId { get; set; }
@@ -32,8 +48,6 @@ namespace ServiceStack.Auth
         public string ClientSecret { get; set; }
 
         public string[] Scopes { get; set; }
-
-        public string VerifyAccessTokenUrl { get; set; } = "https://api.github.com/applications/{0}/tokens/{1}";
 
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
@@ -79,7 +93,7 @@ namespace ServiceStack.Auth
             if (!isPreAuthCallback)
             {
                 var scopes = Scopes.Join("%20");
-                string preAuthUrl = $"{PreAuthUrl}?client_id={ClientId}&redirect_uri={CallbackUrl.UrlEncode()}&scope={scopes}&state={Guid.NewGuid():N}";
+                string preAuthUrl = $"{PreAuthUrl}?client_id={ClientId}&redirect_uri={CallbackUrl.UrlEncode()}&scope={scopes}&{Keywords.State}={session.Id}";
 
                 this.SaveSession(authService, session, SessionExpiry);
                 return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
@@ -144,9 +158,14 @@ namespace ServiceStack.Auth
                 tokens.Country = authInfo.Get("country");
 
                 if (authInfo.TryGetValue("avatar_url", out var profileUrl))
+                {
                     tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl;
+                        
+                    if (string.IsNullOrEmpty(userSession.ProfileUrl))
+                        userSession.ProfileUrl = profileUrl.SanitizeOAuthUrl();
+                }
 
-                if (tokens.Email == null)
+                if (string.IsNullOrEmpty(tokens.Email))
                 {
                     var json = AuthHttpGateway.DownloadGithubUserEmailsInfo(tokens.AccessTokenSecret);
                     var objs = JsonArrayObjects.Parse(json);
@@ -163,6 +182,7 @@ namespace ServiceStack.Auth
                         }
                     }
                 }
+                userSession.UserAuthName = tokens.UserName ?? tokens.Email;
             }
             catch (Exception ex)
             {
@@ -177,7 +197,6 @@ namespace ServiceStack.Auth
             if (!(authSession is AuthUserSession userSession)) return;
 
             userSession.UserName = tokens.UserName ?? userSession.UserName;
-            userSession.UserAuthName = userSession.UserName;
             userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
             userSession.Company = tokens.Company ?? userSession.Company;
             userSession.Country = tokens.Country ?? userSession.Country;

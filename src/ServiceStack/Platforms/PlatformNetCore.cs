@@ -43,8 +43,9 @@ namespace System.Threading
     }
 }
 
-namespace System.Configuration
+namespace ServiceStack
 {
+    // System.Configuration.ConfigurationManager also in https://www.nuget.org/packages/System.Configuration.ConfigurationManager/
     public class ConfigurationErrorsException : Exception
     {
         public ConfigurationErrorsException() {}

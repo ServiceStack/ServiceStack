@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>ServiceStack.Kestrel.Core</PackageId>
+    <AssemblyName>ServiceStack.Kestrel</AssemblyName>
+    <RootNamespace>ServiceStack.Kestrel</RootNamespace>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <Title>ServiceStack.Kestrel .NET Standard 2.0</Title>
+    <PackageDescription>
+      Provides AppSelfHostBase implementation for .NET Core's Kestrel Self Host HTTP Server
+
+      To get started see: https://servicestack.net/getting-started
+    </PackageDescription>
+    <PackageTags>ServiceStack;SelfHost;Host;Kestrel;HTTP;Server</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.Core.csproj"/>
+    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.Core.csproj" />
+    <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.Core.csproj" />
+    <ProjectReference Include="..\ServiceStack\ServiceStack.Core.csproj" />
+    <PackageReference Include="ServiceStack.Text.Core" Version="$(Version)" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.1.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.1.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.1.1" />
+    <PackageReference Include="System.Memory" Version="4.5.3" />
+  </ItemGroup>
+
+</Project>

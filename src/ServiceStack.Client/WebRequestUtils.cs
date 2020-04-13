@@ -18,7 +18,7 @@ namespace ServiceStack
         public TokenException(string message) : base(message) {}
     }
 
-    public class AuthenticationException : Exception
+    public class AuthenticationException : Exception, IHasStatusCode
     {
         public AuthenticationException() {}
 
@@ -27,6 +27,8 @@ namespace ServiceStack
 
         public AuthenticationException(string message, Exception innerException)
             : base(message, innerException) {}
+
+        public int StatusCode => (int) HttpStatusCode.Unauthorized;
     }
 
     // by adamfowleruk
@@ -313,9 +315,8 @@ namespace ServiceStack
             if (response is IHasResponseStatus hasResponseStatus)
                 return hasResponseStatus.ResponseStatus;
 
-            var propertyInfo = response.GetType().GetProperty("ResponseStatus");
-
-            return propertyInfo?.GetProperty(response) as ResponseStatus;
+            var statusGetter = TypeProperties.Get(response.GetType()).GetPublicGetter(nameof(ResponseStatus));
+            return statusGetter?.Invoke(response) as ResponseStatus;
         }
     }
 }

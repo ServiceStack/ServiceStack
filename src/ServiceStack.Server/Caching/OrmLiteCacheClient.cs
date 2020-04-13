@@ -32,7 +32,7 @@ namespace ServiceStack.Caching
 
         public T Exec<T>(Func<IDbConnection, T> action)
         {
-            using (JsConfig.With(excludeTypeInfo: false))
+            using (JsConfig.With(new Config { ExcludeTypeInfo = false }))
             using (var db = DbFactory.Open())
             {
                 return action(db);
@@ -41,7 +41,7 @@ namespace ServiceStack.Caching
 
         public void Exec(Action<IDbConnection> action)
         {
-            using (JsConfig.With(excludeTypeInfo: false))
+            using (JsConfig.With(new Config { ExcludeTypeInfo = false }))
             using (var db = DbFactory.Open())
             {
                 action(db);

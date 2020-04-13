@@ -12,6 +12,7 @@ using Funq;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
 using ServiceStack.Data;
+using ServiceStack.Extensions;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
 
@@ -42,6 +43,7 @@ namespace ServiceStack
         public bool OrderByPrimaryKeyOnPagedQuery { get; set; }
         public string UseNamedConnection { get; set; }
         public Type AutoQueryServiceBaseType { get; set; }
+        public QueryFilterDelegate GlobalQueryFilter { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
         public List<Action<QueryDbFilterContext>> ResponseFilters { get; set; }
         public Action<Type, TypeBuilder, MethodBuilder, ILGenerator> GenerateServiceFilter { get; set; }
@@ -157,6 +159,7 @@ namespace ServiceStack
                     EnableUntypedQueries = EnableUntypedQueries,
                     EnableSqlFilters = EnableRawSqlFilters,
                     OrderByPrimaryKeyOnLimitQuery = OrderByPrimaryKeyOnPagedQuery,
+                    GlobalQueryFilter = GlobalQueryFilter,
                     QueryFilters = QueryFilters,
                     ResponseFilters = ResponseFilters,
                     StartsWithConventions = StartsWithConventions,
@@ -192,19 +195,19 @@ namespace ServiceStack
                 }
             }
 
-            var misingRequestTypes = scannedTypes
+            var missingRequestTypes = scannedTypes
                 .Where(x => x.HasInterface(typeof(IQueryDb)))
                 .Where(x => !appHost.Metadata.OperationsMap.ContainsKey(x))
                 .ToList();
 
-            if (misingRequestTypes.Count == 0)
+            if (missingRequestTypes.Count == 0)
                 return;
 
-            var serviceType = GenerateMissingServices(misingRequestTypes);
+            var serviceType = GenerateMissingServices(missingRequestTypes);
             appHost.RegisterService(serviceType);
         }
 
-        Type GenerateMissingServices(IEnumerable<Type> misingRequestTypes)
+        Type GenerateMissingServices(IEnumerable<Type> missingRequestTypes)
         {
             var assemblyName = new AssemblyName { Name = "tmpAssembly" };
             var typeBuilder =
@@ -214,7 +217,7 @@ namespace ServiceStack
                     TypeAttributes.Public | TypeAttributes.Class,
                     AutoQueryServiceBaseType);
 
-            foreach (var requestType in misingRequestTypes)
+            foreach (var requestType in missingRequestTypes)
             {
                 var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryDb<,>));
                 var hasExplicitInto = genericDef != null;
@@ -430,6 +433,7 @@ namespace ServiceStack
 
         public string UseNamedConnection { get; set; }
         public virtual IDbConnection Db { get; set; }
+        public QueryFilterDelegate GlobalQueryFilter { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
         public List<Action<QueryDbFilterContext>> ResponseFilters { get; set; }
 
@@ -461,8 +465,8 @@ namespace ServiceStack
 
         public ITypedQuery GetTypedQuery(Type dtoType, Type fromType)
         {
-            ITypedQuery defaultValue;
-            if (TypedQueries.TryGetValue(dtoType, out defaultValue)) return defaultValue;
+            if (TypedQueries.TryGetValue(dtoType, out var defaultValue)) 
+                return defaultValue;
 
             var genericType = typeof(TypedQuery<,>).MakeGenericType(dtoType, fromType);
             defaultValue = genericType.CreateInstance<ITypedQuery>();
@@ -483,6 +487,8 @@ namespace ServiceStack
 
         public SqlExpression<From> Filter<From>(ISqlExpression q, IQueryDb dto, IRequest req)
         {
+            GlobalQueryFilter?.Invoke(q, dto, req);
+
             if (QueryFilters == null)
                 return (SqlExpression<From>)q;
 
@@ -502,6 +508,8 @@ namespace ServiceStack
 
         public ISqlExpression Filter(ISqlExpression q, IQueryDb dto, IRequest req)
         {
+            GlobalQueryFilter?.Invoke(q, dto, req);
+
             if (QueryFilters == null)
                 return q;
 
@@ -1037,7 +1045,7 @@ namespace ServiceStack
                 if (aliases.TryGetValue(name, out var alias))
                     match = GetQueryMatch(q, alias, options);
 
-                if (match == null && JsConfig.EmitLowercaseUnderscoreNames && name.Contains("_"))
+                if (match == null && JsConfig.TextCase == TextCase.SnakeCase && name.Contains("_"))
                     match = GetQueryMatch(q, name.Replace("_", ""), options);
             }
 

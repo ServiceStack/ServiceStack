@@ -20,9 +20,8 @@ namespace ServiceStack
 
         public void Set<T>(string key, T value)
         {
-            var s = value as string;
-            var textValue = s != null
-                ? (string)(object)value
+            var textValue = value is string s
+                ? s
                 : value.ToJsv();
 
             settings[key] = textValue;
@@ -35,6 +34,7 @@ namespace ServiceStack
         public IList<string> GetList(string key) => GetString(key).FromJsv<List<string>>();
 
         public IDictionary<string, string> GetDictionary(string key) => GetString(key).FromJsv<Dictionary<string, string>>();
+        public List<KeyValuePair<string, string>> GetKeyValuePairs(string key) => GetString(key).FromJsv<List<KeyValuePair<string, string>>>();
 
         public T Get<T>(string key) => GetString(key).FromJsv<T>();
 

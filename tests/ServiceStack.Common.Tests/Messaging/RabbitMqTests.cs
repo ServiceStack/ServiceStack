@@ -20,7 +20,9 @@ namespace ServiceStack.Common.Tests.Messaging
     [TestFixture, Ignore("Integration Test")]
     public class RabbitMqTests
     {
-        private readonly ConnectionFactory mqFactory = new ConnectionFactory { HostName = "localhost" };
+        private readonly ConnectionFactory mqFactory = new ConnectionFactory {
+            HostName = TestsConfig.RabbitMqHost             
+        };
         private const string Exchange = "mq:tests";
         private const string ExchangeDlq = "mq:tests.dlq";
         private const string ExchangeTopic = "mq:tests.topic";
@@ -159,7 +161,7 @@ namespace ServiceStack.Common.Tests.Messaging
                         channel.BasicAck(e.DeliveryTag, multiple: false);
                         break;
                     }
-                    catch (OperationInterruptedException ex)
+                    catch (OperationInterruptedException)
                     {
                         // The consumer was removed, either through
                         // channel or connection closure, or through the

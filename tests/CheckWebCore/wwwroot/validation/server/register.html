@@ -1,0 +1,50 @@
+<h3>Register New User</h3>
+
+<form action="/register" method="post" class="col-lg-7">
+    <div class="form-group">
+        {{ 'displayName,email,password,confirmPassword' | validationSummary }}
+        {{ { continue: '/validation/server/', errorView:'/validation/server/register' } | htmlHiddenInputs }}
+    </div>
+    <div class="form-group">
+        {{ {id:'displayName'}
+           | formInput({label:'Name',help:'Your first and last name',size:'lg'}) }}
+    </div>
+    <div class="form-group">
+        {{ {id:'email'}
+           | formInput({label:'Email',size:'lg'}) }}
+    </div>
+    <div class="form-group">
+        {{ {id:'password',type:'password'}
+           | formInput({label:'Password',help:'6 characters or more',size:'lg'}) }}
+    </div>
+    <div class="form-group">
+        {{ {id:'confirmPassword',type:'password'}
+           | formInput({label:'Confirm Password',size:'lg'}) }}
+    </div>
+    <div class="form-group">
+        {{ {id:'autoLogin',type:'checkbox',checked:true} | formInput({label:'Auto Login'}) }}
+    </div>
+    <div class="form-group">
+        <button class="btn btn-lg btn-primary" type="submit">Register</button>
+    </div>
+</form>
+
+<div class="form-group">
+    <b>Quick Populate:</b>
+    <div class="quicklist">
+        <span data-click="newUser:new@user.com">new@user.com</span>
+    </div>
+</div>
+
+{{#raw appendTo scripts}}
+<script>
+$(document).bindHandlers({
+    newUser: function(u) {
+        var names = u.split('@');
+        $("[name=displayName]").val($.ss.toPascalCase(names[0]) + " " + $.ss.toPascalCase($.ss.splitOnFirst(names[1],'.')[0]));
+        $("[name=email]").val(u);
+        $("[type=password]").val('p@55wOrd');
+    }
+});
+</script>
+{{/raw}}

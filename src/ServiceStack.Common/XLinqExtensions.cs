@@ -1,4 +1,3 @@
-#if !SL5 && !IOS && !XBOX
 //
 // ServiceStack: Useful extensions to simplify parsing xml with XLinq
 //
@@ -278,6 +277,18 @@ namespace ServiceStack
             return null;
         }
 
+        public static XElement NextElement(this XElement element)
+        {
+            var node = element.NextNode;
+            while (node != null)
+            {
+                if (node.NodeType == XmlNodeType.Element)
+                    return (XElement) node;
+
+                node = node.NextNode;
+            }
+            return null;
+        }
+
     }
 }
-#endif

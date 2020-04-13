@@ -20,15 +20,16 @@ namespace ServiceStack.FluentValidation.Resources {
 	using Validators;
 
 	internal class PersianLanguage : Language {
-		public override string Name => "fa";
+		public const string Culture = "fa";
+		public override string Name => Culture;
 
 		public PersianLanguage() {
 			Translate<EmailValidator>("'{PropertyName}' وارد شده قالب صحیح یک ایمیل را ندارد.");
 			Translate<GreaterThanOrEqualValidator>("'{PropertyName}' باید بیشتر یا مساوی '{ComparisonValue}' باشد.");
 			Translate<GreaterThanValidator>("'{PropertyName}' باید بیشتر از '{ComparisonValue}' باشد.");
 			Translate<LengthValidator>("'{PropertyName}' باید حداقل {MinLength} و حداکثر {MaxLength} کاراکتر داشته باشد. اما مقدار وارد شده {TotalLength} کاراکتر دارد.");
-			Translate<MinimumLengthValidator>("'{PropertyName}' باید حداقل {MinLength} و حداکثر 1000 کاراکتر داشته باشد. اما مقدار وارد شده {TotalLength} کاراکتر دارد.");
-			Translate<MaximumLengthValidator>("'{PropertyName}' باید حداقل 0 و حداکثر {MaxLength} کاراکتر داشته باشد. اما مقدار وارد شده {TotalLength} کاراکتر دارد.");
+			Translate<MinimumLengthValidator>("'{PropertyName}' باید بزرگتر یا برابر با {MinLength} کاراکتر باشد. شما شخصیت {TotalLength} را وارد کردید");
+			Translate<MaximumLengthValidator>("'{PropertyName}' باید کمتر یا مساوی {MaxLength} باشد. {TotalLength} را وارد کردید");
 			Translate<LessThanOrEqualValidator>("'{PropertyName}' باید کمتر یا مساوی '{ComparisonValue}' باشد.");
 			Translate<LessThanValidator>("'{PropertyName}' باید کمتر از '{ComparisonValue}' باشد.");
 			Translate<NotEmptyValidator>("وارد کردن '{PropertyName}' ضروری است.");
@@ -42,9 +43,17 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<InclusiveBetweenValidator>("'{PropertyName}' باید بین {From} و {To} باشد. اما مقدار وارد شده ({Value}) در این محدوده نیست.");
 			Translate<ExclusiveBetweenValidator>("'{PropertyName}' باید بیشتر از {From} و کمتر از {To} باشد. اما مقدار وارد شده ({Value}) در این محدوده نیست.");
 			Translate<CreditCardValidator>("'{PropertyName}' وارد شده معتبر نیست.");
-			Translate<ScalePrecisionValidator>("'{PropertyName}' نباید بیش از {expectedPrecision} رقم، شامل {expectedScale} رقم اعشار داشته باشد. مقدار وارد شده {digits} رقم و {actualScale} رقم اعشار دارد.");
+			Translate<ScalePrecisionValidator>("'{PropertyName}' نباید بیش از {ExpectedPrecision} رقم، شامل {ExpectedScale} رقم اعشار داشته باشد. مقدار وارد شده {Digits} رقم و {ActualScale} رقم اعشار دارد.");
 			Translate<EmptyValidator>("'{PropertyName}' باید خالی باشد.");
 			Translate<NullValidator>("'{PropertyName}' باید خالی باشد.");
+			Translate<EnumValidator>("مقدار '{PropertyValue}' در لیست مقادیر قابل قبول برای '{PropertyName}' نمی باشد.");
+			// Additional fallback messages used by clientside validation integration.
+			Translate("Length_Simple", "'{PropertyName}' باید حداقل {MinLength} و حداکثر {MaxLength} کاراکتر داشته باشد.");
+			Translate("MinimumLength_Simple", "'{PropertyName}' باید بزرگتر یا برابر با {MinLength} کاراکتر باشد.");
+			
+			Translate("MaximumLength_Simple", "'{PropertyName}' باید کمتر یا مساوی {MaxLength} باشد.");
+			Translate("ExactLength_Simple", "'{PropertyName}' باید دقیقا {MaxLength} کاراکتر.");
+			Translate("InclusiveBetween_Simple", "'{PropertyName}' باید بین {From} و {To} باشد.");
 
 		}
 	}

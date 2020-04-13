@@ -1,10 +1,10 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
-using ServiceStack.Templates;
+using ServiceStack.Script;
 
 namespace ServiceStack.Mvc
 {
-#if !NETSTANDARD2_0
+#if !NETSTANDARD
     public class MvcPageResult : System.Web.Mvc.ActionResult
     {
         private readonly PageResult pageResult;
@@ -53,7 +53,7 @@ namespace ServiceStack.Mvc
     
     public static class MvcPageResultExtensions
     {
-#if !NETSTANDARD2_0
+#if !NETSTANDARD
         public static async Task<MvcPageResult> ToMvcResultAsync(this PageResult pageResult)
         {
             var ms = new MemoryStream();            

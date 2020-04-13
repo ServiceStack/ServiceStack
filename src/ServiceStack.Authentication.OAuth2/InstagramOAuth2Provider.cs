@@ -24,8 +24,7 @@ namespace ServiceStack.Authentication.OAuth2
             this.AuthorizeUrl = this.AuthorizeUrl ?? Realm;
             this.AccessTokenUrl = this.AccessTokenUrl ?? "https://api.instagram.com/oauth/access_token";
 
-            this.UserProfileUrl = this.UserProfileUrl
-                ?? "https://api.instagram.com/v1/users/self";
+            this.UserProfileUrl = this.UserProfileUrl ?? "https://api.instagram.com/v1/users/self";
 
             if (this.Scopes.Length == 0)
             {

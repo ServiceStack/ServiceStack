@@ -26,7 +26,7 @@ namespace ServiceStack.FluentValidation.Results
         {
             var ssCode = errorCode?.Replace("Validator", "");
 
-            return ErrorCodeAliases.TryGetValue(ssCode, out var errorCodeAlias) 
+            return ssCode != null && ErrorCodeAliases.TryGetValue(ssCode, out var errorCodeAlias) 
                 ? errorCodeAlias
                 : ssCode;
         }

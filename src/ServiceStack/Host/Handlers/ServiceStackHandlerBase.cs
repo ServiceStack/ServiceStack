@@ -164,7 +164,8 @@ namespace ServiceStack.Host.Handlers
             var hasRequestBody = httpReq.ContentType != null && httpReq.ContentLength > 0;
 
             if (!hasRequestBody
-                && (httpMethod == HttpMethods.Get || httpMethod == HttpMethods.Delete || httpMethod == HttpMethods.Options))
+                && (httpMethod == HttpMethods.Get || httpMethod == HttpMethods.Delete || 
+                    httpMethod == HttpMethods.Options || httpMethod == HttpMethods.Head))
             {
                 return KeyValueDataContractDeserializer.Instance.Parse(queryString, operationType).InTask();
             }
@@ -172,10 +173,27 @@ namespace ServiceStack.Host.Handlers
             var isFormData = httpReq.HasAnyOfContentTypes(MimeTypes.FormUrlEncoded, MimeTypes.MultiPartFormData);
             if (isFormData)
             {
+                if (queryString.Count > 0)
+                {
+                    var instance = KeyValueDataContractDeserializer.Instance.Parse(queryString, operationType);
+                    return KeyValueDataContractDeserializer.Instance.Populate(instance, httpReq.FormData, operationType).InTask();
+                }
                 return KeyValueDataContractDeserializer.Instance.Parse(httpReq.FormData, operationType).InTask();
             }
 
             return CreateContentTypeRequestAsync(httpReq, operationType, contentType);
+        }
+
+        static long GetStreamLengthSafe(Stream stream)
+        {
+            try
+            {
+                return stream.Length; //can throw NotSupportedException
+            }
+            catch (Exception e)
+            {
+                return -1;
+            }
         }
 
         protected static Task<object> CreateContentTypeRequestAsync(IRequest httpReq, Type requestType, string contentType)
@@ -189,7 +207,7 @@ namespace ServiceStack.Host.Handlers
                         || (HttpUtils.HasRequestBody(httpReq.Verb) && 
                                 (httpReq.GetContentEncoding() != null
 #if NETSTANDARD2_0
-                                || httpReq.InputStream.Length > 0 // AWS API Gateway reports ContentLength=0,ContentEncoding=null
+                                || GetStreamLengthSafe(httpReq.InputStream) > 0 // AWS API Gateway reports ContentLength=0,ContentEncoding=null
 #endif
                                 ));
 

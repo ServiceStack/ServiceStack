@@ -618,5 +618,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(response.ResolvedUrl, Is.EqualTo(url.AppendPath("resolved")));
             }
         }
+
+        [Test]
+        public void Does_NormalizePathInfo()
+        {
+            Assert.That(ServiceStackHost.NormalizePathInfo("/api/a", "api"), Is.EqualTo("/a"));
+            Assert.That(ServiceStackHost.NormalizePathInfo("/api/a/b", "api"), Is.EqualTo("/a/b"));
+            Assert.That(ServiceStackHost.NormalizePathInfo("/a", "api"), Is.EqualTo("/a"));
+            Assert.That(ServiceStackHost.NormalizePathInfo("/a/b", "api"), Is.EqualTo("/a/b"));
+            Assert.That(ServiceStackHost.NormalizePathInfo("/apikeys", "api"), Is.EqualTo("/apikeys"));
+            Assert.That(ServiceStackHost.NormalizePathInfo("/apikeys/a", "api"), Is.EqualTo("/apikeys/a"));
+            Assert.That(ServiceStackHost.NormalizePathInfo("/apikeys/a/b", "api"), Is.EqualTo("/apikeys/a/b"));
+        }
+
     }
 }

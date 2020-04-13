@@ -14,20 +14,26 @@ namespace ServiceStack.Auth
         public const string Name = "twitter";
         public static string Realm = "https://api.twitter.com/";
 
+        public const string DefaultAuthorizeUrl = "https://api.twitter.com/oauth/authenticate";
+
+        public bool RetrieveEmail { get; set; } = true;
+
         public TwitterAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name)
         {
-            this.AuthorizeUrl = appSettings.Get("oauth.twitter.AuthorizeUrl", Realm + "oauth/authenticate");
+            this.AuthorizeUrl = appSettings.Get("oauth.twitter.AuthorizeUrl", DefaultAuthorizeUrl);
+
+            NavItem = new NavItem {
+                Href = "/auth/" + Name,
+                Label = "Sign in with Twitter",
+                Id = "btn-" + Name,
+                ClassName = "btn-social btn-twitter",
+                IconClass = "fab svg-twitter",
+            };
         }
 
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
-            if (string.IsNullOrEmpty(ConsumerKey))
-                throw new Exception("oauth.twitter.ConsumerKey is required");
-
-            if (string.IsNullOrEmpty(ConsumerSecret))
-                throw new Exception("oauth.twitter.ConsumerSecret is required");
-            
             var tokens = Init(authService, ref session, request);
 
             //Transferring AccessToken/Secret from Mobile/Desktop App to Server
@@ -38,7 +44,9 @@ namespace ServiceStack.Auth
 
                 var validToken = AuthHttpGateway.VerifyTwitterAccessToken(
                     ConsumerKey, ConsumerSecret,
-                    tokens.AccessToken, tokens.AccessTokenSecret, out var userId);
+                    tokens.AccessToken, tokens.AccessTokenSecret, 
+                    out var userId, 
+                    out var email);
 
                 if (!validToken)
                     return HttpError.Unauthorized("AccessToken is invalid");
@@ -60,14 +68,9 @@ namespace ServiceStack.Auth
             }
 
             //Default OAuth logic based on Twitter's OAuth workflow
-            if (!tokens.RequestToken.IsNullOrEmpty() && !request.oauth_token.IsNullOrEmpty())
+            if (!tokens.RequestTokenSecret.IsNullOrEmpty() && !request.oauth_token.IsNullOrEmpty())
             {
-                OAuthUtils.RequestToken = tokens.RequestToken;
-                OAuthUtils.RequestTokenSecret = tokens.RequestTokenSecret;
-                OAuthUtils.AuthorizationToken = request.oauth_token;
-                OAuthUtils.AuthorizationVerifier = request.oauth_verifier;
-
-                if (OAuthUtils.AcquireAccessToken())
+                if (OAuthUtils.AcquireAccessToken(tokens.RequestTokenSecret, request.oauth_token, request.oauth_verifier))
                 {
                     session.IsAuthenticated = true;
                     tokens.AccessToken = OAuthUtils.AccessToken;
@@ -92,7 +95,9 @@ namespace ServiceStack.Auth
                 //Redirect to OAuth provider to approve access
                 return authService.Redirect(AccessTokenUrlFilter(this, this.AuthorizeUrl
                     .AddQueryParam("oauth_token", tokens.RequestToken)
-                    .AddQueryParam("oauth_callback", session.ReferrerUrl)));
+                    .AddQueryParam("oauth_callback", session.ReferrerUrl)
+                    .AddQueryParam(Keywords.State, session.Id) // doesn't support state param atm, but it's here when it does
+                ));
             }
 
             return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "RequestTokenFailed")));
@@ -130,10 +135,33 @@ namespace ServiceStack.Auth
 
                         var email = obj.Get("email");
                         if (!string.IsNullOrEmpty(email))
+                        {
                             tokens.Email = email;
+                        }
+                        else if (RetrieveEmail)
+                        {
+                            try 
+                            { 
+                                AuthHttpGateway.VerifyTwitterAccessToken(
+                                    ConsumerKey, ConsumerSecret,
+                                    tokens.AccessToken, tokens.AccessTokenSecret,
+                                    out userId, out email);
+
+                                tokens.Email = email;
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Warn($"Could not retrieve Twitter Email", ex);
+                            }
+                        }
 
                         if (obj.TryGetValue("profile_image_url", out var profileUrl))
+                        {
                             tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl;
+
+                            if (string.IsNullOrEmpty(userSession.ProfileUrl))
+                                userSession.ProfileUrl = profileUrl.SanitizeOAuthUrl();
+                        }
 
                         if (SaveExtendedUserInfo)
                         {
@@ -141,6 +169,7 @@ namespace ServiceStack.Auth
                         }
                     }
                 }
+                userSession.UserAuthName = tokens.UserName ?? tokens.Email;
             }
             catch (Exception ex)
             {
@@ -155,8 +184,7 @@ namespace ServiceStack.Auth
 
         public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
         {
-            var userSession = authSession as AuthUserSession;
-            if (userSession == null) return;
+            if (!(authSession is AuthUserSession userSession)) return;
             
             userSession.TwitterUserId = tokens.UserId ?? userSession.TwitterUserId;
             userSession.TwitterScreenName = tokens.UserName ?? userSession.TwitterScreenName;

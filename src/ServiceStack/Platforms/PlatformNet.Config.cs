@@ -8,7 +8,7 @@ namespace ServiceStack.Platforms
         public const string ConfigNullValue = "{null}";
 
         /// <summary>
-        /// Determines wheter the Config section identified by the sectionName exists.
+        /// Determines whether the Config section identified by the sectionName exists.
         /// </summary>
         public static bool ConfigSectionExists(string sectionName)
         {

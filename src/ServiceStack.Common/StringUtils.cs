@@ -6,11 +6,24 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
-using ServiceStack.Templates;
+using ServiceStack.Extensions;
+using ServiceStack.Script;
 using ServiceStack.Text;
 
 namespace ServiceStack
 {
+    public class TextNode
+    {
+        public TextNode()
+        {
+            Children = new List<TextNode>();
+        }
+
+        public string Text { get; set; }
+
+        public List<TextNode> Children { get; set; }
+    }
+
     public static class StringUtils
     {
         public static List<Command> ParseCommands(this string commandsString)
@@ -19,9 +32,7 @@ namespace ServiceStack
         }
         
         public static List<Command> ParseCommands(this ReadOnlyMemory<char> commandsString, 
-            char separator = ',',
-            Func<ReadOnlyMemory<char>, int, int?> atEndIndex = null, 
-            bool allowWhitespaceSensitiveSyntax = false)
+            char separator = ',')
         {
             var to = new List<Command>();
             List<ReadOnlyMemory<char>> args = null;
@@ -38,6 +49,7 @@ namespace ServiceStack
 
             var endBlockPos = commandsString.Length;
             var cmd = new Command();
+            var segmentStartPos = 0;
 
             try
             {
@@ -87,43 +99,6 @@ namespace ServiceStack
                             continue;
                     }
 
-                    if (c.IsOperatorChar() && // don't take precedence over '|' seperator 
-                        (c != separator || (i + 1 < commandsString.Length && commandsString.Span[i + 1].IsOperatorChar())))
-                    {
-                        cmd.Name = commandsString.Slice(0, i).TrimEnd().ToString();
-                        pos = i;
-                        if (!string.IsNullOrEmpty(cmd.Name))
-                            to.Add(cmd);
-                        return to;
-                    }
-
-                    if (allowWhitespaceSensitiveSyntax && c == ':')
-                    {
-                        // replace everything after ':' up till new line and rewrite as single string to method
-                        var endStringPos = commandsString.IndexOf("\n", i);
-                        var endStatementPos = commandsString.IndexOf("}}", i);
-
-                        if (endStringPos == -1 || (endStatementPos != -1 && endStatementPos < endStringPos))
-                            endStringPos = endStatementPos;
-                        
-                        if (endStringPos == -1)
-                            throw new NotSupportedException($"Whitespace sensitive syntax did not find a '\\n' new line to mark the end of the statement, near '{commandsString.SubstringWithEllipsis(i,50)}'");
-
-                        cmd.Name = commandsString.Slice(pos, i - pos).Trim().ToString();
-                        
-                        var originalArgs = commandsString.Slice(i + 1, endStringPos - i - 1).ToString();
-                        var rewrittenArgs = "′" + originalArgs.Trim().Replace("{", "{{").Replace("}", "}}").Replace("′", "\\′") + "′)";
-                        ParseArguments(rewrittenArgs.AsMemory(), out args);
-                        cmd.Args = args;
-                        
-                        i = endStringPos == endStatementPos 
-                            ? endStatementPos - 2  //move cursor back before var block terminator 
-                            : endStringPos;
-
-                        pos = i + 1;
-                        continue;
-                    }
-
                     if (c == '(')
                     {
                         inBrackets = true;
@@ -158,17 +133,14 @@ namespace ServiceStack
                     {
                         if (string.IsNullOrEmpty(cmd.Name))
                             cmd.Name = commandsString.Slice(pos, i - pos).Trim().ToString();
+                        else
+                            cmd.Suffix = commandsString.Slice(pos - cmd.Suffix.Length, i - pos + cmd.Suffix.Length);
+
+                        cmd.Original = commandsString.Slice(segmentStartPos, i - segmentStartPos).Trim();
 
                         to.Add(cmd);
                         cmd = new Command();
-                        pos = i + 1;
-                    }
-                    
-                    var atEndIndexPos = atEndIndex?.Invoke(commandsString, i);
-                    if (atEndIndexPos != null)
-                    {
-                        endBlockPos = atEndIndexPos.Value;
-                        break;
+                        segmentStartPos = pos = i + 1;
                     }
                 }
 
@@ -180,7 +152,10 @@ namespace ServiceStack
                 }
 
                 if (!cmd.Name.IsNullOrEmpty())
+                {
+                    cmd.Original = commandsString.Slice(segmentStartPos, commandsString.Length - segmentStartPos).Trim();
                     to.Add(cmd);
+                }
             }
             catch (Exception e)
             {
@@ -424,7 +399,7 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Protect against XSS by cleaning non-standared User Input
+        /// Protect against XSS by cleaning non-standard User Input
         /// </summary>
         public static string SafeInput(this string text)
         {
@@ -539,6 +514,117 @@ namespace ServiceStack
             return Convert.ToString(Convert.ToChar(codePoint), CultureInfo.InvariantCulture);
         }
 
+        public static List<string> SplitGenericArgs(string argList)
+        {
+            var to = new List<string>();
+            if (string.IsNullOrEmpty(argList))
+                return to;
+
+            var lastPos = 0;
+            var blockCount = 0;
+            for (var i = 0; i < argList.Length; i++)
+            {
+                var argChar = argList[i];
+                switch (argChar)
+                {
+                    case ',':
+                        if (blockCount == 0)
+                        {
+                            var arg = argList.Substring(lastPos, i - lastPos);
+                            to.Add(arg);
+                            lastPos = i + 1;
+                        }
+                        break;
+                    case '<':
+                        blockCount++;
+                        break;
+                    case '>':
+                        blockCount--;
+                        break;
+                }
+            }
+
+            if (lastPos > 0)
+            {
+                var arg = argList.Substring(lastPos);
+                to.Add(arg);
+            }
+            else
+            {
+                to.Add(argList);
+            }
+
+            return to;
+        }
+
+        static char[] blockChars = new[] { '<', '>' };
+        public static TextNode ParseTypeIntoNodes(this string typeDef)
+        {
+            if (string.IsNullOrEmpty(typeDef))
+                return null;
+
+            var node = new TextNode();
+            var lastBlockPos = typeDef.IndexOf('<');
+
+            if (lastBlockPos >= 0)
+            {
+                node.Text = typeDef.Substring(0, lastBlockPos).Trim();
+
+                var blockStartingPos = new Stack<int>();
+                blockStartingPos.Push(lastBlockPos);
+
+                while (lastBlockPos != -1 || blockStartingPos.Count == 0)
+                {
+                    var nextPos = typeDef.IndexOfAny(blockChars, lastBlockPos + 1);
+                    if (nextPos == -1)
+                        break;
+
+                    var blockChar = typeDef.Substring(nextPos, 1);
+
+                    if (blockChar == "<")
+                    {
+                        blockStartingPos.Push(nextPos);
+                    }
+                    else
+                    {
+                        var startPos = blockStartingPos.Pop();
+                        if (blockStartingPos.Count == 0)
+                        {
+                            var endPos = nextPos;
+                            var childBlock = typeDef.Substring(startPos + 1, endPos - startPos - 1);
+
+                            var args = SplitGenericArgs(childBlock);
+                            foreach (var arg in args)
+                            {
+                                if (arg.IndexOfAny(blockChars) >= 0)
+                                {
+                                    var childNode = ParseTypeIntoNodes(arg);
+                                    if (childNode != null)
+                                    {
+                                        node.Children.Add(childNode);
+                                    }
+                                }
+                                else
+                                {
+                                    node.Children.Add(new TextNode { Text = arg.Trim() });
+                                }
+                            }
+
+                        }
+                    }
+
+                    lastBlockPos = nextPos;
+                }
+            }
+            else
+            {
+                node.Text = typeDef.Trim();
+            }
+
+            return node;
+        }
+        
+        
         // http://www.w3.org/TR/html5/entities.json
         // TODO: conditional compilation for NET45 that uses ReadOnlyDictionary
         public static readonly IDictionary<string, string> HtmlCharacterCodes = new SortedDictionary<string, string> {

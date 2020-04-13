@@ -155,7 +155,8 @@ namespace ServiceStack.Serialization
                     }
 
                     var ignoredProperty = propertyName.ToLowerInvariant();
-                    if (ignoredWarningsOnPropertyNames != null && !ignoredWarningsOnPropertyNames.Contains(ignoredProperty))
+                    if (ignoredWarningsOnPropertyNames != null && !ignoredWarningsOnPropertyNames.Contains(ignoredProperty)
+                        && !type.HasAttributeCached<FallbackRouteAttribute>())
                     {
                         Log.WarnFormat("Property '{0}' does not exist on type '{1}'", ignoredProperty, type.FullName);
                     }

@@ -16,11 +16,11 @@ namespace ServiceStack
         public static string WebHostPhysicalPath;
         public static string DefaultRootFileName;
 
-        private static IHttpHandler DefaultHttpHandler;
-        private static RedirectHttpHandler NonRootModeDefaultHttpHandler;
-        private static IHttpHandler ForbiddenHttpHandler;
-        private static IHttpHandler NotFoundHttpHandler;
-        private static readonly IHttpHandler StaticFilesHandler = new StaticFileHandler();
+        public static IHttpHandler DefaultHttpHandler;
+        public static RedirectHttpHandler NonRootModeDefaultHttpHandler;
+        public static IHttpHandler ForbiddenHttpHandler;
+        public static IHttpHandler NotFoundHttpHandler;
+        public static IHttpHandler StaticFilesHandler = new StaticFileHandler();
 
         [ThreadStatic]
         public static string DebugLastHandlerArgs;
@@ -42,7 +42,7 @@ namespace ServiceStack
                 var config = appHost.Config;
 
                 var isAspNetHost = HostContext.IsAspNetHost;
-                WebHostPhysicalPath = appHost.VirtualFileSources.RootDirectory.RealPath;
+                WebHostPhysicalPath = appHost.RootDirectory.RealPath;
 
                 //Apache+mod_mono treats path="servicestack*" as path="*" so takes over root path, so we need to serve matching resources
                 var hostedAtRootPath = config.HandlerFactoryPath == null;
@@ -84,8 +84,8 @@ namespace ServiceStack
                 if (DefaultHttpHandler == null)
                     DefaultHttpHandler = NotFoundHttpHandler;
 
-                var debugDefaultHandler = DefaultHttpHandler is RedirectHttpHandler defaultRedirectHanlder
-                    ? defaultRedirectHanlder.RelativeUrl
+                var debugDefaultHandler = DefaultHttpHandler is RedirectHttpHandler defaultRedirectHandler
+                    ? defaultRedirectHandler.RelativeUrl
                     : typeof(DefaultHttpHandler).GetOperationName();
 
                 ForbiddenHttpHandler = appHost.GetCustomErrorHttpHandler(HttpStatusCode.Forbidden);
@@ -136,7 +136,7 @@ namespace ServiceStack
 
             var pathInfo = httpReq.PathInfo;
 
-            //WebDev Server auto requests '/default.aspx' so recorrect path to different default document
+            //WebDev Server auto requests '/default.aspx' so re-correct path to different default document
             var mode = appHost.Config.HandlerFactoryPath;
             if (mode == null && (url == "/default.aspx" || url == "/Default.aspx"))
                 pathInfo = "/";
@@ -144,16 +144,20 @@ namespace ServiceStack
             //Default Request /
             if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
             {
-                //e.g. to Process View Engiine requests
-                var catchAllHandler = GetCatchAllHandlerIfAny(appHost, httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
-                if (catchAllHandler != null) return catchAllHandler;
+                RestPath matchesFallback = appHost.Config.FallbackRestPath?.Invoke(httpReq);
+                if (matchesFallback == null || matchesFallback.Priority > 0 || 
+                    (matchesFallback.MatchRule == null && !(matchesFallback.Priority < 0))) // is not targeted fallback
+                {
+                    //e.g. to Process View Engine requests
+                    var catchAllHandler = GetCatchAllHandlerIfAny(appHost, httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
+                    if (catchAllHandler != null) return catchAllHandler;
+                }
 
                 //If the fallback route can handle it, let it
-                var restPath = appHost.Config.FallbackRestPath?.Invoke(httpReq);
-                if (restPath != null)
+                if (matchesFallback != null)
                 {
                     var sanitizedPath = RestHandler.GetSanitizedPathInfo(pathInfo, out var contentType);
-                    return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType };
+                    return new RestHandler { RestPath = matchesFallback, RequestName = matchesFallback.RequestType.GetOperationName(), ResponseContentType = contentType };
                 }
 
                 if (mode == null)
@@ -188,16 +192,20 @@ namespace ServiceStack
             //Default Request /
             if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
             {
-                //e.g. to Process View Engiine requests
-                var catchAllHandler = GetCatchAllHandlerIfAny(appHost, httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
-                if (catchAllHandler != null) return catchAllHandler;
+                RestPath matchesFallback = appHost.Config.FallbackRestPath?.Invoke(httpReq);
+                if (matchesFallback == null || matchesFallback.Priority > 0 || 
+                    (matchesFallback.MatchRule == null && !(matchesFallback.Priority < 0))) // is not targeted fallback
+                {
+                    //e.g. to Process View Engine requests
+                    var catchAllHandler = GetCatchAllHandlerIfAny(appHost, httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
+                    if (catchAllHandler != null) return catchAllHandler;
+                }
 
                 //If the fallback route can handle it, let it
-                RestPath restPath = appHost.Config.FallbackRestPath?.Invoke(httpReq);
-                if (restPath != null)
+                if (matchesFallback != null)
                 {
                     var sanitizedPath = RestHandler.GetSanitizedPathInfo(pathInfo, out var contentType);
-                    return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType };
+                    return new RestHandler { RestPath = matchesFallback, RequestName = matchesFallback.RequestType.GetOperationName(), ResponseContentType = contentType };
                 }
 
                 if (mode == null)
@@ -214,7 +222,7 @@ namespace ServiceStack
         }
 
         // no handler registered 
-        // serve the file from the filesystem, restricting to a safelist of extensions
+        // serve the file from the filesystem, restricting to a safe-list of extensions
         public static bool ShouldAllow(string pathInfo)
         {
             if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
@@ -251,8 +259,8 @@ namespace ServiceStack
             var pathInfo = httpReq.PathInfo;
             var httpMethod = httpReq.Verb;
             
-            var pathParts = pathInfo.TrimStart('/').Split('/');
-            if (pathParts.Length == 0) return NotFoundHttpHandler;
+            if (pathInfo.AsSpan().TrimStart('/').Length == 0) 
+                return NotFoundHttpHandler;
 
             var restPath = RestHandler.FindMatchingRestPath(httpReq, out var contentType);
             if (restPath != null)
@@ -282,13 +290,7 @@ namespace ServiceStack
                     : ForbiddenHttpHandler;
             }
 
-            if (appHost.Config.FallbackRestPath != null)
-            {
-                restPath = appHost.Config.FallbackRestPath(httpReq);
-                if (restPath != null)
-                    return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType };
-            }
-            
+            // Check for PagedBasedRouting before wildcard Fallback Service
             foreach (var httpHandlerResolver in appHost.FallbackHandlersArray)
             {
                 var httpHandler = httpHandlerResolver(httpMethod, pathInfo, filePath);
@@ -296,6 +298,13 @@ namespace ServiceStack
                     return httpHandler;
             }
 
+            if (appHost.Config.FallbackRestPath != null)
+            {
+                restPath = appHost.Config.FallbackRestPath(httpReq);
+                if (restPath != null)
+                    return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType };
+            }
+            
             return null;
         }
 

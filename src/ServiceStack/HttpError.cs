@@ -6,7 +6,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class HttpError : Exception, IHttpError, IResponseStatusConvertible, IHasErrorCode
+    public class HttpError : Exception, IHttpError, IResponseStatusConvertible, IHasErrorCode, IHasResponseStatus
     {
         public HttpError() : this(null) { }
 
@@ -48,8 +48,7 @@ namespace ServiceStack
             this.ErrorCode = errorCode ?? statusCode.ToString();
             this.Status = statusCode;
             this.Headers = new Dictionary<string, string>();
-            var hasStatusDesc = innerException as IHasStatusDescription;
-            this.StatusDescription = hasStatusDesc != null 
+            this.StatusDescription = innerException is IHasStatusDescription hasStatusDesc 
                 ? hasStatusDesc.StatusDescription 
                 : errorCode;
             this.Headers = new Dictionary<string, string>();
@@ -101,7 +100,12 @@ namespace ServiceStack
 
         public IDictionary<string, string> Options => this.Headers;
 
-        public ResponseStatus ResponseStatus => this.Response.GetResponseStatus();
+        private ResponseStatus responseStatus;
+        public ResponseStatus ResponseStatus
+        {
+            get => responseStatus ?? this.Response.GetResponseStatus();
+            set => responseStatus = value;
+        }
 
         public List<ResponseError> GetFieldErrors()
         {
@@ -135,6 +139,11 @@ namespace ServiceStack
         public static Exception MethodNotAllowed(string message)
         {
             return new HttpError(HttpStatusCode.MethodNotAllowed, message);
+        }
+
+        public static Exception BadRequest(string message)
+        {
+            return new HttpError(HttpStatusCode.BadRequest, message);
         }
 
         public ResponseStatus ToResponseStatus()

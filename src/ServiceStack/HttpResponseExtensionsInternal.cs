@@ -26,12 +26,14 @@ namespace ServiceStack
         {
             if (HostContext.Config.AllowPartialResponses && result is IPartialWriter partialResult && partialResult.IsPartialRequest)
             {
+                response.AllowSyncIO();
                 partialResult.WritePartialTo(response);
                 return true;
             }
 
             if (result is IStreamWriter streamWriter)
             {
+                response.AllowSyncIO();
                 if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
                 streamWriter.WriteTo(response.OutputStream);
                 if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
@@ -76,7 +78,6 @@ namespace ServiceStack
                           (bodySuffix?.Length).GetValueOrDefault();
 
                 response.SetContentLength(len);
-                response.ContentType = MimeTypes.Binary;
 
                 if (bodyPrefix != null) await response.OutputStream.WriteAsync(bodyPrefix, token);
                 await response.OutputStream.WriteAsync(bytes, token);
@@ -133,7 +134,7 @@ namespace ServiceStack
         /// Response headers are customizable by implementing IHasOptions an returning Dictionary of Http headers.
         /// </summary>
         /// <param name="response">The response.</param>
-        /// <param name="result">Whether or not it was implicity handled by ServiceStack's built-in handlers.</param>
+        /// <param name="result">Whether or not it was implicitly handled by ServiceStack's built-in handlers.</param>
         /// <param name="defaultAction">The default action.</param>
         /// <param name="request">The serialization context.</param>
         /// <param name="bodyPrefix">Add prefix to response body if any</param>
@@ -145,6 +146,7 @@ namespace ServiceStack
             {
                 var defaultContentType = request.ResponseContentType;
                 var disposableResult = result as IDisposable; 
+                bool flushAsync = false;
 
                 try
                 {
@@ -157,6 +159,13 @@ namespace ServiceStack
                     ApplyGlobalResponseHeaders(response);
 
                     IDisposable resultScope = null;
+
+
+                    if (result is Exception)
+                    {
+                        if (response.Request.Items.TryGetValue(Keywords.ErrorView, out var oErrorView))
+                            response.Request.Items[Keywords.View] = oErrorView;
+                    }
 
                     var httpResult = result as IHttpResult;
                     if (httpResult != null)
@@ -176,7 +185,7 @@ namespace ServiceStack
                         if (httpResult is IHttpError httpError)
                         {
                             response.Dto = httpError.CreateErrorResponse();
-                            if (await response.HandleCustomErrorHandler(request, defaultContentType, httpError.Status, response.Dto))
+                            if (await response.HandleCustomErrorHandler(request, defaultContentType, httpError.Status, response.Dto, httpError as Exception))
                             {
                                 return true;
                             }
@@ -209,6 +218,7 @@ namespace ServiceStack
                         response.Dto = result;
                     }
 
+                    var config = HostContext.Config;
                     if (!response.HasStarted)
                     {
                         /* Mono Error: Exception: Method not found: 'System.Web.HttpResponse.get_Headers' */
@@ -243,21 +253,24 @@ namespace ServiceStack
                         //Do not override if another has been set
                         if (response.ContentType == null || response.ContentType == MimeTypes.Html)
                         {
-                            response.ContentType = defaultContentType;
+                            response.ContentType = defaultContentType == (config.DefaultContentType ?? MimeTypes.Html) && result is byte[]
+                                ? MimeTypes.Binary
+                                : defaultContentType;
                         }
                         if (bodyPrefix != null && response.ContentType.IndexOf(MimeTypes.Json, StringComparison.OrdinalIgnoreCase) >= 0)
                         {
                             response.ContentType = MimeTypes.JavaScript;
                         }
 
-                        if (HostContext.Config.AppendUtf8CharsetOnContentTypes.Contains(response.ContentType))
+                        if (config.AppendUtf8CharsetOnContentTypes.Contains(response.ContentType))
                         {
                             response.ContentType += ContentFormat.Utf8Suffix;
                         }
                     }
 
+                    var jsconfig = config.AllowJsConfig ? request.QueryString[Keywords.JsConfig] : null;
                     using (resultScope)
-                    using (HostContext.Config.AllowJsConfig ? JsConfig.CreateScope(request.QueryString[Keywords.JsConfig]) : null)
+                    using (jsconfig != null ? JsConfig.CreateScope(jsconfig) : null)
                     {
                         if (WriteToOutputStream(response, result, bodyPrefix, bodySuffix))
                         {
@@ -265,9 +278,15 @@ namespace ServiceStack
                             return true;
                         }
 
+#if NET45
+                        //JsConfigScope uses ThreadStatic in .NET v4.5 so avoid async thread hops by writing sync to MemoryStream
+                        if (resultScope != null || jsconfig != null)
+                            response.UseBufferedStream = true;
+#endif
+
                         if (await WriteToOutputStreamAsync(response, result, bodyPrefix, bodySuffix, token))
                         {
-                            await response.FlushAsync(token);
+                            flushAsync = true;
                             return true;
                         }
 
@@ -333,6 +352,14 @@ namespace ServiceStack
                 }
                 finally
                 {
+                    if (flushAsync) // move async Thread Hop to outside JsConfigScope so .NET v4.5 disposes same scope
+                    {
+                        try
+                        {
+                            await response.FlushAsync(token);
+                        }
+                        catch(Exception flushEx) { Log.Error("response.FlushAsync()", flushEx); }
+                    }
                     disposableResult?.Dispose();
                     await response.EndRequestAsync(skipHeaders: true);
                 }
@@ -341,7 +368,7 @@ namespace ServiceStack
 
         internal static async Task HandleResponseWriteException(this Exception originalEx, IRequest request, IResponse response, string defaultContentType)
         {
-            await HostContext.RaiseAndHandleUncaughtException(request, response, request.OperationName, originalEx);
+            await HostContext.RaiseAndHandleException(request, response, request.OperationName, originalEx);
 
             if (!HostContext.Config.WriteErrorsToResponse)
                 throw originalEx;
@@ -423,6 +450,7 @@ namespace ServiceStack
         {
             var req = httpRes.Request;
             var errorDto = ex.ToErrorResponse();
+            httpRes.Dto = errorDto;
             HostContext.AppHost.OnExceptionTypeFilter(ex, errorDto.ResponseStatus);
             var serializer = HostContext.ContentTypes.GetStreamSerializerAsync(MimeTypes.Html);
             serializer?.Invoke(req, errorDto, httpRes.OutputStream);
@@ -437,26 +465,27 @@ namespace ServiceStack
                 ex = new Exception(errorMessage);
 
             var errorDto = ex.ToErrorResponse();
+            httpRes.Dto = errorDto;
             HostContext.AppHost.OnExceptionTypeFilter(ex, errorDto.ResponseStatus);
 
-            if (await HandleCustomErrorHandler(httpRes, httpReq, contentType, statusCode, errorDto))
+            if (await HandleCustomErrorHandler(httpRes, httpReq, contentType, statusCode, errorDto, ex))
                 return;
-
-            if ((httpRes.ContentType == null || httpRes.ContentType == MimeTypes.Html) 
-                && contentType != null && contentType != httpRes.ContentType)
-            {
-                httpRes.ContentType = contentType;
-            }
-            if (HostContext.Config.AppendUtf8CharsetOnContentTypes.Contains(contentType))
-            {
-                httpRes.ContentType += ContentFormat.Utf8Suffix;
-            }
-
-            var hold = httpRes.StatusDescription;
-            var hasDefaultStatusDescription = hold == null || hold == "OK";
 
             if (!httpRes.HasStarted)
             {
+                if ((httpRes.ContentType == null || httpRes.ContentType == MimeTypes.Html) 
+                    && contentType != null && contentType != httpRes.ContentType)
+                {
+                    httpRes.ContentType = contentType;
+                }
+                if (HostContext.Config.AppendUtf8CharsetOnContentTypes.Contains(contentType))
+                {
+                    httpRes.ContentType += ContentFormat.Utf8Suffix;
+                }
+
+                var hold = httpRes.StatusDescription;
+                var hasDefaultStatusDescription = hold == null || hold == "OK";
+
                 httpRes.StatusCode = statusCode;
 
                 httpRes.StatusDescription = hasDefaultStatusDescription
@@ -474,16 +503,20 @@ namespace ServiceStack
         }
 
         private static async Task<bool> HandleCustomErrorHandler(this IResponse httpRes, IRequest httpReq,
-            string contentType, int statusCode, object errorDto)
+            string contentType, int statusCode, object errorDto, Exception ex)
         {
-            if (httpReq != null && MimeTypes.Html.MatchesContentType(contentType))
+            if (httpReq != null && MimeTypes.Html.MatchesContentType(contentType) && httpReq.GetView() == null)
             {
                 var errorHandler = HostContext.AppHost.GetCustomErrorHandler(statusCode)
                     ?? HostContext.AppHost.GlobalHtmlErrorHttpHandler;
                 if (errorHandler != null)
                 {
-                    httpReq.Items["Model"] = errorDto;
-                    httpReq.Items[HtmlFormat.ErrorStatusKey] = errorDto.GetResponseStatus();
+                    httpReq.Items[Keywords.Model] = errorDto;
+                    httpReq.Items[Keywords.ErrorStatus] = errorDto.GetResponseStatus();
+                    if (ex != null)
+                    {
+                        httpReq.Items[Keywords.Error] = ex;
+                    }
                     await errorHandler.ProcessRequestAsync(httpReq, httpRes, httpReq.OperationName);
                     return true;
                 }

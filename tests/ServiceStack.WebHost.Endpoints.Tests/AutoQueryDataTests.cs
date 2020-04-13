@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Extensions;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -39,8 +40,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                             };
                             foreach (var cmd in ctx.Commands)
                             {
-                                Func<int, int, int> fn;
-                                if (!supportedFns.TryGetValue(cmd.Name.ToString(), out fn)) continue;
+                                if (!supportedFns.TryGetValue(cmd.Name, out var fn)) continue;
                                 var label = !cmd.Suffix.IsNullOrWhiteSpace() ? cmd.Suffix.Trim().ToString() : cmd.ToString();
                                 ctx.Response.Meta[label] = fn(cmd.Args[0].ParseInt32(), cmd.Args[1].ParseInt32()).ToString();
                                 executedCmds.Add(cmd);
@@ -323,7 +323,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         //Override with custom impl
         public object Any(QueryDataOverridedRockstars dto)
         {
-            var q = AutoQuery.CreateQuery(dto, Request.GetRequestParams(), Request);
+            var q = AutoQuery.CreateQuery(dto, Request);
             q.Take(1);
             return AutoQuery.Execute(dto, q);
         }
@@ -436,7 +436,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .FromJson<QueryResponse<Adhoc>>();
             Assert.That(response.Results.Count, Is.EqualTo(7));
 
-            JsConfig.EmitLowercaseUnderscoreNames = true;
+            JsConfig.Init(new Text.Config { TextCase = TextCase.SnakeCase });
             response = Config.ListeningOn.CombineWith("adhocdata")
                 .AddQueryParam("last_name", "Hendrix")
                 .GetJsonFromUrl()

@@ -20,6 +20,7 @@ namespace ServiceStack.Common.Tests.OAuth
         public override IUserAuthRepository CreateAuthRepo()
         {
             var inMemoryRepo = new InMemoryAuthRepository();
+            inMemoryRepo.Clear();
             InitTest(inMemoryRepo);
             return inMemoryRepo;
         }
@@ -30,7 +31,9 @@ namespace ServiceStack.Common.Tests.OAuth
         public override IUserAuthRepository CreateAuthRepo()
         {
             var appSettings = new AppSettings();
-            var redisRepo = new RedisAuthRepository(new BasicRedisClientManager(new string[] { appSettings.GetString("Redis.Host") ?? "localhost" }));
+            var redisRepo = new RedisAuthRepository(
+                new BasicRedisClientManager(appSettings.GetString("Redis.Host") ?? "localhost"));
+            redisRepo.Clear();
             InitTest(redisRepo);
             return redisRepo;
         }
@@ -41,9 +44,10 @@ namespace ServiceStack.Common.Tests.OAuth
     {
         public override IUserAuthRepository CreateAuthRepo()
         {
-            var db = new PocoDynamo(DynamoConfig.CreateDynamoDBClient());
+            var db = new PocoDynamo(TestsConfig.CreateDynamoDBClient());
             db.DeleteAllTables();
             var dynamoDbRepo = new DynamoDbAuthRepository(db);
+            dynamoDbRepo.Clear();
             InitTest(dynamoDbRepo);
             dynamoDbRepo.InitSchema();
             return dynamoDbRepo;
@@ -54,9 +58,11 @@ namespace ServiceStack.Common.Tests.OAuth
     {
         public override IUserAuthRepository CreateAuthRepo()
         {
-            var connStr = @"Server=localhost;Database=test;User Id=test;Password=test;";
-            var sqlServerFactory = new OrmLiteConnectionFactory(connStr, SqlServerDialect.Provider);
+            var sqlServerFactory = new OrmLiteConnectionFactory(
+                TestsConfig.SqlServerConnString, 
+                SqlServerDialect.Provider);
             var sqlServerRepo = new OrmLiteAuthRepository(sqlServerFactory);
+            try { sqlServerRepo.Clear(); } catch {}
             sqlServerRepo.InitSchema();
             InitTest(sqlServerRepo);
             return sqlServerRepo;
@@ -83,12 +89,14 @@ namespace ServiceStack.Common.Tests.OAuth
         [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
+            RegisterService.AllowUpdates = true;
             appHost = new BasicAppHost().Init();
         }
 
         [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
+            RegisterService.AllowUpdates = false;
             appHost.Dispose();
         }
 
@@ -230,8 +238,7 @@ namespace ServiceStack.Common.Tests.OAuth
 
             var responseObj = registrationService.Post(RegisterDto);
 
-            var httpResult = responseObj as IHttpResult;
-            if (httpResult != null)
+            if (responseObj is IHttpResult httpResult)
             {
                 Assert.Fail("HttpResult found: " + httpResult.Dump());
             }
@@ -279,8 +286,7 @@ namespace ServiceStack.Common.Tests.OAuth
 
             var responseObj = registrationService.Post(RegisterDto);
 
-            var httpResult = responseObj as IHttpResult;
-            if (httpResult != null)
+            if (responseObj is IHttpResult httpResult)
             {
                 Assert.Fail("HttpResult found: " + httpResult.Dump());
             }

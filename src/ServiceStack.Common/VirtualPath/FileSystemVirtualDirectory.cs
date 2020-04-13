@@ -91,10 +91,29 @@ namespace ServiceStack.VirtualPath
         { 
             try
             {
-                var matchingFilesInBackingDir = EnumerateFiles(globPattern)
-                    .Select(fInfo => (IVirtualFile)new FileSystemVirtualFile(VirtualPathProvider, this, fInfo));
+                if (globPattern.IndexOf('/') >= 0)
+                {
+                    var dirPath = globPattern.LastLeftPart("/");
+                    var fileNameSearch = globPattern.LastRightPart("/");
+                    var dir = GetDirectory(dirPath);
 
-                return matchingFilesInBackingDir;
+                    if (dir != null)
+                    {
+                        var matchingFilesInBackingDir = ((FileSystemVirtualDirectory)dir).EnumerateFiles(fileNameSearch)
+                            .Select(fInfo => (IVirtualFile)new FileSystemVirtualFile(VirtualPathProvider, dir, fInfo));
+
+                        return matchingFilesInBackingDir;
+                    }
+                    
+                    return TypeConstants<IVirtualFile>.EmptyArray;
+                }
+                else
+                {
+                    var matchingFilesInBackingDir = EnumerateFiles(globPattern)
+                        .Select(fInfo => (IVirtualFile)new FileSystemVirtualFile(VirtualPathProvider, this, fInfo));
+
+                    return matchingFilesInBackingDir;
+                }
             }
             catch (Exception ex)
             {

@@ -15,7 +15,7 @@ namespace ServiceStack.Testing
 #if !NETSTANDARD2_0
                        Assembly.GetExecutingAssembly()
 #else
-                       typeof(BasicAppHost).GetTypeInfo().Assembly
+                       typeof(BasicAppHost).Assembly
 #endif
                    })
         {

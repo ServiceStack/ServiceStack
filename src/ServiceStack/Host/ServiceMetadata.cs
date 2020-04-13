@@ -127,12 +127,12 @@ namespace ServiceStack.Host
                 .ToList();
         }
 
-        public Operation GetOperation(Type operationType)
+        public Operation GetOperation(Type requestType)
         {
-            if (operationType == null)
+            if (requestType == null)
                 return null;
 
-            OperationsMap.TryGetValue(operationType, out var op);
+            OperationsMap.TryGetValue(requestType, out var op);
             return op;
         }
 
@@ -398,7 +398,7 @@ namespace ServiceStack.Host
             return requestDto;
         }
 
-        private void AddReferencedTypes(HashSet<Type> to, Type type)
+        public static void AddReferencedTypes(HashSet<Type> to, Type type)
         {
             if (type == null || to.Contains(type) || !IsDtoType(type))
                 return;
@@ -447,7 +447,7 @@ namespace ServiceStack.Host
             }
         }
 
-        private bool IsDtoType(Type type) => type != null &&
+        private static bool IsDtoType(Type type) => type != null &&
              type.Namespace?.StartsWith("System") == false &&
              type.IsClass && type != typeof(string) &&
              !type.IsGenericType &&

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -24,8 +25,8 @@ using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.MiniProfiler;
 using ServiceStack.MiniProfiler.Data;
+using ServiceStack.NativeTypes;
 using ServiceStack.NativeTypes.CSharp;
-using ServiceStack.OrmLite;
 using ServiceStack.ProtoBuf;
 using ServiceStack.Razor;
 using ServiceStack.Text;
@@ -51,23 +52,10 @@ namespace CheckWeb
         {
 //            EnableBuffering();
 
-            CSharpGenerator.PreTypeFilter = (sb, type) => 
-            {
-                if (!type.IsEnum.GetValueOrDefault() && !type.IsInterface.GetValueOrDefault())
-                {
-                    sb.AppendLine("[Serializable]");
-                }
-            };
-            
             this.CustomErrorHttpHandlers[HttpStatusCode.NotFound] = new RazorHandler("/Views/TestErrorNotFound");
-
-            var nativeTypes = this.GetPlugin<NativeTypesFeature>();
-            nativeTypes.MetadataTypesConfig.ExportTypes.Add(typeof(DayOfWeek));
-            nativeTypes.MetadataTypesConfig.IgnoreTypes.Add(typeof(IgnoreInMetadataConfig));
-            //nativeTypes.MetadataTypesConfig.GlobalNamespace = "Check.ServiceInterface";
-
+            
             // Change ServiceStack configuration
-            this.SetConfig(new HostConfig
+            SetConfig(new HostConfig
             {
                 DebugMode = true,
                 //UseHttpsLinks = true,
@@ -89,10 +77,10 @@ namespace CheckWeb
             container.Register<IServiceClient>(c =>
                 new JsonServiceClient("http://localhost:55799/"));
 
-            Plugins.Add(new TemplatePagesFeature
+            Plugins.Add(new SharpPagesFeature
             {
                 MetadataDebugAdminRole = RoleNames.AllowAnyUser, 
-                TemplatesAdminRole = RoleNames.AllowAnon,
+                ScriptAdminRole = RoleNames.AllowAnon,
             });
 
             //ProxyFetureTests
@@ -109,7 +97,7 @@ namespace CheckWeb
             Plugins.Add(new AutoQueryDataFeature()
                 .AddDataSource(ctx => ctx.MemorySource(GetRockstars())));
 
-            Plugins.Add(new AdminFeature());
+            //Plugins.Add(new AdminFeature());
 
             Plugins.Add(new PostmanFeature());
             Plugins.Add(new CorsFeature(
@@ -136,56 +124,70 @@ namespace CheckWeb
 
             Plugins.Add(new DynamicallyRegisteredPlugin());
 
-            container.Register<IDbConnectionFactory>(
-                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
-            //container.Register<IDbConnectionFactory>(
-            //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=test;", SqlServerDialect.Provider));
+            var feature = GetPlugin<NativeTypesFeature>();
+            feature.ExportAttribute<DisplayAttribute>(x => {
+                var attr = (DisplayAttribute) x;
+                var metadata = feature.GetGenerator().ToMetadataAttribute(x);
+                if (!attr.AutoGenerateField)
+                    metadata.Args.Add(new MetadataPropertyType {
+                        Name = nameof(DisplayAttribute.AutoGenerateField),
+                        Type = nameof(Boolean),
+                        Value = "false",
+                    });
+                return metadata;
+            });
 
-            using (var db = container.Resolve<IDbConnectionFactory>().Open())
-            {
-                db.DropAndCreateTable<Rockstar>();
-                db.InsertAll(GetRockstars());
-
-                db.DropAndCreateTable<AllTypes>();
-                db.Insert(new AllTypes
-                {
-                    Id = 1,
-                    Int = 2,
-                    Long = 3,
-                    Float = 1.1f,
-                    Double = 2.2,
-                    Decimal = 3.3m,
-                    DateTime = DateTime.Now,
-                    Guid = Guid.NewGuid(),
-                    TimeSpan = TimeSpan.FromMilliseconds(1),
-                    String = "String"
-                });
-            }
-
-            Plugins.Add(new MiniProfilerFeature());
-
-            var dbFactory = (OrmLiteConnectionFactory)container.Resolve<IDbConnectionFactory>();
-            dbFactory.RegisterConnection("SqlServer",
-                new OrmLiteConnectionFactory(
-                    "Server=localhost;Database=test;User Id=test;Password=test;",
-                    SqlServerDialect.Provider)
-                {
-                    ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
-                });
-
-            dbFactory.RegisterConnection("pgsql",
-                new OrmLiteConnectionFactory(
-                    "Server=localhost;Port=5432;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200",
-                    PostgreSqlDialect.Provider));
-
-            using (var db = dbFactory.OpenDbConnection("pgsql"))
-            {
-                db.DropAndCreateTable<Rockstar>();
-                db.DropAndCreateTable<PgRockstar>();
-
-                db.Insert(new Rockstar { Id = 1, FirstName = "PostgreSQL", LastName = "Connection", Age = 1 });
-                db.Insert(new PgRockstar { Id = 1, FirstName = "PostgreSQL", LastName = "Named Connection", Age = 1 });
-            }
+//            container.Register<IDbConnectionFactory>(
+//                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
+//            //container.Register<IDbConnectionFactory>(
+//            //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=test;", SqlServerDialect.Provider));
+//
+//            using (var db = container.Resolve<IDbConnectionFactory>().Open())
+//            {
+//                db.DropAndCreateTable<Rockstar>();
+//                db.InsertAll(GetRockstars());
+//
+//                db.DropAndCreateTable<AllTypes>();
+//                db.Insert(new AllTypes
+//                {
+//                    Id = 1,
+//                    Int = 2,
+//                    Long = 3,
+//                    Float = 1.1f,
+//                    Double = 2.2,
+//                    Decimal = 3.3m,
+//                    DateTime = DateTime.Now,
+//                    Guid = Guid.NewGuid(),
+//                    TimeSpan = TimeSpan.FromMilliseconds(1),
+//                    String = "String"
+//                });
+//            }
+//
+//            Plugins.Add(new MiniProfilerFeature());
+//
+//            var dbFactory = (OrmLiteConnectionFactory)container.Resolve<IDbConnectionFactory>();
+//            dbFactory.RegisterConnection("SqlServer",
+//                new OrmLiteConnectionFactory(
+//                    "Server=localhost;Database=test;User Id=test;Password=test;",
+//                    SqlServerDialect.Provider)
+//                {
+//                    ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
+//                });
+//
+//            dbFactory.RegisterConnection("pgsql",
+//                new OrmLiteConnectionFactory(
+//                    Environment.GetEnvironmentVariable("PGSQL_CONNECTION") ?? 
+//                    "Server=localhost;Port=5432;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200",
+//                    PostgreSqlDialect.Provider));
+//
+//            using (var db = dbFactory.OpenDbConnection("pgsql"))
+//            {
+//                db.DropAndCreateTable<Rockstar>();
+//                db.DropAndCreateTable<PgRockstar>();
+//
+//                db.Insert(new Rockstar { Id = 1, FirstName = "PostgreSQL", LastName = "Connection", Age = 1 });
+//                db.Insert(new PgRockstar { Id = 1, FirstName = "PostgreSQL", LastName = "Named Connection", Age = 1 });
+//            }
 
             //this.GlobalHtmlErrorHttpHandler = new RazorHandler("GlobalErrorHandler.cshtml");
 
@@ -242,15 +244,12 @@ namespace CheckWeb
         /// <param name="container">The container.</param>
         private void ConfigureSerialization(Container container)
         {
-            // Set JSON web services to return idiomatic JSON camelCase properties
-            //JsConfig.EmitCamelCaseNames = true;
-            //JsConfig.EmitLowercaseUnderscoreNames = true;
-
             // Set JSON web services to return ISO8601 date format
-            JsConfig.DateHandler = DateHandler.ISO8601;
-
             // Exclude type info during serialization as an effect of IoC
-            JsConfig.ExcludeTypeInfo = true;
+            JsConfig.Init(new ServiceStack.Text.Config {
+                DateHandler = DateHandler.ISO8601,
+                ExcludeTypeInfo = true,
+            });
         }
 
         /// <summary>
@@ -277,24 +276,24 @@ namespace CheckWeb
                         AuthKey = Convert.FromBase64String("3n/aJNQHPx0cLu/2dN3jWf0GSYL35QlMqgz+LH3hUyA="),
                         RequireSecureConnection = false,
                     },
-                    new ApiKeyAuthProvider(AppSettings),
+//                    new ApiKeyAuthProvider(AppSettings),
                     new BasicAuthProvider(AppSettings),
                 }));
 
             Plugins.Add(new RegistrationFeature());
 
-            var authRepo = new OrmLiteAuthRepository(container.Resolve<IDbConnectionFactory>());
-            container.Register<IAuthRepository>(c => authRepo);
-            authRepo.InitSchema();
-
-            authRepo.CreateUserAuth(new UserAuth
-            {
-                UserName = "test",
-                DisplayName = "Credentials",
-                FirstName = "First",
-                LastName = "Last",
-                FullName = "First Last",
-            }, "test");
+//            var authRepo = new OrmLiteAuthRepository(container.Resolve<IDbConnectionFactory>());
+//            container.Register<IAuthRepository>(c => authRepo);
+//            authRepo.InitSchema();
+//
+//            authRepo.CreateUserAuth(new UserAuth
+//            {
+//                UserName = "test",
+//                DisplayName = "Credentials",
+//                FirstName = "First",
+//                LastName = "Last",
+//                FullName = "First Last",
+//            }, "test");
         }
 
         /// <summary>
@@ -460,7 +459,7 @@ namespace CheckWeb
     {
         public string Result { get; set; }
     }
-
+    
     public class ViewServices : Service
     {
         public object Get(ViewRequest request)
@@ -669,7 +668,15 @@ namespace CheckWeb
     {
         protected void Application_Start(object sender, EventArgs e)
         {
-            new AppHost().Init();
+            try 
+            { 
+                new AppHost().Init();
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception);
+                throw exception;
+            }
         }
 
         protected void Application_BeginRequest(object src, EventArgs e)

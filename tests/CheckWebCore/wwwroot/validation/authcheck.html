@@ -1,0 +1,13 @@
+{{#if isAuthenticated}}
+    Hi {{userSession.DisplayName}}!
+    <p>
+        <a href="/auth/logout?continue=/validation/authcheck">Sign Out</a>.
+    </p>
+    <h3>Secure Pages</h3>
+    <ul>
+        <li><a href="/validation/server/contacts/">/validation/server/contacts/</a></li>
+    </ul>
+{{else}}
+    You're not authenticated, please Sign In:
+    {{ 'signin-links' | partial }}
+{{/if}}

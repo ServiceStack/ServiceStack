@@ -17,24 +17,21 @@
 #endregion
 
 namespace ServiceStack.FluentValidation.Validators {
-	using System;
-	using Attributes;
 	using Internal;
 	using Resources;
-	using Results;
 
 	public class PredicateValidator : PropertyValidator, IPredicateValidator {
         public delegate bool Predicate(object instanceToValidate, object propertyValue, PropertyValidatorContext propertyValidatorContext);
 
-		private readonly Predicate predicate;
+		private readonly Predicate _predicate;
 
 		public PredicateValidator(Predicate predicate) : base(new LanguageStringSource(nameof(PredicateValidator))) {
-			predicate.Guard("A predicate must be specified.");
-			this.predicate = predicate;
+			predicate.Guard("A predicate must be specified.", nameof(predicate));
+			this._predicate = predicate;
 		}
 
 		protected override bool IsValid(PropertyValidatorContext context) {
-			if (!predicate(context.Instance, context.PropertyValue, context)) {
+			if (!_predicate(context.Instance, context.PropertyValue, context)) {
 				return false;
 			}
 

@@ -8,6 +8,10 @@ namespace ServiceStack.NetCore
 {
     public class NetCoreLogFactory : ILogFactory
     {
+        // In test/web watch projects the App can be disposed, disposing the ILoggerFactory 
+        // and invalidating all LogFactory instances so try FallbackLoggerFactory which holds the latest ILoggerFactory 
+        public static ILoggerFactory FallbackLoggerFactory { get; set; }
+
         ILoggerFactory loggerFactory;
         private bool debugEnabled;
 
@@ -19,12 +23,44 @@ namespace ServiceStack.NetCore
 
         public ILog GetLogger(Type type)
         {
-            return new NetCoreLog(loggerFactory.CreateLogger(type), debugEnabled);
+            try
+            {
+                return new NetCoreLog(loggerFactory.CreateLogger(type), debugEnabled);
+            }
+            catch (ObjectDisposedException)
+            {
+                if (FallbackLoggerFactory == null) throw;
+                try
+                {
+                    loggerFactory = FallbackLoggerFactory;
+                    return new NetCoreLog(loggerFactory.CreateLogger(type), debugEnabled);
+                }
+                catch (ObjectDisposedException)
+                {
+                    return new NullDebugLogger(type);
+                }
+            }
         }
 
         public ILog GetLogger(string typeName)
         {
-            return new NetCoreLog(loggerFactory.CreateLogger(typeName), debugEnabled);
+            try
+            {
+                return new NetCoreLog(loggerFactory.CreateLogger(typeName), debugEnabled);
+            }
+            catch (ObjectDisposedException)
+            {
+                if (FallbackLoggerFactory == null) throw;
+                try
+                {
+                    loggerFactory = FallbackLoggerFactory;
+                    return new NetCoreLog(loggerFactory.CreateLogger(typeName), debugEnabled);
+                }
+                catch (ObjectDisposedException)
+                {
+                    return new NullDebugLogger(typeName);
+                }
+            }
         }
     }
 

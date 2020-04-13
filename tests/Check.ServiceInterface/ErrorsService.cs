@@ -47,7 +47,7 @@ namespace Check.ServiceInterface
                 case "ArgumentException":
                     throw new ArgumentException(request.Message ?? "Client Argument Error");
                 case "AuthenticationException":
-                    throw new AuthenticationException(request.Message ?? "We haz issue Authenticatting");
+                    throw new AuthenticationException(request.Message ?? "We haz issue Authenticating");
                 case "UnauthorizedAccessException":
                     throw new UnauthorizedAccessException(request.Message ?? "You shall not pass!");
                 case "OptimisticConcurrencyException":

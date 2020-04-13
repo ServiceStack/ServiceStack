@@ -203,7 +203,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Interlocked.Increment(ref CacheCustomJson.Count);
             return new HttpResult(request)
             {
-                ResultScope = () => JsConfig.With(emitCamelCaseNames:true, includeNullValues:true)
+                ResultScope = () => JsConfig.With(new Text.Config
+                {
+                    TextCase = TextCase.CamelCase,
+                    IncludeNullValues = true,
+                })
             };
         }
 

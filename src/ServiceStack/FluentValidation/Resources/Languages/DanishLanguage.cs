@@ -20,15 +20,16 @@ namespace ServiceStack.FluentValidation.Resources {
 	using Validators;
 
 	internal class DanishLanguage : Language {
-		public override string Name => "da";
+		public const string Culture = "da";
+		public override string Name => Culture;
 
 		public DanishLanguage() {
 			Translate<EmailValidator>("'{PropertyName}' er ikke en gyldig e-mail-adresse.");
 			Translate<GreaterThanOrEqualValidator>("'{PropertyName}' skal være større end eller lig med '{ComparisonValue}'.");
 			Translate<GreaterThanValidator>("'{PropertyName}' skal være større end '{ComparisonValue}'.");
 			Translate<LengthValidator>("'{PropertyName}' skal være mellem {MinLength} og {MaxLength} tegn. Du har indtastet {TotalLength} tegn.");
-			Translate<MinimumLengthValidator>("'{PropertyName}' skal være mellem {MinLength} og 1000 tegn. Du har indtastet {TotalLength} tegn.");
-			Translate<MaximumLengthValidator>("'{PropertyName}' skal være mellem 0 og {MaxLength} tegn. Du har indtastet {TotalLength} tegn.");
+			Translate<MinimumLengthValidator>("'{PropertyName}' skal være større end eller lig med {MinLength} tegn. Du indtastede {TotalLength} tegn.");
+			Translate<MaximumLengthValidator>("'{PropertyName}' skal være mindre end eller lig med {MaxLength} tegn. Du indtastede {TotalLength} tegn.");
 			Translate<LessThanOrEqualValidator>("'{PropertyName}' skal være mindre end eller lig med '{ComparisonValue}'.");
 			Translate<LessThanValidator>("'{PropertyName}' skal være mindre end '{ComparisonValue}'.");
 			Translate<NotEmptyValidator>("'{PropertyName}' bør ikke være tom.");
@@ -42,8 +43,16 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<InclusiveBetweenValidator>("'{PropertyName}' skal være mellem {From} og {To}. Du har indtastet {Value}.");
 			Translate<ExclusiveBetweenValidator>("'{PropertyName}' skal være mellem {From} og {To} (eksklusiv). Du har indtastet {Value}.");
 			Translate<CreditCardValidator>("'{PropertyName}' er ikke et gyldigt kreditkortnummer.");
-			Translate<ScalePrecisionValidator>("'{PropertyName}' må ikke være mere end {expectedPrecision} cifre i alt, med hensyn til {expectedScale} decimaler. {digits} cifre og {actualScale} decimaler blev fundet.");
-
+			Translate<ScalePrecisionValidator>("'{PropertyName}' må ikke være mere end {ExpectedPrecision} cifre i alt, med hensyn til {ExpectedScale} decimaler. {Digits} cifre og {ActualScale} decimaler blev fundet.");
+			Translate<EmptyValidator>("'{PropertyName}' skal være tomt.");
+			Translate<NullValidator>("'{PropertyName}' skal være tomt.");
+			Translate<EnumValidator>("'{PropertyName}' har en række værdier, der ikke indeholder '{PropertyValue}'.");
+			// Additional fallback messages used by clientside validation integration.
+			Translate("Length_Simple", "'{PropertyName}' skal være mellem {MinLength} og {MaxLength} tegn.");
+			Translate("MinimumLength_Simple", "'{PropertyName}' skal være større end eller lig med {MinLength} tegn.");
+			Translate("MaximumLength_Simple", "'{PropertyName}' skal være mindre end eller lig med {MaxLength} tegn.");
+			Translate("ExactLength_Simple", "'{PropertyName}' skal være {MaxLength} tegn langt.");
+			Translate("InclusiveBetween_Simple", "'{PropertyName}' skal være mellem {From} og {To}.");
 		}
 	}
 }

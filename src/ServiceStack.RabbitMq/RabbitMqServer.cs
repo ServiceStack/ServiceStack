@@ -55,6 +55,18 @@ namespace ServiceStack.RabbitMq
         private RabbitMqMessageFactory messageFactory;
         public IMessageFactory MessageFactory => messageFactory;
 
+        public Action<RabbitMqQueueClient> MqQueueClientFilter
+        {
+            get => messageFactory.MqQueueClientFilter;
+            set => messageFactory.MqQueueClientFilter = value;
+        }
+
+        public Action<RabbitMqProducer> MqProducerFilter
+        {
+            get => messageFactory.MqProducerFilter;
+            set => messageFactory.MqProducerFilter = value;
+        }
+
         public Action<string, IBasicProperties, IMessage> PublishMessageFilter
         {
             get => messageFactory.PublishMessageFilter;
@@ -90,14 +102,21 @@ namespace ServiceStack.RabbitMq
         /// <summary>
         /// If you only want to enable priority queue handlers (and threads) for specific msg types
         /// </summary>
-        public string[] PriortyQueuesWhitelist { get; set; }
+        public string[] PriorityQueuesWhitelist { get; set; }
+
+        [Obsolete("Use PriorityQueuesWhitelist")]
+        public string[] PriortyQueuesWhitelist
+        {
+            get => PriorityQueuesWhitelist;
+            set => PriorityQueuesWhitelist = value;
+        }
 
         /// <summary>
         /// Don't listen on any Priority Queues
         /// </summary>
         public bool DisablePriorityQueues
         {
-            set => PriortyQueuesWhitelist = TypeConstants.EmptyStringArray;
+            set => PriorityQueuesWhitelist = TypeConstants.EmptyStringArray;
         }
 
         /// <summary>
@@ -114,6 +133,21 @@ namespace ServiceStack.RabbitMq
             set => PublishResponsesWhitelist = value ? TypeConstants.EmptyStringArray : null;
         }
 
+        /// <summary>
+        /// Opt-in to only publish .outq messages on this white list. 
+        /// Publishes all responses by default.
+        /// </summary>
+        public string[] PublishToOutqWhitelist { get; set; }
+
+        /// <summary>
+        /// Don't publish any messages to .outq
+        /// </summary>
+        public bool DisablePublishingToOutq
+        {
+            set => PublishToOutqWhitelist = value ? TypeConstants.EmptyStringArray : null;
+        }
+
+        
         private IConnection connection;
         private IConnection Connection => connection ?? (connection = ConnectionFactory.CreateConnection());
 
@@ -179,7 +213,8 @@ namespace ServiceStack.RabbitMq
             {
                 RequestFilter = this.RequestFilter,
                 ResponseFilter = this.ResponseFilter,
-                PublishResponsesWhitelist = PublishResponsesWhitelist,               
+                PublishResponsesWhitelist = PublishResponsesWhitelist,    
+                PublishToOutqWhitelist = PublishToOutqWhitelist,
                 RetryCount = RetryCount,
             };
         }
@@ -250,8 +285,8 @@ namespace ServiceStack.RabbitMq
                     var queueNames = new QueueNames(msgType);
                     var noOfThreads = handlerThreadCountMap[msgType];
 
-                    if (PriortyQueuesWhitelist == null
-                        || PriortyQueuesWhitelist.Any(x => x == msgType.Name))
+                    if (PriorityQueuesWhitelist == null
+                        || PriorityQueuesWhitelist.Any(x => x == msgType.Name))
                     {
                         noOfThreads.Times(i =>
                             workerBuilder.Add(new RabbitMqWorker(
@@ -281,8 +316,7 @@ namespace ServiceStack.RabbitMq
                 {
                     var worker = workers[i];
 
-                    int[] workerIds;
-                    if (!queueWorkerIndexMap.TryGetValue(worker.QueueName, out workerIds))
+                    if (!queueWorkerIndexMap.TryGetValue(worker.QueueName, out var workerIds))
                     {
                         queueWorkerIndexMap[worker.QueueName] = new[] { i };
                     }

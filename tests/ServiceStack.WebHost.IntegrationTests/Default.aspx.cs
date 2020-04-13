@@ -11,7 +11,9 @@ namespace ServiceStack.WebHost.IntegrationTests
 	{
 		protected void Page_Load(object sender, EventArgs e)
 		{
-
+			var ssTest = base.SessionBag["ss-test"];
+			
+			SessionBag["test"] = "foo";
 		}
 	}
 }

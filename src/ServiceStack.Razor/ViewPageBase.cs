@@ -4,7 +4,9 @@ using System.Data;
 using System.Dynamic;
 using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
@@ -16,6 +18,7 @@ using ServiceStack.IO;
 using ServiceStack.Messaging;
 using ServiceStack.OrmLite;
 using ServiceStack.Redis;
+using ServiceStack.Script;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using IHtmlString = System.Web.IHtmlString;
@@ -425,6 +428,8 @@ namespace ServiceStack.Razor
 
         private string layout;
 
+        protected virtual IAuthSession UserSession => GetSession();
+
         public virtual IAuthSession GetSession(bool reload = false)
         {
             var req = this.Request;
@@ -504,7 +509,7 @@ namespace ServiceStack.Razor
 
         public ResponseStatus GetErrorStatus()
         {
-            var errorStatus = this.Request.GetItem(HtmlFormat.ErrorStatusKey);
+            var errorStatus = this.Request.GetItem(Keywords.ErrorStatus);
             return errorStatus as ResponseStatus 
                 ?? GetResponseStatus(ModelError);
         }
@@ -558,6 +563,80 @@ namespace ServiceStack.Razor
             throw new StopExecutionException();
         }
 
+        private MvcHtmlString WaitStopAsync(Func<Task> fn)
+        {
+            fn().Wait();
+            return MvcHtmlString.Empty;
+        }
+        
+        public async Task RedirectToAsync(string path)
+        {
+            var result = new HttpResult(null, null, HttpStatusCode.Redirect) {
+                Headers = {
+                    [HttpHeaders.Location] = path.FirstCharEquals('~')
+                        ? Request.ResolveAbsoluteUrl(path)
+                        : path
+                }
+            };
+            await Request.Response.WriteToResponse(Request, result);
+            throw new StopExecutionException();
+        }
+
+        public MvcHtmlString RedirectTo(string path) => WaitStopAsync(() => RedirectToAsync(path));
+
+        public bool HasRole(string role) => 
+            Request.GetSession().HasRole(role, TryResolve<IAuthRepository>());
+        public bool HasPermission(string permission) => 
+            Request.GetSession().HasPermission(permission, TryResolve<IAuthRepository>());
+
+        public MvcHtmlString AssertRole(string role, string message = null, string redirect = null) =>
+            WaitStopAsync(() => AssertRoleAsync(role, message, redirect));
+
+        public async Task AssertRoleAsync(string role, string message = null, string redirect = null)
+        {
+            var session = GetSession();
+            if (!session.IsAuthenticated)
+            {
+                RedirectIfNotAuthenticated(redirect);
+                return;
+            }
+
+            if (!session.HasRole(role, TryResolve<IAuthRepository>()))
+            {
+                if (redirect != null)
+                    await RedirectToAsync(redirect);
+                        
+                var req = Request;
+                var error = new HttpError(HttpStatusCode.Forbidden, message ?? ErrorMessages.InvalidRole.Localize(req));
+                await req.Response.WriteToResponse(req, error);
+                throw new StopExecutionException();
+            }
+        }
+
+        public MvcHtmlString AssertPermission(string permission, string message = null, string redirect = null) =>
+            WaitStopAsync(() => AssertPermissionAsync(permission, message, redirect));
+
+        public async Task AssertPermissionAsync(string permission, string message = null, string redirect = null)
+        {
+            var session = GetSession();
+            if (!session.IsAuthenticated)
+            {
+                RedirectIfNotAuthenticated(redirect);
+                return;
+            }
+
+            if (!session.HasPermission(permission, TryResolve<IAuthRepository>()))
+            {
+                if (redirect != null)
+                    await RedirectToAsync(redirect);
+                        
+                var req = Request;
+                var error = new HttpError(HttpStatusCode.Forbidden, message ?? ErrorMessages.InvalidPermission.Localize(req));
+                await req.Response.WriteToResponse(req, error);
+                throw new StopExecutionException();
+            }
+        }
+        
         public bool RenderErrorIfAny()
         {
             var html = GetErrorHtml(GetErrorStatus());

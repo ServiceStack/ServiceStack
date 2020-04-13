@@ -1,25 +1,20 @@
 ﻿//#define HTTP_LISTENER
+//#define postgres
 
 using System;
 using System.Collections.Generic;
 #if !MONO
 using System.DirectoryServices.AccountManagement;
 #endif
-using System.Net;
 using System.Threading;
-using System.Web;
 using Funq;
 using Raven.Client;
-using Raven.Client.Document;
-using ServiceStack.Admin;
+using Raven.Client.Documents;
 using ServiceStack.Auth;
-using ServiceStack.Authentication.OAuth2;
-using ServiceStack.Authentication.OpenId;
 using ServiceStack.Authentication.RavenDb;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
-using ServiceStack.DataAnnotations;
 using ServiceStack.FluentValidation;
 using ServiceStack.Html.AntiXsrf;
 using ServiceStack.Logging;
@@ -30,6 +25,8 @@ using ServiceStack.Razor;
 using ServiceStack.Redis;
 using ServiceStack.Text;
 using ServiceStack.Web;
+using ILog = log4net.ILog;
+using LogManager = log4net.LogManager;
 
 #if HTTP_LISTENER
 namespace ServiceStack.Auth.Tests
@@ -66,33 +63,32 @@ namespace ServiceStack.AuthWeb.Tests
 
             container.Register(new DataSource());
 
-            var UsePostgreSql = false;
-            if (UsePostgreSql)
-            {
-                container.Register<IDbConnectionFactory>(
-                    new OrmLiteConnectionFactory(
-                        "Server=localhost;Port=5432;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200",
-                        PostgreSqlDialect.Provider)
-                    {
-                        ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
-                    });
-            }
-            else
-            {
-                container.Register<IDbConnectionFactory>(
-                    new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider)
-                    {
-                        ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
-                    });
-            }
-
+#if postgres
+            container.Register<IDbConnectionFactory>(
+                new OrmLiteConnectionFactory(
+                    Environment.GetEnvironmentVariable("PGSQL_CONNECTION") ??
+                    "Server=localhost;Port=5432;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200",
+                    PostgreSqlDialect.Provider)
+                {
+                    ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
+                });
+#else
+            container.Register<IDbConnectionFactory>(
+                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider)
+                {
+                    ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
+                });
+#endif
+            
             using (var db = container.Resolve<IDbConnectionFactory>().Open())
             {
                 db.DropAndCreateTable<Rockstar>();
                 db.Insert(Rockstar.SeedData);
             }
 
-            JsConfig.EmitCamelCaseNames = true;
+            JsConfig.Init(new Text.Config {
+                TextCase = TextCase.CamelCase
+            });
 
             //Register a external dependency-free 
             container.Register<ICacheClient>(new MemoryCacheClient());
@@ -139,18 +135,15 @@ namespace ServiceStack.AuthWeb.Tests
                     },
                     new JwtAuthProvider(appSettings), 
                     new ApiKeyAuthProvider(appSettings), 
-                    new TwitterAuthProvider(appSettings),       //Sign-in with Twitter
-                    new FacebookAuthProvider(appSettings),      //Sign-in with Facebook
-                    new GoogleAuthProvider(appSettings),        //Sign-in with Google OAuth (without DotNetOpenAuth)
-                    new GoogleOAuth2Provider(appSettings),      //Sign-in with Google OAuth2 Provider (with DotNetOpenAuth)
                     new DigestAuthProvider(appSettings),        //Sign-in with Digest Auth
                     new BasicAuthProvider(),                    //Sign-in with Basic Auth
-                    new GoogleOpenIdOAuthProvider(appSettings), //Sign-in with Google OpenId
-                    new YahooOpenIdOAuthProvider(appSettings),  //Sign-in with Yahoo OpenId
-                    new OpenIdOAuthProvider(appSettings),       //Sign-in with Custom OpenId
-                    new LinkedInOAuth2Provider(appSettings),    //Sign-in with LinkedIn OAuth2 Provider
+
+                    new TwitterAuthProvider(appSettings),       //Sign-in with Twitter
+                    new FacebookAuthProvider(appSettings),      //Sign-in with Facebook
+                    new GoogleAuthProvider(appSettings),        //Sign-in with Google OAuth
                     new GithubAuthProvider(appSettings),        //Sign-in with GitHub OAuth Provider
-                    new FourSquareOAuth2Provider(appSettings),  //Sign-in with FourSquare OAuth2 Provider
+                    new MicrosoftGraphAuthProvider(appSettings),//Sign-in with Microsoft Graph OAuth
+                    new LinkedInAuthProvider(appSettings),      //Sign-in with LinkedIn
                     new YandexAuthProvider(appSettings),        //Sign-in with Yandex OAuth Provider        
                     new VkAuthProvider(appSettings),            //Sign-in with VK.com OAuth Provider 
                     new OdnoklassnikiAuthProvider(appSettings), //Sign-in with Odnoklassniki OAuth Provider 
@@ -213,7 +206,11 @@ namespace ServiceStack.AuthWeb.Tests
         private static IUserAuthRepository CreateRavenDbAuthRepo(Container container, AppSettings appSettings)
         {
             container.Register<IDocumentStore>(c =>
-                new DocumentStore { Url = "http://macbook:8080/" });
+                new DocumentStore {
+                    Urls = new [] {
+                        "http://macbook:8080/"
+                    }
+                });
 
             var documentStore = container.Resolve<IDocumentStore>();
             documentStore.Initialize();
@@ -277,6 +274,8 @@ namespace ServiceStack.AuthWeb.Tests
                         ? "{0} {1}".Fmt(user.GivenName, user.Surname)
                         : "{0} {1} {2}".Fmt(user.GivenName, user.MiddleName, user.Surname);
                     tokens.PhoneNumber = user.VoiceTelephoneNumber;
+
+                    userSession.UserAuthName = tokens.Email ?? tokens.UserName;
                 }
             }
             catch (MultipleMatchesException mmex)

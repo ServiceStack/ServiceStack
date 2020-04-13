@@ -26,10 +26,12 @@ namespace ServiceStack.Serialization
             return (T)DeserializeFromString(xml, type);
         }
 
-        public T DeserializeFromStream<T>(Stream stream)
+        public T DeserializeFromStream<T>(Stream stream) => (T)DeserializeFromStream(typeof(T), stream);
+
+        public object DeserializeFromStream(Type type, Stream stream)
         {
-            var serializer = new System.Runtime.Serialization.DataContractSerializer(typeof(T));
-            return (T)serializer.ReadObject(stream);
+            var serializer = new System.Runtime.Serialization.DataContractSerializer(type);
+            return serializer.ReadObject(stream);
         }
     }
 }

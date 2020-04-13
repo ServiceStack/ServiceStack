@@ -1,46 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
-        <AssemblyName>ServiceStack.Interfaces</AssemblyName>
         <PackageId>ServiceStack.Interfaces</PackageId>
-        <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
-        <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
-        <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-        <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-        <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-        <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
-        <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
-        <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
-        <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(Configuration)' != 'Debug' ">
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <Optimize>true</Optimize>
-    </PropertyGroup>
-
-    <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-        <Compile Include="..\..\ServiceStack.Interfaces\**\*.cs" Exclude="bin\**;obj\**;**\*.xproj;packages\**"/>
-    </ItemGroup>
-
-    <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
-        <Compile Include="..\..\ServiceStack.Interfaces\**\*.cs" Exclude="bin\**;obj\**;**\*.xproj;packages\**"/>
-    </ItemGroup>
-
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
-        <DefineConstants>$(DefineConstants);NET45</DefineConstants>
-        <SignAssembly>True</SignAssembly>
-        <DelaySign>False</DelaySign>
-        <AssemblyOriginatorKeyFile>../servicestack.snk</AssemblyOriginatorKeyFile>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-        <DefineConstants>$(DefineConstants);NETSTANDARD2_0</DefineConstants>
+        <AssemblyName>ServiceStack.Interfaces</AssemblyName>
+        <RootNamespace>ServiceStack</RootNamespace>
+        <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
+        <Title>Lightweight and implementation-free interfaces for ServiceStack</Title>
+        <PackageDescription>
+            Lightweight and implementation-free interfaces for DTO's, providers and adapters.
+        </PackageDescription>
+        <PackageTags>ServiceStack;Common;Framework;Clients;ServiceClients;Gateway</PackageTags>
     </PropertyGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-        <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0"/>
+        <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
     </ItemGroup>
 
 </Project>

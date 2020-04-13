@@ -34,6 +34,10 @@ namespace ServiceStack.Host
 
         public Type[] HideRequestBodyForRequestDtoTypes { get; set; }
 
+        public Action<IRequest, RequestLogEntry> RequestLogFilter { get; set; }
+
+        public Func<DateTime> CurrentDateFn { get; set; } = () => DateTime.UtcNow;
+
         protected InMemoryRollingRequestLogger() {}
 
         public InMemoryRollingRequestLogger(int? capacity = DefaultCapacity)
@@ -61,6 +65,8 @@ namespace ServiceStack.Host
 
             var entry = CreateEntry(request, requestDto, response, requestDuration, requestType);
 
+            RequestLogFilter?.Invoke(request, entry);
+
             logEntries.Enqueue(entry);
 
             RequestLogEntry dummy;
@@ -73,7 +79,7 @@ namespace ServiceStack.Host
             var entry = new RequestLogEntry
             {
                 Id = Interlocked.Increment(ref requestId),
-                DateTime = DateTime.UtcNow,
+                DateTime = CurrentDateFn(),
                 RequestDuration = requestDuration,
             };
 
@@ -108,8 +114,18 @@ namespace ServiceStack.Host
                     if (!isClosed)
                         entry.FormData = request.FormData.ToDictionary();
 
-                    if (EnableRequestBodyTracking)
+                    if (EnableRequestBodyTracking && request.CanReadRequestBody())
+                    {
+#if NETSTANDARD2_0
+                        // https://forums.servicestack.net/t/unexpected-end-of-stream-when-uploading-to-aspnet-core/6478/6
+                        if (!request.ContentType.MatchesContentType(MimeTypes.MultiPartFormData))
+                        {
+                            entry.RequestBody = request.GetRawBody();
+                        }
+#else
                         entry.RequestBody = request.GetRawBody();
+#endif
+                    }
                 }
             }
 
@@ -175,6 +191,8 @@ namespace ServiceStack.Host
         {
             if (response is IHttpResult errorResult)
                 return errorResult.Response;
+            else if (response is ErrorResponse errorResponse)
+                return errorResponse.GetResponseDto();
 
             var ex = response as Exception;
             return ex?.ToResponseStatus();

@@ -30,18 +30,7 @@ namespace ServiceStack.Host
         {
             foreach (var mi in serviceType.GetMethods(BindingFlags.Public | BindingFlags.Instance))
             {
-                if (mi.IsGenericMethod || mi.GetParameters().Length != 1)
-                    continue;
-                
-                var paramType = mi.GetParameters()[0].ParameterType;
-                if (paramType.IsValueType || paramType == typeof(string))
-                    continue;
-
-                var actionName = mi.Name.ToUpper();
-                if (!HttpMethods.AllVerbs.Contains(actionName) && 
-                    actionName != ActionContext.AnyAction &&
-                    !HttpMethods.AllVerbs.Any(verb => ContentTypes.KnownFormats.Any(format => actionName.EqualsIgnoreCase(verb + format))) &&
-                    !ContentTypes.KnownFormats.Any(format => actionName.EqualsIgnoreCase(ActionContext.AnyAction + format)))
+                if (!ServiceController.IsServiceAction(mi)) 
                     continue;
 
                 yield return mi;
