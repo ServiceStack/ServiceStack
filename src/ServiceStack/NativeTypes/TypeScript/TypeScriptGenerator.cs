@@ -9,10 +9,10 @@ namespace ServiceStack.NativeTypes.TypeScript
 {
     public class TypeScriptGenerator
     {
-        readonly MetadataTypesConfig Config;
+        public readonly MetadataTypesConfig Config;
         readonly NativeTypesFeature feature;
         List<string> conflictTypeNames = new List<string>();
-        List<MetadataType> allTypes;
+        public List<MetadataType> AllTypes { get; set; }
 
         public TypeScriptGenerator(MetadataTypesConfig config)
         {
@@ -172,18 +172,18 @@ namespace ServiceStack.NativeTypes.TypeScript
                 .Select(x => x.Response).ToHashSet();
             var types = metadata.Types.CreateSortedTypeList();
 
-            allTypes = metadata.GetAllTypesOrdered();
-            allTypes.RemoveAll(x => x.IgnoreType(Config, includeList));
-            allTypes = FilterTypes(allTypes);
+            AllTypes = metadata.GetAllTypesOrdered();
+            AllTypes.RemoveAll(x => x.IgnoreType(Config, includeList));
+            AllTypes = FilterTypes(AllTypes);
 
             //TypeScript doesn't support reusing same type name with different generic airity
-            var conflictPartialNames = allTypes.Map(x => x.Name).Distinct()
+            var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
                 .GroupBy(g => g.LeftPart('`'))
                 .Where(g => g.Count() > 1)
                 .Select(g => g.Key)
                 .ToList();
 
-            this.conflictTypeNames = allTypes
+            this.conflictTypeNames = AllTypes
                 .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
                 .Map(x => x.Name);
 
@@ -205,12 +205,12 @@ namespace ServiceStack.NativeTypes.TypeScript
                 sb = sb.Indent();
             }
 
-            var insertCode = InsertCodeFilter?.Invoke(allTypes, Config);
+            var insertCode = InsertCodeFilter?.Invoke(AllTypes, Config);
             if (insertCode != null)
                 sb.AppendLine(insertCode);
 
             //ServiceStack core interfaces
-            foreach (var type in allTypes)
+            foreach (var type in AllTypes)
             {
                 var fullTypeName = type.GetFullName();
                 if (requestTypes.Contains(type))
@@ -271,7 +271,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 }
             }
 
-            var addCode = AddCodeFilter?.Invoke(allTypes, Config);
+            var addCode = AddCodeFilter?.Invoke(AllTypes, Config);
             if (addCode != null)
                 sb.AppendLine(addCode);
 
@@ -508,7 +508,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 {
                     if (wasAdded) sb.AppendLine();
 
-                    var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
+                    var propType = Type(prop.GetTypeName(Config, AllTypes), prop.GenericArgs);
                     var optionalProperty = propType.EndsWith("?");
                     if (optionalProperty)
                         propType = propType.Substring(0, propType.Length - 1);
