@@ -928,9 +928,14 @@ namespace ServiceStack
                     var dataType = genServices.ResolveColumnType(column, dialect);
                     if (dataType == null)
                         continue;
-                    
+
                     var isKey = column.IsKey || column.IsAutoIncrement;
 
+                    if (dataType.IsValueType && column.AllowDBNull && !isKey)
+                    {
+                        dataType = typeof(Nullable<>).MakeGenericType(dataType);
+                    }
+                    
                     var prop = new MetadataPropertyType {
                         PropertyType = dataType,
                         Items = !isModel ? null : new Dictionary<string, object> {
@@ -942,12 +947,8 @@ namespace ServiceStack
                         IsSystemType = dataType.IsSystemType() ? true : (bool?) null,
                         IsEnum = dataType.IsEnum ? true : (bool?) null,
                         TypeNamespace = dataType.Namespace,
+                        GenericArgs = MetadataTypesGenerator.ToGenericArgs(dataType),
                     };
-                    
-                    if (dataType.IsValueType && column.AllowDBNull && !isKey)
-                    {
-                        prop.Type += "?";
-                    }
                     
                     var attrs = new List<MetadataAttribute>();
                     if (isModel)
