@@ -464,6 +464,36 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public int Id { get; set; }
     }
-    
+
+    public class DefaultValue
+    {
+        public int Id { get; set; }
+        public int Int { get; set; }
+        public int? NInt { get; set; }
+        public bool Bool { get; set; }
+        public bool? NBool { get; set; }
+        public string String { get; set; }
+    }
+
+    public class CreateDefaultValues : ICreateDb<DefaultValue>, IReturn<IdResponse>
+    {
+        public int Id { get; set; }
+        public int Int { get; set; }
+        public int? NInt { get; set; }
+        public bool Bool { get; set; }
+        public bool? NBool { get; set; }
+        public string String { get; set; }
+    }
+
+    public class PatchDefaultValues : IPatchDb<DefaultValue>, IReturnVoid
+    {
+        public int Id { get; set; }
+        public int Int { get; set; }
+        public int? NInt { get; set; }
+        public bool Bool { get; set; }
+        public bool? NBool { get; set; }
+        public string String { get; set; }
+        public string[] Reset { get; set; }
+    }
 
  }

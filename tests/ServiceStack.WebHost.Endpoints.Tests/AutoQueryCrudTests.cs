@@ -208,6 +208,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             db.CreateTable<RockstarAutoGuid>();
             db.CreateTable<RockstarVersion>();
             db.CreateTable<Bookmark>();
+            db.CreateTable<DefaultValue>();
 
             AutoMapping.RegisterPopulator((Dictionary<string,object> target, CreateRockstarWithAutoGuid source) => {
                 if (source.FirstName == "Created")
@@ -1208,6 +1209,58 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(updateResponse.Result.FirstName, Is.EqualTo("Updated"));
             Assert.That(updateResponse.Result.Age, Is.EqualTo(21));
             Assert.That(updateResponse.Result.LivingStatus, Is.EqualTo(LivingStatus.Dead));
+        }
+
+        [Test]
+        public void Can_Patch_DefaultFields_to_default_values()
+        {
+            var createRequest = new CreateDefaultValues {
+                Id = 1,
+                Bool = true,
+                NBool = false,
+                Int = 2,
+                NInt = 3,
+                String = "A",
+            };
+            var createResponse = client.Post(createRequest);
+            AssertCreateDefaultValues(createRequest);
+            
+            var request = new PatchDefaultValues {
+                Id = createRequest.Id,
+                Reset = new[] {
+                    nameof(PatchDefaultValues.Bool),
+                    nameof(PatchDefaultValues.NBool),
+                    nameof(PatchDefaultValues.Int),
+                    nameof(PatchDefaultValues.NInt),
+                    nameof(PatchDefaultValues.String),
+                },
+            };
+            client.Patch(request);
+            
+            using var db = appHost.GetDbConnection();
+            var row = db.SingleById<DefaultValue>(createRequest.Id);
+            Assert.That(row.Bool, Is.EqualTo(default(bool)));
+            Assert.That(row.NBool, Is.EqualTo(default(bool?)));
+            Assert.That(row.Int, Is.EqualTo(default(int)));
+            Assert.That(row.NInt, Is.EqualTo(default(int?)));
+            Assert.That(row.String, Is.EqualTo(default(string)));
+            
+            Assert.Throws<WebServiceException>(() => client.Post(new PatchDefaultValues {
+                Id = createRequest.Id,
+                Reset = new[] { nameof(PatchDefaultValues.Id) },
+            }));
+        }
+
+        private void AssertCreateDefaultValues(CreateDefaultValues createRequest)
+        {
+            using var db = appHost.GetDbConnection();
+            var row = db.SingleById<DefaultValue>(createRequest.Id);
+            Assert.That(row.Id, Is.EqualTo(createRequest.Id));
+            Assert.That(row.Bool, Is.EqualTo(createRequest.Bool));
+            Assert.That(row.NBool, Is.EqualTo(createRequest.NBool));
+            Assert.That(row.Int, Is.EqualTo(createRequest.Int));
+            Assert.That(row.NInt, Is.EqualTo(createRequest.NInt));
+            Assert.That(row.String, Is.EqualTo(createRequest.String));
         }
     }
 }

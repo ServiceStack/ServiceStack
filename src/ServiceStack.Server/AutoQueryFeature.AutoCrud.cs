@@ -714,6 +714,35 @@ namespace ServiceStack
                 typeof(Dictionary<string, object>), meta.DtoType);
             populatorFn?.Invoke(dtoValues, dto);
 
+            IEnumerable<string> asStrings(object o) => o is string s
+                ? s.Split(',').Map(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x))
+                : o is IEnumerable<string> e
+                    ? e
+                    : throw new NotSupportedException($"'{Keywords.Reset}' is not a list of field names");
+
+            var resetField = meta.ModelDef.GetFieldDefinition(Keywords.Reset);
+            var reset = resetField == null 
+                ? (dtoValues.TryRemove(Keywords.Reset, out var oReset)
+                    ? asStrings(oReset)
+                    : (dtoValues.TryRemove(Keywords.reset, out var oreset)
+                        ? asStrings(oreset)
+                        : null)) 
+                  ?? req.GetParam(Keywords.reset)?.FromJsv<string[]>()
+                : null;
+            
+            if (reset != null)
+            {
+                foreach (var fieldName in reset)
+                {
+                    var field = meta.ModelDef.GetFieldDefinition(fieldName);
+                    if (field == null)
+                        throw new NotSupportedException($"Reset field '{fieldName}' does not exist");
+                    if (field.IsPrimaryKey)
+                        throw new NotSupportedException($"Cannot reset primary key field '{fieldName}'");
+                    dtoValues[field.Name] = field.FieldTypeDefaultValue;
+                }
+            }
+
             // Ensure RowVersion is always populated if defined on Request DTO
             if (meta.RowVersionGetter != null && !dtoValues.ContainsKey(Keywords.RowVersion))
                 dtoValues[Keywords.RowVersion] = default(uint);
