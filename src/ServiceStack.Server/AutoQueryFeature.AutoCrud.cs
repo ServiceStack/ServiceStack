@@ -714,11 +714,13 @@ namespace ServiceStack
                 typeof(Dictionary<string, object>), meta.DtoType);
             populatorFn?.Invoke(dtoValues, dto);
 
-            IEnumerable<string> asStrings(object o) => o is string s
-                ? s.Split(',').Map(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x))
-                : o is IEnumerable<string> e
-                    ? e
-                    : throw new NotSupportedException($"'{Keywords.Reset}' is not a list of field names");
+            IEnumerable<string> asStrings(object o) => o == null
+                ? null
+                : o is string s
+                    ? s.Split(',').Map(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x))
+                    : o is IEnumerable<string> e
+                        ? e
+                        : throw new NotSupportedException($"'{Keywords.Reset}' is not a list of field names");
 
             var resetField = meta.ModelDef.GetFieldDefinition(Keywords.Reset);
             var reset = resetField == null 
@@ -727,7 +729,7 @@ namespace ServiceStack
                     : (dtoValues.TryRemove(Keywords.reset, out var oreset)
                         ? asStrings(oreset)
                         : null)) 
-                  ?? req.GetParam(Keywords.reset)?.FromJsv<string[]>()
+                  ?? asStrings(req.GetParam(Keywords.reset))
                 : null;
             
             if (reset != null)
