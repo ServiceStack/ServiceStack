@@ -60,6 +60,11 @@ namespace ServiceStack.Web
         Action<IRequest, RequestLogEntry> RequestLogFilter { get; set; }
 
         /// <summary>
+        /// Customize which instances should not be serialized
+        /// </summary>
+        Func<object,bool> IgnoreFilter { get; set; }
+        
+        /// <summary>
         /// Change what DateTime to use for the current Date (defaults to UtcNow)
         /// </summary>
         Func<DateTime> CurrentDateFn { get; set; }

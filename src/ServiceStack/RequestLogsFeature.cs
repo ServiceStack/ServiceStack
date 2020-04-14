@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using ServiceStack.Admin;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
@@ -76,9 +78,28 @@ namespace ServiceStack
         public Action<IRequest, RequestLogEntry> RequestLogFilter { get; set; }
 
         /// <summary>
+        /// Never attempt to serialize these types
+        /// </summary>
+        public List<Type> IgnoreTypes { get; set; } = new List<Type> {
+        };
+        
+        /// <summary>
+        /// Allow ignoring 
+        /// </summary>
+        public Func<object,bool> IgnoreFilter { get; set; } 
+
+        /// <summary>
         /// Change what DateTime to use for the current Date (defaults to UtcNow)
         /// </summary>
         public Func<DateTime> CurrentDateFn { get; set; } = () => DateTime.UtcNow;
+
+        
+        public bool DefaultIgnoreFilter(object o)
+        {
+            var type = o.GetType();
+            return IgnoreTypes?.Contains(type) == true || o is IDisposable;
+        }
+        
 
         public RequestLogsFeature(int capacity) : this()
         {
@@ -88,6 +109,7 @@ namespace ServiceStack
         public RequestLogsFeature()
         {
             this.AtRestPath = "/requestlogs";
+            this.IgnoreFilter = DefaultIgnoreFilter;
             this.RequiredRoles = new[] { RoleNames.Admin };
             this.EnableErrorTracking = true;
             this.EnableRequestBodyTracking = false;
@@ -113,6 +135,7 @@ namespace ServiceStack
             requestLogger.ExcludeRequestDtoTypes = ExcludeRequestDtoTypes;
             requestLogger.HideRequestBodyForRequestDtoTypes = HideRequestBodyForRequestDtoTypes;
             requestLogger.RequestLogFilter = RequestLogFilter;
+            requestLogger.IgnoreFilter = IgnoreFilter;
             requestLogger.CurrentDateFn = CurrentDateFn;
 
             appHost.Register(requestLogger);
