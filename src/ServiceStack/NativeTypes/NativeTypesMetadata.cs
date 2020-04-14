@@ -705,10 +705,6 @@ namespace ServiceStack.NativeTypes
 
         public MetadataPropertyType ToProperty(PropertyInfo pi, object instance = null, Dictionary<string, object> ignoreValues = null)
         {
-            var genericArgs = pi.PropertyType.IsGenericType
-                ? pi.PropertyType.GetGenericArguments().Select(x => x.ExpandTypeName()).ToArray()
-                : null;
-
             var property = new MetadataPropertyType
             {
                 PropertyInfo = pi,
@@ -721,7 +717,7 @@ namespace ServiceStack.NativeTypes
                 IsEnum = pi.PropertyType.IsEnum.NullIfFalse(),
                 TypeNamespace = pi.PropertyType.Namespace,
                 DataMember = ToDataMember(pi.GetDataMember()),
-                GenericArgs = genericArgs,
+                GenericArgs = ToGenericArgs(pi.PropertyType),
                 Description = pi.GetDescription(),
             };
 
@@ -754,6 +750,14 @@ namespace ServiceStack.NativeTypes
                     property.ReadOnly = true;
             }
             return property;
+        }
+
+        public static string[] ToGenericArgs(Type propType)
+        {
+            var genericArgs = propType.IsGenericType
+                ? propType.GetGenericArguments().Select(x => x.ExpandTypeName()).ToArray()
+                : null;
+            return genericArgs;
         }
 
         public static string PropertyValue(PropertyInfo pi, object instance, object ignoreIfValue=null)
