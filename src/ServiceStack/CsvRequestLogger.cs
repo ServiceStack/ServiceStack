@@ -24,6 +24,9 @@ namespace ServiceStack
         private readonly string errorLogsPattern;
         private readonly TimeSpan appendEverySecs;
         private readonly Timer timer;
+        
+        public Action<List<RequestLogEntry>, Exception> OnWriteLogsError { get; set; }
+        public Action<string, Exception> OnReadLastEntryError { get; set; }
 
         public CsvRequestLogger(IVirtualFiles files = null, string requestLogsPattern = null, string errorLogsPattern = null, TimeSpan? appendEvery = null)
         {
@@ -67,6 +70,7 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
+                OnReadLastEntryError?.Invoke(logFile, ex);
                 log.Error($"Could not read last entry from '{log}'", ex);
             }
             return null;
@@ -133,6 +137,7 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
+                OnWriteLogsError?.Invoke(logs, ex);
                 log.Error(ex);
             }
         }

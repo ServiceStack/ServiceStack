@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using System.Web;
 using Check.ServiceInterface;
 using Check.ServiceModel;
 using Check.ServiceModel.Operations;
@@ -44,6 +45,11 @@ namespace CheckWeb
         /// </summary>
         public AppHost()
             : base("CheckWeb", typeof(ErrorsService).Assembly, typeof(HtmlServices).Assembly) { }
+
+        public override void HttpCookieFilter(HttpCookie cookie)
+        {
+            cookie.SameSite = SameSiteMode.None;
+        }
 
         /// <summary>
         /// Configure the Web Application host.
