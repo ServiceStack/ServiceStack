@@ -46,10 +46,10 @@ namespace CheckWeb
         public AppHost()
             : base("CheckWeb", typeof(ErrorsService).Assembly, typeof(HtmlServices).Assembly) { }
 
-        public override void HttpCookieFilter(HttpCookie cookie)
-        {
-            cookie.SameSite = SameSiteMode.None;
-        }
+        // public override void HttpCookieFilter(HttpCookie cookie)
+        // {
+        //     cookie.SameSite = SameSiteMode.None;
+        // }
 
         /// <summary>
         /// Configure the Web Application host.
