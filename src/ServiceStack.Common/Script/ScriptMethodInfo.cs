@@ -30,16 +30,19 @@ namespace ServiceStack.Script
             this.@params = @params ?? throw new ArgumentNullException(nameof(@params));
         }
 
-        public static List<ScriptMethodInfo> GetScriptMethods(Type scriptMethodsType)
+        public static List<ScriptMethodInfo> GetScriptMethods(Type scriptMethodsType, Func<MethodInfo,bool> where=null)
         {
             var filters = scriptMethodsType.GetMethods(BindingFlags.Instance | BindingFlags.Public);
             var to = filters
                 .OrderBy(x => x.Name)
                 .ThenBy(x => x.GetParameters().Length)
                 .Where(x => x.DeclaringType != typeof(ScriptMethods) && x.DeclaringType != typeof(object))
-                .Where(m => !m.IsSpecialName)                
-                .Select(Create);
-            return to.ToList();
+                .Where(m => !m.IsSpecialName);
+
+            if (where != null)
+                to = to.Where(where);
+                
+            return to.Select(Create).ToList();
         }
 
         public static ScriptMethodInfo Create(MethodInfo mi)
@@ -94,5 +97,12 @@ namespace ServiceStack.Script
         }
 
         public override string ToString() => Signature;
+
+        public ScriptMethodType ToScriptMethodType() => new ScriptMethodType {
+            Name = Name,
+            ParamNames = ParamNames,
+            ParamTypes = ParamTypes,
+            ReturnType = ReturnType,
+        };
     }
 }

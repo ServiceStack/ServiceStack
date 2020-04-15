@@ -9,6 +9,7 @@ using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Results;
 using ServiceStack.FluentValidation.Validators;
 using ServiceStack.Host;
+using ServiceStack.Script;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -108,8 +109,18 @@ namespace ServiceStack.Validation
             appHost.AddToAppMetadata(metadata => {
                 metadata.Plugins.Validation = new ValidationInfo {
                     HasValidationSource = hasValidationSource.NullIfFalse(), 
-                    HasValidationSourceAdmin = (container.Resolve<IValidationSource>() is IValidationSourceAdmin).NullIfFalse(),
+                    HasValidationSourceAdmin = (container.TryResolve<IValidationSource>() is IValidationSourceAdmin).NullIfFalse(),
                     ServiceRoutes = ServiceRoutes.ToMetadataServiceRoutes(),
+                    TypeValidators = !EnableDeclarativeValidation ? null
+                        : appHost.ScriptContext.ScriptMethods.SelectMany(x => 
+                                ScriptMethodInfo.GetScriptMethods(x.GetType(), where:mi => 
+                                    typeof(ITypeValidator).IsAssignableFrom(mi.ReturnType)))
+                            .Map(x => x.ToScriptMethodType()),
+                    PropertyValidators = !EnableDeclarativeValidation ? null
+                        : appHost.ScriptContext.ScriptMethods.SelectMany(x => 
+                                ScriptMethodInfo.GetScriptMethods(x.GetType(), where:mi => 
+                                    typeof(IPropertyValidator).IsAssignableFrom(mi.ReturnType)))
+                            .Map(x => x.ToScriptMethodType()),
                 };
             });
         }

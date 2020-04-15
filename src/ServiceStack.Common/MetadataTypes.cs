@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using ServiceStack.Script;
 
 namespace ServiceStack
 {
@@ -158,8 +159,18 @@ namespace ServiceStack
         public bool? HasValidationSource { get; set; }
         public bool? HasValidationSourceAdmin { get; set; }
         public Dictionary<string,string[]> ServiceRoutes { get; set; }
+        public List<ScriptMethodType> TypeValidators { get; set; }
+        public List<ScriptMethodType> PropertyValidators { get; set; }
         
         public Dictionary<string, string> Meta { get; set; }
+    }
+    
+    public class ScriptMethodType
+    {
+        public string Name { get; set; }
+        public string[] ParamNames { get; set; }
+        public string[] ParamTypes { get; set; }
+        public string ReturnType { get; set; }
     }
 
     public class AutoQueryConvention
@@ -399,6 +410,19 @@ namespace ServiceStack
         public static List<MetadataRoute> GetRoutes(this List<MetadataOperationType> operations, string typeName)
         {
             return operations.FirstOrDefault(x => x.Request.Name == typeName)?.Routes;
+        }
+
+        public static string ToScriptSignature(this ScriptMethodType method)
+        {
+            var paramCount = method.ParamNames?.Length ?? 0;
+            var firstParam = method.ParamNames?.Length > 0 ? method.ParamNames[0] : null;
+            var ret = method.ReturnType != null && method.ReturnType != nameof(StopExecution) ? " -> " + method.ReturnType : "";
+            var sig = paramCount == 0
+                ? $"{method.Name}{ret}"
+                : paramCount == 1
+                    ? $"{firstParam} |> {method.Name}{ret}"
+                    : $"{firstParam} |> {method.Name}(" + string.Join(", ", method.ParamNames?.Skip(1) ?? new string[0]) + $"){ret}";
+            return sig;
         }
     }
 }

@@ -16,11 +16,13 @@ using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
+using ServiceStack.FluentValidation.Validators;
 using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.Mvc;
 using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.NativeTypes.TypeScript;
+using ServiceStack.Script;
 using ServiceStack.Text;
 using ServiceStack.Validation;
 using ServiceStack.Web;
@@ -138,7 +140,9 @@ namespace CheckWebCore
             Plugins.Add(new GrpcFeature(App));
             
             // enable server-side rendering, see: https://sharpscript.net
-            Plugins.Add(new SharpPagesFeature()); 
+            Plugins.Add(new SharpPagesFeature {
+                ScriptMethods = { new CustomScriptMethods() }
+            }); 
             
             Plugins.Add(new LispReplTcpServer {
 //                RequireAuthSecret = true,
@@ -202,6 +206,12 @@ namespace CheckWebCore
 
             //GetPlugin<SvgFeature>().ValidateFn = req => Config.DebugMode; // only allow in DebugMode
         }
+    }
+
+    public class CustomScriptMethods : ScriptMethods
+    {
+        public ITypeValidator CustomTypeValidator(string arg) => null;
+        public IPropertyValidator CustomPropertyValidator(string arg) => null;
     }
     
     [Exclude(Feature.Metadata)]
