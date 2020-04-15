@@ -189,11 +189,6 @@ namespace ServiceStack
         /// </summary>
         public string Field { get; set; }
         
-        /// <summary>
-        /// Results sorted in ascending SortOrder, Id
-        /// </summary>
-        public int SortOrder { get; set; }
-        
         public string CreatedBy { get; set; }
         public DateTime? CreatedDate { get; set; }
         
@@ -209,7 +204,7 @@ namespace ServiceStack
         protected bool Equals(ValidationRule other)
         {
             return Id == other.Id &&
-                   Type == other.Type && Field == other.Field && SortOrder == other.SortOrder &&
+                   Type == other.Type && Field == other.Field &&
                    CreatedBy == other.CreatedBy && Nullable.Equals(CreatedDate, other.CreatedDate) &&
                    ModifiedBy == other.ModifiedBy && Nullable.Equals(ModifiedDate, other.ModifiedDate) &&
                    SuspendedBy == other.SuspendedBy && Nullable.Equals(SuspendedDate, other.SuspendedDate) &&
@@ -231,7 +226,6 @@ namespace ServiceStack
                 var hashCode = Id;
                 hashCode = (hashCode * 397) ^ (Type != null ? Type.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (Field != null ? Field.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ SortOrder;
                 hashCode = (hashCode * 397) ^ (CreatedBy != null ? CreatedBy.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ CreatedDate.GetHashCode();
                 hashCode = (hashCode * 397) ^ (ModifiedBy != null ? ModifiedBy.GetHashCode() : 0);

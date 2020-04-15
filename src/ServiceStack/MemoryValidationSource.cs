@@ -61,8 +61,7 @@ namespace ServiceStack
                         }
                     }
 
-                    var newTypeRules = typeRules.OrderBy(x => ((ValidationRule)x.Value).SortOrder)
-                        .ThenBy(x => ((ValidationRule)x.Value).Id)
+                    var newTypeRules = typeRules.OrderBy(x => ((ValidationRule)x.Value).Id)
                         .ToArray();
                     TypeRulesMap[group.Key] = newTypeRules;
                 }
