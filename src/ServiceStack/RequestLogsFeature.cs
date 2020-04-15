@@ -155,6 +155,8 @@ namespace ServiceStack
 
             appHost.GetPlugin<MetadataFeature>()
                 .AddDebugLink(AtRestPath, "Request Logs");
+            
+            appHost.GetPlugin<MetadataFeature>()?.ExportTypes.Add(typeof(RequestLogEntry));
         }
     }
 }

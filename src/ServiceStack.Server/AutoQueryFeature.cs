@@ -203,6 +203,8 @@ namespace ServiceStack
             if (EnableAutoQueryViewer && appHost.GetPlugin<AutoQueryMetadataFeature>() == null)
                 appHost.LoadPlugin(new AutoQueryMetadataFeature { MaxLimit = MaxLimit });
             
+            appHost.GetPlugin<MetadataFeature>()?.ExportTypes.Add(typeof(CrudEvent));
+
             //CRUD Services
             GenerateCrudServices?.Register(appHost);
         }

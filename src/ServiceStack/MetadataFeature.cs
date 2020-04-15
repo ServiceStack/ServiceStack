@@ -33,6 +33,12 @@ namespace ServiceStack
             }
         }
         
+        /// <summary>
+        /// Export built-in Types so they're available from /metadata/app
+        /// </summary>
+        public List<Type> ExportTypes { get; } = new List<Type> {
+        };
+        
         public Dictionary<Type, string[]> ServiceRoutes { get; set; } = new Dictionary<Type, string[]> {
             { typeof(MetadataAppService), new[]
             {
@@ -163,7 +169,9 @@ namespace ServiceStack
         public INativeTypesMetadata NativeTypesMetadata { get; set; }
         public AppMetadata Any(MetadataApp request)
         {
+            var feature = HostContext.AssertPlugin<MetadataFeature>();
             var typesConfig = NativeTypesMetadata.GetConfig(new TypesMetadata());
+            feature.ExportTypes.Each(x => typesConfig.ExportTypes.Add(x));
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
             metadataTypes.Config = null;
             
@@ -182,7 +190,7 @@ namespace ServiceStack
             if (response.App.ServiceName == null)
                 response.App.ServiceName = appHost.ServiceName;
 
-            foreach (var fn in HostContext.AssertPlugin<MetadataFeature>().AppMetadataFilters)
+            foreach (var fn in feature.AppMetadataFilters)
             {
                 fn(response);
             }

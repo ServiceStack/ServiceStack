@@ -123,6 +123,8 @@ namespace ServiceStack.Validation
                             .Map(x => x.ToScriptMethodType()),
                 };
             });
+            
+            appHost.GetPlugin<MetadataFeature>()?.ExportTypes.Add(typeof(ValidationRule));
         }
 
         public void AfterInit(IAppHost appHost)
