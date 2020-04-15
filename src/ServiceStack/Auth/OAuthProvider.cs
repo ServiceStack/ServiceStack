@@ -8,7 +8,7 @@ namespace ServiceStack.Auth
 {
     public abstract class OAuthProvider : AuthProvider
     {
-        public virtual string Type => "oauth";
+        public override string Type => "oauth";
         public OAuthProvider() { }
 
         public OAuthProvider(IAppSettings appSettings, string authRealm, string oAuthProvider)
