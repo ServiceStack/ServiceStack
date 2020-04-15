@@ -992,7 +992,7 @@ namespace ServiceStack
             className = HtmlScripts.htmlAddClass(className, inputClass);
 
             if (size != null)
-                className = HtmlScripts.htmlAddClass(className, (notInput || isCheck ? inputClass : "input") + "-" + size);
+                className = HtmlScripts.htmlAddClass(className, inputClass + "-" + size);
 
             var errorMsg = ErrorResponse(GetErrorStatus(req), name);
             if (errorMsg != null)
