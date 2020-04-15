@@ -17,6 +17,9 @@ namespace ServiceStack.Auth
     {
         protected static readonly ILog Log = LogManager.GetLogger(typeof(AuthProvider));
 
+        public virtual string Type => GetType().Name;
+        public virtual Dictionary<string, string> Meta => null;
+
         public TimeSpan? SessionExpiry { get; set; }
         public string AuthRealm { get; set; }
         public string Provider { get; set; }

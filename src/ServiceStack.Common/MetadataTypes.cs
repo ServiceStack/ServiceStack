@@ -241,11 +241,12 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
     }
 
-    public class MetaAuthProvider
+    public class MetaAuthProvider : IMeta
     {
         public string Name { get; set; }
         public string Type { get; set; }
         public NavItem NavItem { get; set; }
+        public Dictionary<string, string> Meta { get; set; }
     }
 
     public class MetadataOperationType

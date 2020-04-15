@@ -55,6 +55,7 @@ namespace ServiceStack.Auth
     /// </summary>
     public class ApiKeyAuthProvider : AuthProvider, IAuthWithRequest, IAuthPlugin
     {
+        public override string Type => "Bearer";
         public const string Name = AuthenticateService.ApiKeyProvider;
         public const string Realm = "/auth/" + AuthenticateService.ApiKeyProvider;
 

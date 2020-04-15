@@ -1,9 +1,12 @@
+using System.Collections.Generic;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
     public interface IAuthProvider
     {
+        string Type { get; }
+        Dictionary<string, string> Meta { get; }
         string AuthRealm { get; set; }
         string Provider { get; set; }
         string CallbackUrl { get; set; }

@@ -9,6 +9,8 @@ namespace ServiceStack.Auth
         public new static string Name = AuthenticateService.BasicProvider;
         public new static string Realm = "/auth/" + AuthenticateService.BasicProvider;
 
+        public override string Type => "Basic";
+
         public BasicAuthProvider()
         {
             this.Provider = Name;

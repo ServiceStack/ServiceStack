@@ -12,6 +12,7 @@ namespace ServiceStack.Auth
 {
     public class AspNetWindowsAuthProvider : AuthProvider, IAuthWithRequest
     {
+        public override string Type => "NTLM";
         public static string Name = AuthenticateService.WindowsAuthProvider;
         public static string Realm = "/auth/" + AuthenticateService.WindowsAuthProvider;
 

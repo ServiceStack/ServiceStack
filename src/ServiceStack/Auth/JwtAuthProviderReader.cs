@@ -17,6 +17,7 @@ namespace ServiceStack.Auth
     /// </summary>
     public class JwtAuthProviderReader : AuthProvider, IAuthWithRequest, IAuthPlugin
     {
+        public override string Type => "Bearer";
         public static RsaKeyLengths UseRsaKeyLength = RsaKeyLengths.Bit2048;
 
         public const string Name = AuthenticateService.JwtProvider;

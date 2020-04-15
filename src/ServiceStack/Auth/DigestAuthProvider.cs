@@ -12,6 +12,8 @@ namespace ServiceStack.Auth
     //DigestAuth Info: http://www.ntu.edu.sg/home/ehchua/programming/webprogramming/HTTP_Authentication.html
     public class DigestAuthProvider : AuthProvider, IAuthWithRequest
     {
+        public override string Type => "Digest";
+        
         public static string Name = AuthenticateService.DigestProvider;
         public static string Realm = "/auth/" + AuthenticateService.DigestProvider;
         public static int NonceTimeOut = 600;

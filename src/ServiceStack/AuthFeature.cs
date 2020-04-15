@@ -273,9 +273,10 @@ namespace ServiceStack
                     IncludesRoles = IncludeRolesInAuthenticateResponse.NullIfFalse(),
                     IncludesOAuthTokens = IncludeOAuthTokensInAuthenticateResponse.NullIfFalse(),
                     AuthProviders = AuthenticateService.GetAuthProviders().Map(x => new MetaAuthProvider {
-                        Type = x.GetType().Name,
+                        Type = x.Type,
                         Name = x.Provider,
                         NavItem = (x as AuthProvider)?.NavItem,
+                        Meta = x.Meta,
                     })
                 };
             });

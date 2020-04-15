@@ -15,6 +15,7 @@ namespace ServiceStack.Auth
     {
         public const string Name = AuthenticateService.IdentityProvider;
         public const string Realm = "/auth/" + AuthenticateService.IdentityProvider;
+        public override string Type => "Bearer";
 
         /// <summary>
         /// Whether to override AuthFeature HtmlRedirect with .NET Core Identity defaults

@@ -22,6 +22,10 @@ namespace ServiceStack.Auth
 
         public string VerifyAccessTokenUrl { get; set; }
 
+        public override Dictionary<string, string> Meta { get; } = new Dictionary<string, string> {
+            [Keywords.Allows] = Keywords.Embed
+        };
+        
         static GithubAuthProvider() {}
 
         public GithubAuthProvider(IAppSettings appSettings)

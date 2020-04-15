@@ -8,6 +8,8 @@ namespace ServiceStack.Auth
 {
     public class CredentialsAuthProvider : AuthProvider
     {
+        public override string Type => "credentials";
+
         private class CredentialsAuthValidator : AbstractValidator<Authenticate>
         {
             public CredentialsAuthValidator()
