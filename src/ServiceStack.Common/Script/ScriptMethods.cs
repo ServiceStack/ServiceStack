@@ -103,7 +103,7 @@ namespace ServiceStack.Script
         }
 
         private string CacheKey(InvokerType type, string methodName, int argsCount) =>
-            type + "::" + methodName.ToLower() + "`" + argsCount;
+            type + "::" + methodName + "`" + argsCount;
 
         private MethodInfo GetFilterMethod(string cacheKey) => lookupIndex.TryGetValue(cacheKey, out MethodInfo method) ? method : null;
 
