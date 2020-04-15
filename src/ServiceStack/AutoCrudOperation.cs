@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ServiceStack
 {
@@ -146,6 +147,17 @@ namespace ServiceStack
 
             return null;
         }
+
+        private static List<string> crudWriteInterfaces;
+        private static List<string> CrudWriteNames => crudWriteInterfaces ??= CrudInterfaceMetadataNames(Write); 
+
+        public static bool IsCrud(this MetadataOperationType op) => op.IsCrudRead() || op.IsCrudWrite();
+
+        public static bool IsCrudWrite(this MetadataOperationType op) => 
+            op.Request.Implements?.Any(iface => CrudWriteNames.Contains(iface.Name)) == true;
+
+        public static bool IsCrudRead(this MetadataOperationType op) => 
+            op.Request.Inherits?.Name == typeof(QueryDb<>).Name || op.Request.Inherits?.Name == typeof(QueryDb<,>).Name;
     }
     
     public struct AutoCrudDtoType
