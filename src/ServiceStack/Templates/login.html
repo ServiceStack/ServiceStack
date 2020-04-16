@@ -45,7 +45,10 @@
             border: 1px solid #ccc;
             white-space: pre-wrap;
         }
-        @media (min-width: 700px)
+        #auth {
+            max-width: 350px;
+        }
+        @media (max-width: 768px)
         {
             .container {
                 max-width: 700px;
@@ -93,7 +96,7 @@
                 </form>
             </div>
 
-            <div class="col-5">
+            <div class="col-8">
                 <div class="row justify-content-end">
                     <div id="auth" class="col col-8"></div>
                 </div>
@@ -117,7 +120,7 @@
     var BaseUrl = "${BaseUrl}";
     var qs = queryString(location.href);
     var CONTINUE = qs.redirect || (BaseUrl + '/auth');
-    
+
     function inIframe () {
         try {
             return window.self !== window.top;
@@ -125,7 +128,7 @@
             return true;
         }
     }
-    
+
     bootstrapForm(document.querySelector('form'), {
         success: function (r) {
             location.href = CONTINUE;
@@ -151,7 +154,7 @@
                     var nav = auth[i];
                     var meta = nav.meta || nav.Meta;
                     if (iframe && !(meta && meta.allows === 'embed')) continue;
-                    
+
                     var cls = nav.className || nav.ClassName;
                     var iconCls = nav.iconClass || nav.IconClass;
                     sb.push('<a href="' + BaseUrl + (nav.href || nav.Href) + '" class="btn btn-block btn-lg ' + cls + '">');
