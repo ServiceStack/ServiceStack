@@ -43,6 +43,7 @@ namespace ServiceStack.Auth
                 Id = "btn-" + Name,
                 ClassName = "btn-social btn-facebook",
                 IconClass = "fab svg-facebook",
+                Meta = new Dictionary<string, string> { [Keywords.Allows] = Keywords.Embed },
             };
         }
 

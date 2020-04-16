@@ -111,7 +111,15 @@
     var BaseUrl = "${BaseUrl}";
     var qs = queryString(location.href);
     var CONTINUE = qs.redirect || (BaseUrl + '/auth');
-
+    
+    function inIframe () {
+        try {
+            return window.self !== window.top;
+        } catch (e) {
+            return true;
+        }
+    }
+    
     bootstrapForm(document.querySelector('form'), {
         success: function (r) {
             location.href = CONTINUE;
@@ -129,11 +137,15 @@
         .then(function(r){ return r.json(); })
         .then(function(r) {
             var sb = [];
+            var iframe = inIframe();
             var auth = (r.navItemsMap || r.NavItemsMap || {})['auth'];
             if (auth)
             {
                 for (var i=0; i<auth.length; i++) {
                     var nav = auth[i];
+                    var meta = nav.meta || nav.Meta;
+                    if (iframe && !(meta && meta.allows === 'embed')) continue;
+                    
                     var cls = nav.className || nav.ClassName;
                     var iconCls = nav.iconClass || nav.IconClass;
                     sb.push('<a href="' + BaseUrl + (nav.href || nav.Href) + '" class="btn btn-block btn-lg ' + cls + '">');

@@ -281,6 +281,7 @@ namespace ServiceStack
                     HasAuthRepository = appHost.GetContainer().Exists<IAuthRepository>().NullIfFalse(),
                     IncludesRoles = IncludeRolesInAuthenticateResponse.NullIfFalse(),
                     IncludesOAuthTokens = IncludeOAuthTokensInAuthenticateResponse.NullIfFalse(),
+                    HtmlRedirect = HtmlRedirect?.TrimStart('~'),
                     AuthProviders = AuthenticateService.GetAuthProviders().Map(x => new MetaAuthProvider {
                         Type = x.Type,
                         Name = x.Provider,
