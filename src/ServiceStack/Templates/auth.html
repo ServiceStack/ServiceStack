@@ -193,7 +193,7 @@
                 '<i class="svg-chevron-right svg-lg mb-1" title="expand"></i>StackTrace</button>' +
                 '<div class="stacktrace" style="display:none">' + error.stacktrace + '</div></div>' : '') +
             '</div>');
-        errorHtml += '<p class="ml-3 btn-group"' + btnLink(BaseUrl,'&lt; home')  + (LoginPath ? btnLink(BaseUrl + '/login','login &gt;') : '') + '</p>';
+        errorHtml += '<p class="ml-3 btn-group">' + btnLink(BaseUrl,'&lt; home')  + (LoginPath ? btnLink(BaseUrl + '/login','login &gt;') : '') + '</p>';
         $('#error').innerHTML = errorHtml;
     } else {
         var name = normalized.displayname || normalized.username;
