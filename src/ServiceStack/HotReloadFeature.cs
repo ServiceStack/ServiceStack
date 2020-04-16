@@ -47,6 +47,8 @@ namespace ServiceStack
             "*.sqlite",
             "*.db",
             "*.ts", //watch on generated .js instead
+            "*.log", //exclude log files
+            "*.csv",
         };
         
         public static TimeSpan LongPollDuration = TimeSpan.FromSeconds(60);
