@@ -145,11 +145,12 @@ namespace ServiceStack
             if (reload && (oSession as IAuthSession)?.FromToken != true) // can't reload FromToken sessions from cache
                 oSession = null;
 
+            var appHost = HostContext.AppHost;
             if (oSession == null && !httpReq.Items.ContainsKey(Keywords.HasPreAuthenticated))
             {
                 try
                 {
-                    HostContext.AppHost.ApplyPreAuthenticateFilters(httpReq, httpReq.Response);
+                    appHost.ApplyPreAuthenticateFilters(httpReq, httpReq.Response);
                     httpReq.Items.TryGetValue(Keywords.Session, out oSession);
                 }
                 catch (Exception ex)
@@ -162,9 +163,16 @@ namespace ServiceStack
             var sessionId = httpReq.GetSessionId();
             var session = oSession as IAuthSession;
             if (session != null)
-                session = HostContext.AppHost.OnSessionFilter(httpReq, session, sessionId);
+                session = appHost.OnSessionFilter(httpReq, session, sessionId);
             if (session != null)
                 return session;
+
+            if (appHost.HasValidAuthSecret(httpReq))
+            {
+                session = appHost.GetPlugin<AuthFeature>()?.AuthSecretSession?.Invoke(httpReq);
+                if (session != null)
+                    return session;
+            }
 
             var sessionKey = SessionFeature.GetSessionKey(sessionId);
             if (sessionKey != null)
@@ -172,13 +180,13 @@ namespace ServiceStack
                 session = httpReq.GetCacheClient().Get<IAuthSession>(sessionKey);
 
                 if (session != null)
-                    session = HostContext.AppHost.OnSessionFilter(httpReq, session, sessionId);
+                    session = appHost.OnSessionFilter(httpReq, session, sessionId);
             }
 
             if (session == null)
             {
                 var newSession = SessionFeature.CreateNewSession(httpReq, sessionId);
-                session = HostContext.AppHost.OnSessionFilter(httpReq, newSession, sessionId) ?? newSession;
+                session = appHost.OnSessionFilter(httpReq, newSession, sessionId) ?? newSession;
             }
 
             httpReq.Items[Keywords.Session] = session;

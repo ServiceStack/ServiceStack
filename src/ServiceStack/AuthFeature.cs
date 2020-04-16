@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using ServiceStack.Auth;
+using ServiceStack.Caching;
 using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -188,6 +189,24 @@ namespace ServiceStack
                 "/" + LocalizedStrings.Authenticate.Localize() + "/{provider}",
             };
             return this;
+        }
+
+        /// <summary>
+        /// The Session to return for AuthSecret
+        /// </summary>
+        public Func<IRequest, IAuthSession> AuthSecretSession { get; set; } = DefaultAuthSecretSession;
+
+        public static IAuthSession DefaultAuthSecretSession(IRequest req)
+        {
+            return new AuthUserSession {
+                Id = Guid.NewGuid().ToString("n"),
+                DisplayName = "Admin",
+                UserName = Keywords.AuthSecret,
+                UserAuthName = Keywords.AuthSecret,
+                AuthProvider = Keywords.AuthSecret,
+                IsAuthenticated = true,
+                UserAuthId = "0",
+            };
         }
         
         public AuthFeature(Func<IAuthSession> sessionFactory, IAuthProvider[] authProviders, string htmlRedirect = null)
