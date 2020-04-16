@@ -220,7 +220,7 @@
                         sbTokens.push('<small>copy</small></span>');
                         sbTokens.push('</td></tr>');
                     } else {
-                        sb.push('<tr><th>' + humanize(k) + '</th><td>' + str + '</td></tr>');
+                        sb.push('<tr><th><div>' + humanize(k) + '</div></th><td><div>' + str + '</div></td></tr>');
                     }
                 }
             }
@@ -236,7 +236,11 @@
                         '<span>' + str + '</span>' +
                         '</button><small>copy</small></span>';
                 }
-                sb.push('<tr><th>' + humanize(k) + '</th><td>' + str + '</td>');
+                if (cmpKey === 'referrerurl') {
+                    sb.push('<tr><td colspan="2"><div><a href="' + str + '">Referrer URL</a></div></td></tr>');
+                } else {
+                    sb.push('<tr><th>' + humanize(k) + '</th><td>' + str + '</td>');
+                }
             }
         }
         sb.push('</table></td></table>');

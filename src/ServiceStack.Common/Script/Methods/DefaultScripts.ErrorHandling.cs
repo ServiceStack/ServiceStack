@@ -202,10 +202,10 @@ namespace ServiceStack.Script
             }
         }
         
-        public object ifthrow(ScriptScopeContext scope, bool test, string message) => test 
+        public object ifThrow(ScriptScopeContext scope, bool test, string message) => test 
             ? new Exception(message).InStopFilter(scope, null)
             : StopExecution.Value;
-        public object ifthrow(ScriptScopeContext scope, bool test, string message, object options) => test 
+        public object ifThrow(ScriptScopeContext scope, bool test, string message, object options) => test 
             ? new Exception(message).InStopFilter(scope, options)
             : StopExecution.Value;
 

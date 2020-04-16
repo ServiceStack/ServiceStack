@@ -35,7 +35,7 @@ namespace ServiceStack.Script
             nameof(@do),
             nameof(end),
             nameof(@throw),
-            nameof(ifthrow),
+            nameof(ifThrow),
             nameof(throwIf),
             nameof(throwIf),
             nameof(ifThrowArgumentException),
