@@ -21,7 +21,7 @@ namespace ServiceStack.Formats
         private IAppHost AppHost { get; set; }
         
         public Dictionary<string, string> PathTemplates { get; set; } = new Dictionary<string, string> {
-            { "/" + LocalizedStrings.Auth.Localize(), "/Templates/Auth.html" }
+            { "/" + LocalizedStrings.Auth.Localize(), "/Templates/auth.html" }
         };
         
         public Func<IRequest, string> ResolveTemplate { get; set; }
@@ -124,19 +124,30 @@ namespace ServiceStack.Formats
                 var now = DateTime.UtcNow;
                 var requestName = req.OperationName ?? dto.GetType().GetOperationName();
 
-                html = (ResolveTemplate?.Invoke(req) ?? Templates.HtmlTemplates.GetHtmlFormatTemplate())
+                html = ReplaceTokens(ResolveTemplate?.Invoke(req) ?? Templates.HtmlTemplates.GetHtmlFormatTemplate(), req)
                     .Replace("${Dto}", json)
-                    .Replace("${BaseUrl}", req.GetBaseUrl().TrimEnd('/'))
                     .Replace("${Title}", string.Format(TitleFormat, requestName, now))
                     .Replace("${MvcIncludes}", MiniProfiler.Profiler.RenderIncludes().ToString())
                     .Replace("${Header}", string.Format(HtmlTitleFormat, requestName, now))
                     .Replace("${ServiceUrl}", url)
                     .Replace("${Humanize}", Humanize.ToString().ToLower())
-                    .Replace("${AuthRedirect}", req.ResolveAbsoluteUrl(AppHost.GetPlugin<AuthFeature>()?.HtmlRedirect))
-                    .Replace("${AllowOrigins}", AppHost.GetPlugin<CorsFeature>()?.AllowOriginWhitelist?.Join(";"));
+                    ;
             }
             
             await ((ServiceStackHost)AppHost).WriteAutoHtmlResponseAsync(req, response, html, outputStream);
+        }
+
+        public static string ReplaceTokens(string html, IRequest req)
+        {
+            if (string.IsNullOrEmpty(html))
+                return string.Empty;
+
+            html = html
+                .Replace("${BaseUrl}", req.GetBaseUrl().TrimEnd('/'))
+                .Replace("${AuthRedirect}", req.ResolveAbsoluteUrl(HostContext.AppHost.GetPlugin<AuthFeature>()?.HtmlRedirect))
+                .Replace("${AllowOrigins}", HostContext.AppHost.GetPlugin<CorsFeature>()?.AllowOriginWhitelist?.Join(";"))
+            ;
+            return html;
         }
     }
 }

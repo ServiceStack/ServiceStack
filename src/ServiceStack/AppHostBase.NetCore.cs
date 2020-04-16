@@ -110,8 +110,7 @@ namespace ServiceStack
 
         private IHostingEnvironment env;
 
-        public IHostingEnvironment HostingEnvironment => env 
-            ?? (env = app?.ApplicationServices.GetService<IHostingEnvironment>());  
+        public IHostingEnvironment HostingEnvironment => env ??= app?.ApplicationServices.GetService<IHostingEnvironment>();  
 
         public override void OnConfigLoad()
         {

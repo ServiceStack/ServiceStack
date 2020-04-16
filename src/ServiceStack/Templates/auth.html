@@ -197,6 +197,7 @@
         sb.push('<table><tr><td class="text-center avatar">');
         sb.push('<img src="' + (normalized.profileurl || BaseUrl + '/metadata/svg/male-color.svg') + '">');
         sb.push('<h2>' + name + '</h2>');
+        sb.push('<p><a href="' + BaseUrl + '/auth/logout?continue=' + encodeURIComponent(BaseUrl + '/login') + '">sign out</a></p>');
         sb.push('</td><td class="info"><table class="table">');
 
         var sbTokens = [];

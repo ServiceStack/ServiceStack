@@ -29,6 +29,15 @@ namespace ServiceStack.Templates
                 .Replace("{{serviceStackLogoDataUriLight}}", Svg.Fill(Svg.GetDataUri(Svg.Logos.ServiceStack), Svg.LightColor));
         }
 
+        public static string GetLoginTemplate()
+        {
+            var appHost = HostContext.AppHost;
+            return LoadTemplate("login.html")
+                .Replace("${BaseUrl}", appHost.ResolveStaticBaseUrl())
+                .Replace("${ServiceName}", appHost.ServiceName)
+                ;
+        }
+
         public static string GetHtmlFormatTemplate() => LoadTemplate("HtmlFormat.html");
 
         public static string GetSvgTemplatePath() => GetTemplatePath("svg.html");

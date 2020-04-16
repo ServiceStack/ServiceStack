@@ -114,6 +114,8 @@ namespace ServiceStack
 
         public bool IncludeOAuthTokensInAuthenticateResponse { get; set; }
 
+        public bool IncludeDefaultLogin { get; set; } = true;
+
         /// <summary>
         /// Allow or deny all GET Authenticate Requests
         /// </summary>
@@ -263,6 +265,13 @@ namespace ServiceStack
             var authNavItems = AuthProviders.Select(x => (x as AuthProvider)?.NavItem).Where(x => x != null);
             if (!ViewUtils.NavItemsMap.TryGetValue("auth", out var navItems))
                 ViewUtils.NavItemsMap["auth"] = navItems = new List<NavItem>();
+
+            var isDefaultHtmlRedirect = HtmlRedirect == "~/" + LocalizedStrings.Login.Localize();
+            if (IncludeDefaultLogin && isDefaultHtmlRedirect && !appHost.VirtualFileSources.FileExists("/login.html"))
+            {
+                appHost.VirtualFileSources.GetMemoryVirtualFiles().WriteFile("/login.html", 
+                    Templates.HtmlTemplates.GetLoginTemplate());
+            }
 
             navItems.AddRange(authNavItems);
 
