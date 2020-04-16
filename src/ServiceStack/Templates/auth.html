@@ -179,6 +179,10 @@
         document.querySelector('.btn-stacktrace').style.display = 'none';
         document.querySelector('.stacktrace').style.display = 'block';
     }
+    
+    function btnLink(href,label) {
+        return '<a class="btn btn-outline-primary btn-sm" href="' + href + '">' + label + '</a>';
+    }
 
     var error = normalized.responsestatus;
     if (error && error.errorcode) {
@@ -189,7 +193,7 @@
                 '<i class="svg-chevron-right svg-lg mb-1" title="expand"></i>StackTrace</button>' +
                 '<div class="stacktrace" style="display:none">' + error.stacktrace + '</div></div>' : '') +
             '</div>');
-        errorHtml += '<p class="ml-4"><a href="' + BaseUrl + '">home</a>' + (LoginPath ? ' | <a href="' + LoginPath + '">login</a>' : '') + '</p>';
+        errorHtml += '<p class="ml-3 btn-group"' + btnLink(BaseUrl,'&lt; home')  + (LoginPath ? btnLink(BaseUrl + '/login','login &gt;') : '') + '</p>';
         $('#error').innerHTML = errorHtml;
     } else {
         var name = normalized.displayname || normalized.username;
