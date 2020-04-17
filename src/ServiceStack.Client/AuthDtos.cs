@@ -487,7 +487,7 @@ namespace ServiceStack
         [DataMember(Order = 2)]
         public string Model { get; set; }
         [DataMember(Order = 3)]
-        public string Id { get; set; }
+        public string ModelId { get; set; }
     }
 
     [DataContract]
