@@ -22,6 +22,11 @@ namespace ServiceStack
     public interface IAppHost : IResolver
     {
         /// <summary>
+        /// The base path ServiceStack is hosted on
+        /// </summary>
+        string PathBase { get; }
+        
+        /// <summary>
         /// The assemblies reflected to find api services provided in the AppHost constructor
         /// </summary>
         List<Assembly> ServiceAssemblies { get; }

@@ -61,6 +61,15 @@ namespace ServiceStack
         public bool TestMode { get; set; }
 
         /// <summary>
+        /// The base path ServiceStack is hosted on
+        /// </summary>
+        public virtual string PathBase
+        {
+            get => Config?.HandlerFactoryPath;
+            set => Config.HandlerFactoryPath = value;
+        }
+
+        /// <summary>
         /// The assemblies reflected to find api services.
         /// These can be provided in the constructor call.
         /// </summary>

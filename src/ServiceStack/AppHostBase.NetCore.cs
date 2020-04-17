@@ -39,9 +39,9 @@ namespace ServiceStack
         }
 
         private string pathBase;
-        public string PathBase
+        public override string PathBase
         {
-            get => pathBase;
+            get => pathBase ?? Config?.HandlerFactoryPath;
             set
             {
                 if (!string.IsNullOrEmpty(value))

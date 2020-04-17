@@ -134,11 +134,8 @@ namespace ServiceStack
         public static string ResolveStaticBaseUrl(this IAppHost appHost)
         {
             return (appHost.Config.WebHostUrl ??
-#if NETSTANDARD2_0
-                ((AppHostBase) AppHostBase.Instance).PathBase ??
-#endif
-                (!string.IsNullOrEmpty(appHost.Config.HandlerFactoryPath)
-                    ? "/" + appHost.Config.HandlerFactoryPath
+                (!string.IsNullOrEmpty(appHost.PathBase)
+                    ? "/" + appHost.PathBase
                     : "")).TrimEnd('/');
         }
     }
