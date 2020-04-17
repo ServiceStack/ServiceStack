@@ -307,9 +307,6 @@ namespace ServiceStack.NativeTypes
             typeof(FileContent),
             typeof(StreamFiles), // gRPC Server Stream
             typeof(StreamServerEvents), // gRPC Server Stream
-            typeof(GetCrudEvents),
-            typeof(CheckCrudEvents),
-            typeof(CrudEvent),
         }.ToList();
 
         private MetadataTypes ConfigureScript(MetadataTypesConfig typesConfig)
