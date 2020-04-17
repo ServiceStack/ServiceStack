@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -7,6 +8,7 @@ using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
+using ServiceStack.Text;
 using ServiceStack.Validation;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -97,6 +99,100 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Type = nameof(ValidationRulesTest),
                 AuthSecret = AuthSecret 
             });
+        }
+
+        [Test]
+        public void Does_now_allow_registering_invalid_validators()
+        {
+            (appHost.Resolve<IValidationSource>() as IClearable)?.Clear();
+            
+            var client = GetClient();
+            
+            void saveRules(params ValidationRule[] rules) => client.Post(new ModifyValidationRules {
+                AuthSecret = AuthSecret,
+                SaveRules = new List<ValidationRule>(rules)
+            });
+
+            void assertThrows(Action fn, Action<WebServiceException> onError)
+            {
+                try
+                {
+                    fn();
+                    Assert.Fail($"Should throw {nameof(WebServiceException)}");
+                }
+                catch (WebServiceException e)
+                {
+                    onError(e);
+                }
+            }
+
+            assertThrows(() => saveRules(new ValidationRule {
+                Validator = nameof(ValidateScripts.IsAuthenticated),
+            }), e => Assert.That(e.StatusCode == 400 &&
+                e.GetFieldErrors()[0].FieldName == nameof(ValidationRule.Type)));
+            
+            assertThrows(() => saveRules(new ValidationRule {
+                Type = nameof(ValidationRulesTest) + "NotExists",
+                Validator = nameof(ValidateScripts.IsAuthenticated),
+            }), e => Assert.That(e.StatusCode == 400 &&
+                e.GetFieldErrors()[0].FieldName == nameof(ValidationRule.Type)));
+            
+            assertThrows(() => saveRules(new ValidationRule {
+                Type = nameof(ValidationRulesTest),
+                Field = "NotExists",
+                Validator = nameof(ValidateScripts.IsAuthenticated),
+            }), e => Assert.That(e.StatusCode == 400 &&
+                e.GetFieldErrors()[0].FieldName == nameof(ValidationRule.Field)));
+            
+            assertThrows(() => saveRules(new ValidationRule {
+                Type = nameof(ValidationRulesTest),
+                Validator = nameof(ValidateScripts.IsAuthenticated) + "NotExists",
+            }), e => Assert.That(e.StatusCode == 400 &&
+                e.GetFieldErrors()[0].FieldName == nameof(ValidationRule.Validator)));
+            
+            assertThrows(() => saveRules(new ValidationRule {
+                Type = nameof(ValidationRulesTest),
+                Field = nameof(ValidationRulesTest.AuthSecret),
+                Validator = nameof(ValidateScripts.IsAuthenticated), //should be IPropertyValidator
+            }), e => Assert.That(e.StatusCode == 400 &&
+                e.GetFieldErrors()[0].FieldName == nameof(ValidationRule.Validator)));
+            
+            assertThrows(() => saveRules(new ValidationRule {
+                Type = nameof(ValidationRulesTest),
+                Validator = nameof(ValidateScripts.Null), //should be ITypeValidator
+            }), e => Assert.That(e.StatusCode == 400 &&
+                e.GetFieldErrors()[0].FieldName == nameof(ValidationRule.Validator)));
+
+            assertThrows(() => saveRules(new ValidationRule {
+                Type = nameof(ValidationRulesTest),
+                Field = nameof(ValidationRulesTest.AuthSecret),
+                Validator = $"[{nameof(ValidateScripts.Null)},{nameof(ValidateScripts.IsAuthenticated)}]", //validate all
+            }), e => Assert.That(e.StatusCode == 400 &&
+                e.GetFieldErrors()[0].FieldName == nameof(ValidationRule.Validator)));
+            
+            assertThrows(() => saveRules(new ValidationRule {
+                Type = nameof(ValidationRulesTest),
+                Validator = $"[{nameof(ValidateScripts.IsAuthenticated)},{nameof(ValidateScripts.Null)}]", //validate all
+            }), e => Assert.That(e.StatusCode == 400 &&
+                e.GetFieldErrors()[0].FieldName == nameof(ValidationRule.Validator)));
+            
+            assertThrows(() => saveRules(new ValidationRule {
+                Type = nameof(ValidationRulesTest),
+                Validator = nameof(ValidateScripts.IsAuthenticated),
+                Condition = "true",
+            }), e => Assert.That(e.StatusCode == 400 &&
+                e.GetFieldErrors()[0].FieldName == nameof(ValidationRule.Condition)));
+            
+            assertThrows(() => saveRules(new ValidationRule {
+                Type = nameof(ValidationRulesTest),
+            }), e => Assert.That(e.StatusCode == 400 &&
+                e.GetFieldErrors()[0].FieldName == nameof(ValidationRule.Validator)));
+
+            assertThrows(() => saveRules(new ValidationRule {
+                Type = nameof(ValidationRulesTest),
+                Condition = "Invalid (ode"
+            }), e => Assert.That(e.StatusCode == 400 &&
+                e.GetFieldErrors()[0].FieldName == nameof(ValidationRule.Condition)));
         }
 
         [Test]

@@ -100,13 +100,18 @@ namespace ServiceStack
             return false;
         }
 
+        public static SharpPage ParseCondition(ScriptContext context, string condition)
+        {
+            var evalCode = ScriptCodeUtils.EnsureReturn(condition);
+            return context.CodeSharpPage(evalCode);
+        }
+
         public static void AddTypeValidator(List<ITypeValidator> to, IValidateRule attr)
         {
             var appHost = HostContext.AppHost;
             if (!string.IsNullOrEmpty(attr.Condition))
             {
-                var evalCode = ScriptCodeUtils.EnsureReturn(attr.Condition);
-                var code = appHost.ScriptContext.CodeSharpPage(evalCode);
+                var code = ParseCondition(appHost.ScriptContext, attr.Condition);
                 to.Add(new ScriptValidator(code, attr.Condition).Init(attr));
             }
             else if (!string.IsNullOrEmpty(attr.Validator))

@@ -200,7 +200,6 @@ namespace ServiceStack.Validation
         public async Task Any(ModifyValidationRules request)
         {
             var appHost = HostContext.AssertAppHost();
-            var container = appHost.GetContainer();
             var feature = appHost.AssertPlugin<ValidationFeature>();
             RequestUtils.AssertAccessRole(base.Request, accessRole: feature.AccessRole, authSecret: request.AuthSecret);
 
@@ -214,7 +213,53 @@ namespace ServiceStack.Validation
                 {
                     if (rule.Type == null)
                         throw new ArgumentNullException(nameof(rule.Type));
-                
+
+                    var existingType = appHost.Metadata.FindDtoType(rule.Type);
+                    if (existingType == null)
+                        throw new ArgumentException(@$"{rule.Type} does not exist", nameof(rule.Type));
+                    
+                    if (rule.Field != null && TypeProperties.Get(existingType).GetAccessor(rule.Field) == null)
+                        throw new ArgumentException(@$"{rule.Field} does not exist on {rule.Type}", nameof(rule.Field));
+
+                    if (rule.Validator != null)
+                    {
+                        var validator = appHost.EvalExpression(rule.Validator);
+                        if (validator == null)
+                            throw new ArgumentException(@$"Validator does not exist", nameof(rule.Validator));
+
+                        var validators = (validator as List<object>) ?? TypeConstants.EmptyObjectList;
+                        var firstValidator = validator is IPropertyValidator pv
+                            ? pv
+                            : validator is ITypeValidator tv
+                            ? tv
+                            : validators?.FirstOrDefault() ?? validator;
+
+                        if (rule.Field != null && !(firstValidator is IPropertyValidator && validators.All(v => v is IPropertyValidator)))
+                            throw new ArgumentException(@$"{nameof(IPropertyValidator)} is expected but was {(validators?.FirstOrDefault(v => !(v is IPropertyValidator)) ?? firstValidator).GetType().Name}", nameof(rule.Validator));
+                        
+                        if (rule.Field == null && !(firstValidator is ITypeValidator && validators.All(v => v is ITypeValidator)))
+                            throw new ArgumentException(@$"{nameof(ITypeValidator)} is expected but was {(validators?.FirstOrDefault(v => !(v is IPropertyValidator)) ?? firstValidator).GetType().Name}", nameof(rule.Validator));
+
+                        if (rule.Condition != null)
+                            throw new ArgumentException(@$"Only {nameof(rule.Validator)} or {nameof(rule.Condition)} can be specified, not both", nameof(rule.Condition));
+                    }
+                    else
+                    {
+                        if (rule.Condition == null)
+                            throw new ArgumentNullException(nameof(rule.Validator), @$"{nameof(rule.Validator)} or {nameof(rule.Condition)} is required");
+
+                        try
+                        {
+                            var ast = Validators.ParseCondition(appHost.ScriptContext, rule.Condition);
+                            await ast.Init();
+                        }
+                        catch (Exception e)
+                        {
+                            var useEx = e is ScriptException se ? se.InnerException ?? e : e;
+                            throw new ArgumentException(useEx.Message, nameof(rule.Condition));
+                        }
+                    }
+
                     if (rule.CreatedBy == null)
                     {
                         rule.CreatedBy = userName;
