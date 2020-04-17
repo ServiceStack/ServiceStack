@@ -607,7 +607,32 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Does_work_with_CredentailsAuth()
+        public void Does_return_SessionId_Cookies()
+        {
+            var client = GetClient();
+            var authResponse = client.Send(new Authenticate
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = "user",
+                Password = "p@55word",
+            });
+            var cookies = client.GetCookieValues();
+            Assert.That(authResponse.SessionId, Is.EqualTo(cookies["ss-id"]));
+
+            client = GetClient();
+            authResponse = client.Send(new Authenticate
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = "user",
+                Password = "p@55word",
+                RememberMe = true,
+            });
+            cookies = client.GetCookieValues();
+            Assert.That(authResponse.SessionId, Is.EqualTo(cookies["ss-pid"]));
+        }
+
+        [Test]
+        public void Does_work_with_CredentialsAuth()
         {
             try
             {
