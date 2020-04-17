@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using ServiceStack.Configuration;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
@@ -14,7 +15,46 @@ namespace ServiceStack
 {
     public partial class AutoQueryFeature
     {
-        
+        public string AccessRole { get; set; } = RoleNames.Admin;
+
+        public Dictionary<Type, string[]> ServiceRoutes { get; set; } = new Dictionary<Type, string[]> {
+            { typeof(QueryCrudEventsService), new []{ "/" + "crudevents".Localize() + "/{Model}" } },
+        };
+
+        protected void OnRegister(IAppHost appHost)
+        {
+            if (AccessRole != null && appHost.GetContainer().Exists<ICrudEvents>())
+            {
+                appHost.RegisterServices(ServiceRoutes);
+            }
+        }
+    }
+    
+    [DefaultRequest(typeof(QueryCrudEvents))]
+    public class QueryCrudEventsService : Service
+    {
+        public IAutoQueryDb AutoQuery { get; set; }
+        public IDbConnectionFactory DbFactory { get; set; }
+
+        public async Task<object> Any(QueryCrudEvents request)
+        {
+            var appHost = HostContext.AppHost;
+            var feature = appHost.AssertPlugin<AutoQueryFeature>();
+            RequestUtils.AssertAccessRole(base.Request, accessRole:feature.AccessRole, authSecret:request.AuthSecret);
+
+            if (string.IsNullOrEmpty(request.Model))
+                throw new ArgumentNullException(nameof(request.Model));
+
+            var dto = appHost.Metadata.FindDtoType(request.Model);
+            var namedConnection = dto?.FirstAttribute<NamedConnectionAttribute>()?.Name;
+
+            using var useDb = namedConnection != null
+                ? DbFactory.OpenDbConnection(namedConnection)
+                : DbFactory.OpenDbConnection();
+            
+            var q = AutoQuery.CreateQuery(request, Request, useDb);
+            return await AutoQuery.ExecuteAsync(request, q, Request, useDb);
+        }
     }
 
     public class CrudContext

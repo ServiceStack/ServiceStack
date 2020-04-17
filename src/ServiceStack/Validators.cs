@@ -219,7 +219,7 @@ namespace ServiceStack
                 // Not/EmptyValidator has a required default constructor required to accurately determine empty for value types
                 if (pi.PropertyType.IsValueType && !pi.PropertyType.IsNullableType())
                 {
-                    rule.Validator += "(default('" + pi.PropertyType.Namespace + "." + pi.PropertyType.Name + "')";
+                    rule.Validator += "(default('" + pi.PropertyType.Namespace + "." + pi.PropertyType.Name + "'))";
                 }
             }
         }

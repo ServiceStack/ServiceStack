@@ -476,7 +476,103 @@ namespace ServiceStack
 
         [DataMember(Order = 5)]
         public int[] UnsuspendRuleIds { get; set; }
-
     }
     
+    //CrudEvents
+    [DataContract]
+    public class QueryCrudEvents : QueryDb<CrudEvent>
+    {
+        [DataMember(Order = 1)]
+        public string AuthSecret { get; set; }
+        [DataMember(Order = 2)]
+        public string Model { get; set; }
+        [DataMember(Order = 2)]
+        public string Id { get; set; }
+    }
+    
+    /// <summary>
+    /// Capture a CRUD Event
+    /// </summary>
+    [DataContract]
+    public class CrudEvent : IMeta
+    {
+        [AutoIncrement]
+        [DataMember(Order = 1)]
+        public long Id { get; set; }
+        /// <summary>
+        /// AutoCrudOperation, e.g. Create, Update, Patch, Delete, Save
+        /// </summary>
+        [DataMember(Order = 2)]
+        public string EventType { get; set; }
+        /// <summary>
+        /// DB Model
+        /// </summary>
+        [Index]
+        [DataMember(Order = 3)]
+        public string Model { get; set; }
+        /// <summary>
+        /// Primary Key of DB Model
+        /// </summary>
+        [Index]
+        [DataMember(Order = 4)]
+        public string ModelId { get; set; }
+        /// <summary>
+        /// Date of Event (UTC)
+        /// </summary>
+        [DataMember(Order = 5)]
+        public DateTime EventDate { get; set; }
+        /// <summary>
+        /// Rows Updated if available
+        /// </summary>
+        [DataMember(Order = 6)]
+        public long? RowsUpdated { get; set; }
+        /// <summary>
+        /// Request DTO Type
+        /// </summary>
+        [DataMember(Order = 7)]
+        public string RequestType { get; set; }
+        /// <summary>
+        /// Serialized Request Body
+        /// </summary>
+        [DataMember(Order = 8)]
+        public string RequestBody { get; set; }
+        /// <summary>
+        /// UserAuthId if Authenticated
+        /// </summary>
+        [DataMember(Order = 9)]
+        public string UserAuthId { get; set; }
+        /// <summary>
+        /// UserName or unique User Identifier
+        /// </summary>
+        [DataMember(Order = 10)]
+        public string UserAuthName { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        [DataMember(Order = 11)]
+        public string RemoteIp { get; set; }
+        /// <summary>
+        /// URN format: urn:{requesttype}:{ModelId}
+        /// </summary>
+        [DataMember(Order = 12)]
+        public string Urn { get; set; }
+
+        /// <summary>
+        /// Custom Reference Data with integer Primary Key
+        /// </summary>
+        [DataMember(Order = 13)]
+        public int? RefId { get; set; }
+        /// <summary>
+        /// Custom Reference Data with non-integer Primary Key
+        /// </summary>
+        [DataMember(Order = 14)]
+        public string RefIdStr { get; set; }
+        /// <summary>
+        /// Custom Metadata to attach to this event
+        /// </summary>
+        [DataMember(Order = 15)]
+        public Dictionary<string, string> Meta { get; set; }
+    }
+    
+
 }

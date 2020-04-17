@@ -195,6 +195,7 @@ namespace ServiceStack
                     AutoQueryViewer = EnableAutoQueryViewer.NullIfFalse(),
                     OrderByPrimaryKey = OrderByPrimaryKeyOnPagedQuery.NullIfFalse(),
                     CrudEvents = container.Exists<ICrudEvents>().NullIfFalse(),
+                    CrudEventsServices = (ServiceRoutes.ContainsKey(typeof(QueryCrudEventsService)) && AccessRole != null).NullIfFalse(),
                     NamedConnection = UseNamedConnection,
                     ViewerConventions = ViewerConventions,
                 };
@@ -204,9 +205,11 @@ namespace ServiceStack
                 appHost.LoadPlugin(new AutoQueryMetadataFeature { MaxLimit = MaxLimit });
             
             appHost.GetPlugin<MetadataFeature>()?.ExportTypes.Add(typeof(CrudEvent));
-
+            
             //CRUD Services
             GenerateCrudServices?.Register(appHost);
+
+            OnRegister(appHost);
         }
 
         public void AfterPluginsLoaded(IAppHost appHost)

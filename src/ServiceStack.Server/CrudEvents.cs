@@ -31,73 +31,7 @@ namespace ServiceStack
     {
         Task ExecuteAsync(T crudEvent);
     }
-
-    /// <summary>
-    /// Capture a CRUD Event
-    /// </summary>
-    public class CrudEvent : IMeta
-    {
-        [AutoIncrement]
-        public long Id { get; set; }
-        /// <summary>
-        /// AutoCrudOperation, e.g. Create, Update, Patch, Delete, Save
-        /// </summary>
-        public string EventType { get; set; }
-        /// <summary>
-        /// DB Model
-        /// </summary>
-        public string Model { get; set; }
-        /// <summary>
-        /// Primary Key of DB Model
-        /// </summary>
-        public string ModelId { get; set; }
-        /// <summary>
-        /// Date of Event (UTC)
-        /// </summary>
-        public DateTime EventDate { get; set; }
-        /// <summary>
-        /// Rows Updated if available
-        /// </summary>
-        public long? RowsUpdated { get; set; }
-        /// <summary>
-        /// Request DTO Type
-        /// </summary>
-        public string RequestType { get; set; }
-        /// <summary>
-        /// Serialized Request Body
-        /// </summary>
-        public string RequestBody { get; set; }
-        /// <summary>
-        /// UserAuthId if Authenticated
-        /// </summary>
-        public string UserAuthId { get; set; }
-        /// <summary>
-        /// UserName or unique User Identifier
-        /// </summary>
-        public string UserAuthName { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string RemoteIp { get; set; }
-        /// <summary>
-        /// URN format: urn:{requesttype}:{ModelId}
-        /// </summary>
-        public string Urn { get; set; }
-
-        /// <summary>
-        /// Custom Reference Data with integer Primary Key
-        /// </summary>
-        public int? RefId { get; set; }
-        /// <summary>
-        /// Custom Reference Data with non-integer Primary Key
-        /// </summary>
-        public string RefIdStr { get; set; }
-        /// <summary>
-        /// Custom Metadata to attach to this event
-        /// </summary>
-        public Dictionary<string, string> Meta { get; set; }
-    }
-
+    
     public abstract class CrudEventsBase<T>
         where T : CrudEvent
     {
@@ -319,12 +253,16 @@ namespace ServiceStack
             } while (results.Count > 0);
         }
 
-        public IEnumerable<T> GetEvents(IDbConnection db, string table, string id)
+        public IEnumerable<T> GetEvents(IDbConnection db, string table, string id=null)
         {
             var q = db.From<T>()
-                .Where(x => x.Model == table && x.ModelId == id)
-                .OrderBy(x => x.Id);
-            return db.Select<T>(q);
+                .Where(x => x.Model == table);
+            if (id != null)
+            {
+                q.And(x =>  x.ModelId == id);
+            }
+            q.OrderBy(x => x.Id);
+            return db.Select(q);
         }
 
         /// <summary>
@@ -355,17 +293,13 @@ namespace ServiceStack
         {
             if (!ExcludePrimaryDb)
             {
-                using (var db = DbFactory.OpenDbConnection())
-                {
-                    db.DeleteAll<T>();
-                }
+                using var db = DbFactory.OpenDbConnection();
+                db.DeleteAll<T>();
             }
             foreach (var namedConnection in NamedConnections)
             {
-                using (var db = DbFactory.OpenDbConnection(namedConnection))
-                {
-                    db.DeleteAll<T>();
-                }
+                using var db = DbFactory.OpenDbConnection(namedConnection);
+                db.DeleteAll<T>();
             }
         }
 
