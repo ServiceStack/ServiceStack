@@ -632,6 +632,31 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public async Task Does_return_SessionId_Cookies_Async()
+        {
+            var client = GetClient();
+            var authResponse = await client.PostAsync(new Authenticate
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = "user",
+                Password = "p@55word",
+            });
+            var cookies = client.GetCookieValues();
+            Assert.That(authResponse.SessionId, Is.EqualTo(cookies["ss-id"]));
+
+            client = GetClient();
+            authResponse = await client.PostAsync(new Authenticate
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = "user",
+                Password = "p@55word",
+                RememberMe = true,
+            });
+            cookies = client.GetCookieValues();
+            Assert.That(authResponse.SessionId, Is.EqualTo(cookies["ss-pid"]));
+        }
+
+        [Test]
         public void Does_work_with_CredentialsAuth()
         {
             try
