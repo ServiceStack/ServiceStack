@@ -32,7 +32,7 @@ namespace ServiceStack
     }
     
     [DefaultRequest(typeof(GetCrudEvents))]
-    [Restrict(VisibilityTo = RequestAttributes.None)]
+    [Restrict(VisibilityTo = RequestAttributes.Localhost)]
     public class GetCrudEventsService : Service
     {
         public IAutoQueryDb AutoQuery { get; set; }
@@ -62,7 +62,7 @@ namespace ServiceStack
     }
 
     [DefaultRequest(typeof(CheckCrudEvents))]
-    [Restrict(VisibilityTo = RequestAttributes.None)]
+    [Restrict(VisibilityTo = RequestAttributes.Localhost)]
     public class CheckCrudEventService : Service
     {
         public IDbConnectionFactory DbFactory { get; set; }
