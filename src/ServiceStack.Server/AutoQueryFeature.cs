@@ -196,6 +196,7 @@ namespace ServiceStack
                     OrderByPrimaryKey = OrderByPrimaryKeyOnPagedQuery.NullIfFalse(),
                     CrudEvents = container.Exists<ICrudEvents>().NullIfFalse(),
                     CrudEventsServices = (ServiceRoutes.ContainsKey(typeof(GetCrudEventsService)) && AccessRole != null).NullIfFalse(),
+                    AccessRole = AccessRole,
                     NamedConnection = UseNamedConnection,
                     ViewerConventions = ViewerConventions,
                 };

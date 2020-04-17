@@ -140,7 +140,8 @@ namespace ServiceStack
                 appHost.RegisterService(typeof(SharpApiService), 
                     (ApiPath[0] == '/' ? ApiPath : '/' + ApiPath).CombineWith("/{PageName}/{PathInfo*}"));
 
-            if (DebugMode || MetadataDebugAdminRole != null)
+            var enableMetadataDebug = DebugMode || MetadataDebugAdminRole != null;
+            if (enableMetadataDebug)
             {
                 appHost.RegisterService(typeof(MetadataDebugService), MetadataDebugService.Route);
                 appHost.GetPlugin<MetadataFeature>().AddDebugLink(MetadataDebugService.Route, "Debug Inspector");
@@ -156,6 +157,15 @@ namespace ServiceStack
             {
                 appHost.AfterInitCallbacks.Add(host => RunInitPage());
             }
+            
+            appHost.AddToAppMetadata(meta => {
+                meta.Plugins.SharpPages = new SharpPagesInfo {
+                    ApiPath = ApiPath,
+                    ScriptAdminRole = ScriptAdminRole,
+                    MetadataDebugAdminRole = MetadataDebugAdminRole,
+                    MetadataDebug = enableMetadataDebug,
+                };
+            });
 
             Init();
         }

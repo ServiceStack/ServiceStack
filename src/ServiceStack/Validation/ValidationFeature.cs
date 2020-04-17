@@ -121,6 +121,7 @@ namespace ServiceStack.Validation
                                 ScriptMethodInfo.GetScriptMethods(x.GetType(), where:mi => 
                                     typeof(IPropertyValidator).IsAssignableFrom(mi.ReturnType)))
                             .Map(x => x.ToScriptMethodType()),
+                    AccessRole = AccessRole,
                 };
             });
             

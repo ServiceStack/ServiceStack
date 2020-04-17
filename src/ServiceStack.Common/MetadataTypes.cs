@@ -127,6 +127,7 @@ namespace ServiceStack
         public AuthInfo Auth { get; set; }
         public AutoQueryInfo AutoQuery { get; set; }
         public ValidationInfo Validation { get; set; }
+        public SharpPagesInfo SharpPages { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
 
@@ -151,6 +152,7 @@ namespace ServiceStack
         public bool? OrderByPrimaryKey { get; set; }
         public bool? CrudEvents { get; set; }
         public bool? CrudEventsServices { get; set; }
+        public string AccessRole { get; set; }
         public string NamedConnection { get; set; }
         public List<AutoQueryConvention> ViewerConventions { get; set; }
         public Dictionary<string, string> Meta { get; set; }
@@ -163,9 +165,20 @@ namespace ServiceStack
         public Dictionary<string,string[]> ServiceRoutes { get; set; }
         public List<ScriptMethodType> TypeValidators { get; set; }
         public List<ScriptMethodType> PropertyValidators { get; set; }
+        public string AccessRole { get; set; }
         
         public Dictionary<string, string> Meta { get; set; }
     }
+
+    public class SharpPagesInfo : IMeta
+    {
+        public string ApiPath { get; set; }
+        public string ScriptAdminRole { get; set; }
+        public string MetadataDebugAdminRole { get; set; }
+        public bool? MetadataDebug { get; set; }
+        public Dictionary<string, string> Meta { get; set; }
+    }
+
     
     public class ScriptMethodType
     {
