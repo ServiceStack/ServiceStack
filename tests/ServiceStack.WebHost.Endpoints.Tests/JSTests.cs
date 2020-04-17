@@ -16,7 +16,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(JSON.parse("\"a\""), Is.EqualTo("a"));
             Assert.That(JSON.parse("{a:1}"), Is.EqualTo(new Dictionary<string, object> { {"a", 1  }}));
             Assert.That(JSON.parse("{\"a\":1}"), Is.EqualTo(new Dictionary<string, object> { {"a", 1  }}));
-            Assert.That(JSON.parse("[{a:1},{b:2]"), Is.EqualTo(new List<object>
+            Assert.That(JSON.parse("[{a:1},{b:2}]"), Is.EqualTo(new List<object>
             {
                 new Dictionary<string, object> { { "a", 1 } },
                 new Dictionary<string, object> { { "b", 2 } }
