@@ -18,7 +18,7 @@ namespace ServiceStack
         public string AccessRole { get; set; } = RoleNames.Admin;
 
         public Dictionary<Type, string[]> ServiceRoutes { get; set; } = new Dictionary<Type, string[]> {
-            { typeof(QueryCrudEventsService), new []{ "/" + "crudevents".Localize() + "/{Model}" } },
+            { typeof(GetCrudEventsService), new []{ "/" + "crudevents".Localize() + "/{Model}" } },
             { typeof(CheckCrudEventService), new []{ "/" + "crudevents".Localize() + "/check" } },
         };
 
@@ -31,14 +31,14 @@ namespace ServiceStack
         }
     }
     
-    [DefaultRequest(typeof(QueryCrudEvent))]
+    [DefaultRequest(typeof(GetCrudEvents))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
-    public class QueryCrudEventsService : Service
+    public class GetCrudEventsService : Service
     {
         public IAutoQueryDb AutoQuery { get; set; }
         public IDbConnectionFactory DbFactory { get; set; }
 
-        public async Task<object> Any(QueryCrudEvent request)
+        public async Task<object> Any(GetCrudEvents request)
         {
             var appHost = HostContext.AppHost;
             var feature = appHost.AssertPlugin<AutoQueryFeature>();

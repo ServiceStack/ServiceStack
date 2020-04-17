@@ -480,7 +480,7 @@ namespace ServiceStack
     
     //CrudEvents
     [DataContract]
-    public class QueryCrudEvent : QueryDb<CrudEvent>
+    public class GetCrudEvents : QueryDb<CrudEvent>
     {
         [DataMember(Order = 1)]
         public string AuthSecret { get; set; }

@@ -195,7 +195,7 @@ namespace ServiceStack
                     AutoQueryViewer = EnableAutoQueryViewer.NullIfFalse(),
                     OrderByPrimaryKey = OrderByPrimaryKeyOnPagedQuery.NullIfFalse(),
                     CrudEvents = container.Exists<ICrudEvents>().NullIfFalse(),
-                    CrudEventsServices = (ServiceRoutes.ContainsKey(typeof(QueryCrudEventsService)) && AccessRole != null).NullIfFalse(),
+                    CrudEventsServices = (ServiceRoutes.ContainsKey(typeof(GetCrudEventsService)) && AccessRole != null).NullIfFalse(),
                     NamedConnection = UseNamedConnection,
                     ViewerConventions = ViewerConventions,
                 };
