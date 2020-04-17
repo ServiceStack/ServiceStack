@@ -61,13 +61,13 @@ namespace ServiceStack
         }
     }
 
-    [DefaultRequest(typeof(CheckCrudEvent))]
+    [DefaultRequest(typeof(CheckCrudEvents))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public class CheckCrudEventService : Service
     {
         public IDbConnectionFactory DbFactory { get; set; }
 
-        public async Task<object> Any(CheckCrudEvent request)
+        public async Task<object> Any(CheckCrudEvents request)
         {
             var appHost = HostContext.AppHost;
             var feature = appHost.AssertPlugin<AutoQueryFeature>();
@@ -93,7 +93,7 @@ namespace ServiceStack
                 .SelectDistinct(x => x.ModelId);
 
             var results = await useDb.ColumnAsync<string>(q);
-            return new CheckCrudEventResponse {
+            return new CheckCrudEventsResponse {
                 Results = results.ToList(),
             };
         }

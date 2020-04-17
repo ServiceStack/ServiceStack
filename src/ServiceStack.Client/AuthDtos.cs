@@ -491,7 +491,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class CheckCrudEvent : IReturn<CheckCrudEventResponse>
+    public class CheckCrudEvents : IReturn<CheckCrudEventsResponse>
     {
         [DataMember(Order = 1)]
         public string AuthSecret { get; set; }
@@ -502,7 +502,7 @@ namespace ServiceStack
     }
     
     [DataContract]
-    public class CheckCrudEventResponse : IHasResponseStatus
+    public class CheckCrudEventsResponse : IHasResponseStatus
     {
         [DataMember(Order = 1)]
         public List<string> Results { get; set; }
