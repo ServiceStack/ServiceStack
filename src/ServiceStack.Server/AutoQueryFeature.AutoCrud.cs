@@ -48,12 +48,26 @@ namespace ServiceStack
             var dto = appHost.Metadata.FindDtoType(request.Model);
             var namedConnection = dto?.FirstAttribute<NamedConnectionAttribute>()?.Name;
 
+            var includeIds = request.Include == "ids";
+            if (includeIds)
+                request.Include = null;
+
             using var useDb = namedConnection != null
                 ? DbFactory.OpenDbConnection(namedConnection)
                 : DbFactory.OpenDbConnection();
             
             var q = AutoQuery.CreateQuery(request, Request, useDb);
-            return await AutoQuery.ExecuteAsync(request, q, Request, useDb);
+            var response = await AutoQuery.ExecuteAsync(request, q, Request, useDb);
+
+            if (includeIds)
+            {
+                q = q.Clone();
+                q.SelectDistinct(x => x.ModelId);
+                response.Meta ??= new Dictionary<string, string>();
+                response.Meta["ids"] = (await useDb.ColumnDistinctAsync<string>(q)).Join(",");
+            }
+            
+            return response;
         }
     }
 

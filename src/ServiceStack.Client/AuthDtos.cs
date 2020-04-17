@@ -486,7 +486,7 @@ namespace ServiceStack
         public string AuthSecret { get; set; }
         [DataMember(Order = 2)]
         public string Model { get; set; }
-        [DataMember(Order = 2)]
+        [DataMember(Order = 3)]
         public string Id { get; set; }
     }
     
