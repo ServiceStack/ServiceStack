@@ -480,7 +480,7 @@ namespace ServiceStack
     
     //CrudEvents
     [DataContract]
-    public class QueryCrudEvents : QueryDb<CrudEvent>
+    public class QueryCrudEvent : QueryDb<CrudEvent>
     {
         [DataMember(Order = 1)]
         public string AuthSecret { get; set; }
@@ -489,7 +489,28 @@ namespace ServiceStack
         [DataMember(Order = 3)]
         public string Id { get; set; }
     }
+
+    [DataContract]
+    public class CheckCrudEvent : IReturn<CheckCrudEventResponse>
+    {
+        [DataMember(Order = 1)]
+        public string AuthSecret { get; set; }
+        [DataMember(Order = 2)]
+        public string Model { get; set; }
+        [DataMember(Order = 3)]
+        public List<string> Ids { get; set; }
+    }
     
+    [DataContract]
+    public class CheckCrudEventResponse : IHasResponseStatus
+    {
+        [DataMember(Order = 1)]
+        public List<string> Results { get; set; }
+
+        [DataMember(Order = 2)]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
     /// <summary>
     /// Capture a CRUD Event
     /// </summary>
@@ -574,5 +595,4 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
     }
     
-
 }

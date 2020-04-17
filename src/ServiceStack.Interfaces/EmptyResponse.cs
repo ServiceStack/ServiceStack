@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace ServiceStack
@@ -19,6 +20,19 @@ namespace ServiceStack
         public string Id { get; set; }
 
         [DataMember(Order = 2)]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+    
+    [DataContract]
+    public class StringsResponse : IHasResponseStatus, IMeta
+    {
+        [DataMember(Order = 1)]
+        public List<string> Results { get; set; }
+
+        [DataMember(Order = 2)]
+        public Dictionary<string, string> Meta { get; set; }
+
+        [DataMember(Order = 3)]
         public ResponseStatus ResponseStatus { get; set; }
     }
     

@@ -19,6 +19,7 @@ namespace ServiceStack
 
         public Dictionary<Type, string[]> ServiceRoutes { get; set; } = new Dictionary<Type, string[]> {
             { typeof(QueryCrudEventsService), new []{ "/" + "crudevents".Localize() + "/{Model}" } },
+            { typeof(CheckCrudEventService), new []{ "/" + "crudevents".Localize() + "/check" } },
         };
 
         protected void OnRegister(IAppHost appHost)
@@ -30,13 +31,14 @@ namespace ServiceStack
         }
     }
     
-    [DefaultRequest(typeof(QueryCrudEvents))]
+    [DefaultRequest(typeof(QueryCrudEvent))]
+    [Restrict(VisibilityTo = RequestAttributes.None)]
     public class QueryCrudEventsService : Service
     {
         public IAutoQueryDb AutoQuery { get; set; }
         public IDbConnectionFactory DbFactory { get; set; }
 
-        public async Task<object> Any(QueryCrudEvents request)
+        public async Task<object> Any(QueryCrudEvent request)
         {
             var appHost = HostContext.AppHost;
             var feature = appHost.AssertPlugin<AutoQueryFeature>();
@@ -48,26 +50,52 @@ namespace ServiceStack
             var dto = appHost.Metadata.FindDtoType(request.Model);
             var namedConnection = dto?.FirstAttribute<NamedConnectionAttribute>()?.Name;
 
-            var includeIds = request.Include == "ids";
-            if (includeIds)
-                request.Include = null;
-
             using var useDb = namedConnection != null
                 ? DbFactory.OpenDbConnection(namedConnection)
                 : DbFactory.OpenDbConnection();
             
             var q = AutoQuery.CreateQuery(request, Request, useDb);
             var response = await AutoQuery.ExecuteAsync(request, q, Request, useDb);
-
-            if (includeIds)
-            {
-                q = q.Clone();
-                q.SelectDistinct(x => x.ModelId);
-                response.Meta ??= new Dictionary<string, string>();
-                response.Meta["ids"] = (await useDb.ColumnDistinctAsync<string>(q)).Join(",");
-            }
             
             return response;
+        }
+    }
+
+    [DefaultRequest(typeof(CheckCrudEvent))]
+    [Restrict(VisibilityTo = RequestAttributes.None)]
+    public class CheckCrudEventService : Service
+    {
+        public IDbConnectionFactory DbFactory { get; set; }
+
+        public async Task<object> Any(CheckCrudEvent request)
+        {
+            var appHost = HostContext.AppHost;
+            var feature = appHost.AssertPlugin<AutoQueryFeature>();
+            RequestUtils.AssertAccessRole(base.Request, accessRole:feature.AccessRole, authSecret:request.AuthSecret);
+
+            if (string.IsNullOrEmpty(request.Model))
+                throw new ArgumentNullException(nameof(request.Model));
+
+            var ids = request.Ids?.Count > 0
+                ? request.Ids
+                : throw new ArgumentNullException(nameof(request.Ids));
+
+            var dto = appHost.Metadata.FindDtoType(request.Model);
+            var namedConnection = dto?.FirstAttribute<NamedConnectionAttribute>()?.Name;
+
+            using var useDb = namedConnection != null
+                ? DbFactory.OpenDbConnection(namedConnection)
+                : DbFactory.OpenDbConnection();
+
+            var q = useDb.From<CrudEvent>()
+                .Where(x => x.Model == request.Model)
+                .And(x => ids.Contains(x.ModelId))
+                .SelectDistinct(x => x.ModelId);
+
+            var results = await useDb.ColumnAsync<string>(q);
+            return new CheckCrudEventResponse {
+                Results = results.ToList(),
+            };
         }
     }
 
