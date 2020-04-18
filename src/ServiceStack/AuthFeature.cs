@@ -203,6 +203,7 @@ namespace ServiceStack
             AuthProvider = Keywords.AuthSecret,
             IsAuthenticated = true,
             Roles = new List<string> {RoleNames.Admin},
+            Permissions = new List<string>(),
             UserAuthId = "0",
         };
         
