@@ -42,6 +42,7 @@ namespace ServiceStack
         public IDictionary envVariables() => Environment.GetEnvironmentVariables();
         public OperatingSystem envOSVersion() => Environment.OSVersion;
         public string envCommandLine() => Environment.CommandLine;
+        public string[] envCommandLineArgs() => Environment.GetCommandLineArgs();
         public string envMachineName() => Environment.MachineName;
         public string envSystemDirectory() => Environment.SystemDirectory;
         public string envUserDomainName() => Environment.UserDomainName;

@@ -196,7 +196,7 @@ namespace ServiceStack.Script
         public int MaxStackDepth { get; set; } = 25;
 
         private ILog log;
-        public ILog Log => log ?? (log = LogManager.GetLogger(GetType()));
+        public ILog Log => log ??= LogManager.GetLogger(GetType());
         
         public HashSet<string> RemoveNewLineAfterFiltersNamed { get; set; } = new HashSet<string>();
         public HashSet<string> OnlyEvaluateFiltersWhenSkippingPageFilterExecution { get; set; } = new HashSet<string>();
