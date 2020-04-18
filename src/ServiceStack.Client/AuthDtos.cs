@@ -476,6 +476,9 @@ namespace ServiceStack
 
         [DataMember(Order = 5)]
         public int[] UnsuspendRuleIds { get; set; }
+        
+        [DataMember(Order = 6)]
+        public bool? ClearCache { get; set; }
     }
     
     //CrudEvents

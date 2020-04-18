@@ -105,6 +105,8 @@ namespace ServiceStack
             return TypeConstants.EmptyTask;
         }
 
+        public Task ClearCacheAsync() => TypeConstants.EmptyTask;
+
         public void Clear() => TypeRulesMap.Clear();
     }
 
@@ -141,6 +143,14 @@ namespace ServiceStack
         {
             if (source is IValidationSourceAdmin sourceAdmin)
                 await sourceAdmin.DeleteValidationRulesAsync(ids);
+            else
+                ThrowNotValidationSourceAdmin(source);
+        }
+
+        public static async Task ClearCacheAsync(this IValidationSource source, params int[] ids)
+        {
+            if (source is IValidationSourceAdmin sourceAdmin)
+                await sourceAdmin.ClearCacheAsync();
             else
                 ThrowNotValidationSourceAdmin(source);
         }

@@ -87,6 +87,12 @@ namespace ServiceStack
             ClearValidationSourceCache();
         }
 
+        public Task ClearCacheAsync()
+        {
+            ClearValidationSourceCache();
+            return TypeConstants.EmptyTask;
+        }
+
         public void Clear()
         {
             using var db = OpenDbConnection();

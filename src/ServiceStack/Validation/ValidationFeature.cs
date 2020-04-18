@@ -303,6 +303,11 @@ namespace ServiceStack.Validation
             {
                 await ValidationSource.DeleteValidationRulesAsync(request.DeleteRuleIds.ToArray());
             }
+
+            if (request.ClearCache.GetValueOrDefault())
+            {
+                await ValidationSource.ClearCacheAsync();
+            }
         }
     }
 

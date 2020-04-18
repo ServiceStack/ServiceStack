@@ -168,6 +168,7 @@ namespace ServiceStack
         Task SaveValidationRulesAsync(List<ValidationRule> validateRules);
         Task<List<ValidationRule>> GetValidateRulesByIdsAsync(params int[] ids);
         Task DeleteValidationRulesAsync(params int[] ids);
+        Task ClearCacheAsync();
     }
 
     /// <summary>
