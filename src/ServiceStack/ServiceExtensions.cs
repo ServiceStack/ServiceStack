@@ -169,7 +169,7 @@ namespace ServiceStack
 
             if (appHost.HasValidAuthSecret(httpReq))
             {
-                session = appHost.GetPlugin<AuthFeature>()?.AuthSecretSession?.Invoke(httpReq);
+                session = appHost.GetPlugin<AuthFeature>()?.AuthSecretSession;
                 if (session != null)
                     return session;
             }

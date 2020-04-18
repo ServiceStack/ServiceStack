@@ -261,6 +261,13 @@ namespace ServiceStack.Auth
                     {
                         if (authFeature.IncludeRolesInAuthenticateResponse)
                         {
+                            var authSession = authFeature.AuthSecretSession;
+                            if (authSession != null && session.UserAuthName == authSession.UserAuthName && session.UserAuthId == authSession.UserAuthId)
+                            {
+                                authResponse.Roles = session.Roles;
+                                authResponse.Permissions = session.Permissions;
+                            }
+                            
                             authResponse.Roles ??= (manageRoles != null
                                 ? manageRoles.GetRoles(session.UserAuthId)?.ToList()
                                 : session.Roles);

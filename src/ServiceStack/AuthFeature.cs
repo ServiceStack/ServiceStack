@@ -195,21 +195,16 @@ namespace ServiceStack
         /// <summary>
         /// The Session to return for AuthSecret
         /// </summary>
-        public Func<IRequest, IAuthSession> AuthSecretSession { get; set; } = DefaultAuthSecretSession;
-
-        public static IAuthSession DefaultAuthSecretSession(IRequest req)
-        {
-            return new AuthUserSession {
-                Id = Guid.NewGuid().ToString("n"),
-                DisplayName = "Admin",
-                UserName = Keywords.AuthSecret,
-                UserAuthName = Keywords.AuthSecret,
-                AuthProvider = Keywords.AuthSecret,
-                IsAuthenticated = true,
-                Roles = new List<string> { RoleNames.Admin },
-                UserAuthId = "0",
-            };
-        }
+        public IAuthSession AuthSecretSession { get; set; } = new AuthUserSession {
+            Id = Guid.NewGuid().ToString("n"),
+            DisplayName = "Admin",
+            UserName = Keywords.AuthSecret,
+            UserAuthName = Keywords.AuthSecret,
+            AuthProvider = Keywords.AuthSecret,
+            IsAuthenticated = true,
+            Roles = new List<string> {RoleNames.Admin},
+            UserAuthId = "0",
+        };
         
         public AuthFeature(Func<IAuthSession> sessionFactory, IAuthProvider[] authProviders, string htmlRedirect = null)
         {
