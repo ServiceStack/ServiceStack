@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
+using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -205,6 +206,7 @@ namespace ServiceStack
                 UserAuthName = Keywords.AuthSecret,
                 AuthProvider = Keywords.AuthSecret,
                 IsAuthenticated = true,
+                Roles = new List<string> { RoleNames.Admin },
                 UserAuthId = "0",
             };
         }
