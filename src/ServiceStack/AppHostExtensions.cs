@@ -25,6 +25,12 @@ namespace ServiceStack
             }
         }
 
+        public static Dictionary<Type, string[]> RemoveService<T>(this Dictionary<Type, string[]> serviceRoutes)
+        {
+            serviceRoutes?.TryRemove(typeof(T), out _);
+            return serviceRoutes;
+        }
+
         public static void RegisterService<TService>(this IAppHost appHost, params string[] atRestPaths)
         {
             appHost.RegisterService(typeof(TService), atRestPaths);

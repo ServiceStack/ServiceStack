@@ -128,6 +128,7 @@ namespace ServiceStack
         public AutoQueryInfo AutoQuery { get; set; }
         public ValidationInfo Validation { get; set; }
         public SharpPagesInfo SharpPages { get; set; }
+        public RequestLogsInfo RequestLogs { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
 
@@ -179,7 +180,14 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
     }
 
-    
+    public class RequestLogsInfo : IMeta
+    {
+        public string[] RequiredRoles { get; set; }
+        public string RequestLogger { get; set; }
+        public Dictionary<string,string[]> ServiceRoutes { get; set; }
+        public Dictionary<string, string> Meta { get; set; }
+    }
+
     public class ScriptMethodType
     {
         public string Name { get; set; }

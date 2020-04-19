@@ -122,7 +122,8 @@ namespace ServiceStack
 
         public void Register(IAppHost appHost)
         {
-            appHost.RegisterService<RequestLogsService>(AtRestPath);
+            if (!string.IsNullOrEmpty(AtRestPath))
+                appHost.RegisterService<RequestLogsService>(AtRestPath);
 
             var requestLogger = RequestLogger ?? new InMemoryRollingRequestLogger(Capacity);
             requestLogger.EnableSessionTracking = EnableSessionTracking;
@@ -157,6 +158,16 @@ namespace ServiceStack
                 .AddDebugLink(AtRestPath, "Request Logs");
             
             appHost.GetPlugin<MetadataFeature>()?.ExportTypes.Add(typeof(RequestLogEntry));
+            
+            appHost.AddToAppMetadata(meta => {
+                meta.Plugins.RequestLogs = new RequestLogsInfo {
+                    RequiredRoles = RequiredRoles,
+                    ServiceRoutes = new Dictionary<string, string[]> {
+                        { nameof(RequestLogsService), new[] {AtRestPath} },
+                    },
+                    RequestLogger = requestLogger.GetType().Name,
+                };
+            });
         }
     }
 }
