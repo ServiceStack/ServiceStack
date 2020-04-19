@@ -197,6 +197,16 @@ namespace ServiceStack
         List<HandleUncaughtExceptionAsyncDelegate> UncaughtExceptionHandlersAsync { get; }
 
         /// <summary>
+        /// Provide an exception handler for Service Gateway Exceptions
+        /// </summary>
+        List<HandleGatewayExceptionDelegate> GatewayExceptionHandlers { get; }
+
+        /// <summary>
+        /// Provide an exception handler for Service Gateway Exceptions (Async)
+        /// </summary>
+        List<HandleGatewayExceptionAsyncDelegate> GatewayExceptionHandlersAsync { get; }
+
+        /// <summary>
         /// Provide callbacks to be fired after the AppHost has finished initializing
         /// </summary>
         List<Action<IAppHost>> AfterInitCallbacks { get; }

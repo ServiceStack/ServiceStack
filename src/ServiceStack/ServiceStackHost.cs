@@ -124,6 +124,8 @@ namespace ServiceStack
             ServiceExceptionHandlersAsync = new List<HandleServiceExceptionAsyncDelegate>();
             UncaughtExceptionHandlers = new List<HandleUncaughtExceptionDelegate>();
             UncaughtExceptionHandlersAsync = new List<HandleUncaughtExceptionAsyncDelegate>();
+            GatewayExceptionHandlers = new List<HandleGatewayExceptionDelegate>();
+            GatewayExceptionHandlersAsync = new List<HandleGatewayExceptionAsyncDelegate>();
             BeforeConfigure = new List<Action<ServiceStackHost>>();
             AfterConfigure = new List<Action<ServiceStackHost>>();
             AfterInitCallbacks = new List<Action<IAppHost>>();
@@ -533,6 +535,9 @@ namespace ServiceStack
 
         public List<HandleUncaughtExceptionAsyncDelegate> UncaughtExceptionHandlersAsync { get; set; }
 
+        public List<HandleGatewayExceptionDelegate> GatewayExceptionHandlers { get; set; }
+        public List<HandleGatewayExceptionAsyncDelegate> GatewayExceptionHandlersAsync { get; set; }
+
         public List<Action<ServiceStackHost>> BeforeConfigure { get; set; }
 
         public List<Action<ServiceStackHost>> AfterConfigure { get; set; }
@@ -751,6 +756,24 @@ namespace ServiceStack
         public virtual object OnPostExecuteServiceFilter(IService service, object response, IRequest httpReq, IResponse httpRes)
         {
             return response;
+        }
+
+        /// <summary>
+        /// Occurs when the Service throws an Service Gateway Exception
+        /// </summary>
+        public virtual async Task OnGatewayException(IRequest httpReq, object request, Exception ex)
+        {
+            httpReq.Items[nameof(OnGatewayException)] = bool.TrueString;
+
+            foreach (var errorHandler in GatewayExceptionHandlers)
+            {
+                errorHandler(httpReq, request, ex);
+            }
+
+            foreach (var errorHandler in GatewayExceptionHandlersAsync)
+            {
+                await errorHandler(httpReq, request, ex);
+            }
         }
 
         /// <summary>
