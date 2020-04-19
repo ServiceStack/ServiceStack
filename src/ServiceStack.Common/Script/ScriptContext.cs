@@ -204,6 +204,7 @@ namespace ServiceStack.Script
         public Dictionary<string, ScriptLanguage> ParseAsLanguage { get; set; } = new Dictionary<string, ScriptLanguage>();
         
         public Func<PageVariableFragment, ReadOnlyMemory<byte>> OnUnhandledExpression { get; set; }
+        public Action<PageResult, Exception> OnRenderException { get; set; }
 
         public SharpPage GetPage(string virtualPath)
         {

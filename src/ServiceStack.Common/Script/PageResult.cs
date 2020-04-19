@@ -865,6 +865,8 @@ namespace ServiceStack.Script
                     LastFilterError = useEx;
                     LastFilterStackTrace = stackTrace.ToArray();
 
+                    Context.OnRenderException?.Invoke(this, ex);
+
                     if (RethrowExceptions)
                         throw useEx;
                     
