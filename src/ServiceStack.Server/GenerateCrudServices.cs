@@ -755,18 +755,20 @@ namespace ServiceStack
 
             var appHost = HostContext.AppHost;
             request.BaseUrl ??= HostContext.GetPlugin<NativeTypesFeature>().MetadataTypesConfig.BaseUrl ?? appHost.GetBaseUrl(req);
-            if (request.MakePartial == null)
-                request.MakePartial = false;
-            if (request.MakeVirtual == null)
-                request.MakeVirtual = false;
-            if (request.InitializeCollections == null)
-                request.InitializeCollections = false;
-            if (request.AddDataContractAttributes == null) //required for gRPC
-                request.AddDataContractAttributes = true;
-            if (request.AddIndexesToDataMembers == null) //required for gRPC
-                request.AddIndexesToDataMembers = true;
-
             var typesConfig = metadata.GetConfig(request);
+            if (request.MakePartial == null)
+                typesConfig.MakePartial = false;
+            if (request.MakeVirtual == null)
+                typesConfig.MakeVirtual = false;
+            if (request.InitializeCollections == null)
+                typesConfig.InitializeCollections = false;
+            if (request.AddDataContractAttributes == null) //required for gRPC
+                typesConfig.AddDataContractAttributes = true;
+            if (request.AddIndexesToDataMembers == null) //required for gRPC
+                typesConfig.AddIndexesToDataMembers = true;
+            if (string.IsNullOrEmpty(request.AddDefaultXmlNamespace))
+                typesConfig.AddDefaultXmlNamespace = null;
+
             typesConfig.UsePath = req.PathInfo;
             var metadataTypes = metadata.GetMetadataTypes(req, typesConfig);
             var serviceModelNs = appHost.GetType().Namespace + ".ServiceModel";
