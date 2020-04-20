@@ -731,6 +731,12 @@ namespace ServiceStack.NativeTypes
                 property.DisplayType = apiMember.DataType;
             }
 
+            var validateProp = pi.AllAttributes<ValidateAttribute>();
+            if (validateProp.Any(x => x.Validator != null && ValidateScripts.RequiredValidators.Contains(x.Validator)))
+            {
+                property.IsRequired = true;
+            }
+
             var apiAllowableValues = pi.FirstAttribute<ApiAllowableValuesAttribute>();
             if (apiAllowableValues != null)
             {

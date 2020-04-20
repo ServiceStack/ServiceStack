@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using ServiceStack.Configuration;
 using ServiceStack.FluentValidation.Validators;
@@ -8,6 +9,11 @@ namespace ServiceStack
 {
     public class ValidateScripts : ScriptMethods
     {
+        public static HashSet<string> RequiredValidators { get; } = new HashSet<string> {
+            nameof(NotNull),
+            nameof(NotEmpty),
+        };
+        
         public static ValidateScripts Instance = new ValidateScripts();
 
         //Note: Can't use singleton validators in-case ErrorCode/Messages are customized 
