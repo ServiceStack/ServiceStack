@@ -172,7 +172,7 @@ namespace ServiceStack.Validation
     }
 
     [DefaultRequest(typeof(GetValidationRules))]
-    [Restrict(VisibilityTo = RequestAttributes.None)]
+    [Restrict(VisibilityTo = RequestAttributes.Localhost)]
     public class GetValidationRulesService : Service
     {
         public IValidationSource ValidationSource { get; set; }
@@ -192,7 +192,7 @@ namespace ServiceStack.Validation
     }
 
     [DefaultRequest(typeof(ModifyValidationRules))]
-    [Restrict(VisibilityTo = RequestAttributes.None)]
+    [Restrict(VisibilityTo = RequestAttributes.Localhost)]
     public class ModifyValidationRulesService : Service
     {
         public IValidationSource ValidationSource { get; set; }
