@@ -87,11 +87,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class TriggerAllValidators 
         : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
     {
-        [Validate("CreditCard")]
+        [ValidateCreditCard]
         public string CreditCard { get; set; }
-        [Validate("Email")]
+        [ValidateEmail]
         public string Email { get; set; }
-        [Validate("Empty")]
+        [ValidateEmpty]
         public string Empty { get; set; }
         [Validate("Equal('Equal')")]
         public string Equal { get; set; }
@@ -109,11 +109,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int LessThanOrEqual { get; set; }
         [Validate("LessThan(10)")]
         public int LessThan { get; set; }
-        [Validate("NotEmpty")]
+        [ValidateNotEmpty]
         public string NotEmpty { get; set; }
         [Validate("NotEqual('NotEqual')")]
         public string NotEqual { get; set; }
-        [Validate("Null")]
+        [ValidateNull]
         public string Null { get; set; }
         [Validate("RegularExpression('^[a-z]*$')")]
         public string RegularExpression { get; set; }
@@ -124,18 +124,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class DynamicValidationRules
         : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
     {
-        [Validate("NotNull")]
+        [ValidateNotNull]
         public string FirstName { get; set; }
         
         //[Validate("NotNull")] added in IValidationSource
         public string LastName { get; set; }
 
         // [Validate("[NotNull,InclusiveBetween(13,100)]")]
-        [Validate("NotNull")]
+        [ValidateNotNull]
         //[Validate("InclusiveBetween(13,100)")] added in IValidationSource
         public int? Age { get; set; }
      
-        [Validate("NotEmpty")]
+        [ValidateNotEmpty]
         public DateTime DateOfBirth { get; set; }
      
         public LivingStatus LivingStatus { get; set; }
@@ -145,7 +145,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
     {
         // Just overrides ErrorCode
-        [Validate("NotNull", ErrorCode = "ZERROR")]
+        [ValidateNotNull(ErrorCode = "ZERROR")]
         public string CustomErrorCode { get; set; }
         
         // Overrides both ErrorCode & Message
@@ -154,7 +154,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int CustomErrorCodeAndMessage { get; set; }
 
         // Overrides ErrorCode & uses Message from Validators
-        [Validate("NotNull", ErrorCode = "RuleMessage")]
+        [ValidateNotNull(ErrorCode = "RuleMessage")]
         public string ErrorCodeRule { get; set; }
 
         // Overrides ErrorCode & uses Message from Validators
@@ -170,7 +170,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int IsOddOrOverTwoDigitsCondition { get; set; }
     }
 
-    [ValidateRequest("HasRole('Manager')")]
+    [ValidateHasRole("Manager")]
     public class TestAuthValidators
         : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
     {
@@ -182,15 +182,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class TestMultiAuthValidators
         : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
     {
-        [Validate("NotNull")] //doesn't get validated if ValidateRequest is invalid
+        [ValidateNotNull] //doesn't get validated if ValidateRequest is invalid
         public string NotNull { get; set; }
     }
 
-    [ValidateRequest("IsAdmin")]
+    [ValidateIsAdmin]
     public class TestIsAdmin
         : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
     {
-        [Validate("NotNull")] //doesn't get validated if ValidateRequest is invalid
+        [ValidateNotNull] //doesn't get validated if ValidateRequest is invalid
         public string NotNull { get; set; }
     }
 
@@ -201,7 +201,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public int Id { get; set; }
         
-        [Validate("NotNull")] //doesn't get validated if ValidateRequest is invalid
+        [ValidateNotNull] //doesn't get validated if ValidateRequest is invalid
         public string NotNull { get; set; }
     }
 
@@ -248,7 +248,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class QueryBookmarks : QueryDb<Bookmark> { }
 
     // custom script methods
-    [AutoPopulate(nameof(Bookmark.Id), Eval = "F('Guid.NewGuid')()")] 
+    [AutoPopulate(nameof(Bookmark.Id), Eval = "nguid")] 
     [AutoPopulate(nameof(Bookmark.CreatedBy), Eval = "userAuthId")]
     [AutoPopulate(nameof(Bookmark.CreateDate), Eval = "utcNowOffset")]
     [AutoPopulate(nameof(Bookmark.ModifiedBy), Eval = "userAuthId")]

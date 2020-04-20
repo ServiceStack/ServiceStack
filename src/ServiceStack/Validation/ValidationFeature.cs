@@ -95,10 +95,7 @@ namespace ServiceStack.Validation
             var hasValidationSource = ValidationSource != null || container.Exists<IValidationSource>(); 
             if (hasValidationSource && AccessRole != null)
             {
-                foreach (var registerService in ServiceRoutes)
-                {
-                    appHost.RegisterService(registerService.Key, registerService.Value);
-                }
+                appHost.RegisterServices(ServiceRoutes);
             }
 
             if (ScanAppHostAssemblies)

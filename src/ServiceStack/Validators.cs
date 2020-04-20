@@ -56,9 +56,9 @@ namespace ServiceStack
         //TODO FV9: ValidatorOptions.Global.CascadeMode;
         static readonly Func<CascadeMode> CascadeMode = () => ValidatorOptions.CascadeMode;
 
-        public static bool HasValidateRequestAttributes(Type type) => type.HasAttribute<ValidateRequestAttribute>();
+        public static bool HasValidateRequestAttributes(Type type) => type.AllAttributes().Any(x => x is ValidateRequestAttribute);
 
-        public static bool HasValidateAttributes(Type type) => type.GetPublicProperties().Any(x => x.HasAttribute<ValidateAttribute>());
+        public static bool HasValidateAttributes(Type type) => type.GetPublicProperties().Any(x => x.AllAttributes().Any(a => a is ValidateRequestAttribute));
 
         public static async Task AssertTypeValidatorsAsync(IRequest req, object requestDto, Type requestType)
         {

@@ -72,7 +72,23 @@ namespace ServiceStack
             get => throw new NotSupportedException(nameof(AnyConditions));
             set => Condition = ValidateAttribute.Combine("||", value);
         }
-        
+    }
+    //Default ITypeValidator defined in ValidateScripts 
+    public class ValidateIsAuthenticatedAttribute : ValidateRequestAttribute
+    {
+        public ValidateIsAuthenticatedAttribute() : base("IsAuthenticated") { }
+    }
+    public class ValidateIsAdminAttribute : ValidateRequestAttribute
+    {
+        public ValidateIsAdminAttribute() : base("IsAdmin") { }
+    }
+    public class ValidateHasRoleAttribute : ValidateRequestAttribute
+    {
+        public ValidateHasRoleAttribute(string role) : base("HasRole(`" + role + "`)") { }
+    }
+    public class ValidateHasPermissionAttribute : ValidateRequestAttribute
+    {
+        public ValidateHasPermissionAttribute(string permission) : base("HasPermission(`" + permission + "`)") { }
     }
 
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
@@ -139,6 +155,32 @@ namespace ServiceStack
             sb.Append(')');
             return sb.ToString();
         }
+    }
+
+    //Default IPropertyValidator defined in ValidateScripts 
+    public class ValidateNullAttribute : ValidateAttribute
+    {
+        public ValidateNullAttribute() : base("Null") { }
+    }
+    public class ValidateEmptyAttribute : ValidateAttribute
+    {
+        public ValidateEmptyAttribute() : base("Empty") { }
+    }
+    public class ValidateEmailAttribute : ValidateAttribute
+    {
+        public ValidateEmailAttribute() : base("Email") { }
+    }
+    public class ValidateNotNullAttribute : ValidateAttribute
+    {
+        public ValidateNotNullAttribute() : base("NotNull") { }
+    }
+    public class ValidateNotEmptyAttribute : ValidateAttribute
+    {
+        public ValidateNotEmptyAttribute() : base("NotEmpty") { }
+    }
+    public class ValidateCreditCardAttribute : ValidateAttribute
+    {
+        public ValidateCreditCardAttribute() : base("CreditCard") { }
     }
 
     public interface IValidateRule
