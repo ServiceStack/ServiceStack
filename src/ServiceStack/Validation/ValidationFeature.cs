@@ -223,9 +223,17 @@ namespace ServiceStack.Validation
 
                     if (rule.Validator != null)
                     {
-                        var validator = appHost.EvalExpression(rule.Validator);
-                        if (validator == null)
-                            throw new ArgumentException(@$"Validator does not exist", nameof(rule.Validator));
+                        object validator;
+                        try
+                        {
+                            validator = appHost.EvalExpression(rule.Validator);
+                            if (validator == null)
+                                throw new ArgumentException(@$"Validator does not exist", nameof(rule.Validator));
+                        }
+                        catch (Exception e)
+                        {
+                            throw new ArgumentException(@$"Invalid Validator: " + e.Message, nameof(rule.Validator), e);
+                        }
 
                         var validators = (validator as List<object>) ?? TypeConstants.EmptyObjectList;
                         var firstValidator = validator is IPropertyValidator pv
