@@ -28,8 +28,8 @@ namespace ServiceStack.Extensions.Tests
         
         // [Validate("[" + nameof(ValidateScripts.NotNull) + "," + nameof(ValidateScripts.Length) + "(13,100)]")] e.g. Typed
         // [Validate("[NotNull,Length(13,100)]")]
-        [Validate("NotNull")]
-        [Validate("InclusiveBetween(13,100)")]
+        [ValidateNotNull]
+        [ValidateInclusiveBetween(13,100)]
         [DataMember(Order = 3)]
         public int? Age { get; set; }
 
@@ -58,19 +58,19 @@ namespace ServiceStack.Extensions.Tests
     public class NoAbstractValidator 
         : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
     {
-        [Validate("NotNull")]
+        [ValidateNotNull]
         [DataMember(Order = 1)]
         public string FirstName { get; set; }
         
-        [Validate("NotNull")]
+        [ValidateNotNull]
         [DataMember(Order = 2)]
         public string LastName { get; set; }
 
-        [Validate("[NotNull,InclusiveBetween(13,100)]")]
+        [ValidateNotNull,ValidateInclusiveBetween(13,100)]
         [DataMember(Order = 3)]
         public int? Age { get; set; }
      
-        [Validate("NotEmpty")]
+        [ValidateNotEmpty]
         [DataMember(Order = 4)]
         public DateTime DateOfBirth { get; set; }
      
@@ -83,26 +83,26 @@ namespace ServiceStack.Extensions.Tests
         : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
     {
         // [Validate("NotEmpty(0)")]
-        [Validate("NotEmpty")]
+        [ValidateNotEmpty]
         [DataMember(Order = 1)]
         public int Int { get; set; }
-        [Validate("NotEmpty")]
+        [ValidateNotEmpty]
         [DataMember(Order = 2)]
         public int? NInt { get; set; }
-        [Validate("NotEmpty")]
+        [ValidateNotEmpty]
         // [Validate("NotEmpty(default('System.TimeSpan'))")]
         [DataMember(Order = 3)]
         public TimeSpan TimeSpan { get; set; }
-        [Validate("NotEmpty")]
+        [ValidateNotEmpty]
         [DataMember(Order = 4)]
         public TimeSpan? NTimeSpan { get; set; }
-        [Validate("NotEmpty")]
+        [ValidateNotEmpty]
         [DataMember(Order = 5)]
         public string String { get; set; }
-        [Validate("NotEmpty")]
+        [ValidateNotEmpty]
         [DataMember(Order = 6)]
         public int[] IntArray { get; set; }
-        [Validate("NotEmpty")]
+        [ValidateNotEmpty]
         [DataMember(Order = 7)]
         public List<string> StringList { get; set; }
     }
@@ -111,52 +111,52 @@ namespace ServiceStack.Extensions.Tests
     public class TriggerAllValidators 
         : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
     {
-        [Validate("CreditCard")]
+        [ValidateCreditCard]
         [DataMember(Order = 1)]
         public string CreditCard { get; set; }
-        [Validate("Email")]
+        [ValidateEmail]
         [DataMember(Order = 2)]
         public string Email { get; set; }
-        [Validate("Empty")]
+        [ValidateEmpty]
         [DataMember(Order = 3)]
         public string Empty { get; set; }
-        [Validate("Equal('Equal')")]
+        [ValidateEqual("Equal")]
         [DataMember(Order = 4)]
         public string Equal { get; set; }
-        [Validate("ExclusiveBetween(10, 20)")]
+        [ValidateExclusiveBetween(10, 20)]
         [DataMember(Order = 5)]
         public int ExclusiveBetween { get; set; }
-        [Validate("GreaterThanOrEqual(10)")]
+        [ValidateGreaterThanOrEqual(10)]
         [DataMember(Order = 6)]
         public int GreaterThanOrEqual { get; set; }
-        [Validate("GreaterThan(10)")]
+        [ValidateGreaterThan(10)]
         [DataMember(Order = 7)]
         public int GreaterThan { get; set; }
-        [Validate("InclusiveBetween(10, 20)")]
+        [ValidateInclusiveBetween(10, 20)]
         [DataMember(Order = 8)]
         public int InclusiveBetween { get; set; }
-        [Validate("ExactLength(10)")]
+        [ValidateExactLength(10)]
         [DataMember(Order = 9)]
         public string Length { get; set; }
-        [Validate("LessThanOrEqual(10)")]
+        [ValidateLessThanOrEqual(10)]
         [DataMember(Order = 10)]
         public int LessThanOrEqual { get; set; }
-        [Validate("LessThan(10)")]
+        [ValidateLessThan(10)]
         [DataMember(Order = 11)]
         public int LessThan { get; set; }
-        [Validate("NotEmpty")]
+        [ValidateNotEmpty]
         [DataMember(Order = 12)]
         public string NotEmpty { get; set; }
-        [Validate("NotEqual('NotEqual')")]
+        [ValidateNotEqual("NotEqual")]
         [DataMember(Order = 13)]
         public string NotEqual { get; set; }
-        [Validate("Null")]
+        [ValidateNull]
         [DataMember(Order = 14)]
         public string Null { get; set; }
-        [Validate("RegularExpression('^[a-z]*$')")]
+        [ValidateRegularExpression("^[a-z]*$")]
         [DataMember(Order = 15)]
         public string RegularExpression { get; set; }
-        [Validate("ScalePrecision(1,1)")]
+        [ValidateScalePrecision(1,1)]
         [DataMember(Order = 16)]
         public decimal ScalePrecision { get; set; }
     }
@@ -165,7 +165,7 @@ namespace ServiceStack.Extensions.Tests
     public class DynamicValidationRules
         : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
     {
-        [Validate("NotNull")]
+        [ValidateNotNull]
         [DataMember(Order = 1)]
         public string FirstName { get; set; }
         
@@ -174,12 +174,12 @@ namespace ServiceStack.Extensions.Tests
         public string LastName { get; set; }
 
         // [Validate("[NotNull,InclusiveBetween(13,100)]")]
-        [Validate("NotNull")]
+        [ValidateNotNull]
         //[Validate("InclusiveBetween(13,100)")] added in IValidationSource
         [DataMember(Order = 3)]
         public int? Age { get; set; }
      
-        [Validate("NotEmpty")]
+        [ValidateNotEmpty]
         [DataMember(Order = 4)]
         public DateTime DateOfBirth { get; set; }
      
@@ -192,18 +192,18 @@ namespace ServiceStack.Extensions.Tests
         : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
     {
         // Just overrides ErrorCode
-        [Validate("NotNull", ErrorCode = "ZERROR")]
+        [ValidateNotNull(ErrorCode = "ZERROR")]
         [DataMember(Order = 1)]
         public string CustomErrorCode { get; set; }
         
         // Overrides both ErrorCode & Message
-        [Validate("InclusiveBetween(1,2)", ErrorCode = "ZERROR", 
+        [ValidateInclusiveBetween(1,2, ErrorCode = "ZERROR", 
             Message = "{PropertyName} has to be between {From} and {To}, you: {PropertyValue}")]
         [DataMember(Order = 2)]
         public int CustomErrorCodeAndMessage { get; set; }
 
         // Overrides ErrorCode & uses Message from Validators
-        [Validate("NotNull", ErrorCode = "RuleMessage")]
+        [ValidateNotNull(ErrorCode = "RuleMessage")]
         [DataMember(Order = 3)]
         public string ErrorCodeRule { get; set; }
 
@@ -228,27 +228,27 @@ namespace ServiceStack.Extensions.Tests
     public class TestAuthValidators
         : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
     {
-        [Validate("NotNull")] //doesn't get validated if ValidateRequest is invalid
+        [ValidateNotNull] //doesn't get validated if ValidateRequest is invalid
         [DataMember(Order = 1)]
         public string NotNull { get; set; }
     }
 
-    [ValidateRequest("[IsAuthenticated,HasRole('Manager')]")]
+    [ValidateIsAuthenticated, ValidateHasRole("Manager")]
     [DataContract]
     public class TestMultiAuthValidators
         : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
     {
-        [Validate("NotNull")] //doesn't get validated if ValidateRequest is invalid
+        [ValidateNotNull] //doesn't get validated if ValidateRequest is invalid
         [DataMember(Order = 1)]
         public string NotNull { get; set; }
     }
 
-    [ValidateRequest("IsAdmin")]
+    [ValidateIsAdmin]
     [DataContract]
     public class TestIsAdmin
         : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
     {
-        [Validate("NotNull")] //doesn't get validated if ValidateRequest is invalid
+        [ValidateNotNull] //doesn't get validated if ValidateRequest is invalid
         [DataMember(Order = 1)]
         public string NotNull { get; set; }
     }
@@ -262,7 +262,7 @@ namespace ServiceStack.Extensions.Tests
         [DataMember(Order = 1)]
         public int Id { get; set; }
         
-        [Validate("NotNull")] //doesn't get validated if ValidateRequest is invalid
+        [ValidateNotNull] //doesn't get validated if ValidateRequest is invalid
         [DataMember(Order = 2)]
         public string NotNull { get; set; }
     }
@@ -275,7 +275,7 @@ namespace ServiceStack.Extensions.Tests
         [DataMember(Order = 1)]
         public int Id { get; set; }
         
-        [Validate("NotNull")] //doesn't get validated if ValidateRequest is invalid
+        [ValidateNotNull] //doesn't get validated if ValidateRequest is invalid
         [DataMember(Order = 2)]
         public string NotNull { get; set; }
     }

@@ -182,6 +182,68 @@ namespace ServiceStack
     {
         public ValidateCreditCardAttribute() : base("CreditCard") { }
     }
+    public class ValidateLengthAttribute : ValidateAttribute
+    {
+        public ValidateLengthAttribute(int min, int max) : base($"Length({min},{max})") { }
+    }
+    public class ValidateExactLengthAttribute : ValidateAttribute
+    {
+        public ValidateExactLengthAttribute(int length) : base($"ExactLength({length})") { }
+    }
+    public class ValidateMaximumLengthAttribute : ValidateAttribute
+    {
+        public ValidateMaximumLengthAttribute(int max) : base($"MaximumLength({max})") { }
+    }
+    public class ValidateMinimumLengthAttribute : ValidateAttribute
+    {
+        public ValidateMinimumLengthAttribute(int min) : base($"MinimumLength({min})") { }
+    }
+    public class ValidateLessThanAttribute : ValidateAttribute
+    {
+        public ValidateLessThanAttribute(int value) : base($"LessThan({value})") { }
+    }
+    public class ValidateLessThanOrEqualAttribute : ValidateAttribute
+    {
+        public ValidateLessThanOrEqualAttribute(int value) : base($"LessThanOrEqual({value})") { }
+    }
+    public class ValidateGreaterThanAttribute : ValidateAttribute
+    {
+        public ValidateGreaterThanAttribute(int value) : base($"GreaterThan({value})") { }
+    }
+    public class ValidateGreaterThanOrEqualAttribute : ValidateAttribute
+    {
+        public ValidateGreaterThanOrEqualAttribute(int value) : base($"GreaterThanOrEqual({value})") { }
+    }
+    public class ValidateScalePrecisionAttribute : ValidateAttribute
+    {
+        public ValidateScalePrecisionAttribute(int scale, int precision) : base($"ScalePrecision({scale},{precision})") { }
+    }
+    public class ValidateRegularExpressionAttribute : ValidateAttribute
+    {
+        public ValidateRegularExpressionAttribute(string pattern) : base($"RegularExpression(`{pattern}`)") { }
+    }
+    public class ValidateEqualAttribute : ValidateAttribute
+    {
+        public ValidateEqualAttribute(string value) : base($"Equal(`{value}`)") { }
+        public ValidateEqualAttribute(int value) : base($"Equal({value})") { }
+    }
+    public class ValidateNotEqualAttribute : ValidateAttribute
+    {
+        public ValidateNotEqualAttribute(string value) : base($"NotEqual(`{value}`)") { }
+        public ValidateNotEqualAttribute(int value) : base($"NotEqual({value})") { }
+    }
+    public class ValidateInclusiveBetweenAttribute : ValidateAttribute
+    {
+        public ValidateInclusiveBetweenAttribute(string from, string to) : base($"InclusiveBetween(`{from}`,`{to}`)") { }
+        public ValidateInclusiveBetweenAttribute(char from, char to) : base($"InclusiveBetween(`{from}`,`{to}`)") { }
+        public ValidateInclusiveBetweenAttribute(int from, int to) : base($"NotEqual({from},{to})") { }
+    }
+    public class ValidateExclusiveBetweenAttribute : ValidateAttribute
+    {
+        public ValidateExclusiveBetweenAttribute(string from, string to) : base($"ExclusiveBetween(`{from}`,`{to}`)") { }
+        public ValidateExclusiveBetweenAttribute(char from, char to) : base($"ExclusiveBetween(`{from}`,`{to}`)") { }
+        public ValidateExclusiveBetweenAttribute(int from, int to) : base($"ExclusiveBetween({from},{to})") { }
+    }
 
     public interface IValidateRule
     {
