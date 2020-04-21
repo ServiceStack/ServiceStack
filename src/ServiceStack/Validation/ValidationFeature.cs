@@ -245,7 +245,7 @@ namespace ServiceStack.Validation
                         }
                         catch (Exception e)
                         {
-                            throw new ArgumentException(@$"Invalid Validator: " + e.Message, nameof(rule.Validator), e);
+                            throw new ArgumentException(@$"Invalid Validator: " + e.Message, nameof(rule.Validator));
                         }
 
                         var validators = (validator as List<object>) ?? TypeConstants.EmptyObjectList;
