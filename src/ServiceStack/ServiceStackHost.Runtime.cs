@@ -527,7 +527,7 @@ namespace ServiceStack
             {
                 var paramMsgIndex = argEx.Message.LastIndexOf("Parameter name:", StringComparison.Ordinal);
                 if (paramMsgIndex == -1)
-                    paramMsgIndex = argEx.Message.LastIndexOf(" (Parameter", StringComparison.Ordinal);
+                    paramMsgIndex = argEx.Message.LastIndexOf("(Parameter", StringComparison.Ordinal);
                 
                 var errorMsg = paramMsgIndex > 0
                     ? argEx.Message.Substring(0, paramMsgIndex).TrimEnd()
