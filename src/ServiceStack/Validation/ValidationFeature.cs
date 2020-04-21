@@ -217,6 +217,19 @@ namespace ServiceStack.Validation
                     var existingType = appHost.Metadata.FindDtoType(rule.Type);
                     if (existingType == null)
                         throw new ArgumentException(@$"{rule.Type} does not exist", nameof(rule.Type));
+
+                    if (rule.Validator == "")
+                        rule.Validator = null;
+                    if (rule.Condition == "")
+                        rule.Condition = null;
+                    if (rule.Field == "")
+                        rule.Field = null;
+                    if (rule.ErrorCode == "")
+                        rule.ErrorCode = null;
+                    if (rule.Message == "")
+                        rule.Message = null;
+                    if (rule.Notes == "")
+                        rule.Notes = null;
                     
                     if (rule.Field != null && TypeProperties.Get(existingType).GetAccessor(rule.Field) == null)
                         throw new ArgumentException(@$"{rule.Field} does not exist on {rule.Type}", nameof(rule.Field));
