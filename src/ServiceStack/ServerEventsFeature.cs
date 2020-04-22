@@ -216,90 +216,100 @@ namespace ServiceStack
                 await serverEvents.RemoveExpiredSubscriptionsAsync();
             }
 
-            res.ContentType = MimeTypes.ServerSentEvents;
-            res.AddHeader(HttpHeaders.CacheControl, "no-cache");
-            res.ApplyGlobalResponseHeaders();
-            res.UseBufferedStream = false;
-            res.KeepAlive = true;
-
-            feature.OnInit?.Invoke(req);
-
-            await res.FlushAsync();
-
-            var userAuthId = session?.UserAuthId;
-            var anonUserId = serverEvents.GetNextSequence("anonUser");
-            var userId = userAuthId ?? ("-" + anonUserId);
-            var displayName = session.GetSafeDisplayName()
-                ?? "user" + anonUserId;
-
-            var now = DateTime.UtcNow;
-            var subscriptionId = SessionExtensions.CreateRandomSessionId();
-
-            //Handle both ?channel=A,B,C or ?channels=A,B,C
-            var channels = new List<string>();
-            var channel = req.QueryString["channel"];
-            if (!string.IsNullOrEmpty(channel))
-                channels.AddRange(channel.Split(','));
-            channel = req.QueryString["channels"];
-            if (!string.IsNullOrEmpty(channel))
-                channels.AddRange(channel.Split(','));
-
-            if (channels.Count == 0)
-                channels = EventSubscription.UnknownChannel.ToList();
-
-            var subscription = new EventSubscription(res)
+            EventSubscription subscription = null;
+            try
             {
-                CreatedAt = now,
-                LastPulseAt = now,
-                Channels = channels.ToArray(),
-                SubscriptionId = subscriptionId,
-                UserId = userId,
-                UserName = session?.UserName,
-                DisplayName = displayName,
-                SessionId = req.GetSessionId(),
-                IsAuthenticated = session != null && session.IsAuthenticated,
-                UserAddress = req.UserHostAddress,
-                OnPublish = feature.OnPublish,
-                OnPublishAsync = feature.OnPublishAsync,
-                OnError = feature.OnError,
-                Meta = {
-                    { "userId", userId },
-                    { "isAuthenticated", session != null && session.IsAuthenticated ? "true": "false" },
-                    { "displayName", displayName },
-                    { "channels", string.Join(",", channels) },
-                    { "createdAt", now.ToUnixTimeMs().ToString() },
-                    { AuthMetadataProvider.ProfileUrlKey, session.GetProfileUrl() ?? Svg.GetDataUri(Svg.Icons.DefaultProfile) },
-                },
-                ServerArgs = new Dictionary<string, string>(),
-            };
-            subscription.ConnectArgs = new Dictionary<string, string>(subscription.Meta);
+                res.ContentType = MimeTypes.ServerSentEvents;
+                res.AddHeader(HttpHeaders.CacheControl, "no-cache");
+                res.ApplyGlobalResponseHeaders();
+                res.UseBufferedStream = false;
+                res.KeepAlive = true;
 
-            feature.OnCreated?.Invoke(subscription, req);
+                feature.OnInit?.Invoke(req);
 
-            if (req.Response.IsClosed)
-                return; //Allow short-circuiting in OnCreated callback
+                await res.FlushAsync();
 
-            var heartbeatUrl = feature.HeartbeatPath != null
-                ? req.ResolveAbsoluteUrl("~/".CombineWith(feature.HeartbeatPath)).AddQueryParam("id", subscriptionId)
-                : null;
+                var userAuthId = session?.UserAuthId;
+                var anonUserId = serverEvents.GetNextSequence("anonUser");
+                var userId = userAuthId ?? ("-" + anonUserId);
+                var displayName = session.GetSafeDisplayName()
+                    ?? "user" + anonUserId;
 
-            var unRegisterUrl = feature.UnRegisterPath != null
-                ? req.ResolveAbsoluteUrl("~/".CombineWith(feature.UnRegisterPath)).AddQueryParam("id", subscriptionId)
-                : null;
+                var now = DateTime.UtcNow;
+                var subscriptionId = SessionExtensions.CreateRandomSessionId();
 
-            heartbeatUrl = AddSessionParamsIfAny(heartbeatUrl, req);
-            unRegisterUrl = AddSessionParamsIfAny(unRegisterUrl, req);
+                //Handle both ?channel=A,B,C or ?channels=A,B,C
+                var channels = new List<string>();
+                var channel = req.QueryString["channel"];
+                if (!string.IsNullOrEmpty(channel))
+                    channels.AddRange(channel.Split(','));
+                channel = req.QueryString["channels"];
+                if (!string.IsNullOrEmpty(channel))
+                    channels.AddRange(channel.Split(','));
 
-            subscription.ConnectArgs = new Dictionary<string, string>(subscription.ConnectArgs) {
-                {"id", subscriptionId },
-                {"unRegisterUrl", unRegisterUrl},
-                {"heartbeatUrl", heartbeatUrl},
-                {"updateSubscriberUrl", req.ResolveAbsoluteUrl("~/".CombineWith(feature.SubscribersPath, subscriptionId)) },
-                {"heartbeatIntervalMs", ((long)feature.HeartbeatInterval.TotalMilliseconds).ToString(CultureInfo.InvariantCulture) },
-                {"idleTimeoutMs", ((long)feature.IdleTimeout.TotalMilliseconds).ToString(CultureInfo.InvariantCulture)}
-            };
+                if (channels.Count == 0)
+                    channels = EventSubscription.UnknownChannel.ToList();
 
-            feature.OnConnect?.Invoke(subscription, subscription.ConnectArgs);
+                subscription = new EventSubscription(res)
+                {
+                    CreatedAt = now,
+                    LastPulseAt = now,
+                    Channels = channels.ToArray(),
+                    SubscriptionId = subscriptionId,
+                    UserId = userId,
+                    UserName = session?.UserName,
+                    DisplayName = displayName,
+                    SessionId = req.GetSessionId(),
+                    IsAuthenticated = session != null && session.IsAuthenticated,
+                    UserAddress = req.UserHostAddress,
+                    OnPublish = feature.OnPublish,
+                    OnPublishAsync = feature.OnPublishAsync,
+                    OnError = feature.OnError,
+                    Meta = {
+                        { "userId", userId },
+                        { "isAuthenticated", session != null && session.IsAuthenticated ? "true": "false" },
+                        { "displayName", displayName },
+                        { "channels", string.Join(",", channels) },
+                        { "createdAt", now.ToUnixTimeMs().ToString() },
+                        { AuthMetadataProvider.ProfileUrlKey, session.GetProfileUrl() ?? Svg.GetDataUri(Svg.Icons.DefaultProfile) },
+                    },
+                    ServerArgs = new Dictionary<string, string>(),
+                };
+                subscription.ConnectArgs = new Dictionary<string, string>(subscription.Meta);
+
+                feature.OnCreated?.Invoke(subscription, req);
+
+                if (req.Response.IsClosed)
+                    return; //Allow short-circuiting in OnCreated callback
+
+                var heartbeatUrl = feature.HeartbeatPath != null
+                    ? req.ResolveAbsoluteUrl("~/".CombineWith(feature.HeartbeatPath)).AddQueryParam("id", subscriptionId)
+                    : null;
+
+                var unRegisterUrl = feature.UnRegisterPath != null
+                    ? req.ResolveAbsoluteUrl("~/".CombineWith(feature.UnRegisterPath)).AddQueryParam("id", subscriptionId)
+                    : null;
+
+                heartbeatUrl = AddSessionParamsIfAny(heartbeatUrl, req);
+                unRegisterUrl = AddSessionParamsIfAny(unRegisterUrl, req);
+
+                subscription.ConnectArgs = new Dictionary<string, string>(subscription.ConnectArgs) {
+                    {"id", subscriptionId },
+                    {"unRegisterUrl", unRegisterUrl},
+                    {"heartbeatUrl", heartbeatUrl},
+                    {"updateSubscriberUrl", req.ResolveAbsoluteUrl("~/".CombineWith(feature.SubscribersPath, subscriptionId)) },
+                    {"heartbeatIntervalMs", ((long)feature.HeartbeatInterval.TotalMilliseconds).ToString(CultureInfo.InvariantCulture) },
+                    {"idleTimeoutMs", ((long)feature.IdleTimeout.TotalMilliseconds).ToString(CultureInfo.InvariantCulture)}
+                };
+
+                feature.OnConnect?.Invoke(subscription, subscription.ConnectArgs);                
+            }
+            catch (Exception e)
+            {
+                res.StatusCode = 500;
+                throw;
+            }
+
 
             await serverEvents.RegisterAsync(subscription, subscription.ConnectArgs);
 

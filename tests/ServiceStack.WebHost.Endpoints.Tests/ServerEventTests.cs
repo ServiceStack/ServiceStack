@@ -268,39 +268,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    public class ServerEventsErrorHandlingTests
-    {
-        private readonly ServiceStackHost appHost;
-
-        public ServerEventsErrorHandlingTests()
-        {
-            appHost = new ServerEventsAppHost().Init();
-            appHost.GetPlugin<ServerEventsFeature>().OnInit = req =>
-                throw new Exception("Always throws");
-                
-                appHost.Start(Config.AbsoluteBaseUri);
-        }
-
-        [OneTimeTearDown]
-        public void OneTimeTearDown() => appHost.Dispose();
-
-        [Test]
-        public async Task Does_dispose_SSE_Connection_when_Exception_in_OnInit_handler()
-        {
-            using (var client = new ServerEventsClient(Config.AbsoluteBaseUri))
-            {
-                try
-                {
-                    await client.Connect();
-                }
-                catch (WebException e)
-                {
-                    Assert.That(e.GetStatus(), Is.EqualTo(HttpStatusCode.InternalServerError));
-                }
-            }
-        }
-    }
-
     public abstract class ServerEventsTests
     {
         private ServiceStackHost appHost;
