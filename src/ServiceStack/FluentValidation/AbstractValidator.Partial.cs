@@ -106,5 +106,12 @@ namespace ServiceStack.FluentValidation
                 RuleSet(httpMethod, action);
             }
         }
+
+        //TODO: [SYNC] Call from AbstractValidator.Validate/ValidateAsync(context)
+        private void Init(ValidationContext context)
+        {
+            if (this.Request == null)
+                this.Request = context.Request;
+        }
     }
 }

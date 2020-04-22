@@ -1,5 +1,5 @@
 #region License
-// Copyright (c) Jeremy Skinner (http://www.jeremyskinner.co.uk)
+// Copyright (c) .NET Foundation and contributors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
+// The latest version of this file can be found at https://github.com/FluentValidation/FluentValidation
 #endregion
 
 namespace ServiceStack.FluentValidation.Internal {
@@ -81,7 +81,7 @@ namespace ServiceStack.FluentValidation.Internal {
 		/// <summary>
 		/// Function that will be invoked if any of the validators associated with this rule fail.
 		/// </summary>
-		public Action<object> OnFailure { get; set; }
+		public Action<object, IEnumerable<ValidationFailure>> OnFailure { get; set; }
 
 		/// <summary>
 		/// The current validator being configured by this rule.
@@ -119,9 +119,8 @@ namespace ServiceStack.FluentValidation.Internal {
 			Member = member;
 			PropertyFunc = propertyFunc;
 			Expression = expression;
-			OnFailure = x => { };
 			TypeToValidate = typeToValidate;
-			this._cascadeModeThunk = cascadeModeThunk;
+			_cascadeModeThunk = cascadeModeThunk;
 
 			DependentRules = new List<IValidationRule>();
 			PropertyName = ValidatorOptions.PropertyNameResolver(containerType, member, expression);
@@ -270,12 +269,12 @@ namespace ServiceStack.FluentValidation.Internal {
 			}
 
 			var cascade = _cascadeModeThunk();
-			bool hasAnyFailure = false;
+			var failures = new List<ValidationFailure>();
 
 			// Invoke each validator and collect its results.
 			foreach (var validator in _validators) {
 				IEnumerable<ValidationFailure> results;
-				if (validator.ShouldValidateAsync(context))
+				if (validator.ShouldValidateAsynchronously(context))
 					//TODO: For FV 9 by default disallow invocation of async validators when running synchronously.
 					results = InvokePropertyValidatorAsync(context, validator, propertyName, default).GetAwaiter().GetResult();
 				else
@@ -284,7 +283,7 @@ namespace ServiceStack.FluentValidation.Internal {
 				bool hasFailure = false;
 
 				foreach (var result in results) {
-					hasAnyFailure = true;
+					failures.Add(result);
 					hasFailure = true;
 					yield return result;
 				}
@@ -296,9 +295,9 @@ namespace ServiceStack.FluentValidation.Internal {
 				}
 			}
 
-			if (hasAnyFailure) {
+			if (failures.Count > 0) {
 				// Callback if there has been at least one property validator failed.
-				OnFailure(context.InstanceToValidate);
+				OnFailure?.Invoke(context.InstanceToValidate, failures);
 			}
 			else {
 				foreach (var dependentRule in DependentRules) {
@@ -349,7 +348,6 @@ namespace ServiceStack.FluentValidation.Internal {
 			}
 
 			var cascade = _cascadeModeThunk();
-			bool hasAnyFailure = false;
 			var failures = new List<ValidationFailure>();
 
 			// Invoke each validator and collect its results.
@@ -357,7 +355,7 @@ namespace ServiceStack.FluentValidation.Internal {
 				cancellation.ThrowIfCancellationRequested();
 
 				IEnumerable<ValidationFailure> results;
-				if (validator.ShouldValidateAsync(context))
+				if (validator.ShouldValidateAsynchronously(context))
 					results = await InvokePropertyValidatorAsync(context, validator, propertyName, cancellation);
 				else
 					results = InvokePropertyValidator(context, validator, propertyName);
@@ -365,9 +363,8 @@ namespace ServiceStack.FluentValidation.Internal {
 				bool hasFailure = false;
 
 				foreach (var result in results) {
-					hasAnyFailure = true;
-					hasFailure = true;
 					failures.Add(result);
+					hasFailure = true;
 				}
 
 				// If there has been at least one failure, and our CascadeMode has been set to StopOnFirst
@@ -377,9 +374,9 @@ namespace ServiceStack.FluentValidation.Internal {
 				}
 			}
 
-			if (hasAnyFailure) {
+			if (failures.Count > 0) {
 				// Callback if there has been at least one property validator failed.
-				OnFailure(context.InstanceToValidate);
+				OnFailure?.Invoke(context.InstanceToValidate, failures);
 			}
 			else {
 				failures.AddRange(await RunDependentRulesAsync(context, cancellation));
@@ -465,8 +462,7 @@ namespace ServiceStack.FluentValidation.Internal {
 			}
 		}
 
-		// TODO: Consider making these public and part of the interface for FV 9.
-		internal void ApplySharedCondition(Func<ValidationContext, bool> condition) {
+		public void ApplySharedCondition(Func<ValidationContext, bool> condition) {
 			if (_condition == null) {
 				_condition = condition;
 			}
@@ -476,7 +472,7 @@ namespace ServiceStack.FluentValidation.Internal {
 			}
 		}
 
-		internal void ApplySharedAsyncCondition(Func<ValidationContext, CancellationToken, Task<bool>> condition) {
+		public void ApplySharedAsyncCondition(Func<ValidationContext, CancellationToken, Task<bool>> condition) {
 			if (_asyncCondition == null) {
 				_asyncCondition = condition;
 			}

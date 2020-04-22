@@ -1,4 +1,4 @@
-﻿namespace ServiceStack.FluentValidation.Validators {
+namespace ServiceStack.FluentValidation.Validators {
 	using System;
 	using System.Collections.Generic;
 	using System.Threading;
@@ -52,7 +52,7 @@
 			throw new NotImplementedException();
 		}
 
-		public override bool ShouldValidateAsync(ValidationContext context) {
+		public override bool ShouldValidateAsynchronously(ValidationContext context) {
 			return _isAsync && context.IsAsync();
 		}
 	}
@@ -106,7 +106,7 @@
 		public string PropertyName => _context.PropertyName;
 		public string DisplayName => _context.DisplayName;
 		public MessageFormatter MessageFormatter => _context.MessageFormatter;
-		public object InstanceToValidate => _context.Instance;
+		public object InstanceToValidate => _context.InstanceToValidate;
 		public object PropertyValue => _context.PropertyValue;
 		IValidationContext IValidationContext.ParentContext => ParentContext;
 		public ValidationContext ParentContext => _context.ParentContext;
