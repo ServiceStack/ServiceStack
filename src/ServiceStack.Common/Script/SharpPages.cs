@@ -192,10 +192,9 @@ namespace ServiceStack.Script
         }
 
         private static MemoryVirtualFiles tempFiles;
-        internal static MemoryVirtualFiles TempFiles => tempFiles ?? (tempFiles = new MemoryVirtualFiles());
+        internal static MemoryVirtualFiles TempFiles => tempFiles ??= new MemoryVirtualFiles();
         private static readonly InMemoryVirtualDirectory tempDir;
-        internal static readonly InMemoryVirtualDirectory TempDir = tempDir ?? 
-            (tempDir = new InMemoryVirtualDirectory(TempFiles, ScriptConstants.TempFilePath));
+        internal static readonly InMemoryVirtualDirectory TempDir = tempDir ??= new InMemoryVirtualDirectory(TempFiles, ScriptConstants.TempFilePath);
 
         public virtual SharpPage OneTimePage(string contents, string ext) => OneTimePage(contents, ext, init: null);
         

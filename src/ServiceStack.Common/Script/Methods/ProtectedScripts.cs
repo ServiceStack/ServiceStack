@@ -998,22 +998,22 @@ namespace ServiceStack.Script
 
             if (scopedParams.TryRemove("data", out object data))
             {
-                if (webReq.Method == null)
-                    webReq.Method = HttpMethods.Post;
-
                 if (webReq.ContentType == null)
                     webReq.ContentType = MimeTypes.FormUrlEncoded;
 
                 var body = ConvertDataToString(data, webReq.ContentType);
-                using (var stream = webReq.GetRequestStream())
-                {
-                    var utf8 = MemoryProvider.Instance.ToUtf8(body.AsSpan()).ToArray();
-                    stream.Write(utf8, 0, utf8.Length);
-                }
+                using var stream = webReq.GetRequestStream();
+                var utf8 = MemoryProvider.Instance.ToUtf8(body.AsSpan()).ToArray();
+                stream.Write(utf8, 0, utf8.Length);
             }
 
             return webReq;
         }
+
+        public string urlTextContents(ScriptScopeContext scope, string url) =>
+            urlTextContents(scope, url, new Dictionary<string, object> {
+                ["method"] = HttpMethods.Get
+            });
 
         public string urlTextContents(ScriptScopeContext scope, string url, object options)
         {
