@@ -757,40 +757,28 @@ namespace ServiceStack
             SendAsync<byte[]>(HttpMethods.Post, ResolveTypedUrl(HttpMethods.Post, requestDto), requestDto, token);
 
 
-        public Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto) =>
-            SendAsync<TResponse>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto);
-        public Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token) =>
+        public Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default) =>
             SendAsync<TResponse>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto, token);
 
-        public Task<TResponse> PutAsync<TResponse>(object requestDto) =>
-            SendAsync<TResponse>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto);
-        public Task<TResponse> PutAsync<TResponse>(object requestDto, CancellationToken token) =>
+        public Task<TResponse> PutAsync<TResponse>(object requestDto, CancellationToken token = default) =>
             SendAsync<TResponse>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto, token);
 
-        public Task<TResponse> PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request) =>
-            PutAsync<TResponse>(relativeOrAbsoluteUrl, request, default);
-        public Task<TResponse> PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, CancellationToken token) =>
+        public Task<TResponse> PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, CancellationToken token = default) =>
             SendAsync<TResponse>(HttpMethods.Put, ResolveUrl(HttpMethods.Put, relativeOrAbsoluteUrl), request, token);
 
-        public Task PutAsync(IReturnVoid requestDto) => PutAsync(requestDto, default);
-        public Task<TResponse> PatchAsync<TResponse>(IReturn<TResponse> requestDto) =>
+        public Task<TResponse> PatchAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default) =>
             SendAsync<TResponse>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto);
 
-        public Task PutAsync(IReturnVoid requestDto, CancellationToken token) =>
+        public Task PutAsync(IReturnVoid requestDto, CancellationToken token = default) =>
             SendAsync<byte[]>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto, token);
 
-        public Task<TResponse> PatchAsync<TResponse>(object requestDto) => PatchAsync<TResponse>(requestDto, default);
-        public Task PatchAsync(IReturnVoid requestDto) => PatchAsync(requestDto, default);
-
-        public Task<TResponse> PatchAsync<TResponse>(object requestDto, CancellationToken token) =>
+        public Task<TResponse> PatchAsync<TResponse>(object requestDto, CancellationToken token = default) =>
             SendAsync<TResponse>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, requestDto), requestDto, token);
 
-        public Task PatchAsync(IReturnVoid requestDto, CancellationToken token) =>
+        public Task PatchAsync(IReturnVoid requestDto, CancellationToken token = default) =>
             SendAsync<byte[]>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, requestDto), requestDto, token);
 
-        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto) =>
-            CustomMethodAsync<TResponse>(httpVerb, requestDto, default);
-        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto, CancellationToken token)
+        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto, CancellationToken token = default)
         {
             if (!HttpMethods.Exists(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
@@ -799,9 +787,7 @@ namespace ServiceStack
             return SendAsync<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody, token);
         }
 
-        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto) =>
-            CustomMethodAsync<TResponse>(httpVerb, requestDto, default);
-        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto, CancellationToken token)
+        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto, CancellationToken token = default)
         {
             if (!HttpMethods.Exists(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
@@ -810,8 +796,7 @@ namespace ServiceStack
             return SendAsync<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody, token);
         }
 
-        public Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto) => CustomMethodAsync(httpVerb, requestDto, default);
-        public Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto, CancellationToken token)
+        public Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto, CancellationToken token = default)
         {
             if (!HttpMethods.Exists(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
@@ -820,9 +805,7 @@ namespace ServiceStack
             return SendAsync<byte[]>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody, token);
         }
 
-        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request) =>
-            CustomMethodAsync<TResponse>(httpVerb, relativeOrAbsoluteUrl, request, default);
-        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request, CancellationToken token)
+        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request, CancellationToken token = default)
         {
             if (!HttpMethods.Exists(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);

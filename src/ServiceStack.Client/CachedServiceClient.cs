@@ -245,99 +245,99 @@ namespace ServiceStack
             client.SetCredentials(userName, password);
         }
 
-        public Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto)
+        public Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default)
         {
-            return client.GetAsync(requestDto);
+            return client.GetAsync(requestDto, token);
         }
 
-        public Task<TResponse> GetAsync<TResponse>(object requestDto)
+        public Task<TResponse> GetAsync<TResponse>(object requestDto, CancellationToken token = default)
         {
-            return client.GetAsync<TResponse>(requestDto);
+            return client.GetAsync<TResponse>(requestDto, token);
         }
 
-        public Task<TResponse> GetAsync<TResponse>(string relativeOrAbsoluteUrl)
+        public Task<TResponse> GetAsync<TResponse>(string relativeOrAbsoluteUrl, CancellationToken token = default)
         {
-            return client.GetAsync<TResponse>(relativeOrAbsoluteUrl);
+            return client.GetAsync<TResponse>(relativeOrAbsoluteUrl, token);
         }
 
-        public Task GetAsync(IReturnVoid requestDto)
+        public Task GetAsync(IReturnVoid requestDto, CancellationToken token = default)
         {
-            return client.GetAsync(requestDto);
+            return client.GetAsync(requestDto, token);
         }
 
-        public Task<TResponse> DeleteAsync<TResponse>(IReturn<TResponse> requestDto)
+        public Task<TResponse> DeleteAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default)
         {
-            return client.DeleteAsync(requestDto);
+            return client.DeleteAsync(requestDto, token);
         }
 
-        public Task<TResponse> DeleteAsync<TResponse>(object requestDto)
+        public Task<TResponse> DeleteAsync<TResponse>(object requestDto, CancellationToken token = default)
         {
-            return client.DeleteAsync<TResponse>(requestDto);
+            return client.DeleteAsync<TResponse>(requestDto, token);
         }
 
-        public Task<TResponse> DeleteAsync<TResponse>(string relativeOrAbsoluteUrl)
+        public Task<TResponse> DeleteAsync<TResponse>(string relativeOrAbsoluteUrl, CancellationToken token = default)
         {
-            return client.DeleteAsync<TResponse>(relativeOrAbsoluteUrl);
+            return client.DeleteAsync<TResponse>(relativeOrAbsoluteUrl, token);
         }
 
-        public Task DeleteAsync(IReturnVoid requestDto)
+        public Task DeleteAsync(IReturnVoid requestDto, CancellationToken token = default)
         {
-            return client.DeleteAsync(requestDto);
+            return client.DeleteAsync(requestDto, token);
         }
 
-        public Task<TResponse> PostAsync<TResponse>(IReturn<TResponse> requestDto)
+        public Task<TResponse> PostAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default)
         {
-            return client.PostAsync(requestDto);
+            return client.PostAsync(requestDto, token);
         }
 
-        public Task<TResponse> PostAsync<TResponse>(object requestDto)
+        public Task<TResponse> PostAsync<TResponse>(object requestDto, CancellationToken token = default)
         {
-            return client.PostAsync<TResponse>(requestDto);
+            return client.PostAsync<TResponse>(requestDto, token);
         }
 
-        public Task<TResponse> PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request)
+        public Task<TResponse> PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request, CancellationToken token = default)
         {
-            return client.PostAsync<TResponse>(relativeOrAbsoluteUrl, request);
+            return client.PostAsync<TResponse>(relativeOrAbsoluteUrl, request, token);
         }
 
-        public Task PostAsync(IReturnVoid requestDto)
+        public Task PostAsync(IReturnVoid requestDto, CancellationToken token = default)
         {
-            return client.PostAsync(requestDto);
+            return client.PostAsync(requestDto, token);
         }
 
-        public Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto)
+        public Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default)
         {
-            return client.PutAsync(requestDto);
+            return client.PutAsync(requestDto, token);
         }
 
-        public Task<TResponse> PutAsync<TResponse>(object requestDto)
+        public Task<TResponse> PutAsync<TResponse>(object requestDto, CancellationToken token = default)
         {
-            return client.PutAsync<TResponse>(requestDto);
+            return client.PutAsync<TResponse>(requestDto, token);
         }
 
-        public Task<TResponse> PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request)
+        public Task<TResponse> PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, CancellationToken token = default)
         {
-            return client.PutAsync<TResponse>(relativeOrAbsoluteUrl, request);
+            return client.PutAsync<TResponse>(relativeOrAbsoluteUrl, request, token);
         }
 
-        public Task PutAsync(IReturnVoid requestDto)
+        public Task PutAsync(IReturnVoid requestDto, CancellationToken token = default)
         {
-            return client.PutAsync(requestDto);
+            return client.PutAsync(requestDto, token);
         }
 
-        public Task<TResponse> PatchAsync<TResponse>(IReturn<TResponse> requestDto)
+        public Task<TResponse> PatchAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default)
         {
-            return client.PatchAsync(requestDto);
+            return client.PatchAsync(requestDto, token);
         }
 
-        public Task<TResponse> PatchAsync<TResponse>(object requestDto)
+        public Task<TResponse> PatchAsync<TResponse>(object requestDto, CancellationToken token = default)
         {
-            return client.PatchAsync<TResponse>(requestDto);
+            return client.PatchAsync<TResponse>(requestDto, token);
         }
 
-        public Task PatchAsync(IReturnVoid requestDto)
+        public Task PatchAsync(IReturnVoid requestDto, CancellationToken token = default)
         {
-            return client.PatchAsync(requestDto);
+            return client.PatchAsync(requestDto, token);
         }
 
         public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request, CancellationToken token = default(CancellationToken))
@@ -345,24 +345,24 @@ namespace ServiceStack
             return client.SendAsync<TResponse>(httpMethod, absoluteUrl, request, token);
         }
 
-        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
+        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto, CancellationToken token = default)
         {
-            return client.CustomMethodAsync(httpVerb, requestDto);
+            return client.CustomMethodAsync(httpVerb, requestDto, token);
         }
 
-        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto)
+        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto, CancellationToken token = default)
         {
-            return client.CustomMethodAsync<TResponse>(httpVerb, requestDto);
+            return client.CustomMethodAsync<TResponse>(httpVerb, requestDto, token);
         }
 
-        public Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto)
+        public Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto, CancellationToken token = default)
         {
-            return client.CustomMethodAsync(httpVerb, requestDto);
+            return client.CustomMethodAsync(httpVerb, requestDto, token);
         }
 
-        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request)
+        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request, CancellationToken token = default)
         {
-            return client.CustomMethodAsync<TResponse>(httpVerb, relativeOrAbsoluteUrl, request);
+            return client.CustomMethodAsync<TResponse>(httpVerb, relativeOrAbsoluteUrl, request, token);
         }
 
         public void SendOneWay(object requestDto)

@@ -576,94 +576,95 @@ namespace ServiceStack
         public void CustomMethod(string httpVerb, IReturnVoid requestDto) =>
             CustomMethodAsync(httpVerb, requestDto).GetAwaiter().GetResult();
 
-        public Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto)
+        
+        public Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default)
         {
-            return Execute<TResponse>(requestDto, GetMethodName(Methods.Get, requestDto));
+            return Execute<TResponse>(requestDto, GetMethodName(Methods.Get, requestDto), token);
         }
 
-        public Task<TResponse> GetAsync<TResponse>(object requestDto)
+        public Task<TResponse> GetAsync<TResponse>(object requestDto, CancellationToken token = default)
         {
-            return Execute<TResponse>(requestDto, GetMethodName(Methods.Get, requestDto));
+            return Execute<TResponse>(requestDto, GetMethodName(Methods.Get, requestDto), token);
         }
 
-        public async Task GetAsync(IReturnVoid requestDto)
+        public async Task GetAsync(IReturnVoid requestDto, CancellationToken token = default)
         {
-            await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Get, requestDto));
+            await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Get, requestDto), token);
         }
 
-        public Task<TResponse> DeleteAsync<TResponse>(IReturn<TResponse> requestDto)
+        public Task<TResponse> DeleteAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default)
         {
-            return Execute<TResponse>(requestDto, GetMethodName(Methods.Delete, requestDto));
+            return Execute<TResponse>(requestDto, GetMethodName(Methods.Delete, requestDto), token);
         }
 
-        public Task<TResponse> DeleteAsync<TResponse>(object requestDto)
+        public Task<TResponse> DeleteAsync<TResponse>(object requestDto, CancellationToken token = default)
         {
-            return Execute<TResponse>(requestDto, GetMethodName(Methods.Delete, requestDto));
+            return Execute<TResponse>(requestDto, GetMethodName(Methods.Delete, requestDto), token);
         }
 
-        public async Task DeleteAsync(IReturnVoid requestDto)
+        public async Task DeleteAsync(IReturnVoid requestDto, CancellationToken token = default)
         {
-            await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Delete, requestDto));
+            await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Delete, requestDto), token);
         }
 
-        public Task<TResponse> PostAsync<TResponse>(IReturn<TResponse> requestDto)
+        public Task<TResponse> PostAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default)
         {
-            return Execute<TResponse>(requestDto, GetMethodName(Methods.Post, requestDto));
+            return Execute<TResponse>(requestDto, GetMethodName(Methods.Post, requestDto), token);
         }
 
-        public Task<TResponse> PostAsync<TResponse>(object requestDto)
+        public Task<TResponse> PostAsync<TResponse>(object requestDto, CancellationToken token = default)
         {
-            return Execute<TResponse>(requestDto, GetMethodName(Methods.Post, requestDto));
+            return Execute<TResponse>(requestDto, GetMethodName(Methods.Post, requestDto), token);
         }
 
-        public async Task PostAsync(IReturnVoid requestDto)
+        public async Task PostAsync(IReturnVoid requestDto, CancellationToken token = default)
         {
-            await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Post, requestDto));
+            await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Post, requestDto), token);
         }
 
-        public Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto)
+        public Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default)
         {
-            return Execute<TResponse>(requestDto, GetMethodName(Methods.Put, requestDto));
+            return Execute<TResponse>(requestDto, GetMethodName(Methods.Put, requestDto), token);
         }
 
-        public Task<TResponse> PutAsync<TResponse>(object requestDto)
+        public Task<TResponse> PutAsync<TResponse>(object requestDto, CancellationToken token = default)
         {
-            return Execute<TResponse>(requestDto, GetMethodName(Methods.Put, requestDto));
+            return Execute<TResponse>(requestDto, GetMethodName(Methods.Put, requestDto), token);
         }
 
-        public async Task PutAsync(IReturnVoid requestDto)
+        public async Task PutAsync(IReturnVoid requestDto, CancellationToken token = default)
         {
-            await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Put, requestDto));
+            await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Put, requestDto), token);
         }
 
-        public Task<TResponse> PatchAsync<TResponse>(IReturn<TResponse> requestDto)
+        public Task<TResponse> PatchAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default)
         {
-            return Execute<TResponse>(requestDto, GetMethodName(Methods.Patch, requestDto));
+            return Execute<TResponse>(requestDto, GetMethodName(Methods.Patch, requestDto), token);
         }
 
-        public Task<TResponse> PatchAsync<TResponse>(object requestDto)
+        public Task<TResponse> PatchAsync<TResponse>(object requestDto, CancellationToken token = default)
         {
-            return Execute<TResponse>(requestDto, GetMethodName(Methods.Patch, requestDto));
+            return Execute<TResponse>(requestDto, GetMethodName(Methods.Patch, requestDto), token);
         }
 
-        public async Task PatchAsync(IReturnVoid requestDto)
+        public async Task PatchAsync(IReturnVoid requestDto, CancellationToken token = default)
         {
-            await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Patch, requestDto));
+            await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Patch, requestDto), token);
         }
 
-        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
+        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto, CancellationToken token = default)
         {
-            return Execute<TResponse>(requestDto, GetMethodName(httpVerb, requestDto));
+            return Execute<TResponse>(requestDto, GetMethodName(httpVerb, requestDto), token);
         }
 
-        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto)
+        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto, CancellationToken token = default)
         {
-            return Execute<TResponse>(requestDto, GetMethodName(httpVerb, requestDto));
+            return Execute<TResponse>(requestDto, GetMethodName(httpVerb, requestDto), token);
         }
 
-        public async Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto)
+        public async Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto, CancellationToken token = default)
         {
-            await Execute<EmptyResponse>(requestDto, GetMethodName(httpVerb, requestDto));
+            await Execute<EmptyResponse>(requestDto, GetMethodName(httpVerb, requestDto), token);
         }
 
         public TResponse Send<TResponse>(object requestDto) => SendAsync<TResponse>(requestDto).GetAwaiter().GetResult();

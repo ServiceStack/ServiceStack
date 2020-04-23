@@ -269,126 +269,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        public Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TResponse> GetAsync<TResponse>(object requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TResponse> GetAsync<TResponse>(string relativeOrAbsoluteUrl)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task GetAsync(IReturnVoid requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TResponse> DeleteAsync<TResponse>(IReturn<TResponse> requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TResponse> DeleteAsync<TResponse>(object requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TResponse> DeleteAsync<TResponse>(string relativeOrAbsoluteUrl)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task DeleteAsync(IReturnVoid requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TResponse> PostAsync<TResponse>(IReturn<TResponse> requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TResponse> PostAsync<TResponse>(object requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TResponse> PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task PostAsync(IReturnVoid requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TResponse> PutAsync<TResponse>(object requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TResponse> PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task PutAsync(IReturnVoid requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TResponse> PatchAsync<TResponse>(IReturn<TResponse> requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TResponse> PatchAsync<TResponse>(object requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task PatchAsync(IReturnVoid requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request, CancellationToken token = default(CancellationToken))
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request)
-        {
-            throw new NotImplementedException();
-        }
-
         public void CancelAsync()
         {
             throw new NotImplementedException();
@@ -447,7 +327,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             throw new NotImplementedException();
         }
 
-        public Task<TResponse> SendAsync<TResponse>(object requestDto, CancellationToken token)
+        public Task<TResponse> SendAsync<TResponse>(object requestDto, CancellationToken token = default)
         {
             var tcs = new TaskCompletionSource<TResponse>();
             var response = default(TResponse);
@@ -495,17 +375,138 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             }
         }
 
-        public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<object> requests, CancellationToken token)
+        public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<object> requests, CancellationToken token = default)
         {
             throw new NotImplementedException();
         }
 
-        public Task PublishAsync(object requestDto, CancellationToken token)
+        public Task PublishAsync(object requestDto, CancellationToken token = default)
         {
             return SendAsync<byte[]>(requestDto, token);
         }
 
-        public Task PublishAllAsync(IEnumerable<object> requestDtos, CancellationToken token)
+        public Task PublishAllAsync(IEnumerable<object> requestDtos, CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> GetAsync<TResponse>(object requestDto, CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task GetAsync(IReturnVoid requestDto, CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> DeleteAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> DeleteAsync<TResponse>(object requestDto, CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteAsync(IReturnVoid requestDto, CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> PostAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> PostAsync<TResponse>(object requestDto, CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task PostAsync(IReturnVoid requestDto, CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> PutAsync<TResponse>(object requestDto, CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task PutAsync(IReturnVoid requestDto, CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> PatchAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> PatchAsync<TResponse>(object requestDto, CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task PatchAsync(IReturnVoid requestDto, CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto, CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto, CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto, CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> GetAsync<TResponse>(string relativeOrAbsoluteUrl, CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> DeleteAsync<TResponse>(string relativeOrAbsoluteUrl, CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request, CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request,
+            CancellationToken token = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request, CancellationToken token = default)
         {
             throw new NotImplementedException();
         }
