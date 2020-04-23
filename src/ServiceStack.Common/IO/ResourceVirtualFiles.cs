@@ -56,6 +56,8 @@ namespace ServiceStack.IO
         public override string SanitizePath(string filePath)
         {
             var sanitizedPath = base.SanitizePath(filePath);
+            if (sanitizedPath == null)
+                return null;
             var lastDirPos = sanitizedPath.LastIndexOf('/');
             if (lastDirPos >= 0)
             {
