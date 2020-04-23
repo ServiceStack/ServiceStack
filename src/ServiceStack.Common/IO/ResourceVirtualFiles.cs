@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using ServiceStack.DataAnnotations;
 using ServiceStack.VirtualPath;
@@ -31,7 +32,7 @@ namespace ServiceStack.IO
         
         //https://docs.microsoft.com/en-us/dotnet/api/system.resources.tools.stronglytypedresourcebuilder.verifyresourcename?redirectedfrom=MSDN&view=netframework-4.8#remarks
         static readonly char [] NamespaceSpecialChars = { ' ', '\u00A0', ',', ';', '|', '~', '@', '#', '%', '^', '&', 
-            '*', '+', '-', /*'/',*/ '\\', '<', '>', '?', '[', ']', '(', ')', '{', 
+            '*', '+', '-', /*'/', '\\',*/ '<', '>', '?', '[', ']', '(', ')', '{', 
             '}', '\"', '\'', '!'};
 
         private static string CleanChars(string name)
@@ -52,8 +53,14 @@ namespace ServiceStack.IO
             }
             return new string (newChars);
         }
+        
+        public static HashSet<string> PartialFileNames { get; set; } = new HashSet<string>
+        {
+            "min.js",
+            "min.css",
+        };
 
-        public override string SanitizePath(string filePath)
+        public string CleanPath(string filePath)
         {
             var sanitizedPath = base.SanitizePath(filePath);
             if (sanitizedPath == null)
@@ -63,6 +70,12 @@ namespace ServiceStack.IO
             {
                 var dirPath = sanitizedPath.Substring(0, lastDirPos);
                 var fileName = sanitizedPath.Substring(lastDirPos + 1);
+                if (PartialFileNames.Contains(fileName))
+                {
+                    var partialName = dirPath.LastRightPart('/');
+                    dirPath = dirPath.LastLeftPart('/');
+                    fileName = partialName + '.' + fileName;
+                }
                 
                 var cleanDir = CleanChars(dirPath); //only dirs are replaced 
                 var cleanPath = cleanDir + '/' + fileName;
@@ -71,6 +84,12 @@ namespace ServiceStack.IO
             return sanitizedPath;
         }
 
+        public override IVirtualFile GetFile(string virtualPath)
+        {
+            var virtualFile = RootDirectory.GetFile(CleanPath(virtualPath));
+            virtualFile?.Refresh();
+            return virtualFile;
+        }
 
         private static string GetNamespace(Type type)
         {
