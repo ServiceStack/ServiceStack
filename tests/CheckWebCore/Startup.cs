@@ -348,6 +348,46 @@ namespace CheckWebCore
         public string Type { get; set; }
     }
     
+    [ValidateIsAuthenticated]
+    [ValidateIsAdmin]
+    [ValidateHasRole("TheRole")]
+    [ValidateHasPermission("ThePerm")]
+    public class TriggerAllValidators 
+        : IReturn<IdResponse>
+    {
+        [ValidateCreditCard]
+        public string CreditCard { get; set; }
+        [ValidateEmail]
+        public string Email { get; set; }
+        [ValidateEmpty]
+        public string Empty { get; set; }
+        [ValidateEqual("Equal")]
+        public string Equal { get; set; }
+        [ValidateExclusiveBetween(10, 20)]
+        public int ExclusiveBetween { get; set; }
+        [ValidateGreaterThanOrEqual(10)]
+        public int GreaterThanOrEqual { get; set; }
+        [ValidateGreaterThan(10)]
+        public int GreaterThan { get; set; }
+        [ValidateInclusiveBetween(10, 20)]
+        public int InclusiveBetween { get; set; }
+        [ValidateExactLength(10)]
+        public string Length { get; set; }
+        [ValidateLessThanOrEqual(10)]
+        public int LessThanOrEqual { get; set; }
+        [ValidateLessThan(10)]
+        public int LessThan { get; set; }
+        [ValidateNotEmpty]
+        public string NotEmpty { get; set; }
+        [ValidateNotEqual("NotEqual")]
+        public string NotEqual { get; set; }
+        [ValidateNull]
+        public string Null { get; set; }
+        [ValidateRegularExpression("^[a-z]*$")]
+        public string RegularExpression { get; set; }
+        [ValidateScalePrecision(1,1)]
+        public decimal ScalePrecision { get; set; }
+    }
 
     //    [Authenticate]
     public class MyServices : Service
@@ -375,6 +415,8 @@ namespace CheckWebCore
         public object Any(Throw request) => HttpError.Conflict("Conflict message");
 //        public object Any(Throw request) => new HttpResult
 //            {StatusCode = HttpStatusCode.Conflict, Response = "Error message"};
+
+        public object Any(TriggerAllValidators request) => new IdResponse();
 
         [Authenticate]
         public object Post(ImportData request)

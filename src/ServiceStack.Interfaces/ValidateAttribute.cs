@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using ServiceStack.Caching;
@@ -12,7 +13,7 @@ namespace ServiceStack
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
     [Tag("PropertyOrder")]
-    public class ValidateRequestAttribute : AttributeBase, IValidateRule
+    public class ValidateRequestAttribute : AttributeBase, IValidateRule, IReflectAttributeConverter
     {
         public ValidateRequestAttribute() {}
         public ValidateRequestAttribute(string validator) => Validator = validator;
@@ -72,6 +73,25 @@ namespace ServiceStack
             get => throw new NotSupportedException(nameof(AnyConditions));
             set => Condition = ValidateAttribute.Combine("||", value);
         }
+
+        public ReflectAttribute ToReflectAttribute()
+        {
+            var to = new ReflectAttribute {
+                Name = "ValidateRequest",
+                PropertyArgs = new List<KeyValuePair<PropertyInfo, object>>()
+            };
+            if (!string.IsNullOrEmpty(Validator))
+                to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Validator)), Validator));
+            else if (!string.IsNullOrEmpty(Condition))
+                to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Condition)), Condition));
+            if (!string.IsNullOrEmpty(ErrorCode))
+                to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(ErrorCode)), ErrorCode));
+            if (!string.IsNullOrEmpty(Message))
+                to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Message)), Message));
+            if (StatusCode != default)
+                to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(StatusCode)), StatusCode));
+            return to;
+        }
     }
     //Default ITypeValidator defined in ValidateScripts 
     public class ValidateIsAuthenticatedAttribute : ValidateRequestAttribute
@@ -92,7 +112,7 @@ namespace ServiceStack
     }
 
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
-    public class ValidateAttribute : AttributeBase, IValidateRule
+    public class ValidateAttribute : AttributeBase, IValidateRule, IReflectAttributeConverter
     {
         public ValidateAttribute() {}
         public ValidateAttribute(string validator) => Validator = validator;
@@ -154,6 +174,23 @@ namespace ServiceStack
             sb.Insert(0, '(');
             sb.Append(')');
             return sb.ToString();
+        }
+
+        public ReflectAttribute ToReflectAttribute()
+        {
+            var to = new ReflectAttribute {
+                Name = "Validate",
+                PropertyArgs = new List<KeyValuePair<PropertyInfo, object>>()
+            };
+            if (!string.IsNullOrEmpty(Validator))
+                to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Validator)), Validator));
+            else if (!string.IsNullOrEmpty(Condition))
+                to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Condition)), Condition));
+            if (!string.IsNullOrEmpty(ErrorCode))
+                to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(ErrorCode)), ErrorCode));
+            if (!string.IsNullOrEmpty(Message))
+                to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Message)), Message));
+            return to;
         }
     }
 

@@ -93,31 +93,31 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Email { get; set; }
         [ValidateEmpty]
         public string Empty { get; set; }
-        [Validate("Equal('Equal')")]
+        [ValidateEqual("Equal")]
         public string Equal { get; set; }
-        [Validate("ExclusiveBetween(10, 20)")]
+        [ValidateExclusiveBetween(10, 20)]
         public int ExclusiveBetween { get; set; }
-        [Validate("GreaterThanOrEqual(10)")]
+        [ValidateGreaterThanOrEqual(10)]
         public int GreaterThanOrEqual { get; set; }
-        [Validate("GreaterThan(10)")]
+        [ValidateGreaterThan(10)]
         public int GreaterThan { get; set; }
-        [Validate("InclusiveBetween(10, 20)")]
+        [ValidateInclusiveBetween(10, 20)]
         public int InclusiveBetween { get; set; }
-        [Validate("ExactLength(10)")]
+        [ValidateExactLength(10)]
         public string Length { get; set; }
-        [Validate("LessThanOrEqual(10)")]
+        [ValidateLessThanOrEqual(10)]
         public int LessThanOrEqual { get; set; }
-        [Validate("LessThan(10)")]
+        [ValidateLessThan(10)]
         public int LessThan { get; set; }
         [ValidateNotEmpty]
         public string NotEmpty { get; set; }
-        [Validate("NotEqual('NotEqual')")]
+        [ValidateNotEqual("NotEqual")]
         public string NotEqual { get; set; }
         [ValidateNull]
         public string Null { get; set; }
-        [Validate("RegularExpression('^[a-z]*$')")]
+        [ValidateRegularExpression("^[a-z]*$")]
         public string RegularExpression { get; set; }
-        [Validate("ScalePrecision(1,1)")]
+        [ValidateScalePrecision(1,1)]
         public decimal ScalePrecision { get; set; }
     }
 
