@@ -273,7 +273,7 @@ namespace ServiceStack
     {
         public ValidateInclusiveBetweenAttribute(string from, string to) : base($"InclusiveBetween(`{from}`,`{to}`)") { }
         public ValidateInclusiveBetweenAttribute(char from, char to) : base($"InclusiveBetween(`{from}`,`{to}`)") { }
-        public ValidateInclusiveBetweenAttribute(int from, int to) : base($"NotEqual({from},{to})") { }
+        public ValidateInclusiveBetweenAttribute(int from, int to) : base($"InclusiveBetween({from},{to})") { }
     }
     public class ValidateExclusiveBetweenAttribute : ValidateAttribute
     {

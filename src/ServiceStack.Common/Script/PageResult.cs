@@ -980,7 +980,7 @@ namespace ServiceStack.Script
                     }
                     else
                     {
-                        sb.Append($"{argsTypesWithoutContext[0].ParameterType.Name} | {mi.Name}(");
+                        sb.Append($"{argsTypesWithoutContext[0].ParameterType.Name} |> {mi.Name}(");
                         var piCount = 0;
                         foreach (var pi in argsTypesWithoutContext.Skip(1))
                         {

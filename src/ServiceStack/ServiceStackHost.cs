@@ -844,7 +844,7 @@ namespace ServiceStack
             {
                 if (response == null)
                 {
-                    res.EndRequest();
+                    await res.EndRequestAsync();
                 }
             }
         }
