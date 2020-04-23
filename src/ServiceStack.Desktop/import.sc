@@ -1,12 +1,13 @@
 * x mix svg-action svg-alert svg-av svg-communication svg-content svg-device svg-editor svg-file svg-hardware svg-image svg-maps svg-navigation svg-places svg-social svg-toggle *
 
 {{ const libs = { 
-    '@servicestack/vue/servicestack-vue.umd.js': 'https://unpkg.com/@servicestack/vue',
-    '@servicestack/react/servicestack-react.umd.js': 'https://unpkg.com/@servicestack/react/dist/servicestack-react.min.js', 
+    '@servicestack/client/servicestack-client.min.js': 'https://unpkg.com/@servicestack/client/dist/servicestack-client.min.js',
+    '@servicestack/vue/servicestack-vue.min.js': 'https://unpkg.com/@servicestack/vue/dist/servicestack-vue.umd.js',
+    '@servicestack/react/servicestack-react.min.js': 'https://unpkg.com/@servicestack/react/dist/servicestack-react.min.js', 
      
     'vue/vue.min.js': 'https://unpkg.com/vue/dist/vue.min.js', 
     'vue-class-component/vue-class-component.min.js': 'https://unpkg.com/vue-class-component/dist/vue-class-component.min.js', 
-    'vue-property-decorator/vue-property-decorator.umd.js': 'https://unpkg.com/vue-property-decorator', 
+    'vue-property-decorator/vue-property-decorator.min.js': 'https://unpkg.com/vue-property-decorator', 
     'vue-router/vue-router.min.js': 'https://unpkg.com/vue-router/dist/vue-router.min.js',
     
     'react/react.production.min.js':'https://unpkg.com/react/umd/react.production.min.js',
