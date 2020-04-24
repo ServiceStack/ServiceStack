@@ -671,7 +671,8 @@ namespace ServiceStack
 
         public IgnoreResult svgAddFile(ScriptScopeContext scope, string svgPath, string name, string cssFile)
         {
-            var svg = (scope.Context.VirtualFiles.GetFile(svgPath) ?? throw new FileNotFoundException(svgPath)).ReadAllText();
+            var svgFile = scope.Context.VirtualFiles.GetFile(svgPath) ?? throw new FileNotFoundException(svgPath);
+            var svg = svgFile.ReadAllText();
             Svg.AddImage(svg, name, cssFile);
             return IgnoreResult.Value;
         }
