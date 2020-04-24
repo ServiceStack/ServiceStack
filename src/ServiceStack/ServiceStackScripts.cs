@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -648,6 +649,32 @@ namespace ServiceStack
         public Dictionary<string, string> svgDataUris() => Svg.DataUris;
 
         public Dictionary<string, List<string>> svgCssFiles() => Svg.CssFiles;
+
+        public IgnoreResult svgAdd(string svg, string name)
+        {
+            Svg.AddImage(svg, name);
+            return IgnoreResult.Value;
+        }
+
+        public IgnoreResult svgAdd(string svg, string name, string cssFile)
+        {
+            Svg.AddImage(svg, name, cssFile);
+            return IgnoreResult.Value;
+        }
+
+        public IgnoreResult svgAddFile(ScriptScopeContext scope, string svgPath, string name)
+        {
+            var svg = (scope.Context.VirtualFiles.GetFile(svgPath) ?? throw new FileNotFoundException(svgPath)).ReadAllText();
+            Svg.AddImage(svg, name);
+            return IgnoreResult.Value;
+        }
+
+        public IgnoreResult svgAddFile(ScriptScopeContext scope, string svgPath, string name, string cssFile)
+        {
+            var svg = (scope.Context.VirtualFiles.GetFile(svgPath) ?? throw new FileNotFoundException(svgPath)).ReadAllText();
+            Svg.AddImage(svg, name, cssFile);
+            return IgnoreResult.Value;
+        }
     }
 
     public class SvgScriptBlock : ScriptBlock
@@ -663,14 +690,12 @@ namespace ServiceStack
             var args = argumentStr.SplitOnFirst(' ');
             var name = args[0].Trim();
 
-            using (var ms = MemoryStreamFactory.GetStream())
-            {
-                var useScope = scope.ScopeWithStream(ms);
-                await WriteBodyAsync(useScope, block, token);
+            using var ms = MemoryStreamFactory.GetStream();
+            var useScope = scope.ScopeWithStream(ms);
+            await WriteBodyAsync(useScope, block, token);
 
-                var capturedSvg = ms.ReadToEnd();                
-                Svg.AddImage(capturedSvg, name, args.Length == 2 ? args[1].Trim() : null);
-            }
+            var capturedSvg = await ms.ReadToEndAsync();                
+            Svg.AddImage(capturedSvg, name, args.Length == 2 ? args[1].Trim() : null);
         }
     }
     
