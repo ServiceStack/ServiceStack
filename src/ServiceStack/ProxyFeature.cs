@@ -154,7 +154,14 @@ namespace ServiceStack
                 if (HttpHeaders.RestrictedHeaders.Contains(header))
                     continue;
 
-                webReq.Headers[header] = httpReq.Headers[header];
+                try
+                {
+                    webReq.Headers[header] = httpReq.Headers[header];
+                }
+                catch (Exception e)
+                {
+                    Log.Error($"Could not set Proxy Header: {header} = {httpReq.Headers[header]}\n{e.Message}", e);
+                }
             }
         }
 
