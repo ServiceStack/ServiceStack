@@ -188,7 +188,7 @@ namespace ServiceStack
                 httpRes.StatusCode = 400;
                 httpRes.StatusDescription = "Unknown format, valid formats: svg, css, datauri";
             }
-            httpRes.EndRequest();
+            await httpRes.EndRequestAsync();
         }
     }
 

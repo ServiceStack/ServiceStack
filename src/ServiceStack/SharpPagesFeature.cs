@@ -151,12 +151,6 @@ namespace ServiceStack
             {
                 appHost.RegisterService(typeof(ScriptAdminService), ScriptAdminService.Routes);
             }
-
-            InitPage = Pages.GetPage("_init");
-            if (InitPage != null)
-            {
-                appHost.AfterInitCallbacks.Add(host => RunInitPage());
-            }
             
             appHost.AddToAppMetadata(meta => {
                 meta.Plugins.SharpPages = new SharpPagesInfo {
@@ -168,6 +162,18 @@ namespace ServiceStack
             });
 
             Init();
+            
+            InitPage = Pages.GetPage("_init");
+            if (InitPage == null)
+            {
+                var initScript = appHost.VirtualFileSources.GetFile("_init.ss");
+                if (initScript != null)
+                    InitPage = this.SharpScriptPage(initScript.ReadAllText());
+            }
+            if (InitPage != null)
+            {
+                appHost.AfterInitCallbacks.Add(host => RunInitPage());
+            }
         }
 
         internal SharpPage InitPage { get; set; }
@@ -179,7 +185,7 @@ namespace ServiceStack
             
             try
             {
-                var execInit = new PageResult(InitPage).Result;
+                var execInit = new PageResult(InitPage).RenderToStringAsync().GetAwaiter().GetResult();
                 Args["initout"] = execInit;
                 return execInit;
             }
