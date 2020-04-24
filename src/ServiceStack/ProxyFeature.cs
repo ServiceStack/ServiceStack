@@ -156,6 +156,12 @@ namespace ServiceStack
 
                 try
                 {
+                    if (header.StartsWith(":"))
+                    {
+                        Log.Warn($"Ignoring Invalid Proxy Request Header '{header}'");
+                        continue;
+                    }
+                    
                     webReq.Headers[header] = httpReq.Headers[header];
                 }
                 catch (Exception e)
