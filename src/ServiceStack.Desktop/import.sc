@@ -9,16 +9,23 @@
     'vue-class-component/vue-class-component.min.js': 'https://unpkg.com/vue-class-component/dist/vue-class-component.min.js', 
     'vue-property-decorator/vue-property-decorator.min.js': 'https://unpkg.com/vue-property-decorator', 
     'vue-router/vue-router.min.js': 'https://unpkg.com/vue-router/dist/vue-router.min.js',
+    'vuex/vuex.min.js': 'https://unpkg.com/vuex/dist/vuex.min.js',
+    'portal-vue/portal-vue.min.js': 'https://unpkg.com/portal-vue/dist/portal-vue.umd.min.js',
+    'bootstrap-vue/bootstrap-vue.min.js': 'https://unpkg.com/bootstrap-vue/dist/bootstrap-vue.min.js',
     
     'react/react.production.min.js':'https://unpkg.com/react/umd/react.production.min.js',
     'react-dom/react-dom.production.min.js':'https://unpkg.com/react-dom/umd/react-dom.production.min.js',
     'react-router/react-router.min.js':'https://unpkg.com/react-router/umd/react-router.min.js',
     'react-router-dom/react-router-dom.min.js':'https://unpkg.com/react-router-dom/umd/react-router-dom.min.js',
+    'mobx/mobx.min.js': 'https://unpkg.com/mobx/lib/mobx.umd.min.js',
+    'redux/redux.min.js': 'https://unpkg.com/redux/dist/redux.min.js',
+    'react-redux/react-redux.min.js': 'https://unpkg.com/react-redux/dist/react-redux.min.js',
      
     'bootstrap/bootstrap.min.js': 'https://unpkg.com/bootstrap/dist/js/bootstrap.min.js', 
-    'bootstrap/popper.min.js':'https://cdn.jsdelivr.net/npm/popper.js/dist/umd/popper.min.js',
+    'popper/popper.min.js':'https://cdn.jsdelivr.net/npm/popper.js/dist/umd/popper.min.js',
     'jquery/jquery.min.js': 'https://unpkg.com/jquery/dist/jquery.min.js',
-} }}
+} 
+}}
 
 #each libs
     it.Value |> urlContentsWithCache() |> to => js
