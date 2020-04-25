@@ -8,6 +8,10 @@ namespace ServiceStack.Desktop
     {
         public static DesktopConfig Instance { get; } = new DesktopConfig();
         
+        public string Tool { get; set; }
+        public string ToolVersion { get; set; }
+        public string ChromeVersion { get; set; }
+        
         public List<ProxyConfig> ProxyConfigs { get; set; } = new List<ProxyConfig>();
     }
 
