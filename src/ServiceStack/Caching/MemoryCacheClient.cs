@@ -409,7 +409,7 @@ namespace ServiceStack.Caching
         public void RemoveExpiredEntries()
         {
             var expiredKeys = new List<string>();
-            using (var enumerator = this.memory.GetEnumerator())
+            using var enumerator = this.memory.GetEnumerator();
             while (enumerator.MoveNext())
             {
                 var current = enumerator.Current;

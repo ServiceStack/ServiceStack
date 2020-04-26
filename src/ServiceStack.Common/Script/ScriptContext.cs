@@ -732,16 +732,40 @@ namespace ServiceStack.Script
             }
         }
 
+        public static async Task RenderToStreamAsync(this PageResult pageResult, Stream stream)
+        {
+            try 
+            { 
+                if (pageResult.ResultOutput != null)
+                {
+                    if (pageResult.LastFilterError != null)
+                        throw new ScriptException(pageResult);
+
+                    await stream.WriteAsync(MemoryProvider.Instance.ToUtf8Bytes(pageResult.ResultOutput.AsSpan()));
+                    return;
+                }
+
+                await pageResult.Init();
+                await pageResult.WriteToAsync(stream);
+                if (pageResult.LastFilterError != null)
+                    throw new ScriptException(pageResult);
+            }
+            catch (Exception e)
+            {
+                if (ShouldRethrow(e))
+                    throw;
+                throw HandleException(e, pageResult);
+            }
+        }
+
         public static string RenderScript(this PageResult pageResult)
         {
             try
             {
-                using (var ms = MemoryStreamFactory.GetStream())
-                {
-                    pageResult.RenderToStream(ms);
-                    var output = ms.ReadToEnd();
-                    return output;
-                }
+                using var ms = MemoryStreamFactory.GetStream();
+                pageResult.RenderToStream(ms);
+                var output = ms.ReadToEnd();
+                return output;
             }
             catch (Exception e)
             {
@@ -755,12 +779,10 @@ namespace ServiceStack.Script
         {
             try
             {
-                using (var ms = MemoryStreamFactory.GetStream())
-                {
-                    await RenderAsync(pageResult, ms, token);
-                    var output = ms.ReadToEnd();
-                    return output;
-                }
+                using var ms = MemoryStreamFactory.GetStream();
+                await RenderAsync(pageResult, ms, token);
+                var output = await ms.ReadToEndAsync();
+                return output;
             }
             catch (Exception e)
             {
