@@ -169,10 +169,31 @@
     function humanize(s) { return !s || s.indexOf(' ') >= 0 ? toPascalCase(s) : toPascalCase(splitCase(s)); }
     function splitOnFirst(s, c) { if (!s) return [s]; var pos = s.indexOf(c); return pos >= 0 ? [s.substring(0, pos), s.substring(pos + 1)] : [s]; }
 
+    function queryString(url) {
+        if (!url || url.indexOf('?') === -1)
+            return {};
+        url = splitOnFirst(url,'#')[0];
+        var pairs = splitOnFirst(url, '?')[1].split('&');
+        var map = {};
+        for (var i = 0; i < pairs.length; ++i) {
+            var p = pairs[i].split('=');
+            map[p[0]] = p.length > 1
+                ? decodeURIComponent(p[1].replace(/\+/g, ' '))
+                : null;
+        }
+        return map;
+    }
+
     var $ = function(id) { return document.querySelector(id); };
 
     var sb = [];
     var normalized = normalize(model,true);
+    var qs = queryString(location.href);
+    var copy = qs['copy'] ? qs['copy'].split(',') : null;
+    
+    function showCopy(id) {
+        return !copy || copy.indexOf(id) >= 0;
+    }
 
     function showStackTrace() {
         console.log('showStackTrace');
@@ -217,12 +238,18 @@
                         var provider = splitOnFirst(name,'-')[0];
                         sbTokens.push('<tr><th class="c1">' + provider + '</th>');
                         sbTokens.push('<td class="c2"><b title="' + v[name] + '">' + v[name] + '</b></td>');
-                        sbTokens.push('<td class="c3" style="width:100px">');
-                        sbTokens.push('<span class="btn-copy"><button class="sel btn copy-text" onclick="copy(this,\'' + normalizeKey(provider) + '\')">');
-                        sbTokens.push('<span>' + v[name] + '</span>');
-                        sbTokens.push('</button>');
-                        sbTokens.push('<small>copy</small></span>');
-                        sbTokens.push('</td></tr>');
+                        if (showCopy(provider)) {
+                            sbTokens.push('<td class="c3" style="width:100px">');
+                            sbTokens.push('<span class="btn-copy"><button class="sel btn copy-text" onclick="copy(this,\'' + normalizeKey(provider) + '\')">');
+                            sbTokens.push('<span>' + v[name] + '</span>');
+                            sbTokens.push('</button>');
+                            sbTokens.push('<small>copy</small></span>');
+                            sbTokens.push('</td>');
+                        } else {
+                            sbTokens.push('<td></td>');
+                        }
+                        sbTokens.push('</tr>');
+                            
                     } else {
                         sb.push('<tr><th><div>' + humanize(k) + '</div></th><td><div>' + str + '</div></td></tr>');
                     }
@@ -236,9 +263,11 @@
                         ? v
                         : JSON.stringify(v);
                 if (cmpKey === 'sessionid') {
-                    str += '<span class="btn-copy"><button class="sel btn copy-text" onclick="copy(this,\'' + cmpKey + '\')">' +
-                        '<span>' + str + '</span>' +
-                        '</button><small>copy</small></span>';
+                    if (showCopy('session')) {
+                        str += '<span class="btn-copy"><button class="sel btn copy-text" onclick="copy(this,\'' + cmpKey + '\')">' +
+                            '<span>' + str + '</span>' +
+                            '</button><small>copy</small></span>';
+                    }
                 }
                 if (cmpKey === 'referrerurl') {
                     sb.push('<tr><td colspan="2"><div><a href="' + str + '">Referrer URL</a></div></td></tr>');

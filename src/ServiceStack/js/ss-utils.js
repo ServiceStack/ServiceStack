@@ -65,6 +65,7 @@
     };
     $.ss.queryString = function (url) {
         if (!url || url.indexOf('?') === -1) return {};
+        url = $.ss.splitOnFirst(url,'#')[0];
         var pairs = $.ss.splitOnFirst(url, '?')[1].split('&');
         var map = {};
         for (var i = 0; i < pairs.length; ++i) {
