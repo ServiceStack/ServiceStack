@@ -240,7 +240,7 @@
                         sbTokens.push('<td class="c2"><b title="' + v[name] + '">' + v[name] + '</b></td>');
                         if (showCopy(provider)) {
                             sbTokens.push('<td class="c3" style="width:100px">');
-                            sbTokens.push('<span class="btn-copy"><button class="sel btn copy-text" onclick="copy(this,\'' + normalizeKey(provider) + '\')">');
+                            sbTokens.push('<span class="btn-copy"><button class="sel btn copy-text" onclick="clip(this,\'' + normalizeKey(provider) + '\')">');
                             sbTokens.push('<span>' + v[name] + '</span>');
                             sbTokens.push('</button>');
                             sbTokens.push('<small>copy</small></span>');
@@ -264,7 +264,7 @@
                         : JSON.stringify(v);
                 if (cmpKey === 'sessionid') {
                     if (showCopy('session')) {
-                        str += '<span class="btn-copy"><button class="sel btn copy-text" onclick="copy(this,\'' + cmpKey + '\')">' +
+                        str += '<span class="btn-copy"><button class="sel btn copy-text" onclick="clip(this,\'' + cmpKey + '\')">' +
                             '<span>' + str + '</span>' +
                             '</button><small>copy</small></span>';
                     }
@@ -288,7 +288,7 @@
         $('#session').innerHTML = sb.join('');
     }
 
-    function copy(el,provider) {
+    function clip(el,provider) {
         if (window.getSelection) {
             var range = document.createRange();
             range.selectNodeContents(el);
@@ -312,6 +312,10 @@
                     }
                 }
             }
+            
+            try {
+                window.close();
+            } catch (e) {}
         }
     }
 
