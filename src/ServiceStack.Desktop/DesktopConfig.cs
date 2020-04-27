@@ -13,6 +13,7 @@ namespace ServiceStack.Desktop
         public string ChromeVersion { get; set; }
         
         public List<ProxyConfig> ProxyConfigs { get; set; } = new List<ProxyConfig>();
+        public List<string> ImportParams { get; set; } = new List<string>();
     }
 
     public class ProxyConfig
