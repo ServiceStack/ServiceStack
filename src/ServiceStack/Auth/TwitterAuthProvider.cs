@@ -18,6 +18,10 @@ namespace ServiceStack.Auth
 
         public bool RetrieveEmail { get; set; } = true;
 
+        public override Dictionary<string, string> Meta { get; } = new Dictionary<string, string> {
+            [Keywords.Allows] = Keywords.AccessTokenAuth,
+        };
+
         public TwitterAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name)
         {

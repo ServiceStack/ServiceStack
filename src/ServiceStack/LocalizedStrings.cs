@@ -60,6 +60,7 @@
         
         public const string Allows = "allows";
         public const string Embed = "embed";
+        public const string AccessTokenAuth = "accessTokenAuth";
     }
 
     public static class LocalizedStrings

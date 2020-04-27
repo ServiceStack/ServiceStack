@@ -26,7 +26,7 @@ namespace ServiceStack.Auth
         public bool RetrieveUserPicture { get; set; } = true;
 
         public override Dictionary<string, string> Meta { get; } = new Dictionary<string, string> {
-            [Keywords.Allows] = Keywords.Embed
+            [Keywords.Allows] = Keywords.Embed + "," + Keywords.AccessTokenAuth,
         };
         
         public FacebookAuthProvider(IAppSettings appSettings)
