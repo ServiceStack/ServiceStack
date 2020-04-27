@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using ServiceStack.Auth;
-using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Text;
@@ -288,6 +287,10 @@ namespace ServiceStack
             {
                 appHost.VirtualFileSources.GetMemoryVirtualFiles().WriteFile("/login.html", 
                     Templates.HtmlTemplates.GetLoginTemplate());
+                // required when not using feature like SharpPagesFeature to auto map /login => /login.html
+                appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) => pathInfo == "/login"
+                    ? new Host.Handlers.StaticFileHandler(HostContext.VirtualFileSources.GetFile("/login.html"))
+                    : null);
             }
 
             navItems.AddRange(authNavItems);
