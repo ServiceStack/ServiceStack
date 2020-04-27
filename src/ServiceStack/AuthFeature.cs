@@ -302,6 +302,11 @@ namespace ServiceStack
                     IncludesRoles = IncludeRolesInAuthenticateResponse.NullIfFalse(),
                     IncludesOAuthTokens = IncludeOAuthTokensInAuthenticateResponse.NullIfFalse(),
                     HtmlRedirect = HtmlRedirect?.TrimStart('~'),
+                    ServiceRoutes = ServiceRoutes.ToMetadataServiceRoutes(routes => {
+                        var register = appHost.GetPlugin<RegistrationFeature>();
+                        if (register != null)
+                            routes[nameof(RegisterService)] = new []{ register.AtRestPath };
+                    }),
                     AuthProviders = AuthenticateService.GetAuthProviders().Map(x => new MetaAuthProvider {
                         Type = x.Type,
                         Name = x.Provider,

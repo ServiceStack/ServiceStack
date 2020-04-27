@@ -808,10 +808,10 @@ namespace ServiceStack.Host
             var attrs = new List<ApiMemberAttribute>();
             foreach (var member in members)
             {
-                var memattr = member.AllAttributes<ApiMemberAttribute>()
+                var attr = member.AllAttributes<ApiMemberAttribute>()
                     .Select(x => { x.Name ??= member.Name; return x; });
 
-                attrs.AddRange(memattr);
+                attrs.AddRange(attr);
             }
 
             return attrs;
@@ -884,7 +884,7 @@ namespace ServiceStack.Host
             type != null && type.IsInterface.GetValueOrDefault();
 
         public static bool IsAbstract(this MetadataType type) => 
-            type.IsAbstract.GetValueOrDefault() || type.Name == typeof(AuthUserSession).Name;
+            type.IsAbstract.GetValueOrDefault() || type.Name == nameof(AuthUserSession);
 
         public static bool ExcludesFeature(this Type type, Feature feature) => 
             type.FirstAttribute<ExcludeAttribute>()?.Feature.Has(feature) == true;
@@ -894,13 +894,15 @@ namespace ServiceStack.Host
 
         public static bool? NullIfFalse(this bool value) => value ? true : (bool?)null;
 
-        public static Dictionary<string, string[]> ToMetadataServiceRoutes(this Dictionary<Type, string[]> serviceRoutes)
+        public static Dictionary<string, string[]> ToMetadataServiceRoutes(this Dictionary<Type, string[]> serviceRoutes,
+            Action<Dictionary<string,string[]>> filter=null)
         {
             var to = new Dictionary<string,string[]>();
             foreach (var entry in serviceRoutes.Safe())
             {
                 to[entry.Key.Name] = entry.Value;
             }
+            filter?.Invoke(to);
             return to;
         }
     }

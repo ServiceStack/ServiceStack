@@ -140,6 +140,7 @@ namespace ServiceStack
         public bool? IncludesOAuthTokens { get; set; }
         public string HtmlRedirect { get; set; }
         public List<MetaAuthProvider> AuthProviders { get; set; }
+        public Dictionary<string,string[]> ServiceRoutes { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
 
