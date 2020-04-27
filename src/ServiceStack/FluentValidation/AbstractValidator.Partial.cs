@@ -27,12 +27,17 @@ using ServiceStack.Web;
 namespace ServiceStack.FluentValidation
 {
     public class DefaultValidator<T> : AbstractValidator<T> {}
+
+    public interface IServiceStackValidator
+    {
+        void RemovePropertyRules(Func<PropertyRule, bool> where);
+    }
     
     /// <summary>
     /// Base class for entity validator classes.
     /// </summary>
     /// <typeparam name="T">The type of the object being validated</typeparam>
-    public abstract partial class AbstractValidator<T> : IRequiresRequest, IHasTypeValidators
+    public abstract partial class AbstractValidator<T> : IRequiresRequest, IHasTypeValidators, IServiceStackValidator
     {
         /// <summary>
         /// Validators are auto-wired transient instances
@@ -112,6 +117,15 @@ namespace ServiceStack.FluentValidation
         {
             if (this.Request == null)
                 this.Request = context.Request;
+        }
+
+        public void RemovePropertyRules(Func<PropertyRule, bool> where)
+        {
+            var rulesToRemove = Rules.OfType<PropertyRule>().Where(where).ToList();
+            foreach (var validationRule in rulesToRemove)
+            {
+                Rules.Remove(validationRule);
+            }
         }
     }
 }

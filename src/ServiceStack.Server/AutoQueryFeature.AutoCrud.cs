@@ -51,8 +51,8 @@ namespace ServiceStack
             var namedConnection = dto?.FirstAttribute<NamedConnectionAttribute>()?.Name;
 
             using var useDb = namedConnection != null
-                ? DbFactory.OpenDbConnection(namedConnection)
-                : DbFactory.OpenDbConnection();
+                ? await DbFactory.OpenDbConnectionAsync(namedConnection)
+                : await DbFactory.OpenDbConnectionAsync();
             
             var q = AutoQuery.CreateQuery(request, Request, useDb);
             var response = await AutoQuery.ExecuteAsync(request, q, Request, useDb);
@@ -84,8 +84,8 @@ namespace ServiceStack
             var namedConnection = dto?.FirstAttribute<NamedConnectionAttribute>()?.Name;
 
             using var useDb = namedConnection != null
-                ? DbFactory.OpenDbConnection(namedConnection)
-                : DbFactory.OpenDbConnection();
+                ? await DbFactory.OpenDbConnectionAsync(namedConnection)
+                : await DbFactory.OpenDbConnectionAsync();
 
             var q = useDb.From<CrudEvent>()
                 .Where(x => x.Model == request.Model)

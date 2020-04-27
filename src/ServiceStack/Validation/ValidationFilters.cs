@@ -42,6 +42,27 @@ namespace ServiceStack.Validation
                     
                 try
                 {
+                    if (req.Verb == HttpMethods.Patch)
+                    {
+                        // Ignore property rules for AutoCrud Patch operations with default values (which are ignored)
+                        if (validator is IServiceStackValidator ssValidator && requestDto is ICrud && requestType.IsOrHasGenericInterfaceTypeOf(typeof(IPatchDb<>)))
+                        {
+                            var typeProperties = TypeProperties.Get(requestType);
+                            var propsWithDefaultValues = new HashSet<string>();
+                            foreach (var entry in typeProperties.PropertyMap)
+                            {
+                                if (entry.Value.PublicGetter == null)
+                                    continue;
+                                var defaultValue = entry.Value.PropertyInfo.PropertyType.GetDefaultValue();
+                                var propValue = entry.Value.PublicGetter(requestDto);
+                                if (propValue == null || propValue.Equals(defaultValue))
+                                    propsWithDefaultValues.Add(entry.Key);
+                            }
+                            if (propsWithDefaultValues.Count > 0)
+                                ssValidator.RemovePropertyRules(rule => propsWithDefaultValues.Contains(rule.PropertyName));
+                        }
+                    }
+                    
                     var validationResult = await validator.ValidateAsync(req, requestDto);
     
                     if (treatInfoAndWarningsAsErrors && validationResult.IsValid)
