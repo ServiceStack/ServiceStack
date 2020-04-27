@@ -44,7 +44,6 @@ namespace ServiceStack.Auth
                 Id = "btn-" + Name,
                 ClassName = "btn-social btn-github",
                 IconClass = "fab svg-github",
-                Meta = new Dictionary<string, string> { [Keywords.Allows] = Keywords.Embed },
             };
         }
 
