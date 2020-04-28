@@ -153,22 +153,24 @@ export enum OpenFolderFlags {
  * Refer to the Win32 GetOpenFileName options at:
  * https://docs.microsoft.com/en-us/windows/win32/api/commdlg/ns-commdlg-openfilenamea
  */
-export interface OpenFolderOptions {
+export interface OpenFileOptions {
     flags?: OpenFolderFlags;
     title?: string;
     filter?: string;
+    filterIndex?: number;
     initialDir?: string;
     defaultExt?: string;
+    templateName?: string;
+    isFolderPicker?: boolean;
 }
 
 export interface DialogResult {
-    folderPath:string;
-    fileTitle:string;
-    ok:boolean;
+    file: string|null;
+    fileTitle: string|null;
+    ok: boolean|null;
 }
-
-export async function openFolder(options:OpenFolderOptions) {
-    return (await evaluateCode(`openFolder(${JSON.stringify(options)})`)) as DialogResult;
+export async function openFile(options:OpenFileOptions) {
+    return (await evaluateCode(`openFile(${JSON.stringify(options)})`)) as DialogResult;
 }
 
 export enum MessageBoxType {
