@@ -34,5 +34,14 @@ C:\src\dotnet-app\src\WebApp\bin\Release\netcoreapp3.1\app.pdb";
             Assert.That(output.NormalizeNewLines(), 
                 Does.StartWith("<file src=\"bin\\Release\\netcoreapp3.1\\favicon.ico\" target=\"tools\\netcoreapp3.1\\any\\favicon.ico\" />"));
         }
+
+        [Test]
+        public void Does_UnRaw_RawStrings_in_Template_Literals()
+        {
+            var context = new ScriptContext().Init();
+            var output = context.RenderCode("`type: ${1.typeName()}`");
+            Assert.That(output.Trim(), Is.EqualTo("type: Int32"));
+        }
+
     }
 }
