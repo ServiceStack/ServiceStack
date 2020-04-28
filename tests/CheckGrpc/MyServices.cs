@@ -1,11 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using ServiceStack;
 using CheckGrpc.ServiceModel;
-
 using System.Runtime.Serialization;
-using ServiceStack;
 
 namespace CheckGrpc.ServiceModel
 {
