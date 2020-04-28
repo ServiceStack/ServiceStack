@@ -14,6 +14,7 @@ namespace ServiceStack.Desktop
         
         public List<ProxyConfig> ProxyConfigs { get; set; } = new List<ProxyConfig>();
         public List<string> ImportParams { get; set; } = new List<string>();
+        public string MinToolVersion { get; set; }
     }
 
     public class ProxyConfig

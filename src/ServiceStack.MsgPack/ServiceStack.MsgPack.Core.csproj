@@ -18,7 +18,7 @@
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.Core.csproj" />
     <ProjectReference Include="..\ServiceStack\ServiceStack.Core.csproj" />
     <PackageReference Include="ServiceStack.Text.Core" Version="$(Version)" />
-    <PackageReference Include="MsgPack.Cli" Version="1.0.0" />
+    <PackageReference Include="MsgPack.Cli" Version="1.0.1" />
   </ItemGroup>
 
 </Project>

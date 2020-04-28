@@ -9,9 +9,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Grpc.Net.Client" Version="2.26.0" />
-        <PackageReference Include="Grpc.Core" Version="2.26.0" />
-        <PackageReference Include="protobuf-net.Grpc" Version="1.0.22" />
+        <PackageReference Include="Grpc.Net.Client" Version="2.28.0" />
+        <PackageReference Include="Grpc.Core" Version="2.28.1" />
+        <PackageReference Include="protobuf-net.Grpc" Version="1.0.37" />
         <!-- the transitive import of protobuf-net is lower; we need at least this -->
         <PackageReference Include="protobuf-net" Version="2.4.6" />
         <PackageReference Include="ServiceStack.Text" Version="$(Version)" />

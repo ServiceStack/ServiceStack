@@ -40,6 +40,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771
 		ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.Source.csproj = ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.Source.csproj
 		ServiceStack.NetFramework\ServiceStack.NetFramework.Source.csproj = ServiceStack.NetFramework\ServiceStack.NetFramework.Source.csproj
 		ServiceStack.Kestrel\ServiceStack.Kestrel.Source.csproj = ServiceStack.Kestrel\ServiceStack.Kestrel.Source.csproj
+		ServiceStack.Logging.NLog\ServiceStack.Logging.NLog.csproj = ServiceStack.Logging.NLog\ServiceStack.Logging.NLog.csproj
+		ServiceStack.Logging.Serilog\ServiceStack.Logging.Serilog.csproj = ServiceStack.Logging.Serilog\ServiceStack.Logging.Serilog.csproj
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Formats", "Formats", "{CBDE0575-D09B-4B4D-8C62-5E03E54F6BE8}"
