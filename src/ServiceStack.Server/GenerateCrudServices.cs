@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using ServiceStack.Auth;
+using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
@@ -245,10 +246,17 @@ namespace ServiceStack
             { nameof(UserAuthRole), typeof(UserAuthRole) },
             { nameof(AuthUserSession), typeof(AuthUserSession) },
             { nameof(IAuthSession), typeof(IAuthSession) },
+            { nameof(CrudEvent), typeof(CrudEvent) },
+            { nameof(CacheEntry), typeof(CacheEntry) },
+            { nameof(ValidationRule), typeof(ValidationRule) },
+            { nameof(RequestLogEntry), typeof(RequestLogEntry) },
         };
-
+        
         private static Type ResolveType(string typeName, Dictionary<Tuple<string, string>, Type> generatedTypes)
         {
+            if (ServiceStackModelTypes.TryGetValue(typeName, out var ssType))
+                return ssType;
+
             foreach (var entry in generatedTypes)
             {
                 if (entry.Key.Item2 == typeName)
@@ -263,9 +271,6 @@ namespace ServiceStack
             if (ssClientType != null)
                 return ssClientType;
             
-            if (ServiceStackModelTypes.TryGetValue(typeName, out var ssType))
-                return ssType;
-
             return HostContext.AppHost.ScriptContext.ProtectedMethods.@typeof(typeName);
         }
 

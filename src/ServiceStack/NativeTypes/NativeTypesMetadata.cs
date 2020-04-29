@@ -195,6 +195,7 @@ namespace ServiceStack.NativeTypes
 
             var considered = new HashSet<Type>(opTypes);
             var queue = new Queue<Type>(opTypes);
+            var registeredTypes = new HashSet<string>();
 
             bool ignoreTypeFn(Type t) => t == null 
                 || t.IsGenericParameter 
@@ -218,9 +219,16 @@ namespace ServiceStack.NativeTypes
                     queue.Enqueue(t);
                 }
 
-                if ((!(t.IsSystemType() && !t.IsTuple()) && (t.IsClass || t.IsEnum || t.IsInterface) && !t.IsGenericParameter) || exportTypes.ContainsMatch(t))
+                var typeKey = t.Namespace + "." + t.Name; //codegen-ed types have different identity, need to check on full Type Name
+                if (registeredTypes.Contains(typeKey))
+                    return;
+
+                if (!(t.IsSystemType() && !t.IsTuple())
+                    && (t.IsClass || t.IsEnum || t.IsInterface) 
+                    && !t.IsGenericParameter || exportTypes.ContainsMatch(t))
                 {
                     metadata.Types.Add(ToType(t));
+                    registeredTypes.Add(typeKey);
 
                     foreach (var ns in GetNamespacesUsed(t))
                     {

@@ -215,17 +215,16 @@ namespace ServiceStack
 
         public void AfterPluginsLoaded(IAppHost appHost)
         {
-            var scannedTypes = new List<Type>();
+            var scannedTypes = new HashSet<Type>();
             
             var crudServices = GenerateCrudServices?.GenerateMissingServices(this);
-            if (crudServices != null)
-                scannedTypes.AddRange(crudServices);
+            crudServices?.Each(x => scannedTypes.Add(x));
 
             foreach (var assembly in LoadFromAssemblies)
             {
                 try
                 {
-                    scannedTypes.AddRange(assembly.GetTypes());
+                    assembly.GetTypes().Each(x => scannedTypes.Add(x));
                 }
                 catch (Exception ex)
                 {
