@@ -21,6 +21,7 @@ using ServiceStack.NativeTypes.Swift;
 using ServiceStack.NativeTypes.TypeScript;
 using ServiceStack.NativeTypes.VbNet;
 using ServiceStack.OrmLite;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -153,6 +154,8 @@ namespace ServiceStack
             var assemblyName = new AssemblyName { Name = "tmpCrudAssembly" };
             var dynModule = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run)
                 .DefineDynamicModule("tmpCrudModule");
+            
+            dynModule.SetCustomAttribute(CodegenAttrBuilder);
 
             var metadataTypes = GetMissingTypesToCreate(out var existingMetaTypesMap);
             var generatedTypes = new Dictionary<Tuple<string,string>, Type>();
@@ -348,6 +351,12 @@ namespace ServiceStack
             }
         }
 
+        private static readonly CustomAttributeBuilder CodegenAttrBuilder = new CustomAttributeBuilder(
+            typeof(System.CodeDom.Compiler.GeneratedCodeAttribute)
+                .GetConstructors().First(x => x.GetParameters().Length == 2),
+            new object[]{ "ServiceStack", Env.VersionString },
+            new PropertyInfo[0], TypeConstants.EmptyObjectArray);
+
         private static Type CreateOrGetType(ModuleBuilder dynModule, MetadataType metaType, 
             List<MetadataType> metadataTypes, Dictionary<Tuple<string, string>, MetadataType> existingMetaTypesMap, 
             Dictionary<Tuple<string, string>, Type> generatedTypes)
@@ -405,7 +414,8 @@ namespace ServiceStack
             
             var typeBuilder = dynModule.DefineType(metaType.Namespace + "." + metaType.Name,
                 TypeAttributes.Public | TypeAttributes.Class, baseType, interfaceTypes.ToArray());
-
+            typeBuilder.SetCustomAttribute(CodegenAttrBuilder);
+             
             foreach (var metaAttr in metaType.Attributes.Safe())
             {
                 var attrBuilder = CreateCustomAttributeBuilder(metaAttr, generatedTypes);
@@ -601,6 +611,7 @@ namespace ServiceStack
                 
                 var req = new BasicRequest(requestDto);
                 var ret = ResolveMetadataTypes(requestDto, req);
+                
                 foreach (var op in ret.Item1.Operations)
                 {
                     var requestName = ResolveRequestType(existingTypesMap, op, requestDto, out var modifier);
@@ -1158,24 +1169,29 @@ namespace ServiceStack
             {
                 crudMetadataTypes.Types = crudMetadataTypes.Types.Where(genServices.IncludeType).ToList();
             }
-
+            
             if (genServices.ServiceFilter != null)
             {
                 foreach (var op in crudMetadataTypes.Operations)
                 {
+                    if (op.Request.Type != null) //existing service
+                        continue;
+                    
                     genServices.ServiceFilter(op, req);
                 }
             }
-
             if (genServices.TypeFilter != null)
             {
                 foreach (var type in crudMetadataTypes.Types)
                 {
+                    if (type.Type != null) //existing service
+                        continue;
+                    
                     genServices.TypeFilter(type, req);
                 }
             }
-            
             genServices.MetadataTypesFilter?.Invoke(crudMetadataTypes, typesConfig, req);
+
             
             return new Tuple<MetadataTypes, MetadataTypesConfig>(crudMetadataTypes, typesConfig);
         }
