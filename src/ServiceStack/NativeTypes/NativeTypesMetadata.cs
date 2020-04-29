@@ -1046,6 +1046,9 @@ namespace ServiceStack.NativeTypes
 
         public static List<string> RemoveIgnoredTypes(this MetadataTypes metadata, MetadataTypesConfig config)
         {
+            var excludeServices = config.ExcludeTypes?.Remove("services") ?? false;
+            var excludeTypes = config.ExcludeTypes?.Remove("types") ?? false;
+                
             var includeList = GetIncludeList(metadata, config);
 
             metadata.Types.RemoveAll(x => x.IgnoreType(config, includeList));
@@ -1073,6 +1076,11 @@ namespace ServiceStack.NativeTypes
                     metadata.Types.Add(responseType);
                 }
             }
+            
+            if (excludeServices)
+                metadata.Operations = new List<MetadataOperationType>();
+            if (excludeTypes)
+                metadata.Types = new List<MetadataType>();
 
             return includeList;
         }
