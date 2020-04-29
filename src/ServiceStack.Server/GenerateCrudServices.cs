@@ -47,6 +47,7 @@ namespace ServiceStack
         /// </summary>
         public bool AutoRegister
         {
+            get => this.CreateServices.Any(x => x.NamedConnection == null && x.Schema == null);
             set
             {
                 if (value)
