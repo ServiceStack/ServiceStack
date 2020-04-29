@@ -41,6 +41,27 @@ namespace ServiceStack
         /// Generate services 
         /// </summary>
         public List<CreateCrudServices> CreateServices { get; set; } = new List<CreateCrudServices>();
+
+        /// <summary>
+        /// Auto Register AutoQuery and Crud Services for Default DB
+        /// </summary>
+        public bool AutoRegister
+        {
+            set
+            {
+                if (value)
+                {
+                    this.CreateServices = new List<CreateCrudServices> {
+                        new CreateCrudServices()
+                    };
+                }
+                else
+                {
+                    this.CreateServices = this.CreateServices.Where(x => 
+                        x.NamedConnection == null && x.Schema == null).ToList();
+                }
+            }
+        }
         
         public Action<MetadataTypes, MetadataTypesConfig, IRequest> MetadataTypesFilter { get; set; }
         public Action<MetadataType, IRequest> TypeFilter { get; set; }
