@@ -50,8 +50,8 @@ the most productive development experience for developing .NET to .NET Web Servi
 
 ServiceStack now integrates with all Major IDE's used for creating the best native experiences on the most popular platforms 
 to enable a highly productive dev workflow for consuming Web Services, making ServiceStack the ideal back-end choice for powering 
-rich, native iPhone and iPad Apps on iOS with Swift, Mobile and Tablet Apps on the Android platform with Java, OSX Desktop Appications 
-as well as targetting the most popular .NET PCL platforms including Xamarin.iOS, Xamarin.Android, Windows Store, WPF, WinForms and Silverlight: 
+rich, native iPhone and iPad Apps on iOS with Swift, Mobile and Tablet Apps on the Android platform with Java, OSX Desktop Applications 
+as well as targeting the most popular .NET PCL platforms including Xamarin.iOS, Xamarin.Android, Windows Store, WPF, WinForms and Silverlight: 
 
 <img src="https://raw.githubusercontent.com/ServiceStack/Assets/master/img/wikis/ide-ss-plugin-logos.png" align="right" />
 
@@ -87,11 +87,11 @@ native iOS and OSX Applications - directly from within Xcode!
 
 Providing [an instant Native Typed API in Java](https://docs.servicestack.net/java-add-servicestack-reference.html) 
 and [Kotlin](https://docs.servicestack.net/kotlin-add-servicestack-reference.html)
-including idiomatic Java Generic Service Clients supporting Sync and Async Requests by levaraging Android's AsyncTasks to enable the creation of services-rich and responsive native Java or Kotlin Mobile Apps on the Android platform - directly from within Android Studio!
+including idiomatic Java Generic Service Clients supporting Sync and Async Requests by leveraging Android's AsyncTasks to enable the creation of services-rich and responsive native Java or Kotlin Mobile Apps on the Android platform - directly from within Android Studio!
 
 #### [IntelliJ integration with ServiceStackIDEA](https://docs.servicestack.net/java-add-servicestack-reference.html#install-servicestack-idea-from-the-plugin-repository)
 
-The ServiceStack IDEA plugin is installable directly from IntelliJ's Plugin repository and enables seamless integration with IntelliJ Java Maven projects for genearting a Typed API to quickly and effortlessly consume remote ServiceStack Web Services from pure cross-platform Java or Kotlin Clients.
+The ServiceStack IDEA plugin is installable directly from IntelliJ's Plugin repository and enables seamless integration with IntelliJ Java Maven projects for generating a Typed API to quickly and effortlessly consume remote ServiceStack Web Services from pure cross-platform Java or Kotlin Clients.
 
 #### [Eclipse integration with ServiceStackEclipse](https://github.com/ServiceStack/ServiceStack.Java/tree/master/src/ServiceStackEclipse#eclipse-integration-with-servicestack)
 
