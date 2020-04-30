@@ -24,6 +24,7 @@ export interface DesktopInfo {
 export declare function evalToBool(scriptSrc: string): Promise<boolean>;
 export declare function desktopInfo(): Promise<DesktopInfo>;
 export declare function openUrl(url: string): Promise<boolean>;
+export declare function open(url: string): Promise<boolean>;
 export declare function expandEnvVars(name: string): Promise<any>;
 /**
  * Get Clipboard Contents as a UTF-8 string
