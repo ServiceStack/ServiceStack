@@ -1081,6 +1081,12 @@ namespace ServiceStack.NativeTypes
                 metadata.Operations = new List<MetadataOperationType>();
             if (excludeTypes)
                 metadata.Types = new List<MetadataType>();
+            
+            //Ugly but need to revert state so it's ExcludeTypes option is emitted in generated dtos
+            if (excludeServices)
+                config.ExcludeTypes.Add("services");
+            if (excludeTypes)
+                config.ExcludeTypes.Add("types");
 
             return includeList;
         }
