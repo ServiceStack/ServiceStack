@@ -16,17 +16,14 @@ export declare function evaluateLispAsync(scriptSrc: string): Promise<any>;
 export declare function renderScriptAsync(scriptSrc: string): Promise<string>;
 export declare function renderCodeAsync(scriptSrc: string): Promise<string>;
 export declare function renderLispAsync(scriptSrc: string): Promise<string>;
-export interface IDesktopInfo {
+export interface DesktopInfo {
     tool: string;
     toolVersion: string;
     chromeVersion: string;
 }
-export declare function desktopInfo(): Promise<IDesktopInfo>;
-/**
- * Send Window to Foreground
- * @param windowName - The name of the window to send to foreground, supported: browser
- */
-export declare function sendToForeground(windowName: string): Promise<IDesktopInfo>;
+export declare function evalToBool(scriptSrc: string): Promise<boolean>;
+export declare function desktopInfo(): Promise<DesktopInfo>;
+export declare function openUrl(url: string): Promise<boolean>;
 export declare function expandEnvVars(name: string): Promise<any>;
 /**
  * Get Clipboard Contents as a UTF-8 string
@@ -36,6 +33,108 @@ export declare function clipboard(): Promise<any>;
  * Set the Clipboard Contents with a UTF-8 string
  */
 export declare function setClipboard(contents: string): Promise<any>;
+export interface Size {
+    width: number;
+    height: number;
+}
+export interface Rect {
+    top: number;
+    left: number;
+    bottom: number;
+    right: number;
+}
+export declare function deviceScreenResolution(): Promise<Size>;
+export declare function windowSendToForeground(): Promise<boolean>;
+export declare function windowCenterToScreen(useWorkArea?: boolean): Promise<boolean>;
+export declare function windowSetFullScreen(): Promise<boolean>;
+export declare function windowSetFocus(): Promise<boolean>;
+export declare function windowShowScrollBar(show: boolean): Promise<boolean>;
+export declare function windowSetPosition(x: number, y: number, width?: number, height?: number): Promise<boolean>;
+export declare function windowSetSize(width: number, height: number): Promise<boolean>;
+export declare function windowRedrawFrame(): Promise<boolean>;
+export declare function windowIsVisible(): Promise<boolean>;
+export declare function windowIsEnabled(): Promise<boolean>;
+export declare function windowShow(): Promise<boolean>;
+export declare function windowHide(): Promise<boolean>;
+export declare function windowText(): Promise<any>;
+export declare function windowSetText(text: string): Promise<boolean>;
+export declare function windowSize(): Promise<Size>;
+export declare function windowClientSize(): Promise<Size>;
+export declare function windowClientRect(): Promise<Rect>;
+export declare function windowSetState(state: ShowWindowCommands): Promise<boolean>;
+/**
+ * refer to http://pinvoke.net/default.aspx/Enums/ShowWindowCommand.html
+ */
+export declare enum ShowWindowCommands {
+    /**
+     * Hides the window and activates another window.
+     */
+    Hide = 0,
+    /**
+     * Activates and displays a window. If the window is minimized or
+     * maximized, the system restores it to its original size and position.
+     * An application should specify this flag when displaying the window
+     * for the first time.
+     */
+    Normal = 1,
+    /**
+     * Activates the window and displays it as a minimized window.
+     */
+    ShowMinimized = 2,
+    /**
+     * Maximizes the specified window
+     */
+    Maximize = 3,
+    /**
+     * Activates the window and displays it as a maximized window.
+     */
+    ShowMaximized = 3,
+    /**
+     * Displays a window in its most recent size and position. This value
+     * is similar to <see cref="Win32.ShowWindowCommand.Normal"/>, except
+     * the window is not activated.
+     */
+    ShowNoActivate = 4,
+    /**
+     * Activates the window and displays it in its current size and position.
+     */
+    Show = 5,
+    /**
+     * Minimizes the specified window and activates the next top-level
+     * window in the Z order.
+     */
+    Minimize = 6,
+    /**
+     * Displays the window as a minimized window. This value is similar to
+     * <see cref="Win32.ShowWindowCommand.ShowMinimized"/>, except the
+     * window is not activated.
+     */
+    ShowMinNoActive = 7,
+    /**
+     * Displays the window in its current size and position. This value is
+     * similar to <see cref="Win32.ShowWindowCommand.Show"/>, except the
+     * window is not activated.
+     */
+    ShowNA = 8,
+    /**
+     * Activates and displays the window. If the window is minimized or
+     * maximized, the system restores it to its original size and position.
+     * An application should specify this flag when restoring a minimized window.
+     */
+    Restore = 9,
+    /**
+     * Sets the show state based on the SW_* value specified in the
+     * STARTUPINFO structure passed to the CreateProcess function by the
+     * program that started the application.
+     */
+    ShowDefault = 10,
+    /**
+     * Windows 2000/XP: Minimizes a window, even if the thread
+     * that owns the window is not responding. This flag should only be
+     * used when minimizing windows from a different thread.
+     */
+    ForceMinimize = 11
+}
 export declare enum OpenFolderFlags {
     AllowMultiSelect = 512,
     CreatePrompt = 8192,

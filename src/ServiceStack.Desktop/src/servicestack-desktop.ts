@@ -88,21 +88,19 @@ function quote(text:string) {
     return '"' + text.replace('"','\\"') + '"';
 }
 
-export interface IDesktopInfo {
+export interface DesktopInfo {
     tool: string;
     toolVersion: string;
     chromeVersion: string;
 }
 
-export async function desktopInfo() { return (await evaluateCode('desktopInfo')) as IDesktopInfo; }
-
-/**
- * Send Window to Foreground
- * @param windowName - The name of the window to send to foreground, supported: browser 
- */
-export async function sendToForeground(windowName:string) { 
-    return (await evaluateCode('desktopInfo')) as IDesktopInfo; 
+export async function evalToBool(scriptSrc:string) {
+    return await evaluateCode(scriptSrc) as boolean;
 }
+
+export async function desktopInfo() { return (await evaluateCode('desktopInfo')) as DesktopInfo; }
+
+export async function openUrl(url:string) { return (await evalToBool(`openUrl(${quote(url)})`)); }
 
 export async function expandEnvVars(name:string) { 
     return await evaluateCode(`expandEnvVars(${quote(name)})`); 
@@ -119,6 +117,131 @@ export async function clipboard() { return await evaluateCode('clipboard'); }
 export async function setClipboard(contents:string) { 
     return await evaluateCode(`setClipboard(${quote(contents)})`); 
 }
+
+export interface Size {
+    width:number;
+    height:number;
+}
+export interface Rect {
+    top:number;
+    left:number;
+    bottom:number;
+    right:number;
+}
+
+export async function deviceScreenResolution() {
+    return (await evaluateCode('deviceScreenResolution')) as Size;
+}
+export async function windowSendToForeground() { return await evalToBool('windowSendToForeground'); }
+export async function windowCenterToScreen(useWorkArea?:boolean) { 
+    return await evalToBool(useWorkArea ? `windowCenterToScreen(${useWorkArea})` : `windowCenterToScreen`); 
+}
+export async function windowSetFullScreen() { return await evalToBool('windowSetFullScreen'); }
+export async function windowSetFocus() { return await evalToBool('windowSetFocus'); }
+export async function windowShowScrollBar(show:boolean) { return await evalToBool(`windowCenterToScreen(${show})`); }
+export async function windowSetPosition(x:number,y:number,width?:number,height?:number) { 
+    return await evalToBool(width 
+        ? `windowSetPosition(${x},${y},${width},${height})`
+        : `windowSetPosition(${x},${y})`); 
+}
+export async function windowSetSize(width:number,height:number) { 
+    return await evalToBool(`windowSetSize(${width},${height})`);
+}
+export async function windowRedrawFrame() { return await evalToBool('windowRedrawFrame'); }
+export async function windowIsVisible() { return await evalToBool('windowIsVisible'); }
+export async function windowIsEnabled() { return await evalToBool('windowIsEnabled'); }
+export async function windowShow() { return await evalToBool('windowShow'); }
+export async function windowHide() { return await evalToBool('windowHide'); }
+export async function windowText() { return await evaluateCode('windowText'); }
+export async function windowSetText(text:string) { return await evalToBool(`windowSetText(${quote(text)})`); }
+
+export async function windowSize() {
+    return await evaluateCode('windowSize') as Size;
+}
+export async function windowClientSize() {
+    return await evaluateCode('windowClientSize') as Size;
+}
+export async function windowClientRect() {
+    return await evaluateCode('windowClientRect') as Rect;
+}
+export async function windowSetState(state:ShowWindowCommands) {
+    return await evalToBool(`windowSetState(${state})`);
+}
+
+/**
+ * refer to http://pinvoke.net/default.aspx/Enums/ShowWindowCommand.html
+ */
+export enum ShowWindowCommands {
+    /**
+     * Hides the window and activates another window.
+     */
+    Hide = 0,
+    /**
+     * Activates and displays a window. If the window is minimized or
+     * maximized, the system restores it to its original size and position.
+     * An application should specify this flag when displaying the window
+     * for the first time.
+     */
+    Normal = 1,
+    /**
+     * Activates the window and displays it as a minimized window.
+     */
+    ShowMinimized = 2,
+    /**
+     * Maximizes the specified window
+     */
+    Maximize = 3,
+    /**
+     * Activates the window and displays it as a maximized window.
+     */
+    ShowMaximized = 3,
+    /**
+     * Displays a window in its most recent size and position. This value
+     * is similar to <see cref="Win32.ShowWindowCommand.Normal"/>, except
+     * the window is not activated.
+     */
+    ShowNoActivate = 4,
+    /**
+     * Activates the window and displays it in its current size and position.
+     */
+    Show = 5,
+    /**
+     * Minimizes the specified window and activates the next top-level
+     * window in the Z order.
+     */
+    Minimize = 6,
+    /**
+     * Displays the window as a minimized window. This value is similar to
+     * <see cref="Win32.ShowWindowCommand.ShowMinimized"/>, except the
+     * window is not activated.
+     */
+    ShowMinNoActive = ShowMinimized | Show,
+    /**
+     * Displays the window in its current size and position. This value is
+     * similar to <see cref="Win32.ShowWindowCommand.Show"/>, except the
+     * window is not activated.
+     */
+    ShowNA = 8,
+    /**
+     * Activates and displays the window. If the window is minimized or
+     * maximized, the system restores it to its original size and position.
+     * An application should specify this flag when restoring a minimized window.
+     */
+    Restore = 9,
+    /**
+     * Sets the show state based on the SW_* value specified in the
+     * STARTUPINFO structure passed to the CreateProcess function by the
+     * program that started the application.
+     */
+    ShowDefault = 10,
+    /**
+     * Windows 2000/XP: Minimizes a window, even if the thread
+     * that owns the window is not responding. This flag should only be
+     * used when minimizing windows from a different thread.
+     */
+    ForceMinimize = 11,
+}
+
 
 export enum OpenFolderFlags {
     AllowMultiSelect = 0x00000200,
