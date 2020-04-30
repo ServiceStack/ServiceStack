@@ -102,6 +102,8 @@ export async function desktopInfo() { return (await evaluateCode('desktopInfo'))
 
 export async function openUrl(url:string) { return (await evalToBool(`openUrl(${quote(url)})`)); }
 
+export async function open(url:string) { return (await evalToBool(`open(${quote(url)})`)); }
+
 export async function expandEnvVars(name:string) { 
     return await evaluateCode(`expandEnvVars(${quote(name)})`); 
 }
