@@ -109,7 +109,6 @@ namespace ServiceStack
                 DebugHttpListenerHostEnvironment = Env.IsMono ? "XSP" : "WebServer20",
                 EnableFeatures = Feature.All,
                 WriteErrorsToResponse = true,
-                ReturnsInnerException = true,
                 DisposeDependenciesAfterUse = true,
                 LogUnobservedTaskExceptions = true,
                 HtmlReplaceTokens = new Dictionary<string, string>(),
@@ -173,8 +172,10 @@ namespace ServiceStack
 
 #if !NETSTANDARD2_0
                 UseCamelCase = false,
+                ReturnsInnerException = true,
 #else
                 UseCamelCase = true,
+                ReturnsInnerException = false,
 #endif
             };
 

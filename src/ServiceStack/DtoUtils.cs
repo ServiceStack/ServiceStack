@@ -148,7 +148,26 @@ namespace ServiceStack
             if (HostContext.DebugMode)
             {
                 // View stack trace in tests and on the client
-                responseStatus.StackTrace = GetRequestErrorBody(request) + "\n" + ex;
+                var sb = StringBuilderCache.Allocate();
+                sb.AppendLine(GetRequestErrorBody(request));
+                sb.AppendLine(ex.ToString());
+                
+                var innerMessages = new List<string>();
+                var innerEx = ex.InnerException;
+                while (innerEx != null)
+                {
+                    sb.AppendLine("");
+                    sb.AppendLine(innerEx.ToString());
+                    innerMessages.Add(innerEx.Message);
+                    innerEx = innerEx.InnerException;
+                }
+                
+                responseStatus.StackTrace = StringBuilderCache.ReturnAndFree(sb);
+                if (innerMessages.Count > 0)
+                {
+                    responseStatus.Meta ??= new Dictionary<string, string>();
+                    responseStatus.Meta["InnerMessages"] = innerMessages.Join("\n");
+                }
             }
 
             HostContext.AppHost?.OnLogError(typeof(DtoUtils), "ServiceBase<TRequest>::Service Exception", ex);
