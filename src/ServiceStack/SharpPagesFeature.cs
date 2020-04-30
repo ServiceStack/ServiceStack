@@ -889,7 +889,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
             {
                 httpRes.StatusCode = (int) HttpStatusCode.Forbidden;
                 httpRes.StatusDescription = "Request Validation Failed";
-                httpRes.EndRequest();
+                await httpRes.EndRequestAsync();
                 return;
             }
             

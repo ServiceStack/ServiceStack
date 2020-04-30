@@ -442,7 +442,7 @@ namespace ServiceStack
             {
                 context.SetResult(await fn(context));
                 if (context.Events != null && !ignoreEvent)
-                    context.Events?.Record(context);
+                    await context.Events?.RecordAsync(context);
                 
                 trans?.Commit();
             }
