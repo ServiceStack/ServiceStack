@@ -52,7 +52,7 @@ namespace ServiceStack.Script
         public object ifError(ScriptScopeContext scope) => (object) scope.PageResult.LastFilterError ?? StopExecution.Value;
         public object ifDebug(ScriptScopeContext scope, object ignoreTarget) => ifDebug(scope);
         public object ifDebug(ScriptScopeContext scope) => scope.Context.DebugMode ? (object)IgnoreResult.Value : StopExecution.Value;
-        public object debug(ScriptScopeContext scope) => scope.Context.DebugMode;
+        public object debugMode(ScriptScopeContext scope) => scope.Context.DebugMode;
 
         public bool hasError(ScriptScopeContext scope) => scope.PageResult.LastFilterError != null;
         
