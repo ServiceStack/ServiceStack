@@ -98,6 +98,10 @@ export async function evalToBool(scriptSrc:string) {
     return await evaluateCode(scriptSrc) as boolean;
 }
 
+export async function evalToBoolAsync(scriptSrc:string) {
+    return await evaluateCodeAsync(scriptSrc) as boolean;
+}
+
 export async function desktopInfo() { return (await evaluateCode('desktopInfo')) as DesktopInfo; }
 
 export async function openUrl(url:string) { return (await evalToBool(`openUrl(${quote(url)})`)); }
@@ -117,7 +121,7 @@ export async function clipboard() { return await evaluateCode('clipboard'); }
  * Set the Clipboard Contents with a UTF-8 string
  */
 export async function setClipboard(contents:string) { 
-    return await evaluateCode(`setClipboard(${quote(contents)})`); 
+    return await evalToBool(`setClipboard(${quote(contents)})`); 
 }
 
 export interface Size {
@@ -138,16 +142,16 @@ export async function windowSendToForeground() { return await evalToBool('window
 export async function windowCenterToScreen(useWorkArea?:boolean) { 
     return await evalToBool(useWorkArea ? `windowCenterToScreen(${useWorkArea})` : `windowCenterToScreen`); 
 }
-export async function windowSetFullScreen() { return await evalToBool('windowSetFullScreen'); }
+export async function windowSetFullScreen() { return await evalToBoolAsync('windowSetFullScreen'); }
 export async function windowSetFocus() { return await evalToBool('windowSetFocus'); }
-export async function windowShowScrollBar(show:boolean) { return await evalToBool(`windowCenterToScreen(${show})`); }
+export async function windowShowScrollBar(show:boolean) { return await evalToBool(`windowShowScrollBar(${show})`); }
 export async function windowSetPosition(x:number,y:number,width?:number,height?:number) { 
-    return await evalToBool(width 
+    return await evalToBoolAsync(width 
         ? `windowSetPosition(${x},${y},${width},${height})`
         : `windowSetPosition(${x},${y})`); 
 }
 export async function windowSetSize(width:number,height:number) { 
-    return await evalToBool(`windowSetSize(${width},${height})`);
+    return await evalToBoolAsync(`windowSetSize(${width},${height})`);
 }
 export async function windowRedrawFrame() { return await evalToBool('windowRedrawFrame'); }
 export async function windowIsVisible() { return await evalToBool('windowIsVisible'); }

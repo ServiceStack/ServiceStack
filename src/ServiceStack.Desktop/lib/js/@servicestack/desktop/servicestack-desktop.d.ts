@@ -22,6 +22,7 @@ export interface DesktopInfo {
     chromeVersion: string;
 }
 export declare function evalToBool(scriptSrc: string): Promise<boolean>;
+export declare function evalToBoolAsync(scriptSrc: string): Promise<boolean>;
 export declare function desktopInfo(): Promise<DesktopInfo>;
 export declare function openUrl(url: string): Promise<boolean>;
 export declare function open(url: string): Promise<boolean>;
@@ -33,7 +34,7 @@ export declare function clipboard(): Promise<any>;
 /**
  * Set the Clipboard Contents with a UTF-8 string
  */
-export declare function setClipboard(contents: string): Promise<any>;
+export declare function setClipboard(contents: string): Promise<boolean>;
 export interface Size {
     width: number;
     height: number;
