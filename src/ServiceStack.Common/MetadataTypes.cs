@@ -117,6 +117,7 @@ namespace ServiceStack
         public AppInfo App { get; set; }
         public Dictionary<string, string> ContentTypeFormats { get; set; }
         public PluginInfo Plugins { get; set; }
+        public Dictionary<string,CustomPlugin> CustomPlugins { get; set; }
         public MetadataTypes Api { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
@@ -186,6 +187,32 @@ namespace ServiceStack
         public string[] RequiredRoles { get; set; }
         public string RequestLogger { get; set; }
         public Dictionary<string,string[]> ServiceRoutes { get; set; }
+        public Dictionary<string, string> Meta { get; set; }
+    }
+
+    /// <summary>
+    /// Generic template for adding metadata info about custom plugins  
+    /// </summary>
+    public class CustomPlugin : IMeta
+    {
+        /// <summary>
+        /// Which User Roles have access to this Plugins Services. See RoleNames for built-in Roles.
+        /// </summary>
+        public string AccessRole { get; set; }
+        
+        /// <summary>
+        /// What Services Types (and their user-defined routes) are enabled in this plugin
+        /// </summary>
+        public Dictionary<string,string[]> ServiceRoutes { get; set; }
+        
+        /// <summary>
+        /// List of enabled features in this plugin
+        /// </summary>
+        public List<string> Enabled { get; set; }
+        
+        /// <summary>
+        /// Additional custom metadata about this plugin
+        /// </summary>
         public Dictionary<string, string> Meta { get; set; }
     }
 
