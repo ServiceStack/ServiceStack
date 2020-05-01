@@ -134,9 +134,16 @@ export interface Rect {
     bottom:number;
     right:number;
 }
-
+export interface MonitorInfo {
+    monitor:Rect;
+    work:Rect;
+    flags:number;
+}
 export async function deviceScreenResolution() {
     return (await evaluateCode('deviceScreenResolution')) as Size;
+}
+export async function primaryMonitorInfo() {
+    return (await evaluateCode('primaryMonitorInfo')) as MonitorInfo;
 }
 export async function windowSendToForeground() { return await evalToBool('windowSendToForeground'); }
 export async function windowCenterToScreen(useWorkArea?:boolean) { 

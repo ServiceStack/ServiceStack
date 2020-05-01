@@ -45,7 +45,13 @@ export interface Rect {
     bottom: number;
     right: number;
 }
+export interface MonitorInfo {
+    monitor: Rect;
+    work: Rect;
+    flags: number;
+}
 export declare function deviceScreenResolution(): Promise<Size>;
+export declare function primaryMonitorInfo(): Promise<MonitorInfo>;
 export declare function windowSendToForeground(): Promise<boolean>;
 export declare function windowCenterToScreen(useWorkArea?: boolean): Promise<boolean>;
 export declare function windowSetFullScreen(): Promise<boolean>;
