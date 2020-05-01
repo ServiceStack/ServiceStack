@@ -16,6 +16,7 @@ using System.Web;
     using System.Web.Mvc;
     using System.Web.Routing;
 #else
+    using ServiceStack.Host;
     using ServiceStack.Host.NetCore;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Http;
@@ -250,7 +251,7 @@ namespace ServiceStack.Mvc
     {
         public ServiceStackJsonResult(object value) : base(value) {}
 
-        public override Task ExecuteResultAsync(ActionContext context)
+        public override Task ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context)
         {
             var response = context.HttpContext.Response;
             response.ContentType = !string.IsNullOrEmpty(ContentType) ? ContentType : "application/json";

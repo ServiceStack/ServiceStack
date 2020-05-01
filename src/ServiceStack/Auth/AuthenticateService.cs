@@ -1,8 +1,10 @@
+#if !NETSTANDARD2_0
+using System.Configuration;
+#endif
+
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
-using System.Net;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth

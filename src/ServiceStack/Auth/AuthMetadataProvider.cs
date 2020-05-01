@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using ServiceStack.Logging;
 
 namespace ServiceStack.Auth

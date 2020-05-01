@@ -1,6 +1,3 @@
-using System;
-using System.Web;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
@@ -10,9 +7,9 @@ namespace ServiceStack.Host
         private string acceptEncoding;
 
 #if !NETSTANDARD2_0
-        private readonly HttpContextBase httpContext;
+        private readonly System.Web.HttpContextBase httpContext;
 
-        public RequestPreferences(HttpContextBase httpContext)
+        public RequestPreferences(System.Web.HttpContextBase httpContext)
         {
             this.httpContext = httpContext;
             this.acceptEncoding = httpContext.Request.Headers[HttpHeaders.AcceptEncoding];
@@ -24,16 +21,15 @@ namespace ServiceStack.Host
             this.acceptEncoding = this.acceptEncoding.ToLower();
         }
 
-        public static HttpWorkerRequest GetWorker(HttpContextBase context)
+        public static System.Web.HttpWorkerRequest GetWorker(System.Web.HttpContextBase context)
         {
-            var provider = (IServiceProvider)context;
-            var worker = (HttpWorkerRequest)provider.GetService(typeof(HttpWorkerRequest));
+            var provider = (System.IServiceProvider)context;
+            var worker = (System.Web.HttpWorkerRequest)provider.GetService(typeof(System.Web.HttpWorkerRequest));
             return worker;
         }
 
-        private HttpWorkerRequest httpWorkerRequest;
-        private HttpWorkerRequest HttpWorkerRequest => 
-            this.httpWorkerRequest ?? (this.httpWorkerRequest = GetWorker(this.httpContext));
+        private System.Web.HttpWorkerRequest httpWorkerRequest;
+        private System.Web.HttpWorkerRequest HttpWorkerRequest => this.httpWorkerRequest ??= GetWorker(this.httpContext);
 
         public string AcceptEncoding
         {
@@ -41,10 +37,11 @@ namespace ServiceStack.Host
             {
                 if (acceptEncoding != null)
                     return acceptEncoding;
-                if (Env.IsMono)
+                if (Text.Env.IsMono)
                     return acceptEncoding;
 
-                acceptEncoding = HttpWorkerRequest.GetKnownRequestHeader(HttpWorkerRequest.HeaderAcceptEncoding)?.ToLower();
+                acceptEncoding = HttpWorkerRequest.GetKnownRequestHeader(
+                    System.Web.HttpWorkerRequest.HeaderAcceptEncoding)?.ToLower();
                 return acceptEncoding;
             }
         }

@@ -1,12 +1,13 @@
-﻿using System;
-using System.Net;
-using System.Reflection;
+﻿#if NETSTANDARD2_0
+using Microsoft.AspNetCore.Http;
+#else
 using System.Web;
+#endif
+
+using System;
+using System.Net;
 using ServiceStack.Text;
 using ServiceStack.Web;
-#if NETSTANDARD2_0
-using Microsoft.AspNetCore.Http;
-#endif
 
 namespace ServiceStack.Host
 {

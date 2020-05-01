@@ -1,4 +1,9 @@
-﻿using System;
+﻿#if NETSTANDARD2_0        
+using ServiceStack.Host;
+#else
+using System.Web;
+#endif
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
@@ -6,7 +11,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using ServiceStack.Auth;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host.Handlers;

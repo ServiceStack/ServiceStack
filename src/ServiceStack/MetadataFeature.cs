@@ -1,6 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿#if NETSTANDARD2_0        
+using ServiceStack.Web;
+using ServiceStack.Host;
+#else
 using System.Web;
+#endif
+
+using System;
+using System.Collections.Generic;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Metadata;
 using ServiceStack.NativeTypes;

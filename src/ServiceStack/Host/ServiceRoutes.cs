@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using ServiceStack.Logging;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host

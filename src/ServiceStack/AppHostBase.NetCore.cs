@@ -183,7 +183,7 @@ namespace ServiceStack
 
             NetCoreRequest httpReq;
             IResponse httpRes;
-            System.Web.IHttpHandler handler;
+            IHttpHandler handler;
 
             try 
             {
@@ -333,7 +333,7 @@ namespace ServiceStack
             return app;
         }
 
-        public static IApplicationBuilder Use(this IApplicationBuilder app, System.Web.IHttpAsyncHandler httpHandler)
+        public static IApplicationBuilder Use(this IApplicationBuilder app, IHttpAsyncHandler httpHandler)
         {
             return app.Use(httpHandler.Middleware);
         }

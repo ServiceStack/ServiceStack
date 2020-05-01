@@ -120,7 +120,7 @@ namespace ServiceStack
 
             NetCoreRequest httpReq;
             IResponse httpRes;
-            System.Web.IHttpHandler handler;
+            IHttpHandler handler;
 
             try 
             {

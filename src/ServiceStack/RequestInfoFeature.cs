@@ -1,4 +1,8 @@
-﻿using System.Web;
+﻿#if NETSTANDARD2_0        
+using ServiceStack.Host;
+#else
+using System.Web;
+#endif
 using ServiceStack.Host.Handlers;
 
 namespace ServiceStack

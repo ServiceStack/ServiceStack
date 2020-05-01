@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Web;
+using ServiceStack.MiniProfiler;
 
 namespace ServiceStack.MiniProfiler
 {
@@ -62,7 +62,12 @@ namespace ServiceStack.MiniProfiler
         public static void Stop() => Current.Stop();
     }
 
-    public class HtmlString : IHtmlString, System.Web.IHtmlString
+    public class HtmlString : IHtmlString,
+#if NETSTANDARD2_0
+        ServiceStack.Host.IHtmlString
+#else
+        System.Web.IHtmlString
+#endif
     {
         public static HtmlString Empty = new HtmlString(string.Empty);
 
@@ -89,8 +94,14 @@ namespace ServiceStack.Html
 {
     public static class HtmlStringExtensions
     {
-        public static System.Web.IHtmlString AsRaw(this IHtmlString htmlString) => htmlString is System.Web.IHtmlString aspRawStr
-            ? aspRawStr
-            : new HtmlString(htmlString?.ToHtmlString() ?? "");
+#if NETSTANDARD2_0        
+        public static ServiceStack.Host.IHtmlString AsRaw(this IHtmlString htmlString) => 
+            htmlString is ServiceStack.Host.IHtmlString aspRawStr ? aspRawStr :
+                new HtmlString(htmlString?.ToHtmlString() ?? "");
+#else
+        public static System.Web.IHtmlString AsRaw(this IHtmlString htmlString) => 
+            htmlString is System.Web.IHtmlString aspRawStr ? aspRawStr :
+                new HtmlString(htmlString?.ToHtmlString() ?? "");
+#endif
     }
 }

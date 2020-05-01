@@ -19,7 +19,6 @@ using Microsoft.AspNetCore.Routing;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
-using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Html;
 using ServiceStack.IO;
@@ -85,7 +84,7 @@ namespace ServiceStack.Mvc
                 throw new Exception(ErrorMvcNotInit);
         }
 
-        public System.Web.IHttpHandler CatchAllHandler(string httpMethod, string pathInfo, string filepath)
+        public Host.IHttpHandler CatchAllHandler(string httpMethod, string pathInfo, string filepath)
         {
             var viewEngineResult = GetPageFromPathInfo(pathInfo);
 
@@ -129,7 +128,7 @@ namespace ServiceStack.Mvc
 
         public string IndexPage { get; set; } = "default";
 
-        protected virtual System.Web.IHttpHandler PageBasedRoutingHandler(string httpMethod, string pathInfo, string requestFilePath)
+        protected virtual Host.IHttpHandler PageBasedRoutingHandler(string httpMethod, string pathInfo, string requestFilePath)
         {
             var extPos = pathInfo.LastIndexOf('.');
             if (extPos >= 0 && pathInfo.Substring(extPos) != ".cshtml")
@@ -510,7 +509,7 @@ namespace ServiceStack.Mvc
                     if (layout != null)
                         viewData["Layout"] = layout;
 
-                    viewData[Keywords.IRequest] = req ?? new BasicRequest { PathInfo = view.Path };
+                    viewData[Keywords.IRequest] = req ?? new Host.BasicRequest { PathInfo = view.Path };
 
                     var viewContext = new ViewContext(
                         actionContext,

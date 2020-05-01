@@ -5,7 +5,8 @@ using ServiceStack.Configuration;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
-namespace ServiceStack.Auth {
+namespace ServiceStack.Auth 
+{
     /// <summary>
     ///   Create VK App at: http://vk.com/editapp?act=create
     ///   The Callback URL for your app should match the CallbackUrl provided.

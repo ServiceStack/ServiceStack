@@ -25,7 +25,7 @@ namespace ServiceStack.Auth
 
         public static readonly HashSet<string> IgnoreForOperationTypes = new HashSet<string>
         {
-            typeof(StaticFileHandler).Name,
+            nameof(StaticFileHandler),
         };
 
         /// <summary>
@@ -33,9 +33,18 @@ namespace ServiceStack.Auth
         /// </summary>
         public static readonly Dictionary<string, Func<byte[], byte[], byte[]>> HmacAlgorithms = new Dictionary<string, Func<byte[], byte[], byte[]>>
         {
-            { "HS256", (key, value) => { using (var sha = new HMACSHA256(key)) { return sha.ComputeHash(value); } } },
-            { "HS384", (key, value) => { using (var sha = new HMACSHA384(key)) { return sha.ComputeHash(value); } } },
-            { "HS512", (key, value) => { using (var sha = new HMACSHA512(key)) { return sha.ComputeHash(value); } } }
+            { "HS256", (key, value) => {
+                using var sha = new HMACSHA256(key);
+                return sha.ComputeHash(value);
+            } },
+            { "HS384", (key, value) => {
+                using var sha = new HMACSHA384(key);
+                return sha.ComputeHash(value);
+            } },
+            { "HS512", (key, value) => {
+                using var sha = new HMACSHA512(key);
+                return sha.ComputeHash(value);
+            } }
         };
 
         /// <summary>
@@ -769,9 +778,9 @@ namespace ServiceStack.Auth
                 throw new NotSupportedException("Invalid algorithm: " + HashAlgorithm);
 
             if (isHmac && AuthKey == null)
-                throw new ArgumentNullException(nameof(AuthKey), "An AuthKey is Required to use JWT, e.g: new JwtAuthProvider { AuthKey = AesUtils.CreateKey() }");
+                throw new ArgumentNullException(nameof(AuthKey), @"An AuthKey is Required to use JWT, e.g: new JwtAuthProvider { AuthKey = AesUtils.CreateKey() }");
             if (isRsa && PrivateKey == null && PublicKey == null)
-                throw new ArgumentNullException(nameof(PrivateKey), "PrivateKey is Required to use JWT with " + HashAlgorithm);
+                throw new ArgumentNullException(nameof(PrivateKey), @"PrivateKey is Required to use JWT with " + HashAlgorithm);
 
             if (KeyId == null)
                 KeyId = GetKeyId(null);

@@ -1,5 +1,3 @@
-using ServiceStack.NativeTypes;
-
 namespace ServiceStack
 {
     public static class ValidatorUtils

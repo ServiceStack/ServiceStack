@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Web;
+using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 
 namespace ServiceStack

@@ -2,13 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Xml;
 using ServiceStack.Auth;
 using ServiceStack.DataAnnotations;
 using ServiceStack.FluentValidation;
 using ServiceStack.NativeTypes;
 using ServiceStack.NativeTypes.CSharp;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host

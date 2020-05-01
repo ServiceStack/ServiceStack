@@ -6,7 +6,6 @@ using System.Net;
 using System.Security.Cryptography;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
-using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Web;
 

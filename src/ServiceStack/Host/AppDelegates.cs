@@ -1,6 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿#if !NETSTANDARD2_0
 using System.Web;
+#endif
+using System;
+using System.Threading.Tasks;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
