@@ -151,7 +151,7 @@ export async function windowCenterToScreen(useWorkArea?:boolean) {
 }
 export async function windowSetFullScreen() { return await evalToBoolAsync('windowSetFullScreen'); }
 export async function windowSetFocus() { return await evalToBool('windowSetFocus'); }
-export async function windowShowScrollBar(show:boolean) { return await evalToBool(`windowShowScrollBar(${show})`); }
+export async function windowShowScrollBar(show:boolean) { return await evalToBoolAsync(`windowShowScrollBar(${show})`); }
 export async function windowSetPosition(x:number,y:number,width?:number,height?:number) { 
     return await evalToBoolAsync(width 
         ? `windowSetPosition(${x},${y},${width},${height})`
