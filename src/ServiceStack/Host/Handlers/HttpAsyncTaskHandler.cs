@@ -167,9 +167,6 @@ namespace ServiceStack.Host.Handlers
 
         protected async Task HandleException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
         {
-            var errorMessage = $"Error occured while Processing Request: {ex.Message}";
-            HostContext.AppHost.OnLogError(typeof(HttpAsyncTaskHandler), errorMessage, ex);
-
             try
             {
                 await HostContext.RaiseAndHandleException(httpReq, httpRes, operationName, ex);
@@ -183,7 +180,7 @@ namespace ServiceStack.Host.Handlers
             }
             finally
             {
-                httpRes.EndRequest(skipHeaders: true);
+                await httpRes.EndRequestAsync(skipHeaders: true);
             }
         }
 

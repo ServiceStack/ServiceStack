@@ -15,17 +15,11 @@ namespace ServiceStack
         /// </summary>
         public const string ResponseStatusPropertyName = "ResponseStatus";
 
-        public static ResponseStatus ToResponseStatus(this Exception exception)
-        {
-            return exception is IResponseStatusConvertible customStatus
-                ? customStatus.ToResponseStatus()
-                : CreateResponseStatus(exception.GetType().Name, exception.Message);
-        }
+        public static ResponseStatus ToResponseStatus(this Exception exception, object requestDto = null) =>
+            HostContext.AppHost.CreateResponseStatus(exception, requestDto);
 
-        public static ResponseStatus ToResponseStatus(this ValidationError validationException)
-        {
-            return ResponseStatusUtils.CreateResponseStatus(validationException.ErrorCode, validationException.Message, validationException.Violations);
-        }
+        public static ResponseStatus ToResponseStatus(this ValidationError validationException) => 
+            ResponseStatusUtils.CreateResponseStatus(validationException.ErrorCode, validationException.Message, validationException.Violations);
 
         public static ResponseStatus ToResponseStatus(this ValidationErrorResult validationResult)
         {
@@ -131,71 +125,12 @@ namespace ServiceStack
         /// <returns></returns>
         public static object CreateErrorResponse(object request, Exception ex)
         {
-            var originalEx = ex;
-            ex = HostContext.AppHost?.ResolveResponseException(ex) ?? ex;
             var responseStatus = ex.ToResponseStatus();
-
-            //If ResponseStatus is null fallback to use original Exception
-            if (responseStatus == null)
-            {
-                ex = originalEx;
-                responseStatus = ex.ToResponseStatus();
-            }
-
-            if (responseStatus == null)
-                return null;
-
-            if (HostContext.DebugMode)
-            {
-                // View stack trace in tests and on the client
-                var sb = StringBuilderCache.Allocate();
-                sb.AppendLine(GetRequestErrorBody(request));
-                sb.AppendLine(ex.ToString());
-                
-                var innerMessages = new List<string>();
-                var innerEx = ex.InnerException;
-                while (innerEx != null)
-                {
-                    sb.AppendLine("");
-                    sb.AppendLine(innerEx.ToString());
-                    innerMessages.Add(innerEx.Message);
-                    innerEx = innerEx.InnerException;
-                }
-                
-                responseStatus.StackTrace = StringBuilderCache.ReturnAndFree(sb);
-                if (innerMessages.Count > 0)
-                {
-                    responseStatus.Meta ??= new Dictionary<string, string>();
-                    responseStatus.Meta["InnerMessages"] = innerMessages.Join("\n");
-                }
-            }
-
-            HostContext.AppHost?.OnLogError(typeof(DtoUtils), "ServiceBase<TRequest>::Service Exception", ex);
-
             var errorResponse = CreateErrorResponse(request, ex, responseStatus);
 
             HostContext.AppHost?.OnExceptionTypeFilter(ex, responseStatus);
 
             return errorResponse;
-        }
-
-        /// <summary>
-        /// Override to provide additional/less context about the Service Exception. 
-        /// By default the request is serialized and appended to the ResponseStatus StackTrace.
-        /// </summary>
-        public static string GetRequestErrorBody(object request)
-        {
-            var requestString = "";
-            try
-            {
-                requestString = TypeSerializer.SerializeToString(request);
-            }
-            catch /*(Exception ignoreSerializationException)*/
-            {
-                //Serializing request successfully is not critical and only provides added error info
-            }
-
-            return $"[{(request ?? new object()).GetType().GetOperationName()}: {DateTime.UtcNow}]:\n[REQUEST: {requestString}]";
         }
     }
 }

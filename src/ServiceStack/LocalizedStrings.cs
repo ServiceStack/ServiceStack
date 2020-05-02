@@ -32,6 +32,7 @@
         public const string ApiKey = "__apikey";
         public const string Session = "__session";
         public const string HasPreAuthenticated = "__haspreauth";
+        public const string HasGlobalHeaders = "__global_headers";
         public const string HasLogged = "_logged";
         public const string DidAuthenticate = "__didauth";
         public const string IgnoreEvent = "__ignoreevent";
