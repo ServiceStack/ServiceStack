@@ -249,6 +249,14 @@ namespace ServiceStack
 
         public static int ToStatusCode(this Exception ex)
         {
+            if (ex is AggregateException aex)
+            {
+                if (aex.InnerExceptions.Count == 1)
+                    ex = aex.InnerExceptions[0];
+                else
+                    return ToStatusCode(aex.InnerExceptions[0]);
+            }
+
             if (ex is IHasStatusCode hasStatusCode)
                 return hasStatusCode.StatusCode;
 

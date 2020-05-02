@@ -517,13 +517,13 @@ namespace ServiceStack
         
         public virtual ResponseStatus CreateResponseStatus(Exception ex, object request=null)
         {
-            var e = (Config.ReturnsInnerException && ex.InnerException != null && !(ex is IHttpError)
+            var e = ((Config.ReturnsInnerException && ex.InnerException != null && !(ex is IHttpError)
                 ? ex.InnerException
-                : null) ?? ex;
+                : null) ?? ex).UnwrapIfSingleException();
             
-            var responseStatus = e is IResponseStatusConvertible customStatus
+            var responseStatus = (e is IResponseStatusConvertible customStatus
                 ? customStatus.ToResponseStatus()
-                : ResponseStatusUtils.CreateResponseStatus(e.GetType().Name, e.Message);
+                : null) ?? ResponseStatusUtils.CreateResponseStatus(e.GetType().Name, e.Message);
             
             if (responseStatus == null)
                 return null;
