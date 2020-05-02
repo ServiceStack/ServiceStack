@@ -564,7 +564,7 @@ namespace ServiceStack.NativeTypes.Dart
                     {
                         var genericArg = baseClass.Substring(9, baseClass.Length - 10);
                         sb.AppendLine($"final List<{genericArg}> l = [];");
-                        sb.AppendLine("void set length(int newLength) { l.length = newLength; }");
+                        sb.AppendLine("set length(int newLength) { l.length = newLength; }");
                         sb.AppendLine("int get length => l.length;");
                         sb.AppendLine($"{genericArg} operator [](int index) => l[index];");
                         sb.AppendLine($"void operator []=(int index, {genericArg} value) {{ l[index] = value; }}");
