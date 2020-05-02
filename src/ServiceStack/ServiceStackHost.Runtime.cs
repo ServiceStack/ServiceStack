@@ -517,13 +517,13 @@ namespace ServiceStack
         
         public virtual ResponseStatus CreateResponseStatus(Exception ex, object request=null)
         {
-            var useEx = (Config.ReturnsInnerException && ex.InnerException != null && !(ex is IHttpError)
+            var e = (Config.ReturnsInnerException && ex.InnerException != null && !(ex is IHttpError)
                 ? ex.InnerException
                 : null) ?? ex;
             
-            var responseStatus = useEx is IResponseStatusConvertible customStatus
+            var responseStatus = e is IResponseStatusConvertible customStatus
                 ? customStatus.ToResponseStatus()
-                : ResponseStatusUtils.CreateResponseStatus(useEx.GetType().Name, useEx.Message);
+                : ResponseStatusUtils.CreateResponseStatus(e.GetType().Name, e.Message);
             
             if (responseStatus == null)
                 return null;
@@ -550,16 +550,16 @@ namespace ServiceStack
                         var str = $"[{request.GetType().GetOperationName()}: {DateTime.UtcNow}]:\n[REQUEST: {TypeSerializer.SerializeToString(request)}]";
                         sb.AppendLine(str);
                     }
-                    catch (Exception e)
+                    catch (Exception requestEx)
                     {
-                        sb.AppendLine($"[{request.GetType().GetOperationName()}: {DateTime.UtcNow}]:\n[REQUEST: {ex.Message}]");
+                        sb.AppendLine($"[{request.GetType().GetOperationName()}: {DateTime.UtcNow}]:\n[REQUEST: {requestEx.Message}]");
                     }
                 }
                 
-                sb.AppendLine(ex.ToString());
+                sb.AppendLine(e.ToString());
                 
                 var innerMessages = new List<string>();
-                var innerEx = ex.InnerException;
+                var innerEx = e.InnerException;
                 while (innerEx != null)
                 {
                     sb.AppendLine("");
@@ -574,12 +574,13 @@ namespace ServiceStack
                     responseStatus.Meta ??= new Dictionary<string, string>();
                     responseStatus.Meta["InnerMessages"] = innerMessages.Join("\n");
                 }
-                
-                OnLogError(GetType(), responseStatus.Message, useEx);
             }
-            
-            OnExceptionTypeFilter(ex, responseStatus);
 
+            OnExceptionTypeFilter(e, responseStatus);
+
+            if (Config.DebugMode || Log.IsDebugEnabled)
+                OnLogError(GetType(), responseStatus.Message, e);
+            
             return responseStatus;
         }
 
