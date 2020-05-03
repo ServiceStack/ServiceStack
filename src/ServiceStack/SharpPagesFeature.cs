@@ -187,13 +187,18 @@ namespace ServiceStack
             
             try
             {
-                var execInit = new PageResult(InitPage).RenderToStringAsync().GetAwaiter().GetResult();
+                var pageResult = new PageResult(InitPage);
+                var execInit = pageResult.RenderToStringAsync().GetAwaiter().GetResult();
                 Args["initout"] = execInit;
+                if (pageResult.LastFilterError != null)
+                {
+                    Args["initError"] = pageResult.LastFilterError.ToString();
+                }
                 return execInit;
             }
             catch (Exception ex)
             {
-                Args["initout"] = ex.ToString();
+                Args["initError"] = Args["initout"] = ex.ToString();
                 return ex.ToString();
             }
         }
