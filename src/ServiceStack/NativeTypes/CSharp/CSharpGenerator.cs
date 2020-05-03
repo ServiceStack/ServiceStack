@@ -37,7 +37,7 @@ namespace ServiceStack.NativeTypes.CSharp
             { "UInt64", "ulong" },    
             { "Single", "float" },    
             { "Double", "double" },    
-            { "Decimal", "decimal" },    
+            { "Decimal", "decimal" },
         };
 
         public static TypeFilterDelegate TypeFilter { get; set; }

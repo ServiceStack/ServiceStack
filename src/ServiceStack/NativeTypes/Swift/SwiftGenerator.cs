@@ -54,6 +54,7 @@ namespace ServiceStack.NativeTypes.Swift
             {"Single", "Float"},
             {"Double", "Double"},
             {"Decimal", "Double"},
+            {"IntPtr", "Int64"},
             {"Stream", "Data"},
             {"Type", "String"},
         }.ToConcurrentDictionary();

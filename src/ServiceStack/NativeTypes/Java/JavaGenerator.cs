@@ -72,6 +72,7 @@ namespace ServiceStack.NativeTypes.Java
             {"Single", "Float"},
             {"Double", "Double"},
             {"Decimal", "BigDecimal"},
+            {"IntPtr", "Long"},
             {"Guid", "UUID"},
             {"DateTime", "Date"},
             {"DateTimeOffset", "Date"},
