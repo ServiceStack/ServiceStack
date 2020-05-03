@@ -3,6 +3,7 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <AssemblyName>ServiceStack.Desktop</AssemblyName>
+        <RootNamespace>ServiceStack.Desktop</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -13,6 +14,7 @@
         <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
         <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.Source.csproj" />
         <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.Source.csproj" />
+        <ProjectReference Include="..\ServiceStack\ServiceStack.Source.csproj" />
         <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
     </ItemGroup>
 
