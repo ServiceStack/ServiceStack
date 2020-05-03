@@ -35,6 +35,7 @@ namespace ServiceStack
         public const string Soap = "soap";
         public const string Svg = "svg";
         public const string Validation = "validation";
+        public const string Desktop = "desktop";
         public const string WebSudo = "websudo";
         public const string CancelRequests = "reqcancel";
         public const string Swagger = "swagger";

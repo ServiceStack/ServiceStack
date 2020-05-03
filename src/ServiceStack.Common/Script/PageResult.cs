@@ -220,6 +220,18 @@ namespace ServiceStack.Script
                 Args[ScriptConstants.Request] = hasRequest;
         }
 
+        public PageResult AssignArgs(Dictionary<string, object> args)
+        {
+            if (args != null)
+            {
+                foreach (var entry in args)
+                {
+                    Args[entry.Key] = entry.Value;
+                }
+            }
+            return this;
+        }
+
         //entry point
         public async Task WriteToAsync(Stream responseStream, CancellationToken token = default)
         {

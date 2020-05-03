@@ -28,25 +28,27 @@ namespace ServiceStack.Desktop
             return hWnd != IntPtr.Zero ? fn(hWnd) : default;
         }
 
-        public bool openUrl(string url) =>
-            NativeWin.Open(new Uri(url).ToString());
-        public bool open(string cmd) =>
-            NativeWin.Open(cmd);
-        public Dictionary<string, string> desktopInfo() => 
-            NativeWin.GetDesktopInfo();
-        public Dictionary<string, object> deviceScreenResolution() =>
-            NativeWin.toObject(NativeWin.GetScreenResolution());
-        public string clipboard() =>
-            NativeWin.GetClipboardAsString();
-        public bool setClipboard(string data) => 
-            NativeWin.SetStringInClipboard(data);
-        public int messageBox(string text, string caption, uint type) => 
-            NativeWin.MessageBox(0, text, caption, type);
+        public bool openUrl(ScriptScopeContext scope, string url) =>
+            DoWindow(scope, w => NativeWin.Open(new Uri(url).ToString()));
+        public bool open(ScriptScopeContext scope, string cmd) =>
+            DoWindow(scope, w => NativeWin.Open(cmd));
+        public Dictionary<string, string> desktopInfo(ScriptScopeContext scope) => 
+            DoWindow(scope, w => NativeWin.GetDesktopInfo());
+        public Dictionary<string, object> deviceScreenResolution(ScriptScopeContext scope) =>
+            DoWindow(scope, w => NativeWin.ToObject(NativeWin.GetScreenResolution()));
+        public long findWindowByName(ScriptScopeContext scope, string name) =>
+            DoWindow(scope, w => (long) NativeWin.FindWindowByName(name));
+        public string clipboard(ScriptScopeContext scope) =>
+            DoWindow(scope, w => NativeWin.GetClipboardAsString());
+        public bool setClipboard(ScriptScopeContext scope, string data) => 
+            DoWindow(scope, w => NativeWin.SetStringInClipboard(data));
+        public int messageBox(ScriptScopeContext scope, string text, string caption, uint type) => 
+            DoWindow(scope, w => NativeWin.MessageBox(0, text, caption, type));
         public string expandEnvVars(ScriptScopeContext scope, string path) => 
-            NativeWin.expandEnvVars(path);
+            DoWindow(scope, w => NativeWin.ExpandEnvVars(path));
 
         public Dictionary<string, object> primaryMonitorInfo(ScriptScopeContext scope) =>
-            DoWindow(scope, w => w.GetPrimaryMonitorInfo(out var mi) ? NativeWin.toObject(mi) : null);
+            DoWindow(scope, w => w.GetPrimaryMonitorInfo(out var mi) ? NativeWin.ToObject(mi) : null);
         public bool windowSendToForeground(ScriptScopeContext scope) =>
             DoWindow(scope, w => w.SetForegroundWindow());
         public bool windowCenterToScreen(ScriptScopeContext scope) => 
@@ -72,9 +74,9 @@ namespace ServiceStack.Desktop
         public bool windowIsEnabled(ScriptScopeContext scope) => 
             DoWindow(scope, w => w.IsWindowEnabled());
         public bool windowShow(ScriptScopeContext scope) => 
-            DoWindow(scope, w => w.ShowWindow(ShowWindowCommands.SW_SHOW));
+            DoWindow(scope, w => w.ShowWindow(ShowWindowCommands.Show));
         public bool windowHide(ScriptScopeContext scope) => 
-            DoWindow(scope, w => w.ShowWindow(ShowWindowCommands.SW_HIDE));
+            DoWindow(scope, w => w.ShowWindow(ShowWindowCommands.Hide));
         public string windowText(ScriptScopeContext scope) => 
             DoWindow(scope, w => w.GetText());
         public bool windowSetText(ScriptScopeContext scope, string text) => 
@@ -83,14 +85,14 @@ namespace ServiceStack.Desktop
             DoWindow(scope, w => w.ShowWindow((ShowWindowCommands)state));
         
         public Dictionary<string, object> windowSize(ScriptScopeContext scope) =>
-            DoWindow(scope, w => NativeWin.toObject(w.GetWindowSize()));
+            DoWindow(scope, w => NativeWin.ToObject(w.GetWindowSize()));
         public Dictionary<string, object> windowClientSize(ScriptScopeContext scope) => 
-            DoWindow(scope, w => NativeWin.toObject(w.GetClientSize()));
+            DoWindow(scope, w => NativeWin.ToObject(w.GetClientSize()));
         public Dictionary<string, object> windowClientRect(ScriptScopeContext scope) => 
-            DoWindow(scope, w => NativeWin.toObject(w.GetClientRect()));
+            DoWindow(scope, w => NativeWin.ToObject(w.GetClientRect()));
 
         public DialogResult openFile(ScriptScopeContext scope, Dictionary<string, object> options) => 
-            DoWindow(scope, w => w.openFile(options));
+            DoWindow(scope, w => w.OpenFile(options));
     }
     
 }

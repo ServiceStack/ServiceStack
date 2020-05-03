@@ -18,28 +18,38 @@ namespace ServiceStack.Desktop
             ["chromeVersion"] = DesktopState.ChromeVersion,
         };
 
-        public static Dictionary<string, object> toObject(System.Drawing.Size size) => new Dictionary<string, object> {
+        public static void SetDesktopInfo(Dictionary<string, string> info)
+        {
+            if (info.TryGetValue("tool", out var tool))
+                DesktopState.Tool = tool;
+            if (info.TryGetValue("toolVersion", out var toolVersion))
+                DesktopState.ToolVersion = toolVersion;
+            if (info.TryGetValue("chromeVersion", out var chromeVersion))
+                DesktopState.ChromeVersion = chromeVersion;
+        }
+
+        public static Dictionary<string, object> ToObject(System.Drawing.Size size) => new Dictionary<string, object> {
             ["width"] = size.Width,
             ["height"] = size.Height,
         };
 
-        public static Dictionary<string, object> toObject(System.Drawing.Rectangle rect) => new Dictionary<string, object> {
+        public static Dictionary<string, object> ToObject(System.Drawing.Rectangle rect) => new Dictionary<string, object> {
             ["top"] = rect.Top,
             ["left"] = rect.Left,
             ["bottom"] = rect.Bottom,
             ["right"] = rect.Right,
         };
 
-        public static Dictionary<string, object> toObject(Rectangle rect) => new Dictionary<string, object> {
+        public static Dictionary<string, object> ToObject(Rectangle rect) => new Dictionary<string, object> {
             ["top"] = rect.Top,
             ["left"] = rect.Left,
             ["bottom"] = rect.Bottom,
             ["right"] = rect.Right,
         };
 
-        public static Dictionary<string, object> toObject(MonitorInfo mi) => new Dictionary<string, object> {
-            ["monitor"] = toObject(mi.Monitor),
-            ["work"] = toObject(mi.WorkArea),
+        public static Dictionary<string, object> ToObject(MonitorInfo mi) => new Dictionary<string, object> {
+            ["monitor"] = ToObject(mi.Monitor),
+            ["work"] = ToObject(mi.WorkArea),
             ["flags"] = (int)mi.Flags,
         };
 
@@ -60,11 +70,13 @@ namespace ServiceStack.Desktop
             throw new NotSupportedException("Unknown platform");
         }
 
-        public static string expandEnvVars(string path) => String.IsNullOrEmpty(path) || path.IndexOf('%') == -1
+        public static IntPtr FindWindowByName(string name) => FindWindow(null, null);
+
+        public static string ExpandEnvVars(string path) => String.IsNullOrEmpty(path) || path.IndexOf('%') == -1
             ? path
             : Environment.ExpandEnvironmentVariables(path);
 
-        public static DialogResult openFile(this IntPtr hWnd, Dictionary<string, object> options)
+        public static DialogResult OpenFile(this IntPtr hWnd, Dictionary<string, object> options)
         {
             if (hWnd == IntPtr.Zero) return default;
             var isFolderPicker = options.TryGetValue("isFolderPicker", out var oIsFolderPicker) && oIsFolderPicker is bool b && b;
@@ -95,7 +107,7 @@ namespace ServiceStack.Desktop
             if (options.TryGetValue("filterIndex", out var oFilterIndex))
                 dlgArgs.nFilterIndex = Convert.ToInt32(oFilterIndex);
             dlgArgs.lpstrInitialDir = options.TryGetValue("initialDir", out var oInitialDir)
-                ? expandEnvVars(oInitialDir as string)
+                ? ExpandEnvVars(oInitialDir as string)
                 : Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             if (options.TryGetValue("templateName", out var oTemplateName))
                 dlgArgs.lpTemplateName = oTemplateName as string;
@@ -593,19 +605,19 @@ namespace ServiceStack.Desktop
     [Flags]
     public enum ShowWindowCommands
     {
-        SW_FORCEMINIMIZE = 11,
-        SW_HIDE = 0,
-        SW_MAXIMIZE = 3,
-        SW_MINIMIZE = 6,
-        SW_RESTORE = 9,
-        SW_SHOW = 5,
-        SW_SHOWDEFAULT = 10,
-        SW_SHOWMAXIMIZED = 3,
-        SW_SHOWMINIMIZED = 2,
-        SW_SHOWMINNOACTIVE = 7,
-        SW_SHOWNA = 8,
-        SW_SHOWNOACTIVATE = 4,
-        SW_SHOWNORMAL = 1
+        ForceMinimize = 11,
+        Hide = 0,
+        Maximize = 3,
+        Minimize = 6,
+        Restore = 9,
+        Show = 5,
+        ShowDefault = 10,
+        ShowMaximized = 3,
+        ShowMinimized = 2,
+        ShowMinNoActive = ShowMinimized | Show,
+        ShowNA = 8,
+        ShowNoActivate = 4,
+        Normal = 1
     }
 
     public enum SystemMetric
