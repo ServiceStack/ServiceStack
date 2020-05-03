@@ -125,11 +125,8 @@ namespace ServiceStack
         /// <returns></returns>
         public static object CreateErrorResponse(object request, Exception ex)
         {
-            var responseStatus = ex.ToResponseStatus();
+            var responseStatus = HostContext.AppHost.CreateResponseStatus(ex, request);
             var errorResponse = CreateErrorResponse(request, ex, responseStatus);
-
-            HostContext.AppHost?.OnExceptionTypeFilter(ex, responseStatus);
-
             return errorResponse;
         }
     }
