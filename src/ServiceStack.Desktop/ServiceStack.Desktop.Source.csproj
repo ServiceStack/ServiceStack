@@ -2,12 +2,13 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
+        <AssemblyName>ServiceStack.Desktop</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>
         <EmbeddedResource Include="lib\**\*.*" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
     </ItemGroup>
-    
+
     <ItemGroup>
         <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
         <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.Source.csproj" />
