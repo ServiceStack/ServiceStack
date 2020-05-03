@@ -10,9 +10,9 @@
     
     <ItemGroup>
         <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
-        <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
-        <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
-        <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
+        <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.Source.csproj" />
+        <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.Source.csproj" />
+        <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
     </ItemGroup>
 
 </Project>
