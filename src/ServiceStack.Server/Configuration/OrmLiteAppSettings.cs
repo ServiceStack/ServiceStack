@@ -13,15 +13,9 @@ namespace ServiceStack.Configuration
 
     public class OrmLiteAppSettings : AppSettingsBase, IRequiresSchema
     {
-        private OrmLiteSettings DbSettings
-        {
-            get { return (OrmLiteSettings)base.settings; }
-        }
+        private OrmLiteSettings DbSettings => (OrmLiteSettings)base.settings;
 
-        public IDbConnectionFactory DbFactory
-        {
-            get { return DbSettings.DbFactory; }
-        }
+        public IDbConnectionFactory DbFactory => DbSettings.DbFactory;
 
         public OrmLiteAppSettings(IDbConnectionFactory dbFactory)
             : base(new OrmLiteSettings(dbFactory)) {}
@@ -37,28 +31,22 @@ namespace ServiceStack.Configuration
 
             public string Get(string key)
             {
-                using (var db = DbFactory.Open())
-                {
-                    var config = db.SingleById<ConfigSetting>(key);
-                    return config != null ? config.Value : null;
-                }
+                using var db = DbFactory.Open();
+                var config = db.SingleById<ConfigSetting>(key);
+                return config?.Value;
             }
 
             public List<string> GetAllKeys()
             {
-                using (var db = DbFactory.Open())
-                {
-                    return db.Column<string>(db.From<ConfigSetting>().Select(x => x.Id));
-                }
+                using var db = DbFactory.Open();
+                return db.Column<string>(db.From<ConfigSetting>().Select(x => x.Id));
             }
 
             public Dictionary<string, string> GetAll()
             {
-                using (var db = DbFactory.Open())
-                {
-                    return db.Dictionary<string, string>(
-                        db.From<ConfigSetting>().Select(x => new { x.Id, x.Value }));
-                }
+                using var db = DbFactory.Open();
+                return db.Dictionary<string, string>(
+                    db.From<ConfigSetting>().Select(x => new { x.Id, x.Value }));
             }
 
             public void Set<T>(string key, T value)
@@ -67,18 +55,14 @@ namespace ServiceStack.Configuration
                     ? (string)(object)value
                     : value.ToJsv();
 
-                using (var db = DbFactory.Open())
-                {
-                    db.Save(new ConfigSetting { Id = key, Value = textValue });
-                }
+                using var db = DbFactory.Open();
+                db.Save(new ConfigSetting { Id = key, Value = textValue });
             }
 
             public bool Exists(string key)
             {
-                using (var db = DbFactory.Open())
-                {
-                    return db.Count<ConfigSetting>(q => q.Id == key) > 0;
-                }
+                using var db = DbFactory.Open();
+                return db.Count<ConfigSetting>(q => q.Id == key) > 0;
             }
         }
 
@@ -111,10 +95,8 @@ namespace ServiceStack.Configuration
 
         public void InitSchema()
         {
-            using (var db = DbSettings.DbFactory.Open())
-            {
-                db.CreateTableIfNotExists<ConfigSetting>();
-            }
+            using var db = DbSettings.DbFactory.Open();
+            db.CreateTableIfNotExists<ConfigSetting>();
         }
     }
 }
