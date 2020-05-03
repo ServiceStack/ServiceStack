@@ -108,8 +108,12 @@ export async function openUrl(url:string) { return (await evalToBool(`openUrl(${
 
 export async function open(url:string) { return (await evalToBool(`open(${quote(url)})`)); }
 
-export async function expandEnvVars(name:string) { 
-    return await evaluateCode(`expandEnvVars(${quote(name)})`); 
+export async function expandEnvVars(name:string) {
+    return await evaluateCode(`expandEnvVars(${quote(name)})`);
+}
+
+export async function findWindowByName(name:string) {
+    return parseInt(await evaluateCode(`findWindowByName(${quote(name)})`));
 }
 
 /**
@@ -128,15 +132,15 @@ export interface Size {
     width:number;
     height:number;
 }
-export interface Rect {
+export interface Rectangle {
     top:number;
     left:number;
     bottom:number;
     right:number;
 }
 export interface MonitorInfo {
-    monitor:Rect;
-    work:Rect;
+    monitor:Rectangle;
+    work:Rectangle;
     flags:number;
 }
 export async function deviceScreenResolution() {
@@ -175,7 +179,7 @@ export async function windowClientSize() {
     return await evaluateCode('windowClientSize') as Size;
 }
 export async function windowClientRect() {
-    return await evaluateCode('windowClientRect') as Rect;
+    return await evaluateCode('windowClientRect') as Rectangle;
 }
 export async function windowSetState(state:ShowWindowCommands) {
     return await evalToBool(`windowSetState(${state})`);

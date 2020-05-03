@@ -27,6 +27,7 @@ export declare function desktopInfo(): Promise<DesktopInfo>;
 export declare function openUrl(url: string): Promise<boolean>;
 export declare function open(url: string): Promise<boolean>;
 export declare function expandEnvVars(name: string): Promise<any>;
+export declare function findWindowByName(name: string): Promise<number>;
 /**
  * Get Clipboard Contents as a UTF-8 string
  */
@@ -39,15 +40,15 @@ export interface Size {
     width: number;
     height: number;
 }
-export interface Rect {
+export interface Rectangle {
     top: number;
     left: number;
     bottom: number;
     right: number;
 }
 export interface MonitorInfo {
-    monitor: Rect;
-    work: Rect;
+    monitor: Rectangle;
+    work: Rectangle;
     flags: number;
 }
 export declare function deviceScreenResolution(): Promise<Size>;
@@ -68,7 +69,7 @@ export declare function windowText(): Promise<any>;
 export declare function windowSetText(text: string): Promise<boolean>;
 export declare function windowSize(): Promise<Size>;
 export declare function windowClientSize(): Promise<Size>;
-export declare function windowClientRect(): Promise<Rect>;
+export declare function windowClientRect(): Promise<Rectangle>;
 export declare function windowSetState(state: ShowWindowCommands): Promise<boolean>;
 /**
  * refer to http://pinvoke.net/default.aspx/Enums/ShowWindowCommand.html
