@@ -621,7 +621,7 @@ namespace ServiceStack
                 ? TypeConstants.EmptyStringArray
                 : request.PathInfo.SplitOnLast('.');
 
-            var hasPathContentType = parts.Length > 1 && Host.ContentTypes.KnownFormats.Contains(parts[1]);
+            var hasPathContentType = parts.Length > 1 && ContentTypes.KnownFormats.Contains(parts[1]);
             var pathInfo = hasPathContentType
                 ? parts[0]
                 : request.PathInfo;
@@ -631,7 +631,7 @@ namespace ServiceStack
                 : pathInfo.Split('/');
             
             parts = request.PageName.SplitOnLast('.');
-            var hasPageContentType = pathArgs.Length == 0 && parts.Length > 1 && Host.ContentTypes.KnownFormats.Contains(parts[1]);
+            var hasPageContentType = pathArgs.Length == 0 && parts.Length > 1 && ContentTypes.KnownFormats.Contains(parts[1]);
             var pageName = hasPageContentType
                 ? parts[0]
                 : request.PageName;
