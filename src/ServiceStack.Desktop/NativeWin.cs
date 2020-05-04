@@ -139,9 +139,9 @@ namespace ServiceStack.Desktop
         
         public static void CenterToScreen(this IntPtr hWnd, bool useWorkArea = true)
         {
-            if (GetNearestMonitorInfo(hWnd, out var lpmi))
+            if (GetNearestMonitorInfo(hWnd, out var mi))
             {
-                var rectangle = useWorkArea ? lpmi.WorkArea : lpmi.Monitor;
+                var rectangle = useWorkArea ? mi.WorkArea : mi.Monitor;
                 var num1 = rectangle.Width / 2;
                 var num2 = rectangle.Height / 2;
                 var windowSize = GetWindowSize(hWnd);
@@ -421,16 +421,25 @@ namespace ServiceStack.Desktop
         static void ThrowWin32() => throw new Win32Exception(Marshal.GetLastWin32Error());
     }
     
+    [Flags]
+    public enum WindowPlacementFlags
+    {
+        SETMINPOSITION = 0x0001,
+        RESTORETOMAXIMIZED = 0x0002,
+        ASYNCWINDOWPLACEMENT = 0x0004
+    }
+    
+    [StructLayout(LayoutKind.Sequential)]
     public struct WindowPlacement
     {
-        public int length;
-        public int flags;
-        public int showCmd;
-        public Point ptMinPosition;
-        public Point ptMaxPosition;
-        public Rectangle rcNormalPosition;
+        public uint Size;
+        public WindowPlacementFlags Flags;
+        public ShowWindowCommands ShowCmd;
+        public Point MinPosition;
+        public Point MaxPosition;
+        public Rectangle NormalPosition;
     }
-
+    
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
     public struct MonitorInfo
     {
@@ -900,14 +909,14 @@ namespace ServiceStack.Desktop
         //Window
         [DllImport(LibUser, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GetWindowPlacement(IntPtr hWnd, ref WindowPlacement winpl);
+        public static extern bool GetWindowPlacement(this IntPtr hWnd, ref WindowPlacement winpl);
         
         [DllImport(LibUser)]
-        public static extern IntPtr MonitorFromWindow(IntPtr hWnd, uint dwFlags);
+        public static extern IntPtr MonitorFromWindow(this IntPtr hWnd, uint dwFlags);
         
         [DllImport(LibUser, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool SetWindowPlacement(IntPtr hWnd, [In] ref WindowPlacement winpl);
+        public static extern bool SetWindowPlacement(this IntPtr hWnd, [In] ref WindowPlacement winpl);
         
         [DllImport(LibUser, SetLastError = false)]
         public static extern IntPtr GetDesktopWindow();
@@ -916,10 +925,10 @@ namespace ServiceStack.Desktop
         public static extern bool GetMonitorInfo(IntPtr hMonitor, ref MonitorInfo mi);
         
         [DllImport(LibUser, EntryPoint="GetWindowLong")]
-        public static extern IntPtr GetWindowLong(IntPtr hWnd, int nIndex);
+        public static extern IntPtr GetWindowLong(this IntPtr hWnd, int nIndex);
 
         [DllImport(LibUser, EntryPoint="SetWindowLongPtr")]
-        public static extern IntPtr SetWindowLongPtr64(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+        public static extern IntPtr SetWindowLongPtr64(this IntPtr hWnd, int nIndex, IntPtr dwNewLong);
         
         [DllImport(LibUser)]
         public static extern int GetSystemMetrics(SystemMetric smIndex);
@@ -937,33 +946,33 @@ namespace ServiceStack.Desktop
         public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
 
         [DllImport(LibUser)]
-        public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+        public static extern bool ShowWindow(this IntPtr hWnd, int nCmdShow);
         
         [DllImport(LibUser, SetLastError=true)]
-        public static extern int CloseWindow (IntPtr hWnd);        
+        public static extern int CloseWindow (this IntPtr hWnd);        
         
         [DllImport(LibUser)]
-        public static extern bool DestroyWindow(IntPtr hWnd);        
+        public static extern bool DestroyWindow(this IntPtr hWnd);        
 
         [DllImport(LibUser)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, SetWindowPosFlags uFlags);
+        public static extern bool SetWindowPos(this IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, SetWindowPosFlags uFlags);
 
         [DllImport(LibUser, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GetWindowRect(IntPtr hWnd, out Rectangle lpRect);
+        public static extern bool GetWindowRect(this IntPtr hWnd, out Rectangle lpRect);
         
         [DllImport(LibUser)]
         private static extern IntPtr GetForegroundWindow();
         
         [DllImport(LibUser, SetLastError = true)]
-        public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
+        public static extern bool MoveWindow(this IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
         
         [DllImport(LibUser)]
-        public static extern bool GetClientRect(IntPtr hWnd, out Rectangle lpRect);
+        public static extern bool GetClientRect(this IntPtr hWnd, out Rectangle lpRect);
         
         [DllImport(LibUser)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool ShowScrollBar(IntPtr hWnd, int wBar, [MarshalAs(UnmanagedType.Bool)] bool bShow);
+        public static extern bool ShowScrollBar(this IntPtr hWnd, int wBar, [MarshalAs(UnmanagedType.Bool)] bool bShow);
     }
 }
