@@ -125,13 +125,13 @@ namespace ServiceStack.Script
         public object iif(object test, object ifTrue, object ifFalse) => isTrue(test) ? ifTrue : ifFalse;
         public object when(object returnTarget, object test) => @if(returnTarget, test);     //alias
 
-        public object ifNot(object returnTarget, object test) => !isTrue(test) ? returnTarget : null;
+        public object ifNot(object returnTarget, object test) => !isTrue(test) ? returnTarget : StopExecution.Value;
         public object unless(object returnTarget, object test) => ifNot(returnTarget, test); //alias
 
         public object otherwise(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
 
-        public object ifFalsy(object returnTarget, object test) => isFalsy(test) ? returnTarget : null;
-        public object ifTruthy(object returnTarget, object test) => !isFalsy(test) ? returnTarget : null;
+        public object ifFalsy(object returnTarget, object test) => isFalsy(test) ? returnTarget : StopExecution.Value;
+        public object ifTruthy(object returnTarget, object test) => !isFalsy(test) ? returnTarget : StopExecution.Value;
         public object falsy(object test, object returnIfFalsy) => isFalsy(test) ? returnIfFalsy : null;
         public object truthy(object test, object returnIfTruthy) => !isFalsy(test) ? returnIfTruthy : null;
 
