@@ -149,7 +149,7 @@ namespace ServiceStack.Script
         public object ifExists(object returnTarget, object test) => !isNull(test) ? returnTarget : StopExecution.Value;
         public object ifNotExists(object returnTarget, object test) => isNull(test) ? returnTarget : StopExecution.Value;
         public object ifNo(object returnTarget, object target) => target == null ? returnTarget : StopExecution.Value;
-        public object ifNotEmpty(object target) => isEmpty(target) ? null : target;
+        public object ifNotEmpty(object target) => isEmpty(target) ? StopExecution.Value : target;
         public object ifNotEmpty(object returnTarget, object test) => isEmpty(test) ? StopExecution.Value : returnTarget;
         public object ifEmpty(object returnTarget, object test) => isEmpty(test) ? returnTarget : StopExecution.Value;
         public object ifTrue(object returnTarget, object test) => isTrue(test) ? returnTarget : StopExecution.Value;
