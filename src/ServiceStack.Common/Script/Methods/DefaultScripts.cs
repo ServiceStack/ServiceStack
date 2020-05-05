@@ -146,14 +146,14 @@ namespace ServiceStack.Script
         public bool isInfinity(double value) => double.IsInfinity(value);
 
         public object ifExists(object target) => target;
-        public object ifExists(object returnTarget, object test) => test != null ? returnTarget : null;
-        public object ifNotExists(object returnTarget, object target) => target == null ? returnTarget : null;
-        public object ifNo(object returnTarget, object target) => target == null ? returnTarget : null;
+        public object ifExists(object returnTarget, object test) => !isNull(test) ? returnTarget : StopExecution.Value;
+        public object ifNotExists(object returnTarget, object test) => isNull(test) ? returnTarget : StopExecution.Value;
+        public object ifNo(object returnTarget, object target) => target == null ? returnTarget : StopExecution.Value;
         public object ifNotEmpty(object target) => isEmpty(target) ? null : target;
-        public object ifNotEmpty(object returnTarget, object test) => isEmpty(test) ? null : returnTarget;
-        public object ifEmpty(object returnTarget, object test) => isEmpty(test) ? returnTarget : null;
-        public object ifTrue(object returnTarget, object test) => isTrue(test) ? returnTarget : null;
-        public object ifFalse(object returnTarget, object test) => !isTrue(test) ? returnTarget : null;
+        public object ifNotEmpty(object returnTarget, object test) => isEmpty(test) ? StopExecution.Value : returnTarget;
+        public object ifEmpty(object returnTarget, object test) => isEmpty(test) ? returnTarget : StopExecution.Value;
+        public object ifTrue(object returnTarget, object test) => isTrue(test) ? returnTarget : StopExecution.Value;
+        public object ifFalse(object returnTarget, object test) => !isTrue(test) ? returnTarget : StopExecution.Value;
 
         public bool isEmpty(object target)
         {
