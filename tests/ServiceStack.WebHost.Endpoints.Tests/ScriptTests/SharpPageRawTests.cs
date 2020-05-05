@@ -686,22 +686,22 @@ model.Dictionary['map-key'].Object.AltNested.Field |> lower = 'dictionary altnes
         {
             var context = new ScriptContext().Init();
 
-            Assert.That(new PageResult(context.OneTimePage("{{ 'Not Authenticated' |> unless(auth) |> otherwise('Is Authenticated') }}"))
+            Assert.That(new PageResult(context.OneTimePage("{{ 'Not Authenticated' |> unlessElse(auth, 'Is Authenticated') }}"))
             {
                 Args = {["auth"] = false }
             }.Result, Is.EqualTo("Not Authenticated"));
-            Assert.That(new PageResult(context.OneTimePage("{{ 'Not Authenticated' |> unless(auth) |> otherwise('Is Authenticated') }}"))
+            Assert.That(new PageResult(context.OneTimePage("{{ 'Not Authenticated' |> unlessElse(auth, 'Is Authenticated') }}"))
             {
                 Args = {["auth"] = true }
             }.Result, Is.EqualTo("Is Authenticated"));
             
 
-            Assert.That(new PageResult(context.OneTimePage("{{ 'Is Authenticated' |> if(auth) |> otherwise('Not Authenticated') }}"))
+            Assert.That(new PageResult(context.OneTimePage("{{ 'Is Authenticated' |> ifElse(auth, 'Not Authenticated') }}"))
             {
                 Args = {["auth"] = false }
             }.Result, Is.EqualTo("Not Authenticated"));
             
-            Assert.That(new PageResult(context.OneTimePage("{{ 'Not Authenticated' |> ifNot(auth) |> otherwise('Is Authenticated') }}"))
+            Assert.That(new PageResult(context.OneTimePage("{{ 'Not Authenticated' |> ifNotElse(auth, 'Is Authenticated') }}"))
             {
                 Args = {["auth"] = true }
             }.Result, Is.EqualTo("Is Authenticated"));

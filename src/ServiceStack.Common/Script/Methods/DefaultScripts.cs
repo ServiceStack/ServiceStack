@@ -128,7 +128,11 @@ namespace ServiceStack.Script
         public object ifNot(object returnTarget, object test) => !isTrue(test) ? returnTarget : StopExecution.Value;
         public object unless(object returnTarget, object test) => ifNot(returnTarget, test); //alias
 
-        public object otherwise(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
+        public object otherwise(object returnTarget, object elseReturn) => returnTarget ?? elseReturn;
+        
+        public object ifElse(object returnTarget, object test, object defaultValue) => test is bool b && b ? returnTarget : defaultValue;
+        public object ifNotElse(object returnTarget, object test, object defaultValue) => !isTrue(test) ? returnTarget : defaultValue;
+        public object unlessElse(object returnTarget, object test, object defaultValue) => ifNotElse(returnTarget, test, defaultValue); //alias
 
         public object ifFalsy(object returnTarget, object test) => isFalsy(test) ? returnTarget : StopExecution.Value;
         public object ifTruthy(object returnTarget, object test) => !isFalsy(test) ? returnTarget : StopExecution.Value;
