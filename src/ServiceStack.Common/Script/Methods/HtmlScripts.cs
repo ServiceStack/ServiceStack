@@ -245,7 +245,7 @@ namespace ServiceStack.Script
                         }
                         else
                         {
-                            if (objs.Count > 1 || options.Display != "table")
+                            if (objs.Count > 1 || options.Display == "table")
                             {
                                 var rows = objs.Map(x => x.ToObjectDictionary());
                                 StringBuilderCache.Free(sb);
