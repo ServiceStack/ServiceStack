@@ -889,6 +889,8 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 
         public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
+            httpReq.UseBufferedStream = true;
+
             if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
                 return;
 
@@ -996,6 +998,8 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 
         public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
+            httpReq.UseBufferedStream = true;
+
             if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
                 return;
 

@@ -74,6 +74,9 @@ namespace ServiceStack.Script
             return req(scope).InputStream;
         }
 
+        public string rawBodyAsString(ScriptScopeContext scope) => req(scope).GetRawBody();
+        public object rawBodyAsJson(ScriptScopeContext scope) => JSON.parse(rawBodyAsString(scope));
+
         public async Task<object> requestBodyAsString(ScriptScopeContext scope) => await req(scope).GetRawBodyAsync();
         public async Task<object> requestBodyAsJson(ScriptScopeContext scope) => JSON.parse(await req(scope).GetRawBodyAsync());
         
