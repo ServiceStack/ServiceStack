@@ -2,7 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using ServiceStack.Script;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -64,6 +66,16 @@ namespace ServiceStack.Script
             }
             return StopExecution.Value;
         }
+
+        public Stream requestBody(ScriptScopeContext scope)
+        {
+            var httpReq = req(scope);
+            httpReq.UseBufferedStream = true;
+            return req(scope).InputStream;
+        }
+
+        public async Task<object> requestBodyAsString(ScriptScopeContext scope) => await req(scope).GetRawBodyAsync();
+        public async Task<object> requestBodyAsJson(ScriptScopeContext scope) => JSON.parse(await req(scope).GetRawBodyAsync());
         
         public NameValueCollection form(ScriptScopeContext scope) => req(scope).FormData;
         public NameValueCollection query(ScriptScopeContext scope) => req(scope).QueryString;
