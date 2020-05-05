@@ -169,6 +169,7 @@ namespace ServiceStack
 
         public DefaultScripts Defaults { get; set; } = ViewUtils.DefaultScripts;
         
+        public string Display { get; set; }
         internal int Depth { get; set; }
         internal int ChildDepth { get; set; } = 1;
         internal bool HasCaption { get; set; }
@@ -199,6 +200,9 @@ namespace ServiceStack
                     : null,
                 CaptionIfEmpty = options.TryGetValue("captionIfEmpty", out var captionIfEmpty)
                     ? captionIfEmpty?.ToString()
+                    : null,
+                Display = options.TryGetValue("display", out var display)
+                    ? display?.ToString()
                     : null,
                 Defaults = defaults ?? ViewUtils.DefaultScripts,
             };
