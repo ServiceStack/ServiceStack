@@ -11,7 +11,7 @@ namespace ServiceStack
         public static object parse(string json)
         {
             json.AsSpan().ParseJsToken(out var token);
-            return token.Evaluate(JS.CreateScope());
+            return token?.Evaluate(JS.CreateScope());
         }
 
         public static object parseSpan(ReadOnlySpan<char> json)
