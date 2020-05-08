@@ -67,9 +67,9 @@ namespace ServiceStack.Script
             ExpressionTerminatorChars = e;
 
             var a = new byte['z' + 1];
-            for (var i = (int) '0'; i < a.Length; i++)
+            for (var i = (int) '$'; i < a.Length; i++)
             {
-                if (i >= 'A' && i <= 'Z' || i >= 'a' && i <= 'z' || i >= '0' && i <= '9' || i == '_')
+                if (i >= 'A' && i <= 'Z' || i >= 'a' && i <= 'z' || i >= '0' && i <= '9' || i == '_' || i == '$')
                     a[i] = True;
             }
             ValidVarNameChars = a;
