@@ -144,21 +144,22 @@ namespace ServiceStack.Script
             {
                 var value = objDictionary[key];
                 if (value is string str)
-                {
-                    if (DynamicNumber.TryParse(str, out var numValue))
-                        objDictionary[key] = numValue;
-                    else if (str.StartsWith(DateTimeSerializer.WcfJsonPrefix))
-                        objDictionary[key] = DateTimeSerializer.ParseDateTime(str);
-                    else if (str.EqualsIgnoreCase(bool.TrueString))
-                        objDictionary[key] = true;
-                    else if (str.EqualsIgnoreCase(bool.FalseString))
-                        objDictionary[key] = false;
-                    else if (str == "null")
-                        objDictionary[key] = null;
-                }
+                    objDictionary[key] = coerce(str);
             }
             return objDictionary;
         }
+
+        public object coerce(string str) => DynamicNumber.TryParse(str, out var numValue)
+            ? numValue
+            : str.StartsWith(DateTimeSerializer.WcfJsonPrefix)
+                ? DateTimeSerializer.ParseDateTime(str)
+                : str.EqualsIgnoreCase(bool.TrueString)
+                    ? true
+                    : str.EqualsIgnoreCase(bool.FalseString)
+                        ? false
+                        : str == "null"
+                            ? (object)null
+                            : str;
 
         public string httpMethod(ScriptScopeContext scope) => req(scope)?.Verb;
         public string httpRequestUrl(ScriptScopeContext scope) => req(scope)?.AbsoluteUri;
