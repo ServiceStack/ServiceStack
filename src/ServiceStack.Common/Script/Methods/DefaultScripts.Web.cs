@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.Script;
 using ServiceStack.Text;
+using ServiceStack.Text.Common;
 using ServiceStack.Web;
 
 namespace ServiceStack.Script
@@ -133,6 +134,30 @@ namespace ServiceStack.Script
             else throw new NotSupportedException($"{nameof(toQueryString)} expects a collection of KeyValuePair's but was '{keyValuePairs.GetType().Name}'");
             
             return StringBuilderCache.ReturnAndFree(sb.Length > 0 ? sb.Insert(0,'?') : sb);
+        }
+
+        public Dictionary<string,object> toCoercedDictionary(object target)
+        {
+            var objDictionary = target.ToObjectDictionary();
+            var keys = objDictionary.Keys.ToList();
+            foreach (var key in keys)
+            {
+                var value = objDictionary[key];
+                if (value is string str)
+                {
+                    if (DynamicNumber.TryParse(str, out var numValue))
+                        objDictionary[key] = numValue;
+                    else if (str.StartsWith(DateTimeSerializer.WcfJsonPrefix))
+                        objDictionary[key] = DateTimeSerializer.ParseDateTime(str);
+                    else if (str.EqualsIgnoreCase(bool.TrueString))
+                        objDictionary[key] = true;
+                    else if (str.EqualsIgnoreCase(bool.FalseString))
+                        objDictionary[key] = false;
+                    else if (str == "null")
+                        objDictionary[key] = null;
+                }
+            }
+            return objDictionary;
         }
 
         public string httpMethod(ScriptScopeContext scope) => req(scope)?.Verb;
