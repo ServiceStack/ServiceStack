@@ -232,7 +232,6 @@ namespace ServiceStack.Auth
                 var returnUrl = Request.GetReturnUrl();
                 var referrerUrl = returnUrl
                     ?? session.ReferrerUrl
-                    ?? base.Request.GetQueryStringOrForm(Keywords.ReturnUrl)
                     ?? this.Request.GetHeader(HttpHeaders.Referer)
                     ?? authProvider.CallbackUrl;
 

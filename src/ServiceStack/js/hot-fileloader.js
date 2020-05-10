@@ -25,9 +25,10 @@ var __qs = (function (qs) {
                 if (res.status !== 404 && res.status !== 405) setTimeout(shouldReload, 1000)
             } else {
                 res.json().then(function(r){
-                    if (!__lastFileEtag) {
+                    if (r.eTag) {
                         __lastFileEtag = r.eTag
-                    } else if (r.reload) {
+                    }
+                    if (r.reload) {
                         var scroll = (document.documentElement.scrollTop || document.body.scrollTop);
                         if (location.href.indexOf('#') >= 0)
                             location.reload();

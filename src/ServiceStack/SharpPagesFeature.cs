@@ -529,6 +529,7 @@ namespace ServiceStack
     public class HotReloadPageResponse
     {
         public string ETag { get; set; }
+        public string LastUpdatedPath { get; set; }
         public bool Reload { get; set; }
         public ResponseStatus ResponseStatus { get; set; }
     }

@@ -59,9 +59,13 @@ namespace ServiceStack
         public async Task<HotReloadPageResponse> Any(HotReloadFiles request)
         {
             var vfs = UseVirtualFiles ?? VirtualFileSources;
+            // Remove embedded ResourceVirtualFiles from scan list
+            if (vfs is MultiVirtualFiles multiVfs)
+                vfs = new MultiVirtualFiles(multiVfs.ChildProviders.Where(x => !(x is ResourceVirtualFiles)).ToArray());
 
             var startedAt = DateTime.UtcNow;
             var maxLastModified = DateTime.MinValue;
+            IVirtualFile maxLastFile = null;
             var shouldReload = false;
 
             while (DateTime.UtcNow - startedAt < LongPollDuration)
@@ -74,7 +78,7 @@ namespace ServiceStack
                 
                 foreach (var pattern in patterns)
                 {
-                    var files = vfs.GetAllMatchingFiles(pattern.Trim());
+                    var files = vfs.GetAllMatchingFiles(pattern.Trim()).ToList();
                     foreach (var file in files)
                     {
                         if (ExcludePatterns.Any(exclude => file.Name.Glob(exclude)))
@@ -82,7 +86,10 @@ namespace ServiceStack
                     
                         file.Refresh();
                         if (file.LastModified > maxLastModified)
+                        {
                             maxLastModified = file.LastModified;
+                            maxLastFile = file;
+                        }
                     }
                 }
 
@@ -92,14 +99,23 @@ namespace ServiceStack
                 shouldReload = maxLastModified != DateTime.MinValue && maxLastModified.Ticks > long.Parse(request.ETag);
                 if (shouldReload)
                 {
-                    await Task.Delay(ModifiedDelay);
+                    var modifiedAfterStart = maxLastModified > startedAt;
+                    var delayDiff = modifiedAfterStart
+                        ? maxLastModified - startedAt
+                        : startedAt - maxLastModified;
+                    Console.WriteLine($@"modifiedAfterStart:{modifiedAfterStart}, delayDiff:{delayDiff.TotalMilliseconds}, maxLastModified:{maxLastModified.Ticks}, etag:{request.ETag}");
+                        await Task.Delay(ModifiedDelay);
                     break;
                 }
 
                 await Task.Delay(CheckDelay);
             }
 
-            return new HotReloadPageResponse { Reload = shouldReload, ETag = maxLastModified.Ticks.ToString() };
+            return new HotReloadPageResponse {
+                Reload = shouldReload, 
+                ETag = maxLastModified.Ticks.ToString(),
+                LastUpdatedPath = maxLastFile?.VirtualPath,
+            };
         }
     }
 }
