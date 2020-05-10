@@ -1618,7 +1618,7 @@ namespace ServiceStack.Script
     public partial class DefaultScripts //Methods named after common keywords breaks intelli-sense when trying to use them        
     {
         public object @if(object test) => test is bool b && b ? (object) IgnoreResult.Value : StopExecution.Value;
-        public object @if(object returnTarget, object test) => test is bool b && b ? returnTarget : null;
+        public object @if(object returnTarget, object test) => test is bool b && b ? returnTarget : StopExecution.Value;
         public object @default(object returnTarget, object elseReturn) => returnTarget ?? elseReturn;
 
         public object @throw(ScriptScopeContext scope, string message) => new Exception(message).InStopFilter(scope, null);
