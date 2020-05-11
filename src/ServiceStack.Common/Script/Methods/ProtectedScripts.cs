@@ -213,7 +213,6 @@ namespace ServiceStack.Script
             return type;
         }
 
-
         /// <summary>
         /// Returns Type from type name syntax of .NET's typeof() 
         /// </summary>
@@ -373,6 +372,8 @@ namespace ServiceStack.Script
 
             return resolvedType;
         }
+        
+        public Type typeofProgId(string name) => Type.GetTypeFromProgID(name);
 
         public object call(object instance, string name) => call(instance, name, null);
 
