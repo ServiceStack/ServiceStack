@@ -53,6 +53,8 @@ namespace ServiceStack
     {
         public string Id { get; set; } = ServiceStack.Plugins.SharpPages;
         public bool? EnableHotReload { get; set; }
+        
+        public bool? EnableSpaFallback { get; set; }
 
         public bool DisablePageBasedRouting { get; set; }
 
@@ -136,6 +138,11 @@ namespace ServiceStack
                 {
                     appHost.RegisterService(typeof(HotReloadFilesService));
                 }
+            }
+
+            if (EnableSpaFallback.GetValueOrDefault())
+            {
+                appHost.RegisterService(typeof(SpaFallbackService));
             }
             
             if (!string.IsNullOrEmpty(ApiPath))
@@ -517,6 +524,21 @@ namespace ServiceStack
             return true;
         }
     }
+
+    [FallbackRoute("/{PathInfo*}", Matches="AcceptsHtml"), ExcludeMetadata]
+    public class SpaFallback : IReturn<string>
+    {
+        public string PathInfo { get; set; }
+    }
+
+    [DefaultRequest(typeof(SpaFallback))]
+    [Restrict(VisibilityTo = RequestAttributes.None)]
+    public class SpaFallbackService : Service
+    {
+        //Return index.html for unmatched requests so routing is handled on client
+        public object Any(SpaFallback request) => Request.GetPageResult("/");
+    }
+
 
     [ExcludeMetadata]
     [Route("/hotreload/page")]

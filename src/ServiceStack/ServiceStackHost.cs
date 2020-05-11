@@ -171,6 +171,7 @@ namespace ServiceStack
                 typeof(PostmanService),
                 typeof(HotReloadPageService),
                 typeof(HotReloadFilesService),
+                typeof(SpaFallbackService),
                 typeof(SharpApiService),
                 typeof(MetadataDebugService),
                 typeof(ServerEventsSubscribersService),
