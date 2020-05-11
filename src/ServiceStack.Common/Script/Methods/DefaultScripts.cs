@@ -652,6 +652,15 @@ namespace ServiceStack.Script
             return true;
         }
 
+        public object resolveArg(ScriptScopeContext scope, string name) => scope.GetValue(name);
+        public object resolveGlobal(ScriptScopeContext scope, string name) => resolvePageArg(scope, name);
+        public object resolvePageArg(ScriptScopeContext scope, string name) => scope.PageResult.Args.TryGetValue(name, out var value)
+            ? value
+            : null;
+        public object resolveContextArg(ScriptScopeContext scope, string name) => scope.Context.Args.TryGetValue(name, out var value)
+            ? value
+            : null;
+        
         public object assign(ScriptScopeContext scope, string argExpr, object value) =>
             assignArgs(scope, argExpr, value, scope.ScopedParams);
 
