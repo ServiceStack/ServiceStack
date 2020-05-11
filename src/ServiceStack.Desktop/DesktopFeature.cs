@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
+using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Script;
 using ServiceStack.Text;
@@ -13,13 +16,16 @@ namespace ServiceStack.Desktop
     {
         public string Id { get; set; } = Plugins.Desktop;
         public string AccessRole { get; set; } = RoleNames.Admin;
-
         public List<string> ImportParams { get; } = new List<string>();
         public List<ProxyConfig> ProxyConfigs { get; set; } = new List<ProxyConfig>();
 
+        public string AppName { get; set; }
         public Dictionary<Type, string[]> ServiceRoutes { get; set; } = new Dictionary<Type, string[]> {
             { typeof(DesktopScriptServices), new []{ "/script" } },
+            { typeof(DesktopFileService), new []{ DesktopFileRoute } },
         };
+
+        public static string DesktopFileRoute = "/desktop/files/{File}";
 
         public void BeforePluginsLoaded(IAppHost appHost)
         {
@@ -42,9 +48,81 @@ namespace ServiceStack.Desktop
         
         public void Register(IAppHost appHost)
         {
+            if (AppName == null)
+                ServiceRoutes.Remove(typeof(DesktopFileService));
+            else
+                DesktopConfig.Instance.AppName = AppName;
+            
             appHost.RegisterServices(ServiceRoutes);
             DesktopConfig.Instance.ImportParams.AddRange(ImportParams);
             DesktopConfig.Instance.ProxyConfigs.AddRange(ProxyConfigs);
+        }
+    }
+
+    public class DesktopFile : IRequiresRequestStream, IReturn<string>
+    {
+        public string File { get; set; }
+        public Stream RequestStream { get; set; }
+    }
+
+    public class DesktopFileService : Service
+    {
+        public async Task Get(DesktopFile request)
+        {
+            AssertFile(request.File);
+
+            var appSettingsDir= GetDesktopAppSettingsDirectory();
+            var filePath = Path.Combine(appSettingsDir, request.File);
+            using var fs = new FileInfo(filePath).OpenRead();
+            Response.ContentType = MimeTypes.GetMimeType(filePath);
+            await Response.EndRequestAsync(afterHeaders: async res => {
+                await fs.CopyToAsync(Response.OutputStream);
+            });
+        }
+        
+        public async Task Post(DesktopFile request)
+        {
+            AssertFile(request.File);
+            
+            var appSettingsDir= GetDesktopAppSettingsDirectory();
+            FileSystemVirtualFiles.AssertDirectory(appSettingsDir);
+
+            var filePath = Path.Combine(appSettingsDir, request.File);
+            var tmpFilePath = Path.Combine(appSettingsDir, request.File + ".tmp");
+            try { File.Delete(tmpFilePath); } catch {}
+            using (var fs = new FileInfo(tmpFilePath).Open(FileMode.OpenOrCreate))
+            {
+                await request.RequestStream.CopyToAsync(fs);
+            }
+            File.Move(tmpFilePath, filePath);
+        }
+
+        public void Delete(DesktopFile request)
+        {
+            AssertFile(request.File);
+
+            var appSettingsDir= GetDesktopAppSettingsDirectory();
+            var filePath = Path.Combine(appSettingsDir, request.File);
+            try { File.Delete(filePath); } catch {}
+        }
+
+        private static void AssertFile(string file)
+        {
+            if (string.IsNullOrEmpty(file))
+                throw new ArgumentNullException(nameof(DesktopFile.File));
+            if (file.IndexOf("..", StringComparison.Ordinal) >= 0)
+                throw new NotSupportedException("Invalid File Name");
+        }
+        
+        private string GetDesktopAppSettingsDirectory()
+        {
+            var appName = DesktopConfig.Instance.AppName;
+            if (string.IsNullOrEmpty(appName))
+                throw new NotSupportedException("DesktopConfig.Instance.AppName is required");
+            
+            var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            var appSettingsPath = Path.Combine(homeDir, ".servicestack", "desktop", appName);
+            return appSettingsPath;
         }
     }
 
