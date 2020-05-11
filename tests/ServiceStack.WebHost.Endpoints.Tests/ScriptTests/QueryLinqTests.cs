@@ -246,7 +246,7 @@ Uppercase: CHERRY, Lowercase: cherry
             Assert.That(context.EvaluateScript(@"
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] |> assignTo: numbers }}
 {{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] |> assignTo: strings }}
-{{ numbers |> select: The digit { strings[it] } is { 'even' |> if (isEven(it)) |> otherwise('odd') }.\n }}
+{{ numbers |> select: The digit { strings[it] } is { it.isEven() ? 'even' : 'odd' }.\n }}
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
@@ -1505,7 +1505,7 @@ Second number > 5: 8
         { 
             Assert.That(context.EvaluateScript(@"
 {{ range(100,50)
-   |> select: The number {it} is { 'even' |> if(isEven(it)) |> otherwise('odd') }.\n }} 
+   |> select: The number {it} is { it.isEven() ? 'even' : 'odd' }.\n }} 
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
