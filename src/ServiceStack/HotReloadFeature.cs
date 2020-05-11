@@ -46,7 +46,8 @@ namespace ServiceStack
         public static List<string> ExcludePatterns { get; } = new List<string> {
             "*.sqlite",
             "*.db",
-            "*.ts", //watch on generated .js instead
+            "*.cs",  //monitored by dotnet watch
+            "*.ts",  //watch on generated .js instead
             "*.log", //exclude log files
             "*.csv",
         };
