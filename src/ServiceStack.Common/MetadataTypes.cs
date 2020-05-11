@@ -179,6 +179,7 @@ namespace ServiceStack
         public string ScriptAdminRole { get; set; }
         public string MetadataDebugAdminRole { get; set; }
         public bool? MetadataDebug { get; set; }
+        public bool? SpaFallback { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
 

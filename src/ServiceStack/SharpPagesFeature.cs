@@ -164,6 +164,7 @@ namespace ServiceStack
             appHost.AddToAppMetadata(meta => {
                 meta.Plugins.SharpPages = new SharpPagesInfo {
                     ApiPath = ApiPath,
+                    SpaFallback = EnableSpaFallback,
                     ScriptAdminRole = ScriptAdminRole,
                     MetadataDebugAdminRole = MetadataDebugAdminRole,
                     MetadataDebug = enableMetadataDebug,
