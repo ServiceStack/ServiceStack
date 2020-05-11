@@ -71,6 +71,7 @@ export declare function windowSize(): Promise<Size>;
 export declare function windowClientSize(): Promise<Size>;
 export declare function windowClientRect(): Promise<Rectangle>;
 export declare function windowSetState(state: ShowWindowCommands): Promise<boolean>;
+export declare function knownFolder(folder: KnownFolders): Promise<string>;
 /**
  * refer to http://pinvoke.net/default.aspx/Enums/ShowWindowCommand.html
  */
@@ -230,6 +231,19 @@ export declare enum MessageBoxReturn {
     Retry = 4,
     TryAgain = 10,
     Yes = 6
+}
+export declare enum KnownFolders {
+    Contacts = "Contacts",
+    Desktop = "Desktop",
+    Documents = "Documents",
+    Downloads = "Downloads",
+    Favorites = "Favorites",
+    Links = "Links",
+    Music = "Music",
+    Pictures = "Pictures",
+    SavedGames = "SavedGames",
+    SavedSearches = "SavedSearches",
+    Videos = "Videos"
 }
 /**
  * Refer to Win32 API

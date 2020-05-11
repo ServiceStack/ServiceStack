@@ -46,6 +46,8 @@ namespace ServiceStack.Desktop
             DoWindow(scope, w => NativeWin.MessageBox(0, text, caption, type));
         public string expandEnvVars(ScriptScopeContext scope, string path) => 
             DoWindow(scope, w => NativeWin.ExpandEnvVars(path));
+        public string knownFolder(ScriptScopeContext scope, string folderName) => 
+            DoWindow(scope, w => KnownFolders.GetPath(folderName));
 
         public Dictionary<string, object> primaryMonitorInfo(ScriptScopeContext scope) =>
             DoWindow(scope, w => w.GetPrimaryMonitorInfo(out var mi) ? NativeWin.ToObject(mi) : null);
