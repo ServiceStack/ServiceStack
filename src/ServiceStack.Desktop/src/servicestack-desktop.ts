@@ -185,6 +185,10 @@ export async function windowSetState(state:ShowWindowCommands) {
     return await evalToBool(`windowSetState(${state})`);
 }
 
+export async function knownFolder(folder:KnownFolders) {
+    return await evaluateCode(`knownFolder(${quote(folder)})`) as string;
+}
+
 /**
  * refer to http://pinvoke.net/default.aspx/Enums/ShowWindowCommand.html
  */
@@ -352,6 +356,20 @@ export enum MessageBoxReturn {
     Retry = 4,
     TryAgain = 10,
     Yes = 6,
+}
+
+export enum KnownFolders {
+    Contacts = 'Contacts',
+    Desktop = 'Desktop',
+    Documents = 'Documents',
+    Downloads = 'Downloads',
+    Favorites = 'Favorites',
+    Links = 'Links',
+    Music = 'Music',
+    Pictures = 'Pictures',
+    SavedGames = 'SavedGames',
+    SavedSearches = 'SavedSearches',
+    Videos = 'Videos',
 }
 
 /**
