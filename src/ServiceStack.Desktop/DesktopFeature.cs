@@ -23,10 +23,13 @@ namespace ServiceStack.Desktop
         public string AppName { get; set; }
         public Dictionary<Type, string[]> ServiceRoutes { get; set; } = new Dictionary<Type, string[]> {
             { typeof(DesktopScriptServices), new []{ "/script" } },
-            { typeof(DesktopFileService), new []{ DesktopFileRoute } },
+            { typeof(DesktopFileService), DesktopFileRoutes },
         };
 
-        public static string DesktopFileRoute = "/desktop/files/{File*}";
+        public static string[] DesktopFileRoutes = {
+            "/desktop/files/{File*}",
+            "/desktop/downloads/{File*}",
+        };
 
         public void BeforePluginsLoaded(IAppHost appHost)
         {
@@ -73,7 +76,7 @@ namespace ServiceStack.Desktop
         {
             AssertFile(request.File);
 
-            var appSettingsDir= GetDesktopAppSettingsDirectory();
+            var appSettingsDir= GetDesktopFilesDirectory();
             var filePath = Path.Combine(appSettingsDir, request.File);
             using var fs = new FileInfo(filePath).OpenRead();
             if (fs == null)
@@ -90,7 +93,7 @@ namespace ServiceStack.Desktop
         {
             AssertFile(request.File);
             
-            var appSettingsDir= GetDesktopAppSettingsDirectory();
+            var appSettingsDir= GetDesktopFilesDirectory();
             FileSystemVirtualFiles.AssertDirectory(appSettingsDir);
 
             var filePath = Path.Combine(appSettingsDir, request.File);
@@ -108,7 +111,7 @@ namespace ServiceStack.Desktop
         {
             AssertFile(request.File);
 
-            var appSettingsDir= GetDesktopAppSettingsDirectory();
+            var appSettingsDir= GetDesktopFilesDirectory();
             var filePath = Path.Combine(appSettingsDir, request.File);
             try { File.Delete(filePath); } catch {}
         }
@@ -121,8 +124,11 @@ namespace ServiceStack.Desktop
                 throw new NotSupportedException("Invalid File Name");
         }
         
-        private string GetDesktopAppSettingsDirectory()
+        private string GetDesktopFilesDirectory()
         {
+            if (Request.PathInfo.StartsWith("/desktop/downloads/"))
+                return KnownFolders.GetPath(KnownFolders.Downloads);
+            
             var appName = DesktopConfig.Instance.AppName;
             if (string.IsNullOrEmpty(appName))
                 throw new NotSupportedException("DesktopConfig.Instance.AppName is required");

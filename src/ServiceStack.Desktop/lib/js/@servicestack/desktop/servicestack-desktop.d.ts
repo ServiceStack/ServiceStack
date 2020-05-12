@@ -74,6 +74,8 @@ export declare function windowSetState(state: ShowWindowCommands): Promise<boole
 export declare function knownFolder(folder: KnownFolders): Promise<string>;
 export declare function desktopTextFile(fileName: string): Promise<string>;
 export declare function saveDesktopTextFile(fileName: string, body: string): Promise<string>;
+export declare function desktopDownloadsTextFile(fileName: string): Promise<string>;
+export declare function saveDesktopDownloadsTextFile(fileName: string, body: string): Promise<string>;
 /**
  * refer to http://pinvoke.net/default.aspx/Enums/ShowWindowCommand.html
  */

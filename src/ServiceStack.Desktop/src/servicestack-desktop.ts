@@ -189,21 +189,15 @@ export async function knownFolder(folder:KnownFolders) {
     return await evaluateCode(`knownFolder(${quote(folder)})`) as string;
 }
 
-export async function desktopTextFile(fileName:string) {
-    try {
-        const r = await fetch(`/desktop/files/${fileName}`);
-        if (!r.ok)
-            throw `${r.status} ${r.statusText}`;
-        const contents = await r.text();
-        return contents;
-    } catch (e) {
-        throw e;
-    }
+async function desktopFolderTextFile(folder:string,fileName:string) {
+    const r = await fetch(`/desktop/${folder}/${fileName}`);
+    if (!r.ok)
+        throw `${r.status} ${r.statusText}`;
+    return await r.text();
 }
-
-export async function saveDesktopTextFile(fileName:string,body:string) {
+async function saveDesktopFolderTextFile(folder:string,fileName:string,body:string) {
     try {
-        const r = await fetch(`/desktop/files/${fileName}`, {
+        const r = await fetch(`/desktop/${folder}/${fileName}`, {
             method: "POST",
             body
         });
@@ -214,6 +208,19 @@ export async function saveDesktopTextFile(fileName:string,body:string) {
     } catch (e) {
         throw e;
     }
+}
+
+export async function desktopTextFile(fileName:string) {
+    return await desktopFolderTextFile('files',fileName);
+}
+export async function saveDesktopTextFile(fileName:string,body:string) {
+    return await saveDesktopFolderTextFile('files',fileName,body);
+}
+export async function desktopDownloadsTextFile(fileName:string) {
+    return await desktopFolderTextFile('downloads',fileName);
+}
+export async function saveDesktopDownloadsTextFile(fileName:string,body:string) {
+    return await saveDesktopFolderTextFile('downloads',fileName,body);
 }
 
 /**
