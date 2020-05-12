@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Threading.Tasks;
+using Microsoft.Win32.SafeHandles;
 using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
 using ServiceStack.IO;
@@ -24,11 +27,16 @@ namespace ServiceStack.Desktop
         public Dictionary<Type, string[]> ServiceRoutes { get; set; } = new Dictionary<Type, string[]> {
             { typeof(DesktopScriptServices), new []{ "/script" } },
             { typeof(DesktopFileService), DesktopFileRoutes },
+            { typeof(DesktopDownloadUrlService), DesktopDownloadUrlRoutes }
         };
 
         public static string[] DesktopFileRoutes = {
             "/desktop/files/{File*}",
             "/desktop/downloads/{File*}",
+        };
+
+        public static string[] DesktopDownloadUrlRoutes = {
+            "/desktop/downloads/{File}/url/{Url*}",
         };
 
         public void BeforePluginsLoaded(IAppHost appHost)
@@ -53,9 +61,13 @@ namespace ServiceStack.Desktop
         public void Register(IAppHost appHost)
         {
             if (AppName == null)
+            {
                 ServiceRoutes.Remove(typeof(DesktopFileService));
+            }
             else
+            {
                 DesktopConfig.Instance.AppName = AppName;
+            }
             
             appHost.RegisterServices(ServiceRoutes);
             DesktopConfig.Instance.ImportParams.AddRange(ImportParams);
@@ -115,12 +127,12 @@ namespace ServiceStack.Desktop
             var filePath = Path.Combine(appSettingsDir, request.File);
             try { File.Delete(filePath); } catch {}
         }
-
-        private static void AssertFile(string file)
+        
+        public static void AssertFile(string file)
         {
             if (string.IsNullOrEmpty(file))
                 throw new ArgumentNullException(nameof(DesktopFile.File));
-            if (file.IndexOf("..", StringComparison.Ordinal) >= 0)
+            if (file.IndexOf("..", StringComparison.Ordinal) >= 0 || file.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
                 throw new NotSupportedException("Invalid File Name");
         }
         
@@ -136,6 +148,59 @@ namespace ServiceStack.Desktop
             var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             var appSettingsPath = Path.Combine(homeDir, ".servicestack", "desktop", appName);
             return appSettingsPath;
+        }
+    }
+
+    public class DesktopDownloadUrl : IRequiresRequestStream, IReturnVoid
+    {
+        public string File { get; set; }
+        public string Url { get; set; }
+        public bool Open { get; set; }
+        public string Start { get; set; }
+        public Stream RequestStream { get; set; }
+    }
+
+    [DefaultRequest(typeof(DesktopDownloadUrl)), ExcludeMetadata]
+    public class DesktopDownloadUrlService : Service
+    {
+        public async Task Any(DesktopDownloadUrl request)
+        {
+            DesktopFileService.AssertFile(request.File);
+
+            var url = request.Url.IndexOf("://", StringComparison.Ordinal) >= 0
+                ? request.Url.UrlDecode()
+                : Request.GetBaseUrl().CombineWith(request.Url.UrlDecode());
+            var webReq = (HttpWebRequest) WebRequest.Create(url);
+            var httpReq = (IHttpRequest) base.Request;
+            ProxyFeatureHandler.InitWebRequest(httpReq, webReq);
+            if (httpReq.ContentLength > 0)
+            {
+                using (request.RequestStream)
+                using (var requestStream = await webReq.GetRequestStreamAsync())
+                {
+                    await request.RequestStream.WriteToAsync(requestStream);
+                }
+            }
+            var downloadFile = Path.Combine(KnownFolders.GetPath(KnownFolders.Downloads), request.File);
+            try { File.Delete(downloadFile); } catch {}
+
+            using (var webRes = await webReq.GetResponseAsync())
+            using (var resStream = webRes.ResponseStream())
+            using (var fs = new FileInfo(downloadFile).Open(FileMode.OpenOrCreate))
+            {
+                await resStream.CopyToAsync(fs);
+            }
+            await Response.EndRequestAsync();
+
+            if (request.Open)
+            {
+                var p = new Process {
+                    StartInfo = request.Start != null 
+                        ? new ProcessStartInfo(request.Start, downloadFile) { UseShellExecute = true }
+                        : new ProcessStartInfo(downloadFile) { UseShellExecute = true }
+                };
+                p.Start();
+            }
         }
     }
 

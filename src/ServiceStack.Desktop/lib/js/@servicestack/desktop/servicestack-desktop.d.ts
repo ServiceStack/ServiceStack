@@ -4,6 +4,7 @@ export declare function invokeHostJsonMethod(target: string, args: {
 export declare function invokeHostTextMethod(target: string, args: {
     [id: string]: any;
 }): Promise<string>;
+export declare function combinePaths(...paths: string[]): string;
 export declare function evaluateScript(scriptSrc: string): Promise<any>;
 export declare function evaluateCode(scriptSrc: string): Promise<any>;
 export declare function evaluateLisp(scriptSrc: string): Promise<any>;
@@ -25,7 +26,7 @@ export declare function evalToBool(scriptSrc: string): Promise<boolean>;
 export declare function evalToBoolAsync(scriptSrc: string): Promise<boolean>;
 export declare function desktopInfo(): Promise<DesktopInfo>;
 export declare function openUrl(url: string): Promise<boolean>;
-export declare function open(url: string): Promise<boolean>;
+export declare function start(url: string): Promise<boolean>;
 export declare function expandEnvVars(name: string): Promise<any>;
 export declare function findWindowByName(name: string): Promise<number>;
 /**
@@ -73,9 +74,10 @@ export declare function windowClientRect(): Promise<Rectangle>;
 export declare function windowSetState(state: ShowWindowCommands): Promise<boolean>;
 export declare function knownFolder(folder: KnownFolders): Promise<string>;
 export declare function desktopTextFile(fileName: string): Promise<string>;
-export declare function saveDesktopTextFile(fileName: string, body: string): Promise<string>;
+export declare function desktopSaveTextFile(fileName: string, body: string): Promise<string>;
 export declare function desktopDownloadsTextFile(fileName: string): Promise<string>;
-export declare function saveDesktopDownloadsTextFile(fileName: string, body: string): Promise<string>;
+export declare function desktopSaveDownloadsTextFile(fileName: string, body: string): Promise<string>;
+export declare function desktopSaveDownloadUrl(fileName: string, url: string): string;
 /**
  * refer to http://pinvoke.net/default.aspx/Enums/ShowWindowCommand.html
  */

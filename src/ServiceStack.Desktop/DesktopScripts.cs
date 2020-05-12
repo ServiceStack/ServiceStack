@@ -30,7 +30,7 @@ namespace ServiceStack.Desktop
 
         public bool openUrl(ScriptScopeContext scope, string url) =>
             DoWindow(scope, w => NativeWin.Open(new Uri(url).ToString()));
-        public bool open(ScriptScopeContext scope, string cmd) =>
+        public bool start(ScriptScopeContext scope, string cmd) =>
             DoWindow(scope, w => NativeWin.Open(cmd));
         public Dictionary<string, string> desktopInfo(ScriptScopeContext scope) => 
             DoWindow(scope, w => NativeWin.GetDesktopInfo());

@@ -35,6 +35,25 @@ export async function invokeHostTextMethod(target:string, args:{[id:string]:any}
     }
 }
 
+export function combinePaths(...paths: string[]): string {
+    let parts = [], i, l;
+    for (i = 0, l = paths.length; i < l; i++) {
+        const arg = paths[i];
+        parts = arg.indexOf("://") === -1
+            ? parts.concat(arg.split("/"))
+            : parts.concat(arg.lastIndexOf("/") === arg.length - 1 ? arg.substring(0, arg.length - 1) : arg);
+    }
+    const combinedPaths = [];
+    for (i = 0, l = parts.length; i < l; i++) {
+        const part = parts[i];
+        if (!part || part === ".") continue;
+        if (part === "..") combinedPaths.pop();
+        else combinedPaths.push(part);
+    }
+    if (parts[0] === "") combinedPaths.unshift("");
+    return combinedPaths.join("/") || (combinedPaths.length ? "/" : ".");
+}
+
 export async function evaluateScript(scriptSrc:string) {
     return await invokeHostJsonMethod('script', { 'EvaluateScript':scriptSrc });
 }
@@ -106,7 +125,7 @@ export async function desktopInfo() { return (await evaluateCode('desktopInfo'))
 
 export async function openUrl(url:string) { return (await evalToBool(`openUrl(${quote(url)})`)); }
 
-export async function open(url:string) { return (await evalToBool(`open(${quote(url)})`)); }
+export async function start(url:string) { return (await evalToBool(`start(${quote(url)})`)); }
 
 export async function expandEnvVars(name:string) {
     return await evaluateCode(`expandEnvVars(${quote(name)})`);
@@ -195,7 +214,7 @@ async function desktopFolderTextFile(folder:string,fileName:string) {
         throw `${r.status} ${r.statusText}`;
     return await r.text();
 }
-async function saveDesktopFolderTextFile(folder:string,fileName:string,body:string) {
+async function desktopSaveFolderTextFile(folder:string,fileName:string,body:string) {
     try {
         const r = await fetch(`/desktop/${folder}/${fileName}`, {
             method: "POST",
@@ -213,15 +232,19 @@ async function saveDesktopFolderTextFile(folder:string,fileName:string,body:stri
 export async function desktopTextFile(fileName:string) {
     return await desktopFolderTextFile('files',fileName);
 }
-export async function saveDesktopTextFile(fileName:string,body:string) {
-    return await saveDesktopFolderTextFile('files',fileName,body);
+export async function desktopSaveTextFile(fileName:string,body:string) {
+    return await desktopSaveFolderTextFile('files',fileName,body);
 }
 export async function desktopDownloadsTextFile(fileName:string) {
     return await desktopFolderTextFile('downloads',fileName);
 }
-export async function saveDesktopDownloadsTextFile(fileName:string,body:string) {
-    return await saveDesktopFolderTextFile('downloads',fileName,body);
+export async function desktopSaveDownloadsTextFile(fileName:string,body:string) {
+    return await desktopSaveFolderTextFile('downloads',fileName,body);
 }
+export function desktopSaveDownloadUrl(fileName:string, url:string) {
+    return combinePaths('/desktop/downloads', encodeURIComponent(fileName), 'url', encodeURIComponent(url));
+}
+
 
 /**
  * refer to http://pinvoke.net/default.aspx/Enums/ShowWindowCommand.html
