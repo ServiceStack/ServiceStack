@@ -988,6 +988,11 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                             if (response != null)
                             {
                                 var httpResult = SharpApiService.ToHttpResult(pageResult, response);
+                                if (httpReq.ResponseContentType == MimeTypes.Csv)
+                                {
+                                    var fileName = httpReq.OperationName + ".csv";
+                                    httpRes.AddHeader(HttpHeaders.ContentDisposition, $"attachment;{HttpExt.GetDispositionFileName(fileName)}");
+                                }
                                 await httpRes.WriteToResponse(httpReq, httpResult);
                             }
                             return;
