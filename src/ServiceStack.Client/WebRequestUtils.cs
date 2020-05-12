@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using ServiceStack.Text;
@@ -318,5 +319,37 @@ namespace ServiceStack
             var statusGetter = TypeProperties.Get(response.GetType()).GetPublicGetter(nameof(ResponseStatus));
             return statusGetter?.Invoke(response) as ResponseStatus;
         }
+        
+        public static HttpWebRequest InitWebRequest(string url, string method="GET", Dictionary<string,string> headers=null)
+        {
+            var webReq = (HttpWebRequest) WebRequest.Create(url);
+            if (method != null)
+                webReq.Method = method;
+            if (headers != null)
+            {
+                foreach (var key in headers.Keys)
+                {
+                    var keyLower = key.ToLower();
+                    var value = headers[key];
+                    switch (keyLower)
+                    {
+                        case "content-type":
+                            webReq.ContentType = value;
+                            break;
+                        case "user-agent":
+                            webReq.UserAgent = value;
+                            break;
+                        case "accept":
+                            webReq.Accept = value;
+                            break;
+                        default:
+                            webReq.Headers[key] = value;
+                            break;
+                    }
+                }
+            }
+            return webReq;
+        }
+        
     }
 }
