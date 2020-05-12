@@ -6,6 +6,7 @@
 .btn-social.btn-sm .fab, .btn-social-icon.btn-sm .fab {width:30px; height:30px; background-size:24px 24px; background-position:2px 2px; background-repeat:no-repeat}
 .btn-social.btn-xs .fab, .btn-social-icon.btn-xs .fab {width:24px; height:24px; background-size:20px 20px; background-position:2px 2px; background-repeat:no-repeat}
 .btn-social-icon.btn-xs .fab {background-position:0px 0px}
+.svg-btn,.svg-btn-icon { background-repeat:no-repeat;cursor:pointer;user-select:none; }
 .svg-xs, .svg-sm, .svg-md, .svg-lg, .svg-2x, .svg-3x, .svg-4x, .svg-5x, .svg-6x, .svg-7x, .svg-8x, .svg-9x, .svg-10x, .svg-11x, .svg-12x, .svg-13x, .svg-14x {
 background-position:0;background-repeat:no-repeat;display: inline-block;background-size: contain;vertical-align: middle;}
 .svg-xs {width:12px;height:12px}.svg-sm {width:14px;height:14px}.svg-md {width:18px;height:18px}.svg-lg {width:24px;height:24px}.svg-2x {width:32px;height:32px}
