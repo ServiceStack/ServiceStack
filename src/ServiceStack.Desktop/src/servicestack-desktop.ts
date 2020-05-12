@@ -189,6 +189,33 @@ export async function knownFolder(folder:KnownFolders) {
     return await evaluateCode(`knownFolder(${quote(folder)})`) as string;
 }
 
+export async function desktopTextFile(fileName:string) {
+    try {
+        const r = await fetch(`/desktop/files/${fileName}`);
+        if (!r.ok)
+            throw `${r.status} ${r.statusText}`;
+        const contents = await r.text();
+        return contents;
+    } catch (e) {
+        throw e;
+    }
+}
+
+export async function saveDesktopTextFile(fileName:string,body:string) {
+    try {
+        const r = await fetch(`/desktop/files/${fileName}`, {
+            method: "POST",
+            body
+        });
+        if (!r.ok)
+            throw `${r.status} ${r.statusText}`;
+        const contents = await r.text();
+        return contents;
+    } catch (e) {
+        throw e;
+    }
+}
+
 /**
  * refer to http://pinvoke.net/default.aspx/Enums/ShowWindowCommand.html
  */

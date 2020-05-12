@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
+using ServiceStack.DataAnnotations;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Script;
@@ -25,7 +26,7 @@ namespace ServiceStack.Desktop
             { typeof(DesktopFileService), new []{ DesktopFileRoute } },
         };
 
-        public static string DesktopFileRoute = "/desktop/files/{File}";
+        public static string DesktopFileRoute = "/desktop/files/{File*}";
 
         public void BeforePluginsLoaded(IAppHost appHost)
         {
@@ -65,6 +66,7 @@ namespace ServiceStack.Desktop
         public Stream RequestStream { get; set; }
     }
 
+    [DefaultRequest(typeof(DesktopFile)), ExcludeMetadata]
     public class DesktopFileService : Service
     {
         public async Task Get(DesktopFile request)
@@ -74,13 +76,17 @@ namespace ServiceStack.Desktop
             var appSettingsDir= GetDesktopAppSettingsDirectory();
             var filePath = Path.Combine(appSettingsDir, request.File);
             using var fs = new FileInfo(filePath).OpenRead();
+            if (fs == null)
+                throw new FileNotFoundException();
+            
             Response.ContentType = MimeTypes.GetMimeType(filePath);
             await Response.EndRequestAsync(afterHeaders: async res => {
                 await fs.CopyToAsync(Response.OutputStream);
             });
         }
-        
-        public async Task Post(DesktopFile request)
+
+        public Task Post(DesktopFile request) => Put(request); 
+        public async Task Put(DesktopFile request)
         {
             AssertFile(request.File);
             
@@ -94,6 +100,7 @@ namespace ServiceStack.Desktop
             {
                 await request.RequestStream.CopyToAsync(fs);
             }
+            try { File.Delete(filePath); } catch {}
             File.Move(tmpFilePath, filePath);
         }
 
@@ -145,7 +152,7 @@ namespace ServiceStack.Desktop
         public string RenderLispAsync { get; set; }
     }
 
-    [DefaultRequest(typeof(EvalScript))]
+    [DefaultRequest(typeof(EvalScript)), ExcludeMetadata]
     public class DesktopScriptServices : Service
     {
         public static ILog log = LogManager.GetLogger(typeof(DesktopScriptServices));

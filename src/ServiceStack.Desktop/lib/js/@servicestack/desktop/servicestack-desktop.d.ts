@@ -72,6 +72,8 @@ export declare function windowClientSize(): Promise<Size>;
 export declare function windowClientRect(): Promise<Rectangle>;
 export declare function windowSetState(state: ShowWindowCommands): Promise<boolean>;
 export declare function knownFolder(folder: KnownFolders): Promise<string>;
+export declare function desktopTextFile(fileName: string): Promise<string>;
+export declare function saveDesktopTextFile(fileName: string, body: string): Promise<string>;
 /**
  * refer to http://pinvoke.net/default.aspx/Enums/ShowWindowCommand.html
  */
