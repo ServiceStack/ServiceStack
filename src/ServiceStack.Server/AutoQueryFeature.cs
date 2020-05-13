@@ -1571,5 +1571,8 @@ namespace ServiceStack
         {
             return autoQuery.CreateQuery(model, request.GetRequestParams(), request, db);
         }
+
+        public static IDbConnection GetDb<From>(this IAutoQueryDb autoQuery, IQueryDb<From> dto, IRequest req = null) => 
+            autoQuery.GetDb(typeof(From), req);
     }
 }
