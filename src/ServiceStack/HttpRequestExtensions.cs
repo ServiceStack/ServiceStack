@@ -776,11 +776,9 @@ namespace ServiceStack
 
         public static string GetAbsoluteUrl(this IRequest httpReq, string url)
         {
-            if (url?.SafeSubstring(0, 2) == "~/")
-            {
-                url = httpReq.GetBaseUrl().CombineWith(url.Substring(2));
-            }
-            return url;
+            return url?.IndexOf("://", StringComparison.Ordinal) >= 0
+                ? url
+                : httpReq.GetBaseUrl().CombineWith(url?.TrimStart('~'));
         }
 
         public static string GetReturnUrl(this IRequest req)
