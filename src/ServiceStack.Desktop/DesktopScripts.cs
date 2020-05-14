@@ -28,8 +28,16 @@ namespace ServiceStack.Desktop
             return hWnd != IntPtr.Zero ? fn(hWnd) : default;
         }
 
+        private static string resolveUrl(ScriptScopeContext scope, string url)
+        {
+            var resolvedUrl = scope.ResolveUrl(url);
+            return resolvedUrl.IndexOf("://", StringComparison.Ordinal) >= 0
+                ? resolvedUrl
+                : DesktopState.StartUrl.CombineWith(resolvedUrl);
+        }
+
         public bool openUrl(ScriptScopeContext scope, string url) =>
-            DoWindow(scope, w => NativeWin.Open(new Uri(url).ToString()));
+            DoWindow(scope, w => NativeWin.Open(new Uri(resolveUrl(scope,url)).ToString()));
         public bool start(ScriptScopeContext scope, string cmd) =>
             DoWindow(scope, w => NativeWin.Open(cmd));
         public Dictionary<string, string> desktopInfo(ScriptScopeContext scope) => 

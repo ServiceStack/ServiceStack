@@ -42,15 +42,14 @@ namespace ServiceStack
         public FileSystemVirtualFiles hostVfsFileSystem() => HostContext.FileSystemVirtualFiles;
         public GistVirtualFiles hostVfsGist() => HostContext.GistVirtualFiles;
 
-        public IHttpRequest httpRequest(ScriptScopeContext scope) => req(scope) as IHttpRequest;
-        internal IRequest req(ScriptScopeContext scope) => scope.GetValue(ScriptConstants.Request) as IRequest;
+        public IHttpRequest httpRequest(ScriptScopeContext scope) => scope.GetHttpRequest();
 
-        public object requestItem(ScriptScopeContext scope, string key) => req(scope).GetItem(key);
+        public object requestItem(ScriptScopeContext scope, string key) => scope.GetHttpRequest().GetItem(key);
 
-        public object baseUrl(ScriptScopeContext scope) => req(scope).GetBaseUrl();
+        public object baseUrl(ScriptScopeContext scope) => scope.GetHttpRequest().GetBaseUrl();
 
         public object resolveUrl(ScriptScopeContext scope, string virtualPath) =>
-            req(scope).ResolveAbsoluteUrl(virtualPath);
+            scope.GetHttpRequest().ResolveAbsoluteUrl(virtualPath);
 
         public string serviceUrl(ScriptScopeContext scope, string requestName) => 
             serviceUrl(scope, requestName, null, HttpMethods.Get);
@@ -109,7 +108,7 @@ namespace ServiceStack
                 if (dto == null)
                     throw new ArgumentNullException(nameof(dto));
                 
-                var gateway = appHost.GetServiceGateway(req(scope));
+                var gateway = appHost.GetServiceGateway(scope.GetHttpRequest());
                 var requestType = AssertRequestType(requestName);
 
                 var responseType = appHost.Metadata.GetResponseTypeByRequest(requestType);
@@ -136,7 +135,7 @@ namespace ServiceStack
             try
             {
                 var requestDto = CreateRequestDto(dto, requestName);
-                var gateway = appHost.GetServiceGateway(req(scope));
+                var gateway = appHost.GetServiceGateway(scope.GetHttpRequest());
                 gateway.Publish(requestDto);
                 return StopExecution.Value;
             }
@@ -236,7 +235,7 @@ namespace ServiceStack
                                 
                 var reqParams = objDictionary?.ToStringDictionary() ?? TypeConstants.EmptyStringDictionary;
                 
-                var httpReq = req(scope);
+                var httpReq = scope.GetHttpRequest();
                 var ctx = autoQuery.CreateContext(aqDto, reqParams, httpReq);
                 var fromType = autoQuery.GetFromType(aqDto.GetType());
                 using var db = autoQuery.GetDb(ctx, fromType);
@@ -260,28 +259,28 @@ namespace ServiceStack
             return results;
         }
        
-        public object getUserSession(ScriptScopeContext scope) => req(scope).GetSession();
-        public IAuthSession userSession(ScriptScopeContext scope) => req(scope).GetSession();
-        public string userAuthId(ScriptScopeContext scope) => req(scope).GetSession()?.UserAuthId;
+        public object getUserSession(ScriptScopeContext scope) => scope.GetHttpRequest().GetSession();
+        public IAuthSession userSession(ScriptScopeContext scope) => scope.GetHttpRequest().GetSession();
+        public string userAuthId(ScriptScopeContext scope) => scope.GetHttpRequest().GetSession()?.UserAuthId;
         public string userAuthName(ScriptScopeContext scope)
         {
-            var authSession = req(scope).GetSession();
+            var authSession = scope.GetHttpRequest().GetSession();
             return authSession?.UserAuthName ?? authSession?.UserName ?? authSession?.Email;
         }
 
-        public string userProfileUrl(ScriptScopeContext scope) => req(scope).GetSession().GetProfileUrl();
+        public string userProfileUrl(ScriptScopeContext scope) => scope.GetHttpRequest().GetSession().GetProfileUrl();
 
-        public HashSet<string> userAttributes(ScriptScopeContext scope) => req(scope).GetUserAttributes();
+        public HashSet<string> userAttributes(ScriptScopeContext scope) => scope.GetHttpRequest().GetUserAttributes();
 
         public bool isAuthenticated(ScriptScopeContext scope)
         {
-            var request = req(scope);
+            var request = scope.GetHttpRequest();
             return request != null && AuthenticateAttribute.Authenticate(request, request.GetSession());
         }
 
         public bool isAuthenticated(ScriptScopeContext scope, string provider)
         {
-            var request = req(scope);
+            var request = scope.GetHttpRequest();
             return request != null && AuthenticateAttribute.Authenticate(request);
         }
 
@@ -290,7 +289,7 @@ namespace ServiceStack
             return Context.DefaultMethods.@return(scope, new HttpResult(null, null, HttpStatusCode.Redirect) {
                 Headers = {
                     [HttpHeaders.Location] = path.FirstCharEquals('~')
-                        ? req(scope).ResolveAbsoluteUrl(path)
+                        ? scope.GetHttpRequest().ResolveAbsoluteUrl(path)
                         : path
                 }
             });
@@ -300,7 +299,7 @@ namespace ServiceStack
         {
             if (!isAuthenticated(scope))
             {
-                var url = AuthenticateAttribute.GetHtmlRedirectUrl(req(scope));
+                var url = AuthenticateAttribute.GetHtmlRedirectUrl(scope.GetHttpRequest());
                 return redirectTo(scope, url);
             }
             return IgnoreResult.Value;
@@ -310,7 +309,7 @@ namespace ServiceStack
         {
             if (!isAuthenticated(scope))
             {
-                var url = AuthenticateAttribute.GetHtmlRedirectUrl(req(scope), path, includeRedirectParam:true);
+                var url = AuthenticateAttribute.GetHtmlRedirectUrl(scope.GetHttpRequest(), path, includeRedirectParam:true);
                 return redirectTo(scope, url);
             }
             
@@ -318,10 +317,10 @@ namespace ServiceStack
         }
 
         public object hasRole(ScriptScopeContext scope, string role) =>
-            userSession(scope)?.HasRole(role, req(scope).TryResolve<IAuthRepository>()) == true;
+            userSession(scope)?.HasRole(role, scope.GetHttpRequest().TryResolve<IAuthRepository>()) == true;
 
         public object hasPermission(ScriptScopeContext scope, string permission) =>
-            userSession(scope)?.HasPermission(permission, req(scope).TryResolve<IAuthRepository>()) == true;
+            userSession(scope)?.HasPermission(permission, scope.GetHttpRequest().TryResolve<IAuthRepository>()) == true;
 
         public object assertRole(ScriptScopeContext scope, string role) => assertRole(scope, role, null);
         public object assertRole(ScriptScopeContext scope, string role, Dictionary<string,object> options)
@@ -331,7 +330,7 @@ namespace ServiceStack
                 return ret;
             
             var authSession = userSession(scope);
-            if (!authSession.HasRole(role, req(scope).TryResolve<IAuthRepository>()))
+            if (!authSession.HasRole(role, scope.GetHttpRequest().TryResolve<IAuthRepository>()))
             {
                 if (args.TryGetValue("redirect", out var oRedirect))
                 {
@@ -341,7 +340,7 @@ namespace ServiceStack
 
                 var message = args.TryGetValue("message", out var oMessage)
                     ? (string) oMessage
-                    : ErrorMessages.InvalidRole.Localize(req(scope));
+                    : ErrorMessages.InvalidRole.Localize(scope.GetHttpRequest());
                     
                 return Context.DefaultMethods.@return(scope, new HttpError(HttpStatusCode.Forbidden, message));
             }
@@ -357,7 +356,7 @@ namespace ServiceStack
                 return ret;
             
             var authSession = userSession(scope);
-            if (!authSession.HasPermission(permission, req(scope).TryResolve<IAuthRepository>()))
+            if (!authSession.HasPermission(permission, scope.GetHttpRequest().TryResolve<IAuthRepository>()))
             {
                 if (args.TryGetValue("redirect", out var oRedirect))
                 {
@@ -367,7 +366,7 @@ namespace ServiceStack
 
                 var message = args.TryGetValue("message", out var oMessage)
                     ? (string) oMessage
-                    : ErrorMessages.InvalidRole.Localize(req(scope));
+                    : ErrorMessages.InvalidRole.Localize(scope.GetHttpRequest());
                     
                 return Context.DefaultMethods.@return(scope, new HttpError(HttpStatusCode.Forbidden, message));
             }
@@ -386,7 +385,7 @@ namespace ServiceStack
         public object endIfAuthenticated(ScriptScopeContext scope, object value) => !isAuthenticated(scope) 
             ? value : StopExecution.Value;
 
-        public IAuthRepository authRepo(ScriptScopeContext scope) => HostContext.AppHost.GetAuthRepository(req(scope));
+        public IAuthRepository authRepo(ScriptScopeContext scope) => HostContext.AppHost.GetAuthRepository(scope.GetHttpRequest());
 
         public IUserAuth newUserAuth(IAuthRepository authRepo) =>
             authRepo is ICustomUserAuth c ? c.CreateUserAuth() : new UserAuth();
@@ -501,9 +500,7 @@ namespace ServiceStack
 
         public bool hasErrorStatus(ScriptScopeContext scope) => getErrorStatus(scope) != null;
 
-        public ResponseStatus getErrorStatus(ScriptScopeContext scope) => 
-            scope.GetValue("errorStatus") as ResponseStatus ??
-            ViewUtils.GetErrorStatus(req(scope));
+        public ResponseStatus getErrorStatus(ScriptScopeContext scope) => scope.GetErrorStatus();
 
         /// <summary>
         /// Only return form input value if form submission was invalid
@@ -511,11 +508,11 @@ namespace ServiceStack
         public string formValue(ScriptScopeContext scope, string name) => formValue(scope, name, null);
 
         public string formValue(ScriptScopeContext scope, string name, string defaultValue) => hasErrorStatus(scope) 
-            ? ViewUtils.FormQuery(req(scope), name) 
+            ? ViewUtils.FormQuery(scope.GetHttpRequest(), name) 
             : defaultValue;
 
         public string[] formValues(ScriptScopeContext scope, string name) => hasErrorStatus(scope) 
-            ? ViewUtils.FormQueryValues(req(scope), name) 
+            ? ViewUtils.FormQueryValues(scope.GetHttpRequest(), name) 
             : null;
     
         public bool formCheckValue(ScriptScopeContext scope, string name)
@@ -643,7 +640,7 @@ namespace ServiceStack
 
         public IRawString svgFill(string svg, string color) => Svg.Fill(svg, color).ToRawString();
 
-        public string svgBaseUrl(ScriptScopeContext scope) => req(scope).ResolveAbsoluteUrl(HostContext.AssertPlugin<SvgFeature>().RoutePath);
+        public string svgBaseUrl(ScriptScopeContext scope) => scope.GetHttpRequest().ResolveAbsoluteUrl(HostContext.AssertPlugin<SvgFeature>().RoutePath);
 
         public Dictionary<string, string> svgImages() => Svg.Images;
         public Dictionary<string, string> svgDataUris() => Svg.DataUris;
@@ -889,6 +886,16 @@ namespace ServiceStack
                 
             return options;
         }
-   }
+
+        public static IHttpRequest GetHttpRequest(this ScriptScopeContext scope) =>
+            scope.GetValue(ScriptConstants.Request) as IHttpRequest;
+        
+        public static string ResolveUrl(this ScriptScopeContext scope, string url) =>
+            scope.GetHttpRequest().ResolveAbsoluteUrl(url);
+        
+        public static ResponseStatus GetErrorStatus(this ScriptScopeContext scope) =>
+            scope.GetValue("errorStatus") as ResponseStatus ??
+            ViewUtils.GetErrorStatus(scope.GetHttpRequest());
+    }
 
 }
