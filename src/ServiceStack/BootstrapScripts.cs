@@ -42,7 +42,7 @@ namespace ServiceStack
             var errorStatus = scope.GetErrorStatus();
             if (message == null 
                 || errorStatus != null
-                || scope.GetHttpRequest().Verb == HttpMethods.Get)
+                || scope.GetRequest().Verb == HttpMethods.Get)
                 return null; 
 
             return ViewUtils.ValidationSuccess(message, divAttrs).ToRawString();
@@ -62,7 +62,7 @@ namespace ServiceStack
             formControl(scope, inputAttrs, "input", inputOptions);
 
         public IRawString formControl(ScriptScopeContext scope, object inputAttrs, string tagName, object inputOptions) => 
-            ViewUtils.FormControl(scope.GetHttpRequest(), inputAttrs.AssertOptions(nameof(formControl)), tagName, 
+            ViewUtils.FormControl(scope.GetRequest(), inputAttrs.AssertOptions(nameof(formControl)), tagName, 
                 (inputOptions as IEnumerable<KeyValuePair<string, object>>).FromObjectDictionary<InputOptions>()).ToRawString();
 
         NavOptions ToNavOptions(ScriptScopeContext scope, Dictionary<string, object> options)
@@ -95,7 +95,7 @@ namespace ServiceStack
             if (navOptions.ActivePath == null)
                 navOptions.ActivePath = scope.GetValue("PathInfo")?.ToString();
             if (navOptions.Attributes == null)
-                navOptions.Attributes = scope.GetHttpRequest().GetUserAttributes();
+                navOptions.Attributes = scope.GetRequest().GetUserAttributes();
             if (navOptions.BaseHref == null)
             {
                 var pathBase = HostContext.Config.PathBase;
