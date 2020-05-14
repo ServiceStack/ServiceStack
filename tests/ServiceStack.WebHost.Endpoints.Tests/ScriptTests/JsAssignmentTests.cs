@@ -2,11 +2,29 @@ using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Script;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 {
     public class JsAssignmentTests
     {
+        [Test]
+        public void Does_parse_assignment_expressions()
+        {
+            JsToken token;
+
+            "a = 1 == 2 ? 3 : 4".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsAssignmentExpression(
+                new JsIdentifier("a"),
+                JsAssignment.Operator, 
+                new JsConditionalExpression(
+                    new JsBinaryExpression(new JsLiteral(1), JsEquals.Operator, new JsLiteral(2)), 
+                    new JsLiteral(3), 
+                    new JsLiteral(4))
+            )));
+        }
+
+
         [Test]
         public void Can_assign_local_Variables()
         {
@@ -215,6 +233,21 @@ a + b + c = {{ a + b + c }}");
             var output = context.RenderScript(@"{{ isNull(var a = 1) }}:{{a}}");
             
             Assert.That(output, Is.EqualTo("True:1"));
+        }
+
+        [Test]
+        public void Does_assign_entire_expression()
+        {
+            var context = new ScriptContext().Init();
+            var output = context.RenderScript(@"
+```code|q
+var optional = []
+var key = 'a'
+key = optional.contains(key) ? `${key}?` : key
+```
+{{key}}");
+            output.Print();
+            Assert.That(output.Trim(), Is.EqualTo("a"));
         }
     }
 }

@@ -156,6 +156,13 @@ namespace ServiceStack.Script
                     token = varDec;
                     return literal;
                 }
+
+                if (peekChar == '=' && peekLiteral.SafeGetChar(1) != '=') // not ==, ===
+                {
+                    literal = peekLiteral.ParseAssignmentExpression(identifier, out var assignExpr);
+                    token = assignExpr;
+                    return literal;
+                }
             }
 
             peekLiteral = peekLiteral.AdvancePastWhitespace();

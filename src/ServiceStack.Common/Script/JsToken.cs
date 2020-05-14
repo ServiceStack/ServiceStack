@@ -739,6 +739,21 @@ namespace ServiceStack.Script
             return literal;
         }
 
+        internal static ReadOnlySpan<char> ParseAssignmentExpression(this ReadOnlySpan<char> literal, JsIdentifier id, out JsAssignmentExpression token)
+        {
+            literal = literal.AdvancePastWhitespace();
+
+            if (!literal.FirstCharEquals('='))
+                throw new SyntaxErrorException($"Expected '=' but was {literal.DebugFirstChar()}");
+
+            literal = literal.Advance(1);
+
+            literal = literal.ParseJsExpression(out var init);
+            token = new JsAssignmentExpression(id, JsAssignment.Operator, init);
+
+            return literal;
+        }
+
         internal static ReadOnlySpan<char> ParseJsMemberExpression(this ReadOnlySpan<char> literal, ref JsToken node, bool filterExpression)
         {
             literal = literal.AdvancePastWhitespace();
