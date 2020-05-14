@@ -179,6 +179,9 @@ namespace ServiceStack
                     ((ServiceStackHost)appHost).Container.RegisterAutoWiredType(serviceType);
                 }
             }
+
+            appHost.GetPlugin<MetadataFeature>()
+                .AddPluginLink("types/proto", "gRPC .proto APIs");
         }
 
         public void AfterPluginsLoaded(IAppHost appHost)

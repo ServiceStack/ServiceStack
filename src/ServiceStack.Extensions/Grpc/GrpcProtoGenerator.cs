@@ -43,19 +43,20 @@ namespace ServiceStack.Grpc
         }
 
         static MethodInfo getSchemaMethod;
+        static readonly object[] getSchemaMethodArgs = { null };
         static readonly ConcurrentDictionary<Type, string> SchemaTypeNamesCache = new ConcurrentDictionary<Type, string>();
 
         public string GetSchemaTypeName(Type type)
         {
             if (getSchemaMethod == null)
             {
-                getSchemaMethod = typeof(MetaType).GetMethod("GetSchemaTypeName",
-                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                getSchemaMethod = typeof(MetaType).GetInstanceMethods()
+                    .First(x => x.Name == "GetSchemaTypeName" && x.GetParameters().Length == 1);
             }
 
             return SchemaTypeNamesCache.GetOrAdd(type, key => {
                 if (getSchemaMethod != null)
-                    return (string) getSchemaMethod.Invoke(GrpcConfig.TypeModel[type], null);
+                    return (string) getSchemaMethod.Invoke(GrpcConfig.TypeModel[type], getSchemaMethodArgs);
 
                 return type.Name;
             });
