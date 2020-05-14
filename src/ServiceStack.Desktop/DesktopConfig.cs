@@ -35,6 +35,7 @@ namespace ServiceStack.Desktop
         public static string ToolVersion { get; set; }
         public static string ChromeVersion { get; set; }
         public static bool FromScheme { get; set; }
+        public static string StartUrl { get; set; }
         public static string[] OriginalCommandArgs { get; set; }
         public static string[] CommandArgs { get; set; }
     }
