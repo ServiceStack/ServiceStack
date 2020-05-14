@@ -373,7 +373,9 @@ namespace ServiceStack.Script
             return resolvedType;
         }
         
-        public Type typeofProgId(string name) => Type.GetTypeFromProgID(name);
+        public Type typeofProgId(string name) => Env.IsWindows
+            ? Type.GetTypeFromProgID(name) // .NET Core throws TargetInvocationException CoreCLR_REMOVED -- Unmanaged activation removed
+            : null;
 
         public object call(object instance, string name) => call(instance, name, null);
 
