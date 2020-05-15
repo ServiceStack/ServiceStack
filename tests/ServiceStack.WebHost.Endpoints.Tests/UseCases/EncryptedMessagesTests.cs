@@ -134,6 +134,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         }
 
         [Test]
+        public void Can_Send_Encrypted_EmptyRequest_with_ServiceClients()
+        {
+            var client = CreateClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get(new GetPublicKey()));
+
+            var response = encryptedClient.Delete(new EncryptedDelete());
+
+            Assert.That(response, Is.Not.Null);
+        }
+
+        [Test]
         public void Can_authenticate_and_call_authenticated_Service()
         {
             try

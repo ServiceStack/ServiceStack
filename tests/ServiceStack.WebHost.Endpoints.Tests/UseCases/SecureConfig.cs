@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
@@ -86,9 +88,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
     {
         public string Result { get; set; }
     }
+    
+    [DataContract]
+    [Route("/encrypted/delete/{Id}", "DELETE")]    
+    public class EncryptedDelete : IReturn<EmptyResponse>
+    {
+        [DataMember(Order = 1)] public string Id { get; set; }
+    }
 
     public class SecureServices : Service
     {
+        public async Task<object> Any(EncryptedDelete request)
+        {
+            await Task.Yield();
+            return new EmptyResponse();
+        }
+
         public object Get(GetSecure request)
         {
             if (request.Name == null)
