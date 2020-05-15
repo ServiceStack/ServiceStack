@@ -98,7 +98,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
     public class SecureServices : Service
     {
-        public async Task<object> Any(EncryptedDelete request)
+        public async Task<object> Delete(EncryptedDelete request)
         {
             await Task.Yield();
             return new EmptyResponse();
