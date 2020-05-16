@@ -857,17 +857,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Dispose();
         }
 
-        public List<Rockstar> Rockstars
-        {
-            get { return AutoQueryAppHost.SeedRockstars.ToList(); }
-        }
+        public List<Rockstar> Rockstars => AutoQueryAppHost.SeedRockstars.ToList();
 
-        public List<PagingTest> PagingTests
-        {
-            get { return AutoQueryAppHost.SeedPagingTest.ToList(); }
-        }
+        public List<PagingTest> PagingTests => AutoQueryAppHost.SeedPagingTest.ToList();
 
-//        [NUnit.Framework.Ignore("Debug Run"), Test]
+        //        [NUnit.Framework.Ignore("Debug Run"), Test]
         public void RunFor10Mins()
         {
 #if NET45
@@ -913,6 +907,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = client.Get(new QueryCaseInsensitiveOrderBy { Age = 27, OrderBy = "FirstName" });
 
             Assert.That(response.Results.Count, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Can_query_IsNull()
+        {
+            var url = $"{Config.ListeningOn}query/rockstars?DateDiedIsNull";
+            var response = url.GetJsonFromUrl().FromJson<QueryResponse<Rockstar>>();
+
+            response.PrintDump();
+            Assert.That(response.Results.Count, Is.GreaterThan(0));
+            Assert.That(response.Results.All(x => x.DateDied == null));
+        }
+
+        [Test]
+        public void Can_query_IsNotNull()
+        {
+            var url = $"{Config.ListeningOn}query/rockstars?DateDiedIsNotNull";
+            var response = url.GetJsonFromUrl().FromJson<QueryResponse<Rockstar>>();
+
+            response.PrintDump();
+            Assert.That(response.Results.Count, Is.GreaterThan(0));
+            Assert.That(response.Results.All(x => x.DateDied != null));
         }
 
         [Test]

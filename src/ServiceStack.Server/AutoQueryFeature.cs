@@ -103,6 +103,9 @@ namespace ServiceStack
             {"%In",             "{Field} IN ({Values})"},
             {"%Ids",            "{Field} IN ({Values})"},
             {"%Between%",       "{Field} BETWEEN {Value1} AND {Value2}"},
+            
+            {"%IsNull",         SqlTemplate.IsNull},
+            {"%IsNotNull",      SqlTemplate.IsNotNull},
         };
 
         public Dictionary<string, QueryDbFieldAttribute> StartsWithConventions =
@@ -128,6 +131,8 @@ namespace ServiceStack
             new AutoQueryConvention {Name = "Starts With", Value = "%StartsWith", Types = "string"},
             new AutoQueryConvention {Name = "Contains", Value = "%Contains", Types = "string"},
             new AutoQueryConvention {Name = "Ends With", Value = "%EndsWith", Types = "string"},
+            new AutoQueryConvention {Name = "IS NULL", Value = "%IsNull"},
+            new AutoQueryConvention {Name = "IS NOT NULL", Value = "%IsNotNull"},
         };
 
         public AutoQueryFeature()
@@ -362,7 +367,7 @@ namespace ServiceStack
             return this;
         }
 
-        public HashSet<string> SqlAggregateFunctions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        public readonly HashSet<string> SqlAggregateFunctions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "AVG", "COUNT", "FIRST", "LAST", "MAX", "MIN", "SUM"
         };

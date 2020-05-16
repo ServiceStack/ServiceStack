@@ -808,9 +808,9 @@ namespace ServiceStack
             var reset = resetField == null 
                 ? (dtoValues.TryRemove(Keywords.Reset, out var oReset)
                     ? asStrings(oReset)
-                    : (dtoValues.TryRemove(Keywords.reset, out var oreset)
-                        ? asStrings(oreset)
-                        : null)) 
+                    : dtoValues.TryRemove(Keywords.reset, out oReset)
+                        ? asStrings(oReset)
+                        : null) 
                   ?? asStrings(req.GetParam(Keywords.reset))
                 : null;
             
