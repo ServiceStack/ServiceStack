@@ -835,7 +835,7 @@ namespace ServiceStack.NativeTypes
             var metaAttr = new MetadataDataMember
             {
                 Name = attr.Name,
-                EmitDefaultValue = attr.EmitDefaultValue.NullIfFalse(),
+                EmitDefaultValue = attr.EmitDefaultValue == false ? false : (bool?)null, //true by default
                 Order = attr.Order >= 0 ? attr.Order : (int?)null,
                 IsRequired = attr.IsRequired.NullIfFalse(),
             };

@@ -13,16 +13,16 @@ namespace ServiceStack
     [DataContract]
     public class ResponseError : IMeta
     {
-        [DataMember(IsRequired = false, EmitDefaultValue = false, Order = 1)]
+        [DataMember(Order = 1)]
         public string ErrorCode { get; set; }
 
-        [DataMember(IsRequired = false, EmitDefaultValue = false, Order = 2)]
+        [DataMember(Order = 2)]
         public string FieldName { get; set; }
 
-        [DataMember(IsRequired = false, EmitDefaultValue = false, Order = 3)]
+        [DataMember(Order = 3)]
         public string Message { get; set; }
 
-        [DataMember(IsRequired = false, EmitDefaultValue = false, Order = 4)]
+        [DataMember(Order = 4)]
         public Dictionary<string, string> Meta { get; set; }
     }
 }
