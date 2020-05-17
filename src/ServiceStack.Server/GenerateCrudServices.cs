@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.Serialization;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
@@ -379,6 +380,18 @@ namespace ServiceStack
             new object[]{ "ServiceStack", Env.VersionString },
             new PropertyInfo[0], TypeConstants.EmptyObjectArray);
 
+        private static readonly ConstructorInfo DataContractCtor = typeof(System.Runtime.Serialization.DataContractAttribute)
+            .GetConstructor(Type.EmptyTypes);
+        private static readonly ConstructorInfo DataMemberCtor = typeof(System.Runtime.Serialization.DataMemberAttribute)
+            .GetConstructor(Type.EmptyTypes);
+        private static readonly CustomAttributeBuilder DefaultDataContractCtorBuilder = new CustomAttributeBuilder(
+            DataContractCtor,
+            TypeConstants.EmptyObjectArray,
+            new PropertyInfo[0], TypeConstants.EmptyObjectArray);
+        private static readonly Attribute dataContractAttr = new DataContractAttribute();
+        private static readonly Attribute dataMemberAttr = new DataMemberAttribute();
+
+
         private static Type CreateOrGetType(ModuleBuilder dynModule, MetadataType metaType, 
             List<MetadataType> metadataTypes, Dictionary<Tuple<string, string>, MetadataType> existingMetaTypesMap, 
             Dictionary<Tuple<string, string>, Type> generatedTypes)
@@ -437,6 +450,33 @@ namespace ServiceStack
             var typeBuilder = dynModule.DefineType(metaType.Namespace + "." + metaType.Name,
                 TypeAttributes.Public | TypeAttributes.Class, baseType, interfaceTypes.ToArray());
             typeBuilder.SetCustomAttribute(CodegenAttrBuilder);
+
+            List<MetadataPropertyType> toMetadataPropertyTypes(Dictionary<string, object> args)
+            {
+                var to = new List<MetadataPropertyType>();
+                foreach (var entry in args)
+                {
+                    if (entry.Value == null)
+                        continue;
+                    to.Add(new MetadataPropertyType { Name = entry.Key, Value = entry.Value.ConvertTo<string>(), Type = entry.Value.GetType().Name });
+                }
+                return to;
+            }
+            
+            if (metaType.DataContract != null)
+            {
+                var attrBuilder = metaType.DataContract.Name == null && metaType.DataContract.Namespace == null
+                    ? DefaultDataContractCtorBuilder
+                    : CreateCustomAttributeBuilder(new MetadataAttribute {
+                        Name = nameof(DataContractAttribute),
+                        Attribute = dataContractAttr,
+                        Args = toMetadataPropertyTypes(new Dictionary<string, object> {
+                            [nameof(DataContractAttribute.Name)] = metaType.DataContract.Name,
+                            [nameof(DataContractAttribute.Namespace)] = metaType.DataContract.Namespace,
+                        })
+                    }, generatedTypes);
+                typeBuilder.SetCustomAttribute(attrBuilder);
+            }
              
             foreach (var metaAttr in metaType.Attributes.Safe())
             {
@@ -450,6 +490,22 @@ namespace ServiceStack
                     AssertResolveType(keyNs(metaProp.TypeNamespace, metaProp.Type), generatedTypes);
                 var propBuilder = typeBuilder.DefineProperty(metaProp.Name, PropertyAttributes.HasDefault,
                     CallingConventions.Any, returnType, null);
+
+                if (metaProp.DataMember != null)
+                {
+                    var dm = metaProp.DataMember;
+                    var attrBuilder = CreateCustomAttributeBuilder(new MetadataAttribute {
+                        Name = nameof(DataMemberAttribute),
+                        Attribute = dataMemberAttr,
+                        Args = toMetadataPropertyTypes(new Dictionary<string, object> {
+                            [nameof(DataMemberAttribute.Name)] = dm.Name, 
+                            [nameof(DataMemberAttribute.Order)] = dm.Order, 
+                            [nameof(DataMemberAttribute.IsRequired)] = dm.IsRequired, 
+                            [nameof(DataMemberAttribute.EmitDefaultValue)] = dm.EmitDefaultValue, 
+                        })
+                    }, generatedTypes);
+                    propBuilder.SetCustomAttribute(attrBuilder);
+                }
                 
                 foreach (var metaAttr in metaProp.Attributes.Safe())
                 {
@@ -962,6 +1018,7 @@ namespace ServiceStack
 
             List<MetadataPropertyType> toMetaProps(IEnumerable<ColumnSchema> columns, bool isModel=false)
             {
+                var i = 1;
                 var to = new List<MetadataPropertyType>();
                 foreach (var column in columns)
                 {
@@ -988,6 +1045,9 @@ namespace ServiceStack
                         IsEnum = dataType.IsEnum ? true : (bool?) null,
                         TypeNamespace = dataType.Namespace,
                         GenericArgs = MetadataTypesGenerator.ToGenericArgs(dataType),
+                        DataMember = typesConfig.AddDataContractAttributes
+                            ? new MetadataDataMember { Order = i++ } 
+                            : null,
                     };
                     
                     var attrs = new List<MetadataAttribute>();
@@ -1060,6 +1120,9 @@ namespace ServiceStack
                             DataModel = new MetadataTypeName { Name = typeName },
                         };
                         op.Request.RequestType = op;
+
+                        if (typesConfig.AddDataContractAttributes)
+                            op.Request.DataContract = new MetadataDataContract();
                         
                         if (!existingRoutes.Contains(new Tuple<string, string>(route, verb)))
                             op.Routes.Add(new MetadataRoute { Path = route, Verbs = verb });
@@ -1118,6 +1181,9 @@ namespace ServiceStack
                                         Name = id,
                                         Type = pkField.DataType.Name + (pkField.DataType.IsValueType ? "?" : ""),
                                         TypeNamespace = pkField.DataType.Namespace, 
+                                        DataMember = request.AddDataContractAttributes == true
+                                            ? new MetadataDataMember { Order = 1 } 
+                                            : null, 
                                     }
                                 };
                                 break;
