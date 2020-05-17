@@ -78,6 +78,7 @@ namespace ServiceStack
             {">%",              SqlTemplate.GreaterThanOrEqual},
             {"%>",              SqlTemplate.GreaterThan},
             {"%!",              SqlTemplate.NotEqual},
+            {"<>%",             SqlTemplate.NotEqual},
 
             {"%GreaterThanOrEqualTo%", SqlTemplate.GreaterThanOrEqual},
             {"%GreaterThan%",          SqlTemplate.GreaterThan},
