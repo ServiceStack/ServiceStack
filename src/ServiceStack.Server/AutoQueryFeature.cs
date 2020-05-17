@@ -132,8 +132,8 @@ namespace ServiceStack
             new AutoQueryConvention {Name = "Starts With", Value = "%StartsWith", Types = "string"},
             new AutoQueryConvention {Name = "Contains", Value = "%Contains", Types = "string"},
             new AutoQueryConvention {Name = "Ends With", Value = "%EndsWith", Types = "string"},
-            new AutoQueryConvention {Name = "Is Null", Value = "%IsNull"},
-            new AutoQueryConvention {Name = "Not Null", Value = "%IsNotNull"},
+            new AutoQueryConvention {Name = "Is Null", Value = "%IsNull", ValueType = "none"},
+            new AutoQueryConvention {Name = "Not Null", Value = "%IsNotNull", ValueType = "none"},
         };
 
         public AutoQueryFeature()

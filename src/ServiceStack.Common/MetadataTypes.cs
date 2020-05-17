@@ -230,6 +230,7 @@ namespace ServiceStack
         public string Name { get; set; }
         public string Value { get; set; }
         public string Types { get; set; }
+        public string ValueType { get; set; }
     }
 
     /// <summary>
