@@ -836,7 +836,7 @@ namespace ServiceStack
                 throw new ArgumentNullException(nameof(request.Include));
             if (request.Include != "all" && request.Include != "new")
                 throw new ArgumentException(
-                    "'Include' must be either 'all' to include all AutoQuery Services or 'new' to include only missing Services and Types", 
+                    @"'Include' must be either 'all' to include all AutoQuery Services or 'new' to include only missing Services and Types", 
                     nameof(request.Include));
             
             var metadata = req.Resolve<INativeTypesMetadata>();
@@ -1181,7 +1181,7 @@ namespace ServiceStack
                                         Name = id,
                                         Type = pkField.DataType.Name + (pkField.DataType.IsValueType ? "?" : ""),
                                         TypeNamespace = pkField.DataType.Namespace, 
-                                        DataMember = request.AddDataContractAttributes == true
+                                        DataMember = typesConfig.AddDataContractAttributes
                                             ? new MetadataDataMember { Order = 1 } 
                                             : null, 
                                     }
@@ -1235,7 +1235,8 @@ namespace ServiceStack
                         Properties = toMetaProps(tableSchema.Columns, isModel:true),
                         Items = new Dictionary<string, object> {
                             [nameof(TableSchema)] = tableSchema,
-                        }
+                        },
+                        DataContract = typesConfig.AddDataContractAttributes ? new MetadataDataContract() : null,
                     };
                     if (request.NamedConnection != null)
                         modelType.AddAttribute(new NamedConnectionAttribute(request.NamedConnection));
