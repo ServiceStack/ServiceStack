@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <PackageId>ServiceStack.Extensions</PackageId>
+        <AssemblyName>ServiceStack.Extensions</AssemblyName>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <RootNamespace>ServiceStack</RootNamespace>
+        <DefineConstants>$(DefineConstants);PLAT_PBN_NOSPAN</DefineConstants>
+        <LangVersion>8</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Grpc.AspNetCore.Server" Version="2.28.0" />
+        <PackageReference Include="Grpc.Core.Api" Version="2.28.1" />
+        <PackageReference Include="protobuf-net" Version="3.0.0-alpha.143" />
+        <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.0.37" />
+        
+        <PackageReference Include="System.Threading.Channels" Version="4.7.0" />
+        
+        <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+        <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.Source.csproj" />
+        <ProjectReference Include="..\..\..\ServiceStack.Redis\src\ServiceStack.Redis\ServiceStack.Redis.Source.csproj" />
+        <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+        <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.Source.csproj" />
+        <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.Source.csproj" />
+        <ProjectReference Include="..\ServiceStack\ServiceStack.Source.csproj" />
+        <ProjectReference Include="..\ServiceStack.GrpcClient\ServiceStack.GrpcClient.Source.csproj" />
+    </ItemGroup>
+
+</Project>
