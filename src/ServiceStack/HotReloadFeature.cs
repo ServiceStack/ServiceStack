@@ -100,12 +100,7 @@ namespace ServiceStack
                 shouldReload = maxLastModified != DateTime.MinValue && maxLastModified.Ticks > long.Parse(request.ETag);
                 if (shouldReload)
                 {
-                    var modifiedAfterStart = maxLastModified > startedAt;
-                    var delayDiff = modifiedAfterStart
-                        ? maxLastModified - startedAt
-                        : startedAt - maxLastModified;
-                    Console.WriteLine($@"modifiedAfterStart:{modifiedAfterStart}, delayDiff:{delayDiff.TotalMilliseconds}, maxLastModified:{maxLastModified.Ticks}, etag:{request.ETag}");
-                        await Task.Delay(ModifiedDelay);
+                    await Task.Delay(ModifiedDelay);
                     break;
                 }
 
