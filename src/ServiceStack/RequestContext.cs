@@ -91,17 +91,17 @@ namespace ServiceStack
             {
                 if (UseThreadStatic)
                 {
-                    RequestItems = items ?? (items = new Dictionary<object, object>());
+                    RequestItems = items ??= new Dictionary<object, object>();
                 }
                 else
                 {
-                    CallContext.LogicalSetData(_key, items ?? (items = new ConcurrentDictionary<object, object>()));
+                    CallContext.LogicalSetData(_key, items ??= new ConcurrentDictionary<object, object>());
                 }
             }
             catch (NotImplementedException)
             {
                 //Fixed in Mono master: https://github.com/mono/mono/pull/817
-                CallContext.SetData(_key, items ?? (items = new ConcurrentDictionary<object, object>()));
+                CallContext.SetData(_key, items ??= new ConcurrentDictionary<object, object>());
             }
             return items;
 #else
