@@ -355,13 +355,13 @@ namespace ServiceStack
 
         /// <summary>
         /// Evaluate Expressions in ServiceStack's ScriptContext.
-        /// Can be overriden if you want to customize how different expressions are evaluated.
+        /// Can be overridden if you want to customize how different expressions are evaluated.
         /// </summary>
         object EvalExpression(string expr);
 
         /// <summary>
         /// Evaluate Expressions in ServiceStack's ScriptContext.
-        /// Can be overriden if you want to customize how different expressions are evaluated.
+        /// Can be overridden if you want to customize how different expressions are evaluated.
         /// </summary>
         object EvalExpressionCached(string expr);
 

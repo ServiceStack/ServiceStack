@@ -908,7 +908,7 @@ namespace ServiceStack.NativeTypes
                         : propertyInfo.PropertyType;
                     
                     var referenceAttr = propertyInfo.FirstAttribute<ReferenceAttribute>();
-                    var isReference = referenceAttr != null && propertyType.IsClass;
+                    var isReference = referenceAttr != null && propertyType?.IsClass == true;
                     var isIgnored = propertyInfo.HasAttributeCached<IgnoreAttribute>() || isReference;
 
                     var isFirst = !isIgnored && i++ == 0;
@@ -917,8 +917,8 @@ namespace ServiceStack.NativeTypes
                     
                     var hasIdField = CheckForIdField(objProperties);
                     
-                    var isPrimaryKey = (hasPkAttr == null && (propertyInfo.Name == Keywords.Id || (!hasIdField && isFirst)))
-                                       || propertyInfo.HasAttributeNamed(typeof(PrimaryKeyAttribute).Name)
+                    var isPrimaryKey = (propertyInfo.Name == Keywords.Id || (!hasIdField && isFirst))
+                                       || propertyInfo.HasAttributeNamed(nameof(PrimaryKeyAttribute))
                                        || isAutoId;
 
                     if (isPrimaryKey)

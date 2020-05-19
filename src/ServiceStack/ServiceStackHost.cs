@@ -621,7 +621,7 @@ namespace ServiceStack
 
         /// <summary>
         /// Evaluate Expressions in ServiceStack's ScriptContext.
-        /// Can be overriden if you want to customize how different expressions are evaluated.
+        /// Can be overridden if you want to customize how different expressions are evaluated.
         /// </summary>
         public virtual object EvalExpressionCached(string expr) => JS.evalCached(ScriptContext, expr);
         public virtual object EvalExpression(string expr) => JS.eval(ScriptContext, expr);

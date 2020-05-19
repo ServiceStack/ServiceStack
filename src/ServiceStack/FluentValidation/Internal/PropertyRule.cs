@@ -246,7 +246,7 @@ namespace ServiceStack.FluentValidation.Internal {
 				displayName = string.Empty;
 			}
 
-			// Construct the full name of the property, taking into account overriden property names and the chain (if we're in a nested validator)
+			// Construct the full name of the property, taking into account overridden property names and the chain (if we're in a nested validator)
 			string propertyName = context.PropertyChain.BuildPropertyName(PropertyName ?? displayName);
 
 			// Ensure that this rule is allowed to run.
@@ -326,7 +326,7 @@ namespace ServiceStack.FluentValidation.Internal {
 				displayName = string.Empty;
 			}
 
-			// Construct the full name of the property, taking into account overriden property names and the chain (if we're in a nested validator)
+			// Construct the full name of the property, taking into account overridden property names and the chain (if we're in a nested validator)
 			string propertyName = context.PropertyChain.BuildPropertyName(PropertyName ?? displayName);
 
 			// Ensure that this rule is allowed to run.
