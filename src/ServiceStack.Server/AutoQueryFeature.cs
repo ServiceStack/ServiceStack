@@ -118,6 +118,10 @@ namespace ServiceStack
             { "Contains", new QueryDbFieldAttribute { Template = SqlTemplate.CaseInsensitiveLike, ValueFormat = "%{0}%" }},
             { "EndsWith", new QueryDbFieldAttribute { Template = SqlTemplate.CaseInsensitiveLike, ValueFormat = "%{0}" }},
         };
+        
+        public List<Type> IgnoreGeneratingServicesFor { get; } = new List<Type> {
+            typeof(GetCrudEvents),
+        };
 
         public List<AutoQueryConvention> ViewerConventions { get; set; } = new List<AutoQueryConvention> 
         {
@@ -239,12 +243,14 @@ namespace ServiceStack
             }
 
             var missingQueryRequestTypes = scannedTypes
-                .Where(x => x.HasInterface(typeof(IQueryDb)) &&
-                                 !appHost.Metadata.OperationsMap.ContainsKey(x))
+                .Where(x => x.HasInterface(typeof(IQueryDb)) 
+                            && !appHost.Metadata.OperationsMap.ContainsKey(x)
+                            && !IgnoreGeneratingServicesFor.Contains(x))
                 .ToList();
             var missingCrudRequestTypes = scannedTypes
-                .Where(x => x.HasInterface(typeof(ICrud)) &&
-                            !appHost.Metadata.OperationsMap.ContainsKey(x))
+                .Where(x => x.HasInterface(typeof(ICrud))
+                            && !appHost.Metadata.OperationsMap.ContainsKey(x)
+                            && !IgnoreGeneratingServicesFor.Contains(x))
                 .ToList();
 
             if (missingQueryRequestTypes.Count == 0 && missingCrudRequestTypes.Count == 0)
