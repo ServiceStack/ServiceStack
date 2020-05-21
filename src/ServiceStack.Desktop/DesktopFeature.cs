@@ -83,6 +83,7 @@ namespace ServiceStack.Desktop
     }
 
     [DefaultRequest(typeof(DesktopFile))]
+    [Restrict(VisibilityTo = RequestAttributes.None)]
     public class DesktopFileService : Service
     {
         public async Task Get(DesktopFile request)
@@ -163,6 +164,7 @@ namespace ServiceStack.Desktop
     }
 
     [DefaultRequest(typeof(DesktopDownloadUrl))]
+    [Restrict(VisibilityTo = RequestAttributes.None)]
     public class DesktopDownloadUrlService : Service
     {
         public async Task Any(DesktopDownloadUrl request)
@@ -227,6 +229,7 @@ namespace ServiceStack.Desktop
     }
 
     [DefaultRequest(typeof(EvalScript))]
+    [Restrict(VisibilityTo = RequestAttributes.None)]
     public class DesktopScriptServices : Service
     {
         public static ILog log = LogManager.GetLogger(typeof(DesktopScriptServices));
