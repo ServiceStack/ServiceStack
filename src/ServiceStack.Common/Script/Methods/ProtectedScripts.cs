@@ -873,7 +873,12 @@ namespace ServiceStack.Script
         public IEnumerable<IVirtualFile> findFilesInDirectory(IVirtualPathProvider vfs, string dirPath, string globPattern) => vfs.GetDirectory(dirPath)?.GetAllMatchingFiles(globPattern);
 
         public IEnumerable<IVirtualFile> findFiles(string globPattern) => findFiles(VirtualFiles,globPattern);
+
+        public IEnumerable<IVirtualFile> dirFindFiles(IVirtualDirectory dir, string globPattern) => dir.GetAllMatchingFiles(globPattern);
+        public IEnumerable<IVirtualFile> dirFindFiles(IVirtualDirectory dir, string globPattern, int maxDepth) => dir.GetAllMatchingFiles(globPattern, maxDepth);
         public IEnumerable<IVirtualFile> findFiles(IVirtualPathProvider vfs, string globPattern) => vfs.GetAllMatchingFiles(globPattern);
+        public IEnumerable<IVirtualFile> findFiles(IVirtualPathProvider vfs, string globPattern, int maxDepth) => vfs.GetAllMatchingFiles(globPattern, maxDepth);
+        
         public bool fileExists(string virtualPath) => fileExists(VirtualFiles,virtualPath);
         public bool fileExists(IVirtualPathProvider vfs, string virtualPath) => vfs.FileExists(virtualPath);
         public IVirtualFile file(string virtualPath) => file(VirtualFiles,virtualPath);
