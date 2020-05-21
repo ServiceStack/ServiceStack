@@ -66,6 +66,7 @@ namespace ServiceStack
 
         public IAuthSession userSession(ScriptScopeContext scope) => req(scope).GetSession();
         public string userSessionId(ScriptScopeContext scope) => req(scope).GetSessionId();
+        public string userTempSessionId(ScriptScopeContext scope) => req(scope).GetTemporarySessionId();
         public string userPermanentSessionId(ScriptScopeContext scope) => req(scope).GetPermanentSessionId();
         public HashSet<string> userSessionOptions(ScriptScopeContext scope) => req(scope).GetSessionOptions();
         public bool userHasRole(ScriptScopeContext scope, string role) => 

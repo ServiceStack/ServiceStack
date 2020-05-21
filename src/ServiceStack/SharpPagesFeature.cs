@@ -741,7 +741,7 @@ Service Name              {{ appHost.ServiceName }}
 Handler Path              {{ appConfig.HandlerFactoryPath }}
 VirtualFiles Path         {{ appVirtualFilesPath }}
 VirtualFileSources Path   {{ appVirtualFileSourcesPath }}
-OS Environment Variable   {{ 'OS' | envVariable }}
+OS Environment Variable   {{ 'OS' |> envVariable }}
 ServiceStack Version      {{ envServiceStackVersion }}
 
 Request: 
@@ -752,19 +752,17 @@ Request:
 
 Session:
   - ss-id                 {{ userSessionId }}
-  - ss-pid                {{ userPermanentSessionId }}
-  - ss-opt                {{ userSessionOptions | join }}
-
-User: 
   - IsAuthenticated       {{ userSession.IsAuthenticated }}
-  - UserName              {{ userSession.UserName }}
+  - UserAuthId            {{ userAuthId }}
+  - Username              {{ userAuthName }}
   - LastName              {{ userSession.LastName }}
-  - Is Admin              {{ 'Admin'         | userHasRole }}
-  - Has Permission        {{ 'ThePermission' | userHasPermission }}
+  - Is Admin              {{ 'Admin'         |> userHasRole }}
+  - Has Permission        {{ 'ThePermission' |> userHasPermission }}
 
-Plugins: {{ plugins | select: \n  - { it | typeName } }}
+Plugins:
+{{ plugins |> map => `  - ${it.typeName()}` |> joinln }}
 </pre></td><td style='width:50%'> 
-{{ meta.Operations | take(10) | map => {Request:it.Name, Response:it.ResponseType.Name ?? '', Service:it.ServiceType.Name} | htmlDump({ caption: 'First 10 Services'}) }}
+{{ meta.Operations |> take(10) |> map => {Request:it.Name,Response:it.ResponseType.Name??'', Service:it.ServiceType.Name} |> htmlDump({ caption:'First 10 Services'}) }}
 <table><caption>Network Information</caption>
 <tr><th>    IPv4 Addresses                            </th><th>              IPv6 Addresses                            </th></tr>
 <td>{{#each ip in networkIpv4Addresses}}<div>{{ip}}</div>{{/each}}</td><td>{{#each ip in networkIpv6Addresses}}<div>{{ip}}</div>{{/each}}<td></tr></pre></td>
