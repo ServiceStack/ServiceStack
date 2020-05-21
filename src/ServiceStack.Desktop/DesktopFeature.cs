@@ -75,13 +75,14 @@ namespace ServiceStack.Desktop
         }
     }
 
+    [ExcludeMetadata]
     public class DesktopFile : IRequiresRequestStream, IReturn<string>
     {
         public string File { get; set; }
         public Stream RequestStream { get; set; }
     }
 
-    [DefaultRequest(typeof(DesktopFile)), ExcludeMetadata]
+    [DefaultRequest(typeof(DesktopFile))]
     public class DesktopFileService : Service
     {
         public async Task Get(DesktopFile request)
@@ -151,6 +152,7 @@ namespace ServiceStack.Desktop
         }
     }
 
+    [ExcludeMetadata]
     public class DesktopDownloadUrl : IRequiresRequestStream, IReturnVoid
     {
         public string File { get; set; }
@@ -160,7 +162,7 @@ namespace ServiceStack.Desktop
         public Stream RequestStream { get; set; }
     }
 
-    [DefaultRequest(typeof(DesktopDownloadUrl)), ExcludeMetadata]
+    [DefaultRequest(typeof(DesktopDownloadUrl))]
     public class DesktopDownloadUrlService : Service
     {
         public async Task Any(DesktopDownloadUrl request)
@@ -204,6 +206,7 @@ namespace ServiceStack.Desktop
         }
     }
 
+    [ExcludeMetadata]
     public class EvalScript : IReturn<string>
     {
         public string AuthSecret { get; set; }
@@ -223,7 +226,7 @@ namespace ServiceStack.Desktop
         public string RenderLispAsync { get; set; }
     }
 
-    [DefaultRequest(typeof(EvalScript)), ExcludeMetadata]
+    [DefaultRequest(typeof(EvalScript))]
     public class DesktopScriptServices : Service
     {
         public static ILog log = LogManager.GetLogger(typeof(DesktopScriptServices));

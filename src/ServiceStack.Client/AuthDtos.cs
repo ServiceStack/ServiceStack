@@ -482,6 +482,7 @@ namespace ServiceStack
     }
     
     //CrudEvents
+    [ExcludeMetadata]
     [DataContract]
     public class GetCrudEvents : QueryDb<CrudEvent>
     {
@@ -493,6 +494,7 @@ namespace ServiceStack
         public string ModelId { get; set; }
     }
 
+    [ExcludeMetadata]
     [DataContract]
     public class CheckCrudEvents : IReturn<CheckCrudEventsResponse>
     {
