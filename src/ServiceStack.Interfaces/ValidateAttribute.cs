@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using ServiceStack.Caching;
 using ServiceStack.DataAnnotations;
 
 namespace ServiceStack
@@ -28,8 +27,7 @@ namespace ServiceStack
         /// ARGS:
         ///   - Request: IRequest
         ///   -     dto: Request DTO
-        ///   -   field: Property Name
-        ///   -      it: Property Value
+        ///   -      it: Request DTO
         /// </summary>
         public string Condition { get; set; }
 

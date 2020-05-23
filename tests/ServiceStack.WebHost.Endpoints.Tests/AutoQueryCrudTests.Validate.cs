@@ -5,9 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
-using ServiceStack.Caching;
 using ServiceStack.Data;
-using ServiceStack.FluentValidation;
 using ServiceStack.Model;
 using ServiceStack.OrmLite;
 using ServiceStack.Script;
@@ -21,13 +19,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public NoRockstarAlbumReferences() 
             : base("HasForeignKeyReferences", "Has RockstarAlbum References") {}
 
-        public override async Task<bool> IsValidAsync(object dto, IRequest request = null)
+        public override async Task<bool> IsValidAsync(object dto, IRequest request)
         {
-            //Example of dynamic access using compiled accessor delegates
+            //Example of using compiled accessor delegates to access `Id` property
             //var id = TypeProperties.Get(dto.GetType()).GetPublicGetter("Id")(dto).ConvertTo<int>();
+
             var id = ((IHasId<int>) dto).Id;
             using var db = HostContext.AppHost.GetDbConnection(request);
-            return !(await db.ExistsAsync<RockstarAlbum>(x => x.RockstarId == id));
+            return !await db.ExistsAsync<RockstarAlbum>(x => x.RockstarId == id);
         }
     }
 
