@@ -19,7 +19,12 @@ namespace ServiceStack
         {
             if (request is IHasServiceScope hasScope)
             {
-                var scope = request.CreateScope();
+                var scopeFactory = (Microsoft.Extensions.DependencyInjection.IServiceScopeFactory) 
+                    hasScope.GetService(typeof(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory));
+                if (scopeFactory == null)
+                    return null;
+                
+                var scope = scopeFactory.CreateScope();
                 hasScope.ServiceScope = scope;
                 return scope;
             }
