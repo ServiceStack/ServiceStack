@@ -1236,6 +1236,9 @@ namespace ServiceStack
 
         public virtual string ResolveAbsoluteUrl(string virtualPath, IRequest httpReq)
         {
+            if (virtualPath.StartsWith("http://") || virtualPath.StartsWith("https://"))
+                return virtualPath;
+            
             if (httpReq == null)
                 return (Config.WebHostUrl ?? "/").CombineWith(virtualPath.TrimStart('~'));
 
