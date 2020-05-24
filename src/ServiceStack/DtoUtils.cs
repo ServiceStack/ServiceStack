@@ -15,8 +15,75 @@ namespace ServiceStack
         /// </summary>
         public const string ResponseStatusPropertyName = "ResponseStatus";
 
-        public static ResponseStatus ToResponseStatus(this Exception exception, object requestDto = null) =>
-            HostContext.AssertAppHost().CreateResponseStatus(exception, requestDto);
+        public static ResponseStatus CreateResponseStatus(Exception ex, object request = null, bool debugMode = true)
+        {
+            var e = ex.UnwrapIfSingleException();
+            
+            var responseStatus = (e is IResponseStatusConvertible customStatus
+                ? customStatus.ToResponseStatus()
+                : null) ?? ResponseStatusUtils.CreateResponseStatus(e.GetType().Name, e.Message);
+            
+            if (responseStatus == null)
+                return null;
+
+            if (debugMode)
+            {
+#if !NETSTANDARD2_0
+                if (ex is System.Web.HttpCompileException compileEx && compileEx.Results.Errors.HasErrors)
+                {
+                    responseStatus.Errors ??= new List<ResponseError>();
+                    foreach (var err in compileEx.Results.Errors)
+                    {
+                        responseStatus.Errors.Add(new ResponseError { Message = err.ToString() });
+                    }
+                }
+#endif
+                // View stack trace in tests and on the client
+                var sb = StringBuilderCache.Allocate();
+                
+                if (request != null)
+                {
+                    try
+                    {
+                        var str = $"[{request.GetType().GetOperationName()}: {DateTime.UtcNow}]:\n[REQUEST: {TypeSerializer.SerializeToString(request)}]";
+                        sb.AppendLine(str);
+                    }
+                    catch (Exception requestEx)
+                    {
+                        sb.AppendLine($"[{request.GetType().GetOperationName()}: {DateTime.UtcNow}]:\n[REQUEST: {requestEx.Message}]");
+                    }
+                }
+                
+                sb.AppendLine(e.ToString());
+                
+                var innerMessages = new List<string>();
+                var innerEx = e.InnerException;
+                while (innerEx != null)
+                {
+                    sb.AppendLine("");
+                    sb.AppendLine(innerEx.ToString());
+                    innerMessages.Add(innerEx.Message);
+                    innerEx = innerEx.InnerException;
+                }
+                
+                responseStatus.StackTrace = StringBuilderCache.ReturnAndFree(sb);
+                if (innerMessages.Count > 0)
+                {
+                    responseStatus.Meta ??= new Dictionary<string, string>();
+                    responseStatus.Meta["InnerMessages"] = innerMessages.Join("\n");
+                }
+            }
+
+            return responseStatus;
+        }
+
+        public static ResponseStatus ToResponseStatus(this Exception exception, object requestDto = null)
+        {
+            var appHost = HostContext.AppHost;
+            return appHost != null 
+                ? appHost.CreateResponseStatus(exception, requestDto)
+                : CreateResponseStatus(exception, requestDto);
+        }
 
         public static ResponseStatus ToResponseStatus(this ValidationError validationException) => 
             ResponseStatusUtils.CreateResponseStatus(validationException.ErrorCode, validationException.Message, validationException.Violations);
@@ -125,7 +192,7 @@ namespace ServiceStack
         /// <returns></returns>
         public static object CreateErrorResponse(object request, Exception ex)
         {
-            var responseStatus = HostContext.AssertAppHost().CreateResponseStatus(ex, request);
+            var responseStatus = CreateResponseStatus(ex, request);
             var errorResponse = CreateErrorResponse(request, ex, responseStatus);
             return errorResponse;
         }

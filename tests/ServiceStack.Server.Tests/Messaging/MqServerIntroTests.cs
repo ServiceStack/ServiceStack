@@ -223,7 +223,6 @@ namespace ServiceStack.Server.Tests.Messaging
         [Test]
         public void Message_with_exceptions_are_retried_then_published_to_Request_dlq()
         {
-            using var appHost = new BasicAppHost().Init();
             using var mqServer = CreateMqServer(retryCount: 1);
             var called = 0;
             mqServer.RegisterHandler<HelloIntro>(m =>
@@ -248,7 +247,6 @@ namespace ServiceStack.Server.Tests.Messaging
         [Test]
         public void Message_with_ReplyTo_that_throw_exceptions_are_retried_then_published_to_Request_dlq()
         {
-            using var appHost = new BasicAppHost().Init();
             using var mqServer = CreateMqServer(retryCount: 1);
             var called = 0;
             mqServer.RegisterHandler<HelloIntro>(m =>
@@ -264,10 +262,6 @@ namespace ServiceStack.Server.Tests.Messaging
             {
                 ReplyTo = replyToMq
             });
-
-            int i = 3;
-            while (i-- > 0)
-                Thread.Sleep(10000);
 
             IMessage<HelloIntro> dlqMsg = mqClient.Get<HelloIntro>(QueueNames<HelloIntro>.Dlq);
             mqClient.Ack(dlqMsg);

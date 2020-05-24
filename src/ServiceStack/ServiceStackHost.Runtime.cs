@@ -517,69 +517,16 @@ namespace ServiceStack
         
         public virtual ResponseStatus CreateResponseStatus(Exception ex, object request=null)
         {
-            var e = ((Config.ReturnsInnerException && ex.InnerException != null && !(ex is IHttpError)
+            var useEx = (Config.ReturnsInnerException && ex.InnerException != null && !(ex is IHttpError)
                 ? ex.InnerException
-                : null) ?? ex).UnwrapIfSingleException();
-            
-            var responseStatus = (e is IResponseStatusConvertible customStatus
-                ? customStatus.ToResponseStatus()
-                : null) ?? ResponseStatusUtils.CreateResponseStatus(e.GetType().Name, e.Message);
-            
-            if (responseStatus == null)
-                return null;
+                : null) ?? ex;
 
-            if (Config.DebugMode)
-            {
-#if !NETSTANDARD2_0
-                if (ex is HttpCompileException compileEx && compileEx.Results.Errors.HasErrors)
-                {
-                    responseStatus.Errors ??= new List<ResponseError>();
-                    foreach (var err in compileEx.Results.Errors)
-                    {
-                        responseStatus.Errors.Add(new ResponseError { Message = err.ToString() });
-                    }
-                }
-#endif
-                // View stack trace in tests and on the client
-                var sb = StringBuilderCache.Allocate();
-                
-                if (request != null)
-                {
-                    try
-                    {
-                        var str = $"[{request.GetType().GetOperationName()}: {DateTime.UtcNow}]:\n[REQUEST: {TypeSerializer.SerializeToString(request)}]";
-                        sb.AppendLine(str);
-                    }
-                    catch (Exception requestEx)
-                    {
-                        sb.AppendLine($"[{request.GetType().GetOperationName()}: {DateTime.UtcNow}]:\n[REQUEST: {requestEx.Message}]");
-                    }
-                }
-                
-                sb.AppendLine(e.ToString());
-                
-                var innerMessages = new List<string>();
-                var innerEx = e.InnerException;
-                while (innerEx != null)
-                {
-                    sb.AppendLine("");
-                    sb.AppendLine(innerEx.ToString());
-                    innerMessages.Add(innerEx.Message);
-                    innerEx = innerEx.InnerException;
-                }
-                
-                responseStatus.StackTrace = StringBuilderCache.ReturnAndFree(sb);
-                if (innerMessages.Count > 0)
-                {
-                    responseStatus.Meta ??= new Dictionary<string, string>();
-                    responseStatus.Meta["InnerMessages"] = innerMessages.Join("\n");
-                }
-            }
+            var responseStatus = DtoUtils.CreateResponseStatus(useEx, request, Config.DebugMode);
 
-            OnExceptionTypeFilter(e, responseStatus);
+            OnExceptionTypeFilter(useEx, responseStatus);
 
             if (Config.DebugMode || Log.IsDebugEnabled)
-                OnLogError(GetType(), responseStatus.Message, e);
+                OnLogError(GetType(), responseStatus.Message, useEx);
             
             return responseStatus;
         }
