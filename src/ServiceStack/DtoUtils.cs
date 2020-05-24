@@ -16,7 +16,7 @@ namespace ServiceStack
         public const string ResponseStatusPropertyName = "ResponseStatus";
 
         public static ResponseStatus ToResponseStatus(this Exception exception, object requestDto = null) =>
-            HostContext.AppHost.CreateResponseStatus(exception, requestDto);
+            HostContext.AssertAppHost().CreateResponseStatus(exception, requestDto);
 
         public static ResponseStatus ToResponseStatus(this ValidationError validationException) => 
             ResponseStatusUtils.CreateResponseStatus(validationException.ErrorCode, validationException.Message, validationException.Violations);
@@ -125,7 +125,7 @@ namespace ServiceStack
         /// <returns></returns>
         public static object CreateErrorResponse(object request, Exception ex)
         {
-            var responseStatus = HostContext.AppHost.CreateResponseStatus(ex, request);
+            var responseStatus = HostContext.AssertAppHost().CreateResponseStatus(ex, request);
             var errorResponse = CreateErrorResponse(request, ex, responseStatus);
             return errorResponse;
         }
