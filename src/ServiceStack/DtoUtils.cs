@@ -15,7 +15,7 @@ namespace ServiceStack
         /// </summary>
         public const string ResponseStatusPropertyName = "ResponseStatus";
 
-        public static ResponseStatus CreateResponseStatus(Exception ex, object request = null, bool debugMode = true)
+        public static ResponseStatus CreateResponseStatus(Exception ex, object request = null, bool debugMode = false)
         {
             var e = ex.UnwrapIfSingleException();
             
@@ -192,7 +192,7 @@ namespace ServiceStack
         /// <returns></returns>
         public static object CreateErrorResponse(object request, Exception ex)
         {
-            var responseStatus = CreateResponseStatus(ex, request);
+            var responseStatus = ex.ToResponseStatus(request);
             var errorResponse = CreateErrorResponse(request, ex, responseStatus);
             return errorResponse;
         }

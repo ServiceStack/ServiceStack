@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -7,9 +6,7 @@ using NUnit.Framework;
 using RabbitMQ.Client;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
-using ServiceStack.Messaging.Redis;
 using ServiceStack.RabbitMq;
-using ServiceStack.Redis;
 using ServiceStack.Text;
 
 namespace ServiceStack.Server.Tests.Messaging
@@ -42,17 +39,17 @@ namespace ServiceStack.Server.Tests.Messaging
 
         internal static RabbitMqServer CreateMqServer(int noOfRetries = 2)
         {
-            var redisFactory = TestConfig.BasicClientManger;
-            try
-            {
-                redisFactory.Exec(redis => redis.FlushAll());
-            }
-            catch (RedisException rex)
-            {
-                Debug.WriteLine("WARNING: Redis not started? \n" + rex.Message);
-            }
-            var mqHost = new RabbitMqServer(ConnectionString);
-            return mqHost;
+            var mqServer = new RabbitMqServer(ConnectionString);
+            using var conn = mqServer.ConnectionFactory.CreateConnection();
+            using var channel = conn.CreateModel();
+            channel.PurgeQueue<Reverse>();
+            channel.PurgeQueue<Rot13>();
+            channel.PurgeQueue<Incr>();
+            channel.PurgeQueue<Wait>();
+            channel.PurgeQueue<Hello>();
+            channel.PurgeQueue<HelloResponse>();
+            channel.PurgeQueue<HelloNull>();
+            return mqServer;
         }
 
         internal static void Publish_4_messages(IMessageQueueClient mqClient)
@@ -102,6 +99,7 @@ namespace ServiceStack.Server.Tests.Messaging
                 5.Times(x => ThreadPool.QueueUserWorkItem(y => mqHost.Start()));
                 ExecUtils.RetryOnException(() =>
                 {
+                    Thread.Sleep(100);
                     Assert.That(mqHost.GetStatus(), Is.EqualTo("Started"));
                     Assert.That(mqHost.BgThreadCount, Is.EqualTo(1));
                     Thread.Sleep(100);
@@ -110,6 +108,7 @@ namespace ServiceStack.Server.Tests.Messaging
                 10.Times(x => ThreadPool.QueueUserWorkItem(y => mqHost.Stop()));
                 ExecUtils.RetryOnException(() =>
                 {
+                    Thread.Sleep(100);
                     Assert.That(mqHost.GetStatus(), Is.EqualTo("Stopped"));
                     Thread.Sleep(100);
                 }, TimeSpan.FromSeconds(5));
@@ -117,6 +116,7 @@ namespace ServiceStack.Server.Tests.Messaging
                 ThreadPool.QueueUserWorkItem(y => mqHost.Start());
                 ExecUtils.RetryOnException(() =>
                 {
+                    Thread.Sleep(100);
                     Assert.That(mqHost.GetStatus(), Is.EqualTo("Started"));
                     Assert.That(mqHost.BgThreadCount, Is.EqualTo(2));
                     Thread.Sleep(100);
@@ -196,8 +196,8 @@ namespace ServiceStack.Server.Tests.Messaging
 
                 ExecUtils.RetryOnException(() =>
                 {
+                    Thread.Sleep(300);
                     Assert.That(called, Is.EqualTo(1 + incr.Value));
-                    Thread.Sleep(100);
                 }, TimeSpan.FromSeconds(5));
             }
         }
@@ -246,8 +246,8 @@ namespace ServiceStack.Server.Tests.Messaging
 
                     ExecUtils.RetryOnException(() =>
                     {
+                        Thread.Sleep(300);
                         Assert.That(messageReceived, Is.EqualTo("Hello, ServiceStack"));
-                        Thread.Sleep(100);
                     }, TimeSpan.FromSeconds(5));
                 }
             }
@@ -266,35 +266,26 @@ namespace ServiceStack.Server.Tests.Messaging
 
         private static void RunHandlerOnMultipleThreads(int noOfThreads, int msgs)
         {
-            using (var mqHost = CreateMqServer())
+            using var mqHost = CreateMqServer();
+            var timesCalled = 0;
+
+            mqHost.RegisterHandler<Wait>(m => {
+                Interlocked.Increment(ref timesCalled);
+                Thread.Sleep(m.GetBody().ForMs);
+                return null;
+            }, noOfThreads);
+
+            mqHost.Start();
+
+            using var mqClient = mqHost.CreateMessageQueueClient();
+            var dto = new Wait { ForMs = 100 };
+            msgs.Times(i => mqClient.Publish(dto));
+
+            ExecUtils.RetryOnException(() =>
             {
-                var timesCalled = 0;
-                using (var conn = mqHost.ConnectionFactory.CreateConnection())
-                using (var channel = conn.CreateModel())
-                {
-                    channel.PurgeQueue<Wait>();
-                }
-
-                mqHost.RegisterHandler<Wait>(m => {
-                    Interlocked.Increment(ref timesCalled);
-                    Thread.Sleep(m.GetBody().ForMs);
-                    return null;
-                }, noOfThreads);
-
-                mqHost.Start();
-
-                using (var mqClient = mqHost.CreateMessageQueueClient())
-                {
-                    var dto = new Wait { ForMs = 100 };
-                    msgs.Times(i => mqClient.Publish(dto));
-
-                    ExecUtils.RetryOnException(() =>
-                    {
-                        Assert.That(timesCalled, Is.EqualTo(msgs));
-                        Thread.Sleep(100);
-                    }, TimeSpan.FromSeconds(5));
-                }
-            }
+                Thread.Sleep(300);
+                Assert.That(timesCalled, Is.EqualTo(msgs));
+            }, TimeSpan.FromSeconds(5));
         }
 
         [Test]
