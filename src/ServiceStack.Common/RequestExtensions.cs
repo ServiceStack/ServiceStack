@@ -33,7 +33,7 @@ namespace ServiceStack
             for (int index = 0; index < nvc.Count; index++)
             {
                 var name = nvc.GetKey(index);
-                var values = nvc.GetValues(index);
+                var values = nvc.GetValues(name); // Only use string name instead of index which returns multiple values 
 
                 if (name == null) //thank you .NET Framework!
                 {
