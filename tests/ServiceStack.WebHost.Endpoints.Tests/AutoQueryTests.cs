@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Threading;
+using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Data;
@@ -813,20 +814,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             public IAutoQueryDb AutoQuery { get; set; }
 
-            public object Any(QueryMovies query)
+            public async Task<object> Any(QueryMovies query)
             {
-                var q = AutoQuery.CreateQuery(query, base.Request);
-                return AutoQuery.Execute(query, q);
+                using var db = AutoQuery.GetDb(query, base.Request);
+                var q = AutoQuery.CreateQuery(query, base.Request, db);
+                return await AutoQuery.ExecuteAsync(query, q, base.Request, db);
             }
-            
         }
+        
         [Test]
-        public void Can_execute_AutoQueryService_in_UnitTest()
+        public async Task Can_execute_AutoQueryService_in_UnitTest()
         {
             var service = appHost.Resolve<MyQueryServices>();
             service.Request = new BasicRequest();
 
-            var response = (QueryResponse<Movie>) service.Any(
+            var response = (QueryResponse<Movie>) await service.Any(
                 new QueryMovies { Ratings = new[] {"G", "PG-13"} });
             
             Assert.That(response.Results.Count, Is.EqualTo(5));
