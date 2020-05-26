@@ -467,39 +467,80 @@ namespace ServiceStack
         }
     }
 
+    /// <summary>
+    /// AutoQuery RDBMS APIs
+    /// </summary>
     public interface IAutoQueryDb : IAutoCrudDb
     {
+        /// <summary>
+        /// Resolve the source Type for this Request DTO 
+        /// </summary>
         Type GetFromType(Type requestDtoType);
+        
+        /// <summary>
+        /// Non-generic API to resolve the DB Connection to use for this request 
+        /// </summary>
         IDbConnection GetDb(Type fromType, IRequest req = null);
+
+        /// <summary>
+        /// Generic API to resolve the DB Connection to use for this request
+        /// </summary>
         IDbConnection GetDb<From>(IRequest req = null);
         
+        /// <summary>
+        /// Generate an untyped AutoQuery Query Builder
+        /// </summary>
         ITypedQuery GetTypedQuery(Type dtoType, Type fromType);
 
+        /// <summary>
+        /// Generate a populated and Typed OrmLite SqlExpression using the same model as the source and output target
+        /// </summary>
         SqlExpression<From> CreateQuery<From>(IQueryDb<From> dto, Dictionary<string, string> dynamicParams, IRequest req = null, IDbConnection db = null);
 
+        /// <summary>
+        /// Execute an OrmLite SqlExpression using the same model as the source and output target
+        /// </summary>
         QueryResponse<From> Execute<From>(IQueryDb<From> model, SqlExpression<From> query, IRequest req = null, IDbConnection db = null);
 
+        /// <summary>
+        /// Async Execute an OrmLite SqlExpression using the same model as the source and output target
+        /// </summary>
         Task<QueryResponse<From>> ExecuteAsync<From>(IQueryDb<From> model, SqlExpression<From> query, IRequest req = null, IDbConnection db = null);
 
+        /// <summary>
+        /// Generate a populated and Typed OrmLite SqlExpression using different models for source and output target
+        /// </summary>
         SqlExpression<From> CreateQuery<From, Into>(IQueryDb<From, Into> dto, Dictionary<string, string> dynamicParams, IRequest req = null, IDbConnection db = null);
 
+        /// <summary>
+        /// Execute an OrmLite SqlExpression using different models for source and output target
+        /// </summary>
         QueryResponse<Into> Execute<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query, IRequest req = null, IDbConnection db = null);
 
+        /// <summary>
+        /// Async Execute an OrmLite SqlExpression using different models for source and output target
+        /// </summary>
         Task<QueryResponse<Into>> ExecuteAsync<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query, IRequest req = null, IDbConnection db = null);
         
+        /// <summary>
+        /// Generate a populated untyped ISqlExpression from an untyped AutoQuery Request
+        /// </summary>
         ISqlExpression CreateQuery(IQueryDb dto, Dictionary<string, string> dynamicParams, IRequest req, IDbConnection db);
 
         /// <summary>
-        /// Execute an AutoQuery Request 
+        /// Execute an untyped ISqlExpression 
         /// </summary>
         IQueryResponse Execute(IQueryDb request, ISqlExpression q, IDbConnection db);
 
         /// <summary>
-        /// Execute an AutoQuery Request 
+        /// Async Execute an untyped ISqlExpression 
         /// </summary>
         Task<IQueryResponse> ExecuteAsync(IQueryDb request, ISqlExpression q, IDbConnection db);
     }
 
+    /// <summary>
+    /// AutoQuery CRUD RDBMS APIs
+    /// </summary>
     public interface IAutoCrudDb
     {
         /// <summary>
