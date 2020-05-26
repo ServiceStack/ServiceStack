@@ -27,16 +27,6 @@ namespace ServiceStack
         public List<Action<AppMetadata>> AppMetadataFilters { get; } = new List<Action<AppMetadata>>();
 
         public bool ShowResponseStatusInMetadataPages { get; set; }
-
-        public bool EnableNav
-        {
-            get => ServiceRoutes.ContainsKey(typeof(MetadataNavService));
-            set
-            {
-                if (!value)
-                    ServiceRoutes.Remove(typeof(MetadataNavService));
-            }
-        }
         
         /// <summary>
         /// Export built-in Types so they're available from /metadata/app
@@ -54,6 +44,26 @@ namespace ServiceStack
                 "/" + "metadata".Localize() + "/" + "nav".Localize() + "/{Name}",
             } },
         };
+
+        public bool EnableNav
+        {
+            get => ServiceRoutes.ContainsKey(typeof(MetadataNavService));
+            set
+            {
+                if (!value)
+                    ServiceRoutes.Remove(typeof(MetadataNavService));
+            }
+        }
+        
+        public bool EnableAppMetadata
+        {
+            get => ServiceRoutes.ContainsKey(typeof(MetadataAppService));
+            set
+            {
+                if (!value)
+                    ServiceRoutes.Remove(typeof(MetadataAppService));
+            }
+        }
 
         public MetadataFeature()
         {
