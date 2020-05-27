@@ -1179,7 +1179,7 @@ namespace ServiceStack.Mvc
         public virtual TPlugin GetPlugin<TPlugin>() where TPlugin : class, IPlugin => HostContext.AppHost.GetPlugin<TPlugin>();
 
         private IServiceStackProvider provider;
-        public virtual IServiceStackProvider ServiceStackProvider => provider ?? (provider = new ServiceStackProvider(Request));
+        public virtual IServiceStackProvider ServiceStackProvider => provider ??= new ServiceStackProvider(Request);
 
         public virtual IAppSettings AppSettings => ServiceStackProvider.AppSettings;
 

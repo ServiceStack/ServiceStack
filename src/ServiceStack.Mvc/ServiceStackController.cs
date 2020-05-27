@@ -160,11 +160,11 @@ namespace ServiceStack.Mvc
 
         private IServiceStackProvider serviceStackProvider;
         public virtual IServiceStackProvider ServiceStackProvider => 
-            serviceStackProvider ?? (serviceStackProvider = 
+            serviceStackProvider ??=  
 #if !NETSTANDARD
-            new ServiceStackProvider(new AspNetRequest(base.HttpContext, GetType().Name)));
+            new ServiceStackProvider(new AspNetRequest(base.HttpContext, GetType().Name));
 #else
-            new ServiceStackProvider(new NetCoreRequest(base.HttpContext, GetType().Name)));
+            new ServiceStackProvider(new NetCoreRequest(base.HttpContext, GetType().Name));
 #endif
         public virtual IAppSettings AppSettings => ServiceStackProvider.AppSettings;
 
