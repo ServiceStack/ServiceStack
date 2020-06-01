@@ -6,6 +6,11 @@
         <TargetFrameworks>netstandard2.1;netcoreapp3.0</TargetFrameworks>
         <RootNamespace>ServiceStack</RootNamespace>
         <LangVersion>8</LangVersion>
+        <Title>ServiceStack.GrpcClient</Title>
+        <PackageDescription>
+            ServiceStack's gRPC GrpcServiceClient
+        </PackageDescription>
+        <PackageTags>ServiceStack;ServiceClients;gRPC</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
