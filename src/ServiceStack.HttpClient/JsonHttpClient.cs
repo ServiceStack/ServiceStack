@@ -60,6 +60,7 @@ namespace ServiceStack
         public string RefreshTokenUri { get; set; }
 
         public bool UseTokenCookie { get; set; }
+        public bool UseCookies { get; set; } = true;
 
         /// <summary>
         /// Gets the collection of headers to be added to outgoing requests.
@@ -127,7 +128,7 @@ namespace ServiceStack
 
             var handler = HttpMessageHandler ?? new HttpClientHandler
             {
-                UseCookies = true,
+                UseCookies = UseCookies,
                 CookieContainer = CookieContainer,
                 UseDefaultCredentials = Credentials == null,
                 Credentials = Credentials,
