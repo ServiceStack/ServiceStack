@@ -670,11 +670,10 @@
         }
     };
     $.ss.onUnload = function () {
-        var url = $.ss.unRegisterUrl; 
-        if (url) {
-            $.ss.unRegisterUrl = null;
-            $.ajax({ type: 'POST', url: url, async: false });
-        }
+        if (navigator.sendBeacon)
+            navigator.sendBeacon($.ss.unRegisterUrl);
+        else
+            $.ajax({ type: 'POST', url: $.ss.unRegisterUrl, async: false });
     };
     $.fn.handleServerEvents = function (opt) {
         $.ss.eventSource = this[0];
@@ -683,7 +682,6 @@
             $.extend($.ss.handlers, opt.handlers || {});
         }
         $(window).on("unload", $.ss.onUnload);
-        $(window).on("beforeunload", $.ss.onUnload); //Chrome
         function onMessage(e) {
             var parts = $.ss.splitOnFirst(e.data, ' ');
             var selector = parts[0];
