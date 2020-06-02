@@ -4,7 +4,7 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <Title>ServiceStack.Desktop</Title>
         <PackageDescription>
-            Desktop Assets, Vue and React Framework libraries, Bootstrap, Materail Design SVGs, Fontawesome 
+            Desktop Assets, Vue and React Framework libraries, Bootstrap, Material Design SVGs, Font Awesome 
             and Win32 APIs for ServiceStack CEF .NET Core Desktop Apps
         </PackageDescription>
         <PackageTags>ServiceStack;Desktop,Cef,Vue,React,Bootstrap,MaterialDesign,fontawesone</PackageTags>
