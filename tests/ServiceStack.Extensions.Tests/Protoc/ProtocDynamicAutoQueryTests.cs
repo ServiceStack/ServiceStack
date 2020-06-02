@@ -876,7 +876,8 @@ namespace ServiceStack.Extensions.Tests.Protoc
         
             Assert.That(response.Results.Count, Is.EqualTo(1));
         
-            Assert.That(ProtocTests.ToGuid(response.Results[0].Guid), Is.EqualTo(guid));
+            // Assert.That(ProtocTests.ToGuid(response.Results[0].Guid), Is.EqualTo(guid));
+            Assert.That(response.Results[0].Guid, Is.EqualTo(guid.ToString()));
         }
         
         [Test]

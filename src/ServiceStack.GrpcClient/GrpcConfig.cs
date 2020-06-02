@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Reflection;
+using ProtoBuf;
 using ProtoBuf.Meta;
 using ServiceStack.Logging;
 
@@ -13,6 +14,7 @@ namespace ServiceStack
         static GrpcConfig()
         {
             var model = RuntimeTypeModel.Create();
+            model.BeforeApplyDefaultBehaviour += (sender, args) => args.MetaType.CompatibilityLevel = CompatibilityLevel;  
             model.AfterApplyDefaultBehaviour += OnAfterApplyDefaultBehaviour;
             TypeModel = model;
         }
@@ -83,6 +85,8 @@ namespace ServiceStack
                 }
             }
         }
+
+        public static CompatibilityLevel CompatibilityLevel { get; set; } = CompatibilityLevel.Level300;
 
         public static Func<Type, bool> IgnoreTypeModel { get; set; } = DefaultIgnoreTypes;
 

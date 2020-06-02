@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -270,7 +271,7 @@ namespace ServiceStack.Extensions.Tests.Protoc
                 NotEqual = "NotEqual",
                 Null = "NotNull",
                 RegularExpression = "FOO",
-                ScalePrecision = ToProtoBufDecimal(123.456m)
+                ScalePrecision = 123.456m.ToString(CultureInfo.InvariantCulture)
             };
 
             try

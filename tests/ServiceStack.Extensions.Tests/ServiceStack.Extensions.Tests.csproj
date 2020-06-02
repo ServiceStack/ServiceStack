@@ -33,9 +33,5 @@
         <ProjectReference Include="..\..\src\ServiceStack.Extensions\ServiceStack.Extensions.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.GrpcClient\ServiceStack.GrpcClient.csproj" />
     </ItemGroup>
-    
-    <ItemGroup>
-      <Folder Include="Protoc\protobuf-net" />
-    </ItemGroup>
 
 </Project>
