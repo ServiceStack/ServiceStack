@@ -136,9 +136,9 @@ namespace ServiceStack.Auth
 
             EachDb(db =>
             {
-                db.CreateTableIfNotExists<TUserAuth>();
-                db.CreateTableIfNotExists<TUserAuthDetails>();
-                db.CreateTableIfNotExists<UserAuthRole>();
+                db.DropAndCreateTable<TUserAuth>();
+                db.DropAndCreateTable<TUserAuthDetails>();
+                db.DropAndCreateTable<UserAuthRole>();
             });
         }
 
