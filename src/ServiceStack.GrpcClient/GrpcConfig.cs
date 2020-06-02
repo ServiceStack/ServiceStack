@@ -76,7 +76,7 @@ namespace ServiceStack
                     newField.MapValueFormat = field.MapValueFormat;
                     newField.Name = field.Name;
                     newField.OverwriteList = field.OverwriteList;
-                    newField.SupportNull = field.SupportNull;
+                    // newField.SupportNull = field.SupportNull;
                 } catch(Exception ex)
                 {
                     throw new InvalidOperationException($"Error adding field {field.Member?.Name}: {ex.Message}", ex);
