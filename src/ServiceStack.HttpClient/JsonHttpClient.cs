@@ -126,15 +126,22 @@ namespace ServiceStack
             if (HttpMessageHandler == null && GlobalHttpMessageHandlerFactory != null)
                 HttpMessageHandler = GlobalHttpMessageHandlerFactory();
 
-            var handler = HttpMessageHandler ?? new HttpClientHandler
+            var handler = HttpMessageHandler;
+            if (handler == null)
             {
-                UseCookies = UseCookies,
-                CookieContainer = CookieContainer,
-                UseDefaultCredentials = Credentials == null,
-                Credentials = Credentials,
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
-            };
-
+                var useHandler = new HttpClientHandler
+                {
+                    CookieContainer = CookieContainer,
+                    UseDefaultCredentials = Credentials == null,
+                    Credentials = Credentials,
+                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                };
+                if (UseCookies) //UseCookies throws in Blazor, only set if true
+                    useHandler.UseCookies = UseCookies;
+                
+                handler = useHandler;
+            }
+            
             var baseUri = BaseUri != null ? new Uri(BaseUri) : null;
 
             var client = new HttpClient(handler) { BaseAddress = baseUri };
