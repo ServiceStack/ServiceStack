@@ -9,14 +9,18 @@ namespace ServiceStack
 {
     public static class GrpcConfig
     {
-        public static RuntimeTypeModel TypeModel { get; }
+        private static RuntimeTypeModel typeModel;
+        public static RuntimeTypeModel TypeModel => typeModel ??= Init();
+        public static CompatibilityLevel CompatibilityLevel => TypeModel.DefaultCompatibilityLevel;
 
-        static GrpcConfig()
+        static GrpcConfig() => typeModel = Init();
+
+        private static RuntimeTypeModel Init()
         {
             var model = RuntimeTypeModel.Create();
-            model.BeforeApplyDefaultBehaviour += (sender, args) => args.MetaType.CompatibilityLevel = CompatibilityLevel;  
             model.AfterApplyDefaultBehaviour += OnAfterApplyDefaultBehaviour;
-            TypeModel = model;
+            model.DefaultCompatibilityLevel = CompatibilityLevel.Level300;
+            return model;
         }
 
         private static void OnAfterApplyDefaultBehaviour(object sender, TypeAddedEventArgs args)
@@ -85,8 +89,6 @@ namespace ServiceStack
                 }
             }
         }
-
-        public static CompatibilityLevel CompatibilityLevel { get; set; } = CompatibilityLevel.Level300;
 
         public static Func<Type, bool> IgnoreTypeModel { get; set; } = DefaultIgnoreTypes;
 
