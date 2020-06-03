@@ -558,9 +558,10 @@ namespace ServiceStack.Extensions.Tests
         [DataMember(Order = 1)]
         // [DataMember(Order = 11)]
         public int Id { get; set; }
-        [DataMember(Order = 2)]
+        
+        // [DataMember(Order = 2)]
         // [DataMember(Order = 12)]
-        public new string FirstName { get; set; }
+        // public new string FirstName { get; set; }
         
         //1. Commenting out property resolves issue
         //2. When using 1,2 index throws Grpc.Core.RpcException: Status(StatusCode=Unknown, Detail="Exception was thrown by handler.")
