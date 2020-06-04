@@ -195,11 +195,6 @@ namespace ServiceStack.Script
         /// </summary>
         public int MaxStackDepth { get; set; } = 25;
 
-        /// <summary>
-        /// Parse floating point numbers as decimals instead of doubles
-        /// </summary>
-        public static bool DecimalFloatingPointNumbers { get; set; }
-
         private ILog log;
         public ILog Log => log ??= LogManager.GetLogger(GetType());
         

@@ -471,7 +471,7 @@ namespace ServiceStack.Script
 
                 //don't convert into ternary to avoid Type coercion
                 if ((firstDecimalPos > 0 && firstDecimalPos < i) || hasExponent)
-                    token = ScriptContext.DecimalFloatingPointNumbers ? new JsLiteral(numLiteral.ParseDecimal()) : new JsLiteral(numLiteral.ParseDouble());
+                    token = new JsLiteral(ScriptConfig.ParseRealNumber(numLiteral));
                 else
                     token = new JsLiteral(numLiteral.ParseSignedInteger());
 

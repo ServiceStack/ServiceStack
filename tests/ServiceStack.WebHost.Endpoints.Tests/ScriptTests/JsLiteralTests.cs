@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using ServiceStack.Script;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 {
@@ -17,6 +18,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             "`a`".ParseJsExpression(out token);
             Assert.That(token, Is.EqualTo(new JsTemplateLiteral(
                 new[] { new JsTemplateElement("a","a", tail:true) })));
+
+            "1.0".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsLiteral(1.0)));
+
+            var hold = ScriptConfig.ParseRealNumber;
+            ScriptConfig.ParseRealNumber = numLiteral => numLiteral.ParseDecimal();
+
+            "1.0".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsLiteral(1.0m)));
+
+            ScriptConfig.ParseRealNumber = hold;
 
             "`a${b}`".ParseJsExpression(out token);
             Assert.That(token, Is.EqualTo(new JsTemplateLiteral(

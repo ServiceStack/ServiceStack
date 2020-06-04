@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using ServiceStack.IO;
+using ServiceStack.Text;
 
 namespace ServiceStack.Script
 {
@@ -36,7 +37,8 @@ namespace ServiceStack.Script
         public static string DefaultErrorClassName { get; set; } = "alert alert-danger";
         public static bool AllowUnixPipeSyntax { get; set; } = true;
         public static bool AllowAssignmentExpressions { get; set; } = true;
-        
+        public static ParseRealNumber ParseRealNumber = numLiteral => numLiteral.ParseDouble();
+
         public static CultureInfo CreateCulture()
         {
             var culture = DefaultCulture;
@@ -52,4 +54,6 @@ namespace ServiceStack.Script
             return culture;
         }
     }
+
+    public delegate object ParseRealNumber(ReadOnlySpan<char> numLiteral);
 }
