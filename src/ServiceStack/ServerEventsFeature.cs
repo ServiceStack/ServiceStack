@@ -231,6 +231,9 @@ namespace ServiceStack
 
                 feature.OnInit?.Invoke(req);
 
+                if (req.Response.IsClosed)
+                    return; //Allow short-circuiting in OnInit callback
+
                 await res.FlushAsync();
 
                 var userAuthId = session?.UserAuthId;
