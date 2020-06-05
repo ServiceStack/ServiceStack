@@ -15,7 +15,7 @@
         <PackageReference Include="protobuf-net" Version="3.0.0-alpha.173.g87fa6ea775" />
         <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.0.81" />
         
-        <PackageReference Include="System.Threading.Channels" Version="4.7.0" />
+        <PackageReference Include="System.Threading.Channels" Version="4.7.1" />
         
         <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
         <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.Source.csproj" />
