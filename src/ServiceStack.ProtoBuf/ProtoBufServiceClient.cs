@@ -42,15 +42,9 @@ namespace ServiceStack.ProtoBuf
             }
         }
 
-        public override string ContentType
-        {
-            get { return MimeTypes.ProtoBuf; }
-        }
+        public override string ContentType => MimeTypes.ProtoBuf;
 
-        public override StreamDeserializerDelegate StreamDeserializer
-        {
-            get { return Deserialize; }
-        }
+        public override StreamDeserializerDelegate StreamDeserializer => Deserialize;
 
         private static object Deserialize(Type type, Stream source)
         {
