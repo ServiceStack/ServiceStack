@@ -26,6 +26,7 @@ namespace ServiceStack.ProtoBuf
             Model.Serialize(outputStream, dto);
         }
 
+        public static T Deserialize<T>(Stream fromStream) => (T) Deserialize(typeof(T), fromStream);
         public static object Deserialize(Type type, Stream fromStream)
         {
             var obj = Model.Deserialize(fromStream, null, type);

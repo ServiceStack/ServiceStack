@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
@@ -117,6 +118,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 AttachmentData = Encoding.UTF8.GetBytes("AttachmentData"),
             };
             return request;
+        }
+
+        [Test]
+        public void Can_Serialize()
+        {
+	        var request = CreateProtoBufEmail();
+
+	        // using var ms = new MemoryStream(); 
+	        using var ms = MemoryStreamFactory.GetStream(); 
+	        ProtoBufFormat.Serialize(request, ms);
+
+	        ms.Position = 0;
+	        var response = ProtoBufFormat.Deserialize(request.GetType(), ms);
+
+	        Assert.That(response.Equals(request));
         }
 
         [Test]
