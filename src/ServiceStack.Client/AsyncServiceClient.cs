@@ -236,14 +236,12 @@ namespace ServiceStack
                    if (RequestCompressionType != null)
                         webReq.Headers[HttpHeaders.ContentEncoding] = RequestCompressionType;
 
-                    using (var requestStream = await webReq.GetRequestStreamAsync().ConfigureAwait(false))
-                    {
-                        token.ThrowIfCancellationRequested();
-                        if (request != null)
-                        {
-                            StreamSerializer(null, request, requestStream);
-                        }
-                    }
+                   using var requestStream = await webReq.GetRequestStreamAsync().ConfigureAwait(false);
+                   token.ThrowIfCancellationRequested();
+                   if (request != null)
+                   {
+                       StreamSerializer(null, request, requestStream);
+                   }
                 }
             }
             catch (Exception ex)
@@ -277,7 +275,7 @@ namespace ServiceStack
 
                     while ((read = await responseStream.ReadAsync(bufferRead, 0, bufferRead.Length, token).ConfigureAwait(false)) != 0)
                     {
-                        ms.Write(bufferRead, 0, read);
+                        await ms.WriteAsync(bufferRead, 0, read, token);
                         totalRead += read;
                         OnDownloadProgress?.Invoke(totalRead, responseBodyLength);
                     }
@@ -296,7 +294,7 @@ namespace ServiceStack
                             {
                                 if (typeof(T) == typeof(string))
                                 {
-                                    return Complete((T) (object) stream.ReadToEnd());
+                                    return Complete((T) (object) await stream.ReadToEndAsync());
                                 }
                                 else if (typeof(T) == typeof(byte[]))
                                     return Complete((T) (object) stream.ToArray());
@@ -347,11 +345,11 @@ namespace ServiceStack
                             GetAccessTokenResponse tokenResponse;
                             try
                             {
-                                tokenResponse = uri.PostJsonToUrl(refreshRequest, requestFilter: req => {
+                                tokenResponse = (await uri.PostJsonToUrlAsync(refreshRequest, requestFilter: req => {
                                     if (UseTokenCookie) {
                                         req.CookieContainer = CookieContainer;
                                     }
-                                }).FromJson<GetAccessTokenResponse>();
+                                })).FromJson<GetAccessTokenResponse>();
                             }
                             catch (WebException refreshEx)
                             {
@@ -467,10 +465,8 @@ namespace ServiceStack
                         }
                         else //Android
                         {
-                            using (var ms = MemoryStreamFactory.GetStream(bytes))
-                            {
-                                serviceEx.ResponseDto = this.StreamDeserializer(errorResponseType, ms);
-                            }
+                            using var ms = MemoryStreamFactory.GetStream(bytes);
+                            serviceEx.ResponseDto = this.StreamDeserializer(errorResponseType, ms);
                         }
                         return serviceEx;
                     }
