@@ -1,8 +1,6 @@
 using System;
 using System.IO;
 using System.Runtime.Serialization;
-using ProtoBuf;
-using ProtoBuf.Meta;
 using ServiceStack.Web;
 
 namespace ServiceStack.ProtoBuf

@@ -9,6 +9,7 @@ namespace ServiceStack.ProtoBuf
     public class ProtoBufFormat : IPlugin, IProtoBufPlugin, Model.IHasStringId
     {
         public string Id { get; set; } = Plugins.ProtoBuf;
+
         public void Register(IAppHost appHost)
         {
             appHost.ContentTypes.Register(MimeTypes.ProtoBuf, Serialize, Deserialize);
@@ -28,12 +29,13 @@ namespace ServiceStack.ProtoBuf
         }
 
         public static T Deserialize<T>(Stream fromStream) => (T) Deserialize(typeof(T), fromStream);
+
         public static object Deserialize(Type type, Stream fromStream)
         {
             // Current 3.0.0-alpha.152 fails to deserialize if using RecyclableMemoryStream directly 
             if (fromStream is RecyclableMemoryStream rms)
             {
-                using var ms = new MemoryStream(rms.GetBuffer(), 0, (int) rms.Length); 
+                using var ms = new MemoryStream(rms.GetBuffer(), 0, (int) rms.Length);
                 var obj = Model.Deserialize(ms, null, type);
                 return obj;
             }

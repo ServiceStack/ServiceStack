@@ -16,13 +16,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [DataContract]
     public class Reqstar //: IReturn<List<Reqstar>>
     {
-        [DataMember(Order = 1)] public int Id { get; set; }
+        [DataMember(Order = 1)]
+        public int Id { get; set; }
 
-        [DataMember(Order = 2)] public string FirstName { get; set; }
+        [DataMember(Order = 2)]
+        public string FirstName { get; set; }
 
-        [DataMember(Order = 3)] public string LastName { get; set; }
+        [DataMember(Order = 3)]
+        public string LastName { get; set; }
 
-        [DataMember(Order = 4)] public int? Age { get; set; }
+        [DataMember(Order = 4)]
+        public int? Age { get; set; }
     }
 
     //New: No special naming convention
@@ -32,19 +36,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [DataContract]
     public class SearchReqstars2 : IReturn<ReqstarsResponse>
     {
-        [DataMember(Order = 1)] public int? Age { get; set; }
+        [DataMember(Order = 1)]
+        public int? Age { get; set; }
     }
 
     [DataContract]
     public class ReqstarsResponse
     {
-        [DataMember(Order = 1)] public int Total { get; set; }
+        [DataMember(Order = 1)]
+        public int Total { get; set; }
 
-        [DataMember(Order = 2)] public int? Aged { get; set; }
+        [DataMember(Order = 2)]
+        public int? Aged { get; set; }
 
-        [DataMember(Order = 3)] public List<Reqstar> Results { get; set; }
+        [DataMember(Order = 3)]
+        public List<Reqstar> Results { get; set; }
 
-        [DataMember(Order = 4)] public ResponseStatus ResponseStatus { get; set; }
+        [DataMember(Order = 4)]
+        public ResponseStatus ResponseStatus { get; set; }
     }
 
     //Naming convention:{Request DTO}Response
@@ -54,20 +63,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [DataContract]
     public class SearchReqstars : IReturn<SearchReqstarsResponse>
     {
-        [DataMember(Order = 1)] public int? Age { get; set; }
+        [DataMember(Order = 1)]
+        public int? Age { get; set; }
     }
 
 
     [DataContract]
     public class SearchReqstarsResponse
     {
-        [DataMember(Order = 1)] public int Total { get; set; }
+        [DataMember(Order = 1)]
+        public int Total { get; set; }
 
-        [DataMember(Order = 2)] public int? Aged { get; set; }
+        [DataMember(Order = 2)]
+        public int? Aged { get; set; }
 
-        [DataMember(Order = 3)] public List<Reqstar> Results { get; set; }
+        [DataMember(Order = 3)]
+        public List<Reqstar> Results { get; set; }
 
-        [DataMember(Order = 4)] public ResponseStatus ResponseStatus { get; set; }
+        [DataMember(Order = 4)]
+        public ResponseStatus ResponseStatus { get; set; }
     }
 
     public class ReqstarsService : IService
@@ -80,12 +94,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             if (request.Age.HasValue && request.Age <= 0)
                 throw new ArgumentException("Invalid Age");
 
-            var response = new SearchReqstarsResponse
-            {
+            var response = new SearchReqstarsResponse {
                 Total = 2,
                 Aged = 10,
-                Results = new List<Reqstar>
-                {
+                Results = new List<Reqstar> {
                     new Reqstar {Id = 1, FirstName = "Max", LastName = "Meier", Age = 10},
                     new Reqstar {Id = 2, FirstName = "Susan", LastName = "Stark", Age = 10}
                 }
@@ -102,12 +114,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             if (request.Age.HasValue && request.Age <= 0)
                 throw new ArgumentException("Invalid Age");
 
-            var response = new ReqstarsResponse()
-            {
+            var response = new ReqstarsResponse() {
                 Total = 2,
                 Aged = 10,
-                Results = new List<Reqstar>
-                {
+                Results = new List<Reqstar> {
                     new Reqstar {Id = 1, FirstName = "Max", LastName = "Meier", Age = 10},
                     new Reqstar {Id = 2, FirstName = "Susan", LastName = "Stark", Age = 10}
                 }
@@ -120,9 +130,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class AppHost : AppHostHttpListenerBase
     {
         public AppHost()
-            : base("Test ErrorHandling", typeof(ReqstarsService).Assembly)
-        {
-        }
+            : base("Test ErrorHandling", typeof(ReqstarsService).Assembly) { }
 
         public override void Configure(Funq.Container container)
         {
@@ -160,8 +168,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Dispose();
         }
 
-        static IRestClient[] ServiceClients =
-        {
+        static IRestClient[] ServiceClients = {
             new JsonServiceClient(testUri),
             new JsonHttpClient(testUri),
             new XmlServiceClient(testUri),
