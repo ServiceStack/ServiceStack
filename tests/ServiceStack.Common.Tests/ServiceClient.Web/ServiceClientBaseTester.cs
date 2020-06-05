@@ -10,7 +10,7 @@ namespace ServiceStack.Common.Tests.ServiceClient.Web
     {
         public override string ContentType { get { return String.Format("application/{0}", Format); } }
 
-        public override void SerializeToStream(IRequest requestContext, object request, System.IO.Stream stream)
+        public override void SerializeToStream(IRequest req, object request, System.IO.Stream stream)
         {
             throw new NotImplementedException();
         }

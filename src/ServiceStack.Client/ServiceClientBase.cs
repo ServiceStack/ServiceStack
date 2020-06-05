@@ -504,7 +504,7 @@ namespace ServiceStack
             SerializeRequestToStream(request, stream);
         }
 
-        public abstract void SerializeToStream(IRequest requestContext, object request, Stream stream);
+        public abstract void SerializeToStream(IRequest req, object request, Stream stream);
 
         public abstract T DeserializeFromStream<T>(Stream stream);
 
