@@ -15,8 +15,10 @@ namespace ServiceStack.Desktop
         public string MinToolVersion { get; set; }
         public Action OnExit { get; set; }
         public Action<Exception> OnError { get; set; }
+
+        public static Func<ScriptScopeContext, IntPtr> WindowFactory { get; set; } = RequestWindowFactory;
         
-        public static Func<ScriptScopeContext, IntPtr> RequestWindowFactory { get; set; } = scope => 
+        public static IntPtr RequestWindowFactory(ScriptScopeContext scope) 
         {
             if (scope.TryGetValue(ScriptConstants.Request, out var oRequest) && oRequest is IRequest req)
             {
@@ -28,7 +30,7 @@ namespace ServiceStack.Desktop
                     return (IntPtr)lHandle;
             }
             return IntPtr.Zero;
-        };
+        }
     }
 
     public class ProxyConfig

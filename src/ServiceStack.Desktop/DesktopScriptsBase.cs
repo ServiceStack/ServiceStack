@@ -3,13 +3,11 @@ using ServiceStack.Script;
 
 namespace ServiceStack.Desktop
 {
-    public abstract class DesktopScriptsBase : ScriptMethods
+    public static class DesktopUtils
     {
-        public Func<ScriptScopeContext, IntPtr> WindowFactory { get; set; } = DesktopConfig.RequestWindowFactory;
-
-        protected bool DoWindow(ScriptScopeContext scope, Action<IntPtr> fn)
+        public static bool DoWindow(this ScriptScopeContext scope, Action<IntPtr> fn)
         {
-            var hWnd = WindowFactory(scope);
+            var hWnd = DesktopConfig.WindowFactory(scope);
             if (hWnd != IntPtr.Zero)
             {
                 fn(hWnd);
@@ -19,9 +17,9 @@ namespace ServiceStack.Desktop
             return false;
         }
 
-        protected T DoWindow<T>(ScriptScopeContext scope, Func<IntPtr, T> fn)
+        public static T DoWindow<T>(this ScriptScopeContext scope, Func<IntPtr, T> fn)
         {
-            var hWnd = WindowFactory(scope);
+            var hWnd = DesktopConfig.WindowFactory(scope);
             return hWnd != IntPtr.Zero ? fn(hWnd) : default;
         }
     }
