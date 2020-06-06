@@ -5,37 +5,17 @@ using ServiceStack.Script;
 
 namespace ServiceStack.Desktop
 {
-    public class DesktopScripts : ScriptMethods
+    public class DesktopScripts : DesktopScriptsBase
     {
-        private readonly Func<ScriptScopeContext,IntPtr> windowFactory;
-        public DesktopScripts(Func<ScriptScopeContext,IntPtr> windowFactory) => 
-            this.windowFactory = windowFactory;
-
-        bool DoWindow(ScriptScopeContext scope, Action<IntPtr> fn)
-        {
-            var hWnd = windowFactory(scope);
-            if (hWnd != IntPtr.Zero)
-            {
-                fn(hWnd);
-                return true;
-            }
-            return false;
-        }
+        public DesktopScripts(Func<ScriptScopeContext, IntPtr> windowFactory=null) : base(windowFactory) { }
         
-        T DoWindow<T>(ScriptScopeContext scope, Func<IntPtr,T> fn)
-        {
-            var hWnd = windowFactory(scope);
-            return hWnd != IntPtr.Zero ? fn(hWnd) : default;
-        }
-
-        private static string resolveUrl(ScriptScopeContext scope, string url)
+        static string resolveUrl(ScriptScopeContext scope, string url)
         {
             var resolvedUrl = scope.ResolveUrl(url);
             return resolvedUrl.IndexOf("://", StringComparison.Ordinal) >= 0
                 ? resolvedUrl
                 : DesktopState.StartUrl.CombineWith(resolvedUrl);
         }
-
         public bool openUrl(ScriptScopeContext scope, string url) =>
             DoWindow(scope, w => NativeWin.Open(new Uri(resolveUrl(scope,url)).ToString()));
         public bool start(ScriptScopeContext scope, string cmd) =>

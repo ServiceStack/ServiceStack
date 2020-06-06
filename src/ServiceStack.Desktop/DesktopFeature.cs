@@ -43,21 +43,9 @@ namespace ServiceStack.Desktop
         {
             appHost.Config.EmbeddedResourceBaseTypes.Add(typeof(DesktopAssets));
 
-            appHost.ScriptContext.ScriptMethods.Add(new DesktopScripts(
-                scope => {
-                    if (scope.TryGetValue(ScriptConstants.Request, out var oRequest) && oRequest is IRequest req)
-                    {
-                        var info = req.GetHeader("X-Desktop-Info");
-                        if (info != null)
-                            NativeWin.SetDesktopInfo(info.FromJsv<Dictionary<string, string>>());
-                        var handle = req.GetHeader("X-Window-Handle");
-                        if (handle != null && long.TryParse(handle, out var lHandle))
-                            return (IntPtr)lHandle;
-                    }
-                    return IntPtr.Zero;
-                }));
+            appHost.ScriptContext.ScriptMethods.Add(new DesktopScripts());
         }
-        
+
         public void Register(IAppHost appHost)
         {
             if (AppName == null)
