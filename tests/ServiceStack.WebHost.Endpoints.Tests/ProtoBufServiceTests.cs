@@ -120,7 +120,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Can_Serialize()
+        public void Can_Serialize_ProtoBufEmail_with_RecyclableMemoryStream()
         {
             var request = CreateProtoBufEmail();
 

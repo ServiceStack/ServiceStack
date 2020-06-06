@@ -32,18 +32,8 @@ namespace ServiceStack.ProtoBuf
 
         public static object Deserialize(Type type, Stream fromStream)
         {
-            // Current 3.0.0-alpha.152 fails to deserialize if using RecyclableMemoryStream directly 
-            if (fromStream is RecyclableMemoryStream rms)
-            {
-                using var ms = new MemoryStream(rms.GetBuffer(), 0, (int) rms.Length);
-                var obj = Model.Deserialize(ms, null, type);
-                return obj;
-            }
-            else
-            {
-                var obj = Model.Deserialize(fromStream, null, type);
-                return obj;
-            }
+            var obj = Model.Deserialize(fromStream, null, type);
+            return obj;
         }
 
         public string GetProto(Type type)
