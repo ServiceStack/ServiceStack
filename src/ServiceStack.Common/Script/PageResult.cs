@@ -1122,7 +1122,7 @@ namespace ServiceStack.Script
             return value;
         }
 
-        internal bool TryGetValue(string name, ScriptScopeContext scope, out object value)
+        internal bool TryGetValue(string name, ScriptScopeContext scope, bool argsOnly, out object value)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
@@ -1144,17 +1144,25 @@ namespace ServiceStack.Script
                                     ? obj
                                     : Context.Args.TryGetValue(name, out obj)
                                         ? obj
-                                        : (invoker = GetFilterAsBinding(name, out ScriptMethods filter)) != null
-                                            ? InvokeFilter(invoker, filter, new object[0], name)
-                                            : (invoker = GetContextFilterAsBinding(name, out filter)) != null
-                                                ? InvokeFilter(invoker, filter, new object[] {scope}, name)
-                                                : ((ret = false) ? (object) null : null);
+                                        : argsOnly 
+                                            ? null
+                                            : (invoker = GetFilterAsBinding(name, out var filter)) != null
+                                                ? InvokeFilter(invoker, filter, new object[0], name)
+                                                : (invoker = GetContextFilterAsBinding(name, out filter)) != null
+                                                    ? InvokeFilter(invoker, filter, new object[] {scope}, name)
+                                                    : ((ret = false) ? (object) null : null);
             return ret;
         }
         
         internal object GetValue(string name, ScriptScopeContext scope)
         {
-            TryGetValue(name, scope, out var value);
+            TryGetValue(name, scope, argsOnly:false, out var value);
+            return value;
+        }
+
+        internal object GetArgument(string name, ScriptScopeContext scope)
+        {
+            TryGetValue(name, scope, argsOnly:true, out var value);
             return value;
         }
 
