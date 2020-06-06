@@ -11,6 +11,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
         <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
         <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.Source.csproj" />
         <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.Source.csproj" />
