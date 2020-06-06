@@ -7,8 +7,6 @@ namespace ServiceStack.Desktop
 {
     public class DesktopScripts : DesktopScriptsBase
     {
-        public DesktopScripts(Func<ScriptScopeContext, IntPtr> windowFactory=null) : base(windowFactory) { }
-        
         static string resolveUrl(ScriptScopeContext scope, string url)
         {
             var resolvedUrl = scope.ResolveUrl(url);

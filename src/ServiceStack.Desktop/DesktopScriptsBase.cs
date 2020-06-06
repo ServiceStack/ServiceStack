@@ -1,20 +1,15 @@
 using System;
-using System.Collections.Generic;
 using ServiceStack.Script;
-using ServiceStack.Web;
 
 namespace ServiceStack.Desktop
 {
     public abstract class DesktopScriptsBase : ScriptMethods
     {
-        private readonly Func<ScriptScopeContext, IntPtr> windowFactory;
-
-        protected DesktopScriptsBase(Func<ScriptScopeContext, IntPtr> windowFactory=null) =>
-            this.windowFactory = windowFactory ?? DesktopConfig.RequestWindowFactory;
+        public Func<ScriptScopeContext, IntPtr> WindowFactory { get; set; } = DesktopConfig.RequestWindowFactory;
 
         protected bool DoWindow(ScriptScopeContext scope, Action<IntPtr> fn)
         {
-            var hWnd = windowFactory(scope);
+            var hWnd = WindowFactory(scope);
             if (hWnd != IntPtr.Zero)
             {
                 fn(hWnd);
@@ -26,7 +21,7 @@ namespace ServiceStack.Desktop
 
         protected T DoWindow<T>(ScriptScopeContext scope, Func<IntPtr, T> fn)
         {
-            var hWnd = windowFactory(scope);
+            var hWnd = WindowFactory(scope);
             return hWnd != IntPtr.Zero ? fn(hWnd) : default;
         }
     }
