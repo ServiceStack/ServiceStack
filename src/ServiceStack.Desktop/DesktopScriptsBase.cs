@@ -7,24 +7,10 @@ namespace ServiceStack.Desktop
 {
     public abstract class DesktopScriptsBase : ScriptMethods
     {
-        public static Func<ScriptScopeContext, IntPtr> WindowFactory => scope => 
-        {
-            if (scope.TryGetValue(ScriptConstants.Request, out var oRequest) && oRequest is IRequest req)
-            {
-                var info = req.GetHeader("X-Desktop-Info");
-                if (info != null)
-                    NativeWin.SetDesktopInfo(info.FromJsv<Dictionary<string, string>>());
-                var handle = req.GetHeader("X-Window-Handle");
-                if (handle != null && long.TryParse(handle, out var lHandle))
-                    return (IntPtr)lHandle;
-            }
-            return IntPtr.Zero;
-        };
-
         private readonly Func<ScriptScopeContext, IntPtr> windowFactory;
 
         protected DesktopScriptsBase(Func<ScriptScopeContext, IntPtr> windowFactory=null) =>
-            this.windowFactory = windowFactory ?? WindowFactory;
+            this.windowFactory = windowFactory ?? DesktopConfig.RequestWindowFactory;
 
         protected bool DoWindow(ScriptScopeContext scope, Action<IntPtr> fn)
         {

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using ServiceStack.Script;
+using ServiceStack.Web;
 
 namespace ServiceStack.Desktop
 {
@@ -13,6 +15,20 @@ namespace ServiceStack.Desktop
         public string MinToolVersion { get; set; }
         public Action OnExit { get; set; }
         public Action<Exception> OnError { get; set; }
+        
+        public static Func<ScriptScopeContext, IntPtr> RequestWindowFactory { get; set; } = scope => 
+        {
+            if (scope.TryGetValue(ScriptConstants.Request, out var oRequest) && oRequest is IRequest req)
+            {
+                var info = req.GetHeader("X-Desktop-Info");
+                if (info != null)
+                    NativeWin.SetDesktopInfo(info.FromJsv<Dictionary<string, string>>());
+                var handle = req.GetHeader("X-Window-Handle");
+                if (handle != null && long.TryParse(handle, out var lHandle))
+                    return (IntPtr)lHandle;
+            }
+            return IntPtr.Zero;
+        };
     }
 
     public class ProxyConfig
