@@ -1,6 +1,8 @@
 using System;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Script;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
@@ -229,5 +231,41 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(result, Is.EqualTo("System.Text.StringBuilder"));
         }
 
+        public class CustomMethods : ScriptMethods
+        {
+            public static int Counter = 0;
+            public string chooseColor(ScriptScopeContext scope) => chooseColor(scope, "#ffffff");
+            public string chooseColor(ScriptScopeContext scope, string defaultColor)
+            {
+                Counter++;
+                return defaultColor;
+            }
+        }
+
+        [Test]
+        public async Task Only_call_EvaluateCode_method_once()
+        {
+            CustomMethods.Counter = 0;
+            var context = new ScriptContext {
+                ScriptMethods = { new CustomMethods() },
+            }.Init();
+
+            var fn = ScriptCodeUtils.EnsureReturn("chooseColor(`#336699`)");
+            var ret = await context.EvaluateCodeAsync(fn);
+            Assert.That(ret, Is.EqualTo("#336699"));
+            Assert.That(CustomMethods.Counter, Is.EqualTo(1));
+
+            CustomMethods.Counter = 0;
+            fn = ScriptCodeUtils.EnsureReturn("chooseColor");
+            ret = await context.EvaluateCodeAsync(fn);
+            Assert.That(ret, Is.EqualTo("#ffffff"));
+            Assert.That(CustomMethods.Counter, Is.EqualTo(1));
+
+            CustomMethods.Counter = 0;
+            fn = ScriptCodeUtils.EnsureReturn("chooseColor()");
+            ret = await context.EvaluateCodeAsync(fn);
+            Assert.That(ret, Is.EqualTo("#ffffff"));
+            Assert.That(CustomMethods.Counter, Is.EqualTo(1));
+        }
     }
 }

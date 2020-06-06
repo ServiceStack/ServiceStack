@@ -255,7 +255,7 @@ namespace ServiceStack.Script
                     return Callee.Evaluate(scope);
             }
             else
-                return scope.GetValue(name);
+                return scope.GetArgument(name);
 
             return null;
         }
