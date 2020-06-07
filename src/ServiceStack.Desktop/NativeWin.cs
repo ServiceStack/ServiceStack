@@ -220,7 +220,7 @@ namespace ServiceStack.Desktop
                     new IntPtr((int) dwStyle & (int) ~WindowStyles.WS_OVERLAPPEDWINDOW));
 
                 var mr = mi.Monitor;
-                SetWindowPos(hWnd, (IntPtr) HwndZOrder.HWND_TOP,
+                SetWindowPos(hWnd, (IntPtr) HwndZOrder.HWND_TOPMOST,
                     mr.Left, mr.Top,
                     mr.Right - mr.Left,
                     mr.Bottom - mr.Top,
