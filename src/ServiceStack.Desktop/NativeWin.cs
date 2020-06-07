@@ -213,10 +213,10 @@ namespace ServiceStack.Desktop
         {
             if (hWnd == IntPtr.Zero) return null;
             //https://devblogs.microsoft.com/oldnewthing/20100412-00/?p=14353
-            var dwStyle = GetWindowLong(hWnd, (int) WindowLongFlags.GWL_STYLE);
+            var dwStyle = GetWindowLongPtr(hWnd, (int) WindowLongFlags.GWL_STYLE);
             if (GetPrimaryMonitorInfo(hWnd, out var mi))
             {
-                SetWindowLongPtr64(hWnd, (int) WindowLongFlags.GWL_STYLE,
+                SetWindowLongPtr(hWnd, (int) WindowLongFlags.GWL_STYLE,
                     new IntPtr((int) dwStyle & (int) ~WindowStyles.WS_OVERLAPPEDWINDOW));
 
                 var mr = mi.Monitor;
@@ -419,6 +419,14 @@ namespace ServiceStack.Desktop
         }
 
         static void ThrowWin32() => throw new Win32Exception(Marshal.GetLastWin32Error());
+
+        public static void ApplyTransparency(IntPtr hWnd, byte transparency)
+        {
+            const int GWL_EXSTYLE = (int) WindowLongFlags.GWL_EXSTYLE;
+            const int WS_EX_LAYERED = (int)WindowStylesEx.WS_EX_LAYERED;
+            SetWindowLongPtr(hWnd, GWL_EXSTYLE, new IntPtr(GetWindowLongPtr(hWnd, GWL_EXSTYLE).ToInt32() | WS_EX_LAYERED));
+            SetLayeredWindowAttributes(hWnd, 0, transparency, LWA_ALPHA);
+        }
     }
     
     [Flags]
@@ -610,6 +618,37 @@ namespace ServiceStack.Desktop
         WS_VSCROLL = 0x00200000
     }
     
+    [Flags]
+    public enum WindowStylesEx : uint
+    {
+        WS_EX_ACCEPTFILES = 0x00000010,
+        WS_EX_APPWINDOW = 0x00040000,
+        WS_EX_CLIENTEDGE = 0x00000200,
+        WS_EX_COMPOSITED = 0x02000000,
+        WS_EX_CONTEXTHELP = 0x00000400,
+        WS_EX_CONTROLPARENT = 0x00010000,
+        WS_EX_DLGMODALFRAME = 0x00000001,
+        WS_EX_LAYERED = 0x00080000,
+        WS_EX_LAYOUTRTL = 0x00400000,
+        WS_EX_LEFT = 0x00000000,
+        WS_EX_LEFTSCROLLBAR = 0x00004000,
+        WS_EX_LTRREADING = 0x00000000,
+        WS_EX_MDICHILD = 0x00000040,
+        WS_EX_NOACTIVATE = 0x08000000,
+        WS_EX_NOINHERITLAYOUT = 0x00100000,
+        WS_EX_NOPARENTNOTIFY = 0x00000004,
+        WS_EX_NOREDIRECTIONBITMAP = 0x00200000,
+        WS_EX_OVERLAPPEDWINDOW = WS_EX_WINDOWEDGE | WS_EX_CLIENTEDGE,
+        WS_EX_PALETTEWINDOW = WS_EX_WINDOWEDGE | WS_EX_TOOLWINDOW | WS_EX_TOPMOST,
+        WS_EX_RIGHT = 0x00001000,
+        WS_EX_RIGHTSCROLLBAR = 0x00000000,
+        WS_EX_RTLREADING = 0x00002000,
+        WS_EX_STATICEDGE = 0x00020000,
+        WS_EX_TOOLWINDOW = 0x00000080,
+        WS_EX_TOPMOST = 0x00000008,
+        WS_EX_TRANSPARENT = 0x00000020,
+        WS_EX_WINDOWEDGE = 0x00000100
+    }
     
     [Flags]
     public enum ShowWindowCommands
@@ -901,6 +940,9 @@ namespace ServiceStack.Desktop
         public const int SB_CTL = 2;
         public const int SB_BOTH = 3;
 
+        public const int LWA_ALPHA = 0x2;
+        public const int LWA_COLORKEY = 0x1;
+
         public static int ScreenX => GetSystemMetrics(SystemMetric.SM_CXSCREEN);
         public static int ScreenY => GetSystemMetrics(SystemMetric.SM_CYSCREEN);
         
@@ -993,11 +1035,36 @@ namespace ServiceStack.Desktop
         [DllImport(LibUser, CharSet = CharSet.Auto)]
         public static extern bool GetMonitorInfo(IntPtr hMonitor, ref MonitorInfo mi);
         
+        public static IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex)
+        {
+            if (IntPtr.Size == 8)
+                return GetWindowLongPtr64(hWnd, nIndex);
+            else
+                return GetWindowLongPtr32(hWnd, nIndex);
+        }
         [DllImport(LibUser, EntryPoint="GetWindowLong")]
-        public static extern IntPtr GetWindowLong(this IntPtr hWnd, int nIndex);
-
+        public static extern IntPtr GetWindowLongPtr32(IntPtr hWnd, int nIndex);
+        [DllImport(LibUser, EntryPoint="GetWindowLongPtr")]
+        public static extern IntPtr GetWindowLongPtr64(IntPtr hWnd, int nIndex);
+        
+        public static IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr dwNewLong)
+        {
+            return IntPtr.Size == 8 
+                ? SetWindowLongPtr64(hWnd, nIndex, dwNewLong) 
+                : new IntPtr(SetWindowLong32(hWnd, nIndex, dwNewLong.ToInt32()));
+        }
+        [DllImport(LibUser, EntryPoint="SetWindowLong")]
+        public static extern int SetWindowLong32(IntPtr hWnd, int nIndex, int dwNewLong);
         [DllImport(LibUser, EntryPoint="SetWindowLongPtr")]
-        public static extern IntPtr SetWindowLongPtr64(this IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+        public static extern IntPtr SetWindowLongPtr64(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+        
+        [DllImport(LibUser, SetLastError = true)]
+        public static extern int GetWindowLongA(IntPtr hWnd, int nIndex);
+        [DllImport(LibUser, SetLastError = true)]
+        public static extern int SetWindowLongA(IntPtr hWnd, int nIndex, int dwNewLong);
+        
+        [DllImport(LibUser)]
+        public static extern bool SetLayeredWindowAttributes(IntPtr hWnd, uint crKey, byte bAlpha, uint dwFlags);        
         
         [DllImport(LibUser)]
         public static extern int GetSystemMetrics(SystemMetric smIndex);
