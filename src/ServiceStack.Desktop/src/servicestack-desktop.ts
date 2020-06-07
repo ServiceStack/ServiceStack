@@ -103,7 +103,7 @@ export async function renderLispAsync(scriptSrc:string) {
     return await invokeHostTextMethod('script', { 'RenderLispAsync':scriptSrc });
 }
 
-function quote(text:string) {
+export function quote(text:string) {
     return '"' + text.replace('"','\\"') + '"';
 }
 

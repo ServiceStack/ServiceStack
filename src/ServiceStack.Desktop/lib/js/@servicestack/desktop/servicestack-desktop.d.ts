@@ -17,6 +17,7 @@ export declare function evaluateLispAsync(scriptSrc: string): Promise<any>;
 export declare function renderScriptAsync(scriptSrc: string): Promise<string>;
 export declare function renderCodeAsync(scriptSrc: string): Promise<string>;
 export declare function renderLispAsync(scriptSrc: string): Promise<string>;
+export declare function quote(text: string): string;
 export interface DesktopInfo {
     tool: string;
     toolVersion: string;
