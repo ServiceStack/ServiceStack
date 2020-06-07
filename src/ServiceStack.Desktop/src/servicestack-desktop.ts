@@ -436,6 +436,6 @@ export enum KnownFolders {
  * @param caption
  * @param type
  */
-export async function messageBox(title:string, caption:string="", type:MessageBoxType=MessageBoxType.Ok) {
+export async function messageBox(title:string, caption:string="", type:MessageBoxType=MessageBoxType.Ok|MessageBoxType.TopMost) {
     return (await evaluateCode(`messageBox(${quote(title)},${quote(caption)},${type})`)) as MessageBoxReturn;
 }
