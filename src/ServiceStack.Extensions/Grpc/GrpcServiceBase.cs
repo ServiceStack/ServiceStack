@@ -91,7 +91,7 @@ namespace ServiceStack
             return ret;
         }
 
-        public void PopulateRequestFromHeaders(object request, global::Grpc.Core.Metadata headers)
+        protected virtual void PopulateRequestFromHeaders(object request, global::Grpc.Core.Metadata headers)
         {
             if (headers.Count == 0)
                 return;
