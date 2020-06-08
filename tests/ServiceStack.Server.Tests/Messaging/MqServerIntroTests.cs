@@ -85,6 +85,12 @@ namespace ServiceStack.Server.Tests.Messaging
         public string Result { get; set; }
     }
 
+    public class MqAuthOnlyToken : IHasBearerToken, IReturn<MqAuthOnlyResponse>
+    {
+        public string Name { get; set; }
+        public string BearerToken { get; set; }
+    }
+
     public class MqAuthOnlyService : Service
     {
         [Authenticate]
@@ -93,8 +99,17 @@ namespace ServiceStack.Server.Tests.Messaging
             var session = base.SessionAs<AuthUserSession>();
             return new MqAuthOnlyResponse
             {
-                Result = "Hello, {0}! Your UserName is {1}"
-                    .Fmt(request.Name, session.UserAuthName)
+                Result = $"Hello, {request.Name}! Your UserName is {session.UserAuthName}"
+            };
+        }
+
+        [Authenticate]
+        public object Any(MqAuthOnlyToken request)
+        {
+            var session = base.SessionAs<AuthUserSession>();
+            return new MqAuthOnlyResponse
+            {
+                Result = $"Hello, {request.Name}! Your UserName is {session.UserName}"
             };
         }
     }
@@ -132,6 +147,10 @@ namespace ServiceStack.Server.Tests.Messaging
             Plugins.Add(new AuthFeature(() => new AuthUserSession(),
                 new IAuthProvider[] {
                     new CredentialsAuthProvider(AppSettings),
+                    new JwtAuthProvider(AppSettings) {
+                        AuthKey = AesUtils.CreateKey(),
+                        RequireSecureConnection = false,
+                    }, 
                 }));
 
             container.Register<IAuthRepository>(c => new InMemoryAuthRepository());
@@ -157,6 +176,7 @@ namespace ServiceStack.Server.Tests.Messaging
             var mqServer = container.Resolve<IMessageService>();
 
             mqServer.RegisterHandler<HelloIntro>(ExecuteMessage);
+            mqServer.RegisterHandler<MqAuthOnlyToken>(ExecuteMessage);
             mqServer.RegisterHandler<MqAuthOnly>(m =>
             {
                 var req = new BasicRequest
@@ -355,6 +375,7 @@ namespace ServiceStack.Server.Tests.Messaging
 
             var response = client.Post(new Authenticate
             {
+                provider = "credentials",
                 UserName = "mythz",
                 Password = "p@55word"
             });
@@ -372,6 +393,34 @@ namespace ServiceStack.Server.Tests.Messaging
             mqClient.Ack(responseMsg);
             Assert.That(responseMsg.GetBody().Result,
                 Is.EqualTo("Hello, MQ Auth! Your UserName is mythz"));
+        }
+
+        [Test]
+        public void Can_make_authenticated_requests_with_MQ_BearerToken()
+        {
+            using var appHost = new AppHost(() => CreateMqServer()).Init();
+            appHost.Start(Config.ListeningOn);
+
+            var client = new JsonServiceClient(Config.ListeningOn);
+
+            var response = client.Post(new Authenticate
+            {
+                provider = "credentials",
+                UserName = "mythz",
+                Password = "p@55word"
+            });
+
+            using var mqClient = appHost.Resolve<IMessageService>().CreateMessageQueueClient();
+            mqClient.Publish(new MqAuthOnlyToken
+            {
+                Name = "MQ AuthToken",
+                BearerToken = response.BearerToken,
+            });
+
+            var responseMsg = mqClient.Get<MqAuthOnlyResponse>(QueueNames<MqAuthOnlyResponse>.In);
+            mqClient.Ack(responseMsg);
+            Assert.That(responseMsg.GetBody().Result,
+                Is.EqualTo("Hello, MQ AuthToken! Your UserName is mythz"));
         }
 
         [Test]
