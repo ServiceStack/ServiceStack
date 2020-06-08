@@ -524,6 +524,9 @@ namespace ServiceStack.Auth
                         break;
                 }
             }
+
+            if (authSession.UserAuthName == null)
+                authSession.UserAuthName = authSession.UserName ?? authSession.Email;
         }
         
         public static List<Claim> ConvertSessionToClaims(this IAuthSession session,
