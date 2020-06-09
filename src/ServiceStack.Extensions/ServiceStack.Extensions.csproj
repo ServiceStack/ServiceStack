@@ -17,7 +17,7 @@
     <ItemGroup>
         <PackageReference Include="Grpc.AspNetCore.Server" Version="2.29.0" />
         <PackageReference Include="Grpc.Core.Api" Version="2.29.0" />
-        <PackageReference Include="protobuf-net" Version="3.0.0-alpha.155" />
+        <PackageReference Include="protobuf-net" Version="3.0.0" />
         <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.0.90" />
         
         <PackageReference Include="System.Threading.Channels" Version="4.7.1" />
