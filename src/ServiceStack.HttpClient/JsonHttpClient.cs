@@ -123,10 +123,11 @@ namespace ServiceStack
             if (HttpClient != null)
                 return HttpClient;
 
-            if (HttpMessageHandler == null && GlobalHttpMessageHandlerFactory != null)
-                HttpMessageHandler = GlobalHttpMessageHandlerFactory();
-
             var handler = HttpMessageHandler;
+
+            if (handler == null && GlobalHttpMessageHandlerFactory != null)
+                handler = GlobalHttpMessageHandlerFactory();
+
             if (handler == null)
             {
                 var useHandler = new HttpClientHandler
@@ -144,7 +145,7 @@ namespace ServiceStack
             
             var baseUri = BaseUri != null ? new Uri(BaseUri) : null;
 
-            var client = new HttpClient(handler) { BaseAddress = baseUri };
+            var client = new HttpClient(handler, disposeHandler: HttpMessageHandler == null) { BaseAddress = baseUri };
 
             if (BearerToken != null)
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken);
