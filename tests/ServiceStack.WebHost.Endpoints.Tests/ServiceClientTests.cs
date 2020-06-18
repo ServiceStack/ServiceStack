@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -154,6 +155,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = await client.GetAsync(new EchoRequestInfo());
 
             Assert.That(response.Headers["Foo"], Is.EqualTo("Bar"));
+        }
+
+        [Test]
+        public async Task Doesnt_dispose_injected_handler()
+        {
+            var handler = new HttpClientHandler();
+
+            var client1 = (JsonHttpClient)GetClient();
+            client1.HttpMessageHandler = handler;
+            await client1.GetAsync(new GetCustomer { CustomerId = 5 });
+            client1.Dispose();
+
+            var client2 = (JsonHttpClient)GetClient();
+            client2.HttpMessageHandler = handler;
+            var response = await client2.GetAsync(new GetCustomer { CustomerId = 5 });
+
+            Assert.That(response, Is.Not.Null);
         }
     }
 
