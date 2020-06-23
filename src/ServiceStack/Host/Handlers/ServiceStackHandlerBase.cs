@@ -218,6 +218,7 @@ namespace ServiceStack.Host.Handlers
                         var deserializer = HostContext.ContentTypes.GetStreamDeserializerAsync(contentType);
                         if (deserializer != null)
                         {
+                            httpReq.AllowSyncIO();
                             return deserializer(requestType, httpReq.InputStream);
                         }
                     }

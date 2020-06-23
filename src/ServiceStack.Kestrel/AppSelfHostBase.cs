@@ -176,7 +176,7 @@ namespace ServiceStack
                 }
                 finally
                 {
-                    httpRes.Close();
+                    await httpRes.CloseAsync();
                 }
                 //Matches Exceptions handled in HttpListenerBase.InitTask()
 
