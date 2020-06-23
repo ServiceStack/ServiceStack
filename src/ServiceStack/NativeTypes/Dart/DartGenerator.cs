@@ -1206,6 +1206,7 @@ namespace ServiceStack.NativeTypes.Dart
     {
         public static HashSet<string> DartKeyWords = new HashSet<string>
         {
+            "context", // IConvertible code-gen property
             "abstract",
             "deferred",
             "if",
