@@ -68,7 +68,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException webEx)
             {
                 Assert.That(webEx.StatusCode, Is.EqualTo(400));
-                Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(typeof(ArgumentNullException).Name));
+                Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(nameof(ArgumentNullException)));
             }
         }
 
@@ -86,7 +86,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException webEx)
             {
                 Assert.That(webEx.StatusCode, Is.EqualTo(404));
-                Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(typeof(FileNotFoundException).Name));
+                Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(nameof(FileNotFoundException)));
             }
         }
 
@@ -105,7 +105,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException webEx)
             {
                 Assert.That(webEx.StatusCode, Is.EqualTo(404));
-                Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(typeof(FileNotFoundException).Name));
+                Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(nameof(FileNotFoundException)));
                 Assert.That(webEx.ResponseStatus.Message, Is.EqualTo("ClientErrorMessage"));
             }
         }
@@ -120,7 +120,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var response = await restClient.PutAsync(new ThrowHttpError
                 {
                     StatusCode = 403,
-                    Type = typeof(Exception).Name,
+                    Type = nameof(Exception),
                     Message = "ForbiddenErrorMessage",
                 });
 
@@ -129,7 +129,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException webEx)
             {
                 Assert.That(webEx.StatusCode, Is.EqualTo(403));
-                Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(typeof(Exception).Name));
+                Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(nameof(Exception)));
                 Assert.That(webEx.ResponseStatus.Message, Is.EqualTo("ForbiddenErrorMessage"));
             }
         }
@@ -143,7 +143,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var response = await client.GetAsync<ThrowHttpError>("/not-here");
                 Assert.Fail("Should throw");
             }
-            catch (AggregateException ex) //JsonHttpClient
+            catch (WebException ex) //JsonServiceClient
+            {
+                Assert.That(ex.Status, Is.EqualTo(WebExceptionStatus.NameResolutionFailure));
+            }
+            catch (Exception ex) //JsonHttpClient
             {
                 var innerEx = ex.UnwrapIfSingleException().InnerException;
 #if !NETCORE
@@ -153,10 +157,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                                             .Or.EqualTo("No such host is known")                              // .NET Core 2.1
                                             .Or.EqualTo("The server name or address could not be resolved")); // .NET Core 2.0
 #endif        
-            }
-            catch (WebException ex) //JsonServiceClient
-            {
-                Assert.That(ex.Status, Is.EqualTo(WebExceptionStatus.NameResolutionFailure));
             }
         }
     }
