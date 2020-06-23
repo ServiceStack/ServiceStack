@@ -200,6 +200,11 @@ export interface DialogResult {
     ok: boolean | null;
 }
 export declare function openFile(options: OpenFileOptions): Promise<DialogResult>;
+export interface OpenFolderOptions {
+    title?: string;
+    initialDir?: string;
+}
+export declare function openFolder(options: OpenFolderOptions): Promise<DialogResult>;
 export declare enum MessageBoxType {
     AbortRetryIgnore = 2,
     CancelTryContinue = 6,

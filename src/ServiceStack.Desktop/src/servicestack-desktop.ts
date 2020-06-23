@@ -374,6 +374,14 @@ export async function openFile(options:OpenFileOptions) {
     return (await evaluateCode(`openFile(${JSON.stringify(options)})`)) as DialogResult;
 }
 
+export interface OpenFolderOptions {
+    title?: string;
+    initialDir?: string;
+}
+export async function openFolder(options:OpenFolderOptions) {
+    return (await evaluateCode(`openFolder(${JSON.stringify(options)})`)) as DialogResult;
+}
+
 export enum MessageBoxType {
     AbortRetryIgnore = 0x00000002,
     CancelTryContinue = 0x00000006,

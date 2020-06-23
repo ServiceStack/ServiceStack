@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using PInvoke;
 using ServiceStack.Text.Pools;
+using Win32Exception = System.ComponentModel.Win32Exception;
 
 namespace ServiceStack.Desktop
 {
@@ -40,17 +41,17 @@ namespace ServiceStack.Desktop
             ["right"] = rect.Right,
         };
 
-        public static Dictionary<string, object> ToObject(Rectangle rect) => new Dictionary<string, object> {
-            ["top"] = rect.Top,
-            ["left"] = rect.Left,
-            ["bottom"] = rect.Bottom,
-            ["right"] = rect.Right,
+        public static Dictionary<string, object> ToObject(RECT rect) => new Dictionary<string, object> {
+            ["top"] = rect.top,
+            ["left"] = rect.left,
+            ["bottom"] = rect.bottom,
+            ["right"] = rect.right,
         };
 
-        public static Dictionary<string, object> ToObject(MonitorInfo mi) => new Dictionary<string, object> {
-            ["monitor"] = ToObject(mi.Monitor),
-            ["work"] = ToObject(mi.WorkArea),
-            ["flags"] = (int)mi.Flags,
+        public static Dictionary<string, object> ToObject(User32.MONITORINFO mi) => new Dictionary<string, object> {
+            ["monitor"] = ToObject(mi.rcMonitor),
+            ["work"] = ToObject(mi.rcWork),
+            ["flags"] = (int)mi.dwFlags,
         };
 
         public static bool Open(string cmd)
@@ -70,9 +71,7 @@ namespace ServiceStack.Desktop
             throw new NotSupportedException("Unknown platform");
         }
 
-        public static IntPtr FindWindowByName(string name) => FindWindow(null, null);
-
-        public static string ExpandEnvVars(string path) => String.IsNullOrEmpty(path) || path.IndexOf('%') == -1
+        public static string ExpandEnvVars(string path) => string.IsNullOrEmpty(path) || path.IndexOf('%') == -1
             ? path
             : Environment.ExpandEnvironmentVariables(path);
 
@@ -87,7 +86,7 @@ namespace ServiceStack.Desktop
                     : filter.Replace("|","\0") + "\0\0"
                 : isFolderPicker
                     ? "Folder only\0$$$.$$$\0\0"
-                    : "All Files\0*.*\0\0"; 
+                    : "All Files\0*.*\0\0";
             
             var dlgArgs = new OpenFileName();
             dlgArgs.lStructSize = Marshal.SizeOf(dlgArgs);
@@ -136,14 +135,76 @@ namespace ServiceStack.Desktop
 
             return new DialogResult();
         }
-        
+
+        public static DialogResult OpenFolder(this IntPtr hWnd, Dictionary<string, object> options)
+        {
+            var flags = (int) BrowseInfos.NewDialogStyle;
+
+            var pszSelectedPath = new char[256];
+
+            var initialDir = options.TryGetValue("initialDir", out var oInitialDir)
+                ? ExpandEnvVars(oInitialDir as string)
+                : Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+
+            var dlgArgs = new BROWSEINFO {
+                pidlRoot = IntPtr.Zero,
+                hwndOwner = hWnd,
+                pszDisplayName = new string(new char[256]),
+                lpszTitle = options.TryGetValue("title", out var oTitle)
+                    ? oTitle as string
+                    : "Select a Folder",
+                ulFlags = flags,
+                lParam = IntPtr.Zero,
+                iImage = 0,
+                lpfn = (hWnd, msg, lParam, data) => {
+                    switch (msg)
+                    {
+                        case 1: //BFFM_INITIALIZED
+                            const int BFFM_SETSELECTIONW = 0x400 + 103;
+                            SendMessage(hWnd, BFFM_SETSELECTIONW, 1, initialDir);
+                            break;
+                        case 2: //BFFM_SELCHANGED
+                            // Indicates the selection has changed. The lpData parameter points to the item identifier list for the newly selected item.
+                            IntPtr selectedPidl = lParam;
+                            if (selectedPidl != IntPtr.Zero)
+                            {
+                                const int BFFM_ENABLEOK = 0x400 + 101;
+                                IntPtr pszSelectedPath =
+                                    Marshal.AllocHGlobal((MAX_PATH + 1) * Marshal.SystemDefaultCharSize);
+                                // Try to retrieve the path from the IDList
+                                bool isFileSystemFolder = SHGetPathFromIDListLongPath(selectedPidl, ref pszSelectedPath);
+                                Marshal.FreeHGlobal(pszSelectedPath);
+                                SendMessage(hWnd, BFFM_ENABLEOK, 0, isFileSystemFolder ? 1 : 0);
+                            }
+
+                            break;
+                    }
+
+                    return 0;
+                },
+            };
+
+            var pidlRet = SHBrowseForFolder(dlgArgs);
+            if (pidlRet != IntPtr.Zero)
+            {
+                Shell32.SHGetPathFromIDList(pidlRet, pszSelectedPath);
+                
+                return new DialogResult {
+                    File = new string(pszSelectedPath),
+                    Ok = true,
+                };
+            }
+
+            return new DialogResult();
+        }
+
         public static void CenterToScreen(this IntPtr hWnd, bool useWorkArea = true)
         {
             if (GetNearestMonitorInfo(hWnd, out var mi))
             {
-                var rectangle = useWorkArea ? mi.WorkArea : mi.Monitor;
-                var num1 = rectangle.Width / 2;
-                var num2 = rectangle.Height / 2;
+                var rectangle = useWorkArea ? mi.rcWork : mi.rcMonitor;
+                var num1 = rectangle.Width() / 2;
+                var num2 = rectangle.Height() / 2;
                 var windowSize = GetWindowSize(hWnd);
                 SetPosition(hWnd, num1 - windowSize.Width / 2, num2 - windowSize.Height / 2);
             }
@@ -152,79 +213,72 @@ namespace ServiceStack.Desktop
         public static bool SetSize(this IntPtr hWnd, int width, int height)
         {
             if (hWnd == IntPtr.Zero) return default;
-            return SetWindowPos(hWnd, IntPtr.Zero, -1, -1, width, height, 
-                SetWindowPosFlags.NoActivate | SetWindowPosFlags.NoMove | SetWindowPosFlags.NoZOrder);
+            return User32.SetWindowPos(hWnd, IntPtr.Zero, -1, -1, width, height, 
+                User32.SetWindowPosFlags.SWP_NOACTIVATE | User32.SetWindowPosFlags.SWP_NOMOVE | User32.SetWindowPosFlags.SWP_NOZORDER);
         }
 
         public static bool SetPosition(this IntPtr hWnd, int x, int y)
         {
             if (hWnd == IntPtr.Zero) return default;
-            return SetWindowPos(hWnd, IntPtr.Zero, x, y, -1, -1, 
-                SetWindowPosFlags.NoActivate | SetWindowPosFlags.NoSize | SetWindowPosFlags.NoZOrder);
+            return User32.SetWindowPos(hWnd, IntPtr.Zero, x, y, -1, -1, 
+                User32.SetWindowPosFlags.SWP_NOACTIVATE | User32.SetWindowPosFlags.SWP_NOSIZE | User32.SetWindowPosFlags.SWP_NOZORDER);
         }
 
         public static bool SetPosition(this IntPtr hWnd, int x, int y, int width, int height)
         {
             if (hWnd == IntPtr.Zero) return default;
-            return SetWindowPos(hWnd, IntPtr.Zero, x, y, width, height, 
-                SetWindowPosFlags.NoActivate | SetWindowPosFlags.NoZOrder);
+            return User32.SetWindowPos(hWnd, IntPtr.Zero, x, y, width, height, 
+                User32.SetWindowPosFlags.SWP_NOACTIVATE | User32.SetWindowPosFlags.SWP_NOZORDER);
         }
 
-        public static bool SetPosition(this IntPtr hWnd, int x, int y, int width, int height, SetWindowPosFlags flags)
+        public static bool SetPosition(this IntPtr hWnd, int x, int y, int width, int height, User32.SetWindowPosFlags flags)
         {
             if (hWnd == IntPtr.Zero) return default;
-            return SetWindowPos(hWnd, IntPtr.Zero, x, y, width, height, flags);
+            return User32.SetWindowPos(hWnd, IntPtr.Zero, x, y, width, height, flags);
         }
-        public static bool SetPosition(this IntPtr hWnd, ref Rectangle rect) => SetPosition(hWnd, 
-            rect.Left, rect.Top, rect.Width, rect.Height, SetWindowPosFlags.NoActivate | SetWindowPosFlags.NoZOrder);
-        public static bool SetPosition(this IntPtr hWnd, Rectangle rect) => SetPosition(hWnd, ref rect);
-        public static bool SetPosition(this IntPtr hWnd, Rectangle rect, SetWindowPosFlags flags) => SetPosition(hWnd, ref rect, flags);
-        public static bool SetPosition(this IntPtr hWnd, ref Rectangle rect, SetWindowPosFlags flags) => 
-            SetPosition(hWnd, rect.Left, rect.Top, rect.Width, rect.Height, flags);
+        public static bool SetPosition(this IntPtr hWnd, ref RECT rect) => SetPosition(hWnd, 
+            rect.left, rect.top, rect.Width(), rect.Height(), User32.SetWindowPosFlags.SWP_NOACTIVATE | User32.SetWindowPosFlags.SWP_NOZORDER);
+        public static bool SetPosition(this IntPtr hWnd, RECT rect) => SetPosition(hWnd, ref rect);
+        public static bool SetPosition(this IntPtr hWnd, RECT rect, User32.SetWindowPosFlags flags) => SetPosition(hWnd, ref rect, flags);
+        public static bool SetPosition(this IntPtr hWnd, ref RECT rect, User32.SetWindowPosFlags flags) => 
+            SetPosition(hWnd, rect.left, rect.top, rect.Width(), rect.Height(), flags);
 
-        public static void RedrawFrame(this IntPtr hWnd) => SetPosition(hWnd, new Rectangle(),
-                SetWindowPosFlags.FrameChanged | SetWindowPosFlags.NoMove | SetWindowPosFlags.NoSize);
+        public static void RedrawFrame(this IntPtr hWnd) => SetPosition(hWnd, new RECT(),
+            User32.SetWindowPosFlags.SWP_FRAMECHANGED | User32.SetWindowPosFlags.SWP_NOMOVE | User32.SetWindowPosFlags.SWP_NOSIZE);
 
-        public static float GetScalingFactor(this IntPtr hdc)
+        public static float GetScalingFactor(this User32.SafeDCHandle hdc)
         {
-            int logicalScreenHeight = GetDeviceCaps(hdc, VERTRES);
-            int physicalScreenHeight = GetDeviceCaps(hdc, DESKTOPVERTRES);
-            return (float) physicalScreenHeight / (float) logicalScreenHeight;
+            int logicalScreenHeight = Gdi32.GetDeviceCaps(hdc, Gdi32.DeviceCap.VERTRES);
+            int physicalScreenHeight = Gdi32.GetDeviceCaps(hdc, Gdi32.DeviceCap.DESKTOPVERTRES);
+            return physicalScreenHeight / (float) logicalScreenHeight;
         }
 
         public static System.Drawing.Size GetScreenResolution()
         {
-            IntPtr hdc = GetDC(IntPtr.Zero);
-            try
-            {
-                var scalingFactor = GetScalingFactor(hdc);
-                return new System.Drawing.Size(
-                    (int) (GetSystemMetrics(SystemMetric.SM_CXSCREEN) * scalingFactor),
-                    (int) (GetSystemMetrics(SystemMetric.SM_CYSCREEN) * scalingFactor)
-                );
-            }
-            finally
-            {
-                NativeWin.ReleaseDC(IntPtr.Zero, hdc);
-            }
+            using var hdc = User32.GetDC(IntPtr.Zero);
+            var scalingFactor = GetScalingFactor(hdc);
+            return new System.Drawing.Size(
+                (int) (User32.GetSystemMetrics(User32.SystemMetric.SM_CXSCREEN) * scalingFactor),
+                (int) (User32.GetSystemMetrics(User32.SystemMetric.SM_CYSCREEN) * scalingFactor)
+            );
         }
 
-        public static MonitorInfo? SetKioskMode(this IntPtr hWnd)
+        public static User32.MONITORINFO? SetKioskMode(this IntPtr hWnd)
         {
             if (hWnd == IntPtr.Zero) return null;
             //https://devblogs.microsoft.com/oldnewthing/20100412-00/?p=14353
-            var dwStyle = GetWindowLongPtr(hWnd, (int) WindowLongFlags.GWL_STYLE);
+            var dwStyle = GetWindowLongPtr(hWnd, (int) User32.WindowLongIndexFlags.GWL_STYLE);
             if (GetPrimaryMonitorInfo(hWnd, out var mi))
             {
-                SetWindowLongPtr(hWnd, (int) WindowLongFlags.GWL_STYLE,
-                    new IntPtr((int) dwStyle & (int) ~WindowStyles.WS_OVERLAPPEDWINDOW));
+                SetWindowLongPtr(hWnd, (int) User32.WindowLongIndexFlags.GWL_STYLE,
+                    new IntPtr((uint) dwStyle & (uint)~User32.WindowStyles.WS_OVERLAPPEDWINDOW));
 
-                var mr = mi.Monitor;
-                SetWindowPos(hWnd, (IntPtr) HwndZOrder.HWND_TOPMOST,
-                    mr.Left, mr.Top,
-                    mr.Right - mr.Left,
-                    mr.Bottom - mr.Top,
-                    SetWindowPosFlags.NoZOrder | SetWindowPosFlags.FrameChanged);
+                var mr = mi.rcMonitor;
+                User32.SetWindowPos(hWnd, User32.SpecialWindowHandles.HWND_TOPMOST,
+                    mr.left, mr.top,
+                    mr.right - mr.left,
+                    mr.bottom - mr.top,
+                    User32.SetWindowPosFlags.SWP_NOZORDER | User32.SetWindowPosFlags.SWP_FRAMECHANGED);
                 return mi;
             }
             return null;
@@ -234,66 +288,67 @@ namespace ServiceStack.Desktop
         {
             if (hWnd == IntPtr.Zero) return;
             var res = GetScreenResolution();
-            SetWindowPos(hWnd, IntPtr.Zero,
+            User32.SetWindowPos(hWnd, IntPtr.Zero,
                 0, 0,
                 res.Width,
                 res.Height,
-                SetWindowPosFlags.ShowWindow);
+                User32.SetWindowPosFlags.SWP_SHOWWINDOW);
         }
 
         public static void ResizeWindow(this IntPtr hWnd, int width, int height)
         {
             if (hWnd == IntPtr.Zero) return;
-            SetWindowPos(hWnd, IntPtr.Zero,
+            User32.SetWindowPos(hWnd, IntPtr.Zero,
                 0, 0, width, height,
-                SetWindowPosFlags.NoZOrder
+                User32.SetWindowPosFlags.SWP_NOZORDER
             );
         }
-        public static Rectangle GetClientRect(this IntPtr hWnd)
+        
+        public static RECT GetClientRect(this IntPtr hWnd)
         {
             if (hWnd == IntPtr.Zero) return default;
-            GetClientRect(hWnd, out var lpRect);
+            User32.GetClientRect(hWnd, out var lpRect);
             return lpRect;
         }
 
         public static System.Drawing.Size GetClientSize(this IntPtr hWnd)
         {
             if (hWnd == IntPtr.Zero) return default;
-            GetClientRect(hWnd, out var rectangle);
+            User32.GetClientRect(hWnd, out var rectangle);
             return new System.Drawing.Size
             {
-                Width = rectangle.Width,
-                Height = rectangle.Height
+                Width = rectangle.Width(),
+                Height = rectangle.Height()
             };
         }
 
         public static System.Drawing.Size GetWindowSize(this IntPtr hWnd)
         {
             if (hWnd == IntPtr.Zero) return default;
-            GetWindowRect(hWnd, out var rectangle);
+            User32.GetWindowRect(hWnd, out var rectangle);
             return new System.Drawing.Size
             {
-                Width = rectangle.Width,
-                Height = rectangle.Height
+                Width = rectangle.Width(),
+                Height = rectangle.Height()
             };
         }
 
-        public static bool GetPrimaryMonitorInfo(this IntPtr hWnd, out MonitorInfo monitorInfo)
+        public static bool GetPrimaryMonitorInfo(this IntPtr hWnd, out User32.MONITORINFO monitorInfo)
         {
             if (hWnd == IntPtr.Zero) { monitorInfo = default; return default; }
-            var mi = new MonitorInfo();
-            mi.Size = Marshal.SizeOf(mi);
-            var ret = GetMonitorInfo(MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY), ref mi);
+            var mi = new User32.MONITORINFO();
+            mi.cbSize = Marshal.SizeOf(mi);
+            var ret = GetMonitorInfo(MonitorFromWindow(hWnd, User32.MonitorOptions.MONITOR_DEFAULTTOPRIMARY), ref mi);
             monitorInfo = mi;
             return ret;
         }
 
-        public static bool GetNearestMonitorInfo(this IntPtr hWnd, out MonitorInfo monitorInfo)
+        public static bool GetNearestMonitorInfo(this IntPtr hWnd, out User32.MONITORINFO monitorInfo)
         {
             if (hWnd == IntPtr.Zero) { monitorInfo = default; return default; }
-            var mi = new MonitorInfo();
-            mi.Size = Marshal.SizeOf(mi);
-            var ret = GetMonitorInfo(MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST), ref mi);
+            var mi = new User32.MONITORINFO();
+            mi.cbSize = Marshal.SizeOf(mi);
+            var ret = GetMonitorInfo(MonitorFromWindow(hWnd, User32.MonitorOptions.MONITOR_DEFAULTTONEAREST), ref mi);
             monitorInfo = mi;
             return ret;
         }
@@ -307,13 +362,13 @@ namespace ServiceStack.Desktop
         public static bool SetText(this IntPtr hWnd, string text)
         {
             if (hWnd == IntPtr.Zero) return default;
-            return SetWindowText(hWnd, text);
+            return User32.SetWindowText(hWnd, text);
         }
 
         public static string GetText(this IntPtr hWnd)
         {
             if (hWnd == IntPtr.Zero) return default;
-            var size = GetWindowTextLength(hWnd);
+            var size = User32.GetWindowTextLength(hWnd);
             if (size > 0)
             {
                 var len = size + 1;
@@ -328,7 +383,7 @@ namespace ServiceStack.Desktop
             var num = 10;
             while (true)
             {
-                if (OpenClipboard(default))
+                if (User32.OpenClipboard(default))
                 {
                     break;
                 }
@@ -355,7 +410,7 @@ namespace ServiceStack.Desktop
                 if (handle == default)
                     return null;
 
-                pointer = GlobalLock(handle);
+                pointer = Kernel32.GlobalLock(handle);
                 if (pointer == default)
                     return null;
 
@@ -369,8 +424,8 @@ namespace ServiceStack.Desktop
                 if (buff != null)
                     BufferPool.ReleaseBufferToPool(ref buff);
                 if (pointer != default)
-                    GlobalUnlock(handle);
-                CloseClipboard();
+                    Kernel32.GlobalUnlock(handle);
+                User32.CloseClipboard();
             }
         }
 
@@ -381,7 +436,7 @@ namespace ServiceStack.Desktop
             IntPtr hGlobal = default;
             try
             {
-                EmptyClipboard();
+                User32.EmptyClipboard();
 
                 var bytes = (text.Length + 1) * 2;
                 hGlobal = Marshal.AllocHGlobal(bytes);
@@ -389,7 +444,7 @@ namespace ServiceStack.Desktop
                 if (hGlobal == default)
                     ThrowWin32();
 
-                var target = GlobalLock(hGlobal);
+                var target = Kernel32.GlobalLock(hGlobal);
 
                 if (target == default)
                     ThrowWin32();
@@ -400,7 +455,7 @@ namespace ServiceStack.Desktop
                 }
                 finally
                 {
-                    GlobalUnlock(target);
+                    Kernel32.GlobalUnlock(target);
                 }
 
                 if (SetClipboardData(cfUnicodeText, hGlobal) == default)
@@ -413,7 +468,7 @@ namespace ServiceStack.Desktop
                 if (hGlobal != default)
                     Marshal.FreeHGlobal(hGlobal);
 
-                CloseClipboard();
+                User32.CloseClipboard();
             }
             return true;
         }
@@ -422,352 +477,21 @@ namespace ServiceStack.Desktop
 
         public static void ApplyTransparency(IntPtr hWnd, byte transparency)
         {
-            const int GWL_EXSTYLE = (int) WindowLongFlags.GWL_EXSTYLE;
-            const int WS_EX_LAYERED = (int)WindowStylesEx.WS_EX_LAYERED;
+            const int GWL_EXSTYLE = (int) User32.WindowLongIndexFlags.GWL_EXSTYLE;
+            const int WS_EX_LAYERED = (int)User32.WindowStylesEx.WS_EX_LAYERED;
             SetWindowLongPtr(hWnd, GWL_EXSTYLE, new IntPtr(GetWindowLongPtr(hWnd, GWL_EXSTYLE).ToInt32() | WS_EX_LAYERED));
             SetLayeredWindowAttributes(hWnd, 0, transparency, LWA_ALPHA);
         }
     }
-    
-    [Flags]
-    public enum WindowPlacementFlags
-    {
-        SETMINPOSITION = 0x0001,
-        RESTORETOMAXIMIZED = 0x0002,
-        ASYNCWINDOWPLACEMENT = 0x0004
-    }
-    
-    [StructLayout(LayoutKind.Sequential)]
-    public struct WindowPlacement
-    {
-        public uint Size;
-        public WindowPlacementFlags Flags;
-        public ShowWindowCommands ShowCmd;
-        public Point MinPosition;
-        public Point MaxPosition;
-        public Rectangle NormalPosition;
-    }
-    
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-    public struct MonitorInfo
-    {
-        public int Size;
-        public Rectangle Monitor;
-        public Rectangle WorkArea;
-        public uint Flags;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NativeWin.CCHDEVICENAME)]
-        public string DeviceName;
-        public void Init()
-        {
-            this.Size = 40 + 2 * NativeWin.CCHDEVICENAME;
-            this.DeviceName = string.Empty;
-        }
-    }
-    
-    [StructLayout(LayoutKind.Sequential)]
-    public struct Rectangle : IEquatable<Rectangle>
-    {
-        public int Left;
-        public int Top;
-        public int Right;
-        public int Bottom;
 
-        public Rectangle(int left = 0, int top = 0, int right = 0, int bottom = 0)
-        {
-            this.Left = left;
-            this.Top = top;
-            this.Right = right;
-            this.Bottom = bottom;
-        }
-
-        public Rectangle(int width = 0, int height = 0)
-            : this(0, 0, width, height) {}
-
-        public Rectangle(int all = 0) : this(all, all, all, all) {}
-
-        public int Width => Right - Left;
-        public int Height => Bottom - Top;
-        public bool Equals(Rectangle other) => Left == other.Left && Right == other.Right && Top == other.Top && Bottom == other.Bottom;
-        public override bool Equals(object obj) => obj is Rectangle other && this.Equals(other);
-        public static bool operator ==(Rectangle left, Rectangle right) => left.Equals(right);
-        public static bool operator !=(Rectangle left, Rectangle right) => !(left == right);
-        public override int GetHashCode() => ((Left * 397 ^ Top) * 397 ^ Right) * 397 ^ Bottom;
-        public Size Size => new Size(this.Width, this.Height);
-        public bool IsEmpty => Left == 0 && Top == 0 && Right == 0 && Bottom == 0;
-    }
-    
-    [StructLayout(LayoutKind.Sequential)]
-    public struct Size : IEquatable<Size>
+    public static class RectEx
     {
-        public int Width, Height;
-        public Size(int width, int height)
-        {
-            this.Width = width;
-            this.Height = height;
-        }
-        public bool IsEmpty => this.Width == 0 && this.Height == 0;
-        public bool Equals(Size other) => Width == other.Width && Height == other.Height;
-        public override bool Equals(object obj) => obj is Size && Equals((Size)obj);
-        public override int GetHashCode() { unchecked { return (Width * 397) ^ Height; } }
-        public static bool operator ==(Size left, Size right) => left.Equals(right);
-        public static bool operator !=(Size left, Size right) => !(left == right);
-        public void Offset(int  width, int  height) { Width += width; Height += height; }
-        public void Set(int  width, int  height) { Width = width; Height = height; }
-        public override string ToString() {
-            var culture = CultureInfo.CurrentCulture;
-            return $"{{ Width = {Width.ToString(culture)}, Height = {Height.ToString(culture)} }}";
-        }
-    }
-    
-    [StructLayout(LayoutKind.Sequential)]
-    public struct Point : IEquatable<Point>
-    {
-        public int X, Y;
-        public Point(int  x, int  y)
-        {
-            X = x;
-            Y = y;
-        }
-        public bool IsEmpty => this.X == 0 && this.Y == 0;
-        public bool Equals(Point other) => X == other.X && Y == other.Y;
-        public override bool Equals(object obj) => obj is Point point && Equals(point);
-        public override int GetHashCode() { unchecked { return (X*397) ^ Y; } }
-        public static bool operator ==(Point left, Point right) => left.Equals(right);
-        public static bool operator !=(Point left, Point right) => !(left == right);
-        public void Offset(int  x, int  y) { X += x; Y += y; }
-        public void Set(int  x, int  y) { X = x; Y = y; }
-        public override string ToString() {
-            var culture = CultureInfo.CurrentCulture;
-            return $"{{ X = {X.ToString(culture)}, Y = {Y.ToString(culture)} }}";
-        }
-    }
-    
-    public enum HwndZOrder
-    {
-        HWND_BOTTOM = 1,
-        HWND_NOTOPMOST = -2,
-        HWND_TOP = 0,
-        HWND_TOPMOST = -1
-    }
-    
-    [Flags]
-    public enum WindowLongFlags
-    {
-        GWL_EXSTYLE = -20,
-        GWLP_HINSTANCE = -6,
-        GWLP_HWNDPARENT = -8,
-        GWLP_ID = -12,
-        GWL_STYLE = -16,
-        GWLP_USERDATA = -21,
-        GWLP_WNDPROC = -4,
-        DWLP_DLGPROC = 0x4,
-        DWLP_MSGRESULT = 0,
-        DWLP_USER = 0x8
-    }
-    
-    [Flags]
-    public enum SetWindowPosFlags : uint
-    {
-        AsyncWindowPosition = 0x4000,
-        DeferErase = 0x2000,
-        DrawFrame = 0x0020,
-        FrameChanged = 0x0020,
-        HideWindow = 0x0080,
-        NoActivate = 0x0010,
-        NoCopyBits = 0x0100,
-        NoMove = 0x0002,
-        NoOwnerZOrder = 0x0200,
-        NoRedraw = 0x0008,
-        NoReposition = 0x0200,
-        NoSendChanging = 0x0400,
-        NoSize = 0x0001,
-        NoZOrder = 0x0004,
-        ShowWindow = 0x0040,
-    }
-    
-    [Flags]
-    public enum WindowStyles
-    {
-        WS_BORDER = 0x00800000,
-        WS_CAPTION = 0x00C00000,
-        WS_CHILD = 0x40000000,
-        WS_CHILDWINDOW = 0x40000000,
-        WS_CLIPCHILDREN = 0x02000000,
-        WS_CLIPSIBLINGS = 0x04000000,
-        WS_DISABLED = 0x08000000,
-        WS_DLGFRAME = 0x00400000,
-        WS_GROUP = 0x00020000,
-        WS_HSCROLL = 0x00100000,
-        WS_ICONIC = 0x20000000,
-        WS_MAXIMIZE = 0x01000000,
-        WS_MAXIMIZEBOX = 0x00010000,
-        WS_MINIMIZE = 0x20000000,
-        WS_MINIMIZEBOX = 0x00020000,
-        WS_OVERLAPPED = 0x00000000,
-        WS_OVERLAPPEDWINDOW =
-            WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
-        WS_POPUP = unchecked ((int) 0x80000000),
-        WS_POPUPWINDOW = WS_POPUP | WS_BORDER | WS_SYSMENU,
-        WS_SIZEBOX = 0x00040000,
-        WS_SYSMENU = 0x00080000,
-        WS_TABSTOP = 0x00010000,
-        WS_THICKFRAME = 0x00040000,
-        WS_TILED = 0x00000000,
-        WS_TILEDWINDOW = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
-        WS_VISIBLE = 0x10000000,
-        WS_VSCROLL = 0x00200000
-    }
-    
-    [Flags]
-    public enum WindowStylesEx : uint
-    {
-        WS_EX_ACCEPTFILES = 0x00000010,
-        WS_EX_APPWINDOW = 0x00040000,
-        WS_EX_CLIENTEDGE = 0x00000200,
-        WS_EX_COMPOSITED = 0x02000000,
-        WS_EX_CONTEXTHELP = 0x00000400,
-        WS_EX_CONTROLPARENT = 0x00010000,
-        WS_EX_DLGMODALFRAME = 0x00000001,
-        WS_EX_LAYERED = 0x00080000,
-        WS_EX_LAYOUTRTL = 0x00400000,
-        WS_EX_LEFT = 0x00000000,
-        WS_EX_LEFTSCROLLBAR = 0x00004000,
-        WS_EX_LTRREADING = 0x00000000,
-        WS_EX_MDICHILD = 0x00000040,
-        WS_EX_NOACTIVATE = 0x08000000,
-        WS_EX_NOINHERITLAYOUT = 0x00100000,
-        WS_EX_NOPARENTNOTIFY = 0x00000004,
-        WS_EX_NOREDIRECTIONBITMAP = 0x00200000,
-        WS_EX_OVERLAPPEDWINDOW = WS_EX_WINDOWEDGE | WS_EX_CLIENTEDGE,
-        WS_EX_PALETTEWINDOW = WS_EX_WINDOWEDGE | WS_EX_TOOLWINDOW | WS_EX_TOPMOST,
-        WS_EX_RIGHT = 0x00001000,
-        WS_EX_RIGHTSCROLLBAR = 0x00000000,
-        WS_EX_RTLREADING = 0x00002000,
-        WS_EX_STATICEDGE = 0x00020000,
-        WS_EX_TOOLWINDOW = 0x00000080,
-        WS_EX_TOPMOST = 0x00000008,
-        WS_EX_TRANSPARENT = 0x00000020,
-        WS_EX_WINDOWEDGE = 0x00000100
-    }
-    
-    [Flags]
-    public enum ShowWindowCommands
-    {
-        ForceMinimize = 11,
-        Hide = 0,
-        Maximize = 3,
-        Minimize = 6,
-        Restore = 9,
-        Show = 5,
-        ShowDefault = 10,
-        ShowMaximized = 3,
-        ShowMinimized = 2,
-        ShowMinNoActive = ShowMinimized | Show,
-        ShowNA = 8,
-        ShowNoActivate = 4,
-        Normal = 1
-    }
-
-    public enum SystemMetric
-    {
-        SM_CXSCREEN = 0,  // 0x00
-        SM_CYSCREEN = 1,  // 0x01
-        SM_CXVSCROLL = 2,  // 0x02
-        SM_CYHSCROLL = 3,  // 0x03
-        SM_CYCAPTION = 4,  // 0x04
-        SM_CXBORDER = 5,  // 0x05
-        SM_CYBORDER = 6,  // 0x06
-        SM_CXDLGFRAME = 7,  // 0x07
-        SM_CXFIXEDFRAME = 7,  // 0x07
-        SM_CYDLGFRAME = 8,  // 0x08
-        SM_CYFIXEDFRAME = 8,  // 0x08
-        SM_CYVTHUMB = 9,  // 0x09
-        SM_CXHTHUMB = 10, // 0x0A
-        SM_CXICON = 11, // 0x0B
-        SM_CYICON = 12, // 0x0C
-        SM_CXCURSOR = 13, // 0x0D
-        SM_CYCURSOR = 14, // 0x0E
-        SM_CYMENU = 15, // 0x0F
-        SM_CXFULLSCREEN = 16, // 0x10
-        SM_CYFULLSCREEN = 17, // 0x11
-        SM_CYKANJIWINDOW = 18, // 0x12
-        SM_MOUSEPRESENT = 19, // 0x13
-        SM_CYVSCROLL = 20, // 0x14
-        SM_CXHSCROLL = 21, // 0x15
-        SM_DEBUG = 22, // 0x16
-        SM_SWAPBUTTON = 23, // 0x17
-        SM_CXMIN = 28, // 0x1C
-        SM_CYMIN = 29, // 0x1D
-        SM_CXSIZE = 30, // 0x1E
-        SM_CYSIZE = 31, // 0x1F
-        SM_CXSIZEFRAME = 32, // 0x20
-        SM_CXFRAME = 32, // 0x20
-        SM_CYSIZEFRAME = 33, // 0x21
-        SM_CYFRAME = 33, // 0x21
-        SM_CXMINTRACK = 34, // 0x22
-        SM_CYMINTRACK = 35, // 0x23
-        SM_CXDOUBLECLK = 36, // 0x24
-        SM_CYDOUBLECLK = 37, // 0x25
-        SM_CXICONSPACING = 38, // 0x26
-        SM_CYICONSPACING = 39, // 0x27
-        SM_MENUDROPALIGNMENT = 40, // 0x28
-        SM_PENWINDOWS = 41, // 0x29
-        SM_DBCSENABLED = 42, // 0x2A
-        SM_CMOUSEBUTTONS = 43, // 0x2B
-        SM_SECURE = 44, // 0x2C
-        SM_CXEDGE = 45, // 0x2D
-        SM_CYEDGE = 46, // 0x2E
-        SM_CXMINSPACING = 47, // 0x2F
-        SM_CYMINSPACING = 48, // 0x30
-        SM_CXSMICON = 49, // 0x31
-        SM_CYSMICON = 50, // 0x32
-        SM_CYSMCAPTION = 51, // 0x33
-        SM_CXSMSIZE = 52, // 0x34
-        SM_CYSMSIZE = 53, // 0x35
-        SM_CXMENUSIZE = 54, // 0x36
-        SM_CYMENUSIZE = 55, // 0x37
-        SM_ARRANGE = 56, // 0x38
-        SM_CXMINIMIZED = 57, // 0x39
-        SM_CYMINIMIZED = 58, // 0x3A
-        SM_CXMAXTRACK = 59, // 0x3B
-        SM_CYMAXTRACK = 60, // 0x3C
-        SM_CXMAXIMIZED = 61, // 0x3D
-        SM_CYMAXIMIZED = 62, // 0x3E
-        SM_NETWORK = 63, // 0x3F
-        SM_CLEANBOOT = 67, // 0x43
-        SM_CXDRAG = 68, // 0x44
-        SM_CYDRAG = 69, // 0x45
-        SM_SHOWSOUNDS = 70, // 0x46
-        SM_CXMENUCHECK = 71, // 0x47
-        SM_CYMENUCHECK = 72, // 0x48
-        SM_SLOWMACHINE = 73, // 0x49
-        SM_MIDEASTENABLED = 74, // 0x4A
-        SM_MOUSEWHEELPRESENT = 75, // 0x4B
-        SM_XVIRTUALSCREEN = 76, // 0x4C
-        SM_YVIRTUALSCREEN = 77, // 0x4D
-        SM_CXVIRTUALSCREEN = 78, // 0x4E
-        SM_CYVIRTUALSCREEN = 79, // 0x4F
-        SM_CMONITORS = 80, // 0x50
-        SM_SAMEDISPLAYFORMAT = 81, // 0x51
-        SM_IMMENABLED = 82, // 0x52
-        SM_CXFOCUSBORDER = 83, // 0x53
-        SM_CYFOCUSBORDER = 84, // 0x54
-        SM_TABLETPC = 86, // 0x56
-        SM_MEDIACENTER = 87, // 0x57
-        SM_STARTER = 88, // 0x58
-        SM_SERVERR2 = 89, // 0x59
-        SM_MOUSEHORIZONTALWHEELPRESENT = 91, // 0x5B
-        SM_CXPADDEDBORDER = 92, // 0x5C
-        SM_DIGITIZER = 94, // 0x5E
-        SM_MAXIMUMTOUCHES = 95, // 0x5F
-
-        SM_REMOTESESSION = 0x1000, // 0x1000
-        SM_SHUTTINGDOWN = 0x2000, // 0x2000
-        SM_REMOTECONTROL = 0x2001, // 0x2001
-
-
-        SM_CONVERTIBLESLATEMODE = 0x2003,
-        SM_SYSTEMDOCKED = 0x2004,
+        public static int Top(this RECT rect) => rect.top;
+        public static int Bottom(this RECT rect) => rect.bottom;
+        public static int Left(this RECT rect) => rect.left;
+        public static int Right(this RECT rect) => rect.right;
+        public static int Width(this RECT rect) => rect.right - rect.left;
+        public static int Height(this RECT rect) => rect.bottom - rect.top;
     }
     
     //File Dialog
@@ -833,16 +557,6 @@ namespace ServiceStack.Desktop
         [System.Security.SecuritySafeCritical]
         private static int SizeOf() => Marshal.SizeOf(typeof(OpenFileName));
     }
-        
-    public class DialogOptions
-    {
-        public int? Flags { get; set; }
-        public string Title { get; set; }
-        public string Filter { get; set; }
-        public string InitialDir { get; set; }
-        public string DefaultExt { get; set; }
-        public bool IsFolderPicker { get; set; }
-    }
 
     public class DialogResult
     {
@@ -852,33 +566,43 @@ namespace ServiceStack.Desktop
     }
     
     [Flags]
-    public enum KnownFolderFlags : uint
+    public enum BrowseInfos
     {
-        SimpleIDList              = 0x00000100,
-        NotParentRelative         = 0x00000200,
-        DefaultPath               = 0x00000400,
-        Init                      = 0x00000800,
-        NoAlias                   = 0x00001000,
-        DontUnexpand              = 0x00002000,
-        DontVerify                = 0x00004000,
-        Create                    = 0x00008000,
-        NoAppcontainerRedirection = 0x00010000,
-        AliasOnly                 = 0x80000000
+        NewDialogStyle      = 0x0040,   // Use the new dialog layout with the ability to resize
+        HideNewFolderButton = 0x0200    // Don't display the 'New Folder' button
     }
+ 
+    [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Auto)]
+    public class BROWSEINFO 
+    {
+        public IntPtr hwndOwner;
+        public IntPtr pidlRoot; //LPCITEMIDLIST pidlRoot; // Root ITEMIDLIST
+    
+        // For interop purposes, send over a buffer of MAX_PATH size. 
+        public string pszDisplayName; //LPWSTR pszDisplayName; // Return display name of item selected.
+    
+        public string lpszTitle; //LPCWSTR lpszTitle; // text to go in the banner over the tree.
+        public int ulFlags; //UINT ulFlags; // Flags that control the return stuff
+        public BrowseCallbackProc lpfn; //BFFCALLBACK lpfn; // Call back pointer
+        public IntPtr lParam; //LPARAM lParam; // extra info that's passed back in callbacks
+        public int iImage; //int iImage; // output var: where to return the Image index.
+    }
+    
+    public delegate int BrowseCallbackProc(IntPtr hwnd, int msg, IntPtr lParam, IntPtr lpData);
     
     public static class KnownFolders
     {
-        public static Guid Contacts = new Guid("{56784854-C6CB-462B-8169-88E350ACB882}");
-        public static Guid Desktop = new Guid("{B4BFCC3A-DB2C-424C-B029-7FE99A87C641}");
-        public static Guid Documents = new Guid("{FDD39AD0-238F-46AF-ADB4-6C85480369C7}");
-        public static Guid Downloads = new Guid("{374DE290-123F-4565-9164-39C4925E467B}");
-        public static Guid Favorites = new Guid("{1777F761-68AD-4D8A-87BD-30B759FA33DD}");
-        public static Guid Links = new Guid("{BFB9D5E0-C6A9-404C-B2B2-AE6DB6AF4968}");
-        public static Guid Music = new Guid("{4BD8D571-6D19-48D3-BE97-422220080E43}");
-        public static Guid Pictures = new Guid("{33E28130-4E1E-4676-835A-98395C3BC3BB}");
-        public static Guid SavedGames = new Guid("{4C5C32FF-BB9D-43B0-B5B4-2D72E54EAAA4}");
-        public static Guid SavedSearches = new Guid("{7D1D3A04-DEBB-4115-95CF-2F29DA2920DA}");
-        public static Guid Videos = new Guid("{18989B1D-99B5-455B-841C-AB7C74E4DDFC}");
+        public static Guid Contacts => Shell32.KNOWNFOLDERID.FOLDERID_Contacts;
+        public static Guid Desktop => Shell32.KNOWNFOLDERID.FOLDERID_Desktop;
+        public static Guid Documents => Shell32.KNOWNFOLDERID.FOLDERID_Documents;
+        public static Guid Downloads => Shell32.KNOWNFOLDERID.FOLDERID_Downloads;
+        public static Guid Favorites => Shell32.KNOWNFOLDERID.FOLDERID_Favorites;
+        public static Guid Links => Shell32.KNOWNFOLDERID.FOLDERID_Links;
+        public static Guid Music => Shell32.KNOWNFOLDERID.FOLDERID_Music;
+        public static Guid Pictures => Shell32.KNOWNFOLDERID.FOLDERID_Pictures;
+        public static Guid SavedGames => Shell32.KNOWNFOLDERID.FOLDERID_SavedGames;
+        public static Guid SavedSearches => Shell32.KNOWNFOLDERID.FOLDERID_SavedSearches;
+        public static Guid Videos => Shell32.KNOWNFOLDERID.FOLDERID_Videos;
         
         static Dictionary<string, Guid> Map { get; } = new Dictionary<string, Guid> {
             { nameof(Contacts), Contacts },
@@ -895,13 +619,13 @@ namespace ServiceStack.Desktop
         };
 
         public static string GetPath(string knownFolder,
-            KnownFolderFlags flags = KnownFolderFlags.DontVerify, bool defaultUser = false) =>
+            Shell32.KNOWN_FOLDER_FLAG flags = Shell32.KNOWN_FOLDER_FLAG.KF_FLAG_DONT_VERIFY, bool defaultUser = false) =>
             Map.TryGetValue(knownFolder, out var knownFolderId)
                 ? GetPath(knownFolderId, flags, defaultUser)
                 : ThrowUnknownFolder();
         
         public static string GetPath(Guid knownFolderId, 
-            KnownFolderFlags flags=KnownFolderFlags.DontVerify, bool defaultUser=false)
+            Shell32.KNOWN_FOLDER_FLAG flags=Shell32.KNOWN_FOLDER_FLAG.KF_FLAG_DONT_VERIFY, bool defaultUser=false)
         {
             if (SHGetKnownFolderPath(knownFolderId, (uint)flags, new IntPtr(defaultUser ? -1 : 0), out var outPath) >= 0)
             {
@@ -924,16 +648,7 @@ namespace ServiceStack.Desktop
     public static partial class NativeWin
     {
         public const int MAX_PATH = 260;
-        
-        public const int CCHDEVICENAME = 32; // size of a device name string
-        public const int MONITOR_DEFAULTTONULL = 0;
-        public const int MONITOR_DEFAULTTOPRIMARY = 1;
-        public const int MONITOR_DEFAULTTONEAREST = 2;
-        
-        public const int VERTRES = 10;
-        public const int DESKTOPVERTRES = 117;
-        public const int LOGPIXELSX = 88;
-        public const int LOGPIXELSY = 90;
+        public const int MAX_UNICODESTRING_LEN = short.MaxValue;
 
         public const int SB_HORZ = 0;
         public const int SB_VERT = 1;
@@ -943,15 +658,15 @@ namespace ServiceStack.Desktop
         public const int LWA_ALPHA = 0x2;
         public const int LWA_COLORKEY = 0x1;
 
-        public static int ScreenX => GetSystemMetrics(SystemMetric.SM_CXSCREEN);
-        public static int ScreenY => GetSystemMetrics(SystemMetric.SM_CYSCREEN);
+        public static int ScreenX => User32.GetSystemMetrics(User32.SystemMetric.SM_CXSCREEN);
+        public static int ScreenY => User32.GetSystemMetrics(User32.SystemMetric.SM_CYSCREEN);
         
         public const uint cfUnicodeText = 13;
         
         public const string LibUser = "user32.dll";
         public const string LibCommonDlg = "comdlg32.dll";
         public const string LibKernel = "kernel32.dll";
-        public const string LibGdi = "gdi32.dll";
+        public const string LibShell = "shell32.dll";
         
         //Message Box
         [DllImport(LibUser, SetLastError = true, CharSet= CharSet.Auto)]
@@ -961,23 +676,8 @@ namespace ServiceStack.Desktop
         [DllImport(LibUser, CharSet = CharSet.Auto)]
         public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
 
-        [DllImport(LibUser, CharSet = CharSet.Auto)]
-        public static extern int GetWindowTextLength(IntPtr hWnd);
-        [DllImport(LibUser, CharSet = CharSet.Auto)]
-        public static extern bool SetWindowText(IntPtr hwnd, string lpString);
-        
-        [DllImport(LibUser, ExactSpelling = true)]
-        public static extern bool ShowWindow(this IntPtr hWnd, ShowWindowCommands nCmdShow);
-
-        [DllImport(LibUser, ExactSpelling = true)]
-        public static extern bool IsWindowVisible(this IntPtr hWnd);
-
         [DllImport(LibUser, ExactSpelling = true)]
         public static extern bool IsWindowEnabled(this IntPtr hWnd);
-        
-        [DllImport(LibUser)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool SetForegroundWindow(this IntPtr hWnd);
         
         [DllImport(LibCommonDlg, SetLastError=true, CharSet = CharSet.Auto)]
         public static extern bool GetOpenFileName([In, Out] OpenFileName ofn);
@@ -993,47 +693,19 @@ namespace ServiceStack.Desktop
         [DllImport(LibUser, SetLastError = true)]
         public static extern IntPtr GetClipboardData(uint uFormat);
 
-        [DllImport(LibKernel, SetLastError = true)]
-        public static extern IntPtr GlobalLock(IntPtr hMem);
-
-        [DllImport(LibKernel, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GlobalUnlock(IntPtr hMem);
-
-        [DllImport(LibUser, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool OpenClipboard(IntPtr hWndNewOwner);
-
-        [DllImport(LibUser, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool CloseClipboard();
-
         [DllImport(LibUser, SetLastError = true)]
         public static extern IntPtr SetClipboardData(uint uFormat, IntPtr data);
-
-        [DllImport(LibUser)]
-        public static extern bool EmptyClipboard();
-
+        
         [DllImport(LibKernel, SetLastError = true)]
         public static extern int GlobalSize(IntPtr hMem);
         
         //Window
-        [DllImport(LibUser, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GetWindowPlacement(this IntPtr hWnd, ref WindowPlacement winpl);
         
         [DllImport(LibUser)]
-        public static extern IntPtr MonitorFromWindow(this IntPtr hWnd, uint dwFlags);
-        
-        [DllImport(LibUser, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool SetWindowPlacement(this IntPtr hWnd, [In] ref WindowPlacement winpl);
-        
-        [DllImport(LibUser, SetLastError = false)]
-        public static extern IntPtr GetDesktopWindow();
+        public static extern IntPtr MonitorFromWindow(this IntPtr hWnd, User32.MonitorOptions dwFlags);
     
         [DllImport(LibUser, CharSet = CharSet.Auto)]
-        public static extern bool GetMonitorInfo(IntPtr hMonitor, ref MonitorInfo mi);
+        public static extern bool GetMonitorInfo(IntPtr hMonitor, ref User32.MONITORINFO mi);
         
         public static IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex)
         {
@@ -1066,49 +738,52 @@ namespace ServiceStack.Desktop
         [DllImport(LibUser)]
         public static extern bool SetLayeredWindowAttributes(IntPtr hWnd, uint crKey, byte bAlpha, uint dwFlags);        
         
-        [DllImport(LibUser)]
-        public static extern int GetSystemMetrics(SystemMetric smIndex);
-
-        [DllImport(LibGdi)]
-        public static extern int GetDeviceCaps(IntPtr hdc, int nIndex);
-
-        [DllImport(LibUser)]
-        public static extern IntPtr GetDC(IntPtr hWnd);
-
-        [DllImport(LibUser)]
-        public static extern bool ReleaseDC(IntPtr hWnd, IntPtr hDC);
-        
-        [DllImport(LibUser)]
-        public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
-
-        [DllImport(LibUser)]
-        public static extern bool ShowWindow(this IntPtr hWnd, int nCmdShow);
-        
-        [DllImport(LibUser, SetLastError=true)]
-        public static extern int CloseWindow (this IntPtr hWnd);        
-        
-        [DllImport(LibUser)]
-        public static extern bool DestroyWindow(this IntPtr hWnd);        
-
-        [DllImport(LibUser)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool SetWindowPos(this IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, SetWindowPosFlags uFlags);
-
-        [DllImport(LibUser, CharSet = CharSet.Unicode)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GetWindowRect(this IntPtr hWnd, out Rectangle lpRect);
-        
-        [DllImport(LibUser)]
-        private static extern IntPtr GetForegroundWindow();
-        
         [DllImport(LibUser, SetLastError = true)]
         public static extern bool MoveWindow(this IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
         
         [DllImport(LibUser)]
-        public static extern bool GetClientRect(this IntPtr hWnd, out Rectangle lpRect);
+        public static extern bool GetClientRect(this IntPtr hWnd, out RECT lpRect);
         
         [DllImport(LibUser)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool ShowScrollBar(this IntPtr hWnd, int wBar, [MarshalAs(UnmanagedType.Bool)] bool bShow);
+        
+        [DllImport(LibUser, CharSet=CharSet.Auto)]
+        public static extern IntPtr SendMessage(IntPtr hWnd, int msg, int wParam, string lParam);
+        [DllImport(LibUser, CharSet=CharSet.Auto)]
+        public static extern IntPtr SendMessage(IntPtr hWnd, int msg, int wParam, int lParam);        
+
+        [DllImport(LibShell, CharSet=CharSet.Auto)]
+        public static extern IntPtr SHBrowseForFolder([In] BROWSEINFO lpbi);
+        
+        [DllImport(LibShell, CharSet=CharSet.Auto)]
+        private static extern bool SHGetPathFromIDListEx(IntPtr pidl, IntPtr pszPath, int cchPath, int flags);
+        public static bool SHGetPathFromIDListLongPath(IntPtr pidl, ref IntPtr pszPath)
+        {
+            int noOfTimes = 1;
+            // This is how size was allocated in the calling method.
+            int bufferSize = MAX_PATH * Marshal.SystemDefaultCharSize;
+            int length = MAX_PATH;
+            bool result = false;
+ 
+            // SHGetPathFromIDListEx returns false in case of insufficient buffer.
+            // This method does not distinguish between insufficient memory and an error. Until we get a proper solution,
+            // this logic would work. In the worst case scenario, loop exits when length reaches unicode string length.
+            while ((result = SHGetPathFromIDListEx(pidl, pszPath, length, 0)) == false 
+                   && length < MAX_UNICODESTRING_LEN)
+            {
+                string path = Marshal.PtrToStringAuto(pszPath);
+ 
+                if (path.Length != 0 && path.Length < length)
+                    break;
+ 
+                noOfTimes += 2; //520 chars capacity increase in each iteration.
+                length = noOfTimes * length >= MAX_UNICODESTRING_LEN 
+                    ? MAX_UNICODESTRING_LEN :  length;
+                pszPath = Marshal.ReAllocHGlobal(pszPath, (IntPtr)((length + 1) * Marshal.SystemDefaultCharSize));
+            }
+ 
+            return result;
+        }
     }
 }

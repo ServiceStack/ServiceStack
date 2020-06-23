@@ -15,12 +15,17 @@
     </ItemGroup>
     
     <ItemGroup>
-        <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
         <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
         <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
         <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
         <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
         <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
-    </ItemGroup>
+        
+        <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
+        <PackageReference Include="PInvoke.User32" Version="0.6.49" />
+        <PackageReference Include="PInvoke.Kernel32" Version="0.6.49" />
+        <PackageReference Include="PInvoke.Gdi32" Version="0.6.49" />
+        <PackageReference Include="PInvoke.Shell32" Version="0.6.49" />
+   </ItemGroup>
 
 </Project>

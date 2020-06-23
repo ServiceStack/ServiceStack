@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using PInvoke;
 using ServiceStack.Script;
 // ReSharper disable InconsistentNaming
 
@@ -23,13 +24,13 @@ namespace ServiceStack.Desktop
         public Dictionary<string, object> deviceScreenResolution(ScriptScopeContext scope) =>
             scope.DoWindow(w => NativeWin.ToObject(NativeWin.GetScreenResolution()));
         public long findWindowByName(ScriptScopeContext scope, string name) =>
-            scope.DoWindow(w => (long) NativeWin.FindWindowByName(name));
+            scope.DoWindow(w => (long) User32.FindWindow(null, name));
         public string clipboard(ScriptScopeContext scope) =>
             scope.DoWindow(w => NativeWin.GetClipboardAsString());
         public bool setClipboard(ScriptScopeContext scope, string data) => 
             scope.DoWindow(w => NativeWin.SetStringInClipboard(data));
         public int messageBox(ScriptScopeContext scope, string text, string caption, uint type) => 
-            scope.DoWindow(w => NativeWin.MessageBox(0, text, caption, type));
+            scope.DoWindow(w => (int)User32.MessageBox(default, text, caption, (User32.MessageBoxOptions)type));
         public string expandEnvVars(ScriptScopeContext scope, string path) => 
             scope.DoWindow(w => NativeWin.ExpandEnvVars(path));
         public string knownFolder(ScriptScopeContext scope, string folderName) => 
@@ -38,7 +39,7 @@ namespace ServiceStack.Desktop
         public Dictionary<string, object> primaryMonitorInfo(ScriptScopeContext scope) =>
             scope.DoWindow(w => w.GetPrimaryMonitorInfo(out var mi) ? NativeWin.ToObject(mi) : null);
         public bool windowSendToForeground(ScriptScopeContext scope) =>
-            scope.DoWindow(w => w.SetForegroundWindow());
+            scope.DoWindow(User32.SetForegroundWindow);
         public bool windowCenterToScreen(ScriptScopeContext scope) => 
             scope.DoWindow(w => w.CenterToScreen());
         public bool windowCenterToScreen(ScriptScopeContext scope, bool useWorkArea) => 
@@ -58,19 +59,19 @@ namespace ServiceStack.Desktop
         public bool windowRedrawFrame(ScriptScopeContext scope) => 
             scope.DoWindow(w => w.RedrawFrame());
         public bool windowIsVisible(ScriptScopeContext scope) => 
-            scope.DoWindow(w => w.IsWindowVisible());
+            scope.DoWindow(User32.IsWindowVisible);
         public bool windowIsEnabled(ScriptScopeContext scope) => 
             scope.DoWindow(w => w.IsWindowEnabled());
         public bool windowShow(ScriptScopeContext scope) => 
-            scope.DoWindow(w => w.ShowWindow(ShowWindowCommands.Show));
+            scope.DoWindow(w => User32.ShowWindow(w, User32.WindowShowStyle.SW_SHOW));
         public bool windowHide(ScriptScopeContext scope) => 
-            scope.DoWindow(w => w.ShowWindow(ShowWindowCommands.Hide));
+            scope.DoWindow(w => User32.ShowWindow(w, User32.WindowShowStyle.SW_HIDE));
         public string windowText(ScriptScopeContext scope) => 
             scope.DoWindow(w => w.GetText());
         public bool windowSetText(ScriptScopeContext scope, string text) => 
             scope.DoWindow(w => w.SetText(text));
-        public bool windowSetState(ScriptScopeContext scope, int state) => 
-            scope.DoWindow(w => w.ShowWindow((ShowWindowCommands)state));
+        public bool windowSetState(ScriptScopeContext scope, int state) =>
+            scope.DoWindow(w => User32.ShowWindow(w, (User32.WindowShowStyle) state));
         
         public Dictionary<string, object> windowSize(ScriptScopeContext scope) =>
             scope.DoWindow(w => NativeWin.ToObject(w.GetWindowSize()));
@@ -81,6 +82,8 @@ namespace ServiceStack.Desktop
 
         public DialogResult openFile(ScriptScopeContext scope, Dictionary<string, object> options) => 
             scope.DoWindow(w => w.OpenFile(options));
+        public DialogResult openFolder(ScriptScopeContext scope, Dictionary<string, object> options) => 
+            scope.DoWindow(w => w.OpenFolder(options));
     }
     
 }

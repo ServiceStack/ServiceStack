@@ -11,12 +11,17 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
         <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
         <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.Source.csproj" />
         <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.Source.csproj" />
         <ProjectReference Include="..\ServiceStack\ServiceStack.Source.csproj" />
         <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+        
+        <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
+        <PackageReference Include="PInvoke.User32" Version="0.6.49" />
+        <PackageReference Include="PInvoke.Kernel32" Version="0.6.49" />
+        <PackageReference Include="PInvoke.Gdi32" Version="0.6.49" />
+        <PackageReference Include="PInvoke.Shell32" Version="0.6.49" />
     </ItemGroup>
 
 </Project>
