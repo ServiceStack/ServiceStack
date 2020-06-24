@@ -129,7 +129,9 @@ namespace ServiceStack
             return appHost;
         }
 
-        public static List<IPlugin> AddIfNotExists<T>(this List<IPlugin> plugins, T plugin, Action<T> configure=null) where T : class, IPlugin
+        public static List<IPlugin> AddIfNotExists<T>(this List<IPlugin> plugins, T plugin) where T : class, IPlugin =>
+            plugins.AddIfNotExists(plugin, null);
+        public static List<IPlugin> AddIfNotExists<T>(this List<IPlugin> plugins, T plugin, Action<T> configure) where T : class, IPlugin
         {
             var existingPlugin = plugins.FirstOrDefault(x => x is T) as T; 
             if (existingPlugin == null)
