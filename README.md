@@ -664,7 +664,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [kaza](https://github.com/kaza)
  - [mishfit](https://github.com/mishfit)
  - [rfvgyhn](https://github.com/rfvgyhn) (Chris)
- - [caioproiete](https://github.com/caioproiete) (Caio Proiete)
+ - [augustoproiete](https://github.com/augustoproiete) (C. Augusto Proiete)
  - [sjuxax](https://github.com/sjuxax) (Jeff Cook)
  - [madaleno](https://github.com/madaleno) (Luis Madaleno)
  - [yavosh](https://github.com/yavosh) (Yavor Shahpasov)
