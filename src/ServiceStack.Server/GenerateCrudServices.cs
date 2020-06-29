@@ -44,6 +44,11 @@ namespace ServiceStack
         public List<CreateCrudServices> CreateServices { get; set; } = new List<CreateCrudServices>();
 
         /// <summary>
+        /// Customize AutoGen Operation Generation
+        /// </summary>
+        public Action<AutoGenContext> GenerateOperationsFilter { get; set; }
+
+        /// <summary>
         /// Auto Register AutoQuery and Crud Services for Default DB
         /// </summary>
         public bool AutoRegister
@@ -688,7 +693,7 @@ namespace ServiceStack
                 requestDto.Include = "new";
                 
                 var req = new BasicRequest(requestDto);
-                var ret = ResolveMetadataTypes(requestDto, req);
+                var ret = ResolveMetadataTypes(requestDto, req, GenerateOperationsFilter);
                 
                 foreach (var op in ret.Item1.Operations)
                 {
@@ -805,9 +810,9 @@ namespace ServiceStack
             return src;
         }
 
-        public static string GenerateSource(IRequest req, CrudCodeGenTypes request)
+        public static string GenerateSource(IRequest req, CrudCodeGenTypes request, Action<AutoGenContext> generateOperationsFilter)
         {
-            var ret = ResolveMetadataTypes(request, req);
+            var ret = ResolveMetadataTypes(request, req, generateOperationsFilter);
             var crudMetadataTypes = ret.Item1;
             var typesConfig = ret.Item2;
             
@@ -830,7 +835,8 @@ namespace ServiceStack
         static Tuple<string, string> key(MetadataTypeName type) => new Tuple<string, string>(type.Namespace, type.Name);
         static Tuple<string, string> keyNs(string ns, string name) => new Tuple<string, string>(ns, name);
 
-        public static Tuple<MetadataTypes, MetadataTypesConfig> ResolveMetadataTypes(CrudCodeGenTypes request, IRequest req)
+        public static Tuple<MetadataTypes, MetadataTypesConfig> ResolveMetadataTypes(
+            CrudCodeGenTypes request, IRequest req, Action<AutoGenContext> generateOperationsFilter)
         {
             if (string.IsNullOrEmpty(request.Include))
                 throw new ArgumentNullException(nameof(request.Include));
@@ -1084,8 +1090,17 @@ namespace ServiceStack
 
             foreach (var entry in typesToGenerateMap)
             {
-                var typeName = StringUtils.SnakeCaseToPascalCase(entry.Key);
+                var genModelName = StringUtils.SnakeCaseToPascalCase(entry.Key);
+                var ctx = new AutoGenContext(request, entry.Key, entry.Value) {
+                    DataModelName = genModelName,
+                    RoutePathBase = "/" + Words.Pluralize(genModelName).ToLower(),
+                };
+                
+                generateOperationsFilter?.Invoke(ctx);
+
                 var tableSchema = entry.Value;
+                var dataModelName = ctx.DataModelName;
+                
                 if (includeCrudServices != null)
                 {
                     var pkField = tableSchema.Columns.First(x => x.IsKey);
@@ -1095,15 +1110,15 @@ namespace ServiceStack
                         if (!AutoCrudOperation.IsOperation(operation))
                             continue;
 
-                        var requestType = operation + typeName;
+                        var requestType = (ctx.OperationNames.TryGetValue(operation, out var customOpName) ? customOpName : null) 
+                                          ?? operation + dataModelName;
                         if (containsType(serviceModelNs, requestType))
                             continue;
 
                         var verb = crudVerbs[operation];
-                        var plural = Words.Pluralize(typeName).ToLower();
                         var route = verb == "GET" || verb == "POST"
-                            ? "/" + plural
-                            : "/" + plural + "/{" + id + "}";
+                            ? ctx.RoutePathBase
+                            : ctx.RoutePathBase + "/{" + id + "}";
                             
                         var op = new MetadataOperationType {
                             Actions = new List<string> { verb },
@@ -1117,7 +1132,7 @@ namespace ServiceStack
                                     },
                                 },
                             },
-                            DataModel = new MetadataTypeName { Name = typeName },
+                            DataModel = new MetadataTypeName { Name = dataModelName },
                         };
                         op.Request.RequestType = op;
 
@@ -1132,16 +1147,16 @@ namespace ServiceStack
                             op.Request.Inherits = new MetadataTypeName {
                                 Namespace = "ServiceStack",
                                 Name = "QueryDb`1",
-                                GenericArgs = new[] { typeName },
+                                GenericArgs = new[] { dataModelName },
                             };
                             op.ReturnType = new MetadataTypeName {
                                 Namespace = "ServiceStack",
                                 Name = "QueryResponse`1",
-                                GenericArgs = new[] { typeName },
+                                GenericArgs = new[] { dataModelName },
                             };
-                            op.ViewModel = new MetadataTypeName { Name = typeName };
+                            op.ViewModel = new MetadataTypeName { Name = dataModelName };
                             
-                            var uniqueRoute = "/" + plural + "/{" + id + "}";
+                            var uniqueRoute = ctx.RoutePathBase + "/{" + id + "}";
                             if (!existingRoutes.Contains(new Tuple<string, string>(uniqueRoute, verb)))
                             {
                                 op.Routes.Add(new MetadataRoute {
@@ -1157,7 +1172,7 @@ namespace ServiceStack
                                     Namespace = "ServiceStack",
                                     Name = $"I{operation}Db`1",
                                     GenericArgs = new[] {
-                                        typeName,
+                                        dataModelName,
                                     }
                                 },
                             }.ToArray();
@@ -1227,10 +1242,10 @@ namespace ServiceStack
                     }
                 }
 
-                if (!containsType(typesNs, typeName))
+                if (!containsType(typesNs, dataModelName))
                 {
                     var modelType = new MetadataType {
-                        Name = typeName,
+                        Name = dataModelName,
                         Namespace = typesNs,
                         Properties = toMetaProps(tableSchema.Columns, isModel:true),
                         Items = new Dictionary<string, object> {
@@ -1242,7 +1257,7 @@ namespace ServiceStack
                         modelType.AddAttribute(new NamedConnectionAttribute(request.NamedConnection));
                     if (request.Schema != null)
                         modelType.AddAttribute(new SchemaAttribute(request.Schema));
-                    if (!string.Equals(dialect.NamingStrategy.GetTableName(typeName), tableSchema.Name, StringComparison.OrdinalIgnoreCase))
+                    if (!string.Equals(dialect.NamingStrategy.GetTableName(dataModelName), tableSchema.Name, StringComparison.OrdinalIgnoreCase))
                         modelType.AddAttribute(new AliasAttribute(tableSchema.Name));
                     crudMetadataTypes.Types.Add(modelType);
 
@@ -1299,7 +1314,7 @@ namespace ServiceStack
                 var genServices = HostContext.AssertPlugin<AutoQueryFeature>().GenerateCrudServices;
                 RequestUtils.AssertAccessRoleOrDebugMode(base.Request, accessRole: genServices.AccessRole, authSecret: request.AuthSecret);
                 
-                var src = GenerateCrudServices.GenerateSource(Request, request);
+                var src = GenerateCrudServices.GenerateSource(Request, request, genServices.GenerateOperationsFilter);
                 return src;
             }
             catch (Exception e)

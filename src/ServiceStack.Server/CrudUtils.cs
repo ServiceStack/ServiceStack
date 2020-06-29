@@ -8,6 +8,44 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
+    public class AutoGenContext
+    {
+        public AutoGenContext(CrudCodeGenTypes instruction, string tableName, TableSchema tableSchema)
+        {
+            Instruction = instruction;
+            TableName = tableName;
+            TableSchema = tableSchema;
+        }
+
+        /// <summary>
+        /// AutoGen Request DTO Instruction
+        /// </summary>
+        public CrudCodeGenTypes Instruction { get; set; }
+        /// <summary>
+        /// Original Table Name
+        /// </summary>
+        public string TableName { get; }
+        /// <summary>
+        /// RDBMS TableSchema
+        /// </summary>
+        public TableSchema TableSchema { get; }
+        
+        /// <summary>
+        /// Generated DataModel Name to use 
+        /// </summary>
+        public string DataModelName { get; set; }
+
+        /// <summary>
+        /// Generated Route Path base to use 
+        /// </summary>
+        public string RoutePathBase { get; set; }
+        
+        /// <summary>
+        /// Generated Request DTO Name to use per operation: Query, Create, Update, Patch, Delete
+        /// </summary>
+        public Dictionary<string,string> OperationNames { get; set; } = new Dictionary<string, string>();
+    }
+    
     public interface IGenerateCrudServices
     {
         List<string> IncludeCrudOperations { get; set; }
@@ -16,6 +54,7 @@ namespace ServiceStack
         /// Generate services 
         /// </summary>
         List<CreateCrudServices> CreateServices { get; set; }
+        Action<AutoGenContext> GenerateOperationsFilter { get; set; }
         Func<ColumnSchema, IOrmLiteDialectProvider, Type> ResolveColumnType { get; set; }
         Action<MetadataTypes, MetadataTypesConfig, IRequest> MetadataTypesFilter { get; set; }
         Action<MetadataType, IRequest> TypeFilter { get; set; }
@@ -90,7 +129,7 @@ namespace ServiceStack
     /// <summary>
     /// Instruction for which AutoCrud Services to generate
     /// </summary>
-    public class CreateCrudServices
+    public class CreateCrudServices : IMeta
     {
         /// <summary>
         /// Which AutoCrud Operations to include:
@@ -128,9 +167,11 @@ namespace ServiceStack
         /// https://docs.servicestack.net/csharp-add-servicestack-reference#excludetypes
         /// </summary>
         public List<string> ExcludeTypes { get; set; }
+
+        public Dictionary<string, string> Meta { get; set; }
     }
 
-    public class CrudCodeGenTypes : NativeTypesBase, IReturn<string>
+    public class CrudCodeGenTypes : NativeTypesBase, IMeta, IReturn<string>
     {
         /// <summary>
         /// Either 'all' to include all AutoQuery Services or 'new' to include only missing Services and Types
@@ -180,6 +221,8 @@ namespace ServiceStack
         /// Do not use cached DB Table Schemas, re-fetch latest 
         /// </summary>
         public bool? NoCache { get; set; }
+
+        public Dictionary<string, string> Meta { get; set; }
     }
 
     public class CrudTables : IReturn<AutoCodeSchemaResponse>
