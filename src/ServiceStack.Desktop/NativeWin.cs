@@ -48,10 +48,10 @@ namespace ServiceStack.Desktop
             ["right"] = rect.right,
         };
 
-        public static Dictionary<string, object> ToObject(User32.MONITORINFO mi) => new Dictionary<string, object> {
-            ["monitor"] = ToObject(mi.rcMonitor),
-            ["work"] = ToObject(mi.rcWork),
-            ["flags"] = (int)mi.dwFlags,
+        public static Dictionary<string, object> ToObject(MonitorInfo mi) => new Dictionary<string, object> {
+            ["monitor"] = ToObject(mi.Monitor),
+            ["work"] = ToObject(mi.WorkArea),
+            ["flags"] = (int)mi.Flags,
         };
 
         public static bool Open(string cmd)
@@ -140,8 +140,6 @@ namespace ServiceStack.Desktop
         {
             var flags = (int) BrowseInfos.NewDialogStyle;
 
-            var pszSelectedPath = new char[256];
-
             var initialDir = options.TryGetValue("initialDir", out var oInitialDir)
                 ? ExpandEnvVars(oInitialDir as string)
                 : Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
@@ -187,10 +185,9 @@ namespace ServiceStack.Desktop
             var pidlRet = SHBrowseForFolder(dlgArgs);
             if (pidlRet != IntPtr.Zero)
             {
-                Shell32.SHGetPathFromIDList(pidlRet, pszSelectedPath);
-                
+                var filePath = Shell32.SHGetPathFromIDList(pidlRet);
                 return new DialogResult {
-                    File = new string(pszSelectedPath),
+                    File = filePath,
                     Ok = true,
                 };
             }
@@ -202,7 +199,7 @@ namespace ServiceStack.Desktop
         {
             if (GetNearestMonitorInfo(hWnd, out var mi))
             {
-                var rectangle = useWorkArea ? mi.rcWork : mi.rcMonitor;
+                var rectangle = useWorkArea ? mi.WorkArea : mi.Monitor;
                 var num1 = rectangle.Width() / 2;
                 var num2 = rectangle.Height() / 2;
                 var windowSize = GetWindowSize(hWnd);
@@ -263,7 +260,7 @@ namespace ServiceStack.Desktop
             );
         }
 
-        public static User32.MONITORINFO? SetKioskMode(this IntPtr hWnd)
+        public static MonitorInfo? SetKioskMode(this IntPtr hWnd)
         {
             if (hWnd == IntPtr.Zero) return null;
             //https://devblogs.microsoft.com/oldnewthing/20100412-00/?p=14353
@@ -273,7 +270,7 @@ namespace ServiceStack.Desktop
                 SetWindowLongPtr(hWnd, (int) User32.WindowLongIndexFlags.GWL_STYLE,
                     new IntPtr((uint) dwStyle & (uint)~User32.WindowStyles.WS_OVERLAPPEDWINDOW));
 
-                var mr = mi.rcMonitor;
+                var mr = mi.Monitor;
                 User32.SetWindowPos(hWnd, User32.SpecialWindowHandles.HWND_TOPMOST,
                     mr.left, mr.top,
                     mr.right - mr.left,
@@ -333,21 +330,21 @@ namespace ServiceStack.Desktop
             };
         }
 
-        public static bool GetPrimaryMonitorInfo(this IntPtr hWnd, out User32.MONITORINFO monitorInfo)
+        public static bool GetPrimaryMonitorInfo(this IntPtr hWnd, out MonitorInfo monitorInfo)
         {
             if (hWnd == IntPtr.Zero) { monitorInfo = default; return default; }
-            var mi = new User32.MONITORINFO();
-            mi.cbSize = Marshal.SizeOf(mi);
+            var mi = new MonitorInfo();
+            mi.Size = Marshal.SizeOf(mi);
             var ret = GetMonitorInfo(MonitorFromWindow(hWnd, User32.MonitorOptions.MONITOR_DEFAULTTOPRIMARY), ref mi);
             monitorInfo = mi;
             return ret;
         }
 
-        public static bool GetNearestMonitorInfo(this IntPtr hWnd, out User32.MONITORINFO monitorInfo)
+        public static bool GetNearestMonitorInfo(this IntPtr hWnd, out MonitorInfo monitorInfo)
         {
             if (hWnd == IntPtr.Zero) { monitorInfo = default; return default; }
-            var mi = new User32.MONITORINFO();
-            mi.cbSize = Marshal.SizeOf(mi);
+            var mi = new MonitorInfo();
+            mi.Size = Marshal.SizeOf(mi);
             var ret = GetMonitorInfo(MonitorFromWindow(hWnd, User32.MonitorOptions.MONITOR_DEFAULTTONEAREST), ref mi);
             monitorInfo = mi;
             return ret;
@@ -590,6 +587,26 @@ namespace ServiceStack.Desktop
     
     public delegate int BrowseCallbackProc(IntPtr hwnd, int msg, IntPtr lParam, IntPtr lpData);
     
+    // Using User32.MONITORINFO doesn't materialize properly
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+    public struct MonitorInfo
+    {
+        public const int CCHDEVICENAME = 32; // size of a device name string
+
+        public int Size;
+        public RECT Monitor;
+        public RECT WorkArea;
+        public uint Flags;
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = CCHDEVICENAME)]
+        public string DeviceName;
+        public void Init()
+        {
+            this.Size = 40 + 2 * CCHDEVICENAME;
+            this.DeviceName = string.Empty;
+        }
+    }    
+    
     public static class KnownFolders
     {
         public static Guid Contacts => Shell32.KNOWNFOLDERID.FOLDERID_Contacts;
@@ -705,7 +722,7 @@ namespace ServiceStack.Desktop
         public static extern IntPtr MonitorFromWindow(this IntPtr hWnd, User32.MonitorOptions dwFlags);
     
         [DllImport(LibUser, CharSet = CharSet.Auto)]
-        public static extern bool GetMonitorInfo(IntPtr hMonitor, ref User32.MONITORINFO mi);
+        public static extern bool GetMonitorInfo(IntPtr hMonitor, ref MonitorInfo mi);
         
         public static IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex)
         {
