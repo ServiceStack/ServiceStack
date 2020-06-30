@@ -29,7 +29,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void BufferredRequest_allows_rereading_of_Request_InputStream()
         {
             appHost.LastRequestBody = null;
-            appHost.UseBufferredStream = true;
+            appHost.UseBufferedStream = true;
 
             var client = new JsonServiceClient(Config.ServiceStackBaseUri);
             var request = new MyRequest { Data = "RequestData" };
@@ -43,7 +43,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Cannot_reread_Request_InputStream_without_bufferring()
         {
             appHost.LastRequestBody = null;
-            appHost.UseBufferredStream = false;
+            appHost.UseBufferedStream = false;
 
             var client = new JsonServiceClient(Config.ServiceStackBaseUri);
             var request = new MyRequest { Data = "RequestData" };
@@ -58,7 +58,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Cannot_see_RequestBody_in_RequestLogger_without_bufferring()
         {
             appHost.LastRequestBody = null;
-            appHost.UseBufferredStream = false;
+            appHost.UseBufferedStream = false;
 
             var client = new JsonServiceClient(Config.ServiceStackBaseUri);
             var request = new MyRequest { Data = "RequestData" };
@@ -132,7 +132,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var requestLogger = appHost.TryResolve<IRequestLogger>();
             appHost.LastRequestBody = null;
-            appHost.UseBufferredStream = false;
+            appHost.UseBufferedStream = false;
 
             var response = client.Send(request);
             //Debug.WriteLine(appHost.LastRequestBody);
@@ -147,10 +147,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class BufferedRequestAppHost : AppHostHttpListenerBase
     {
-        public BufferedRequestAppHost() : base(typeof(BufferedRequestTests).Name, typeof(MyService).Assembly) { }
+        public BufferedRequestAppHost() : base(nameof(BufferedRequestTests), typeof(MyService).Assembly) { }
 
         public string LastRequestBody { get; set; }
-        public bool UseBufferredStream { get; set; }
+        public bool UseBufferedStream { get; set; }
         public bool EnableRequestBodyTracking { get; set; }
 
         public override void Configure(Container container)
@@ -159,8 +159,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Plugins.Add(new SoapFormat());
 #endif
             PreRequestFilters.Add((httpReq, httpRes) => {
-                if (UseBufferredStream)
-                    httpReq.UseBufferedStream = UseBufferredStream;
+                if (UseBufferedStream)
+                    httpReq.UseBufferedStream = UseBufferedStream;
 
                 LastRequestBody = null;
                 LastRequestBody = httpReq.GetRawBody();
