@@ -346,4 +346,7 @@ namespace ServiceStack
         
         public AutoPopulateAttribute(string field) => Field = field ?? throw new ArgumentNullException(nameof(field));
     }
+    
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+    public class AutoIgnoreAttribute : AttributeBase {}
 }
