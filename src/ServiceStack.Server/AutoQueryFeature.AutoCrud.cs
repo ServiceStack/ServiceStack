@@ -693,7 +693,8 @@ namespace ServiceStack
                         to.NullableProps.Add(propName);
                     }
 
-                    if (IgnoreCrudProperties.Contains(pi.Name) && to.ModelDef.GetFieldDefinition(propName) == null)
+                    if ((IgnoreCrudProperties.Contains(pi.Name) && to.ModelDef.GetFieldDefinition(propName) == null) 
+                        || pi.HasAttribute<AutoIgnoreAttribute>())
                     {
                         to.RemoveDtoProps ??= new List<string>();
                         to.RemoveDtoProps.Add(pi.Name);
