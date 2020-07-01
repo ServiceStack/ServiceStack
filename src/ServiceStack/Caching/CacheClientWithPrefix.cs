@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace ServiceStack.Caching
 {
@@ -22,82 +23,82 @@ namespace ServiceStack.Caching
 
         public bool Remove(string key)
         {
-            return cache.Remove(prefix + key);
+            return cache.Remove(EnsurePrefix(key));
         }
 
         public T Get<T>(string key)
         {
-            return cache.Get<T>(prefix + key);
+            return cache.Get<T>(EnsurePrefix(key));
         }
 
         public long Increment(string key, uint amount)
         {
-            return cache.Increment(prefix + key, amount);
+            return cache.Increment(EnsurePrefix(key), amount);
         }
 
         public long Decrement(string key, uint amount)
         {
-            return cache.Decrement(prefix + key, amount);
+            return cache.Decrement(EnsurePrefix(key), amount);
         }
 
         public bool Add<T>(string key, T value)
         {
-            return cache.Add(prefix + key, value);
+            return cache.Add(EnsurePrefix(key), value);
         }
 
         public bool Set<T>(string key, T value)
         {
-            return cache.Set(prefix + key, value);
+            return cache.Set(EnsurePrefix(key), value);
         }
 
         public bool Replace<T>(string key, T value)
         {
-            return cache.Replace(prefix + key, value);
+            return cache.Replace(EnsurePrefix(key), value);
         }
 
         public void SetAll<T>(IDictionary<string, T> values)
         {
-            cache.SetAll(values.ToDictionary(x => prefix + x.Key, x => x.Value));
+            cache.SetAll(values.ToDictionary(x => EnsurePrefix(x.Key), x => x.Value));
         }
 
         public IDictionary<string, T> GetAll<T>(IEnumerable<string> keys)
         {
-            return cache.GetAll<T>(keys.Select(x => prefix + x));
+            return cache.GetAll<T>(keys.Select(EnsurePrefix));
         }
 
         public bool Replace<T>(string key, T value, TimeSpan expiresIn)
         {
-            return cache.Replace(prefix + key, value, expiresIn);
+            return cache.Replace(EnsurePrefix(key), value, expiresIn);
         }
 
         public bool Set<T>(string key, T value, TimeSpan expiresIn)
         {
-            return cache.Set(prefix + key, value, expiresIn);
+            return cache.Set(EnsurePrefix(key), value, expiresIn);
         }
 
         public bool Add<T>(string key, T value, TimeSpan expiresIn)
         {
-            return cache.Add(prefix + key, value, expiresIn);
+            return cache.Add(EnsurePrefix(key), value, expiresIn);
         }
 
         public bool Replace<T>(string key, T value, DateTime expiresAt)
         {
-            return cache.Replace(prefix + key, value, expiresAt);
+            return cache.Replace(EnsurePrefix(key), value, expiresAt);
         }
 
         public bool Set<T>(string key, T value, DateTime expiresAt)
         {
-            return cache.Set(prefix + key, value, expiresAt);
+            return cache.Set(EnsurePrefix(key), value, expiresAt);
         }
 
         public bool Add<T>(string key, T value, DateTime expiresAt)
         {
-            return cache.Add(prefix + key, value, expiresAt);
+            return cache.Add(EnsurePrefix(key), value, expiresAt);
         }
 
         public void RemoveAll(IEnumerable<string> keys)
         {
-            cache.RemoveAll(keys.Select(x => prefix + x));
+            cache.RemoveAll(keys.Select(EnsurePrefix));
         }
 
         public void FlushAll()
@@ -113,17 +114,17 @@ namespace ServiceStack.Caching
 
         public void RemoveByPattern(string pattern)
         {
-            (cache as IRemoveByPattern)?.RemoveByPattern(prefix + pattern);
+            cache.RemoveByPattern(EnsurePrefix(pattern));
         }
 
         public void RemoveByRegex(string regex)
         {
-            (cache as IRemoveByPattern)?.RemoveByRegex(prefix + regex);
+            cache.RemoveByRegex(EnsurePrefix(regex));
         }
 
         public IEnumerable<string> GetKeysByPattern(string pattern)
         {
-            return (cache as ICacheClientExtended)?.GetKeysByPattern(prefix + pattern);
+            return cache.GetKeysByPattern(EnsurePrefix(pattern));
         }
 
         public void RemoveExpiredEntries()
@@ -133,8 +134,13 @@ namespace ServiceStack.Caching
 
         public TimeSpan? GetTimeToLive(string key)
         {
-            return (cache as ICacheClientExtended)?.GetTimeToLive(key);
+            return cache.GetTimeToLive(EnsurePrefix(key));
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private string EnsurePrefix(string s) => s != null && !s.StartsWith(prefix)
+            ? prefix + s
+            : s;
         
         public string Prefix => prefix;
     }
@@ -144,7 +150,7 @@ namespace ServiceStack.Caching
         /// <summary>
         /// Decorates the ICacheClient (and its siblings) prefixing every key with the given prefix
         /// 
-        /// Usefull for multi-tenant environments
+        /// Useful for multi-tenant environments
         /// </summary>
         public static ICacheClient WithPrefix(this ICacheClient cache, string prefix)
         {
