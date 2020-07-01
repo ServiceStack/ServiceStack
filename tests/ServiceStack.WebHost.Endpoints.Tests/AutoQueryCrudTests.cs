@@ -1262,5 +1262,80 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(row.NInt, Is.EqualTo(createRequest.NInt));
             Assert.That(row.String, Is.EqualTo(createRequest.String));
         }
+
+        [Test]
+        public void Does_ignore_unknown_properties_not_on_DataModel()
+        {
+            var createResponse = client.Post(new CreateRockstarUnknownField {
+                FirstName = "UpdateReturn",
+                LastName = "Result",
+                Age = 20,
+                DateOfBirth = new DateTime(2001,7,1),
+                LivingStatus = LivingStatus.Dead,
+                Unknown = "Field",
+            });
+
+            var queryResponse = client.Get(new QueryRockstarsUnknownField {
+                Id = createResponse.Id,
+                Unknown = "Field",
+            });
+            
+            Assert.That(queryResponse.Results.Count, Is.EqualTo(1));
+            
+            var updateResponse = client.Put(new UpdateRockstarUnknownField {
+                Id = createResponse.Id, 
+                LastName = "UpdateResult",
+                Unknown = "Field",
+            });
+            
+            var patchResponse = client.Patch(new PatchRockstarUnknownField {
+                Id = createResponse.Id, 
+                LastName = "PatchResult",
+                Unknown = "Field",
+            });
+            
+            var deleteResponse = client.Delete(new DeleteRockstarUnknownField {
+                Id = createResponse.Id, 
+                Unknown = "Field",
+            });
+        }
+
+        [Test]
+        public async Task Does_ignore_unknown_properties_not_on_DataModel_Async()
+        {
+            var createResponse = await client.PostAsync(new CreateRockstarUnknownField {
+                FirstName = "UpdateReturn",
+                LastName = "Result",
+                Age = 20,
+                DateOfBirth = new DateTime(2001,7,1),
+                LivingStatus = LivingStatus.Dead,
+                Unknown = "Field",
+            });
+
+            var queryResponse = await client.GetAsync(new QueryRockstarsUnknownField {
+                Id = createResponse.Id,
+                Unknown = "Field",
+            });
+            
+            Assert.That(queryResponse.Results.Count, Is.EqualTo(1));
+            
+            var updateResponse = await client.PutAsync(new UpdateRockstarUnknownField {
+                Id = createResponse.Id, 
+                LastName = "UpdateResult",
+                Unknown = "Field",
+            });
+            
+            var patchResponse = await client.PatchAsync(new PatchRockstarUnknownField {
+                Id = createResponse.Id, 
+                LastName = "PatchResult",
+                Unknown = "Field",
+            });
+            
+            var deleteResponse = await client.DeleteAsync(new DeleteRockstarUnknownField {
+                Id = createResponse.Id, 
+                Unknown = "Field",
+            });
+        }
+
     }
 }

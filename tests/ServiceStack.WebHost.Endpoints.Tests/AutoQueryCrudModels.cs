@@ -496,4 +496,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string[] Reset { get; set; }
     }
 
+    public class QueryRockstarsUnknownField : QueryDb<Rockstar>
+    {
+        public int Id { get; set; }
+        public string Unknown { get; set; }
+    }
+    public class CreateRockstarUnknownField : RockstarBase, ICreateDb<RockstarAuto>, IReturn<RockstarWithIdAndResultResponse>
+    {
+        public string Unknown { get; set; }
+    }
+    public class UpdateRockstarUnknownField : RockstarBase, IUpdateDb<RockstarAuto>, IReturn<EmptyResponse>
+    {
+        public int Id { get; set; }
+        public string Unknown { get; set; }
+    }
+    public class PatchRockstarUnknownField : RockstarBase, IPatchDb<RockstarAuto>, IReturn<EmptyResponse>
+    {
+        public int Id { get; set; }
+        public string Unknown { get; set; }
+    }
+    public class DeleteRockstarUnknownField : IDeleteDb<Rockstar>, IReturn<EmptyResponse>
+    {
+        public int Id { get; set; }
+        public string Unknown { get; set; }
+    }
+
  }

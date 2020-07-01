@@ -693,11 +693,16 @@ namespace ServiceStack
                         to.NullableProps.Add(propName);
                     }
 
-                    if ((IgnoreCrudProperties.Contains(pi.Name) && to.ModelDef.GetFieldDefinition(propName) == null) 
-                        || pi.HasAttribute<AutoIgnoreAttribute>())
+                    if (!IncludeCrudProperties.Contains(propName))
                     {
-                        to.RemoveDtoProps ??= new List<string>();
-                        to.RemoveDtoProps.Add(pi.Name);
+                        var hasProp = to.ModelDef.GetFieldDefinition(propName) != null; 
+                        if (!hasProp
+                            || (IgnoreCrudProperties.Contains(pi.Name) && !hasProp)
+                            || pi.HasAttribute<AutoIgnoreAttribute>())
+                        {
+                            to.RemoveDtoProps ??= new List<string>();
+                            to.RemoveDtoProps.Add(pi.Name);
+                        }
                     }
                 }
 
@@ -709,6 +714,11 @@ namespace ServiceStack
             nameof(IHasSessionId.SessionId),
             nameof(IHasBearerToken.BearerToken),
             nameof(IHasVersion.Version),
+        };
+        
+        public static HashSet<string> IncludeCrudProperties { get; set; } = new HashSet<string> {
+            Keywords.Reset,
+            Keywords.RowVersion,
         };
 
         private Dictionary<string, object> ResolveDtoValues(IRequest req, object dto, bool skipDefaults=false)
