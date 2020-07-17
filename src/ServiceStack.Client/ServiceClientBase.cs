@@ -528,7 +528,9 @@ namespace ServiceStack
             var elType = requests.GetType().GetCollectionType();
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";
             this.PopulateRequestMetadatas(requests);
-            var client = SendRequest(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), requests);
+            var httpMethod = ToHttpMethod(elType)  ?? HttpMethods.Post;
+            
+            var client = SendRequest(httpMethod, ResolveUrl(httpMethod, requestUri), requests);
 
             try
             {
@@ -540,7 +542,7 @@ namespace ServiceStack
                 if (!HandleResponseException(ex,
                     requests,
                     requestUri,
-                    () => SendRequest(HttpMethods.Post, requestUri, requests),
+                    () => SendRequest(httpMethod, requestUri, requests),
                     c => c.GetResponse(),
                     out List<TResponse> response))
                 {
@@ -565,7 +567,17 @@ namespace ServiceStack
                 return HttpMethods.Post;
             if (typeof(IQuery).IsAssignableFrom(requestType))
                 return HttpMethods.Get;
-
+            if (requestType.HasInterface(typeof(IGet)))
+                return HttpMethods.Get;
+            if (requestType.HasInterface(typeof(IPost)))
+                return HttpMethods.Post;
+            if (requestType.HasInterface(typeof(IPut)))
+                return HttpMethods.Put;
+            if (requestType.HasInterface(typeof(IDelete)))
+                return HttpMethods.Delete;
+            if (requestType.HasInterface(typeof(IPatch)))
+                return HttpMethods.Patch;
+            
             return null;
         }
 
@@ -1174,7 +1186,8 @@ namespace ServiceStack
             var elType = requests.GetType().GetCollectionType();
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";
             this.PopulateRequestMetadatas(requests);
-            return asyncClient.SendAsync<List<TResponse>>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, requestUri), requests, token);
+            var httpMethod = ToHttpMethod(elType) ?? HttpMethods.Post;
+            return asyncClient.SendAsync<List<TResponse>>(httpMethod, ResolveUrl(httpMethod, requestUri), requests, token);
         }
 
         public Task PublishAsync(object request, CancellationToken token)
