@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 
@@ -45,13 +46,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class NoVerbRequest : IReturn<string> { }
 	
-    public class GetRequest : IReturn<string>, IGet { }
+    public class GetRequest : IReturn<string>, IGet
+    {
+        public int Id { get; set; }
+    }
 
     public class PostRequest : IReturn<string>, IPost { }
 
     public class PutRequest : IReturn<string>, IPut { }
 
-    public class DeleteRequest : IReturn<string>, IDelete { }
+    public class DeleteRequest : IReturn<string>, IDelete
+    {
+        public int Id { get; set; }
+    }
 
     public class PatchRequest : IReturn<string>, IPatch { }
 
@@ -107,7 +114,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				
         public object Get(GetRequest request) => HttpMethods.Get;
 		
-        public object Get(GetRequest[] request) => $"{HttpMethods.Get}AutoBatched";
+        public object Get(GetRequest[] request) => $"{HttpMethods.Get}AutoBatched{request[0].Id}";
 		
         public object Post(PostRequest request) => HttpMethods.Post;
 		
@@ -119,7 +126,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		
         public object Delete(DeleteRequest request) => HttpMethods.Delete;
 		
-        public object Delete(DeleteRequest[] request) => $"{HttpMethods.Delete}AutoBatched";
+        public object Delete(DeleteRequest[] request) => $"{HttpMethods.Delete}AutoBatched{request[0].Id}";
 		
         public object Patch(PatchRequest request) => HttpMethods.Patch;
 
@@ -222,11 +229,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void SendAll_request_for_IGet_calls_Get_Method()
         {
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri) {EmulateHttpViaPost = true};
 
-            var response = client.SendAll(new[] { new GetRequest() });
+            var response = client.SendAll(new[] { new GetRequest { Id = 1} });
 
-            Assert.That(response, Is.All.EqualTo($"{HttpMethods.Get}AutoBatched"));
+            Assert.That(response, Is.All.EqualTo($"{HttpMethods.Get}AutoBatched1"));
         }
 
         [Test]
@@ -262,7 +269,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void SendAll_request_for_IPut_calls_Put_Method()
         {
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri) {EmulateHttpViaPost = true};
 
             var response = client.SendAll(new[] { new PutRequest() });
 
@@ -282,11 +289,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void SendAll_request_for_IDelete_calls_Delete_Method()
         {
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri) {EmulateHttpViaPost = true};
 
-            var response = client.SendAll(new[] { new DeleteRequest() });
+            var response = client.SendAll(new[] { new DeleteRequest { Id = 1 } });
 
-            Assert.That(response, Is.All.EqualTo($"{HttpMethods.Delete}AutoBatched"));
+            Assert.That(response, Is.All.EqualTo($"{HttpMethods.Delete}AutoBatched1"));
         }
 
         [Test]
@@ -302,7 +309,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void SendAll_request_for_IPatch_calls_Patch_Method()
         {
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri) {EmulateHttpViaPost = true};
 
             var response = client.SendAll(new[] { new PatchRequest() });
 
@@ -322,9 +329,69 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void SendAll_request_for_request_with_no_marker_calls_Any_Method()
         {
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri) {EmulateHttpViaPost = true};
 
             var response = client.SendAll(new[] { new NoVerbRequest() });
+
+            Assert.That(response, Is.All.EqualTo("NoVerbAutoBatched"));
+        }
+        
+        [Test]
+        public async Task SendAllAsync_request_for_IGet_calls_Get_Method()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri) {EmulateHttpViaPost = true};
+
+            var response = await client.SendAllAsync(new[] { new GetRequest { Id = 1} });
+
+            Assert.That(response, Is.All.EqualTo($"{HttpMethods.Get}AutoBatched1"));
+        }
+
+        [Test]
+        public async Task SendAllAsync_request_for_IPost_calls_Post_Method()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+            var response = await client.SendAllAsync(new[] { new PostRequest() });
+
+            Assert.That(response, Is.All.EqualTo($"{HttpMethods.Post}AutoBatched"));
+        }
+        
+        [Test]
+        public async Task SendAllAsync_request_for_IPut_calls_Put_Method()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri) {EmulateHttpViaPost = true};;
+
+            var response = await client.SendAllAsync(new[] { new PutRequest() });
+
+            Assert.That(response, Is.All.EqualTo($"{HttpMethods.Put}AutoBatched"));
+        }
+        
+        [Test]
+        public async Task SendAllAsync_request_for_IDelete_calls_Delete_Method()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri) {EmulateHttpViaPost = true};
+
+            var response = await client.SendAllAsync(new[] { new DeleteRequest { Id = 1 } });
+
+            Assert.That(response, Is.All.EqualTo($"{HttpMethods.Delete}AutoBatched1"));
+        }
+
+        [Test]
+        public async Task SendAllAsync_request_for_IPatch_calls_Patch_Method()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri) {EmulateHttpViaPost = true};
+
+            var response = await client.SendAllAsync(new[] { new PatchRequest() });
+
+            Assert.That(response, Is.All.EqualTo($"{HttpMethods.Patch}AutoBatched"));
+        }
+
+        [Test]
+        public async Task SendAllAsync_request_for_request_with_no_marker_calls_Any_Method()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri) {EmulateHttpViaPost = true};
+
+            var response = await client.SendAllAsync(new[] { new NoVerbRequest() });
 
             Assert.That(response, Is.All.EqualTo("NoVerbAutoBatched"));
         }

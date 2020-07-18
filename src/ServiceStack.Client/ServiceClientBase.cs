@@ -528,14 +528,16 @@ namespace ServiceStack
             var elType = requests.GetType().GetCollectionType();
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";
             this.PopulateRequestMetadatas(requests);
-            var httpMethod = ToHttpMethod(elType)  ?? HttpMethods.Post;
-
-            var emulateHttpViaPostCurrent = EmulateHttpViaPost;
+            var httpMethod = HttpMethods.Post;
+            if(this.EmulateHttpViaPost) 
+			{
+				httpMethod = ToHttpMethod(elType) ?? HttpMethods.Post;
+			}
+            
+            var client = SendRequest(httpMethod, ResolveUrl(httpMethod, requestUri), requests);
             
             try
             {
-                EmulateHttpViaPost = true;
-                var client = SendRequest(httpMethod, ResolveUrl(httpMethod, requestUri), requests);
                 var webResponse = client.GetResponse();
                 return HandleResponse<List<TResponse>>(webResponse);
             }
@@ -552,10 +554,6 @@ namespace ServiceStack
                 }
 
                 return response;
-            }
-            finally
-            {
-                EmulateHttpViaPost = emulateHttpViaPostCurrent;
             }
         }
 
@@ -971,7 +969,7 @@ namespace ServiceStack
 
             this.PopulateRequestMetadata(request);
 
-            if (!HttpUtils.HasRequestBody(httpMethod) && request != null)
+            if (!this.EmulateHttpViaPost && !HttpUtils.HasRequestBody(httpMethod) && request != null)
             {
                 var queryString = QueryStringSerializer.SerializeToString(request);
                 if (!string.IsNullOrEmpty(queryString))
@@ -985,8 +983,17 @@ namespace ServiceStack
 
             try
             {
+                if (this.EmulateHttpViaPost)
+                {
+                    client.Method = HttpMethods.Post;
+                    client.Headers[HttpHeaders.XHttpMethodOverride] = httpMethod;
+                }
+                else
+                {
+                    client.Method = httpMethod;
+                }
+                
                 client.Accept = Accept;
-                client.Method = httpMethod;
                 PclExportClient.Instance.AddHeader(client, Headers);
 
                 if (Proxy != null) 
@@ -1019,7 +1026,7 @@ namespace ServiceStack
 
                 ApplyWebRequestFilters(client);
 
-                if (HttpUtils.HasRequestBody(httpMethod))
+                if (HttpUtils.HasRequestBody(client.Method))
                 {
                     client.ContentType = ContentType;
 
@@ -1192,11 +1199,15 @@ namespace ServiceStack
             var elType = requests.GetType().GetCollectionType();
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";
             this.PopulateRequestMetadatas(requests);
-            var httpMethod = ToHttpMethod(elType) ?? HttpMethods.Post;
+            var httpMethod = HttpMethods.Post;
+            var emulateHttpViaPostCurrent = asyncClient.EmulateHttpViaPost;
             
-            var emulateHttpViaPostCurrent = EmulateHttpViaPost;
-            asyncClient.EmulateHttpViaPost = true;
-
+            if (this.EmulateHttpViaPost)
+            {
+                httpMethod = ToHttpMethod(elType) ?? HttpMethods.Post;
+                asyncClient.EmulateHttpViaPost = true;
+            }
+            
             try
             {
                 return asyncClient.SendAsync<List<TResponse>>(httpMethod, ResolveUrl(httpMethod, requestUri), requests, token);

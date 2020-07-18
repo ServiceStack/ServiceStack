@@ -153,8 +153,7 @@ namespace ServiceStack
             this.PopulateRequestMetadata(request);
 
             var requestUri = absoluteUrl;
-            var hasQueryString = request != null && !HttpUtils.HasRequestBody(httpMethod);
-            if (hasQueryString)
+            if (!this.EmulateHttpViaPost && !HttpUtils.HasRequestBody(httpMethod) && request != null)
             {
                 var queryString = QueryStringSerializer.SerializeToString(request);
                 if (!string.IsNullOrEmpty(queryString))
