@@ -43,6 +43,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public class NoVerbRequest : IReturn<string> { }
+	
+    public class GetRequest : IReturn<string>, IGet { }
+
+    public class PostRequest : IReturn<string>, IPost { }
+
+    public class PutRequest : IReturn<string>, IPut { }
+
+    public class DeleteRequest : IReturn<string>, IDelete { }
+
+    public class PatchRequest : IReturn<string>, IPatch { }
+
     public class GetAutoBatchIndex : IReturn<GetAutoBatchIndexResponse>
     {
     }
@@ -88,6 +100,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             return responses;
         }
+
+        public object Any(NoVerbRequest request) => "NoVerb";
+				
+        public object Get(GetRequest request) => HttpMethods.Get;
+		
+        public object Get(GetRequest[] request) => HttpMethods.Get;
+		
+        public object Post(PostRequest request) => HttpMethods.Post;
+		
+        public object Post(PostRequest[] request) => HttpMethods.Post;
+		
+        public object Put(PutRequest request) => HttpMethods.Put;
+		
+        public object Put(PutRequest[] request) => HttpMethods.Put;
+		
+        public object Delete(DeleteRequest request) => HttpMethods.Delete;
+		
+        public object Delete(DeleteRequest[] request) => HttpMethods.Delete;
+		
+        public object Patch(PatchRequest request) => HttpMethods.Patch;
+		
+        public object Patch(PatchRequest[] request) => HttpMethods.Patch;
+		
     }
 
     [TestFixture]
@@ -171,6 +206,126 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.AreEqual("1", responses[1].Meta["GlobalResponseFilterAutoBatchIndex"]);
 
             Assert.AreEqual("1", responseHeaders["GlobalRequestFilterAutoBatchIndex"]);
+        }
+
+        [Test]
+        public void Send_request_for_IGet_calls_Get_Method()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+            var response = client.Send(new GetRequest());
+
+            Assert.That(response, Is.EqualTo(HttpMethods.Get));
+        }
+
+        [Test]
+        public void SendAll_request_for_IGet_calls_Get_Method()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+            var response = client.SendAll(new[] { new GetRequest() });
+
+            Assert.That(response, Is.All.EqualTo(HttpMethods.Get));
+        }
+
+        [Test]
+        public void Send_request_for_IPost_calls_Post_Method()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+            var response = client.Send(new PostRequest());
+
+            Assert.That(response, Is.EqualTo(HttpMethods.Post));
+        }
+
+        [Test]
+        public void SendAll_request_for_IPost_calls_Post_Method()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+            var response = client.SendAll(new[] { new PostRequest() });
+
+            Assert.That(response, Is.All.EqualTo(HttpMethods.Post));
+        }
+
+        [Test]
+        public void Send_request_for_IPut_calls_Put_Method()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+            var response = client.Send(new PutRequest());
+
+            Assert.That(response, Is.EqualTo(HttpMethods.Put));
+        }
+
+        [Test]
+        public void SendAll_request_for_IPut_calls_Put_Method()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+            var response = client.SendAll(new[] { new PutRequest() });
+
+            Assert.That(response, Is.All.EqualTo(HttpMethods.Put));
+        }
+
+        [Test]
+        public void Send_request_for_IDelete_calls_Delete_Method()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+            var response = client.Send(new DeleteRequest());
+
+            Assert.That(response, Is.EqualTo(HttpMethods.Delete));
+        }
+
+        [Test]
+        public void SendAll_request_for_IDelete_calls_Delete_Method()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+            var response = client.SendAll(new[] { new DeleteRequest() });
+
+            Assert.That(response, Is.All.EqualTo(HttpMethods.Delete));
+        }
+
+        [Test]
+        public void Send_request_for_IPatch_calls_Patch_Method()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+            var response = client.Send(new PatchRequest());
+
+            Assert.That(response, Is.EqualTo(HttpMethods.Patch));
+        }
+
+        [Test]
+        public void SendAll_request_for_IPatch_calls_Patch_Method()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+            var response = client.SendAll(new[] { new PatchRequest() });
+
+            Assert.That(response, Is.All.EqualTo(HttpMethods.Patch));
+        }
+
+        [Test]
+        public void Send_request_for_request_with_no_marker_calls_Any_Method()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+            var response = client.Send(new NoVerbRequest());
+
+            Assert.That(response, Is.EqualTo("NoVerb"));
+        }
+
+        [Test]
+        public void SendAll_request_for_request_with_no_marker_calls_Any_Method()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+            var response = client.SendAll(new[] { new NoVerbRequest() });
+
+            Assert.That(response, Is.All.EqualTo("NoVerb"));
         }
     }
 }
