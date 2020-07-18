@@ -102,27 +102,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         public object Any(NoVerbRequest request) => "NoVerb";
+        
+        public object Any(NoVerbRequest[] request) => "NoVerbAutoBatched";
 				
         public object Get(GetRequest request) => HttpMethods.Get;
 		
-        public object Get(GetRequest[] request) => HttpMethods.Get;
+        public object Get(GetRequest[] request) => $"{HttpMethods.Get}AutoBatched";
 		
         public object Post(PostRequest request) => HttpMethods.Post;
 		
-        public object Post(PostRequest[] request) => HttpMethods.Post;
+        public object Post(PostRequest[] request) => $"{HttpMethods.Post}AutoBatched";
 		
         public object Put(PutRequest request) => HttpMethods.Put;
 		
-        public object Put(PutRequest[] request) => HttpMethods.Put;
+        public object Put(PutRequest[] request) => $"{HttpMethods.Put}AutoBatched";
 		
         public object Delete(DeleteRequest request) => HttpMethods.Delete;
 		
-        public object Delete(DeleteRequest[] request) => HttpMethods.Delete;
+        public object Delete(DeleteRequest[] request) => $"{HttpMethods.Delete}AutoBatched";
 		
         public object Patch(PatchRequest request) => HttpMethods.Patch;
-		
-        public object Patch(PatchRequest[] request) => HttpMethods.Patch;
-		
+
+        public object Patch(PatchRequest[] request) => $"{HttpMethods.Patch}AutoBatched";
     }
 
     [TestFixture]
@@ -225,7 +226,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var response = client.SendAll(new[] { new GetRequest() });
 
-            Assert.That(response, Is.All.EqualTo(HttpMethods.Get));
+            Assert.That(response, Is.All.EqualTo($"{HttpMethods.Get}AutoBatched"));
         }
 
         [Test]
@@ -245,7 +246,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var response = client.SendAll(new[] { new PostRequest() });
 
-            Assert.That(response, Is.All.EqualTo(HttpMethods.Post));
+            Assert.That(response, Is.All.EqualTo($"{HttpMethods.Post}AutoBatched"));
         }
 
         [Test]
@@ -265,7 +266,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var response = client.SendAll(new[] { new PutRequest() });
 
-            Assert.That(response, Is.All.EqualTo(HttpMethods.Put));
+            Assert.That(response, Is.All.EqualTo($"{HttpMethods.Put}AutoBatched"));
         }
 
         [Test]
@@ -285,7 +286,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var response = client.SendAll(new[] { new DeleteRequest() });
 
-            Assert.That(response, Is.All.EqualTo(HttpMethods.Delete));
+            Assert.That(response, Is.All.EqualTo($"{HttpMethods.Delete}AutoBatched"));
         }
 
         [Test]
@@ -305,7 +306,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var response = client.SendAll(new[] { new PatchRequest() });
 
-            Assert.That(response, Is.All.EqualTo(HttpMethods.Patch));
+            Assert.That(response, Is.All.EqualTo($"{HttpMethods.Patch}AutoBatched"));
         }
 
         [Test]
@@ -325,7 +326,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var response = client.SendAll(new[] { new NoVerbRequest() });
 
-            Assert.That(response, Is.All.EqualTo("NoVerb"));
+            Assert.That(response, Is.All.EqualTo("NoVerbAutoBatched"));
         }
     }
 }
