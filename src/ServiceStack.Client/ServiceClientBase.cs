@@ -529,11 +529,13 @@ namespace ServiceStack
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";
             this.PopulateRequestMetadatas(requests);
             var httpMethod = ToHttpMethod(elType)  ?? HttpMethods.Post;
-            
-            var client = SendRequest(httpMethod, ResolveUrl(httpMethod, requestUri), requests);
 
+            var emulateHttpViaPostCurrent = EmulateHttpViaPost;
+            
             try
             {
+                EmulateHttpViaPost = true;
+                var client = SendRequest(httpMethod, ResolveUrl(httpMethod, requestUri), requests);
                 var webResponse = client.GetResponse();
                 return HandleResponse<List<TResponse>>(webResponse);
             }
@@ -550,6 +552,10 @@ namespace ServiceStack
                 }
 
                 return response;
+            }
+            finally
+            {
+                EmulateHttpViaPost = emulateHttpViaPostCurrent;
             }
         }
 
@@ -1187,7 +1193,18 @@ namespace ServiceStack
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + elType.Name + "[]";
             this.PopulateRequestMetadatas(requests);
             var httpMethod = ToHttpMethod(elType) ?? HttpMethods.Post;
-            return asyncClient.SendAsync<List<TResponse>>(httpMethod, ResolveUrl(httpMethod, requestUri), requests, token);
+            
+            var emulateHttpViaPostCurrent = EmulateHttpViaPost;
+            asyncClient.EmulateHttpViaPost = true;
+
+            try
+            {
+                return asyncClient.SendAsync<List<TResponse>>(httpMethod, ResolveUrl(httpMethod, requestUri), requests, token);
+            }
+            finally
+            {
+                asyncClient.EmulateHttpViaPost = emulateHttpViaPostCurrent;
+            }
         }
 
         public Task PublishAsync(object request, CancellationToken token)
