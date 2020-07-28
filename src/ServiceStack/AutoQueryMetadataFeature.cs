@@ -116,6 +116,7 @@ namespace ServiceStack
     public class AutoQueryOperation : IMeta
     {
         public string Request { get; set; }
+        public List<MetadataRoute> Routes { get; set; }
         public string From { get; set; }
         public string To { get; set; }
         public Dictionary<string, string> Meta { get; set; }
@@ -198,6 +199,7 @@ namespace ServiceStack
                     var inheritArgs = op.Request.Inherits.GenericArgs.Safe().ToArray();
                     response.Operations.Add(new AutoQueryOperation {
                         Request = op.Request.Name,
+                        Routes = op.Routes,
                         From = inheritArgs.First(),
                         To = inheritArgs.Last(),
                     });

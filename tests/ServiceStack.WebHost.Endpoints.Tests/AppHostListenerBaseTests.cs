@@ -248,11 +248,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         private static string GetBaseAddressWithFreePort()
         {
-            TcpListener listener = new TcpListener(IPAddress.Loopback, 0);
+            var listener = new TcpListener(IPAddress.Loopback, 0);
             listener.Start();
-            IPEndPoint endPoint = listener.LocalEndpoint as IPEndPoint;
 
-            if (endPoint != null)
+            if (listener.LocalEndpoint is IPEndPoint endPoint)
             {
                 string address = endPoint.Address.ToString();
                 int port = endPoint.Port;
