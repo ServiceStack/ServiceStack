@@ -122,6 +122,10 @@ namespace ServiceStack
         public static Exception Forbidden(string message) => new HttpError(HttpStatusCode.Forbidden, message);
         public static Exception MethodNotAllowed(string message) => new HttpError(HttpStatusCode.MethodNotAllowed, message);
         public static Exception BadRequest(string message) => new HttpError(HttpStatusCode.BadRequest, message);
+        public static Exception PreconditionFailed(string message) => new HttpError(HttpStatusCode.PreconditionFailed, message);
+        public static Exception ExpectationFailed(string message) => new HttpError(HttpStatusCode.ExpectationFailed, message);
+        public static Exception NotImplemented(string message) => new HttpError(HttpStatusCode.NotImplemented, message);
+        public static Exception ServiceUnavailable(string message) => new HttpError(HttpStatusCode.ServiceUnavailable, message);
 
         public ResponseStatus ToResponseStatus() => Response.GetResponseStatus()
             ?? ResponseStatusUtils.CreateResponseStatus(ErrorCode, Message, null);
