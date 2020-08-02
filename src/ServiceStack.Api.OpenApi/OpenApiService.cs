@@ -1013,8 +1013,8 @@ namespace ServiceStack.Api.OpenApi
 
         private List<string> GetTags(string path)
         {
-            var tagname = GetTagName(path);
-            return tagname != null ? new List<string> { tagname } : null;
+            var tagName = GetTagName(path);
+            return tagName != null ? new List<string> { tagName } : null;
         }
 
         private string GetTagName(string path)

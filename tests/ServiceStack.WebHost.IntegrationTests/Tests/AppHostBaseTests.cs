@@ -23,7 +23,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         }
 
         [Test]
-        public void Gets_404_on_non_existant_page()
+        public void Gets_404_on_non_existent_page()
         {
             var webRes = (BasePath + "nonexistant.html").GetErrorResponse();
             Assert.That(webRes.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));

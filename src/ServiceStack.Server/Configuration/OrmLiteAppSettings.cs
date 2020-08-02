@@ -64,6 +64,12 @@ namespace ServiceStack.Configuration
                 using var db = DbFactory.Open();
                 return db.Count<ConfigSetting>(q => q.Id == key) > 0;
             }
+
+            public void Delete(string key)
+            {
+                using var db = DbFactory.Open();
+                db.DeleteById<ConfigSetting>(key);
+            }
         }
 
         public T GetOrCreate<T>(string key, Func<T> createFn)
@@ -78,20 +84,14 @@ namespace ServiceStack.Configuration
             return base.Get(key, default(T));
         }
 
-        public override string GetString(string name)
-        {
-            return base.GetNullableString(name);
-        }
+        public override string GetString(string name) => base.GetNullableString(name);
 
-        public override void Set<T>(string key, T value)
-        {
-            DbSettings.Set(key, value);
-        }
+        public override void Set<T>(string key, T value) => DbSettings.Set(key, value);
 
-        public override Dictionary<string, string> GetAll()
-        {
-            return DbSettings.GetAll();
-        }
+        public override Dictionary<string, string> GetAll() => DbSettings.GetAll();
+
+        public void Delete(string key) => DbSettings.Delete(key);
+
 
         public void InitSchema()
         {
