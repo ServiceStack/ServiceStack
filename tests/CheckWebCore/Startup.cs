@@ -235,12 +235,14 @@ namespace CheckWebCore
     }
 
     [Route("/testauth")]
+    [Tag("mobile")]
     public class TestAuth : IReturn<TestAuth> {}
 
     [Route("/session")]
     public class Session : IReturn<AuthUserSession> {}
     
     [Route("/throw")]
+    [Tag("desktop")]
     public class Throw {}
     
     [Route("/api/data/import/{Month}", "POST")]
@@ -258,6 +260,7 @@ namespace CheckWebCore
     {
         public T Result { get; set; }
     }
+    [Tag("web")]
     public class Campaign : IReturn<ResponseBase<Dictionary<string, List<object>>>>
     {
         public int Id { get; set; }
@@ -304,6 +307,7 @@ namespace CheckWebCore
         Verbs = "POST")]
     [ApiResponse(HttpStatusCode.Unauthorized, "You were unauthorized to call this service")]
     //[Restrict(VisibleLocalhostOnly = true)]
+    [Tag("web"),Tag("mobile"),Tag("desktop")]
     public class CreateBookings : CreateBookingBase ,IReturn<CreateBookingsResponse>
     {
 

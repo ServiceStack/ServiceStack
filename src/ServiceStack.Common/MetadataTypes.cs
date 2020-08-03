@@ -317,6 +317,7 @@ namespace ServiceStack
         public List<string> RequiresAnyRole { get; set; }
         public List<string> RequiredPermissions { get; set; }
         public List<string> RequiresAnyPermission { get; set; }
+        public List<string> Tags { get; set; }
     }
 
     public class MetadataType : IMeta

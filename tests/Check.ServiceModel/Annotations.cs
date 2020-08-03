@@ -8,6 +8,7 @@ namespace Check.ServiceModel
     [Alias("AliasAnnotations")]
     [Schema("Annotations.dbo")]
     [NamedConnection("AnnotationsDb")]
+    [Tag("web"),Tag("mobile"),Tag("desktop")]
     public class HelloAnnotations : IReturn<HelloAnnotations>
     {
         [Display(AutoGenerateField = false, AutoGenerateFilter = true, ShortName = "Id", Order = 1)]

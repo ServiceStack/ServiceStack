@@ -10,6 +10,7 @@ using ServiceStack.DataAnnotations;
 namespace Check.ServiceModel.Operations
 {
     [System.ComponentModel.Description("Description for HelloACodeGenTest")]
+    [Tag("web")]
     public class HelloACodeGenTest
     {
         [Description("Description for FirstField")]
@@ -19,6 +20,7 @@ namespace Check.ServiceModel.Operations
     }
 
     [DataContract]
+    [Tag("mobile")]
     public class HelloACodeGenTestResponse
     {
         [DataMember]
@@ -32,6 +34,7 @@ namespace Check.ServiceModel.Operations
 
     [Route("/hello")]
     [Route("/hello/{Name}")]
+    [Tag("web"),Tag("mobile")]
     public class Hello
     {
         [Required]
@@ -43,8 +46,8 @@ namespace Check.ServiceModel.Operations
     {
         public string Result { get; set; }
     }
-
-
+    
+    [Tag("desktop")]
     public class HelloWithNestedClass : IReturn<HelloResponse>
     {
         public string Name { get; set; }
@@ -72,21 +75,25 @@ namespace Check.ServiceModel.Operations
         public string Result { get; set; }
     }
 
+    [Tag("web")]
     public class HelloList : IReturn<List<ListResult>>
     {
         public List<string> Names { get; set; }
     }
 
+    [Tag("mobile")]
     public class HelloReturnList : IReturn<List<OnlyInReturnListArg>>
     {
         public List<string> Names { get; set; }
     }
 
+    [Tag("desktop")]
     public class HelloArray : IReturn<ArrayResult[]>
     {
         public List<string> Names { get; set; }
     }
 
+    [Tag("mobile"),Tag("desktop")]
     public class HelloExisting : IReturn<HelloExistingResponse>
     {
         public List<string> Names { get; set; }

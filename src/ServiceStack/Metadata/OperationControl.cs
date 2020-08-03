@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.Host;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Metadata
@@ -59,6 +60,12 @@ namespace ServiceStack.Metadata
         public virtual Task RenderAsync(Stream output)
         {
             var baseUrl = HttpRequest.ResolveAbsoluteUrl("~/");
+            var sbTags = StringBuilderCache.Allocate();
+            Operation.Tags.Each(x => sbTags.Append($"<span><b>{x.Name}</b></span>"));
+            var tagsHtml = sbTags.Length > 0
+                ? "<div class=\"tags\">" + StringBuilderCache.ReturnAndFree(sbTags) + "</div>"
+                : "";
+            
             var renderedTemplate = Templates.HtmlTemplates.Format(Templates.HtmlTemplates.GetOperationControlTemplate(),
                 Title,
                 baseUrl.CombineWith(MetadataConfig.DefaultMetadataUri),
@@ -66,7 +73,8 @@ namespace ServiceStack.Metadata
                 OperationName,
                 GetHttpRequestTemplate(),
                 ResponseTemplate,
-                MetadataHtml);
+                MetadataHtml,
+                tagsHtml);
 
             return output.WriteAsync(renderedTemplate);
         }

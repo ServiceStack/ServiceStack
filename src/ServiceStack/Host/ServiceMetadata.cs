@@ -7,6 +7,7 @@ using ServiceStack.DataAnnotations;
 using ServiceStack.FluentValidation;
 using ServiceStack.NativeTypes;
 using ServiceStack.NativeTypes.CSharp;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
@@ -53,6 +54,7 @@ namespace ServiceStack.Host
             var authAttrs = reqFilterAttrs.OfType<AuthenticateAttribute>().ToList();
             var actions = GetImplementedActions(serviceType, requestType);
             authAttrs.AddRange(actions.SelectMany(x => x.AllAttributes<AuthenticateAttribute>()));
+            var tagAttrs = requestType.AllAttributes<TagAttribute>().ToList();
 
             var operation = new Operation
             {
@@ -69,6 +71,7 @@ namespace ServiceStack.Host
                 RequiresAnyRole = authAttrs.OfType<RequiresAnyRoleAttribute>().SelectMany(x => x.RequiredRoles).ToList(),
                 RequiredPermissions = authAttrs.OfType<RequiredPermissionAttribute>().SelectMany(x => x.RequiredPermissions).ToList(),
                 RequiresAnyPermission = authAttrs.OfType<RequiresAnyPermissionAttribute>().SelectMany(x => x.RequiredPermissions).ToList(),
+                Tags = tagAttrs,
             };
 
             this.OperationsMap[requestType] = operation;
@@ -668,6 +671,7 @@ namespace ServiceStack.Host
         public List<string> RequiresAnyRole { get; set; }
         public List<string> RequiredPermissions { get; set; }
         public List<string> RequiresAnyPermission { get; set; }
+        public List<TagAttribute> Tags { get; set; }
         
         public List<ITypeValidator> RequestTypeValidationRules { get; private set; }
         public List<IValidationRule> RequestPropertyValidationRules { get; private set; }
@@ -720,6 +724,7 @@ namespace ServiceStack.Host
         public List<string> VisibleTo { get; set; }
         public List<string> Actions { get; set; }
         public List<string> Routes { get; set; }
+        public List<string> Tags { get; set; }
     }
 
     public class XsdMetadata
@@ -789,6 +794,7 @@ namespace ServiceStack.Host
                 ServiceName = operation.ServiceType.GetOperationName(),
                 Actions = operation.Actions,
                 Routes = operation.Routes.Map(x => x.Path),
+                Tags = operation.Tags.Map(x => x.Name),
             };
 
             if (operation.RestrictTo != null)
