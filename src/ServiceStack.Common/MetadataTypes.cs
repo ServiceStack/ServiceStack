@@ -479,5 +479,9 @@ namespace ServiceStack
                     : $"{firstParam} |> {method.Name}(" + string.Join(", ", method.ParamNames?.Skip(1) ?? new string[0]) + $"){ret}";
             return sig;
         }
+        
+        public static List<MetadataOperationType> GetOperationsByTags(this MetadataTypes types, string[] tags) => 
+            types.Operations.Where(x => x.Tags != null && x.Tags.Any(t => Array.IndexOf(tags, t) >= 0)).ToList();
+
     }
 }

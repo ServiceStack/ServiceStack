@@ -131,6 +131,12 @@ namespace ServiceStack.Host
                 .ToList();
         }
 
+        public List<Operation> GetOperationsByTag(string tag) => 
+            Operations.Where(x => x.Tags.Any(t => t.Name == tag)).ToList();
+
+        public List<Operation> GetOperationsByTags(string[] tags) => 
+            Operations.Where(x => x.Tags.Any(t => Array.IndexOf(tags, t.Name) >= 0)).ToList();
+
         public Operation GetOperation(Type requestType)
         {
             if (requestType == null)

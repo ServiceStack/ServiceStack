@@ -1098,14 +1098,16 @@ namespace ServiceStack.NativeTypes
 
         public static List<string> GetIncludeList(MetadataTypes metadata, MetadataTypesConfig config)
         {
-            if (config.IncludeTypes == null)
+            if (config.IncludeTypes.IsEmpty())
                 return null;
 
-            var namespacedTypes = config.IncludeTypes
+            var includeTypes = config.IncludeTypes.Where(x => !x.StartsWith("{")).ToList();
+            
+            var namespacedTypes = includeTypes
                 .Where(s => s.Length > 2 && s.EndsWith(NamespaceWildCard))
                 .Map(s => s.Substring(0, s.Length - 2));
 
-            var explicitTypes = config.IncludeTypes
+            var explicitTypes = includeTypes
                 .Where(x => !x.EndsWith(NamespaceWildCard))
                 .ToList();
 
@@ -1118,9 +1120,22 @@ namespace ServiceStack.NativeTypes
                 .Map(s => s.Substring(2)).ToArray();
             explicitTypes.AddRange(reverseTypesToExpand);
 
-            if (typesToExpand.Count != 0 || NamespaceWildCard.Length != 0)
+            var tags = config.IncludeTypes.Where(x => x.StartsWith("{") && x.EndsWith("}"))
+                .SelectMany(x => x.Substring(1, x.Length -2).Split(',')).Distinct().ToArray();
+
+            if (tags.Length > 0)
             {
-                var includeTypesInNamespace = NamespaceWildCard.Length > 0
+                var tagTypes = metadata.GetOperationsByTags(tags).Map(x => x.Request.Name);
+                if (tagTypes.Count > 0)
+                {
+                    explicitTypes.AddRange(tagTypes);
+                    typesToExpand.AddRange(tagTypes);
+                }
+            }
+
+            if (typesToExpand.Count != 0 || namespacedTypes.Count != 0)
+            {
+                var includeTypesInNamespace = namespacedTypes.Count > 0
                     ? metadata.GetAllMetadataTypes()
                         .Where(x => namespacedTypes.Any(ns => x.Namespace?.StartsWith(ns) == true))
                         .Select(x => x.Name)
@@ -1177,7 +1192,7 @@ namespace ServiceStack.NativeTypes
             }
 
             // From IncludeTypes get the corresponding MetadataTypes
-            return config.IncludeTypes;
+            return includeTypes;
         }
 
         public static bool IgnoreType(this MetadataType type, MetadataTypesConfig config, List<string> overrideIncludeType = null)
