@@ -268,7 +268,7 @@ namespace ServiceStack.Auth
         /// <summary>
         /// Whether to also Include Token in ConvertSessionToTokenResponse   
         /// </summary>
-        public bool IncludeJwtInConvertSessionToTokenResponse { get; set;  }
+        public bool IncludeJwtInConvertSessionToTokenResponse { get; set; }
 
         public JwtAuthProviderReader()
             : base(null, Realm, Name)
