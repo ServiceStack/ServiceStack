@@ -521,6 +521,8 @@ namespace ServiceStack.Auth
                 verifiedPayload = GetVerifiedJwtPayload(req, jwt.Split('.'));
                 if (verifiedPayload == null)
                     return null;
+                if (ValidateToken != null && !ValidateToken(verifiedPayload, req)) 
+                    return null;
             }
             catch (Exception e)
             {

@@ -154,6 +154,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             Assert.That(authResponse.BearerToken, Is.Not.Null);
 
             var jwtProvider = (JwtAuthProvider) AuthenticateService.GetJwtAuthProvider();
+            // Ensure minimum signature example
+            // jwtProvider.ValidateToken = (jsonObj, request) => 
+            //     request.GetJwtToken().LastRightPart('.').FromBase64UrlSafe().Length >= 32;
+
             var req = new BasicHttpRequest {
                 Headers = {[HttpHeaders.Authorization] = "Bearer " + authResponse.BearerToken}
             };
