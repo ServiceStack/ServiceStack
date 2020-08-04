@@ -234,6 +234,12 @@ namespace ServiceStack
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool EquivalentTo(this byte[] bytes, byte[] other)
         {
+            if (bytes == null || other == null)
+                return bytes == other;
+
+            if (bytes.Length != other.Length)
+                return false;
+
             var compare = 0;
             for (var i = 0; i < other.Length; i++)
                 compare |= other[i] ^ bytes[i];
