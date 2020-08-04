@@ -3,7 +3,7 @@ title: SVG Images
 layout: _script-layout
 -->
 
-{{ 'id' | importRequestParams }}
+{{ 'id' |> importRequestParams }}
 
 <style>
 body {
@@ -139,7 +139,7 @@ button {
 }
 </style>
 
-{{ 'buttons' | cssIncludes }}
+{{ 'buttons' |> cssIncludes }}
 
 <a id="lnk-back" href="./">&lt;back</a>
 
@@ -150,12 +150,12 @@ button {
     
     <h3 class="my-4"><a href="{{ `/css/${it.Key}.css`.resolveUrl() }}" target="_blank">/css/{{it.Key}}.css</a></h3>
     
-    {{ it.Key | cssIncludes }}
+    {{ it.Key |> cssIncludes }}
     
     {{#each name in it.Value}}
     <div class="my-1 svg">
         <b>{{name}}</b>
-        <a {{ {active:name == id} | htmlClass }} href="?id={{name}}">
+        <a {{ {active:name == id} |> htmlClass }} href="?id={{name}}">
             <div class="svg-icon">
                 <img src="{{ `${name}`.svgDataUri() }}">
             </div>
@@ -166,9 +166,9 @@ button {
     
 {{#if it.Value.Count > 0}}
     
-    {{ (id && it.Value.contains(id) ? id : it.Value[0]) | assignTo: name }}
+    {{ var name = (id && it.Value.contains(id) ? id : it.Value[0]) }}
     
-    {{ ['lg','md','sm','xs'] | assignTo: sizes }}
+    {{ var sizes = ['lg','md','sm','xs'] }}
     
     <table class="usage my-4">
         <tr>
@@ -279,7 +279,7 @@ button {
                 <tr>
                     <th>#Script inline style</th>
                     <td class="sel">
-                        {{#raw}} {{ {{/raw}} 'buttons,{{it.Key}}' | cssIncludes{{#raw}} }} {{/raw}}
+                        {{#raw}} {{ {{/raw}} 'buttons,{{it.Key}}' |> cssIncludes{{#raw}} }} {{/raw}}
                     </td>
                 </tr>
                 <tr>
