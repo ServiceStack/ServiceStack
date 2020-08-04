@@ -500,6 +500,7 @@ namespace ServiceStack.Auth
 
         public bool IsJwtValid(string jwt) => GetValidJwtPayload(jwt) != null;
         public bool IsJwtValid(IRequest req, string jwt) => GetValidJwtPayload(req, jwt) != null;
+        public bool IsJwtValid(IRequest req) => GetValidJwtPayload(req, req.GetJwtToken()) != null;
 
         public JsonObject GetValidJwtPayload(string jwt) =>
             GetValidJwtPayload(null, jwt);
@@ -507,9 +508,24 @@ namespace ServiceStack.Auth
         /// <summary>
         /// Return token payload which is both verified and still valid
         /// </summary>
+        public virtual JsonObject GetValidJwtPayload(IRequest req) => GetValidJwtPayload(req, req.GetJwtToken());
+
+        /// <summary>
+        /// Return token payload which is both verified and still valid
+        /// </summary>
         public virtual JsonObject GetValidJwtPayload(IRequest req, string jwt)
         {
-            var verifiedPayload = GetVerifiedJwtPayload(req, jwt.Split('.'));
+            JsonObject verifiedPayload = null;
+            try
+            {
+                verifiedPayload = GetVerifiedJwtPayload(req, jwt.Split('.'));
+                if (verifiedPayload == null)
+                    return null;
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
             var invalidError = GetInvalidJwtPayloadError(verifiedPayload);
             return invalidError != null
                 ? null
