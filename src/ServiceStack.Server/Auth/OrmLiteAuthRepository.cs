@@ -423,10 +423,10 @@ namespace ServiceStack.Auth
 
         public virtual IUserAuth GetUserAuth(string userAuthId)
         {
-            return Exec(db =>
-            {
-                return db.SingleById<TUserAuth>(int.Parse(userAuthId));
-            });
+            if (string.IsNullOrEmpty(userAuthId))
+                throw new ArgumentNullException(nameof(userAuthId));
+            
+            return Exec(db => db.SingleById<TUserAuth>(int.Parse(userAuthId)));
         }
 
         public virtual void SaveUserAuth(IAuthSession authSession)

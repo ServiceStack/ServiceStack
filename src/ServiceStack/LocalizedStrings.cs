@@ -93,6 +93,7 @@
         public static string ApiKeyDoesNotExist = "ApiKey does not exist";
         public static string ApiKeyHasBeenCancelled = "ApiKey has been cancelled";
         public static string ApiKeyHasExpired = "ApiKey has expired";
+        public static string ApiKeyIsInvalid = "ApiKey is Invalid";
         public static string UserForApiKeyDoesNotExist = "User for ApiKey does not exist";
         public static string JwtRequiresSecureConnection = "Sending JWT over insecure connection forbidden when RequireSecureConnection=true";
         public static string TokenInvalidated = "Token has been invalidated";

@@ -196,6 +196,9 @@ namespace ServiceStack.Auth
             {
                 var apiKey = GetApiKey(authService.Request, request.Password);
                 ValidateApiKey(authService.Request, apiKey);
+                
+                if (string.IsNullOrEmpty(apiKey.UserAuthId))
+                    throw HttpError.Conflict(ErrorMessages.ApiKeyIsInvalid.Localize(authService.Request));
 
                 var userAuth = authRepo.GetUserAuth(apiKey.UserAuthId);
                 if (userAuth == null)
