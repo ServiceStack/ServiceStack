@@ -5,10 +5,8 @@
     <TargetFrameworks>net45;netstandard2.0;netcoreapp3.1</TargetFrameworks>
     <Title>MVC Adapters for integrating with ServiceStack webservices</Title>
     <PackageDescription>
-      Full details in MVC PowerPack: http://mono.servicestack.net/mvc-powerpack/
-      MVC Adapter classes to provide tight integration and re-usable functionality between ServiceStack and MVC.
-      Including adapters for: MiniProfiler, FluentValidation, Funq IOC Controller Factory, Funq Validator Factory
-      ControllerBase (configured with access to ServiceStack's ICacheClient, ISession, typed UserSession dependencies).
+    MVC Adapter classes to provide tight integration and re-usable functionality between ServiceStack and MVC.
+    Including adapters for: MiniProfiler, FluentValidation, Funq IOC Controller Factory, Funq Validator Factory ControllerBase (configured with access to ServiceStack's ICacheClient, ISession, typed UserSession dependencies).
     </PackageDescription>
     <PackageTags>MVC;ServiceStack;MiniProfiler;FluentValidation;Controller</PackageTags>
   </PropertyGroup>

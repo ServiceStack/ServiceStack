@@ -6,9 +6,9 @@
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <Title>ServiceStack Self Host for .NET Core's Kestrel HTTP Server</Title>
     <PackageDescription>
-      Provides AppSelfHostBase implementation for .NET Core's Kestrel Self Host HTTP Server
+    Provides AppSelfHostBase implementation for .NET Core's Kestrel Self Host HTTP Server
 
-      To get started see: https://servicestack.net/getting-started
+    To get started see: https://servicestack.net/getting-started
     </PackageDescription>
     <PackageTags>ServiceStack;SelfHost;Host;Kestrel;HTTP;Server</PackageTags>
   </PropertyGroup>

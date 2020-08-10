@@ -6,8 +6,8 @@
     <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
     <Title>ServiceStack Swagger v1.0 metadata provider and integrated UI</Title>
     <PackageDescription>
-      Provides a set of services to be discovered by Swagger (http://swagger.io).
-      Swagger is a specification and complete framework implementation for describing, producing, consuming, and visualizing RESTful web services.
+    Provides a set of services to be discovered by Swagger (http://swagger.io).
+    Swagger is a specification and complete framework implementation for describing, producing, consuming, and visualizing RESTful web services.
     </PackageDescription>
     <PackageTags>Swagger;metadata;API;REST;Docs;ServiceStack</PackageTags>
   </PropertyGroup>

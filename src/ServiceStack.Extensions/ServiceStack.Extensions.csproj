@@ -8,9 +8,7 @@
         <DefineConstants>$(DefineConstants);PLAT_PBN_NOSPAN</DefineConstants>
         <LangVersion>8</LangVersion>
         <Title>ServiceStack.Extensions</Title>
-        <PackageDescription>
-            ServiceStack extensions for .NET Core Apps, including GrpcFeature 
-        </PackageDescription>
+        <PackageDescription>ServiceStack extensions for .NET Core Apps, including GrpcFeature</PackageDescription>
         <PackageTags>ServiceStack;gRPC;server;GrpcFeature</PackageTags>
     </PropertyGroup>
 

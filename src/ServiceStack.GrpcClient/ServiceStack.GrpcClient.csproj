@@ -7,9 +7,7 @@
         <RootNamespace>ServiceStack</RootNamespace>
         <LangVersion>8</LangVersion>
         <Title>ServiceStack.GrpcClient</Title>
-        <PackageDescription>
-            ServiceStack's gRPC GrpcServiceClient
-        </PackageDescription>
+        <PackageDescription>ServiceStack's gRPC GrpcServiceClient</PackageDescription>
         <PackageTags>ServiceStack;ServiceClients;gRPC</PackageTags>
     </PropertyGroup>
 
