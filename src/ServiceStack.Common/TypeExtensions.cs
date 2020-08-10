@@ -50,6 +50,21 @@ namespace ServiceStack
                 }
             }
 
+            foreach (var iface in type.GetInterfaces())
+            {
+                if (iface.IsGenericType && !iface.IsGenericTypeDefinition)
+                {
+                    foreach (var arg in iface.GetGenericArguments())
+                    {
+                        if (!refTypes.Contains(arg))
+                        {
+                            refTypes.Add(arg);
+                            AddReferencedTypes(arg, refTypes);
+                        }
+                    }
+                }
+            }
+
             var properties = type.GetProperties();
             if (!properties.IsEmpty())
             {

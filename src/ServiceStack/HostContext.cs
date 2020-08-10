@@ -25,7 +25,7 @@ namespace ServiceStack
 
         public static AsyncContext Async = new AsyncContext();
 
-        internal static ServiceStackHost AssertAppHost()
+        public static ServiceStackHost AssertAppHost()
         {
             if (ServiceStackHost.Instance == null)
                 throw new ConfigurationErrorsException(
@@ -214,7 +214,7 @@ namespace ServiceStack
         private static string defaultOperationNamespace;
         public static string DefaultOperationNamespace
         {
-            get => defaultOperationNamespace ?? (defaultOperationNamespace = GetDefaultNamespace());
+            get => defaultOperationNamespace ??= GetDefaultNamespace();
             set => defaultOperationNamespace = value;
         }
 
@@ -237,15 +237,14 @@ namespace ServiceStack
             return null;
         }
 
-        public static Task<object> RaiseServiceException(IRequest httpReq, object request, Exception ex)
-        {
-            return AssertAppHost().OnServiceException(httpReq, request, ex);
-        }
+        public static Task<object> RaiseServiceException(IRequest httpReq, object request, Exception ex) => 
+            AssertAppHost().OnServiceException(httpReq, request, ex);
 
-        public static Task RaiseUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
-        {
-            return AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex);
-        }
+        public static Task RaiseUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex) => 
+            AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex);
+
+        public static Task RaiseGatewayException(IRequest httpReq, object request, Exception ex) => 
+            AssertAppHost().OnGatewayException(httpReq, request, ex);
 
         public static async Task RaiseAndHandleException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
         {

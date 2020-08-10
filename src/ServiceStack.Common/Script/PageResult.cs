@@ -121,6 +121,11 @@ namespace ServiceStack.Script
         public string AssignExceptionsTo { get; set; }
 
         /// <summary>
+        /// What argument captured errors should be binded to
+        /// </summary>
+        public string CatchExceptionsIn { get; set; }
+
+        /// <summary>
         /// Whether to skip execution of all page filters and just write page string fragments
         /// </summary>
         public bool SkipFilterExecution { get; set; }
@@ -156,14 +161,30 @@ namespace ServiceStack.Script
         public int StackDepth { get; internal set; }
         
         /// <summary>
+        /// The Current StackDepth of rendering partials
+        /// </summary>
+        public int PartialStackDepth { get; internal set; }
+
+        /// <summary>
         /// Can be used to track number of Evaluations
         /// </summary>
         public long Evaluations { get; private set; }
-
+        
+        /// <summary>
+        /// Can be used to track number of Evaluations
+        /// </summary>
+        internal bool PageProcessed { get; set; }
+        
         public void AssertNextEvaluation()
         {
             if (Evaluations++ >= Context.MaxEvaluations)
                 throw new NotSupportedException($"Exceeded Max Evaluations of {Context.MaxEvaluations}. \nMaxEvaluations can be changed in `ScriptContext.MaxEvaluations`.");
+        }
+        
+        public void AssertNextPartial()
+        {
+            if (PartialStackDepth++ >= Context.MaxStackDepth)
+                throw new NotSupportedException($"Exceeded Max Partial StackDepth of {Context.MaxStackDepth}. \nMaxStackDepth can be changed in `ScriptContext.MaxStackDepth`.");
         }
 
         public void ResetIterations() => Evaluations = 0;
@@ -197,6 +218,18 @@ namespace ServiceStack.Script
             var hasRequest = (CodePage as IRequiresRequest)?.Request;
             if (hasRequest != null)
                 Args[ScriptConstants.Request] = hasRequest;
+        }
+
+        public PageResult AssignArgs(Dictionary<string, object> args)
+        {
+            if (args != null)
+            {
+                foreach (var entry in args)
+                {
+                    Args[entry.Key] = entry.Value;
+                }
+            }
+            return this;
         }
 
         //entry point
@@ -482,15 +515,24 @@ namespace ServiceStack.Script
         }
 
         public Task WritePageAsync(SharpPage page, SharpCodePage codePage,
-            ScriptScopeContext scope, CancellationToken token = default(CancellationToken))
+            ScriptScopeContext scope, CancellationToken token = default)
         {
-            if (page != null)
-                return WritePageAsync(page, scope, token);
+            try
+            {
+                AssertNextPartial();
+                
+                if (page != null)
+                    return WritePageAsync(page, scope, token);
 
-            return WriteCodePageAsync(codePage, scope, token);
+                return WriteCodePageAsync(codePage, scope, token);
+            }
+            finally
+            {
+                PartialStackDepth--;
+            }
         }
 
-        public async Task WritePageAsync(SharpPage page, ScriptScopeContext scope, CancellationToken token = default(CancellationToken))
+        public async Task WritePageAsync(SharpPage page, ScriptScopeContext scope, CancellationToken token = default)
         {
             if (PageTransformers.Count == 0)
             {
@@ -818,7 +860,7 @@ namespace ServiceStack.Script
                             else if (rethrow)
                                 throw;
 
-                            throw new TargetInvocationException($"Failed to invoke filter '{expr.GetDisplayName()}': {ex.Message}", ex);
+                            throw new TargetInvocationException($"Failed to invoke script method '{expr.GetDisplayName()}': {ex.Message}", ex);
                         }
 
                         return IgnoreResult.Value;
@@ -827,24 +869,29 @@ namespace ServiceStack.Script
                     if (value is Task<object> valueTask)
                         value = await valueTask;
                 }
-                catch (StopFilterExecutionException ex)
+                catch (Exception ex)
                 {
-                    LastFilterError = ex.InnerException;
+                    var stopEx = ex as StopFilterExecutionException;
+                    var useEx = stopEx?.InnerException ?? ex;
+                    
+                    LastFilterError = useEx;
                     LastFilterStackTrace = stackTrace.ToArray();
 
+                    Context.OnRenderException?.Invoke(this, ex);
+
                     if (RethrowExceptions)
-                        throw ex.InnerException;
+                        throw useEx;
                     
                     var skipExecutingFilters = SkipExecutingFiltersIfError.GetValueOrDefault(Context.SkipExecutingFiltersIfError);
                     if (skipExecutingFilters)
                         this.SkipFilterExecution = true;
 
-                    var rethrow = ScriptConfig.FatalExceptions.Contains(ex.InnerException.GetType());
+                    var rethrow = ScriptConfig.FatalExceptions.Contains(useEx.GetType());
                     if (!rethrow)
                     {
                         string errorBinding = null;
 
-                        if (ex.Options is Dictionary<string, object> filterParams)
+                        if (stopEx?.Options is Dictionary<string, object> filterParams)
                         {
                             if (filterParams.TryGetValue(ScriptConstants.AssignError, out object assignError))
                             {
@@ -853,50 +900,56 @@ namespace ServiceStack.Script
                             else if (filterParams.TryGetValue(ScriptConstants.CatchError, out object catchError))
                             {
                                 errorBinding = catchError as string;
-                                SkipFilterExecution = false;
-                                LastFilterError = null;
-                                LastFilterStackTrace = null;
+                                ResetError();
                             }
                             if (filterParams.TryGetValue(ScriptConstants.IfErrorReturn, out object ifErrorReturn))
                             {
-                                SkipFilterExecution = false;
-                                LastFilterError = null;
-                                LastFilterStackTrace = null;
+                                ResetError();
                                 return ifErrorReturn;
                             }
                         }
 
                         if (errorBinding == null)
-                            errorBinding = AssignExceptionsTo ?? Context.AssignExceptionsTo;
+                            errorBinding = AssignExceptionsTo ?? CatchExceptionsIn ?? Context.AssignExceptionsTo;
 
                         if (!string.IsNullOrEmpty(errorBinding))
                         {
-                            scope.ScopedParams[errorBinding] = ex.InnerException;
+                            if (CatchExceptionsIn != null)
+                                ResetError();
+                            
+                            scope.ScopedParams[errorBinding] = useEx;
                             scope.ScopedParams[errorBinding + "StackTrace"] = stackTrace.Map(x => "   at " + x).Join(Environment.NewLine);
                             return string.Empty;
                         }
                     }
                     
+                    //continueExecutingFiltersOnError == false / skipExecutingFiltersOnError == true 
                     if (SkipExecutingFiltersIfError.HasValue || Context.SkipExecutingFiltersIfError)
                         return string.Empty;
                     
                     // rethrow exceptions which aren't handled
-
                     var exResult = Format.OnExpressionException(this, ex);
                     if (exResult != null)
                         await scope.OutputStream.WriteAsync(Format.EncodeValue(exResult).ToUtf8Bytes(), token);
-                    else if (rethrow)
-                        throw ex.InnerException;
+                    else if (rethrow || useEx is TargetInvocationException)
+                        throw useEx;
 
                     var filterName = expr.GetDisplayName();
                     if (filterName.StartsWith("throw"))
-                        throw ex.InnerException;
+                        throw useEx;
 
-                    throw new TargetInvocationException($"Failed to invoke filter '{filterName}': {ex.InnerException.Message}", ex.InnerException);
+                    throw new TargetInvocationException($"Failed to invoke script method '{filterName}': {useEx.Message}", useEx);
                 }
             }
 
             return UnwrapValue(value);
+        }
+
+        private void ResetError()
+        {
+            SkipFilterExecution = false;
+            LastFilterError = null;
+            LastFilterStackTrace = null;
         }
 
         private static object UnwrapValue(object value)
@@ -939,7 +992,7 @@ namespace ServiceStack.Script
                     }
                     else
                     {
-                        sb.Append($"{argsTypesWithoutContext[0].ParameterType.Name} | {mi.Name}(");
+                        sb.Append($"{argsTypesWithoutContext[0].ParameterType.Name} |> {mi.Name}(");
                         var piCount = 0;
                         foreach (var pi in argsTypesWithoutContext.Skip(1))
                         {
@@ -991,7 +1044,7 @@ namespace ServiceStack.Script
                 if (binding.StartsWith("throw"))
                     throw;
 
-                throw new TargetInvocationException($"Failed to invoke filter '{binding}': {ex.Message}", ex);
+                throw new TargetInvocationException($"Failed to invoke script method '{binding}': {ex.Message}", ex);
             }
         }
 
@@ -1069,7 +1122,7 @@ namespace ServiceStack.Script
             return value;
         }
 
-        internal bool TryGetValue(string name, ScriptScopeContext scope, out object value)
+        internal bool TryGetValue(string name, ScriptScopeContext scope, bool argsOnly, out object value)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
@@ -1079,27 +1132,37 @@ namespace ServiceStack.Script
 
             value = scope.ScopedParams != null && scope.ScopedParams.TryGetValue(name, out object obj)
                 ? obj
-                : Args.TryGetValue(name, out obj)
-                    ? obj
-                    : Page != null && Page.Args.TryGetValue(name, out obj)
+                : name == ScriptConstants.Global
+                    ? Args
+                    : Args.TryGetValue(name, out obj)
                         ? obj
-                        : CodePage != null && CodePage.Args.TryGetValue(name, out obj)
+                        : Page != null && Page.Args.TryGetValue(name, out obj)
                             ? obj
-                            : LayoutPage != null && LayoutPage.Args.TryGetValue(name, out obj)
+                            : CodePage != null && CodePage.Args.TryGetValue(name, out obj)
                                 ? obj
-                                : Context.Args.TryGetValue(name, out obj)
+                                : LayoutPage != null && LayoutPage.Args.TryGetValue(name, out obj)
                                     ? obj
-                                    : (invoker = GetFilterAsBinding(name, out ScriptMethods filter)) != null
-                                        ? InvokeFilter(invoker, filter, new object[0], name)
-                                        : (invoker = GetContextFilterAsBinding(name, out filter)) != null
-                                            ? InvokeFilter(invoker, filter, new object[]{ scope }, name)
-                                            : ((ret = false) ? (object)null : null);
+                                    : Context.Args.TryGetValue(name, out obj)
+                                        ? obj
+                                        : argsOnly 
+                                            ? null
+                                            : (invoker = GetFilterAsBinding(name, out var filter)) != null
+                                                ? InvokeFilter(invoker, filter, new object[0], name)
+                                                : (invoker = GetContextFilterAsBinding(name, out filter)) != null
+                                                    ? InvokeFilter(invoker, filter, new object[] {scope}, name)
+                                                    : ((ret = false) ? (object) null : null);
             return ret;
         }
         
         internal object GetValue(string name, ScriptScopeContext scope)
         {
-            TryGetValue(name, scope, out var value);
+            TryGetValue(name, scope, argsOnly:false, out var value);
+            return value;
+        }
+
+        internal object GetArgument(string name, ScriptScopeContext scope)
+        {
+            TryGetValue(name, scope, argsOnly:true, out var value);
             return value;
         }
 

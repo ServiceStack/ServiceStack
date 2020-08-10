@@ -36,7 +36,7 @@ namespace ServiceStack.Common.Tests.OAuth
             public ValidateServiceRunner(IAppHost appHost, ActionContext actionContext)
                 : base(appHost, actionContext) { }
 
-            public override Task<object> HandleExceptionAsync(IRequest request, T requestDto, System.Exception ex)
+            public override Task<object> HandleExceptionAsync(IRequest req, T requestDto, System.Exception ex)
             {
                 return DtoUtils.CreateErrorResponse(requestDto, ex).InTask();
             }

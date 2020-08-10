@@ -194,7 +194,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var mockRequest = new MockHttpRequest();
             var mockResponse = new MockHttpResponse(mockRequest);
 
-            mockRequest.Headers[HttpHeaders.Range] = "bytes=0";
+            mockRequest.Headers[HttpHeaders.Range] = "bytes=0-";
 
             string customText = "1234567890";
             byte[] customTextBytes = customText.ToUtf8Bytes();

@@ -455,7 +455,7 @@ namespace ServiceStack.ServiceHost.Tests
             {
                 this.Definition = definition;
                 var parts = definition.SplitOnFirst(' ');
-                RestPath = new RestPath(typeof(SlugRequest), path: parts[1], verbs: parts[0] == "ANY" ? null : parts[0]);
+                RestPath = new RestPath(typeof(SlugRequest), path: parts[1], verbs: parts[0] == ActionContext.AnyAction ? null : parts[0]);
             }
 
             public static List<SlugRoute> GetOrderedMatchingRules(string withVerb, string forPath)

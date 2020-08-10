@@ -537,10 +537,7 @@ namespace ServiceStack.Common.Tests.Models
         public DateTime CreatedDate { get; set; }
         public DateTime ModifiedDate { get; set; }
 
-        public override string ToString()
-        {
-            return String.Format("{0} {1}", this.ExternalRef, this.Id.ToString("N"));
-        }
+        public override string ToString() => $"{ExternalRef} {Id:N}";
     }
 
     public class Label : IContent

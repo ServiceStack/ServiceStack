@@ -3,14 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using Funq;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
-using ServiceStack.NativeTypes;
 using ServiceStack.Serialization;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -18,9 +16,9 @@ using ServiceStack.Web;
 namespace ServiceStack.Host
 {
     public delegate object ServiceExecFn(IRequest requestContext, object request);
-    public delegate object InstanceExecFn(IRequest requestContext, object intance, object request);
-    public delegate object ActionInvokerFn(object intance, object request);
-    public delegate void VoidActionInvokerFn(object intance, object request);
+    public delegate object InstanceExecFn(IRequest requestContext, object instance, object request);
+    public delegate object ActionInvokerFn(object instance, object request);
+    public delegate void VoidActionInvokerFn(object instance, object request);
 
     public class ServiceController : IServiceController
     {
@@ -560,10 +558,13 @@ namespace ServiceStack.Host
         public object ExecuteMessage(IMessage dto, IRequest req)
         {
             RequestContext.Instance.StartRequestContext();
+#if NETSTANDARD2_0
+            using var scope = req.StartScope();
+#endif
             
             req.PopulateFromRequestIfHasSessionId(dto.Body);
 
-            req.Dto = appHost.ApplyRequestConvertersAsync(req, dto.Body).Result;
+            req.Dto = appHost.ApplyRequestConvertersAsync(req, dto.Body).GetAwaiter().GetResult();
             if (appHost.ApplyMessageRequestFilters(req, req.Response, dto.Body))
                 return req.Response.Dto;
 
@@ -572,7 +573,7 @@ namespace ServiceStack.Host
             if (response is Task taskResponse)
                 response = taskResponse.GetResult();
 
-            response = appHost.ApplyResponseConvertersAsync(req, response).Result;
+            response = appHost.ApplyResponseConvertersAsync(req, response).GetAwaiter().GetResult();
 
             if (appHost.ApplyMessageResponseFilters(req, req.Response, response))
                 response = req.Response.Dto;

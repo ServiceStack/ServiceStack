@@ -20,34 +20,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         {
             var context = new ScriptContext().Init();
 
-            var template = @"{{ 11200 | assignTo: balance }}
-{{ 3     | assignTo: projectedMonths }}
+            var template = @"{{ 11200 |> assignTo: balance }}
+{{ 3     |> assignTo: projectedMonths }}
 {{'
 Salary:        4000
 App Royalties: 200
-'| trim | parseKeyValueText(':') | assignTo: monthlyRevenues }}
+'|> trim |> parseKeyValueText(':') |> assignTo: monthlyRevenues }}
 {{'
 Rent      1000
 Internet  50
 Mobile    50
 Food      400
 Misc      200
-'| trim | parseKeyValueText | assignTo: monthlyExpenses }}
-{{ monthlyRevenues | values | sum | assignTo: totalRevenues }}
-{{ monthlyExpenses | values | sum | assignTo: totalExpenses }}
-{{ subtract(totalRevenues, totalExpenses) | assignTo: totalSavings }}
+'|> trim |> parseKeyValueText |> assignTo: monthlyExpenses }}
+{{ monthlyRevenues |> values |> sum |> assignTo: totalRevenues }}
+{{ monthlyExpenses |> values |> sum |> assignTo: totalExpenses }}
+{{ subtract(totalRevenues, totalExpenses) |> assignTo: totalSavings }}
 
-Current Balance: <b>{{ balance | currency }}</b>
+Current Balance: <b>{{ balance |> currency }}</b>
 
 Monthly Revenues:
-{{ monthlyRevenues | toList | select: { it.Key | padRight(17) }{ it.Value | currency }\n }}
-Total            <b>{{ totalRevenues | currency }}</b> 
+{{ monthlyRevenues |> toList |> select: { it.Key |> padRight(17) }{ it.Value |> currency }\n }}
+Total            <b>{{ totalRevenues |> currency }}</b> 
 
 Monthly Expenses:
-{{ monthlyExpenses | toList | select: { it.Key | padRight(17) }{ it.Value | currency }\n }}
-Total            <b>{{ totalExpenses | currency }}</b>
+{{ monthlyExpenses |> toList |> select: { it.Key |> padRight(17) }{ it.Value |> currency }\n }}
+Total            <b>{{ totalExpenses |> currency }}</b>
 
-Monthly Savings: <b>{{ totalSavings | currency }}</b>
+Monthly Savings: <b>{{ totalSavings |> currency }}</b>
 {{ htmlErrorDebug }}";
 
             var output = context.EvaluateScript(template);
@@ -142,14 +142,14 @@ Monthly Savings: <b>$2,500.00</b>".NormalizeNewLines()));
             public string Body => ParamCount == 0
                 ? $"{Name}"
                 : ParamCount == 1
-                    ? $"| {Name}"
-                    : $"| {Name}(" + string.Join(", ", RemainingParams) + $")";
+                    ? $"|> {Name}"
+                    : $"|> {Name}(" + string.Join(", ", RemainingParams) + $")";
 
             public string Display => ParamCount == 0
                 ? $"{Name}{Return}"
                 : ParamCount == 1
-                    ? $"{FirstParam} | {Name}{Return}"
-                    : $"{FirstParam} | {Name}(" + string.Join(", ", RemainingParams) + $"){Return}";
+                    ? $"{FirstParam} |> {Name}{Return}"
+                    : $"{FirstParam} |> {Name}(" + string.Join(", ", RemainingParams) + $"){Return}";
         }
         
         [Test]
@@ -160,16 +160,16 @@ Monthly Savings: <b>$2,500.00</b>".NormalizeNewLines()));
                 ScriptMethods = { new FilterInfoFilters() }
             }.Init();
 
-            var results = context.EvaluateScript(@"{{ 'DefaultScripts' | assignTo: filter }}
-{{ filter | filtersAvailable | where => contains(lower(it.Name), lower(nameContains ?? ''))  
-          | assignTo: filters }}
+            var results = context.EvaluateScript(@"{{ 'DefaultScripts' |> assignTo: filter }}
+{{ filter |> filtersAvailable |> where => contains(lower(it.Name), lower(nameContains ?? ''))  
+          |> assignTo: filters }}
 {{#each filters}}
-{{Body}}
+{{Body |> raw}}
 {{/each}}", new Dictionary<string, object> { ["nameContains"] = "atan" });
             
             Assert.That(results.NormalizeNewLines(), Is.EqualTo(@"
-| atan
-| atan2(x)".NormalizeNewLines()));
+|> atan
+|> atan2(x)".NormalizeNewLines()));
         }
         
 
@@ -207,13 +207,13 @@ Monthly Savings: <b>$2,500.00</b>".NormalizeNewLines()));
             }
                 
 
-            var result = context.Evaluate<Product>("{{ `select * from product where productId=@id` | dbSingle({ id }) | return }}");
+            var result = context.Evaluate<Product>("{{ `select * from product where productId=@id` |> dbSingle({ id }) |> return }}");
 
             result.TextDump().Print();
             
             AssertProduct(result, product1);
 
-            var results = context.Evaluate<Product[]>("{{ `select * from product where productId IN (@ids) order by productId` | dbSelect({ ids }) | return }}", 
+            var results = context.Evaluate<Product[]>("{{ `select * from product where productId IN (@ids) order by productId` |> dbSelect({ ids }) |> return }}", 
                 new ObjectDictionary {
                     ["ids"] = new[]{ product1.ProductId, product2.ProductId },
                 });
@@ -252,10 +252,10 @@ Monthly Savings: <b>$2,500.00</b>".NormalizeNewLines()));
                 QueryData.Products.Take(3).Each(x => db.Insert(x));
             }
 
-            var output = context.EvaluateScript("{{ dbTableNames | textDump({ caption:'Tables' }) }}");
+            var output = context.EvaluateScript("{{ dbTableNames |> textDump({ caption:'Tables' }) }}");
             Assert.That(output.NormalizeNewLines(), Is.EqualTo("| Tables   |\n|----------|\n| Customer |\n| Product  |"));
             
-            output = context.EvaluateScript("{{ dbTableNamesWithRowCounts | textDump({ caption:'Tables' }) }}");
+            output = context.EvaluateScript("{{ dbTableNamesWithRowCounts |> textDump({ caption:'Tables' }) }}");
             Assert.That(output.NormalizeNewLines(), Is.EqualTo("| Tables      ||\n|----------|---|\n| Product  | 3 |\n| Customer | 1 |"));
         }
 
@@ -264,7 +264,7 @@ Monthly Savings: <b>$2,500.00</b>".NormalizeNewLines()));
         {
             var context = CreateDbContext();
 
-            var output = context.EvaluateScript("{{ `SELECT * FROM Unknown` | dbSelect(null, { ifErrorReturn: 'No Table' }) }}");
+            var output = context.EvaluateScript("{{ `SELECT * FROM Unknown` |> dbSelect(null, { ifErrorReturn: 'No Table' }) }}");
             Assert.That(output, Is.EqualTo("No Table"));
         }
 

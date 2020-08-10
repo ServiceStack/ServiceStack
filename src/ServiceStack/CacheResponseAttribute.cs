@@ -65,6 +65,8 @@ namespace ServiceStack
             var feature = HostContext.GetPlugin<HttpCacheFeature>();
             if (feature == null)
                 throw new NotSupportedException(ErrorMessages.CacheFeatureMustBeEnabled.Fmt("[CacheResponse]"));
+            if (feature.DisableCaching)
+                return;
 
             var keyBase = "res:" + req.RawUrl;
             var keySuffix = MimeTypes.GetExtension(req.ResponseContentType);

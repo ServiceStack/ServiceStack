@@ -37,6 +37,7 @@ namespace ServiceStack.Script
         public double exp(double value) => Math.Exp(value);
         public double log(double value) => Math.Log(value);
         public double log(double a, double newBase) => Math.Log(a, newBase);
+        public double log2(double value) => Math.Log(value, 2);
         public double log10(double value) => Math.Log10(value);
         public double pow(double x, double y) => Math.Pow(x, y);
         public double round(double value) => Math.Round(value);

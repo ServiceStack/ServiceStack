@@ -1,13 +1,15 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿#if !NETSTANDARD2_0
 using System.Web;
+#endif
+using System;
+using System.Threading.Tasks;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
 {
-	public delegate IHttpHandler HttpHandlerResolverDelegate(string httpMethod, string pathInfo, string filePath);
+    public delegate IHttpHandler HttpHandlerResolverDelegate(string httpMethod, string pathInfo, string filePath);
 
-	public delegate bool StreamSerializerResolverDelegate(IRequest requestContext, object dto, IResponse httpRes);
+    public delegate bool StreamSerializerResolverDelegate(IRequest requestContext, object dto, IResponse httpRes);
 
     public delegate void HandleUncaughtExceptionDelegate(
         IRequest httpReq, IResponse httpRes, string operationName, Exception ex);
@@ -18,6 +20,9 @@ namespace ServiceStack.Host
     public delegate object HandleServiceExceptionDelegate(IRequest httpReq, object request, Exception ex);
 
     public delegate Task<object> HandleServiceExceptionAsyncDelegate(IRequest httpReq, object request, Exception ex);
+
+    public delegate void HandleGatewayExceptionDelegate(IRequest httpReq, object request, Exception ex);
+    public delegate Task HandleGatewayExceptionAsyncDelegate(IRequest httpReq, object request, Exception ex);
 
     public delegate RestPath FallbackRestPathDelegate(IHttpRequest httpReq);
 

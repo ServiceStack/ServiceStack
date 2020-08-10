@@ -102,6 +102,7 @@ namespace ServiceStack.Api.OpenApi
                 ResultScope = () => JsConfig.With(new Config
                 {
                     IncludeNullValues = false, 
+                    IncludeNullValuesInDictionaries = false,
                     IncludeTypeInfo = false, 
                     ExcludeTypeInfo = true,
                 })
@@ -301,7 +302,7 @@ namespace ServiceStack.Api.OpenApi
                 Type = OpenApiType.Object,
                 Title = GetSchemaTypeName(schemaType),
                 Description = schemaType.GetDescription() ?? GetSchemaTypeName(schemaType),
-                Properties = new OrderedDictionary<string, OpenApiProperty>()
+                Properties = new OrderedDictionary<string, OpenApiProperty>
                 {
                     { "Key", GetOpenApiProperty(schemas, keyType, route, verb) },
                     { "Value", GetOpenApiProperty(schemas, valueType, route, verb) }
@@ -331,9 +332,18 @@ namespace ServiceStack.Api.OpenApi
 
         private static readonly Regex swaggerRefRegex = new Regex("[^A-Za-z0-9\\.\\-_]", RegexOptions.Compiled);
 
+        private OpenApiProperty GetOpenApiProperty(IDictionary<string, OpenApiSchema> schemas, PropertyInfo pi, string route, string verb)
+        {
+            var ret = GetOpenApiProperty(schemas, pi.PropertyType, route, verb);
+            ret.PropertyInfo = pi;
+            return ret;
+        }
+        
         private OpenApiProperty GetOpenApiProperty(IDictionary<string, OpenApiSchema> schemas, Type propertyType, string route, string verb)
         {
-            var schemaProp = new OpenApiProperty();
+            var schemaProp = new OpenApiProperty {
+                PropertyType = propertyType,
+            };
 
             if (IsKeyValuePairType(propertyType))
             {
@@ -531,7 +541,7 @@ namespace ServiceStack.Api.OpenApi
 
                     if (apiMembers.Any(x => x.ExcludeInSchema))
                         continue;
-                    var schemaProperty = GetOpenApiProperty(schemas, prop.PropertyType, route, verb);
+                    var schemaProperty = GetOpenApiProperty(schemas, prop, route, verb);
                     var schemaPropertyName = GetSchemaPropertyName(prop);
 
                     schemaProperty.Description = prop.GetDescription() ?? apiDoc?.Description;
@@ -704,7 +714,7 @@ namespace ServiceStack.Api.OpenApi
                     .SelectMany(x => x.AllAttributes().OfType<AuthenticateAttribute>()).ToList();
 
                 authAttrs.AddRange(actions
-                    .Where(x => x.Name.ToUpperInvariant() == "ANY")
+                    .Where(x => x.Name.ToUpperInvariant() == ActionContext.AnyAction)
                     .SelectMany(x => x.AllAttributes<AuthenticateAttribute>())
                 );
 
@@ -1003,8 +1013,8 @@ namespace ServiceStack.Api.OpenApi
 
         private List<string> GetTags(string path)
         {
-            var tagname = GetTagName(path);
-            return tagname != null ? new List<string> { tagname } : null;
+            var tagName = GetTagName(path);
+            return tagName != null ? new List<string> { tagName } : null;
         }
 
         private string GetTagName(string path)

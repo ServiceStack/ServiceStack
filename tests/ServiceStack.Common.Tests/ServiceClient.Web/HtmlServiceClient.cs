@@ -34,7 +34,7 @@ namespace ServiceStack.Common.Tests.ServiceClient.Web
             get { return MimeTypes.FormUrlEncoded; }
         }
 
-        public override void SerializeToStream(IRequest requestContext, object request, Stream stream)
+        public override void SerializeToStream(IRequest req, object request, Stream stream)
         {
             var queryString = QueryStringSerializer.SerializeToString(request);
             stream.Write(queryString);

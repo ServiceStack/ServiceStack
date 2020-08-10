@@ -157,7 +157,7 @@ namespace ServiceStack
         }
 
         private IServiceGateway gateway;
-        public virtual IServiceGateway Gateway => gateway ?? (gateway = HostContext.AppHost.GetServiceGateway(Request));
+        public virtual IServiceGateway Gateway => gateway ??= HostContext.AppHost.GetServiceGateway(Request);
 
         public object Execute(object requestDto)
         {
@@ -188,19 +188,19 @@ namespace ServiceStack
         }
 
         private ICacheClient cache;
-        public virtual ICacheClient Cache => cache ?? (cache = HostContext.AppHost.GetCacheClient(Request));
+        public virtual ICacheClient Cache => cache ??= HostContext.AppHost.GetCacheClient(Request);
 
         private IDbConnection db;
-        public virtual IDbConnection Db => db ?? (db = HostContext.AppHost.GetDbConnection(Request));
+        public virtual IDbConnection Db => db ??= HostContext.AppHost.GetDbConnection(Request);
 
         private IRedisClient redis;
-        public virtual IRedisClient Redis => redis ?? (redis = HostContext.AppHost.GetRedisClient(Request));
+        public virtual IRedisClient Redis => redis ??= HostContext.AppHost.GetRedisClient(Request);
 
         private IMessageProducer messageProducer;
-        public virtual IMessageProducer MessageProducer => messageProducer ?? (messageProducer = HostContext.AppHost.GetMessageProducer(Request));
+        public virtual IMessageProducer MessageProducer => messageProducer ??= HostContext.AppHost.GetMessageProducer(Request);
 
         private IAuthRepository authRepository;
-        public IAuthRepository AuthRepository => authRepository ?? (authRepository = HostContext.AppHost.GetAuthRepository(Request));
+        public IAuthRepository AuthRepository => authRepository ??= HostContext.AppHost.GetAuthRepository(Request);
 
         private ISessionFactory sessionFactory;
         public virtual ISessionFactory SessionFactory => sessionFactory ?? (sessionFactory = TryResolve<ISessionFactory>()) ?? new SessionFactory(Cache);
@@ -223,8 +223,8 @@ namespace ServiceStack
         /// Dynamic Session Bag
         /// </summary>
         private ISession session;
-        public virtual ISession SessionBag => session ?? (session = TryResolve<ISession>() //Easier to mock
-            ?? SessionFactory.GetOrCreateSession(Request, Response));
+        public virtual ISession SessionBag => session ??= TryResolve<ISession>() //Easier to mock
+            ?? SessionFactory.GetOrCreateSession(Request, Response);
 
         public virtual IAuthSession GetSession(bool reload = false)
         {

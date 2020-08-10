@@ -389,29 +389,30 @@ namespace ServiceStack.Razor
         }
 
         private IServiceGateway gateway;
-        public virtual IServiceGateway Gateway => gateway ?? (gateway = HostContext.AppHost.GetServiceGateway(Request));
+        public virtual IServiceGateway Gateway => gateway ??= HostContext.AppHost.GetServiceGateway(Request);
 
         public bool IsError => ModelError != null || GetErrorStatus() != null;
 
         public object ModelError { get; set; }
 
+        public string PathBase => AppHost.Config.PathBase;
         public IVirtualFiles VirtualFiles => HostContext.VirtualFiles;
         public IVirtualPathProvider VirtualFileSources => HostContext.VirtualFileSources;
 
         private ICacheClient cache;
-        public ICacheClient Cache => cache ?? (cache = HostContext.AppHost.GetCacheClient(Request));
+        public ICacheClient Cache => cache ??= HostContext.AppHost.GetCacheClient(Request);
 
         private IDbConnection db;
-        public IDbConnection Db => db ?? (db = HostContext.AppHost.GetDbConnection(Request));
+        public IDbConnection Db => db ??= HostContext.AppHost.GetDbConnection(Request);
 
         private IRedisClient redis;
-        public IRedisClient Redis => redis ?? (redis = HostContext.AppHost.GetRedisClient(Request));
+        public IRedisClient Redis => redis ??= HostContext.AppHost.GetRedisClient(Request);
 
         private IMessageProducer messageProducer;
-        public virtual IMessageProducer MessageProducer => messageProducer ?? (messageProducer = HostContext.AppHost.GetMessageProducer(Request));
+        public virtual IMessageProducer MessageProducer => messageProducer ??= HostContext.AppHost.GetMessageProducer(Request);
 
         private IAuthRepository authRepository;
-        public IAuthRepository AuthRepository => authRepository ?? (authRepository = HostContext.AppHost.GetAuthRepository(Request));
+        public IAuthRepository AuthRepository => authRepository ??= HostContext.AppHost.GetAuthRepository(Request);
 
         private ISessionFactory sessionFactory;
         private ISession session;
@@ -422,7 +423,7 @@ namespace ServiceStack.Razor
                 if (sessionFactory == null)
                     sessionFactory = new SessionFactory(Cache);
 
-                return session ?? (session = sessionFactory.GetOrCreateSession(Request, Response));
+                return session ??= sessionFactory.GetOrCreateSession(Request, Response);
             }
         }
 
@@ -554,11 +555,10 @@ namespace ServiceStack.Razor
         {
             if (IsAuthenticated) return;
 
-            redirectUrl = redirectUrl
-                ?? AuthenticateService.HtmlRedirect
-                ?? HostContext.Config.DefaultRedirectPath
-                ?? HostContext.Config.WebHostUrl
-                ?? "/";
+            redirectUrl ??= AuthenticateService.HtmlRedirect
+                        ?? HostContext.Config.DefaultRedirectPath
+                        ?? HostContext.Config.WebHostUrl
+                        ?? "/";
             AuthenticateAttribute.DoHtmlRedirect(redirectUrl, Request, Response, includeRedirectParam: true);
             throw new StopExecutionException();
         }

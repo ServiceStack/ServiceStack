@@ -38,17 +38,8 @@ namespace ServiceStack
             if (res.IsClosed)
                 return; //AuthenticateAttribute already closed the request (ie auth failed)
 
-            var session = req.GetSession();
-
-            var authRepo = HostContext.AppHost.GetAuthRepository(req);
-            using (authRepo as IDisposable)
-            {
-                if (session != null && session.HasRole(RoleNames.Admin, authRepo))
-                    return;
-
-                if (HasAllPermissions(req, session, authRepo))
-                    return;
-            }
+            if (HasAllPermissions(req, req.GetSession(), RequiredPermissions))
+                return;
 
             if (DoHtmlRedirectAccessDeniedIfConfigured(req, res))
                 return;
@@ -60,24 +51,74 @@ namespace ServiceStack
 
         public bool HasAllPermissions(IRequest req, IAuthSession session, IAuthRepository authRepo)
         {
-            if (HasAllPermissions(session, authRepo)) return true;
+            if (SessionValidForAllPermissions(req, session, RequiredPermissions))
+                return true;
+
+            return SessionHasAllPermissions(req, session, authRepo, RequiredPermissions);
+        }
+        
+        public static bool HasAllPermissions(IRequest req, IAuthSession session, ICollection<string> requiredPermissions)
+        {
+            if (SessionValidForAllPermissions(req, session, requiredPermissions))
+                return true;
+            
+            var authRepo = HostContext.AppHost.GetAuthRepository(req);
+            using (authRepo as IDisposable)
+            {
+                return SessionHasAllPermissions(req, session, authRepo, requiredPermissions);
+            }
+        }
+
+        /// <summary>
+        /// Check all session is in all supplied roles otherwise a 401 HttpError is thrown
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="requiredPermissions"></param>
+        public static void AssertRequiredPermissions(IRequest req, params string[] requiredPermissions)
+        {
+            var session = req.GetSession();
+            if (HasAllPermissions(req, session, requiredPermissions))
+                return;
+
+            var isAuthenticated = session != null && session.IsAuthenticated;
+            if (!isAuthenticated)
+                ThrowNotAuthenticated(req);
+            else
+                ThrowInvalidPermission(req);
+        }
+
+        public static bool HasRequiredPermissions(IRequest req, string[] requiredPermissions) =>  HasAllPermissions(req, req.GetSession(), requiredPermissions);
+
+        private static bool SessionHasAllPermissions(IRequest req, IAuthSession session, IAuthRepository authRepo, ICollection<string> requiredPermissions)
+        {
+            if (session.HasRole(RoleNames.Admin, authRepo))
+                return true;
+
+            if (requiredPermissions.All(x => session.HasPermission(x, authRepo)))
+                return true;
 
             session.UpdateFromUserAuthRepo(req, authRepo);
 
-            if (HasAllPermissions(session, authRepo))
+            if (requiredPermissions.All(x => session.HasPermission(x, authRepo)))
             {
                 req.SaveSession(session);
                 return true;
             }
+
             return false;
         }
 
-        public bool HasAllPermissions(IAuthSession session, IAuthRepository authRepo)
+        private static bool SessionValidForAllPermissions(IRequest req, IAuthSession session, ICollection<string> requiredPermissions)
         {
-            if (session == null)
-                return false;
+            if (requiredPermissions.IsEmpty()) 
+                return true;
+            
+            if (HostContext.HasValidAuthSecret(req))
+                return true;
 
-            return this.RequiredPermissions.All(x => session.HasPermission(x, authRepo));
+            AssertAuthenticated(req, requestDto:req.Dto, session:session);
+
+            return false;
         }
 
         protected bool Equals(RequiredPermissionAttribute other)

@@ -82,8 +82,8 @@ namespace ServiceStack
 
         public HttpStatusCode StatusCode
         {
-            get { return (HttpStatusCode)Status; }
-            set { Status = (int)value; }
+            get => (HttpStatusCode)Status;
+            set => Status = (int)value;
         }
 
         public string StatusDescription { get; set; }
@@ -116,40 +116,18 @@ namespace ServiceStack
             return new List<ResponseError>();
         }
 
-        public static Exception NotFound(string message)
-        {
-            return new HttpError(HttpStatusCode.NotFound, message);
-        }
+        public static Exception NotFound(string message) => new HttpError(HttpStatusCode.NotFound, message);
+        public static Exception Unauthorized(string message) => new HttpError(HttpStatusCode.Unauthorized, message);
+        public static Exception Conflict(string message) => new HttpError(HttpStatusCode.Conflict, message);
+        public static Exception Forbidden(string message) => new HttpError(HttpStatusCode.Forbidden, message);
+        public static Exception MethodNotAllowed(string message) => new HttpError(HttpStatusCode.MethodNotAllowed, message);
+        public static Exception BadRequest(string message) => new HttpError(HttpStatusCode.BadRequest, message);
+        public static Exception PreconditionFailed(string message) => new HttpError(HttpStatusCode.PreconditionFailed, message);
+        public static Exception ExpectationFailed(string message) => new HttpError(HttpStatusCode.ExpectationFailed, message);
+        public static Exception NotImplemented(string message) => new HttpError(HttpStatusCode.NotImplemented, message);
+        public static Exception ServiceUnavailable(string message) => new HttpError(HttpStatusCode.ServiceUnavailable, message);
 
-        public static Exception Unauthorized(string message)
-        {
-            return new HttpError(HttpStatusCode.Unauthorized, message);
-        }
-
-        public static Exception Conflict(string message)
-        {
-            return new HttpError(HttpStatusCode.Conflict, message);
-        }
-
-        public static Exception Forbidden(string message)
-        {
-            return new HttpError(HttpStatusCode.Forbidden, message);
-        }
-
-        public static Exception MethodNotAllowed(string message)
-        {
-            return new HttpError(HttpStatusCode.MethodNotAllowed, message);
-        }
-
-        public static Exception BadRequest(string message)
-        {
-            return new HttpError(HttpStatusCode.BadRequest, message);
-        }
-
-        public ResponseStatus ToResponseStatus()
-        {
-            return Response.GetResponseStatus()
-                ?? ResponseStatusUtils.CreateResponseStatus(ErrorCode, Message, null);
-        }
+        public ResponseStatus ToResponseStatus() => Response.GetResponseStatus()
+            ?? ResponseStatusUtils.CreateResponseStatus(ErrorCode, Message, null);
     }
 }

@@ -1,10 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netcoreapp3.0</TargetFramework>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
         <LangVersion>8</LangVersion>
     </PropertyGroup>
-    
+
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
+<!-- TODO GET AutoQuery CRUD to work after existing tests have been resolved -->
+        <DefineConstants>$(DefineConstants);AUTOQUERY_CRUD</DefineConstants>
+    </PropertyGroup>
+
+
     <ItemGroup>
         <PackageReference Include="NUnit3TestAdapter" Version="3.15.1" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.3.0" />
@@ -13,10 +19,11 @@
         <PackageReference Include="ServiceStack.OrmLite" Version="$(Version)" />
         <PackageReference Include="ServiceStack.OrmLite.Sqlite" Version="$(Version)" />
         <PackageReference Include="ServiceStack.OrmLite.SqlServer" Version="$(Version)" />
-        <PackageReference Include="Grpc.Net.Client" Version="2.23.2" />
-        <PackageReference Include="Grpc.Core.Api" Version="2.24.0" />
-        <PackageReference Include="Grpc.Core" Version="2.24.0" />
-
+        <PackageReference Include="Grpc.Net.Client" Version="2.29.0" />
+        <PackageReference Include="Grpc.Core.Api" Version="2.29.0" />
+        <PackageReference Include="Grpc.Core" Version="2.29.0" />
+        <PackageReference Include="Google.Protobuf" Version="3.12.2" />
+        
         <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />

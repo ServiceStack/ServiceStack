@@ -1,7 +1,10 @@
-using System;
+#if !NETSTANDARD2_0
 using System.Configuration;
+#endif
+
+using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
@@ -44,13 +47,20 @@ namespace ServiceStack.Auth
         public static bool HtmlRedirectReturnPathOnly { get; internal set; }
         
         public static Func<AuthFilterContext, object> AuthResponseDecorator { get; internal set; }
-        internal static IAuthProvider[] AuthProviders = TypeConstants<IAuthProvider>.EmptyArray;
-        internal static IAuthWithRequest[] AuthWithRequestProviders = TypeConstants<IAuthWithRequest>.EmptyArray;
-        internal static IAuthResponseFilter[] AuthResponseFilters = TypeConstants<IAuthResponseFilter>.EmptyArray;
+        internal static IAuthProvider[] AuthProviders;
+        internal static IAuthWithRequest[] AuthWithRequestProviders;
+        internal static IAuthResponseFilter[] AuthResponseFilters;
 
         static AuthenticateService()
         {
+            Reset();
+        }
+
+        internal static void Reset()
+        {
             CurrentSessionFactory = () => new AuthUserSession();
+            AuthProviders = TypeConstants<IAuthProvider>.EmptyArray;
+            AuthResponseFilters = TypeConstants<IAuthResponseFilter>.EmptyArray;
         }
 
         /// <summary>
@@ -219,44 +229,66 @@ namespace ServiceStack.Auth
                 if (request.provider == null && !session.IsAuthenticated)
                     throw HttpError.Unauthorized(ErrorMessages.NotAuthenticated.Localize(Request));
 
-                var referrerUrl = request.Continue
+                var returnUrl = Request.GetReturnUrl();
+                var referrerUrl = returnUrl
                     ?? session.ReferrerUrl
-                    ?? request.Continue
-                    ?? base.Request.GetQueryStringOrForm(Keywords.ReturnUrl)
                     ?? this.Request.GetHeader(HttpHeaders.Referer)
                     ?? authProvider.CallbackUrl;
 
                 if (authFeature != null)
                 {
-                    if (!string.IsNullOrEmpty(request.Continue))
+                    if (!string.IsNullOrEmpty(returnUrl))
                         authFeature.ValidateRedirectLinks(Request, referrerUrl);
                 }
 
                 var manageRoles = AuthRepository as IManageRoles;
 
                 var alreadyAuthenticated = response == null;
-                response = response ?? new AuthenticateResponse {
+                response ??= new AuthenticateResponse {
                     UserId = session.UserAuthId,
                     UserName = session.UserAuthName,
                     DisplayName = session.DisplayName 
-                        ?? session.UserName 
-                        ?? $"{session.FirstName} {session.LastName}".Trim(),
+                                  ?? session.UserName 
+                                  ?? $"{session.FirstName} {session.LastName}".Trim(),
                     SessionId = session.Id,
                     ReferrerUrl = referrerUrl,
                 };
 
                 if (response is AuthenticateResponse authResponse)
                 {
-                    authResponse.ProfileUrl = authResponse.ProfileUrl ?? session.GetProfileUrl();
-                    
-                    if (authFeature?.IncludeRolesInAuthenticateResponse == true)
+                    authResponse.ProfileUrl ??= session.GetProfileUrl();
+
+                    if (session.UserAuthId != null && authFeature != null)
                     {
-                        authResponse.Roles = authResponse.Roles ?? (manageRoles != null
-                             ? manageRoles.GetRoles(session.UserAuthId)?.ToList()
-                             : session.Roles);
-                        authResponse.Permissions = authResponse.Permissions ?? (manageRoles != null
-                            ? manageRoles.GetPermissions(session.UserAuthId)?.ToList()
-                            : session.Permissions);
+                        if (authFeature.IncludeRolesInAuthenticateResponse)
+                        {
+                            var authSession = authFeature.AuthSecretSession;
+                            if (authSession != null && session.UserAuthName == authSession.UserAuthName && session.UserAuthId == authSession.UserAuthId)
+                            {
+                                authResponse.Roles = session.Roles;
+                                authResponse.Permissions = session.Permissions;
+                            }
+                            
+                            authResponse.Roles ??= (manageRoles != null
+                                ? manageRoles.GetRoles(session.UserAuthId)?.ToList()
+                                : session.Roles);
+                            authResponse.Permissions ??= (manageRoles != null
+                                ? manageRoles.GetPermissions(session.UserAuthId)?.ToList()
+                                : session.Permissions);
+                        }
+                        if (authFeature.IncludeOAuthTokensInAuthenticateResponse && AuthRepository != null)
+                        {
+                            var authDetails = AuthRepository.GetUserAuthDetails(session.UserAuthId);
+                            if (authDetails?.Count > 0)
+                            {
+                                authResponse.Meta ??= new Dictionary<string, string>();
+                                foreach (var authDetail in authDetails.Where(x => x.AccessTokenSecret != null))
+                                {
+                                    authResponse.Meta[authDetail.Provider + "-tokens"] = authDetail.AccessTokenSecret + 
+                                        (authDetail.AccessToken != null ? ':' + authDetail.AccessToken : ""); 
+                                }
+                            }
+                        }
                     }
 
                     var authCtx = new AuthFilterContext {
@@ -305,8 +337,8 @@ namespace ServiceStack.Auth
 
                 if (ex is HttpError)
                 {
-                    var errorReferrerUrl = this.Request.GetHeader(HttpHeaders.Referer);
-                    if (isHtml && errorReferrerUrl != null)
+                    var errorReferrerUrl = this.Request.GetReturnUrl() ?? this.Request.GetHeader(HttpHeaders.Referer);
+                    if (isHtml && errorReferrerUrl != null && Request.GetParam(Keywords.NoRedirect) == null)
                     {
                         errorReferrerUrl = errorReferrerUrl.SetParam("f", ex.Message.Localize(Request));
                         return HttpResult.Redirect(errorReferrerUrl);

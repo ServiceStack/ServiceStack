@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using ServiceStack.Script;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 {
@@ -17,6 +18,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             "`a`".ParseJsExpression(out token);
             Assert.That(token, Is.EqualTo(new JsTemplateLiteral(
                 new[] { new JsTemplateElement("a","a", tail:true) })));
+
+            "1.0".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsLiteral(1.0)));
+
+            var hold = ScriptConfig.ParseRealNumber;
+            ScriptConfig.ParseRealNumber = numLiteral => numLiteral.ParseDecimal();
+
+            "1.0".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsLiteral(1.0m)));
+
+            ScriptConfig.ParseRealNumber = hold;
 
             "`a${b}`".ParseJsExpression(out token);
             Assert.That(token, Is.EqualTo(new JsTemplateLiteral(
@@ -151,7 +163,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(context.EvaluateScript(@"{{ `\\ \n` }}"), 
                 Is.EqualTo("\\ \n"));
             
-            Assert.That(context.EvaluateScript(@"{{ `""#key"".replace(/\\s+/g,'')` | raw }}"), 
+            Assert.That(context.EvaluateScript(@"{{ `""#key"".replace(/\\s+/g,'')` |> raw }}"), 
                 Is.EqualTo(@"""#key"".replace(/\s+/g,'')"));
         }
 
@@ -174,12 +186,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(context.EvaluateScript("{{`a ${b + 1} c ${incr(d + 1)}`}}"), Is.EqualTo("a 3 c 6"));
             Assert.That(context.EvaluateScript("{{`\n`}}"), Is.EqualTo("\n"));
             Assert.That(context.EvaluateScript("{{`a\n${b}`}}"), Is.EqualTo("a\n2"));
-            Assert.That(context.EvaluateScript("{{`\"\"` | raw}}"), Is.EqualTo("\"\""));
-            Assert.That(context.EvaluateScript("{{`''` | raw}}"), Is.EqualTo("''"));
-            Assert.That(context.EvaluateScript("{{`a\"b\"c` | raw}}"), Is.EqualTo("a\"b\"c"));
-            Assert.That(context.EvaluateScript("{{`a'b'c` | raw}}"), Is.EqualTo("a'b'c"));
+            Assert.That(context.EvaluateScript("{{`\"\"` |> raw}}"), Is.EqualTo("\"\""));
+            Assert.That(context.EvaluateScript("{{`''` |> raw}}"), Is.EqualTo("''"));
+            Assert.That(context.EvaluateScript("{{`a\"b\"c` |> raw}}"), Is.EqualTo("a\"b\"c"));
+            Assert.That(context.EvaluateScript("{{`a'b'c` |> raw}}"), Is.EqualTo("a'b'c"));
 
-            Assert.That(context.EvaluateScript("{{`a\"b\"c` | appendTo: a}}{{ a | raw }}"), Is.EqualTo("a\"b\"c"));
+            Assert.That(context.EvaluateScript("{{`a\"b\"c` |> appendTo: a}}{{ a |> raw }}"), Is.EqualTo("a\"b\"c"));
             Assert.That(context.EvaluateScript("{{`${a}\\\\${b}`}}"), Is.EqualTo("1\\2"));
         }
     }

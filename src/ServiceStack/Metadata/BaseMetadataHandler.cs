@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Web.UI;
 using ServiceStack.Host;
 using ServiceStack.Web;
 using System.Text;
@@ -172,12 +171,14 @@ namespace ServiceStack.Metadata
                 sb.Append("<table class='enum'>");
                 sb.Append($"<caption><b>{ConvertToHtml(metadataType.DisplayType ?? metadataType.Name)}</b> Enum:</caption>");
 
-                var hasEnumValues = !metadataType.EnumValues.IsEmpty();
+                var hasEnumValues = !metadataType.EnumMemberValues.IsEmpty() ||
+                                    !metadataType.EnumValues.IsEmpty();
                 if (hasEnumValues)
                 {
                     sb.Append("<thead><tr>");
                     sb.Append("<th>Name</th>");
                     sb.Append("<th>Value</th>");
+                    sb.Append("<th></th>");
                     sb.Append("</tr></thead>");
                 }
                 
@@ -191,14 +192,18 @@ namespace ServiceStack.Metadata
                         sb.Append("<td>")
                           .Append(metadataType.EnumNames[i])
                           .Append("</td><td>")
-                          .Append(metadataType.EnumValues[i])
-                          .Append("</td>");
+                          .Append(!metadataType.EnumMemberValues.IsEmpty() 
+                                ? metadataType.EnumMemberValues[i]
+                                : metadataType.EnumValues[i])
+                          .Append("</td>")
+                          .Append($"<td>{metadataType.EnumDescriptions?[i]}</td>");
                     }
                     else
                     {
                         sb.Append("<td>")
                           .Append(metadataType.EnumNames[i])
-                          .Append("</td>");
+                          .Append("</td>")
+                          .Append($"<td>{metadataType.EnumDescriptions?[i]}</td>");
                     }
                     sb.Append("</tr>");
                 }

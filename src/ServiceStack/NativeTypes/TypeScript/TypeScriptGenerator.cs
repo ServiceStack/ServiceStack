@@ -9,10 +9,10 @@ namespace ServiceStack.NativeTypes.TypeScript
 {
     public class TypeScriptGenerator
     {
-        readonly MetadataTypesConfig Config;
+        public readonly MetadataTypesConfig Config;
         readonly NativeTypesFeature feature;
         List<string> conflictTypeNames = new List<string>();
-        List<MetadataType> allTypes;
+        public List<MetadataType> AllTypes { get; set; }
 
         public TypeScriptGenerator(MetadataTypesConfig config)
         {
@@ -26,7 +26,7 @@ namespace ServiceStack.NativeTypes.TypeScript
 
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
-
+        
         public static List<string> DefaultImports = new List<string>
         {
         };
@@ -50,6 +50,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"Single", "number"},
             {"Double", "number"},
             {"Decimal", "number"},
+            {"IntPtr", "number"},
             {"List", "Array"},
             {"Byte[]", "Uint8Array"},
             {"Stream", "Blob"},
@@ -57,6 +58,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"IDictionary", "any"},
             {"OrderedDictionary", "any"},
             {"Uri", "string"},
+            {"Type", "string"},
         };
         private static string declaredEmptyString = "''";
         private static readonly Dictionary<string, string> primitiveDefaultValues = new Dictionary<string, string>
@@ -83,6 +85,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"Single", "0"},
             {"Double", "0"},
             {"Decimal", "0"},
+            {"IntPtr", "0"},
             {"number", "0"},
             {"List", "[]"},
             {"Uint8Array", "new Uint8Array(0)"},
@@ -112,6 +115,30 @@ namespace ServiceStack.NativeTypes.TypeScript
         
         public HashSet<string> AddedDeclarations { get; set; } = new HashSet<string>();
 
+        public static Func<TypeScriptGenerator, MetadataType, MetadataPropertyType, string> PropertyTypeFilter { get; set; }
+
+        /// <summary>
+        /// Whether property should be marked optional
+        /// </summary>
+        public static Func<TypeScriptGenerator, MetadataType, MetadataPropertyType, bool?> IsPropertyOptional { get; set; } =
+            DefaultIsPropertyOptional;
+
+        /// <summary>
+        /// Helper to make Nullable properties
+        /// </summary>
+        public static bool UseNullableProperties
+        {
+            set
+            {
+                if (value)
+                {
+                    IsPropertyOptional = (gen, type, prop) => false;
+                    PropertyTypeFilter = (gen, type, prop) => 
+                        gen.GetPropertyType(prop, out var isNullable) + "|null";
+                }
+            }
+        }
+
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
             var typeNamespaces = new HashSet<string>();
@@ -134,12 +161,13 @@ namespace ServiceStack.NativeTypes.TypeScript
             sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
             sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
+            if (Config.UsePath != null)
+                sb.AppendLine("UsePath: {0}".Fmt(Config.UsePath));
+
             sb.AppendLine();
             sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
 
-            if (!Config.ExportAsTypes) // Optional properties only on interfaces
-                sb.AppendLine("{0}MakePropertiesOptional: {1}".Fmt(defaultValue("MakePropertiesOptional"), Config.MakePropertiesOptional));
-            
+            sb.AppendLine("{0}MakePropertiesOptional: {1}".Fmt(defaultValue("MakePropertiesOptional"), Config.MakePropertiesOptional));
             sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
@@ -162,18 +190,18 @@ namespace ServiceStack.NativeTypes.TypeScript
                 .Select(x => x.Response).ToHashSet();
             var types = metadata.Types.CreateSortedTypeList();
 
-            allTypes = metadata.GetAllTypesOrdered();
-            allTypes.RemoveAll(x => x.IgnoreType(Config, includeList));
-            allTypes = FilterTypes(allTypes);
+            AllTypes = metadata.GetAllTypesOrdered();
+            AllTypes.RemoveAll(x => x.IgnoreType(Config, includeList));
+            AllTypes = FilterTypes(AllTypes);
 
             //TypeScript doesn't support reusing same type name with different generic airity
-            var conflictPartialNames = allTypes.Map(x => x.Name).Distinct()
+            var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
                 .GroupBy(g => g.LeftPart('`'))
                 .Where(g => g.Count() > 1)
                 .Select(g => g.Key)
                 .ToList();
 
-            this.conflictTypeNames = allTypes
+            this.conflictTypeNames = AllTypes
                 .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
                 .Map(x => x.Name);
 
@@ -195,12 +223,12 @@ namespace ServiceStack.NativeTypes.TypeScript
                 sb = sb.Indent();
             }
 
-            var insertCode = InsertCodeFilter?.Invoke(allTypes, Config);
+            var insertCode = InsertCodeFilter?.Invoke(AllTypes, Config);
             if (insertCode != null)
                 sb.AppendLine(insertCode);
 
             //ServiceStack core interfaces
-            foreach (var type in allTypes)
+            foreach (var type in AllTypes)
             {
                 var fullTypeName = type.GetFullName();
                 if (requestTypes.Contains(type))
@@ -216,19 +244,20 @@ namespace ServiceStack.NativeTypes.TypeScript
                         lastNS = AppendType(ref sb, type, lastNS,
                             new CreateTypeOptions
                             {
+                                Routes = metadata.Operations.GetRoutes(type),
                                 ImplementsFn = () =>
                                 {
                                     if (!Config.AddReturnMarker
-                                        && !type.ReturnVoidMarker
-                                        && type.ReturnMarkerTypeName == null)
+                                        && operation?.ReturnsVoid != true
+                                        && operation?.ReturnType == null)
                                         return null;
 
-                                    if (type.ReturnVoidMarker)
-                                        return "IReturnVoid";
-                                    if (type.ReturnMarkerTypeName != null)
-                                        return Type("IReturn`1", new[] { Type(type.ReturnMarkerTypeName).InReturnMarker() });
+                                    if (operation?.ReturnsVoid == true)
+                                        return nameof(IReturnVoid);
+                                    if (operation?.ReturnType != null)
+                                        return Type("IReturn`1", new[] { Type(operation.ReturnType) });
                                     return response != null
-                                        ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs).InReturnMarker() })
+                                        ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
                                         : null;
                                 },
                                 IsRequest = true,
@@ -260,7 +289,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 }
             }
 
-            var addCode = AddCodeFilter?.Invoke(allTypes, Config);
+            var addCode = AddCodeFilter?.Invoke(AllTypes, Config);
             if (addCode != null)
                 sb.AppendLine(addCode);
 
@@ -281,9 +310,9 @@ namespace ServiceStack.NativeTypes.TypeScript
         {
             sb.AppendLine();
             AppendComments(sb, type.Description);
-            if (type.Routes != null)
+            if (options?.Routes != null)
             {
-                AppendAttributes(sb, type.Routes.ConvertAll(x => x.ToMetadataAttribute()));
+                AppendAttributes(sb, options.Routes.ConvertAll(x => x.ToMetadataAttribute()));
             }
             AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);
@@ -310,8 +339,12 @@ namespace ServiceStack.NativeTypes.TypeScript
                             var name = type.EnumNames[i];
                             var value = type.EnumValues?[i];
 
-                            if (type.EnumMemberValues != null && type.EnumMemberValues[i] != name)
-                                value = $"'{type.EnumMemberValues[i]}'";
+                            var memberValue = type.GetEnumMemberValue(i);
+                            if (memberValue != null)
+                            {
+                                sb.AppendLine($"{name} = '{memberValue}',");
+                                continue;
+                            }
 
                             sb.AppendLine(value == null 
                                 ? $"{name} = '{name}',"
@@ -452,7 +485,7 @@ namespace ServiceStack.NativeTypes.TypeScript
 
                 AddProperties(sb, type,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
-                        && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
+                        && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)));
 
                 if (EmitPartialConstructors && Config.ExportAsTypes && isClass)
                 {
@@ -480,6 +513,15 @@ namespace ServiceStack.NativeTypes.TypeScript
             return lastNS;
         }
 
+        public virtual string GetPropertyType(MetadataPropertyType prop, out bool isNullable)
+        {
+            var propType = Type(prop.GetTypeName(Config, AllTypes), prop.GenericArgs);
+            isNullable = propType.EndsWith("?");
+            if (isNullable)
+                propType = propType.Substring(0, propType.Length - 1);
+            return propType;
+        }
+
         public void AddProperties(StringBuilderWrapper sb, MetadataType type, bool includeResponseStatus)
         {
             var wasAdded = false;
@@ -493,22 +535,12 @@ namespace ServiceStack.NativeTypes.TypeScript
                 {
                     if (wasAdded) sb.AppendLine();
 
-                    var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
-                    var optional = "";
-                    if (propType.EndsWith("?"))
-                    {
-                        propType = propType.Substring(0, propType.Length - 1);
-                        optional = "?";
-                    }
+                    var propType = GetPropertyType(prop, out var optionalProperty);
+                    propType = PropertyTypeFilter?.Invoke(this, type, prop) ?? propType;
 
-                    if (Config.MakePropertiesOptional)
-                        optional = "?";
-
-                    if (prop.Attributes.Safe().FirstOrDefault(x => x.Name == "Required") != null)
-                        optional = "";
-
-                    if (Config.ExportAsTypes && !type.IsInterface.GetValueOrDefault())
-                        optional = "";
+                    var optional = IsPropertyOptional(this, type, prop) ?? optionalProperty
+                        ? "?"
+                        : "";
 
                     wasAdded = AppendComments(sb, prop.Description);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
@@ -523,8 +555,19 @@ namespace ServiceStack.NativeTypes.TypeScript
 
                 AppendDataMember(sb, null, dataMemberIndex++);
                 sb.AppendLine(modifier + "{0}{1}: ResponseStatus;".Fmt(
-                    typeof(ResponseStatus).Name.PropertyStyle(), Config.ExportAsTypes ? "" : "?"));
+                    nameof(ResponseStatus).PropertyStyle(), Config.ExportAsTypes ? "" : "?"));
             }
+        }
+
+        public static bool? DefaultIsPropertyOptional(TypeScriptGenerator generator, MetadataType type, MetadataPropertyType prop)
+        {
+            if (prop.Attributes.Safe().FirstOrDefault(x => x.Name == "Required") != null)
+                return false;
+            
+            if (generator.Config.MakePropertiesOptional)
+                return true;
+
+            return null;
         }
 
         public bool AppendAttributes(StringBuilderWrapper sb, List<MetadataAttribute> attributes)
@@ -547,7 +590,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                         {
                             if (args.Length > 0)
                                 args.Append(", ");
-                            args.Append("{0}".Fmt(TypeValue(ctorArg.Type, ctorArg.Value)));
+                            args.Append(TypeValue(ctorArg.Type, ctorArg.Value));
                         }
                     }
                     else if (attr.Args != null)
@@ -556,7 +599,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                         {
                             if (args.Length > 0)
                                 args.Append(", ");
-                            args.Append("{0}={1}".Fmt(attrArg.Name, TypeValue(attrArg.Type, attrArg.Value)));
+                            args.Append($"{attrArg.Name}={TypeValue(attrArg.Type, attrArg.Value)}");
                         }
                     }
                     sb.AppendLine("// @{0}({1})".Fmt(attr.Name, StringBuilderCacheAlt.ReturnAndFree(args)));

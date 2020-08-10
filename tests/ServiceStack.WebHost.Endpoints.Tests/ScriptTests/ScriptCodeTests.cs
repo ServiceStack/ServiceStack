@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
+using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Script;
 using ServiceStack.Text;
@@ -114,20 +115,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             JsStatement[] expr;
 
             expr = new[] {
-                new JsFilterExpressionStatement("1 | add(2)", new JsLiteral(1),
+                new JsFilterExpressionStatement("1 |> add(2)", new JsLiteral(1),
                     new JsCallExpression(new JsIdentifier("add"), new JsLiteral(2))),
             };
 
-            Assert.That(ParseCode("1 | add(2)"), Is.EqualTo(expr));
-            Assert.That(ParseCode("{{ 1 | add(2) }}"), Is.EqualTo(expr));
-            Assert.That(ParseCode(" \n {{ \n 1 | add(2) \n }} \n "), Is.EqualTo(expr));
+            Assert.That(ParseCode("1 |> add(2)"), Is.EqualTo(expr));
+            Assert.That(ParseCode("{{ 1 |> add(2) }}"), Is.EqualTo(expr));
+            Assert.That(ParseCode(" \n {{ \n 1 |> add(2) \n }} \n "), Is.EqualTo(expr));
 
             expr = new[] {
-                new JsFilterExpressionStatement("1 \n | \n add(2)", new JsLiteral(1),
+                new JsFilterExpressionStatement("1 \n |> \n add(2)", new JsLiteral(1),
                     new JsCallExpression(new JsIdentifier("add"), new JsLiteral(2))),
             };
 
-            Assert.That(ParseCode("{{ \n 1 \n | \n add(2) \n }}"), Is.EqualTo(expr));
+            Assert.That(ParseCode("{{ \n 1 \n |> \n add(2) \n }}"), Is.EqualTo(expr));
         }
 
         [Test]
@@ -283,9 +284,9 @@ else
 
             code = @"
 #if a > 1
-    `${a} > 1` | raw
+    `${a} > 1` |> raw
 else
-    `${a} <= 1` | raw
+    `${a} <= 1` |> raw
 /if
 ";
 
@@ -293,19 +294,19 @@ else
             Assert.That(result.Trim(), Is.EqualTo("1 <= 1"));
 
             code = @"
-range(5) | map => it + 1 | to => nums
+range(5) |> map => it + 1 |> to => nums
 #each a in nums
     #if a > 2
         #if a.isOdd() 
-            `${a} > 2 and odd` | raw
+            `${a} > 2 and odd` |> raw
         else
-            `${a} > 2 and even` | raw
+            `${a} > 2 and even` |> raw
         /if
     else
         #if a.isOdd() 
-            `${a} <= 2 and odd` | raw
+            `${a} <= 2 and odd` |> raw
         else
-            `${a} <= 2 and even` | raw
+            `${a} <= 2 and even` |> raw
         /if
     /if
 /each
@@ -318,22 +319,22 @@ range(5) | map => it + 1 | to => nums
 #function testValue(a) 
     #if a > 2
         #if a.isOdd() 
-            `${a} > 2 and odd` | return
+            `${a} > 2 and odd` |> return
         else
-            `${a} > 2 and even` | return
+            `${a} > 2 and even` |> return
         /if
     else
         #if a.isOdd() 
-            `${a} <= 2 and odd` | return
+            `${a} <= 2 and odd` |> return
         else
-            `${a} <= 2 and even` | return
+            `${a} <= 2 and even` |> return
         /if
     /if
 /function
 
-range(5) | map => it + 1 | to => nums
+range(5) |> map => it + 1 |> to => nums
 #each nums
-    it.testValue() | raw
+    it.testValue() |> raw
 /each
 ";
             
@@ -345,9 +346,9 @@ range(5) | map => it + 1 | to => nums
     return (a > 2 ? (a.isOdd() ? `${a} > 2 and odd`  : `${a} > 2 and even`) : (a.isOdd() ? `${a} <= 2 and odd` : `${a} <= 2 and even`)) 
 /function
 
-range(5) | map => it + 1 | to => nums
+range(5) |> map => it + 1 |> to => nums
 #each nums
-    it.testValue() | raw
+    it.testValue() |> raw
 /each
 ";
             
@@ -361,9 +362,9 @@ range(5) | map => it + 1 | to => nums
         : (a.isOdd() ? `${a} <= 2 and odd` : `${a} <= 2 and even`)) }} 
 /function
 
-range(5) | map => it + 1 | to => nums
+range(5) |> map => it + 1 |> to => nums
 #each nums
-    it.testValue() | raw
+    it.testValue() |> raw
 /each
 ";
             
@@ -478,7 +479,7 @@ out
 {{/each}}
 {{/capture}}
 
-text | markdown
+text |> markdown
 ");
             Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
 <h2>Title</h2>
@@ -495,7 +496,7 @@ text | markdown
                     Grape Fruit:  2
                     Rock Melon:   3                    
                 {{/keyvalues}}
-                dict | return
+                dict |> return
             ");
                 
             Assert.That(result, Is.EquivalentTo(new Dictionary<string, string> {
@@ -512,7 +513,7 @@ text | markdown
                     Grape Fruit,2,2
                     Rock Melon,3,3                 
                 {{/csv}}
-                list | return");
+                list |> return");
 
             Assert.That(result, Is.EquivalentTo(new List<List<string>> {
                 new List<string> { "Apples", "2", "2" },
@@ -553,8 +554,8 @@ text | markdown
  - List Item
 {{/partial}}
 
-'<h1>Title</h1>' | raw
-'content' | partial | markdown");
+'<h1>Title</h1>' |> raw
+'content' |> partial |> markdown");
          
             Assert.That(output.RemoveNewLines(), Is.EqualTo(@"<h1>Title</h1><ul><li>List Item</li></ul>".RemoveNewLines()));
 
@@ -570,10 +571,10 @@ text | markdown
             
             
             output = context.RenderCode(@"
-3 | to => times
+3 |> to => times
 {{#while times > 0}}
 {{times}} time{{times == 1 ? '' : 's'}}
-{{times - 1 | to => times}}
+{{times - 1 |> to => times}}
 {{/while}}
 ");
             
@@ -629,7 +630,7 @@ text | markdown
                     Grape Fruit:  2
                     Rock Melon:   3                    
                 /keyvalues
-                dict | return
+                dict |> return
             ";
             
             result = context.EvaluateCode(code);
@@ -648,7 +649,7 @@ text | markdown
                     Grape Fruit,2,2
                     Rock Melon,3,3                 
                 /csv
-                list | return";
+                list |> return";
             result = context.EvaluateCode(code);
             Assert.That(result, Is.EquivalentTo(new List<List<string>> {
                 new List<string> { "Apples", "2", "2" },
@@ -675,10 +676,10 @@ text | markdown
 
 
             code = @"
-                3 | to => times
+                3 |> to => times
                 #while times > 0
                     `${times} time${times == 1 ? '' : 's'}`
-                    times - 1 | to => times
+                    times - 1 |> to => times
                 /while";
             
             Assert.That(context.RenderCode(code).NormalizeNewLines(), Is.EqualTo("3 times\n2 times\n1 time"));
@@ -743,7 +744,7 @@ text | markdown
                     Grape Fruit:  2
                     Rock Melon:   3                    
                 /keyvalues
-                dict | return
+                dict |> return
             ".Replace("\r", "");
             var expectedKeyValues = new Dictionary<string, string> {
                 {"Apples", "2"},
@@ -761,7 +762,7 @@ text | markdown
                     Grape Fruit,2,2
                     Rock Melon,3,3                 
                 /csv
-                list | return".Replace("\r",""));
+                list |> return".Replace("\r",""));
 
             Assert.That(result, Is.EquivalentTo(new List<List<string>> {
                 new List<string> { "Apples", "2", "2" },
@@ -786,10 +787,10 @@ text | markdown
 
 
             code = @"
-                3 | to => times
+                3 |> to => times
                 #while times > 0
                     `${times} time${times == 1 ? '' : 's'}`
-                    times - 1 | to => times
+                    times - 1 |> to => times
                 /while".Replace("\r", "");
             Assert.That(context.RenderCode(code).NormalizeNewLines(), Is.EqualTo("3 times\n2 times\n1 time"));
             Assert.That(context.RenderCode(code.Trim()).NormalizeNewLines(), Is.EqualTo("3 times\n2 times\n1 time"));
@@ -865,10 +866,10 @@ text | markdown
             var context = new ScriptContext().Init();
 
             string template (string block) => "```" + block + @"
-                3 | to => times
+                3 |> to => times
                 #while times > 0
                     `${times} time${times == 1 ? '' : 's'}`
-                    times - 1 | to => times
+                    times - 1 |> to => times
                 /while
                 ```
 remaining={{times}}"; 
@@ -882,6 +883,237 @@ remaining={{times}}";
                 Is.EqualTo("remaining=0"));
             Assert.That(context.EvaluateScript(template("code|mute")).NormalizeNewLines(), 
                 Is.EqualTo("remaining=0"));
+        }
+
+        void AssertFizzBuzzOutput(string output)
+        {
+            Assert.That(output.NormalizeNewLines(), Does.StartWith(@"
+1
+2
+Fizz
+4
+Buzz
+Fizz
+7
+8
+Fizz
+Buzz
+11
+Fizz
+13
+14
+FizzBuzz".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void Can_eval_FizzBuzz_Script()
+        {
+            var context = new ScriptContext().Init();
+
+            string src = @"
+{{#each range(1,100)}}
+{{#if it % 3 == 0 && it % 5 == 0}}
+FizzBuzz
+{{else if it % 3 == 0}}
+Fizz
+{{else if it % 5 == 0}}
+Buzz
+{{else}}
+{{it}}
+{{/if}}
+{{/each}}
+";
+            var output = context.RenderScript(src);
+            AssertFizzBuzzOutput(output);
+        }
+
+        [Test]
+        public void Can_eval_FizzBuzz_Code()
+        {
+            var context = new ScriptContext().Init();
+
+            string src = @"
+#each range(1,100)
+    #if it % 3 == 0 && it % 5 == 0
+        'FizzBuzz'
+    else if it % 3 == 0
+        'Fizz'
+    else if it % 5 == 0
+        'Buzz'
+    else
+        it
+    /if
+/each
+";
+            var output = context.RenderCode(src);
+            AssertFizzBuzzOutput(output);
+
+            src = @"
+#function fizzbuzz(it)
+    #if it % 3 == 0 && it % 5 == 0
+        'FizzBuzz' |> return
+    else if it % 3 == 0
+        'Fizz' |> return
+    else if it % 5 == 0
+        'Buzz' |> return
+    else
+        it |> return
+    /if
+/function
+
+#each range(1,100)
+  fizzbuzz(it)
+/each
+";
+            
+            output = context.RenderCode(src);
+            AssertFizzBuzzOutput(output);
+        }
+
+        [Test]
+        public void Can_eval_FizzBuzz_Lisp()
+        {
+            var context = new ScriptContext {
+                ScriptLanguages = { ScriptLisp.Language }
+            }.Init();
+
+            string src = @"
+(doseq (i (range 1 100))
+  (println
+    (cond ((and (zero? (mod i 3)) (zero? (mod i 5))) ""FizzBuzz"")
+          ((zero? (mod i 3)) ""Fizz"")
+          ((zero? (mod i 5)) ""Buzz"")
+          (t i))
+  ))";
+            var output = context.RenderLisp(src);
+            AssertFizzBuzzOutput(output);
+
+            src = @"
+(defn fizzbuzz [i]
+    (cond ((and (zero? (mod i 3)) (zero? (mod i 5))) ""FizzBuzz"")
+          ((zero? (mod i 3)) ""Fizz"")
+          ((zero? (mod i 5)) ""Buzz"")
+          (t i)))
+
+(dorun println (map fizzbuzz (range 1 100)))
+";
+
+            output = context.RenderLisp(src);
+            AssertFizzBuzzOutput(output);
+        }
+
+        [Test]
+        public void Can_eval_FizzBuzz_combined()
+        {
+            var context = new ScriptContext {
+                ScriptLanguages = { ScriptLisp.Language },
+                Plugins = {
+                    new MarkdownScriptPlugin()
+                }
+            }.Init();
+
+            string src = @"
+{{#defn fizzbuzz [i] }}
+    (cond ((and (zero? (mod i 3)) (zero? (mod i 5))) ""FizzBuzz"")
+          ((zero? (mod i 3)) ""Fizz"")
+          ((zero? (mod i 5)) ""Buzz"")
+          (t i))
+{{/defn}}
+
+{{#capture md}}
+## FizzBuzz:
+{{#each range(1,100) }}
+  - {{ fizzbuzz(it) }}
+{{/each}}
+{{/capture}}
+
+{{ md |> markdown }}
+";
+           
+            var output = context.RenderScript(src);
+            Assert.That(output.NormalizeNewLines(), Does.StartWith(@"
+<h2>FizzBuzz:</h2>
+<ul>
+<li>1</li>
+<li>2</li>
+<li>Fizz</li>
+<li>4</li>
+<li>Buzz</li>
+<li>Fizz</li>
+<li>7</li>
+<li>8</li>
+<li>Fizz</li>
+<li>Buzz</li>
+<li>11</li>
+<li>Fizz</li>
+<li>13</li>
+<li>14</li>
+<li>FizzBuzz</li>".NormalizeNewLines()));
+        }
+
+        const string TemplateMix = @"
+Template:
+{{#each range(1,15) }}
+{{#if it % 3 == 0 && it % 5 == 0}}
+  FizzBuzz
+{{else if it % 3 == 0}}
+  Fizz
+{{else if it % 5 == 0}}
+  Buzz
+{{else}}
+  {{it}}
+{{/if}}
+{{/each}}
+
+Code:
+```code
+#each range(1,15)
+    #if it % 3 == 0 && it % 5 == 0
+        ""FizzBuzz""
+    else if it % 3 == 0
+        ""Fizz""
+    else if it % 5 == 0
+        ""Buzz""
+    else
+        it
+    /if
+/each
+```
+
+Lisp:
+```lisp
+(defn fizzbuzz [i]
+    (cond ((and (zero? (mod i 3)) (zero? (mod i 5))) ""FizzBuzz"")
+          ((zero? (mod i 3)) ""Fizz"")
+          ((zero? (mod i 5)) ""Buzz"")
+          (t i)))
+
+(dorun println (map fizzbuzz (range 1 15)))
+```
+";
+        [Test]
+        public void Can_use_multiple_code_blocks()
+        {
+            var context = new ScriptContext {
+                ScriptLanguages = { ScriptLisp.Language }
+            };
+
+            context.VirtualFiles.WriteFile("page.html", "{{#raw template}}\n" +
+                TemplateMix +
+            @"{{/raw}}
+            {{template}}");
+            context.Init();
+            
+            var output = context.RenderScript(TemplateMix);
+            Assert.That(output.NormalizeNewLines(), Does.Contain(@"Lisp:
+1
+2
+Fizz".NormalizeNewLines()));
+            
+            var pageResult = new PageResult(context.GetPage("page"));
+            output = pageResult.RenderScript();
+            Assert.That(output, Does.Contain("#each range(1,15)"));
+            Assert.That(output, Does.Contain("(defn fizzbuzz [i]"));
         }
 
     }

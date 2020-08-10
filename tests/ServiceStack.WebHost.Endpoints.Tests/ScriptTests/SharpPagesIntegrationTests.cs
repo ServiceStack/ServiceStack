@@ -184,7 +184,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 files.WriteFile("layout-with-sidebar.html", @"
 <html>
 <body id=sidebar>
-{{ 'sidebar' | partial({ links: { 'a.html': 'A Page', 'b.html': 'B Page' } }) }}
+{{ 'sidebar' |> partial({ links: { 'a.html': 'A Page', 'b.html': 'B Page' } }) }}
 {{ page }}
 </body>
 </html>
@@ -251,7 +251,7 @@ layout: alt/alt-layout
 ");
                 files.WriteFile("requestinfo-page.html", @"
 <h1>The Request Info Page</h1>
-<p>{{ 'requestInfo' | partial }}</p>
+<p>{{ 'requestInfo' |> partial }}</p>
 ");
                 
                 files.WriteFile("dir/dir-partial.html", @"
@@ -259,7 +259,7 @@ layout: alt/alt-layout
 ");
                 files.WriteFile("dir/dir-page-partial.html", @"
 <h1>Dir Page Partial</h1>
-{{ 'dir-partial' | partial }}
+{{ 'dir-partial' |> partial }}
 ");
                 
                 files.WriteFile("dir/dir-file.txt", @"
@@ -267,25 +267,25 @@ layout: alt/alt-layout
 ");
                 files.WriteFile("dir/dir-page-file.html", @"
 <h1>Dir Page File</h1>
-{{ 'dir-file.txt' | includeFile }}
+{{ 'dir-file.txt' |> includeFile }}
 ");
                 files.WriteFile("dir/dir-page-file-cache.html", @"
 <h1>Dir Page File Cache</h1>
-{{ 'dir-file.txt' | includeFileWithCache }}
+{{ 'dir-file.txt' |> includeFileWithCache }}
 ");
                 
                 files.WriteFile("rockstar-details.html", @"{{ it.FirstName }} {{ it.LastName }} ({{ it.Age }})");
 
                 files.WriteFile("rockstar-gateway.html", @"
-{{ { qs.id, qs.firstName } | ensureAnyArgsNotNull | sendToGateway('GetRockstarTemplate') | assignTo: rockstar }}
-{{ rockstar | ifExists     | selectPartial: rockstar-details }}
-{{ rockstar | endIfExists  | select: No rockstar with id: { qs.id } }}
+{{ { qs.id, qs.firstName } |> ensureAnyArgsNotNull |> sendToGateway('GetRockstarTemplate') |> assignTo: rockstar }}
+{{ rockstar |> ifExists     |> selectPartial: rockstar-details }}
+{{ rockstar |> endIfExists  |> select: No rockstar with id: { qs.id } }}
 {{ htmlError }}
 ");
 
                 files.WriteFile("rockstar-gateway-publish.html", @"
-{{ 'id,firstName,lastName,age' | importRequestParams }}{{ { id, firstName, lastName, age } | ensureAllArgsNotNull | publishToGateway('AddRockstarTemplate') }}
-{{ 'rockstar-gateway' | partial({ firstName }) }}
+{{ 'id,firstName,lastName,age' |> importRequestParams }}{{ { id, firstName, lastName, age } |> ensureAllArgsNotNull |> publishToGateway('AddRockstarTemplate') }}
+{{ 'rockstar-gateway' |> partial({ firstName }) }}
 {{ htmlError }}");
 
                 files.WriteFile("plugins/dll.txt", "Forbidden File");

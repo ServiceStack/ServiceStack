@@ -5,6 +5,7 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using Grpc.Core;
+using Microsoft.Extensions.DependencyInjection;
 using ProtoBuf.Grpc;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
@@ -13,7 +14,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Grpc
 {
-    public class GrpcRequest : IHttpRequest
+    public class GrpcRequest : IHttpRequest, IHasServiceScope
     {
         public object Dto { get; set; }
         public object OriginalRequest { get; }
@@ -26,6 +27,8 @@ namespace ServiceStack.Grpc
             get => resolver ?? Service.GlobalResolver;
             set => resolver = value;
         }
+
+        public IServiceScope ServiceScope { get; set; }
 
         public CallContext Context { get; }
         
@@ -56,7 +59,32 @@ namespace ServiceStack.Grpc
 
             foreach (var header in context.RequestHeaders)
             {
-                this.Headers[header.Key] = header.Value;
+                var key = header.Key;
+                if (header.Key.IndexOf('.') >= 0)
+                {
+                    if (header.Key.StartsWith("query."))
+                    {
+                        this.QueryString[header.Key.Substring(6)] = header.Value;
+                        continue;
+                    }
+                    if (header.Key.StartsWith("form."))
+                    {
+                        this.FormData[header.Key.Substring(5)] = header.Value;
+                        continue;
+                    }
+                    if (header.Key.StartsWith("cookie."))
+                    {
+                        var name = header.Key.Substring(7); 
+                        this.Cookies[name] = new Cookie(name, header.Value);
+                        continue;
+                    }
+                    if (header.Key.StartsWith("header."))
+                    {
+                        key = header.Key.Substring(7);
+                    }
+                }
+
+                this.Headers[key] =  header.Value;
             }
 
             if (context.ServerCallContext.UserState != null)
@@ -80,12 +108,26 @@ namespace ServiceStack.Grpc
 
         public T TryResolve<T>()
         {
+            if (ServiceScope != null)
+            {
+                var instance = ServiceScope.ServiceProvider.GetService(typeof(T));
+                if (instance != null)
+                    return (T)instance;
+            }
+
             if (typeof(T) == typeof(IRequest))
                 return (T)(object)this;
             if (typeof(T) == typeof(IResponse))
                 return (T)this.Response;
 
             return Resolver.TryResolve<T>();
+        }
+
+        public object GetService(Type serviceType)
+        {
+            var mi = typeof(GrpcRequest).GetMethod(nameof(TryResolve));
+            var genericMi = mi.MakeGenericMethod(serviceType);
+            return genericMi.Invoke(this, TypeConstants.EmptyObjectArray);
         }
 
         public string UserHostAddress { get; set; }

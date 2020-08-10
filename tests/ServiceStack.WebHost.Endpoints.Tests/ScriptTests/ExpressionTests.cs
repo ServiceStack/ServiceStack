@@ -11,7 +11,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var context = new ScriptContext().Init();
 
             Assert.That(context.EvaluateScript(@"
-{{ [1,2,3] | assignTo: numArray }}
+{{ [1,2,3] |> assignTo: numArray }}
 {{ do: assign('numArray[1]', 4) }}
 {{ numArray[1] }}
 ").Trim(), Is.EqualTo("4"));
@@ -23,19 +23,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var context = new ScriptContext().Init();
 
             Assert.That(context.EvaluateScript(@"
-{{ 1 | assignTo: arg }}
-{{ arg | do: assign('doArg', incr(it)) }}
+{{ 1 |> assignTo: arg }}
+{{ arg |> do: assign('doArg', incr(it)) }}
 {{ doArg }}
 ").Trim(), Is.EqualTo("2"));
             
             Assert.That(context.EvaluateScript(@"
-{{ null | assignTo: arg }}
-{{ arg | do: assign('doArg', 2) }}
+{{ null |> assignTo: arg }}
+{{ arg |> do: assign('doArg', 2) }}
 {{ doArg }}
 ").Trim(), Is.EqualTo(""));
             
             Assert.That(context.EvaluateScript(@"
-{{ noArg | do: assign('doArg', 2) }}
+{{ noArg |> do: assign('doArg', 2) }}
 {{ doArg }}
 ").Trim(), Is.EqualTo(""));
         }
@@ -46,7 +46,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var context = new ScriptContext().Init();
 
             Assert.That(context.EvaluateScript(@"
-{{ [1,2,3] | toArray | assignTo: numArray }}
+{{ [1,2,3] |> toArray |> assignTo: numArray }}
 {{ do: assign('numArray[1]', 4) }}
 {{ numArray[1] }}
 ").Trim(), Is.EqualTo("4"));
@@ -58,7 +58,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var context = new ScriptContext().Init();
 
             Assert.That(context.EvaluateScript(@"
-{{ ['a','b','c'] | assignTo: stringArray }}
+{{ ['a','b','c'] |> assignTo: stringArray }}
 {{ do: assign('stringArray[1]', 'd') }}
 {{ stringArray[1] }}
 ").Trim(), Is.EqualTo("d"));
@@ -70,7 +70,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var context = new ScriptContext().Init();
 
             Assert.That(context.EvaluateScript(@"
-{{ ['a','b','c'] | toArray | assignTo: stringArray }}
+{{ ['a','b','c'] |> toArray |> assignTo: stringArray }}
 {{ do: assign('stringArray[1]', 'd') }}
 {{ stringArray[1] }}
 ").Trim(), Is.EqualTo("d"));
@@ -82,7 +82,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var context = new ScriptContext().Init();
 
             Assert.That(context.EvaluateScript(@"
-{{ { a: 'foo', b: 'bar' } | assignTo: map }}
+{{ { a: 'foo', b: 'bar' } |> assignTo: map }}
 {{ do: assign('map[`b`]', 'qux') }}
 {{ map['b'] }}
 ").Trim(), Is.EqualTo("qux"));

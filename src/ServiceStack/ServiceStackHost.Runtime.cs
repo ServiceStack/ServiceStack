@@ -26,6 +26,7 @@ using ServiceStack.IO;
 using ServiceStack.Messaging;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler;
+using ServiceStack.Model;
 using ServiceStack.Redis;
 using ServiceStack.Serialization;
 using ServiceStack.Support.WebHost;
@@ -413,7 +414,8 @@ namespace ServiceStack
 
         public void AssertFeatures(Feature usesFeatures)
         {
-            if (Config.EnableFeatures == Feature.All) return;
+            if (Config.EnableFeatures == Feature.All) 
+                return;
 
             if (!HasFeature(usesFeatures))
             {
@@ -510,22 +512,47 @@ namespace ServiceStack
             return false;
         }
 
-        public virtual Exception ResolveResponseException(Exception ex)
+        public virtual ErrorResponse CreateErrorResponse(Exception ex, object request = null) =>
+            new ErrorResponse { ResponseStatus = ex.ToResponseStatus() };
+        
+        public virtual ResponseStatus CreateResponseStatus(Exception ex, object request=null)
         {
-            return Config?.ReturnsInnerException == true && ex.InnerException != null && !(ex is IHttpError)
+            var useEx = (Config.ReturnsInnerException && ex.InnerException != null && !(ex is IHttpError)
                 ? ex.InnerException
-                : ex;
+                : null) ?? ex;
+
+            var responseStatus = DtoUtils.CreateResponseStatus(useEx, request, Config.DebugMode);
+
+            OnExceptionTypeFilter(useEx, responseStatus);
+
+            if (Config.DebugMode || Log.IsDebugEnabled)
+                OnLogError(GetType(), responseStatus.Message, useEx);
+            
+            return responseStatus;
         }
 
+        /// <summary>
+        /// Callback for handling when errors are logged, also called for non-Exception error logging like 404 requests   
+        /// </summary>
+        public virtual void OnLogError(Type type, string message, Exception innerEx=null)
+        {
+            if (innerEx != null)
+                Log.Error(message, innerEx);
+            else
+                Log.Error(message);
+        }
+        
         public virtual void OnExceptionTypeFilter(Exception ex, ResponseStatus responseStatus)
         {
             var argEx = ex as ArgumentException;
-            var isValidationSummaryEx = argEx is ValidationException;
-            if (argEx != null && !isValidationSummaryEx && argEx.ParamName != null)
+            if (argEx?.ParamName != null)
             {
                 var paramMsgIndex = argEx.Message.LastIndexOf("Parameter name:", StringComparison.Ordinal);
+                if (paramMsgIndex == -1)
+                    paramMsgIndex = argEx.Message.LastIndexOf("(Parameter", StringComparison.Ordinal); //.NET Core
+                
                 var errorMsg = paramMsgIndex > 0
-                    ? argEx.Message.Substring(0, paramMsgIndex)
+                    ? argEx.Message.Substring(0, paramMsgIndex).TrimEnd()
                     : argEx.Message;
 
                 if (responseStatus.Errors == null)
@@ -555,14 +582,6 @@ namespace ServiceStack
                         : $"Invalid Value for '{e.PropertyName}'"
                 }).ToList();
             }
-        }
-
-        public virtual void OnLogError(Type type, string message, Exception innerEx=null)
-        {
-            if (innerEx != null)
-                Log.Error(message, innerEx);
-            else
-                Log.Error(message);
         }
 
         public virtual void OnSaveSession(IRequest httpReq, IAuthSession session, TimeSpan? expiresIn = null)
@@ -734,7 +753,7 @@ namespace ServiceStack
         /// </summary>
         /// <param name="req">Provided by services and pageView, can be helpful when overriding this method</param>
         /// <returns>Nullable MemoryCacheClient</returns>
-        public virtual MemoryCacheClient GetMemoryCacheClient(IRequest req) => Container.TryResolve<MemoryCacheClient>();
+        public virtual MemoryCacheClient GetMemoryCacheClient(IRequest req=null) => Container.TryResolve<MemoryCacheClient>() ?? DefaultCache;
 
         /// <summary>
         /// Returns <see cref="IMessageProducer"></see> from the IOC container.
@@ -808,6 +827,12 @@ namespace ServiceStack
 
             var utf8Bytes = html.ToUtf8Bytes();
             await outputStream.WriteAsync(utf8Bytes, 0, utf8Bytes.Length);
+        }
+
+        public virtual List<string> GetMetadataPluginIds()
+        {
+            var pluginIds = Plugins.OfType<IHasStringId>().Map(x => x.Id);
+            return pluginIds;
         }
     }
 

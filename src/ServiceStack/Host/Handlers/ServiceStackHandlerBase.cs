@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Text;
@@ -219,6 +218,7 @@ namespace ServiceStack.Host.Handlers
                         var deserializer = HostContext.ContentTypes.GetStreamDeserializerAsync(contentType);
                         if (deserializer != null)
                         {
+                            httpReq.AllowSyncIO();
                             return deserializer(requestType, httpReq.InputStream);
                         }
                     }

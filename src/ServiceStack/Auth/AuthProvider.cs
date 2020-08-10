@@ -2,11 +2,11 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
+using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.Web;
 
@@ -15,6 +15,9 @@ namespace ServiceStack.Auth
     public abstract class AuthProvider : IAuthProvider
     {
         protected static readonly ILog Log = LogManager.GetLogger(typeof(AuthProvider));
+
+        public virtual string Type => GetType().Name;
+        public virtual Dictionary<string, string> Meta => null;
 
         public TimeSpan? SessionExpiry { get; set; }
         public string AuthRealm { get; set; }
@@ -88,7 +91,7 @@ namespace ServiceStack.Auth
             var feature = HostContext.GetPlugin<AuthFeature>();
 
             var session = service.GetSession();
-            var referrerUrl = request?.Continue
+            var referrerUrl = service.Request.GetReturnUrl()
                 ?? (feature.HtmlLogoutRedirect != null ? service.Request.ResolveAbsoluteUrl(feature.HtmlLogoutRedirect) : null)
                 ?? session.ReferrerUrl
                 ?? service.Request.GetHeader("Referer").NotLogoutUrl()
@@ -234,8 +237,6 @@ namespace ServiceStack.Auth
 
             return null;
         }
-
-        public virtual NavItem GetNavItem() => null;
 
         protected virtual IAuthRepository GetAuthRepository(IRequest req)
         {
@@ -387,17 +388,16 @@ namespace ServiceStack.Auth
             if (request == null)
                 request = authService.Request.Dto as Authenticate;
 
-            var referrerUrl = session.ReferrerUrl;
-            if (referrerUrl.IsNullOrEmpty())
-            {
-                referrerUrl = request?.Continue
-                    ?? authService.Request.GetQueryStringOrForm(Keywords.ReturnUrl)
-                    ?? authService.Request.GetHeader("Referer");
-            }
+            var referrerUrl = authService.Request.GetReturnUrl() ?? session.ReferrerUrl;
+            if (!string.IsNullOrEmpty(referrerUrl))
+                return referrerUrl;
+
+            referrerUrl = authService.Request.GetHeader("Referer");
+            if (!string.IsNullOrEmpty(referrerUrl))
+                return referrerUrl;
 
             var requestUri = authService.Request.AbsoluteUri;
-            if (referrerUrl.IsNullOrEmpty()
-                || referrerUrl.IndexOf("/auth", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (requestUri.IndexOf("/auth", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 referrerUrl = this.RedirectUrl
                     ?? authService.Request.GetBaseUrl()
@@ -459,6 +459,21 @@ namespace ServiceStack.Auth
             {
                 req.SetSessionId(hasSession.SessionId);
                 return true;
+            }
+            return false;
+        }
+
+        public static bool PopulateRequestDtoIfAuthenticated(this IRequest req, object requestDto)
+        {
+            if (requestDto is IHasSessionId hasSession && hasSession.SessionId == null)
+            {
+                hasSession.SessionId = req.GetSessionId();
+                return hasSession.SessionId != null;
+            }
+            if (requestDto is IHasBearerToken hasToken && hasToken.BearerToken == null)
+            {
+                hasToken.BearerToken = req.GetBearerToken();
+                return hasToken.BearerToken != null;
             }
             return false;
         }

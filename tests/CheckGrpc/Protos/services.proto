@@ -1,0 +1,178 @@
+/* Options:
+Date: 2019-11-15 17:53:42
+Version: 5.71
+Tip: To override a DTO option, remove "//" prefix before updating
+BaseUrl: https://localhost:5001
+
+//GlobalNamespace: 
+//AddDescriptionAsComments: True
+*/
+
+syntax = "proto3";
+import "protobuf-net/bcl.proto"; // schema for protobuf-net's handling of core .NET types
+
+option csharp_namespace = "CheckGrpc";
+
+service GrpcServices {
+
+   rpc GetAllTypes(AllTypes) returns (AllTypes) {}
+
+   rpc PostAllTypes(AllTypes) returns (AllTypes) {}
+
+   rpc PutAllTypes(AllTypes) returns (AllTypes) {}
+
+   rpc DeleteAllTypes(AllTypes) returns (AllTypes) {}
+
+   rpc PatchAllTypes(AllTypes) returns (AllTypes) {}
+
+   rpc GetHello(Hello) returns (HelloResponse) {}
+
+   rpc PostHello(Hello) returns (HelloResponse) {}
+
+   rpc PutHello(Hello) returns (HelloResponse) {}
+
+   rpc DeleteHello(Hello) returns (HelloResponse) {}
+
+   rpc PatchHello(Hello) returns (HelloResponse) {}
+
+   rpc GetHelloAllTypes(HelloAllTypes) returns (HelloAllTypesResponse) {}
+
+   rpc PostHelloAllTypes(HelloAllTypes) returns (HelloAllTypesResponse) {}
+
+   rpc PutHelloAllTypes(HelloAllTypes) returns (HelloAllTypesResponse) {}
+
+   rpc DeleteHelloAllTypes(HelloAllTypes) returns (HelloAllTypesResponse) {}
+
+   rpc PatchHelloAllTypes(HelloAllTypes) returns (HelloAllTypesResponse) {}
+
+   rpc ServerStreamFiles(StreamFiles) returns (stream FileContent) {}
+
+   rpc ServerStreamServerEvents(StreamServerEvents) returns (stream StreamServerEventsResponse) {}
+}
+
+message AllCollectionTypes {
+   repeated int32 IntArray = 1 [packed = false];
+   repeated int32 IntList = 2 [packed = false];
+   repeated string StringArray = 3;
+   repeated string StringList = 4;
+   repeated Poco PocoArray = 5;
+   repeated Poco PocoList = 6;
+   repeated uint32 NullableByteArray = 7;
+   repeated uint32 NullableByteList = 8;
+   repeated .bcl.DateTime NullableDateTimeArray = 9;
+   repeated .bcl.DateTime NullableDateTimeList = 10;
+}
+message AllTypes {
+   int32 Id = 1;
+   int32 NullableId = 2;
+   uint32 Byte = 3;
+   int32 Short = 4;
+   int32 Int = 5;
+   int64 Long = 6;
+   uint32 UShort = 7;
+   uint32 UInt = 8;
+   uint64 ULong = 9;
+   float Float = 10;
+   double Double = 11;
+   .bcl.Decimal Decimal = 12;
+   string String = 13;
+   .bcl.DateTime DateTime = 14;
+   .bcl.TimeSpan TimeSpan = 15;
+   DateTimeOffset DateTimeOffset = 16;
+   .bcl.Guid Guid = 17; // default value could not be applied: 00000000-0000-0000-0000-000000000000
+   uint32 Char = 18;
+   KeyValuePair_String_String KeyValuePair = 19;
+   .bcl.DateTime NullableDateTime = 20;
+   .bcl.TimeSpan NullableTimeSpan = 21;
+   repeated string StringList = 22;
+   repeated string StringArray = 23;
+   map<string,string> StringMap = 24;
+   map<int32,string> IntStringMap = 25;
+   SubType SubType = 26;
+   Point Point = 27;
+   string aliasedName = 28;
+}
+message DateTimeOffset {
+}
+message FileContent {
+   string Name = 1;
+   string Type = 2;
+   int32 Length = 3;
+   bytes Body = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message Hello {
+   string Name = 1;
+}
+message HelloAllTypes {
+   string Name = 1;
+   AllTypes AllTypes = 2;
+   AllCollectionTypes AllCollectionTypes = 3;
+}
+message HelloAllTypesResponse {
+   string Result = 1;
+   AllTypes AllTypes = 2;
+   AllCollectionTypes AllCollectionTypes = 3;
+   ResponseStatus ResponseStatus = 4;
+}
+message HelloResponse {
+   string Result = 1;
+   ResponseStatus ResponseStatus = 2;
+}
+message KeyValuePair_String_String {
+   string Key = 1;
+   string Value = 2;
+}
+message Poco {
+   string Name = 1;
+}
+message Point {
+   double X = 1;
+   double Y = 2;
+}
+message ResponseError {
+   string ErrorCode = 1;
+   string FieldName = 2;
+   string Message = 3;
+   map<string,string> Meta = 4;
+}
+message ResponseStatus {
+   string ErrorCode = 1;
+   string Message = 2;
+   string StackTrace = 3;
+   repeated ResponseError Errors = 4;
+   map<string,string> Meta = 5;
+}
+message StreamFiles {
+   repeated string Paths = 1;
+}
+message StreamServerEvents {
+   repeated string Channels = 1;
+}
+message StreamServerEventsResponse {
+   int64 EventId = 1;
+   string Channel = 2;
+   string Selector = 4;
+   string Json = 5;
+   string Op = 6;
+   string Target = 7;
+   string CssSelector = 8;
+   map<string,string> Meta = 9;
+   string UserId = 10;
+   string DisplayName = 11;
+   string ProfileUrl = 12;
+   bool IsAuthenticated = 13;
+   repeated string Channels = 14;
+   int64 CreatedAt = 15;
+   string Id = 21;
+   string UnRegisterUrl = 22;
+   string UpdateSubscriberUrl = 23;
+   string HeartbeatUrl = 24;
+   int64 HeartbeatIntervalMs = 25;
+   int64 IdleTimeoutMs = 26;
+   ResponseStatus ResponseStatus = 30;
+}
+message SubType {
+   int32 Id = 1;
+   string Name = 2;
+}

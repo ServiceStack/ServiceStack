@@ -4,7 +4,8 @@ namespace ServiceStack.DataAnnotations
 {
     /// <summary>
     /// Compute attribute.
-    /// Use to indicate that a property is a Calculated Field 
+    /// Use to indicate that a property is a Calculated Field.
+    /// Use [Persisted] attribute to persist column
     /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
     public class ComputeAttribute : AttributeBase
@@ -21,5 +22,11 @@ namespace ServiceStack.DataAnnotations
     
     [AttributeUsage(AttributeTargets.Property)]
     public class ComputedAttribute : AttributeBase {}
+    
+    /// <summary>
+    /// Whether to persist field
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property)]
+    public class PersistedAttribute : AttributeBase {}
 }
 

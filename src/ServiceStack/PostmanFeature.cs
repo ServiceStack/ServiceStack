@@ -8,8 +8,9 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class PostmanFeature : IPlugin
+    public class PostmanFeature : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.Postman;
         public string AtRestPath { get; set; }
         public bool? EnableSessionExport { get; set; }
         public string Headers { get; set; }

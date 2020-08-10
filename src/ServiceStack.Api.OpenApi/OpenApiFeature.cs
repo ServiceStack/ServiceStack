@@ -9,8 +9,9 @@ using ServiceStack.Auth;
 
 namespace ServiceStack.Api.OpenApi
 {
-    public class OpenApiFeature : IPlugin, IPreInitPlugin
+    public class OpenApiFeature : IPlugin, IPreInitPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.OpenApi;
         /// <summary>
         /// Gets or sets <see cref="Regex"/> pattern to filter available resources. 
         /// </summary>

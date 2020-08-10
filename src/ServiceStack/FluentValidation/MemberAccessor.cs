@@ -1,4 +1,4 @@
-﻿#pragma warning disable 1591
+#pragma warning disable 1591
 namespace ServiceStack.FluentValidation.Internal
 {
 	using System;
@@ -6,13 +6,6 @@ namespace ServiceStack.FluentValidation.Internal
 	using System.Linq.Expressions;
 	using System.Reflection;
 	using Internal;
-
-	[Obsolete("Instantiate MemberAccessor<TObject,TValue> directly.")]
-	public static class MemberAccessor<TObject> {
-		public static MemberAccessor<TObject, TValue> From<TValue>(Expression<Func<TObject, TValue>> getExpression, bool writeable = true) {
-			return new MemberAccessor<TObject, TValue>(getExpression, writeable);
-		} 
-	}
 
 	public class MemberAccessor<TObject, TValue> {
 		readonly Expression<Func<TObject, TValue>> getExpression;

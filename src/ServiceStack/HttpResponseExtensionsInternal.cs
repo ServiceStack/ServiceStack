@@ -85,6 +85,18 @@ namespace ServiceStack
                 return true;
             }
 
+            if (result is ReadOnlyMemory<byte> rom)
+            {
+                var len = (bodyPrefix?.Length).GetValueOrDefault() +
+                          rom.Length +
+                          (bodySuffix?.Length).GetValueOrDefault();
+                
+                if (bodyPrefix != null) await response.OutputStream.WriteAsync(bodyPrefix, token);
+                await response.OutputStream.WriteAsync(rom, token);
+                if (bodySuffix != null) await response.OutputStream.WriteAsync(bodySuffix, token);
+                return true;
+            }
+
             return false;
         }
 
@@ -191,7 +203,7 @@ namespace ServiceStack
                             }
                         }
 
-                        response.Dto = response.Dto ?? httpResult.GetDto();
+                        response.Dto ??= httpResult.GetDto();
 
                         if (!response.HasStarted)
                         {
@@ -274,7 +286,7 @@ namespace ServiceStack
                     {
                         if (WriteToOutputStream(response, result, bodyPrefix, bodySuffix))
                         {
-                            response.Flush(); //required for Compression
+                            await response.FlushAsync(token); //required for Compression
                             return true;
                         }
 
@@ -293,11 +305,16 @@ namespace ServiceStack
                         if (httpResult != null)
                             result = httpResult.Response;
 
+                        ReadOnlyMemory<byte>? uf8Bytes = null;
                         if (result is string responseText)
+                            uf8Bytes = MemoryProvider.Instance.ToUtf8(responseText.AsSpan());
+                        else if (result is ReadOnlyMemory<char> rom)
+                            uf8Bytes = MemoryProvider.Instance.ToUtf8(rom.Span);
+
+                        if (uf8Bytes != null)
                         {
-                            var strBytes = responseText.ToUtf8Bytes();
                             var len = (bodyPrefix?.Length).GetValueOrDefault() +
-                                      strBytes.Length +
+                                      uf8Bytes.Value.Length +
                                       (bodySuffix?.Length).GetValueOrDefault();
 
                             response.SetContentLength(len);
@@ -312,7 +329,7 @@ namespace ServiceStack
                             if (bodyPrefix != null) 
                                 await response.OutputStream.WriteAsync(bodyPrefix, token);
 
-                            await response.OutputStream.WriteAsync(strBytes, token);
+                            await response.OutputStream.WriteAsync(uf8Bytes.Value, token);
 
                             if (bodySuffix != null) 
                                 await response.OutputStream.WriteAsync(bodySuffix, token);
@@ -416,7 +433,7 @@ namespace ServiceStack
             }
             finally
             {
-                res.EndRequest(skipHeaders: true);
+                await res.EndRequestAsync(skipHeaders: true);
             }
         }
 
@@ -449,11 +466,9 @@ namespace ServiceStack
         public static Task WriteErrorBody(this IResponse httpRes, Exception ex)
         {
             var req = httpRes.Request;
-            var errorDto = ex.ToErrorResponse();
-            httpRes.Dto = errorDto;
-            HostContext.AppHost.OnExceptionTypeFilter(ex, errorDto.ResponseStatus);
+            httpRes.Dto = HostContext.AppHost.CreateErrorResponse(ex);
             var serializer = HostContext.ContentTypes.GetStreamSerializerAsync(MimeTypes.Html);
-            serializer?.Invoke(req, errorDto, httpRes.OutputStream);
+            serializer?.Invoke(req, httpRes.Dto, httpRes.OutputStream);
             httpRes.EndHttpHandlerRequest(skipHeaders: true);
             return TypeConstants.EmptyTask;
         }
@@ -464,11 +479,9 @@ namespace ServiceStack
             if (ex == null)
                 ex = new Exception(errorMessage);
 
-            var errorDto = ex.ToErrorResponse();
-            httpRes.Dto = errorDto;
-            HostContext.AppHost.OnExceptionTypeFilter(ex, errorDto.ResponseStatus);
+            httpRes.Dto = HostContext.AppHost.CreateErrorResponse(ex, request:httpReq?.Dto);
 
-            if (await HandleCustomErrorHandler(httpRes, httpReq, contentType, statusCode, errorDto, ex))
+            if (await HandleCustomErrorHandler(httpRes, httpReq, contentType, statusCode, httpRes.Dto, ex))
                 return;
 
             if (!httpRes.HasStarted)
@@ -497,7 +510,7 @@ namespace ServiceStack
 
             var serializer = HostContext.ContentTypes.GetStreamSerializerAsync(contentType ?? httpRes.ContentType);
             if (serializer != null)
-                await serializer(httpReq, errorDto, httpRes.OutputStream);
+                await serializer(httpReq, httpRes.Dto, httpRes.OutputStream);
 
             httpRes.EndHttpHandlerRequest(skipHeaders: true);
         }
@@ -524,44 +537,11 @@ namespace ServiceStack
             return false;
         }
 
-        private static ErrorResponse ToErrorResponse(this Exception ex)
-        {
-            List<ResponseError> errors = null;
-
-            // For some exception types, we'll need to extract additional information in debug mode
-            // (for example, so people can fix errors in their pages).
-            if (HostContext.DebugMode)
-            {
-#if !NETSTANDARD2_0
-                if (ex is HttpCompileException compileEx && compileEx.Results.Errors.HasErrors)
-                {
-                    errors = new List<ResponseError>();
-                    foreach (var err in compileEx.Results.Errors)
-                    {
-                        errors.Add(new ResponseError { Message = err.ToString() });
-                    }
-                }
-#endif
-            }
-
-            var dto = new ErrorResponse
-            {
-                ResponseStatus = new ResponseStatus
-                {
-                    ErrorCode = ex.ToErrorCode(),
-                    Message = ex.Message,
-                    StackTrace = HostContext.DebugMode ? ex.StackTrace : null,
-                    Errors = errors
-                }
-            };
-            return dto;
-        }
-
         public static bool ShouldWriteGlobalHeaders(IResponse httpRes)
         {
-            if (!httpRes.HasStarted && HostContext.Config != null && !httpRes.Items.ContainsKey("__global_headers"))
+            if (!httpRes.HasStarted && HostContext.Config != null && !httpRes.Items.ContainsKey(Keywords.HasGlobalHeaders))
             {
-                httpRes.Items["__global_headers"] = true;
+                httpRes.Items[Keywords.HasGlobalHeaders] = bool.TrueString;
                 return true;
             }
             return false;

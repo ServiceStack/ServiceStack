@@ -26,7 +26,14 @@ namespace ServiceStack.Serialization
             if (!UseBcl)
                 return JsonSerializer.SerializeToString(obj);
 
-            if (obj == null) return null;
+            return BclSerializeToString(obj);
+        }
+
+        public static string BclSerializeToString<T>(T obj)
+        {
+            if (obj == null) 
+                return null;
+
             var type = obj.GetType();
             try
             {
@@ -54,13 +61,18 @@ namespace ServiceStack.Serialization
             }
             else if (UseBcl)
             {
-                var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(obj.GetType());
-                serializer.WriteObject(stream, obj);
+                BclSerializeToStream(obj, stream);
             }
             else
             {
                 JsonSerializer.SerializeToStream(obj, stream);
             }
+        }
+
+        public static void BclSerializeToStream<T>(T obj, Stream stream)
+        {
+            var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(obj.GetType());
+            serializer.WriteObject(stream, obj);
         }
     }
 }

@@ -98,27 +98,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         {
             var context = new ScriptContext().Init();
             
-            Assert.That(context.EvaluateScript("{{ [1,2,3] | map(it => it * it) | sum }}"),  Is.EqualTo("14"));
+            Assert.That(context.EvaluateScript("{{ [1,2,3] |> map(it => it * it) |> sum }}"),  Is.EqualTo("14"));
             
-            Assert.That(context.EvaluateScript("{{ [1,2,3] | map(n => n * n) | sum }}"),  Is.EqualTo("14"));
+            Assert.That(context.EvaluateScript("{{ [1,2,3] |> map(n => n * n) |> sum }}"),  Is.EqualTo("14"));
             
-            Assert.That(context.EvaluateScript("{{ [1,2,3] | map => it * it | sum }}"),  Is.EqualTo("14"));
+            Assert.That(context.EvaluateScript("{{ [1,2,3] |> map => it * it |> sum }}"),  Is.EqualTo("14"));
             
-            Assert.That(context.EvaluateScript("{{ [1,2,3] | where => it % 2 == 1 | map => it * it | sum }}"),  Is.EqualTo("10"));
+            Assert.That(context.EvaluateScript("{{ [1,2,3] |> where => it % 2 == 1 |> map => it * it |> sum }}"),  Is.EqualTo("10"));
             
-            Assert.That(context.EvaluateScript("{{ [1,2,3] | all => it > 2 | lower }}"),  Is.EqualTo("false"));
+            Assert.That(context.EvaluateScript("{{ [1,2,3] |> all => it > 2 |> lower }}"),  Is.EqualTo("false"));
             
-            Assert.That(context.EvaluateScript("{{ [1,2,3] | any => it > 2 | show: Y }}"),  Is.EqualTo("Y"));
+            Assert.That(context.EvaluateScript("{{ [1,2,3] |> any => it > 2 |> show: Y }}"),  Is.EqualTo("Y"));
             
-            Assert.That(context.EvaluateScript("{{ [1,2,3] | orderByDesc => it | join }}"),  Is.EqualTo("3,2,1"));
+            Assert.That(context.EvaluateScript("{{ [1,2,3] |> orderByDesc => it |> join }}"),  Is.EqualTo("3,2,1"));
             
-            Assert.That(context.EvaluateScript("{{ [3,2,1] | orderBy => it | join }}"),  Is.EqualTo("1,2,3"));
+            Assert.That(context.EvaluateScript("{{ [3,2,1] |> orderBy => it |> join }}"),  Is.EqualTo("1,2,3"));
 
-            Assert.That(context.EvaluateScript("{{ [1,2,3] | map => it * it | assignTo => values }}{{ values | sum }}"),  Is.EqualTo("14"));
+            Assert.That(context.EvaluateScript("{{ [1,2,3] |> map => it * it |> assignTo => values }}{{ values |> sum }}"),  Is.EqualTo("14"));
 
-            Assert.That(context.EvaluateScript("{{ ['A','B','C'] | map => lower(it) | map => `${it}` | join('') }}"),  Is.EqualTo("abc"));
+            Assert.That(context.EvaluateScript("{{ ['A','B','C'] |> map => lower(it) |> map => `${it}` |> join('') }}"),  Is.EqualTo("abc"));
 
-            Assert.That(context.EvaluateScript("{{ ['A','B','C'] | map => lower(it) | map => `${it}` | concat }}"),  Is.EqualTo("abc"));
+            Assert.That(context.EvaluateScript("{{ ['A','B','C'] |> map => lower(it) |> map => `${it}` |> concat }}"),  Is.EqualTo("abc"));
         }
 
         [Test]
@@ -132,16 +132,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 }
             }.Init();
 
-            Assert.That(context.EvaluateScript("{{ [1,2,3] | let => { a: it * it, b: isOdd(it) } | select: ({a},{b}), }}"),  
+            Assert.That(context.EvaluateScript("{{ [1,2,3] |> let => { a: it * it, b: isOdd(it) } |> select: ({a},{b}), }}"),  
                 Is.EqualTo("(1,True),(4,False),(9,True),"));
 
-            Assert.That(context.EvaluateScript("{{ people | let => { a: it.Name, b: it.Age * 2 } | select: ({a},{b}), }}"),  
+            Assert.That(context.EvaluateScript("{{ people |> let => { a: it.Name, b: it.Age * 2 } |> select: ({a},{b}), }}"),  
                 Is.EqualTo("(name1,2),(name2,4),(name3,6),"));
             
-            Assert.That(context.EvaluateScript("{{ people | let => { it.Name, it.Age } | select: ({Name},{Age}), }}"),  
+            Assert.That(context.EvaluateScript("{{ people |> let => { it.Name, it.Age } |> select: ({Name},{Age}), }}"),  
                 Is.EqualTo("(name1,1),(name2,2),(name3,3),"));
             
-            Assert.That(context.EvaluateScript("{{ people | map => { it.Name, it.Age } | select: ({it.Name},{it.Age}), }}"),  
+            Assert.That(context.EvaluateScript("{{ people |> map => { it.Name, it.Age } |> select: ({it.Name},{it.Age}), }}"),  
                 Is.EqualTo("(name1,1),(name2,2),(name3,3),"));
         }
 
@@ -150,11 +150,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         {
             var context = new ScriptContext().Init();
             
-            Assert.That(context.EvaluateScript(@"{{ [{name:'Alice',score:50},{name:'Bob',score:40},{name:'Cathy',score:45}] | assignTo=>scoreRecords }}
+            Assert.That(context.EvaluateScript(@"{{ [{name:'Alice',score:50},{name:'Bob',score:40},{name:'Cathy',score:45}] |> assignTo=>scoreRecords }}
 Bob's score: {{ scoreRecords 
-   | toDictionary => it.name
-   | map => it.Bob
-   | select: { it.name } = { it.score }
+   |> toDictionary => it.name
+   |> map => it.Bob
+   |> select: { it.name } = { it.score }
 }}"), Is.EqualTo("Bob's score: Bob = 40"));
         }
 
@@ -163,11 +163,11 @@ Bob's score: {{ scoreRecords
         {
             var context = new ScriptContext().Init();
             
-            Assert.That(context.EvaluateScript(@"{{ [20, 10, 40, 50, 10, 70, 30] | assignTo: attemptedWithdrawals }}
+            Assert.That(context.EvaluateScript(@"{{ [20, 10, 40, 50, 10, 70, 30] |> assignTo: attemptedWithdrawals }}
 {{ attemptedWithdrawals 
-   | reduce((balance, nextWithdrawal) => ((nextWithdrawal <= balance) ? (balance - nextWithdrawal) : balance), 
+   |> reduce((balance, nextWithdrawal) => ((nextWithdrawal <= balance) ? (balance - nextWithdrawal) : balance), 
             { initialValue: 100.0, })
-   | select: Ending balance: { it }. }}"), 
+   |> select: Ending balance: { it }. }}"), 
                 Is.EqualTo("Ending balance: 20."));
         }
         
@@ -194,8 +194,8 @@ Bob's score: {{ scoreRecords
                 }
             }.Init();
             
-            Assert.That(context.EvaluateScript(@"{{ ['from   ', ' salt', ' earn ', '  last   ', ' near ', ' form  '] | assignTo: anagrams }}
-{{#each groupBy(anagrams, w => trim(w), { map: x => upper(x), comparer: anagramComparer }) }}{{it | json}}{{/each}}"),
+            Assert.That(context.EvaluateScript(@"{{ ['from   ', ' salt', ' earn ', '  last   ', ' near ', ' form  '] |> assignTo: anagrams }}
+{{#each groupBy(anagrams, w => trim(w), { map: x => upper(x), comparer: anagramComparer }) }}{{it |> json}}{{/each}}"),
                 Is.EqualTo(@"[""FROM   "","" FORM  ""]["" SALT"",""  LAST   ""]["" EARN "","" NEAR ""]"));
         }
 

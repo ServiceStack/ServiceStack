@@ -24,7 +24,7 @@ namespace ServiceStack.Common.Tests
     public class FormatTests
     {
         [Test]
-        public void Can_seraialize_ProtoBuf()
+        public void Can_serialize_ProtoBuf()
         {
             var dto = new TestModel { Id = 1, Name = "Name" };
 
@@ -37,7 +37,7 @@ namespace ServiceStack.Common.Tests
         }
 
         [Test]
-        public void Can_seraialize_MsgPack()
+        public void Can_serialize_MsgPack()
         {
             var dto = new TestModel { Id = 1, Name = "Name" };
 
@@ -50,7 +50,7 @@ namespace ServiceStack.Common.Tests
         }
 
         [Test]
-        public void Can_seraialize_Wire()
+        public void Can_serialize_Wire()
         {
             var dto = new TestModel { Id = 1, Name = "Name" };
 

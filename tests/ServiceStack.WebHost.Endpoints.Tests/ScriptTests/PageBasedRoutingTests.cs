@@ -45,12 +45,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 { "returnpages/index.html", "returnpages/index.html {{ return }} suffix" },
                 { "returnpages/_arg.html", "returnpages/_arg.html {{arg}} {{ return }} suffix" },
                 { "returnpages/if.html", "returnpages/if.html {{#if true}}{{ return }}{{/if}} suffix" },
-                { "httpresults/index.html", "httpresults/index.html {{ {foo:'bar'} | return({ format: 'json' }) }} suffix" },
-                { "httpresults/explicit.html", "httpresults/explicit.html {{ {response: {foo:'bar'}, format: 'json'} | httpResult | return }} suffix" },
-                { "httpresults/_arg.html", "httpresults/_arg.html {{ {foo:arg} | return({ format: 'json' }) }} suffix" },
-                { "httpresults/no-response.html", "httpresults/no-response.html {{ httpResult({ format: 'json' }) | return }} suffix" },
-                { "httpresults/redirect.html", "httpresults/redirect.html {{ httpResult({ status:'Found', Location:'/httpresults/redirected' }) | return }} suffix" },
-                { "httpresults/redirect-code.html", "httpresults/redirect.html {{ httpResult({ status:301, Location:'/httpresults/redirected-301' }) | return }} suffix" },
+                { "httpresults/index.html", "httpresults/index.html {{ {foo:'bar'} |> return({ format: 'json' }) }} suffix" },
+                { "httpresults/explicit.html", "httpresults/explicit.html {{ {response: {foo:'bar'}, format: 'json'} |> httpResult |> return }} suffix" },
+                { "httpresults/_arg.html", "httpresults/_arg.html {{ {foo:arg} |> return({ format: 'json' }) }} suffix" },
+                { "httpresults/no-response.html", "httpresults/no-response.html {{ httpResult({ format: 'json' }) |> return }} suffix" },
+                { "httpresults/redirect.html", "httpresults/redirect.html {{ httpResult({ status:'Found', Location:'/httpresults/redirected' }) |> return }} suffix" },
+                { "httpresults/redirect-code.html", "httpresults/redirect.html {{ httpResult({ status:301, Location:'/httpresults/redirected-301' }) |> return }} suffix" },
             };
 
             public override List<IVirtualPathProvider> GetVirtualFileSources()

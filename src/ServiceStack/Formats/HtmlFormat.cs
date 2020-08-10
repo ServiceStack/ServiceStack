@@ -1,14 +1,15 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.Serialization;
 using ServiceStack.Web;
 
 namespace ServiceStack.Formats
 {
-    public class HtmlFormat : IPlugin
+    public class HtmlFormat : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.Html;
         public static string TitleFormat
             = @"{0} Snapshot of {1}";
 
@@ -18,6 +19,30 @@ namespace ServiceStack.Formats
         public static bool Humanize = true;
 
         private IAppHost AppHost { get; set; }
+        
+        public Dictionary<string, string> PathTemplates { get; set; } = new Dictionary<string, string> {
+            { "/" + LocalizedStrings.Auth.Localize(), "/Templates/auth.html" }
+        };
+        
+        public Func<IRequest, string> ResolveTemplate { get; set; }
+
+        public string DefaultResolveTemplate(IRequest req)
+        {
+            if (PathTemplates != null && PathTemplates.TryGetValue(req.PathInfo, out var templatePath))
+            {
+                var file = HostContext.VirtualFileSources.GetFile(templatePath);
+                if (file == null)
+                    throw new FileNotFoundException($"Could not load HTML template '{templatePath}'", templatePath);
+
+                return file.ReadAllText();
+            }
+            return null;
+        }
+
+        public HtmlFormat()
+        {
+            ResolveTemplate = DefaultResolveTemplate;
+        }
 
         public void Register(IAppHost appHost)
         {
@@ -99,16 +124,30 @@ namespace ServiceStack.Formats
                 var now = DateTime.UtcNow;
                 var requestName = req.OperationName ?? dto.GetType().GetOperationName();
 
-                html = Templates.HtmlTemplates.GetHtmlFormatTemplate()
+                html = ReplaceTokens(ResolveTemplate?.Invoke(req) ?? Templates.HtmlTemplates.GetHtmlFormatTemplate(), req)
                     .Replace("${Dto}", json)
                     .Replace("${Title}", string.Format(TitleFormat, requestName, now))
                     .Replace("${MvcIncludes}", MiniProfiler.Profiler.RenderIncludes().ToString())
                     .Replace("${Header}", string.Format(HtmlTitleFormat, requestName, now))
                     .Replace("${ServiceUrl}", url)
-                    .Replace("${Humanize}", Humanize.ToString().ToLower());
+                    .Replace("${Humanize}", Humanize.ToString().ToLower())
+                    ;
             }
             
             await ((ServiceStackHost)AppHost).WriteAutoHtmlResponseAsync(req, response, html, outputStream);
+        }
+
+        public static string ReplaceTokens(string html, IRequest req)
+        {
+            if (string.IsNullOrEmpty(html))
+                return string.Empty;
+
+            html = html
+                .Replace("${BaseUrl}", req.GetBaseUrl().TrimEnd('/'))
+                .Replace("${AuthRedirect}", req.ResolveAbsoluteUrl(HostContext.AppHost.GetPlugin<AuthFeature>()?.HtmlRedirect))
+                .Replace("${AllowOrigins}", HostContext.AppHost.GetPlugin<CorsFeature>()?.AllowOriginWhitelist?.Join(";"))
+            ;
+            return html;
         }
     }
 }

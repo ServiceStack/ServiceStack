@@ -35,7 +35,7 @@ namespace ServiceStack.Script
             nameof(@do),
             nameof(end),
             nameof(@throw),
-            nameof(ifthrow),
+            nameof(ifThrow),
             nameof(throwIf),
             nameof(throwIf),
             nameof(ifThrowArgumentException),
@@ -65,9 +65,14 @@ namespace ServiceStack.Script
             EvaluateWhenSkippingFilterExecution.Each(name => context.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Add(name));
         }
 
-        // methods without arguments can be used in bindings, e.g. {{ now | dateFormat }}
+        // methods without arguments can be used in bindings, e.g. {{ now |> dateFormat }}
         public DateTime now() => DateTime.Now;
         public DateTime utcNow() => DateTime.UtcNow;
+
+        public DateTimeOffset nowOffset() => DateTimeOffset.Now;
+        public DateTimeOffset utcNowOffset() => DateTimeOffset.UtcNow;
+
+        public Guid nguid() => Guid.NewGuid();
 
         public DateTime addTicks(DateTime target, int count) => target.AddTicks(count);
         public DateTime addMilliseconds(DateTime target, int count) => target.AddMilliseconds(count);
@@ -120,13 +125,17 @@ namespace ServiceStack.Script
         public object iif(object test, object ifTrue, object ifFalse) => isTrue(test) ? ifTrue : ifFalse;
         public object when(object returnTarget, object test) => @if(returnTarget, test);     //alias
 
-        public object ifNot(object returnTarget, object test) => !isTrue(test) ? returnTarget : null;
+        public object ifNot(object returnTarget, object test) => !isTrue(test) ? returnTarget : StopExecution.Value;
         public object unless(object returnTarget, object test) => ifNot(returnTarget, test); //alias
 
-        public object otherwise(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
+        public object otherwise(object returnTarget, object elseReturn) => returnTarget ?? elseReturn;
+        
+        public object ifElse(object returnTarget, object test, object defaultValue) => test is bool b && b ? returnTarget : defaultValue;
+        public object ifNotElse(object returnTarget, object test, object defaultValue) => !isTrue(test) ? returnTarget : defaultValue;
+        public object unlessElse(object returnTarget, object test, object defaultValue) => ifNotElse(returnTarget, test, defaultValue); //alias
 
-        public object ifFalsy(object returnTarget, object test) => isFalsy(test) ? returnTarget : null;
-        public object ifTruthy(object returnTarget, object test) => !isFalsy(test) ? returnTarget : null;
+        public object ifFalsy(object returnTarget, object test) => isFalsy(test) ? returnTarget : StopExecution.Value;
+        public object ifTruthy(object returnTarget, object test) => !isFalsy(test) ? returnTarget : StopExecution.Value;
         public object falsy(object test, object returnIfFalsy) => isFalsy(test) ? returnIfFalsy : null;
         public object truthy(object test, object returnIfTruthy) => !isFalsy(test) ? returnIfTruthy : null;
 
@@ -141,14 +150,14 @@ namespace ServiceStack.Script
         public bool isInfinity(double value) => double.IsInfinity(value);
 
         public object ifExists(object target) => target;
-        public object ifExists(object returnTarget, object test) => test != null ? returnTarget : null;
-        public object ifNotExists(object returnTarget, object target) => target == null ? returnTarget : null;
-        public object ifNo(object returnTarget, object target) => target == null ? returnTarget : null;
-        public object ifNotEmpty(object target) => isEmpty(target) ? null : target;
-        public object ifNotEmpty(object returnTarget, object test) => isEmpty(test) ? null : returnTarget;
-        public object ifEmpty(object returnTarget, object test) => isEmpty(test) ? returnTarget : null;
-        public object ifTrue(object returnTarget, object test) => isTrue(test) ? returnTarget : null;
-        public object ifFalse(object returnTarget, object test) => !isTrue(test) ? returnTarget : null;
+        public object ifExists(object returnTarget, object test) => !isNull(test) ? returnTarget : StopExecution.Value;
+        public object ifNotExists(object returnTarget, object test) => isNull(test) ? returnTarget : StopExecution.Value;
+        public object ifNo(object returnTarget, object target) => target == null ? returnTarget : StopExecution.Value;
+        public object ifNotEmpty(object target) => isEmpty(target) ? StopExecution.Value : target;
+        public object ifNotEmpty(object returnTarget, object test) => isEmpty(test) ? StopExecution.Value : returnTarget;
+        public object ifEmpty(object returnTarget, object test) => isEmpty(test) ? returnTarget : StopExecution.Value;
+        public object ifTrue(object returnTarget, object test) => isTrue(test) ? returnTarget : StopExecution.Value;
+        public object ifFalse(object returnTarget, object test) => !isTrue(test) ? returnTarget : StopExecution.Value;
 
         public bool isEmpty(object target)
         {
@@ -209,6 +218,7 @@ namespace ServiceStack.Script
             var scopedParams = scope.GetParamsWithItemBinding(nameof(count), scopeOptions, out string itemBinding);
 
             var expr = literal.GetCachedJsExpression(scope);
+            scope = scope.Clone();
             scope.AddItemToScope(itemBinding, target);
             var result = expr.EvaluateToBool(scope);
 
@@ -252,6 +262,7 @@ namespace ServiceStack.Script
             var scopedParams = scope.GetParamsWithItemBinding(nameof(count), scopeOptions, out string itemBinding);
 
             var expr = literal.GetCachedJsExpression(scope);
+            scope = scope.Clone();
             scope.AddItemToScope(itemBinding, target);
             var result = expr.EvaluateToBool(scope);
 
@@ -641,6 +652,15 @@ namespace ServiceStack.Script
             return true;
         }
 
+        public object resolveArg(ScriptScopeContext scope, string name) => scope.GetValue(name);
+        public object resolveGlobal(ScriptScopeContext scope, string name) => resolvePageArg(scope, name);
+        public object resolvePageArg(ScriptScopeContext scope, string name) => scope.PageResult.Args.TryGetValue(name, out var value)
+            ? value
+            : null;
+        public object resolveContextArg(ScriptScopeContext scope, string name) => scope.Context.Args.TryGetValue(name, out var value)
+            ? value
+            : null;
+        
         public object assign(ScriptScopeContext scope, string argExpr, object value) =>
             assignArgs(scope, argExpr, value, scope.ScopedParams);
 
@@ -777,7 +797,7 @@ namespace ServiceStack.Script
                 }
             }
 
-            pageParams["it"] = pageParams;
+            pageParams[ScriptConstants.It] = pageParams;
             pageParams[ScriptConstants.PartialArg] = page;
 
             await scope.WritePageAsync(page, codePage, pageParams);
@@ -935,6 +955,7 @@ namespace ServiceStack.Script
             var items = target.AssertEnumerable(nameof(toDictionary));
             var token = scope.AssertExpression(nameof(map), expression, scopeOptions, out var itemBinding);
 
+            scope = scope.Clone();
             return items.ToDictionary(item => token.Evaluate(scope.AddItemToScope(itemBinding, item)));
         }
 
@@ -1112,6 +1133,7 @@ namespace ServiceStack.Script
         {
             var token = scope.AssertExpression(nameof(map), expression, scopeOptions, out var itemBinding);
 
+            scope = scope.Clone();
             if (target is IEnumerable items && !(target is IDictionary) && !(target is string))
             {
                 var i = 0;
@@ -1290,9 +1312,9 @@ namespace ServiceStack.Script
             
             pageParams[ScriptConstants.PartialArg] = page;
 
+            scope = scope.Clone();
             if (target is IEnumerable objs && !(target is IDictionary) && !(target is string))
             {
-
                 var i = 0;
                 foreach (var item in objs)
                 {
@@ -1309,11 +1331,11 @@ namespace ServiceStack.Script
         
         public object removeKeyFromDictionary(IDictionary dictionary, object keyToRemove)
         {
-            var removeKeys = keyToRemove is IEnumerable e
+            var removeKeys = keyToRemove is IEnumerable e && !(keyToRemove is string)
                 ? e.Map(x => x)
                 : null;
             
-            foreach (var key in dictionary.Keys)
+            foreach (var key in EnumerableUtils.ToList(dictionary.Keys))
             {
                 if (removeKeys != null)
                 {
@@ -1333,11 +1355,12 @@ namespace ServiceStack.Script
         
         public object remove(object target, object keysToRemove)
         {
-            var removeKeys = keysToRemove is IEnumerable eKeys
-                ? eKeys.Map(x => x)
-                : null;
+            var removeKeys = keysToRemove is string s
+                ? (IEnumerable) new[] {s}
+                : keysToRemove is IEnumerable eKeys
+                    ? eKeys.Map(x => x)
+                    : null;
 
-            var stringKey = keysToRemove as string;
             var stringKeys = removeKeys?.OfType<string>().ToArray();
             if (stringKeys.IsEmpty())
                 stringKeys = null;
@@ -1461,6 +1484,21 @@ namespace ServiceStack.Script
             return to;
         }
 
+        private static readonly HashSet<string> InternalKeys = new HashSet<string> {
+            ScriptConstants.It, ScriptConstants.PartialArg };
+        
+        public object ownProps(IEnumerable<KeyValuePair<string,object>> target)
+        {
+            var to = new List<KeyValuePair<string, object>>();
+            foreach (var entry in target)
+            {
+                if (InternalKeys.Contains(entry.Key))
+                    continue;
+                to.Add(entry);
+            }
+            return to;
+        }
+
         public object withoutKeys(IDictionary<string, object> target, object keys)
         {
             if (keys == null)
@@ -1576,8 +1614,11 @@ namespace ServiceStack.Script
         public object unwrap(object value)
         {
             if (value is Task t)
+            {
+                if (value is Task<object> taskObj)
+                    return taskObj.GetAwaiter().GetResult();
                 return t.GetResult();
-
+            }
             return value;
         }
         public object sync(object value) => unwrap(value);
@@ -1586,7 +1627,7 @@ namespace ServiceStack.Script
     public partial class DefaultScripts //Methods named after common keywords breaks intelli-sense when trying to use them        
     {
         public object @if(object test) => test is bool b && b ? (object) IgnoreResult.Value : StopExecution.Value;
-        public object @if(object returnTarget, object test) => test is bool b && b ? returnTarget : null;
+        public object @if(object returnTarget, object test) => test is bool b && b ? returnTarget : StopExecution.Value;
         public object @default(object returnTarget, object elseReturn) => returnTarget ?? elseReturn;
 
         public object @throw(ScriptScopeContext scope, string message) => new Exception(message).InStopFilter(scope, null);

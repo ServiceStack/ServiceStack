@@ -128,7 +128,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(context.EvaluateScript("BEFORE {{#raw}} Hi, {{ {{ name }} }} {{/raw}} AFTER"),
                 Is.EqualTo("BEFORE  Hi, {{ {{ name }} }}  AFTER"));
 
-            Assert.That(context.EvaluateScript("BEFORE {{#raw md}}# Heading{{/raw}} AFTER {{ md | markdown }}").NormalizeNewLines(),
+            Assert.That(context.EvaluateScript("BEFORE {{#raw md}}# Heading{{/raw}} AFTER {{ md |> markdown }}").NormalizeNewLines(),
                 Is.EqualTo("BEFORE  AFTER <h1>Heading</h1>"));
         }
 
@@ -153,7 +153,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 Plugins = { new MarkdownScriptPlugin() }
             }.Init();
 
-            Assert.That(context.EvaluateScript("BEFORE {{#raw appendTo md}}# Heading{{/raw}}{{#raw appendTo md}} Appended{{/raw}} AFTER {{ md | markdown }}").NormalizeNewLines(),
+            Assert.That(context.EvaluateScript("BEFORE {{#raw appendTo md}}# Heading{{/raw}}{{#raw appendTo md}} Appended{{/raw}} AFTER {{ md |> markdown }}").NormalizeNewLines(),
                 Is.EqualTo("BEFORE  AFTER <h1>Heading Appended</h1>"));
         }
         
@@ -407,7 +407,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 Is.EqualTo("#0 1, #1 3, #2 5, "));
             Assert.That(context.EvaluateScript("{{#each num in numbers where isOdd(num)}}#{{index}} {{num}}, {{/each}}"), 
                 Is.EqualTo("#0 1, #1 3, #2 5, "));
-            Assert.That(context.EvaluateScript("{{#each people where Name = 'name2' and Age = 2 }}#{{index}} {{Name}}, {{Age}}{{/each}}"), 
+            Assert.That(context.EvaluateScript("{{#each people where Name == 'name2' and Age == 2 }}#{{index}} {{Name}}, {{Age}}{{/each}}"), 
                 Is.EqualTo("#0 name2, 2"));
             Assert.That(context.EvaluateScript("{{#each p in people where p.Name == 'name2' }}#{{index}} {{p.Name}}, {{p.Age}}{{/each}}"), 
                 Is.EqualTo("#0 name2, 2"));
@@ -536,8 +536,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             context = new ScriptContext().Init();
 
             Assert.That(context.EvaluateScript(
-                "{{ { title:'title1', content:'content1' } | addTo: posts}}" +
-                "{{ { title:'title2', content:'content2' } | addTo: posts}}" +
+                "{{ { title:'title1', content:'content1' } |> addTo: posts}}" +
+                "{{ { title:'title2', content:'content2' } |> addTo: posts}}" +
                 "{{#each posts}}{{title}}={{content}}, {{/each}}"),
                 Is.EqualTo("title1=content1, title2=content2, "));
         }
@@ -548,7 +548,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var context = new ScriptContext().Init();
             
             context.VirtualFiles.WriteFile("_layout.html", @"
-{{ 'from layout' | assignTo: layoutArg }}
+{{ 'from layout' |> assignTo: layoutArg }}
 I am a Layout with page
 {{ page }}");
             
@@ -559,7 +559,7 @@ Who can also access other arguments in scope <b>{{ layoutArg }}</b>
 {{/partial}}
 
 I am a Page with a partial
-{{ 'my_partial' | partial({ arg: 'from page' }) }}".TrimStart());
+{{ 'my_partial' |> partial({ arg: 'from page' }) }}".TrimStart());
 
             var pageResult = new PageResult(context.GetPage("page"));
 
@@ -580,7 +580,7 @@ Who can also access other arguments in scope <b>from layout</b>"));
             var context = new ScriptContext().Init();
             
             context.VirtualFiles.WriteFile("_layout.html", @"
-{{ 'from layout' | assignTo: layoutArg }}
+{{ 'from layout' |> assignTo: layoutArg }}
 I am a Layout with page
 {{ page }}");
             
@@ -590,9 +590,9 @@ I am a partial called with the scoped argument <b>{{ arg }}</b> and <b>{{ partia
 Who can also access other arguments in scope <b>{{ layoutArg }}</b>
 {{/partial}}
 
-{{ 'from page' | assignTo: partialArg }}
+{{ 'from page' |> assignTo: partialArg }}
 I am a Page with a partial
-{{ 'my_partial' | partial({ arg: 'from page' }) }}
+{{ 'my_partial' |> partial({ arg: 'from page' }) }}
 partialArg in page scope is <b>{{ partialArg }}</b>".TrimStart());
 
             var pageResult = new PageResult(context.GetPage("page"));
@@ -624,7 +624,7 @@ partialArg in page scope is <b>from page</b>"));
 
 <h1>Heading</h1>
 
-{{ 'content' | partial | markdown }}
+{{ 'content' |> partial |> markdown }}
 
 <footer>2000</footer>");
          
@@ -730,7 +730,7 @@ partialArg in page scope is <b>from page</b>"));
                 }
             }.Init();
 
-            Assert.That(context.EvaluateScript("{{#partial p {expenses:100} }} {{income ?? 2000}} - {{expenses}} {{/partial}}{{ 'p' | partial}}"), 
+            Assert.That(context.EvaluateScript("{{#partial p {expenses:100} }} {{income ?? 2000}} - {{expenses}} {{/partial}}{{ 'p' |> partial}}"), 
                 Is.EqualTo(" 1000 - 100 "));
         }
 
@@ -749,7 +749,7 @@ partialArg in page scope is <b>from page</b>"));
             Assert.That(context.EvaluateScript("{{#eval {expenses:100} }} {{incomeExpr}} - {{expenses}} {{/eval}}"), 
                 Is.EqualTo(" 2000 - 100 "));
             
-            Assert.That(context.EvaluateScript("{{ ` ${incomeExpr} - ${expenseExpr} ` | evalTemplate({expenses:100}) }}"), 
+            Assert.That(context.EvaluateScript("{{ ` ${incomeExpr} - ${expenseExpr} ` |> evalTemplate({expenses:100}) }}"), 
                 Is.EqualTo(" 2000 - 100 "));
         }
 
@@ -768,7 +768,7 @@ partialArg in page scope is <b>from page</b>"));
             Assert.That(context.EvaluateScript("{{#eval {use:{context:true},expenses:100} }} {{incomeExpr}} - {{expenses}} {{/eval}}"), 
                 Is.EqualTo(" 1000 - 100 "));
             
-            Assert.That(context.EvaluateScript("{{ ` ${incomeExpr} - ${expenseExpr} ` | evalTemplate({use:{context:true},expenses:100}) }}"), 
+            Assert.That(context.EvaluateScript("{{ ` ${incomeExpr} - ${expenseExpr} ` |> evalTemplate({use:{context:true},expenses:100}) }}"), 
                 Is.EqualTo(" 1000 - 100 "));
         }
 
@@ -786,12 +786,12 @@ partialArg in page scope is <b>from page</b>"));
             Assert.Throws<ScriptException>(() => 
                 context.EvaluateScript("{{#eval}}{{evalContent}}{{/eval}}"));
             Assert.Throws<ScriptException>(() => 
-                context.EvaluateScript("{{ evalContent | evalTemplate}}"));
+                context.EvaluateScript("{{ evalContent |> evalTemplate}}"));
 
             Assert.That(context.EvaluateScript("{{#eval {use:{plugins:'MarkdownScriptPlugin'} }}{{evalContent}}{{/eval}}"), 
                 Is.EqualTo("<h1>Heading</h1>\n"));
 
-            Assert.That(context.EvaluateScript("{{ evalContent | evalTemplate({use:{plugins:'MarkdownScriptPlugin'}}) | raw }}"), 
+            Assert.That(context.EvaluateScript("{{ evalContent |> evalTemplate({use:{plugins:'MarkdownScriptPlugin'}}) |> raw }}"), 
                 Is.EqualTo("<h1>Heading</h1>\n"));
         }
         
@@ -808,13 +808,13 @@ partialArg in page scope is <b>from page</b>"));
 
             Assert.That(context.EvaluateScript("{{#eval}}{{evalContent}}{{/eval}}"), 
                 Does.Not.Contain("ServiceStack"));
-            Assert.That(context.EvaluateScript("{{ evalContent | evalTemplate}}"), 
+            Assert.That(context.EvaluateScript("{{ evalContent |> evalTemplate}}"), 
                 Does.Not.Contain("ServiceStack"));
 
             Assert.That(context.EvaluateScript("{{#eval {use:{filters:'InfoScripts'}}{{evalContent}}{{/eval}}"), 
                 Does.Contain("ServiceStack"));
             
-            Assert.That(context.EvaluateScript("{{ evalContent | evalTemplate({use:{filters:'InfoScripts'}}) }}"), 
+            Assert.That(context.EvaluateScript("{{ evalContent |> evalTemplate({use:{filters:'InfoScripts'}}) }}"), 
                 Does.Contain("ServiceStack"));
         }
         
@@ -832,11 +832,11 @@ partialArg in page scope is <b>from page</b>"));
                 }
             }.Init();
             
-            var result = context.EvaluateScript(@"{{#each templates}}{{index}} =>{{#eval {expenses: 100 * index} }} {{it}} {{/eval}}| {{/each}}");
-            Assert.That(result, Is.EqualTo("0 => 1. 1000 - 0 | 1 => 2. 2000 - 100 | 2 => 3. 3000 - 200 | "));
+            var result = context.EvaluateScript(@"{{#each templates}}{{index}} =>{{#eval {expenses: 100 * index} }} {{it}} {{/eval}}|> {{/each}}");
+            Assert.That(result, Is.EqualTo("0 => 1. 1000 - 0 |> 1 => 2. 2000 - 100 |> 2 => 3. 3000 - 200 |> "));
             
-            result = context.EvaluateScript(@"{{#each templates}}{{index}} =>{{ ` ${it} ` | evalTemplate({expenses: 100 * index}) }}| {{/each}}");
-            Assert.That(result, Is.EqualTo("0 => 1. 1000 - 0 | 1 => 2. 2000 - 100 | 2 => 3. 3000 - 200 | "));
+            result = context.EvaluateScript(@"{{#each templates}}{{index}} =>{{ ` ${it} ` |> evalTemplate({expenses: 100 * index}) }}|> {{/each}}");
+            Assert.That(result, Is.EqualTo("0 => 1. 1000 - 0 |> 1 => 2. 2000 - 100 |> 2 => 3. 3000 - 200 |> "));
         }
 
         [Test]
@@ -853,8 +853,8 @@ partialArg in page scope is <b>from page</b>"));
             output = context.EvaluateScript("{{#minifyjs}}var a = 1; var b = 2;{{/minifyjs}}");
             Assert.That(output.Trim(), Is.EqualTo("var a=1;var b=2;"));
             
-            output = context.EvaluateScript("{{#minifyjs appendTo scripts}}var a = 1; var b = 2;{{/minifyjs}} | {{#minifyjs appendTo scripts}}function fn ( a ) { }{{/minifyjs}} | {{scripts}}");
-            Assert.That(output.NormalizeNewLines(), Is.EqualTo("|  | \nvar a=1;var b=2;\nfunction fn(a){}"));
+            output = context.EvaluateScript("{{#minifyjs appendTo scripts}}var a = 1; var b = 2;{{/minifyjs}} |> {{#minifyjs appendTo scripts}}function fn ( a ) { }{{/minifyjs}} |> {{scripts}}");
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo("|>  |> \nvar a=1;var b=2;\nfunction fn(a){}"));
         }
 
         [Test]
@@ -868,8 +868,8 @@ partialArg in page scope is <b>from page</b>"));
             var output = context.EvaluateScript("{{#minifycss}} a { width: 1px; } b { height: 1px; } {{/minifycss}}");
             Assert.That(output.Trim(), Is.EqualTo("a{width:1px}b{height:1px}"));
             
-            output = context.EvaluateScript("{{#minifycss appendTo css}} a { width: 1px; } {{/minifycss}} | {{#minifycss appendTo css}} b { height: 1px; } {{/minifycss}} | {{css}}");
-            Assert.That(output.NormalizeNewLines(), Is.EqualTo("|  |  a{width:1px} b{height:1px}"));
+            output = context.EvaluateScript("{{#minifycss appendTo css}} a { width: 1px; } {{/minifycss}} |> {{#minifycss appendTo css}} b { height: 1px; } {{/minifycss}} |> {{css}}");
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo("|>  |>  a{width:1px} b{height:1px}"));
         }
 
         [Test]
@@ -883,8 +883,8 @@ partialArg in page scope is <b>from page</b>"));
             var output = context.EvaluateScript("{{#minifyhtml}} <h1 >  Title  </h1>  <p >  Content  </p> {{/minifyhtml}}");
             Assert.That(output.Trim(), Is.EqualTo("<h1> Title </h1> <p> Content </p>"));
             
-            output = context.EvaluateScript("{{#minifyhtml appendTo html}} <h1 >  Title  </h1> {{/minifyhtml}} | {{#minifyhtml appendTo html}} <p >  Content  </p> {{/minifyhtml}} | {{html | raw}}");
-            Assert.That(output.NormalizeNewLines(), Is.EqualTo("|  | <h1> Title </h1><p> Content </p>"));
+            output = context.EvaluateScript("{{#minifyhtml appendTo html}} <h1 >  Title  </h1> {{/minifyhtml}} |> {{#minifyhtml appendTo html}} <p >  Content  </p> {{/minifyhtml}} |> {{html |> raw}}");
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo("|>  |> <h1> Title </h1><p> Content </p>"));
         }
 
         [Test]
@@ -912,14 +912,14 @@ partialArg in page scope is <b>from page</b>"));
             var js2 = "function fn ( a ) { }";
             var minified2 = "function fn(a){}";
             
-            output = context.EvaluateScript("{{#minifyjs appendTo scripts}}" + js + "{{/minifyjs}} | {{#minifyjs appendTo scripts}}" + js2 + "{{/minifyjs}} | {{scripts}}");
-            Assert.That(output.NormalizeNewLines(), Is.EqualTo($"|  | \n{minified}\n{minified2}"));
+            output = context.EvaluateScript("{{#minifyjs appendTo scripts}}" + js + "{{/minifyjs}} |> {{#minifyjs appendTo scripts}}" + js2 + "{{/minifyjs}} |> {{scripts}}");
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo($"|>  |> \n{minified}\n{minified2}"));
             
             Assert.That(context.Cache["minifyjs:" + js].ToString().NormalizeNewLines(), Is.EqualTo(minified));
             Assert.That(context.Cache["minifyjs:" + js2].ToString().NormalizeNewLines(), Is.EqualTo(minified2));
             
-            output = context.EvaluateScript("{{#minifyjs appendTo scripts}}" + js + "{{/minifyjs}} | {{#minifyjs appendTo scripts}}" + js2 + "{{/minifyjs}} | {{scripts}}");
-            Assert.That(output.NormalizeNewLines(), Is.EqualTo($"|  | \n{minified}\n{minified2}"));
+            output = context.EvaluateScript("{{#minifyjs appendTo scripts}}" + js + "{{/minifyjs}} |> {{#minifyjs appendTo scripts}}" + js2 + "{{/minifyjs}} |> {{scripts}}");
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo($"|>  |> \n{minified}\n{minified2}"));
         }
 
         [Test]
@@ -989,7 +989,7 @@ partialArg in page scope is <b>from page</b>"));
   Grape Fruit:  2
   Rock Melon:   3                    
 /keyvalues
-dict | return
+dict |> return
 ```");
                 
             Assert.That(result, Is.EquivalentTo(new Dictionary<string, string> {
@@ -1015,7 +1015,7 @@ dict | return
   * Grape Fruit:  2
   * Rock Melon:   3                    
 /keyvalues
-dict | return
+dict |> return
 ```");
                 
             Assert.That(result, Is.EquivalentTo(new Dictionary<string, string> {
@@ -1054,10 +1054,10 @@ dict | return
 
             var result = context.EvaluateScript(@"
 ```code
-3 | to => times
+3 |> to => times
 #while times > 0
     times 
-    times - 1 | to => times
+    times - 1 |> to => times
 /while
 ```");
             
@@ -1065,10 +1065,10 @@ dict | return
             
             result = context.EvaluateScript(@"
 ```code
-0 | to => times
+0 |> to => times
 #while times > 0
     times 
-    times - 1 | to => times
+    times - 1 |> to => times
 else
     `times == 0`
 /while
@@ -1084,10 +1084,10 @@ else
 
             var result = context.EvaluateScript(@"
 ```code
-3 | to => times
+3 |> to => times
 #while times > 0
     times 
-    times - 1 | to => times
+    times - 1 |> to => times
 /while
 ```".Replace("\r",""));
             
@@ -1095,10 +1095,10 @@ else
             
             result = context.EvaluateScript(@"
 ```code
-0 | to => times
+0 |> to => times
 #while times > 0
     times 
-    times - 1 | to => times
+    times - 1 |> to => times
 else
     `times == 0`
 /while
@@ -1116,10 +1116,10 @@ else
 
             var result = context.EvaluateScript(@"
 ```code
-3 | to => times
+3 |> to => times
 #while times > 0
     times 
-    times - 1 | to => times
+    times - 1 |> to => times
 /while
 ```");
             
@@ -1127,10 +1127,10 @@ else
             
             result = context.EvaluateScript(@"
 ```code
-0 | to => times
+0 |> to => times
 #while times > 0
     times 
-    times - 1 | to => times
+    times - 1 |> to => times
 else
     `times == 0`
 /while

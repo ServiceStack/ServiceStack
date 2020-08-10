@@ -41,7 +41,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                             foreach (var cmd in ctx.Commands)
                             {
                                 if (!supportedFns.TryGetValue(cmd.Name, out var fn)) continue;
-                                var label = !cmd.Suffix.IsNullOrWhiteSpace() ? cmd.Suffix.Trim().ToString() : cmd.ToString();
+                                var label = !cmd.Suffix.IsNullOrWhiteSpace() ? cmd.Suffix.ToString().Trim() : cmd.ToString();
                                 ctx.Response.Meta[label] = fn(cmd.Args[0].ParseInt32(), cmd.Args[1].ParseInt32()).ToString();
                                 executedCmds.Add(cmd);
                             }
@@ -325,14 +325,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var q = AutoQuery.CreateQuery(dto, Request);
             q.Take(1);
-            return AutoQuery.Execute(dto, q);
+            return AutoQuery.Execute(dto, q, Request);
         }
 
         public object Any(QueryDataOverridedCustomRockstars dto)
         {
             var q = AutoQuery.CreateQuery(dto, Request.GetRequestParams(), Request);
             q.Take(1);
-            return AutoQuery.Execute(dto, q);
+            return AutoQuery.Execute(dto, q, Request);
         }
     }
 

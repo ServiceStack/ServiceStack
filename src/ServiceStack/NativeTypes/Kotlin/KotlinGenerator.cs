@@ -72,6 +72,7 @@ namespace ServiceStack.NativeTypes.Kotlin
             {"Single", "Float"},
             {"Double", "Double"},
             {"Decimal", "BigDecimal"},
+            {"IntPtr", "Long"},
             {"Guid", "UUID"},
             {"DateTime", "Date"},
             {"DateTimeOffset", "Date"},
@@ -131,6 +132,9 @@ namespace ServiceStack.NativeTypes.Kotlin
             sb.AppendLine($"Version: {Env.VersionString}");
             sb.AppendLine($"Tip: {HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")}");
             sb.AppendLine($"BaseUrl: {Config.BaseUrl}");
+            if (Config.UsePath != null)
+                sb.AppendLine("UsePath: {0}".Fmt(Config.UsePath));
+
             sb.AppendLine();
             sb.AppendLine("{0}Package: {1}".Fmt(DefaultValue("Package"), Config.Package));
             sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(DefaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
@@ -210,17 +214,18 @@ namespace ServiceStack.NativeTypes.Kotlin
                         lastNS = AppendType(ref sb, type, lastNS,
                             new CreateTypeOptions
                             {
+                                Routes = metadata.Operations.GetRoutes(type),
                                 ImplementsFn = () =>
                                 {
                                     if (!Config.AddReturnMarker
-                                        && !type.ReturnVoidMarker
-                                        && type.ReturnMarkerTypeName == null)
+                                        && operation?.ReturnsVoid != true
+                                        && operation?.ReturnType == null)
                                         return null;
 
-                                    if (type.ReturnVoidMarker)
-                                        return "IReturnVoid";
-                                    if (type.ReturnMarkerTypeName != null)
-                                        return Type("IReturn`1", new[] { Type(type.ReturnMarkerTypeName) });
+                                    if (operation?.ReturnsVoid == true)
+                                        return nameof(IReturnVoid);
+                                    if (operation?.ReturnType != null)
+                                        return Type("IReturn`1", new[] { Type(operation.ReturnType) });
                                     return response != null
                                         ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
                                         : null;
@@ -265,7 +270,7 @@ namespace ServiceStack.NativeTypes.Kotlin
         {
             return metadata.GetAllMetadataTypes().Any(x => KotlinGeneratorExtensions.KotlinKeyWords.Contains(x.Name)
                 || x.Properties.Safe().Any(p => p.DataMember != null && p.DataMember.Name != null)
-                || (x.ReturnMarkerTypeName != null && x.ReturnMarkerTypeName.Name.IndexOf('`') >= 0)); //uses TypeToken<T>
+                || (x.RequestType?.ReturnType != null && x.RequestType?.ReturnType.Name.IndexOf('`') >= 0)); //uses TypeToken<T>
         }
 
         private static bool ReferencesStream(MetadataTypes metadata)
@@ -276,9 +281,9 @@ namespace ServiceStack.NativeTypes.Kotlin
         //Use built-in types already in net.servicestack.client package
         public static HashSet<string> IgnoreTypeNames = new HashSet<string>
         {
-            typeof(ResponseStatus).Name,
-            typeof(ResponseError).Name,
-            typeof(ErrorResponse).Name,
+            nameof(ResponseStatus),
+            nameof(ResponseError),
+            nameof(ErrorResponse),
         }; 
 
         private List<string> RemoveIgnoredTypes(MetadataTypes metadata)
@@ -294,9 +299,9 @@ namespace ServiceStack.NativeTypes.Kotlin
 
             sb.AppendLine();
             AppendComments(sb, type.Description);
-            if (type.Routes != null)
+            if (options?.Routes != null)
             {
-                AppendAttributes(sb, type.Routes.ConvertAll(x => x.ToMetadataAttribute()));
+                AppendAttributes(sb, options.Routes.ConvertAll(x => x.ToMetadataAttribute()));
             }
             AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);
@@ -399,7 +404,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                 AddProperties(sb, type,
                     initCollections: !type.IsInterface() && Config.InitializeCollections,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
-                        && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
+                        && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)));
 
                 if (responseTypeExpression != null)
                 {
@@ -463,7 +468,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                 if (wasAdded) sb.AppendLine();
 
                 AppendDataMember(sb, null, dataMemberIndex++);
-                sb.AppendLine($"var {typeof(ResponseStatus).Name.PropertyStyle()}:ResponseStatus?{defaultValue}");
+                sb.AppendLine($"var {nameof(ResponseStatus).PropertyStyle()}:ResponseStatus?{defaultValue}");
             }
         }
         
@@ -735,7 +740,10 @@ namespace ServiceStack.NativeTypes.Kotlin
             if (node.Text == "List")
             {
                 sb.Append("ArrayList<");
-                sb.Append(ConvertFromCSharp(node.Children[0]));
+                if (!node.Children.IsEmpty())
+                    sb.Append(ConvertFromCSharp(node.Children[0]));
+                else
+                    sb.Append(ConvertFromCSharp(new TextNode { Text = "Object" })); //error fallback
                 sb.Append(">");
             }
             else if (node.Text == "Dictionary")

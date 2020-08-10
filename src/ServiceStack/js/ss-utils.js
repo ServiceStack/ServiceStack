@@ -65,6 +65,7 @@
     };
     $.ss.queryString = function (url) {
         if (!url || url.indexOf('?') === -1) return {};
+        url = $.ss.splitOnFirst(url,'#')[0];
         var pairs = $.ss.splitOnFirst(url, '?')[1].split('&');
         var map = {};
         for (var i = 0; i < pairs.length; ++i) {
@@ -596,7 +597,8 @@
         var qs = $.ss.queryString(url);
         qs['channels'] = channels;
         delete qs['channel'];
-        $.ss.eventSourceUrl = $.ss.toUrl(url.substring(0, Math.min(url.indexOf('?'), url.length)), qs);
+        var pos = url.indexOf('?');
+        $.ss.eventSourceUrl = $.ss.toUrl(pos >= 0 ? url.substring(0, pos) : url, qs);
     };
     $.ss.updateSubscriberInfo = function (subscribe, unsubscribe) {
         var sub = typeof subscribe == "string" ? subscribe.split(',') : subscribe;
@@ -667,12 +669,19 @@
             }
         }
     };
+    $.ss.onUnload = function () {
+        if (navigator.sendBeacon)
+            navigator.sendBeacon($.ss.unRegisterUrl);
+        else
+            $.ajax({ type: 'POST', url: $.ss.unRegisterUrl, async: false });
+    };
     $.fn.handleServerEvents = function (opt) {
         $.ss.eventSource = this[0];
         $.ss.eventOptions = opt = opt || {};
         if (opt.handlers) {
             $.extend($.ss.handlers, opt.handlers || {});
         }
+        $(window).on("unload", $.ss.onUnload);
         function onMessage(e) {
             var parts = $.ss.splitOnFirst(e.data, ' ');
             var selector = parts[0];
@@ -682,7 +691,15 @@
                 selector = selParts[1];
             }
             var json = parts[1];
-            var msg = json ? JSON.parse(json) : null;
+            var msg, fn;
+            try {
+                msg = json ? JSON.parse(json) : null;
+            } catch (e) {
+                e.json = json;
+                fn = $.ss.handlers["onError"];
+                if (fn)
+                    fn("JSON.parse() error", e);
+            }
 
             parts = $.ss.splitOnFirst(selector, '.');
             if (parts.length <= 1)
@@ -703,40 +720,40 @@
                 if (cmd === "onConnect") {
                     $.extend(opt, msg);
                     if (opt.heartbeatUrl) {
-                        if (opt.heartbeat) {
-                            window.clearInterval(opt.heartbeat);
-                        }
-                        opt.heartbeat = window.setInterval(function () {
-                            if ($.ss.eventSource.readyState === 2) //CLOSED
-                            {
-                                window.clearInterval(opt.heartbeat);
-                                var stopFn = $.ss.handlers["onStop"];
-                                if (stopFn != null)
-                                    stopFn.apply($.ss.eventSource);
-                                $.ss.reconnectServerEvents({ errorArgs: { error:'CLOSED' } });
-                                return;
-                            }
-                            $.ajax({
-                                type: "POST",
-                                url: opt.heartbeatUrl,
-                                data: null,
-                                dataType: "text",
-                                success: function (r) { },
-                                error: function () {
-                                    $.ss.reconnectServerEvents({ errorArgs: arguments });
+                        $.ss.CONNECT_ID = $.ss.CONNECT_ID ? $.ss.CONNECT_ID + 1 : 1;
+                        (function(connectId) {
+                            function sendHeartbeat() {
+                                if (connectId !== $.ss.CONNECT_ID) // Only allow latest connections heartbeat callback through 
+                                    return;
+                                if ($.ss.eventSource.readyState === 2) //CLOSED
+                                {
+                                    var stopFn = $.ss.handlers["onStop"];
+                                    if (stopFn != null)
+                                        stopFn.apply($.ss.eventSource);
+                                    $.ss.reconnectServerEvents({ errorArgs: { error:'CLOSED' } });
+                                    return;
                                 }
-                            });
-                        }, parseInt(opt.heartbeatIntervalMs) || 10000);
+                                $.ajax({
+                                    type: "POST",
+                                    url: opt.heartbeatUrl,
+                                    data: null,
+                                    dataType: "text",
+                                    success: function (r) {
+                                        setTimeout(sendHeartbeat, parseInt(opt.heartbeatIntervalMs) || 10000)
+                                    },
+                                    error: function () {
+                                        $.ss.reconnectServerEvents({ errorArgs: arguments });
+                                    }
+                                });
+                            }
+                            setTimeout(sendHeartbeat, parseInt(opt.heartbeatIntervalMs) || 10000);
+                        })($.ss.CONNECT_ID);
                     }
-                    if (opt.unRegisterUrl) {
-                        $(window).on("unload", function () {
-                            $.ajax({ type: 'POST', url: opt.unRegisterUrl, async: false });
-                        });
-                    }
+                    $.ss.unRegisterUrl = opt.unRegisterUrl;
                     $.ss.updateSubscriberUrl = opt.updateSubscriberUrl;
                     $.ss.updateChannels((opt.channels || "").split(','));
                 }
-                var fn = $.ss.handlers[cmd];
+                fn = $.ss.handlers[cmd];
                 if (fn) {
                     fn.call(el || document.body, msg, e);
                 }
@@ -752,7 +769,7 @@
                 $.ss.invokeReceiver(r, cmd, el, msg, e, op);
             }
 
-            var fn = $.ss.handlers["onMessage"];
+            fn = $.ss.handlers["onMessage"];
             if (fn) fn.call(el || document.body, msg, e);
 
             if (opt.success) opt.success(selector, msg, e); //deprecated
@@ -771,3 +788,21 @@
         };
     };
 });
+function reset() {
+    $.ss.eventSourceStop = false;
+    $.ss.eventOptions = {};
+    $.ss.eventReceivers = {};
+    $.ss.eventChannels = [];
+    $.ss.eventSourceUrl = $.ss.updateSubscriberUrl = $.ss.eventOptions = $.ss.eventSource = null;
+}
+$.ss.disposeServerEvents = function (cb) {
+  var unRegisterUrl = $.ss.eventOptions && $.ss.eventOptions.unRegisterUrl;
+  if ($.ss.eventSource) $.ss.eventSource.close();
+  reset();
+
+  if (unRegisterUrl) {
+      $.ajax({ type: 'POST', url: unRegisterUrl, complete: function() { if (cb) cb(); } });
+  } else {
+      if (cb) cb();
+  }
+};

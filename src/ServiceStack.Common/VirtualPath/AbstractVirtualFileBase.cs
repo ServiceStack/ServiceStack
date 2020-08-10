@@ -36,10 +36,8 @@ namespace ServiceStack.VirtualPath
 
         public virtual string GetFileHash()
         {
-            using (var stream = OpenRead())
-            {
-                return stream.ToMd5Hash();
-            }
+            using var stream = OpenRead();
+            return stream.ToMd5Hash();
         }
 
         public virtual StreamReader OpenText()
@@ -49,33 +47,27 @@ namespace ServiceStack.VirtualPath
 
         public virtual string ReadAllText()
         {
-            using (var reader = OpenText())
-            {
-                var text = reader.ReadToEnd();
-				return text;
-            }
+            using var reader = OpenText();
+            var text = reader.ReadToEnd();
+            return text;
         }
 
         public virtual byte[] ReadAllBytes()
         {
-            using (var stream = OpenRead())
-            {
-                return stream.ReadFully();
-            }
+            using var stream = OpenRead();
+            return stream.ReadFully();
         }
 
         public abstract Stream OpenRead();
 
         public virtual object GetContents()
         {
-            using (var stream = OpenRead())
-            {
-                var romBytes = stream.ReadFullyAsMemory();
-                if (MimeTypes.IsBinary(MimeTypes.GetMimeType(Extension)))
-                    return romBytes;
+            using var stream = OpenRead();
+            var romBytes = stream.ReadFullyAsMemory();
+            if (MimeTypes.IsBinary(MimeTypes.GetMimeType(Extension)))
+                return romBytes;
 
-                return MemoryProvider.Instance.FromUtf8(romBytes.Span);
-            }
+            return MemoryProvider.Instance.FromUtf8(romBytes.Span);
         }
 
         protected virtual string GetVirtualPathToRoot()
@@ -101,8 +93,7 @@ namespace ServiceStack.VirtualPath
 
         public override bool Equals(object obj)
         {
-            var other = obj as AbstractVirtualFileBase;
-            if (other == null)
+            if (!(obj is AbstractVirtualFileBase other))
                 return false;
 
             return other.VirtualPath == this.VirtualPath;

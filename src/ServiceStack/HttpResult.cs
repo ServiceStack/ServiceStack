@@ -61,12 +61,13 @@ namespace ServiceStack
             if (!FileInfo.Exists)
                 throw HttpError.NotFound($"{FileInfo.Name} was not found");
 
-            if (!asAttachment) return;
+            if (!asAttachment) 
+                return;
 
-            var headerValue = $"attachment; filename=\"{fileResponse.Name}\"; size={fileResponse.Length}; " +
-                              $"creation-date={fileResponse.CreationTimeUtc.ToString("R").Replace(",", "")}; " +
-                              $"modification-date={fileResponse.LastWriteTimeUtc.ToString("R").Replace(",", "")}; " +
-                              $"read-date={fileResponse.LastAccessTimeUtc.ToString("R").Replace(",", "")}";
+            var headerValue = $"attachment; {HttpExt.GetDispositionFileName(fileResponse.Name)}; size={fileResponse.Length}; " +
+                $"creation-date={fileResponse.CreationTimeUtc.ToString("R").Replace(",", "")}; " +
+                $"modification-date={fileResponse.LastWriteTimeUtc.ToString("R").Replace(",", "")}; " +
+                $"read-date={fileResponse.LastAccessTimeUtc.ToString("R").Replace(",", "")}";
 
             this.Headers = new Dictionary<string, string>
             {
@@ -90,7 +91,7 @@ namespace ServiceStack
 
             if (!asAttachment) return;
 
-            var headerValue = $"attachment; filename=\"{fileResponse.Name}\"; size={fileResponse.Length}; modification-date={fileResponse.LastModified.ToString("R").Replace(",", "")}";
+            var headerValue = $"attachment; {HttpExt.GetDispositionFileName(fileResponse.Name)}; size={fileResponse.Length}; modification-date={fileResponse.LastModified.ToString("R").Replace(",", "")}";
 
             this.Headers = new Dictionary<string, string>
             {
@@ -187,7 +188,7 @@ namespace ServiceStack
 
         public void SetSessionCookie(string name, string value, string path)
         {
-            path = path ?? "/";
+            path ??= "/";
             this.Headers[HttpHeaders.SetCookie] = $"{name}={value};path={path}";
         }
 
@@ -199,7 +200,7 @@ namespace ServiceStack
 
         public void SetCookie(string name, string value, DateTime expiresAt, string path, bool secure = false, bool httpOnly = false)
         {
-            path = path ?? "/";
+            path ??= "/";
             var cookie = $"{name}={value};expires={expiresAt:R};path={path}";
             if (secure)
                 cookie += ";Secure";
@@ -259,11 +260,9 @@ namespace ServiceStack
             {
                 response?.SetContentLength(FileInfo.Length + paddingLength);
 
-                using (var fs = this.FileInfo.OpenRead())
-                {
-                    await fs.CopyToAsync(responseStream, token);
-                    return;
-                }
+                using var fs = this.FileInfo.OpenRead();
+                await fs.CopyToAsync(responseStream, token);
+                return;
             }
 
             if (this.ResponseStream != null)
@@ -342,10 +341,8 @@ namespace ServiceStack
             var outputStream = response.OutputStream;
             if (FileInfo != null)
             {
-                using (var fs = FileInfo.OpenRead())
-                {
-                    await fs.WritePartialToAsync(outputStream, rangeStart, rangeEnd, token);
-                }
+                using var fs = FileInfo.OpenRead();
+                await fs.WritePartialToAsync(outputStream, rangeStart, rangeEnd, token);
             }
             else if (ResponseStream != null)
             {
@@ -360,10 +357,8 @@ namespace ServiceStack
             }
             else if (ResponseText != null)
             {
-                using (var ms = MemoryStreamFactory.GetStream(Encoding.UTF8.GetBytes(ResponseText)))
-                {
-                    await ms.WritePartialToAsync(outputStream, rangeStart, rangeEnd, token);
-                }
+                using var ms = MemoryStreamFactory.GetStream(Encoding.UTF8.GetBytes(ResponseText));
+                await ms.WritePartialToAsync(outputStream, rangeStart, rangeEnd, token);
             }
             else
                 throw new InvalidOperationException("Neither file, stream nor text were set when attempting to write to the Response Stream.");

@@ -29,6 +29,15 @@ namespace ServiceStack.Templates
                 .Replace("{{serviceStackLogoDataUriLight}}", Svg.Fill(Svg.GetDataUri(Svg.Logos.ServiceStack), Svg.LightColor));
         }
 
+        public static string GetLoginTemplate()
+        {
+            var appHost = HostContext.AppHost;
+            return LoadTemplate("login.html")
+                .Replace("${BaseUrl}", appHost.ResolveStaticBaseUrl())
+                .Replace("${ServiceName}", appHost.ServiceName)
+                ;
+        }
+
         public static string GetHtmlFormatTemplate() => LoadTemplate("HtmlFormat.html");
 
         public static string GetSvgTemplatePath() => GetTemplatePath("svg.html");
@@ -38,7 +47,7 @@ namespace ServiceStack.Templates
             var templatePath = GetTemplatePath(templateName);
             var file = HostContext.VirtualFileSources.GetFile(templatePath);
             if (file == null)
-                throw new FileNotFoundException("Could not load HTML template embedded resource: " + templatePath, templateName);
+                throw new FileNotFoundException("Could not load HTML template: " + templatePath, templateName);
 
             var contents = file.ReadAllText();
             return contents;

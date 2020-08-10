@@ -402,8 +402,8 @@ namespace ServiceStack.Caching
             if (entry != null &&
                 entry.ExpiryDate != null && DateTime.UtcNow > entry.ExpiryDate)
             {
-                db.Delete<TCacheEntry>(q => DateTime.UtcNow > q.ExpiryDate);
-                return default(TCacheEntry);
+                db.DeleteById<TCacheEntry>(entry.Id);
+                return default;
             }
             return entry;
         }
@@ -448,6 +448,11 @@ namespace ServiceStack.Caching
             });
         }
 
+        public void RemoveExpiredEntries()
+        {
+            Exec(db => db.Delete<TCacheEntry>(q => DateTime.UtcNow > q.ExpiryDate));
+        }
+
         public void RemoveByRegex(string regex)
         {
             throw new NotImplementedException();
@@ -470,6 +475,7 @@ namespace ServiceStack.Caching
         public string Id { get; set; }
         [StringLength(StringLengthAttribute.MaxText)]
         public string Data { get; set; }
+        [Index]
         public DateTime? ExpiryDate { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime ModifiedDate { get; set; }
@@ -485,6 +491,7 @@ namespace ServiceStack.Caching
         [StringLength(StringLengthAttribute.MaxText)]
         public string Data { get; set; }
         public DateTime CreatedDate { get; set; }
+        [Index]
         public DateTime? ExpiryDate { get; set; }
         public DateTime ModifiedDate { get; set; }
     }

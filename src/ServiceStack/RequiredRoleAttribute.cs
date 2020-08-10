@@ -79,11 +79,11 @@ namespace ServiceStack
             if (HasAllRoles(req, session, requiredRoles))
                 return;
 
-            var statusCode = session != null && session.IsAuthenticated
-                ? (int)HttpStatusCode.Forbidden
-                : (int)HttpStatusCode.Unauthorized;
-
-            throw new HttpError(statusCode, ErrorMessages.InvalidRole.Localize(req));
+            var isAuthenticated = session != null && session.IsAuthenticated;
+            if (!isAuthenticated)
+                ThrowNotAuthenticated(req);
+            else
+                ThrowInvalidRole(req);
         }
 
         public static bool HasRequiredRoles(IRequest req, string[] requiredRoles) => HasAllRoles(req, req.GetSession(), requiredRoles);
@@ -109,15 +109,17 @@ namespace ServiceStack
         
         private static bool SessionValidForAllRoles(IRequest req, IAuthSession session, ICollection<string> requiredRoles)
         {
+            var singleRequiredRole = requiredRoles.Count == 1 ? requiredRoles.First() : null; 
+            if (singleRequiredRole == RoleNames.AllowAnon)
+                return true;
+
             if (requiredRoles.IsEmpty()) 
                 return true;
             
             if (HostContext.HasValidAuthSecret(req))
                 return true;
 
-            var singleRequiredRole = requiredRoles.Count == 1 ? requiredRoles.First() : null; 
-            if (singleRequiredRole == RoleNames.AllowAnon)
-                return true;
+            AssertAuthenticated(req, requestDto:req.Dto, session:session);
 
             if (session != null && singleRequiredRole == RoleNames.AllowAnyUser && session.IsAuthenticated)
                 return true;

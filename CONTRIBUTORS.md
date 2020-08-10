@@ -276,7 +276,7 @@
  - [kaza](https://github.com/kaza)
  - [mishfit](https://github.com/mishfit)
  - [rfvgyhn](https://github.com/rfvgyhn) (Chris)
- - [caiopoiete](https://github.com/caiopoiete) (Caio Proiete)
+ - [augustoproiete](https://github.com/augustoproiete) (C. Augusto Proiete)
  - [sjuxax](https://github.com/sjuxax) (Jeff Cook)
  - [madaleno](https://github.com/madaleno) (Luis Madaleno)
  - [yavosh](https://github.com/yavosh) (Yavor Shahpasov)
@@ -302,6 +302,7 @@
  - [barambani](https://github.com/barambani)
  - [nhalm](https://github.com/et1975)
  - [scottmcarthur](https://github.com/scottmcarthur) (Scott McArthur)
+ - [siliconrob](https://github.com/Siliconrob) (Robin Michael)
 
 
 

@@ -118,10 +118,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     
     public class BuiltInTypesAppHost : AppHostHttpListenerBase
     {
-        public BuiltInTypesAppHost() : base(typeof(BuiltInTypesAppHost).Name, typeof(BuiltInTypesService).Assembly) { }
+        public BuiltInTypesAppHost() : base(nameof(BuiltInTypesAppHost), typeof(BuiltInTypesService).Assembly) { }
 
         public string LastRequestBody { get; set; }
-        public bool UseBufferredStream { get; set; }
+        public bool UseBufferedStream { get; set; }
         public bool EnableRequestBodyTracking { get; set; }
 
         public override void Configure(Container container) {}

@@ -1,19 +1,19 @@
 #region License
-// Copyright (c) Jeremy Skinner (http://www.jeremyskinner.co.uk)
-// 
-// Licensed under the Apache License, Version 2.0 (the "License"); 
-// you may not use this file except in compliance with the License. 
-// You may obtain a copy of the License at 
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-// See the License for the specific language governing permissions and 
+// Copyright (c) .NET Foundation and contributors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
 // limitations under the License.
-// 
-// The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
+//
+// The latest version of this file can be found at https://github.com/FluentValidation/FluentValidation
 #endregion
 
 namespace ServiceStack.FluentValidation.Internal {
@@ -36,7 +36,7 @@ namespace ServiceStack.FluentValidation.Internal {
 		/// <param name="predicate">The condition that should apply to multiple rules</param>
 		/// <param name="action">Action that encapsulates the rules.</param>
 		/// <returns></returns>
-		public IConditionBuilder When(Func<T, bool> predicate, Action action) {
+		public IConditionBuilder When(Func<T, ValidationContext<T>, bool> predicate, Action action) {
 			var propertyRules = new List<IValidationRule>();
 
 			using (_rules.OnItemAdded(propertyRules.Add)) {
@@ -48,7 +48,7 @@ namespace ServiceStack.FluentValidation.Internal {
 
 			bool Condition(ValidationContext context) {
 				string cacheId = null;
-				
+
 				if (context.InstanceToValidate != null) {
 					cacheId = id + context.InstanceToValidate.GetHashCode();
 
@@ -59,7 +59,7 @@ namespace ServiceStack.FluentValidation.Internal {
 					}
 				}
 
-				var executionResult = predicate((T) context.InstanceToValidate);
+				var executionResult = predicate((T)context.InstanceToValidate, ValidationContext<T>.GetFromNonGenericContext(context));
 				if (context.InstanceToValidate != null) {
 					context.RootContextData[cacheId] = executionResult;
 				}
@@ -68,13 +68,7 @@ namespace ServiceStack.FluentValidation.Internal {
 
 			// Must apply the predicate after the rule has been fully created to ensure any rules-specific conditions have already been applied.
 			foreach (var rule in propertyRules) {
-				//TODO for FV 9 remove explicit reference to CollectionPropertyRule. 
-				if (rule is PropertyRule p) {
-					p.ApplySharedCondition(Condition);
-				}
-				else {
-					throw new NotSupportedException("Cannot call the root-level When/Unless methods on rules that don't inherit from PropertyRule");
-				}
+				rule.ApplySharedCondition(Condition);
 			}
 
 			return new ConditionOtherwiseBuilder(_rules, Condition);
@@ -85,8 +79,8 @@ namespace ServiceStack.FluentValidation.Internal {
 		/// </summary>
 		/// <param name="predicate">The condition that should be applied to multiple rules</param>
 		/// <param name="action">Action that encapsulates the rules</param>
-		public IConditionBuilder Unless(Func<T, bool> predicate, Action action) {
-			return When(x => !predicate(x), action);
+		public IConditionBuilder Unless(Func<T, ValidationContext<T>, bool> predicate, Action action) {
+			return When((x, context) => !predicate(x, context), action);
 		}
 	}
 
@@ -103,7 +97,7 @@ namespace ServiceStack.FluentValidation.Internal {
 		/// <param name="predicate">The asynchronous condition that should apply to multiple rules</param>
 		/// <param name="action">Action that encapsulates the rules.</param>
 		/// <returns></returns>
-		public IConditionBuilder WhenAsync(Func<T, CancellationToken, Task<bool>> predicate, Action action) {
+		public IConditionBuilder WhenAsync(Func<T, ValidationContext<T>, CancellationToken, Task<bool>> predicate, Action action) {
 			var propertyRules = new List<IValidationRule>();
 
 			using (_rules.OnItemAdded(propertyRules.Add)) {
@@ -125,7 +119,7 @@ namespace ServiceStack.FluentValidation.Internal {
 					}
 				}
 
-				var executionResult = await predicate((T) context.InstanceToValidate, ct);
+				var executionResult = await predicate((T)context.InstanceToValidate, ValidationContext<T>.GetFromNonGenericContext(context), ct);
 				if (context.InstanceToValidate != null) {
 					context.RootContextData[cacheId] = executionResult;
 				}
@@ -133,13 +127,7 @@ namespace ServiceStack.FluentValidation.Internal {
 			}
 
 			foreach (var rule in propertyRules) {
-				//TODO for FV 9 remove explicit reference to CollectionPropertyRule. 
-				if (rule is PropertyRule p) {
-					p.ApplySharedAsyncCondition(Condition);
-				}
-				else {
-					throw new NotSupportedException("Cannot call the root-level When/Unless methods on rules that don't inherit from PropertyRule");
-				}
+				rule.ApplySharedAsyncCondition(Condition);
 			}
 
 			return new AsyncConditionOtherwiseBuilder(_rules, Condition);
@@ -150,8 +138,8 @@ namespace ServiceStack.FluentValidation.Internal {
 		/// </summary>
 		/// <param name="predicate">The asynchronous condition that should be applied to multiple rules</param>
 		/// <param name="action">Action that encapsulates the rules</param>
-		public IConditionBuilder UnlessAsync(Func<T, CancellationToken, Task<bool>> predicate, Action action) {
-			return WhenAsync(async (x, ct) => !await predicate(x, ct), action);
+		public IConditionBuilder UnlessAsync(Func<T, ValidationContext<T>, CancellationToken, Task<bool>> predicate, Action action) {
+			return WhenAsync(async (x, context, ct) => !await predicate(x, context, ct), action);
 		}
 	}
 
@@ -174,12 +162,7 @@ namespace ServiceStack.FluentValidation.Internal {
 			}
 
 			foreach (var rule in propertyRules) {
-				if (rule is PropertyRule p) {
-					p.ApplySharedCondition(ctx => !_condition(ctx));
-				}
-				else {
-					throw new NotSupportedException("Cannot call the root-level When/Unless methods on rules that don't inherit from PropertyRule");
-				}
+				rule.ApplySharedCondition(ctx => !_condition(ctx));
 			}
 		}
 	}
@@ -203,12 +186,7 @@ namespace ServiceStack.FluentValidation.Internal {
 			}
 
 			foreach (var rule in propertyRules) {
-				if (rule is PropertyRule p) {
-					p.ApplySharedAsyncCondition(async (ctx, ct) => !await _condition(ctx, ct));
-				}
-				else {
-					throw new NotSupportedException("Cannot call the root-level When/Unless methods on rules that don't inherit from PropertyRule");
-				}
+				rule.ApplySharedAsyncCondition(async (ctx, ct) => !await _condition(ctx, ct));
 			}
 		}
 	}

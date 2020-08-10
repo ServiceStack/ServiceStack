@@ -28,7 +28,9 @@ namespace CheckWebCore
                         AuthKey = AesUtils.CreateKey(),
                         RequireSecureConnection = false,
                     }, 
-                    new CredentialsAuthProvider(), //HTML Form post of UserName/Password credentials
+                    new CredentialsAuthProvider {
+                        SkipPasswordVerificationForInProcessRequests = true,
+                    }, //HTML Form post of UserName/Password credentials
                     new TwitterAuthProvider(AppSettings),
                     new GithubAuthProvider(AppSettings), 
                     new GoogleAuthProvider(AppSettings),

@@ -291,7 +291,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var memorySource = new MemoryDataSource<RockstarGenre>(Db.Select<RockstarGenre>(), requestDto, Request);
             var q = AutoQuery.CreateQuery(requestDto, Request, memorySource);
-            return AutoQuery.Execute(requestDto, q);
+            return AutoQuery.Execute(requestDto, q, memorySource);
         }
     }
 }

@@ -2,9 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using ServiceStack.Script;
 using ServiceStack.Text;
+using ServiceStack.Text.Common;
 using ServiceStack.Web;
 
 namespace ServiceStack.Script
@@ -13,7 +16,7 @@ namespace ServiceStack.Script
     
     public partial class DefaultScripts
     {
-        internal IHttpRequest req(ScriptScopeContext scope) => scope.GetValue("Request") as IHttpRequest;
+        internal IRequest req(ScriptScopeContext scope) => scope.GetValue(ScriptConstants.Request) as IRequest;
 
         public bool matchesPathInfo(ScriptScopeContext scope, string pathInfo) => 
             scope.GetValue("PathInfo")?.ToString().TrimEnd('/') == pathInfo?.TrimEnd('/');
@@ -64,6 +67,19 @@ namespace ServiceStack.Script
             }
             return StopExecution.Value;
         }
+
+        public Stream requestBody(ScriptScopeContext scope)
+        {
+            var httpReq = req(scope);
+            httpReq.UseBufferedStream = true;
+            return req(scope).InputStream;
+        }
+
+        public string rawBodyAsString(ScriptScopeContext scope) => req(scope).GetRawBody();
+        public object rawBodyAsJson(ScriptScopeContext scope) => JSON.parse(rawBodyAsString(scope));
+
+        public async Task<object> requestBodyAsString(ScriptScopeContext scope) => await req(scope).GetRawBodyAsync();
+        public async Task<object> requestBodyAsJson(ScriptScopeContext scope) => JSON.parse(await req(scope).GetRawBodyAsync());
         
         public NameValueCollection form(ScriptScopeContext scope) => req(scope).FormData;
         public NameValueCollection query(ScriptScopeContext scope) => req(scope).QueryString;
@@ -119,6 +135,31 @@ namespace ServiceStack.Script
             
             return StringBuilderCache.ReturnAndFree(sb.Length > 0 ? sb.Insert(0,'?') : sb);
         }
+
+        public Dictionary<string,object> toCoercedDictionary(object target)
+        {
+            var objDictionary = target.ToObjectDictionary();
+            var keys = objDictionary.Keys.ToList();
+            foreach (var key in keys)
+            {
+                var value = objDictionary[key];
+                if (value is string str)
+                    objDictionary[key] = coerce(str);
+            }
+            return objDictionary;
+        }
+
+        public object coerce(string str) => DynamicNumber.TryParse(str, out var numValue)
+            ? numValue
+            : str.StartsWith(DateTimeSerializer.WcfJsonPrefix)
+                ? DateTimeSerializer.ParseDateTime(str)
+                : str.EqualsIgnoreCase(bool.TrueString)
+                    ? true
+                    : str.EqualsIgnoreCase(bool.FalseString)
+                        ? false
+                        : str == "null"
+                            ? (object)null
+                            : str;
 
         public string httpMethod(ScriptScopeContext scope) => req(scope)?.Verb;
         public string httpRequestUrl(ScriptScopeContext scope) => req(scope)?.AbsoluteUri;

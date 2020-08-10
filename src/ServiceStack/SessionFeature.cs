@@ -5,8 +5,9 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class SessionFeature : IPlugin
+    public class SessionFeature : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.Session;
         public const string SessionId = "ss-id";
         public const string PermanentSessionId = "ss-pid";
         public const string SessionOptionsKey = "ss-opt";

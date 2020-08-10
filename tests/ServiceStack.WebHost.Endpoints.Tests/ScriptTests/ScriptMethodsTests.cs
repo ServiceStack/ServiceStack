@@ -109,7 +109,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         {
             var context = CreateContext().Init();
             
-            context.VirtualFiles.WriteFile("page.html", "<h1>{{ 'foo' | greet }}, {{ \"bar\" | greet }}</h1>");
+            context.VirtualFiles.WriteFile("page.html", "<h1>{{ 'foo' |> greet }}, {{ \"bar\" |> greet }}</h1>");
             
             var result = new PageResult(context.GetPage("page"));
 
@@ -123,7 +123,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         {
             var context = CreateContext().Init();
             
-            context.VirtualFiles.WriteFile("page.html", "<h1>{{ 1 | addInt(2) }}</h1>");
+            context.VirtualFiles.WriteFile("page.html", "<h1>{{ 1 |> addInt(2) }}</h1>");
             
             var result = new PageResult(context.GetPage("page"));
 
@@ -137,7 +137,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         {
             var context = CreateContext().Init();
             
-            context.VirtualFiles.WriteFile("page.html", "<h1>{{ 1 | addInt(2) | addInt(3) }}</h1>");
+            context.VirtualFiles.WriteFile("page.html", "<h1>{{ 1 |> addInt(2) |> addInt(3) }}</h1>");
             
             var result = new PageResult(context.GetPage("page"));
 
@@ -156,7 +156,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 pageArg: 2
 -->
 
-<h1>{{ 1 | addInt(pageArg) | addInt(resultArg) }}</h1>");
+<h1>{{ 1 |> addInt(pageArg) |> addInt(resultArg) }}</h1>");
             
             var result = new PageResult(context.GetPage("page"))
             {
@@ -176,7 +176,7 @@ pageArg: 2
         {
             var context = CreateContext().Init();
             
-            context.VirtualFiles.WriteFile("page.html", "<h1>{{ 1 | addInt(addInt(2,3)) }}</h1>");
+            context.VirtualFiles.WriteFile("page.html", "<h1>{{ 1 |> addInt(addInt(2,3)) }}</h1>");
             
             var result = new PageResult(context.GetPage("page"));
 
@@ -197,7 +197,7 @@ pageArg: 2
 pageArg: 2
 -->
 
-<h1>{{ 1 | addInt(pageArg) | addInt( addInt(addInt(2,resultArg),contextArg) ) }}</h1>");
+<h1>{{ 1 |> addInt(pageArg) |> addInt( addInt(addInt(2,resultArg),contextArg) ) }}</h1>");
             
             var result = new PageResult(context.GetPage("page"))
             {
@@ -220,7 +220,7 @@ pageArg: 2
                 ExcludeFiltersNamed = { "repeat" }
             }.Init();
 
-            var page = context.OneTimePage("{{ '.' | repeat(3) }}{{ 3 | repeating('-') }}");
+            var page = context.OneTimePage("{{ '.' |> repeat(3) }}{{ 3 |> repeating('-') }}");
             
             Assert.That(new PageResult(page).Result, Is.EqualTo("---"));
             
@@ -236,8 +236,8 @@ pageArg: 2
                 ScriptMethods = { new ProtectedScripts() }
             }.Init();
             context.VirtualFiles.WriteFile("file.txt", "foo");
-            context.VirtualFiles.WriteFile("page.html", "{{ 'file.txt' | includeFileWithCache | assignTo: contents }}" +
-                                                        "{{ contents | append('bar') | upper | repeat(2) }}");
+            context.VirtualFiles.WriteFile("page.html", "{{ 'file.txt' |> includeFileWithCache |> assignTo: contents }}" +
+                                                        "{{ contents |> append('bar') |> upper |> repeat(2) }}");
             
             Assert.That(new PageResult(context.GetPage("page")).Result, Is.EqualTo("FOOBARFOOBAR"));
             Assert.That(context.ExpiringCache.Count, Is.EqualTo(1));
@@ -250,8 +250,8 @@ pageArg: 2
             }.Init();
             tempContext.VirtualFiles.WriteFile("file.txt", "...");
             
-            var tmpPage = tempContext.OneTimePage("{{ 'file.txt' | includeFileWithCache | assignTo: contents }}" +
-                                                  "{{ contents | append('bar') | repeat(3) }}");
+            var tmpPage = tempContext.OneTimePage("{{ 'file.txt' |> includeFileWithCache |> assignTo: contents }}" +
+                                                  "{{ contents |> append('bar') |> repeat(3) }}");
             Assert.That(new PageResult(tmpPage).Result, Is.EqualTo("...bar...bar...bar"));
             Assert.That(new PageResult(tmpPage).Result, Is.EqualTo("...bar...bar...bar"));
             
@@ -297,8 +297,8 @@ pageArg: 2
                 db.Insert(new Post { Title = "The Title", Content = "The Content", Created = DateTime.Now, Modified = DateTime.Now });
             }
                 
-            context.VirtualFiles.WriteFile("objectCount.html", "{{ objectCount | assignTo: count }}{{ count }}");
-            context.VirtualFiles.WriteFile("dbCount.html", "{{ dbScalar(`SELECT COUNT(*) FROM Post`) | assignTo: count }}{{ count }}");
+            context.VirtualFiles.WriteFile("objectCount.html", "{{ objectCount |> assignTo: count }}{{ count }}");
+            context.VirtualFiles.WriteFile("dbCount.html", "{{ dbScalar(`SELECT COUNT(*) FROM Post`) |> assignTo: count }}{{ count }}");
             
             Assert.That(new PageResult(context.GetPage("objectCount")).Result, Is.EqualTo("1"));
             Assert.That(new PageResult(context.GetPage("dbCount")).Result, Is.EqualTo("1"));

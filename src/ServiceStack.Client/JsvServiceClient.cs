@@ -21,7 +21,7 @@ namespace ServiceStack
 
         public override string ContentType => $"application/{Format}";
 
-        public override void SerializeToStream(IRequest requestContext, object request, Stream stream)
+        public override void SerializeToStream(IRequest req, object request, Stream stream)
         {
             TypeSerializer.SerializeToStream(request, stream);
         }

@@ -53,11 +53,13 @@ namespace ServiceStack.NativeTypes.Dart
             {"Single", "double"},
             {"Double", "double"},
             {"Decimal", "double"},
+            {"IntPtr", "int"},
             {"List", "List"},
             {"Byte[]", "Uint8List"},
             {"Stream", "Uint8List"},
             {"HttpWebResponse", "Uint8List"},
             {"IDictionary", "dynamic"},
+            {"Type", "String"},
         };
         private static string declaredEmptyString = "\"\"";
         private static readonly Dictionary<string, string> defaultValues = new Dictionary<string, string>
@@ -81,6 +83,7 @@ namespace ServiceStack.NativeTypes.Dart
             {"Single", "0"},
             {"Double", "0"},
             {"Decimal", "0"},
+            {"IntPtr", "0"},
             {"number", "0"},
             {"List", "[]"},
             {"Byte[]", "new Uint8List(0)"},
@@ -213,6 +216,9 @@ namespace ServiceStack.NativeTypes.Dart
             sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
             sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
+            if (Config.UsePath != null)
+                sb.AppendLine("UsePath: {0}".Fmt(Config.UsePath));
+
             sb.AppendLine();
             sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
             sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
@@ -278,7 +284,7 @@ namespace ServiceStack.NativeTypes.Dart
                 defaultImports.AddIfNotExists("dart:collection");
             }
             if (allTypes.Any(x => x.Properties?.Any(p => p.Type == "Byte[]") == true)
-                || requestTypes.Any(x => x.ReturnMarkerTypeName?.Name == "Byte[]")
+                || requestTypes.Any(x => x.RequestType?.ReturnType?.Name == "Byte[]")
                 || responseTypes.Any(x => x.Name == "Byte[]"))
             {
                 defaultImports.AddIfNotExists("dart:typed_data");
@@ -312,19 +318,20 @@ namespace ServiceStack.NativeTypes.Dart
                         lastNS = AppendType(ref sb, type, lastNS,
                             new CreateTypeOptions
                             {
+                                Routes = metadata.Operations.GetRoutes(type),
                                 ImplementsFn = () =>
                                 {
                                     if (!Config.AddReturnMarker
-                                        && !type.ReturnVoidMarker
-                                        && type.ReturnMarkerTypeName == null)
+                                        && operation?.ReturnsVoid != true
+                                        && operation?.ReturnType == null)
                                         return null;
 
-                                    if (type.ReturnVoidMarker)
-                                        return "IReturnVoid";
-                                    if (type.ReturnMarkerTypeName != null)
-                                        return Type("IReturn`1", new[] { Type(type.ReturnMarkerTypeName).InDeclarationType() });
+                                    if (operation?.ReturnsVoid == true)
+                                        return nameof(IReturnVoid);
+                                    if (operation?.ReturnType != null)
+                                        return Type("IReturn`1", new[] { Type(operation.ReturnType) });
                                     return response != null
-                                        ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs).InDeclarationType() })
+                                        ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
                                         : null;
                                 },
                                 IsRequest = true,
@@ -374,9 +381,9 @@ namespace ServiceStack.NativeTypes.Dart
         {
             sb.AppendLine();
             AppendComments(sb, type.Description);
-            if (type.Routes != null)
+            if (options?.Routes != null)
             {
-                AppendAttributes(sb, type.Routes.ConvertAll(x => x.ToMetadataAttribute()));
+                AppendAttributes(sb, options.Routes.ConvertAll(x => x.ToMetadataAttribute()));
             }
             AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);
@@ -534,7 +541,7 @@ namespace ServiceStack.NativeTypes.Dart
 
                 AddProperties(sb, type,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
-                                           && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
+                                           && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)));
 
                 if (isClass)
                 {
@@ -559,7 +566,7 @@ namespace ServiceStack.NativeTypes.Dart
                     {
                         var genericArg = baseClass.Substring(9, baseClass.Length - 10);
                         sb.AppendLine($"final List<{genericArg}> l = [];");
-                        sb.AppendLine("void set length(int newLength) { l.length = newLength; }");
+                        sb.AppendLine("set length(int newLength) { l.length = newLength; }");
                         sb.AppendLine("int get length => l.length;");
                         sb.AppendLine($"{genericArg} operator [](int index) => l[index];");
                         sb.AppendLine($"void operator []=(int index, {genericArg} value) {{ l[index] = value; }}");
@@ -829,7 +836,7 @@ namespace ServiceStack.NativeTypes.Dart
                 if (wasAdded) sb.AppendLine();
 
                 AppendDataMember(sb, null, dataMemberIndex++);
-                sb.AppendLine($"ResponseStatus {typeof(ResponseStatus).Name.PropertyStyle().PropertyName()};");
+                sb.AppendLine($"ResponseStatus {nameof(ResponseStatus).PropertyStyle().PropertyName()};");
             }
         }
 
@@ -1199,6 +1206,7 @@ namespace ServiceStack.NativeTypes.Dart
     {
         public static HashSet<string> DartKeyWords = new HashSet<string>
         {
+            "context", // IConvertible code-gen property
             "abstract",
             "deferred",
             "if",

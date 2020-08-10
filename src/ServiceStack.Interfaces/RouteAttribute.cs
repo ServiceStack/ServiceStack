@@ -2,6 +2,8 @@
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace ServiceStack
 {
@@ -11,7 +13,7 @@ namespace ServiceStack
     ///		each request DTO, to map multiple paths to the service.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-    public class RouteAttribute : AttributeBase
+    public class RouteAttribute : AttributeBase, IReflectAttributeConverter
     {
         /// <summary>
         /// 	<para>Initializes an instance of the <see cref="RouteAttribute"/> class.</para>
@@ -154,8 +156,48 @@ namespace ServiceStack
                 return hashCode;
             }
         }
-    }
+        
+        public ReflectAttribute ToReflectAttribute()
+        {
+            if (Summary == null && Notes == null && Matches == null && Priority == default)
+            {
+                //Return ideal Constructor Args 
+                if (Path != null && Verbs != null)
+                {
+                    return new ReflectAttribute {
+                        ConstructorArgs = new List<KeyValuePair<PropertyInfo, object>> {
+                            new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Path)), Path),
+                            new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Verbs)), Verbs),
+                        }
+                    };
+                }
 
+                return new ReflectAttribute {
+                    ConstructorArgs = new List<KeyValuePair<PropertyInfo, object>> {
+                        new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Path)), Path),
+                    }
+                };
+            }
+
+            //Otherwise return Property Args
+            var to = new ReflectAttribute {
+                PropertyArgs = new List<KeyValuePair<PropertyInfo, object>> {
+                    new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Path)), Path),
+                }
+            };
+            if (Verbs != null)
+                to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Verbs)), Verbs));
+            if (Summary != null)
+                to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Summary)), Summary));
+            if (Notes != null)
+                to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Notes)), Notes));
+            if (Matches != null)
+                to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Matches)), Matches));
+            if (Priority != default)
+                to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Priority)), Priority));
+            return to;
+        }
+    }
 
     /// <summary>
     /// Fallback routes have the lowest precedence, i.e. after normal Routes, static files or any matching Catch All Handlers.

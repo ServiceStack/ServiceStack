@@ -311,8 +311,9 @@ function arr(m) {
 function makeRows(h,m) {
   var sb = '';
   for (var r=0,len=m.length; r<len; r++) {
-    sb += '<tr>';
     var row = m[r];
+    if (!row) continue;
+    sb += '<tr>';
     for (var k in h) if (show(k)) sb += '<td>' + val(row[k]) + '</td>';
     sb += '</tr>';
   }  

@@ -1,0 +1,2026 @@
+/* Options:
+Date: 2020-06-03 21:41:31
+Version: 5.81
+Tip: To override a DTO option, remove "//" prefix before updating
+BaseUrl: http://localhost:20000
+
+//GlobalNamespace: 
+//AddDescriptionAsComments: True
+*/
+
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+option csharp_namespace = "ServiceStack.Extensions.Tests.Protoc";
+option php_namespace = "ServiceStack.Extensions.Tests.Protoc";
+
+service GrpcServices {
+
+    rpc GetAddHeader(AddHeader) returns (EmptyResponse) {}
+
+    rpc GetAnyHello(AnyHello) returns (HelloResponse) {}
+
+    rpc PostAnyHello(AnyHello) returns (HelloResponse) {}
+
+    rpc PutAnyHello(AnyHello) returns (HelloResponse) {}
+
+    rpc DeleteAnyHello(AnyHello) returns (HelloResponse) {}
+
+    rpc PostAssignRoles(AssignRoles) returns (AssignRolesResponse) {}
+
+    rpc OptionsAuthenticate(Authenticate) returns (AuthenticateResponse) {}
+
+    rpc GetAuthenticate(Authenticate) returns (AuthenticateResponse) {}
+
+    rpc PostAuthenticate(Authenticate) returns (AuthenticateResponse) {}
+
+    rpc DeleteAuthenticate(Authenticate) returns (AuthenticateResponse) {}
+
+    rpc GetChangeConnectionInfo(ChangeConnectionInfo) returns (ChangeDbResponse) {}
+
+    rpc GetChangeDb(ChangeDb) returns (ChangeDbResponse) {}
+
+    rpc PostConvertSessionToToken(ConvertSessionToToken) returns (ConvertSessionToTokenResponse) {}
+
+    rpc PostCreateBookmark(CreateBookmark) returns (CreateBookmarkResponse) {}
+
+    rpc PostCreateConnectionInfoRockstar(CreateConnectionInfoRockstar) returns (RockstarWithIdAndResultResponse) {}
+
+    rpc PostCreateNamedRockstar(CreateNamedRockstar) returns (RockstarWithIdAndResultResponse) {}
+
+    rpc PostCreateRockstar(CreateRockstar) returns (CreateRockstarResponse) {}
+
+    rpc PostCreateRockstarAdhocNonDefaults(CreateRockstarAdhocNonDefaults) returns (RockstarWithIdAndResultResponse) {}
+
+    rpc PostCreateRockstarAudit(CreateRockstarAudit) returns (RockstarWithIdResponse) {}
+
+    rpc PostCreateRockstarAuditMqToken(CreateRockstarAuditMqToken) returns (RockstarWithIdResponse) {}
+
+    rpc PostCreateRockstarAuditTenant(CreateRockstarAuditTenant) returns (RockstarWithIdAndResultResponse) {}
+
+    rpc PostCreateRockstarAuditTenantGateway(CreateRockstarAuditTenantGateway) returns (RockstarWithIdAndResultResponse) {}
+
+    rpc GetCreateRockstarAuditTenantMq(CreateRockstarAuditTenantMq) returns (EmptyResponse) {}
+
+    rpc PostCreateRockstarAuditTenantMq(CreateRockstarAuditTenantMq) returns (EmptyResponse) {}
+
+    rpc PutCreateRockstarAuditTenantMq(CreateRockstarAuditTenantMq) returns (EmptyResponse) {}
+
+    rpc DeleteCreateRockstarAuditTenantMq(CreateRockstarAuditTenantMq) returns (EmptyResponse) {}
+
+    rpc PostCreateRockstarAutoMap(CreateRockstarAutoMap) returns (RockstarWithIdAndResultResponse) {}
+
+    rpc PostCreateRockstarVersion(CreateRockstarVersion) returns (RockstarWithIdAndRowVersionResponse) {}
+
+    rpc PostCreateRockstarWithAutoGuid(CreateRockstarWithAutoGuid) returns (CreateRockstarWithReturnGuidResponse) {}
+
+    rpc PostCreateRockstarWithReturn(CreateRockstarWithReturn) returns (RockstarWithIdAndResultResponse) {}
+
+    rpc PostCreateRockstarWithVoidReturn(CreateRockstarWithVoidReturn) returns (EmptyResponse) {}
+
+    rpc PostCreateTodo(CreateTodo) returns (CreateTodoResponse) {}
+
+    rpc PostCustomValidationErrors(CustomValidationErrors) returns (RockstarWithIdResponse) {}
+
+    rpc CallDeleteRockstar(DeleteRockstar) returns (EmptyResponse) {}
+
+    rpc CallDeleteRockstarAudit(DeleteRockstarAudit) returns (RockstarWithIdAndCountResponse) {}
+
+    rpc CallDeleteRockstarFilters(DeleteRockstarFilters) returns (DeleteRockstarCountResponse) {}
+
+    rpc CallDeleteTodo(DeleteTodo) returns (EmptyResponse) {}
+
+    rpc CallDeleteTodos(DeleteTodos) returns (EmptyResponse) {}
+
+    rpc GetDynamicQueryGetRockstarsDynamic(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryCustomRockstarsSchema(DynamicRequest) returns (QueryResponse_CustomRockstarSchema) {}
+
+    rpc GetDynamicSearchMovies(DynamicRequest) returns (QueryResponse_Movie) {}
+
+    rpc GetDynamicQueryMovies(DynamicRequest) returns (QueryResponse_Movie) {}
+
+    rpc GetDynamicQueryUnknownRockstars(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryRockstarsWithReferences(DynamicRequest) returns (QueryResponse_RockstarReference) {}
+
+    rpc GetDynamicQueryAllFields(DynamicRequest) returns (QueryResponse_AllFields) {}
+
+    rpc GetDynamicQueryTypeWithEnums(DynamicRequest) returns (QueryResponse_TypeWithEnum) {}
+
+    rpc GetDynamicQueryAdhocRockstars(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryAdhoc(DynamicRequest) returns (QueryResponse_Adhoc) {}
+
+    rpc GetDynamicQueryChangeDb(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryJoinedRockstarAlbumsCustomSelect(DynamicRequest) returns (QueryResponse_CustomSelectRockstar) {}
+
+    rpc GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse(DynamicRequest) returns (QueryResponse_CustomSelectRockstarResponse) {}
+
+    rpc GetDynamicQueryFoos(DynamicRequest) returns (QueryResponse_Foo) {}
+
+    rpc GetDynamicQueryOverridedRockstars(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryOverridedCustomRockstars(DynamicRequest) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetDynamicQueryCaseInsensitiveOrderBy(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicStreamMovies(DynamicRequest) returns (QueryResponse_Movie) {}
+
+    rpc GetDynamicQueryCustomRockstarsReferences(DynamicRequest) returns (QueryResponse_RockstarReference) {}
+
+    rpc GetDynamicQueryRockstarAlbumsCustomLeftJoin(DynamicRequest) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetDynamicQueryChangeConnectionInfo(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryRockstarAudit(DynamicRequest) returns (QueryResponse_RockstarAuto) {}
+
+    rpc GetDynamicQueryRockstarAuditSubOr(DynamicRequest) returns (QueryResponse_RockstarAuto) {}
+
+    rpc GetDynamicQueryBookmarks(DynamicRequest) returns (QueryResponse_Bookmark) {}
+
+    rpc GetDynamicQueryNamedRockstars(DynamicRequest) returns (QueryResponse_NamedRockstar) {}
+
+    rpc GetDynamicQueryRockstars(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryRockstarAlbums(DynamicRequest) returns (QueryResponse_RockstarAlbum) {}
+
+    rpc GetDynamicQueryPagingTest(DynamicRequest) returns (QueryResponse_PagingTest) {}
+
+    rpc GetDynamicQueryRockstarsConventions(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryCustomRockstars(DynamicRequest) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetDynamicQueryJoinedRockstarAlbums(DynamicRequest) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetDynamicQueryRockstarAlbumsImplicit(DynamicRequest) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetDynamicQueryRockstarAlbumsLeftJoin(DynamicRequest) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetDynamicQueryMultiJoinRockstar(DynamicRequest) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetDynamicQueryFieldRockstars(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryRockstarAlias(DynamicRequest) returns (QueryResponse_RockstarAlias) {}
+
+    rpc GetDynamicQueryFieldRockstarsDynamic(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryRockstarsFilter(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryCustomRockstarsFilter(DynamicRequest) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetDynamicQueryRockstarsIFilter(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryOrRockstars(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryRockstarsImplicit(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryOrRockstarsFields(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryFieldsImplicitConventions(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryGetRockstars(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryRockstarFilters(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc PostDynamicValidationRules(DynamicValidationRules) returns (RockstarWithIdResponse) {}
+
+    rpc PostEmptyValidators(EmptyValidators) returns (RockstarWithIdResponse) {}
+
+    rpc GetEndsWithSuffixRequest(EndsWithSuffixRequest) returns (EndsWithSuffixResponse) {}
+
+    rpc PostEndsWithSuffixRequest(EndsWithSuffixRequest) returns (EndsWithSuffixResponse) {}
+
+    rpc PutEndsWithSuffixRequest(EndsWithSuffixRequest) returns (EndsWithSuffixResponse) {}
+
+    rpc DeleteEndsWithSuffixRequest(EndsWithSuffixRequest) returns (EndsWithSuffixResponse) {}
+
+    rpc PostGetAccessToken(GetAccessToken) returns (GetAccessTokenResponse) {}
+
+    rpc CallGetApiKeys(GetApiKeys) returns (GetApiKeysResponse) {}
+
+    rpc CallGetFile(GetFile) returns (FileContent) {}
+
+    rpc CallGetHello(GetHello) returns (HelloResponse) {}
+
+    rpc CallGetTodo(GetTodo) returns (GetTodoResponse) {}
+
+    rpc CallGetTodos(GetTodos) returns (GetTodosResponse) {}
+
+    rpc GetHelloJwt(HelloJwt) returns (HelloJwtResponse) {}
+
+    rpc PostHelloJwt(HelloJwt) returns (HelloJwtResponse) {}
+
+    rpc PutHelloJwt(HelloJwt) returns (HelloJwtResponse) {}
+
+    rpc DeleteHelloJwt(HelloJwt) returns (HelloJwtResponse) {}
+
+    rpc GetIncr(Incr) returns (EmptyResponse) {}
+
+    rpc PostIncr(Incr) returns (EmptyResponse) {}
+
+    rpc PutIncr(Incr) returns (EmptyResponse) {}
+
+    rpc DeleteIncr(Incr) returns (EmptyResponse) {}
+
+    rpc PostMultiply(Multiply) returns (MultiplyResponse) {}
+
+    rpc PostNoAbstractValidator(NoAbstractValidator) returns (RockstarWithIdResponse) {}
+
+    rpc PostOnlyValidatesRequest(OnlyValidatesRequest) returns (RockstarWithIdResponse) {}
+
+    rpc CallPatchRockstar(PatchRockstar) returns (EmptyResponse) {}
+
+    rpc CallPatchRockstarAuditTenant(PatchRockstarAuditTenant) returns (RockstarWithIdAndResultResponse) {}
+
+    rpc CallPatchRockstarAuditTenantGateway(PatchRockstarAuditTenantGateway) returns (RockstarWithIdAndResultResponse) {}
+
+    rpc CallPatchRockstarAuditTenantMq(PatchRockstarAuditTenantMq) returns (EmptyResponse) {}
+
+    rpc CallPostChatToChannel(PostChatToChannel) returns (ChatMessage) {}
+
+    rpc GetQueryAdhoc(QueryAdhoc) returns (QueryResponse_Adhoc) {}
+
+    rpc GetQueryAdhocRockstars(QueryAdhocRockstars) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryAllFields(QueryAllFields) returns (QueryResponse_AllFields) {}
+
+    rpc GetQueryBookmarks(QueryBookmarks) returns (QueryResponse_Bookmark) {}
+
+    rpc GetQueryCaseInsensitiveOrderBy(QueryCaseInsensitiveOrderBy) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryChangeConnectionInfo(QueryChangeConnectionInfo) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryChangeDb(QueryChangeDb) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryCustomRockstars(QueryCustomRockstars) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetQueryCustomRockstarsFilter(QueryCustomRockstarsFilter) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetQueryCustomRockstarsReferences(QueryCustomRockstarsReferences) returns (QueryResponse_RockstarReference) {}
+
+    rpc GetQueryCustomRockstarsSchema(QueryCustomRockstarsSchema) returns (QueryResponse_CustomRockstarSchema) {}
+
+    rpc GetQueryFieldRockstars(QueryFieldRockstars) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryFieldRockstarsDynamic(QueryFieldRockstarsDynamic) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryFieldsImplicitConventions(QueryFieldsImplicitConventions) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryFoos(QueryFoos) returns (QueryResponse_Foo) {}
+
+    rpc GetQueryGetRockstars(QueryGetRockstars) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryGetRockstarsDynamic(QueryGetRockstarsDynamic) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryJoinedRockstarAlbums(QueryJoinedRockstarAlbums) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetQueryJoinedRockstarAlbumsCustomSelect(QueryJoinedRockstarAlbumsCustomSelect) returns (QueryResponse_CustomSelectRockstar) {}
+
+    rpc GetQueryJoinedRockstarAlbumsCustomSelectResponse(QueryJoinedRockstarAlbumsCustomSelectResponse) returns (QueryResponse_CustomSelectRockstarResponse) {}
+
+    rpc GetQueryMovies(QueryMovies) returns (QueryResponse_Movie) {}
+
+    rpc GetQueryMultiJoinRockstar(QueryMultiJoinRockstar) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetQueryNamedRockstars(QueryNamedRockstars) returns (QueryResponse_NamedRockstar) {}
+
+    rpc GetQueryOrRockstars(QueryOrRockstars) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryOrRockstarsFields(QueryOrRockstarsFields) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryOverridedCustomRockstars(QueryOverridedCustomRockstars) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetQueryOverridedRockstars(QueryOverridedRockstars) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryPagingTest(QueryPagingTest) returns (QueryResponse_PagingTest) {}
+
+    rpc GetQueryRockstarAlbums(QueryRockstarAlbums) returns (QueryResponse_RockstarAlbum) {}
+
+    rpc GetQueryRockstarAlbumsCustomLeftJoin(QueryRockstarAlbumsCustomLeftJoin) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetQueryRockstarAlbumsImplicit(QueryRockstarAlbumsImplicit) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetQueryRockstarAlbumsLeftJoin(QueryRockstarAlbumsLeftJoin) returns (QueryResponse_CustomRockstar) {}
+
+    rpc GetQueryRockstarAlias(QueryRockstarAlias) returns (QueryResponse_RockstarAlias) {}
+
+    rpc GetQueryRockstarAudit(QueryRockstarAudit) returns (QueryResponse_RockstarAuto) {}
+
+    rpc GetQueryRockstarAuditSubOr(QueryRockstarAuditSubOr) returns (QueryResponse_RockstarAuto) {}
+
+    rpc GetQueryRockstarFilters(QueryRockstarFilters) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryRockstars(QueryRockstars) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryRockstarsConventions(QueryRockstarsConventions) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryRockstarsFilter(QueryRockstarsFilter) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryRockstarsIFilter(QueryRockstarsIFilter) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryRockstarsImplicit(QueryRockstarsImplicit) returns (QueryResponse_Rockstar) {}
+
+    rpc GetQueryRockstarsWithReferences(QueryRockstarsWithReferences) returns (QueryResponse_RockstarReference) {}
+
+    rpc GetQueryTypeWithEnums(QueryTypeWithEnums) returns (QueryResponse_TypeWithEnum) {}
+
+    rpc GetQueryUnknownRockstars(QueryUnknownRockstars) returns (QueryResponse_Rockstar) {}
+
+    rpc DeleteRealDeleteAuditTenant(RealDeleteAuditTenant) returns (RockstarWithIdAndCountResponse) {}
+
+    rpc DeleteRealDeleteAuditTenantGateway(RealDeleteAuditTenantGateway) returns (RockstarWithIdAndCountResponse) {}
+
+    rpc DeleteRealDeleteAuditTenantMq(RealDeleteAuditTenantMq) returns (EmptyResponse) {}
+
+    rpc PostRegenerateApiKeys(RegenerateApiKeys) returns (RegenerateApiKeysResponse) {}
+
+    rpc PutRegister(Register) returns (RegisterResponse) {}
+
+    rpc PostRegister(Register) returns (RegisterResponse) {}
+
+    rpc GetRequiresAuth(RequiresAuth) returns (RequiresAuth) {}
+
+    rpc PostRequiresAuth(RequiresAuth) returns (RequiresAuth) {}
+
+    rpc PutRequiresAuth(RequiresAuth) returns (RequiresAuth) {}
+
+    rpc DeleteRequiresAuth(RequiresAuth) returns (RequiresAuth) {}
+
+    rpc PostResetTodos(ResetTodos) returns (EmptyResponse) {}
+
+    rpc GetSearchMovies(SearchMovies) returns (QueryResponse_Movie) {}
+
+    rpc PostSecured(Secured) returns (SecuredResponse) {}
+
+    rpc PutSoftDeleteAuditTenant(SoftDeleteAuditTenant) returns (RockstarWithIdAndResultResponse) {}
+
+    rpc ServerStreamFiles(StreamFiles) returns (stream FileContent) {}
+
+    rpc GetStreamMovies(StreamMovies) returns (QueryResponse_Movie) {}
+
+    rpc ServerStreamServerEvents(StreamServerEvents) returns (stream StreamServerEventsResponse) {}
+
+    rpc PostTestAuthValidators(TestAuthValidators) returns (RockstarWithIdResponse) {}
+
+    rpc PostTestDbCondition(TestDbCondition) returns (RockstarWithIdResponse) {}
+
+    rpc PostTestDbValidator(TestDbValidator) returns (RockstarWithIdResponse) {}
+
+    rpc PostTestIsAdmin(TestIsAdmin) returns (RockstarWithIdResponse) {}
+
+    rpc PostTestMultiAuthValidators(TestMultiAuthValidators) returns (RockstarWithIdResponse) {}
+
+    rpc GetThrow(Throw) returns (HelloResponse) {}
+
+    rpc GetThrowCustom(ThrowCustom) returns (ThrowCustomResponse) {}
+
+    rpc GetThrowVoid(ThrowVoid) returns (EmptyResponse) {}
+
+    rpc PostTriggerAllValidators(TriggerAllValidators) returns (RockstarWithIdResponse) {}
+
+    rpc PostTriggerValidators(TriggerValidators) returns (EmptyResponse) {}
+
+    rpc PostUnAssignRoles(UnAssignRoles) returns (UnAssignRolesResponse) {}
+
+    rpc PutUpdateConnectionInfoRockstar(UpdateConnectionInfoRockstar) returns (RockstarWithIdAndResultResponse) {}
+
+    rpc PutUpdateNamedRockstar(UpdateNamedRockstar) returns (RockstarWithIdAndResultResponse) {}
+
+    rpc PutUpdateRockstar(UpdateRockstar) returns (EmptyResponse) {}
+
+    rpc PutUpdateRockstarAdhocNonDefaults(UpdateRockstarAdhocNonDefaults) returns (EmptyResponse) {}
+
+    rpc PatchUpdateRockstarAudit(UpdateRockstarAudit) returns (EmptyResponse) {}
+
+    rpc PutUpdateRockstarAuditTenant(UpdateRockstarAuditTenant) returns (RockstarWithIdAndResultResponse) {}
+
+    rpc PutUpdateRockstarAuditTenantGateway(UpdateRockstarAuditTenantGateway) returns (RockstarWithIdAndResultResponse) {}
+
+    rpc PutUpdateRockstarAuditTenantMq(UpdateRockstarAuditTenantMq) returns (EmptyResponse) {}
+
+    rpc PatchUpdateRockstarVersion(UpdateRockstarVersion) returns (RockstarWithIdAndRowVersionResponse) {}
+
+    rpc PutUpdateTodo(UpdateTodo) returns (EmptyResponse) {}
+
+    rpc PostValidateCreateRockstar(ValidateCreateRockstar) returns (RockstarWithIdResponse) {}
+}
+
+message AddHeader {
+   string Name = 1;
+   string Value = 2;
+}
+message Adhoc {
+   int32 Id = 1;
+   string first_name = 2;
+   string LastName = 3;
+}
+message AllFields {
+   int32 Id = 1;
+   int32 NullableId = 2;
+   uint32 Byte = 3;
+   int32 Short = 4;
+   int32 Int = 5;
+   int64 Long = 6;
+   uint32 UShort = 7;
+   uint32 UInt = 8;
+   uint64 ULong = 9;
+   float Float = 10;
+   double Double = 11;
+   string Decimal = 12;
+   string String = 13;
+   .google.protobuf.Timestamp DateTime = 14;
+   .google.protobuf.Duration TimeSpan = 15;
+   string Guid = 16; // default value could not be applied: 00000000-0000-0000-0000-000000000000
+   .google.protobuf.Timestamp NullableDateTime = 17;
+   .google.protobuf.Duration NullableTimeSpan = 18;
+   string NullableGuid = 19;
+   HttpStatusCode Enum = 20;
+   HttpStatusCode NullableEnum = 21;
+}
+message AnyHello {
+   string Name = 1;
+}
+message AssignRoles {
+   string UserName = 1;
+   repeated string Permissions = 2;
+   repeated string Roles = 3;
+   map<string,string> Meta = 4;
+}
+message AssignRolesResponse {
+   repeated string AllRoles = 1;
+   repeated string AllPermissions = 2;
+   map<string,string> Meta = 3;
+   ResponseStatus ResponseStatus = 4;
+}
+message AuditBase {
+   .google.protobuf.Timestamp CreatedDate = 1;
+   string CreatedBy = 2;
+   string CreatedInfo = 3;
+   .google.protobuf.Timestamp ModifiedDate = 4;
+   string ModifiedBy = 5;
+   string ModifiedInfo = 6;
+   .google.protobuf.Timestamp SoftDeletedDate = 7;
+   string SoftDeletedBy = 8;
+   string SoftDeletedInfo = 9;
+   oneof subtype {
+      RockstarAuditTenant RockstarAuditTenant = 252248706;
+   }
+}
+message Authenticate {
+   string provider = 1;
+   string State = 2;
+   string oauth_token = 3;
+   string oauth_verifier = 4;
+   string UserName = 5;
+   string Password = 6;
+   bool RememberMe = 7;
+   string ErrorView = 9;
+   string nonce = 10;
+   string uri = 11;
+   string response = 12;
+   string qop = 13;
+   string nc = 14;
+   string cnonce = 15;
+   bool UseTokenCookie = 16;
+   string AccessToken = 17;
+   string AccessTokenSecret = 18;
+   string scope = 19;
+   map<string,string> Meta = 20;
+}
+message AuthenticateResponse {
+   string UserId = 1;
+   string SessionId = 2;
+   string UserName = 3;
+   string DisplayName = 4;
+   string ReferrerUrl = 5;
+   string BearerToken = 6;
+   string RefreshToken = 7;
+   string ProfileUrl = 8;
+   repeated string Roles = 9;
+   repeated string Permissions = 10;
+   ResponseStatus ResponseStatus = 11;
+   map<string,string> Meta = 12;
+}
+message Bar {
+   string Y = 2;
+}
+message Bookmark {
+   string Slug = 1;
+   string Title = 2;
+   string Description = 3;
+   string Url = 4;
+}
+message ChangeConnectionInfo {
+}
+message ChangeDb {
+   string NamedConnection = 1;
+   string ConnectionString = 2;
+   string ProviderName = 3;
+}
+message ChangeDbResponse {
+   repeated Rockstar Results = 1;
+}
+message ChatMessage {
+   int64 Id = 1;
+   string Channel = 2;
+   string FromUserId = 3;
+   string FromName = 4;
+   string DisplayName = 5;
+   string Message = 6;
+   string UserAuthId = 7;
+   bool Private = 8;
+}
+message ConvertSessionToToken {
+   bool PreserveSession = 1;
+   map<string,string> Meta = 2;
+}
+message ConvertSessionToTokenResponse {
+   map<string,string> Meta = 1;
+   string AccessToken = 2;
+   string RefreshToken = 3;
+   ResponseStatus ResponseStatus = 4;
+}
+message CreateAuditBase_RockstarAuditTenant_RockstarWithIdAndResultResponse {
+}
+message CreateAuditTenantBase_RockstarAuditTenant_RockstarWithIdAndResultResponse {
+}
+message CreateBookmark {
+   string Slug = 1;
+   string Title = 2;
+   string Description = 3;
+   string Url = 4;
+}
+message CreateBookmarkResponse {
+   string Id = 1; // default value could not be applied: 00000000-0000-0000-0000-000000000000
+   DaoBase Result = 2;
+   ResponseStatus ResponseStatus = 3;
+}
+message CreateConnectionInfoRockstar {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   .google.protobuf.Timestamp DateOfBirth = 4;
+   .google.protobuf.Timestamp DateDied = 5;
+   LivingStatus LivingStatus = 6;
+   int32 Id = 101;
+}
+message CreateNamedRockstar {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   .google.protobuf.Timestamp DateOfBirth = 4;
+   .google.protobuf.Timestamp DateDied = 5;
+   LivingStatus LivingStatus = 6;
+   int32 Id = 101;
+}
+message CreateRockstar {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   .google.protobuf.Timestamp DateOfBirth = 4;
+   .google.protobuf.Timestamp DateDied = 5;
+   LivingStatus LivingStatus = 6;
+}
+message CreateRockstarAdhocNonDefaults {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   .google.protobuf.Timestamp DateOfBirth = 4;
+   .google.protobuf.Timestamp DateDied = 5;
+   LivingStatus LivingStatus = 6;
+}
+message CreateRockstarAudit {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   .google.protobuf.Timestamp DateOfBirth = 4;
+   .google.protobuf.Timestamp DateDied = 5;
+   LivingStatus LivingStatus = 6;
+}
+message CreateRockstarAuditMqToken {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   .google.protobuf.Timestamp DateOfBirth = 4;
+   .google.protobuf.Timestamp DateDied = 5;
+   LivingStatus LivingStatus = 6;
+   string BearerToken = 101;
+}
+message CreateRockstarAuditTenant {
+   string BearerToken = 201;
+   string FirstName = 202;
+   string LastName = 203;
+   int32 Age = 204;
+   .google.protobuf.Timestamp DateOfBirth = 205;
+   .google.protobuf.Timestamp DateDied = 206;
+   LivingStatus LivingStatus = 207;
+}
+message CreateRockstarAuditTenantGateway {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   .google.protobuf.Timestamp DateOfBirth = 4;
+   .google.protobuf.Timestamp DateDied = 5;
+   LivingStatus LivingStatus = 6;
+}
+message CreateRockstarAuditTenantMq {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   .google.protobuf.Timestamp DateOfBirth = 4;
+   .google.protobuf.Timestamp DateDied = 5;
+   LivingStatus LivingStatus = 6;
+}
+message CreateRockstarAutoMap {
+   string MapFirstName = 1;
+   string MapLastName = 2;
+   int32 MapAge = 3;
+   .google.protobuf.Timestamp MapDateOfBirth = 4;
+   .google.protobuf.Timestamp MapDateDied = 5;
+   LivingStatus MapLivingStatus = 6;
+}
+message CreateRockstarResponse {
+   ResponseStatus ResponseStatus = 1;
+}
+message CreateRockstarVersion {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   .google.protobuf.Timestamp DateOfBirth = 4;
+   .google.protobuf.Timestamp DateDied = 5;
+   LivingStatus LivingStatus = 6;
+}
+message CreateRockstarWithAutoGuid {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   .google.protobuf.Timestamp DateOfBirth = 4;
+   .google.protobuf.Timestamp DateDied = 5;
+   LivingStatus LivingStatus = 6;
+}
+message CreateRockstarWithReturn {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   .google.protobuf.Timestamp DateOfBirth = 4;
+   .google.protobuf.Timestamp DateDied = 5;
+   LivingStatus LivingStatus = 6;
+}
+message CreateRockstarWithReturnGuidResponse {
+   string Id = 1; // default value could not be applied: 00000000-0000-0000-0000-000000000000
+   RockstarBase Result = 2;
+   ResponseStatus ResponseStatus = 3;
+}
+message CreateRockstarWithVoidReturn {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   .google.protobuf.Timestamp DateOfBirth = 4;
+   .google.protobuf.Timestamp DateDied = 5;
+   LivingStatus LivingStatus = 6;
+}
+message CreateTodo {
+   string Title = 1;
+   int32 Order = 2;
+}
+message CreateTodoResponse {
+   Todo Result = 1;
+   ResponseStatus ResponseStatus = 2;
+}
+message CustomRockstar {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   string RockstarAlbumName = 4;
+   string RockstarGenreName = 5;
+}
+message CustomRockstarSchema {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   string RockstarAlbumName = 4;
+   string RockstarGenreName = 5;
+}
+message CustomSelectRockstar {
+   int32 Id = 1;
+   string FirstName = 2;
+   string LastName = 3;
+   int32 Age = 4;
+}
+message CustomSelectRockstarResponse {
+   int32 Id = 1;
+   string FirstName = 2;
+   int32 Age = 3;
+}
+message CustomValidationErrors {
+   string CustomErrorCode = 1;
+   int32 CustomErrorCodeAndMessage = 2;
+   string ErrorCodeRule = 3;
+   int32 IsOddCondition = 4;
+   int32 IsOddAndOverTwoDigitsCondition = 5;
+   int32 IsOddOrOverTwoDigitsCondition = 6;
+}
+message DaoBase {
+   string Id = 1; // default value could not be applied: 00000000-0000-0000-0000-000000000000
+   .google.protobuf.Timestamp CreateDate = 2;
+   string CreatedBy = 3;
+   .google.protobuf.Timestamp ModifiedDate = 4;
+   string ModifiedBy = 5;
+   oneof subtype {
+      Bookmark Bookmark = 439450339;
+   }
+}
+message DeleteRockstar {
+   int32 Id = 1;
+}
+message DeleteRockstarAudit {
+   int32 Id = 1;
+}
+message DeleteRockstarCountResponse {
+   int32 Count = 1;
+   ResponseStatus ResponseStatus = 2;
+}
+message DeleteRockstarFilters {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+}
+message DeleteTodo {
+   int64 Id = 1;
+}
+message DeleteTodos {
+   repeated int64 Ids = 1 [packed = false];
+}
+message DynamicRequest {
+   map<string,string> Params = 1;
+}
+message DynamicValidationRules {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   .google.protobuf.Timestamp DateOfBirth = 4;
+   LivingStatus LivingStatus = 5;
+}
+message EmptyResponse {
+   ResponseStatus ResponseStatus = 1;
+}
+message EmptyValidators {
+   int32 Int = 1;
+   int32 NInt = 2;
+   .google.protobuf.Duration TimeSpan = 3;
+   .google.protobuf.Duration NTimeSpan = 4;
+   string String = 5;
+   repeated int32 IntArray = 6 [packed = false];
+   repeated string StringList = 7;
+}
+message EndsWithSuffixRequest {
+   string Suffix = 1;
+}
+message EndsWithSuffixResponse {
+   SearchResult Result = 1;
+   int32 Count = 2;
+   repeated string Words = 3;
+}
+message Entry {
+}
+message FileContent {
+   string Name = 1;
+   string Type = 2;
+   int32 Length = 3;
+   bytes Body = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message Foo {
+   string X = 1;
+   oneof subtype {
+      Bar Bar = 210304982;
+   }
+}
+message GetAccessToken {
+   string RefreshToken = 1;
+   bool UseTokenCookie = 2;
+   map<string,string> Meta = 3;
+}
+message GetAccessTokenResponse {
+   string AccessToken = 1;
+   map<string,string> Meta = 2;
+   ResponseStatus ResponseStatus = 3;
+}
+message GetApiKeys {
+   string Environment = 1;
+   map<string,string> Meta = 2;
+}
+message GetApiKeysResponse {
+   repeated UserApiKey Results = 1;
+   map<string,string> Meta = 2;
+   ResponseStatus ResponseStatus = 3;
+}
+message GetFile {
+   string Path = 1;
+}
+message GetHello {
+   string Name = 1;
+}
+message GetTodo {
+   int64 Id = 1;
+}
+message GetTodoResponse {
+   Todo Result = 1;
+   ResponseStatus ResponseStatus = 2;
+}
+message GetTodos {
+}
+message GetTodosResponse {
+   repeated Todo Results = 1;
+   ResponseStatus ResponseStatus = 2;
+}
+message HelloJwt {
+   string Name = 1;
+   string BearerToken = 2;
+}
+message HelloJwtResponse {
+   string Result = 1;
+   ResponseStatus ResponseStatus = 2;
+}
+message HelloResponse {
+   string Result = 1;
+   ResponseStatus ResponseStatus = 2;
+}
+enum HttpStatusCode {
+   option allow_alias = true;
+   ZERO = 0; // proto3 requires a zero value as the first item (it can be named anything)
+   Continue = 100;
+   SwitchingProtocols = 101;
+   Processing = 102;
+   EarlyHints = 103;
+   OK = 200;
+   Created = 201;
+   Accepted = 202;
+   NonAuthoritativeInformation = 203;
+   NoContent = 204;
+   ResetContent = 205;
+   PartialContent = 206;
+   MultiStatus = 207;
+   AlreadyReported = 208;
+   IMUsed = 226;
+   MultipleChoices = 300;
+   Ambiguous = 300;
+   MovedPermanently = 301;
+   Moved = 301;
+   Found = 302;
+   Redirect = 302;
+   SeeOther = 303;
+   RedirectMethod = 303;
+   NotModified = 304;
+   UseProxy = 305;
+   Unused = 306;
+   TemporaryRedirect = 307;
+   RedirectKeepVerb = 307;
+   PermanentRedirect = 308;
+   BadRequest = 400;
+   Unauthorized = 401;
+   PaymentRequired = 402;
+   Forbidden = 403;
+   NotFound = 404;
+   MethodNotAllowed = 405;
+   NotAcceptable = 406;
+   ProxyAuthenticationRequired = 407;
+   RequestTimeout = 408;
+   Conflict = 409;
+   Gone = 410;
+   LengthRequired = 411;
+   PreconditionFailed = 412;
+   RequestEntityTooLarge = 413;
+   RequestUriTooLong = 414;
+   UnsupportedMediaType = 415;
+   RequestedRangeNotSatisfiable = 416;
+   ExpectationFailed = 417;
+   MisdirectedRequest = 421;
+   UnprocessableEntity = 422;
+   Locked = 423;
+   FailedDependency = 424;
+   UpgradeRequired = 426;
+   PreconditionRequired = 428;
+   TooManyRequests = 429;
+   RequestHeaderFieldsTooLarge = 431;
+   UnavailableForLegalReasons = 451;
+   InternalServerError = 500;
+   NotImplemented = 501;
+   BadGateway = 502;
+   ServiceUnavailable = 503;
+   GatewayTimeout = 504;
+   HttpVersionNotSupported = 505;
+   VariantAlsoNegotiates = 506;
+   InsufficientStorage = 507;
+   LoopDetected = 508;
+   NotExtended = 510;
+   NetworkAuthenticationRequired = 511;
+}
+message Incr {
+   int32 Amount = 1;
+}
+enum LivingStatus {
+   Alive = 0;
+   Dead = 1;
+}
+message Movie {
+   int32 Id = 1;
+   string ImdbId = 2;
+   string Title = 3;
+   string Rating = 4;
+   string Score = 5;
+   string Director = 6;
+   .google.protobuf.Timestamp ReleaseDate = 7;
+   string TagLine = 8;
+   repeated string Genres = 9;
+}
+message Multiply {
+   int32 X = 1;
+   int32 Y = 2;
+}
+message MultiplyResponse {
+   int32 Result = 1;
+}
+message NamedRockstar {
+}
+message NoAbstractValidator {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   .google.protobuf.Timestamp DateOfBirth = 4;
+   LivingStatus LivingStatus = 5;
+}
+message OnlyValidatesRequest {
+   int32 Test = 1;
+   string NotNull = 2;
+}
+message PagingTest {
+   int32 Id = 1;
+   string Name = 2;
+   int32 Value = 3;
+}
+message PatchAuditBase_RockstarAuditTenant_RockstarWithIdAndResultResponse {
+}
+message PatchAuditTenantBase_RockstarAuditTenant_RockstarWithIdAndResultResponse {
+}
+message PatchRockstar {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   .google.protobuf.Timestamp DateOfBirth = 4;
+   .google.protobuf.Timestamp DateDied = 5;
+   LivingStatus LivingStatus = 6;
+   int32 Id = 101;
+}
+message PatchRockstarAuditTenant {
+   string BearerToken = 201;
+   int32 Id = 202;
+   string FirstName = 203;
+   LivingStatus LivingStatus = 204;
+}
+message PatchRockstarAuditTenantGateway {
+   int32 Id = 1;
+   string FirstName = 2;
+   LivingStatus LivingStatus = 3;
+}
+message PatchRockstarAuditTenantMq {
+   int32 Id = 1;
+   string FirstName = 2;
+   LivingStatus LivingStatus = 3;
+}
+message PostChatToChannel {
+   string From = 1;
+   string ToUserId = 2;
+   string Channel = 3;
+   string Message = 4;
+   string Selector = 5;
+}
+message QueryAdhoc {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+}
+message QueryAdhocRockstars {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   string first_name = 201;
+}
+message QueryAllFields {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   string Guid = 201;
+}
+message QueryBookmarks {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+}
+message QueryCaseInsensitiveOrderBy {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   int32 Age = 201;
+}
+message QueryChangeConnectionInfo {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+}
+message QueryChangeDb {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   string NamedConnection = 201;
+   string ConnectionString = 202;
+   string ProviderName = 203;
+}
+message QueryCustomRockstars {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   int32 Age = 201;
+}
+message QueryCustomRockstarsFilter {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   int32 Age = 201;
+}
+message QueryCustomRockstarsReferences {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   int32 Age = 201;
+}
+message QueryCustomRockstarsSchema {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   int32 Age = 201;
+}
+message QueryDbTenant_RockstarAuditTenant_RockstarAuto {
+}
+message QueryFieldRockstars {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   string FirstName = 201;
+   repeated string FirstNames = 202;
+   int32 Age = 203;
+   string FirstNameCaseInsensitive = 204;
+   string FirstNameStartsWith = 205;
+   string LastNameEndsWith = 206;
+   repeated string FirstNameBetween = 207;
+   string OrLastName = 208;
+}
+message QueryFieldRockstarsDynamic {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   int32 Age = 201;
+}
+message QueryFieldsImplicitConventions {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   string FirstNameContains = 201;
+   string LastNameEndsWith = 202;
+}
+message QueryFoos {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   string X = 201;
+}
+message QueryGetRockstars {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   repeated int32 Ids = 201 [packed = false];
+   repeated int32 Ages = 202 [packed = false];
+   repeated string FirstNames = 203;
+   repeated int32 IdsBetween = 204 [packed = false];
+}
+message QueryGetRockstarsDynamic {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+}
+message QueryJoinedRockstarAlbums {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   int32 Age = 201;
+   string RockstarAlbumName = 202;
+}
+message QueryJoinedRockstarAlbumsCustomSelect {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   int32 Age = 201;
+   string RockstarAlbumName = 202;
+}
+message QueryJoinedRockstarAlbumsCustomSelectResponse {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   int32 Age = 201;
+   string RockstarAlbumName = 202;
+}
+message QueryMovies {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   repeated int32 Ids = 201 [packed = false];
+   repeated string ImdbIds = 202;
+   repeated string Ratings = 203;
+}
+message QueryMultiJoinRockstar {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   int32 Age = 201;
+   string RockstarAlbumName = 202;
+   string RockstarGenreName = 203;
+}
+message QueryNamedRockstars {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   int32 Age = 201;
+}
+message QueryOrRockstars {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   int32 Age = 201;
+   string FirstName = 202;
+}
+message QueryOrRockstarsFields {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   string FirstName = 201;
+   string LastName = 202;
+}
+message QueryOverridedCustomRockstars {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   int32 Age = 201;
+}
+message QueryOverridedRockstars {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   int32 Age = 201;
+}
+message QueryPagingTest {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   int32 Id = 201;
+   string Name = 202;
+   int32 Value = 203;
+}
+message QueryResponse_Adhoc {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated Adhoc Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_AllFields {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated AllFields Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_Bookmark {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated DaoBase Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_CustomRockstar {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated CustomRockstar Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_CustomRockstarSchema {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated CustomRockstarSchema Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_CustomSelectRockstar {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated CustomSelectRockstar Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_CustomSelectRockstarResponse {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated CustomSelectRockstarResponse Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_Foo {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated Foo Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_Movie {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated Movie Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_NamedRockstar {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated Rockstar Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_PagingTest {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated PagingTest Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_Rockstar {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated Rockstar Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_RockstarAlbum {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated RockstarAlbum Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_RockstarAlias {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated RockstarAlias Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_RockstarAuto {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated RockstarBase Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_RockstarReference {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated RockstarReference Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_TypeWithEnum {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated TypeWithEnum Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryRockstarAlbums {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   int32 Id = 201;
+   int32 RockstarId = 202;
+   string Name = 203;
+   string Genre = 204;
+   repeated int32 IdBetween = 205 [packed = false];
+}
+message QueryRockstarAlbumsCustomLeftJoin {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   int32 Age = 201;
+   string AlbumName = 202;
+   int32 IdNotEqualTo = 203;
+}
+message QueryRockstarAlbumsImplicit {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+}
+message QueryRockstarAlbumsLeftJoin {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   int32 Age = 201;
+   string AlbumName = 202;
+   int32 IdNotEqualTo = 203;
+}
+message QueryRockstarAlias {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   int32 Age = 201;
+   string RockstarAlbumName = 202;
+}
+message QueryRockstarAudit {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   int32 Id = 301;
+}
+message QueryRockstarAuditSubOr {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   string FirstNameStartsWith = 201;
+   int32 AgeOlderThan = 202;
+}
+message QueryRockstarFilters {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   repeated int32 Ids = 201 [packed = false];
+   repeated int32 Ages = 202 [packed = false];
+   repeated string FirstNames = 203;
+   repeated int32 IdsBetween = 204 [packed = false];
+}
+message QueryRockstars {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   int32 Age = 201;
+}
+message QueryRockstarsConventions {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   .google.protobuf.Timestamp DateOfBirthGreaterThan = 201;
+   .google.protobuf.Timestamp DateDiedLessThan = 202;
+   repeated int32 Ids = 203 [packed = false];
+   int32 AgeOlderThan = 204;
+   int32 AgeGreaterThanOrEqualTo = 205;
+   int32 AgeGreaterThan = 206;
+   int32 GreaterThanAge = 207;
+   string FirstNameStartsWith = 208;
+   string LastNameEndsWith = 209;
+   string LastNameContains = 210;
+   string RockstarAlbumNameContains = 211;
+   int32 RockstarIdAfter = 212;
+   int32 RockstarIdOnOrAfter = 213;
+}
+message QueryRockstarsFilter {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   int32 Age = 201;
+}
+message QueryRockstarsIFilter {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   int32 Age = 201;
+}
+message QueryRockstarsImplicit {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+}
+message QueryRockstarsWithReferences {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   int32 Age = 201;
+}
+message QueryTypeWithEnums {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+}
+message QueryUnknownRockstars {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   int32 UnknownInt = 201;
+   string UnknownProperty = 202;
+}
+message RealDeleteAuditTenant {
+   string BearerToken = 1;
+   int32 Id = 2;
+   int32 Age = 3;
+}
+message RealDeleteAuditTenantGateway {
+   int32 Id = 1;
+}
+message RealDeleteAuditTenantMq {
+   int32 Id = 1;
+}
+message RegenerateApiKeys {
+   string Environment = 1;
+   map<string,string> Meta = 2;
+}
+message RegenerateApiKeysResponse {
+   repeated UserApiKey Results = 1;
+   map<string,string> Meta = 2;
+   ResponseStatus ResponseStatus = 3;
+}
+message Register {
+   string UserName = 1;
+   string FirstName = 2;
+   string LastName = 3;
+   string DisplayName = 4;
+   string Email = 5;
+   string Password = 6;
+   string ConfirmPassword = 7;
+   bool AutoLogin = 8;
+   string ErrorView = 10;
+   map<string,string> Meta = 11;
+}
+message RegisterResponse {
+   string UserId = 1;
+   string SessionId = 2;
+   string UserName = 3;
+   string ReferrerUrl = 4;
+   string BearerToken = 5;
+   string RefreshToken = 6;
+   ResponseStatus ResponseStatus = 7;
+   map<string,string> Meta = 8;
+}
+message RequiresAuth {
+   string Name = 1;
+   string BearerToken = 2;
+}
+message ResetTodos {
+}
+message ResponseError {
+   string ErrorCode = 1;
+   string FieldName = 2;
+   string Message = 3;
+   map<string,string> Meta = 4;
+}
+message ResponseStatus {
+   string ErrorCode = 1;
+   string Message = 2;
+   string StackTrace = 3;
+   repeated ResponseError Errors = 4;
+   map<string,string> Meta = 5;
+}
+message Rockstar {
+   int32 Id = 1;
+   string FirstName = 2;
+   string LastName = 3;
+   int32 Age = 4;
+   .google.protobuf.Timestamp DateOfBirth = 5;
+   .google.protobuf.Timestamp DateDied = 6;
+   LivingStatus LivingStatus = 7;
+   oneof subtype {
+      NamedRockstar NamedRockstar = 345091624;
+   }
+}
+message RockstarAlbum {
+   int32 Id = 1;
+   int32 RockstarId = 2;
+   string Name = 3;
+   string Genre = 4;
+}
+message RockstarAlias {
+   int32 RockstarId = 1;
+   string FirstName = 2;
+   string Surname = 3;
+   string album = 4;
+}
+message RockstarAudit {
+   int32 Id = 1;
+   .google.protobuf.Timestamp CreatedDate = 2;
+   string CreatedBy = 3;
+   string CreatedInfo = 4;
+   .google.protobuf.Timestamp ModifiedDate = 5;
+   string ModifiedBy = 6;
+   string ModifiedInfo = 7;
+}
+message RockstarAuditTenant {
+   int32 TenantId = 1;
+   int32 Id = 2;
+   string FirstName = 3;
+   string LastName = 4;
+   int32 Age = 5;
+   .google.protobuf.Timestamp DateOfBirth = 6;
+   .google.protobuf.Timestamp DateDied = 7;
+   LivingStatus LivingStatus = 8;
+}
+message RockstarAuto {
+   int32 Id = 1;
+}
+message RockstarAutoGuid {
+   string Id = 1; // default value could not be applied: 00000000-0000-0000-0000-000000000000
+}
+message RockstarBase {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   .google.protobuf.Timestamp DateOfBirth = 4;
+   .google.protobuf.Timestamp DateDied = 5;
+   LivingStatus LivingStatus = 6;
+   oneof subtype {
+      RockstarAutoGuid RockstarAutoGuid = 92000829;
+      RockstarAuto RockstarAuto = 92257311;
+      RockstarAudit RockstarAudit = 119875064;
+      RockstarVersion RockstarVersion = 320656675;
+   }
+}
+message RockstarGenre {
+   int32 Id = 1;
+   int32 RockstarId = 2;
+   string Name = 3;
+}
+message RockstarReference {
+   int32 Id = 1;
+   string FirstName = 2;
+   string LastName = 3;
+   int32 Age = 4;
+   repeated RockstarAlbum Albums = 5;
+}
+message RockstarVersion {
+   int32 Id = 1;
+   uint64 RowVersion = 2;
+}
+message RockstarWithIdAndCountResponse {
+   int32 Id = 1;
+   int32 Count = 2;
+   ResponseStatus ResponseStatus = 3;
+}
+message RockstarWithIdAndResultResponse {
+   int32 Id = 1;
+   RockstarBase Result = 2;
+   ResponseStatus ResponseStatus = 3;
+}
+message RockstarWithIdAndRowVersionResponse {
+   int32 Id = 1;
+   uint32 RowVersion = 2;
+   ResponseStatus ResponseStatus = 3;
+}
+message RockstarWithIdResponse {
+   int32 Id = 1;
+   ResponseStatus ResponseStatus = 2;
+}
+message SearchMovies {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+}
+message SearchResult {
+   int32 Id = 1;
+   string Suffix = 2;
+}
+message Secured {
+   string Name = 1;
+}
+message SecuredResponse {
+   string Result = 1;
+   ResponseStatus ResponseStatus = 2;
+}
+message SoftDeleteAuditBase_RockstarAuditTenant_RockstarWithIdAndResultResponse {
+}
+message SoftDeleteAuditTenant {
+   int32 Id = 201;
+}
+message SoftDeleteAuditTenantBase_RockstarAuditTenant_RockstarWithIdAndResultResponse {
+}
+enum SomeEnum {
+   SomeEnum_Value0 = 0;
+   SomeEnum_Value1 = 1;
+   SomeEnum_Value2 = 2;
+   SomeEnum_Value3 = 3;
+}
+enum SomeEnumAsInt {
+   Value0 = 0;
+   Value1 = 1;
+   Value2 = 2;
+   Value3 = 3;
+}
+message StreamFiles {
+   repeated string Paths = 1;
+}
+message StreamMovies {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   repeated string Ratings = 201;
+}
+message StreamServerEvents {
+   repeated string Channels = 1;
+}
+message StreamServerEventsResponse {
+   int64 EventId = 1;
+   string Channel = 2;
+   string Selector = 4;
+   string Json = 5;
+   string Op = 6;
+   string Target = 7;
+   string CssSelector = 8;
+   map<string,string> Meta = 9;
+   string UserId = 10;
+   string DisplayName = 11;
+   string ProfileUrl = 12;
+   bool IsAuthenticated = 13;
+   repeated string Channels = 14;
+   int64 CreatedAt = 15;
+   string Id = 21;
+   string UnRegisterUrl = 22;
+   string UpdateSubscriberUrl = 23;
+   string HeartbeatUrl = 24;
+   int64 HeartbeatIntervalMs = 25;
+   int64 IdleTimeoutMs = 26;
+   ResponseStatus ResponseStatus = 30;
+}
+message TestAuthValidators {
+   string NotNull = 1;
+}
+message TestDbCondition {
+   int32 Id = 1;
+   string NotNull = 2;
+}
+message TestDbValidator {
+   int32 Id = 1;
+   string NotNull = 2;
+}
+message TestIsAdmin {
+   string NotNull = 1;
+}
+message TestMultiAuthValidators {
+   string NotNull = 1;
+}
+message Throw {
+   string Message = 1;
+}
+message ThrowCustom {
+}
+message ThrowCustomResponse {
+   ResponseStatus ResponseStatus = 1;
+}
+message ThrowVoid {
+   string Message = 1;
+}
+message Todo {
+   int64 Id = 1;
+   string Title = 2;
+   int32 Order = 3;
+   bool Completed = 4;
+}
+message TriggerAllValidators {
+   string CreditCard = 1;
+   string Email = 2;
+   string Empty = 3;
+   string Equal = 4;
+   int32 ExclusiveBetween = 5;
+   int32 GreaterThanOrEqual = 6;
+   int32 GreaterThan = 7;
+   int32 InclusiveBetween = 8;
+   string Length = 9;
+   int32 LessThanOrEqual = 10;
+   int32 LessThan = 11;
+   string NotEmpty = 12;
+   string NotEqual = 13;
+   string Null = 14;
+   string RegularExpression = 15;
+   string ScalePrecision = 16;
+}
+message TriggerValidators {
+   string CreditCard = 1;
+   string Email = 2;
+   string Empty = 3;
+   string Equal = 4;
+   int32 ExclusiveBetween = 5;
+   int32 GreaterThanOrEqual = 6;
+   int32 GreaterThan = 7;
+   int32 InclusiveBetween = 8;
+   string Length = 9;
+   int32 LessThanOrEqual = 10;
+   int32 LessThan = 11;
+   string NotEmpty = 12;
+   string NotEqual = 13;
+   string Null = 14;
+   string RegularExpression = 15;
+   string ScalePrecision = 16;
+}
+message TypeWithEnum {
+   int32 Id = 1;
+   string Name = 2;
+   SomeEnum SomeEnum = 3;
+   SomeEnumAsInt SomeEnumAsInt = 4;
+   SomeEnum NSomeEnum = 5;
+   SomeEnumAsInt NSomeEnumAsInt = 6;
+}
+message UnAssignRoles {
+   string UserName = 1;
+   repeated string Permissions = 2;
+   repeated string Roles = 3;
+   map<string,string> Meta = 4;
+}
+message UnAssignRolesResponse {
+   repeated string AllRoles = 1;
+   repeated string AllPermissions = 2;
+   map<string,string> Meta = 3;
+   ResponseStatus ResponseStatus = 4;
+}
+message UpdateAuditBase_RockstarAuditTenant_RockstarWithIdAndResultResponse {
+}
+message UpdateAuditTenantBase_RockstarAuditTenant_RockstarWithIdAndResultResponse {
+}
+message UpdateConnectionInfoRockstar {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   .google.protobuf.Timestamp DateOfBirth = 4;
+   .google.protobuf.Timestamp DateDied = 5;
+   LivingStatus LivingStatus = 6;
+   int32 Id = 101;
+}
+message UpdateNamedRockstar {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   .google.protobuf.Timestamp DateOfBirth = 4;
+   .google.protobuf.Timestamp DateDied = 5;
+   LivingStatus LivingStatus = 6;
+   int32 Id = 101;
+}
+message UpdateRockstar {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   .google.protobuf.Timestamp DateOfBirth = 4;
+   .google.protobuf.Timestamp DateDied = 5;
+   LivingStatus LivingStatus = 6;
+   int32 Id = 101;
+}
+message UpdateRockstarAdhocNonDefaults {
+   int32 Id = 1;
+   string FirstName = 2;
+   string LastName = 3;
+   int32 Age = 4;
+   .google.protobuf.Timestamp DateOfBirth = 5;
+   .google.protobuf.Timestamp DateDied = 6;
+   LivingStatus LivingStatus = 7;
+}
+message UpdateRockstarAudit {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   .google.protobuf.Timestamp DateOfBirth = 4;
+   .google.protobuf.Timestamp DateDied = 5;
+   LivingStatus LivingStatus = 6;
+   int32 Id = 101;
+}
+message UpdateRockstarAuditTenant {
+   string BearerToken = 201;
+   int32 Id = 202;
+   string FirstName = 203;
+   LivingStatus LivingStatus = 204;
+}
+message UpdateRockstarAuditTenantGateway {
+   int32 Id = 1;
+   string FirstName = 2;
+   LivingStatus LivingStatus = 3;
+}
+message UpdateRockstarAuditTenantMq {
+   int32 Id = 1;
+   string FirstName = 2;
+   LivingStatus LivingStatus = 3;
+}
+message UpdateRockstarVersion {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   .google.protobuf.Timestamp DateOfBirth = 4;
+   .google.protobuf.Timestamp DateDied = 5;
+   LivingStatus LivingStatus = 6;
+   int32 Id = 101;
+   uint64 RowVersion = 102;
+}
+message UpdateTodo {
+   int64 Id = 1;
+   string Title = 2;
+   int32 Order = 3;
+   bool Completed = 4;
+}
+message UserApiKey {
+   string Key = 1;
+   string KeyType = 2;
+   .google.protobuf.Timestamp ExpiryDate = 3;
+   map<string,string> Meta = 4;
+}
+message ValidateCreateRockstar {
+   string FirstName = 1;
+   string LastName = 2;
+   int32 Age = 3;
+   .google.protobuf.Timestamp DateOfBirth = 4;
+   .google.protobuf.Timestamp DateDied = 5;
+   LivingStatus LivingStatus = 6;
+}

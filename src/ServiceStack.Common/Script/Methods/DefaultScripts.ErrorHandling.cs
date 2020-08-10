@@ -16,6 +16,12 @@ namespace ServiceStack.Script
             return StopExecution.Value;
         }
 
+        public object catchError(ScriptScopeContext scope, string errorBinding)
+        {
+            scope.PageResult.CatchExceptionsIn = errorBinding;
+            return StopExecution.Value;
+        }
+
         public object assignErrorAndContinueExecuting(ScriptScopeContext scope, string errorBinding)
         {
             assignError(scope, errorBinding);
@@ -46,7 +52,7 @@ namespace ServiceStack.Script
         public object ifError(ScriptScopeContext scope) => (object) scope.PageResult.LastFilterError ?? StopExecution.Value;
         public object ifDebug(ScriptScopeContext scope, object ignoreTarget) => ifDebug(scope);
         public object ifDebug(ScriptScopeContext scope) => scope.Context.DebugMode ? (object)IgnoreResult.Value : StopExecution.Value;
-        public object debug(ScriptScopeContext scope) => scope.Context.DebugMode;
+        public object debugMode(ScriptScopeContext scope) => scope.Context.DebugMode;
 
         public bool hasError(ScriptScopeContext scope) => scope.PageResult.LastFilterError != null;
         
@@ -196,10 +202,10 @@ namespace ServiceStack.Script
             }
         }
         
-        public object ifthrow(ScriptScopeContext scope, bool test, string message) => test 
+        public object ifThrow(ScriptScopeContext scope, bool test, string message) => test 
             ? new Exception(message).InStopFilter(scope, null)
             : StopExecution.Value;
-        public object ifthrow(ScriptScopeContext scope, bool test, string message, object options) => test 
+        public object ifThrow(ScriptScopeContext scope, bool test, string message, object options) => test 
             ? new Exception(message).InStopFilter(scope, options)
             : StopExecution.Value;
 

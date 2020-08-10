@@ -96,6 +96,7 @@ namespace ServiceStack.Host.AspNet
 
         public void Close()
         {
+            if (IsClosed) return;
             this.IsClosed = true;
 
             this.FlushBufferIfAny(BufferedStream, response.OutputStream);
@@ -113,6 +114,7 @@ namespace ServiceStack.Host.AspNet
 
         public void End()
         {
+            if (IsClosed) return;
             this.IsClosed = true;
             try
             {

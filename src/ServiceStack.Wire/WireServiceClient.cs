@@ -7,6 +7,7 @@ namespace ServiceStack.Wire
     using ServiceStack.Web;
     using ServiceStack.Text;
 
+    [Obsolete("Use better supported formats like ProtoBuf or MsgPack")]
     public class WireServiceClient : ServiceClientBase
     {
         public override string Format => "x-wire";
@@ -19,12 +20,12 @@ namespace ServiceStack.Wire
         public WireServiceClient(string syncReplyBaseUri, string asyncOneWayBaseUri)
             : base(syncReplyBaseUri, asyncOneWayBaseUri) { }
 
-        public override void SerializeToStream(IRequest requestContext, object request, Stream stream)
+        public override void SerializeToStream(IRequest req, object request, Stream stream)
         {
             if (request == null) return;
             try
             {
-                WireFormat.Serialize(requestContext, request, stream);
+                WireFormat.Serialize(req, request, stream);
             }
             catch (Exception ex)
             {
@@ -50,6 +51,7 @@ namespace ServiceStack.Wire
         public override StreamDeserializerDelegate StreamDeserializer => WireFormat.Deserialize;
     }
     
+    [Obsolete("Use better supported formats like ProtoBuf or MsgPack")]
     public class WireFormat : IPlugin, IWirePlugin
     {
         public static Serializer WireSerializer = new Serializer(new SerializerOptions(

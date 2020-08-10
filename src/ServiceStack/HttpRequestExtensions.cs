@@ -45,7 +45,7 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Gets request paramater string value by looking in the following order:
+        /// Gets request parameter string value by looking in the following order:
         /// - QueryString[name]
         /// - FormData[name]
         /// - Cookies[name]
@@ -249,6 +249,14 @@ namespace ServiceStack
 
         public static int ToStatusCode(this Exception ex)
         {
+            if (ex is AggregateException aex)
+            {
+                if (aex.InnerExceptions.Count == 1)
+                    ex = aex.InnerExceptions[0];
+                else
+                    return ToStatusCode(aex.InnerExceptions[0]);
+            }
+
             if (ex is IHasStatusCode hasStatusCode)
                 return hasStatusCode.StatusCode;
 
@@ -768,11 +776,18 @@ namespace ServiceStack
 
         public static string GetAbsoluteUrl(this IRequest httpReq, string url)
         {
-            if (url?.SafeSubstring(0, 2) == "~/")
-            {
-                url = httpReq.GetBaseUrl().CombineWith(url.Substring(2));
-            }
-            return url;
+            return url?.IndexOf("://", StringComparison.Ordinal) >= 0
+                ? url
+                : httpReq.GetBaseUrl().CombineWith(url?.TrimStart('~'));
+        }
+
+        public static string GetReturnUrl(this IRequest req)
+        {
+            var redirectUrl = req.GetQueryStringOrForm(Keywords.Continue) ??
+                              req.GetQueryStringOrForm(Keywords.ReturnUrl);
+            if (redirectUrl != null)
+                HostContext.GetPlugin<AuthFeature>()?.ValidateRedirectLinks?.Invoke(req, redirectUrl);
+            return redirectUrl;
         }
 
         public static string InferBaseUrl(this string absoluteUri, string fromPathInfo = null)

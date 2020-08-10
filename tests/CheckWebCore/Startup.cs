@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Net;
+using System.Reflection;
+using System.Runtime.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -14,9 +16,13 @@ using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
+using ServiceStack.FluentValidation.Validators;
 using ServiceStack.Host;
+using ServiceStack.Logging;
 using ServiceStack.Mvc;
+using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.NativeTypes.TypeScript;
+using ServiceStack.Script;
 using ServiceStack.Text;
 using ServiceStack.Validation;
 using ServiceStack.Web;
@@ -88,9 +94,23 @@ namespace CheckWebCore
     {
         public void Configure(IApplicationBuilder app)=> "#9".Print();           // #9
     }
-    
 
-    public class AppHost : AppHostBase, IConfigureApp
+
+    public interface IAppHostConstraint{}
+    public class AppHostConstraint : IAppHostConstraint{}
+    public abstract class AppHostConstraintsBase<TServiceInterfaceAssembly> : AppHostBase
+        where TServiceInterfaceAssembly : IAppHostConstraint
+    {
+        protected AppHostConstraintsBase(string serviceName, params Assembly[] assembliesWithServices) 
+        : base(serviceName, assembliesWithServices)
+        {
+            ConsoleLogFactory.Configure();
+        }
+    }
+
+    public class AppHost 
+        //: AppHostConstraintsBase<AppHostConstraint>, IConfigureApp
+        : AppHostBase, IConfigureApp
     {
         public AppHost() : base("TestLogin", typeof(MyServices).Assembly) { }
 
@@ -100,6 +120,7 @@ namespace CheckWebCore
 
             app.UseServiceStack(new AppHost
             {
+                PathBase = "/api",
                 AppSettings = new NetCoreAppSettings(Configuration)
             });
         }
@@ -114,10 +135,14 @@ namespace CheckWebCore
         // Configure your AppHost with the necessary configuration and dependencies your App needs
         public override void Configure(Container container)
         {
+            RegisterService<GetFileService>();
+
             Plugins.Add(new GrpcFeature(App));
             
             // enable server-side rendering, see: https://sharpscript.net
-            Plugins.Add(new SharpPagesFeature()); 
+            Plugins.Add(new SharpPagesFeature {
+                ScriptMethods = { new CustomScriptMethods() }
+            }); 
             
             Plugins.Add(new LispReplTcpServer {
 //                RequireAuthSecret = true,
@@ -162,19 +187,31 @@ namespace CheckWebCore
                 });
             
 
-//            TypeScriptGenerator.TypeFilter = (type, args) => {
-//                if (type == "ResponseBase`1" && args[0] == "Dictionary<String,List`1>")
-//                    return "ResponseBase<Map<string,Array<any>>>";
-//                return null;
-//            };
+            CSharpGenerator.TypeFilter = (type, args) => {
+                if (type == "ResponseBase`1" && args[0] == "Dictionary<String,List`1>")
+                    return "ResponseBase<Dictionary<string,List<object>>>";
+                return null;
+            };
 
-//            TypeScriptGenerator.DeclarationTypeFilter = (type, args) => {
-//                return null;
-//            };
+            TypeScriptGenerator.TypeFilter = (type, args) => {
+                if (type == "ResponseBase`1" && args[0] == "Dictionary<String,List`1>")
+                    return "ResponseBase<Map<string,Array<any>>>";
+                return null;
+            };
+
+            TypeScriptGenerator.DeclarationTypeFilter = (type, args) => {
+                return null;
+            };
 
 
             //GetPlugin<SvgFeature>().ValidateFn = req => Config.DebugMode; // only allow in DebugMode
         }
+    }
+
+    public class CustomScriptMethods : ScriptMethods
+    {
+        public ITypeValidator CustomTypeValidator(string arg) => null;
+        public IPropertyValidator CustomPropertyValidator(string arg) => null;
     }
     
     [Exclude(Feature.Metadata)]
@@ -198,12 +235,14 @@ namespace CheckWebCore
     }
 
     [Route("/testauth")]
+    [Tag("mobile")]
     public class TestAuth : IReturn<TestAuth> {}
 
     [Route("/session")]
     public class Session : IReturn<AuthUserSession> {}
     
     [Route("/throw")]
+    [Tag("desktop")]
     public class Throw {}
     
     [Route("/api/data/import/{Month}", "POST")]
@@ -221,6 +260,7 @@ namespace CheckWebCore
     {
         public T Result { get; set; }
     }
+    [Tag("web")]
     public class Campaign : IReturn<ResponseBase<Dictionary<string, List<object>>>>
     {
         public int Id { get; set; }
@@ -229,12 +269,20 @@ namespace CheckWebCore
     {
         public int Id { get; set; }
     }
+    
+    public enum EnumMemberTest
+    {
+        [EnumMember(Value = "No ne")] None = 0,
+        [EnumMember(Value = "Template")] Template = 1,
+        [EnumMember(Value = "Rule")] Rule = 3,
+    }
 
     public class Dummy
     {
         public Campaign Campaign { get; set; }
         public DataEvent DataEvent { get; set; }
         public ExtendsDictionary ExtendsDictionary { get; set; }
+        public EnumMemberTest EnumMemberTest { get; set; }
     }
    
     public class ExtendsDictionary : Dictionary<Guid, string> {
@@ -253,10 +301,103 @@ namespace CheckWebCore
         public ResponseStatus ResponseStatus { get; set; }
     }
 
+    [Route("/bookings/repeat",
+        Summary = "Create new bookings",
+        Notes = "Create new bookings if you are authorized to do so.",
+        Verbs = "POST")]
+    [ApiResponse(HttpStatusCode.Unauthorized, "You were unauthorized to call this service")]
+    //[Restrict(VisibleLocalhostOnly = true)]
+    [Tag("web"),Tag("mobile"),Tag("desktop")]
+    public class CreateBookings : CreateBookingBase ,IReturn<CreateBookingsResponse>
+    {
+
+        [ApiMember(
+        Description =
+        "Set the dates you want to book and it's quantities. It's an array of dates and quantities.",
+        IsRequired = true)]
+        public List<DatesToRepeat> DatesToRepeat { get; set; }
+    }
+
+    public class CreateBookingBase
+    {
+        public int Id { get; set; }
+    }
+
+    public class CreateBookingsResponse
+    {
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    public class DatesToRepeat
+    {
+        public int Ticks { get; set; }
+    }
+    
+    
+    [Route("/swagger/search", "POST")]
+    public class SwaggerSearch : IReturn<EmptyResponse>, IPost
+    {
+        public List<SearchFilter> Filters { get; set; }
+    }
+
+    public class SearchFilter
+    {
+        [ApiMember(Name = "Field")]
+        public string Field { get; set; }
+
+        [ApiMember(Name = "Values")]
+        public List<string> Values { get; set; }
+
+        [ApiMember(Name = "Type")]
+        public string Type { get; set; }
+    }
+    
+    [ValidateIsAuthenticated]
+    [ValidateIsAdmin]
+    [ValidateHasRole("TheRole")]
+    [ValidateHasPermission("ThePerm")]
+    public class TriggerAllValidators 
+        : IReturn<IdResponse>
+    {
+        [ValidateCreditCard]
+        public string CreditCard { get; set; }
+        [ValidateEmail]
+        public string Email { get; set; }
+        [ValidateEmpty]
+        public string Empty { get; set; }
+        [ValidateEqual("Equal")]
+        public string Equal { get; set; }
+        [ValidateExclusiveBetween(10, 20)]
+        public int ExclusiveBetween { get; set; }
+        [ValidateGreaterThanOrEqual(10)]
+        public int GreaterThanOrEqual { get; set; }
+        [ValidateGreaterThan(10)]
+        public int GreaterThan { get; set; }
+        [ValidateInclusiveBetween(10, 20)]
+        public int InclusiveBetween { get; set; }
+        [ValidateExactLength(10)]
+        public string Length { get; set; }
+        [ValidateLessThanOrEqual(10)]
+        public int LessThanOrEqual { get; set; }
+        [ValidateLessThan(10)]
+        public int LessThan { get; set; }
+        [ValidateNotEmpty]
+        public string NotEmpty { get; set; }
+        [ValidateNotEqual("NotEqual")]
+        public string NotEqual { get; set; }
+        [ValidateNull]
+        public string Null { get; set; }
+        [ValidateRegularExpression("^[a-z]*$")]
+        public string RegularExpression { get; set; }
+        [ValidateScalePrecision(1,1)]
+        public decimal ScalePrecision { get; set; }
+    }
 
     //    [Authenticate]
     public class MyServices : Service
     {
+        public object Any(CreateBookings request) => new CreateBookingsResponse();
+        
         public object Any(Dummy request) => request;
         public object Any(Campaign request) => request;
         
@@ -272,12 +413,14 @@ namespace CheckWebCore
 
         public object Any(TestAuth request) => request;
 
-        [Authenticate]
-        public object Any(Session request) => SessionAs<AuthUserSession>();
+        // [Authenticate]
+        // public object Any(Session request) => SessionAs<AuthUserSession>();
 
         public object Any(Throw request) => HttpError.Conflict("Conflict message");
 //        public object Any(Throw request) => new HttpResult
 //            {StatusCode = HttpStatusCode.Conflict, Response = "Error message"};
+
+        public object Any(TriggerAllValidators request) => new IdResponse();
 
         [Authenticate]
         public object Post(ImportData request)
@@ -310,5 +453,30 @@ namespace CheckWebCore
             };
             return to;
         }
+
+        public object Any(ImpersonateUser request)
+        {
+            using (var service = base.ResolveService<AuthenticateService>()) //In Process
+            {
+                service.Post(new Authenticate { provider = "logout" });
+                
+                return service.Post(new Authenticate {
+                    provider = AuthenticateService.CredentialsProvider,
+                    UserName = request.UserName,
+                });
+            }
+        }
+        
+        public object Any(SwaggerSearch request) => new EmptyResponse();
     }
+    
+    // [RequiredRole("Admin")]
+    [Restrict(InternalOnly=true)]
+    [Route("/impersonate/{UserName}")]
+    public class ImpersonateUser
+    {
+        public string UserName { get; set; }
+    }
+
 }
+

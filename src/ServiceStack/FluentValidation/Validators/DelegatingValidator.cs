@@ -34,10 +34,6 @@ namespace ServiceStack.FluentValidation.Validators {
 		private readonly Func<PropertyValidatorContext, CancellationToken, Task<bool>> _asyncCondition;
 		public IPropertyValidator InnerValidator { get; private set; }
 
-		public bool ShouldValidateAsync(ValidationContext context) {
-			return InnerValidator.ShouldValidateAsync(context) || _asyncCondition != null;
-		}
-
 		public DelegatingValidator(Func<PropertyValidatorContext, bool> condition, IPropertyValidator innerValidator) {
 			_condition = condition;
 			_asyncCondition = null;
@@ -72,6 +68,11 @@ namespace ServiceStack.FluentValidation.Validators {
 			}
 
 			return Enumerable.Empty<ValidationFailure>();
+		}
+
+		public bool ShouldValidateAsynchronously(ValidationContext context)
+		{
+			return InnerValidator.ShouldValidateAsynchronously(context) || _asyncCondition != null;
 		}
 
 		public bool SupportsStandaloneValidation => false;

@@ -181,6 +181,12 @@ namespace ServiceStack
                 ? new HashSet<string>()
                 : sessionOptions.Split(',').ToHashSet();
         }
+        
+        public static string GetUserAuthName(this IAuthSession session) => session == null ? null
+            : session.UserAuthName ?? session.UserName ?? session.Email;
+
+        public static string GetUserAuthIdOrName(this IAuthSession session) => session == null ? null
+            : session.UserAuthId ?? session.UserAuthName ?? session.UserName ?? session.Email;
 
         public static void UpdateSession(this IAuthSession session, IUserAuth userAuth)
         {
@@ -300,6 +306,11 @@ namespace ServiceStack
         public static void Set<T>(this ISession session, T value)
         {
             session.Set(typeof(T).Name, value);
+        }
+
+        public static void Remove<T>(this ISession session)
+        {
+            session.Remove(typeof(T).Name);
         }
 
         public static void DeleteSessionCookies(this IResponse response)

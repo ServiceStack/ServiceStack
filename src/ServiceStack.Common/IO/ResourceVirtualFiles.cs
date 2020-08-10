@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using ServiceStack.DataAnnotations;
 using ServiceStack.VirtualPath;
@@ -9,8 +10,8 @@ namespace ServiceStack.IO
         : AbstractVirtualPathProviderBase
     {
         protected ResourceVirtualDirectory RootDir;
-        protected Assembly BackingAssembly;
-        protected string RootNamespace;
+        protected readonly Assembly BackingAssembly;
+        protected readonly string RootNamespace;
 
         public override IVirtualDirectory RootDirectory => RootDir;
         public override string VirtualPathSeparator => "/";
@@ -18,8 +19,8 @@ namespace ServiceStack.IO
         
         public DateTime LastModified { get; set; } 
 
-        public ResourceVirtualFiles(Type baseTypeInAssmebly)
-            : this(baseTypeInAssmebly.Assembly, GetNamespace(baseTypeInAssmebly)) { }
+        public ResourceVirtualFiles(Type baseTypeInAssembly)
+            : this(baseTypeInAssembly.Assembly, GetNamespace(baseTypeInAssembly)) { }
 
         public ResourceVirtualFiles(Assembly backingAssembly, string rootNamespace=null)
         {
@@ -27,6 +28,67 @@ namespace ServiceStack.IO
             this.RootNamespace = rootNamespace ?? backingAssembly.GetName().Name;
 
             Initialize();
+        }
+        
+        //https://docs.microsoft.com/en-us/dotnet/api/system.resources.tools.stronglytypedresourcebuilder.verifyresourcename?redirectedfrom=MSDN&view=netframework-4.8#remarks
+        static readonly char [] NamespaceSpecialChars = { ' ', '\u00A0', ',', ';', '|', '~', '@', '#', '%', '^', '&', 
+            '*', '+', '-', /*'/', '\\',*/ '<', '>', '?', '[', ']', '(', ')', '{', 
+            '}', '\"', '\'', '!'};
+
+        private static string CleanChars(string name)
+        {
+            var newChars = new char[name.Length];
+            var nameChars = name.AsSpan();
+            for (var i = 0; i < nameChars.Length ;i++) 
+            {
+                newChars[i] = nameChars[i];
+                foreach (var c in NamespaceSpecialChars)
+                {
+                    if (nameChars[i] == c)
+                    {
+                        newChars[i] = '_';
+                        break;
+                    }
+                }
+            }
+            return new string (newChars);
+        }
+        
+        public static HashSet<string> PartialFileNames { get; set; } = new HashSet<string>
+        {
+            "min.js",
+            "min.css",
+        };
+
+        public string CleanPath(string filePath)
+        {
+            var sanitizedPath = base.SanitizePath(filePath);
+            if (sanitizedPath == null)
+                return null;
+            var lastDirPos = sanitizedPath.LastIndexOf('/');
+            if (lastDirPos >= 0)
+            {
+                var dirPath = sanitizedPath.Substring(0, lastDirPos);
+                var fileName = sanitizedPath.Substring(lastDirPos + 1);
+                if (PartialFileNames.Contains(fileName))
+                {
+                    var partialName = dirPath.LastRightPart('/');
+                    dirPath = dirPath.LastLeftPart('/');
+                    fileName = partialName + '.' + fileName;
+                }
+                
+                var cleanDir = CleanChars(dirPath); //only dirs are replaced 
+                var cleanPath = cleanDir + '/' + fileName;
+                return cleanPath;
+            }
+            return sanitizedPath;
+        }
+
+        public override IVirtualFile GetFile(string virtualPath)
+        {
+            var virtualFile = RootDirectory.GetFile(CleanPath(virtualPath));
+            virtualFile?.Refresh();
+            return virtualFile;
         }
 
         private static string GetNamespace(Type type)

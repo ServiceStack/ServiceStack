@@ -54,7 +54,9 @@ namespace ServiceStack.NativeTypes.Swift
             {"Single", "Float"},
             {"Double", "Double"},
             {"Decimal", "Double"},
+            {"IntPtr", "Int64"},
             {"Stream", "Data"},
+            {"Type", "String"},
         }.ToConcurrentDictionary();
 
         public static TypeFilterDelegate TypeFilter { get; set; }
@@ -99,6 +101,9 @@ namespace ServiceStack.NativeTypes.Swift
             sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
             sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
+            if (Config.UsePath != null)
+                sb.AppendLine("UsePath: {0}".Fmt(Config.UsePath));
+
             sb.AppendLine();
 
             sb.AppendLine("{0}BaseClass: {1}".Fmt(DefaultValue("BaseClass"), Config.BaseClass));
@@ -174,19 +179,20 @@ namespace ServiceStack.NativeTypes.Swift
                         lastNS = AppendType(ref sb, ref sbExt, type, lastNS,
                             new CreateTypeOptions
                             {
+                                Routes = metadata.Operations.GetRoutes(type),
                                 ImplementsFn = () =>
                                 {
                                     if (!Config.AddReturnMarker
-                                        && !type.ReturnVoidMarker
-                                        && type.ReturnMarkerTypeName == null)
+                                        && operation?.ReturnsVoid != true
+                                        && operation?.ReturnType == null)
                                         return null;
 
-                                    if (type.ReturnVoidMarker)
-                                        return "IReturnVoid";
-                                    if (type.ReturnMarkerTypeName != null)
-                                        return ReturnType("IReturn`1", new[] { Type(type.ReturnMarkerTypeName) });
+                                    if (operation?.ReturnsVoid == true)
+                                        return nameof(IReturnVoid);
+                                    if (operation?.ReturnType != null)
+                                        return Type("IReturn`1", new[] { Type(operation.ReturnType) });
                                     return response != null
-                                        ? ReturnType("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
+                                        ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
                                         : null;
                                 },
                                 IsRequest = true,
@@ -234,9 +240,9 @@ namespace ServiceStack.NativeTypes.Swift
         //Use built-in types already in net.servicestack.client package
         public static HashSet<string> IgnoreTypeNames = new HashSet<string>
         {
-            typeof(ResponseStatus).Name,
-            typeof(ResponseError).Name,
-            typeof(ErrorResponse).Name,
+            nameof(ResponseStatus),
+            nameof(ResponseError),
+            nameof(ErrorResponse),
         };
 
         private List<string> RemoveIgnoredTypes(MetadataTypes metadata)
@@ -260,9 +266,9 @@ namespace ServiceStack.NativeTypes.Swift
 
             sb.AppendLine();
             AppendComments(sb, type.Description);
-            if (type.Routes != null)
+            if (options?.Routes != null)
             {
-                AppendAttributes(sb, type.Routes.ConvertAll(x => x.ToMetadataAttribute()));
+                AppendAttributes(sb, options.Routes.ConvertAll(x => x.ToMetadataAttribute()));
             }
             AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);
@@ -385,7 +391,7 @@ namespace ServiceStack.NativeTypes.Swift
                 AddProperties(sb, type,
                     initCollections: !type.IsInterface() && Config.InitializeCollections,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
-                        && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
+                        && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)));
 
                 sb = sb.UnIndent();
                 sb.AppendLine("}");
@@ -678,7 +684,7 @@ namespace ServiceStack.NativeTypes.Swift
                 if (wasAdded) sb.AppendLine();
 
                 AppendDataMember(sb, null, dataMemberIndex++);
-                sb.AppendLine("public var {0}:ResponseStatus?".Fmt(typeof(ResponseStatus).Name.PropertyStyle()));
+                sb.AppendLine("public var {0}:ResponseStatus?".Fmt(nameof(ResponseStatus).PropertyStyle()));
             }
         }
 
@@ -702,7 +708,7 @@ namespace ServiceStack.NativeTypes.Swift
                         {
                             if (args.Length > 0)
                                 args.Append(", ");
-                            args.Append("{0}".Fmt(TypeValue(ctorArg.Type, ctorArg.Value)));
+                            args.Append(TypeValue(ctorArg.Type, ctorArg.Value));
                         }
                     }
                     else if (attr.Args != null)
@@ -711,7 +717,7 @@ namespace ServiceStack.NativeTypes.Swift
                         {
                             if (args.Length > 0)
                                 args.Append(", ");
-                            args.Append("{0}={1}".Fmt(attrArg.Name, TypeValue(attrArg.Type, attrArg.Value)));
+                            args.Append($"{attrArg.Name}={TypeValue(attrArg.Type, attrArg.Value)}");
                         }
                     }
                     sb.AppendLine("// @{0}({1})".Fmt(attr.Name, StringBuilderCacheAlt.ReturnAndFree(args)));

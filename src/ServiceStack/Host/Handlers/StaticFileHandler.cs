@@ -200,18 +200,17 @@ namespace ServiceStack.Host.Handlers
                             byte[] zipBytes = null;
                             if (encoding == CompressionTypes.GZip)
                             {
-                                zipBytes = DefaultFileContentsGzip ??
-                                           (DefaultFileContentsGzip = DefaultFileContents.CompressBytes(encoding));
+                                zipBytes = DefaultFileContentsGzip ??= DefaultFileContents.CompressBytes(encoding);
                             }
                             else if (encoding == CompressionTypes.Deflate)
                             {
-                                zipBytes = DefaultFileContentsDeflate ??
-                                           (DefaultFileContentsDeflate = DefaultFileContents.CompressBytes(encoding));
+                                zipBytes = DefaultFileContentsDeflate ??= DefaultFileContents.CompressBytes(encoding);
                             }
                             else
                             {
                                 zipBytes = DefaultFileContents.CompressBytes(encoding);
                             }
+
                             r.AddHeader(HttpHeaders.ContentEncoding, encoding);
                             r.SetContentLength(zipBytes.Length);
                             await r.OutputStream.WriteAsync(zipBytes);
@@ -234,13 +233,15 @@ namespace ServiceStack.Host.Handlers
                         if (rangeEnd > contentLength - 1)
                             rangeEnd = contentLength - 1;
 
-                        r.AddHttpRangeResponseHeaders(rangeStart: rangeStart, rangeEnd: rangeEnd, contentLength: contentLength);
+                        r.AddHttpRangeResponseHeaders(rangeStart: rangeStart, rangeEnd: rangeEnd,
+                            contentLength: contentLength);
                     }
                     else
                     {
                         rangeStart = 0;
                         rangeEnd = contentLength - 1;
                     }
+
                     var outputStream = r.OutputStream;
                     using (var fs = file.OpenRead())
                     {
@@ -281,6 +282,13 @@ namespace ServiceStack.Host.Handlers
 #endif
                 catch (Exception ex)
                 {
+                    if (ex is IHttpError httpError)
+                    {
+                        r.StatusCode = (int) httpError.StatusCode;
+                        r.StatusDescription = httpError.Message ?? httpError.ErrorCode;
+                        return;
+                    }
+                    
                     log.ErrorFormat($"Static file {request.PathInfo} forbidden: {ex.Message}");
                     throw new HttpException(403, "Forbidden.");
                 }

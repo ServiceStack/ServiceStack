@@ -17,7 +17,7 @@ namespace ServiceStack.Host.Handlers
 
         public string RequestName { get; set; }
 
-        private Type[] ProcessRequestArgTypes = new[] {typeof(IRequest), typeof(IResponse), typeof(string)};
+        private Type[] ProcessRequestArgTypes = {typeof(IRequest), typeof(IResponse), typeof(string)};
 
         public virtual bool RunAsAsync()
         {
@@ -167,9 +167,6 @@ namespace ServiceStack.Host.Handlers
 
         protected async Task HandleException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
         {
-            var errorMessage = $"Error occured while Processing Request: {ex.Message}";
-            HostContext.AppHost.OnLogError(typeof(HttpAsyncTaskHandler), errorMessage, ex);
-
             try
             {
                 await HostContext.RaiseAndHandleException(httpReq, httpRes, operationName, ex);
@@ -183,7 +180,7 @@ namespace ServiceStack.Host.Handlers
             }
             finally
             {
-                httpRes.EndRequest(skipHeaders: true);
+                await httpRes.EndRequestAsync(skipHeaders: true);
             }
         }
 

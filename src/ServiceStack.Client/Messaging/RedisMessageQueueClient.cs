@@ -27,12 +27,10 @@ namespace ServiceStack.Messaging
         }
 
         private IRedisNativeClient readWriteClient;
-        public IRedisNativeClient ReadWriteClient => 
-            readWriteClient ?? (readWriteClient = (IRedisNativeClient) clientsManager.GetClient());
+        public IRedisNativeClient ReadWriteClient => readWriteClient ??= (IRedisNativeClient) clientsManager.GetClient();
 
         private IRedisNativeClient readOnlyClient;
-        public IRedisNativeClient ReadOnlyClient => 
-            readOnlyClient ?? (readOnlyClient = (IRedisNativeClient) clientsManager.GetReadOnlyClient());
+        public IRedisNativeClient ReadOnlyClient => readOnlyClient ??= (IRedisNativeClient) clientsManager.GetReadOnlyClient();
 
         public void Publish<T>(T messageBody)
         {

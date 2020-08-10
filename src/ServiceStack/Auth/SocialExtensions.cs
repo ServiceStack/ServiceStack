@@ -1,5 +1,4 @@
 ﻿using System.Security.Cryptography;
-using System.Text;
 using ServiceStack.Text;
 
 namespace ServiceStack.Auth

@@ -62,7 +62,7 @@ namespace ServiceStack.VirtualPath
             return RootDirectory.GetDirectory(SanitizePath(virtualPath));
         }
 
-        public virtual IEnumerable<IVirtualFile> GetAllMatchingFiles(string globPattern, int maxDepth = Int32.MaxValue)
+        public virtual IEnumerable<IVirtualFile> GetAllMatchingFiles(string globPattern, int maxDepth = int.MaxValue)
         {
             return RootDirectory.GetAllMatchingFiles(globPattern, maxDepth);
         }

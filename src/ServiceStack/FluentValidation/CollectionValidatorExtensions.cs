@@ -139,6 +139,12 @@ namespace ServiceStack.FluentValidation {
 				return _ruleBuilder.SetValidator(validatorProvider, ruleSets);
 			}
 
+			public IRuleBuilderOptions<T, IEnumerable<TCollectionElement>> SetValidator<TValidator>(Func<T, IEnumerable<TCollectionElement>, TValidator> validatorProvider, params string[] ruleSets) 
+				where TValidator : IValidator<IEnumerable<TCollectionElement>>
+			{
+				return _ruleBuilder.SetValidator(validatorProvider, ruleSets);
+			}
+
 			public IRuleBuilderOptions<T, IEnumerable<TCollectionElement>> Configure(Action<PropertyRule> configurator) {
 				return ((IRuleBuilderOptions<T, IEnumerable<TCollectionElement>>)_ruleBuilder).Configure(configurator);
 			}

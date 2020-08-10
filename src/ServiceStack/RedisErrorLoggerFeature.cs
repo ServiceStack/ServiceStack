@@ -1,7 +1,6 @@
 ﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
-
 using System;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
@@ -9,8 +8,9 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class RedisErrorLoggerFeature : IPlugin
+    public class RedisErrorLoggerFeature : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.RedisErrorLogs;
         private static ILog Log = LogManager.GetLogger(typeof(RedisErrorLoggerFeature));
 
         private readonly IRedisClientsManager redisManager;

@@ -1,0 +1,19 @@
+{
+  "compileOnSave":  true,
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "declaration": true,
+    "sourceMap": false,
+    "target": "es5",
+    "module": "umd",
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "lib": ["es2015","dom","dom.iterable"],
+    "outDir": "lib\\js\\@servicestack\\desktop"
+  },
+   "files": [
+    "./src/servicestack-desktop.ts"
+   ]
+}

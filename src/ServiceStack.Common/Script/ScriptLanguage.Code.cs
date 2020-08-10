@@ -151,6 +151,17 @@ namespace ServiceStack.Script
             return new JsBlockStatement(statements);
         }
 
+        public static string EnsureReturn(string code)
+        {
+            if (code == null)
+                throw new ArgumentNullException(nameof(code));
+            
+            // if code doesn't contain a return, wrap and return the expression
+            if (code.IndexOf(ScriptConstants.Return,StringComparison.Ordinal) == -1)
+                code = ScriptConstants.Return + "(" + code + ")";
+            return code;
+        }
+
         public static T EvaluateCode<T>(this ScriptContext context, string code, Dictionary<string, object> args = null) =>
             context.EvaluateCode(code, args).ConvertTo<T>();
         
@@ -499,13 +510,13 @@ namespace ServiceStack.Script
                     {
                         if (statementPos >= 0)
                         {
-                            elseBody = literal.Slice(statementPos, cursorPos - statementPos).Trim();
-                            var ret = literal.Slice(cursorPos);
+                            elseBody = literal.Slice(statementPos, (cursorPos - lineLength) - statementPos).Trim();
+                            var ret = literal.Slice(cursorPos - lineLength);
                             return ret;
                         }
 
-                        statementPos = cursorPos - lineLength + 4;
                         elseArgument = line.Slice(4).Trim();
+                        statementPos = cursorPos;
                     }
                 }
             }

@@ -88,9 +88,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
             var withoutHtmlBlock = @"
 {{#if !isEmpty(items)}}
-<ul{{ ['nav', !disclaimerAccepted?'blur':''] | htmlClass }} id=""ul-{{id}}"">
+<ul{{ ['nav', !disclaimerAccepted?'blur':''] |> htmlClass }} id=""ul-{{id}}"">
 {{#each items}}
-    <li{{ {alt:isOdd(index), active:Name==highlight} | htmlClass }}>
+    <li{{ {alt:isOdd(index), active:Name==highlight} |> htmlClass }}>
         {{Name}}
     </li>
 {{/each}}
@@ -130,13 +130,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 </ul>".NormalizeNewLines()));
 
             var withoutHtmlBlock = @"
-{{ items | where: it.Age >= 2  
-   | assignTo: items }}
+{{ items |> where: it.Age >= 2  
+   |> assignTo: items }}
 {{#if !isEmpty(items)}}
 {{#if hasAccess}}
-<ul{{ ['nav', !disclaimerAccepted?'blur':''] | htmlClass }} id=""ul-{{id}}"">
+<ul{{ ['nav', !disclaimerAccepted?'blur':''] |> htmlClass }} id=""ul-{{id}}"">
 {{#each items}}
-    <li{{ {alt:isOdd(index), active:Name==highlight} | htmlClass }}>
+    <li{{ {alt:isOdd(index), active:Name==highlight} |> htmlClass }}>
         {{Name}}
     </li>
 {{/each}}

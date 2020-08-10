@@ -18,7 +18,8 @@ namespace ServiceStack
         [DataMember(Order = 5)] public string UserName { get; set; }
         [DataMember(Order = 6)] public string Password { get; set; }
         [DataMember(Order = 7)] public bool? RememberMe { get; set; }
-        [DataMember(Order = 8)] public string Continue { get; set; }
+        // For Web Requests only can use ?continue or ?returnUrl
+        // [DataMember(Order = 8)] public string Continue { get; set; }
         [DataMember(Order = 9)] public string ErrorView { get; set; }
 
         // digest auth
@@ -72,7 +73,8 @@ namespace ServiceStack
         [DataMember(Order = 6)] public string Password { get; set; }
         [DataMember(Order = 7)] public string ConfirmPassword { get; set; }
         [DataMember(Order = 8)] public bool? AutoLogin { get; set; }
-        [DataMember(Order = 9)] public string Continue { get; set; }
+        // For Web Requests only can use ?continue or ?returnUrl
+        // [DataMember(Order = 9)] public string Continue { get; set; }
         [DataMember(Order = 10)] public string ErrorView { get; set; }
         [DataMember(Order = 11)] public Dictionary<string, string> Meta { get; set; }
     }
@@ -311,11 +313,14 @@ namespace ServiceStack
         [DataMember(Order = 2)] public Dictionary<string, string> Meta { get; set; }
         [DataMember(Order = 3)] public ResponseStatus ResponseStatus { get; set; }
     }
-    
+
     [ExcludeMetadata]
-    [Route("/metadata/nav")]
     [DataContract]
-    public class GetNavItems : IReturn<GetNavItemsResponse> {}
+    public class GetNavItems : IReturn<GetNavItemsResponse>
+    {
+        [DataMember(Order = 1)]
+        public string Name { get; set; }
+    }
 
     [DataContract]
     public class GetNavItemsResponse : IMeta
@@ -331,6 +336,10 @@ namespace ServiceStack
         [DataMember(Order = 5)]
         public ResponseStatus ResponseStatus { get; set; }
     }
+
+    [ExcludeMetadata]
+    [DataContract]
+    public class MetadataApp { }
 
     [DataContract]
     public class GetFile : IReturn<FileContent>, IGet
@@ -426,4 +435,169 @@ namespace ServiceStack
         [DataMember(Order = 30)]
         public ResponseStatus ResponseStatus { get; set; }
     }
+
+    [DataContract]
+    public class DynamicRequest
+    {
+        [DataMember(Order = 1)]
+        public Dictionary<string, string> Params { get; set; }
+    }
+    
+    //Validation Rules
+    [DataContract]
+    public class GetValidationRules : IReturn<GetValidationRulesResponse>
+    {
+        [DataMember(Order = 1)]
+        public string AuthSecret { get; set; }
+        [DataMember(Order = 2)]
+        public string Type { get; set; }
+    }
+    [DataContract]
+    public class GetValidationRulesResponse
+    {
+        [DataMember(Order = 1)]
+        public List<ValidationRule> Results { get; set; }
+        [DataMember(Order = 2)]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+    [DataContract]
+    public class ModifyValidationRules : IReturnVoid
+    {
+        [DataMember(Order = 1)]
+        public string AuthSecret { get; set; }
+        [DataMember(Order = 2)]
+        public List<ValidationRule> SaveRules { get; set; }
+
+        [DataMember(Order = 3)]
+        public int[] DeleteRuleIds { get; set; }
+
+        [DataMember(Order = 4)]
+        public int[] SuspendRuleIds { get; set; }
+
+        [DataMember(Order = 5)]
+        public int[] UnsuspendRuleIds { get; set; }
+        
+        [DataMember(Order = 6)]
+        public bool? ClearCache { get; set; }
+    }
+    
+    //CrudEvents
+    [ExcludeMetadata]
+    [DataContract]
+    public class GetCrudEvents : QueryDb<CrudEvent>
+    {
+        [DataMember(Order = 1)]
+        public string AuthSecret { get; set; }
+        [DataMember(Order = 2)]
+        public string Model { get; set; }
+        [DataMember(Order = 3)]
+        public string ModelId { get; set; }
+    }
+
+    [ExcludeMetadata]
+    [DataContract]
+    public class CheckCrudEvents : IReturn<CheckCrudEventsResponse>
+    {
+        [DataMember(Order = 1)]
+        public string AuthSecret { get; set; }
+        [DataMember(Order = 2)]
+        public string Model { get; set; }
+        [DataMember(Order = 3)]
+        public List<string> Ids { get; set; }
+    }
+    
+    [DataContract]
+    public class CheckCrudEventsResponse : IHasResponseStatus
+    {
+        [DataMember(Order = 1)]
+        public List<string> Results { get; set; }
+
+        [DataMember(Order = 2)]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    /// <summary>
+    /// Capture a CRUD Event
+    /// </summary>
+    [DataContract]
+    public class CrudEvent : IMeta
+    {
+        [AutoIncrement]
+        [DataMember(Order = 1)]
+        public long Id { get; set; }
+        /// <summary>
+        /// AutoCrudOperation, e.g. Create, Update, Patch, Delete, Save
+        /// </summary>
+        [DataMember(Order = 2)]
+        public string EventType { get; set; }
+        /// <summary>
+        /// DB Model
+        /// </summary>
+        [Index]
+        [DataMember(Order = 3)]
+        public string Model { get; set; }
+        /// <summary>
+        /// Primary Key of DB Model
+        /// </summary>
+        [Index]
+        [DataMember(Order = 4)]
+        public string ModelId { get; set; }
+        /// <summary>
+        /// Date of Event (UTC)
+        /// </summary>
+        [DataMember(Order = 5)]
+        public DateTime EventDate { get; set; }
+        /// <summary>
+        /// Rows Updated if available
+        /// </summary>
+        [DataMember(Order = 6)]
+        public long? RowsUpdated { get; set; }
+        /// <summary>
+        /// Request DTO Type
+        /// </summary>
+        [DataMember(Order = 7)]
+        public string RequestType { get; set; }
+        /// <summary>
+        /// Serialized Request Body
+        /// </summary>
+        [DataMember(Order = 8)]
+        public string RequestBody { get; set; }
+        /// <summary>
+        /// UserAuthId if Authenticated
+        /// </summary>
+        [DataMember(Order = 9)]
+        public string UserAuthId { get; set; }
+        /// <summary>
+        /// UserName or unique User Identifier
+        /// </summary>
+        [DataMember(Order = 10)]
+        public string UserAuthName { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        [DataMember(Order = 11)]
+        public string RemoteIp { get; set; }
+        /// <summary>
+        /// URN format: urn:{requesttype}:{ModelId}
+        /// </summary>
+        [DataMember(Order = 12)]
+        public string Urn { get; set; }
+
+        /// <summary>
+        /// Custom Reference Data with integer Primary Key
+        /// </summary>
+        [DataMember(Order = 13)]
+        public int? RefId { get; set; }
+        /// <summary>
+        /// Custom Reference Data with non-integer Primary Key
+        /// </summary>
+        [DataMember(Order = 14)]
+        public string RefIdStr { get; set; }
+        /// <summary>
+        /// Custom Metadata to attach to this event
+        /// </summary>
+        [DataMember(Order = 15)]
+        public Dictionary<string, string> Meta { get; set; }
+    }
+    
 }

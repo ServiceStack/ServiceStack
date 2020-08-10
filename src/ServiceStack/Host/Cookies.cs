@@ -1,11 +1,13 @@
-﻿using System;
-using System.Net;
+﻿#if NETSTANDARD2_0
+using Microsoft.AspNetCore.Http;
+#else
 using System.Web;
+#endif
+
+using System;
+using System.Net;
 using ServiceStack.Text;
 using ServiceStack.Web;
-#if NETSTANDARD2_0
-using Microsoft.AspNetCore.Http;
-#endif
 
 namespace ServiceStack.Host
 {
@@ -67,24 +69,48 @@ namespace ServiceStack.Host
         private static readonly DateTime Session = DateTime.MinValue;
 
 #if !NETSTANDARD2_0
+        private static SetMemberDelegate sameSiteFn;
+        private static Enum sameSiteNone;
+        private static Enum sameSiteStrict;
+
+        public static void Init()
+        {
+            // Use reflection to avoid tfm builds and binary dependency on .NET Framework v4.7.2+
+            sameSiteFn = TypeProperties<HttpCookie>.GetAccessor("SameSite")?.PublicSetter;
+            if (sameSiteFn != null)
+            {
+                var sameSiteMode = typeof(HttpCookie).Assembly.GetType("System.Web.SameSiteMode");
+                if (sameSiteMode != null)
+                {
+                    sameSiteNone = (Enum) Enum.Parse(sameSiteMode, "None");
+                    sameSiteStrict = (Enum) Enum.Parse(sameSiteMode, "Strict");
+                }
+            }
+        }
+        
         public static HttpCookie ToHttpCookie(this Cookie cookie)
         {
+            var config = HostContext.Config;
             var httpCookie = new HttpCookie(cookie.Name, cookie.Value)
             {
                 Path = cookie.Path,
                 Expires = cookie.Expires,
-                HttpOnly = !HostContext.Config.AllowNonHttpOnlyCookies || cookie.HttpOnly,
+                HttpOnly = !config.AllowNonHttpOnlyCookies || cookie.HttpOnly,
                 Secure = cookie.Secure,
             };
             if (!string.IsNullOrEmpty(cookie.Domain))
             {
                 httpCookie.Domain = cookie.Domain;
             }
-            else if (HostContext.Config.RestrictAllCookiesToDomain != null)
+            else if (config.RestrictAllCookiesToDomain != null)
             {
-                httpCookie.Domain = HostContext.Config.RestrictAllCookiesToDomain;
+                httpCookie.Domain = config.RestrictAllCookiesToDomain;
             }
-            
+
+            sameSiteFn?.Invoke(httpCookie, config.UseSameSiteCookies
+                ? sameSiteStrict
+                : sameSiteNone);
+
             HostContext.AppHost?.HttpCookieFilter(httpCookie);
 
             return httpCookie;
@@ -95,16 +121,16 @@ namespace ServiceStack.Host
         public static CookieOptions ToCookieOptions(this Cookie cookie)
         {
             var config = HostContext.Config;
-            var cookieOptions = new CookieOptions
-            {
+            var cookieOptions = new CookieOptions {
                 Path = cookie.Path,
-                Expires = cookie.Expires == DateTime.MinValue ? (DateTimeOffset?)null : cookie.Expires,
+                Expires = cookie.Expires == DateTime.MinValue ? (DateTimeOffset?) null : cookie.Expires,
                 HttpOnly = !config.AllowNonHttpOnlyCookies || cookie.HttpOnly,
                 Secure = cookie.Secure,
+                SameSite = config.UseSameSiteCookies
+                    ? SameSiteMode.Strict
+                    : SameSiteMode.None,
             };
 
-            if (config.UseSameSiteCookies)
-                cookieOptions.SameSite = SameSiteMode.Strict;
             if (!string.IsNullOrEmpty(cookie.Domain))
                 cookieOptions.Domain = cookie.Domain;
             else if (config.RestrictAllCookiesToDomain != null)
@@ -118,6 +144,7 @@ namespace ServiceStack.Host
 
         public static string AsHeaderValue(this Cookie cookie)
         {
+            var config = HostContext.Config;
             var path = cookie.Path ?? "/";
             var sb = StringBuilderCache.Allocate();
 
@@ -132,16 +159,19 @@ namespace ServiceStack.Host
             {
                 sb.Append($";domain={cookie.Domain}");
             }
-            else if (HostContext.Config.RestrictAllCookiesToDomain != null)
+            else if (config.RestrictAllCookiesToDomain != null)
             {
-                sb.Append($";domain={HostContext.Config.RestrictAllCookiesToDomain}");
+                sb.Append($";domain={config.RestrictAllCookiesToDomain}");
             }
 
             if (cookie.Secure)
             {
                 sb.Append(";Secure");
             }
-            if (!HostContext.Config.AllowNonHttpOnlyCookies || cookie.HttpOnly)
+
+            sb.Append(";SameSite=").Append(config.UseSameSiteCookies ? "Strict" : "None");
+            
+            if (!config.AllowNonHttpOnlyCookies || cookie.HttpOnly)
             {
                 sb.Append(";HttpOnly");
             }

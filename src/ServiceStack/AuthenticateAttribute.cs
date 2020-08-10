@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
+using ServiceStack.Host;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -83,6 +85,54 @@ namespace ServiceStack
                 await AuthProvider.HandleFailedAuth(authProviders[0], session, req, res);
             }
         }
+
+        public static bool Authenticate(IRequest req, object requestDto=null, IAuthSession session=null, IAuthProvider[] authProviders=null)
+        {
+            if (HostContext.HasValidAuthSecret(req))
+                return true;
+
+            session ??= (req ?? throw new ArgumentNullException(nameof(req))).GetSession();
+            authProviders ??= AuthenticateService.GetAuthProviders();
+            var authValidate = HostContext.GetPlugin<AuthFeature>()?.OnAuthenticateValidate;
+            var ret = authValidate?.Invoke(req);
+            if (ret != null)
+                return false;
+
+            req.PopulateFromRequestIfHasSessionId(requestDto);
+
+            if (!req.Items.ContainsKey(Keywords.HasPreAuthenticated))
+            {
+                var mockResponse = new BasicRequest().Response;
+                req.Items[Keywords.HasPreAuthenticated] = true;
+                foreach (var authWithRequest in authProviders.OfType<IAuthWithRequest>())
+                {
+                    authWithRequest.PreAuthenticate(req, mockResponse);
+                    if (mockResponse.IsClosed)
+                        return false;
+                }
+            }
+            
+            return session != null && (authProviders.Length > 0 
+                       ? authProviders.Any(x => session.IsAuthorized(x.Provider))
+                       : session.IsAuthenticated);
+        }
+
+        public static void AssertAuthenticated(IRequest req, object requestDto=null, IAuthSession session=null, IAuthProvider[] authProviders=null)
+        {
+            if (Authenticate(req, requestDto:requestDto, session:session))
+                return;
+
+            ThrowNotAuthenticated(req);
+        }
+
+        public static void ThrowNotAuthenticated(IRequest req=null) => 
+            throw new HttpError(401, nameof(HttpStatusCode.Unauthorized), ErrorMessages.NotAuthenticated.Localize(req));
+
+        public static void ThrowInvalidRole(IRequest req=null) => 
+            throw new HttpError(403, nameof(HttpStatusCode.Forbidden), ErrorMessages.InvalidRole.Localize(req));
+
+        public static void ThrowInvalidPermission(IRequest req=null) => 
+            throw new HttpError(403, nameof(HttpStatusCode.Forbidden), ErrorMessages.InvalidPermission.Localize(req));
 
         internal static Task PreAuthenticateAsync(IRequest req, IEnumerable<IAuthProvider> authProviders)
         {

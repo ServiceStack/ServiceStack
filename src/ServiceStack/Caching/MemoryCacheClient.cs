@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using System.Threading;
 using ServiceStack.Logging;
 
 namespace ServiceStack.Caching
@@ -9,6 +11,10 @@ namespace ServiceStack.Caching
     public class MemoryCacheClient : ICacheClientExtended, IRemoveByPattern
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(MemoryCacheClient));
+
+        private long hitCounter = 0;
+
+        public long CleaningInterval { get; set; } = 1000;
 
         private ConcurrentDictionary<string, CacheEntry> memory;
         public bool FlushOnDispose { get; set; }
@@ -34,7 +40,7 @@ namespace ServiceStack.Caching
 
             internal object Value
             {
-                get { return cacheValue; }
+                get => cacheValue;
                 set
                 {
                     cacheValue = value;
@@ -58,6 +64,16 @@ namespace ServiceStack.Caching
         private void Set(string key, CacheEntry entry)
         {
             this.memory[key] = entry;
+            IncrHit();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void IncrHit()
+        {
+            if (Interlocked.Increment(ref hitCounter) % CleaningInterval == 0)
+            {
+                this.RemoveExpiredEntries();
+            }
         }
 
         /// <summary>
@@ -145,6 +161,7 @@ namespace ServiceStack.Caching
         public object Get(string key, out long lastModifiedTicks)
         {
             lastModifiedTicks = 0;
+            IncrHit();
 
             if (this.memory.TryGetValue(key, out var cacheEntry))
             {
@@ -392,7 +409,7 @@ namespace ServiceStack.Caching
         public void RemoveExpiredEntries()
         {
             var expiredKeys = new List<string>();
-            using (var enumerator = this.memory.GetEnumerator())
+            using var enumerator = this.memory.GetEnumerator();
             while (enumerator.MoveNext())
             {
                 var current = enumerator.Current;

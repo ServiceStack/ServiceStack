@@ -78,11 +78,34 @@ namespace ServiceStack
         /// </summary>
         public static void ExtractHttpRanges(this string rangeHeader, long contentLength, out long rangeStart, out long rangeEnd)
         {
-            var rangeParts = rangeHeader.RightPart("=").SplitOnFirst("-");
-            rangeStart = long.Parse(rangeParts[0]);
-            rangeEnd = rangeParts.Length == 2 && !string.IsNullOrEmpty(rangeParts[1])
-                           ? int.Parse(rangeParts[1]) //the client requested a chunk
-                           : contentLength - 1;
+            if (string.IsNullOrEmpty(rangeHeader) || rangeHeader.LeftPart('=') != "bytes" 
+                                                  || rangeHeader.IndexOf('-') == -1)
+                throw new HttpError(HttpStatusCode.RequestedRangeNotSatisfiable, $"Unsupported HTTP Range '{rangeHeader}'");
+            
+            if (rangeHeader.IndexOf(',') >= 0)
+                throw new HttpError(HttpStatusCode.RequestedRangeNotSatisfiable, $"Multiple HTTP Ranges in '{rangeHeader}' is not supported");
+
+            var bytesRange = rangeHeader.RightPart("=");
+            var rangeStartStr = bytesRange.LeftPart("-");
+            var rangeEndStr = bytesRange.RightPart("-");
+            if (string.IsNullOrEmpty(rangeStartStr))
+            {
+                var suffixLength = long.Parse(rangeEndStr);
+                rangeEnd = contentLength - 1;
+                rangeStart = rangeEnd - suffixLength;
+            }
+            else
+            {
+                rangeStart = long.Parse(rangeStartStr);
+                rangeEnd = !string.IsNullOrEmpty(rangeEndStr)
+                    ? long.Parse(rangeEndStr) //the client requested a chunk
+                    : contentLength - 1;
+            }
+
+            if (rangeStart < 0)
+                rangeStart = 0;
+            if (rangeEnd > contentLength - 1)
+                rangeEnd = contentLength - 1;
         }
 
         /// <summary>

@@ -16,8 +16,7 @@ namespace ServiceStack
         private static Dictionary<Type, ToMessageDelegate> ToMessageFnCache = new Dictionary<Type, ToMessageDelegate>();
         internal static ToMessageDelegate GetToMessageFn(Type type)
         {
-            ToMessageDelegate toMessageFn;
-            ToMessageFnCache.TryGetValue(type, out toMessageFn);
+            ToMessageFnCache.TryGetValue(type, out var toMessageFn);
 
             if (toMessageFn != null) return toMessageFn;
 

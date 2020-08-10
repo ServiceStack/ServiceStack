@@ -61,11 +61,29 @@ namespace ServiceStack
             }
         }
 
+        protected virtual Task<TResponse> ExecuteDynamic<TResponse>(string method, DynamicRequest request, CallContext context, Type requestType)
+        {
+            AppHost.AssertFeatures(ServiceStack.Feature.Grpc);
+            var to = request.Params.ToObjectDictionary();
+            var typedRequest = to?.FromObjectDictionary(requestType) ?? requestType.CreateInstance();
+            if (request.Params != null)
+            {
+                foreach (var entry in request.Params)
+                {
+                    context.RequestHeaders.Add("query." + entry.Key, entry.Value);
+                }
+            }
+            return Execute<TResponse>(method, typedRequest, context);
+        }
+        
         protected virtual async Task<TResponse> Execute<TResponse>(string method, object request, CallContext context)
         {
             AppHost.AssertFeatures(ServiceStack.Feature.Grpc);
+            if (!Feature.DisableRequestParamsInHeaders)
+                PopulateRequestFromHeaders(request, context.CallOptions.Headers);
 
             var req = new GrpcRequest(context, request, method);
+            using var scope = req.StartScope();
             var ret = await RpcGateway.ExecuteAsync<TResponse>(request, req);
             if (req.Response.Dto == null)
                 req.Response.Dto = ret;
@@ -73,9 +91,41 @@ namespace ServiceStack
             return ret;
         }
 
+        protected virtual void PopulateRequestFromHeaders(object request, global::Grpc.Core.Metadata headers)
+        {
+            if (headers.Count == 0)
+                return;
+
+            var props = TypeProperties.Get(request.GetType());
+            var to = new Dictionary<string, object>();
+            foreach (var entry in headers)
+            {
+                var key = entry.Key.IndexOf('.') >= 0 && (
+                        entry.Key.StartsWith("query.") ||
+                        entry.Key.StartsWith("form.") ||
+                        entry.Key.StartsWith("cookie.") ||
+                        entry.Key.StartsWith("header."))
+                    ? entry.Key.RightPart('.')
+                    : entry.Key;
+                
+                if (!props.PropertyMap.TryGetValue(key, out var accessor))
+                    continue;
+
+                var propName = accessor.PropertyInfo.Name; 
+                to[propName] = !entry.Key.EndsWith("-bin")
+                    ? (object) entry.Value
+                    : entry.ValueBytes;
+            }
+
+            if (to.Count > 0)
+                to.PopulateInstance(request);
+        }
+
         protected virtual async IAsyncEnumerable<TResponse> Stream<TRequest,TResponse>(TRequest request, CallContext context)
         {
             AppHost.AssertFeatures(ServiceStack.Feature.Grpc);
+            if (!Feature.DisableRequestParamsInHeaders)
+                PopulateRequestFromHeaders(request, context.CallOptions.Headers);
             
             if (!Feature.RequestServiceTypeMap.TryGetValue(typeof(TRequest), out var serviceType))
                 throw new NotSupportedException($"'{typeof(TRequest).Name}' was not registered in GrpcFeature.RegisterServices");
@@ -84,6 +134,7 @@ namespace ServiceStack
             using var disposableService = service as IDisposable;
             
             var req = new GrpcRequest(context, request, HttpMethods.Post);
+            using var scope = req.StartScope();
             var res = req.Response;
 
             if (service is IRequiresRequest requiresRequest)
@@ -135,12 +186,12 @@ namespace ServiceStack
                     catch (OperationCanceledException)
                     {
                         await enumerator.DisposeAsync();
-                        yield break; //written in headers
+                        yield break;
                     }
                     catch (Exception)
                     {
                         await enumerator.DisposeAsync();
-                        yield break; //written in headers
+                        yield break;
                     }
                     if (more)
                         yield return enumerator.Current;

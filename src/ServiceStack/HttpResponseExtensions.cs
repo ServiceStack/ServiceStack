@@ -115,12 +115,33 @@ namespace ServiceStack
             httpRes.EndRequest();
         }
 
+#if NETSTANDARD
+        public static Microsoft.AspNetCore.Http.HttpRequest AllowSyncIO(this Microsoft.AspNetCore.Http.HttpRequest req)
+        {
+            req.HttpContext.AllowSyncIO();
+            return req;
+        }
+        public static Microsoft.AspNetCore.Http.HttpContext AllowSyncIO(this Microsoft.AspNetCore.Http.HttpContext ctx)
+        {
+            // AllowSynchronousIO for sync SSE notifications https://github.com/aspnet/AspNetCore/issues/7644 
+            var feature = ctx.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
+            feature.AllowSynchronousIO = true;
+            return ctx;
+        }
+#endif
+
+        public static IRequest AllowSyncIO(this IRequest req)
+        {
+#if NETSTANDARD
+            (req as ServiceStack.Host.NetCore.NetCoreRequest)?.HttpContext.AllowSyncIO();
+#endif
+            return req;
+        }
+
         public static IResponse AllowSyncIO(this IResponse res)
         {
 #if NETSTANDARD
-                // AllowSynchronousIO for sync SSE notifications https://github.com/aspnet/AspNetCore/issues/7644 
-                var feature = ((ServiceStack.Host.NetCore.NetCoreResponse)res).HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
-                feature.AllowSynchronousIO = true;
+            (res as ServiceStack.Host.NetCore.NetCoreResponse)?.HttpContext.AllowSyncIO();
 #endif
             return res;
         }
@@ -265,7 +286,7 @@ namespace ServiceStack
 #if !NETSTANDARD2_0
             if (response is Host.AspNet.AspNetResponse aspRes)
             {
-                aspRes.Write(contents);
+                aspRes.Response.Write(contents);
                 return;
             }
 #endif

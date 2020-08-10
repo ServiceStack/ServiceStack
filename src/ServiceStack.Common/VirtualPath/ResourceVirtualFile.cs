@@ -7,8 +7,8 @@ namespace ServiceStack.VirtualPath
 {
     public class ResourceVirtualFile : AbstractVirtualFileBase
     {
-        protected Assembly BackingAssembly;
-        protected string FileName;
+        protected readonly Assembly BackingAssembly;
+        protected readonly string FileName;
         
         public override string Name => FileName;
 
@@ -25,10 +25,8 @@ namespace ServiceStack.VirtualPath
             {
                 if (length == null)
                 {
-                    using (var s = OpenRead())
-                    {
-                        length = s.Length;
-                    }
+                    using var s = OpenRead();
+                    length = s.Length;
                 }
                 return length.Value;
             }

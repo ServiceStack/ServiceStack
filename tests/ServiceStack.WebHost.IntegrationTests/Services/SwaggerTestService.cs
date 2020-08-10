@@ -15,6 +15,16 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         Blue
     }
 
+    public enum MyColorDesc
+    {
+        [Description("The color Red")]
+        Red = 10,
+        [Description("The color Green")]
+        Green = 20,
+        [Description("The color Blue")]
+        Blue = 30,
+    }
+
     [Api("SwaggerTest Service Description")]
     [ApiResponse(HttpStatusCode.BadRequest, "Your request was not understood")]
     [ApiResponse(HttpStatusCode.InternalServerError, "Oops, something broke")]
@@ -34,6 +44,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         [ApiAllowableValues("Color", typeof(MyColor))] //Enum
         [DataMember]
         public MyColor Color { get; set; }
+
+        [ApiMember]
+        [ApiAllowableValues("ColorDesc", typeof(MyColorDesc))] //Enum
+        [DataMember]
+        public MyColorDesc ColorDesc { get; set; }
 
         [ApiMember(Description = "Aliased Description",
                    DataType = "string", IsRequired = true)]

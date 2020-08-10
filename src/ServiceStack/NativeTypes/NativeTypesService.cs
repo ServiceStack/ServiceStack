@@ -255,11 +255,18 @@ namespace ServiceStack.NativeTypes
             typeof(IHasSessionId),
             typeof(IHasBearerToken),
             typeof(IHasVersion),
+            typeof(ICreateDb<>),
+            typeof(IUpdateDb<>),
+            typeof(IPatchDb<>),
+            typeof(IDeleteDb<>),
+            typeof(ISaveDb<>),
         }.ToList();
 
         public static List<Type> BuiltInClientDtos = new[] {
             typeof(ResponseStatus),
             typeof(ResponseError),
+            typeof(EmptyResponse),
+            typeof(IdResponse),
             typeof(QueryBase),
             typeof(QueryData<>),
             typeof(QueryDb<>),
@@ -295,6 +302,11 @@ namespace ServiceStack.NativeTypes
             typeof(NavItem),
             typeof(GetNavItems),
             typeof(GetNavItemsResponse),
+            typeof(MetadataApp),
+            typeof(GetFile),
+            typeof(FileContent),
+            typeof(StreamFiles), // gRPC Server Stream
+            typeof(StreamServerEvents), // gRPC Server Stream
         }.ToList();
 
         private MetadataTypes ConfigureScript(MetadataTypesConfig typesConfig)

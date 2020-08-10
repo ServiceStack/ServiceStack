@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Threading;
+using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Data;
@@ -28,7 +29,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public const string SqlServerProvider = "SqlServer2012";
 
         public static string SqliteFileConnString = "~/App_Data/autoquery.sqlite".MapProjectPath();
-
+        
+        public Action<AutoQueryAppHost,Container> ConfigureFn { get; set; }
+        
         public override void Configure(Container container)
         {
             var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
@@ -145,6 +148,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var autoQuery = new AutoQueryFeature
                 {
                     MaxLimit = 100,
+                    // EnableAsync = false,
                     EnableRawSqlFilters = true,
                     ResponseFilters = {
                         ctx => {
@@ -159,7 +163,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                             foreach (var cmd in ctx.Commands)
                             {
                                 if (!supportedFns.TryGetValue(cmd.Name, out var fn)) continue;
-                                var label = !cmd.Suffix.IsNullOrWhiteSpace() ? cmd.Suffix.Trim().ToString() : cmd.ToString();
+                                var label = !cmd.Suffix.IsNullOrWhiteSpace() ? cmd.Suffix.ToString().Trim() : cmd.ToString();
                                 ctx.Response.Meta[label] = fn(cmd.Args[0].ParseInt32(), cmd.Args[1].ParseInt32()).ToString();
                                 executedCmds.Add(cmd);
                             }
@@ -178,6 +182,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 );
 
             Plugins.Add(autoQuery);
+            
+            ConfigureFn?.Invoke(this,container);
         }
 
         public static Rockstar[] SeedRockstars = new[] {
@@ -744,7 +750,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public object Any(QueryChangeConnectionInfo query)
         {
-            return AutoQuery.Execute(query, AutoQuery.CreateQuery(query, Request));
+            return AutoQuery.Execute(query, AutoQuery.CreateQuery(query, Request), Request);
         }
     }
 
@@ -808,20 +814,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             public IAutoQueryDb AutoQuery { get; set; }
 
-            public object Any(QueryMovies query)
+            public async Task<object> Any(QueryMovies query)
             {
-                var q = AutoQuery.CreateQuery(query, base.Request);
-                return AutoQuery.Execute(query, q);
+                using var db = AutoQuery.GetDb(query, base.Request);
+                var q = AutoQuery.CreateQuery(query, base.Request, db);
+                return await AutoQuery.ExecuteAsync(query, q, base.Request, db);
             }
-            
         }
+        
         [Test]
-        public void Can_execute_AutoQueryService_in_UnitTest()
+        public async Task Can_execute_AutoQueryService_in_UnitTest()
         {
             var service = appHost.Resolve<MyQueryServices>();
             service.Request = new BasicRequest();
 
-            var response = (QueryResponse<Movie>) service.Any(
+            var response = (QueryResponse<Movie>) await service.Any(
                 new QueryMovies { Ratings = new[] {"G", "PG-13"} });
             
             Assert.That(response.Results.Count, Is.EqualTo(5));
@@ -852,17 +859,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Dispose();
         }
 
-        public List<Rockstar> Rockstars
-        {
-            get { return AutoQueryAppHost.SeedRockstars.ToList(); }
-        }
+        public List<Rockstar> Rockstars => AutoQueryAppHost.SeedRockstars.ToList();
 
-        public List<PagingTest> PagingTests
-        {
-            get { return AutoQueryAppHost.SeedPagingTest.ToList(); }
-        }
+        public List<PagingTest> PagingTests => AutoQueryAppHost.SeedPagingTest.ToList();
 
-//        [NUnit.Framework.Ignore("Debug Run"), Test]
+        //        [NUnit.Framework.Ignore("Debug Run"), Test]
         public void RunFor10Mins()
         {
 #if NET45
@@ -908,6 +909,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = client.Get(new QueryCaseInsensitiveOrderBy { Age = 27, OrderBy = "FirstName" });
 
             Assert.That(response.Results.Count, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Can_query_IsNull()
+        {
+            var url = $"{Config.ListeningOn}query/rockstars?DateDiedIsNull";
+            var response = url.GetJsonFromUrl().FromJson<QueryResponse<Rockstar>>();
+
+            response.PrintDump();
+            Assert.That(response.Results.Count, Is.GreaterThan(0));
+            Assert.That(response.Results.All(x => x.DateDied == null));
+        }
+
+        [Test]
+        public void Can_query_IsNotNull()
+        {
+            var url = $"{Config.ListeningOn}query/rockstars?DateDiedIsNotNull";
+            var response = url.GetJsonFromUrl().FromJson<QueryResponse<Rockstar>>();
+
+            response.PrintDump();
+            Assert.That(response.Results.Count, Is.GreaterThan(0));
+            Assert.That(response.Results.All(x => x.DateDied != null));
         }
 
         [Test]

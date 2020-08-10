@@ -1,52 +1,18 @@
 using System;
-using System.Collections.Concurrent;
-using System.Reflection;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Grpc.Core;
-using ProtoBuf.Meta;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
     public static class GrpcUtils
     {
-        public static Func<Type, bool> IgnoreTypeModel { get; set; } = DefaultIgnoreTypes;
-
-        public static bool DefaultIgnoreTypes(Type type) => type.IsValueType || type == typeof(string);
-
-        public static Func<string, string, string> ServiceNameResolver { get; set; } = DefaultServiceNameResolver;
-        public static string DefaultServiceNameResolver(string verb, string requestName) => 
-            requestName.StartsWithIgnoreCase(verb) ? "Call" + requestName : verb.ToPascalCase() + requestName;
-
-        public static Func<string, string> ServerStreamServiceNameResolver { get; set; } = DefaultServerStreamServiceNameResolver;
-        public static string DefaultServerStreamServiceNameResolver(string requestName) => 
-            "Server" + requestName;
-        
-        public static MetaType Register<T>() => GrpcMarshaller<T>.GetMetaType();
-        
-        public static string GetServiceName(string verb, string requestName) => ServiceNameResolver(verb, requestName);
-
-        public static string GetServerStreamServiceName(string requestName) => ServerStreamServiceNameResolver(requestName);
-
-        private static readonly ConcurrentDictionary<Type, Func<MetaType>> FnCache =
-            new ConcurrentDictionary<Type, Func<MetaType>>();
-
-        public static MetaType Register(Type type)
-        {
-            if (IgnoreTypeModel(type))
-                return null;
-
-            if (!FnCache.TryGetValue(type, out var fn))
-            {
-                var grpc = typeof(GrpcMarshaller<>).MakeGenericType(type);
-                var mi = grpc.GetMethod("GetMetaType", BindingFlags.Static | BindingFlags.Public);
-                FnCache[type] = fn = (Func<MetaType>) mi.CreateDelegate(typeof(Func<MetaType>));
-            }
-
-            return fn();
-        }
-
-        public static RuntimeTypeModel TypeModel { get; } = ProtoBuf.Meta.TypeModel.Create();
-
         public static Task<TResponse> Execute<TRequest, TResponse>(this Channel channel, TRequest request,
             string servicesName, string methodName,
             CallOptions options = default, string host = null)
@@ -67,6 +33,262 @@ namespace ServiceStack
             {
                 return await auc.ResponseAsync;
             }
+        }
+
+        public static HttpClientHandler AddPemCertificate(this HttpClientHandler handler, X509Certificate2 cert,
+            Func<HttpRequestMessage, X509Certificate2, X509Chain, SslPolicyErrors, bool>
+                serverCertificateCustomValidationCallback = null)
+        {
+            handler.ClientCertificates.Add(cert);
+            if (serverCertificateCustomValidationCallback != null)
+                handler.ServerCertificateCustomValidationCallback = serverCertificateCustomValidationCallback;
+            return handler;
+        }
+
+        public static HttpClientHandler AddPemCertificateFromFile(this HttpClientHandler handler, string fileName,
+            Func<HttpRequestMessage, X509Certificate2, X509Chain, SslPolicyErrors, bool> serverCertificateCustomValidationCallback = null) =>
+            handler.AddPemCertificate(new X509Certificate2(fileName), serverCertificateCustomValidationCallback);
+
+        public static HttpClientHandler AllowSelfSignedCertificatesFrom(this HttpClientHandler handler, string dnsName)
+        {
+            handler.ServerCertificateCustomValidationCallback = AllowSelfSignedCertificatesFrom(dnsName);
+            return handler;
+        }
+        
+        public static Func<HttpRequestMessage, X509Certificate2, X509Chain, SslPolicyErrors, bool> AllowSelfSignedCertificatesFrom(string dnsName) =>
+            (req, cert, certChain, sslPolicyErrors) =>
+                cert.SubjectName.RawData.SequenceEqual(cert.IssuerName.RawData) && // self-signed
+                cert.GetNameInfo(X509NameType.DnsName, forIssuer: false) == dnsName &&
+                (sslPolicyErrors & ~SslPolicyErrors.RemoteCertificateChainErrors) == SslPolicyErrors.None; // only this
+
+        public static void Set(this Metadata headers, string name, string value)
+        {
+            for (var i = 0; i < headers.Count; i++)
+            {
+                var entry = headers[i];
+                if (entry.Key.EqualsIgnoreCase(name))
+                {
+                    headers.RemoveAt(i);
+                    break;
+                }
+            }
+
+            headers.Add(name, value);
+        }
+        
+        public static CallOptions Init(this CallOptions options, GrpcClientConfig config, bool noAuth)
+        {
+            var auth = noAuth
+                ? null
+                : !string.IsNullOrEmpty(config.UserName) && !string.IsNullOrEmpty(config.Password)
+                    ? "Basic " + Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(config.UserName + ":" + config.Password))
+                    : !string.IsNullOrEmpty(config.BearerToken)
+                        ? "Bearer " + config.BearerToken
+                        : !string.IsNullOrEmpty(config.SessionId)
+                            ? nameof(config.SessionId)
+                            : null;
+
+            if (config.Headers.Count > 0 || auth != null || config.UserAgent != null)
+            {
+                var headers = options.Headers;
+                if (headers == null)
+                    options = options.WithHeaders(headers = new Metadata());
+                
+                foreach (var entry in config.Headers)
+                {
+                    headers.Add(entry);
+                }
+
+                if (auth != null)
+                {
+                    if (auth == nameof(config.SessionId))
+                        headers.Set(GrpcClientConfig.Keywords.HeaderSessionId, config.SessionId);
+                    else
+                        headers.Set(HttpHeaders.Authorization, auth);
+                }
+
+                if (config.UserAgent != null)
+                    headers.Set(HttpHeaders.UserAgent, config.UserAgent);
+            }
+            return options;
+        }
+
+        public static bool InitRequestDto(GrpcClientConfig config, object requestDto)
+        {
+            config.PopulateRequestMetadata(requestDto);
+            var authIncluded = !string.IsNullOrEmpty((requestDto is IHasBearerToken hasBearerToken ? hasBearerToken.BearerToken : null) ?? 
+                (requestDto is IHasSessionId hasSessionId ? hasSessionId.SessionId : null));
+            return authIncluded;
+        }
+
+        public static async Task<(TResponse, ResponseStatus, Metadata)> GetResponseAsync<TResponse>(GrpcClientConfig config, AsyncUnaryCall<TResponse> auc)
+        {
+            var headers = await auc.ResponseHeadersAsync;
+            object status = null;
+            ResponseStatus typedStatus = null;
+            string errorCode = null;
+            string message = null;
+            TResponse response = default;
+            try
+            {
+                response = await auc.ResponseAsync;
+                status = response.GetResponseStatus();
+
+                if (response is AuthenticateResponse authResponse)
+                {
+                    if (!string.IsNullOrEmpty(authResponse.BearerToken))
+                        config.BearerToken = authResponse.BearerToken;
+                    else if (!string.IsNullOrEmpty(authResponse.SessionId))
+                        config.SessionId = authResponse.SessionId;
+                }
+            }
+            catch (RpcException ex)
+            {
+                var statusBytes = ResponseCallContext.GetHeaderBytes(headers, GrpcClientConfig.Keywords.GrpcResponseStatus);
+                status = statusBytes != null 
+                    ? GrpcServiceStack.ParseResponseStatus(statusBytes)
+                    : new ResponseStatus {
+                        ErrorCode = errorCode = ex.Status.Detail ?? ex.StatusCode.ToString(),
+                        Message = message = HttpStatus.GetStatusDescription(ResponseCallContext.GetHttpStatus(headers)) 
+                    };
+
+                typedStatus = status as ResponseStatus; 
+                if (typedStatus != null && string.IsNullOrEmpty(typedStatus.Message))
+                {
+                    typedStatus.ErrorCode = errorCode = ex.StatusCode.ToString();
+                    typedStatus.Message = message = ex.Status.Detail;
+                }
+
+                var prop = TypeProperties<TResponse>.GetAccessor(nameof(IHasResponseStatus.ResponseStatus));
+                if (prop != null)
+                {
+                    response = typeof(TResponse).CreateInstance<TResponse>();
+                    if (prop.PropertyInfo.PropertyType.IsInstanceOfType(status))
+                    {
+                        prop.PublicSetter(response, status);
+                    }
+                    else
+                    {
+                        // Protoc clients generate different ResponseStatus DTO
+                        var propStatus = status.ConvertTo(prop.PropertyInfo.PropertyType);
+                        prop.PublicSetter(response, propStatus);
+                    }
+                }
+            }
+            finally
+            {
+                await InvokeResponseFiltersAsync(config, auc, response);
+            }
+
+            if (typedStatus == null)
+                typedStatus = status as ResponseStatus;
+            
+            if (typedStatus == null && status != null)
+            {
+                typedStatus = new ResponseStatus {
+                    ErrorCode = errorCode ?? TypeProperties.Get(status.GetType()).GetPublicGetter(nameof(ResponseStatus.ErrorCode))(status) as string,
+                    Message = message ?? TypeProperties.Get(status.GetType()).GetPublicGetter(nameof(ResponseStatus.Message))(status) as string,
+                };
+            }
+
+            return (response, typedStatus, headers);
+        }
+
+        public static async Task<Metadata> InvokeResponseFiltersAsync<TResponse>(GrpcClientConfig config, AsyncUnaryCall<TResponse> auc, TResponse response, Action<ResponseCallContext> fn = null)
+        {
+            var headers = await auc.ResponseHeadersAsync;
+            if (GrpcClientConfig.GlobalResponseFilter != null || config.ResponseFilter != null)
+            {
+                var ctx = new ResponseCallContext(response, auc.GetStatus(), headers);
+                fn?.Invoke(ctx);
+
+                GrpcClientConfig.GlobalResponseFilter?.Invoke(ctx);
+                config.ResponseFilter?.Invoke(ctx);
+            }
+            return headers;
+        }
+
+        public static async Task<Metadata> InvokeResponseFiltersAsync<TResponse>(GrpcClientConfig config, AsyncServerStreamingCall<TResponse> asc, IAsyncStreamReader<TResponse> response, Action<ResponseCallContext> fn = null)
+        {
+            var headers = await asc.ResponseHeadersAsync;
+            if (GrpcClientConfig.GlobalResponseFilter != null || config.ResponseFilter != null)
+            {
+                var ctx = new ResponseCallContext(response, asc.GetStatus(), headers);
+                fn?.Invoke(ctx);
+
+                GrpcClientConfig.GlobalResponseFilter?.Invoke(ctx);
+                config.ResponseFilter?.Invoke(ctx);
+            }
+            return headers;
+        }
+
+        public static async Task<(IAsyncStreamReader<TResponse>, ResponseStatus, Metadata)> GetResponseAsync<TResponse>(GrpcClientConfig config, AsyncServerStreamingCall<TResponse> auc)
+        {
+            var headers = await auc.ResponseHeadersAsync;
+            ResponseStatus status = null;
+            IAsyncStreamReader<TResponse> response = default;
+            try
+            {
+                response = auc.ResponseStream;
+                status = response.GetResponseStatus();
+            }
+            catch (RpcException ex)
+            {
+                status = HandleRpcException(headers, ex);
+            }
+            finally
+            {
+                await InvokeResponseFiltersAsync(config, auc, response);
+            }
+
+            return (response, status, headers);
+        }
+
+        public static ResponseStatus HandleRpcException(Metadata headers, RpcException ex)
+        {
+            var statusBytes = ResponseCallContext.GetHeaderBytes(headers, GrpcClientConfig.Keywords.GrpcResponseStatus);
+            var status = statusBytes != null
+                ? GrpcMarshaller<ResponseStatus>.Instance.Deserializer(statusBytes)
+                : new ResponseStatus {
+                    ErrorCode = ex.Status.Detail ?? ex.StatusCode.ToString(),
+                    Message = HttpStatus.GetStatusDescription(ResponseCallContext.GetHttpStatus(headers))
+                };
+            return status;
+        }
+        
+        public static WebHeaderCollection ResolveHeaders(Metadata headers)
+        {
+            var to = new WebHeaderCollection();
+            foreach (var header in headers)
+            {
+                if (header.Key.EndsWith("-bin"))
+                    continue;
+                
+                to[header.Key] = header.Value;
+            }
+            return to;
+        }
+
+        public static Metadata ToHeaders(Dictionary<string, string> headers)
+        {
+            var to = new Metadata();
+            foreach (var entry in headers)
+            {
+                to.Add(entry.Key, entry.Value);
+            }
+            return to;
+        }
+
+        public static Metadata ToHeaders<T>(T headers)
+        {
+            var to = new Metadata();
+            var objDictionary = headers.ToObjectDictionary();
+            foreach (var entry in objDictionary)
+            {
+                var val = entry.Value.ConvertTo<string>();
+                to.Add(entry.Key, val);
+            }
+            return to;
         }
     }
 }

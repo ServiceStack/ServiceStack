@@ -11,6 +11,7 @@ using ServiceStack.Host.Handlers;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Messaging;
+using ServiceStack.Script;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -20,6 +21,11 @@ namespace ServiceStack
     /// </summary>
     public interface IAppHost : IResolver
     {
+        /// <summary>
+        /// The base path ServiceStack is hosted on
+        /// </summary>
+        string PathBase { get; }
+        
         /// <summary>
         /// The assemblies reflected to find api services provided in the AppHost constructor
         /// </summary>
@@ -191,6 +197,16 @@ namespace ServiceStack
         List<HandleUncaughtExceptionAsyncDelegate> UncaughtExceptionHandlersAsync { get; }
 
         /// <summary>
+        /// Provide an exception handler for Service Gateway Exceptions
+        /// </summary>
+        List<HandleGatewayExceptionDelegate> GatewayExceptionHandlers { get; }
+
+        /// <summary>
+        /// Provide an exception handler for Service Gateway Exceptions (Async)
+        /// </summary>
+        List<HandleGatewayExceptionAsyncDelegate> GatewayExceptionHandlersAsync { get; }
+
+        /// <summary>
         /// Provide callbacks to be fired after the AppHost has finished initializing
         /// </summary>
         List<Action<IAppHost>> AfterInitCallbacks { get; }
@@ -331,6 +347,36 @@ namespace ServiceStack
         /// Publish Message to be processed by AppHost
         /// </summary>
         void PublishMessage<T>(IMessageProducer messageProducer, T message);
+        
+        /// <summary>
+        /// Global #Script ScriptContext for AppHost. Returns SharpPagesFeature plugin or fallsback to DefaultScriptContext.
+        /// </summary>
+        ScriptContext ScriptContext { get; }
+
+        /// <summary>
+        /// Evaluate Expressions in ServiceStack's ScriptContext.
+        /// Can be overridden if you want to customize how different expressions are evaluated.
+        /// </summary>
+        object EvalExpression(string expr);
+
+        /// <summary>
+        /// Evaluate Expressions in ServiceStack's ScriptContext.
+        /// Can be overridden if you want to customize how different expressions are evaluated.
+        /// </summary>
+        object EvalExpressionCached(string expr);
+
+        /// <summary>
+        /// Evaluate a script value, `IScriptValue.Expression` results are cached globally.
+        /// If `IRequest` is provided, results from the same `IScriptValue.Eval` are cached per request. 
+        /// </summary>
+        object EvalScriptValue(IScriptValue scriptValue, IRequest req = null, Dictionary<string, object> args = null);
+
+        /// <summary>
+        /// Evaluate a script value, `IScriptValue.Expression` results are cached globally.
+        /// If `IRequest` is provided, results from the same `IScriptValue.Eval` are cached per request. 
+        /// </summary>
+        Task<object> EvalScriptValueAsync(IScriptValue scriptValue, IRequest req = null, Dictionary<string, object> args = null);
+
     }
 
     public interface IHasAppHost

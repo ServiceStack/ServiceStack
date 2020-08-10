@@ -11,8 +11,9 @@ namespace ServiceStack
     /// <summary>
     /// Transparently Proxy requests through to downstream HTTP Servers
     /// </summary>
-    public class ProxyFeature : IPlugin
+    public class ProxyFeature : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.Proxy;
         private readonly Func<IHttpRequest, bool> matchingRequests;
         public readonly Func<IHttpRequest, string> ResolveUrl;
 
@@ -80,7 +81,9 @@ namespace ServiceStack
         public Action<IHttpResponse, HttpWebResponse> ProxyResponseFilter { get; set; }
         public Func<IHttpRequest, Stream, Task<Stream>> TransformRequest { get; set; }
         public Func<IHttpResponse, Stream, Task<Stream>> TransformResponse { get; set; }
-        public HashSet<string> IgnoreResponseHeaders { get; set; }
+        public HashSet<string> IgnoreResponseHeaders { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+            HttpHeaders.TransferEncoding
+        };
 
         public override Task ProcessRequestAsync(IRequest req, IResponse response, string operationName)
         {
@@ -99,9 +102,34 @@ namespace ServiceStack
             }
         }
 
-        public virtual async Task ProxyRequestAsync(IHttpRequest httpReq, string url)
+        public virtual async Task ProxyRequestAsync(IHttpRequest httpReq, string url) => 
+            await ProxyRequestAsync(httpReq, (HttpWebRequest)WebRequest.Create(url));
+
+        public async Task ProxyRequestAsync(IHttpRequest httpReq, HttpWebRequest webReq)
         {
-            var webReq = (HttpWebRequest)WebRequest.Create(url);
+            InitWebRequest(httpReq, webReq);
+
+            ProxyRequestFilter?.Invoke(httpReq, webReq);
+
+            if (httpReq.ContentLength > 0)
+            {
+                var inputStream = httpReq.InputStream;
+                if (TransformRequest != null)
+                    inputStream = await TransformRequest(httpReq, inputStream) ?? inputStream;
+
+                using (inputStream)
+                using (var requestStream = await webReq.GetRequestStreamAsync())
+                {
+                    await inputStream.WriteToAsync(requestStream);
+                }
+            }
+
+            var res = (IHttpResponse) httpReq.Response;
+            await ProxyToResponse(res, webReq);
+        }
+
+        public static void InitWebRequest(IHttpRequest httpReq, HttpWebRequest webReq)
+        {
             webReq.Method = httpReq.Verb;
             webReq.ContentType = httpReq.ContentType;
             webReq.Accept = httpReq.Accept;
@@ -126,42 +154,42 @@ namespace ServiceStack
                 if (HttpHeaders.RestrictedHeaders.Contains(header))
                     continue;
 
-                webReq.Headers[header] = httpReq.Headers[header];
-            }
-
-            ProxyRequestFilter?.Invoke(httpReq, webReq);
-
-            if (httpReq.ContentLength > 0)
-            {
-                var inputStream = httpReq.InputStream;
-                if (TransformRequest != null)
-                    inputStream = await TransformRequest(httpReq, inputStream) ?? inputStream;
-
-                using (inputStream)
-                using (var requestStream = await webReq.GetRequestStreamAsync())
+                try
                 {
-                    await inputStream.WriteToAsync(requestStream);
+                    if (header.StartsWith(":"))
+                    {
+                        Log.Warn($"Ignoring Invalid Proxy Request Header '{header}'");
+                        continue;
+                    }
+                    
+                    webReq.Headers[header] = httpReq.Headers[header];
+                }
+                catch (Exception e)
+                {
+                    Log.Error($"Could not set Proxy Header: {header} = {httpReq.Headers[header]}\n{e.Message}", e);
                 }
             }
-            var res = (IHttpResponse)httpReq.Response;
+        }
+
+        public async Task ProxyToResponse(IHttpResponse res, HttpWebRequest webReq)
+        {
             try
             {
-                using (var webRes = (HttpWebResponse)await webReq.GetResponseAsync())
-                {
-                    await CopyToResponse(res, webRes);
-                }
+                using var webRes = (HttpWebResponse) await webReq.GetResponseAsync();
+                await CopyToResponse(res, webRes);
             }
             catch (WebException webEx)
             {
-                using (var errorResponse = (HttpWebResponse)webEx.Response)
-                {
-                    await CopyToResponse(res, errorResponse);
-                }
+                using var errorResponse = (HttpWebResponse) webEx.Response;
+                await CopyToResponse(res, errorResponse);
             }
         }
 
         public virtual async Task CopyToResponse(IHttpResponse res, HttpWebResponse webRes)
         {
+            if (webRes == null)
+                return;
+            
             res.StatusCode = (int) webRes.StatusCode;
             res.StatusDescription = webRes.StatusDescription;
             res.ContentType = webRes.ContentType;

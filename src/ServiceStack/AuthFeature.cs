@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using ServiceStack.Auth;
+using ServiceStack.Configuration;
+using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -11,8 +13,9 @@ namespace ServiceStack
     /// <summary>
     /// Enable the authentication feature and configure the AuthService.
     /// </summary>
-    public class AuthFeature : IPlugin, IPostInitPlugin
+    public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.Auth;
         //http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
         public Regex ValidUserNameRegEx = AuthFeatureExtensions.ValidUserNameRegEx;
 
@@ -43,7 +46,7 @@ namespace ServiceStack
                 if (redirect.StartsWith(req.GetBaseUrl()))
                     return;
                 
-                throw new ArgumentException(ErrorMessages.NoExternalRedirects, nameof(Authenticate.Continue));
+                throw new ArgumentException(ErrorMessages.NoExternalRedirects, Keywords.Continue);
             }
         }
 
@@ -110,6 +113,10 @@ namespace ServiceStack
 
         public bool IncludeRolesInAuthenticateResponse { get; set; } = true;
 
+        public bool IncludeOAuthTokensInAuthenticateResponse { get; set; }
+
+        public bool IncludeDefaultLogin { get; set; } = true;
+
         /// <summary>
         /// Allow or deny all GET Authenticate Requests
         /// </summary>
@@ -158,15 +165,13 @@ namespace ServiceStack
                 }
             }
         }
-
-        string Localize(string s) => HostContext.AppHost?.ResolveLocalizedString(s, null) ?? s;
         
         [Obsolete("The /authenticate alias routes are no longer added by default")]
         public AuthFeature RemoveAuthenticateAliasRoutes()
         {
             ServiceRoutes[typeof(AuthenticateService)] = new[] {
-                "/" + Localize(LocalizedStrings.Auth),
-                "/" + Localize(LocalizedStrings.Auth) + "/{provider}",
+                "/" + LocalizedStrings.Auth.Localize(),
+                "/" + LocalizedStrings.Auth.Localize() + "/{provider}",
             };
             return this;
         }
@@ -178,13 +183,28 @@ namespace ServiceStack
         public AuthFeature AddAuthenticateAliasRoutes()
         {
             ServiceRoutes[typeof(AuthenticateService)] = new[] {
-                "/" + Localize(LocalizedStrings.Auth),
-                "/" + Localize(LocalizedStrings.Auth) + "/{provider}",
-                "/" + Localize(LocalizedStrings.Authenticate),
-                "/" + Localize(LocalizedStrings.Authenticate) + "/{provider}",
+                "/" + LocalizedStrings.Auth.Localize(),
+                "/" + LocalizedStrings.Auth.Localize() + "/{provider}",
+                "/" + LocalizedStrings.Authenticate.Localize(),
+                "/" + LocalizedStrings.Authenticate.Localize() + "/{provider}",
             };
             return this;
         }
+
+        /// <summary>
+        /// The Session to return for AuthSecret
+        /// </summary>
+        public IAuthSession AuthSecretSession { get; set; } = new AuthUserSession {
+            Id = Guid.NewGuid().ToString("n"),
+            DisplayName = "Admin",
+            UserName = Keywords.AuthSecret,
+            UserAuthName = Keywords.AuthSecret,
+            AuthProvider = Keywords.AuthSecret,
+            IsAuthenticated = true,
+            Roles = new List<string> {RoleNames.Admin},
+            Permissions = new List<string>(),
+            UserAuthId = "0",
+        };
         
         public AuthFeature(Func<IAuthSession> sessionFactory, IAuthProvider[] authProviders, string htmlRedirect = null)
         {
@@ -194,14 +214,14 @@ namespace ServiceStack
             ServiceRoutes = new Dictionary<Type, string[]> {
                 { typeof(AuthenticateService), new[]
                     {
-                        "/" + Localize(LocalizedStrings.Auth),
-                        "/" + Localize(LocalizedStrings.Auth) + "/{provider}",
+                        "/" + LocalizedStrings.Auth.Localize(),
+                        "/" + LocalizedStrings.Auth.Localize() + "/{provider}",
                     } },
-                { typeof(AssignRolesService), new[]{ "/" + Localize(LocalizedStrings.AssignRoles) } },
-                { typeof(UnAssignRolesService), new[]{ "/" + Localize(LocalizedStrings.UnassignRoles) } },
+                { typeof(AssignRolesService), new[]{ "/" + LocalizedStrings.AssignRoles.Localize() } },
+                { typeof(UnAssignRolesService), new[]{ "/" + LocalizedStrings.UnassignRoles.Localize() } },
             };
 
-            this.HtmlRedirect = htmlRedirect ?? "~/" + Localize(LocalizedStrings.Login);
+            this.HtmlRedirect = htmlRedirect ?? "~/" + LocalizedStrings.Login.Localize();
             this.CreateDigestAuthHashes = authProviders.Any(x => x is DigestAuthProvider);
         }
 
@@ -237,10 +257,7 @@ namespace ServiceStack
                         StrictModeCodes.CyclicalUserSession);
             }
 
-            foreach (var registerService in ServiceRoutes)
-            {
-                appHost.RegisterService(registerService.Key, registerService.Value);
-            }
+            appHost.RegisterServices(ServiceRoutes);
 
             var sessionFeature = RegisterPlugins.OfType<SessionFeature>().First();
             sessionFeature.SessionExpiry = SessionExpiry;
@@ -265,7 +282,39 @@ namespace ServiceStack
             if (!ViewUtils.NavItemsMap.TryGetValue("auth", out var navItems))
                 ViewUtils.NavItemsMap["auth"] = navItems = new List<NavItem>();
 
+            var isDefaultHtmlRedirect = HtmlRedirect == "~/" + LocalizedStrings.Login.Localize();
+            if (IncludeDefaultLogin && isDefaultHtmlRedirect && !appHost.VirtualFileSources.FileExists("/login.html"))
+            {
+                appHost.VirtualFileSources.GetMemoryVirtualFiles().WriteFile("/login.html", 
+                    Templates.HtmlTemplates.GetLoginTemplate());
+                // required when not using feature like SharpPagesFeature to auto map /login => /login.html
+                appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) => pathInfo == "/login"
+                    ? new Host.Handlers.StaticFileHandler(HostContext.VirtualFileSources.GetFile("/login.html"))
+                    : null);
+            }
+
             navItems.AddRange(authNavItems);
+
+            appHost.AddToAppMetadata(meta => {
+                meta.Plugins.Auth = new AuthInfo {
+                    HasAuthSecret = (appHost.Config.AdminAuthSecret != null).NullIfFalse(),
+                    HasAuthRepository = appHost.GetContainer().Exists<IAuthRepository>().NullIfFalse(),
+                    IncludesRoles = IncludeRolesInAuthenticateResponse.NullIfFalse(),
+                    IncludesOAuthTokens = IncludeOAuthTokensInAuthenticateResponse.NullIfFalse(),
+                    HtmlRedirect = HtmlRedirect?.TrimStart('~'),
+                    ServiceRoutes = ServiceRoutes.ToMetadataServiceRoutes(routes => {
+                        var register = appHost.GetPlugin<RegistrationFeature>();
+                        if (register != null)
+                            routes[nameof(RegisterService)] = new []{ register.AtRestPath };
+                    }),
+                    AuthProviders = AuthenticateService.GetAuthProviders().Map(x => new MetaAuthProvider {
+                        Type = x.Type,
+                        Name = x.Provider,
+                        NavItem = (x as AuthProvider)?.NavItem,
+                        Meta = x.Meta,
+                    })
+                };
+            });
         }
 
         public void AfterPluginsLoaded(IAppHost appHost)

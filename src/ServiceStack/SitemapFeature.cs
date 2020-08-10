@@ -54,8 +54,9 @@ namespace ServiceStack
         public string UrlSetFooterXml { get; set; }
     }
 
-    public class SitemapFeature : IPlugin
+    public class SitemapFeature : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.Sitemap;
         public Dictionary<string, string> SitemapIndexNamespaces { get; set; }
         public Dictionary<string, string> UrlSetNamespaces { get; set; }
 

@@ -53,8 +53,7 @@ namespace ServiceStack
 
         public static ApplyTo HttpMethodAsApplyTo(this IRequest req)
         {
-            ApplyTo applyTo;
-            return VerbsApplyTo.TryGetValue(req.Verb, out applyTo)
+            return VerbsApplyTo.TryGetValue(req.Verb, out var applyTo)
                 ? applyTo
                 : ApplyTo.None;
         }

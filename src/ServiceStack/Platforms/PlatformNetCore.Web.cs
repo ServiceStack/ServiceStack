@@ -1,18 +1,12 @@
 ﻿#if NETSTANDARD2_0
 
-using System.CodeDom.Compiler;
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.ComponentModel;
-using System.IO;
 using System.Reflection;
-using System.Runtime.Serialization;
-using System.Security.Principal;
 using System.Threading.Tasks;
-using ServiceStack;
 
-namespace System.Web
+namespace ServiceStack.Host
 {
     public interface IHttpHandler
     {
@@ -26,6 +20,16 @@ namespace System.Web
         Task Middleware(Microsoft.AspNetCore.Http.HttpContext context, Func<Task> next); //.NET Core
     }
 
+    public interface IHttpHandlerFactory
+    {
+        //IHttpHandler GetHandler(HttpContext context, string requestType, string url, string pathTranslated);
+        //void ReleaseHandler(IHttpHandler handler);
+    }
+
+    public class DefaultHttpHandler : IHttpHandler
+    {
+        //public void ProcessRequest(HttpContext context) {}
+    }
     public class HtmlString : IHtmlString
     {
         private readonly string htmlString;
@@ -62,20 +66,6 @@ namespace System.Web
         }
     }
 
-    public interface IHttpHandlerFactory
-    {
-        //IHttpHandler GetHandler(HttpContext context, string requestType, string url, string pathTranslated);
-        //void ReleaseHandler(IHttpHandler handler);
-    }
-
-    public class DefaultHttpHandler : IHttpHandler
-    {
-        //public void ProcessRequest(HttpContext context) {}
-    }
-}
-
-namespace System.Web.UI
-{
     // https://github.com/mono/mono/blob/master/mcs/class/System.Web/System.Web.UI/DataBinder.cs
     public sealed class DataBinder
     {
@@ -88,7 +78,7 @@ namespace System.Web.UI
             if (result == null)
                 return String.Empty;
 
-            if (format == null || format.Length == 0)
+            if (string.IsNullOrEmpty(format))
                 return result.ToString();
 
             return String.Format(format, result);
@@ -96,9 +86,9 @@ namespace System.Web.UI
 
         public static object Eval(object container, string expression)
         {
-            expression = expression != null ? expression.Trim() : null;
-            if (expression == null || expression.Length == 0)
-                throw new ArgumentNullException("expression");
+            expression = expression?.Trim();
+            if (string.IsNullOrEmpty(expression))
+                throw new ArgumentNullException(nameof(expression));
 
             object current = container;
             while (current != null)
@@ -130,9 +120,9 @@ namespace System.Web.UI
         public static object GetIndexedPropertyValue(object container, string expr)
         {
             if (container == null)
-                throw new ArgumentNullException("container");
+                throw new ArgumentNullException(nameof(container));
             if ((expr == null) || (expr.Length == 0))
-                throw new ArgumentNullException("expr");
+                throw new ArgumentNullException(nameof(expr));
 
             int openIdx = expr.IndexOf('[');
             int closeIdx = expr.IndexOf(']'); // see the test case. MS ignores all after the first ]
@@ -180,7 +170,7 @@ namespace System.Web.UI
             if (openIdx > 0)
             {
                 property = expr.Substring(0, openIdx);
-                if (property != null && property.Length > 0)
+                if (property.Length > 0)
                     container = GetPropertyValue(container, property);
             }
 
@@ -231,9 +221,9 @@ namespace System.Web.UI
         public static object GetPropertyValue(object container, string propName)
         {
             if (container == null)
-                throw new ArgumentNullException("container");
-            if (propName == null || propName.Length == 0)
-                throw new ArgumentNullException("propName");
+                throw new ArgumentNullException(nameof(container));
+            if (string.IsNullOrEmpty(propName))
+                throw new ArgumentNullException(nameof(propName));
 
 #if !NETSTANDARD2_0
             PropertyDescriptor prop = TypeDescriptor.GetProperties(container).Find(propName, true);
@@ -242,7 +232,7 @@ namespace System.Web.UI
 #endif
             if (prop == null)
             {
-                throw new HttpException("Property " + propName + " not found in " +
+                throw new ServiceStack.Host.HttpException("Property " + propName + " not found in " +
                              container.GetType());
             }
             return prop.GetValue(container);

@@ -10,8 +10,9 @@ namespace ServiceStack
     /// <summary>
     /// Back-end Service used by /js/hot-fileloader.js to detect file changes in /wwwroot and auto reload page.
     /// </summary>
-    public class HotReloadFeature : IPlugin
+    public class HotReloadFeature : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.HotReload;
         public IVirtualPathProvider VirtualFiles
         {
             set => HotReloadFilesService.UseVirtualFiles = value;
@@ -45,6 +46,10 @@ namespace ServiceStack
         public static List<string> ExcludePatterns { get; } = new List<string> {
             "*.sqlite",
             "*.db",
+            "*.cs",  //monitored by dotnet watch
+            "*.ts",  //watch on generated .js instead
+            "*.log", //exclude log files
+            "*.csv",
         };
         
         public static TimeSpan LongPollDuration = TimeSpan.FromSeconds(60);
@@ -55,9 +60,13 @@ namespace ServiceStack
         public async Task<HotReloadPageResponse> Any(HotReloadFiles request)
         {
             var vfs = UseVirtualFiles ?? VirtualFileSources;
+            // Remove embedded ResourceVirtualFiles from scan list
+            if (vfs is MultiVirtualFiles multiVfs)
+                vfs = new MultiVirtualFiles(multiVfs.ChildProviders.Where(x => !(x is ResourceVirtualFiles)).ToArray());
 
             var startedAt = DateTime.UtcNow;
             var maxLastModified = DateTime.MinValue;
+            IVirtualFile maxLastFile = null;
             var shouldReload = false;
 
             while (DateTime.UtcNow - startedAt < LongPollDuration)
@@ -70,7 +79,7 @@ namespace ServiceStack
                 
                 foreach (var pattern in patterns)
                 {
-                    var files = vfs.GetAllMatchingFiles(pattern.Trim());
+                    var files = vfs.GetAllMatchingFiles(pattern.Trim()).ToList();
                     foreach (var file in files)
                     {
                         if (ExcludePatterns.Any(exclude => file.Name.Glob(exclude)))
@@ -78,7 +87,10 @@ namespace ServiceStack
                     
                         file.Refresh();
                         if (file.LastModified > maxLastModified)
+                        {
                             maxLastModified = file.LastModified;
+                            maxLastFile = file;
+                        }
                     }
                 }
 
@@ -95,7 +107,11 @@ namespace ServiceStack
                 await Task.Delay(CheckDelay);
             }
 
-            return new HotReloadPageResponse { Reload = shouldReload, ETag = maxLastModified.Ticks.ToString() };
+            return new HotReloadPageResponse {
+                Reload = shouldReload, 
+                ETag = maxLastModified.Ticks.ToString(),
+                LastUpdatedPath = maxLastFile?.VirtualPath,
+            };
         }
     }
 }

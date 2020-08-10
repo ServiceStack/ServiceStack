@@ -16,6 +16,11 @@ namespace ServiceStack.Serialization
             if (!UseBcl)
                 return JsonSerializer.DeserializeFromString(json, returnType);
 
+            return BclDeserializeFromString(json, returnType);
+        }
+
+        public static object BclDeserializeFromString(string json, Type returnType)
+        {
             try
             {
                 using (var ms = MemoryStreamFactory.GetStream())
@@ -47,15 +52,10 @@ namespace ServiceStack.Serialization
         public T DeserializeFromStream<T>(Stream stream)
         {
             if (TextSerializer is IStringStreamSerializer streamSerializer)
-            {
                 return streamSerializer.DeserializeFromStream<T>(stream);
-            }
 
             if (UseBcl)
-            {
-                var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(typeof(T));
-                return (T)serializer.ReadObject(stream);
-            }
+                return (T)BclDeserializeFromStream(typeof(T), stream);
 
             return JsonSerializer.DeserializeFromStream<T>(stream);
         }
@@ -63,17 +63,18 @@ namespace ServiceStack.Serialization
         public object DeserializeFromStream(Type type, Stream stream)
         {
             if (TextSerializer is IStringStreamSerializer streamSerializer)
-            {
                 return streamSerializer.DeserializeFromStream(type, stream);
-            }
 
             if (UseBcl)
-            {
-                var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(type);
-                return serializer.ReadObject(stream);
-            }
+                return BclDeserializeFromStream(type, stream);
 
             return JsonSerializer.DeserializeFromStream(type, stream);
+        }
+
+        public static object BclDeserializeFromStream(Type type, Stream stream)
+        {
+            var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(type);
+            return serializer.ReadObject(stream);
         }
     }
 }

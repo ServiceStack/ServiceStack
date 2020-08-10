@@ -56,6 +56,7 @@
     <RemoveDir Directories="$(SrcDir)/ServiceStack.RabbitMq/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack.Server/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack.Kestrel/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.Desktop/obj" />
   </Target>
 
   <Target Name="UpdateVersion">
@@ -236,6 +237,11 @@
 
     <!-- ServiceStack.Logging.Slack -->
     <MSBuild Projects="$(SrcDir)/ServiceStack.Logging.Slack/ServiceStack.Logging.Slack.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.Desktop -->
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Desktop/ServiceStack.Desktop.csproj"
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 

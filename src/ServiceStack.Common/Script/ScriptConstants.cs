@@ -29,11 +29,19 @@ namespace ServiceStack.Script
         public const string Map = "map";
         public const string Request = "Request";
         public const string PathInfo = "PathInfo";
+        public const string PathBase = "PathBase";
         public const string PathArgs = "PathArgs";
+        public const string Dto = "dto";
+        public const string It = "it";
+        public const string Field = "field";
         public const string AssetsBase = "assetsBase";
         public const string Format = "format";
         public const string BaseUrl = "BaseUrl";
         public const string PartialArg = "__partial";
+        public const string Global = "global";
+        public const string Return = "return";
+        public const string ErrorCode = nameof(ErrorCode);
+        public const string ErrorMessage = nameof(ErrorMessage);
 
         public static IRawString EmptyRawString { get; } = new RawString("");
         public static IRawString TrueRawString { get; } = new RawString("true");

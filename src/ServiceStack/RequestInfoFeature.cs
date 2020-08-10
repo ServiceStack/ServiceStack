@@ -1,10 +1,15 @@
-﻿using System.Web;
+﻿#if NETSTANDARD2_0        
+using ServiceStack.Host;
+#else
+using System.Web;
+#endif
 using ServiceStack.Host.Handlers;
 
 namespace ServiceStack
 {
-    public class RequestInfoFeature : IPlugin
+    public class RequestInfoFeature : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.RequestInfo;
         public void Register(IAppHost appHost)
         {
             appHost.CatchAllHandlers.Add(ProcessRequest);

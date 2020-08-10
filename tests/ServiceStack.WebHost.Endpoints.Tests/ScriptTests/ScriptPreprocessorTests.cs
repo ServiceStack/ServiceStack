@@ -37,9 +37,9 @@ title: The title
 
     {{#if debug}}
         {{ range(1,5) 
-           | where => it.isOdd() 
-           | map => it * it   
-           | join(',')
+           |> where => it.isOdd() 
+           |> map => it * it   
+           |> join(',')
         }}
     {{/if}}
 ```
@@ -73,9 +73,9 @@ title: The title
 {{ 1 + 1 }}
 {{#if debug}}
 {{ range(1,5)
-| where => it.isOdd()
-| map => it * it
-| join(',')
+|> where => it.isOdd()
+|> map => it * it
+|> join(',')
 }}
 {{/if}}
 ".NormalizeNewLines()));

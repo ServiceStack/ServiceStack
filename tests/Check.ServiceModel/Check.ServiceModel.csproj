@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Annotations.cs" />
     <Compile Include="AutoQueryTypes.cs" />
     <Compile Include="CodeGenTestTypes.cs" />
     <Compile Include="CustomMethodRoutes.cs" />

@@ -72,6 +72,9 @@ namespace ServiceStack.NativeTypes.FSharp
             sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
             sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
+            if (Config.UsePath != null)
+                sb.AppendLine("UsePath: {0}".Fmt(Config.UsePath));
+
             sb.AppendLine();
             sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
             sb.AppendLine("{0}MakeDataContractsExtensible: {1}".Fmt(defaultValue("MakeDataContractsExtensible"), Config.MakeDataContractsExtensible));
@@ -130,8 +133,7 @@ namespace ServiceStack.NativeTypes.FSharp
                     if (!existingTypes.Contains(fullTypeName))
                     {
                         MetadataType response = null;
-                        MetadataOperationType operation;
-                        if (requestTypesMap.TryGetValue(type, out operation))
+                        if (requestTypesMap.TryGetValue(type, out var operation))
                         {
                             response = operation.Response;
                         }
@@ -139,17 +141,18 @@ namespace ServiceStack.NativeTypes.FSharp
                         lastNS = AppendType(ref sb, type, lastNS,
                             new CreateTypeOptions
                             {
+                                Routes = metadata.Operations.GetRoutes(type),
                                 ImplementsFn = () =>
                                 {
                                     if (!Config.AddReturnMarker
-                                        && !type.ReturnVoidMarker
-                                        && type.ReturnMarkerTypeName == null)
+                                        && operation?.ReturnsVoid != true
+                                        && operation?.ReturnType == null)
                                         return null;
 
-                                    if (type.ReturnVoidMarker)
-                                        return "IReturnVoid";
-                                    if (type.ReturnMarkerTypeName != null)
-                                        return Type("IReturn`1", new[] { Type(type.ReturnMarkerTypeName) });
+                                    if (operation?.ReturnsVoid == true)
+                                        return nameof(IReturnVoid);
+                                    if (operation?.ReturnType != null)
+                                        return Type("IReturn`1", new[] { Type(operation.ReturnType) });
                                     return response != null
                                         ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
                                         : null;
@@ -199,9 +202,9 @@ namespace ServiceStack.NativeTypes.FSharp
 
             sb.AppendLine();
             AppendComments(sb, type.Description);
-            if (type.Routes != null)
+            if (options?.Routes != null)
             {
-                AppendAttributes(sb, type.Routes.ConvertAll(x => x.ToMetadataAttribute()));
+                AppendAttributes(sb, options.Routes.ConvertAll(x => x.ToMetadataAttribute()));
             }
             AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);
@@ -268,7 +271,7 @@ namespace ServiceStack.NativeTypes.FSharp
 
                 AddProperties(sb, type,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
-                        && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
+                        && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)));
 
                 if (sb.Length == startLen)
                     sb.AppendLine(type.IsInterface() ? "interface end" : "class end");
@@ -371,7 +374,7 @@ namespace ServiceStack.NativeTypes.FSharp
                         {
                             if (args.Length > 0)
                                 args.Append(", ");
-                            args.Append("{0}".Fmt(TypeValue(ctorArg.Type, ctorArg.Value)));
+                            args.Append(TypeValue(ctorArg.Type, ctorArg.Value));
                         }
                     }
                     else if (attr.Args != null)
@@ -380,7 +383,7 @@ namespace ServiceStack.NativeTypes.FSharp
                         {
                             if (args.Length > 0)
                                 args.Append(", ");
-                            args.Append("{0}={1}".Fmt(attrArg.Name, TypeValue(attrArg.Type, attrArg.Value)));
+                            args.Append($"{attrArg.Name}={TypeValue(attrArg.Type, attrArg.Value)}");
                         }
                     }
                     sb.AppendLine("[<{0}({1})>]".Fmt(attr.Name, StringBuilderCacheAlt.ReturnAndFree(args)));

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -11,6 +12,7 @@ using ServiceStack.Text;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Data;
+using ServiceStack.Host;
 using ServiceStack.OrmLite;
 using ServiceStack.Web;
 
@@ -141,6 +143,33 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 .FromJson<SecuredResponse>();
 
             Assert.That(response.Result, Is.EqualTo(request.Name));
+        }
+
+        [Test]
+        public void Requires_full_Signature_to_Authenticate()
+        {
+            var client = GetClientWithBasicAuthCredentials();
+
+            var authResponse = client.Post(new Authenticate());
+            Assert.That(authResponse.BearerToken, Is.Not.Null);
+
+            var jwtProvider = (JwtAuthProvider) AuthenticateService.GetJwtAuthProvider();
+            // Ensure minimum signature example
+            // jwtProvider.ValidateToken = (js,req) => 
+            //     req.GetJwtToken().LastRightPart('.').FromBase64UrlSafe().Length >= 32;
+
+            var req = new BasicHttpRequest {
+                Headers = {[HttpHeaders.Authorization] = "Bearer " + authResponse.BearerToken}
+            };
+
+            Assert.That(jwtProvider.IsJwtValid(req));
+
+            var startSigPos = authResponse.BearerToken.LastIndexOf('.') + 1;
+            for (var i = startSigPos; i < authResponse.BearerToken.Length; i++)
+            {
+                req.Headers[HttpHeaders.Authorization] = "Bearer " + authResponse.BearerToken.Substring(0, i);
+                Assert.That(jwtProvider.IsJwtValid(req), Is.False);
+            }
         }
 
         [Test]

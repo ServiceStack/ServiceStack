@@ -124,6 +124,9 @@ namespace ServiceStack.NativeTypes.VbNet
             sb.AppendLine("'Version: {0}".Fmt(Env.VersionString));
             sb.AppendLine("'Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("''")));
             sb.AppendLine("'BaseUrl: {0}".Fmt(Config.BaseUrl));
+            if (Config.UsePath != null)
+                sb.AppendLine("'UsePath: {0}".Fmt(Config.UsePath));
+
             sb.AppendLine("'");
             sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(DefaultValue("GlobalNamespace"), Config.GlobalNamespace));
             sb.AppendLine("{0}MakePartial: {1}".Fmt(DefaultValue("MakePartial"), Config.MakePartial));
@@ -208,17 +211,18 @@ namespace ServiceStack.NativeTypes.VbNet
                         lastNS = AppendType(ref sb, type, lastNS, allTypes,
                             new CreateTypeOptions
                             {
+                                Routes = metadata.Operations.GetRoutes(type),
                                 ImplementsFn = () =>
                                 {
                                     if (!Config.AddReturnMarker
-                                        && !type.ReturnVoidMarker
-                                        && type.ReturnMarkerTypeName == null)
+                                        && operation?.ReturnsVoid != true
+                                        && operation?.ReturnType == null)
                                         return null;
 
-                                    if (type.ReturnVoidMarker)
-                                        return "IReturnVoid";
-                                    if (type.ReturnMarkerTypeName != null)
-                                        return Type("IReturn`1", new[] { Type(type.ReturnMarkerTypeName) });
+                                    if (operation?.ReturnsVoid == true)
+                                        return nameof(IReturnVoid);
+                                    if (operation?.ReturnType != null)
+                                        return Type("IReturn`1", new[] { Type(operation.ReturnType) });
                                     return response != null
                                         ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
                                         : null;
@@ -286,9 +290,9 @@ namespace ServiceStack.NativeTypes.VbNet
 
             sb.AppendLine();
             AppendComments(sb, type.Description);
-            if (type.Routes != null)
+            if (options?.Routes != null)
             {
-                AppendAttributes(sb, type.Routes.ConvertAll(x => x.ToMetadataAttribute()));
+                AppendAttributes(sb, options.Routes.ConvertAll(x => x.ToMetadataAttribute()));
             }
             AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);
@@ -311,7 +315,8 @@ namespace ServiceStack.NativeTypes.VbNet
                         if (KeyWords.Contains(name))
                             name = $"[{name}]";
                         
-                        if (type.EnumMemberValues != null && type.EnumMemberValues[i] != name)
+                        var memberValue = type.GetEnumMemberValue(i);
+                        if (memberValue != null)
                         {
                             AppendAttributes(sb, new List<MetadataAttribute> {
                                 new MetadataAttribute {
@@ -319,7 +324,7 @@ namespace ServiceStack.NativeTypes.VbNet
                                     Args = new List<MetadataPropertyType> {
                                         new MetadataPropertyType {
                                             Name = "Value",
-                                            Value = type.EnumMemberValues[i],
+                                            Value = memberValue,
                                             Type = "String",
                                         }
                                     }
@@ -371,10 +376,10 @@ namespace ServiceStack.NativeTypes.VbNet
 
                 sb = sb.Indent();
 
-                AddConstuctor(sb, type, options);
+                AddConstructor(sb, type, options);
                 AddProperties(sb, type,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
-                        && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
+                        && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)));
 
                 foreach (var innerTypeRef in type.InnerTypes.Safe())
                 {
@@ -398,7 +403,7 @@ namespace ServiceStack.NativeTypes.VbNet
             return lastNS;
         }
 
-        private void AddConstuctor(StringBuilderWrapper sb, MetadataType type, CreateTypeOptions options)
+        private void AddConstructor(StringBuilderWrapper sb, MetadataType type, CreateTypeOptions options)
         {
             if (type.IsInterface())
                 return;

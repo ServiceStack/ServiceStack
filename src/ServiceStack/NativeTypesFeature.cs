@@ -6,8 +6,9 @@ using ServiceStack.NativeTypes;
 
 namespace ServiceStack
 {
-    public class NativeTypesFeature : IPlugin
+    public class NativeTypesFeature : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.NativeTypes;
         public MetadataTypesConfig MetadataTypesConfig { get; set; }
 
         public static bool DisableTokenVerification { get; set; }
@@ -32,6 +33,34 @@ namespace ServiceStack
                     typeof(StringLengthAttribute),
                     typeof(AutoQueryViewerAttribute),
                     typeof(AutoQueryViewerFieldAttribute),
+                    
+                    typeof(ValidateRequestAttribute),
+                    typeof(ValidateIsAuthenticatedAttribute),
+                    typeof(ValidateIsAdminAttribute),
+                    typeof(ValidateHasRoleAttribute),
+                    typeof(ValidateHasPermissionAttribute),
+                    
+                    typeof(ValidateAttribute),
+                    typeof(ValidateNullAttribute),
+                    typeof(ValidateEmptyAttribute),
+                    typeof(ValidateEmailAttribute),
+                    typeof(ValidateNotNullAttribute),
+                    typeof(ValidateNotEmptyAttribute),
+                    typeof(ValidateCreditCardAttribute),
+                    typeof(ValidateLengthAttribute),
+                    typeof(ValidateExactLengthAttribute),
+                    typeof(ValidateMaximumLengthAttribute),
+                    typeof(ValidateMinimumLengthAttribute),
+                    typeof(ValidateLessThanAttribute),
+                    typeof(ValidateLessThanOrEqualAttribute),
+                    typeof(ValidateGreaterThanAttribute),
+                    typeof(ValidateGreaterThanOrEqualAttribute),
+                    typeof(ValidateScalePrecisionAttribute),
+                    typeof(ValidateRegularExpressionAttribute),
+                    typeof(ValidateEqualAttribute),
+                    typeof(ValidateNotEqualAttribute),
+                    typeof(ValidateInclusiveBetweenAttribute),
+                    typeof(ValidateExclusiveBetweenAttribute),
                 },
                 ExportTypes = new HashSet<Type>
                 {
@@ -43,7 +72,12 @@ namespace ServiceStack
                     typeof(IMeta),
                     typeof(IHasSessionId),
                     typeof(IHasBearerToken),
-                    typeof(IHasVersion)
+                    typeof(IHasVersion),
+                    typeof(ICreateDb<>),
+                    typeof(IUpdateDb<>),
+                    typeof(IPatchDb<>),
+                    typeof(IDeleteDb<>),
+                    typeof(ISaveDb<>),
                 },
                 IgnoreTypes = new HashSet<Type>
                 {
@@ -92,10 +126,14 @@ namespace ServiceStack
              new NativeTypesMetadata(HostContext.AppHost.Metadata, MetadataTypesConfig))
             .GetGenerator();
         
+        public MetadataTypesGenerator DefaultGenerator { get; private set; }
+        
         public void Register(IAppHost appHost)
         {
-            appHost.Register<INativeTypesMetadata>(
-                new NativeTypesMetadata(appHost.Metadata, MetadataTypesConfig));
+            var nativeTypesMeta = new NativeTypesMetadata(appHost.Metadata, MetadataTypesConfig);
+            appHost.Register<INativeTypesMetadata>(nativeTypesMeta);
+
+            DefaultGenerator = nativeTypesMeta.GetGenerator();
 
             appHost.RegisterService<NativeTypesService>();
         }

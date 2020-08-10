@@ -220,7 +220,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     
 #if DEBUG    
     
-    [Ignore("Can hang builds")]
+//    [Ignore("Can hang builds")]
     [TestFixture]
     public class MemoryServerEventsTests : ServerEventsTests
     {
@@ -283,9 +283,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
-
-            var redisEvents = appHost.Resolve<IServerEvents>() as RedisServerEvents;
-            if (redisEvents != null)
+            if (appHost.Resolve<IServerEvents>() is RedisServerEvents redisEvents)
                 redisEvents.Dispose();
 
             appHost.Dispose();

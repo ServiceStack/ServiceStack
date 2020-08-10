@@ -125,10 +125,21 @@ namespace Funq
             Register<Func<TArg1, TArg2, TArg3, TService>>(c => (a1, a2, a3) => c.TryResolve<TService>());
             return TryResolve<Func<TArg1, TArg2, TArg3, TService>>();
         }
+        
+        public ServiceEntry<TService, Func<Container, TService>> GetServiceEntry<TService>() => 
+            GetEntry<TService, Func<Container, TService>>(null, throwIfMissing: false);
+
+        public ServiceEntry<TService, Func<Container, TService>> GetServiceEntryNamed<TService>(string name) => 
+            GetEntry<TService, Func<Container, TService>>(name, throwIfMissing: false);
 
         public bool Exists<TService>()
         {
             var entry = GetEntry<TService, Func<Container, TService>>(null, throwIfMissing: false);
+            return entry != null;
+        }
+        public bool ExistsNamed<TService>(string name)
+        {
+            var entry = GetEntry<TService, Func<Container, TService>>(name, throwIfMissing: false);
             return entry != null;
         }
 

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -16,12 +18,35 @@ namespace ServiceStack
             
             var map = new Dictionary<string, string>();
 
-            foreach (var name in request.QueryString.AllKeys)
-            {
-                if (name == null) continue; //thank you ASP.NET
+            AddToMap(request.QueryString, map);
 
-                var values = request.QueryString.GetValues(name);
-                if (values.Length == 1)
+            if ((request.Verb == HttpMethods.Post || request.Verb == HttpMethods.Put) && request.FormData != null)
+            {
+                AddToMap(request.FormData, map);
+            }
+
+            return map;
+        }
+
+        private static void AddToMap(NameValueCollection nvc, Dictionary<string, string> map)
+        {
+            for (int index = 0; index < nvc.Count; index++)
+            {
+                var name = nvc.GetKey(index);
+                var values = nvc.GetValues(name); // Only use string name instead of index which returns multiple values 
+
+                if (name == null) //thank you .NET Framework!
+                {
+                    if (values?.Length > 0)
+                        map[values[0]] = null;
+                    continue;
+                }
+                
+                if (values == null || values.Length == 0)
+                {
+                    map[name] = null;
+                }
+                else if (values.Length == 1)
                 {
                     map[name] = values[0];
                 }
@@ -33,31 +58,6 @@ namespace ServiceStack
                     }
                 }
             }
-
-            if ((request.Verb == HttpMethods.Post || request.Verb == HttpMethods.Put)
-                && request.FormData != null)
-            {
-                foreach (var name in request.FormData.AllKeys)
-                {
-                    if (name == null) continue; //thank you ASP.NET
-
-                    var values = request.FormData.GetValues(name);
-                    if (values.Length == 1)
-                    {
-                        map[name] = values[0];
-                    }
-                    else
-                    {
-                        for (var i = 0; i < values.Length; i++)
-                        {
-                            map[name + (i == 0 ? "" : "#" + i)] = values[i];
-                        }
-                    }
-                }
-            }
-
-            return map;
         }
-
     }
 }

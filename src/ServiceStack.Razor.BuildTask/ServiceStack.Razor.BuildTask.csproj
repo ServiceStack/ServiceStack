@@ -17,7 +17,7 @@
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
     <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
     <PackageReference Include="Microsoft.AspNet.Razor" Version="3.2.7" />
-    <PackageReference Include="System.Memory" Version="4.5.3" />
+    <PackageReference Include="System.Memory" Version="4.5.4" />
     <Reference Include="System" />
     <Reference Include="System.Web" />
     <Reference Include="System.Core" />

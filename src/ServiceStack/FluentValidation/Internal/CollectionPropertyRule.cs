@@ -1,6 +1,6 @@
-﻿#region License
+#region License
 
-// Copyright (c) Jeremy Skinner (http://www.jeremyskinner.co.uk)
+// Copyright (c) .NET Foundation and contributors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// The latest version of this file can be found at https://github.com/JeremySkinner/FluentValidation
+// The latest version of this file can be found at https://github.com/FluentValidation/FluentValidation
 
 #endregion
 
@@ -92,16 +92,16 @@ namespace ServiceStack.FluentValidation.Internal {
 					throw new InvalidOperationException("Could not automatically determine the property name ");
 				}
 
-				var validatorTasks = collectionPropertyValue.Select(async (v, count) => {
+				var validatorTasks = collectionPropertyValue.Select(async (v, index) => {
 					if (Filter != null && !Filter(v)) {
 						return Enumerable.Empty<ValidationFailure>();
 					}
 
-					string indexer = count.ToString();
+					string indexer = index.ToString();
 					bool useDefaultIndexFormat = true;
 
 					if (IndexBuilder != null) {
-						indexer = IndexBuilder(context.InstanceToValidate, collectionPropertyValue, v, count);
+						indexer = IndexBuilder(context.InstanceToValidate, collectionPropertyValue, v, index);
 						useDefaultIndexFormat = false;
 					}
 
@@ -110,6 +110,7 @@ namespace ServiceStack.FluentValidation.Internal {
 					newContext.PropertyChain.AddIndexer(indexer, useDefaultIndexFormat);
 
 					var newPropertyContext = new PropertyValidatorContext(newContext, this, newContext.PropertyChain.ToString(), v);
+					newPropertyContext.MessageFormatter.AppendArgument("CollectionIndex", index);
 
 					return await validator.ValidateAsync(newPropertyContext, cancellation);
 				});
@@ -190,5 +191,6 @@ namespace ServiceStack.FluentValidation.Internal {
 
 			return results;
 		}
+
 	}
 }

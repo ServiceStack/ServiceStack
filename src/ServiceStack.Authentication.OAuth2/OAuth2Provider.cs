@@ -240,7 +240,8 @@ namespace ServiceStack.Authentication.OAuth2
 
             if (session.ReferrerUrl.IsNullOrEmpty())
             {
-                session.ReferrerUrl = request?.Continue ?? authService.Request.GetHeader("Referer");
+                session.ReferrerUrl = authService.Request.GetReturnUrl() 
+                    ?? authService.Request.GetHeader("Referer");
             }
 
             if (session.ReferrerUrl.IsNullOrEmpty() || session.ReferrerUrl.IndexOf("/auth", StringComparison.OrdinalIgnoreCase) >= 0)

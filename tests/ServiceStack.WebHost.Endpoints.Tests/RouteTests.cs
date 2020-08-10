@@ -147,6 +147,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Does_encode_QueryString()
+        {
+            var msg = "Field with comma, to demonstrate. ";
+            var response = Config.AbsoluteBaseUri.CombineWith("/custom")
+                .PostToUrl(new CustomRoute { Data = msg }, 
+                    requestFilter:req => req.Accept = MimeTypes.Json);
+
+            response.Print();
+
+            var dto = response.FromJson<CustomRoute>();
+            Assert.That(dto.Data, Is.EqualTo(msg));
+
+            response = Config.AbsoluteBaseUri.CombineWith("/custom")
+                .PostToUrl(new CustomRoute { Data = msg }.ToStringDictionary(), 
+                    requestFilter:req => req.Accept = MimeTypes.Json);
+
+            response.Print();
+
+            dto = response.FromJson<CustomRoute>();
+            Assert.That(dto.Data, Is.EqualTo(msg));
+        }
+
+        [Test]
         public void Can_download_route_with_dot_seperator()
         {
             var response = Config.AbsoluteBaseUri.CombineWith("/customdot/id.data")

@@ -72,7 +72,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 }
             }.Init();
             
-            Assert.That(context.EvaluateScript("{{ { a: add(it % 3,1) * 2, b: 2 * 3 + incr(4 + decr(5)) } | values | sum | currency }}"), 
+            Assert.That(context.EvaluateScript("{{ { a: add(it % 3,1) * 2, b: 2 * 3 + incr(4 + decr(5)) } |> values |> sum |> currency }}"), 
                 Is.EqualTo("$19.00"));
         }
     }

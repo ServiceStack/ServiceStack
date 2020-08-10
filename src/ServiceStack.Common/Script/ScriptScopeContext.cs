@@ -34,6 +34,11 @@ namespace ServiceStack.Script
         {
             return new Templates.TemplateScopeContext(from.PageResult, from.OutputStream, from.ScopedParams);
         }
+
+        public ScriptScopeContext Clone()
+        {
+            return new ScriptScopeContext(PageResult, OutputStream, new Dictionary<string, object>(ScopedParams));
+        }
     }
 
     public class ScopeVars : Dictionary<string, object>
@@ -55,9 +60,21 @@ namespace ServiceStack.Script
             return StopExecution.Value;
         }
 
+        /// <summary>
+        /// Resolve value from stored arguments and filters 
+        /// </summary>
         public static object GetValue(this ScriptScopeContext scope, string name) => scope.PageResult.GetValue(name, scope);
+        
+        /// <summary>
+        /// Resolve value from stored arguments only 
+        /// </summary>
+        public static object GetArgument(this ScriptScopeContext scope, string name) => scope.PageResult.GetArgument(name, scope);
+        
+        /// <summary>
+        /// Try Resolve value from stored arguments and filters 
+        /// </summary>
         public static bool TryGetValue(this ScriptScopeContext scope, string name, out object value) => 
-            scope.PageResult.TryGetValue(name, scope, out value);
+            scope.PageResult.TryGetValue(name, scope, argsOnly:false, out value);
 
         public static bool TryGetMethod(this ScriptScopeContext scope, string name, int fnArgValuesCount, out Delegate fn, out ScriptMethods scriptMethod, out bool requiresScope)
         {
@@ -81,16 +98,14 @@ namespace ServiceStack.Script
                         var filter = scriptMethod;
                         fn = (StaticMethodInvoker) (args => {
                             var ctxScope = (ScriptScopeContext) args[0];
-                            using (var ms = MemoryStreamFactory.GetStream())
-                            {
-                                args[0] = ctxScope.ScopeWithStream(ms);
-                                var task = (Task) contextFilter(filter, args);
-                                task.Wait();
-                                var discard = task.GetResult();
+                            using var ms = MemoryStreamFactory.GetStream();
+                            args[0] = ctxScope.ScopeWithStream(ms);
+                            var task = (Task) contextFilter(filter, args);
+                            task.Wait();
+                            var discard = task.GetResult();
 
-                                var ret = MemoryProvider.Instance.FromUtf8(ms.GetBufferAsMemory().Span);
-                                return ret.ToString();
-                            }
+                            var ret = MemoryProvider.Instance.FromUtf8(ms.GetBufferAsMemory().Span);
+                            return ret.ToString();
                         });
                     }
                 }

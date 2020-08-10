@@ -8,6 +8,8 @@ namespace ServiceStack.Auth
 {
     public class CredentialsAuthProvider : AuthProvider
     {
+        public override string Type => "credentials";
+
         private class CredentialsAuthValidator : AbstractValidator<Authenticate>
         {
             public CredentialsAuthValidator()
@@ -89,11 +91,11 @@ namespace ServiceStack.Auth
             if (SkipPasswordVerificationForInProcessRequests && authService.Request.IsInProcessRequest())
             {
                 new PrivateAuthValidator().ValidateAndThrow(request);
-                return AuthenticatePrivateRequest(authService, session, request.UserName, request.Password, request.Continue);
+                return AuthenticatePrivateRequest(authService, session, request.UserName, request.Password, authService.Request.GetReturnUrl());
             }
             
             new CredentialsAuthValidator().ValidateAndThrow(request);
-            return Authenticate(authService, session, request.UserName, request.Password, request.Continue);
+            return Authenticate(authService, session, request.UserName, request.Password, authService.Request.GetReturnUrl());
         }
 
         protected object Authenticate(IServiceBase authService, IAuthSession session, string userName, string password)

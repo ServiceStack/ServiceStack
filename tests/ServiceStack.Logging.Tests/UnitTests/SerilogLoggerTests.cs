@@ -2,6 +2,8 @@
 using NUnit.Framework;
 using ServiceStack.Logging.Serilog;
 using global::Serilog;
+using ServiceStack.Logging.Tests.UseCases;
+using ServiceStack.Text;
 
 namespace ServiceStack.Logging.Tests.UnitTests
 {
@@ -77,6 +79,27 @@ namespace ServiceStack.Logging.Tests.UnitTests
             Assert.AreEqual("\"awesome\"", result.Properties["prop2"].ToString());
         }
 
+        [Test]
+        public void PushPropertyTests()
+        {
+            var dummySink = new DummySink();
+            LogManager.LogFactory = new SerilogFactory(new LoggerConfiguration()
+                .Enrich.FromLogContext()
+                .WriteTo.Sink(dummySink)
+                .CreateLogger());
+
+            var log = LogManager.GetLogger(typeof(SerilogLoggerTests));
+
+            using (log.PushProperty("A", "1"))
+            using (log.PushProperty("B", "2"))
+            {
+                log.Info("log entry");
+            }
+
+            var result = dummySink.Events[0];
+            Assert.That(result.Properties.Any(x => x.Key == "A"));
+            Assert.That(result.Properties.Any(x => x.Key == "B"));
+        }
 
     }
 

@@ -9,17 +9,13 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
-using ServiceStack;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
@@ -28,17 +24,17 @@ using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
-using ServiceStack.Platforms;
 using ServiceStack.Redis;
 using ServiceStack.Script;
-using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 using ServiceStack.Text;
+using ActionContext = Microsoft.AspNetCore.Mvc.ActionContext;
 
 namespace ServiceStack.Mvc
 {
-    public class RazorFormat : IPlugin, Html.IViewEngine
+    public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.Razor;
         public static ILog log = LogManager.GetLogger(typeof(RazorFormat));
 
         public static string DefaultLayout { get; set; } = "_Layout";
@@ -88,7 +84,7 @@ namespace ServiceStack.Mvc
                 throw new Exception(ErrorMvcNotInit);
         }
 
-        public System.Web.IHttpHandler CatchAllHandler(string httpMethod, string pathInfo, string filepath)
+        public Host.IHttpHandler CatchAllHandler(string httpMethod, string pathInfo, string filepath)
         {
             var viewEngineResult = GetPageFromPathInfo(pathInfo);
 
@@ -132,7 +128,7 @@ namespace ServiceStack.Mvc
 
         public string IndexPage { get; set; } = "default";
 
-        protected virtual System.Web.IHttpHandler PageBasedRoutingHandler(string httpMethod, string pathInfo, string requestFilePath)
+        protected virtual Host.IHttpHandler PageBasedRoutingHandler(string httpMethod, string pathInfo, string requestFilePath)
         {
             var extPos = pathInfo.LastIndexOf('.');
             if (extPos >= 0 && pathInfo.Substring(extPos) != ".cshtml")
@@ -345,7 +341,23 @@ namespace ServiceStack.Mvc
             return true;
         }
 
-        private ViewEngineResult FindView(IEnumerable<string> viewNames, out Dictionary<string, object> routingArgs)
+        public IView GetViewPage(string path)
+        {
+            var viewEngineResult = FindView(new[] {path}, out _);
+            if (viewEngineResult?.Success == true)
+                return viewEngineResult.View;
+            return null;
+        }
+
+        public IView GetContentPage(string path)
+        {
+            var viewEngineResult = GetRoutingPage(path, out _);
+            if (viewEngineResult?.Success == true)
+                return viewEngineResult.View;
+            return null;
+        }
+        
+        public ViewEngineResult FindView(IEnumerable<string> viewNames, out Dictionary<string, object> routingArgs)
         {
             routingArgs = null;
             const string execPath = "";
@@ -378,10 +390,21 @@ namespace ServiceStack.Mvc
 
         internal static ViewDataDictionary CreateViewData<T>(T model)
         {
+            if (model is ViewDataDictionary viewData)
+                return viewData;
+            
+            if (model != null && model.GetType().IsAnonymousType())
+            {
+                return new ViewDataDictionary(
+                    metadataProvider: new EmptyModelMetadataProvider(),
+                    modelState: new ModelStateDictionary()) {
+                    Model = new DictionaryDynamicObject(model.ToObjectDictionary())
+                };
+            }
+
             return new ViewDataDictionary<T>(
                 metadataProvider: new EmptyModelMetadataProvider(),
-                modelState: new ModelStateDictionary())
-            {
+                modelState: new ModelStateDictionary()) {
                 Model = model
             };
         }
@@ -396,7 +419,7 @@ namespace ServiceStack.Mvc
                     new RouteData(),
                     new ActionDescriptor());
 
-                var sw = new StreamWriter(stream);
+                var sw = new StreamWriter(stream); // don't dispose of stream so other middleware can re-read / filter it
                 {
                     if (viewData == null)
                         viewData = CreateViewData((object)null);
@@ -445,6 +468,83 @@ namespace ServiceStack.Mvc
                 await req.Response.WriteErrorBody(ex);
             }
         }
+
+        public async Task<ReadOnlyMemory<char>> RenderToHtmlAsync(IView view, object model = null, string layout = null)
+        {
+            using var ms = MemoryStreamFactory.GetStream();
+            await WriteHtmlAsync(ms, view, model, layout);
+            return MemoryProvider.Instance.FromUtf8(ms.GetBufferAsSpan());
+        }
+        
+        public async Task WriteHtmlAsync(Stream stream, IView view, object model = null, string layout = null, HttpContext ctx = null, IRequest req = null)
+        {
+            if (view == null)
+                throw new ArgumentNullException(nameof(view));
+            
+            var razorView = view as RazorView;
+
+            try
+            {
+                if (ctx == null)
+                {
+                    ctx = new DefaultHttpContext {
+                        RequestServices = HostContext.Container
+                    };
+                }
+                
+                var actionContext = new ActionContext(
+                    ctx,
+                    new RouteData(),
+                    new ActionDescriptor());
+
+                var sw = new StreamWriter(stream);
+                {
+                    var viewData = CreateViewData(model);
+
+                    // Use "_Layout" if unspecified
+                    if (razorView != null)
+                        razorView.RazorPage.Layout = layout ?? DefaultLayout;
+
+                    // Allows Layout from being overridden in page with: Layout = Html.ResolveLayout("LayoutUnlessOverridden")
+                    if (layout != null)
+                        viewData["Layout"] = layout;
+
+                    viewData[Keywords.IRequest] = req ?? new Host.BasicRequest { PathInfo = view.Path };
+
+                    var viewContext = new ViewContext(
+                        actionContext,
+                        view,
+                        viewData,
+                        new TempDataDictionary(actionContext.HttpContext, tempDataProvider),
+                        sw,
+                        new HtmlHelperOptions());
+
+                    await view.RenderAsync(viewContext);
+
+                    await sw.FlushAsync();
+
+                    try
+                    {
+                        using (razorView?.RazorPage as IDisposable) { }
+                    }
+                    catch (Exception ex)
+                    {
+                        log.Warn("Error trying to dispose Razor View: " + ex.Message, ex);
+                    }
+                }
+            }
+            catch (StopExecutionException) { }
+            catch (Exception origEx)
+            {
+                var ex = origEx.UnwrapIfSingleException();
+                if (ex is StopExecutionException)
+                    return;
+                if (ex == origEx)
+                    throw;
+                throw ex;
+            }
+        }
+        
     }
 
     public class RazorHandler : ServiceStackHandlerBase
@@ -1068,6 +1168,7 @@ namespace ServiceStack.Mvc
             return new HtmlString(RazorViewExtensions.GetErrorHtml(GetErrorStatus()) ?? "");
         }
 
+        public string PathBase => AppHost.Config.PathBase;
         public IVirtualFiles VirtualFiles => HostContext.VirtualFiles;
         public IVirtualPathProvider VirtualFileSources => HostContext.VirtualFileSources;
 
@@ -1078,7 +1179,7 @@ namespace ServiceStack.Mvc
         public virtual TPlugin GetPlugin<TPlugin>() where TPlugin : class, IPlugin => HostContext.AppHost.GetPlugin<TPlugin>();
 
         private IServiceStackProvider provider;
-        public virtual IServiceStackProvider ServiceStackProvider => provider ?? (provider = new ServiceStackProvider(Request));
+        public virtual IServiceStackProvider ServiceStackProvider => provider ??= new ServiceStackProvider(Request);
 
         public virtual IAppSettings AppSettings => ServiceStackProvider.AppSettings;
 

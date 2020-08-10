@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Logging;
+using ServiceStack.Script;
+
 #if NETSTANDARD2_0
 using System.Threading.Tasks;
 #endif
@@ -71,7 +74,7 @@ namespace ServiceStack
             return default(TReturn);
         }
 
-        public static void RetryUntilTrue(Func<bool> action, TimeSpan? timeOut)
+        public static void RetryUntilTrue(Func<bool> action, TimeSpan? timeOut=null)
         {
             var i = 0;
             var firstAttempt = DateTime.UtcNow;
@@ -154,6 +157,12 @@ namespace ServiceStack
         public static void SleepBackOffMultiplier(int retriesAttempted) => TaskUtils.Sleep(CalculateFullJitterBackOffDelay(retriesAttempted));
 
         /// <summary>
+        /// How long to wait before next retry using Exponential BackOff delay with Full Jitter.
+        /// </summary>
+        /// <param name="retriesAttempted"></param>
+        public static Task DelayBackOffMultiplierAsync(int retriesAttempted) => Task.Delay(CalculateFullJitterBackOffDelay(retriesAttempted));
+
+        /// <summary>
         /// Exponential BackOff Delay with Full Jitter
         /// </summary>
         /// <param name="retriesAttempted"></param>
@@ -197,5 +206,17 @@ namespace ServiceStack
             var retries = Math.Min(retriesAttempted, MaxRetries);
             return (int)Math.Min((1L << retries) * baseDelay, maxBackOffMs);
         }
+
+        /// <summary>
+        /// Calculate back-off logic for obtaining an in memory lock 
+        /// </summary>
+        /// <param name="retries"></param>
+        /// <returns></returns>
+        public static int CalculateMemoryLockDelay(int retries) => retries < 10
+            ? CalculateExponentialDelay(retries, baseDelay:5, maxBackOffMs:1000)
+            : CalculateFullJitterBackOffDelay(retries, baseDelay:10, maxBackOffMs:10000);
+
+        public static string ShellExec(string command, Dictionary<string, object> args=null) =>
+            new ProtectedScripts().sh(default, command, args);
     }
 }

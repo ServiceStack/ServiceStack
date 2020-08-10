@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using ServiceStack.Configuration;
 using ServiceStack.Templates;
@@ -17,8 +16,6 @@ namespace ServiceStack.Auth
 
         protected string[] Scopes { get; set; }
         
-        public Func<string, bool> VerifyAccessToken { get; set; }
-
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
             var tokens = Init(authService, ref session, request);

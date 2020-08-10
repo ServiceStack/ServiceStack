@@ -189,6 +189,11 @@ namespace ServiceStack
             {
                 return ExecSync<TResponse>(requestDto);
             }
+            catch (Exception ex)
+            {
+                HostContext.RaiseGatewayException(req, requestDto, ex).Wait();
+                throw;
+            }
             finally
             {
                 req.Dto = holdDto;
@@ -211,6 +216,11 @@ namespace ServiceStack
             {
                 var response = await ExecAsync<TResponse>(requestDto);
                 return response;
+            }
+            catch (Exception ex)
+            {
+                await HostContext.RaiseGatewayException(req, requestDto, ex);
+                throw;
             }
             finally
             {
@@ -247,6 +257,11 @@ namespace ServiceStack
             {
                 return ExecSync<TResponse[]>(typedArray).ToList();
             }
+            catch (Exception ex)
+            {
+                HostContext.RaiseGatewayException(req, requestDtos, ex).Wait();
+                throw;
+            }
             finally
             {
                 req.Dto = holdDto;
@@ -255,7 +270,7 @@ namespace ServiceStack
             }
         }
 
-        public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<object> requestDtos, CancellationToken token = new CancellationToken())
+        public async Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<object> requestDtos, CancellationToken token = new CancellationToken())
         {
             var holdDto = req.Dto;
             var holdAttrs = req.RequestAttributes;
@@ -265,14 +280,22 @@ namespace ServiceStack
             req.SetItem(Keywords.InvokeVerb, HttpMethods.Post);
             req.SetInProcessRequest();
 
-            var responseTask = ExecAsync<TResponse[]>(typedArray);
-            return HostContext.Async.ContinueWith(req, responseTask, task => 
-                {
-                    req.Dto = holdDto;
-                    req.RequestAttributes = holdAttrs;
-                    ResetVerb(holdVerb);
-                    return task.Result.ToList();
-                }, token);
+            try
+            {
+                var response = await ExecAsync<TResponse[]>(typedArray);
+                return response.ToList();
+            }
+            catch (Exception ex)
+            {
+                await HostContext.RaiseGatewayException(req, requestDtos, ex);
+                throw;
+            }
+            finally
+            {
+                req.Dto = holdDto;
+                req.RequestAttributes = holdAttrs;
+                ResetVerb(holdVerb);
+            }
         }
 
         public void Publish(object requestDto)
@@ -289,6 +312,11 @@ namespace ServiceStack
             try
             {
                 var response = HostContext.ServiceController.Execute(requestDto, req);
+            }
+            catch (Exception ex)
+            {
+                HostContext.RaiseGatewayException(req, requestDto, ex).Wait();
+                throw;
             }
             finally
             {
@@ -310,12 +338,22 @@ namespace ServiceStack
             req.RequestAttributes |= RequestAttributes.OneWay;
             req.RequestAttributes |= RequestAttributes.InProcess;
 
-            await HostContext.ServiceController.GatewayExecuteAsync(requestDto, req, applyFilters: false);
-
-            req.Dto = holdDto;
-            req.OperationName = holdOp;
-            req.RequestAttributes = holdAttrs;
-            ResetVerb(holdVerb);
+            try
+            {
+                await HostContext.ServiceController.GatewayExecuteAsync(requestDto, req, applyFilters: false);
+            }
+            catch (Exception ex)
+            {
+                await HostContext.RaiseGatewayException(req, requestDto, ex);
+                throw;
+            }
+            finally
+            {
+                req.Dto = holdDto;
+                req.OperationName = holdOp;
+                req.RequestAttributes = holdAttrs;
+                ResetVerb(holdVerb);
+            }
         }
 
         public void PublishAll(IEnumerable<object> requestDtos)
@@ -333,6 +371,11 @@ namespace ServiceStack
             try
             {
                 var response = HostContext.ServiceController.Execute(typedArray, req);
+            }
+            catch (Exception ex)
+            {
+                HostContext.RaiseGatewayException(req, requestDtos, ex).Wait();
+                throw;
             }
             finally
             {
@@ -353,11 +396,21 @@ namespace ServiceStack
             req.RequestAttributes &= ~RequestAttributes.Reply;
             req.RequestAttributes |= RequestAttributes.OneWay;
 
-            await HostContext.ServiceController.GatewayExecuteAsync(typedArray, req, applyFilters: false);
-
-            req.Dto = holdDto;
-            req.RequestAttributes = holdAttrs;
-            ResetVerb(holdVerb);
+            try
+            {
+                await HostContext.ServiceController.GatewayExecuteAsync(typedArray, req, applyFilters: false);
+            }
+            catch (Exception ex)
+            {
+                await HostContext.RaiseGatewayException(req, requestDtos, ex);
+                throw;
+            }
+            finally
+            {
+                req.Dto = holdDto;
+                req.RequestAttributes = holdAttrs;
+                ResetVerb(holdVerb);
+            }
         }
     }
 }

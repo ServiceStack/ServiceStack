@@ -94,6 +94,10 @@ namespace ServiceStack
         /// </summary>
         public string OutputWebPath { get; set; }
         /// <summary>
+        /// If needed, include PathBase prefix in output tag
+        /// </summary>
+        public string PathBase { get; set; }
+        /// <summary>
         /// Whether to minify sources in bundle (default true)
         /// </summary>
         public bool Minify { get; set; } = true;
@@ -165,6 +169,7 @@ namespace ServiceStack
 
         public DefaultScripts Defaults { get; set; } = ViewUtils.DefaultScripts;
         
+        public string Display { get; set; }
         internal int Depth { get; set; }
         internal int ChildDepth { get; set; } = 1;
         internal bool HasCaption { get; set; }
@@ -195,6 +200,9 @@ namespace ServiceStack
                     : null,
                 CaptionIfEmpty = options.TryGetValue("captionIfEmpty", out var captionIfEmpty)
                     ? captionIfEmpty?.ToString()
+                    : null,
+                Display = options.TryGetValue("display", out var display)
+                    ? display?.ToString()
                     : null,
                 Defaults = defaults ?? ViewUtils.DefaultScripts,
             };
@@ -442,6 +450,9 @@ namespace ServiceStack
             return StringBuilderCache.ReturnAndFree(sb);
         }
         
+        /// <summary>
+        ///  Display a list of NavItem's
+        /// </summary>
         public static string Nav(List<NavItem> navItems, NavOptions options)
         {
             if (navItems.IsEmpty())
@@ -461,6 +472,9 @@ namespace ServiceStack
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Display a `nav-link` nav-item
+        /// </summary>
         public static string NavLink(NavItem navItem, NavOptions options)
         {
             var sb = StringBuilderCache.Allocate();
@@ -475,6 +489,9 @@ namespace ServiceStack
                     ? " active"
                     : "";
         
+        /// <summary>
+        /// Display a `nav-link` nav-item
+        /// </summary>
         public static void NavLink(StringBuilder sb, NavItem navItem, NavOptions options)
         {
             if (!navItem.ShowNav(options.Attributes))
@@ -536,6 +553,7 @@ namespace ServiceStack
                             .Append(ActiveClass(childNav,options.ActivePath))
                             .Append("\"")
                             .Append(" href=\"")
+                            .Append(options.BaseHref?.TrimEnd('/'))
                             .Append(childNav.Href)
                             .Append("\">")
                             .Append(childNav.Label)
@@ -636,6 +654,9 @@ namespace ServiceStack
             return text;
         }
         
+        /// <summary>
+        /// Emit HTML hidden input field for each specified Key/Value pair entry
+        /// </summary>
         public static string HtmlHiddenInputs(IEnumerable<KeyValuePair<string,object>> inputValues)
         {
             if (inputValues != null)
@@ -738,6 +759,10 @@ namespace ServiceStack
             return strings;
         }
 
+        /// <summary>
+        /// Show validation summary error message unless there's an error in exceptFor list of fields
+        /// as validation errors will be displayed along side the field instead
+        /// </summary>
         public static string ValidationSummary(ResponseStatus errorStatus, string exceptFor) =>
             ValidationSummary(errorStatus, ToVarNames(exceptFor), null); 
         public static string ValidationSummary(ResponseStatus errorStatus, ICollection<string> exceptFields, Dictionary<string,object> divAttrs)
@@ -761,6 +786,9 @@ namespace ServiceStack
         public static string ValidationSummaryCssClassNames = "alert alert-danger";
         public static string ValidationSuccessCssClassNames = "alert alert-success";
 
+        /// <summary>
+        /// Display a "Success Alert Box"
+        /// </summary>
         public static string ValidationSuccess(string message, Dictionary<string,object> divAttrs)
         {
             if (divAttrs == null)
@@ -772,6 +800,9 @@ namespace ServiceStack
             return HtmlScripts.htmlDiv(message, divAttrs).ToRawString();
         }
         
+        /// <summary>
+        /// Return an error message unless there's an error in fieldNames
+        /// </summary>
         public static string ErrorResponseExcept(ResponseStatus errorStatus, string fieldNames) =>
             ErrorResponseExcept(errorStatus, ToVarNames(fieldNames));
         public static string ErrorResponseExcept(ResponseStatus errorStatus, ICollection<string> fieldNames)
@@ -800,6 +831,9 @@ namespace ServiceStack
             return errorStatus.Message ?? errorStatus.ErrorCode;
         }
         
+        /// <summary>
+        /// Return an error message unless there are field errors
+        /// </summary>
         public static string ErrorResponseSummary(ResponseStatus errorStatus)
         {
             if (errorStatus == null)
@@ -810,6 +844,9 @@ namespace ServiceStack
                 : null;
         }
         
+        /// <summary>
+        /// Return an error for the specified field (if any)  
+        /// </summary>
         public static string ErrorResponse(ResponseStatus errorStatus, string fieldName)
         {
             if (fieldName == null)
@@ -959,7 +996,7 @@ namespace ServiceStack
             className = HtmlScripts.htmlAddClass(className, inputClass);
 
             if (size != null)
-                className = HtmlScripts.htmlAddClass(className, (notInput || isCheck ? inputClass : "input") + "-" + size);
+                className = HtmlScripts.htmlAddClass(className, inputClass + "-" + size);
 
             var errorMsg = ErrorResponse(GetErrorStatus(req), name);
             if (errorMsg != null)
@@ -1191,7 +1228,7 @@ namespace ServiceStack
             return BundleAsset(filterName, 
                 webVfs, 
                 contentVfs,
-                jsCompressor, options, outFile, options.OutputWebPath, htmlTagFmt, assetExt);
+                jsCompressor, options, outFile, options.OutputWebPath, htmlTagFmt, assetExt, options.PathBase);
         }
 
         public static string BundleCss(string filterName, 
@@ -1208,7 +1245,7 @@ namespace ServiceStack
             return BundleAsset(filterName, 
                 webVfs, 
                 contentVfs, 
-                cssCompressor, options, outFile, options.OutputWebPath, htmlTagFmt, assetExt);
+                cssCompressor, options, outFile, options.OutputWebPath, htmlTagFmt, assetExt, options.PathBase);
         }
 
         public static string BundleHtml(string filterName, 
@@ -1227,7 +1264,7 @@ namespace ServiceStack
             return BundleAsset(filterName, 
                 webVfs, 
                 contentVfs,
-                htmlCompressor, options, outFile, options.OutputWebPath, htmlTagFmt, assetExt);
+                htmlCompressor, options, outFile, options.OutputWebPath, htmlTagFmt, assetExt, options.PathBase);
         }
 
         private static string BundleAsset(string filterName, 
@@ -1238,13 +1275,14 @@ namespace ServiceStack
             string origOutFile, 
             string outWebPath, 
             string htmlTagFmt, 
-            string assetExt)
+            string assetExt, 
+            string pathBase)
         {
             try
             {
                 var writeVfs = ResolveWriteVfs(filterName, webVfs, contentVfs, origOutFile, options.SaveToDisk, out var outFilePath);
 
-                var outHtmlTag = htmlTagFmt.Replace("{0}", outFilePath);
+                var outHtmlTag = htmlTagFmt.Replace("{0}", pathBase == null ? outFilePath : pathBase.CombineWith(outFilePath));
 
                 var maxDate = DateTime.MinValue;
                 var hasHash = outFilePath.IndexOf("[hash]", StringComparison.Ordinal) >= 0;

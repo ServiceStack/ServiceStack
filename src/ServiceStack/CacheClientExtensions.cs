@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ServiceStack.Caching;
 using ServiceStack.Web;
 using System.Globalization;
+using System.Threading.Tasks;
 
 namespace ServiceStack
 {
@@ -270,8 +271,7 @@ namespace ServiceStack
         /// <param name="regex">Regular expression pattern to search cache keys</param>
         public static void RemoveByRegex(this ICacheClient cacheClient, string regex)
         {
-            var canRemoveByPattern = cacheClient as IRemoveByPattern;
-            if (canRemoveByPattern == null)
+            if (!(cacheClient is IRemoveByPattern canRemoveByPattern))
                 throw new NotImplementedException("IRemoveByPattern is not implemented by: " + cacheClient.GetType().FullName);
 
             canRemoveByPattern.RemoveByRegex(regex);
@@ -279,8 +279,7 @@ namespace ServiceStack
 
         public static IEnumerable<string> GetKeysByPattern(this ICacheClient cache, string pattern)
         {
-            var extendedCache = cache as ICacheClientExtended;
-            if (extendedCache == null)
+            if (!(cache is ICacheClientExtended extendedCache))
                 throw new NotImplementedException("ICacheClientExtended is not implemented by: " + cache.GetType().FullName);
 
             return extendedCache.GetKeysByPattern(pattern);
@@ -308,6 +307,18 @@ namespace ServiceStack
             return value;
         }
 
+        public static async Task<T> GetOrCreateAsync<T>(this ICacheClient cache,
+            string key, Func<Task<T>> createFn)
+        {
+            var value = cache.Get<T>(key);
+            if (Equals(value, default(T)))
+            {
+                value = await createFn();
+                cache.Set(key, value);
+            }
+            return value;
+        }
+
         public static T GetOrCreate<T>(this ICacheClient cache,
             string key, TimeSpan expiresIn, Func<T> createFn)
         {
@@ -320,10 +331,21 @@ namespace ServiceStack
             return value;
         }
 
+        public static async Task<T> GetOrCreateAsync<T>(this ICacheClient cache,
+            string key, TimeSpan expiresIn, Func<Task<T>> createFn)
+        {
+            var value = cache.Get<T>(key);
+            if (Equals(value, default(T)))
+            {
+                value = await createFn();
+                cache.Set(key, value, expiresIn);
+            }
+            return value;
+        }
+
         public static TimeSpan? GetTimeToLive(this ICacheClient cache, string key)
         {
-            var extendedCache = cache as ICacheClientExtended;
-            if (extendedCache == null)
+            if (!(cache is ICacheClientExtended extendedCache))
                 throw new Exception("GetTimeToLive is not implemented by: " + cache.GetType().FullName);
 
             return extendedCache.GetTimeToLive(key);

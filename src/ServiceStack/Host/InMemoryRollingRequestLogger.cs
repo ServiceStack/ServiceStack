@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using ServiceStack.Web;
 
@@ -29,12 +28,14 @@ namespace ServiceStack.Host
         public string[] RequiredRoles { get; set; }
 
         public Func<IRequest, bool> SkipLogging { get; set; }
-
+        
         public Type[] ExcludeRequestDtoTypes { get; set; }
 
         public Type[] HideRequestBodyForRequestDtoTypes { get; set; }
 
         public Action<IRequest, RequestLogEntry> RequestLogFilter { get; set; }
+
+        public Func<object,bool> IgnoreFilter { get; set; } 
 
         public Func<DateTime> CurrentDateFn { get; set; } = () => DateTime.UtcNow;
 
@@ -66,6 +67,32 @@ namespace ServiceStack.Host
             var entry = CreateEntry(request, requestDto, response, requestDuration, requestType);
 
             RequestLogFilter?.Invoke(request, entry);
+
+            if (IgnoreFilter != null)
+            {
+                if (entry.RequestDto != null && IgnoreFilter(entry.RequestDto))
+                    entry.RequestDto = null;
+                if (entry.ResponseDto != null && IgnoreFilter(entry.ResponseDto))
+                    entry.ResponseDto = null;
+                if (entry.Session != null && IgnoreFilter(entry.Session))
+                    entry.Session = null;
+                if (entry.ErrorResponse != null && IgnoreFilter(entry.ErrorResponse))
+                    entry.ErrorResponse = null;
+                if (entry.ExceptionData != null)
+                {
+                    List<object> keysToRemove = null;
+                    foreach (var key in entry.ExceptionData.Keys)
+                    {
+                        var val = entry.ExceptionData[key];
+                        if (val != null && IgnoreFilter(val))
+                        {
+                            keysToRemove ??= new List<object>();
+                            keysToRemove.Add(key);
+                        }
+                    }
+                    keysToRemove?.Each(entry.ExceptionData.Remove);
+                }
+            }
 
             logEntries.Enqueue(entry);
 

@@ -35,6 +35,12 @@ namespace ServiceStack.Script
             return instance;
         }
         
+        public object @default(string typeName)
+        {
+            var type = assertTypeOf(typeName);
+            return type.GetDefaultValue();
+        }
+
         public object @new(string typeName)
         {
             var type = @typeof(typeName);
@@ -207,7 +213,6 @@ namespace ServiceStack.Script
             return type;
         }
 
-
         /// <summary>
         /// Returns Type from type name syntax of .NET's typeof() 
         /// </summary>
@@ -220,7 +225,7 @@ namespace ServiceStack.Script
             
             var key = "type:" + typeName;
 
-            Type cookType(Type type, List<string> genericArgs, bool isArray)
+            Type cookType(Type type, List<string> genericArgs, bool isArray, bool isNullable)
             {
                 if (type.IsGenericType)
                 {
@@ -237,7 +242,9 @@ namespace ServiceStack.Script
                     type = type.MakeArrayType();
                 }
             
-                return type;
+                return isNullable
+                    ? typeof(Nullable<>).MakeGenericType(type)
+                    : type;
             }
             
             Type onlyTypeOf(string _typeName)
@@ -256,70 +263,68 @@ namespace ServiceStack.Script
                     genericArgs = typeGenericArgs(_typeName);
                     _typeName = _typeName.LeftPart('<') + '`' + Math.Max(genericArgs.Count, 1);
                 }
-
+                var isNullable = _typeName.EndsWith("?");
+                if (isNullable)
+                    _typeName = _typeName.Substring(0, _typeName.Length - 1);
+                
                 if (_typeName.IndexOf('.') >= 0)
                 {
                     if (Context.ScriptTypeQualifiedNameMap.TryGetValue(_typeName, out var type))
-                        return cookType(type, genericArgs, isArray);
+                        return cookType(type, genericArgs, isArray, isNullable);
 
                     if (Context.AllowScriptingOfAllTypes)
                     {
                         type = AssemblyUtils.FindType(_typeName);
                         if (type != null)
-                            return cookType(type, genericArgs, isArray);
+                            return cookType(type, genericArgs, isArray, isNullable);
                     }
                 }
                 else
                 {
-                    switch (_typeName)
+                    var ret = _typeName switch {
+                        "int" => !isArray ? typeof(int) : typeof(int[]),
+                        "long" => !isArray ? typeof(long) : typeof(long[]),
+                        "bool" => !isArray ? typeof(bool) : typeof(bool[]),
+                        "char" => !isArray ? typeof(char) : typeof(char[]),
+                        "double" => !isArray ? typeof(double) : typeof(double[]),
+                        "float" => !isArray ? typeof(float) : typeof(float[]),
+                        "decimal" => !isArray ? typeof(decimal) : typeof(decimal[]),
+                        "byte" => !isArray ? typeof(byte) : typeof(byte[]),
+                        "sbyte" => !isArray ? typeof(sbyte) : typeof(sbyte[]),
+                        "uint" => !isArray ? typeof(uint) : typeof(uint[]),
+                        "ulong" => !isArray ? typeof(ulong) : typeof(ulong[]),
+                        "object" => !isArray ? typeof(object) : typeof(object[]),
+                        "short" => !isArray ? typeof(short) : typeof(short[]),
+                        "ushort" => !isArray ? typeof(ushort) : typeof(ushort[]),
+                        "string" => !isArray ? typeof(string) : typeof(string[]),
+                        "Guid" => !isArray ? typeof(Guid) : typeof(Guid[]),
+                        "TimeSpan" => !isArray ? typeof(TimeSpan) : typeof(TimeSpan[]),
+                        "DateTime" => !isArray ? typeof(DateTime) : typeof(DateTime[]),
+                        "DateTimeOffset" => !isArray ? typeof(DateTimeOffset) : typeof(DateTimeOffset[]),
+                        _ => null,
+                    };
+                    if (ret != null)
                     {
-                        case "bool":
-                            return !isArray ? typeof(bool) : typeof(bool[]);
-                        case "byte":
-                            return !isArray ? typeof(byte) : typeof(byte[]);
-                        case "sbyte":
-                            return !isArray ? typeof(sbyte) : typeof(sbyte[]);
-                        case "char":
-                            return !isArray ? typeof(char) : typeof(char[]);
-                        case "decimal":
-                            return !isArray ? typeof(decimal) : typeof(decimal[]);
-                        case "double":
-                            return !isArray ? typeof(double) : typeof(double[]);
-                        case "float":
-                            return !isArray ? typeof(float) : typeof(float[]);
-                        case "int":
-                            return !isArray ? typeof(int) : typeof(int[]);
-                        case "uint":
-                            return !isArray ? typeof(uint) : typeof(uint[]);
-                        case "long":
-                            return !isArray ? typeof(long) : typeof(long[]);
-                        case "ulong":
-                            return !isArray ? typeof(ulong) : typeof(ulong[]);
-                        case "object":
-                            return !isArray ? typeof(object) : typeof(object[]);
-                        case "short":
-                            return !isArray ? typeof(short) : typeof(short[]);
-                        case "ushort":
-                            return !isArray ? typeof(ushort) : typeof(ushort[]);
-                        case "string":
-                            return !isArray ? typeof(string) : typeof(string[]);
+                        return isNullable
+                            ? typeof(Nullable<>).MakeGenericType(ret)
+                            : ret;
                     }
 
                     if (Context.ScriptTypeNameMap.TryGetValue(_typeName, out var type))
-                        return cookType(type, genericArgs, isArray);
+                        return cookType(type, genericArgs, isArray, isNullable);
                 }
 
                 foreach (var ns in Context.ScriptNamespaces)
                 {
                     var lookupType = ns + "." + _typeName;
                     if (Context.ScriptTypeQualifiedNameMap.TryGetValue(lookupType, out var type))
-                        return cookType(type, genericArgs, isArray);
+                        return cookType(type, genericArgs, isArray, isNullable);
                     
                     if (Context.AllowScriptingOfAllTypes)
                     {
                         type = AssemblyUtils.FindType(lookupType);
                         if (type != null)
-                            return cookType(type, genericArgs, isArray);
+                            return cookType(type, genericArgs, isArray, isNullable);
                     }
                 }
 
@@ -367,6 +372,10 @@ namespace ServiceStack.Script
 
             return resolvedType;
         }
+        
+        public Type typeofProgId(string name) => Env.IsWindows
+            ? Type.GetTypeFromProgID(name) // .NET Core throws TargetInvocationException CoreCLR_REMOVED -- Unmanaged activation removed
+            : null;
 
         public object call(object instance, string name) => call(instance, name, null);
 
@@ -864,7 +873,12 @@ namespace ServiceStack.Script
         public IEnumerable<IVirtualFile> findFilesInDirectory(IVirtualPathProvider vfs, string dirPath, string globPattern) => vfs.GetDirectory(dirPath)?.GetAllMatchingFiles(globPattern);
 
         public IEnumerable<IVirtualFile> findFiles(string globPattern) => findFiles(VirtualFiles,globPattern);
+
+        public IEnumerable<IVirtualFile> dirFindFiles(IVirtualDirectory dir, string globPattern) => dir.GetAllMatchingFiles(globPattern);
+        public IEnumerable<IVirtualFile> dirFindFiles(IVirtualDirectory dir, string globPattern, int maxDepth) => dir.GetAllMatchingFiles(globPattern, maxDepth);
         public IEnumerable<IVirtualFile> findFiles(IVirtualPathProvider vfs, string globPattern) => vfs.GetAllMatchingFiles(globPattern);
+        public IEnumerable<IVirtualFile> findFiles(IVirtualPathProvider vfs, string globPattern, int maxDepth) => vfs.GetAllMatchingFiles(globPattern, maxDepth);
+        
         public bool fileExists(string virtualPath) => fileExists(VirtualFiles,virtualPath);
         public bool fileExists(IVirtualPathProvider vfs, string virtualPath) => vfs.FileExists(virtualPath);
         public IVirtualFile file(string virtualPath) => file(VirtualFiles,virtualPath);
@@ -992,22 +1006,22 @@ namespace ServiceStack.Script
 
             if (scopedParams.TryRemove("data", out object data))
             {
-                if (webReq.Method == null)
-                    webReq.Method = HttpMethods.Post;
-
                 if (webReq.ContentType == null)
                     webReq.ContentType = MimeTypes.FormUrlEncoded;
 
                 var body = ConvertDataToString(data, webReq.ContentType);
-                using (var stream = webReq.GetRequestStream())
-                {
-                    var utf8 = MemoryProvider.Instance.ToUtf8(body.AsSpan()).ToArray();
-                    stream.Write(utf8, 0, utf8.Length);
-                }
+                using var stream = webReq.GetRequestStream();
+                var utf8 = MemoryProvider.Instance.ToUtf8(body.AsSpan()).ToArray();
+                stream.Write(utf8, 0, utf8.Length);
             }
 
             return webReq;
         }
+
+        public string urlTextContents(ScriptScopeContext scope, string url) =>
+            urlTextContents(scope, url, new Dictionary<string, object> {
+                ["method"] = HttpMethods.Get
+            });
 
         public string urlTextContents(ScriptScopeContext scope, string url, object options)
         {
@@ -1438,5 +1452,7 @@ namespace ServiceStack.Script
             catch {}               
             return null;
         }
+
+        public void exit(int exitCode) => Environment.Exit(exitCode);
     }
 }

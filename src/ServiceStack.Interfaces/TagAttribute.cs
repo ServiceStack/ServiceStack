@@ -15,7 +15,9 @@ namespace ServiceStack
         /// </summary>
         public ApplyTo ApplyTo { get; set; }
 
-        public TagAttribute(string name = null, ApplyTo applyTo = ApplyTo.All)
+        public TagAttribute() : this(null) { }
+        public TagAttribute(string name) : this(name, ApplyTo.All) {}
+        public TagAttribute(string name, ApplyTo applyTo)
         {
             Name = name;
             ApplyTo = applyTo;

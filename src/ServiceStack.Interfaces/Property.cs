@@ -9,9 +9,9 @@ namespace ServiceStack
     [DataContract]
     public class Property
     {
-        [DataMember]
+        [DataMember(Order = 1)]
         public string Name { get; set; }
-        [DataMember]
+        [DataMember(Order = 2)]
         public string Value { get; set; }
     }
 

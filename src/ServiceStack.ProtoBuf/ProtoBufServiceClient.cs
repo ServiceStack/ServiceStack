@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Runtime.Serialization;
-using ProtoBuf;
 using ServiceStack.Web;
 
 namespace ServiceStack.ProtoBuf
@@ -18,11 +17,11 @@ namespace ServiceStack.ProtoBuf
         public ProtoBufServiceClient(string syncReplyBaseUri, string asyncOneWayBaseUri)
             : base(syncReplyBaseUri, asyncOneWayBaseUri) { }
 
-        public override void SerializeToStream(IRequest requestContext, object request, Stream stream)
+        public override void SerializeToStream(IRequest req, object request, Stream stream)
         {
             try
             {
-                Serializer.NonGeneric.Serialize(stream, request);
+                ProtoBufFormat.Serialize(req, request, stream);
             }
             catch (Exception ex)
             {
@@ -34,7 +33,7 @@ namespace ServiceStack.ProtoBuf
         {
             try
             {
-                return Serializer.Deserialize<T>(stream);
+                return ProtoBufFormat.Deserialize<T>(stream);
             }
             catch (Exception ex)
             {
@@ -42,21 +41,15 @@ namespace ServiceStack.ProtoBuf
             }
         }
 
-        public override string ContentType
-        {
-            get { return MimeTypes.ProtoBuf; }
-        }
+        public override string ContentType => MimeTypes.ProtoBuf;
 
-        public override StreamDeserializerDelegate StreamDeserializer
-        {
-            get { return Deserialize; }
-        }
+        public override StreamDeserializerDelegate StreamDeserializer => Deserialize;
 
         private static object Deserialize(Type type, Stream source)
         {
             try
             {
-                return Serializer.NonGeneric.Deserialize(type, source);
+                return ProtoBufFormat.Deserialize(type, source);
             }
             catch (Exception ex)
             {

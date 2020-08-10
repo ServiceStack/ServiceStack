@@ -55,6 +55,7 @@ namespace ServiceStack.Auth
     /// </summary>
     public class ApiKeyAuthProvider : AuthProvider, IAuthWithRequest, IAuthPlugin
     {
+        public override string Type => "Bearer";
         public const string Name = AuthenticateService.ApiKeyProvider;
         public const string Realm = "/auth/" + AuthenticateService.ApiKeyProvider;
 
@@ -195,6 +196,9 @@ namespace ServiceStack.Auth
             {
                 var apiKey = GetApiKey(authService.Request, request.Password);
                 ValidateApiKey(authService.Request, apiKey);
+                
+                if (string.IsNullOrEmpty(apiKey.UserAuthId))
+                    throw HttpError.Conflict(ErrorMessages.ApiKeyIsInvalid.Localize(authService.Request));
 
                 var userAuth = authRepo.GetUserAuth(apiKey.UserAuthId);
                 if (userAuth == null)
@@ -222,7 +226,7 @@ namespace ServiceStack.Auth
                     DisplayName = session.DisplayName
                         ?? session.UserName
                         ?? $"{session.FirstName} {session.LastName}".Trim(),
-                    ReferrerUrl = request.Continue,
+                    ReferrerUrl = authService.Request.GetReturnUrl(),
                 };
             }
         }
@@ -331,10 +335,7 @@ namespace ServiceStack.Auth
             if (!(authRepo is IManageApiKeys apiRepo))
                 throw new NotSupportedException(authRepo.GetType().Name + " does not implement IManageApiKeys");
 
-            foreach (var registerService in ServiceRoutes)
-            {
-                appHost.RegisterService(registerService.Key, registerService.Value);
-            }
+            appHost.RegisterServices(ServiceRoutes);
 
             feature.AuthEvents.Add(new ApiKeyAuthEvents(this));
 

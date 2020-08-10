@@ -92,6 +92,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Foo2 = foo2;
             }
         }
+
+        [Test]
+        public void Does_not_throw_when_registering_null_dependency()
+        {
+            var container = new Funq.Container();
+            container.Register((IFoo) new Foo());
+            Assert.That(container.TryResolve<IFoo>() != null);
+            container.Register((IFoo) null);
+            Assert.That(container.TryResolve<IFoo>() == null);
+        }
         
         [Test]
         public void Can_register_transient()

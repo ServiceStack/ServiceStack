@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Collections.Generic;
 using System.Globalization;
 using ServiceStack.FluentValidation;
 using ServiceStack.Validation;
@@ -89,6 +88,8 @@ namespace ServiceStack.Auth
         /// </summary>
         public object Post(Register request)
         {
+            var returnUrl = Request.GetReturnUrl();
+
             var authFeature = GetPlugin<AuthFeature>();
             if (authFeature != null)
             {
@@ -99,9 +100,8 @@ namespace ServiceStack.Auth
                     if (request.Email != null)
                         request.Email = request.Email.ToLower();
                 }
-
-                if (!string.IsNullOrEmpty(request.Continue))
-                    authFeature.ValidateRedirectLinks(Request, request.Continue);
+                if (!string.IsNullOrEmpty(returnUrl))
+                    authFeature.ValidateRedirectLinks(Request, returnUrl);
             }
             
             var validateResponse = ValidateFn?.Invoke(this, HttpMethods.Post, request);
@@ -141,7 +141,6 @@ namespace ServiceStack.Auth
                             provider = CredentialsAuthProvider.Name,
                             UserName = request.UserName ?? request.Email,
                             Password = request.Password,
-                            Continue = request.Continue ?? base.Request.GetQueryStringOrForm(Keywords.ReturnUrl)
                         });
 
                     if (authResponse is IHttpError)
@@ -167,7 +166,7 @@ namespace ServiceStack.Auth
                 response = new RegisterResponse
                 {
                     UserId = user.Id.ToString(CultureInfo.InvariantCulture),
-                    ReferrerUrl = request.Continue,
+                    ReferrerUrl = Request.GetReturnUrl(),
                     UserName = session.UserName,
                 };
             }
@@ -175,12 +174,12 @@ namespace ServiceStack.Auth
             var isHtml = Request.ResponseContentType.MatchesContentType(MimeTypes.Html);
             if (isHtml)
             {
-                if (string.IsNullOrEmpty(request.Continue))
+                if (string.IsNullOrEmpty(returnUrl))
                     return response;
 
                 return new HttpResult(response)
                 {
-                    Location = request.Continue
+                    Location = returnUrl
                 };
             }
 

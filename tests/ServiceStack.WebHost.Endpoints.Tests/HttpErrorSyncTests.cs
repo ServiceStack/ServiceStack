@@ -231,7 +231,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class Custom401Exception : Exception, IHasStatusCode
     {
-        public int StatusCode { get { return 401; } }
+        public int StatusCode => 401;
     }
 
     public class CustomErrorCodeException : Exception, IHasErrorCode

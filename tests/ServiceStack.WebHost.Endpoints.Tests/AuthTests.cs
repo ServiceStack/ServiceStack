@@ -381,9 +381,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class AuthTests
     {
-        protected virtual string VirtualDirectory { get { return ""; } }
-        protected virtual string ListeningOn { get { return "http://localhost:1337/"; } }
-        protected virtual string WebHostUrl { get { return "http://mydomain.com"; } }
+        protected virtual string VirtualDirectory => "";
+        protected virtual string ListeningOn => "http://localhost:1337/";
+        protected virtual string WebHostUrl => "http://mydomain.com";
 
         public const string UserName = "user";
         public const string Password = "p@55word";
@@ -607,7 +607,57 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Does_work_with_CredentailsAuth()
+        public void Does_return_SessionId_Cookies()
+        {
+            var client = GetClient();
+            var authResponse = client.Send(new Authenticate
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = "user",
+                Password = "p@55word",
+            });
+            var cookies = client.GetCookieValues();
+            Assert.That(authResponse.SessionId, Is.EqualTo(cookies["ss-id"]));
+
+            client = GetClient();
+            authResponse = client.Send(new Authenticate
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = "user",
+                Password = "p@55word",
+                RememberMe = true,
+            });
+            cookies = client.GetCookieValues();
+            Assert.That(authResponse.SessionId, Is.EqualTo(cookies["ss-pid"]));
+        }
+
+        [Test]
+        public async Task Does_return_SessionId_Cookies_Async()
+        {
+            var client = GetClient();
+            var authResponse = await client.PostAsync(new Authenticate
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = "user",
+                Password = "p@55word",
+            });
+            var cookies = client.GetCookieValues();
+            Assert.That(authResponse.SessionId, Is.EqualTo(cookies["ss-id"]));
+
+            client = GetClient();
+            authResponse = await client.PostAsync(new Authenticate
+            {
+                provider = CredentialsAuthProvider.Name,
+                UserName = "user",
+                Password = "p@55word",
+                RememberMe = true,
+            });
+            cookies = client.GetCookieValues();
+            Assert.That(authResponse.SessionId, Is.EqualTo(cookies["ss-pid"]));
+        }
+
+        [Test]
+        public void Does_work_with_CredentialsAuth()
         {
             try
             {

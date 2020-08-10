@@ -56,12 +56,14 @@ namespace ServiceStack
                     if (responseStatus == null && ResponseDto != null)
                     {
                         var propertyInfo = this.ResponseDto.GetType().GetProperty(nameof(ResponseStatus));
-                        responseStatus = propertyInfo?.GetProperty(this.ResponseDto) as ResponseStatus;
+                        
+                        var statusDto = propertyInfo?.GetProperty(this.ResponseDto);
+                        responseStatus = ToBuiltInResponseStatus(statusDto);
 
                         if (responseStatus == null)
                         {
                             if (ResponseDto.ToObjectDictionary().TryGetValue(nameof(ResponseStatus), out var oStatus))
-                                responseStatus = oStatus as ResponseStatus;
+                                responseStatus = ToBuiltInResponseStatus(oStatus);
                         }
                     }
 
@@ -87,6 +89,18 @@ namespace ServiceStack
 
                 return responseStatus;
             }
+        }
+
+        private ResponseStatus ToBuiltInResponseStatus(object statusDto)
+        {
+            responseStatus = statusDto as ResponseStatus;
+            if (responseStatus != null)
+                return responseStatus;
+
+            // Generated DTO
+            return statusDto?.GetType().Name == nameof(IHasResponseStatus.ResponseStatus)
+                ? statusDto.ConvertTo(typeof(ResponseStatus)) as ResponseStatus
+                : responseStatus;
         }
 
         public ResponseStatus ToResponseStatus() => ResponseStatus;

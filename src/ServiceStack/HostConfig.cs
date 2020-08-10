@@ -21,7 +21,7 @@ namespace ServiceStack
         public static string ServiceStackPath = null;
 
         private static HostConfig instance;
-        public static HostConfig Instance => instance ?? (instance = NewInstance());
+        public static HostConfig Instance => instance ??= NewInstance();
 
         public static HostConfig ResetInstance()
         {
@@ -96,7 +96,7 @@ namespace ServiceStack
                     "avi", "divx", "m3u", "mov", "mp3", "mpeg", "mpg", "qt", "vob", "wav", "wma", "wmv",
                     "flv", "swf", "xap", "xaml", "ogg", "ogv", "mp4", "webm", "eot", "ttf", "woff", "woff2", "map",
                     "xls", "xla", "xlsx", "xltx", "doc", "dot", "docx", "dotx", "ppt", "pps", "ppa", "pptx", "potx", 
-                    "wasm"
+                    "wasm", "proto", "cer", "crt"
                 },
                 CompressFilesWithExtensions = new HashSet<string>(),
                 AllowFilePaths = new List<string>
@@ -109,7 +109,6 @@ namespace ServiceStack
                 DebugHttpListenerHostEnvironment = Env.IsMono ? "XSP" : "WebServer20",
                 EnableFeatures = Feature.All,
                 WriteErrorsToResponse = true,
-                ReturnsInnerException = true,
                 DisposeDependenciesAfterUse = true,
                 LogUnobservedTaskExceptions = true,
                 HtmlReplaceTokens = new Dictionary<string, string>(),
@@ -173,8 +172,10 @@ namespace ServiceStack
 
 #if !NETSTANDARD2_0
                 UseCamelCase = false,
+                ReturnsInnerException = true,
 #else
                 UseCamelCase = true,
+                ReturnsInnerException = false,
 #endif
             };
 
@@ -190,6 +191,7 @@ namespace ServiceStack
             //Get a copy of the singleton already partially configured
             this.WsdlServiceNamespace = instance.WsdlServiceNamespace;
             this.ApiVersion = instance.ApiVersion;
+            this.AppInfo = instance.AppInfo;
             this.EmbeddedResourceSources = instance.EmbeddedResourceSources;
             this.EmbeddedResourceBaseTypes = instance.EmbeddedResourceBaseTypes;
             this.EmbeddedResourceTreatAsFiles = instance.EmbeddedResourceTreatAsFiles;
@@ -263,6 +265,8 @@ namespace ServiceStack
 
         public string WsdlServiceNamespace { get; set; }
         public string ApiVersion { get; set; }
+        
+        public AppInfo AppInfo { get; set; }
 
         private RequestAttributes metadataVisibility;
         public RequestAttributes MetadataVisibility
@@ -303,6 +307,7 @@ namespace ServiceStack
         public string WebHostUrl { get; set; }
         public string WebHostPhysicalPath { get; set; }
         public string HandlerFactoryPath { get; set; }
+        public string PathBase { get; internal set; } // auto populated from HandlerFactoryPath
         public string DefaultRedirectPath { get; set; }
         public string MetadataRedirectPath { get; set; }
 
@@ -390,8 +395,7 @@ namespace ServiceStack
         public FallbackRestPathDelegate FallbackRestPath { get; set; }
 
         private HashSet<string> razorNamespaces;
-        public HashSet<string> RazorNamespaces => razorNamespaces 
-            ?? (razorNamespaces = Platform.Instance.GetRazorNamespaces());
+        public HashSet<string> RazorNamespaces => razorNamespaces ??= Platform.Instance.GetRazorNamespaces();
 
     }
 

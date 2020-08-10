@@ -9,10 +9,12 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class HttpCacheFeature : IPlugin
+    public class HttpCacheFeature : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.HttpCache;
         public TimeSpan DefaultMaxAge { get; set; }
         public TimeSpan DefaultExpiresIn { get; set; }
+        public bool DisableCaching { get; set; }
 
         public Func<string, string> CacheControlFilter { get; set; }
 
@@ -32,7 +34,7 @@ namespace ServiceStack
 
         public async Task HandleCacheResponses(IRequest req, IResponse res, object response)
         {
-            if (req.IsInProcessRequest())
+            if (req.IsInProcessRequest() || DisableCaching)
                 return;
 
             if (response is Exception || res.StatusCode >= 300)

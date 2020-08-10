@@ -6,8 +6,10 @@ using ServiceStack.IO;
 
 namespace ServiceStack.Api.Swagger
 {
-    public class SwaggerFeature : IPlugin, IPreInitPlugin
+    [Obsolete("Consider using newer OpenApiFeature, see: https://docs.servicestack.net/openapi")]
+    public class SwaggerFeature : IPlugin, IPreInitPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.Swagger;
         /// <summary>
         /// Gets or sets <see cref="Regex"/> pattern to filter available resources. 
         /// </summary>

@@ -14,8 +14,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 	[TestFixture]
 	public class RequestContextTests
 	{
-		private const string ListeningOn = "http://localhost:1337/";
-
 		public class HeadersAppHostHttpListener
 			: AppHostHttpListenerBase
 		{
@@ -38,8 +36,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 				this.GlobalRequestFilters.Add((req, res, dto) =>
 				{
-					var requestFilter = dto as RequestFilter;
-					if (requestFilter != null)
+					if (dto is RequestFilter requestFilter)
 					{
 						res.StatusCode = requestFilter.StatusCode;
 						if (!requestFilter.HeaderName.IsNullOrEmpty())
@@ -58,7 +55,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			appHost = new HeadersAppHostHttpListener();
 			appHost.Init();
-			appHost.Start(ListeningOn);
+			appHost.Start(Config.ListeningOn);
 		}
 
 		[OneTimeTearDown]
@@ -69,25 +66,33 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 		public static Dictionary<string, string> GetResponseHeaders(String url)
 		{
-			var webRequest = (HttpWebRequest)WebRequest.Create(url);
-
-			var webResponse = webRequest.GetResponse();
-
-			var map = new Dictionary<string, string>();
-			for (var i = 0; i < webResponse.Headers.Count; i++)
+			try
 			{
-				var header = webResponse.Headers.AllKeys[i];
-				map[header] = webResponse.Headers[header];
-			}
+				var webRequest = (HttpWebRequest)WebRequest.Create(url);
 
-			return map;
+				var webResponse = webRequest.GetResponse();
+
+				var map = new Dictionary<string, string>();
+				for (var i = 0; i < webResponse.Headers.Count; i++)
+				{
+					var header = webResponse.Headers.AllKeys[i];
+					map[header] = webResponse.Headers[header];
+				}
+
+				return map;
+			}
+			catch (WebException e)
+			{
+				Console.WriteLine(e);
+				throw;
+			}
 		}
 
 		[Test]
 		public void Can_resolve_CustomHeader()
 		{
 			var webRequest = (HttpWebRequest)WebRequest.Create(
-				ListeningOn + "json/reply/Headers?Name=X-CustomHeader");
+				Config.ListeningOn + "json/reply/Headers?Name=X-CustomHeader");
 			webRequest.Headers["X-CustomHeader"] = "CustomValue";
 
 			var response = JsonSerializer.DeserializeFromStream<HeadersResponse>(
@@ -99,7 +104,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Does_Send_Global_Headers()
 		{
-            var headers = GetResponseHeaders(ListeningOn + "json/reply/Headers");
+            var headers = GetResponseHeaders(Config.ListeningOn + "json/reply/Headers");
 			Assert.That(headers["Access-Control-Allow-Origin"], Is.EqualTo("*"));
 			Assert.That(headers["Access-Control-Allow-Methods"], Is.EqualTo("GET, POST, PUT, DELETE, OPTIONS"));
 		}
@@ -110,7 +115,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			try
 			{
 				var webRequest = (HttpWebRequest)WebRequest.Create(
-					ListeningOn + "json/reply/RequestFilter?StatusCode=401");
+					Config.ListeningOn + "json/reply/RequestFilter?StatusCode=401");
 
 				webRequest.GetResponse();
 
@@ -128,7 +133,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			try
 			{
-				var webRequest = (HttpWebRequest)WebRequest.Create(ListeningOn 
+				var webRequest = (HttpWebRequest)WebRequest.Create(Config.ListeningOn 
 					+ "json/reply/RequestFilter?StatusCode=401"
 					+ "&HeaderName=" + HttpHeaders.WwwAuthenticate
 					+ "&HeaderValue=" + "Basic realm=\"Auth Required\"".UrlEncode());

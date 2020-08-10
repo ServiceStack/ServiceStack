@@ -127,20 +127,7 @@ namespace ServiceStack
             return SessionFeature.GetOrCreateSession<TUserSession>(req.GetCacheClient(), req, req.Response);
         }
 
-        public static bool IsAuthenticated(this IRequest req)
-        {
-            //Sync with [Authenticate] impl
-            if (HostContext.HasValidAuthSecret(req))
-                return true;
-            
-            var authProviders = AuthenticateService.GetAuthProviders();
-            AuthenticateAttribute.PreAuthenticateAsync(req, authProviders).Wait();
-            if (req.Response.IsClosed)
-                return false;
-            
-            var session = req.GetSession();
-            return session != null && authProviders.Any(x => session.IsAuthorized(x.Provider));
-        }
+        public static bool IsAuthenticated(this IRequest req) => AuthenticateAttribute.Authenticate(req, req.Dto);
 
         public static IAuthSession GetSession(this IRequest httpReq, bool reload = false)
         {
@@ -158,11 +145,12 @@ namespace ServiceStack
             if (reload && (oSession as IAuthSession)?.FromToken != true) // can't reload FromToken sessions from cache
                 oSession = null;
 
+            var appHost = HostContext.AppHost;
             if (oSession == null && !httpReq.Items.ContainsKey(Keywords.HasPreAuthenticated))
             {
                 try
                 {
-                    HostContext.AppHost.ApplyPreAuthenticateFilters(httpReq, httpReq.Response);
+                    appHost.ApplyPreAuthenticateFilters(httpReq, httpReq.Response);
                     httpReq.Items.TryGetValue(Keywords.Session, out oSession);
                 }
                 catch (Exception ex)
@@ -175,9 +163,16 @@ namespace ServiceStack
             var sessionId = httpReq.GetSessionId();
             var session = oSession as IAuthSession;
             if (session != null)
-                session = HostContext.AppHost.OnSessionFilter(httpReq, session, sessionId);
+                session = appHost.OnSessionFilter(httpReq, session, sessionId);
             if (session != null)
                 return session;
+
+            if (appHost.HasValidAuthSecret(httpReq))
+            {
+                session = appHost.GetPlugin<AuthFeature>()?.AuthSecretSession;
+                if (session != null)
+                    return session;
+            }
 
             var sessionKey = SessionFeature.GetSessionKey(sessionId);
             if (sessionKey != null)
@@ -185,13 +180,13 @@ namespace ServiceStack
                 session = httpReq.GetCacheClient().Get<IAuthSession>(sessionKey);
 
                 if (session != null)
-                    session = HostContext.AppHost.OnSessionFilter(httpReq, session, sessionId);
+                    session = appHost.OnSessionFilter(httpReq, session, sessionId);
             }
 
             if (session == null)
             {
                 var newSession = SessionFeature.CreateNewSession(httpReq, sessionId);
-                session = HostContext.AppHost.OnSessionFilter(httpReq, newSession, sessionId) ?? newSession;
+                session = appHost.OnSessionFilter(httpReq, newSession, sessionId) ?? newSession;
             }
 
             httpReq.Items[Keywords.Session] = session;
@@ -223,7 +218,7 @@ namespace ServiceStack
                 ServiceAction = (instance, req) => invokeAction(service, request)
             };
 
-            requestContext = requestContext ?? new MockHttpRequest();
+            requestContext ??= new MockHttpRequest();
             ServiceController.InjectRequestContext(service, requestContext);
             var runner = HostContext.CreateServiceRunner<TRequest>(actionCtx);
             var responseTask = runner.ExecuteAsync(requestContext, service, request);

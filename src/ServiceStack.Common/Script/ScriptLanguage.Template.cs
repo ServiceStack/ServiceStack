@@ -58,6 +58,10 @@ namespace ServiceStack.Script
                 if (var.Binding?.Equals(ScriptConstants.Page) == true
                     && !scope.ScopedParams.ContainsKey(ScriptConstants.PartialArg))
                 {
+                    if (scope.PageResult.PageProcessed)
+                        throw new NotSupportedException("{{page}} can only be called once per render, in the Layout page.");
+                    scope.PageResult.PageProcessed = true;
+                    
                     await scope.PageResult.WritePageAsync(scope.PageResult.Page, scope.PageResult.CodePage, scope, token);
 
                     if (scope.PageResult.HaltExecution)
@@ -332,6 +336,7 @@ namespace ServiceStack.Script
             int startBlockPos = -1;
             var cursorPos = 0;
             var lastBlockPos = 0;
+            var inRawBlock = false;
             
             const int delim = 3; // '```'.length
 
@@ -339,6 +344,19 @@ namespace ServiceStack.Script
             {
                 var lineLength = line.Length;
                 line = line.AdvancePastWhitespace();
+
+                if (line.IndexOf("{{#raw") >= 0 && line.IndexOf("{{/raw}}") < 0)
+                {
+                    inRawBlock = true;
+                    continue;
+                }
+                if (line.IndexOf("{{/raw}}") >= 0)
+                {
+                    inRawBlock = false;
+                    continue;
+                }
+                if (inRawBlock)
+                    continue;
 
                 if (line.StartsWith("```"))
                 {
@@ -536,7 +554,8 @@ namespace ServiceStack.Script
                         var lastExpr = varFragment.FilterExpressions?.LastOrDefault();
                         var filterName = lastExpr?.Name ??
                                          varFragment?.InitialExpression?.Name ?? varFragment.Binding;
-                        if (filterName != null && context.RemoveNewLineAfterFiltersNamed.Contains(filterName))
+                        if ((filterName != null && context.RemoveNewLineAfterFiltersNamed.Contains(filterName))
+                            || expr is JsVariableDeclaration)
                         {
                             lastPos += newLineLen;
                         }
@@ -705,11 +724,11 @@ namespace ServiceStack.Script
                             if (token != null)
                             {
                                 var indexType = pi.GetGetMethod()?.GetParameters().FirstOrDefault()?.ParameterType;
-                                if (indexType != typeof(object))
+                                if (indexType != typeof(object) && !(valueExpr is ConstantExpression ce && ce.Type == indexType))
                                 {
-                                    var evalAsInt = typeof(ScriptTemplateUtils).GetStaticMethod(nameof(EvaluateBindingAs))
+                                    var evalAsIndexType = typeof(ScriptTemplateUtils).GetStaticMethod(nameof(EvaluateBindingAs))
                                         .MakeGenericMethod(indexType);
-                                    valueExpr = Expression.Call(evalAsInt, scope, Expression.Constant(token));
+                                    valueExpr = Expression.Call(evalAsIndexType, scope, Expression.Constant(token));
                                 }
                             }
 
@@ -778,6 +797,10 @@ namespace ServiceStack.Script
             return body;
         }
 
+        private static readonly Type[] ObjectArg = { typeof(object) };
+        public static MethodInfo CreateConvertMethod(Type toType) =>
+            typeof(AutoMappingUtils).GetStaticMethod(nameof(AutoMappingUtils.ConvertTo), ObjectArg).MakeGenericMethod(toType);
+
         public static Action<ScriptScopeContext, object, object> CompileAssign(Type type, ReadOnlyMemory<char> expr)
         {
             var scope = Expression.Parameter(typeof(ScriptScopeContext), "scope");
@@ -789,21 +812,47 @@ namespace ServiceStack.Script
             {
                 var mi = propItemExpr.Indexer.GetSetMethod();
                 var indexExpr = propItemExpr.Arguments[0];
-                body = Expression.Call(propItemExpr.Object, mi, indexExpr, valueToAssign);
+                if (propItemExpr.Indexer.PropertyType != typeof(object))
+                {
+                    body = Expression.Call(propItemExpr.Object, mi, indexExpr, 
+                        Expression.Call(CreateConvertMethod(propItemExpr.Indexer.DeclaringType.GetCollectionType()), valueToAssign));
+                }
+                else
+                {
+                    body = Expression.Call(propItemExpr.Object, mi, indexExpr, valueToAssign);
+                }
             }
             else if (body is BinaryExpression binaryExpr && binaryExpr.NodeType == ExpressionType.ArrayIndex)
             {
                 var arrayInstance = binaryExpr.Left;
                 var indexExpr = binaryExpr.Right;
-                
-                body = Expression.Assign(
-                    Expression.ArrayAccess(arrayInstance, indexExpr), 
-                    valueToAssign);
+
+                if (arrayInstance.Type != typeof(object))
+                {
+                    body = Expression.Assign(
+                        Expression.ArrayAccess(arrayInstance, indexExpr), 
+                        Expression.Call(CreateConvertMethod(arrayInstance.Type.GetElementType()), valueToAssign));
+                }
+                else
+                {
+                    body = Expression.Assign(
+                        Expression.ArrayAccess(arrayInstance, indexExpr), 
+                        valueToAssign);
+                }
             }
-            else
+            else if (body is MemberExpression propExpr)
             {
-                throw new BindingExpressionException($"Assignment expression for '{expr}' not supported yet", "valueToAssign", expr.ToString());
+                if (propExpr.Type != typeof(object))
+                {
+                    body = Expression.Assign(propExpr, Expression.Call(CreateConvertMethod(propExpr.Type), valueToAssign));
+                }
+                else
+                {
+                    body = Expression.Assign(propExpr, valueToAssign);
+                }
             }
+            else 
+                throw new BindingExpressionException($"Assignment expression for '{expr}' not supported yet", "valueToAssign", expr.ToString());
 
             return Expression.Lambda<Action<ScriptScopeContext, object, object>>(body, scope, instance, valueToAssign).Compile();
         }
@@ -839,7 +888,7 @@ namespace ServiceStack.Script
             var converted = result.ConvertTo<T>();
             return converted;
         }
-
+        
         private static PropertyInfo AssertProperty(Type currType, string prop, ReadOnlyMemory<char> expr)
         {
             var pi = currType.GetProperty(prop);

@@ -72,6 +72,7 @@ namespace ServiceStack.NativeTypes.Java
             {"Single", "Float"},
             {"Double", "Double"},
             {"Decimal", "BigDecimal"},
+            {"IntPtr", "Long"},
             {"Guid", "UUID"},
             {"DateTime", "Date"},
             {"DateTimeOffset", "Date"},
@@ -134,6 +135,9 @@ namespace ServiceStack.NativeTypes.Java
             sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
             sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
+            if (Config.UsePath != null)
+                sb.AppendLine("UsePath: {0}".Fmt(Config.UsePath));
+
             sb.AppendLine();
             sb.AppendLine("{0}Package: {1}".Fmt(DefaultValue("Package"), Config.Package));
             sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(DefaultValue("GlobalNamespace"), defaultNamespace));
@@ -218,17 +222,18 @@ namespace ServiceStack.NativeTypes.Java
                         lastNS = AppendType(ref sb, type, lastNS,
                             new CreateTypeOptions
                             {
+                                Routes = metadata.Operations.GetRoutes(type),
                                 ImplementsFn = () =>
                                 {
                                     if (!Config.AddReturnMarker
-                                        && !type.ReturnVoidMarker
-                                        && type.ReturnMarkerTypeName == null)
+                                        && operation?.ReturnsVoid != true
+                                        && operation?.ReturnType == null)
                                         return null;
 
-                                    if (type.ReturnVoidMarker)
-                                        return "IReturnVoid";
-                                    if (type.ReturnMarkerTypeName != null)
-                                        return Type("IReturn`1", new[] { Type(type.ReturnMarkerTypeName) });
+                                    if (operation?.ReturnsVoid == true)
+                                        return nameof(IReturnVoid);
+                                    if (operation?.ReturnType != null)
+                                        return Type("IReturn`1", new[] { Type(operation.ReturnType) });
                                     return response != null
                                         ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
                                         : null;
@@ -277,7 +282,7 @@ namespace ServiceStack.NativeTypes.Java
             return metadata.GetAllMetadataTypes()
                 .Any(x => x.Properties.Safe().Any(p => JavaGeneratorExtensions.JavaKeyWords.Contains(p.Name.PropertyStyle()))
                     || x.Properties.Safe().Any(p => p.DataMember?.Name != null)
-                    || (x.ReturnMarkerTypeName != null && x.ReturnMarkerTypeName.Name.IndexOf('`') >= 0) //uses TypeToken<T>
+                    || (x.RequestType?.ReturnType != null && x.RequestType?.ReturnType.Name.IndexOf('`') >= 0) //uses TypeToken<T>
                 );
         }
 
@@ -289,9 +294,9 @@ namespace ServiceStack.NativeTypes.Java
         //Use built-in types already in net.servicestack.client package
         public static HashSet<string> IgnoreTypeNames = new HashSet<string>
         {
-            typeof(ResponseStatus).Name,
-            typeof(ResponseError).Name,
-            typeof(ErrorResponse).Name,
+            nameof(ResponseStatus),
+            nameof(ResponseError),
+            nameof(ErrorResponse),
         }; 
 
         private List<string> RemoveIgnoredTypes(MetadataTypes metadata)
@@ -308,9 +313,9 @@ namespace ServiceStack.NativeTypes.Java
 
             sb.AppendLine();
             AppendComments(sb, type.Description);
-            if (type.Routes != null)
+            if (options?.Routes != null)
             {
-                AppendAttributes(sb, type.Routes.ConvertAll(x => x.ToMetadataAttribute()));
+                AppendAttributes(sb, options.Routes.ConvertAll(x => x.ToMetadataAttribute()));
             }
             AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);
@@ -419,7 +424,7 @@ namespace ServiceStack.NativeTypes.Java
 
                 AddProperties(sb, type,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
-                        && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name),
+                        && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)),
                     addPropertyAccessors: addPropertyAccessors,
                     settersReturnType: settersReturnType);
 
@@ -492,7 +497,7 @@ namespace ServiceStack.NativeTypes.Java
                 if (wasAdded) sb.AppendLine();
 
                 AppendDataMember(sb, null, dataMemberIndex++);
-                sb.AppendLine("public ResponseStatus {0} = null;".Fmt(typeof(ResponseStatus).Name.PropertyStyle()));
+                sb.AppendLine("public ResponseStatus {0} = null;".Fmt(nameof(ResponseStatus).PropertyStyle()));
 
                 if (addPropertyAccessors)
                     sbAccessors.AppendPropertyAccessor("ResponseStatus", "ResponseStatus", settersReturnType);
@@ -533,7 +538,7 @@ namespace ServiceStack.NativeTypes.Java
                         {
                             if (args.Length > 0)
                                 args.Append(", ");
-                            args.Append("{0}".Fmt(TypeValue(ctorArg.Type, ctorArg.Value)));
+                            args.Append(TypeValue(ctorArg.Type, ctorArg.Value));
                         }
                     }
                     else if (attr.Args != null)
@@ -542,7 +547,7 @@ namespace ServiceStack.NativeTypes.Java
                         {
                             if (args.Length > 0)
                                 args.Append(", ");
-                            args.Append("{0}={1}".Fmt(attrArg.Name, TypeValue(attrArg.Type, attrArg.Value)));
+                            args.Append($"{attrArg.Name}={TypeValue(attrArg.Type, attrArg.Value)}");
                         }
                     }
                     sb.AppendLine(prefix + "@{0}({1})".Fmt(attr.Name, StringBuilderCacheAlt.ReturnAndFree(args)));
@@ -606,7 +611,7 @@ namespace ServiceStack.NativeTypes.Java
             if (genericArgs != null)
             {
                 if (type == "Nullable`1")
-                    return /*@Nullable*/ "{0}".Fmt(GenericArg(genericArgs[0]));
+                    return /*@Nullable*/ GenericArg(genericArgs[0]);
                 if (ArrayTypes.Contains(type))
                     return "ArrayList<{0}>".Fmt(GenericArg(genericArgs[0])).StripNullable();
                 if (DictionaryTypes.Contains(type))
@@ -645,8 +650,7 @@ namespace ServiceStack.NativeTypes.Java
             if (arrParts.Length > 1)
                 return "ArrayList<{0}>".Fmt(TypeAlias(arrParts[0]));
 
-            string typeAlias;
-            TypeAliases.TryGetValue(type, out typeAlias);
+            TypeAliases.TryGetValue(type, out var typeAlias);
 
             return typeAlias ?? NameOnly(type);
         }
@@ -771,7 +775,10 @@ namespace ServiceStack.NativeTypes.Java
             if (node.Text == "List")
             {
                 sb.Append("ArrayList<");
-                sb.Append(ConvertFromCSharp(node.Children[0]));
+                if (!node.Children.IsEmpty())
+                    sb.Append(ConvertFromCSharp(node.Children[0]));
+                else
+                    sb.Append(ConvertFromCSharp(new TextNode { Text = "Object" })); //error fallback
                 sb.Append(">");
             }
             else if (node.Text == "Dictionary")

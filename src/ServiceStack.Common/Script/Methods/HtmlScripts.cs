@@ -176,7 +176,7 @@ namespace ServiceStack.Script
                         return string.Empty;
 
                     var first = !isEmpty ? objs[0] : null;
-                    if (first is IDictionary && objs.Count > 1)
+                    if (first is IDictionary && objs.Count > 1 && options.Display != "table")
                         return HtmlList(objs, options);
 
                     var sb = StringBuilderCacheAlt.Allocate();
@@ -245,7 +245,7 @@ namespace ServiceStack.Script
                         }
                         else
                         {
-                            if (objs.Count > 1)
+                            if (objs.Count > 1 || options.Display == "table")
                             {
                                 var rows = objs.Map(x => x.ToObjectDictionary());
                                 StringBuilderCache.Free(sb);

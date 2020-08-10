@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -8,6 +7,7 @@ using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Text;
 using ServiceStack.Web;
+using ServiceStack.Auth;
 
 namespace ServiceStack.Host
 {
@@ -223,38 +223,40 @@ namespace ServiceStack.Host
         }
 
         [Obsolete("Use HandleExceptionAsync(req, requestDto, ex, service)")]
-        public virtual Task<object> HandleExceptionAsync(IRequest request, TRequest requestDto, Exception ex) => 
+        public virtual Task<object> HandleExceptionAsync(IRequest req, TRequest requestDto, Exception ex) => 
             TypeConstants.EmptyTask;
 
-        public virtual async Task<object> HandleExceptionAsync(IRequest request, TRequest requestDto, Exception ex, object service)
+        public virtual async Task<object> HandleExceptionAsync(IRequest req, TRequest requestDto, Exception ex, object service)
         {
             var errorResponse = (service is IServiceErrorFilter filter ? await filter.OnExceptionAsync(requestDto, ex) : null)
-                ?? await HandleExceptionAsync(request, requestDto, ex)
-                ?? await HostContext.RaiseServiceException(request, requestDto, ex)
+                ?? await HandleExceptionAsync(req, requestDto, ex)
+                ?? await HostContext.RaiseServiceException(req, requestDto, ex)
                 ?? DtoUtils.CreateErrorResponse(requestDto, ex);
 
-            AfterEachRequest(request, requestDto, errorResponse ?? ex, service);
+            AfterEachRequest(req, requestDto, errorResponse ?? ex, service);
             
             return errorResponse;
         }
 
-        public object ExecuteOneWay(IRequest requestContext, object instance, TRequest request)
+        public object ExecuteOneWay(IRequest req, object instance, TRequest requestDto)
         {
             var msgFactory = AppHost.TryResolve<IMessageFactory>();
             if (msgFactory == null)
             {
-                var task = ExecuteAsync(requestContext, instance, request);
+                var task = ExecuteAsync(req, instance, requestDto);
                 return task.Result;
             }
 
+            req.PopulateRequestDtoIfAuthenticated(requestDto);
+            
             //Capture and persist this async req on this Services 'In Queue' 
             //for execution after this req has been completed
             using (var producer = msgFactory.CreateMessageProducer())
             {
-                AppHost.PublishMessage(producer, request);
+                AppHost.PublishMessage(producer, requestDto);
             }
 
-            return WebRequestUtils.GetErrorResponseDtoType(request).CreateInstance();
+            return WebRequestUtils.GetErrorResponseDtoType(requestDto).CreateInstance();
         }
 
         //signature matches ServiceExecFn

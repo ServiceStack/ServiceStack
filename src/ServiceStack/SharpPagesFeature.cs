@@ -1,11 +1,13 @@
-﻿using System;
+﻿#if !NETSTANDARD2_0
+using System.Web;
+#endif
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Web;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
@@ -47,9 +49,12 @@ namespace ServiceStack
         }
     }
     
-    public class SharpPagesFeature : ScriptContext, IPlugin, IViewEngine
+    public class SharpPagesFeature : ScriptContext, IPlugin, IViewEngine, Model.IHasStringId
     {
+        public string Id { get; set; } = ServiceStack.Plugins.SharpPages;
         public bool? EnableHotReload { get; set; }
+        
+        public bool? EnableSpaFallback { get; set; }
 
         public bool DisablePageBasedRouting { get; set; }
 
@@ -134,12 +139,18 @@ namespace ServiceStack
                     appHost.RegisterService(typeof(HotReloadFilesService));
                 }
             }
+
+            if (EnableSpaFallback.GetValueOrDefault())
+            {
+                appHost.RegisterService(typeof(SpaFallbackService));
+            }
             
             if (!string.IsNullOrEmpty(ApiPath))
                 appHost.RegisterService(typeof(SharpApiService), 
                     (ApiPath[0] == '/' ? ApiPath : '/' + ApiPath).CombineWith("/{PageName}/{PathInfo*}"));
 
-            if (DebugMode || MetadataDebugAdminRole != null)
+            var enableMetadataDebug = DebugMode || MetadataDebugAdminRole != null;
+            if (enableMetadataDebug)
             {
                 appHost.RegisterService(typeof(MetadataDebugService), MetadataDebugService.Route);
                 appHost.GetPlugin<MetadataFeature>().AddDebugLink(MetadataDebugService.Route, "Debug Inspector");
@@ -149,14 +160,30 @@ namespace ServiceStack
             {
                 appHost.RegisterService(typeof(ScriptAdminService), ScriptAdminService.Routes);
             }
+            
+            appHost.AddToAppMetadata(meta => {
+                meta.Plugins.SharpPages = new SharpPagesInfo {
+                    ApiPath = ApiPath,
+                    SpaFallback = EnableSpaFallback,
+                    ScriptAdminRole = ScriptAdminRole,
+                    MetadataDebugAdminRole = MetadataDebugAdminRole,
+                    MetadataDebug = enableMetadataDebug,
+                };
+            });
 
+            Init();
+            
             InitPage = Pages.GetPage("_init");
+            if (InitPage == null)
+            {
+                var initScript = appHost.VirtualFileSources.GetFile("_init.ss");
+                if (initScript != null)
+                    InitPage = this.SharpScriptPage(initScript.ReadAllText());
+            }
             if (InitPage != null)
             {
                 appHost.AfterInitCallbacks.Add(host => RunInitPage());
             }
-
-            Init();
         }
 
         internal SharpPage InitPage { get; set; }
@@ -168,13 +195,18 @@ namespace ServiceStack
             
             try
             {
-                var execInit = new PageResult(InitPage).Result;
+                var pageResult = new PageResult(InitPage);
+                var execInit = pageResult.RenderToStringAsync().GetAwaiter().GetResult();
                 Args["initout"] = execInit;
+                if (pageResult.LastFilterError != null)
+                {
+                    Args["initError"] = pageResult.LastFilterError.ToString();
+                }
                 return execInit;
             }
             catch (Exception ex)
             {
-                Args["initout"] = ex.ToString();
+                Args["initError"] = Args["initout"] = ex.ToString();
                 return ex.ToString();
             }
         }
@@ -494,6 +526,21 @@ namespace ServiceStack
         }
     }
 
+    [FallbackRoute("/{PathInfo*}", Matches="AcceptsHtml"), ExcludeMetadata]
+    public class SpaFallback : IReturn<string>
+    {
+        public string PathInfo { get; set; }
+    }
+
+    [DefaultRequest(typeof(SpaFallback))]
+    [Restrict(VisibilityTo = RequestAttributes.None)]
+    public class SpaFallbackService : Service
+    {
+        //Return index.html for unmatched requests so routing is handled on client
+        public object Any(SpaFallback request) => Request.GetPageResult("/");
+    }
+
+
     [ExcludeMetadata]
     [Route("/hotreload/page")]
     public class HotReloadPage : IReturn<HotReloadPageResponse>
@@ -505,6 +552,7 @@ namespace ServiceStack
     public class HotReloadPageResponse
     {
         public string ETag { get; set; }
+        public string LastUpdatedPath { get; set; }
         public bool Reload { get; set; }
         public ResponseStatus ResponseStatus { get; set; }
     }
@@ -597,7 +645,7 @@ namespace ServiceStack
                 ? TypeConstants.EmptyStringArray
                 : request.PathInfo.SplitOnLast('.');
 
-            var hasPathContentType = parts.Length > 1 && Host.ContentTypes.KnownFormats.Contains(parts[1]);
+            var hasPathContentType = parts.Length > 1 && ContentTypes.KnownFormats.Contains(parts[1]);
             var pathInfo = hasPathContentType
                 ? parts[0]
                 : request.PathInfo;
@@ -607,7 +655,7 @@ namespace ServiceStack
                 : pathInfo.Split('/');
             
             parts = request.PageName.SplitOnLast('.');
-            var hasPageContentType = pathArgs.Length == 0 && parts.Length > 1 && Host.ContentTypes.KnownFormats.Contains(parts[1]);
+            var hasPageContentType = pathArgs.Length == 0 && parts.Length > 1 && ContentTypes.KnownFormats.Contains(parts[1]);
             var pageName = hasPageContentType
                 ? parts[0]
                 : request.PageName;
@@ -693,7 +741,7 @@ Service Name              {{ appHost.ServiceName }}
 Handler Path              {{ appConfig.HandlerFactoryPath }}
 VirtualFiles Path         {{ appVirtualFilesPath }}
 VirtualFileSources Path   {{ appVirtualFileSourcesPath }}
-OS Environment Variable   {{ 'OS' | envVariable }}
+OS Environment Variable   {{ 'OS' |> envVariable }}
 ServiceStack Version      {{ envServiceStackVersion }}
 
 Request: 
@@ -704,19 +752,17 @@ Request:
 
 Session:
   - ss-id                 {{ userSessionId }}
-  - ss-pid                {{ userPermanentSessionId }}
-  - ss-opt                {{ userSessionOptions | join }}
-
-User: 
   - IsAuthenticated       {{ userSession.IsAuthenticated }}
-  - UserName              {{ userSession.UserName }}
+  - UserAuthId            {{ userAuthId }}
+  - Username              {{ userAuthName }}
   - LastName              {{ userSession.LastName }}
-  - Is Admin              {{ 'Admin'         | userHasRole }}
-  - Has Permission        {{ 'ThePermission' | userHasPermission }}
+  - Is Admin              {{ 'Admin'         |> userHasRole }}
+  - Has Permission        {{ 'ThePermission' |> userHasPermission }}
 
-Plugins: {{ plugins | select: \n  - { it | typeName } }}
+Plugins:
+{{ plugins |> map => `  - ${it.typeName()}` |> joinln }}
 </pre></td><td style='width:50%'> 
-{{ meta.Operations | take(10) | map => {Request:it.Name, Response:it.ResponseType.Name ?? '', Service:it.ServiceType.Name} | htmlDump({ caption: 'First 10 Services'}) }}
+{{ meta.Operations |> take(10) |> map => {Request:it.Name,Response:it.ResponseType.Name??'', Service:it.ServiceType.Name} |> htmlDump({ caption:'First 10 Services'}) }}
 <table><caption>Network Information</caption>
 <tr><th>    IPv4 Addresses                            </th><th>              IPv6 Addresses                            </th></tr>
 <td>{{#each ip in networkIpv4Addresses}}<div>{{ip}}</div>{{/each}}</td><td>{{#each ip in networkIpv6Addresses}}<div>{{ip}}</div>{{/each}}<td></tr></pre></td>
@@ -727,14 +773,8 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
             if (string.IsNullOrEmpty(request.Script))
                 return null;
 
-            var feature = HostContext.GetPlugin<SharpPagesFeature>();
-            if (!HostContext.DebugMode)
-            {
-                if (HostContext.Config.AdminAuthSecret == null || HostContext.Config.AdminAuthSecret != request.AuthSecret)
-                {
-                    RequiredRoleAttribute.AssertRequiredRoles(Request, feature.MetadataDebugAdminRole);
-                }
-            }
+            var feature = HostContext.AssertPlugin<SharpPagesFeature>();
+            RequestUtils.AssertAccessRoleOrDebugMode(Request, accessRole: feature.MetadataDebugAdminRole, authSecret: request.AuthSecret);
 
             var appHost = HostContext.AppHost;
             var context = new ScriptContext
@@ -871,6 +911,8 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 
         public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
+            httpReq.UseBufferedStream = true;
+
             if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
                 return;
 
@@ -878,7 +920,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
             {
                 httpRes.StatusCode = (int) HttpStatusCode.Forbidden;
                 httpRes.StatusDescription = "Request Validation Failed";
-                httpRes.EndRequest();
+                await httpRes.EndRequestAsync();
                 return;
             }
             
@@ -944,6 +986,11 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                             if (response != null)
                             {
                                 var httpResult = SharpApiService.ToHttpResult(pageResult, response);
+                                if (httpReq.ResponseContentType == MimeTypes.Csv)
+                                {
+                                    var fileName = httpReq.OperationName + ".csv";
+                                    httpRes.AddHeader(HttpHeaders.ContentDisposition, $"attachment;{HttpExt.GetDispositionFileName(fileName)}");
+                                }
                                 await httpRes.WriteToResponse(httpReq, httpResult);
                             }
                             return;
@@ -978,6 +1025,8 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 
         public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
+            httpReq.UseBufferedStream = true;
+
             if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
                 return;
 
@@ -1036,23 +1085,21 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
         protected virtual IResponse Response => Request?.Response;
 
         private ICacheClient cache;
-        public virtual ICacheClient Cache => cache ?? (cache = HostContext.AppHost.GetCacheClient(Request));
+        public virtual ICacheClient Cache => cache ??= HostContext.AppHost.GetCacheClient(Request);
 
         private MemoryCacheClient localCache;
 
-        public virtual MemoryCacheClient LocalCache =>
-            localCache ?? (localCache = HostContext.AppHost.GetMemoryCacheClient(Request));
+        public virtual MemoryCacheClient LocalCache => localCache ??= HostContext.AppHost.GetMemoryCacheClient(Request);
 
         private IDbConnection db;
-        public virtual IDbConnection Db => db ?? (db = HostContext.AppHost.GetDbConnection(Request));
+        public virtual IDbConnection Db => db ??= HostContext.AppHost.GetDbConnection(Request);
 
         private IRedisClient redis;
-        public virtual IRedisClient Redis => redis ?? (redis = HostContext.AppHost.GetRedisClient(Request));
+        public virtual IRedisClient Redis => redis ??= HostContext.AppHost.GetRedisClient(Request);
 
         private IMessageProducer messageProducer;
 
-        public virtual IMessageProducer MessageProducer =>
-            messageProducer ?? (messageProducer = HostContext.AppHost.GetMessageProducer(Request));
+        public virtual IMessageProducer MessageProducer => messageProducer ??= HostContext.AppHost.GetMessageProducer(Request);
 
         private ISessionFactory sessionFactory;
 
@@ -1061,11 +1108,10 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 
         private IAuthRepository authRepository;
 
-        public virtual IAuthRepository AuthRepository =>
-            authRepository ?? (authRepository = HostContext.AppHost.GetAuthRepository(Request));
+        public virtual IAuthRepository AuthRepository => authRepository ??= HostContext.AppHost.GetAuthRepository(Request);
 
         private IServiceGateway gateway;
-        public virtual IServiceGateway Gateway => gateway ?? (gateway = HostContext.AppHost.GetServiceGateway(Request));
+        public virtual IServiceGateway Gateway => gateway ??= HostContext.AppHost.GetServiceGateway(Request);
 
         public IVirtualPathProvider VirtualFileSources => HostContext.VirtualFileSources;
 
@@ -1073,8 +1119,8 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 
         private ISession session;
 
-        public virtual ISession SessionBag => session ?? (session = TryResolve<ISession>() //Easier to mock
-            ?? SessionFactory.GetOrCreateSession(Request, Response));
+        public virtual ISession SessionBag => session ??= TryResolve<ISession>() //Easier to mock
+            ?? SessionFactory.GetOrCreateSession(Request, Response);
 
         public virtual IAuthSession GetSession(bool reload = false)
         {
@@ -1129,6 +1175,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
             context.ScriptMethods.Add(new ProtectedScripts());
             context.ScriptMethods.Add(new InfoScripts());
             context.ScriptMethods.Add(new ServiceStackScripts());
+            context.ScriptMethods.Add(new ValidateScripts());
             context.ScriptMethods.Add(new BootstrapScripts());
             context.Plugins.Add(new ServiceStackScriptBlocks());
             context.Plugins.Add(new MarkdownScriptPlugin { RegisterPageFormat = false });
@@ -1151,6 +1198,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                 : new Dictionary<string, object>();
             
             to[nameof(IRequest.RawUrl)] = request.RawUrl;
+            to[ScriptConstants.PathBase] = HostContext.Config.PathBase;
             to[ScriptConstants.PathInfo] = request.OriginalPathInfo;
             to[nameof(IRequest.AbsoluteUri)] = request.AbsoluteUri;
             to[nameof(IRequest.Verb)] = to["Method"] = request.Verb;
@@ -1216,6 +1264,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
         {
             args["Request"] = request;
             args[nameof(request.RawUrl)] = request.RawUrl;
+            args[ScriptConstants.PathBase] = HostContext.Config.PathBase;
             args[ScriptConstants.PathInfo] = request.OriginalPathInfo;
             args[nameof(request.AbsoluteUri)] = request.AbsoluteUri;
             args[nameof(request.Verb)] = args["Method"] = request.Verb;

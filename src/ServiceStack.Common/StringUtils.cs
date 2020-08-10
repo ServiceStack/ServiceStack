@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using ServiceStack.Extensions;
@@ -409,7 +410,7 @@ namespace ServiceStack
         }
 
         public static readonly Dictionary<char, string> EscapedCharMap = new Dictionary<char, string> {
-            {'\'', @"\'"},
+            // {'\'', @"\'"},
             {'\"', "\\\""},
             {'\\', @"\\"},
             {'\0', @"\0"},
@@ -448,6 +449,32 @@ namespace ServiceStack
             sb.Append('"');
             return sb.ToString();
         }
+
+        public static string SnakeCaseToPascalCase(string snakeCase)
+        {
+            if (string.IsNullOrEmpty(snakeCase))
+                return snakeCase;
+            
+            var safeVarName = snakeCase.SafeVarName();
+            if (safeVarName.IndexOf('_') >= 0)
+            {
+                var parts = safeVarName.Split('_').Where(x => !string.IsNullOrEmpty(x));
+                var pascalName = "";
+                foreach (var part in parts)
+                {
+                    pascalName += char.ToUpper(part[0]) + part.Substring(1);
+                }
+                return pascalName;
+            }
+            return char.IsLower(safeVarName[0])
+                ? char.ToUpper(safeVarName[0]) + safeVarName.Substring(1)
+                : safeVarName;
+        }
+
+        public static string RemoveSuffix(string name, string suffix) => name == null ? null :
+            name.EndsWith(suffix)
+                ? name.Substring(0, name.Length - suffix.Length)
+                : name;
 
         static readonly Regex StripHtmlUnicodeRegEx =
             new Regex(@"&(#)?([xX])?([^ \f\n\r\t\v;]+);", RegexOptions.Compiled);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
 using ServiceStack.FluentValidation;
+using ServiceStack.Logging;
 using ServiceStack.Web;
 
 namespace ServiceStack.Validation
@@ -39,10 +40,19 @@ namespace ServiceStack.Validation
     {
         public static IValidator GetValidator(IRequest httpReq)
         {
-            var validator = httpReq.TryResolve<IValidator<T>>();
-            if (validator is IRequiresRequest hasRequest)
-                hasRequest.Request = httpReq;
-            return validator;
+            try
+            {
+                var validator = httpReq.TryResolve<IValidator<T>>();
+                if (validator is IRequiresRequest hasRequest)
+                    hasRequest.Request = httpReq;
+                return validator;
+            }
+            catch (Exception e)
+            {
+                var log = LogManager.GetLogger(typeof(ValidatorCache));
+                log.Error($@"ValidatorCache<{typeof(T).Name}>.GetValidator() at {httpReq.PathInfo}", e);
+                throw;
+            }
         }
     }
 }

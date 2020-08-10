@@ -22,7 +22,7 @@ namespace ServiceStack
 
         public override string ContentType => $"application/{Format}";
 
-        public override void SerializeToStream(IRequest requestContext, object request, Stream stream) => 
+        public override void SerializeToStream(IRequest req, object request, Stream stream) => 
             JsonDataContractSerializer.Instance.SerializeToStream(request, stream);
 
         public override T DeserializeFromStream<T>(Stream stream) => 

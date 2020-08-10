@@ -294,6 +294,9 @@ namespace ServiceStack
         {
             var webClient = new WebClient();
             webClient.Headers.Add(HttpHeaders.UserAgent, UserAgent);
+            if (!string.IsNullOrEmpty(AccessToken))
+                webClient.Headers.Add(HttpHeaders.Authorization, "token " + AccessToken);
+                
             webClient.DownloadFile(downloadUrl, fileName);
         }
 

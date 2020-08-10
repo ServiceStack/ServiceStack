@@ -55,7 +55,10 @@ namespace ServiceStack.Script
 
                 var expr = Expressions[i];
                 var value = expr.Evaluate(scope);
-                sb.Append(value);
+                if (value is IRawString rs)
+                    sb.Append(rs.ToRawString());
+                else
+                    sb.Append(value);
             }
 
             var ret = StringBuilderCache.ReturnAndFree(sb);

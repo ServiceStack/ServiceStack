@@ -261,8 +261,7 @@ namespace ServiceStack.Auth
             if (instance.Meta == null)
                 return default(T);
 
-            string str;
-            instance.Meta.TryGetValue(typeof(T).GetOperationName(), out str);
+            instance.Meta.TryGetValue(typeof(T).GetOperationName(), out var str);
             return str == null ? default(T) : TypeSerializer.DeserializeFromString<T>(str);
         }
 
@@ -272,8 +271,7 @@ namespace ServiceStack.Auth
             if (instance == null)
                 throw new ArgumentNullException(nameof(instance));
 
-            string str;
-            if (!instance.Meta.TryGetValue(typeof(T).GetOperationName(), out str))
+            if (!instance.Meta.TryGetValue(typeof(T).GetOperationName(), out var str))
                 return false;
 
             value = TypeSerializer.DeserializeFromString<T>(str);
@@ -526,6 +524,9 @@ namespace ServiceStack.Auth
                         break;
                 }
             }
+
+            if (authSession.UserAuthName == null)
+                authSession.UserAuthName = authSession.UserName ?? authSession.Email;
         }
         
         public static List<Claim> ConvertSessionToClaims(this IAuthSession session,

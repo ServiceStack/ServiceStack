@@ -38,7 +38,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         [Test]
         public void Can_parse_template_with_filter()
         {
-            var fragments = ScriptTemplateUtils.ParseTemplate("<h1>{{ title | filter }}</h1>");
+            var fragments = ScriptTemplateUtils.ParseTemplate("<h1>{{ title |> filter }}</h1>");
             Assert.That(fragments.Count, Is.EqualTo(3));
 
             var strFragment1 = fragments[0] as PageStringFragment;
@@ -46,17 +46,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var strFragment3 = fragments[2] as PageStringFragment;
 
             Assert.That(strFragment1.Value.ToString(), Is.EqualTo("<h1>"));
-            Assert.That(varFragment2.OriginalText.ToString(), Is.EqualTo("{{ title | filter }}"));
+            Assert.That(varFragment2.OriginalText.ToString(), Is.EqualTo("{{ title |> filter }}"));
             Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter"));
             Assert.That(varFragment2.FilterExpressions[0].Arguments.Length, Is.EqualTo(0));
             Assert.That(strFragment3.Value.ToString(), Is.EqualTo("</h1>"));
 
-            fragments = ScriptTemplateUtils.ParseTemplate("<h1>{{ title | filter() }}</h1>");
+            fragments = ScriptTemplateUtils.ParseTemplate("<h1>{{ title |> filter() }}</h1>");
 
             varFragment2 = fragments[1] as PageVariableFragment;
-            Assert.That(varFragment2.OriginalText.ToString(), Is.EqualTo("{{ title | filter() }}"));
+            Assert.That(varFragment2.OriginalText.ToString(), Is.EqualTo("{{ title |> filter() }}"));
             Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter"));
@@ -96,7 +96,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         [Test]
         public void Can_parse_template_with_filter_with_arg()
         {
-            var fragments = ScriptTemplateUtils.ParseTemplate("<h1>{{ title | filter(1) }}</h1>");
+            var fragments = ScriptTemplateUtils.ParseTemplate("<h1>{{ title |> filter(1) }}</h1>");
             Assert.That(fragments.Count, Is.EqualTo(3));
 
             var strFragment1 = fragments[0] as PageStringFragment;
@@ -104,7 +104,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var strFragment3 = fragments[2] as PageStringFragment;
 
             Assert.That(strFragment1.Value.ToString(), Is.EqualTo("<h1>"));
-            Assert.That(varFragment2.OriginalText.ToString(), Is.EqualTo("{{ title | filter(1) }}"));
+            Assert.That(varFragment2.OriginalText.ToString(), Is.EqualTo("{{ title |> filter(1) }}"));
             Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter"));
@@ -116,7 +116,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         [Test]
         public void Can_parse_template_with_filter_with_multiple_args()
         {
-            var fragments = ScriptTemplateUtils.ParseTemplate("<h1>{{ title | filter(1,2.2,'a',\"b\",true) }}</h1>");
+            var fragments = ScriptTemplateUtils.ParseTemplate("<h1>{{ title |> filter(1,2.2,'a',\"b\",true) }}</h1>");
             Assert.That(fragments.Count, Is.EqualTo(3));
 
             var strFragment1 = fragments[0] as PageStringFragment;
@@ -124,7 +124,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var strFragment3 = fragments[2] as PageStringFragment;
 
             Assert.That(strFragment1.Value.ToString(), Is.EqualTo("<h1>"));
-            Assert.That(varFragment2.OriginalText.ToString(), Is.EqualTo("{{ title | filter(1,2.2,'a',\"b\",true) }}"));
+            Assert.That(varFragment2.OriginalText.ToString(), Is.EqualTo("{{ title |> filter(1,2.2,'a',\"b\",true) }}"));
             Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter"));
@@ -140,7 +140,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         [Test]
         public void Can_parse_template_with_multiple_filters_and_multiple_args()
         {
-            var fragments = ScriptTemplateUtils.ParseTemplate("<h1>{{ title | filter1 | filter2(1) | filter3(1,2.2,'a',\"b\",true) }}</h1>");
+            var fragments = ScriptTemplateUtils.ParseTemplate("<h1>{{ title |> filter1 |> filter2(1) |> filter3(1,2.2,'a',\"b\",true) }}</h1>");
             Assert.That(fragments.Count, Is.EqualTo(3));
 
             var strFragment1 = fragments[0] as PageStringFragment;
@@ -148,7 +148,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var strFragment3 = fragments[2] as PageStringFragment;
 
             Assert.That(strFragment1.Value.ToString(), Is.EqualTo("<h1>"));
-            Assert.That(varFragment2.OriginalText.ToString(), Is.EqualTo("{{ title | filter1 | filter2(1) | filter3(1,2.2,'a',\"b\",true) }}"));
+            Assert.That(varFragment2.OriginalText.ToString(), Is.EqualTo("{{ title |> filter1 |> filter2(1) |> filter3(1,2.2,'a',\"b\",true) }}"));
             Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(3));
 
@@ -173,7 +173,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         [Test]
         public void Can_parse_template_with_multiple_variables_and_filters()
         {
-            var fragments = ScriptTemplateUtils.ParseTemplate("<h1>{{ title | filter1 }}</h1>\n<p>{{ content | filter2(a) }}</p>");
+            var fragments = ScriptTemplateUtils.ParseTemplate("<h1>{{ title |> filter1 }}</h1>\n<p>{{ content |> filter2(a) }}</p>");
             Assert.That(fragments.Count, Is.EqualTo(5));
 
             var strFragment1 = fragments[0] as PageStringFragment;
@@ -184,7 +184,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
             Assert.That(strFragment1.Value.ToString(), Is.EqualTo("<h1>"));
 
-            Assert.That(varFragment2.OriginalText.ToString(), Is.EqualTo("{{ title | filter1 }}"));
+            Assert.That(varFragment2.OriginalText.ToString(), Is.EqualTo("{{ title |> filter1 }}"));
             Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter1"));
@@ -192,7 +192,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
             Assert.That(strFragment3.Value.ToString(), Is.EqualTo("</h1>\n<p>"));
 
-            Assert.That(varFragment4.OriginalText.ToString(), Is.EqualTo("{{ content | filter2(a) }}"));
+            Assert.That(varFragment4.OriginalText.ToString(), Is.EqualTo("{{ content |> filter2(a) }}"));
             Assert.That(varFragment4.Binding, Is.EqualTo("content"));
             Assert.That(varFragment4.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment4.FilterExpressions[0].Name, Is.EqualTo("filter2"));
@@ -213,10 +213,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         [Test]
         public void Can_parse_template_with_arg_and_multiple_filters()
         {
-            var fragments = ScriptTemplateUtils.ParseTemplate("{{ ' - {{it}}' | forEach(items) | markdown }}");
+            var fragments = ScriptTemplateUtils.ParseTemplate("{{ ' - {{it}}' |> forEach(items) |> markdown }}");
             var varFragment = fragments[0] as PageVariableFragment;
             
-            Assert.That(varFragment.OriginalText.ToString(), Is.EqualTo("{{ ' - {{it}}' | forEach(items) | markdown }}"));
+            Assert.That(varFragment.OriginalText.ToString(), Is.EqualTo("{{ ' - {{it}}' |> forEach(items) |> markdown }}"));
             Assert.That(varFragment.FilterExpressions.Length, Is.EqualTo(2));
             Assert.That(varFragment.FilterExpressions[0].Name, Is.EqualTo("forEach"));
             Assert.That(varFragment.FilterExpressions[0].Arguments.Length, Is.EqualTo(1));
@@ -520,6 +520,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         {
             JsToken token;
 
+            "it.Id == 0".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(
+                new JsBinaryExpression(
+                    new JsMemberExpression(new JsIdentifier("it"), new JsIdentifier("Id")),
+                    JsEquals.Operator,
+                    new JsLiteral(0)
+                )
+            ));
+
+            var hold = ScriptConfig.AllowAssignmentExpressions;
+            ScriptConfig.AllowAssignmentExpressions = false;
+
             "it.Id = 0".ParseJsExpression(out token);
             Assert.That(token, Is.EqualTo(
                 new JsBinaryExpression(
@@ -528,6 +540,91 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                     new JsLiteral(0)
                 )
             ));
+            
+            ScriptConfig.AllowAssignmentExpressions = hold;
+        }
+
+        [Test]
+        public void Can_parse_assignment_expression()
+        {
+            JsToken token;
+
+            "id = 0".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(
+                new JsAssignmentExpression(
+                    new JsIdentifier("id"),
+                    JsAssignment.Operator,
+                    new JsLiteral(0)
+                )
+            ));
+
+            "global.id = 0".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(
+                new JsAssignmentExpression(
+                    new JsMemberExpression(new JsIdentifier("global"), new JsIdentifier("id")),
+                    JsAssignment.Operator,
+                    new JsLiteral(0)
+                )
+            ));
+        }
+
+        [Test]
+        public void Can_parse_variable_declarations()
+        {
+            JsToken token;
+
+            "var id = 0".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(
+                new JsVariableDeclaration(
+                    JsVariableDeclarationKind.Var,
+                    new JsDeclaration(new JsIdentifier("id"), new JsLiteral(0))
+                )
+            ));
+
+            "var id = 0;".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(
+                new JsVariableDeclaration(
+                    JsVariableDeclarationKind.Var,
+                    new JsDeclaration(new JsIdentifier("id"), new JsLiteral(0))
+                )
+            ));
+
+            "let a = 1 + 2, b = 3 * 4, c, d = 'D'".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(
+                new JsVariableDeclaration(
+                    JsVariableDeclarationKind.Let,
+                    new JsDeclaration(new JsIdentifier("a"), 
+                        new JsBinaryExpression(new JsLiteral(1), JsAddition.Operator, new JsLiteral(2) ))
+                    ,new JsDeclaration(new JsIdentifier("b"), 
+                        new JsBinaryExpression(new JsLiteral(3), JsMultiplication.Operator, new JsLiteral(4) ))
+                    ,new JsDeclaration(new JsIdentifier("c"), null) 
+                    ,new JsDeclaration(new JsIdentifier("d"), new JsLiteral("D") ))
+                )
+            );
+
+            "const c = [1]".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(
+                new JsVariableDeclaration(
+                    JsVariableDeclarationKind.Const,
+                    new JsDeclaration(new JsIdentifier("c"), 
+                        new JsArrayExpression(new JsLiteral(1)))
+                )
+            ));
+        }
+
+        [Test]
+        public void Can_execute_variable_declarations()
+        {
+            var context = new ScriptContext().Init();
+            Assert.That(context.RenderScript("{{var a = 1}}{{a}}"), Is.EqualTo("1"));
+            Assert.That(context.RenderScript("{{let a = 1, b = 1 + 2}}{{b}}"), Is.EqualTo("3"));
+            Assert.That(context.RenderScript("{{const a = 1, b = 1 + 2, c}}{{b}}"), Is.EqualTo("3"));
+            Assert.That(context.RenderScript("{{var a = 1, b = 1 + 2, c}}{{c}}"), Is.EqualTo(""));
+            Assert.That(context.RenderScript("{{let a = 1, b = 1 + 2,c,d='A'}}{{d}}"), Is.EqualTo("A"));
+            Assert.That(context.RenderScript("{{var a=1, b=1+2, c, d='A'}}{{d}}"), Is.EqualTo("A"));
+            
+            var expr = JS.expression("var a=1, b = 1 + 2, c, d='A'");
+            var str = expr.ToJsAstString();
         }
 
         [Test]
@@ -536,18 +633,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var fragments1 = ScriptTemplateUtils.ParseTemplate(
                 @"{{ 
 products 
-  | where: it.UnitsInStock = 0 
-  | select: { it.productName | raw } is sold out!\n 
+  |> where: it.UnitsInStock = 0 
+  |> select: { it.productName |> raw } is sold out!\n 
 }}");
             
             var fragments2 = ScriptTemplateUtils.ParseTemplate(
             @"{{ products 
-                 | where: it.UnitsInStock = 0 
-                 | select: { it.productName | raw } is sold out!\n }}");
+                 |> where: it.UnitsInStock = 0 
+                 |> select: { it.productName |> raw } is sold out!\n }}");
             
             // i.e. is rewritten and is equivalent to:
             var fragments3 = ScriptTemplateUtils.ParseTemplate(
-                @"{{ products | where(′it.UnitsInStock = 0′) | select(′{{ it.productName | raw }} is sold out!\n′)}}");
+                @"{{ products |> where(′it.UnitsInStock = 0′) |> select(′{{ it.productName |> raw }} is sold out!\n′)}}");
             Assert.That(fragments3.Count, Is.EqualTo(1));
             
             Assert.That(fragments1.Count, Is.EqualTo(1));
@@ -560,7 +657,7 @@ products
             Assert.That(varFragment1.FilterExpressions[1].Name, Is.EqualTo("select"));
             Assert.That(varFragment1.FilterExpressions[1].Arguments.Length, Is.EqualTo(1));
             Assert.That(varFragment1.FilterExpressions[1].Arguments[0], Is.EqualTo(
-                new JsLiteral("{{ it.productName | raw }} is sold out!\\n")
+                new JsLiteral("{{ it.productName |> raw }} is sold out!\\n")
             ));
 
             foreach (var fragments in new[]{ fragments2, fragments3 })
@@ -579,7 +676,7 @@ products
         public void Can_parse_pages_starting_with_values()
         {
             var fragments = ScriptTemplateUtils.ParseTemplate(
-                @"{{ [c.CustomerId, o.OrderId, o.OrderDate] | jsv }}\n");
+                @"{{ [c.CustomerId, o.OrderId, o.OrderDate] |> jsv }}\n");
 
             var varFragment = (PageVariableFragment) fragments[0];
             Assert.That(varFragment.Expression, Is.EqualTo(new JsArrayExpression(
@@ -588,7 +685,7 @@ products
                 new JsMemberExpression(new JsIdentifier("o"), new JsIdentifier("OrderDate"))
             )));
             
-            Assert.That(varFragment.OriginalText.ToString(), Is.EqualTo("{{ [c.CustomerId, o.OrderId, o.OrderDate] | jsv }}"));
+            Assert.That(varFragment.OriginalText.ToString(), Is.EqualTo("{{ [c.CustomerId, o.OrderId, o.OrderDate] |> jsv }}"));
             
             var newLine = (PageStringFragment) fragments[1];
             Assert.That(newLine.Value.ToString(), Is.EqualTo("\\n"));
@@ -598,11 +695,11 @@ products
         public void Can_parse_pages_starting_with_values_newLine()
         {
             var context = new ScriptContext().Init();
-            var page = context.OneTimePage("{{ [c.CustomerId, o.OrderId, o.OrderDate] | jsv }}\n");
+            var page = context.OneTimePage("{{ [c.CustomerId, o.OrderId, o.OrderDate] |> jsv }}\n");
             var fragments = page.PageFragments;
             
 //            var fragments = TemplatePageUtils.ParseTemplatePage(
-//                "{{ [c.CustomerId, o.OrderId, o.OrderDate] | jsv }}\n");
+//                "{{ [c.CustomerId, o.OrderId, o.OrderDate] |> jsv }}\n");
 
             var varFragment = (PageVariableFragment) fragments[0];
             Assert.That(varFragment.Expression, Is.EqualTo(new JsArrayExpression(
@@ -620,7 +717,7 @@ products
         {
             try
             {
-                var fragments = ScriptTemplateUtils.ParseTemplate("{{ arg | filter(' 1) }}");
+                var fragments = ScriptTemplateUtils.ParseTemplate("{{ arg |> filter(' 1) }}");
                 Assert.Fail("should throw");
             }
             catch (ArgumentException e)
@@ -630,7 +727,7 @@ products
 
             try
             {
-                var fragments = ScriptTemplateUtils.ParseTemplate("square = {{ 'square-partial | partial({ ten }) }}");
+                var fragments = ScriptTemplateUtils.ParseTemplate("square = {{ 'square-partial |> partial({ ten }) }}");
                 Assert.Fail("should throw");
             }
             catch (ArgumentException e)
@@ -640,7 +737,7 @@ products
 
             try
             {
-                var fragments = ScriptTemplateUtils.ParseTemplate("{{ arg | filter({ unterminated:1) }}");
+                var fragments = ScriptTemplateUtils.ParseTemplate("{{ arg |> filter({ unterminated:1) }}");
                 Assert.Fail("should throw");
             }
             catch (ArgumentException e)
@@ -650,7 +747,7 @@ products
 
             try
             {
-                var fragments = ScriptTemplateUtils.ParseTemplate("{{ arg | filter([ 1) }}");
+                var fragments = ScriptTemplateUtils.ParseTemplate("{{ arg |> filter([ 1) }}");
                 Assert.Fail("should throw");
             }
             catch (ArgumentException e)
@@ -663,18 +760,18 @@ products
         [Test]
         public void Does_remove_new_line_between_var_literals()
         {
-            var fragments = ScriptTemplateUtils.ParseTemplate("{{ 'foo' | assignTo: bar }}\n{{ bar }}");
+            var fragments = ScriptTemplateUtils.ParseTemplate("{{ 'foo' |> assignTo: bar }}\n{{ bar }}");
             Assert.That(fragments.Count, Is.EqualTo(2));
-            fragments = ScriptTemplateUtils.ParseTemplate("{{ 'foo' | assignTo: bar }}\r\n{{ bar }}");
+            fragments = ScriptTemplateUtils.ParseTemplate("{{ 'foo' |> assignTo: bar }}\r\n{{ bar }}");
             Assert.That(fragments.Count, Is.EqualTo(2));
 
-            fragments = ScriptTemplateUtils.ParseTemplate("{{ ['foo'] | do: assign('bar', it) }}\n{{ bar }}");
+            fragments = ScriptTemplateUtils.ParseTemplate("{{ ['foo'] |> do: assign('bar', it) }}\n{{ bar }}");
             Assert.That(fragments.Count, Is.EqualTo(2));
             fragments = ScriptTemplateUtils.ParseTemplate("{{ do: assign('bar', 'foo') }}\n{{ bar }}");
             Assert.That(fragments.Count, Is.EqualTo(2));
-            fragments = ScriptTemplateUtils.ParseTemplate("{{ 10 | times | do: assign('bar', 'foo') }}\n{{ bar }}");
+            fragments = ScriptTemplateUtils.ParseTemplate("{{ 10 |> times |> do: assign('bar', 'foo') }}\n{{ bar }}");
             Assert.That(fragments.Count, Is.EqualTo(2));
-            fragments = ScriptTemplateUtils.ParseTemplate("{{ 10 | times | do: assign('bar', 'foo') }}\nbar");
+            fragments = ScriptTemplateUtils.ParseTemplate("{{ 10 |> times |> do: assign('bar', 'foo') }}\nbar");
             Assert.That(fragments.Count, Is.EqualTo(2));
             var stringFragment = (PageStringFragment) fragments[1];
             Assert.That(stringFragment.Value.ToString(), Is.EqualTo("bar"));

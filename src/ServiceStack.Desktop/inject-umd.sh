@@ -1,0 +1,1 @@
+sed -i 's/})(function/    else if (typeof window != "undefined") factory(window.require||function(){}, window["\@servicestack\/desktop"]={});\n})(function/' lib/js/@servicestack/desktop/servicestack-desktop.js

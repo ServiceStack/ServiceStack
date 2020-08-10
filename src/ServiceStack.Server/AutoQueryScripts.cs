@@ -12,7 +12,7 @@ namespace ServiceStack
     
     public class AutoQueryScripts : ScriptMethods, IAutoQueryDbFilters
     {
-        private IHttpRequest req(ScriptScopeContext scope) => scope.GetValue("Request") as IHttpRequest;
+        private IRequest req(ScriptScopeContext scope) => scope.GetValue(ScriptConstants.Request) as IRequest;
         private ServiceStackHost appHost => HostContext.AppHost;
 
         public object sendToAutoQuery(ScriptScopeContext scope, string requestName) => 
@@ -55,9 +55,12 @@ namespace ServiceStack
                     throw new ArgumentException("Request DTO is not an AutoQuery DTO: " + requestName);
 
                 var reqParams = objDictionary?.ToStringDictionary() ?? TypeConstants.EmptyStringDictionary;
-                var q = autoQuery.CreateQuery(aqDto, reqParams, req(scope));
-                var response = autoQuery.Execute(aqDto, q);
-
+                var requestDtoType = requestDto.GetType();
+                var fromType = autoQuery.GetFromType(requestDtoType);
+                var httpReq = req(scope);
+                using var db = autoQuery.GetDb(fromType, httpReq);
+                var q = autoQuery.CreateQuery(aqDto, reqParams, httpReq, db);
+                var response = autoQuery.Execute(aqDto, q, db);
                 return response;
             }
             catch (Exception ex)

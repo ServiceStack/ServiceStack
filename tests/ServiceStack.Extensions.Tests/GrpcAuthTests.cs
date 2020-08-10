@@ -59,7 +59,7 @@ namespace ServiceStack.Extensions.Tests
 
         public object Post(Secured request)
         {
-            return new SecuredResponse { Result = request.Name };
+            return new SecuredResponse { Result = $"Hello, {request.Name}" };
         }
     }
     
@@ -135,6 +135,7 @@ namespace ServiceStack.Extensions.Tests
                 AfterInitCallbacks.Add(host => {
                     
                     var authRepo = GetAuthRepository();
+                    (authRepo as InMemoryAuthRepository).Clear();
                     authRepo.CreateUserAuth(new UserAuth
                     {
                         Id = userId.ToInt(),
@@ -158,7 +159,7 @@ namespace ServiceStack.Extensions.Tests
 
             public override void ConfigureKestrel(KestrelServerOptions options)
             {
-                options.ListenLocalhost(20000, listenOptions =>
+                options.ListenLocalhost(TestsConfig.Port, listenOptions =>
                 {
                     listenOptions.Protocols = HttpProtocols.Http2;
                 });
@@ -180,7 +181,7 @@ namespace ServiceStack.Extensions.Tests
         {
             appHost = new AppHost()
                 .Init()
-                .Start("http://localhost:20000/");
+                .Start(TestsConfig.ListeningOn);
         }
 
         [OneTimeTearDown]
@@ -215,12 +216,7 @@ namespace ServiceStack.Extensions.Tests
             return response.RefreshToken;
         }
 
-        private static GrpcServiceClient GetClient()
-        {
-            GrpcClientFactory.AllowUnencryptedHttp2 = true;
-            var client = new GrpcServiceClient("http://localhost:20000");
-            return client;
-        }
+        private static GrpcServiceClient GetClient() => TestsConfig.GetInsecureClient();
 
         protected virtual async Task<GrpcServiceClient> GetClientWithRefreshToken(string refreshToken = null, string accessToken = null)
         {
@@ -238,8 +234,7 @@ namespace ServiceStack.Extensions.Tests
         protected virtual GrpcServiceClient GetClientWithBasicAuthCredentials()
         {
             var client = GetClient();
-            client.UserName = Username;
-            client.Password = Password;
+            client.SetCredentials(Username, Password);
             return client;
         }
 
@@ -260,6 +255,20 @@ namespace ServiceStack.Extensions.Tests
                 Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
                 Assert.That(ex.ErrorCode, Is.EqualTo(nameof(HttpStatusCode.Unauthorized)));
             }
+        }
+
+        [Test]
+        public async Task Can_access_Secured_using_BasicAuth()
+        {
+            var client = GetClientWithBasicAuthCredentials();
+
+            var request = new Secured { Name = "test" };
+
+            var response = await client.SendAsync(request);
+            Assert.That(response.Result, Is.EqualTo("Hello, test"));
+
+            response = await client.PostAsync(request);
+            Assert.That(response.Result, Is.EqualTo("Hello, test"));
         }
         
         [Test]
@@ -314,10 +323,10 @@ namespace ServiceStack.Extensions.Tests
 
             var request = new Secured { Name = "test" };
             var response = await client.SendAsync(request);
-            Assert.That(response.Result, Is.EqualTo(request.Name));
+            Assert.That(response.Result, Is.EqualTo("Hello, test"));
 
             response = await client.SendAsync(request);
-            Assert.That(response.Result, Is.EqualTo(request.Name));
+            Assert.That(response.Result, Is.EqualTo("Hello, test"));
         }
 
         [Test]
@@ -327,10 +336,10 @@ namespace ServiceStack.Extensions.Tests
 
             var request = new Secured { Name = "test" };
             var response = await client.SendAsync(request);
-            Assert.That(response.Result, Is.EqualTo(request.Name));
+            Assert.That(response.Result, Is.EqualTo("Hello, test"));
 
             response = await client.SendAsync(request);
-            Assert.That(response.Result, Is.EqualTo(request.Name));
+            Assert.That(response.Result, Is.EqualTo("Hello, test"));
         }
         
         [Test]
@@ -365,7 +374,7 @@ namespace ServiceStack.Extensions.Tests
 
             client.BearerToken = testKey.Id;
             var testResponse = await client.SendAsync(new Secured { Name = "test" });
-            Assert.That(testResponse.Result, Is.EqualTo("test"));
+            Assert.That(testResponse.Result, Is.EqualTo("Hello, test"));
 
             Assert.That(AppHost.LastApiKey.Id, Is.EqualTo(testKey.Id));
         }

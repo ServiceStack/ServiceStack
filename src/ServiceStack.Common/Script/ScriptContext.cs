@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
@@ -170,12 +171,12 @@ namespace ServiceStack.Script
         public bool RenderExpressionExceptions { get; set; }
 
         /// <summary>
-        /// What argument to assign Filter Exceptions to
+        /// What argument to assign Exceptions to
         /// </summary>
         public string AssignExceptionsTo { get; set; }
         
         /// <summary>
-        /// Whether to skip executing Filters if an Exception was thrown
+        /// Whether to skip executing expressions if an Exception was thrown
         /// </summary>
         public bool SkipExecutingFiltersIfError { get; set; }
 
@@ -195,7 +196,7 @@ namespace ServiceStack.Script
         public int MaxStackDepth { get; set; } = 25;
 
         private ILog log;
-        public ILog Log => log ?? (log = LogManager.GetLogger(GetType()));
+        public ILog Log => log ??= LogManager.GetLogger(GetType());
         
         public HashSet<string> RemoveNewLineAfterFiltersNamed { get; set; } = new HashSet<string>();
         public HashSet<string> OnlyEvaluateFiltersWhenSkippingPageFilterExecution { get; set; } = new HashSet<string>();
@@ -203,6 +204,7 @@ namespace ServiceStack.Script
         public Dictionary<string, ScriptLanguage> ParseAsLanguage { get; set; } = new Dictionary<string, ScriptLanguage>();
         
         public Func<PageVariableFragment, ReadOnlyMemory<byte>> OnUnhandledExpression { get; set; }
+        public Action<PageResult, Exception> OnRenderException { get; set; }
 
         public SharpPage GetPage(string virtualPath)
         {
@@ -302,15 +304,14 @@ namespace ServiceStack.Script
         }
 
         private SharpPage emptyPage;
-        public SharpPage EmptyPage => emptyPage ?? (emptyPage = OneTimePage("")); 
+        public SharpPage EmptyPage => emptyPage ??= OneTimePage(""); 
 
         
         private static InMemoryVirtualFile emptyFile;
         public InMemoryVirtualFile EmptyFile =>
-            emptyFile ?? (emptyFile = new InMemoryVirtualFile(SharpPages.TempFiles, SharpPages.TempDir) {
+            emptyFile ??= new InMemoryVirtualFile(SharpPages.TempFiles, SharpPages.TempDir) {
                 FilePath = "empty", TextContents = ""
-            }); 
-
+            }; 
         
         public SharpPage OneTimePage(string contents, string ext=null) 
             => Pages.OneTimePage(contents, ext ?? PageFormats.First().Extension);
@@ -619,6 +620,9 @@ namespace ServiceStack.Script
     public static class ScriptContextUtils
     {
         public static string ErrorNoReturn = "Script did not return a value. Use EvaluateScript() to return script output instead";
+        
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static void ThrowNoReturn() => throw new NotSupportedException("Script did not return a value");
 
         public static bool ShouldRethrow(Exception e) =>
             e is ScriptException;
@@ -728,16 +732,40 @@ namespace ServiceStack.Script
             }
         }
 
+        public static async Task RenderToStreamAsync(this PageResult pageResult, Stream stream)
+        {
+            try 
+            { 
+                if (pageResult.ResultOutput != null)
+                {
+                    if (pageResult.LastFilterError != null)
+                        throw new ScriptException(pageResult);
+
+                    await stream.WriteAsync(MemoryProvider.Instance.ToUtf8Bytes(pageResult.ResultOutput.AsSpan()));
+                    return;
+                }
+
+                await pageResult.Init();
+                await pageResult.WriteToAsync(stream);
+                if (pageResult.LastFilterError != null)
+                    throw new ScriptException(pageResult);
+            }
+            catch (Exception e)
+            {
+                if (ShouldRethrow(e))
+                    throw;
+                throw HandleException(e, pageResult);
+            }
+        }
+
         public static string RenderScript(this PageResult pageResult)
         {
             try
             {
-                using (var ms = MemoryStreamFactory.GetStream())
-                {
-                    pageResult.RenderToStream(ms);
-                    var output = ms.ReadToEnd();
-                    return output;
-                }
+                using var ms = MemoryStreamFactory.GetStream();
+                pageResult.RenderToStream(ms);
+                var output = ms.ReadToEnd();
+                return output;
             }
             catch (Exception e)
             {
@@ -751,12 +779,10 @@ namespace ServiceStack.Script
         {
             try
             {
-                using (var ms = MemoryStreamFactory.GetStream())
-                {
-                    await RenderAsync(pageResult, ms, token);
-                    var output = ms.ReadToEnd();
-                    return output;
-                }
+                using var ms = MemoryStreamFactory.GetStream();
+                await RenderAsync(pageResult, ms, token);
+                var output = await ms.ReadToEndAsync();
+                return output;
             }
             catch (Exception e)
             {

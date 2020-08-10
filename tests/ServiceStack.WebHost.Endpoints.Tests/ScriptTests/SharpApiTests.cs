@@ -34,8 +34,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                     @"API /preview
 * content : string - #Script to evaluate
 
-{{ qs.content  | evalTemplate({use:{plugins:'MarkdownScriptPlugin'}}) | assignTo:response }}
-{{ response | return({ contentType:'text/plain' }) }}"
+{{ qs.content  |> evalTemplate({use:{plugins:'MarkdownScriptPlugin'}}) |> assignTo:response }}
+{{ response |> return({ contentType:'text/plain' }) }}"
                 },
             };
         }

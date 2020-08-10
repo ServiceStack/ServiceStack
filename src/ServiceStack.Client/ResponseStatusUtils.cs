@@ -20,7 +20,7 @@ namespace ServiceStack
         /// <param name="errorMessage">The error message.</param>
         /// <param name="validationErrors">The validation errors.</param>
         /// <returns></returns>
-        public static ResponseStatus CreateResponseStatus(string errorCode, string errorMessage, IEnumerable<ValidationErrorField> validationErrors)
+        public static ResponseStatus CreateResponseStatus(string errorCode, string errorMessage, IEnumerable<ValidationErrorField> validationErrors=null)
         {
             var to = new ResponseStatus {
                 ErrorCode = errorCode,

@@ -13,12 +13,19 @@ using ServiceStack.Web;
 namespace ServiceStack.Host
 {
     public class BasicRequest : IRequest, IHasResolver, IHasVirtualFiles
+#if NETSTANDARD2_0
+    , IHasServiceScope
+#endif    
     {
         public object Dto { get; set; }
         public IMessage Message { get; set; }
         public object OriginalRequest { get; private set; }
         public IResponse Response { get; set; }
-
+        
+#if NETSTANDARD2_0
+        public Microsoft.Extensions.DependencyInjection.IServiceScope ServiceScope { get; set; }
+#endif
+        
         private IResolver resolver;
         public IResolver Resolver
         {
@@ -34,10 +41,11 @@ namespace ServiceStack.Host
             RequestAttributes requestAttributes = RequestAttributes.LocalSubnet | RequestAttributes.MessageQueue)
         {
             Message = message ?? new Message();
+            Dto = Message.Body;
             ContentType = this.ResponseContentType = MimeTypes.Json;
             this.Headers = new NameValueCollection();
 
-            if (Message.Body != null)
+            if (Dto != null)
             {
                 PathInfo = "/json/oneway/" + OperationName;
                 RawUrl = AbsoluteUri = "mq://" + PathInfo;
@@ -54,18 +62,35 @@ namespace ServiceStack.Host
             this.QueryString = new NameValueCollection();
             this.FormData = new NameValueCollection();
             this.Files = TypeConstants<IHttpFile>.EmptyArray;
+            this.RemoteIp = IPAddress.IPv6Loopback.ToString();
         }
 
         private string operationName;
         public string OperationName
         {
-            get => operationName ?? (operationName = Message.Body?.GetType().GetOperationName());
+            get => operationName ??= Dto?.GetType().GetOperationName();
             set => operationName = value;
         }
 
         public T TryResolve<T>()
         {
+#if NETSTANDARD2_0
+            if (ServiceScope != null)
+            {
+                var instance = ServiceScope.ServiceProvider.GetService(typeof(T));
+                if (instance != null)
+                    return (T)instance;
+            }
+#endif
+
             return this.TryResolveInternal<T>();
+        }
+
+        public object GetService(Type serviceType)
+        {
+            var mi = typeof(BasicRequest).GetMethod(nameof(TryResolve));
+            var genericMi = mi.MakeGenericMethod(serviceType);
+            return genericMi.Invoke(this, TypeConstants.EmptyObjectArray);
         }
 
         public string UserHostAddress { get; set; }
@@ -87,8 +112,7 @@ namespace ServiceStack.Host
         public RequestAttributes RequestAttributes { get; set; }
 
         private IRequestPreferences requestPreferences;
-        public IRequestPreferences RequestPreferences => 
-            requestPreferences ?? (requestPreferences = new RequestPreferences(this));
+        public IRequestPreferences RequestPreferences => requestPreferences ??= new RequestPreferences(this);
 
         public string ContentType { get; set; }
 
@@ -119,10 +143,7 @@ namespace ServiceStack.Host
         public bool UseBufferedStream { get; set; }
 
         private string body;
-        public string GetRawBody()
-        {
-            return body ?? (body = (Message.Body ?? "").Dump());
-        }
+        public string GetRawBody() => body ??= (Message.Body ?? "").Dump();
 
         public Task<string> GetRawBodyAsync() => Task.FromResult(GetRawBody());
 
@@ -152,7 +173,7 @@ namespace ServiceStack.Host
 
         public string[] AcceptTypes { get; set; }
 
-        public Stream InputStream { get; set; }
+        public Stream InputStream { get; set; } = Stream.Null;
 
         public long ContentLength => (GetRawBody() ?? "").Length;
 
@@ -176,5 +197,5 @@ namespace ServiceStack.Host
         public bool IsFile { get; set; }
         
         public bool IsDirectory { get; set; }
-   }
+    }
 }

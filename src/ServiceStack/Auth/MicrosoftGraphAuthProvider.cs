@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
-using ServiceStack.Text.Pools;
 
 namespace ServiceStack.Auth
 {

@@ -1,6 +1,5 @@
 using System;
-using System.Linq;
-using System.Net;
+using System.Collections.Generic;
 using ServiceStack.Configuration;
 using ServiceStack.Web;
 
@@ -8,6 +7,17 @@ namespace ServiceStack.Auth
 {
     public abstract class OAuthProvider : AuthProvider
     {
+        public override string Type => "oauth";
+
+        public Func<string, bool> VerifyAccessToken { get; set; }
+
+        public override Dictionary<string, string> Meta => VerifyAccessToken != null
+            ? new Dictionary<string, string> {
+                [Keywords.Allows] = Keywords.AccessTokenAuth,
+            }
+            : null;
+
+        
         public OAuthProvider() { }
 
         public OAuthProvider(IAppSettings appSettings, string authRealm, string oAuthProvider)

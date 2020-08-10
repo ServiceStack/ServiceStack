@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Web;
-using Funq;
+using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 
 namespace ServiceStack
 {
-    public class PredefinedRoutesFeature : IPlugin
+    public class PredefinedRoutesFeature : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.PredefinedRoutes;
         public Dictionary<string, Func<IHttpHandler>> HandlerMappings { get; } = new Dictionary<string, Func<IHttpHandler>>();
         
         public void Register(IAppHost appHost)

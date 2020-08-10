@@ -103,7 +103,7 @@ namespace ServiceStack.Script
         }
 
         private string CacheKey(InvokerType type, string methodName, int argsCount) =>
-            type + "::" + methodName.ToLower() + "`" + argsCount;
+            type + "::" + methodName + "`" + argsCount;
 
         private MethodInfo GetFilterMethod(string cacheKey) => lookupIndex.TryGetValue(cacheKey, out MethodInfo method) ? method : null;
 
@@ -237,21 +237,27 @@ namespace ServiceStack.Script
         public static ScriptScopeContext AddItemToScope(this ScriptScopeContext scope, string itemBinding, object item, int index)
         {
             scope.ScopedParams[ScriptConstants.Index] = index;
-            return scope.AddItemToScope(itemBinding, item);
+            return SetItemInScope(itemBinding, item, scope);
         }
 
         public static ScriptScopeContext AddItemToScope(this ScriptScopeContext scope, string itemBinding, object item)
         {
-            scope.ScopedParams[itemBinding] = item;
+            return SetItemInScope(itemBinding, item, scope);
+        }
+
+        private static ScriptScopeContext SetItemInScope(string itemBinding, object item, ScriptScopeContext newScope)
+        {
+            newScope.ScopedParams[itemBinding] = item;
 
             if (item is ScopeVars explodeBindings)
             {
                 foreach (var entry in explodeBindings)
                 {
-                    scope.ScopedParams[entry.Key] = entry.Value;
+                    newScope.ScopedParams[entry.Key] = entry.Value;
                 }
             }
-            return scope;
+
+            return newScope;
         }
 
         public static T GetValueOrEvaluateBinding<T>(this ScriptScopeContext scope, object valueOrBinding) =>

@@ -146,10 +146,9 @@ namespace ServiceStack.RabbitMq
         {
             set => PublishToOutqWhitelist = value ? TypeConstants.EmptyStringArray : null;
         }
-
         
         private IConnection connection;
-        private IConnection Connection => connection ?? (connection = ConnectionFactory.CreateConnection());
+        private IConnection Connection => connection ??= ConnectionFactory.CreateConnection();
 
         private readonly Dictionary<Type, IMessageHandlerFactory> handlerMap
             = new Dictionary<Type, IMessageHandlerFactory>();

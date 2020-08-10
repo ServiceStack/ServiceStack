@@ -28,8 +28,8 @@ title: Bootstrap Templates
     <div class="col-6">
       <h4>Auth and Registration</h4>
       <ul>
-        <li><a href="/validation/authcheck">/validation/authcheck</a></li>
-        {{#if isAuthenticated}}<li><a href="/auth/logout">Sign Out</a></li>{{/if}}
+        <li><a href="{{PathBase}}/validation/authcheck">/validation/authcheck</a></li>
+        {{#if isAuthenticated}}<li><a href="{{PathBase}}/auth/logout">Sign Out</a></li>{{/if}}
       </ul>
       <h4>Sign In</h4>
       {{ 'signin-links' | partial }}
@@ -38,24 +38,24 @@ title: Bootstrap Templates
     <div class="col-6">
       <h4>Validation Examples</h4>
       <ul>
-        <li><a href="/validation/server/">/validation/server/</a></li>
-        <li><a href="/validation/server-ts/">/validation/server-ts/</a></li>
-        <li><a href="/validation/server-jquery/">/validation/server-jquery/</a></li>
-        <li><a href="/validation/server-razor/">/validation/server-razor/</a></li>
-        <li><a href="/validation/client-ts/">/validation/client-ts/</a></li>
-        <li><a href="/validation/client-jquery/">/validation/client-jquery/</a></li>
-        <li><a href="/validation/client-razor/">/validation/client-razor/</a></li>
-        <li><a href="/validation/vuetify/">/validation/vuetify/</a></li>
+        <li><a href="{{PathBase}}/validation/server/">/validation/server/</a></li>
+        <li><a href="{{PathBase}}/validation/server-ts/">/validation/server-ts/</a></li>
+        <li><a href="{{PathBase}}/validation/server-jquery/">/validation/server-jquery/</a></li>
+        <li><a href="{{PathBase}}/validation/server-razor/">/validation/server-razor/</a></li>
+        <li><a href="{{PathBase}}/validation/client-ts/">/validation/client-ts/</a></li>
+        <li><a href="{{PathBase}}/validation/client-jquery/">/validation/client-jquery/</a></li>
+        <li><a href="{{PathBase}}/validation/client-razor/">/validation/client-razor/</a></li>
+        <li><a href="{{PathBase}}/validation/vuetify/">/validation/vuetify/</a></li>
       </ul>
     </div>
   </div>
 
-  <h3><a href="/metadata/nav">/metadata/nav</a></h3>
-  <h3><a href="/metadata/svg">/metadata/svg</a></h3>
+  <h3><a href="{{PathBase}}/metadata/nav">/metadata/nav</a></h3>
+  <h3><a href="{{PathBase}}/metadata/svg">/metadata/svg</a></h3>
 
-  <h3 class="mt-3"><a href="/navitems">/navitems</a></h3>
-  <h3><a href="/svg-demo">/svg-demo</a></h3>
-  <h3><a href="/svg">/svg</a></h3>
+  <h3 class="mt-3"><a href="{{PathBase}}/navitems">/navitems</a></h3>
+  <h3><a href="{{PathBase}}/svg-demo">/svg-demo</a></h3>
+  <h3><a href="{{PathBase}}/svg">/svg</a></h3>
 
   <hr class="mt-3">
 

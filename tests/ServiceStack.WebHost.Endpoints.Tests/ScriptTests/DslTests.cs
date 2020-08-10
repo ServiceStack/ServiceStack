@@ -41,7 +41,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var context = CreateContext();
 
             var person = new PersonContract { Name = "Kurt", Age = 27 };
-            var result = (ReadOnlyMemory<byte>)context.Evaluate("{{ serialize(target) | return }}", new Dictionary<string, object> {
+            var result = (ReadOnlyMemory<byte>)context.Evaluate("{{ serialize(target) |> return }}", new Dictionary<string, object> {
                 ["target"] = person
             });
             
@@ -96,7 +96,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
             var person = new PersonContract { Name = "Kurt", Age = 27 };
             
-            var evalContext = new PageResult(context.OneTimePage("{{ serialize(target) | return }}")) {
+            var evalContext = new PageResult(context.OneTimePage("{{ serialize(target) |> return }}")) {
                 Args = {
                     ["target"] = person
                 }

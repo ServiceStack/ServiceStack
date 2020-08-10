@@ -29,7 +29,7 @@ namespace ServiceStack.FluentValidation {
 	/// <summary>
 	/// An exception that represents failed validation
 	/// </summary>
-	public partial class ValidationException : ArgumentException, IResponseStatusConvertible
+	public partial class ValidationException : IResponseStatusConvertible
 	{
 	    public ResponseStatus ToResponseStatus()
 	    {

@@ -11,5 +11,7 @@ namespace ServiceStack.Caching
         TimeSpan? GetTimeToLive(string key);
 
         IEnumerable<string> GetKeysByPattern(string pattern);
+
+        void RemoveExpiredEntries();
     }
 }

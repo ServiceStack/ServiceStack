@@ -139,8 +139,11 @@ namespace ServiceStack.Script
         public string replace(string text, string oldValue, string newValue) => text.Replace(oldValue, newValue);
 
         public string trimStart(string text) => text?.TrimStart();
+        public string trimStart(string text, char c) => text?.TrimStart(c);
         public string trimEnd(string text) => text?.TrimEnd();
+        public string trimEnd(string text, char c) => text?.TrimEnd(c);
         public string trim(string text) => text?.Trim();
+        public string trim(string text, char c) => text?.Trim(c);
 
         public string padLeft(string text, int totalWidth) => text?.PadLeft(AssertWithinMaxQuota(totalWidth));
         public string padLeft(string text, int totalWidth, char padChar) => text?.PadLeft(AssertWithinMaxQuota(totalWidth), padChar);
@@ -355,5 +358,8 @@ namespace ServiceStack.Script
         
         public bool isBinary(string fileOrExt) => MimeTypes.IsBinary(MimeTypes.GetMimeType(fileOrExt));
         public string contentType(string fileOrExt) => MimeTypes.GetMimeType(fileOrExt);
+
+        public static string[] splitLines(string contents) => contents.Replace("\r", "").Split('\n');
+        public IEnumerable<string> readLines(string contents) => contents.ReadLines();
     }
 }

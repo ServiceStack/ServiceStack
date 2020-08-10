@@ -43,7 +43,12 @@ namespace ServiceStack.NetCore
         public override string Get(int index) => Get(GetKey(index));
         public override string Get(string name) => originalQuery[name];
         public override string GetKey(int index) => AllKeys[index];
-        public override string[] GetValues(string name) => originalQuery[name];
+        public override string[] GetValues(string name)
+        {
+            var values = originalQuery[name];
+            return values;
+        }
+        
         //public new bool HasKeys() => originalQuery.Count > 0; // not virtual
         public override string ToString() => string.Join("&", originalQuery.Select(pair => pair.Key + "=" + pair.Value.ToString()));
 

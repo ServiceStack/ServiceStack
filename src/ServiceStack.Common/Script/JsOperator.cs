@@ -245,6 +245,18 @@ namespace ServiceStack.Script
             DynamicNumber.Mod(lhs, rhs);
     }
 
+    public class JsAssignment : JsBinaryOperator
+    {
+        public static JsAssignment Operator = new JsAssignment();
+        private JsAssignment() { }
+        public override string Token => "=";
+        
+        public override object Evaluate(object lhs, object rhs)
+        {
+            throw new System.NotImplementedException();
+        }
+    }
+
     public class JsMinus : JsUnaryOperator
     {
         public static JsMinus Operator = new JsMinus();

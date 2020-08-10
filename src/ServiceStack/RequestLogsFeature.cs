@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using ServiceStack.Admin;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
@@ -6,8 +8,9 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class RequestLogsFeature : IPlugin
+    public class RequestLogsFeature : IPlugin, Model.IHasStringId
     {
+        public string Id { get; set; } = Plugins.RequestLogs;
         /// <summary>
         /// RequestLogs service Route, default is /requestlogs
         /// </summary>
@@ -75,9 +78,28 @@ namespace ServiceStack
         public Action<IRequest, RequestLogEntry> RequestLogFilter { get; set; }
 
         /// <summary>
+        /// Never attempt to serialize these types
+        /// </summary>
+        public List<Type> IgnoreTypes { get; set; } = new List<Type> {
+        };
+        
+        /// <summary>
+        /// Allow ignoring 
+        /// </summary>
+        public Func<object,bool> IgnoreFilter { get; set; } 
+
+        /// <summary>
         /// Change what DateTime to use for the current Date (defaults to UtcNow)
         /// </summary>
         public Func<DateTime> CurrentDateFn { get; set; } = () => DateTime.UtcNow;
+
+        
+        public bool DefaultIgnoreFilter(object o)
+        {
+            var type = o.GetType();
+            return IgnoreTypes?.Contains(type) == true || o is IDisposable;
+        }
+        
 
         public RequestLogsFeature(int capacity) : this()
         {
@@ -87,6 +109,7 @@ namespace ServiceStack
         public RequestLogsFeature()
         {
             this.AtRestPath = "/requestlogs";
+            this.IgnoreFilter = DefaultIgnoreFilter;
             this.RequiredRoles = new[] { RoleNames.Admin };
             this.EnableErrorTracking = true;
             this.EnableRequestBodyTracking = false;
@@ -99,7 +122,8 @@ namespace ServiceStack
 
         public void Register(IAppHost appHost)
         {
-            appHost.RegisterService<RequestLogsService>(AtRestPath);
+            if (!string.IsNullOrEmpty(AtRestPath))
+                appHost.RegisterService<RequestLogsService>(AtRestPath);
 
             var requestLogger = RequestLogger ?? new InMemoryRollingRequestLogger(Capacity);
             requestLogger.EnableSessionTracking = EnableSessionTracking;
@@ -112,6 +136,7 @@ namespace ServiceStack
             requestLogger.ExcludeRequestDtoTypes = ExcludeRequestDtoTypes;
             requestLogger.HideRequestBodyForRequestDtoTypes = HideRequestBodyForRequestDtoTypes;
             requestLogger.RequestLogFilter = RequestLogFilter;
+            requestLogger.IgnoreFilter = IgnoreFilter;
             requestLogger.CurrentDateFn = CurrentDateFn;
 
             appHost.Register(requestLogger);
@@ -131,6 +156,18 @@ namespace ServiceStack
 
             appHost.GetPlugin<MetadataFeature>()
                 .AddDebugLink(AtRestPath, "Request Logs");
+            
+            appHost.GetPlugin<MetadataFeature>()?.ExportTypes.Add(typeof(RequestLogEntry));
+            
+            appHost.AddToAppMetadata(meta => {
+                meta.Plugins.RequestLogs = new RequestLogsInfo {
+                    RequiredRoles = RequiredRoles,
+                    ServiceRoutes = new Dictionary<string, string[]> {
+                        { nameof(RequestLogsService), new[] {AtRestPath} },
+                    },
+                    RequestLogger = requestLogger.GetType().Name,
+                };
+            });
         }
     }
 }
