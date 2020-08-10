@@ -126,7 +126,7 @@ namespace ServiceStack
                 MapExceptionToStatusCode = new Dictionary<Type, int>(),
                 UseSaltedHash = false,
                 FallbackPasswordHashers = new List<IPasswordHasher>(),
-                UseSameSiteCookies = false,
+                UseSameSiteCookies = null,
                 UseSecureCookies = true,   // good default to have, but needed if UseSameSiteCookies=true 
                 AllowSessionIdsInHttpParams = false,
                 AllowSessionCookies = true,
@@ -371,7 +371,7 @@ namespace ServiceStack
         public bool AllowJsConfig { get; set; }
         public bool AllowPartialResponses { get; set; }
         public bool AllowNonHttpOnlyCookies { get; set; }
-        public bool UseSameSiteCookies { get; set; }
+        public bool? UseSameSiteCookies { get; set; }
         public bool AllowAclUrlReservation { get; set; }
         public bool AddRedirectParamsToQueryString { get; set; }
         public bool RedirectToDefaultDocuments { get; set; }

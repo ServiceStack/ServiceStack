@@ -72,6 +72,7 @@ namespace ServiceStack.Host
         private static SetMemberDelegate sameSiteFn;
         private static Enum sameSiteNone;
         private static Enum sameSiteStrict;
+        private static Enum sameSiteLax;
 
         public static void Init()
         {
@@ -84,6 +85,7 @@ namespace ServiceStack.Host
                 {
                     sameSiteNone = (Enum) Enum.Parse(sameSiteMode, "None");
                     sameSiteStrict = (Enum) Enum.Parse(sameSiteMode, "Strict");
+                    sameSiteLax = (Enum) Enum.Parse(sameSiteMode, "Lax");
                 }
             }
         }
@@ -107,9 +109,12 @@ namespace ServiceStack.Host
                 httpCookie.Domain = config.RestrictAllCookiesToDomain;
             }
 
-            sameSiteFn?.Invoke(httpCookie, config.UseSameSiteCookies
-                ? sameSiteStrict
-                : sameSiteNone);
+            var sameSiteCookie = config.UseSameSiteCookies == null
+                ? sameSiteLax
+                : config.UseSameSiteCookies == true
+                    ? sameSiteStrict
+                    : sameSiteNone;
+            sameSiteFn?.Invoke(httpCookie, sameSiteCookie);
 
             HostContext.AppHost?.HttpCookieFilter(httpCookie);
 
@@ -126,9 +131,11 @@ namespace ServiceStack.Host
                 Expires = cookie.Expires == DateTime.MinValue ? (DateTimeOffset?) null : cookie.Expires,
                 HttpOnly = !config.AllowNonHttpOnlyCookies || cookie.HttpOnly,
                 Secure = cookie.Secure,
-                SameSite = config.UseSameSiteCookies
-                    ? SameSiteMode.Strict
-                    : SameSiteMode.None,
+                SameSite = config.UseSameSiteCookies == null
+                    ? SameSiteMode.Lax
+                    : config.UseSameSiteCookies == true
+                        ? SameSiteMode.Strict
+                        : SameSiteMode.None,
             };
 
             if (!string.IsNullOrEmpty(cookie.Domain))
@@ -168,8 +175,13 @@ namespace ServiceStack.Host
             {
                 sb.Append(";Secure");
             }
-
-            sb.Append(";SameSite=").Append(config.UseSameSiteCookies ? "Strict" : "None");
+            
+            var sameSiteCookie = config.UseSameSiteCookies == null
+                ? "Lax"
+                : config.UseSameSiteCookies == true
+                    ? "Strict"
+                    : "None";
+            sb.Append(";SameSite=").Append(sameSiteCookie);
             
             if (!config.AllowNonHttpOnlyCookies || cookie.HttpOnly)
             {
