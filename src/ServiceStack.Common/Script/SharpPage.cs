@@ -79,7 +79,7 @@ namespace ServiceStack.Script
                     return this;
             }
             
-            return await Load();
+            return await Load().ConfigAwait();
         }
 
         public async Task<SharpPage> Load()

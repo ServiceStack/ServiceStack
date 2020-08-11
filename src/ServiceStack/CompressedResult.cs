@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Web;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -26,16 +27,16 @@ namespace ServiceStack
 
         public HttpStatusCode StatusCode
         {
-            get { return (HttpStatusCode)Status; }
-            set { Status = (int)value; }
+            get => (HttpStatusCode)Status;
+            set => Status = (int)value;
         }
 
         public string StatusDescription { get; set; }
 
         public object Response
         {
-            get { return this.Contents; }
-            set { throw new NotImplementedException(); }
+            get => this.Contents;
+            set => throw new NotImplementedException();
         }
 
         public IContentTypeWriter ResponseFilter { get; set; }
@@ -91,10 +92,10 @@ namespace ServiceStack
             var response = RequestContext?.Response;
             response?.SetContentLength(this.Contents.Length + PaddingLength);
 
-            await responseStream.WriteAsync(this.Contents, token);
+            await responseStream.WriteAsync(this.Contents, token).ConfigAwait();
             //stream.Write(this.Contents, Adler32ChecksumLength, this.Contents.Length - Adler32ChecksumLength);
 
-            await responseStream.FlushAsync(token);
+            await responseStream.FlushAsync(token).ConfigAwait();
         }
     }
 }

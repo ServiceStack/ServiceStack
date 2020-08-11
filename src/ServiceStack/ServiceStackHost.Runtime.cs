@@ -41,7 +41,7 @@ namespace ServiceStack
         {
             foreach (var converter in RequestConvertersArray)
             {
-                requestDto = await converter(req, requestDto) ?? requestDto;
+                requestDto = await converter(req, requestDto).ConfigAwait() ?? requestDto;
                 if (req.Response.IsClosed)
                     return requestDto;
             }
@@ -53,7 +53,7 @@ namespace ServiceStack
         {
             foreach (var converter in ResponseConvertersArray)
             {
-                responseDto = await converter(req, responseDto) ?? responseDto;
+                responseDto = await converter(req, responseDto).ConfigAwait() ?? responseDto;
                 if (req.Response.IsClosed)
                     return responseDto;
             }
@@ -130,7 +130,7 @@ namespace ServiceStack
             {
                 if (!req.IsMultiRequest())
                 {
-                    await ApplyRequestFiltersSingleAsync(req, res, requestDto);
+                    await ApplyRequestFiltersSingleAsync(req, res, requestDto).ConfigAwait();
                     return;
                 }
 
@@ -140,7 +140,7 @@ namespace ServiceStack
                 foreach (var dto in dtos)
                 {
                     req.Items[Keywords.AutoBatchIndex] = i;
-                    await ApplyRequestFiltersSingleAsync(req, res, dto);
+                    await ApplyRequestFiltersSingleAsync(req, res, dto).ConfigAwait();
                     if (res.IsClosed)
                         return;
 
@@ -163,7 +163,7 @@ namespace ServiceStack
                 if (attribute is IHasRequestFilter filterSync)
                     filterSync.RequestFilter(req, res, requestDto);
                 else if (attribute is IHasRequestFilterAsync filterAsync)
-                    await filterAsync.RequestFilterAsync(req, res, requestDto);
+                    await filterAsync.RequestFilterAsync(req, res, requestDto).ConfigAwait();
 
                 Release(attribute);
                 if (res.IsClosed) 
@@ -184,7 +184,7 @@ namespace ServiceStack
             
             foreach (var requestFilter in GlobalRequestFiltersAsyncArray)
             {
-                await requestFilter(req, res, requestDto);
+                await requestFilter(req, res, requestDto).ConfigAwait();
                 if (res.IsClosed) 
                     return;
             }
@@ -198,7 +198,7 @@ namespace ServiceStack
                 if (attribute is IHasRequestFilter filterSync)
                     filterSync.RequestFilter(req, res, requestDto);
                 else if (attribute is IHasRequestFilterAsync filterAsync)
-                    await filterAsync.RequestFilterAsync(req, res, requestDto);
+                    await filterAsync.RequestFilterAsync(req, res, requestDto).ConfigAwait();
 
                 Release(attribute);
                 if (res.IsClosed) 
@@ -231,7 +231,7 @@ namespace ServiceStack
                 var batchResponse = req.IsMultiRequest() ? response as IEnumerable : null;
                 if (batchResponse == null)
                 {
-                    await ApplyResponseFiltersSingleAsync(req, res, response);
+                    await ApplyResponseFiltersSingleAsync(req, res, response).ConfigAwait();
                     return;
                 }
 
@@ -241,7 +241,7 @@ namespace ServiceStack
                 {
                     req.Items[Keywords.AutoBatchIndex] = i;
 
-                    await ApplyResponseFiltersSingleAsync(req, res, dto);
+                    await ApplyResponseFiltersSingleAsync(req, res, dto).ConfigAwait();
                     if (res.IsClosed)
                         return;
 
@@ -270,7 +270,7 @@ namespace ServiceStack
                     if (attribute is IHasResponseFilter filterSync)
                         filterSync.ResponseFilter(req, res, response);
                     else if (attribute is IHasResponseFilterAsync filterAsync)
-                        await filterAsync.ResponseFilterAsync(req, res, response);
+                        await filterAsync.ResponseFilterAsync(req, res, response).ConfigAwait();
 
                     Release(attribute);
                     if (res.IsClosed) 
@@ -295,7 +295,7 @@ namespace ServiceStack
 
             foreach (var responseFilter in GlobalResponseFiltersAsyncArray)
             {
-                await responseFilter(req, res, response);
+                await responseFilter(req, res, response).ConfigAwait();
                 if (res.IsClosed) 
                     return;
             }
@@ -311,7 +311,7 @@ namespace ServiceStack
                     if (attribute is IHasResponseFilter filterSync)
                         filterSync.ResponseFilter(req, res, response);
                     else if (attribute is IHasResponseFilterAsync filterAsync)
-                        await filterAsync.ResponseFilterAsync(req, res, response);
+                        await filterAsync.ResponseFilterAsync(req, res, response).ConfigAwait();
 
                     Release(attribute);
                     if (res.IsClosed) 
@@ -821,12 +821,12 @@ namespace ServiceStack
                 if (request.ResponseContentType.MatchesContentType(MimeTypes.Html))
                     request.ResponseContentType = Config.PreferredContentTypesArray.First(x => !x.MatchesContentType(MimeTypes.Html));
 
-                await request.Response.WriteToResponse(request, response);
+                await request.Response.WriteToResponse(request, response).ConfigAwait();
                 return;
             }
 
             var utf8Bytes = html.ToUtf8Bytes();
-            await outputStream.WriteAsync(utf8Bytes, 0, utf8Bytes.Length);
+            await outputStream.WriteAsync(utf8Bytes, 0, utf8Bytes.Length).ConfigAwait();
         }
 
         public virtual List<string> GetMetadataPluginIds()

@@ -673,7 +673,7 @@ namespace ServiceStack
             // Cache AST Globally
             var cachedCodePage = JS.scriptCached(ScriptContext, evalCode);
             
-            var evalCodeValue = await EvalScriptAsync(new PageResult(cachedCodePage), req, args);
+            var evalCodeValue = await EvalScriptAsync(new PageResult(cachedCodePage), req, args).ConfigAwait();
             if (!scriptValue.NoCache && req != null)
                 req.Items[evalCacheKey] = evalCodeValue;
 
@@ -736,7 +736,7 @@ namespace ServiceStack
         {
             InitPageResult(pageResult, req, args);
 
-            var ret = await pageResult.EvaluateResultAsync();
+            var ret = await pageResult.EvaluateResultAsync().ConfigAwait();
             if (!ret.Item1)
                 ScriptContextUtils.ThrowNoReturn();
 
@@ -773,7 +773,7 @@ namespace ServiceStack
 
             foreach (var errorHandler in GatewayExceptionHandlersAsync)
             {
-                await errorHandler(httpReq, request, ex);
+                await errorHandler(httpReq, request, ex).ConfigAwait();
             }
         }
 
@@ -791,7 +791,7 @@ namespace ServiceStack
             }
             foreach (var errorHandler in ServiceExceptionHandlersAsync)
             {
-                lastError = await errorHandler(httpReq, request, ex) ?? lastError;
+                lastError = await errorHandler(httpReq, request, ex).ConfigAwait() ?? lastError;
             }
             return lastError;
         }
@@ -807,7 +807,7 @@ namespace ServiceStack
             }
             foreach (var errorHandler in UncaughtExceptionHandlersAsync)
             {
-                await errorHandler(httpReq, httpRes, operationName, ex);
+                await errorHandler(httpReq, httpRes, operationName, ex).ConfigAwait();
             }
         }
 
@@ -833,19 +833,19 @@ namespace ServiceStack
             try
             {
                 var httpError = new HttpError(res.StatusCode, res.StatusDescription);
-                response = await OnServiceException(req, requestDto, httpError);
+                response = await OnServiceException(req, requestDto, httpError).ConfigAwait();
                 if (response != null)
                 {
                     await res.EndHttpHandlerRequestAsync(afterHeaders: async httpRes => {
-                        await ContentTypes.SerializeToStreamAsync(req, response, httpRes.OutputStream);
-                    });
+                        await ContentTypes.SerializeToStreamAsync(req, response, httpRes.OutputStream).ConfigAwait();
+                    }).ConfigAwait();
                 }
             }
             finally
             {
                 if (response == null)
                 {
-                    await res.EndRequestAsync();
+                    await res.EndRequestAsync().ConfigAwait();
                 }
             }
         }

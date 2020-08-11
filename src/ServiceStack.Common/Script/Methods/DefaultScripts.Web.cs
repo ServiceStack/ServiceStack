@@ -78,8 +78,8 @@ namespace ServiceStack.Script
         public string rawBodyAsString(ScriptScopeContext scope) => req(scope).GetRawBody();
         public object rawBodyAsJson(ScriptScopeContext scope) => JSON.parse(rawBodyAsString(scope));
 
-        public async Task<object> requestBodyAsString(ScriptScopeContext scope) => await req(scope).GetRawBodyAsync();
-        public async Task<object> requestBodyAsJson(ScriptScopeContext scope) => JSON.parse(await req(scope).GetRawBodyAsync());
+        public async Task<object> requestBodyAsString(ScriptScopeContext scope) => await req(scope).GetRawBodyAsync().ConfigAwait();
+        public async Task<object> requestBodyAsJson(ScriptScopeContext scope) => JSON.parse(await req(scope).GetRawBodyAsync().ConfigAwait());
         
         public NameValueCollection form(ScriptScopeContext scope) => req(scope).FormData;
         public NameValueCollection query(ScriptScopeContext scope) => req(scope).QueryString;

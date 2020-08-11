@@ -41,7 +41,7 @@ namespace ServiceStack.Script
                 return TypeConstants.EmptyTask;
             }
 
-            var ret = await token.EvaluateAsync(scope);
+            var ret = await token.EvaluateAsync(scope).ConfigAwait();
             return ret == JsNull.Value 
                 ? null 
                 : ret;

@@ -21,6 +21,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Configuration;
 using ServiceStack.IO;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -151,7 +152,7 @@ namespace ServiceStack
         {
             if (NetCoreHandler != null)
             {
-                var handled = await NetCoreHandler(context);
+                var handled = await NetCoreHandler(context).ConfigAwait();
                 if (handled)
                     return;
             }
@@ -171,7 +172,7 @@ namespace ServiceStack
                     context.Request.PathBase.Value.IndexOf(mode, StringComparison.OrdinalIgnoreCase) == 1;
                 if (!includedInPathInfo && !includedInPathBase)
                 {
-                    await next();
+                    await next().ConfigAwait();
                     return;
                 }
 
@@ -200,8 +201,8 @@ namespace ServiceStack
                 {
                     var holdNext = next;
                     next = async () => {
-                        await BeforeNextMiddleware(httpReq);
-                        await holdNext();
+                        await BeforeNextMiddleware(httpReq).ConfigAwait();
+                        await holdNext().ConfigAwait();
                     };
                 }
             } 
@@ -215,9 +216,9 @@ namespace ServiceStack
                 }
 
                 context.Response.ContentType = MimeTypes.PlainText;
-                await context.Response.WriteAsync($"{ex.GetType().Name}: {ex.Message}");
+                await context.Response.WriteAsync($"{ex.GetType().Name}: {ex.Message}").ConfigAwait();
                 if (Config.DebugMode)
-                    await context.Response.WriteAsync($"\nStackTrace:\n{ex.StackTrace}");
+                    await context.Response.WriteAsync($"\nStackTrace:\n{ex.StackTrace}").ConfigAwait();
                 return;
             }
 
@@ -225,7 +226,7 @@ namespace ServiceStack
             {
                 if (serviceStackHandler is NotFoundHttpHandler)
                 {
-                    await next();
+                    await next().ConfigAwait();
                     return;
                 }
 
@@ -239,7 +240,7 @@ namespace ServiceStack
 
                 try
                 {
-                    await serviceStackHandler.ProcessRequestAsync(httpReq, httpRes, operationName);
+                    await serviceStackHandler.ProcessRequestAsync(httpReq, httpRes, operationName).ConfigAwait();
                 }
                 catch (Exception ex)
                 {
@@ -252,14 +253,14 @@ namespace ServiceStack
                 }
                 finally
                 {
-                    httpRes.Close();
+                    await httpRes.CloseAsync().ConfigAwait();
                 }
                 //Matches Exceptions handled in HttpListenerBase.InitTask()
 
                 return;
             }
 
-            await next();
+            await next().ConfigAwait();
         }
 
         public override string MapProjectPath(string relativePath)

@@ -336,7 +336,7 @@ namespace ServiceStack.Mvc
                 }
             }
 
-            await RenderView(req, outputStream, viewData, viewEngineResult.View, req.GetTemplate());
+            await RenderView(req, outputStream, viewData, viewEngineResult.View, req.GetTemplate()).ConfigAwait();
 
             return true;
         }
@@ -442,9 +442,9 @@ namespace ServiceStack.Mvc
                         sw,
                         new HtmlHelperOptions());
 
-                    await view.RenderAsync(viewContext);
+                    await view.RenderAsync(viewContext).ConfigAwait();
 
-                    await sw.FlushAsync();
+                    await sw.FlushAsync().ConfigAwait();
 
                     try
                     {
@@ -465,14 +465,14 @@ namespace ServiceStack.Mvc
                 
                 req.Items[RenderException] = ex;
                 //Can't set HTTP Headers which are already written at this point
-                await req.Response.WriteErrorBody(ex);
+                await req.Response.WriteErrorBody(ex).ConfigAwait();
             }
         }
 
         public async Task<ReadOnlyMemory<char>> RenderToHtmlAsync(IView view, object model = null, string layout = null)
         {
             using var ms = MemoryStreamFactory.GetStream();
-            await WriteHtmlAsync(ms, view, model, layout);
+            await WriteHtmlAsync(ms, view, model, layout).ConfigAwait();
             return MemoryProvider.Instance.FromUtf8(ms.GetBufferAsSpan());
         }
         
@@ -519,9 +519,9 @@ namespace ServiceStack.Mvc
                         sw,
                         new HtmlHelperOptions());
 
-                    await view.RenderAsync(viewContext);
+                    await view.RenderAsync(viewContext).ConfigAwait();
 
-                    await sw.FlushAsync();
+                    await sw.FlushAsync().ConfigAwait();
 
                     try
                     {
@@ -586,12 +586,12 @@ namespace ServiceStack.Mvc
                     view = viewResult?.View ?? throw new ArgumentException("Could not find Razor Page at " + PathInfo);
                 }
 
-                await RenderView(format, req, res, view, Args);
+                await RenderView(format, req, res, view, Args).ConfigAwait();
             }
             catch (Exception ex)
             {
                 //Can't set HTTP Headers which are already written at this point
-                await req.Response.WriteErrorBody(ex);
+                await req.Response.WriteErrorBody(ex).ConfigAwait();
             }
         }
 
@@ -610,7 +610,7 @@ namespace ServiceStack.Mvc
                 var modelType = genericDef?.GetGenericArguments()[0];
                 if (modelType != null && modelType != typeof(object))
                 {
-                    model = await DeserializeHttpRequestAsync(modelType, req, req.ContentType);
+                    model = await DeserializeHttpRequestAsync(modelType, req, req.ContentType).ConfigAwait();
                     viewData = RazorFormat.CreateViewData(model);
                 }
             }
@@ -651,7 +651,7 @@ namespace ServiceStack.Mvc
                 }
             }
 
-            await format.RenderView(req, res.OutputStream, viewData, view);
+            await format.RenderView(req, res.OutputStream, viewData, view).ConfigAwait();
         }
     }
 
@@ -1018,7 +1018,7 @@ namespace ServiceStack.Mvc
                         : path
                 }
             };
-            await req.Response.WriteToResponse(req, result);
+            await req.Response.WriteToResponse(req, result).ConfigAwait();
             throw new StopExecutionException();
         }
 
@@ -1052,10 +1052,10 @@ namespace ServiceStack.Mvc
             if (!session.HasRole(role, req.TryResolve<IAuthRepository>()))
             {
                 if (redirect != null)
-                    await req.RedirectToAsync(redirect);
+                    await req.RedirectToAsync(redirect).ConfigAwait();
                         
                 var error = new HttpError(HttpStatusCode.Forbidden, message ?? ErrorMessages.InvalidRole.Localize(req));
-                await req.Response.WriteToResponse(req, error);
+                await req.Response.WriteToResponse(req, error).ConfigAwait();
                 throw new StopExecutionException();
             }
         }
@@ -1080,10 +1080,10 @@ namespace ServiceStack.Mvc
             if (!session.HasPermission(permission, req.TryResolve<IAuthRepository>()))
             {
                 if (redirect != null)
-                    await req.RedirectToAsync(redirect);
+                    await req.RedirectToAsync(redirect).ConfigAwait();
                         
                 var error = new HttpError(HttpStatusCode.Forbidden, message ?? ErrorMessages.InvalidPermission.Localize(req));
-                await req.Response.WriteToResponse(req, error);
+                await req.Response.WriteToResponse(req, error).ConfigAwait();
                 throw new StopExecutionException();
             }
         }

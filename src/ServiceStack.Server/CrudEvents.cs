@@ -163,14 +163,14 @@ namespace ServiceStack
             {
                 foreach (var requestFilter in RequestFiltersAsync)
                 {
-                    await requestFilter(req, req.Response, req.Dto);
+                    await requestFilter(req, req.Response, req.Dto).ConfigAwait();
                     
                     if (req.Response.IsClosed)
                         throw new UnauthorizedAccessException($"RequestFiltersAsync short-circuited request denying executing {typeof(T).Name} {crudEvent.Id}");
                 }
             }
             
-            await ServiceExecutor.ExecuteAsync(requestDto, req);
+            await ServiceExecutor.ExecuteAsync(requestDto, req).ConfigAwait();
         }
     }
 

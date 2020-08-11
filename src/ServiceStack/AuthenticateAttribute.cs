@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Host;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -64,14 +65,14 @@ namespace ServiceStack
             var authProviders = AuthenticateService.GetAuthProviders(this.Provider);
             if (authProviders.Length == 0)
             {
-                await res.WriteError(req, requestDto, $"No registered Auth Providers found matching {this.Provider ?? "any"} provider");
+                await res.WriteError(req, requestDto, $"No registered Auth Providers found matching {this.Provider ?? "any"} provider").ConfigAwait();
                 res.EndRequest();
                 return;
             }
             
             req.PopulateFromRequestIfHasSessionId(requestDto);
 
-            await PreAuthenticateAsync(req, authProviders);
+            await PreAuthenticateAsync(req, authProviders).ConfigAwait();
 
             if (res.IsClosed)
                 return;
@@ -82,7 +83,7 @@ namespace ServiceStack
                 if (this.DoHtmlRedirectIfConfigured(req, res, true))
                     return;
 
-                await AuthProvider.HandleFailedAuth(authProviders[0], session, req, res);
+                await AuthProvider.HandleFailedAuth(authProviders[0], session, req, res).ConfigAwait();
             }
         }
 

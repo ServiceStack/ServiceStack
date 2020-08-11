@@ -299,9 +299,9 @@ namespace ServiceStack
             }
 
             if (connectArgs != null)
-                await sub.PublishAsync("cmd.onConnect", connectArgs.ToJson(), token);
+                await sub.PublishAsync("cmd.onConnect", connectArgs.ToJson(), token).ConfigAwait();
 
-            await local.RegisterAsync(sub, token: token);
+            await local.RegisterAsync(sub, token: token).ConfigAwait();
         }
 
         private void StoreSubscriptionInfo(IRedisClient redis, SubscriptionInfo info)

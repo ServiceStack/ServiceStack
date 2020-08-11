@@ -26,7 +26,7 @@ namespace ServiceStack.Script
             }
             else
             {
-                await scope.OutputStream.WriteAsync(strFragment.Value.Span, token);
+                await scope.OutputStream.WriteAsync(strFragment.Value.Span, token).ConfigAwait();
             }
         }
 

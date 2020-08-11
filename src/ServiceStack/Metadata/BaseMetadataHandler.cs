@@ -24,7 +24,7 @@ namespace ServiceStack.Metadata
                 return;
 
             httpRes.ContentType = "text/html; charset=utf-8";
-            await ProcessOperationsAsync(httpRes.OutputStream, httpReq, httpRes);
+            await ProcessOperationsAsync(httpRes.OutputStream, httpReq, httpRes).ConfigAwait();
 
             await httpRes.EndHttpHandlerRequestAsync(skipHeaders:true);
         }

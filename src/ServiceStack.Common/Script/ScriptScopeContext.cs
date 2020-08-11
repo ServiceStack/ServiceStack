@@ -187,7 +187,7 @@ namespace ServiceStack.Script
 
         public static async Task WritePageAsync(this ScriptScopeContext scope, SharpPage page, SharpCodePage codePage, Dictionary<string, object> pageParams, CancellationToken token = default(CancellationToken))
         {
-            await scope.PageResult.WritePageAsync(page, codePage, scope.ScopeWithParams(pageParams), token);
+            await scope.PageResult.WritePageAsync(page, codePage, scope.ScopeWithParams(pageParams), token).ConfigAwait();
         }
 
         public static void InvokeAssignExpression(this ScriptScopeContext scope, string assignExpr, object target, object value)

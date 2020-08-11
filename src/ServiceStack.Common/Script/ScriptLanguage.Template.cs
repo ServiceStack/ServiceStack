@@ -51,7 +51,7 @@ namespace ServiceStack.Script
         {
             if (fragment is PageStringFragment str)
             {
-                await scope.OutputStream.WriteAsync(str.ValueUtf8, token);
+                await scope.OutputStream.WriteAsync(str.ValueUtf8, token).ConfigAwait();
             }
             else if (fragment is PageVariableFragment var)
             {
@@ -62,20 +62,20 @@ namespace ServiceStack.Script
                         throw new NotSupportedException("{{page}} can only be called once per render, in the Layout page.");
                     scope.PageResult.PageProcessed = true;
                     
-                    await scope.PageResult.WritePageAsync(scope.PageResult.Page, scope.PageResult.CodePage, scope, token);
+                    await scope.PageResult.WritePageAsync(scope.PageResult.Page, scope.PageResult.CodePage, scope, token).ConfigAwait();
 
                     if (scope.PageResult.HaltExecution)
                         scope.PageResult.HaltExecution = false; //break out of page but continue evaluating layout
                 }
                 else
                 {
-                    await scope.PageResult.WriteVarAsync(scope, var, token);
+                    await scope.PageResult.WriteVarAsync(scope, var, token).ConfigAwait();
                 }
             }
             else if (fragment is PageBlockFragment blockFragment)
             {
                 var block = scope.PageResult.GetBlock(blockFragment.Name);
-                await block.WriteAsync(scope, blockFragment, token);
+                await block.WriteAsync(scope, blockFragment, token).ConfigAwait();
             }
             else return false;
 
@@ -162,7 +162,7 @@ namespace ServiceStack.Script
         {
             var pageResult = new PageResult(context.SharpScriptPage(script));
             args.Each((x,y) => pageResult.Args[x] = y);
-            return await pageResult.RenderScriptAsync();
+            return await pageResult.RenderScriptAsync().ConfigAwait();
         }
         
         /// <summary>
@@ -189,7 +189,7 @@ namespace ServiceStack.Script
         /// Evaluate #Script and convert returned value to T asynchronously
         /// </summary>
         public static async Task<T> EvaluateAsync<T>(this ScriptContext context, string script, Dictionary<string, object> args = null) =>
-            (await context.EvaluateAsync(script, args)).ConvertTo<T>();
+            (await context.EvaluateAsync(script, args).ConfigAwait()).ConvertTo<T>();
         
         /// <summary>
         /// Evaluate #Script and convert returned value to T asynchronously
@@ -199,7 +199,7 @@ namespace ServiceStack.Script
             var pageResult = new PageResult(context.SharpScriptPage(script));
             args.Each((x,y) => pageResult.Args[x] = y);
 
-            var ret = await pageResult.EvaluateResultAsync();
+            var ret = await pageResult.EvaluateResultAsync().ConfigAwait();
             if (!ret.Item1)
                 throw new NotSupportedException(ScriptContextUtils.ErrorNoReturn);
             

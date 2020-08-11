@@ -33,22 +33,22 @@ namespace ServiceStack.Script
 
         protected virtual async Task WriteAsync(ScriptScopeContext scope, PageFragment[] body, string callTrace, CancellationToken cancel)
         {
-            await scope.PageResult.WriteFragmentsAsync(scope, body, callTrace, cancel);
+            await scope.PageResult.WriteFragmentsAsync(scope, body, callTrace, cancel).ConfigAwait();
         }
 
         protected virtual async Task WriteAsync(ScriptScopeContext scope, JsStatement[] body, string callTrace, CancellationToken cancel)
         {
-            await scope.PageResult.WriteStatementsAsync(scope, body, callTrace, cancel);
+            await scope.PageResult.WriteStatementsAsync(scope, body, callTrace, cancel).ConfigAwait();
         }
 
         protected virtual async Task WriteBodyAsync(ScriptScopeContext scope, PageBlockFragment fragment, CancellationToken token)
         {
-            await WriteAsync(scope, fragment.Body, GetCallTrace(fragment), token);
+            await WriteAsync(scope, fragment.Body, GetCallTrace(fragment), token).ConfigAwait();
         }
 
         protected virtual async Task WriteElseAsync(ScriptScopeContext scope, PageElseBlock fragment, CancellationToken token)
         {
-            await WriteAsync(scope, fragment.Body, GetElseCallTrace(fragment), token);
+            await WriteAsync(scope, fragment.Body, GetElseCallTrace(fragment), token).ConfigAwait();
         }
 
         protected async Task WriteElseAsync(ScriptScopeContext scope, PageElseBlock[] elseBlocks, CancellationToken cancel)
@@ -57,7 +57,7 @@ namespace ServiceStack.Script
             {
                 if (elseBlock.Argument.IsNullOrEmpty())
                 {
-                    await WriteElseAsync(scope, elseBlock, cancel);
+                    await WriteElseAsync(scope, elseBlock, cancel).ConfigAwait();
                     return;
                 }
 
@@ -66,10 +66,10 @@ namespace ServiceStack.Script
                     argument = argument.Advance(3);
 
                 var result = await argument.GetJsExpressionAndEvaluateToBoolAsync(scope,
-                    ifNone: () => throw new NotSupportedException("'else if' block does not have a valid expression"));
+                    ifNone: () => throw new NotSupportedException("'else if' block does not have a valid expression")).ConfigAwait();
                 if (result)
                 {
-                    await WriteElseAsync(scope, elseBlock, cancel);
+                    await WriteElseAsync(scope, elseBlock, cancel).ConfigAwait();
                     return;
                 }
             }

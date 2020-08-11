@@ -137,8 +137,8 @@ namespace ServiceStack.Host.AspNet
 
         public async Task FlushAsync(CancellationToken token = default(CancellationToken))
         {
-            await this.FlushBufferIfAnyAsync(BufferedStream, response.OutputStream, token);
-            await response.OutputStream.FlushAsync(token);
+            await this.FlushBufferIfAnyAsync(BufferedStream, response.OutputStream, token).ConfigAwait();
+            await response.OutputStream.FlushAsync(token).ConfigAwait();
         }
 
         public bool IsClosed

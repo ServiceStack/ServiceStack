@@ -55,22 +55,21 @@ namespace ServiceStack.Script
             var context = scope.CreateNewContext(args);
             var unrenderedBody = new SharpPartialPage(scope.Context, "eval-page", block.Body, format, args);
 
-            using (var ms = MemoryStreamFactory.GetStream())
-            {
-                var captureScope = scope.ScopeWith(outputStream:ms, scopedParams:args);
-                await scope.PageResult.WritePageAsync(unrenderedBody, captureScope, token);
-                var renderedBody = await ms.ReadToEndAsync();
+            using var ms = MemoryStreamFactory.GetStream();
+            var captureScope = scope.ScopeWith(outputStream:ms, scopedParams:args);
+            await scope.PageResult.WritePageAsync(unrenderedBody, captureScope, token).ConfigAwait();
+            // ReSharper disable once MethodHasAsyncOverload
+            var renderedBody = ms.ReadToEnd();
 
-                if (htmlDecode)
-                {
-                    renderedBody = renderedBody.HtmlDecode();
-                }
-                
-                var pageResult = new PageResult(context.OneTimePage(renderedBody)) {
-                    Args = args,
-                };
-                await pageResult.WriteToAsync(scope.OutputStream, token);
+            if (htmlDecode)
+            {
+                renderedBody = renderedBody.HtmlDecode();
             }
+                
+            var pageResult = new PageResult(context.OneTimePage(renderedBody)) {
+                Args = args,
+            };
+            await pageResult.WriteToAsync(scope.OutputStream, token).ConfigAwait();
         }
     }
 }

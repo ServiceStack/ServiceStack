@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ServiceStack.Caching;
 using ServiceStack.Web;
+using ServiceStack.Text;
 using System.Globalization;
 using System.Threading.Tasks;
 
@@ -313,7 +314,7 @@ namespace ServiceStack
             var value = cache.Get<T>(key);
             if (Equals(value, default(T)))
             {
-                value = await createFn();
+                value = await createFn().ConfigAwait();
                 cache.Set(key, value);
             }
             return value;
@@ -337,7 +338,7 @@ namespace ServiceStack
             var value = cache.Get<T>(key);
             if (Equals(value, default(T)))
             {
-                value = await createFn();
+                value = await createFn().ConfigAwait();
                 cache.Set(key, value, expiresIn);
             }
             return value;

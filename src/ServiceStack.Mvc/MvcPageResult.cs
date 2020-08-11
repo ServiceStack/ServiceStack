@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 using ServiceStack.Script;
+using ServiceStack.Text;
 
 namespace ServiceStack.Mvc
 {
@@ -46,7 +47,7 @@ namespace ServiceStack.Mvc
                     context.HttpContext.Response.Headers[entry.Key] = entry.Value;
             }
 
-            await pageResult.WriteToAsync(context.HttpContext.Response.Body);
+            await pageResult.WriteToAsync(context.HttpContext.Response.Body).ConfigAwait();
         }
     }
 #endif    
@@ -57,7 +58,7 @@ namespace ServiceStack.Mvc
         public static async Task<MvcPageResult> ToMvcResultAsync(this PageResult pageResult)
         {
             var ms = new MemoryStream();            
-            await pageResult.WriteToAsync(ms);
+            await pageResult.WriteToAsync(ms).ConfigAwait();
             return new MvcPageResult(pageResult, ms);
         }
 #else

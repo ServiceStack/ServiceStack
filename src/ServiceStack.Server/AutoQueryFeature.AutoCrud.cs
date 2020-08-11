@@ -51,11 +51,11 @@ namespace ServiceStack
             var namedConnection = dto?.FirstAttribute<NamedConnectionAttribute>()?.Name;
 
             using var useDb = namedConnection != null
-                ? await DbFactory.OpenDbConnectionAsync(namedConnection)
-                : await DbFactory.OpenDbConnectionAsync();
+                ? await DbFactory.OpenDbConnectionAsync(namedConnection).ConfigAwait()
+                : await DbFactory.OpenDbConnectionAsync().ConfigAwait();
             
             var q = AutoQuery.CreateQuery(request, Request, useDb);
-            var response = await AutoQuery.ExecuteAsync(request, q, Request, useDb);
+            var response = await AutoQuery.ExecuteAsync(request, q, Request, useDb).ConfigAwait();
             
             return response;
         }
@@ -84,15 +84,15 @@ namespace ServiceStack
             var namedConnection = dto?.FirstAttribute<NamedConnectionAttribute>()?.Name;
 
             using var useDb = namedConnection != null
-                ? await DbFactory.OpenDbConnectionAsync(namedConnection)
-                : await DbFactory.OpenDbConnectionAsync();
+                ? await DbFactory.OpenDbConnectionAsync(namedConnection).ConfigAwait()
+                : await DbFactory.OpenDbConnectionAsync().ConfigAwait();
 
             var q = useDb.From<CrudEvent>()
                 .Where(x => x.Model == request.Model)
                 .And(x => ids.Contains(x.ModelId))
                 .SelectDistinct(x => x.ModelId);
 
-            var results = await useDb.ColumnAsync<string>(q);
+            var results = await useDb.ColumnAsync<string>(q).ConfigAwait();
             return new CheckCrudEventsResponse {
                 Results = results.ToList(),
             };
@@ -204,9 +204,9 @@ namespace ServiceStack
                         selectIdentity = false;
                     }
                     
-                    var autoIntId = await db.InsertAsync<Table>(dtoValues, selectIdentity: selectIdentity);
+                    var autoIntId = await db.InsertAsync<Table>(dtoValues, selectIdentity: selectIdentity).ConfigAwait();
                     return CreateInternal(dtoValues, pkField, selectIdentity, autoIntId);
-                });
+                }).ConfigAwait();
                 
             return response;
         }
@@ -280,9 +280,9 @@ namespace ServiceStack
                         : null;
                     var q = DeleteInternal<Table>(ctx, dtoValues);
                     if (q != null)
-                        return new ExecValue(idValue, await ctx.Db.DeleteAsync(q));
-                    return new ExecValue(idValue, await ctx.Db.DeleteAsync<Table>(dtoValues));
-                });
+                        return new ExecValue(idValue, await ctx.Db.DeleteAsync(q).ConfigAwait());
+                    return new ExecValue(idValue, await ctx.Db.DeleteAsync<Table>(dtoValues).ConfigAwait());
+                }).ConfigAwait();
             
             return response;
         }
@@ -342,9 +342,9 @@ namespace ServiceStack
             var row = dto.ConvertTo<Table>();
             var response = await ExecAndReturnResponseAsync<Table>(CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Save),
                 async ctx => {
-                    await ctx.Db.SaveAsync(row);
+                    await ctx.Db.SaveAsync(row).ConfigAwait();
                     return SaveInternal(dto, ctx);
-                }); 
+                }).ConfigAwait();
                 
             return response;
         }
@@ -440,9 +440,9 @@ namespace ServiceStack
 
             using (trans)
             {
-                context.SetResult(await fn(context));
+                context.SetResult(await fn(context).ConfigAwait());
                 if (context.Events != null && !ignoreEvent)
-                    await context.Events?.RecordAsync(context);
+                    await context.Events.RecordAsync(context).ConfigAwait();
                 
                 trans?.Commit();
             }
@@ -465,7 +465,7 @@ namespace ServiceStack
 
             if (context.ResultProp != null && context.Id != null)
             {
-                var result = await context.Db.SingleByIdAsync<Table>(context.Id);
+                var result = await context.Db.SingleByIdAsync<Table>(context.Id).ConfigAwait();
                 context.ResultProp.PublicSetter(response, result.ConvertTo(context.ResultProp.PropertyInfo.PropertyType));
             }
 
@@ -481,7 +481,7 @@ namespace ServiceStack
                 if (AutoMappingUtils.IsDefaultValue(idValue))
                     context.ThrowPrimaryKeyRequiredForRowVersion();
                 
-                var rowVersion = await context.Db.GetRowVersionAsync<Table>(idValue);
+                var rowVersion = await context.Db.GetRowVersionAsync<Table>(idValue).ConfigAwait();
                 context.RowVersionProp.PublicSetter(response, rowVersion.ConvertTo(context.RowVersionProp.PropertyInfo.PropertyType));
             }
             
@@ -598,14 +598,14 @@ namespace ServiceStack
                         
                         // Should only update a Single Row
                         var rowsUpdated = GetAutoFilterExpressions(ctx, dtoValues, out var expr, out var exprParams) 
-                            ? await ctx.Db.UpdateOnlyAsync<Table>(dtoValues, expr, exprParams.ToArray())
-                            : await ctx.Db.UpdateOnlyAsync<Table>(dtoValues);
+                            ? await ctx.Db.UpdateOnlyAsync<Table>(dtoValues, expr, exprParams.ToArray()).ConfigAwait()
+                            : await ctx.Db.UpdateOnlyAsync<Table>(dtoValues).ConfigAwait();
 
                         if (rowsUpdated != 1)
                             throw new OptimisticConcurrencyException($"{rowsUpdated} rows were updated by '{dto.GetType().Name}'");
 
                         return new ExecValue(idValue, rowsUpdated);
-                    }); //TODO: UpdateOnly
+                    }).ConfigAwait(); //TODO: UpdateOnly
 
                 return response;
             }

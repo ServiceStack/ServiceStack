@@ -27,16 +27,16 @@ namespace ServiceStack
                 if (AppHost.ApplyPreRequestFilters(req, req.Response))
                     return CreateResponse<TResponse>(res);
 
-                requestDto = await AppHost.ApplyRequestConvertersAsync(req, requestDto);
-                await AppHost.ApplyRequestFiltersAsync(req, res, requestDto);
+                requestDto = await AppHost.ApplyRequestConvertersAsync(req, requestDto).ConfigAwait();
+                await AppHost.ApplyRequestFiltersAsync(req, res, requestDto).ConfigAwait();
                 if (res.IsClosed)
                     return CreateResponse<TResponse>(res);
 
-                var response = await Executor.ExecuteAsync(requestDto, req);
+                var response = await Executor.ExecuteAsync(requestDto, req).ConfigAwait();
 
-                response = await AppHost.ApplyResponseConvertersAsync(req, response);
+                response = await AppHost.ApplyResponseConvertersAsync(req, response).ConfigAwait();
 
-                await AppHost.ApplyResponseFiltersAsync(req, res, response);
+                await AppHost.ApplyResponseFiltersAsync(req, res, response).ConfigAwait();
                 if (res.IsClosed)
                     return CreateResponse<TResponse>(res);
 

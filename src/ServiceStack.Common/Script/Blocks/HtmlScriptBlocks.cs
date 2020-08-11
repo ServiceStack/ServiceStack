@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Text;
 
 namespace ServiceStack.Script
 {
@@ -266,7 +267,7 @@ namespace ServiceStack.Script
 
             if (HtmlScripts.VoidElements.Contains(Tag)) //e.g. img, input, br, etc
             {
-                await scope.OutputStream.WriteAsync($"<{Tag}{attrString}>{Suffix}", token);
+                await scope.OutputStream.WriteAsync($"<{Tag}{attrString}>{Suffix}", token).ConfigAwait();
             }
             else
             {
@@ -275,7 +276,7 @@ namespace ServiceStack.Script
                     var hasElements = each != null && each.GetEnumerator().MoveNext();
                     if (hasElements)
                     {
-                        await scope.OutputStream.WriteAsync($"<{Tag}{attrString}>{Suffix}", token);
+                        await scope.OutputStream.WriteAsync($"<{Tag}{attrString}>{Suffix}", token).ConfigAwait();
 
                         var index = 0;
                         var whereIndex = 0;
@@ -299,21 +300,21 @@ namespace ServiceStack.Script
 
                             itemScope.ScopedParams[nameof(index)] = AssertWithinMaxQuota(index++);
 
-                            await WriteBodyAsync(itemScope, block, token);
+                            await WriteBodyAsync(itemScope, block, token).ConfigAwait();
                         }
 
-                        await scope.OutputStream.WriteAsync($"</{Tag}>{Suffix}", token);
+                        await scope.OutputStream.WriteAsync($"</{Tag}>{Suffix}", token).ConfigAwait();
                     }
                     else
                     {
-                        await WriteElseAsync(scope, block.ElseBlocks, token);
+                        await WriteElseAsync(scope, block.ElseBlocks, token).ConfigAwait();
                     }
                 }
                 else
                 {
-                    await scope.OutputStream.WriteAsync($"<{Tag}{attrString}>{Suffix}", token);
-                    await WriteBodyAsync(scope, block, token);
-                    await scope.OutputStream.WriteAsync($"</{Tag}>{Suffix}", token);
+                    await scope.OutputStream.WriteAsync($"<{Tag}{attrString}>{Suffix}", token).ConfigAwait();
+                    await WriteBodyAsync(scope, block, token).ConfigAwait();
+                    await scope.OutputStream.WriteAsync($"</{Tag}>{Suffix}", token).ConfigAwait();
                 }
             }
         }

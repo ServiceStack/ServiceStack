@@ -145,21 +145,21 @@ namespace ServiceStack.IO
                 return gistCache;
 
             LastRefresh = DateTime.UtcNow;
-            return gistCache = await Gateway.GetGistAsync(GistId);
+            return gistCache = await Gateway.GetGistAsync(GistId).ConfigAwait();
         }
         
         public async Task LoadAllTruncatedFilesAsync()
         {
-            var gist = await GetGistAsync();
+            var gist = await GetGistAsync().ConfigAwait();
 
             var files = gist.Files.Where(x => 
                 (string.IsNullOrEmpty(x.Value.Content) || x.Value.Content.Length < x.Value.Size) && x.Value.Truncated);
 
             var tasks = files.Select(async x => {
-                x.Value.Content = await x.Value.Raw_Url.GetStringFromUrlAsync();
+                x.Value.Content = await x.Value.Raw_Url.GetStringFromUrlAsync().ConfigAwait();
             });
 
-            await Task.WhenAll(tasks);
+            await Task.WhenAll(tasks).ConfigAwait();
         }
 
         public void ClearGist() => gistCache = null;

@@ -803,19 +803,17 @@ namespace ServiceStack.Script
         public async Task includeFile(ScriptScopeContext scope, string virtualPath)
         {
             var file = ResolveFile(nameof(includeFile), scope, virtualPath);
-            using (var reader = file.OpenRead())
-            {
-                await reader.CopyToAsync(scope.OutputStream);
-            }
+            using var reader = file.OpenRead();
+            await reader.CopyToAsync(scope.OutputStream).ConfigAwait();
         }
 
         public async Task ifDebugIncludeScript(ScriptScopeContext scope, string virtualPath)
         {
             if (scope.Context.DebugMode)
             {
-                await scope.OutputStream.WriteAsync("<script>");
-                await includeFile(scope, virtualPath);
-                await scope.OutputStream.WriteAsync("</script>");
+                await scope.OutputStream.WriteAsync("<script>").ConfigAwait();
+                await includeFile(scope, virtualPath).ConfigAwait();
+                await scope.OutputStream.WriteAsync("</script>").ConfigAwait();
             }
         }
 

@@ -155,10 +155,10 @@ namespace ServiceStack.Host
             switch (response)
             {
                 case string text:
-                    await stream.WriteAsync(text);
+                    await stream.WriteAsync(text).ConfigAwait();
                     break;
                 case byte[] bytes:
-                    await stream.WriteAsync(bytes, 0, bytes.Length);
+                    await stream.WriteAsync(bytes, 0, bytes.Length).ConfigAwait();
                     break;
                 case MemoryStream input:
                     await input.WriteToAsync(stream);

@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Web;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -22,7 +23,7 @@ namespace ServiceStack
             if (HostContext.AppHost.HasValidAuthSecret(req))
                 return;
 
-            await base.ExecuteAsync(req, res, requestDto);
+            await base.ExecuteAsync(req, res, requestDto).ConfigAwait();
             if (res.IsClosed)
                 return;
 

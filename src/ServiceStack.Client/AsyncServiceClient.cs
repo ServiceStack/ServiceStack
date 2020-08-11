@@ -236,7 +236,7 @@ namespace ServiceStack
                    if (RequestCompressionType != null)
                         webReq.Headers[HttpHeaders.ContentEncoding] = RequestCompressionType;
 
-                   using var requestStream = await webReq.GetRequestStreamAsync().ConfigureAwait(false);
+                   using var requestStream = await webReq.GetRequestStreamAsync().ConfigAwait();
                    token.ThrowIfCancellationRequested();
                    if (request != null)
                    {
@@ -254,7 +254,7 @@ namespace ServiceStack
 
             try
             {
-                webRes = (HttpWebResponse) await webReq.GetResponseAsync().ConfigureAwait(false);
+                webRes = (HttpWebResponse) await webReq.GetResponseAsync().ConfigAwait();
                 {
                     token.ThrowIfCancellationRequested();
 
@@ -273,9 +273,9 @@ namespace ServiceStack
                     int read;
                     var ms = MemoryStreamFactory.GetStream();
 
-                    while ((read = await responseStream.ReadAsync(bufferRead, 0, bufferRead.Length, token).ConfigureAwait(false)) != 0)
+                    while ((read = await responseStream.ReadAsync(bufferRead, 0, bufferRead.Length, token).ConfigAwait()) != 0)
                     {
-                        await ms.WriteAsync(bufferRead, 0, read, token);
+                        await ms.WriteAsync(bufferRead, 0, read, token).ConfigAwait();
                         totalRead += read;
                         OnDownloadProgress?.Invoke(totalRead, responseBodyLength);
                     }
@@ -294,7 +294,7 @@ namespace ServiceStack
                             {
                                 if (typeof(T) == typeof(string))
                                 {
-                                    return Complete((T) (object) await stream.ReadToEndAsync());
+                                    return Complete((T) (object) await stream.ReadToEndAsync().ConfigAwait());
                                 }
                                 else if (typeof(T) == typeof(byte[]))
                                     return Complete((T) (object) stream.ToArray());
@@ -349,7 +349,7 @@ namespace ServiceStack
                                     if (UseTokenCookie) {
                                         req.CookieContainer = CookieContainer;
                                     }
-                                })).FromJson<GetAccessTokenResponse>();
+                                }).ConfigAwait()).FromJson<GetAccessTokenResponse>();
                             }
                             catch (WebException refreshEx)
                             {
@@ -390,7 +390,7 @@ namespace ServiceStack
                                 }
                             }
 
-                            return await SendWebRequestAsync<T>(httpMethod, absoluteUrl, request, token, recall: true).ConfigureAwait(false);
+                            return await SendWebRequestAsync<T>(httpMethod, absoluteUrl, request, token, recall: true).ConfigAwait();
                         }
 
                         OnAuthenticationRequired?.Invoke();
@@ -402,7 +402,7 @@ namespace ServiceStack
 
                         HandleAuthException(ex, webReq);
 
-                        return await SendWebRequestAsync<T>(httpMethod, absoluteUrl, request, token, recall: true).ConfigureAwait(false);
+                        return await SendWebRequestAsync<T>(httpMethod, absoluteUrl, request, token, recall: true).ConfigAwait();
                     }
                     catch (WebServiceException)
                     {
@@ -452,24 +452,22 @@ namespace ServiceStack
 
                 try
                 {
-                    using (var stream = errorResponse.ResponseStream())
-                    {
-                        var bytes = stream.ReadFully();
-                        serviceEx.ResponseBody = bytes.FromUtf8Bytes();
-                        var errorResponseType = WebRequestUtils.GetErrorResponseDtoType<TResponse>(request);
+                    using var stream = errorResponse.ResponseStream();
+                    var bytes = stream.ReadFully();
+                    serviceEx.ResponseBody = bytes.FromUtf8Bytes();
+                    var errorResponseType = WebRequestUtils.GetErrorResponseDtoType<TResponse>(request);
 
-                        if (stream.CanSeek)
-                        {
-                            PclExport.Instance.ResetStream(stream);
-                            serviceEx.ResponseDto = this.StreamDeserializer(errorResponseType, stream);
-                        }
-                        else //Android
-                        {
-                            using var ms = MemoryStreamFactory.GetStream(bytes);
-                            serviceEx.ResponseDto = this.StreamDeserializer(errorResponseType, ms);
-                        }
-                        return serviceEx;
+                    if (stream.CanSeek)
+                    {
+                        PclExport.Instance.ResetStream(stream);
+                        serviceEx.ResponseDto = this.StreamDeserializer(errorResponseType, stream);
                     }
+                    else //Android
+                    {
+                        using var ms = MemoryStreamFactory.GetStream(bytes);
+                        serviceEx.ResponseDto = this.StreamDeserializer(errorResponseType, ms);
+                    }
+                    return serviceEx;
                 }
                 catch (Exception innerEx)
                 {

@@ -242,11 +242,11 @@ namespace ServiceStack.Script
             {
                 using (JsConfig.CreateScope(jsconfig))
                 {
-                    await scope.OutputStream.WriteAsync(fn(items));
+                    await scope.OutputStream.WriteAsync(fn(items)).ConfigAwait();
                     return;
                 }
             }
-            await scope.OutputStream.WriteAsync(items.ToJson());
+            await scope.OutputStream.WriteAsync(items.ToJson()).ConfigAwait();
         }
 
         private IRawString serialize(object target, string jsconfig, Func<object, string> fn)

@@ -535,7 +535,7 @@ namespace ServiceStack
                 Request.QueryString["channels"] = string.Join(",", request.Channels);
 
             var handler = new ServerEventsHandler();
-            await handler.ProcessRequestAsync(Request, Request.Response, nameof(StreamServerEvents));
+            await handler.ProcessRequestAsync(Request, Request.Response, nameof(StreamServerEvents)).ConfigAwait();
 
             var res = (GrpcResponse) Request.Response;
 

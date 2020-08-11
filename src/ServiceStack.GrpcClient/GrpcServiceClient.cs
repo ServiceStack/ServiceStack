@@ -226,7 +226,7 @@ namespace ServiceStack
 
                 var fn = ResolveExecute<GetAccessTokenResponse>(refreshRequest);
                 using var auc = (AsyncUnaryCall<GetAccessTokenResponse>) fn(useInvoker, refreshRequest, config.ServicesName, methodName, options, null);
-                var (response, refreshStatus, headers) = await GrpcUtils.GetResponseAsync(config, auc);
+                var (response, refreshStatus, headers) = await GrpcUtils.GetResponseAsync(config, auc).ConfigAwait();
                 using (newChannel){}
 
                 if (refreshStatus?.ErrorCode != null)
@@ -265,15 +265,15 @@ namespace ServiceStack
                 var fn = ResolveExecute<TResponse>(requestDto);
                 using var auc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, Config.ServicesName, methodName, options, null);
 
-                var (response, status, headers) = await GrpcUtils.GetResponseAsync(Config, auc);
+                var (response, status, headers) = await GrpcUtils.GetResponseAsync(Config, auc).ConfigAwait();
 
                 if (status?.ErrorCode != null)
                 {
-                    if (await RetryRequest(Config, auc.GetStatus().StatusCode, status, callInvoker))
+                    if (await RetryRequest(Config, auc.GetStatus().StatusCode, status, callInvoker).ConfigAwait())
                     {
                         options = new CallOptions().Init(Config, noAuth:authIncluded);
                         using var retryAuc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, Config.ServicesName, methodName, options, null);
-                        var (retryResponse, retryStatus, retryHeaders) = await GrpcUtils.GetResponseAsync(Config, retryAuc);
+                        var (retryResponse, retryStatus, retryHeaders) = await GrpcUtils.GetResponseAsync(Config, retryAuc).ConfigAwait();
                         if (retryStatus?.ErrorCode == null)
                             return retryResponse;
                     }
@@ -320,18 +320,18 @@ namespace ServiceStack
             // Handle retry on first request
             var requestDto = requestDtos[0];
             using var auc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, Config.ServicesName, methodName, options, null);
-            var (response, status, headers) = await GrpcUtils.GetResponseAsync(Config, auc);
+            var (response, status, headers) = await GrpcUtils.GetResponseAsync(Config, auc).ConfigAwait();
 
             if (status?.ErrorCode != null)
             {
-                if (await RetryRequest(Config, auc.GetStatus().StatusCode, status, callInvoker))
+                if (await RetryRequest(Config, auc.GetStatus().StatusCode, status, callInvoker).ConfigAwait())
                 {
                     authIncluded = GrpcUtils.InitRequestDto(Config, requestDto);
                     fn = ResolveExecute<TResponse>(requestDto);
                     options = new CallOptions().Init(Config, noAuth:authIncluded);
                     using var retryAuc = (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, Config.ServicesName, methodName, options, null);
 
-                    var (retryResponse, retryStatus, retryHeaders) = await GrpcUtils.GetResponseAsync(Config, retryAuc);
+                    var (retryResponse, retryStatus, retryHeaders) = await GrpcUtils.GetResponseAsync(Config, retryAuc).ConfigAwait();
                     if (retryResponse.GetResponseStatus()?.ErrorCode == null)
                     {
                         responses.Add(retryResponse);
@@ -360,11 +360,11 @@ namespace ServiceStack
                 asyncTasks.Add(GrpcUtils.GetResponseAsync(Config, (AsyncUnaryCall<TResponse>) fn(callInvoker, requestDto, Config.ServicesName, methodName, options, null)));
             }
 
-            await Task.WhenAll(asyncTasks);
+            await Task.WhenAll(asyncTasks).ConfigAwait();
 
             foreach (var task in asyncTasks)
             {
-                (response, _, _) = await task;
+                (response, _, _) = await task.ConfigAwait();
                 responses.Add(response);
             }
 
@@ -383,15 +383,15 @@ namespace ServiceStack
             var callInvoker = Config.Channel.CreateCallInvoker();
             using var assc = (AsyncServerStreamingCall<TResponse>) fn(callInvoker, requestDto, Config.ServicesName, methodName, options, null);
 
-            var (response, status, headers) = await GrpcUtils.GetResponseAsync(Config, assc);
+            var (response, status, headers) = await GrpcUtils.GetResponseAsync(Config, assc).ConfigAwait();
 
             if (status?.ErrorCode != null)
             {
-                if (await RetryRequest(Config, assc.GetStatus().StatusCode, status, callInvoker))
+                if (await RetryRequest(Config, assc.GetStatus().StatusCode, status, callInvoker).ConfigAwait())
                 {
                     fn = ResolveStream<TResponse>(requestDto);
                     using var retryAssc = (AsyncServerStreamingCall<TResponse>) fn(callInvoker, requestDto, Config.ServicesName, methodName, options, null);
-                    var (retryResponse, retryStatus, retryHeaders) = await GrpcUtils.GetResponseAsync(Config, retryAssc);
+                    var (retryResponse, retryStatus, retryHeaders) = await GrpcUtils.GetResponseAsync(Config, retryAssc).ConfigAwait();
                     if (retryStatus?.ErrorCode == null)
                     {
                         await foreach(var item in retryResponse.ReadAllAsync(token))
@@ -519,7 +519,7 @@ namespace ServiceStack
         public async Task PublishAsync(object requestDto, CancellationToken token = default)
         {
             AssertPublishType(requestDto.GetType());
-            await Execute<EmptyResponse>(requestDto, GetMethodName(GetMethod(requestDto), requestDto), token);
+            await Execute<EmptyResponse>(requestDto, GetMethodName(GetMethod(requestDto), requestDto), token).ConfigAwait();
         }
 
         public Task PublishAllAsync(IEnumerable<object> requestDtos, CancellationToken token = default)
@@ -589,7 +589,7 @@ namespace ServiceStack
 
         public async Task GetAsync(IReturnVoid requestDto, CancellationToken token = default)
         {
-            await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Get, requestDto), token);
+            await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Get, requestDto), token).ConfigAwait();
         }
 
         public Task<TResponse> DeleteAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default)
@@ -604,7 +604,7 @@ namespace ServiceStack
 
         public async Task DeleteAsync(IReturnVoid requestDto, CancellationToken token = default)
         {
-            await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Delete, requestDto), token);
+            await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Delete, requestDto), token).ConfigAwait();
         }
 
         public Task<TResponse> PostAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default)
@@ -619,7 +619,7 @@ namespace ServiceStack
 
         public async Task PostAsync(IReturnVoid requestDto, CancellationToken token = default)
         {
-            await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Post, requestDto), token);
+            await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Post, requestDto), token).ConfigAwait();
         }
 
         public Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default)
@@ -634,7 +634,7 @@ namespace ServiceStack
 
         public async Task PutAsync(IReturnVoid requestDto, CancellationToken token = default)
         {
-            await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Put, requestDto), token);
+            await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Put, requestDto), token).ConfigAwait();
         }
 
         public Task<TResponse> PatchAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default)
@@ -649,7 +649,7 @@ namespace ServiceStack
 
         public async Task PatchAsync(IReturnVoid requestDto, CancellationToken token = default)
         {
-            await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Patch, requestDto), token);
+            await Execute<EmptyResponse>(requestDto, GetMethodName(Methods.Patch, requestDto), token).ConfigAwait();
         }
 
         public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto, CancellationToken token = default)
@@ -664,7 +664,7 @@ namespace ServiceStack
 
         public async Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto, CancellationToken token = default)
         {
-            await Execute<EmptyResponse>(requestDto, GetMethodName(httpVerb, requestDto), token);
+            await Execute<EmptyResponse>(requestDto, GetMethodName(httpVerb, requestDto), token).ConfigAwait();
         }
 
         public TResponse Send<TResponse>(object requestDto) => SendAsync<TResponse>(requestDto).GetAwaiter().GetResult();

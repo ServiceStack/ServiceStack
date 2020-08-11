@@ -1141,24 +1141,23 @@ namespace ServiceStack
             }
         }
 
-        public virtual Task<TResponse> SendAsync<TResponse>(object request, CancellationToken token = default)
+        public virtual async Task<TResponse> SendAsync<TResponse>(object request, CancellationToken token = default)
         {
             if (typeof(TResponse) == typeof(object))
-                return this.SendAsync(this.GetResponseType(request), request, token)
-                    .ContinueWith(t => (TResponse)t.Result, token);
+                return (TResponse) await this.SendAsync(this.GetResponseType(request), request, token);
 
             if (request is IVerb)
             {
                 if (request is IGet)
-                    return GetAsync<TResponse>(request, token);
+                    return await GetAsync<TResponse>(request, token);
                 if (request is IPost)
-                    return PostAsync<TResponse>(request, token);
+                    return await PostAsync<TResponse>(request, token);
                 if (request is IPut)
-                    return PutAsync<TResponse>(request, token);
+                    return await PutAsync<TResponse>(request, token);
                 if (request is IDelete)
-                    return DeleteAsync<TResponse>(request, token);
+                    return await DeleteAsync<TResponse>(request, token);
                 if (request is IPatch)
-                    return PatchAsync<TResponse>(request, token);
+                    return await PatchAsync<TResponse>(request, token);
             }
 
             var httpMethod = HttpMethod ?? DefaultHttpMethod;
@@ -1166,7 +1165,7 @@ namespace ServiceStack
                  ? this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name
                  : Format + "/reply/" + request.GetType().Name);
 
-            return asyncClient.SendAsync<TResponse>(httpMethod, requestUri, request, token);
+            return await asyncClient.SendAsync<TResponse>(httpMethod, requestUri, request, token);
         }
 
         public Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<object> requests, CancellationToken token)

@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -74,7 +75,7 @@ namespace ServiceStack
                 }
             }
 
-            await res.WriteBytesToResponse(responseBytes, req.ResponseContentType);
+            await res.WriteBytesToResponse(responseBytes, req.ResponseContentType).ConfigAwait();
             using (response as IDisposable) {}
         }
     }

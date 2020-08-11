@@ -51,7 +51,7 @@ namespace ServiceStack.Script
                 if (blockFragment.Quiet && scope.OutputStream != Stream.Null)
                     scope = scope.ScopeWithStream(Stream.Null);
                 
-                await page.WriteStatementsAsync(scope, blockStatements, token);
+                await page.WriteStatementsAsync(scope, blockStatements, token).ConfigAwait();
                 
                 return true;
             }
@@ -70,26 +70,26 @@ namespace ServiceStack.Script
                     if (!string.IsNullOrEmpty(strValue))
                     {
                         var bytes = strValue.ToUtf8Bytes();
-                        await scope.OutputStream.WriteAsync(bytes, token);
+                        await scope.OutputStream.WriteAsync(bytes, token).ConfigAwait();
                     }
-                    await scope.OutputStream.WriteAsync(JsTokenUtils.NewLineUtf8, token);
+                    await scope.OutputStream.WriteAsync(JsTokenUtils.NewLineUtf8, token).ConfigAwait();
                 }
             }
             else if (statement is JsFilterExpressionStatement filterStatement)
             {
-                await page.WritePageFragmentAsync(scope, filterStatement.FilterExpression, token);
+                await page.WritePageFragmentAsync(scope, filterStatement.FilterExpression, token).ConfigAwait();
                 if (!page.Context.RemoveNewLineAfterFiltersNamed.Contains(filterStatement.FilterExpression.LastFilterName))
                 {
-                    await scope.OutputStream.WriteAsync(JsTokenUtils.NewLineUtf8, token);
+                    await scope.OutputStream.WriteAsync(JsTokenUtils.NewLineUtf8, token).ConfigAwait();
                 }
             }
             else if (statement is JsBlockStatement blockStatement)
             {
-                await page.WriteStatementsAsync(scope, blockStatement.Statements, token);
+                await page.WriteStatementsAsync(scope, blockStatement.Statements, token).ConfigAwait();
             }
             else if (statement is JsPageBlockFragmentStatement pageFragmentStatement)
             {
-                await page.WritePageFragmentAsync(scope, pageFragmentStatement.Block, token);
+                await page.WritePageFragmentAsync(scope, pageFragmentStatement.Block, token).ConfigAwait();
             }
             else return false;
             
@@ -139,7 +139,7 @@ namespace ServiceStack.Script
         public static async Task<string> RenderCodeAsync(this ScriptContext context, string code, Dictionary<string, object> args=null)
         {
             var pageResult = GetCodePageResult(context, code, args);
-            return await pageResult.RenderScriptAsync();
+            return await pageResult.RenderScriptAsync().ConfigAwait();
         }
 
         public static JsBlockStatement ParseCode(this ScriptContext context, string code) =>
@@ -176,13 +176,13 @@ namespace ServiceStack.Script
         }
 
         public static async Task<T> EvaluateCodeAsync<T>(this ScriptContext context, string code, Dictionary<string, object> args = null) =>
-            (await context.EvaluateCodeAsync(code, args)).ConvertTo<T>();
+            (await context.EvaluateCodeAsync(code, args).ConfigAwait()).ConvertTo<T>();
         
         public static async Task<object> EvaluateCodeAsync(this ScriptContext context, string code, Dictionary<string, object> args=null)
         {
             var pageResult = GetCodePageResult(context, code, args);
 
-            var ret = await pageResult.EvaluateResultAsync();
+            var ret = await pageResult.EvaluateResultAsync().ConfigAwait();
             if (!ret.Item1)
                 throw new NotSupportedException(ScriptContextUtils.ErrorNoReturn);
             

@@ -628,7 +628,7 @@ namespace ServiceStack
             }
             using (Profiler.Current.Step("AutoQuery.Execute"))
             {
-                return await AutoQuery.ExecuteAsync(dto, q, db);
+                return await AutoQuery.ExecuteAsync(dto, q, db).ConfigAwait();
             }
         }
 
@@ -662,7 +662,7 @@ namespace ServiceStack
             }
             using (Profiler.Current.Step("AutoQuery.Execute"))
             {
-                return await AutoQuery.ExecuteAsync(dto, q, db);
+                return await AutoQuery.ExecuteAsync(dto, q, db).ConfigAwait();
             }
         }
     }
@@ -878,7 +878,7 @@ namespace ServiceStack
             using (db == null ? db = GetDb<From>(req) : null)
             {
                 var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
-                return ResponseFilter(db, await typedQuery.ExecuteAsync<From>(db, query), query, model);
+                return ResponseFilter(db, await typedQuery.ExecuteAsync<From>(db, query).ConfigAwait(), query, model);
             }
         }
 
@@ -906,7 +906,7 @@ namespace ServiceStack
             using (db == null ? db = GetDb<From>(req) : null)
             {
                 var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
-                return ResponseFilter(db, await typedQuery.ExecuteAsync<Into>(db, query), query, model);
+                return ResponseFilter(db, await typedQuery.ExecuteAsync<Into>(db, query).ConfigAwait(), query, model);
             }
         }
 
@@ -1020,7 +1020,7 @@ namespace ServiceStack
             {
                 var typedQuery = autoQuery.GetTypedQuery(request.GetType(), typeof(From));
                 var q = (SqlExpression<From>)query;
-                return autoQuery.ResponseFilter(db, await typedQuery.ExecuteAsync<Into>(db, q), q, request);
+                return autoQuery.ResponseFilter(db, await typedQuery.ExecuteAsync<Into>(db, q).ConfigAwait(), q, request);
             }
         }
     }
@@ -1549,7 +1549,7 @@ namespace ServiceStack
                 var response = new QueryResponse<Into>
                 {
                     Offset = q.Offset.GetValueOrDefault(0),
-                    Results = await db.LoadSelectAsync<Into, From>(q, include:include),
+                    Results = await db.LoadSelectAsync<Into, From>(q, include:include).ConfigAwait(),
                 };
 
                 return response;

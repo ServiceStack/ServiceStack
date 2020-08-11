@@ -76,34 +76,34 @@ namespace ServiceStack.Host.Handlers
                     taskResponse.Start();
                 }
 
-                await taskResponse;
+                await taskResponse.ConfigAwait();
                 var taskResult = taskResponse.GetResult();
 
                 if (taskResult is Task[] taskResults)
                 {
-                    var batchResponse = await HandleAsyncBatchResponse(taskResults);
-                    await HandleResponseNext(httpReq, httpRes, batchResponse);
+                    var batchResponse = await HandleAsyncBatchResponse(taskResults).ConfigAwait();
+                    await HandleResponseNext(httpReq, httpRes, batchResponse).ConfigAwait();
                     return;
                 }
 
                 if (taskResult is Task subTask)
                 {
-                    await subTask;
+                    await subTask.ConfigAwait();
                     taskResult = subTask.GetResult();
                 }
 
-                await HandleResponseNext(httpReq, httpRes, taskResult);
+                await HandleResponseNext(httpReq, httpRes, taskResult).ConfigAwait();
             }
             else
             {
                 if (response is Task[] taskResults)
                 {
-                    var batchResponse = await HandleAsyncBatchResponse(taskResults);
-                    await HandleResponseNext(httpReq, httpRes, batchResponse);
+                    var batchResponse = await HandleAsyncBatchResponse(taskResults).ConfigAwait();
+                    await HandleResponseNext(httpReq, httpRes, batchResponse).ConfigAwait();
                     return;
                 }
 
-                await HandleResponseNext(httpReq, httpRes, response);
+                await HandleResponseNext(httpReq, httpRes, response).ConfigAwait();
             }
         }
 
@@ -113,26 +113,26 @@ namespace ServiceStack.Host.Handlers
             var doJsonp = HostContext.Config.AllowJsonpRequests && !string.IsNullOrEmpty(callback);
 
             UpdateResponseContentType(httpReq, response);
-            response = await appHost.ApplyResponseConvertersAsync(httpReq, response);
+            response = await appHost.ApplyResponseConvertersAsync(httpReq, response).ConfigAwait();
 
-            await appHost.ApplyResponseFiltersAsync(httpReq, httpRes, response);
+            await appHost.ApplyResponseFiltersAsync(httpReq, httpRes, response).ConfigAwait();
             if (httpRes.IsClosed)
                 return;
 
             if (httpReq.ResponseContentType.Contains("jsv") &&
                 !string.IsNullOrEmpty(httpReq.QueryString[Keywords.Debug]))
             {
-                await WriteDebugResponse(httpRes, response);
+                await WriteDebugResponse(httpRes, response).ConfigAwait();
                 return;
             }
 
             if (doJsonp && !(response is CompressedResult))
             {
-                await httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
+                await httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes()).ConfigAwait();
                 return;
             }
 
-            await httpRes.WriteToResponse(httpReq, response);
+            await httpRes.WriteToResponse(httpReq, response).ConfigAwait();
         }
 
         private static async Task<object[]> HandleAsyncBatchResponse(Task[] taskResults)
@@ -140,7 +140,7 @@ namespace ServiceStack.Host.Handlers
             if (taskResults.Length == 0)
                 return TypeConstants.EmptyObjectArray;
 
-            await Task.WhenAll(taskResults);
+            await Task.WhenAll(taskResults).ConfigAwait();
 
             var firstResponse = taskResults[0].GetResult();
             var batchedResponses = firstResponse != null

@@ -15,7 +15,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host
 {
-    public delegate object ServiceExecFn(IRequest requestContext, object request);
+    public delegate Task<object> ServiceExecFn(IRequest requestContext, object request);
     public delegate object InstanceExecFn(IRequest requestContext, object instance, object request);
     public delegate object ActionInvokerFn(object instance, object request);
     public delegate void VoidActionInvokerFn(object instance, object request);
@@ -428,7 +428,7 @@ namespace ServiceStack.Host
                 var service = serviceFactoryFn.CreateInstance(req, serviceType);
 
                 ServiceExecFn serviceExec = (reqCtx, requestDto) =>
-                    iserviceExec.Execute(reqCtx, service, requestDto);
+                    iserviceExec.Execute(reqCtx, service, requestDto).InTask();
 
                 return ManagedServiceExec(serviceExec, (IService)service, req, dto);
             };
@@ -462,7 +462,7 @@ namespace ServiceStack.Host
             }
         }
 
-        private object ManagedServiceExec(ServiceExecFn serviceExec, IService service, IRequest request, object requestDto)
+        private async Task<object> ManagedServiceExec(ServiceExecFn serviceExec, IService service, IRequest request, object requestDto)
         {
             try
             {
@@ -470,15 +470,14 @@ namespace ServiceStack.Host
 
                 object response = null;
 
-                object Release(object result)
+                async Task<object> Release(object result)
                 {
                     //Gets disposed by AppHost or ContainerAdapter if set
                     if (result is Task taskResponse)
                     {
-                        return HostContext.Async.ContinueWith(request, taskResponse, task => {
-                            appHost.Release(service);
-                            return taskResponse.GetResult();
-                        });
+                        await taskResponse.ConfigAwait();
+                        appHost.Release(service);
+                        return taskResponse.GetResult();
                     }
                     appHost.Release(service);
                     return result;
@@ -492,15 +491,15 @@ namespace ServiceStack.Host
                         request.Dto = requestDto;
 
                     //Executes the service and returns the result
-                    response = serviceExec(request, requestDto);
+                    response = await serviceExec(request, requestDto).ConfigAwait();
 
                     response = appHost.OnPostExecuteServiceFilter(service, response, request, request.Response);
 
-                    return Release(response);
+                    return await Release(response).ConfigAwait();
                 }
                 catch (Exception)
                 {
-                    Release(response);
+                    await Release(response).ConfigAwait();
                     throw;
                 }
             }
@@ -531,13 +530,13 @@ namespace ServiceStack.Host
         {
             if (response is Task taskResponse)
             {
-                await taskResponse;
+                await taskResponse.ConfigAwait();
                 response = taskResponse.GetResult();
             }
 
-            response = await appHost.ApplyResponseConvertersAsync(req, response);
+            response = await appHost.ApplyResponseConvertersAsync(req, response).ConfigAwait();
 
-            await appHost.ApplyResponseFiltersAsync(req, req.Response, response);
+            await appHost.ApplyResponseFiltersAsync(req, req.Response, response).ConfigAwait();
             if (req.Response.IsClosed)
                 return req.Response.Dto;
 
@@ -604,9 +603,8 @@ namespace ServiceStack.Host
                 AssertServiceRestrictions(requestType, req.RequestAttributes);
 
             var handlerFn = GetService(requestType);
-            var response = handlerFn(req, requestDto);
-            if (response is Task responseTask)
-                response = responseTask.GetResult();
+            var responseTask = handlerFn(req, requestDto);
+            var response = responseTask.GetResult();
 
             response = appHost.OnAfterExecute(req, requestDto, response);
 
@@ -626,12 +624,8 @@ namespace ServiceStack.Host
                 AssertServiceRestrictions(requestType, req.RequestAttributes);
 
             var handlerFn = GetService(requestType);
-            var response = handlerFn(req, requestDto);
-            if (response is Task responseTask)
-            {
-                await responseTask;
-                response = responseTask.GetResult();
-            }
+            var responseTask = await handlerFn(req, requestDto).ConfigAwait();
+            var response = responseTask;
 
             response = appHost.OnAfterExecute(req, requestDto, response);
 
@@ -714,38 +708,35 @@ namespace ServiceStack.Host
 
             if (applyFilters)
             {
-                requestDto = await appHost.ApplyRequestConvertersAsync(req, requestDto);
-                await appHost.ApplyRequestFiltersAsync(req, req.Response, requestDto);
+                requestDto = await appHost.ApplyRequestConvertersAsync(req, requestDto).ConfigAwait();
+                await appHost.ApplyRequestFiltersAsync(req, req.Response, requestDto).ConfigAwait();
                 if (req.Response.IsClosed)
                     return null;
             }
 
             var handlerFn = GetService(requestType);
-            var response = handlerFn(req, requestDto);
+            var taskObj = handlerFn(req, requestDto);
 
-            if (response is Task<object> taskObj)
+            var response = await taskObj.ConfigAwait();
+
+            if (response is Task[] tasks)
             {
-                response = await taskObj;
+                await Task.WhenAll(tasks).ConfigAwait();
 
-                if (response is Task[] tasks)
+                object[] ret = null;
+                for (int i = 0; i < tasks.Length; i++)
                 {
-                    await Task.WhenAll(tasks);
+                    var tResult = tasks[i];
+                    if (ret == null)
+                        ret = (object[])Array.CreateInstance(tResult.GetType(), tasks.Length);
 
-                    object[] ret = null;
-                    for (int i = 0; i < tasks.Length; i++)
-                    {
-                        var tResult = tasks[i].GetResult();
-                        if (ret == null)
-                            ret = (object[])Array.CreateInstance(tResult.GetType(), tasks.Length);
-
-                        ret[i] = applyFilters ? await ApplyResponseFiltersAsync(tResult, req) : tResult;
-                    }
-                    return ret;
+                    ret[i] = applyFilters ? await ApplyResponseFiltersAsync(tResult, req).ConfigAwait() : tResult;
                 }
+                return ret;
             }
 
             if (applyFilters)
-                return await ApplyResponseFiltersAsync(response, req); 
+                return await ApplyResponseFiltersAsync(response, req).ConfigAwait(); 
             return response;
         }
 
@@ -768,9 +759,9 @@ namespace ServiceStack.Host
             return handlerFn;
         }
 
-        private static ServiceExecFn CreateAutoBatchServiceExec(ServiceExecFn handlerFn)
+        private static ServiceExecFn CreateAutoBatchServiceExec(ServiceExecFn handlerFnAsync)
         {
-            return (req, dtos) => 
+            return async (req, dtos) => 
             {
                 var dtosList = ((IEnumerable) dtos).Map(x => x);
                 if (dtosList.Count == 0)
@@ -780,7 +771,7 @@ namespace ServiceStack.Host
 
                 req.Items[Keywords.AutoBatchIndex] = 0;
 
-                var firstResponse = handlerFn(req, firstDto);
+                var firstResponse = await handlerFnAsync(req, firstDto).ConfigAwait();
                 if (firstResponse is Exception)
                 {
                     req.SetAutoBatchCompletedHeader(0);
@@ -799,7 +790,7 @@ namespace ServiceStack.Host
                     {
                         var dto = dtosList[i];
                         req.Items[Keywords.AutoBatchIndex] = i;
-                        var response = handlerFn(req, dto);
+                        var response = await handlerFnAsync(req, dto).ConfigAwait();
                         //short-circuit on first error
                         if (response is Exception)
                         {
@@ -816,38 +807,28 @@ namespace ServiceStack.Host
 
                 //async
                 var asyncResponses = new Task[dtosList.Count];
-                Task firstAsyncError = null;
+                asyncResponses[0] = asyncResponse; //don't re-execute first request
 
-                //execute each async service sequentially
-                var task = dtosList.EachAsync((dto, i) =>
+                for (var i = 1; i < dtosList.Count; i++)
                 {
-                    //short-circuit on first error and don't exec any more handlers
-                    if (firstAsyncError != null)
-                        return firstAsyncError;
+                    try
+                    {
+                        req.Items[Keywords.AutoBatchIndex] = i;
+                        var dto = dtosList[i];
 
-                    req.Items[Keywords.AutoBatchIndex] = i;
-
-                    asyncResponses[i] = i == 0
-                        ? asyncResponse //don't re-execute first request
-                        : (Task) handlerFn(req, dto);
-
-                    var asyncResult = asyncResponses[i].GetResult();
-                    if (asyncResult is Exception)
+                        var task = handlerFnAsync(req, dto);
+                        await task.ConfigAwait();
+                        asyncResponses[i] = task;
+                    }
+                    catch (Exception e)
                     {
                         req.SetAutoBatchCompletedHeader(i);
-                        return firstAsyncError = asyncResponses[i];
+                        return e;
                     }
-                    return asyncResponses[i];
-                });
-                var batchResponse = HostContext.Async.ContinueWith(req, task, x => {
-                    if (firstAsyncError != null)
-                        return (object)firstAsyncError;
-                    req.Items.Remove(Keywords.AutoBatchIndex);
-                    req.SetAutoBatchCompletedHeader(dtosList.Count);
-                    return (object) asyncResponses;
-                }); //return error or completed responses
-
-                return batchResponse;
+                }
+                req.Items.Remove(Keywords.AutoBatchIndex);
+                req.SetAutoBatchCompletedHeader(dtosList.Count);
+                return asyncResponses;
             };
         }
 

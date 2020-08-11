@@ -186,7 +186,7 @@ namespace ServiceStack.Validation
                 throw HttpError.NotFound(request.Type);
             
             return new GetValidationRulesResponse {
-                Results = await ValidationSource.GetAllValidateRulesAsync(request.Type),
+                Results = await ValidationSource.GetAllValidateRulesAsync(request.Type).ConfigAwait(),
             };
         }
     }
@@ -272,7 +272,7 @@ namespace ServiceStack.Validation
                         try
                         {
                             var ast = Validators.ParseCondition(appHost.ScriptContext, rule.Condition);
-                            await ast.Init();
+                            await ast.Init().ConfigAwait();
                         }
                         catch (Exception e)
                         {
@@ -290,41 +290,41 @@ namespace ServiceStack.Validation
                     rule.ModifiedDate = utcNow;
                 }
 
-                await ValidationSource.SaveValidationRulesAsync(rules);
+                await ValidationSource.SaveValidationRulesAsync(rules).ConfigAwait();
             }
 
             if (!request.SuspendRuleIds.IsEmpty())
             {
-                var suspendRules = await ValidationSource.GetValidateRulesByIdsAsync(request.SuspendRuleIds);
+                var suspendRules = await ValidationSource.GetValidateRulesByIdsAsync(request.SuspendRuleIds).ConfigAwait();
                 foreach (var suspendRule in suspendRules)
                 {
                     suspendRule.SuspendedBy = userName;
                     suspendRule.SuspendedDate = utcNow;
                 }
 
-                await ValidationSource.SaveValidationRulesAsync(suspendRules);
+                await ValidationSource.SaveValidationRulesAsync(suspendRules).ConfigAwait();
             }
 
             if (!request.UnsuspendRuleIds.IsEmpty())
             {
-                var unsuspendRules = await ValidationSource.GetValidateRulesByIdsAsync(request.UnsuspendRuleIds);
+                var unsuspendRules = await ValidationSource.GetValidateRulesByIdsAsync(request.UnsuspendRuleIds).ConfigAwait();
                 foreach (var unsuspendRule in unsuspendRules)
                 {
                     unsuspendRule.SuspendedBy = null;
                     unsuspendRule.SuspendedDate = null;
                 }
 
-                await ValidationSource.SaveValidationRulesAsync(unsuspendRules);
+                await ValidationSource.SaveValidationRulesAsync(unsuspendRules).ConfigAwait();
             }
 
             if (!request.DeleteRuleIds.IsEmpty())
             {
-                await ValidationSource.DeleteValidationRulesAsync(request.DeleteRuleIds.ToArray());
+                await ValidationSource.DeleteValidationRulesAsync(request.DeleteRuleIds.ToArray()).ConfigAwait();
             }
 
             if (request.ClearCache.GetValueOrDefault())
             {
-                await ValidationSource.ClearCacheAsync();
+                await ValidationSource.ClearCacheAsync().ConfigAwait();
             }
         }
     }

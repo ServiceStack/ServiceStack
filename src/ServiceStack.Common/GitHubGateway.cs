@@ -107,7 +107,7 @@ namespace ServiceStack
             GetSourceZipUrl(user, repo, GetJson($"repos/{user}/{repo}/releases"));
 
         public virtual async Task<string> GetSourceZipUrlAsync(string user, string repo) => 
-            GetSourceZipUrl(user, repo, await GetJsonAsync($"repos/{user}/{repo}/releases"));
+            GetSourceZipUrl(user, repo, await GetJsonAsync($"repos/{user}/{repo}/releases").ConfigAwait());
 
         private static string GetSourceZipUrl(string user, string repo, string json)
         {
@@ -125,7 +125,7 @@ namespace ServiceStack
 
         public virtual async Task<List<GithubRepo>> GetSourceReposAsync(string orgName)
         {
-            var repos = (await GetUserAndOrgReposAsync(orgName))
+            var repos = (await GetUserAndOrgReposAsync(orgName).ConfigAwait())
                 .OrderBy(x => x.Name)
                 .ToList();
             return repos;
@@ -140,7 +140,7 @@ namespace ServiceStack
 
             try
             {
-                foreach (var repos in await userRepos)
+                foreach (var repos in await userRepos.ConfigAwait())
                 foreach (var repo in repos)
                     map[repo.Name] = repo;
             }
@@ -151,7 +151,7 @@ namespace ServiceStack
 
             try
             {
-                foreach (var repos in await userRepos)
+                foreach (var repos in await userRepos.ConfigAwait())
                 foreach (var repo in repos)
                     map[repo.Name] = repo;
             }
@@ -173,13 +173,13 @@ namespace ServiceStack
             StreamJsonCollection<List<GithubRepo>>($"users/{githubUser}/repos").SelectMany(x => x).ToList();
 
         public virtual async Task<List<GithubRepo>> GetUserReposAsync(string githubUser) =>
-            (await GetJsonCollectionAsync<List<GithubRepo>>($"users/{githubUser}/repos")).SelectMany(x => x).ToList();
+            (await GetJsonCollectionAsync<List<GithubRepo>>($"users/{githubUser}/repos").ConfigAwait()).SelectMany(x => x).ToList();
 
         public virtual List<GithubRepo> GetOrgRepos(string githubOrg) =>
             StreamJsonCollection<List<GithubRepo>>($"orgs/{githubOrg}/repos").SelectMany(x => x).ToList();
         
         public virtual async Task<List<GithubRepo>> GetOrgReposAsync(string githubOrg) =>
-            (await GetJsonCollectionAsync<List<GithubRepo>>($"orgs/{githubOrg}/repos")).SelectMany(x => x).ToList();
+            (await GetJsonCollectionAsync<List<GithubRepo>>($"orgs/{githubOrg}/repos").ConfigAwait()).SelectMany(x => x).ToList();
         
         public virtual string GetJson(string route)
         {
@@ -204,11 +204,11 @@ namespace ServiceStack
             if (GetJsonFilter != null)
                 return GetJsonFilter(apiUrl);
 
-            return await apiUrl.GetJsonFromUrlAsync(ApplyRequestFilters);
+            return await apiUrl.GetJsonFromUrlAsync(ApplyRequestFilters).ConfigAwait();
         }
 
         public virtual async Task<T> GetJsonAsync<T>(string route) => 
-            (await GetJsonAsync(route)).FromJson<T>();
+            (await GetJsonAsync(route).ConfigAwait()).FromJson<T>();
 
         public virtual IEnumerable<T> StreamJsonCollection<T>(string route)
         {
@@ -243,7 +243,7 @@ namespace ServiceStack
                         responseFilter: res => {
                             var links = ParseLinkUrls(res.Headers["Link"]);
                             links.TryGetValue("next", out nextUrl);
-                        }))
+                        }).ConfigAwait())
                     .FromJson<List<T>>();
 
                 to.AddRange(results);
@@ -315,7 +315,7 @@ namespace ServiceStack
 
         public async Task<Gist> GetGistAsync(string gistId)
         {
-            var response = await GetJsonAsync<GithubGist>($"/gists/{gistId}");
+            var response = await GetJsonAsync<GithubGist>($"/gists/{gistId}").ConfigAwait();
             return PopulateGist(response);
         }
 

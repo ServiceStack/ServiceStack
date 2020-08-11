@@ -86,8 +86,8 @@ namespace ServiceStack.Desktop
             
             Response.ContentType = MimeTypes.GetMimeType(filePath);
             await Response.EndRequestAsync(afterHeaders: async res => {
-                await fs.CopyToAsync(Response.OutputStream);
-            });
+                await fs.CopyToAsync(Response.OutputStream).ConfigAwait();
+            }).ConfigAwait();
         }
 
         public Task Post(DesktopFile request) => Put(request); 
@@ -103,7 +103,7 @@ namespace ServiceStack.Desktop
             try { File.Delete(tmpFilePath); } catch {}
             using (var fs = new FileInfo(tmpFilePath).Open(FileMode.OpenOrCreate))
             {
-                await request.RequestStream.CopyToAsync(fs);
+                await request.RequestStream.CopyToAsync(fs).ConfigAwait();
             }
             try { File.Delete(filePath); } catch {}
             File.Move(tmpFilePath, filePath);
@@ -168,21 +168,21 @@ namespace ServiceStack.Desktop
             if (httpReq.ContentLength > 0)
             {
                 using (request.RequestStream)
-                using (var requestStream = await webReq.GetRequestStreamAsync())
+                using (var requestStream = await webReq.GetRequestStreamAsync().ConfigAwait())
                 {
-                    await request.RequestStream.WriteToAsync(requestStream);
+                    await request.RequestStream.WriteToAsync(requestStream).ConfigAwait();
                 }
             }
             var downloadFile = Path.Combine(KnownFolders.GetPath(KnownFolders.Downloads), request.File);
             try { File.Delete(downloadFile); } catch {}
 
-            using (var webRes = await webReq.GetResponseAsync())
+            using (var webRes = await webReq.GetResponseAsync().ConfigAwait())
             using (var resStream = webRes.ResponseStream())
             using (var fs = new FileInfo(downloadFile).Open(FileMode.OpenOrCreate))
             {
-                await resStream.CopyToAsync(fs);
+                await resStream.CopyToAsync(fs).ConfigAwait();
             }
-            await Response.EndRequestAsync();
+            await Response.EndRequestAsync().ConfigAwait();
 
             if (request.Open)
             {
@@ -263,8 +263,8 @@ namespace ServiceStack.Desktop
                 base.Response.StatusCode = 500;
                 base.Response.StatusDescription = e.GetType().Name;
                 base.Response.ContentType = MimeTypes.PlainText;
-                await base.Response.OutputStream.WriteAsync(MemoryProvider.Instance.ToUtf8(e.ToString().AsSpan()));
-                await base.Response.EndRequestAsync(skipHeaders:true);
+                await base.Response.OutputStream.WriteAsync(MemoryProvider.Instance.ToUtf8(e.ToString().AsSpan())).ConfigAwait();
+                await base.Response.EndRequestAsync(skipHeaders:true).ConfigAwait();
             }
 
             async Task SetResult(object value, string resultType=" result")
@@ -276,8 +276,8 @@ namespace ServiceStack.Desktop
                     using var ms = MemoryStreamFactory.GetStream();
                     JsonSerializer.SerializeToStream(value, ms);
                     ms.Position = 0;
-                    await ms.CopyToAsync(base.Response.OutputStream);
-                });
+                    await ms.CopyToAsync(base.Response.OutputStream).ConfigAwait();
+                }).ConfigAwait();
             }
             
             async Task SetOutput(PageResult result)
@@ -287,29 +287,29 @@ namespace ServiceStack.Desktop
                 base.Response.ContentType = MimeTypes.PlainText;
                 await base.Response.EndRequestAsync(skipHeaders:false, async res => {
                     using var ms = MemoryStreamFactory.GetStream();
-                    await result.RenderToStreamAsync(ms);
+                    await result.RenderToStreamAsync(ms).ConfigAwait();
                     ms.Position = 0;
-                    await ms.CopyToAsync(res.OutputStream);    
-                });
+                    await ms.CopyToAsync(res.OutputStream).ConfigAwait();
+                }).ConfigAwait();
             }
             var args = new Dictionary<string,object> {
                 [ScriptConstants.Request] = base.Request,
             }; 
                 
             if (method.EqualsIgnoreCase(nameof(ScriptTemplateUtils.EvaluateScript)))
-                await SetResult(await appHost.ScriptContext.EvaluateAsync(script, args));
+                await SetResult(await appHost.ScriptContext.EvaluateAsync(script, args)).ConfigAwait();
             else if (method.EqualsIgnoreCase(nameof(ScriptTemplateUtils.RenderScript)))
-                await SetOutput(new PageResult(appHost.ScriptContext.SharpScriptPage(script)).AssignArgs(args));
+                await SetOutput(new PageResult(appHost.ScriptContext.SharpScriptPage(script)).AssignArgs(args)).ConfigAwait();
                 
             else if (method.EqualsIgnoreCase(nameof(ScriptCodeUtils.EvaluateCode)))
-                await SetResult(await appHost.ScriptContext.EvaluateCodeAsync(ScriptCodeUtils.EnsureReturn(script), args));
+                await SetResult(await appHost.ScriptContext.EvaluateCodeAsync(ScriptCodeUtils.EnsureReturn(script), args)).ConfigAwait();
             else if (method.EqualsIgnoreCase(nameof(ScriptCodeUtils.RenderCode)))
-                await SetOutput(new PageResult(appHost.ScriptContext.CodeSharpPage(script)).AssignArgs(args));
+                await SetOutput(new PageResult(appHost.ScriptContext.CodeSharpPage(script)).AssignArgs(args)).ConfigAwait();
                 
             else if (method.EqualsIgnoreCase(nameof(ScriptLispUtils.EvaluateLisp)))
-                await SetResult(await appHost.ScriptContext.EvaluateLispAsync(ScriptLispUtils.EnsureReturn(script), args));
+                await SetResult(await appHost.ScriptContext.EvaluateLispAsync(ScriptLispUtils.EnsureReturn(script), args)).ConfigAwait();
             else if (method.EqualsIgnoreCase(nameof(ScriptLispUtils.RenderLisp)))
-                await SetOutput(new PageResult(appHost.ScriptContext.LispSharpPage(script)).AssignArgs(args));
+                await SetOutput(new PageResult(appHost.ScriptContext.LispSharpPage(script)).AssignArgs(args)).ConfigAwait();
 
             if (base.Response.IsClosed)
                 return;
@@ -323,13 +323,13 @@ namespace ServiceStack.Desktop
                     base.Response.StatusDescription = method + resultType;
                     await base.Response.EndRequestAsync(skipHeaders:false, async res => {
                         using var ms = MemoryStreamFactory.GetStream();
-                        JsonSerializer.SerializeToStream(await valueTask, ms);
-                        await ms.CopyToAsync(base.Response.OutputStream);
-                    });
+                        JsonSerializer.SerializeToStream(await valueTask.ConfigAwait(), ms);
+                        await ms.CopyToAsync(base.Response.OutputStream).ConfigAwait();
+                    }).ConfigAwait();
                 }
                 catch (Exception e)
                 {
-                    await HandleExceptionAsync(e);
+                    await HandleExceptionAsync(e).ConfigAwait();
                 }
             }
             
@@ -342,30 +342,30 @@ namespace ServiceStack.Desktop
                     base.Response.ContentType = MimeTypes.PlainText;
                     await base.Response.EndRequestAsync(skipHeaders:false, async res => {
                         using var ms = MemoryStreamFactory.GetStream();
-                        await result.RenderToStreamAsync(ms);
-                        await ms.CopyToAsync(res.OutputStream);    
-                    });
+                        await result.RenderToStreamAsync(ms).ConfigAwait();
+                        await ms.CopyToAsync(res.OutputStream).ConfigAwait();
+                    }).ConfigAwait();
                 }
                 catch (Exception e)
                 {
-                    await HandleExceptionAsync(e);
+                    await HandleExceptionAsync(e).ConfigAwait();
                 }
             }
 
             if (method.EqualsIgnoreCase(nameof(ScriptTemplateUtils.EvaluateScriptAsync)))
-                await Task.Run(async () => await setResultAsync(appHost.ScriptContext.EvaluateAsync(script, args), " async result"));
+                await Task.Run(async () => await setResultAsync(appHost.ScriptContext.EvaluateAsync(script, args), " async result").ConfigAwait()).ConfigAwait();
             else if (method.EqualsIgnoreCase(nameof(ScriptTemplateUtils.RenderScriptAsync)))
-                await Task.Run(async () => await setOutputAsync(new PageResult(appHost.ScriptContext.SharpScriptPage(script)).AssignArgs(args)));
+                await Task.Run(async () => await setOutputAsync(new PageResult(appHost.ScriptContext.SharpScriptPage(script)).AssignArgs(args)).ConfigAwait()).ConfigAwait();
 
             else if (method.EqualsIgnoreCase(nameof(ScriptCodeUtils.EvaluateCodeAsync)))
-                await Task.Run(async () => await setResultAsync(appHost.ScriptContext.EvaluateCodeAsync(ScriptCodeUtils.EnsureReturn(script), args), " async result"));
+                await Task.Run(async () => await setResultAsync(appHost.ScriptContext.EvaluateCodeAsync(ScriptCodeUtils.EnsureReturn(script), args), " async result").ConfigAwait()).ConfigAwait();
             else if (method.EqualsIgnoreCase(nameof(ScriptCodeUtils.RenderCodeAsync)))
-                await Task.Run(async () => await setOutputAsync(new PageResult(appHost.ScriptContext.CodeSharpPage(script)).AssignArgs(args)));
+                await Task.Run(async () => await setOutputAsync(new PageResult(appHost.ScriptContext.CodeSharpPage(script)).AssignArgs(args)).ConfigAwait()).ConfigAwait();
 
             else if (method.EqualsIgnoreCase(nameof(ScriptLispUtils.EvaluateLispAsync)))
-                await Task.Run(async () => await setResultAsync(appHost.ScriptContext.EvaluateLispAsync(ScriptLispUtils.EnsureReturn(script), args), " async result"));
+                await Task.Run(async () => await setResultAsync(appHost.ScriptContext.EvaluateLispAsync(ScriptLispUtils.EnsureReturn(script), args), " async result").ConfigAwait()).ConfigAwait();
             else if (method.EqualsIgnoreCase(nameof(ScriptLispUtils.RenderLispAsync)))
-                await Task.Run(async () => await setOutputAsync(new PageResult(appHost.ScriptContext.LispSharpPage(script)).AssignArgs(args)));
+                await Task.Run(async () => await setOutputAsync(new PageResult(appHost.ScriptContext.LispSharpPage(script)).AssignArgs(args)).ConfigAwait()).ConfigAwait();
             else throw new NotSupportedException($"Unsupported script API '{method}', supported: " +
                 "EvaluateScript/Async, EvaluateCode/Async, EvaluateLisp/Async");
         }

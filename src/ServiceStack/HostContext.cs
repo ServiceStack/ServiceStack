@@ -14,6 +14,7 @@ using ServiceStack.IO;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -249,12 +250,12 @@ namespace ServiceStack
         public static async Task RaiseAndHandleException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
         {
             if (!httpReq.Items.ContainsKey(nameof(ServiceStackHost.OnServiceException)))
-                await AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex);
+                await AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex).ConfigAwait();
 
             if (httpRes.IsClosed)
                 return;
 
-            await AssertAppHost().HandleResponseException(httpReq, httpRes, operationName, ex);
+            await AssertAppHost().HandleResponseException(httpReq, httpRes, operationName, ex).ConfigAwait();
         }
 
 #if !NETSTANDARD2_0
