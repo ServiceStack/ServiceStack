@@ -89,8 +89,25 @@ namespace ServiceStack.Api.OpenApi
                 Definitions = definitions.Where(x => !SchemaIdToClrType.ContainsKey(x.Key) || !IsInlineSchema(SchemaIdToClrType[x.Key])).ToDictionary(x => x.Key, x => x.Value),
                 Tags = tags.Values.OrderBy(x => x.Name).ToList(),
                 Parameters = new Dictionary<string, OpenApiParameter> { { "Accept", GetAcceptHeaderParameter() } },
-                SecurityDefinitions = SecurityDefinitions,                
+                SecurityDefinitions = SecurityDefinitions,
             };
+
+            if (SchemaFilter != null)
+            {
+                result.Parameters.Each(x => {
+                    if (x.Value.Schema != null)
+                        SchemaFilter(x.Value.Schema);
+                });
+                result.Definitions.Each(x => {
+                    if (x.Value.AllOf != null)
+                        SchemaFilter(x.Value.AllOf);
+                    SchemaFilter(x.Value);
+                });
+                result.Responses.Each(x => {
+                    if (x.Value.Schema != null)
+                        SchemaFilter(x.Value.Schema);
+                });
+            }
 
             if (OperationFilter != null)
                 apiPaths.Each(x => GetOperations(x.Value).Each(o => OperationFilter(o.Item1, o.Item2)));
