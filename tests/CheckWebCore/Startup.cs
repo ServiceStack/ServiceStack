@@ -316,6 +316,11 @@ namespace CheckWebCore
         "Set the dates you want to book and it's quantities. It's an array of dates and quantities.",
         IsRequired = true)]
         public List<DatesToRepeat> DatesToRepeat { get; set; }
+
+        [ApiMember]
+        public IEnumerable<DatesToRepeat> DatesToRepeatIEnumerable { get; set; }
+        [ApiMember]
+        public DatesToRepeat[] DatesToRepeatArray { get; set; }
     }
 
     public class CreateBookingBase
