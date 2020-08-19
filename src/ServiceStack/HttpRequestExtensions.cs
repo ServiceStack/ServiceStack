@@ -552,7 +552,7 @@ namespace ServiceStack
                 map[name] = request.QueryString[name];
             }
 
-            if ((request.Verb == HttpMethods.Post || request.Verb == HttpMethods.Put)
+            if (HttpUtils.HasRequestBody(request.Verb)
                 && request.FormData != null)
             {
                 foreach (var name in request.FormData.AllKeys)
