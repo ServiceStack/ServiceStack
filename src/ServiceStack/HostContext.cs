@@ -130,9 +130,11 @@ namespace ServiceStack
         /// </summary>
         public static GistVirtualFiles GistVirtualFiles => AssertAppHost().VirtualFileSources.GetGistVirtualFiles();
 
-        public static ICacheClient Cache => TryResolve<ICacheClient>();
+        public static ICacheClient Cache => AssertAppHost().GetCacheClient();
 
-        public static MemoryCacheClient LocalCache => TryResolve<MemoryCacheClient>();
+        public static ICacheClientAsync CacheClientAsync => AssertAppHost().GetCacheClientAsync();
+
+        public static MemoryCacheClient LocalCache => AssertAppHost().GetMemoryCacheClient();
 
         /// <summary>
         /// Call to signal the completion of a ServiceStack-handled Request

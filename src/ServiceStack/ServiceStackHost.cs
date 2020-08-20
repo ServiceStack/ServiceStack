@@ -1005,6 +1005,12 @@ namespace ServiceStack
             if (!Container.Exists<MemoryCacheClient>())
                 Container.Register(DefaultCache);
 
+            if (!Container.Exists<ICacheClientAsync>())
+            {
+                var cache = Container.Resolve<ICacheClient>();
+                Container.Register(cache.AsAsync());
+            }
+
             if (Container.Exists<IMessageService>()
                 && !Container.Exists<IMessageFactory>())
             {

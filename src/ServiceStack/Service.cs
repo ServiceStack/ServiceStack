@@ -50,6 +50,9 @@ namespace ServiceStack
         private ICacheClient cache;
         public virtual ICacheClient Cache => cache ??= HostContext.AppHost.GetCacheClient(Request);
 
+        private ICacheClientAsync cacheAsync;
+        public virtual ICacheClientAsync CacheAsync => cacheAsync ??= HostContext.AppHost.GetCacheClientAsync(Request);
+
         private MemoryCacheClient localCache;
         /// <summary>
         /// Returns <see cref="MemoryCacheClient"></see>. cache is only persisted for this running app instance.

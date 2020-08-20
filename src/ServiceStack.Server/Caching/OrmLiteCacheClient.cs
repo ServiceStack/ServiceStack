@@ -11,7 +11,7 @@ namespace ServiceStack.Caching
 {
     public class OrmLiteCacheClient : OrmLiteCacheClient<CacheEntry> { }
 
-    public class OrmLiteCacheClient<TCacheEntry> : ICacheClient, IRequiresSchema, ICacheClientExtended, IRemoveByPattern
+    public partial class OrmLiteCacheClient<TCacheEntry> : ICacheClient, IRequiresSchema, ICacheClientExtended, IRemoveByPattern
         where TCacheEntry : ICacheEntry, new()
     {
         TCacheEntry CreateEntry(string id, string data = null,
@@ -74,25 +74,23 @@ namespace ServiceStack.Caching
             return Exec(db =>
             {
                 long nextVal;
-                using (var dbTrans = db.OpenTransaction(IsolationLevel.ReadCommitted))
+                using var dbTrans = db.OpenTransaction(IsolationLevel.ReadCommitted);
+                var cache = Verify(db, db.SingleById<TCacheEntry>(key));
+
+                if (cache == null)
                 {
-                    var cache = Verify(db, db.SingleById<TCacheEntry>(key));
-
-                    if (cache == null)
-                    {
-                        nextVal = amount;
-                        db.Insert(CreateEntry(key, nextVal.ToString()));
-                    }
-                    else
-                    {
-                        nextVal = long.Parse(cache.Data) + amount;
-                        cache.Data = nextVal.ToString();
-
-                        db.Update(cache);
-                    }
-
-                    dbTrans.Commit();
+                    nextVal = amount;
+                    db.Insert(CreateEntry(key, nextVal.ToString()));
                 }
+                else
+                {
+                    nextVal = long.Parse(cache.Data) + amount;
+                    cache.Data = nextVal.ToString();
+
+                    db.Update(cache);
+                }
+
+                dbTrans.Commit();
 
                 return nextVal;
             });
@@ -103,25 +101,23 @@ namespace ServiceStack.Caching
             return Exec(db =>
             {
                 long nextVal;
-                using (var dbTrans = db.OpenTransaction(IsolationLevel.ReadCommitted))
+                using var dbTrans = db.OpenTransaction(IsolationLevel.ReadCommitted);
+                var cache = Verify(db, db.SingleById<TCacheEntry>(key));
+
+                if (cache == null)
                 {
-                    var cache = Verify(db, db.SingleById<TCacheEntry>(key));
-
-                    if (cache == null)
-                    {
-                        nextVal = -amount;
-                        db.Insert(CreateEntry(key, nextVal.ToString()));
-                    }
-                    else
-                    {
-                        nextVal = long.Parse(cache.Data) - amount;
-                        cache.Data = nextVal.ToString();
-
-                        db.Update(cache);
-                    }
-
-                    dbTrans.Commit();
+                    nextVal = -amount;
+                    db.Insert(CreateEntry(key, nextVal.ToString()));
                 }
+                else
+                {
+                    nextVal = long.Parse(cache.Data) - amount;
+                    cache.Data = nextVal.ToString();
+
+                    db.Update(cache);
+                }
+
+                dbTrans.Commit();
 
                 return nextVal;
             });
@@ -361,7 +357,7 @@ namespace ServiceStack.Caching
                 foreach (var key in keys)
                 {
                     if (!map.ContainsKey(key))
-                        map[key] = default(T);
+                        map[key] = default;
                 }
 
                 return map;

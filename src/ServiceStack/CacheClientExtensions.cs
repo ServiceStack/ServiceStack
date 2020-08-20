@@ -258,8 +258,7 @@ namespace ServiceStack
         /// <param name="pattern">The wildcard, where "*" means any sequence of characters and "?" means any single character.</param>
         public static void RemoveByPattern(this ICacheClient cacheClient, string pattern)
         {
-            var canRemoveByPattern = cacheClient as IRemoveByPattern;
-            if (canRemoveByPattern == null)
+            if (!(cacheClient is IRemoveByPattern canRemoveByPattern))
                 throw new NotImplementedException(
                     "IRemoveByPattern is not implemented on: " + cacheClient.GetType().FullName);
 

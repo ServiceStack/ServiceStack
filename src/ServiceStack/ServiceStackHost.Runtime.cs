@@ -733,7 +733,7 @@ namespace ServiceStack
         /// </summary>
         /// <param name="req">Provided by services and pageView, can be helpful when overriding this method</param>
         /// <returns></returns>
-        public virtual ICacheClient GetCacheClient(IRequest req)
+        public virtual ICacheClient GetCacheClient(IRequest req = null)
         {
             var resolver = req ?? (IResolver) this;
             var cache = resolver.TryResolve<ICacheClient>();
@@ -746,6 +746,9 @@ namespace ServiceStack
 
             return DefaultCache;
         }
+
+        public virtual ICacheClientAsync GetCacheClientAsync(IRequest req = null) => 
+            (req ?? (IResolver) this).TryResolve<ICacheClientAsync>() ?? GetCacheClient(req).AsAsync();
 
         /// <summary>
         /// Returns <see cref="MemoryCacheClient"></see>. cache is only persisted for this running app instance.
