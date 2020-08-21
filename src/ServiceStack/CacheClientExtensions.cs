@@ -290,9 +290,19 @@ namespace ServiceStack
             return cache.GetKeysByPattern("*");
         }
 
+        public static async Task<IEnumerable<string>> GetAllKeysAsync(this ICacheClientAsync cache)
+        {
+            return await cache.GetKeysByPatternAsync("*");
+        }
+
         public static IEnumerable<string> GetKeysStartingWith(this ICacheClient cache, string prefix)
         {
             return cache.GetKeysByPattern(prefix + "*");
+        }
+
+        public static async Task<IEnumerable<string>> GetKeysStartingWithAsync(this ICacheClientAsync cache, string prefix)
+        {
+            return await cache.GetKeysByPatternAsync(prefix + "*");
         }
 
         public static T GetOrCreate<T>(this ICacheClient cache,
@@ -307,14 +317,14 @@ namespace ServiceStack
             return value;
         }
 
-        public static async Task<T> GetOrCreateAsync<T>(this ICacheClient cache,
+        public static async Task<T> GetOrCreateAsync<T>(this ICacheClientAsync cache,
             string key, Func<Task<T>> createFn)
         {
-            var value = cache.Get<T>(key);
+            var value = await cache.GetAsync<T>(key);
             if (Equals(value, default(T)))
             {
                 value = await createFn().ConfigAwait();
-                cache.Set(key, value);
+                await cache.SetAsync(key, value);
             }
             return value;
         }
@@ -331,14 +341,14 @@ namespace ServiceStack
             return value;
         }
 
-        public static async Task<T> GetOrCreateAsync<T>(this ICacheClient cache,
+        public static async Task<T> GetOrCreateAsync<T>(this ICacheClientAsync cache,
             string key, TimeSpan expiresIn, Func<Task<T>> createFn)
         {
-            var value = cache.Get<T>(key);
+            var value = await cache.GetAsync<T>(key);
             if (Equals(value, default(T)))
             {
                 value = await createFn().ConfigAwait();
-                cache.Set(key, value, expiresIn);
+                await cache.SetAsync(key, value, expiresIn);
             }
             return value;
         }
@@ -349,6 +359,11 @@ namespace ServiceStack
                 throw new Exception("GetTimeToLive is not implemented by: " + cache.GetType().FullName);
 
             return extendedCache.GetTimeToLive(key);
+        }
+
+        public static async Task<TimeSpan?> GetTimeToLiveAsync(this ICacheClientAsync cache, string key)
+        {
+            return await cache.GetTimeToLiveAsync(key);
         }
     }
 }
