@@ -302,6 +302,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return new RequiresWebSudoResponse { Result = request.Name };
         }
     }
+    
+    public class RequiresAuthAction : IReturn<RequiresAuthAction> {}
+    public class RequiresRoleAction : IReturn<RequiresRoleAction> {}
+    public class RequiresAuthRoleAction : IReturn<RequiresAuthRoleAction> {}
+
+    public class ActionFilterAuthServices : Service
+    {
+        [Authenticate]
+        public object Any(RequiresAuthAction request) => request;
+        [RequiredRole(nameof(RequiresRoleAction))]
+        public object Any(RequiresRoleAction request) => request;
+        [Authenticate,RequiredRole(nameof(RequiresAuthRoleAction))]
+        public object Any(RequiresAuthRoleAction request) => request;
+    }
 
     public class AuthAppHost
         : AppSelfHostBase
@@ -438,22 +452,72 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             };
         }
 
-        [Test]
-        public void No_Credentials_throws_UnAuthorized()
+        private void AssertDoesThrowUnauthorized(Action<IServiceClient> send)
         {
             try
             {
-                var client = GetClient();
-                var request = new Secured { Name = "test" };
-                var response = client.Send<SecureResponse>(request);
+                send(GetClient());
 
                 Assert.Fail("Shouldn't be allowed");
             }
             catch (WebServiceException webEx)
             {
-                Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+                Assert.That(webEx.StatusCode, Is.EqualTo((int) HttpStatusCode.Unauthorized));
                 Console.WriteLine(webEx.ResponseDto.Dump());
             }
+        }
+
+        private void AssertDoesThrowForbidden(Action<IServiceClient> send)
+        {
+            try
+            {
+                var client = (ServiceClientBase)GetClientWithUserPassword();
+                client.AlwaysSendBasicAuthHeader = true;
+                send(client);
+
+                Assert.Fail("Shouldn't be allowed");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo((int) HttpStatusCode.Forbidden));
+                // Console.WriteLine(webEx.ResponseDto.Dump());
+            }
+        }
+
+        [Test]
+        public void No_Credentials_throws_UnAuthorized()
+        {
+            AssertDoesThrowUnauthorized(client => client.Send<SecureResponse>(new Secured { Name = "test" }));
+        }
+
+        [Test]
+        public void ActionFilters_throw_Unauthorized_on_RequiresAuthAction()
+        {
+            AssertDoesThrowUnauthorized(client => client.Send(new RequiresAuthAction()));
+        }
+
+        [Test]
+        public void ActionFilters_throw_Unauthorized_on_RequiresRoleAction()
+        {
+            AssertDoesThrowUnauthorized(client => client.Send(new RequiresRoleAction()));
+        }
+
+        [Test]
+        public void ActionFilters_throw_Unauthorized_on_RequiresAuthRoleAction()
+        {
+            AssertDoesThrowUnauthorized(client => client.Send(new RequiresAuthRoleAction()));
+        }
+
+        [Test]
+        public void ActionFilters_throw_Forbidden_on_RequiresRoleAction()
+        {
+            AssertDoesThrowForbidden(client => client.Send(new RequiresRoleAction()));
+        }
+
+        [Test]
+        public void ActionFilters_throw_Forbidden_on_RequiresAuthRoleAction()
+        {
+            AssertDoesThrowForbidden(client => client.Send(new RequiresAuthRoleAction()));
         }
 
         [Test]
@@ -1164,9 +1228,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 RememberMe = true,
             };
             var initialLoginResponse = client.Send(authRequest);
-            var alreadyLogggedInResponse = client.Send(authRequest);
+            var alreadyLoggedInResponse = client.Send(authRequest);
 
-            Assert.That(alreadyLogggedInResponse.UserName, Is.EqualTo(UserName));
+            Assert.That(alreadyLoggedInResponse.UserName, Is.EqualTo(UserName));
         }
 
 
@@ -1200,10 +1264,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 RememberMe = true,
             };
             var initialLoginResponse = client.Send(authRequest);
-            var alreadyLogggedInResponse = client.Send(authRequest);
+            var alreadyLoggedInResponse = client.Send(authRequest);
 
             Assert.That(initialLoginResponse.UserName, Is.EqualTo(EmailBasedUsername));
-            Assert.That(alreadyLogggedInResponse.UserName, Is.EqualTo(EmailBasedUsername));
+            Assert.That(alreadyLoggedInResponse.UserName, Is.EqualTo(EmailBasedUsername));
         }
 
         [Test]
@@ -1347,7 +1411,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             );
         }
 
-
         [Test]
         public void Meaningful_Exception_for_Unknown_Auth_Header()
         {
@@ -1355,7 +1418,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Can_logout_using_CredentailsAuth()
+        public void Can_logout_using_CredentialsAuth()
         {
             Assert.That(AuthenticateService.LogoutAction, Is.EqualTo("logout"));
 
