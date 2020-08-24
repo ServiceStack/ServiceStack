@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Text;
 
 namespace ServiceStack.Caching
 {
@@ -22,115 +24,116 @@ namespace ServiceStack.Caching
             this.cache = cache;
         }
 
-        public async Task<bool> RemoveAsync(string key)
+        public async Task<bool> RemoveAsync(string key, CancellationToken token=default)
         {
-            return await cache.RemoveAsync(EnsurePrefix(key));
+            return await cache.RemoveAsync(EnsurePrefix(key), token).ConfigAwait();
         }
 
-        public async Task<T> GetAsync<T>(string key)
+        public async Task<T> GetAsync<T>(string key, CancellationToken token=default)
         {
-            return await cache.GetAsync<T>(EnsurePrefix(key));
+            return await cache.GetAsync<T>(EnsurePrefix(key), token).ConfigAwait();
         }
 
-        public async Task<long> IncrementAsync(string key, uint amount)
+        public async Task<long> IncrementAsync(string key, uint amount, CancellationToken token=default)
         {
-            return await cache.IncrementAsync(EnsurePrefix(key), amount);
+            return await cache.IncrementAsync(EnsurePrefix(key), amount, token).ConfigAwait();
         }
 
-        public async Task<long> DecrementAsync(string key, uint amount)
+        public async Task<long> DecrementAsync(string key, uint amount, CancellationToken token=default)
         {
-            return await cache.DecrementAsync(EnsurePrefix(key), amount);
+            return await cache.DecrementAsync(EnsurePrefix(key), amount, token).ConfigAwait();
         }
 
-        public async Task<bool> AddAsync<T>(string key, T value)
+        public async Task<bool> AddAsync<T>(string key, T value, CancellationToken token=default)
         {
-            return await cache.AddAsync(EnsurePrefix(key), value);
+            return await cache.AddAsync(EnsurePrefix(key), value, token).ConfigAwait();
         }
 
-        public async Task<bool> SetAsync<T>(string key, T value)
+        public async Task<bool> SetAsync<T>(string key, T value, CancellationToken token=default)
         {
-            return await cache.SetAsync(EnsurePrefix(key), value);
+            return await cache.SetAsync(EnsurePrefix(key), value, token).ConfigAwait();
         }
 
-        public async Task<bool> ReplaceAsync<T>(string key, T value)
+        public async Task<bool> ReplaceAsync<T>(string key, T value, CancellationToken token=default)
         {
-            return await cache.ReplaceAsync(EnsurePrefix(key), value);
+            return await cache.ReplaceAsync(EnsurePrefix(key), value, token).ConfigAwait();
         }
 
-        public async Task SetAllAsync<T>(IDictionary<string, T> values)
+        public async Task SetAllAsync<T>(IDictionary<string, T> values, CancellationToken token=default)
         {
-            await cache.SetAllAsync(values.ToDictionary(x => EnsurePrefix(x.Key), x => x.Value));
+            await cache.SetAllAsync(values.ToDictionary(
+                x => EnsurePrefix(x.Key), x => x.Value), token).ConfigAwait();
         }
 
-        public async Task<IDictionary<string, T>> GetAllAsync<T>(IEnumerable<string> keys)
+        public async Task<IDictionary<string, T>> GetAllAsync<T>(IEnumerable<string> keys, CancellationToken token=default)
         {
-            return await cache.GetAllAsync<T>(keys.Select(EnsurePrefix));
+            return await cache.GetAllAsync<T>(keys.Select(EnsurePrefix), token).ConfigAwait();
         }
 
-        public async Task<bool> ReplaceAsync<T>(string key, T value, TimeSpan expiresIn)
+        public async Task<bool> ReplaceAsync<T>(string key, T value, TimeSpan expiresIn, CancellationToken token=default)
         {
-            return await cache.ReplaceAsync(EnsurePrefix(key), value, expiresIn);
+            return await cache.ReplaceAsync(EnsurePrefix(key), value, expiresIn, token).ConfigAwait();
         }
 
-        public async Task<bool> SetAsync<T>(string key, T value, TimeSpan expiresIn)
+        public async Task<bool> SetAsync<T>(string key, T value, TimeSpan expiresIn, CancellationToken token=default)
         {
-            return await cache.SetAsync(EnsurePrefix(key), value, expiresIn);
+            return await cache.SetAsync(EnsurePrefix(key), value, expiresIn, token).ConfigAwait();
         }
 
-        public async Task<bool> AddAsync<T>(string key, T value, TimeSpan expiresIn)
+        public async Task<bool> AddAsync<T>(string key, T value, TimeSpan expiresIn, CancellationToken token=default)
         {
-            return await cache.AddAsync(EnsurePrefix(key), value, expiresIn);
+            return await cache.AddAsync(EnsurePrefix(key), value, expiresIn, token).ConfigAwait();
         }
 
-        public async Task<bool> ReplaceAsync<T>(string key, T value, DateTime expiresAt)
+        public async Task<bool> ReplaceAsync<T>(string key, T value, DateTime expiresAt, CancellationToken token=default)
         {
-            return await cache.ReplaceAsync(EnsurePrefix(key), value, expiresAt);
+            return await cache.ReplaceAsync(EnsurePrefix(key), value, expiresAt, token).ConfigAwait();
         }
 
-        public async Task<bool> SetAsync<T>(string key, T value, DateTime expiresAt)
+        public async Task<bool> SetAsync<T>(string key, T value, DateTime expiresAt, CancellationToken token=default)
         {
-            return await cache.SetAsync(EnsurePrefix(key), value, expiresAt);
+            return await cache.SetAsync(EnsurePrefix(key), value, expiresAt, token).ConfigAwait();
         }
 
-        public async Task<bool> AddAsync<T>(string key, T value, DateTime expiresAt)
+        public async Task<bool> AddAsync<T>(string key, T value, DateTime expiresAt, CancellationToken token=default)
         {
-            return await cache.AddAsync(EnsurePrefix(key), value, expiresAt);
+            return await cache.AddAsync(EnsurePrefix(key), value, expiresAt, token).ConfigAwait();
         }
 
-        public async Task RemoveAllAsync(IEnumerable<string> keys)
+        public async Task RemoveAllAsync(IEnumerable<string> keys, CancellationToken token=default)
         {
-            await cache.RemoveAllAsync(keys.Select(EnsurePrefix));
+            await cache.RemoveAllAsync(keys.Select(EnsurePrefix), token).ConfigAwait();
         }
 
-        public async Task FlushAllAsync()
+        public async Task FlushAllAsync(CancellationToken token=default)
         {
             // Cannot be prefixed
-            await cache.FlushAllAsync();
+            await cache.FlushAllAsync(token).ConfigAwait();
         }
 
-        public async Task RemoveByPatternAsync(string pattern)
+        public async Task RemoveByPatternAsync(string pattern, CancellationToken token=default)
         {
-            await (cache as IRemoveByPatternAsync).RemoveByPatternAsync(EnsurePrefix(pattern));
+            await (cache as IRemoveByPatternAsync).RemoveByPatternAsync(EnsurePrefix(pattern), token).ConfigAwait();
         }
 
-        public async Task RemoveByRegexAsync(string regex)
+        public async Task RemoveByRegexAsync(string regex, CancellationToken token=default)
         {
-            (cache as IRemoveByPatternAsync).RemoveByRegexAsync(EnsurePrefix(regex));
+            await (cache as IRemoveByPatternAsync).RemoveByRegexAsync(EnsurePrefix(regex), token).ConfigAwait();
         }
 
-        public async Task<IEnumerable<string>> GetKeysByPatternAsync(string pattern)
+        public async Task<IEnumerable<string>> GetKeysByPatternAsync(string pattern, CancellationToken token=default)
         {
-            return await cache.GetKeysByPatternAsync(EnsurePrefix(pattern));
+            return await cache.GetKeysByPatternAsync(EnsurePrefix(pattern), token).ConfigAwait();
         }
 
-        public async Task RemoveExpiredEntriesAsync()
+        public async Task RemoveExpiredEntriesAsync(CancellationToken token=default)
         {
-            await cache.RemoveExpiredEntriesAsync();
+            await cache.RemoveExpiredEntriesAsync(token).ConfigAwait();
         }
 
-        public async Task<TimeSpan?> GetTimeToLiveAsync(string key)
+        public async Task<TimeSpan?> GetTimeToLiveAsync(string key, CancellationToken token=default)
         {
-            return await cache.GetTimeToLiveAsync(EnsurePrefix(key));
+            return await cache.GetTimeToLiveAsync(EnsurePrefix(key), token).ConfigAwait();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

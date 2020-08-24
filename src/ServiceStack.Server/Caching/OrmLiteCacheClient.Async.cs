@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
@@ -10,107 +11,109 @@ namespace ServiceStack.Caching
 {
     public partial class OrmLiteCacheClient<TCacheEntry> : ICacheClientAsync, IRemoveByPatternAsync
     {
-        public async Task<T> ExecAsync<T>(Func<IDbConnection, Task<T>> action)
+        public async Task<T> ExecAsync<T>(Func<IDbConnection, Task<T>> action, CancellationToken token=default)
         {
             using (JsConfig.With(new Config { ExcludeTypeInfo = false }))
-            using (var db = await DbFactory.OpenAsync())
+            using (var db = await DbFactory.OpenAsync(token).ConfigAwait())
             {
-                return await action(db);
+                return await action(db).ConfigAwait();
             }
         }
 
-        public async Task ExecAsync(Func<IDbConnection,Task> action)
+        public async Task ExecAsync(Func<IDbConnection,Task> action, CancellationToken token=default)
         {
             using (JsConfig.With(new Config { ExcludeTypeInfo = false }))
-            using (var db = await DbFactory.OpenAsync())
+            using (var db = await DbFactory.OpenAsync(token).ConfigAwait())
             {
-                await action(db);
+                await action(db).ConfigAwait();
             }
         }
 
-        public Task<bool> RemoveAsync(string key)
+        public async Task<bool> RemoveAsync(string key, CancellationToken token=default)
         {
-            return ExecAsync(async db => await db.DeleteByIdAsync<TCacheEntry>(key) > 0);
+            return await ExecAsync(async db => 
+                await db.DeleteByIdAsync<TCacheEntry>(key, token: token).ConfigAwait() > 0, token).ConfigAwait();
         }
 
-        public Task RemoveAllAsync(IEnumerable<string> keys)
+        public async Task RemoveAllAsync(IEnumerable<string> keys, CancellationToken token=default)
         {
-            return ExecAsync(async db => await db.DeleteByIdsAsync<TCacheEntry>(keys) > 0);
+            await ExecAsync(async db => 
+                await db.DeleteByIdsAsync<TCacheEntry>(keys, token: token).ConfigAwait() > 0, token).ConfigAwait();
         }
 
-        public async Task<T> GetAsync<T>(string key)
+        public async Task<T> GetAsync<T>(string key, CancellationToken token=default)
         {
             return await ExecAsync(async db =>
             {
-                var cache = Verify(db, await db.SingleByIdAsync<TCacheEntry>(key));
+                var cache = Verify(db, await db.SingleByIdAsync<TCacheEntry>(key, token).ConfigAwait());
                 return cache == null
                     ? default
                     : db.Deserialize<T>(cache.Data);
-            });
+            }, token).ConfigAwait();
         }
 
-        public async Task<long> IncrementAsync(string key, uint amount)
+        public async Task<long> IncrementAsync(string key, uint amount, CancellationToken token=default)
         {
             return await ExecAsync(async db =>
             {
                 long nextVal;
                 using var dbTrans = db.OpenTransaction(IsolationLevel.ReadCommitted);
-                var cache = Verify(db, await db.SingleByIdAsync<TCacheEntry>(key));
+                var cache = Verify(db, await db.SingleByIdAsync<TCacheEntry>(key, token).ConfigAwait());
 
                 if (cache == null)
                 {
                     nextVal = amount;
-                    await db.InsertAsync(CreateEntry(key, nextVal.ToString()));
+                    await db.InsertAsync(CreateEntry(key, nextVal.ToString()), token: token).ConfigAwait();
                 }
                 else
                 {
                     nextVal = long.Parse(cache.Data) + amount;
                     cache.Data = nextVal.ToString();
 
-                    await db.UpdateAsync(cache);
+                    await db.UpdateAsync(cache, token: token).ConfigAwait();
                 }
 
                 dbTrans.Commit();
 
                 return nextVal;
-            });
+            }, token).ConfigAwait();
         }
 
-        public async Task<long> DecrementAsync(string key, uint amount)
+        public async Task<long> DecrementAsync(string key, uint amount, CancellationToken token=default)
         {
             return await ExecAsync(async db =>
             {
                 long nextVal;
                 using var dbTrans = db.OpenTransaction(IsolationLevel.ReadCommitted);
-                var cache = Verify(db, await db.SingleByIdAsync<TCacheEntry>(key));
+                var cache = Verify(db, await db.SingleByIdAsync<TCacheEntry>(key, token).ConfigAwait());
 
                 if (cache == null)
                 {
                     nextVal = -amount;
-                    await db.InsertAsync(CreateEntry(key, nextVal.ToString()));
+                    await db.InsertAsync(CreateEntry(key, nextVal.ToString()), token: token).ConfigAwait();
                 }
                 else
                 {
                     nextVal = long.Parse(cache.Data) - amount;
                     cache.Data = nextVal.ToString();
 
-                    await db.UpdateAsync(cache);
+                    await db.UpdateAsync(cache, token: token).ConfigAwait();
                 }
 
                 dbTrans.Commit();
 
                 return nextVal;
-            });
+            }, token).ConfigAwait();
         }
 
-        public async Task<bool> AddAsync<T>(string key, T value)
+        public async Task<bool> AddAsync<T>(string key, T value, CancellationToken token=default)
         {
             try
             {
                 await ExecAsync(async db =>
                 {
-                    await db.InsertAsync(CreateEntry(key, db.Serialize(value)));
-                });
+                    await db.InsertAsync(CreateEntry(key, db.Serialize(value)), token: token).ConfigAwait();
+                }, token).ConfigAwait();
                 return true;
             }
             catch (Exception)
@@ -119,7 +122,7 @@ namespace ServiceStack.Caching
             }
         }
 
-        private static async Task<bool> UpdateIfExistsAsync<T>(IDbConnection db, string key, T value)
+        private static async Task<bool> UpdateIfExistsAsync<T>(IDbConnection db, string key, T value, CancellationToken token=default)
         {
             var exists = await db.UpdateOnlyAsync(new TCacheEntry
                 {
@@ -128,12 +131,12 @@ namespace ServiceStack.Caching
                     ModifiedDate = DateTime.UtcNow,
                 },
                 onlyFields: q => new { q.Data, q.ModifiedDate },
-                @where: q => q.Id == key) == 1;
+                @where: q => q.Id == key, token: token).ConfigAwait() == 1;
 
             return exists;
         }
 
-        private static async Task<bool> UpdateIfExistsAsync<T>(IDbConnection db, string key, T value, DateTime expiresAt)
+        private static async Task<bool> UpdateIfExistsAsync<T>(IDbConnection db, string key, T value, DateTime expiresAt, CancellationToken token=default)
         {
             var exists = await db.UpdateOnlyAsync(new TCacheEntry
                 {
@@ -143,35 +146,35 @@ namespace ServiceStack.Caching
                     ModifiedDate = DateTime.UtcNow,
                 },
                 onlyFields: q => new { q.Data, ExpiredDate = q.ExpiryDate, q.ModifiedDate },
-                @where: q => q.Id == key) == 1;
+                @where: q => q.Id == key, token: token).ConfigAwait() == 1;
 
             return exists;
         }
 
-        public async Task<bool> SetAsync<T>(string key, T value)
+        public async Task<bool> SetAsync<T>(string key, T value, CancellationToken token=default)
         {
             return await ExecAsync(async db =>
             {
-                var exists = await UpdateIfExistsAsync(db, key, value);
+                var exists = await UpdateIfExistsAsync(db, key, value, token).ConfigAwait();
 
                 if (!exists)
                 {
                     try
                     {
-                        await db.InsertAsync(CreateEntry(key, db.Serialize(value)));
+                        await db.InsertAsync(CreateEntry(key, db.Serialize(value)), token: token).ConfigAwait();
                     }
                     catch (Exception)
                     {
-                        exists = await UpdateIfExistsAsync(db, key, value);
+                        exists = await UpdateIfExistsAsync(db, key, value, token).ConfigAwait();
                         if (!exists) throw;
                     }
                 }
 
                 return true;
-            });
+            }, token).ConfigAwait();
         }
 
-        public async Task<bool> ReplaceAsync<T>(string key, T value)
+        public async Task<bool> ReplaceAsync<T>(string key, T value, CancellationToken token=default)
         {
             return await ExecAsync(async db =>
             {
@@ -182,25 +185,25 @@ namespace ServiceStack.Caching
                         ModifiedDate = DateTime.UtcNow,
                     },
                     onlyFields: q => new { q.Data, q.ModifiedDate },
-                    where: q => q.Id == key) == 1;
+                    where: q => q.Id == key, token: token).ConfigAwait() == 1;
 
                 if (!exists)
                 {
-                    await db.InsertAsync(CreateEntry(key, db.Serialize(value)));
+                    await db.InsertAsync(CreateEntry(key, db.Serialize(value)), token: token).ConfigAwait();
                 }
 
                 return true;
-            });
+            }, token).ConfigAwait();
         }
 
-        public async Task<bool> AddAsync<T>(string key, T value, DateTime expiresAt)
+        public async Task<bool> AddAsync<T>(string key, T value, DateTime expiresAt, CancellationToken token=default)
         {
             try
             {
                 await ExecAsync(async db =>
                 {
-                    await db.InsertAsync(CreateEntry(key, db.Serialize(value), expires: expiresAt));
-                });
+                    await db.InsertAsync(CreateEntry(key, db.Serialize(value), expires: expiresAt), token: token).ConfigAwait();
+                }, token).ConfigAwait();
                 return true;
             }
             catch (Exception)
@@ -209,29 +212,29 @@ namespace ServiceStack.Caching
             }
         }
 
-        public async Task<bool> SetAsync<T>(string key, T value, DateTime expiresAt)
+        public async Task<bool> SetAsync<T>(string key, T value, DateTime expiresAt, CancellationToken token=default)
         {
             return await ExecAsync(async db =>
             {
-                var exists = await UpdateIfExistsAsync(db, key, value, expiresAt);
+                var exists = await UpdateIfExistsAsync(db, key, value, expiresAt, token).ConfigAwait();
                 if (!exists)
                 {
                     try
                     {
-                        await db.InsertAsync(CreateEntry(key, db.Serialize(value), expires: expiresAt));
+                        await db.InsertAsync(CreateEntry(key, db.Serialize(value), expires: expiresAt), token: token).ConfigAwait();
                     }
                     catch (Exception)
                     {
-                        exists = await UpdateIfExistsAsync(db, key, value, expiresAt);
+                        exists = await UpdateIfExistsAsync(db, key, value, expiresAt, token).ConfigAwait();
                         if (!exists) throw;
                     }
                 }
 
                 return true;
-            });
+            }, token).ConfigAwait();
         }
 
-        public async Task<bool> ReplaceAsync<T>(string key, T value, DateTime expiresAt)
+        public async Task<bool> ReplaceAsync<T>(string key, T value, DateTime expiresAt, CancellationToken token=default)
         {
             return await ExecAsync(async db =>
             {
@@ -243,26 +246,26 @@ namespace ServiceStack.Caching
                         ModifiedDate = DateTime.UtcNow,
                     },
                     onlyFields: q => new { q.Data, ExpiredDate = q.ExpiryDate, q.ModifiedDate },
-                    where: q => q.Id == key) == 1;
+                    where: q => q.Id == key, token: token).ConfigAwait() == 1;
 
                 if (!exists)
                 {
-                    await db.InsertAsync(CreateEntry(key, db.Serialize(value), expires: expiresAt));
+                    await db.InsertAsync(CreateEntry(key, db.Serialize(value), expires: expiresAt), token: token).ConfigAwait();
                 }
 
                 return true;
-            });
+            }, token).ConfigAwait();
         }
 
-        public async Task<bool> AddAsync<T>(string key, T value, TimeSpan expiresIn)
+        public async Task<bool> AddAsync<T>(string key, T value, TimeSpan expiresIn, CancellationToken token=default)
         {
             try
             {
                 await ExecAsync(async db =>
                 {
                     await db.InsertAsync(CreateEntry(key, db.Serialize(value),
-                        expires: DateTime.UtcNow.Add(expiresIn)));
-                });
+                        expires: DateTime.UtcNow.Add(expiresIn)), token: token).ConfigAwait();
+                }, token).ConfigAwait();
                 return true;
             }
             catch (Exception)
@@ -271,29 +274,29 @@ namespace ServiceStack.Caching
             }
         }
 
-        public async Task<bool> SetAsync<T>(string key, T value, TimeSpan expiresIn)
+        public async Task<bool> SetAsync<T>(string key, T value, TimeSpan expiresIn, CancellationToken token=default)
         {
             return await ExecAsync(async db =>
             {
-                var exists = await UpdateIfExistsAsync(db, key, value, DateTime.UtcNow.Add(expiresIn));
+                var exists = await UpdateIfExistsAsync(db, key, value, DateTime.UtcNow.Add(expiresIn), token).ConfigAwait();
                 if (!exists)
                 {
                     try
                     {
-                        await db.InsertAsync(CreateEntry(key, db.Serialize(value), expires: DateTime.UtcNow.Add(expiresIn)));
+                        await db.InsertAsync(CreateEntry(key, db.Serialize(value), expires: DateTime.UtcNow.Add(expiresIn)), token: token).ConfigAwait();
                     }
                     catch (Exception)
                     {
-                        exists = await UpdateIfExistsAsync(db, key, value, DateTime.UtcNow.Add(expiresIn));
+                        exists = await UpdateIfExistsAsync(db, key, value, DateTime.UtcNow.Add(expiresIn), token).ConfigAwait();
                         if (!exists) throw;
                     }
                 }
 
                 return true;
-            });
+            }, token).ConfigAwait();
         }
 
-        public async Task<bool> ReplaceAsync<T>(string key, T value, TimeSpan expiresIn)
+        public async Task<bool> ReplaceAsync<T>(string key, T value, TimeSpan expiresIn, CancellationToken token=default)
         {
             return await ExecAsync(async db =>
             {
@@ -305,30 +308,30 @@ namespace ServiceStack.Caching
                         ModifiedDate = DateTime.UtcNow,
                     },
                     onlyFields: q => new { q.Data, ExpiredDate = q.ExpiryDate, q.ModifiedDate },
-                    where: q => q.Id == key) == 1;
+                    where: q => q.Id == key, token: token).ConfigAwait() == 1;
 
                 if (!exists)
                 {
-                    await db.InsertAsync(CreateEntry(key, db.Serialize(value), expires: DateTime.UtcNow.Add(expiresIn)));
+                    await db.InsertAsync(CreateEntry(key, db.Serialize(value), expires: DateTime.UtcNow.Add(expiresIn)), token: token).ConfigAwait();
                 }
 
                 return true;
-            });
+            }, token).ConfigAwait();
         }
 
-        public async Task FlushAllAsync()
+        public async Task FlushAllAsync(CancellationToken token=default)
         {
             await ExecAsync(async db =>
             {
-                await db.DeleteAllAsync<TCacheEntry>();
-            });
+                await db.DeleteAllAsync<TCacheEntry>(token).ConfigAwait();
+            }, token).ConfigAwait();
         }
 
-        public async Task<IDictionary<string, T>> GetAllAsync<T>(IEnumerable<string> keys)
+        public async Task<IDictionary<string, T>> GetAllAsync<T>(IEnumerable<string> keys, CancellationToken token=default)
         {
             return await ExecAsync(async db =>
             {
-                var results = Verify(db, await db.SelectByIdsAsync<TCacheEntry>(keys));
+                var results = Verify(db, await db.SelectByIdsAsync<TCacheEntry>(keys, token).ConfigAwait());
                 var map = new Dictionary<string, T>();
 
                 results.Each(x =>
@@ -341,10 +344,10 @@ namespace ServiceStack.Caching
                 }
 
                 return map;
-            });
+            }, token).ConfigAwait();
         }
 
-        public async Task SetAllAsync<T>(IDictionary<string, T> values)
+        public async Task SetAllAsync<T>(IDictionary<string, T> values, CancellationToken token=default)
         {
             await ExecAsync(async db =>
             {
@@ -352,15 +355,15 @@ namespace ServiceStack.Caching
                     CreateEntry(entry.Key, db.Serialize(entry.Value)))
                     .ToList();
 
-                await db.InsertAllAsync(rows);
-            });
+                await db.InsertAllAsync(rows, token).ConfigAwait();
+            }, token).ConfigAwait();
         }
 
-        public async Task<TimeSpan?> GetTimeToLiveAsync(string key)
+        public async Task<TimeSpan?> GetTimeToLiveAsync(string key, CancellationToken token=default)
         {
             return await ExecAsync(async db =>
             {
-                var cache = await db.SingleByIdAsync<TCacheEntry>(key);
+                var cache = await db.SingleByIdAsync<TCacheEntry>(key, token).ConfigAwait();
                 if (cache == null)
                     return null;
 
@@ -368,39 +371,42 @@ namespace ServiceStack.Caching
                     return TimeSpan.MaxValue;
 
                 return cache.ExpiryDate - DateTime.UtcNow;
-            });
+            }, token).ConfigAwait();
         }
 
-        public async Task RemoveByPatternAsync(string pattern)
+        public async Task RemoveByPatternAsync(string pattern, CancellationToken token=default)
         {
             await ExecAsync(async db => {
                 var dbPattern = pattern.Replace('*', '%');
                 var dialect = db.GetDialectProvider();
-                await db.DeleteAsync<TCacheEntry>(dialect.GetQuotedColumnName("Id") + " LIKE " + dialect.GetParam("dbPattern"), new { dbPattern });
-            });
+                await db.DeleteAsync<TCacheEntry>(dialect.GetQuotedColumnName("Id") + " LIKE " + dialect.GetParam("dbPattern"), 
+                    new { dbPattern }, token).ConfigAwait();
+            }, token).ConfigAwait();
         }
 
-        public async Task<IEnumerable<string>> GetKeysByPatternAsync(string pattern)
+        public async Task<IEnumerable<string>> GetKeysByPatternAsync(string pattern, CancellationToken token=default)
         {
             return await ExecAsync(async db =>
             {
                 if (pattern == "*")
-                    return await db.ColumnAsync<string>(db.From<TCacheEntry>().Select(x => x.Id));
+                    return await db.ColumnAsync<string>(db.From<TCacheEntry>().Select(x => x.Id), token).ConfigAwait();
 
                 var dbPattern = pattern.Replace('*', '%');
                 var dialect = db.Dialect();
                 var id = dialect.GetQuotedColumnName("Id");
 
                 return await db.ColumnAsync<string>(db.From<TCacheEntry>()
-                    .Where(id + " LIKE {0}", dbPattern));
-            });
+                    .Where(id + " LIKE {0}", dbPattern), token).ConfigAwait();
+            }, token).ConfigAwait();
         }
 
-        public async Task RemoveExpiredEntriesAsync()
+        public async Task RemoveExpiredEntriesAsync(CancellationToken token=default)
         {
-            await ExecAsync(async db => await db.DeleteAsync<TCacheEntry>(q => DateTime.UtcNow > q.ExpiryDate));
+            await ExecAsync(async db => 
+                await db.DeleteAsync<TCacheEntry>(q => DateTime.UtcNow > q.ExpiryDate, token: token).ConfigAwait(), token).ConfigAwait();
         }
 
-        public Task RemoveByRegexAsync(string regex) => throw new NotImplementedException();
+        public Task RemoveByRegexAsync(string regex, CancellationToken token=default) => 
+            throw new NotImplementedException();
     }
 }
