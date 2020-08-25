@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using ServiceStack.Logging;
+using ServiceStack.Text;
 
 namespace ServiceStack.Caching
 {
@@ -49,6 +50,24 @@ namespace ServiceStack.Caching
             }
 
             internal long LastModifiedTicks { get; private set; }
+
+            protected bool Equals(CacheEntry other)
+            {
+                return Equals(cacheValue, other.cacheValue);
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (ReferenceEquals(null, obj)) return false;
+                if (ReferenceEquals(this, obj)) return true;
+                if (obj.GetType() != this.GetType()) return false;
+                return Equals((CacheEntry) obj);
+            }
+
+            public override int GetHashCode()
+            {
+                return (cacheValue != null ? cacheValue.GetHashCode() : 0);
+            }
         }
 
         public MemoryCacheClient()
@@ -58,6 +77,7 @@ namespace ServiceStack.Caching
 
         private bool TryGetValue(string key, out CacheEntry entry)
         {
+            IncrHit();
             return this.memory.TryGetValue(key, out entry);
         }
 
@@ -78,52 +98,41 @@ namespace ServiceStack.Caching
 
         /// <summary>
         /// Stores The value with key only if such key doesn't exist at the server yet. 
+        /// <returns>true if added</returns>
         /// </summary>
         private bool CacheAdd(string key, object value, DateTime? expiresAt = null)
         {
-            if (this.TryGetValue(key, out var entry)) return false;
-
-            entry = new CacheEntry(value, expiresAt);
-            this.Set(key, entry);
-
-            return true;
+            IncrHit();
+            return this.memory.TryAdd(key, new CacheEntry(value, expiresAt));
         }
 
         /// <summary>
         /// Adds or replaces the value with key.
+        /// <returns>true if added</returns>
         /// </summary>
-        private bool CacheSet(string key, object value, DateTime expiresAt)
+        private bool CacheSet(string key, object value, DateTime? expiresAt = null)
         {
-            return CacheSet(key, value, expiresAt, null);
-        }
-
-        /// <summary>
-        /// Adds or replaces the value with key. 
-        /// </summary>
-        private bool CacheSet(string key, object value, DateTime? expiresAt = null, long? checkLastModified = null)
-        {
-            if (!this.TryGetValue(key, out var entry))
-            {
-                entry = new CacheEntry(value, expiresAt);
-                this.Set(key, entry);
-                return true;
-            }
-
-            if (checkLastModified.HasValue
-                && entry.LastModifiedTicks != checkLastModified.Value) return false;
-
-            entry.Value = value;
-            entry.ExpiresAt = expiresAt;
-
+            IncrHit();
+            this.memory[key] = new CacheEntry(value, expiresAt);
             return true;
         }
 
         /// <summary>
-        /// Replace the value with specified key if it exists.
+        /// Replace the value with specified key only if it exists.
+        /// <returns>true if updated</returns>
         /// </summary>
         private bool CacheReplace(string key, object value, DateTime? expiresAt = null)
         {
-            return !CacheSet(key, value, expiresAt);
+            if (this.TryGetValue(key, out var entry))
+            {
+                lock (entry)
+                {
+                    entry.Value = value;
+                    entry.ExpiresAt = expiresAt;
+                }
+                return true;
+            }
+            return false;
         }
 
         public void Dispose()
@@ -161,9 +170,7 @@ namespace ServiceStack.Caching
         public object Get(string key, out long lastModifiedTicks)
         {
             lastModifiedTicks = 0;
-            IncrHit();
-
-            if (this.memory.TryGetValue(key, out var cacheEntry))
+            if (this.TryGetValue(key, out var cacheEntry))
             {
                 if (cacheEntry.HasExpired)
                 {
@@ -185,27 +192,13 @@ namespace ServiceStack.Caching
 
         private long UpdateCounter(string key, long value)
         {
-            if (this.memory.TryGetValue(key, out var cacheEntry))
-            {
-                try
-                {
-                    lock (cacheEntry)
-                    {
-                        var int64 = Convert.ToInt64(cacheEntry.Value);
-                        int64 += value;
-                        cacheEntry.Value = int64;
-                        return int64;
-                    }
-                }
-                catch (Exception)
-                {
-                    cacheEntry.Value = value;
-                    return value;
-                }
-            }
-
-            Set(key, value);
-            return value;
+            IncrHit();
+            var currVal = value;
+            this.memory.AddOrUpdate(key, new CacheEntry(value, null), (k, existingEntry) => {
+                var int64 = Convert.ToInt64(existingEntry.Value);
+                return new CacheEntry(currVal = int64 + value, null);
+            });
+            return currVal;
         }
 
         public long Increment(string key, uint amount)
@@ -424,7 +417,7 @@ namespace ServiceStack.Caching
 
         public TimeSpan? GetTimeToLive(string key)
         {
-            if (this.memory.TryGetValue(key, out var cacheEntry))
+            if (this.TryGetValue(key, out var cacheEntry))
             {
                 if (cacheEntry.ExpiresAt == null)
                     return TimeSpan.MaxValue;

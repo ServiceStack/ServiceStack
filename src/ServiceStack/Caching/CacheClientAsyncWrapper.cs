@@ -83,5 +83,9 @@ namespace ServiceStack.Caching
     {
         public static ICacheClientAsync AsAsync(this ICacheClient cache) =>
             cache as ICacheClientAsync ?? new CacheClientAsyncWrapper(cache);
+
+        public static ICacheClient Unwrap(this ICacheClientAsync cache) => cache is CacheClientAsyncWrapper wrapper
+            ? wrapper.Cache
+            : null;
     }
 }
