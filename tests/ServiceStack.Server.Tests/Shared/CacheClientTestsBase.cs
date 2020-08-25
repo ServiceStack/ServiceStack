@@ -248,23 +248,22 @@ namespace ServiceStack.Server.Tests.Shared
             var ormliteCache = Cache as OrmLiteCacheClient;
             var key = "int:key";
 
-            var value = Cache.GetOrCreate(key, TimeSpan.FromMilliseconds(100), () => 1);
+            var value = Cache.GetOrCreate(key, TimeSpan.FromMilliseconds(2000), () => 1);
             var ttl = Cache.GetTimeToLive(key);
 
             if (ormliteCache != null)
             {
-                using (var db = ormliteCache.DbFactory.OpenDbConnection())
-                {
-                    var row = db.SingleById<CacheEntry>(key);
-                    Assert.That(row, Is.Not.Null);
-                    Assert.That(row.ExpiryDate, Is.Not.Null);
-                }
+                using var db = ormliteCache.DbFactory.OpenDbConnection();
+                var row = db.SingleById<CacheEntry>(key);
+                Assert.That(row, Is.Not.Null);
+                Assert.That(row.ExpiryDate, Is.Not.Null);
             }
 
             Assert.That(value, Is.EqualTo(1));
             Assert.That(ttl.Value.TotalMilliseconds, Is.GreaterThan(0));
 
-            Thread.Sleep(200);
+            Cache.Remove(key);
+
             value = Cache.Get<int>(key);
             ttl = Cache.GetTimeToLive(key);
 
@@ -273,11 +272,9 @@ namespace ServiceStack.Server.Tests.Shared
 
             if (ormliteCache != null)
             {
-                using (var db = ormliteCache.DbFactory.OpenDbConnection())
-                {
-                    var row = db.SingleById<CacheEntry>(key);
-                    Assert.That(row, Is.Null);
-                }
+                using var db = ormliteCache.DbFactory.OpenDbConnection();
+                var row = db.SingleById<CacheEntry>(key);
+                Assert.That(row, Is.Null);
             }
         }
 

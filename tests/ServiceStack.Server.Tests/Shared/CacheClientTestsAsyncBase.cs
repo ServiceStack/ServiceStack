@@ -32,7 +32,7 @@ namespace ServiceStack.Server.Tests.Shared
         [Test]
         public async Task Does_flush_all()
         {
-            3.Times(async i =>
+            await 3.TimesAsync(async i =>
                 await Cache.SetAsync(i.ToUrn<Item>(), new Item { Id = i, Name = "Name" + i }));
 
             Assert.That(await Cache.GetAsync<Item>(1.ToUrn<Item>()), Is.Not.Null);
@@ -126,7 +126,7 @@ namespace ServiceStack.Server.Tests.Shared
             var ormliteCache = Cache as OrmLiteCacheClient;
             var key = "int:key";
 
-            var value = await Cache.GetOrCreateAsync(key, TimeSpan.FromMilliseconds(100), () => Task.FromResult(1));
+            var value = await Cache.GetOrCreateAsync(key, TimeSpan.FromMilliseconds(2000), () => Task.FromResult(1));
             var ttl = await Cache.GetTimeToLiveAsync(key);
 
             if (ormliteCache != null)
@@ -140,7 +140,8 @@ namespace ServiceStack.Server.Tests.Shared
             Assert.That(value, Is.EqualTo(1));
             Assert.That(ttl.Value.TotalMilliseconds, Is.GreaterThan(0));
 
-            Thread.Sleep(200);
+            await Cache.RemoveAsync(key);
+
             value = await Cache.GetAsync<int>(key);
             ttl = await Cache.GetTimeToLiveAsync(key);
 
