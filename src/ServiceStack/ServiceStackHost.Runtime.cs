@@ -727,12 +727,10 @@ namespace ServiceStack
         internal static readonly MemoryCacheClient DefaultCache = new MemoryCacheClient();
 
         /// <summary>
-        /// Tries to resolve <see cref="IRedisClient"></see> through Ioc container.
-        /// If not registered, it falls back to <see cref="IRedisClientsManager"></see>.GetClient();
-        /// Called by itself, <see cref="Service"></see> and <see cref="ServiceStack.Razor.ViewPageBase"></see>
+        /// Tries to resolve <see cref="ICacheClient"></see> through IoC container.
+        /// If not registered, it falls back to <see cref="IRedisClientsManager"></see>.GetClient(),
+        /// otherwise returns DefaultCache MemoryCacheClient
         /// </summary>
-        /// <param name="req">Provided by services and pageView, can be helpful when overriding this method</param>
-        /// <returns></returns>
         public virtual ICacheClient GetCacheClient(IRequest req = null)
         {
             var resolver = req ?? (IResolver) this;
@@ -747,9 +745,29 @@ namespace ServiceStack
             return DefaultCache;
         }
 
+        /// <summary>
+        /// Get registered ICacheClientAsync otherwise returns async wrapped sync ICacheClient
+        /// </summary>
+        /// <param name="req"></param>
+        /// <returns></returns>
         public virtual ICacheClientAsync GetCacheClientAsync(IRequest req = null) => 
             (req ?? (IResolver) this).TryResolve<ICacheClientAsync>() ?? GetCacheClient(req).AsAsync();
 
+        /// <summary>
+        /// Only sets cacheAsync if native Async provider, otherwise sets cacheSync
+        /// </summary>
+        /// <param name="req"></param>
+        /// <returns></returns>
+        public virtual void TryGetNativeCacheClient(IRequest req, out ICacheClient cacheSync, out ICacheClientAsync cacheAsync)
+        {
+            cacheSync = GetCacheClient(req);
+            cacheAsync = (req ?? (IResolver)this).TryResolve<ICacheClientAsync>();
+            if (cacheAsync.Unwrap() != null) // non-null if wraps sync ICacheClient
+                cacheAsync = null;
+            else if (cacheAsync != null)
+                cacheSync = null;
+        }
+        
         /// <summary>
         /// Returns <see cref="MemoryCacheClient"></see>. cache is only persisted for this running app instance.
         /// Called by <see cref="Service"></see>.MemoryCacheClient

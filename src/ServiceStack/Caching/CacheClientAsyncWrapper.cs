@@ -84,6 +84,16 @@ namespace ServiceStack.Caching
         public static ICacheClientAsync AsAsync(this ICacheClient cache) =>
             cache as ICacheClientAsync ?? new CacheClientAsyncWrapper(cache);
 
+        /// <summary>
+        /// Returns underlying wrapped sync ICacheClient or ICacheClient API if cache implements it  
+        /// </summary>
+        public static ICacheClient AsSync(this ICacheClientAsync cache) => cache is CacheClientAsyncWrapper wrapper
+            ? wrapper.Cache
+            : cache as ICacheClient;
+
+        /// <summary>
+        /// Returns sync ICacheClient if wrapped  
+        /// </summary>
         public static ICacheClient Unwrap(this ICacheClientAsync cache) => cache is CacheClientAsyncWrapper wrapper
             ? wrapper.Cache
             : null;

@@ -418,7 +418,7 @@ namespace ServiceStack
             }
         }
 
-        public static async Task WriteBytesToResponse(this IResponse res, byte[] responseBytes, string contentType, CancellationToken token = default(CancellationToken))
+        public static async Task WriteBytesToResponse(this IResponse res, byte[] responseBytes, string contentType, CancellationToken token = default)
         {
             res.ContentType = HostContext.Config.AppendUtf8CharsetOnContentTypes.Contains(contentType)
                 ? contentType + ContentFormat.Utf8Suffix

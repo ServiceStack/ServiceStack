@@ -65,7 +65,7 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Returns the optimized result for the IRequestContext. 
+        /// Returns the optimized result for the IRequest. 
         /// Does not use or store results in any cache.
         /// </summary>
         /// <param name="request"></param>
@@ -84,30 +84,28 @@ namespace ServiceStack
             if (compressionType == null)
                 return HostContext.ContentTypes.SerializeToString(request, dto);
 
-            using (var ms = new MemoryStream())
-            using (var compressionStream = GetCompressionStream(ms, compressionType))
+            using var ms = new MemoryStream();
+            using var compressionStream = GetCompressionStream(ms, compressionType);
+            using (httpResult?.ResultScope?.Invoke())
             {
-                using (httpResult?.ResultScope?.Invoke())
+                using (var msBuffer = MemoryStreamFactory.GetStream())
                 {
-                    using (var msBuffer = MemoryStreamFactory.GetStream())
-                    {
-                        HostContext.ContentTypes.SerializeToStreamAsync(request, dto, msBuffer).Wait();
-                        msBuffer.Position = 0;
-                        msBuffer.CopyTo(compressionStream);
-                    }
-                    compressionStream.Close();
+                    HostContext.ContentTypes.SerializeToStreamAsync(request, dto, msBuffer).Wait();
+                    msBuffer.Position = 0;
+                    msBuffer.CopyTo(compressionStream);
                 }
-
-                var compressedBytes = ms.ToArray();
-                return new CompressedResult(compressedBytes, compressionType, request.ResponseContentType)
-                {
-                    Status = request.Response.StatusCode
-                };
+                compressionStream.Close();
             }
+
+            var compressedBytes = ms.ToArray();
+            return new CompressedResult(compressedBytes, compressionType, request.ResponseContentType)
+            {
+                Status = request.Response.StatusCode
+            };
         }
 
         /// <summary>
-        /// Returns the optimized result for the IRequestContext. 
+        /// Returns the optimized result for the IRequest. 
         /// Does not use or store results in any cache.
         /// </summary>
         public static async Task<object> ToOptimizedResultAsync(this IRequest request, object dto)
@@ -122,21 +120,19 @@ namespace ServiceStack
             if (compressionType == null)
                 return HostContext.ContentTypes.SerializeToString(request, dto);
 
-            using (var ms = new MemoryStream())
-            using (var compressionStream = GetCompressionStream(ms, compressionType))
+            using var ms = new MemoryStream();
+            using var compressionStream = GetCompressionStream(ms, compressionType);
+            using (httpResult?.ResultScope?.Invoke())
             {
-                using (httpResult?.ResultScope?.Invoke())
-                {
-                    await HostContext.ContentTypes.SerializeToStreamAsync(request, dto, compressionStream);
-                    compressionStream.Close();
-                }
-
-                var compressedBytes = ms.ToArray();
-                return new CompressedResult(compressedBytes, compressionType, request.ResponseContentType)
-                {
-                    Status = request.Response.StatusCode
-                };
+                await HostContext.ContentTypes.SerializeToStreamAsync(request, dto, compressionStream);
+                compressionStream.Close();
             }
+
+            var compressedBytes = ms.ToArray();
+            return new CompressedResult(compressedBytes, compressionType, request.ResponseContentType)
+            {
+                Status = request.Response.StatusCode
+            };
         }
 
         private static Stream GetCompressionStream(Stream outputStream, string compressionType)
@@ -150,44 +146,53 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Overload for the <see cref="ContentCacheManager.Resolve"/> method returning the most
-        /// optimized result based on the MimeType and CompressionType from the IRequestContext.
+        /// Returning the most optimized result based on the MimeType and CompressionType from the IRequest.
         /// </summary>
         public static object ToOptimizedResultUsingCache<T>(
-            this IRequest requestContext, ICacheClient cacheClient, string cacheKey,
-            Func<T> factoryFn)
+            this IRequest req, ICacheClient cacheClient, string cacheKey, Func<T> factoryFn)
         {
-            return requestContext.ToOptimizedResultUsingCache(cacheClient, cacheKey, null, factoryFn);
+            return req.ToOptimizedResultUsingCache(cacheClient, cacheKey, null, factoryFn);
         }
 
         /// <summary>
-        /// Overload for the <see cref="ContentCacheManager.Resolve"/> method returning the most
-        /// optimized result based on the MimeType and CompressionType from the IRequestContext.
+        /// Returning the most optimized result based on the MimeType and CompressionType from the IRequest.
+        /// </summary>
+        public static Task<object> ToOptimizedResultUsingCacheAsync<T>(
+            this IRequest req, ICacheClientAsync cacheClient, string cacheKey, Func<T> factoryFn, CancellationToken token=default)
+        {
+            return req.ToOptimizedResultUsingCacheAsync(cacheClient, cacheKey, null, factoryFn, token);
+        }
+
+        /// <summary>
+        /// Returning the most optimized result based on the MimeType and CompressionType from the IRequest.
         /// <param name="expireCacheIn">How long to cache for, null is no expiration</param>
         /// </summary>
         public static object ToOptimizedResultUsingCache<T>(
-            this IRequest requestContext, ICacheClient cacheClient, string cacheKey,
+            this IRequest req, ICacheClient cacheClient, string cacheKey,
             TimeSpan? expireCacheIn, Func<T> factoryFn)
         {
-            var cacheResult = cacheClient.ResolveFromCache(cacheKey, requestContext);
+            var cacheResult = cacheClient.ResolveFromCache(cacheKey, req);
             if (cacheResult != null)
                 return cacheResult;
 
-            cacheResult = cacheClient.Cache(cacheKey, factoryFn(), requestContext, expireCacheIn);
+            cacheResult = cacheClient.Cache(cacheKey, factoryFn(), req, expireCacheIn);
             return cacheResult;
         }
 
         /// <summary>
-        /// Clears all the serialized and compressed caches set 
-        /// by the 'Resolve' method for the cacheKey provided
+        /// Returning the most optimized result based on the MimeType and CompressionType from the IRequest.
+        /// <param name="expireCacheIn">How long to cache for, null is no expiration</param>
         /// </summary>
-        /// <param name="requestContext"></param>
-        /// <param name="cacheClient"></param>
-        /// <param name="cacheKeys"></param>
-        public static void RemoveFromCache(
-            this IRequest requestContext, ICacheClient cacheClient, params string[] cacheKeys)
+        public static async Task<object> ToOptimizedResultUsingCacheAsync<T>(
+            this IRequest req, ICacheClientAsync cacheClient, string cacheKey,
+            TimeSpan? expireCacheIn, Func<T> factoryFn, CancellationToken token=default)
         {
-            cacheClient.ClearCaches(cacheKeys);
+            var cacheResult = await cacheClient.ResolveFromCacheAsync(cacheKey, req, token).ConfigAwait();
+            if (cacheResult != null)
+                return cacheResult;
+
+            cacheResult = await cacheClient.CacheAsync(cacheKey, factoryFn(), req, expireCacheIn, token).ConfigAwait();
+            return cacheResult;
         }
 
         /// <summary>
