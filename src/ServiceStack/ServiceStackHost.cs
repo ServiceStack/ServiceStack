@@ -38,6 +38,9 @@ namespace ServiceStack
     {
         private readonly ILog Log = LogManager.GetLogger(typeof(ServiceStackHost));
 
+        /// <summary>
+        /// Singleton access to AppHost
+        /// </summary>
         public static ServiceStackHost Instance { get; protected set; }
 
         /// <summary>
@@ -188,6 +191,9 @@ namespace ServiceStack
             JsConfig.InitStatics();
         }
 
+        /// <summary>
+        /// Configure your AppHost and its dependencies
+        /// </summary>
         public abstract void Configure(Container container);
 
         protected virtual ServiceController CreateServiceController(params Assembly[] assembliesWithServices)
@@ -392,8 +398,9 @@ namespace ServiceStack
         /// </summary>
         public virtual string GetWebRootPath() => Config.WebHostPhysicalPath;
         
-        
-
+        /// <summary>
+        /// Override to intercept VFS Providers registered for this AppHost
+        /// </summary>
         public virtual List<IVirtualPathProvider> GetVirtualFileSources()
         {
             var pathProviders = new List<IVirtualPathProvider>(InsertVirtualFileSources ?? TypeConstants<IVirtualPathProvider>.EmptyList) {                 
@@ -433,14 +440,30 @@ namespace ServiceStack
             throw new NotImplementedException("Start(listeningAtUrlBase) is not supported by this AppHost");
         }
 
+        /// <summary>
+        /// The public name of this App
+        /// </summary>
         public string ServiceName { get; set; }
 
+        /// <summary>
+        /// ServiceStack's Configuration API, see: https://docs.servicestack.net/appsettings  
+        /// </summary>
         public IAppSettings AppSettings { get; set; }
 
+        /// <summary>
+        /// The populated Metadata for this AppHost's Services
+        /// </summary>
         public ServiceMetadata Metadata { get; set; }
 
+        /// <summary>
+        /// The ServiceController that executes Services
+        /// </summary>
         public ServiceController ServiceController { get; set; }
         
+        /// <summary>
+        /// Provides a pure object model for executing the full HTTP Request pipeline which returns the Response DTO
+        /// back to ASP .NET Core gRPC which handles sending the response back to the HTTP/2 connected client.
+        /// </summary>
         public RpcGateway RpcGateway { get; set; }
 
         // Rare for a user to auto register all available services in ServiceStack.dll
@@ -453,12 +476,24 @@ namespace ServiceStack
         /// </summary>
         public virtual Container Container { get; private set; }
 
+        /// <summary>
+        /// Dynamically register Service Routes
+        /// </summary>
         public IServiceRoutes Routes { get; set; }
 
-        public List<RestPath> RestPaths;
+        /// <summary>
+        /// Registered Routes
+        /// </summary>
+        public List<RestPath> RestPaths { get; set; }
 
+        /// <summary>
+        /// Register custom Request Binder
+        /// </summary>
         public Dictionary<Type, Func<IRequest, object>> RequestBinders => ServiceController.RequestTypeFactoryMap;
 
+        /// <summary>
+        /// Manage registered Content Types & their sync/async serializers supported by this AppHost
+        /// </summary>
         public IContentTypes ContentTypes { get; set; }
 
         /// <summary>
@@ -539,33 +574,72 @@ namespace ServiceStack
         public List<HandleGatewayExceptionDelegate> GatewayExceptionHandlers { get; set; }
         public List<HandleGatewayExceptionAsyncDelegate> GatewayExceptionHandlersAsync { get; set; }
 
+        /// <summary>
+        /// Register callbacks fired just before AppHost.Configure() 
+        /// </summary>
         public List<Action<ServiceStackHost>> BeforeConfigure { get; set; }
 
+        /// <summary>
+        /// Register callbacks fired just after AppHost.Configure() 
+        /// </summary>
         public List<Action<ServiceStackHost>> AfterConfigure { get; set; }
 
+        /// <summary>
+        /// Register callbacks that's fired after the AppHost is initialized
+        /// </summary>
         public List<Action<IAppHost>> AfterInitCallbacks { get; set; }
 
+        /// <summary>
+        /// Register callbacks that's fired when AppHost is disposed
+        /// </summary>
         public List<Action<IAppHost>> OnDisposeCallbacks { get; set; }
 
+        /// <summary>
+        /// Register callbacks to execute at the end of a Request
+        /// </summary>
         public List<Action<IRequest>> OnEndRequestCallbacks { get; set; }
 
+        /// <summary>
+        /// Register highest priority IHttpHandler callbacks
+        /// </summary>
         public List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers { get; set; }
         internal Func<IHttpRequest, IHttpHandler>[] RawHttpHandlersArray;
 
+        /// <summary>
+        /// Get "Catch All" IHttpHandler predicate IHttpHandler's, e.g. Used by HTML View Engines
+        /// </summary>
         public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
         internal HttpHandlerResolverDelegate[] CatchAllHandlersArray;
 
+        /// <summary>
+        /// Register fallback Request Handlers e.g. Used by #Script & Razor Page Based Routing
+        /// </summary>
         public List<HttpHandlerResolverDelegate> FallbackHandlers { get; set; }
         internal HttpHandlerResolverDelegate[] FallbackHandlersArray;
 
+        /// <summary>
+        /// Fallback IServiceStackHandler to handle Error Responses
+        /// </summary>
         public IServiceStackHandler GlobalHtmlErrorHttpHandler { get; set; }
 
+        /// <summary>
+        /// Register Custom IServiceStackHandler to handle specific HttpStatusCode's 
+        /// </summary>
         public Dictionary<HttpStatusCode, IServiceStackHandler> CustomErrorHttpHandlers { get; set; }
 
+        /// <summary>
+        /// Captured StartUp Exceptions
+        /// </summary>
         public List<ResponseStatus> StartUpErrors { get; set; }
 
+        /// <summary>
+        /// Captured Unobserved Async Errors
+        /// </summary>
         public List<ResponseStatus> AsyncErrors { get; set; }
 
+        /// <summary>
+        /// Which plugins were loaded in this AppHost
+        /// </summary>
         public List<string> PluginsLoaded { get; set; }
 
         /// <summary>
@@ -591,12 +665,21 @@ namespace ServiceStack
              ?? VirtualFileSources
              ?? new FileSystemVirtualFiles(GetWebRootPath())).RootDirectory;
 
+        /// <summary>
+        /// The Content Root Directory for this AppHost
+        /// </summary>
         public IVirtualDirectory ContentRootDirectory => 
             VirtualFiles?.RootDirectory
             ?? new FileSystemVirtualFiles(MapProjectPath("~/")).RootDirectory;
         
+        /// <summary>
+        /// Insert higher priority VFS providers at the start of the VFS providers list
+        /// </summary>
         public List<IVirtualPathProvider> InsertVirtualFileSources { get; set; }
         
+        /// <summary>
+        /// Append lower priority VFS providers at the end of the VFS providers list
+        /// </summary>
         public List<IVirtualPathProvider> AddVirtualFileSources { get; set; }
 
         public List<Action<IRequest, object>> GatewayRequestFilters { get; set; }
@@ -611,6 +694,9 @@ namespace ServiceStack
         public List<Func<IRequest, object, Task>> GatewayResponseFiltersAsync { get; set; }
         internal Func<IRequest, object, Task>[] GatewayResponseFiltersAsyncArray;
 
+        /// <summary>
+        /// The fallback ScriptContext to use if no SharpPagesFeature plugin was registered
+        /// </summary>
         public ScriptContext DefaultScriptContext { get; set; }
 
         /// <summary>
@@ -722,6 +808,9 @@ namespace ServiceStack
             }
         }
 
+        /// <summary>
+        /// Override to intercept sync #Script execution
+        /// </summary>
         public virtual object EvalScript(PageResult pageResult, IRequest req = null, Dictionary<string, object> args=null)
         {
             InitPageResult(pageResult, req, args);
@@ -732,6 +821,9 @@ namespace ServiceStack
             return ScriptLanguage.UnwrapValue(returnValue);
         }
 
+        /// <summary>
+        /// Override to intercept async #Script execution
+        /// </summary>
         public virtual async Task<object> EvalScriptAsync(PageResult pageResult, IRequest req = null, Dictionary<string, object> args=null)
         {
             InitPageResult(pageResult, req, args);
@@ -815,6 +907,9 @@ namespace ServiceStack
         protected virtual Task HandleUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex) =>
             HandleResponseException(httpReq, httpRes, operationName, ex);
         
+        /// <summary>
+        /// Override to intercept Response Exceptions
+        /// </summary>
         public virtual Task HandleResponseException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
         {
             //Only add custom error messages to StatusDescription
@@ -827,6 +922,9 @@ namespace ServiceStack
             return httpRes.WriteErrorToResponse(httpReq, httpReq.ResponseContentType, operationName, errorMessage, ex, statusCode);
         }
 
+        /// <summary>
+        /// Override to intercept Short Circuited Authentication Errors
+        /// </summary>
         public virtual async Task HandleShortCircuitedErrors(IRequest req, IResponse res, object requestDto)
         {
             object response = null;
@@ -850,6 +948,10 @@ namespace ServiceStack
             }
         }
 
+        /// <summary>
+        /// Override to intercept Exceptions thrown at Startup.
+        /// Use StrictMode to rethrow Startup Exceptions
+        /// </summary>
         public virtual void OnStartupException(Exception ex)
         {
             if (Config.StrictMode == true || Config.DebugMode)
@@ -859,6 +961,9 @@ namespace ServiceStack
         }
 
         private HostConfig config;
+        /// <summary>
+        /// The Configuration for this AppHost 
+        /// </summary>
         public HostConfig Config
         {
             get => config;
@@ -869,12 +974,17 @@ namespace ServiceStack
             }
         }
 
+        /// <summary>
+        /// Override to intercept after the Config was loaded
+        /// </summary>
         public virtual void OnConfigLoad()
         {
             Config.DebugMode = GetType().Assembly.IsDebugBuild();
         }
 
-        // Config has changed
+        /// <summary>
+        /// Override to intercept when the Config has changed
+        /// </summary>
         public virtual void OnAfterConfigChanged()
         {
             config.ServiceEndpointsMetadataConfig = ServiceEndpointsMetadataConfig.Create(config.HandlerFactoryPath);
@@ -883,13 +993,18 @@ namespace ServiceStack
             JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
         }
 
+        /// <summary>
+        /// Override to intercept before the AppHost is initialized
+        /// </summary>
         public virtual void OnBeforeInit()
         {
             Container.Register<IHashProvider>(c => new SaltedHash()).ReusedWithin(ReuseScope.None);
             Container.Register<IPasswordHasher>(c => new PasswordHasher());
         }
 
-        //After configure called
+        /// <summary>
+        /// Override to intercept after the AppHost has been initialized
+        /// </summary>
         public virtual void OnAfterInit()
         {
             AfterInitAt = DateTime.UtcNow;
@@ -1105,6 +1220,9 @@ namespace ServiceStack
             ServiceController.AfterInit();
         }
 
+        /// <summary>
+        /// Override to intercept releasing this Service or Attribute instance 
+        /// </summary>
         public virtual void Release(object instance)
         {
             try
@@ -1125,6 +1243,9 @@ namespace ServiceStack
             }
         }
 
+        /// <summary>
+        /// Override to intercept the final callback after executing this Request 
+        /// </summary>
         public virtual void OnEndRequest(IRequest request = null)
         {
             try
@@ -1224,22 +1345,34 @@ namespace ServiceStack
             return Plugins.FirstOrDefault(x => x is T) as T;
         }
 
+        /// <summary>
+        /// Returns true if App has this plugin registered 
+        /// </summary>
         public bool HasPlugin<T>() where T : class, IPlugin
         {
             return Plugins.FirstOrDefault(x => x is T) != null;
         }
 
+        /// <summary>
+        /// Override to use a Custom ServiceRunner to execute this Request DTO
+        /// </summary>
         public virtual IServiceRunner<TRequest> CreateServiceRunner<TRequest>(ActionContext actionContext)
         {
             //cached per service action
             return new ServiceRunner<TRequest>(this, actionContext);
         }
 
+        /// <summary>
+        /// Override to use a localized string for internal routes & text used by ServiceStack 
+        /// </summary>
         public virtual string ResolveLocalizedString(string text, IRequest request=null)
         {
             return text;
         }
 
+        /// <summary>
+        /// Override to customize the Absolute URL for this virtualPath for this IRequest
+        /// </summary>
         public virtual string ResolveAbsoluteUrl(string virtualPath, IRequest httpReq)
         {
             if (virtualPath.StartsWith("http://") || virtualPath.StartsWith("https://"))
@@ -1251,11 +1384,17 @@ namespace ServiceStack
             return httpReq.GetAbsoluteUrl(virtualPath); //Http Listener, TODO: ASP.NET overrides
         }
 
+        /// <summary>
+        /// Override to change whether absolute links should use https:// URLs 
+        /// </summary>
         public virtual bool UseHttps(IRequest httpReq)
         {
             return Config.UseHttpsLinks || httpReq.GetHeader(HttpHeaders.XForwardedProtocol) == "https";
         }
 
+        /// <summary>
+        /// Override to customize the BaseUrl to use for this IRequest 
+        /// </summary>
         public virtual string GetBaseUrl(IRequest httpReq)
         {
             var useHttps = UseHttps(httpReq);
@@ -1275,12 +1414,18 @@ namespace ServiceStack
                 .TrimEnd('/');
         }
 
+        /// <summary>
+        /// Override to customize the Physical Path for this virtualPath for this IRequest
+        /// </summary>
         public virtual string ResolvePhysicalPath(string virtualPath, IRequest httpReq)
         {
             return VirtualFileSources.CombineVirtualPath(RootDirectory.RealPath, virtualPath);
         }
 
         private bool delayedLoadPlugin;
+        /// <summary>
+        /// Manually register Plugin to load
+        /// </summary>
         public virtual void LoadPlugin(params IPlugin[] plugins)
         {
             if (delayedLoadPlugin)
@@ -1314,19 +1459,44 @@ namespace ServiceStack
             }
         }
 
+        /// <summary>
+        /// Override to intercept Service Requests
+        /// </summary>
         public virtual object ExecuteService(object requestDto) => ExecuteService(requestDto, RequestAttributes.None);
 
+        /// <summary>
+        /// Override to intercept Service Requests
+        /// </summary>
         public virtual object ExecuteService(object requestDto, IRequest req) => ServiceController.Execute(requestDto, req);
 
+        /// <summary>
+        /// Override to intercept Async Service Requests
+        /// </summary>
         public virtual Task<object> ExecuteServiceAsync(object requestDto, IRequest req) => ServiceController.ExecuteAsync(requestDto, req);
 
+        /// <summary>
+        /// Override to intercept Service Requests
+        /// </summary>
         public virtual object ExecuteService(object requestDto, RequestAttributes requestAttributes) => ServiceController.Execute(requestDto, new BasicRequest(requestDto, requestAttributes));
 
+        /// <summary>
+        /// Override to intercept MQ Requests
+        /// </summary>
         public virtual object ExecuteMessage(IMessage mqMessage) => ServiceController.ExecuteMessage(mqMessage, new BasicRequest(mqMessage));
 
+        /// <summary>
+        /// Override to intercept MQ Requests
+        /// </summary>
         public virtual object ExecuteMessage(IMessage dto, IRequest req) => ServiceController.ExecuteMessage(dto, req);
 
+        /// <summary>
+        /// Manually register ServiceStack Service at these routes
+        /// </summary>
         public virtual void RegisterService<T>(params string[] atRestPaths) where T : IService => RegisterService(typeof(T), atRestPaths);
+
+        /// <summary>
+        /// Manually register ServiceStack Service at these routes
+        /// </summary>
         public virtual void RegisterService(Type serviceType, params string[] atRestPaths)
         {
             ServiceController.RegisterService(serviceType);
@@ -1341,17 +1511,26 @@ namespace ServiceStack
                 }
             }
         }
-
+        
+        /// <summary>
+        /// Register all ServiceStack Services found in this Assembly
+        /// </summary>
         public void RegisterServicesInAssembly(Assembly assembly)
         {
             ServiceController.RegisterServicesInAssembly(assembly);
         }
 
+        /// <summary>
+        /// Return the [Route] attributes for this Requesty DTO Type
+        /// </summary>
         public virtual RouteAttribute[] GetRouteAttributes(Type requestType)
         {
             return requestType.AllAttributes<RouteAttribute>();
         }
 
+        /// <summary>
+        /// Override to customize WSDL returned in SOAP /metadata pages
+        /// </summary>
         public virtual string GenerateWsdl(WsdlTemplateBase wsdlTemplate)
         {
             var wsdl = wsdlTemplate.ToString();
@@ -1366,21 +1545,33 @@ namespace ServiceStack
             return wsdl;
         }
 
+        /// <summary>
+        /// Register Typed Service Request Filter
+        /// </summary>
         public void RegisterTypedRequestFilter<T>(Action<IRequest, IResponse, T> filterFn)
         {
             GlobalTypedRequestFilters[typeof(T)] = new TypedFilter<T>(filterFn);
         }
 
+        /// <summary>
+        /// Register Typed Service Request Filter
+        /// </summary>
         public void RegisterTypedRequestFilter<T>(Func<Container, ITypedFilter<T>> filter)
         {
             RegisterTypedFilter(RegisterTypedRequestFilter, filter);
         }
 
+        /// <summary>
+        /// Register Typed Service Response Filter
+        /// </summary>
         public void RegisterTypedResponseFilter<T>(Action<IRequest, IResponse, T> filterFn)
         {
             GlobalTypedResponseFilters[typeof(T)] = new TypedFilter<T>(filterFn);
         }
 
+        /// <summary>
+        /// Register Typed Service Response Filter
+        /// </summary>
         public void RegisterTypedResponseFilter<T>(Func<Container, ITypedFilter<T>> filter)
         {
             RegisterTypedFilter(RegisterTypedResponseFilter, filter);
@@ -1398,27 +1589,42 @@ namespace ServiceStack
             });
         }
 
+        /// <summary>
+        /// Register Typed MQ Request Filter
+        /// </summary>
         public void RegisterTypedMessageRequestFilter<T>(Action<IRequest, IResponse, T> filterFn)
         {
             GlobalTypedMessageRequestFilters[typeof(T)] = new TypedFilter<T>(filterFn);
         }
 
+        /// <summary>
+        /// Register Typed MQ Response Filter
+        /// </summary>
         public void RegisterTypedMessageResponseFilter<T>(Action<IRequest, IResponse, T> filterFn)
         {
             GlobalTypedMessageResponseFilters[typeof(T)] = new TypedFilter<T>(filterFn);
         }
 
+        /// <summary>
+        /// Override to customize the physical path to return for this relativePath 
+        /// </summary>
         public virtual string MapProjectPath(string relativePath)
         {
             return relativePath.MapProjectPath();
         }
 
+        /// <summary>
+        /// Override to customize normalized /path/info to use for this request 
+        /// </summary>
         public virtual string ResolvePathInfo(IRequest request, string originalPathInfo)
         {
             var pathInfo = NormalizePathInfo(originalPathInfo, Config.HandlerFactoryPath);            
             return pathInfo;
         }
 
+        /// <summary>
+        /// Normalizes /path/info based on Config.HandlerFactoryPath 
+        /// </summary>
         public static string NormalizePathInfo(string pathInfo, string mode)
         {
             if (mode?.Length > 0 && mode[0] == '/')
@@ -1441,6 +1647,9 @@ namespace ServiceStack
                 : normalizedPathInfo;
         }
 
+        /// <summary>
+        /// Override to customize Redirect Responses
+        /// </summary>
         public virtual IHttpHandler ReturnRedirectHandler(IHttpRequest httpReq)
         {
             var pathInfo = NormalizePathInfo(httpReq.OriginalPathInfo, Config.HandlerFactoryPath);
@@ -1449,6 +1658,9 @@ namespace ServiceStack
                 : null;
         }
         
+        /// <summary>
+        /// Override to customize IHttpHandler used to service ?debug=requestinfo requests
+        /// </summary>
         public virtual IHttpHandler ReturnRequestInfoHandler(IHttpRequest httpReq)
         {
             if ((Config.DebugMode
@@ -1470,6 +1682,10 @@ namespace ServiceStack
             return null;
         }
 
+        /// <summary>
+        /// Executes OnDisposeCallbacks and Disposes IDisposable's dependencies in the IOC & reset singleton states
+        /// </summary>
+        /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)

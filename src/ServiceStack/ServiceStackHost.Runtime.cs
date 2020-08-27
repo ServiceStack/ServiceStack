@@ -37,6 +37,9 @@ namespace ServiceStack
 {
     public abstract partial class ServiceStackHost
     {
+        /// <summary>
+        /// Executes Service Request Converters
+        /// </summary>
         public async Task<object> ApplyRequestConvertersAsync(IRequest req, object requestDto)
         {
             foreach (var converter in RequestConvertersArray)
@@ -49,6 +52,9 @@ namespace ServiceStack
             return requestDto;
         }
 
+        /// <summary>
+        /// Executes Service Response Converters
+        /// </summary>
         public async Task<object> ApplyResponseConvertersAsync(IRequest req, object responseDto)
         {
             foreach (var converter in ResponseConvertersArray)
@@ -151,6 +157,9 @@ namespace ServiceStack
             }
         }
 
+        /// <summary>
+        /// Executes Service Request Filters
+        /// </summary>
         protected async Task ApplyRequestFiltersSingleAsync(IRequest req, IResponse res, object requestDto)
         {
             //Exec all RequestFilter attributes with Priority < 0
@@ -252,6 +261,9 @@ namespace ServiceStack
             }
         }
 
+        /// <summary>
+        /// Executes Service Response Filters
+        /// </summary>
         protected async Task ApplyResponseFiltersSingleAsync(IRequest req, IResponse res, object response)
         {
             var attributes = req.Dto != null
@@ -320,6 +332,9 @@ namespace ServiceStack
             }
         }
 
+        /// <summary>
+        /// Executes MQ Response Filters
+        /// </summary>
         public bool ApplyMessageRequestFilters(IRequest req, IResponse res, object requestDto)
         {
             ExecTypedFilters(GlobalTypedMessageRequestFilters, req, res, requestDto);
@@ -341,6 +356,9 @@ namespace ServiceStack
             return res.IsClosed;
         }
 
+        /// <summary>
+        /// Executes MQ Response Filters
+        /// </summary>
         public bool ApplyMessageResponseFilters(IRequest req, IResponse res, object response)
         {
             ExecTypedFilters(GlobalTypedMessageResponseFilters, req, res, response);
@@ -362,6 +380,9 @@ namespace ServiceStack
             return res.IsClosed;
         }
 
+        /// <summary>
+        /// Executes Typed Request Filters 
+        /// </summary>
         public void ExecTypedFilters(Dictionary<Type, ITypedFilter> typedFilters, IRequest req, IResponse res, object dto)
         {
             if (typedFilters.Count == 0) return;
@@ -386,12 +407,18 @@ namespace ServiceStack
             }
         }
 
+        /// <summary>
+        /// Configuration of ServiceStack's /metadata pages
+        /// </summary>
         public MetadataPagesConfig MetadataPagesConfig => new MetadataPagesConfig(
             Metadata,
             Config.ServiceEndpointsMetadataConfig,
             Config.IgnoreFormatsInMetadata,
             ContentTypes.ContentTypeFormats.Keys.ToList());
 
+        /// <summary>
+        /// Return the Default Session Expiry for this Request 
+        /// </summary>
         public virtual TimeSpan GetDefaultSessionExpiry(IRequest req)
         {
             var sessionFeature = this.GetPlugin<SessionFeature>();
@@ -407,11 +434,17 @@ namespace ServiceStack
                 : SessionFeature.DefaultSessionExpiry;
         }
 
+        /// <summary>
+        /// Return whether this App supports this feature 
+        /// </summary>
         public bool HasFeature(Feature feature)
         {
             return (feature & Config.EnableFeatures) == feature;
         }
 
+        /// <summary>
+        /// Assert whether this App supports this feature 
+        /// </summary>
         public void AssertFeatures(Feature usesFeatures)
         {
             if (Config.EnableFeatures == Feature.All) 
@@ -424,13 +457,20 @@ namespace ServiceStack
             }
         }
 
+        /// <summary>
+        /// Assert whether this App should server this contentType 
+        /// </summary>
         public void AssertContentType(string contentType)
         {
-            if (Config.EnableFeatures == Feature.All) return;
+            if (Config.EnableFeatures == Feature.All) 
+                return;
 
             AssertFeatures(contentType.ToFeature());
         }
 
+        /// <summary>
+        /// Override to return whether this request can access the metadata for the request
+        /// </summary>
         public bool HasAccessToMetadata(IRequest httpReq, IResponse httpRes)
         {
             if (!HasFeature(Feature.Metadata))
@@ -451,6 +491,9 @@ namespace ServiceStack
             return true;
         }
 
+        /// <summary>
+        /// Override to handle Forbidden Feature Error Responses
+        /// </summary>
         public void HandleErrorResponse(IRequest httpReq, IResponse httpRes, HttpStatusCode errorStatus, string errorStatusDescription = null)
         {
             if (httpRes.IsClosed) return;
@@ -464,6 +507,9 @@ namespace ServiceStack
             handler.ProcessRequestAsync(httpReq, httpRes, httpReq.OperationName);
         }
 
+        /// <summary>
+        /// Override to customize the IServiceStackHandler that should handle the specified errorStatusCode 
+        /// </summary>
         public IServiceStackHandler GetCustomErrorHandler(int errorStatusCode)
         {
             try
@@ -476,6 +522,9 @@ namespace ServiceStack
             }
         }
 
+        /// <summary>
+        /// Override to customize the IServiceStackHandler that should handle the specified HttpStatusCode 
+        /// </summary>
         public IServiceStackHandler GetCustomErrorHandler(HttpStatusCode errorStatus)
         {
             IServiceStackHandler httpHandler = null;
@@ -484,6 +533,9 @@ namespace ServiceStack
             return httpHandler;
         }
 
+        /// <summary>
+        /// Override to change the IServiceStackHandler that should handle 404 NotFount Responses
+        /// </summary>
         public IServiceStackHandler GetNotFoundHandler()
         {
             IServiceStackHandler httpHandler = null;
@@ -492,6 +544,9 @@ namespace ServiceStack
             return httpHandler ?? new NotFoundHttpHandler();
         }
 
+        /// <summary>
+        /// Override to customize the IHttpHandler that should handle the specified HttpStatusCode 
+        /// </summary>
         public IHttpHandler GetCustomErrorHttpHandler(HttpStatusCode errorStatus)
         {
             var ssHandler = GetCustomErrorHandler(errorStatus)
@@ -501,6 +556,9 @@ namespace ServiceStack
             return httpHandler ?? new ServiceStackHttpHandler(ssHandler);
         }
 
+        /// <summary>
+        /// Return true if the current request is configured with the super user AdminAuthSecret or not  
+        /// </summary>
         public bool HasValidAuthSecret(IRequest httpReq)
         {
             if (Config.AdminAuthSecret != null)
@@ -512,9 +570,15 @@ namespace ServiceStack
             return false;
         }
 
+        /// <summary>
+        /// Override to customize converting an Exception into a generic ErrorResponse DTO  
+        /// </summary>
         public virtual ErrorResponse CreateErrorResponse(Exception ex, object request = null) =>
             new ErrorResponse { ResponseStatus = ex.ToResponseStatus() };
         
+        /// <summary>
+        /// Override to customize converting an Exception into the ResponseStatus DTO  
+        /// </summary>
         public virtual ResponseStatus CreateResponseStatus(Exception ex, object request=null)
         {
             var useEx = (Config.ReturnsInnerException && ex.InnerException != null && !(ex is IHttpError)
@@ -542,6 +606,9 @@ namespace ServiceStack
                 Log.Error(message);
         }
         
+        /// <summary>
+        /// Override to intercept & customize Exception responses 
+        /// </summary>
         public virtual void OnExceptionTypeFilter(Exception ex, ResponseStatus responseStatus)
         {
             var argEx = ex as ArgumentException;
@@ -584,6 +651,9 @@ namespace ServiceStack
             }
         }
 
+        /// <summary>
+        /// Override to intercept when Sessions are saved
+        /// </summary>
         public virtual void OnSaveSession(IRequest httpReq, IAuthSession session, TimeSpan? expiresIn = null)
         {
             if (httpReq == null) return;
@@ -644,11 +714,17 @@ namespace ServiceStack
             return true;
         }
 
+        /// <summary>
+        /// Overriden by AppHost's to return the current IRequest if it supports singleton access to the Request Context 
+        /// </summary>
         public virtual IRequest TryGetCurrentRequest()
         {
             return null;
         }
 
+        /// <summary>
+        /// Override to intercept the response of a ServiceStack Service request
+        /// </summary>
         public virtual object OnAfterExecute(IRequest req, object requestDto, object response)
         {
             if (req.Response.Dto == null)
@@ -657,6 +733,9 @@ namespace ServiceStack
             return response;
         }
 
+        /// <summary>
+        /// Override to customize what DTOs are displayed on metadata pages
+        /// </summary>
         public virtual MetadataTypesConfig GetTypesConfigForMetadata(IRequest req)
         {
             var typesConfig = new NativeTypesFeature().MetadataTypesConfig;
@@ -788,8 +867,14 @@ namespace ServiceStack
                 ?? Container.TryResolve<IMessageService>().MessageFactory).CreateMessageProducer();
         }
 
+        /// <summary>
+        /// Get the configured <see cref="IServiceGateway"/>  
+        /// </summary>
         public virtual IServiceGateway GetServiceGateway() => GetServiceGateway(new BasicRequest());
 
+        /// <summary>
+        /// Get the configured <see cref="IServiceGateway"/> for this request.  
+        /// </summary>
         public virtual IServiceGateway GetServiceGateway(IRequest req)
         {
             if (req == null)
@@ -801,13 +886,22 @@ namespace ServiceStack
                 ?? new InProcessServiceGateway(req);
         }
 
+        /// <summary>
+        /// Gets the registered <see cref="IAuthRepository"/>  
+        /// </summary>
         public virtual IAuthRepository GetAuthRepository(IRequest req = null)
         {
             return TryResolve<IAuthRepository>();
         }
 
+        /// <summary>
+        /// Return the ICookies implementation to use
+        /// </summary>
         public virtual ICookies GetCookies(IHttpResponse res) => new Cookies(res);
 
+        /// <summary>
+        /// Override to return whether static files should be sent compressed or not (if supported by UserAgent)
+        /// </summary>
         public virtual bool ShouldCompressFile(IVirtualFile file)
         {
             return !string.IsNullOrEmpty(file.Extension) 
@@ -815,6 +909,9 @@ namespace ServiceStack
                 && (Config.CompressFilesLargerThanBytes == null || file.Length > Config.CompressFilesLargerThanBytes);
         }
 
+        /// <summary>
+        /// Allow overriding ServiceStack runtime config like JWT Keys
+        /// </summary>
         public virtual T GetRuntimeConfig<T>(IRequest req, string name, T defaultValue)
         {
             var runtimeAppSettings = TryResolve<IRuntimeAppSettings>();
@@ -824,6 +921,9 @@ namespace ServiceStack
             return defaultValue;
         }
 
+        /// <summary>
+        /// Override to intercept MQ Publish Requests 
+        /// </summary>
         public virtual void PublishMessage<T>(IMessageProducer messageProducer, T message)
         {
             if (messageProducer == null)
@@ -832,6 +932,9 @@ namespace ServiceStack
             messageProducer.Publish(message);
         }
 
+        /// <summary>
+        /// Override to intercept auto HTML Page Response
+        /// </summary>
         public virtual async Task WriteAutoHtmlResponseAsync(IRequest request, object response, string html, Stream outputStream)
         {
             if (!Config.EnableAutoHtmlResponses)
@@ -850,6 +953,9 @@ namespace ServiceStack
             await outputStream.WriteAsync(utf8Bytes, 0, utf8Bytes.Length).ConfigAwait();
         }
 
+        /// <summary>
+        /// Override to alter what registered plugins you want discoverable (used by ServiceStack Studio to enable features). 
+        /// </summary>
         public virtual List<string> GetMetadataPluginIds()
         {
             var pluginIds = Plugins.OfType<IHasStringId>().Map(x => x.Id);
