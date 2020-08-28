@@ -361,12 +361,12 @@ namespace ServiceStack.Server.Tests.Shared
             await cache.SetAsync("test_QUERY_Deposit__Query_Deposit_10_1", "A");
             await cache.SetAsync("test_QUERY_Deposit__0_1___CUSTOM", "B");
 
-            var keys = await cache.GetKeysStartingWithAsync("test_QUERY_Deposit");
+            var keys = (await cache.GetKeysStartingWithAsync("test_QUERY_Deposit")).ToList();
             Assert.That(keys.Count, Is.EqualTo(2));
 
             await cache.RemoveAllAsync(keys);
 
-            var newKeys = await cache.GetKeysStartingWithAsync("test_QUERY_Deposit");
+            var newKeys = (await cache.GetKeysStartingWithAsync("test_QUERY_Deposit")).ToList();
             Assert.That(newKeys.Count, Is.EqualTo(0));
         }
 

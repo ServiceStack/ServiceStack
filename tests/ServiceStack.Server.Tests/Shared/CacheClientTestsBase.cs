@@ -506,12 +506,12 @@ namespace ServiceStack.Server.Tests.Shared
             cache.Set("test_QUERY_Deposit__Query_Deposit_10_1", "A");
             cache.Set("test_QUERY_Deposit__0_1___CUSTOM", "B");
 
-            var keys = cache.GetKeysStartingWith("test_QUERY_Deposit");
+            var keys = cache.GetKeysStartingWith("test_QUERY_Deposit").ToList();
             Assert.That(keys.Count, Is.EqualTo(2));
 
             cache.RemoveAll(keys);
 
-            var newKeys = cache.GetKeysStartingWith("test_QUERY_Deposit");
+            var newKeys = cache.GetKeysStartingWith("test_QUERY_Deposit").ToList();
             Assert.That(newKeys.Count, Is.EqualTo(0));
         }
 
