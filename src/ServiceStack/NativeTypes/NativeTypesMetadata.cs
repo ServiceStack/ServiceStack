@@ -511,7 +511,7 @@ namespace ServiceStack.NativeTypes
 
         private MetadataTypeName[] ToInterfaces(Type type)
         {
-            return type.GetInterfaces().Where(x => 
+            return type.GetDirectInterfaces().Where(x => 
             (!config.ExcludeImplementedInterfaces && !x.IsGenericType && !x.IsSystemType() && !x.IsServiceStackType()) 
             || config.ExportTypes.ContainsMatch(x))
             .Map(x =>
@@ -1522,5 +1522,26 @@ namespace ServiceStack.NativeTypes
 
         public static string GetAttributeName(this Attribute attr) => 
             StringUtils.RemoveSuffix(attr.GetType().Name, "Attribute");
+
+        public static Type[] GetDirectInterfaces(this Type type)
+        {
+            var childInterfaces = new List<Type>();
+            if (type.BaseType != typeof(object) && type.BaseType != null)
+            {
+                foreach (var childIface in type.BaseType.GetInterfaces())
+                {
+                    childInterfaces.Add(childIface);
+                }
+            }
+            foreach(var iface in type.GetInterfaces())
+            {
+                foreach (var childIface in iface.GetInterfaces())
+                {
+                    childInterfaces.Add(childIface);
+                }
+            }
+            var directInterfaces = type.GetInterfaces().Except(childInterfaces);
+            return directInterfaces.ToArray();
+        }
     }
 }
