@@ -371,7 +371,7 @@ namespace ServiceStack.NativeTypes
             typesConfig.ExportTypes.Remove(typeof(ICreateDb<>));
             typesConfig.ExportTypes.Remove(typeof(IUpdateDb<>));
             typesConfig.ExportTypes.Remove(typeof(IPatchDb<>));
-            typesConfig.ExportTypes.Remove(typeof(IUpdateDb<>));
+            typesConfig.ExportTypes.Remove(typeof(IDeleteDb<>));
             typesConfig.ExportTypes.Remove(typeof(ISaveDb<>));
 
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
