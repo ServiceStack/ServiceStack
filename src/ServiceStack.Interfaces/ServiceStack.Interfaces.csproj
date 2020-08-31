@@ -4,14 +4,33 @@
         <PackageId>ServiceStack.Interfaces</PackageId>
         <AssemblyName>ServiceStack.Interfaces</AssemblyName>
         <RootNamespace>ServiceStack</RootNamespace>
-        <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
+        <TargetFrameworks>net45;net472;netstandard2.0</TargetFrameworks>
         <Title>Lightweight and implementation-free interfaces for ServiceStack</Title>
         <PackageDescription>Lightweight and implementation-free interfaces for DTO's, providers and adapters.</PackageDescription>
         <PackageTags>ServiceStack;Common;Framework;Clients;ServiceClients;Gateway</PackageTags>
     </PropertyGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />        
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)'=='net45'">
+        <Compile Remove="Redis/*Async.cs" />
+        <Compile Remove="Redis/Generic/*Async.cs" />
+        <Compile Remove="Redis/Pipeline/*Async.cs" />
+        <None Include="Redis/*Async.cs" />
+        <None Include="Redis/Generic/*Async.cs" />
+        <None Include="Redis/Pipeline/*Async.cs" />
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+        <Reference Include="System.Net" />
+        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.0" />
+    </ItemGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
         <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
+        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.0" />        
     </ItemGroup>
 
 </Project>
