@@ -112,7 +112,7 @@
       <HintPath>..\..\src\packages\ServiceStack.HttpClient.5.9.3\lib\net45\ServiceStack.HttpClient.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ServiceStack.Interfaces, Version=5.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="ServiceStack.Interfaces, Version=5.0.0.0, Culture=neutral, PublicKeyToken=02c12cbda47e6587">
       <HintPath>..\..\src\packages\ServiceStack.Interfaces.5.9.3\lib\net472\ServiceStack.Interfaces.dll</HintPath>
       <Private>True</Private>
     </Reference>
