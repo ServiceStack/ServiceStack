@@ -262,6 +262,12 @@
     <Content Include="webpage.html" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\ServiceStack.Common.Tests\IocExtensions.cs">
+      <Link>Common.Tests\IocExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Common.Tests\TestBase.cs">
+      <Link>Common.Tests\TestBase.cs</Link>
+    </Compile>
     <Compile Include="Services\AsyncTaskServices.cs" />
     <Compile Include="Services\CookiesService.cs" />
     <Compile Include="Services\CustomPathServices.cs" />
@@ -366,32 +372,6 @@
     <Compile Include="Tests\UniqueRequestTests.cs" />
     <Compile Include="Tests\VirtualPathTests.cs" />
     <Compile Include="Tests\WebServicesTests.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj">
-      <Project>{c43f583f-abde-4dd4-bbe3-66322817a6ad}</Project>
-      <Name>ServiceStack.Client</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">
-      <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
-      <Name>ServiceStack.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
-      <Project>{55942102-033a-4da8-a6af-1db7b2f34a2d}</Project>
-      <Name>ServiceStack.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj">
-      <Project>{5a315f92-80d2-4c60-a5a4-22e027ac7e7e}</Project>
-      <Name>ServiceStack.Server</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
-      <Project>{680a1709-25eb-4d52-a87f-ee03ffd94baa}</Project>
-      <Name>ServiceStack</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj">
-      <Project>{3fa9197a-462d-44cc-9ab3-61af414d0b45}</Project>
-      <Name>ServiceStack.Common.Tests</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="static-root.txt" />
