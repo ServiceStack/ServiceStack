@@ -533,6 +533,14 @@ namespace ServiceStack.Auth
                 ? null
                 : verifiedPayload;
         }
+
+        public static Dictionary<string, object> ExtractPayload(string jwt)
+        {
+            var payloadBase64 = jwt.AsSpan().RightPart('.').LeftPart('.');
+            var payloadBytes = payloadBase64.ToString().FromBase64UrlSafe();
+            var payloadJson = MemoryProvider.Instance.FromUtf8Bytes(payloadBytes);
+            return (Dictionary<string, object>) JSON.parse(payloadJson);
+        }
         
         /// <summary>
         /// Return token payload which has been verified to be created using the configured encryption key.
