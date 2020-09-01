@@ -58,7 +58,7 @@ namespace ServiceStack.Auth
 
         public string UserProfileUrl { get; set; }
         public string VerifyTokenUrl { get; set; }
-
+        public string IssuerSigningKeysUrl { get; set; }
         public OAuthAuthorizer OAuthUtils { get; set; }
 
 

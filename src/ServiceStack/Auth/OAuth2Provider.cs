@@ -83,13 +83,13 @@ namespace ServiceStack.Auth
                 }
                 
                 var contents = GetAccessTokenJson(code);
-                var authInfo = JsonObject.Parse(contents);
+                var authInfo = (Dictionary<string,object>)JSON.parse(contents);
 
-                var accessToken = authInfo["access_token"];
+                var accessToken = authInfo["access_token"].ToString();
 
                 var redirectUrl = SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"));
 
-                var errorResult = AuthenticateWithAccessToken(authService, session, tokens, accessToken);
+                var errorResult = AuthenticateWithAccessToken(authService, session, tokens, accessToken, authInfo);
                 if (errorResult != null)
                     return errorResult;
                 
@@ -125,15 +125,24 @@ namespace ServiceStack.Auth
             return contents;
         }
 
-        protected virtual object AuthenticateWithAccessToken(IServiceBase authService, IAuthSession session, IAuthTokens tokens, string accessToken)
+        protected virtual object AuthenticateWithAccessToken(IServiceBase authService, IAuthSession session, IAuthTokens tokens, 
+            string accessToken, Dictionary<string,object> authInfo = null)
         {
             tokens.AccessToken = accessToken;
+            if (authInfo != null)
+            {
+                tokens.Items ??= new Dictionary<string, string>();
+                foreach (var entry in authInfo)
+                {
+                    tokens.Items[entry.Key] = entry.Value?.ToString();
+                }
+            }
 
-            var authInfo = this.CreateAuthInfo(accessToken);
+            var accessTokenAuthInfo = this.CreateAuthInfo(accessToken);
 
             session.IsAuthenticated = true;
 
-            return OnAuthenticated(authService, session, tokens, authInfo);
+            return OnAuthenticated(authService, session, tokens, accessTokenAuthInfo);
         }
 
         protected abstract Dictionary<string, string> CreateAuthInfo(string accessToken);
