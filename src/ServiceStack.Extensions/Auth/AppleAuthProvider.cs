@@ -266,7 +266,18 @@ namespace ServiceStack.Auth
             tokens.Items ??= new Dictionary<string, string>();
             foreach (var entry in authInfo.ToStringDictionary())
             {
-                tokens.Items[entry.Key] = entry.Value;
+                if (entry.Key == "refresh_token")
+                {
+                    tokens.RefreshToken = entry.Value;
+                }
+                else if (entry.Key == "expires_in")
+                {
+                    tokens.RefreshTokenExpiry = DateTime.UtcNow.AddSeconds(entry.Value.ConvertTo<int>());
+                }
+                else
+                {
+                    tokens.Items[entry.Key] = entry.Value;
+                }
             }
 
             var appHost = HostContext.AssertAppHost();
