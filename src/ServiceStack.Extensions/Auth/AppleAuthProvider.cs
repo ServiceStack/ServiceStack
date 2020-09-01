@@ -274,6 +274,7 @@ namespace ServiceStack.Auth
                 {
                     tokens.RefreshTokenExpiry = DateTime.UtcNow.AddSeconds(entry.Value.ConvertTo<int>());
                 }
+                else if (entry.Key == "access_token") { /*ignore*/ }
                 else
                 {
                     tokens.Items[entry.Key] = entry.Value;
