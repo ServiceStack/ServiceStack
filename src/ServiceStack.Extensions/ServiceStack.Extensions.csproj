@@ -19,6 +19,9 @@
         <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.0.90" />
         
         <PackageReference Include="System.Threading.Channels" Version="4.7.1" />
+
+        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.7.1" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.7.1" />
         
         <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
         <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />

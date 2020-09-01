@@ -16,6 +16,28 @@ namespace ServiceStack.Auth
 
         protected string[] Scopes { get; set; }
         
+        public string ResponseMode { get; set; }
+
+        protected override void AssertValidState()
+        {
+            base.AssertValidState();
+            
+            AssertAuthorizeUrl();
+            AssertAccessTokenUrl();
+        }
+
+        protected virtual void AssertAccessTokenUrl()
+        {
+            if (string.IsNullOrEmpty(AccessTokenUrl))
+                throw new Exception($"oauth.{Provider}.{nameof(AccessTokenUrl)} is required");
+        }
+
+        protected virtual void AssertAuthorizeUrl()
+        {
+            if (string.IsNullOrEmpty(AuthorizeUrl))
+                throw new Exception($"oauth.{Provider}.{nameof(AuthorizeUrl)} is required");
+        }
+
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
             var tokens = Init(authService, ref session, request);
@@ -37,19 +59,22 @@ namespace ServiceStack.Auth
             }
 
             var httpRequest = authService.Request;
-            var error = httpRequest.QueryString["error_reason"]
-                        ?? httpRequest.QueryString["error"]
-                        ?? httpRequest.QueryString["error_code"]
-                        ?? httpRequest.QueryString["error_description"];
+            var error = httpRequest.GetQueryStringOrForm("error_reason")
+                        ?? httpRequest.GetQueryStringOrForm("error")
+                        ?? httpRequest.GetQueryStringOrForm("error_code")
+                        ?? httpRequest.GetQueryStringOrForm("error_description");
 
             var hasError = !error.IsNullOrEmpty();
             if (hasError)
             {
-                Log.Error($"OAuth2 Error callback. {httpRequest.QueryString}");
+                var httpParams = HttpUtils.HasRequestBody(httpRequest.Verb)
+                    ? httpRequest.QueryString
+                    : httpRequest.FormData;
+                Log.Error($"OAuth2 Error callback. {httpParams}");
                 return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", error)));
             }             
         
-            var code = httpRequest.QueryString[Keywords.Code];
+            var code = httpRequest.GetQueryStringOrForm(Keywords.Code);
             var isPreAuthCallback = !code.IsNullOrEmpty();
             if (!isPreAuthCallback)
             {
@@ -61,6 +86,9 @@ namespace ServiceStack.Auth
                     .AddQueryParam("scope", string.Join(" ", Scopes))
                     .AddQueryParam(Keywords.State, oauthstate);
 
+                if (ResponseMode != null)
+                    preAuthUrl = preAuthUrl.AddQueryParam("response_mode", ResponseMode);
+                        
                 if (session is AuthUserSession authSession)
                     (authSession.Meta ?? (authSession.Meta = new Dictionary<string, string>()))["oauthstate"] = oauthstate;
 
@@ -70,7 +98,7 @@ namespace ServiceStack.Auth
 
             try
             {
-                var state = httpRequest.QueryString[Keywords.State];
+                var state = httpRequest.GetQueryStringOrForm(Keywords.State);
                 if (state != null && session is AuthUserSession authSession)
                 {
                     if (authSession.Meta == null)
@@ -85,7 +113,7 @@ namespace ServiceStack.Auth
                 var contents = GetAccessTokenJson(code);
                 var authInfo = (Dictionary<string,object>)JSON.parse(contents);
 
-                var accessToken = authInfo["access_token"].ToString();
+                var accessToken = (string)authInfo["access_token"];
 
                 var redirectUrl = SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"));
 
@@ -106,7 +134,9 @@ namespace ServiceStack.Auth
             }
             catch (WebException we)
             {
-                string errorBody = we.GetResponseBody();
+                var errorBody = we.GetResponseBody();
+                Log.Error($"Failed to get Access Token for '{Provider}': {errorBody}");
+                
                 var statusCode = ((HttpWebResponse)we.Response).StatusCode;
                 if (statusCode == HttpStatusCode.BadRequest)
                 {
@@ -178,6 +208,8 @@ namespace ServiceStack.Auth
 
             LoadUserOAuthProvider(userSession, tokens);
         }
+
+        public Func<IAuthSession,IAuthTokens, string> ResolveUnknownDisplayName { get; set; }
         
         public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
         {
@@ -189,6 +221,9 @@ namespace ServiceStack.Auth
             userSession.FirstName = tokens.FirstName ?? userSession.FirstName;
             userSession.LastName = tokens.LastName ?? userSession.LastName;
             userSession.Email = userSession.PrimaryEmail = tokens.Email ?? userSession.PrimaryEmail ?? userSession.Email;
+            
+            if (userSession.DisplayName == null && ResolveUnknownDisplayName != null)
+                userSession.DisplayName = ResolveUnknownDisplayName(authSession, tokens);
         }
 
     }

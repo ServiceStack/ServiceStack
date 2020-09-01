@@ -247,9 +247,9 @@ namespace ServiceStack.Auth
                 response ??= new AuthenticateResponse {
                     UserId = session.UserAuthId,
                     UserName = session.UserAuthName,
-                    DisplayName = session.DisplayName 
-                                  ?? session.UserName 
-                                  ?? $"{session.FirstName} {session.LastName}".Trim(),
+                    DisplayName = session.DisplayName
+                        ?? session.UserName 
+                        ?? $"{session.FirstName} {session.LastName}".Trim(),
                     SessionId = session.Id,
                     ReferrerUrl = referrerUrl,
                 };

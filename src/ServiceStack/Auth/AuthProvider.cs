@@ -12,7 +12,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
-    public abstract class AuthProvider : IAuthProvider
+    public abstract class AuthProvider : IAuthProvider, IAuthPlugin
     {
         protected static readonly ILog Log = LogManager.GetLogger(typeof(AuthProvider));
 
@@ -27,6 +27,8 @@ namespace ServiceStack.Auth
 
         public bool PersistSession { get; set; }
         public bool SaveExtendedUserInfo { get; set; }
+        
+        public bool? RestoreSessionFromState { get; set; }
 
         public Action<AuthUserSession, IAuthTokens, Dictionary<string, string>> LoadUserAuthFilter { get; set; }
 
@@ -424,6 +426,11 @@ namespace ServiceStack.Auth
                 }
             }
             return failedResult;
+        }
+
+        public virtual void Register(IAppHost appHost, AuthFeature feature)
+        {
+            RestoreSessionFromState ??= appHost.Config.UseSameSiteCookies == true;
         }
     }
 
