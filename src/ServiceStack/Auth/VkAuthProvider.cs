@@ -30,7 +30,7 @@ namespace ServiceStack.Auth
 
             NavItem = new NavItem {
                 Href = "/auth/" + Name,
-                Label = "Sign in with VK",
+                Label = "Sign In with VK",
                 Id = "btn-" + Name,
                 ClassName = "btn-social btn-vk",
                 IconClass = "fab svg-vk",

@@ -72,7 +72,7 @@ namespace ServiceStack.Auth
 
             NavItem = new NavItem {
                 Href = "/auth/" + Name,
-                Label = "Sign in with Microsoft",
+                Label = "Sign In with Microsoft",
                 Id = "btn-" + Name,
                 ClassName = "btn-social btn-microsoft",
                 IconClass = "fab svg-microsoft",

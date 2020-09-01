@@ -1418,6 +1418,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Can_parse_windowsauth_header()
+        {
+            var auth = new AuthenticationInfo("windowsauth realm=\"/auth/windowsauth\"");
+            auth.PrintDump();
+        }
+
+        [Test]
         public void Can_logout_using_CredentialsAuth()
         {
             Assert.That(AuthenticateService.LogoutAction, Is.EqualTo("logout"));

@@ -38,7 +38,7 @@ namespace ServiceStack.Auth
 
             NavItem = new NavItem {
                 Href = "/auth/" + Name,
-                Label = "Sign in with Facebook",
+                Label = "Sign In with Facebook",
                 Id = "btn-" + Name,
                 ClassName = "btn-social btn-facebook",
                 IconClass = "fab svg-facebook",

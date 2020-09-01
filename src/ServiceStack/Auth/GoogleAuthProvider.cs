@@ -44,7 +44,7 @@ namespace ServiceStack.Auth
 
             NavItem = new NavItem {
                 Href = "/auth/" + Name,
-                Label = "Sign in with Google",
+                Label = "Sign In with Google",
                 Id = "btn-" + Name,
                 ClassName = "btn-social btn-google",
                 IconClass = "fab svg-google",
@@ -60,15 +60,16 @@ namespace ServiceStack.Auth
             return issuedTo == ConsumerKey;
         }
 
-        protected override object AuthenticateWithAccessToken(IServiceBase authService, IAuthSession session, IAuthTokens tokens, string accessToken)
+        protected override object AuthenticateWithAccessToken(IServiceBase authService, IAuthSession session, IAuthTokens tokens, string accessToken, 
+            Dictionary<string, object> authInfo=null)
         {
             tokens.AccessTokenSecret = accessToken;
 
-            var authInfo = CreateAuthInfo(accessToken);
+            var accessTokenAuthInfo = CreateAuthInfo(accessToken);
 
             session.IsAuthenticated = true;
 
-            return OnAuthenticated(authService, session, tokens, authInfo);
+            return OnAuthenticated(authService, session, tokens, accessTokenAuthInfo);
         }
 
         protected override Dictionary<string, string> CreateAuthInfo(string accessToken)

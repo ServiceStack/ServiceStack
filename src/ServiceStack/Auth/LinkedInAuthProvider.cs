@@ -38,7 +38,7 @@ namespace ServiceStack.Auth
 
             NavItem = new NavItem {
                 Href = "/auth/" + Name,
-                Label = "Sign in with LinkedIn",
+                Label = "Sign In with LinkedIn",
                 Id = "btn-" + Name,
                 ClassName = "btn-social btn-linkedin",
                 IconClass = "fab svg-linkedin",

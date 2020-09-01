@@ -29,7 +29,7 @@ namespace ServiceStack.Auth
 
             NavItem = new NavItem {
                 Href = "/auth/" + Name,
-                Label = "Sign in with Twitter",
+                Label = "Sign In with Twitter",
                 Id = "btn-" + Name,
                 ClassName = "btn-social btn-twitter",
                 IconClass = "fab svg-twitter",
