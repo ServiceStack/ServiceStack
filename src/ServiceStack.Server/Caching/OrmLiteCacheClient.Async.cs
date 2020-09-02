@@ -384,7 +384,7 @@ namespace ServiceStack.Caching
             }, token).ConfigAwait();
         }
 
-#if !NET45
+#if NET472 || NETSTANDARD2_0
         public async IAsyncEnumerable<string> GetKeysByPatternAsync(string pattern, CancellationToken token = default)
         {
             var results = await ExecAsync(async db =>
@@ -405,6 +405,8 @@ namespace ServiceStack.Caching
                 yield return key;
             }
         }
+
+        public ValueTask DisposeAsync() => default;
 #endif
 
         public async Task RemoveExpiredEntriesAsync(CancellationToken token=default)
