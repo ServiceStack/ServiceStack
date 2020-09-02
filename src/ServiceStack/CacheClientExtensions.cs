@@ -482,20 +482,28 @@ namespace ServiceStack
             return cache.GetKeysByPattern("*");
         }
 
-        public static async Task<IEnumerable<string>> GetAllKeysAsync(this ICacheClientAsync cache)
-        {
-            return await cache.GetKeysByPatternAsync("*");
-        }
-
         public static IEnumerable<string> GetKeysStartingWith(this ICacheClient cache, string prefix)
         {
             return cache.GetKeysByPattern(prefix + "*");
         }
-
-        public static async Task<IEnumerable<string>> GetKeysStartingWithAsync(this ICacheClientAsync cache, string prefix)
+        
+#if  !NET45
+        public static async IAsyncEnumerable<string> GetAllKeysAsync(this ICacheClientAsync cache)
         {
-            return await cache.GetKeysByPatternAsync(prefix + "*");
+            await foreach (var key in cache.GetKeysByPatternAsync("*"))
+            {
+                yield return key;
+            }
         }
+
+        public static async IAsyncEnumerable<string> GetKeysStartingWithAsync(this ICacheClientAsync cache, string prefix)
+        {
+            await foreach (var key in cache.GetKeysByPatternAsync(prefix + "*"))
+            {
+                yield return key;
+            }
+        }
+#endif
 
         public static T GetOrCreate<T>(this ICacheClient cache,
             string key, Func<T> createFn)

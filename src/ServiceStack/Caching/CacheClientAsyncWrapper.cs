@@ -58,8 +58,16 @@ namespace ServiceStack.Caching
 
         public Task<TimeSpan?> GetTimeToLiveAsync(string key, CancellationToken token=default) => Cache.GetTimeToLive(key).InTask();
 
-        public Task<IEnumerable<string>> GetKeysByPatternAsync(string pattern, CancellationToken token=default) => Cache.GetKeysByPattern(pattern).InTask();
-
+#if !NET45
+        public async IAsyncEnumerable<string> GetKeysByPatternAsync(string pattern, CancellationToken token = default)
+        {
+            foreach (var key in Cache.GetKeysByPattern(pattern))
+            {
+                yield return key;
+            }
+        }
+#endif
+        
         public Task RemoveExpiredEntriesAsync(CancellationToken token=default)
         {
             (Cache as ICacheClientExtended)?.RemoveExpiredEntries();

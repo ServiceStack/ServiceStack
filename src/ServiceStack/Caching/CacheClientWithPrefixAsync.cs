@@ -121,10 +121,15 @@ namespace ServiceStack.Caching
             await (cache as IRemoveByPatternAsync).RemoveByRegexAsync(EnsurePrefix(regex), token).ConfigAwait();
         }
 
-        public async Task<IEnumerable<string>> GetKeysByPatternAsync(string pattern, CancellationToken token=default)
+#if !NET45
+        public async IAsyncEnumerable<string> GetKeysByPatternAsync(string pattern, CancellationToken token = default)
         {
-            return await cache.GetKeysByPatternAsync(EnsurePrefix(pattern), token).ConfigAwait();
+            await foreach (var key in cache.GetKeysByPatternAsync(EnsurePrefix(pattern), token))
+            {
+                yield return key;
+            }
         }
+#endif
 
         public async Task RemoveExpiredEntriesAsync(CancellationToken token=default)
         {

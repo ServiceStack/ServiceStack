@@ -384,9 +384,10 @@ namespace ServiceStack.Caching
             }, token).ConfigAwait();
         }
 
-        public async Task<IEnumerable<string>> GetKeysByPatternAsync(string pattern, CancellationToken token=default)
+#if !NET45
+        public async IAsyncEnumerable<string> GetKeysByPatternAsync(string pattern, CancellationToken token = default)
         {
-            return await ExecAsync(async db =>
+            var results = await ExecAsync(async db =>
             {
                 if (pattern == "*")
                     return await db.ColumnAsync<string>(db.From<TCacheEntry>().Select(x => x.Id), token).ConfigAwait();
@@ -398,7 +399,13 @@ namespace ServiceStack.Caching
                 return await db.ColumnAsync<string>(db.From<TCacheEntry>()
                     .Where(id + " LIKE {0}", dbPattern), token).ConfigAwait();
             }, token).ConfigAwait();
+            
+            foreach (var key in results)
+            {
+                yield return key;
+            }
         }
+#endif
 
         public async Task RemoveExpiredEntriesAsync(CancellationToken token=default)
         {

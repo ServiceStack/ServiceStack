@@ -303,7 +303,8 @@ namespace ServiceStack.Server.Tests.Shared
 
             var sessionPattern = IdUtils.CreateUrn<IAuthSession>("");
             Assert.That(sessionPattern, Is.EqualTo("urn:iauthsession:"));
-            var sessionKeys = (await Cache.GetKeysStartingWithAsync(sessionPattern)).ToList();
+#if !NETFX            
+            var sessionKeys = await Cache.GetKeysStartingWithAsync(sessionPattern).ToListAsync();
 
             Assert.That(sessionKeys.Count, Is.EqualTo(5));
             Assert.That(sessionKeys.All(x => x.StartsWith("urn:iauthsession:")));
@@ -311,9 +312,9 @@ namespace ServiceStack.Server.Tests.Shared
             var allSessions = await Cache.GetAllAsync<IAuthSession>(sessionKeys);
             Assert.That(allSessions.Values.Count(x => x != null), Is.EqualTo(sessionKeys.Count));
 
-            var allKeys = (await Cache.GetAllKeysAsync()).ToList();
+            var allKeys = (await Cache.GetAllKeysAsync().ToListAsync()).ToList();
             Assert.That(allKeys.Count, Is.EqualTo(10));
-
+#endif
             JsConfig.Reset();
         }
 
@@ -353,6 +354,7 @@ namespace ServiceStack.Server.Tests.Shared
             JsConfig.Reset();
         }
         
+#if !NETFX            
         [Test]
         public async Task Can_RemoveAll_and_GetKeysStartingWith_with_prefix()
         {
@@ -361,14 +363,15 @@ namespace ServiceStack.Server.Tests.Shared
             await cache.SetAsync("test_QUERY_Deposit__Query_Deposit_10_1", "A");
             await cache.SetAsync("test_QUERY_Deposit__0_1___CUSTOM", "B");
 
-            var keys = (await cache.GetKeysStartingWithAsync("test_QUERY_Deposit")).ToList();
+            var keys = (await cache.GetKeysStartingWithAsync("test_QUERY_Deposit").ToListAsync()).ToList();
             Assert.That(keys.Count, Is.EqualTo(2));
 
             await cache.RemoveAllAsync(keys);
 
-            var newKeys = (await cache.GetKeysStartingWithAsync("test_QUERY_Deposit")).ToList();
+            var newKeys = (await cache.GetKeysStartingWithAsync("test_QUERY_Deposit").ToListAsync()).ToList();
             Assert.That(newKeys.Count, Is.EqualTo(0));
         }
+#endif
 
     }
 }

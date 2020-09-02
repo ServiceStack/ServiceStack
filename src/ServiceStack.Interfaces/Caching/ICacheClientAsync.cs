@@ -111,8 +111,10 @@ namespace ServiceStack.Caching
         
         Task<TimeSpan?> GetTimeToLiveAsync(string key, CancellationToken token=default);
 
-        Task<IEnumerable<string>> GetKeysByPatternAsync(string pattern, CancellationToken token=default);
-
+#if !NET45        
+        IAsyncEnumerable<string> GetKeysByPatternAsync(string pattern, CancellationToken token=default);
+#endif
+        
         Task RemoveExpiredEntriesAsync(CancellationToken token=default);
     }
 }
