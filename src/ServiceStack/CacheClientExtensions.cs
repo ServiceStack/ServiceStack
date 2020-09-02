@@ -487,7 +487,7 @@ namespace ServiceStack
             return cache.GetKeysByPattern(prefix + "*");
         }
         
-#if  !NET45
+#if NET472 || NETSTANDARD2_0
         public static async IAsyncEnumerable<string> GetAllKeysAsync(this ICacheClientAsync cache)
         {
             await foreach (var key in cache.GetKeysByPatternAsync("*"))

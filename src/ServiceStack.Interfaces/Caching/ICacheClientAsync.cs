@@ -115,7 +115,7 @@ namespace ServiceStack.Caching
         
         Task<TimeSpan?> GetTimeToLiveAsync(string key, CancellationToken token=default);
 
-#if NET472 || NETSTANDARD2_0        
+#if NET472 || NETSTANDARD2_0
         IAsyncEnumerable<string> GetKeysByPatternAsync(string pattern, CancellationToken token=default);
 #endif
         
