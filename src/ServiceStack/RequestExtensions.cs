@@ -219,7 +219,7 @@ namespace ServiceStack
             return value;
         }
 
-#if !NETSTANDARD2_0
+#if NET45 || NET472
         public static RequestBaseWrapper ToHttpRequestBase(this IRequest httpReq)
         {
             return new RequestBaseWrapper((IHttpRequest)httpReq);

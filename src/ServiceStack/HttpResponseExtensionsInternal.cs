@@ -290,7 +290,7 @@ namespace ServiceStack
                             return true;
                         }
 
-#if NET45
+#if NET45 || NET472
                         //JsConfigScope uses ThreadStatic in .NET v4.5 so avoid async thread hops by writing sync to MemoryStream
                         if (resultScope != null || jsconfig != null)
                             response.UseBufferedStream = true;

@@ -211,7 +211,7 @@ namespace ServiceStack.Host.Handlers
             var response = this.RequestInfo ?? GetRequestInfo(httpReq);
             response.HandlerFactoryArgs = HttpHandlerFactory.DebugLastHandlerArgs;
             response.DebugString = "";
-#if NET45
+#if NET45 || NET472
             if (HttpContext.Current != null)
             {
                 response.DebugString += HttpContext.Current.Request.GetType().FullName

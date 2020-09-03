@@ -2,7 +2,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack</PackageId>
     <AssemblyName>ServiceStack</AssemblyName>
-    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net45;net472;netstandard2.0</TargetFrameworks>
     <Title>ServiceStack webservice framework: Faster, Cleaner, Modern WCF alternative</Title>
     <PackageDescription>
     ServiceStack is a simple and fast alternative to WCF, MVC and Web API in one cohesive framework for all your services and web apps that's intuitive and Easy to use!
@@ -20,12 +20,15 @@
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
     <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' OR '$(TargetFramework)' == 'net472' ">
     <Reference Include="System.Net" />
     <Reference Include="System.Web" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.0" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="System.Memory" Version="4.5.4" />

@@ -136,7 +136,7 @@ namespace ServiceStack
 
             PclExport.Instance.SetUserAgent(webReq, httpReq.UserAgent);
 
-#if NET45
+#if NET45 || NET472
             webReq.Referer = httpReq.UrlReferrer?.ToString();
             webReq.ServicePoint.Expect100Continue = false;
 
