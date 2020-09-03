@@ -35,7 +35,7 @@ namespace ServiceStack.Redis
         /// <summary>
         /// Subscribe to channels by name
         /// </summary>
-        ValueTask SubscribeToChannelsAsync(string[] channels, CancellationToken cancellationToken = default);
+        ValueTask SubscribeToChannelsAsync(string[] channels, CancellationToken token = default);
 
         /// <summary>
         /// Subscribe to channels by name
@@ -45,17 +45,17 @@ namespace ServiceStack.Redis
         /// <summary>
         /// Subscribe to channels matching the supplied patterns
         /// </summary>
-        ValueTask SubscribeToChannelsMatchingAsync(string[] patterns, CancellationToken cancellationToken = default);
+        ValueTask SubscribeToChannelsMatchingAsync(string[] patterns, CancellationToken token = default);
 
         /// <summary>
         /// Subscribe to channels matching the supplied patterns
         /// </summary>
         ValueTask SubscribeToChannelsMatchingAsync(params string[] patterns); // convenience API
 
-        ValueTask UnSubscribeFromAllChannelsAsync(CancellationToken cancellationToken = default);
-        ValueTask UnSubscribeFromChannelsAsync(string[] channels, CancellationToken cancellationToken = default);
+        ValueTask UnSubscribeFromAllChannelsAsync(CancellationToken token = default);
+        ValueTask UnSubscribeFromChannelsAsync(string[] channels, CancellationToken token = default);
         ValueTask UnSubscribeFromChannelsAsync(params string[] channels); // convenience API
-        ValueTask UnSubscribeFromChannelsMatchingAsync(string[] patterns, CancellationToken cancellationToken = default);
+        ValueTask UnSubscribeFromChannelsMatchingAsync(string[] patterns, CancellationToken token = default);
         ValueTask UnSubscribeFromChannelsMatchingAsync(params string[] patterns); // convenience API
     }
 }

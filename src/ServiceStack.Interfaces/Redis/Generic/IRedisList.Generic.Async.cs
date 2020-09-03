@@ -3,7 +3,7 @@
 // ServiceStack.Redis: ECMA CLI Binding to the Redis key-value storage system
 //
 // Authors:
-//   Demis Bellot Async(demis.bellot@gmail.com, CancellationToken cancellationToken = default)
+//   Demis Bellot Async(demis.bellot@gmail.com, CancellationToken token = default)
 //
 // Copyright 2017 ServiceStack, Inc. All Rights Reserved.
 //
@@ -25,40 +25,40 @@ namespace ServiceStack.Redis.Generic
     public interface IRedisListAsync<T>
         : IAsyncEnumerable<T>, IHasStringId
     {
-        ValueTask<int> CountAsync(CancellationToken cancellationToken = default);
-        ValueTask<List<T>> GetAllAsync(CancellationToken cancellationToken = default);
-        ValueTask<List<T>> GetRangeAsync(int startingFrom, int endingAt, CancellationToken cancellationToken = default);
-        ValueTask<List<T>> GetRangeFromSortedListAsync(int startingFrom, int endingAt, CancellationToken cancellationToken = default);
-        ValueTask RemoveAllAsync(CancellationToken cancellationToken = default);
-        ValueTask TrimAsync(int keepStartingFrom, int keepEndingAt, CancellationToken cancellationToken = default);
-        ValueTask<long> RemoveValueAsync(T value, CancellationToken cancellationToken = default);
-        ValueTask<long> RemoveValueAsync(T value, int noOfMatches, CancellationToken cancellationToken = default);
+        ValueTask<int> CountAsync(CancellationToken token = default);
+        ValueTask<List<T>> GetAllAsync(CancellationToken token = default);
+        ValueTask<List<T>> GetRangeAsync(int startingFrom, int endingAt, CancellationToken token = default);
+        ValueTask<List<T>> GetRangeFromSortedListAsync(int startingFrom, int endingAt, CancellationToken token = default);
+        ValueTask RemoveAllAsync(CancellationToken token = default);
+        ValueTask TrimAsync(int keepStartingFrom, int keepEndingAt, CancellationToken token = default);
+        ValueTask<long> RemoveValueAsync(T value, CancellationToken token = default);
+        ValueTask<long> RemoveValueAsync(T value, int noOfMatches, CancellationToken token = default);
 
-        ValueTask AddRangeAsync(IEnumerable<T> values, CancellationToken cancellationToken = default);
-        ValueTask AppendAsync(T value, CancellationToken cancellationToken = default);
-        ValueTask PrependAsync(T value, CancellationToken cancellationToken = default);
-        ValueTask<T> RemoveStartAsync(CancellationToken cancellationToken = default);
-        ValueTask<T> BlockingRemoveStartAsync(TimeSpan? timeOut, CancellationToken cancellationToken = default);
-        ValueTask<T> RemoveEndAsync(CancellationToken cancellationToken = default);
+        ValueTask AddRangeAsync(IEnumerable<T> values, CancellationToken token = default);
+        ValueTask AppendAsync(T value, CancellationToken token = default);
+        ValueTask PrependAsync(T value, CancellationToken token = default);
+        ValueTask<T> RemoveStartAsync(CancellationToken token = default);
+        ValueTask<T> BlockingRemoveStartAsync(TimeSpan? timeOut, CancellationToken token = default);
+        ValueTask<T> RemoveEndAsync(CancellationToken token = default);
 
-        ValueTask EnqueueAsync(T value, CancellationToken cancellationToken = default);
-        ValueTask<T> DequeueAsync(CancellationToken cancellationToken = default);
-        ValueTask<T> BlockingDequeueAsync(TimeSpan? timeOut, CancellationToken cancellationToken = default);
+        ValueTask EnqueueAsync(T value, CancellationToken token = default);
+        ValueTask<T> DequeueAsync(CancellationToken token = default);
+        ValueTask<T> BlockingDequeueAsync(TimeSpan? timeOut, CancellationToken token = default);
 
-        ValueTask PushAsync(T value, CancellationToken cancellationToken = default);
-        ValueTask<T> PopAsync(CancellationToken cancellationToken = default);
-        ValueTask<T> BlockingPopAsync(TimeSpan? timeOut, CancellationToken cancellationToken = default);
-        ValueTask<T> PopAndPushAsync(IRedisListAsync<T> toList, CancellationToken cancellationToken = default);
+        ValueTask PushAsync(T value, CancellationToken token = default);
+        ValueTask<T> PopAsync(CancellationToken token = default);
+        ValueTask<T> BlockingPopAsync(TimeSpan? timeOut, CancellationToken token = default);
+        ValueTask<T> PopAndPushAsync(IRedisListAsync<T> toList, CancellationToken token = default);
 
 
-        ValueTask<bool> RemoveAsync(T item, CancellationToken cancellationToken = default);
-        ValueTask AddAsync(T item, CancellationToken cancellationToken = default);
-        ValueTask RemoveAtAsync(int index, CancellationToken cancellationToken = default);
-        ValueTask<bool> ContainsAsync(T item, CancellationToken cancellationToken = default);
-        ValueTask ClearAsync(CancellationToken cancellationToken = default);
-        ValueTask<int> IndexOfAsync(T item, CancellationToken cancellationToken = default);
+        ValueTask<bool> RemoveAsync(T item, CancellationToken token = default);
+        ValueTask AddAsync(T item, CancellationToken token = default);
+        ValueTask RemoveAtAsync(int index, CancellationToken token = default);
+        ValueTask<bool> ContainsAsync(T item, CancellationToken token = default);
+        ValueTask ClearAsync(CancellationToken token = default);
+        ValueTask<int> IndexOfAsync(T item, CancellationToken token = default);
 
-        ValueTask<T> ElementAtAsync(int index, CancellationToken cancellationToken = default);
-        ValueTask SetValueAsync(int index, T value, CancellationToken cancellationToken = default);
+        ValueTask<T> ElementAtAsync(int index, CancellationToken token = default);
+        ValueTask SetValueAsync(int index, T value, CancellationToken token = default);
     }
 }

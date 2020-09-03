@@ -22,7 +22,7 @@ namespace ServiceStack.Redis.Generic
     /// <typeparam name="T"></typeparam>
     public interface IRedisTypedTransactionAsync<T> : IRedisTypedQueueableOperationAsync<T>, IAsyncDisposable
     {
-        ValueTask<bool> CommitAsync(CancellationToken cancellationToken = default);
-        ValueTask RollbackAsync(CancellationToken cancellationToken = default);
+        ValueTask<bool> CommitAsync(CancellationToken token = default);
+        ValueTask RollbackAsync(CancellationToken token = default);
     }
 }

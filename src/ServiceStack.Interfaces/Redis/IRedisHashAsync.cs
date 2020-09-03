@@ -8,16 +8,16 @@ namespace ServiceStack.Redis
     public interface IRedisHashAsync
         : IAsyncEnumerable<KeyValuePair<string, string>>, IHasStringId
     {
-        ValueTask<bool> AddIfNotExistsAsync(KeyValuePair<string, string> item, CancellationToken cancellationToken = default);
-        ValueTask AddRangeAsync(IEnumerable<KeyValuePair<string, string>> items, CancellationToken cancellationToken = default);
-        ValueTask<long> IncrementValueAsync(string key, int incrementBy, CancellationToken cancellationToken = default);
+        ValueTask<bool> AddIfNotExistsAsync(KeyValuePair<string, string> item, CancellationToken token = default);
+        ValueTask AddRangeAsync(IEnumerable<KeyValuePair<string, string>> items, CancellationToken token = default);
+        ValueTask<long> IncrementValueAsync(string key, int incrementBy, CancellationToken token = default);
 
         // shim the basic ICollection etc APIs
-        ValueTask<int> CountAsync(CancellationToken cancellationToken = default);
-        ValueTask AddAsync(KeyValuePair<string, string> item, CancellationToken cancellationToken = default);
-        ValueTask AddAsync(string key, string value, CancellationToken cancellationToken = default);
-        ValueTask ClearAsync(CancellationToken cancellationToken = default);
-        ValueTask<bool> ContainsKeyAsync(string key, CancellationToken cancellationToken = default);
-        ValueTask<bool> RemoveAsync(string key, CancellationToken cancellationToken = default);
+        ValueTask<int> CountAsync(CancellationToken token = default);
+        ValueTask AddAsync(KeyValuePair<string, string> item, CancellationToken token = default);
+        ValueTask AddAsync(string key, string value, CancellationToken token = default);
+        ValueTask ClearAsync(CancellationToken token = default);
+        ValueTask<bool> ContainsKeyAsync(string key, CancellationToken token = default);
+        ValueTask<bool> RemoveAsync(string key, CancellationToken token = default);
     }
 }

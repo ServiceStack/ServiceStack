@@ -3,7 +3,7 @@
 // ServiceStack.Redis: ECMA CLI Binding to the Redis key-value storage system
 //
 // Authors:
-//   Demis Bellot Async(demis.bellot@gmail.com, CancellationToken cancellationToken = default)
+//   Demis Bellot Async(demis.bellot@gmail.com, CancellationToken token = default)
 //
 // Copyright 2017 ServiceStack, Inc. All Rights Reserved.
 //
@@ -19,33 +19,33 @@ namespace ServiceStack.Redis.Generic
 {
     public interface IRedisSortedSetAsync<T> : IAsyncEnumerable<T>, IHasStringId
     {
-        ValueTask<int> CountAsync(CancellationToken cancellationToken = default);
-        ValueTask AddAsync(T item, double score, CancellationToken cancellationToken = default);
-        ValueTask<T> PopItemWithHighestScoreAsync(CancellationToken cancellationToken = default);
-        ValueTask<T> PopItemWithLowestScoreAsync(CancellationToken cancellationToken = default);
-        ValueTask<double> IncrementItemAsync(T item, double incrementBy, CancellationToken cancellationToken = default);
-        ValueTask<int> IndexOfAsync(T item, CancellationToken cancellationToken = default);
-        ValueTask<long> IndexOfDescendingAsync(T item, CancellationToken cancellationToken = default);
-        ValueTask<List<T>> GetAllAsync(CancellationToken cancellationToken = default);
-        ValueTask<List<T>> GetAllDescendingAsync(CancellationToken cancellationToken = default);
-        ValueTask<List<T>> GetRangeAsync(int fromRank, int toRank, CancellationToken cancellationToken = default);
-        ValueTask<List<T>> GetRangeByLowestScoreAsync(double fromScore, double toScore, CancellationToken cancellationToken = default);
-        ValueTask<List<T>> GetRangeByLowestScoreAsync(double fromScore, double toScore, int? skip, int? take, CancellationToken cancellationToken = default);
-        ValueTask<List<T>> GetRangeByHighestScoreAsync(double fromScore, double toScore, CancellationToken cancellationToken = default);
-        ValueTask<List<T>> GetRangeByHighestScoreAsync(double fromScore, double toScore, int? skip, int? take, CancellationToken cancellationToken = default);
-        ValueTask<long> RemoveRangeAsync(int minRank, int maxRank, CancellationToken cancellationToken = default);
-        ValueTask<long> RemoveRangeByScoreAsync(double fromScore, double toScore, CancellationToken cancellationToken = default);
-        ValueTask<double> GetItemScoreAsync(T item, CancellationToken cancellationToken = default);
-        ValueTask<long> PopulateWithIntersectOfAsync(IRedisSortedSetAsync<T>[] setIds, CancellationToken cancellationToken = default);
+        ValueTask<int> CountAsync(CancellationToken token = default);
+        ValueTask AddAsync(T item, double score, CancellationToken token = default);
+        ValueTask<T> PopItemWithHighestScoreAsync(CancellationToken token = default);
+        ValueTask<T> PopItemWithLowestScoreAsync(CancellationToken token = default);
+        ValueTask<double> IncrementItemAsync(T item, double incrementBy, CancellationToken token = default);
+        ValueTask<int> IndexOfAsync(T item, CancellationToken token = default);
+        ValueTask<long> IndexOfDescendingAsync(T item, CancellationToken token = default);
+        ValueTask<List<T>> GetAllAsync(CancellationToken token = default);
+        ValueTask<List<T>> GetAllDescendingAsync(CancellationToken token = default);
+        ValueTask<List<T>> GetRangeAsync(int fromRank, int toRank, CancellationToken token = default);
+        ValueTask<List<T>> GetRangeByLowestScoreAsync(double fromScore, double toScore, CancellationToken token = default);
+        ValueTask<List<T>> GetRangeByLowestScoreAsync(double fromScore, double toScore, int? skip, int? take, CancellationToken token = default);
+        ValueTask<List<T>> GetRangeByHighestScoreAsync(double fromScore, double toScore, CancellationToken token = default);
+        ValueTask<List<T>> GetRangeByHighestScoreAsync(double fromScore, double toScore, int? skip, int? take, CancellationToken token = default);
+        ValueTask<long> RemoveRangeAsync(int minRank, int maxRank, CancellationToken token = default);
+        ValueTask<long> RemoveRangeByScoreAsync(double fromScore, double toScore, CancellationToken token = default);
+        ValueTask<double> GetItemScoreAsync(T item, CancellationToken token = default);
+        ValueTask<long> PopulateWithIntersectOfAsync(IRedisSortedSetAsync<T>[] setIds, CancellationToken token = default);
         ValueTask<long> PopulateWithIntersectOfAsync(params IRedisSortedSetAsync<T>[] setIds); // convenience API
-        ValueTask<long> PopulateWithIntersectOfAsync(IRedisSortedSetAsync<T>[] setIds, string[] args, CancellationToken cancellationToken = default);
-        ValueTask<long> PopulateWithUnionOfAsync(IRedisSortedSetAsync<T>[] setIds, CancellationToken cancellationToken = default);
+        ValueTask<long> PopulateWithIntersectOfAsync(IRedisSortedSetAsync<T>[] setIds, string[] args, CancellationToken token = default);
+        ValueTask<long> PopulateWithUnionOfAsync(IRedisSortedSetAsync<T>[] setIds, CancellationToken token = default);
         ValueTask<long> PopulateWithUnionOfAsync(params IRedisSortedSetAsync<T>[] setIds); // convenience API
-        ValueTask<long> PopulateWithUnionOfAsync(IRedisSortedSetAsync<T>[] setIds, string[] args, CancellationToken cancellationToken = default);
-        ValueTask ClearAsync(CancellationToken cancellationToken = default);
+        ValueTask<long> PopulateWithUnionOfAsync(IRedisSortedSetAsync<T>[] setIds, string[] args, CancellationToken token = default);
+        ValueTask ClearAsync(CancellationToken token = default);
 
-        ValueTask<bool> ContainsAsync(T item, CancellationToken cancellationToken = default);
-        ValueTask AddAsync(T item, CancellationToken cancellationToken = default);
-        ValueTask<bool> RemoveAsync(T item, CancellationToken cancellationToken = default);
+        ValueTask<bool> ContainsAsync(T item, CancellationToken token = default);
+        ValueTask AddAsync(T item, CancellationToken token = default);
+        ValueTask<bool> RemoveAsync(T item, CancellationToken token = default);
     }
 }

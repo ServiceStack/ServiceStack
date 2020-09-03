@@ -23,7 +23,7 @@ namespace ServiceStack.Redis
     public interface IRedisTransactionAsync
         : IRedisTransactionBaseAsync, IRedisQueueableOperationAsync, IAsyncDisposable
     {
-        ValueTask<bool> CommitAsync(CancellationToken cancellationToken = default);
-        ValueTask RollbackAsync(CancellationToken cancellationToken = default);
+        ValueTask<bool> CommitAsync(CancellationToken token = default);
+        ValueTask RollbackAsync(CancellationToken token = default);
     }
 }
