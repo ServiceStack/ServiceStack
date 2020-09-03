@@ -20,28 +20,28 @@ namespace ServiceStack.Redis
     public interface IRedisSetAsync
         : IAsyncEnumerable<string>, IHasStringId
     {
-        ValueTask<int> CountAsync(CancellationToken cancellationToken = default);
-        ValueTask<List<string>> GetRangeFromSortedSetAsync(int startingFrom, int endingAt, CancellationToken cancellationToken = default);
-        ValueTask<HashSet<string>> GetAllAsync(CancellationToken cancellationToken = default);
-        ValueTask<string> PopAsync(CancellationToken cancellationToken = default);
-        ValueTask MoveAsync(string value, IRedisSetAsync toSet, CancellationToken cancellationToken = default);
-        ValueTask<HashSet<string>> IntersectAsync(IRedisSetAsync[] withSets, CancellationToken cancellationToken = default);
+        ValueTask<int> CountAsync(CancellationToken token = default);
+        ValueTask<List<string>> GetRangeFromSortedSetAsync(int startingFrom, int endingAt, CancellationToken token = default);
+        ValueTask<HashSet<string>> GetAllAsync(CancellationToken token = default);
+        ValueTask<string> PopAsync(CancellationToken token = default);
+        ValueTask MoveAsync(string value, IRedisSetAsync toSet, CancellationToken token = default);
+        ValueTask<HashSet<string>> IntersectAsync(IRedisSetAsync[] withSets, CancellationToken token = default);
         ValueTask<HashSet<string>> IntersectAsync(params IRedisSetAsync[] withSets); // convenience API
-        ValueTask StoreIntersectAsync(IRedisSetAsync[] withSets, CancellationToken cancellationToken = default);
+        ValueTask StoreIntersectAsync(IRedisSetAsync[] withSets, CancellationToken token = default);
         ValueTask StoreIntersectAsync(params IRedisSetAsync[] withSets); // convenience API
-        ValueTask<HashSet<string>> UnionAsync(IRedisSetAsync[] withSets, CancellationToken cancellationToken = default);
+        ValueTask<HashSet<string>> UnionAsync(IRedisSetAsync[] withSets, CancellationToken token = default);
         ValueTask<HashSet<string>> UnionAsync(params IRedisSetAsync[] withSets); // convenience API
-        ValueTask StoreUnionAsync(IRedisSetAsync[] withSets, CancellationToken cancellationToken = default);
+        ValueTask StoreUnionAsync(IRedisSetAsync[] withSets, CancellationToken token = default);
         ValueTask StoreUnionAsync(params IRedisSetAsync[] withSets); // convenience API
-        ValueTask<HashSet<string>> DiffAsync(IRedisSetAsync[] withSets, CancellationToken cancellationToken = default);
-        ValueTask StoreDiffAsync(IRedisSetAsync fromSet, IRedisSetAsync[] withSets, CancellationToken cancellationToken = default);
+        ValueTask<HashSet<string>> DiffAsync(IRedisSetAsync[] withSets, CancellationToken token = default);
+        ValueTask StoreDiffAsync(IRedisSetAsync fromSet, IRedisSetAsync[] withSets, CancellationToken token = default);
         ValueTask StoreDiffAsync(IRedisSetAsync fromSet, params IRedisSetAsync[] withSets); // convenience API
-        ValueTask<string> GetRandomEntryAsync(CancellationToken cancellationToken = default);
+        ValueTask<string> GetRandomEntryAsync(CancellationToken token = default);
 
 
-        ValueTask<bool> RemoveAsync(string item, CancellationToken cancellationToken = default);
-        ValueTask AddAsync(string item, CancellationToken cancellationToken = default);
-        ValueTask<bool> ContainsAsync(string item, CancellationToken cancellationToken = default);
-        ValueTask ClearAsync(CancellationToken cancellationToken = default);
+        ValueTask<bool> RemoveAsync(string item, CancellationToken token = default);
+        ValueTask AddAsync(string item, CancellationToken token = default);
+        ValueTask<bool> ContainsAsync(string item, CancellationToken token = default);
+        ValueTask ClearAsync(CancellationToken token = default);
     }
 }
