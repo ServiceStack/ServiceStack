@@ -64,5 +64,8 @@ namespace ServiceStack
             TaskCreationOptions.None, TaskContinuationOptions.None, TaskScheduler.Default);
         public static void RunSync(Func<Task> task) => SyncTaskFactory.StartNew(task).Unwrap().GetAwaiter().GetResult();
         public static TResult RunSync<TResult>(Func<Task<TResult>> task) => SyncTaskFactory.StartNew(task).Unwrap().GetAwaiter().GetResult();
+        
+        public static ValueTask AsValueTask<T>(this Task task) => new ValueTask(task);
+        public static ValueTask<T> AsValueTask<T>(this Task<T> task) => new ValueTask<T>(task);
     }
 }
