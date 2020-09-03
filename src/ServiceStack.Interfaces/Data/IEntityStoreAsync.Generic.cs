@@ -15,22 +15,22 @@ namespace ServiceStack.Data
     /// <typeparam name="T"></typeparam>
     public interface IEntityStoreAsync<T>
     {
-        Task<T> GetByIdAsync(object id, CancellationToken cancellationToken = default);
+        Task<T> GetByIdAsync(object id, CancellationToken token = default);
 
-        Task<IList<T>> GetByIdsAsync(IEnumerable ids, CancellationToken cancellationToken = default);
+        Task<IList<T>> GetByIdsAsync(IEnumerable ids, CancellationToken token = default);
 
-        Task<IList<T>> GetAllAsync(CancellationToken cancellationToken = default);
+        Task<IList<T>> GetAllAsync(CancellationToken token = default);
 
-        Task<T> StoreAsync(T entity, CancellationToken cancellationToken = default);
+        Task<T> StoreAsync(T entity, CancellationToken token = default);
 
-        Task StoreAllAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default);
+        Task StoreAllAsync(IEnumerable<T> entities, CancellationToken token = default);
 
-        Task DeleteAsync(T entity, CancellationToken cancellationToken = default);
+        Task DeleteAsync(T entity, CancellationToken token = default);
 
-        Task DeleteByIdAsync(object id, CancellationToken cancellationToken = default);
+        Task DeleteByIdAsync(object id, CancellationToken token = default);
 
-        Task DeleteByIdsAsync(IEnumerable ids, CancellationToken cancellationToken = default);
+        Task DeleteByIdsAsync(IEnumerable ids, CancellationToken token = default);
 
-        Task DeleteAllAsync(CancellationToken cancellationToken = default);
+        Task DeleteAllAsync(CancellationToken token = default);
     }
 }

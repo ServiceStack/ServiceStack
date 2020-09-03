@@ -11,20 +11,20 @@ namespace ServiceStack.Data
 {
     public interface IEntityStoreAsync
     {
-        Task<T> GetByIdAsync<T>(object id, CancellationToken cancellationToken = default);
+        Task<T> GetByIdAsync<T>(object id, CancellationToken token = default);
 
-        Task<IList<T>> GetByIdsAsync<T>(ICollection ids, CancellationToken cancellationToken = default);
+        Task<IList<T>> GetByIdsAsync<T>(ICollection ids, CancellationToken token = default);
 
-        Task<T> StoreAsync<T>(T entity, CancellationToken cancellationToken = default);
+        Task<T> StoreAsync<T>(T entity, CancellationToken token = default);
 
-        Task StoreAllAsync<TEntity>(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
+        Task StoreAllAsync<TEntity>(IEnumerable<TEntity> entities, CancellationToken token = default);
 
-        Task DeleteAsync<T>(T entity, CancellationToken cancellationToken = default);
+        Task DeleteAsync<T>(T entity, CancellationToken token = default);
 
-        Task DeleteByIdAsync<T>(object id, CancellationToken cancellationToken = default);
+        Task DeleteByIdAsync<T>(object id, CancellationToken token = default);
 
-        Task DeleteByIdsAsync<T>(ICollection ids, CancellationToken cancellationToken = default);
+        Task DeleteByIdsAsync<T>(ICollection ids, CancellationToken token = default);
 
-        Task DeleteAllAsync<TEntity>(CancellationToken cancellationToken = default);
+        Task DeleteAllAsync<TEntity>(CancellationToken token = default);
     }
 }

@@ -9,7 +9,7 @@ namespace ServiceStack.Redis.Pipeline
     /// </summary>
     public interface IRedisPipelineSharedAsync : IAsyncDisposable, IRedisQueueCompletableOperationAsync
     {
-        ValueTask FlushAsync(CancellationToken cancellationToken = default);
-        ValueTask<bool> ReplayAsync(CancellationToken cancellationToken = default);
+        ValueTask FlushAsync(CancellationToken token = default);
+        ValueTask<bool> ReplayAsync(CancellationToken token = default);
     }
 }
