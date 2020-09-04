@@ -2,7 +2,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Common</PackageId>
     <AssemblyName>ServiceStack.Common</AssemblyName>
-    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net45;net472;netstandard2.0</TargetFrameworks>
     <RootNamespace>ServiceStack</RootNamespace>
     <Title>Common libraries for ServiceStack projects</Title>
     <PackageDescription>#Script, Virtual File System, SimpleContainer and Common library for ServiceStack projects.</PackageDescription>
@@ -12,6 +12,9 @@
     <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
     <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
     <PackageReference Include="System.Memory" Version="4.5.4" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
