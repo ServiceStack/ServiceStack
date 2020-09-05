@@ -71,8 +71,9 @@ namespace ServiceStack.Auth
 
         public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null)
         {
-            return session != null && session.IsAuthenticated
-                && LoginMatchesSession(session, HttpContext.Current.GetUser().GetUserName());
+            var user = HttpContext.Current.GetUser();
+            return session != null && session.IsAuthenticated && 
+                   (user == null || LoginMatchesSession(session, user.GetUserName()));
         }
 
         public virtual bool IsAuthorized(IPrincipal user)
