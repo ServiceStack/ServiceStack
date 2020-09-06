@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ServiceStack.Auth
 {
@@ -16,6 +19,20 @@ namespace ServiceStack.Auth
         bool TryAuthenticate(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, out IUserAuth userAuth);
     }
 
+    public interface IAuthRepositoryAsync
+    {
+        Task LoadUserAuthAsync(IAuthSession session, IAuthTokens tokens, CancellationToken token=default);
+        Task SaveUserAuthAsync(IAuthSession authSession);
+        Task<List<IUserAuthDetails>> GetUserAuthDetailsAsync(string userAuthId, CancellationToken token=default);
+        Task<IUserAuthDetails> CreateOrMergeAuthSessionAsync(IAuthSession authSession, IAuthTokens tokens, CancellationToken token=default);
+
+        Task<IUserAuth> GetUserAuthAsync(IAuthSession authSession, IAuthTokens tokens, CancellationToken token=default);
+        Task<IUserAuth> GetUserAuthByUserNameAsync(string userNameOrEmail, CancellationToken token=default);
+        Task SaveUserAuthAsync(IUserAuth userAuth, CancellationToken token=default);
+        Task<IUserAuth> TryAuthenticateAsync(string userName, string password, CancellationToken token=default);
+        Task<IUserAuth> TryAuthenticateAsync(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, CancellationToken token=default);
+    }
+
     public interface IUserAuthRepository : IAuthRepository
     {
         IUserAuth CreateUserAuth(IUserAuth newUser, string password);
@@ -25,10 +42,25 @@ namespace ServiceStack.Auth
         void DeleteUserAuth(string userAuthId);
     }
 
+    public interface IUserAuthRepositoryAsync : IAuthRepository
+    {
+        Task<IUserAuth> CreateUserAuthAsync(IUserAuth newUser, string password, CancellationToken token=default);
+        Task<IUserAuth> UpdateUserAuthAsync(IUserAuth existingUser, IUserAuth newUser, CancellationToken token=default);
+        Task<IUserAuth> UpdateUserAuthAsync(IUserAuth existingUser, IUserAuth newUser, string password, CancellationToken token=default);
+        Task<IUserAuth> GetUserAuthAsync(string userAuthId, CancellationToken token=default);
+        Task DeleteUserAuthAsync(string userAuthId, CancellationToken token=default);
+    }
+
     public interface IQueryUserAuth
     {
         List<IUserAuth> GetUserAuths(string orderBy = null, int? skip = null, int? take = null);
         List<IUserAuth> SearchUserAuths(string query, string orderBy = null, int? skip = null, int? take = null);
+    }
+
+    public interface IQueryUserAuthAsync
+    {
+        Task<List<IUserAuth>> GetUserAuthsAsync(string orderBy = null, int? skip = null, int? take = null, CancellationToken token=default);
+        Task<List<IUserAuth>> SearchUserAuthsAsync(string query, string orderBy = null, int? skip = null, int? take = null, CancellationToken token=default);
     }
 
     public interface ICustomUserAuth
@@ -52,4 +84,21 @@ namespace ServiceStack.Auth
         void UnAssignRoles(string userAuthId,
             ICollection<string> roles = null, ICollection<string> permissions = null);
     }
+    
+    public interface IManageRolesAsync
+    {
+        Task<ICollection<string>> GetRolesAsync(string userAuthId, CancellationToken token=default);
+        Task<ICollection<string>> GetPermissionsAsync(string userAuthId, CancellationToken token=default);
+        Task<Tuple<ICollection<string>,ICollection<string>>> GetRolesAndPermissionsAsync(string userAuthId, CancellationToken token=default);
+
+        Task<bool> HasRoleAsync(string userAuthId, string role, CancellationToken token=default);
+        Task<bool> HasPermissionAsync(string userAuthId, string permission, CancellationToken token=default);
+
+        Task AssignRolesAsync(string userAuthId,
+            ICollection<string> roles = null, ICollection<string> permissions = null, CancellationToken token=default);
+
+        Task UnAssignRolesAsync(string userAuthId,
+            ICollection<string> roles = null, ICollection<string> permissions = null, CancellationToken token=default);
+    }
+    
 }
