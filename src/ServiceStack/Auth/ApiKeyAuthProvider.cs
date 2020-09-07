@@ -29,7 +29,7 @@ namespace ServiceStack.Auth
 
     public interface IManageApiKeysAsync
     {
-        Task InitApiKeySchemaAsync(CancellationToken token=default);
+        void InitApiKeySchema();
 
         Task<bool> ApiKeyExistsAsync(string apiKey, CancellationToken token=default);
 

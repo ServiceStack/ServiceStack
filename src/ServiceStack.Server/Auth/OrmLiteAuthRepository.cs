@@ -15,7 +15,7 @@ namespace ServiceStack.Auth
             : base(dbFactory, namedConnection) {}
     }
 
-    public class OrmLiteAuthRepository<TUserAuth, TUserAuthDetails> : OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails>
+    public partial class OrmLiteAuthRepository<TUserAuth, TUserAuthDetails> : OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails>
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
@@ -61,7 +61,7 @@ namespace ServiceStack.Auth
             : base(dbFactory, connectionStrings) { }
     }
 
-    public class OrmLiteAuthRepositoryMultitenancy<TUserAuth, TUserAuthDetails> : OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails>, IDisposable
+    public partial class OrmLiteAuthRepositoryMultitenancy<TUserAuth, TUserAuthDetails> : OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails>, IDisposable
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
@@ -152,12 +152,11 @@ namespace ServiceStack.Auth
 
         public void Dispose()
         {
-            if (db != null)
-                db.Dispose();
+            db?.Dispose();
         }
     }
 
-    public abstract class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IRequiresSchema, IClearable, IManageRoles, IManageApiKeys, ICustomUserAuth, IQueryUserAuth
+    public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IRequiresSchema, IClearable, IManageRoles, IManageApiKeys, ICustomUserAuth, IQueryUserAuth
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {

@@ -178,7 +178,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 },
                 ConfigureContainer = container => {
                     ConfigureAuthRepo(container);
-                    var authRepo = container.TryResolve<IAuthRepositoryAsync>();
+                    var authRepo = container.TryResolve<IAuthRepositoryAsync>()
+                        ?? container.TryResolve<IAuthRepository>() as IAuthRepositoryAsync
+                        ?? new UserAuthRepositoryAsyncWrapper(container.TryResolve<IAuthRepository>());
                     
                     if (authRepo is IClearableAsync clearable)
                     {

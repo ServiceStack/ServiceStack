@@ -101,7 +101,7 @@ namespace ServiceStack.Auth
             ICollection<string> roles = null, ICollection<string> permissions = null, CancellationToken token=default);
     }
     
-    public class UserAuthRepositoryAsyncWrapper : IUserAuthRepositoryAsync
+    public class UserAuthRepositoryAsyncWrapper : IUserAuthRepositoryAsync, IRequiresSchema
     {
         private readonly IAuthRepository authRepo;
         public UserAuthRepositoryAsyncWrapper(IAuthRepository authRepo) => this.authRepo = authRepo;
@@ -180,5 +180,7 @@ namespace ServiceStack.Auth
             authRepo.DeleteUserAuth(userAuthId);
             return TypeConstants.EmptyTask;
         }
+
+        public void InitSchema() => authRepo.InitSchema();
     }
 }
