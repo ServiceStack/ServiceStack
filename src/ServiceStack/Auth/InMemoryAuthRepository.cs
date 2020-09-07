@@ -107,7 +107,8 @@ namespace ServiceStack.Auth
 
                 public T GetById(object id)
                 {
-                    if (id == null) return default(T);
+                    if (id == null) 
+                        return default;
 
                     lock (TypedData<T>.Instance.Items)
                     {
@@ -174,7 +175,8 @@ namespace ServiceStack.Auth
 
             public void Store<T>(T item)
             {
-                if (Equals(item, default(T))) return;
+                if (Equals(item, default(T))) 
+                    return;
 
                 lock (TypedData<T>.Instance.Items)
                 {
