@@ -42,7 +42,7 @@ namespace ServiceStack.Auth
         void DeleteUserAuth(string userAuthId);
     }
 
-    public interface IUserAuthRepositoryAsync : IAuthRepository
+    public interface IUserAuthRepositoryAsync : IAuthRepositoryAsync
     {
         Task<IUserAuth> CreateUserAuthAsync(IUserAuth newUser, string password, CancellationToken token=default);
         Task<IUserAuth> UpdateUserAuthAsync(IUserAuth existingUser, IUserAuth newUser, CancellationToken token=default);
