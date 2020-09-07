@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
 
@@ -309,6 +311,11 @@ namespace ServiceStack.Auth
         {
             repo.RecordSuccessfulLogin(userAuth, rehashPassword:false, password:null);
         }
+
+        public static async Task RecordSuccessfulLoginAsync(this IUserAuthRepositoryAsync repo, IUserAuth userAuth, CancellationToken token=default)
+        {
+            await repo.RecordSuccessfulLoginAsync(userAuth, rehashPassword:false, password:null, token: token);
+        }
         
         public static void RecordSuccessfulLogin(this IUserAuthRepository repo, IUserAuth userAuth, bool rehashPassword, string password)
         {
@@ -329,6 +336,26 @@ namespace ServiceStack.Auth
                 repo.SaveUserAuth(userAuth);
             }
         }
+        
+        public static async Task RecordSuccessfulLoginAsync(this IUserAuthRepositoryAsync repo, IUserAuth userAuth, bool rehashPassword, string password, CancellationToken token=default)
+        {
+            var recordLoginAttempts = HostContext.GetPlugin<AuthFeature>()?.MaxLoginAttempts != null;
+            if (recordLoginAttempts)
+            {
+                userAuth.InvalidLoginAttempts = 0;
+                userAuth.LastLoginAttempt = userAuth.ModifiedDate = DateTime.UtcNow;
+            }
+
+            if (rehashPassword)
+            {
+                userAuth.PopulatePasswordHashes(password);
+            }
+
+            if (recordLoginAttempts || rehashPassword)
+            {
+                await repo.SaveUserAuthAsync(userAuth, token);
+            }
+        }
 
         public static void RecordInvalidLoginAttempt(this IUserAuthRepository repo, IUserAuth userAuth)
         {
@@ -342,6 +369,20 @@ namespace ServiceStack.Auth
                 userAuth.LockedDate = userAuth.LastLoginAttempt;
             }
             repo.SaveUserAuth(userAuth);
+        }
+
+        public static async Task RecordInvalidLoginAttemptAsync(this IUserAuthRepositoryAsync repo, IUserAuth userAuth, CancellationToken token=default)
+        {
+            var feature = HostContext.GetPlugin<AuthFeature>();
+            if (feature?.MaxLoginAttempts == null) return;
+
+            userAuth.InvalidLoginAttempts += 1;
+            userAuth.LastLoginAttempt = userAuth.ModifiedDate = DateTime.UtcNow;
+            if (userAuth.InvalidLoginAttempts >= feature.MaxLoginAttempts.Value)
+            {
+                userAuth.LockedDate = userAuth.LastLoginAttempt;
+            }
+            await repo.SaveUserAuthAsync(userAuth, token);
         }
 
         public static void PopulateFromMap(this IAuthSession session, Dictionary<string, string> map)

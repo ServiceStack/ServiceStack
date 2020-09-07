@@ -895,6 +895,27 @@ namespace ServiceStack
         }
 
         /// <summary>
+        /// Gets the registered <see cref="IAuthRepositoryAsync"/>
+        /// Returns native IAuthRepositoryAsync if exists, a sync wrapper if IAuthRepository exists, otherwise null.
+        /// </summary>
+        public virtual IAuthRepositoryAsync GetAuthRepositoryAsync(IRequest req = null)
+        {
+            var authRepoAsync = TryResolve<IAuthRepositoryAsync>();
+            if (authRepoAsync != null)
+                return authRepoAsync;
+
+            var authRepo = GetAuthRepository(req);
+            authRepoAsync = authRepo as IAuthRepositoryAsync;
+            if (authRepoAsync != null)
+                return authRepoAsync;
+            
+            if (authRepo != null)
+                return new UserAuthRepositoryAsyncWrapper(authRepo);
+            
+            return null;
+        }
+
+        /// <summary>
         /// Return the ICookies implementation to use
         /// </summary>
         public virtual ICookies GetCookies(IHttpResponse res) => new Cookies(res);

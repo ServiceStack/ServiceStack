@@ -13,7 +13,7 @@ namespace ServiceStack.Auth
         public RedisAuthRepository(IRedisClientManagerFacade factory) : base(factory) { }
     }
 
-    public class RedisAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IClearable, IManageApiKeys, ICustomUserAuth, IQueryUserAuth
+    public partial class RedisAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IClearable, IManageApiKeys, ICustomUserAuth, IQueryUserAuth
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {

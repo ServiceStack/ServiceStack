@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Funq;
 using NUnit.Framework;
@@ -24,23 +25,7 @@ using ServiceStack.Aws.DynamoDb;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    // Custom UserAuth Data Model with extended Metadata properties
-    [Index(Name = nameof(Key))]
-    public class AppUser : UserAuth
-    {
-        public string Key { get; set; }
-        public string ProfileUrl { get; set; }
-        public string LastLoginIp { get; set; }
-        public DateTime? LastLoginDate { get; set; }
-    }
-
-    [Index(Name = nameof(Key))]
-    public class AppUserDetails : UserAuthDetails
-    {
-        public string Key { get; set; }
-    }
-
-    public class MemoryAuthRepositoryTests : AuthRepositoryTestsBase
+    public class MemoryAuthRepositoryTestsAsync : AuthRepositoryTestsAsyncBase
     {
         public override void ConfigureAuthRepo(Container container)
         {
@@ -48,7 +33,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
     
-    public class RedisAuthRepositoryTests : AuthRepositoryTestsBase
+    public class UserAuthRepositoryAsyncWrapperTests : AuthRepositoryTestsAsyncBase
+    {
+        public override void ConfigureAuthRepo(Container container)
+        {
+            container.Register<IAuthRepositoryAsync>(c => 
+                new UserAuthRepositoryAsyncWrapper(new InMemoryAuthRepository<AppUser,AppUserDetails>()));
+        }
+    }
+    
+    public class RedisAuthRepositoryTestsAsync : AuthRepositoryTestsAsyncBase
     {
         public override void ConfigureAuthRepo(Container container)
         {
@@ -58,7 +52,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
     
-    public class OrmLiteAuthRepositoryTests : AuthRepositoryTestsBase
+    public class OrmLiteAuthRepositoryTestsAsync : AuthRepositoryTestsAsyncBase
     {
         public override void ConfigureAuthRepo(Container container)
         {
@@ -72,7 +66,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
     
-    public class OrmLiteAuthRepositoryDistinctRolesTests : AuthRepositoryTestsBase
+    public class OrmLiteAuthRepositoryDistinctRolesTestsAsync : AuthRepositoryTestsAsyncBase
     {
         public override void ConfigureAuthRepo(Container container)
         {
@@ -89,7 +83,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [NUnit.Framework.Ignore("Requires RavenDB")]
-    public class RavenDbAuthRepositoryTests : AuthRepositoryTestsBase
+    public class RavenDbAuthRepositoryTestsAsync : AuthRepositoryTestsAsyncBase
     {
         public override void ConfigureAuthRepo(Container container)
         {
@@ -116,7 +110,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [NUnit.Framework.Ignore("Requires MongoDB")]
-    public class MongoDbAuthRepositoryTests : AuthRepositoryTestsBase
+    public class MongoDbAuthRepositoryTestsAsync : AuthRepositoryTestsAsyncBase
     {
         public override void ConfigureAuthRepo(Container container)
         {
@@ -131,7 +125,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     [NUnit.Framework.Ignore("Requires DynamoDB")]
-    public class DynamoDbAuthRepositoryTests : AuthRepositoryTestsBase
+    public class DynamoDbAuthRepositoryTestsAsync : AuthRepositoryTestsAsyncBase
     {
         public static IPocoDynamo CreatePocoDynamo()
         {
@@ -160,7 +154,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
     
-    public abstract class AuthRepositoryTestsBase
+    public abstract class AuthRepositoryTestsAsyncBase
     {
         private ServiceStackHost appHost;
 
@@ -184,11 +178,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 },
                 ConfigureContainer = container => {
                     ConfigureAuthRepo(container);
-                    var authRepo = container.Resolve<IAuthRepository>();
+                    var authRepo = container.TryResolve<IAuthRepositoryAsync>();
                     
-                    if (authRepo is IClearable clearable)
+                    if (authRepo is IClearableAsync clearable)
                     {
-                        try { clearable.Clear(); } catch {}
+                        try { clearable.ClearAsync().Wait(); } catch {}
                     }
 
                     authRepo.InitSchema();
@@ -202,11 +196,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         const string Password = "p@55wOrd";
 
         [Test]
-        public void Can_CreateUserAuth()
+        public async Task Can_CreateUserAuth()
         {
-            var authRepo = appHost.TryResolve<IAuthRepository>();
+            var authRepo = appHost.GetAuthRepositoryAsync();
 
-            var newUser = authRepo.CreateUserAuth(new AppUser
+            var newUser = await authRepo.CreateUserAuthAsync(new AppUser
             {
                 DisplayName = "Test User",
                 Email = "user@gmail.com",
@@ -216,33 +210,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             
             Assert.That(newUser.Email, Is.EqualTo("user@gmail.com"));
 
-            var fromDb = authRepo.GetUserAuth((newUser as AppUser)?.Key ?? newUser.Id.ToString());
+            var fromDb = await authRepo.GetUserAuthAsync((newUser as AppUser)?.Key ?? newUser.Id.ToString());
             Assert.That(fromDb.Email, Is.EqualTo("user@gmail.com"));
 
             newUser.FirstName = "Updated";
-            authRepo.SaveUserAuth(newUser);
+            await authRepo.SaveUserAuthAsync(newUser);
             
             var newSession = SessionFeature.CreateNewSession(null, "SESSION_ID");
             newSession.PopulateSession(newUser);
 
-            var updatedUser = authRepo.GetUserAuth(newSession.UserAuthId);
+            var updatedUser = await authRepo.GetUserAuthAsync(newSession.UserAuthId);
             Assert.That(updatedUser, Is.Not.Null);
             Assert.That(updatedUser.FirstName, Is.EqualTo("Updated"));
-            
-            Assert.That(authRepo.TryAuthenticate(newUser.Email, Password, out var authUser));
+
+            var authUser = await authRepo.TryAuthenticateAsync(newUser.Email, Password);
+            Assert.That(authUser, Is.Not.Null);
             Assert.That(authUser.FirstName, Is.EqualTo(updatedUser.FirstName));
             
-            authRepo.DeleteUserAuth(newSession.UserAuthId);
-            var deletedUserAuth = authRepo.GetUserAuth(newSession.UserAuthId);
+            await authRepo.DeleteUserAuthAsync(newSession.UserAuthId);
+            var deletedUserAuth = await authRepo.GetUserAuthAsync(newSession.UserAuthId);
             Assert.That(deletedUserAuth, Is.Null);
         }
 
         [Test]
-        public void Can_AddUserAuthDetails()
+        public async Task Can_AddUserAuthDetails()
         {
-            var authRepo = appHost.TryResolve<IAuthRepository>();
+            var authRepo = appHost.GetAuthRepositoryAsync();
             
-            var newUser = authRepo.CreateUserAuth(new AppUser
+            var newUser = await authRepo.CreateUserAuthAsync(new AppUser
             {
                 DisplayName = "Facebook User",
                 Email = "user@fb.com",
@@ -265,17 +260,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Email = "user@fb.com",
             };
             
-            var userAuthDetails = authRepo.CreateOrMergeAuthSession(newSession, fbAuthTokens);
+            var userAuthDetails = await authRepo.CreateOrMergeAuthSessionAsync(newSession, fbAuthTokens);
             Assert.That(userAuthDetails.Email, Is.EqualTo("user@fb.com"));
 
-            var userAuthDetailsList = authRepo.GetUserAuthDetails(newSession.UserAuthId);
+            var userAuthDetailsList = await authRepo.GetUserAuthDetailsAsync(newSession.UserAuthId);
             Assert.That(userAuthDetailsList.Count, Is.EqualTo(1));
             Assert.That(userAuthDetailsList[0].Email, Is.EqualTo("user@fb.com"));
             
-            authRepo.DeleteUserAuth(newSession.UserAuthId);
-            userAuthDetailsList = authRepo.GetUserAuthDetails(newSession.UserAuthId);
+            await authRepo.DeleteUserAuthAsync(newSession.UserAuthId);
+            userAuthDetailsList = await authRepo.GetUserAuthDetailsAsync(newSession.UserAuthId);
             Assert.That(userAuthDetailsList, Is.Empty);
-            var deletedUserAuth = authRepo.GetUserAuth(newSession.UserAuthId);
+            var deletedUserAuth = await authRepo.GetUserAuthAsync(newSession.UserAuthId);
             Assert.That(deletedUserAuth, Is.Null);
         }
 
