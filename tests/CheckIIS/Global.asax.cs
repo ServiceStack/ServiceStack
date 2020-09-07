@@ -154,7 +154,7 @@ namespace CheckIIS
                 {
                     Thread.Sleep(waitInMs);
                 }
-                await serverEvents.NotifyAllAsync("cmd.MS", stuff);
+                await serverEvents.NotifyAllAsync("cmd.MS", stuff, cancellationToken);
             }
         }
 
