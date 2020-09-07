@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
@@ -24,6 +25,19 @@ namespace ServiceStack.Auth
         List<ApiKey> GetUserApiKeys(string userId);
 
         void StoreAll(IEnumerable<ApiKey> apiKeys);
+    }
+
+    public interface IManageApiKeysAsync
+    {
+        Task InitApiKeySchemaAsync(CancellationToken token=default);
+
+        Task<bool> ApiKeyExistsAsync(string apiKey, CancellationToken token=default);
+
+        Task<ApiKey> GetApiKeyAsync(string apiKey, CancellationToken token=default);
+
+        Task<List<ApiKey>> GetUserApiKeysAsync(string userId, CancellationToken token=default);
+
+        Task StoreAllAsync(IEnumerable<ApiKey> apiKeys, CancellationToken token=default);
     }
 
     /// <summary>
