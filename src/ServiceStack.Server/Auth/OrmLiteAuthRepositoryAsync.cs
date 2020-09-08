@@ -180,7 +180,7 @@ namespace ServiceStack.Auth
             {
                 if (!hasInitSchema)
                 {
-                    hasInitSchema = db.TableExists<TUserAuth>(); //TODO: TableExistsAsync 
+                    hasInitSchema = await db.TableExistsAsync<TUserAuth>(token); 
 
                     if (!hasInitSchema)
                         throw new Exception("OrmLiteAuthRepository Db tables have not been initialized. Try calling 'InitSchema()' in your AppHost Configure method.");

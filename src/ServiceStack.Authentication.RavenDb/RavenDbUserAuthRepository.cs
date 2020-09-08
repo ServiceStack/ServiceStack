@@ -39,7 +39,7 @@ namespace ServiceStack.Authentication.RavenDb
         public static int DefaultParseIntId(string key) => int.Parse(key.RightPart('/').LeftPart('-'));
     }
 
-    public class RavenDbUserAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IQueryUserAuth
+    public partial class RavenDbUserAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IQueryUserAuth
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
@@ -147,27 +147,24 @@ namespace ServiceStack.Authentication.RavenDb
             newUser.CreatedDate = DateTime.UtcNow;
             newUser.ModifiedDate = newUser.CreatedDate;
 
-            using (var session = documentStore.OpenSession())
-            {
-                session.Store(newUser);
-                session.SaveChanges();
-            }
+            using var session = documentStore.OpenSession();
+            session.Store(newUser);
+            session.SaveChanges();
 
             return newUser;
         }
 
         private PropertyAccessor userAuthKeyProp;
-        private PropertyAccessor UserAuthKeyProp => userAuthKeyProp
-            ?? (userAuthKeyProp = UserAuthProps.GetAccessor(UserAuthIdentifier) 
-            ?? throw new NotSupportedException(
-                $"{typeof(TUserAuth).Name} does not contain '{UserAuthIdentifier}' property, add property or specify alternate Raven Identifier in UserAuthIdentifier"));
+        private PropertyAccessor UserAuthKeyProp => userAuthKeyProp 
+            ??= UserAuthProps.GetAccessor(UserAuthIdentifier) 
+            ?? throw new NotSupportedException($"{typeof(TUserAuth).Name} does not contain '{UserAuthIdentifier}' property, add property or specify alternate Raven Identifier in UserAuthIdentifier");
 
 
         private PropertyAccessor userAuthDetailsKeyProp;
-        private PropertyAccessor UserAuthDetailsKeyProp => userAuthDetailsKeyProp
-            ?? (userAuthDetailsKeyProp = UserAuthDetailsProps.GetAccessor(UserAuthDetailsIdentifier) 
-            ?? throw new NotSupportedException(typeof(TUserAuthDetails).Name + 
-                $" does not contain '{UserAuthDetailsIdentifier}' property, add property or specify alternate Raven Identifier in UserAuthDetailsIdentifier"));
+        private PropertyAccessor UserAuthDetailsKeyProp => userAuthDetailsKeyProp 
+            ??= UserAuthDetailsProps.GetAccessor(UserAuthDetailsIdentifier) 
+            ?? throw new NotSupportedException(typeof(TUserAuthDetails).Name +
+                $" does not contain '{UserAuthDetailsIdentifier}' property, add property or specify alternate Raven Identifier in UserAuthDetailsIdentifier");
         
         private void UpdateKey(IUserAuth existingUser, IUserAuth newUser)
         {
@@ -190,11 +187,9 @@ namespace ServiceStack.Authentication.RavenDb
             newUser.CreatedDate = existingUser.CreatedDate;
             newUser.ModifiedDate = DateTime.UtcNow;
 
-            using (var session = documentStore.OpenSession())
-            {
-                session.Store(newUser);
-                session.SaveChanges();
-            }
+            using var session = documentStore.OpenSession();
+            session.Store(newUser);
+            session.SaveChanges();
 
             return newUser;
         }
@@ -231,11 +226,9 @@ namespace ServiceStack.Authentication.RavenDb
             newUser.CreatedDate = existingUser.CreatedDate;
             newUser.ModifiedDate = DateTime.UtcNow;
 
-            using (var session = documentStore.OpenSession())
-            {
-                session.Store(newUser);
-                session.SaveChanges();
-            }
+            using var session = documentStore.OpenSession();
+            session.Store(newUser);
+            session.SaveChanges();
 
             return newUser;
         }
@@ -245,16 +238,14 @@ namespace ServiceStack.Authentication.RavenDb
             if (userNameOrEmail == null)
                 return null;
 
-            using (var session = documentStore.OpenSession())
-            {
-                var userAuth = session.Query<UserAuth_By_UserNameOrEmail.Result, UserAuth_By_UserNameOrEmail>()
-                    .Customize(x => x.WaitForNonStaleResults())
-                    .Where(x => x.Search.Contains(userNameOrEmail))
-                    .OfType<TUserAuth>()
-                    .FirstOrDefault();
+            using var session = documentStore.OpenSession();
+            var userAuth = session.Query<UserAuth_By_UserNameOrEmail.Result, UserAuth_By_UserNameOrEmail>()
+                .Customize(x => x.WaitForNonStaleResults())
+                .Where(x => x.Search.Contains(userNameOrEmail))
+                .OfType<TUserAuth>()
+                .FirstOrDefault();
                 
-                return userAuth;
-            }
+            return userAuth;
         }
 
         public bool TryAuthenticate(string userName, string password, out IUserAuth userAuth)
@@ -312,75 +303,65 @@ namespace ServiceStack.Authentication.RavenDb
 
         public void DeleteUserAuth(string userAuthId)
         {
-            using (var session = documentStore.OpenSession())
-            {
-                var userAuth = session.Load<TUserAuth>(userAuthId);
-                session.Delete(userAuth);
+            using var session = documentStore.OpenSession();
+            var userAuth = session.Load<TUserAuth>(userAuthId);
+            session.Delete(userAuth);
 
-                var userAuthDetails = session.Query<UserAuth_By_UserAuthDetails.Result, UserAuth_By_UserAuthDetails>()
-                    .Customize(x => x.WaitForNonStaleResults())
-                    .Where(q => q.UserAuthId == userAuthId);
-                userAuthDetails.Each(session.Delete);
-            }
+            var userAuthDetails = session.Query<UserAuth_By_UserAuthDetails.Result, UserAuth_By_UserAuthDetails>()
+                .Customize(x => x.WaitForNonStaleResults())
+                .Where(q => q.UserAuthId == userAuthId);
+            userAuthDetails.Each(session.Delete);
         }
 
         public IUserAuth GetUserAuth(string userAuthId)
         {
-            using (var session = documentStore.OpenSession())
-            {
-                return int.TryParse(userAuthId, out var intAuthId)
-                    ? session.Load<TUserAuth>(intAuthId)
-                    : session.Load<TUserAuth>(userAuthId);
-            }
+            using var session = documentStore.OpenSession();
+            return int.TryParse(userAuthId, out var intAuthId)
+                ? session.Load<TUserAuth>(intAuthId)
+                : session.Load<TUserAuth>(userAuthId);
         }
 
         public void SaveUserAuth(IAuthSession authSession)
         {
-            using (var session = documentStore.OpenSession())
-            {
-                int idInt = int.Parse(authSession.UserAuthId);
+            using var session = documentStore.OpenSession();
+            int idInt = int.Parse(authSession.UserAuthId);
 
-                var userAuth = !authSession.UserAuthId.IsNullOrEmpty()
-                    ? session.Load<TUserAuth>(idInt)
-                    : authSession.ConvertTo<TUserAuth>();
+            var userAuth = !authSession.UserAuthId.IsNullOrEmpty()
+                ? session.Load<TUserAuth>(idInt)
+                : authSession.ConvertTo<TUserAuth>();
 
-                if (userAuth.Id == default && !authSession.UserAuthId.IsNullOrEmpty())
-                    userAuth.Id = idInt;
+            if (userAuth.Id == default && !authSession.UserAuthId.IsNullOrEmpty())
+                userAuth.Id = idInt;
 
-                userAuth.ModifiedDate = DateTime.UtcNow;
-                if (userAuth.CreatedDate == default)
-                    userAuth.CreatedDate = userAuth.ModifiedDate;
+            userAuth.ModifiedDate = DateTime.UtcNow;
+            if (userAuth.CreatedDate == default)
+                userAuth.CreatedDate = userAuth.ModifiedDate;
 
-                session.Store(userAuth);
-                session.SaveChanges();
-            }
+            session.Store(userAuth);
+            session.SaveChanges();
         }
 
         public void SaveUserAuth(IUserAuth userAuth)
         {
-            using (var session = documentStore.OpenSession())
-            {
-                userAuth.ModifiedDate = DateTime.UtcNow;
-                if (userAuth.CreatedDate == default)
-                    userAuth.CreatedDate = userAuth.ModifiedDate;
+            using var session = documentStore.OpenSession();
+            userAuth.ModifiedDate = DateTime.UtcNow;
+            if (userAuth.CreatedDate == default)
+                userAuth.CreatedDate = userAuth.ModifiedDate;
 
-                session.Store(userAuth);
-                session.SaveChanges();
-            }
+            session.Store(userAuth);
+            session.SaveChanges();
         }
 
         public List<IUserAuthDetails> GetUserAuthDetails(string userAuthId)
         {
-            using (var session = documentStore.OpenSession())
-            {
-                return  session.Query<UserAuth_By_UserAuthDetails.Result, UserAuth_By_UserAuthDetails>()
-                    .Customize(x => x.WaitForNonStaleResults())
-                    .Where(q => q.UserAuthId == userAuthId)
-                    .OrderBy(x => x.ModifiedDate)
-                    .OfType<TUserAuthDetails>()
-                    .ToList()
-                    .ConvertAll(x => x as IUserAuthDetails);
-            }
+            using var session = documentStore.OpenSession();
+            return  session.Query<UserAuth_By_UserAuthDetails.Result, UserAuth_By_UserAuthDetails>()
+                .Customize(x => x.WaitForNonStaleResults())
+                .Where(q => q.UserAuthId == userAuthId)
+                .OrderBy(x => x.ModifiedDate)
+                .OfType<TUserAuthDetails>()
+                .ToList()
+                .ConvertAll(x => x as IUserAuthDetails);
         }
 
         public IUserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens)
@@ -399,22 +380,20 @@ namespace ServiceStack.Authentication.RavenDb
             if (tokens == null || tokens.Provider.IsNullOrEmpty() || tokens.UserId.IsNullOrEmpty())
                 return null;
 
-            using (var session = documentStore.OpenSession())
-            {
-                var oAuthProvider = session
-                    .Query<UserAuth_By_UserAuthDetails.Result, UserAuth_By_UserAuthDetails>()
-                    .Customize(x => x.WaitForNonStaleResults())
-                    .Where(q => q.Provider == tokens.Provider && q.UserId == tokens.UserId)
-                    .OfType<TUserAuthDetails>()
-                    .FirstOrDefault();
+            using var session = documentStore.OpenSession();
+            var oAuthProvider = session
+                .Query<UserAuth_By_UserAuthDetails.Result, UserAuth_By_UserAuthDetails>()
+                .Customize(x => x.WaitForNonStaleResults())
+                .Where(q => q.Provider == tokens.Provider && q.UserId == tokens.UserId)
+                .OfType<TUserAuthDetails>()
+                .FirstOrDefault();
 
-                if (oAuthProvider != null)
-                {
-                    var userAuth = session.Load<TUserAuth>(oAuthProvider.UserAuthId);
-                    return userAuth;
-                }
-                return null;
+            if (oAuthProvider != null)
+            {
+                var userAuth = session.Load<TUserAuth>(oAuthProvider.UserAuthId);
+                return userAuth;
             }
+            return null;
         }
 
         public IUserAuthDetails CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
@@ -422,50 +401,48 @@ namespace ServiceStack.Authentication.RavenDb
             var userAuth = GetUserAuth(authSession, tokens)
                 ?? typeof(TUserAuth).CreateInstance<TUserAuth>();
 
-            using (var session = documentStore.OpenSession())
+            using var session = documentStore.OpenSession();
+            var authDetails = session
+                .Query<UserAuth_By_UserAuthDetails.Result, UserAuth_By_UserAuthDetails>()
+                .Customize(x => x.WaitForNonStaleResults())
+                .Where(q => q.Provider == tokens.Provider && q.UserId == tokens.UserId)
+                .OfType<TUserAuthDetails>()
+                .FirstOrDefault();
+
+            if (authDetails == null)
             {
-                var authDetails = session
-                    .Query<UserAuth_By_UserAuthDetails.Result, UserAuth_By_UserAuthDetails>()
-                    .Customize(x => x.WaitForNonStaleResults())
-                    .Where(q => q.Provider == tokens.Provider && q.UserId == tokens.UserId)
-                    .OfType<TUserAuthDetails>()
-                    .FirstOrDefault();
-
-                if (authDetails == null)
-                {
-                    authDetails = typeof(TUserAuthDetails).CreateInstance<TUserAuthDetails>();
-                    authDetails.Provider = tokens.Provider;
-                    authDetails.UserId = tokens.UserId;
-                }
-
-                authDetails.PopulateMissing(tokens);
-                userAuth.PopulateMissingExtended(authDetails);
-
-                userAuth.ModifiedDate = DateTime.UtcNow;
-                if (userAuth.CreatedDate == default)
-                    userAuth.CreatedDate = userAuth.ModifiedDate;
-
-                session.Store(userAuth);
-                session.SaveChanges();
-
-                var key = (string)UserAuthKeyProp.PublicGetter(userAuth); 
-                if (userAuth.Id == default)
-                {
-                    userAuth.Id = RavenDbUserAuthRepository.ParseIntId(key);
-                }
-
-                authDetails.UserAuthId = userAuth.Id; // Partial FK int Id
-                authDetails.RefIdStr = key; // FK
-
-                if (authDetails.CreatedDate == default)
-                    authDetails.CreatedDate = userAuth.ModifiedDate;
-                authDetails.ModifiedDate = userAuth.ModifiedDate;
-
-                session.Store(authDetails);
-                session.SaveChanges();
-
-                return authDetails;
+                authDetails = typeof(TUserAuthDetails).CreateInstance<TUserAuthDetails>();
+                authDetails.Provider = tokens.Provider;
+                authDetails.UserId = tokens.UserId;
             }
+
+            authDetails.PopulateMissing(tokens);
+            userAuth.PopulateMissingExtended(authDetails);
+
+            userAuth.ModifiedDate = DateTime.UtcNow;
+            if (userAuth.CreatedDate == default)
+                userAuth.CreatedDate = userAuth.ModifiedDate;
+
+            session.Store(userAuth);
+            session.SaveChanges();
+
+            var key = (string)UserAuthKeyProp.PublicGetter(userAuth); 
+            if (userAuth.Id == default)
+            {
+                userAuth.Id = RavenDbUserAuthRepository.ParseIntId(key);
+            }
+
+            authDetails.UserAuthId = userAuth.Id; // Partial FK int Id
+            authDetails.RefIdStr = key; // FK
+
+            if (authDetails.CreatedDate == default)
+                authDetails.CreatedDate = userAuth.ModifiedDate;
+            authDetails.ModifiedDate = userAuth.ModifiedDate;
+
+            session.Store(authDetails);
+            session.SaveChanges();
+
+            return authDetails;
         }
 
         public static IEnumerable<TUserAuth> SortAndPage(IRavenQueryable<TUserAuth> q, string orderBy, int? skip, int? take)
@@ -488,28 +465,24 @@ namespace ServiceStack.Authentication.RavenDb
 
         public List<IUserAuth> GetUserAuths(string orderBy = null, int? skip = null, int? take = null)
         {
-            using (var session = documentStore.OpenSession())
-            {
-                var q = session.Query<TUserAuth>();
-                return SortAndPage(q, orderBy, skip, take).OfType<IUserAuth>().ToList();
-            }
+            using var session = documentStore.OpenSession();
+            var q = session.Query<TUserAuth>();
+            return SortAndPage(q, orderBy, skip, take).OfType<IUserAuth>().ToList();
         }
 
         public List<IUserAuth> SearchUserAuths(string query, string orderBy = null, int? skip = null, int? take = null)
         {
             if (string.IsNullOrEmpty(query))
                 return GetUserAuths(orderBy, skip, take);
-            
-            using (var session = documentStore.OpenSession())
-            {
-                // RavenDB cant query string Contains/IndexOf
-                var q = session.Query<TUserAuth>()
-                    .Where(x => x.UserName.StartsWith(query) || x.UserName.EndsWith(query) || 
-                                x.Email.StartsWith(query) || x.Email.EndsWith(query))
-                    .Customize(x => x.WaitForNonStaleResults());
 
-                return SortAndPage(q, orderBy, skip, take).OfType<IUserAuth>().ToList();
-            }
+            using var session = documentStore.OpenSession();
+            // RavenDB cant query string Contains/IndexOf
+            var q = session.Query<TUserAuth>()
+                .Where(x => x.UserName.StartsWith(query) || x.UserName.EndsWith(query) || 
+                            x.Email.StartsWith(query) || x.Email.EndsWith(query))
+                .Customize(x => x.WaitForNonStaleResults());
+
+            return SortAndPage(q, orderBy, skip, take).OfType<IUserAuth>().ToList();
         }
     }
     

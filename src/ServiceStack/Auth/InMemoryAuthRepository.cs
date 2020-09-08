@@ -82,13 +82,13 @@ namespace ServiceStack.Auth
                 lock (Instance.TrackedTypes) Instance.TrackedTypes.ForEach(x => x.Clear());
             }
 
-#if NET472 || NETSTANDARD2_0
             public Task ClearAsync(CancellationToken token = default)
             {
                 Clear();
                 return TypeConstants.EmptyTask;
             }
 
+#if NET472 || NETSTANDARD2_0
             public async Task<IRedisClientFacadeAsync> GetClientAsync(CancellationToken token = default)
             {
                 return new InMemoryClientFacadeAsync(root);
