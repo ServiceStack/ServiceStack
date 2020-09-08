@@ -167,7 +167,7 @@ namespace ServiceStack.Authentication.RavenDb
             await session.PopulateSessionAsync(userAuth, this, token);
         }
 
-        public async Task DeleteUserAuthAsync(string userAuthId, CancellationToken token = default)
+        public Task DeleteUserAuthAsync(string userAuthId, CancellationToken token = default)
         {
             using var session = documentStore.OpenSession();
             var userAuth = session.Load<TUserAuth>(userAuthId);
@@ -177,17 +177,18 @@ namespace ServiceStack.Authentication.RavenDb
                 .Customize(x => x.WaitForNonStaleResults())
                 .Where(q => q.UserAuthId == userAuthId);
             userAuthDetails.Each(session.Delete);
+            return TypeConstants.EmptyTask;
         }
 
-        public async Task<IUserAuth> GetUserAuthAsync(string userAuthId, CancellationToken token = default)
+        public Task<IUserAuth> GetUserAuthAsync(string userAuthId, CancellationToken token = default)
         {
             using var session = documentStore.OpenSession();
-            return int.TryParse(userAuthId, out var intAuthId)
-                ? session.Load<TUserAuth>(intAuthId)
-                : session.Load<TUserAuth>(userAuthId);
+            return (int.TryParse(userAuthId, out var intAuthId)
+                ? (IUserAuth)session.Load<TUserAuth>(intAuthId)
+                : session.Load<TUserAuth>(userAuthId)).InTask();
         }
 
-        public async Task SaveUserAuthAsync(IAuthSession authSession, CancellationToken token = default)
+        public Task SaveUserAuthAsync(IAuthSession authSession, CancellationToken token = default)
         {
             using var session = documentStore.OpenSession();
             int idInt = int.Parse(authSession.UserAuthId);
@@ -205,9 +206,10 @@ namespace ServiceStack.Authentication.RavenDb
 
             session.Store(userAuth);
             session.SaveChanges();
+            return TypeConstants.EmptyTask;
         }
 
-        public async Task SaveUserAuthAsync(IUserAuth userAuth, CancellationToken token = default)
+        public Task SaveUserAuthAsync(IUserAuth userAuth, CancellationToken token = default)
         {
             using var session = documentStore.OpenSession();
             userAuth.ModifiedDate = DateTime.UtcNow;
@@ -216,20 +218,19 @@ namespace ServiceStack.Authentication.RavenDb
 
             session.Store(userAuth);
             session.SaveChanges();
+            return TypeConstants.EmptyTask;
         }
 
         public async Task<List<IUserAuthDetails>> GetUserAuthDetailsAsync(string userAuthId, CancellationToken token = default)
         {
-            using (var session = documentStore.OpenSession())
-            {
-                return (await session.Query<UserAuth_By_UserAuthDetails.Result, UserAuth_By_UserAuthDetails>()
-                        .Customize(x => x.WaitForNonStaleResults())
-                        .Where(q => q.UserAuthId == userAuthId)
-                        .OrderBy(x => x.ModifiedDate)
-                        .OfType<TUserAuthDetails>()
-                        .ToListAsync(token))
-                    .ConvertAll(x => x as IUserAuthDetails);
-            }
+            using var session = documentStore.OpenSession();
+            return (await session.Query<UserAuth_By_UserAuthDetails.Result, UserAuth_By_UserAuthDetails>()
+                    .Customize(x => x.WaitForNonStaleResults())
+                    .Where(q => q.UserAuthId == userAuthId)
+                    .OrderBy(x => x.ModifiedDate)
+                    .OfType<TUserAuthDetails>()
+                    .ToListAsync(token))
+                .ConvertAll(x => x as IUserAuthDetails);
         }
 
         public async Task<IUserAuth> GetUserAuthAsync(IAuthSession authSession, IAuthTokens tokens, CancellationToken token = default)
@@ -313,11 +314,11 @@ namespace ServiceStack.Authentication.RavenDb
             return authDetails;
         }
 
-        public async Task<List<IUserAuth>> GetUserAuthsAsync(string orderBy = null, int? skip = null, int? take = null, CancellationToken token = default)
+        public Task<List<IUserAuth>> GetUserAuthsAsync(string orderBy = null, int? skip = null, int? take = null, CancellationToken token = default)
         {
             using var session = documentStore.OpenSession();
             var q = session.Query<TUserAuth>();
-            return SortAndPage(q, orderBy, skip, take).OfType<IUserAuth>().ToList();
+            return SortAndPage(q, orderBy, skip, take).OfType<IUserAuth>().ToList().InTask();
         }
 
         public async Task<List<IUserAuth>> SearchUserAuthsAsync(string query, string orderBy = null, int? skip = null, int? take = null, CancellationToken token = default)
