@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
+using ServiceStack.Text;
 
 namespace ServiceStack.Auth
 {
     [DefaultRequest(typeof(AssignRoles))]
     public class AssignRolesService : Service
     {
-        public object Post(AssignRoles request)
+        public async Task<object> Post(AssignRoles request)
         {
             if (!Request.IsInProcessRequest())
                 RequiredRoleAttribute.AssertRequiredRoles(Request, RoleNames.Admin);
@@ -15,16 +17,16 @@ namespace ServiceStack.Auth
             if (string.IsNullOrEmpty(request.UserName))
                 throw new ArgumentNullException(nameof(request.UserName));
 
-            var userAuth = AuthRepository.GetUserAuthByUserName(request.UserName);
+            var userAuth = await AuthRepositoryAsync.GetUserAuthByUserNameAsync(request.UserName).ConfigAwait();
             if (userAuth == null)
                 throw HttpError.NotFound(request.UserName);
 
-            AuthRepository.AssignRoles(userAuth, request.Roles, request.Permissions);
+            await AuthRepositoryAsync.AssignRolesAsync(userAuth, request.Roles, request.Permissions).ConfigAwait();
 
             return new AssignRolesResponse
             {
-                AllRoles = AuthRepository.GetRoles(userAuth).ToList(),
-                AllPermissions = AuthRepository.GetPermissions(userAuth).ToList(),
+                AllRoles = (await AuthRepositoryAsync.GetRolesAsync(userAuth).ConfigAwait()).ToList(),
+                AllPermissions = (await AuthRepositoryAsync.GetPermissionsAsync(userAuth).ConfigAwait()).ToList(),
             };
         }
     }

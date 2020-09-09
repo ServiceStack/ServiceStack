@@ -5,6 +5,9 @@ using System.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
@@ -104,6 +107,39 @@ namespace ServiceStack.Auth
             return null;
         }
 
+        public static IUserSessionSourceAsync GetUserSessionSourceAsync()
+        {
+            var userSessionSource = HostContext.TryResolve<IUserSessionSourceAsync>();
+            if (userSessionSource != null)
+                return userSessionSource;
+
+            if (AuthProviders != null)
+            {
+                foreach (var authProvider in AuthProviders)
+                {
+                    if (authProvider is IUserSessionSourceAsync sessionSource) //don't remove
+                        return sessionSource;
+                }
+            }
+
+            var sync = GetUserSessionSource();
+            if (sync != null)
+                return new UserSessionSourceSyncWrapper(sync);
+
+            return null;
+        }
+
+        class UserSessionSourceSyncWrapper : IUserSessionSourceAsync
+        {
+            private readonly IUserSessionSource source;
+            public UserSessionSourceSyncWrapper(IUserSessionSource source) => this.source = source;
+
+            public Task<IAuthSession> GetUserSessionAsync(string userAuthId, CancellationToken token = default)
+            {
+                return source.GetUserSession(userAuthId).InTask();
+            }
+        }
+
         /// <summary>
         /// Get specific AuthProvider
         /// </summary>
@@ -163,7 +199,7 @@ namespace ServiceStack.Auth
 
         public void Options(Authenticate request) { }
 
-        public object Get(Authenticate request)
+        public Task<object> Get(Authenticate request)
         {
             var allowGetAuthRequests = HostContext.AssertPlugin<AuthFeature>().AllowGetAuthenticateRequests;
 
@@ -174,7 +210,21 @@ namespace ServiceStack.Auth
             return Post(request);
         }
 
-        public object Post(Authenticate request)
+        public object PostSync(Authenticate request)
+        {
+            try
+            {
+                var task = Post(request);
+                var response = task.GetResult();
+                return response;
+            }
+            catch (Exception e)
+            {
+                throw e.UnwrapIfSingleException();
+            }
+        }
+
+        public async Task<object> Post(Authenticate request)
         {
             AssertAuthProviders();
 
@@ -204,13 +254,13 @@ namespace ServiceStack.Auth
                 throw HttpError.NotFound(ErrorMessages.UnknownAuthProviderFmt.Fmt(provider.SafeInput()));
 
             if (LogoutAction.EqualsIgnoreCase(request.provider))
-                return authProvider.Logout(this, request);
+                return await authProvider.LogoutAsync(this, request);
 
             if (authProvider is IAuthWithRequest && !base.Request.IsInProcessRequest())
             {
                 //IAuthWithRequest normally doesn't call Authenticate directly, but they can to return Auth Info
                 //But as AuthenticateService doesn't have [Authenticate] we need to call it manually
-                new AuthenticateAttribute().ExecuteAsync(base.Request, base.Response, request).Wait();
+                await new AuthenticateAttribute().ExecuteAsync(base.Request, base.Response, request);
                 if (base.Response.IsClosed)
                     return null;
             }
@@ -220,11 +270,11 @@ namespace ServiceStack.Auth
             var isHtml = base.Request.ResponseContentType.MatchesContentType(MimeTypes.Html);
             try
             {
-                var response = Authenticate(request, provider, session, authProvider);
+                var response = await AuthenticateAsync(request, provider, session, authProvider).ConfigAwait();
 
                 // The above Authenticate call may end an existing session and create a new one so we need
                 // to refresh the current session reference.
-                session = this.GetSession();
+                session = await this.GetSessionAsync().ConfigAwait();
 
                 if (request.provider == null && !session.IsAuthenticated)
                     throw HttpError.Unauthorized(ErrorMessages.NotAuthenticated.Localize(Request));
@@ -241,7 +291,7 @@ namespace ServiceStack.Auth
                         authFeature.ValidateRedirectLinks(Request, referrerUrl);
                 }
 
-                var manageRoles = AuthRepository as IManageRoles;
+                var manageRoles = AuthRepositoryAsync as IManageRolesAsync;
 
                 var alreadyAuthenticated = response == null;
                 response ??= new AuthenticateResponse {
@@ -270,15 +320,15 @@ namespace ServiceStack.Auth
                             }
                             
                             authResponse.Roles ??= (manageRoles != null
-                                ? manageRoles.GetRoles(session.UserAuthId)?.ToList()
+                                ? (await manageRoles.GetRolesAsync(session.UserAuthId).ConfigAwait())?.ToList()
                                 : session.Roles);
                             authResponse.Permissions ??= (manageRoles != null
-                                ? manageRoles.GetPermissions(session.UserAuthId)?.ToList()
+                                ? (await manageRoles.GetPermissionsAsync(session.UserAuthId).ConfigAwait())?.ToList()
                                 : session.Permissions);
                         }
-                        if (authFeature.IncludeOAuthTokensInAuthenticateResponse && AuthRepository != null)
+                        if (authFeature.IncludeOAuthTokensInAuthenticateResponse && AuthRepositoryAsync != null)
                         {
-                            var authDetails = AuthRepository.GetUserAuthDetails(session.UserAuthId);
+                            var authDetails = await AuthRepositoryAsync.GetUserAuthDetailsAsync(session.UserAuthId).ConfigAwait();
                             if (authDetails?.Count > 0)
                             {
                                 authResponse.Meta ??= new Dictionary<string, string>();
@@ -349,12 +399,20 @@ namespace ServiceStack.Auth
             }
         }
 
+        [Obsolete("Use AuthenticateAsync")]
+        public AuthenticateResponse Authenticate(Authenticate request)
+        {
+            var task = AuthenticateAsync(request);
+            var ret = task.GetResult();
+            return ret;
+        }
+
         /// <summary>
         /// Public API entry point to authenticate via code
         /// </summary>
         /// <param name="request"></param>
         /// <returns>null; if already authenticated otherwise a populated instance of AuthResponse</returns>
-        public AuthenticateResponse Authenticate(Authenticate request)
+        public async Task<AuthenticateResponse> AuthenticateAsync(Authenticate request, CancellationToken token=default)
         {
             //Remove HTML Content-Type to avoid auth providers issuing browser re-directs
             var hold = this.Request.ResponseContentType;
@@ -377,9 +435,10 @@ namespace ServiceStack.Auth
                     throw HttpError.NotFound(ErrorMessages.UnknownAuthProviderFmt.Fmt(provider.SafeInput()));
 
                 if (request.provider == LogoutAction)
-                    return oAuthConfig.Logout(this, request) as AuthenticateResponse;
+                    return await oAuthConfig.LogoutAsync(this, request, token).ConfigAwait() as AuthenticateResponse;
 
-                var result = Authenticate(request, provider, this.GetSession(), oAuthConfig);
+                var result = await AuthenticateAsync(request, provider, 
+                    await this.GetSessionAsync(token: token).ConfigAwait(), oAuthConfig, token).ConfigAwait();
                 if (result is HttpError httpError)
                     throw httpError;
 
@@ -396,7 +455,7 @@ namespace ServiceStack.Auth
         /// subsequent code relies on current <see cref="IAuthSession"/> data be sure to reload
         /// the session instance via <see cref="ServiceExtensions.GetSession(IServiceBase,bool)"/>.
         /// </summary>
-        private object Authenticate(Authenticate request, string provider, IAuthSession session, IAuthProvider oAuthConfig)
+        private async Task<object> AuthenticateAsync(Authenticate request, string provider, IAuthSession session, IAuthProvider oAuthConfig, CancellationToken token=default)
         {
             if (request.provider == null && request.UserName == null)
                 return null; //Just return sessionInfo if no provider or username is given
@@ -408,18 +467,18 @@ namespace ServiceStack.Auth
             if (generateNewCookies)
                 this.Request.GenerateNewSessionCookies(session);
 
-            var response = oAuthConfig.Authenticate(this, session, request);
+            var response = await oAuthConfig.AuthenticateAsync(this, session, request, token).ConfigAwait();
 
             return response;
         }
 
-        public object Delete(Authenticate request)
+        public async Task<object> Delete(Authenticate request)
         {
             var response = ValidateFn?.Invoke(this, HttpMethods.Delete, request);
             if (response != null)
                 return response;
 
-            this.RemoveSession();
+            await this.RemoveSessionAsync();
 
             return new AuthenticateResponse();
         }

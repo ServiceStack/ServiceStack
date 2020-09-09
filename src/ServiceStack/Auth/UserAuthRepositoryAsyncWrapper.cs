@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,15 +48,17 @@ namespace ServiceStack.Auth
             return TypeConstants.EmptyTask;
         }
 
-        public async Task<IUserAuth> TryAuthenticateAsync(string userName, string password, CancellationToken token = default)
+        public Task<IUserAuth> TryAuthenticateAsync(string userName, string password, CancellationToken token = default)
         {
-            return authRepo.TryAuthenticate(userName, password, out var userAuth) ? userAuth : null;
+            return (authRepo.TryAuthenticate(userName, password, out var userAuth) ? userAuth : null).InTask();
         }
 
-        public async Task<IUserAuth> TryAuthenticateAsync(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence,
+        public Task<IUserAuth> TryAuthenticateAsync(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence,
             CancellationToken token = default)
         {
-            return authRepo.TryAuthenticate(digestHeaders, privateKey, nonceTimeOut, sequence, out var userAuth) ? userAuth : null;
+            return (authRepo.TryAuthenticate(digestHeaders, privateKey, nonceTimeOut, sequence, out var userAuth)
+                ? userAuth
+                : null).InTask();
         }
 
         public Task<IUserAuth> CreateUserAuthAsync(IUserAuth newUser, string password, CancellationToken token = default)
@@ -85,5 +88,70 @@ namespace ServiceStack.Auth
         }
 
         public void InitSchema() => authRepo.InitSchema();
+    }
+
+    public class UserAuthRepositoryAsyncManageRolesWrapper : UserAuthRepositoryAsyncWrapper, IManageRolesAsync
+    {
+        private readonly IManageRoles manageRoles;
+
+        public UserAuthRepositoryAsyncManageRolesWrapper(IAuthRepository authRepo) : base(authRepo)
+        {
+            this.manageRoles = (IManageRoles) authRepo;
+        }
+
+        public Task<ICollection<string>> GetRolesAsync(string userAuthId, CancellationToken token = default)
+        {
+            return manageRoles.GetRoles(userAuthId).InTask();
+        }
+
+        public Task<ICollection<string>> GetPermissionsAsync(string userAuthId, CancellationToken token = default)
+        {
+            return manageRoles.GetPermissions(userAuthId).InTask();
+        }
+
+        public Task<Tuple<ICollection<string>, ICollection<string>>> GetRolesAndPermissionsAsync(string userAuthId, CancellationToken token = default)
+        {
+            manageRoles.GetRolesAndPermissions(userAuthId, out var roles, out var permissions);
+            return new Tuple<ICollection<string>, ICollection<string>>(roles, permissions).InTask();
+        }
+
+        public Task<bool> HasRoleAsync(string userAuthId, string role, CancellationToken token = default)
+        {
+            return manageRoles.HasRole(userAuthId, role).InTask();
+        }
+
+        public Task<bool> HasPermissionAsync(string userAuthId, string permission, CancellationToken token = default)
+        {
+            return manageRoles.HasPermission(userAuthId, permission).InTask();
+        }
+
+        public Task AssignRolesAsync(string userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null, CancellationToken token = default)
+        {
+            manageRoles.AssignRoles(userAuthId, roles, permissions);
+            return TypeConstants.EmptyTask;
+        }
+
+        public Task UnAssignRolesAsync(string userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null, CancellationToken token = default)
+        {
+            manageRoles.UnAssignRoles(userAuthId, roles, permissions);
+            return TypeConstants.EmptyTask;
+        }
+    }
+
+    public static class UserAuthRepositoryAsyncWrapperExtensions
+    {
+        /// <summary>
+        /// Returns either the native IAuthRepositoryAsync provider or an IAuthRepositoryAsync sync-wrapped provider over IAuthRepository
+        /// </summary>
+        public static IAuthRepositoryAsync AsAsync(this IAuthRepository authRepo)
+        {
+            if (authRepo == null)
+                return null;
+            if (authRepo is IAuthRepositoryAsync authRepoAsync)
+                return authRepoAsync;
+            if (authRepo is IManageRoles)
+                return new UserAuthRepositoryAsyncManageRolesWrapper(authRepo);
+            return new UserAuthRepositoryAsyncWrapper(authRepo);
+        }
     }
 }

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Templates;
 using ServiceStack.Text;
@@ -38,7 +40,7 @@ namespace ServiceStack.Auth
                 throw new Exception($"oauth.{Provider}.{nameof(AuthorizeUrl)} is required");
         }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
         {
             var tokens = Init(authService, ref session, request);
 
@@ -49,7 +51,7 @@ namespace ServiceStack.Auth
                     return HttpError.Unauthorized("AccessToken is not for client_id: " + ConsumerKey);
 
                 var isHtml = authService.Request.IsHtml();
-                var failedResult = AuthenticateWithAccessToken(authService, session, tokens, request.AccessToken);
+                var failedResult = await AuthenticateWithAccessTokenAsync(authService, session, tokens, request.AccessToken, token: token).ConfigAwait();
                 if (failedResult != null)
                     return ConvertToClientError(failedResult, isHtml);
 
@@ -92,7 +94,7 @@ namespace ServiceStack.Auth
                 if (session is AuthUserSession authSession)
                     (authSession.Meta ?? (authSession.Meta = new Dictionary<string, string>()))["oauthstate"] = oauthstate;
 
-                this.SaveSession(authService, session, SessionExpiry);
+                await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
                 return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
             }
 
@@ -117,7 +119,7 @@ namespace ServiceStack.Auth
 
                 var redirectUrl = SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"));
 
-                var errorResult = AuthenticateWithAccessToken(authService, session, tokens, accessToken, authInfo);
+                var errorResult = await AuthenticateWithAccessTokenAsync(authService, session, tokens, accessToken, authInfo, token).ConfigAwait();
                 if (errorResult != null)
                     return errorResult;
                 
@@ -155,8 +157,8 @@ namespace ServiceStack.Auth
             return contents;
         }
 
-        protected virtual object AuthenticateWithAccessToken(IServiceBase authService, IAuthSession session, IAuthTokens tokens, 
-            string accessToken, Dictionary<string,object> authInfo = null)
+        protected virtual async Task<object> AuthenticateWithAccessTokenAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens, 
+            string accessToken, Dictionary<string,object> authInfo = null, CancellationToken token=default)
         {
             tokens.AccessToken = accessToken;
             if (authInfo != null)
@@ -168,14 +170,14 @@ namespace ServiceStack.Auth
                 }
             }
 
-            var accessTokenAuthInfo = this.CreateAuthInfo(accessToken);
+            var accessTokenAuthInfo = await this.CreateAuthInfoAsync(accessToken, token).ConfigAwait();
 
             session.IsAuthenticated = true;
 
-            return OnAuthenticated(authService, session, tokens, accessTokenAuthInfo);
+            return await OnAuthenticatedAsync(authService, session, tokens, accessTokenAuthInfo, token).ConfigAwait();
         }
 
-        protected abstract Dictionary<string, string> CreateAuthInfo(string accessToken);
+        protected abstract Task<Dictionary<string, string>> CreateAuthInfoAsync(string accessToken, CancellationToken token=default);
 
         /// <summary>
         /// Override to return User chosen username or Email for this AuthProvider
@@ -183,7 +185,7 @@ namespace ServiceStack.Auth
         protected virtual string GetUserAuthName(IAuthTokens tokens, Dictionary<string, string> authInfo) =>
             tokens.Email;
 
-        protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
+        protected override Task LoadUserAuthInfoAsync(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token=default)
         {
             try
             {
@@ -207,6 +209,7 @@ namespace ServiceStack.Auth
             }
 
             LoadUserOAuthProvider(userSession, tokens);
+            return TypeConstants.EmptyTask;
         }
 
         public Func<IAuthSession,IAuthTokens, string> ResolveUnknownDisplayName { get; set; }

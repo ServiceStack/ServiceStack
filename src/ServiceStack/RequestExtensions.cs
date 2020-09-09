@@ -290,48 +290,64 @@ namespace ServiceStack
 #endif
         }
 
-        public static bool GetSessionFromSource(this IRequest request, string userAuthId, 
-            Action<IUserAuthRepository,IUserAuth> validator,
-            out IAuthSession session, out IEnumerable<string> roles, out IEnumerable<string> permissions)
+        public static async Task<SessionSourceResult> GetSessionFromSourceAsync(this IRequest request, 
+            string userAuthId, Func<IAuthRepositoryAsync,IUserAuth,Task> validator, CancellationToken token=default)
         {
-            session = null;
-            roles = permissions = null;
+            IAuthSession session = null;
+            IEnumerable<string> roles = null;
+            IEnumerable<string> permissions = null;
 
-            var userSessionSource = AuthenticateService.GetUserSessionSource();
+            var userSessionSource = AuthenticateService.GetUserSessionSourceAsync();
             if (userSessionSource != null)
             {
-                session = userSessionSource.GetUserSession(userAuthId);
+                session = await userSessionSource.GetUserSessionAsync(userAuthId, token).ConfigAwait();
                 if (session == null)
                     throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(request));
 
                 roles = session.Roles;
                 permissions = session.Permissions;
-                return true;
+                return new SessionSourceResult(session, roles, permissions);
             }
 
-            if (HostContext.AppHost.GetAuthRepository(request) is IUserAuthRepository userRepo)
+            var userRepo = HostContext.AppHost.GetAuthRepositoryAsync(request);
+#if NET472 || NETSTANDARD2_0
+            await using (userRepo as IAsyncDisposable)
+#else
+            using (userRepo as IDisposable)
+#endif
             {
-                using (userRepo as IDisposable)
+                var userAuth = await userRepo.GetUserAuthAsync(userAuthId, token).ConfigAwait();
+                if (userAuth == null)
+                    throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(request));
+
+                if (validator != null)
+                    await validator(userRepo, userAuth).ConfigAwait();
+
+                session = SessionFeature.CreateNewSession(request, SessionExtensions.CreateRandomSessionId());
+                await session.PopulateSessionAsync(userAuth, userRepo, token).ConfigAwait();
+
+                if (userRepo is IManageRolesAsync manageRoles && session.UserAuthId != null)
                 {
-                    var userAuth = userRepo.GetUserAuth(userAuthId);
-                    if (userAuth == null)
-                        throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(request));
-
-                    validator?.Invoke(userRepo, userAuth);
-
-                    session = SessionFeature.CreateNewSession(request, SessionExtensions.CreateRandomSessionId());
-                    session.PopulateSession(userAuth, userRepo);
-
-                    if (userRepo is IManageRoles manageRoles && session.UserAuthId != null)
-                    {
-                        roles = manageRoles.GetRoles(session.UserAuthId);
-                        permissions = manageRoles.GetPermissions(session.UserAuthId);
-                    }
-                    return true;
+                    roles = await manageRoles.GetRolesAsync(session.UserAuthId, token).ConfigAwait();
+                    permissions = await manageRoles.GetPermissionsAsync(session.UserAuthId, token).ConfigAwait();
                 }
+                return new SessionSourceResult(session, roles, permissions);
             }
             
-            return false;
+            return null;
+        }
+    }
+
+    public class SessionSourceResult
+    {
+        public IAuthSession Session { get; }
+        public IEnumerable<string> Roles { get; }
+        public IEnumerable<string> Permissions { get; }
+        public SessionSourceResult(IAuthSession session, IEnumerable<string> roles, IEnumerable<string> permissions)
+        {
+            Session = session;
+            Roles = roles;
+            Permissions = permissions;
         }
     }
     

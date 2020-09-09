@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
 
@@ -45,18 +47,18 @@ namespace ServiceStack.Auth
             };
         }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
         {
             var tokens = Init(authService, ref session, request);
 
             //Transferring AccessToken/Secret from Mobile/Desktop App to Server
             if (request?.AccessToken != null)
             {
-                if (!AuthHttpGateway.VerifyFacebookAccessToken(AppId, request.AccessToken))
+                if (!await AuthHttpGateway.VerifyFacebookAccessTokenAsync(AppId, request.AccessToken, token))
                     return HttpError.Unauthorized("AccessToken is not for App: " + AppId);
 
                 var isHtml = authService.Request.IsHtml();
-                var failedResult = AuthenticateWithAccessToken(authService, session, tokens, request.AccessToken);
+                var failedResult = await AuthenticateWithAccessTokenAsync(authService, session, tokens, request.AccessToken, token).ConfigAwait();
                 if (failedResult != null)
                     return ConvertToClientError(failedResult, isHtml);
 
@@ -84,20 +86,20 @@ namespace ServiceStack.Auth
             {
                 var preAuthUrl = $"{PreAuthUrl}?client_id={AppId}&redirect_uri={this.CallbackUrl.UrlEncode()}&scope={string.Join(",", Permissions)}&{Keywords.State}={session.Id}";
 
-                this.SaveSession(authService, session, SessionExpiry);
+                await this.SaveSessionAsync(authService, session, SessionExpiry, token: token);
                 return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
             }
 
             try
             {
                 var accessTokenUrl = $"{AccessTokenUrl}?client_id={AppId}&redirect_uri={this.CallbackUrl.UrlEncode()}&client_secret={AppSecret}&code={code}";
-                var contents = AccessTokenUrlFilter(this, accessTokenUrl).GetJsonFromUrl();
+                var contents = await AccessTokenUrlFilter(this, accessTokenUrl).GetJsonFromUrlAsync();
                 var authInfo = JsonObject.Parse(contents);
 
                 var accessToken = authInfo["access_token"];
 
-                return AuthenticateWithAccessToken(authService, session, tokens, accessToken)
-                       ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))); //Haz Access!
+                return await AuthenticateWithAccessTokenAsync(authService, session, tokens, accessToken, token).ConfigAwait()
+                    ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))); //Haz Access!
             }
             catch (WebException we)
             {
@@ -112,7 +114,7 @@ namespace ServiceStack.Auth
             return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
         }
 
-        protected virtual object AuthenticateWithAccessToken(IServiceBase authService, IAuthSession session, IAuthTokens tokens, string accessToken)
+        protected virtual async Task<object> AuthenticateWithAccessTokenAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens, string accessToken, CancellationToken token=default)
         {
             tokens.AccessTokenSecret = accessToken;
 
@@ -121,10 +123,10 @@ namespace ServiceStack.Auth
 
             session.IsAuthenticated = true;
 
-            return OnAuthenticated(authService, session, tokens, authInfo);
+            return await OnAuthenticatedAsync(authService, session, tokens, authInfo, token).ConfigAwait();
         }
 
-        protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
+        protected override async Task LoadUserAuthInfoAsync(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token=default)
         {
             try
             {
@@ -137,7 +139,7 @@ namespace ServiceStack.Auth
 
                 if (RetrieveUserPicture)
                 {
-                    var json = AuthHttpGateway.DownloadFacebookUserInfo(tokens.AccessTokenSecret, "picture");
+                    var json = await AuthHttpGateway.DownloadFacebookUserInfoAsync(tokens.AccessTokenSecret, new[]{ "picture" }, token).ConfigAwait();
                     var obj = JsonObject.Parse(json);
                     var picture = obj.Object("picture");
                     var data = picture?.Object("data");

@@ -306,7 +306,7 @@ namespace ServiceStack.AuthWeb.Tests
         public string Custom { get; set; }
     }
 
-    public class CustomCredentialsAuthProvider : CredentialsAuthProvider
+    public class CustomCredentialsAuthProvider : CredentialsAuthProviderSync
     {
         public override bool TryAuthenticate(IServiceBase authService, string userName, string password)
         {

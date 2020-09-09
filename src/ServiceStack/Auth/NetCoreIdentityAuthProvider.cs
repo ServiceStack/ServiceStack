@@ -3,10 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using ServiceStack.Configuration;
 using ServiceStack.Host.NetCore;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
@@ -101,7 +103,7 @@ namespace ServiceStack.Auth
             return session.IsAuthenticated;
         }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        public override Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
         {
             throw new NotImplementedException("NetCoreIdentityAuthProvider Authenticate() should not be called directly");
         }
@@ -249,7 +251,7 @@ namespace ServiceStack.Auth
                 return;
             }
             
-            var session = req.GetSession();
+            var session = await req.GetSessionAsync().ConfigAwait();
             if (session.IsAuthenticated)
             {
                 var claims = session.ConvertSessionToClaims(
@@ -257,11 +259,11 @@ namespace ServiceStack.Auth
                     roleClaimType:RoleClaimType,
                     permissionClaimType:PermissionClaimType);
                 
-                if (session.Roles.IsEmpty() && HostContext.AppHost.GetAuthRepository(req) is IManageRoles authRepo)
+                if (session.Roles.IsEmpty() && HostContext.AppHost.GetAuthRepositoryAsync(req) is IManageRolesAsync authRepo)
                 {
-                    using (authRepo as IDisposable)
+                    await using (authRepo as IAsyncDisposable)
                     {
-                        var roles = authRepo.GetRoles(session.UserAuthId.ToInt());
+                        var roles = await authRepo.GetRolesAsync(session.UserAuthId.ToInt()).ConfigAwait();
                         foreach (var role in roles)
                         {
                             claims.Add(new Claim(RoleClaimType, role, Issuer));
@@ -305,8 +307,10 @@ namespace ServiceStack.Auth
             }
         }
 
-        public void Register(IAppHost appHost, AuthFeature authFeature)
+        public override void Register(IAppHost appHost, AuthFeature authFeature)
         {
+            base.Register(appHost, authFeature);
+            
             if (AutoSignInSessions)
             {
                 ((AppHostBase)appHost).BeforeNextMiddleware = SignInAuthenticatedSessions;

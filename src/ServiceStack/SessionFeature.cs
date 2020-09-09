@@ -1,6 +1,9 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -81,6 +84,27 @@ namespace ServiceStack
             if (sessionKey != null)
             {
                 var session = (cache ?? httpReq.GetCacheClient()).Get<T>(sessionKey);
+                if (!Equals(session, default(T)))
+                    return (T)HostContext.AppHost.OnSessionFilter(httpReq, (IAuthSession)session, sessionId);
+            }
+
+            return (T)CreateNewSession(httpReq, sessionId);
+        }
+
+        public static async  Task<T> GetOrCreateSessionAsync<T>(ICacheClientAsync cache = null, IRequest httpReq = null, IResponse httpRes = null, CancellationToken token=default)
+        {
+            if (httpReq == null)
+                httpReq = HostContext.GetCurrentRequest();
+
+            var iSession = await httpReq.GetSessionAsync(reload:false, token).ConfigAwait();
+            if (iSession is T variable)
+                return variable;
+
+            var sessionId = httpReq.GetSessionId();
+            var sessionKey = GetSessionKey(sessionId);
+            if (sessionKey != null)
+            {
+                var session = await (cache ?? httpReq.GetCacheClientAsync()).GetAsync<T>(sessionKey, token).ConfigAwait();
                 if (!Equals(session, default(T)))
                     return (T)HostContext.AppHost.OnSessionFilter(httpReq, (IAuthSession)session, sessionId);
             }

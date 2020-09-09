@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
 
@@ -53,7 +55,7 @@ namespace ServiceStack.Auth
 
         public string[] Scopes { get; set; }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
         {
             var tokens = Init(authService, ref session, request);
 
@@ -63,13 +65,13 @@ namespace ServiceStack.Auth
                 //https://developer.github.com/v3/oauth_authorizations/#check-an-authorization
 
                 var url = VerifyAccessTokenUrl.Fmt(ClientId, request.AccessToken);
-                var json = url.GetJsonFromUrl(requestFilter: httpReq => {
+                var json = await url.GetJsonFromUrlAsync(requestFilter: httpReq => {
                     PclExport.Instance.SetUserAgent(httpReq, ServiceClientBase.DefaultUserAgent);
                     httpReq.AddBasicAuth(ClientId, ClientSecret);
-                });
+                }).ConfigAwait();
 
                 var isHtml = authService.Request.IsHtml();
-                var failedResult = AuthenticateWithAccessToken(authService, session, tokens, request.AccessToken);
+                var failedResult = await AuthenticateWithAccessTokenAsync(authService, session, tokens, request.AccessToken, token).ConfigAwait();
                 if (failedResult != null)
                     return ConvertToClientError(failedResult, isHtml);
 
@@ -123,7 +125,7 @@ namespace ServiceStack.Auth
 
                 var accessToken = authInfo["access_token"];
 
-                return AuthenticateWithAccessToken(authService, session, tokens, accessToken)
+                return await AuthenticateWithAccessTokenAsync(authService, session, tokens, accessToken, token).ConfigAwait()
                     ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))); //Haz Access!
             }
             catch (WebException webException)
@@ -138,19 +140,19 @@ namespace ServiceStack.Auth
             return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
         }
 
-        protected virtual object AuthenticateWithAccessToken(IServiceBase authService, IAuthSession session, IAuthTokens tokens, string accessToken)
+        protected virtual async Task<object> AuthenticateWithAccessTokenAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens, string accessToken, CancellationToken token=default)
         {
             tokens.AccessTokenSecret = accessToken;
 
-            var json = AuthHttpGateway.DownloadGithubUserInfo(accessToken);
+            var json = await AuthHttpGateway.DownloadGithubUserInfoAsync(accessToken, token);
             var authInfo = JsonObject.Parse(json);
 
             session.IsAuthenticated = true;
 
-            return OnAuthenticated(authService, session, tokens, authInfo);
+            return await OnAuthenticatedAsync(authService, session, tokens, authInfo, token).ConfigAwait();
         }
 
-        protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
+        protected override async Task LoadUserAuthInfoAsync(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token=default)
         {
             try
             {
@@ -171,7 +173,7 @@ namespace ServiceStack.Auth
 
                 if (string.IsNullOrEmpty(tokens.Email))
                 {
-                    var json = AuthHttpGateway.DownloadGithubUserEmailsInfo(tokens.AccessTokenSecret);
+                    var json = await AuthHttpGateway.DownloadGithubUserEmailsInfoAsync(tokens.AccessTokenSecret, token).ConfigAwait();
                     var objs = JsonArrayObjects.Parse(json);
                     foreach (var obj in objs)
                     {

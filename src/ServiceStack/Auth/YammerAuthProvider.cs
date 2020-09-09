@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
 
@@ -92,7 +94,7 @@ namespace ServiceStack.Auth
         /// <returns>
         /// The <see cref="object"/>.
         /// </returns>
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
         {
             var tokens = this.Init(authService, ref session, request);
 
@@ -104,7 +106,7 @@ namespace ServiceStack.Auth
             {
                 var preAuthUrl = $"{this.PreAuthUrl}?client_id={this.ClientId}&redirect_uri={this.RedirectUrl.UrlEncode()}";
 
-                this.SaveSession(authService, session, SessionExpiry);
+                await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
                 return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
             }
 
@@ -114,7 +116,7 @@ namespace ServiceStack.Auth
             try
             {
                 // Get access response object
-                var contents = AccessTokenUrlFilter(this, accessTokenUrl).GetStringFromUrl();
+                var contents = await AccessTokenUrlFilter(this, accessTokenUrl).GetStringFromUrlAsync().ConfigAwait();
 
                 var authInfo = PclExportClient.Instance.ParseQueryString(contents);
                 var authObj = JsonObject.Parse(contents);
@@ -152,7 +154,7 @@ namespace ServiceStack.Auth
                 session.IsAuthenticated = true;
 
                 // Pass along
-                var response = this.OnAuthenticated(authService, session, tokens, authInfo.ToDictionary());
+                var response = await OnAuthenticatedAsync(authService, session, tokens, authInfo.ToDictionary(), token).ConfigAwait();
                 if (response != null)
                     return response;
 
@@ -184,11 +186,11 @@ namespace ServiceStack.Auth
         /// <param name="authInfo">
         /// The auth info.
         /// </param>
-        protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
+        protected override async Task LoadUserAuthInfoAsync(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token = default)
         {
             try
             {
-                var contents = AuthHttpGateway.DownloadYammerUserInfo(tokens.UserId);
+                var contents = await AuthHttpGateway.DownloadYammerUserInfoAsync(tokens.UserId).ConfigAwait();
 
                 var obj = JsonObject.Parse(contents);
 
@@ -237,11 +239,8 @@ namespace ServiceStack.Auth
         /// </param>
         public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
         {
-            var userSession = authSession as AuthUserSession;
-            if (userSession == null)
-            {
+            if (!(authSession is AuthUserSession userSession))
                 return;
-            }
 
             userSession.UserAuthId = tokens.UserId ?? userSession.UserAuthId;
             userSession.UserAuthName = tokens.UserName ?? userSession.UserAuthName;

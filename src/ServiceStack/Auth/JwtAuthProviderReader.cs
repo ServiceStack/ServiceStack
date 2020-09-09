@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
@@ -394,7 +396,7 @@ namespace ServiceStack.Auth
             return session.FromToken && session.IsAuthenticated;
         }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        public override Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
         {
             // only allow verification of token
             if (!string.IsNullOrEmpty(request.Password) && string.IsNullOrEmpty(request.UserName))
@@ -416,7 +418,7 @@ namespace ServiceStack.Auth
                     if (jwtPayload == null) //not verified
                         throw HttpError.Forbidden(ErrorMessages.TokenInvalid.Localize(req));
                     
-                    return toAuthResponse(CreateSessionFromPayload(req, jwtPayload));
+                    return (toAuthResponse(CreateSessionFromPayload(req, jwtPayload)) as object).InTask();
                 }
                 if (parts.Length == 5) //Encrypted JWE Token
                 {
@@ -430,7 +432,7 @@ namespace ServiceStack.Auth
                             throw HttpError.Forbidden(ErrorMessages.TokenInvalid.Localize(req));
                     }
 
-                    return toAuthResponse(CreateSessionFromPayload(req, jwtPayload));
+                    return (toAuthResponse(CreateSessionFromPayload(req, jwtPayload)) as object).InTask();
                 }
             }
    

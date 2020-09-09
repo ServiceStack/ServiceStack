@@ -15,6 +15,9 @@ namespace ServiceStack
     /// Generic + Useful IService base class
     /// </summary>
     public class Service : IService, IServiceBase, IDisposable, IServiceFilters
+#if NET472 || NETSTANDARD2_0
+        , IAsyncDisposable
+#endif
     {
         public static IResolver GlobalResolver { get; set; }
 
@@ -73,6 +76,9 @@ namespace ServiceStack
 
         private IAuthRepository authRepository;
         public virtual IAuthRepository AuthRepository => authRepository ??= HostContext.AppHost.GetAuthRepository(Request);
+
+        private IAuthRepositoryAsync authRepositoryAsync;
+        public virtual IAuthRepositoryAsync AuthRepositoryAsync => authRepositoryAsync ??= HostContext.AppHost.GetAuthRepositoryAsync(Request);
 
         private IServiceGateway gateway;
         public virtual IServiceGateway Gateway => gateway ??= HostContext.AppHost.GetServiceGateway(Request);
@@ -143,6 +149,9 @@ namespace ServiceStack
             redis?.Dispose();
             messageProducer?.Dispose();
             using (authRepository as IDisposable) { }
+#if !(NET472 || NETSTANDARD2_0)
+            using (authRepositoryAsync as IDisposable)
+#endif
 
             RequestContext.Instance.ReleaseDisposables();
 
@@ -152,6 +161,13 @@ namespace ServiceStack
         public virtual void OnBeforeExecute(object requestDto) {}
         public virtual object OnAfterExecute(object response) => response;
         public virtual Task<object> OnExceptionAsync(object requestDto, Exception ex) => TypeConstants.EmptyTask;
+        
+#if NET472 || NETSTANDARD2_0
+        public async ValueTask DisposeAsync()
+        {
+            await using (authRepositoryAsync as IAsyncDisposable) {}
+        }
+#endif
     }
 
 }

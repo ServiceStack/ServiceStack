@@ -218,7 +218,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return false;
         }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        public override Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request,
+            CancellationToken token = default)
         {
             throw new NotImplementedException();
         }

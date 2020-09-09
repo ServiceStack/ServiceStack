@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
@@ -255,8 +257,9 @@ namespace ServiceStack.Auth
                 auth_time: 1598881434
                 nonce_supported: true
          */
-        protected override object AuthenticateWithAccessToken(IServiceBase authService, IAuthSession session, IAuthTokens tokens, 
-            string accessToken, Dictionary<string,object> authInfo = null)
+
+        protected override async Task<object> AuthenticateWithAccessTokenAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens,
+            string accessToken, Dictionary<string, object> authInfo = null, CancellationToken token = default)
         {
             if (authInfo == null)
                 throw new ArgumentNullException(nameof(authInfo));
@@ -305,7 +308,7 @@ namespace ServiceStack.Auth
                 throw;
             }
 
-            var idTokenAuthInfo = CreateAuthInfo(idToken);
+            var idTokenAuthInfo = await CreateAuthInfoAsync(idToken, token).ConfigAwait();
             
             var userJson = authService.Request.GetQueryStringOrForm("user");
             if (userJson != null)
@@ -323,13 +326,13 @@ namespace ServiceStack.Auth
             }
 
             session.IsAuthenticated = true;
-            return OnAuthenticated(authService, session, tokens, idTokenAuthInfo);
+            return await OnAuthenticatedAsync(authService, session, tokens, idTokenAuthInfo, token).ConfigAwait();
         }
 
-        protected override Dictionary<string, string> CreateAuthInfo(string idToken)
+        protected override Task<Dictionary<string, string>> CreateAuthInfoAsync(string idToken, CancellationToken token = default)
         {
             var idTokenPayload = JwtAuthProviderReader.ExtractPayload(idToken);
-            return idTokenPayload.ToStringDictionary();
+            return idTokenPayload.ToStringDictionary().InTask();
         }
 
         public static string DefaultResolveUnknownDisplayName(IAuthSession authSession, IAuthTokens tokens)
@@ -342,8 +345,8 @@ namespace ServiceStack.Auth
             }
             return email.LeftPart('@').Replace('.', ' ').Replace('_', ' ');
         }
-            
-        protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
+
+        protected override Task LoadUserAuthInfoAsync(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token = default)
         {
             tokens.UserId = tokens.UserName = authInfo.Get("sub");
             tokens.Email = authInfo.Get("email");
@@ -360,6 +363,7 @@ namespace ServiceStack.Auth
             userSession.UserAuthName = tokens.UserName ?? tokens.Email;
 
             LoadUserOAuthProvider(userSession, tokens);
+            return TypeConstants.EmptyTask;
         }
     }
     

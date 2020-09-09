@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -42,7 +44,7 @@ namespace ServiceStack.Auth
 
         public string ApplicationPassword { get; set; }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
         {
             IAuthTokens tokens = Init(authService, ref session, request);
             IRequest httpRequest = authService.Request;
@@ -64,14 +66,14 @@ namespace ServiceStack.Auth
             if (!isPreAuthCallback)
             {
                 string preAuthUrl = $"{PreAuthUrl}?response_type=code&client_id={ApplicationId}&redirect_uri={CallbackUrl.UrlEncode()}&display=popup&state={Guid.NewGuid().ToString("N")}";
-                this.SaveSession(authService, session, SessionExpiry);
+                await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
                 return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
             }
 
             try
             {
                 string payload = $"grant_type=authorization_code&code={code}&client_id={ApplicationId}&client_secret={ApplicationPassword}";
-                string contents = AccessTokenUrl.PostStringToUrl(payload);
+                string contents = await AccessTokenUrl.PostStringToUrlAsync(payload).ConfigAwait();
 
                 var authInfo = JsonObject.Parse(contents);
 
@@ -88,7 +90,7 @@ namespace ServiceStack.Auth
 
                 session.IsAuthenticated = true;
 
-                return OnAuthenticated(authService, session, tokens, authInfo.ToDictionary())
+                return await OnAuthenticatedAsync(authService, session, tokens, authInfo.ToDictionary(), token).ConfigAwait()
                     ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1")));
             }
             catch (WebException webException)
@@ -103,11 +105,11 @@ namespace ServiceStack.Auth
             return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
         }
 
-        protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
+        protected override async Task LoadUserAuthInfoAsync(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token = default)
         {
             try
             {
-                string json = $"https://login.yandex.ru/info?format=json&oauth_token={tokens.AccessTokenSecret}".GetJsonFromUrl();
+                string json = await $"https://login.yandex.ru/info?format=json&oauth_token={tokens.AccessTokenSecret}".GetJsonFromUrlAsync().ConfigAwait();
                 JsonObject obj = JsonObject.Parse(json);
 
                 tokens.UserId = obj.Get("id");

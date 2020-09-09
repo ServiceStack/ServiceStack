@@ -1,29 +1,26 @@
-using System.Threading;
-using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
-    public class BasicAuthProvider : CredentialsAuthProvider, IAuthWithRequest
+    public class BasicAuthProviderSync : CredentialsAuthProviderSync, IAuthWithRequest
     {
         public new static string Name = AuthenticateService.BasicProvider;
         public new static string Realm = "/auth/" + AuthenticateService.BasicProvider;
 
         public override string Type => "Basic";
 
-        public BasicAuthProvider()
+        public BasicAuthProviderSync()
         {
             this.Provider = Name;
             this.AuthRealm = Realm;
         }
 
-        public BasicAuthProvider(IAppSettings appSettings)
+        public BasicAuthProviderSync(IAppSettings appSettings)
             : base(appSettings, Realm, Name) {}
 
-        public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
+        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
             var httpReq = authService.Request;
             var basicAuth = httpReq.GetBasicAuthUserAndPassword();
@@ -33,7 +30,7 @@ namespace ServiceStack.Auth
             var userName = basicAuth.Value.Key;
             var password = basicAuth.Value.Value;
 
-            return await AuthenticateAsync(authService, session, userName, password, authService.Request.GetReturnUrl(), token).ConfigAwait();
+            return Authenticate(authService, session, userName, password, authService.Request.GetReturnUrl());
         }
 
         public virtual void PreAuthenticate(IRequest req, IResponse res)

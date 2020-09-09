@@ -116,7 +116,7 @@ namespace ServiceStack.Auth
                 : userAuth.Roles;
         }
 
-        public static async Task<ICollection<string>> GetRolesAsync(this IAuthRepository userAuthRepo, IUserAuth userAuth, CancellationToken token=default)
+        public static async Task<ICollection<string>> GetRolesAsync(this IAuthRepositoryAsync userAuthRepo, IUserAuth userAuth, CancellationToken token=default)
         {
             return userAuthRepo is IManageRolesAsync managesRoles 
                 ? await managesRoles.GetRolesAsync(userAuth.Id.ToString(), token).ConfigAwait()

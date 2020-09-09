@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using DotNetOpenAuth.Messaging;
 using DotNetOpenAuth.OpenId;
 using DotNetOpenAuth.OpenId.Extensions.AttributeExchange;
@@ -41,7 +43,7 @@ namespace ServiceStack.Authentication.OpenId
                 : new OpenIdRelyingParty();
         }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token=default)
         {
             var tokens = Init(authService, ref session, request);
 
@@ -78,7 +80,7 @@ namespace ServiceStack.Authentication.OpenId
                             httpResult.Headers[header] = openIdResponse.Headers[header];
                         }
                         // Save the current session to keep the ReferrerUrl available (similar to Facebook provider)
-                        this.SaveSession(authService, session, SessionExpiry);
+                        await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
                         return httpResult;
                     }
                 }
@@ -106,7 +108,7 @@ namespace ServiceStack.Authentication.OpenId
                                 // with the OpenID Claimed Identifier as their username.
                                 session.IsAuthenticated = true;
 
-                                return OnAuthenticated(authService, session, tokens, authInfo)
+                                return await OnAuthenticatedAsync(authService, session, tokens, authInfo, token).ConfigAwait()
                                     ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))); //Haz access!
 
                             case AuthenticationStatus.Canceled:
@@ -144,7 +146,7 @@ namespace ServiceStack.Authentication.OpenId
             return authInfo;
         }
 
-        protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
+        protected override Task LoadUserAuthInfoAsync(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token=default)
         {
             if (authInfo.ContainsKey("user_id"))
                 tokens.UserId = authInfo.GetValueOrDefault("user_id");
@@ -192,6 +194,7 @@ namespace ServiceStack.Authentication.OpenId
             userSession.UserAuthName = tokens.Email;
 
             LoadUserOAuthProvider(userSession, tokens);
+            return TypeConstants.EmptyTask;
         }
 
         public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Text;
@@ -370,7 +371,7 @@ namespace ServiceStack.Auth
     [DefaultRequest(typeof(GetAccessToken))]
     public class GetAccessTokenService : Service
     {
-        public object Any(GetAccessToken request)
+        public async Task<object> Any(GetAccessToken request)
         {
             var jwtAuthProvider = (JwtAuthProvider)AuthenticateService.GetRequiredJwtAuthProvider();
 
@@ -404,15 +405,16 @@ namespace ServiceStack.Auth
 
             var userId = jwtPayload["sub"];
 
-            if (!Request.GetSessionFromSource(userId, (authRepo,userAuth) => {
-                if (jwtAuthProvider.IsAccountLocked(authRepo, userAuth))
+            var result = await Request.GetSessionFromSourceAsync(userId, async (authRepo, userAuth) => {
+                if (await jwtAuthProvider.IsAccountLockedAsync(authRepo, userAuth))
                     throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(Request));
-            }, out var session, out var roles, out var perms))
-            {
-                throw new NotSupportedException("JWT RefreshTokens requires a registered IUserAuthRepository or an AuthProvider implementing IUserSessionSource");
-            }
+            }).ConfigAwait();
 
-            var accessToken = jwtAuthProvider.CreateJwtBearerToken(Request, session, roles, perms);
+            if (result == null)
+                throw new NotSupportedException("JWT RefreshTokens requires a registered IUserAuthRepository or an AuthProvider implementing IUserSessionSource");
+            
+            var accessToken = jwtAuthProvider.CreateJwtBearerToken(Request, 
+                session:result.Session, roles:result.Roles, perms:result.Permissions);
 
             var response = new GetAccessTokenResponse
             {
@@ -433,7 +435,6 @@ namespace ServiceStack.Auth
                 }
             };
         }
-        
     }
 
     internal static class JwtAuthProviderUtils

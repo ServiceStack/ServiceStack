@@ -1,5 +1,7 @@
 using System;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 
@@ -8,17 +10,35 @@ namespace ServiceStack.Auth
     public interface IAuthHttpGateway
     {
         bool VerifyTwitterAccessToken(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, out string userId, out string email);
+
+        Task<AuthId> VerifyTwitterAccessTokenAsync(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, CancellationToken token = default);
         string DownloadTwitterUserInfo(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, string twitterUserId);
+        Task<string> DownloadTwitterUserInfoAsync(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, string twitterUserId, CancellationToken token = default);
 
         bool VerifyFacebookAccessToken(string appId, string accessToken);
+
+        Task<bool> VerifyFacebookAccessTokenAsync(string appId, string accessToken, CancellationToken token = default);
         string DownloadFacebookUserInfo(string facebookCode, params string[] fields);
+        Task<string> DownloadFacebookUserInfoAsync(string facebookCode, string[] fields, CancellationToken token = default);
 
         string DownloadGithubUserInfo(string accessToken);
+        Task<string> DownloadGithubUserInfoAsync(string accessToken, CancellationToken token = default);
         string DownloadGithubUserEmailsInfo(string accessToken);
+        Task<string> DownloadGithubUserEmailsInfoAsync(string accessToken, CancellationToken token = default);
         string DownloadGoogleUserInfo(string accessToken);
+        Task<string> DownloadGoogleUserInfoAsync(string accessToken, CancellationToken token = default);
         string DownloadMicrosoftUserInfo(string accessToken);
+        Task<string> DownloadMicrosoftUserInfoAsync(string accessToken, CancellationToken token = default);
         string CreateMicrosoftPhotoUrl(string accessToken, string savePhotoSize=null);
+        Task<string> CreateMicrosoftPhotoUrlAsync(string accessToken, string savePhotoSize = null, CancellationToken token = default);
         string DownloadYammerUserInfo(string yammerUserId);
+        Task<string> DownloadYammerUserInfoAsync(string yammerUserId);
+    }
+
+    public class AuthId
+    {
+        public string UserId { get; set; }
+        public string Email { get; set; }
     }
 
     public class AuthHttpGateway : IAuthHttpGateway
@@ -44,6 +64,14 @@ namespace ServiceStack.Auth
                 TwitterUserUrl.Fmt(twitterUserId));
         }
 
+        public async Task<string> DownloadTwitterUserInfoAsync(string consumerKey, string consumerSecret,
+            string accessToken, string accessTokenSecret, string twitterUserId, CancellationToken token=default)
+        {
+            twitterUserId.ThrowIfNullOrEmpty(nameof(twitterUserId));
+            return await GetJsonFromOAuthUrlAsync(consumerKey, consumerSecret, accessToken, accessTokenSecret,
+                TwitterUserUrl.Fmt(twitterUserId), token: token).ConfigAwait();
+        }
+
         public bool VerifyTwitterAccessToken(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, 
             out string userId, out string email)
         {
@@ -63,6 +91,23 @@ namespace ServiceStack.Auth
             }
         }
 
+        public async Task<AuthId> VerifyTwitterAccessTokenAsync(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, CancellationToken token=default)
+        {
+            try
+            {
+                var json = await GetJsonFromOAuthUrlAsync(consumerKey, consumerSecret, accessToken, accessTokenSecret, TwitterVerifyCredentialsUrl, token: token).ConfigAwait();
+                var obj = JsonObject.Parse(json);
+                var userId = obj.Get("id_str");
+                var email = obj.Get("email");
+                if (!string.IsNullOrEmpty(userId))
+                    return new AuthId { UserId = userId, Email = email };
+            }
+            catch
+            {
+            }
+            return null;
+        }
+
         public static string GetJsonFromOAuthUrl(
             string consumerKey, string consumerSecret,
             string accessToken, string accessTokenSecret, 
@@ -78,8 +123,28 @@ namespace ServiceStack.Auth
                     consumerKey, consumerSecret, accessToken, accessTokenSecret, HttpMethods.Get, uri, data);
             }
 
-            using (var webRes = PclExport.Instance.GetResponse(webReq))
-                return webRes.ReadToEnd();
+            using var webRes = PclExport.Instance.GetResponse(webReq);
+            return webRes.ReadToEnd();
+        }
+
+        public static async Task<string> GetJsonFromOAuthUrlAsync(
+            string consumerKey, string consumerSecret,
+            string accessToken, string accessTokenSecret, 
+            string url, string data = null, CancellationToken token=default)
+        {
+            var uri = new Uri(url);
+            var webReq = (HttpWebRequest)WebRequest.Create(uri);
+            webReq.Accept = MimeTypes.Json;
+
+            if (accessToken != null)
+            {
+                webReq.Headers[HttpRequestHeader.Authorization] = OAuthAuthorizer.AuthorizeRequest(
+                    consumerKey, consumerSecret, accessToken, accessTokenSecret, HttpMethods.Get, uri, data);
+            }
+
+            using var webRes = await webReq.GetResponseAsync();
+            using var stream = webRes.GetResponseStream();
+            return await stream.ReadToEndAsync(HttpUtils.UseEncoding).ConfigAwait();
         }
 
         public bool VerifyFacebookAccessToken(string appId, string accessToken)
@@ -91,6 +156,27 @@ namespace ServiceStack.Auth
             {
                 var url = FacebookVerifyTokenUrl.Fmt(accessToken);
                 var json = url.GetJsonFromUrl();
+
+                var obj = JsonObject.Parse(json);
+                var tokenAppId = obj.Get("id");
+
+                return tokenAppId == appId;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> VerifyFacebookAccessTokenAsync(string appId, string accessToken, CancellationToken token = default)
+        {
+            if (string.IsNullOrEmpty(appId) || string.IsNullOrEmpty(accessToken))
+                return false;
+
+            try
+            {
+                var url = FacebookVerifyTokenUrl.Fmt(accessToken);
+                var json = await url.GetJsonFromUrlAsync().ConfigAwait();
 
                 var obj = JsonObject.Parse(json);
                 var tokenAppId = obj.Get("id");
@@ -117,6 +203,20 @@ namespace ServiceStack.Auth
             return json;
         }
 
+        public async Task<string> DownloadFacebookUserInfoAsync(string facebookCode, string[] fields, CancellationToken token=default)
+        {
+            facebookCode.ThrowIfNullOrEmpty("facebookCode");
+
+            var url = FacebookUserUrl.Fmt(facebookCode);
+            if (fields.Length > 0)
+            {
+                url = url.AddQueryParam("fields", string.Join(",", fields));
+            }
+
+            var json = await url.GetJsonFromUrlAsync().ConfigAwait();
+            return json;
+        }
+
         public string DownloadGithubUserInfo(string accessToken)
         {
             if (string.IsNullOrEmpty(accessToken))
@@ -125,6 +225,19 @@ namespace ServiceStack.Auth
             var url = GithubUserUrl.Fmt(accessToken);
 
             var json = url.GetJsonFromUrl(
+                httpReq => PclExport.Instance.SetUserAgent(httpReq, ServiceClientBase.DefaultUserAgent));
+
+            return json;
+        }
+
+        public async Task<string> DownloadGithubUserInfoAsync(string accessToken, CancellationToken token=default)
+        {
+            if (string.IsNullOrEmpty(accessToken))
+                throw new ArgumentNullException(nameof(accessToken));
+
+            var url = GithubUserUrl.Fmt(accessToken);
+
+            var json = await url.GetJsonFromUrlAsync(
                 httpReq => PclExport.Instance.SetUserAgent(httpReq, ServiceClientBase.DefaultUserAgent));
 
             return json;
@@ -143,11 +256,33 @@ namespace ServiceStack.Auth
             return json;
         }
 
+        public async Task<string> DownloadGithubUserEmailsInfoAsync(string accessToken, CancellationToken token=default)
+        {
+            if (string.IsNullOrEmpty(accessToken))
+                throw new ArgumentNullException(nameof(accessToken));
+
+            var url = GithubUserEmailsUrl.Fmt(accessToken);
+
+            var json = await url.GetJsonFromUrlAsync(
+                httpReq => PclExport.Instance.SetUserAgent(httpReq, ServiceClientBase.DefaultUserAgent)).ConfigAwait();
+
+            return json;
+        }
+
         public string DownloadGoogleUserInfo(string accessToken)
         {
             var json = GoogleAuthProvider.DefaultUserProfileUrl
                 .AddQueryParam("access_token", accessToken)
                 .GetJsonFromUrl();
+
+            return json;
+        }
+
+        public async Task<string> DownloadGoogleUserInfoAsync(string accessToken, CancellationToken token=default)
+        {
+            var json = await GoogleAuthProvider.DefaultUserProfileUrl
+                .AddQueryParam("access_token", accessToken)
+                .GetJsonFromUrlAsync().ConfigAwait();
 
             return json;
         }
@@ -159,30 +294,61 @@ namespace ServiceStack.Auth
             return json;
         }
 
+        public async Task<string> DownloadMicrosoftUserInfoAsync(string accessToken, CancellationToken token=default)
+        {
+            var json = await MicrosoftGraphAuthProvider.DefaultUserProfileUrl
+                .GetJsonFromUrlAsync(requestFilter:req => req.AddBearerToken(accessToken)).ConfigAwait();
+            return json;
+        }
+
         public string CreateMicrosoftPhotoUrl(string accessToken, string savePhotoSize=null)
         {
-            try 
-            { 
-                using (var origStream = MicrosoftGraphAuthProvider.PhotoUrl
-                    .GetStreamFromUrl(requestFilter:req => req.AddBearerToken(accessToken)))
-                using (var origImage = System.Drawing.Image.FromStream(origStream))
-                {
-                    var parts = savePhotoSize?.Split('x');
-                    var width = origImage.Width;
-                    var height = origImage.Height;
+            try
+            {
+                using var origStream = MicrosoftGraphAuthProvider.PhotoUrl
+                    .GetStreamFromUrl(requestFilter:req => req.AddBearerToken(accessToken));
+                using var origImage = System.Drawing.Image.FromStream(origStream);
+                var parts = savePhotoSize?.Split('x');
+                var width = origImage.Width;
+                var height = origImage.Height;
 
-                    if (parts != null && parts.Length > 0)
-                        int.TryParse(parts[0], out width);
+                if (parts != null && parts.Length > 0)
+                    int.TryParse(parts[0], out width);
 
-                    if (parts != null && parts.Length > 1)
-                        int.TryParse(parts[1], out height);
+                if (parts != null && parts.Length > 1)
+                    int.TryParse(parts[1], out height);
 
-                    using (var resizedImage = origImage.ResizeToPng(width, height))
-                    {
-                        var base64 = Convert.ToBase64String(resizedImage.GetBuffer(), 0, (int) resizedImage.Length);
-                        return "data:image/png;base64," + base64;
-                    }
-                }
+                using var resizedImage = origImage.ResizeToPng(width, height);
+                var base64 = Convert.ToBase64String(resizedImage.GetBuffer(), 0, (int) resizedImage.Length);
+                return "data:image/png;base64," + base64;
+            }
+            catch (Exception ex)
+            {
+                Log.Warn($"Could not retrieve '{MicrosoftGraphAuthProvider.Name}' photo", ex);
+                return null;
+            }
+        }
+
+        public async Task<string> CreateMicrosoftPhotoUrlAsync(string accessToken, string savePhotoSize=null, CancellationToken token=default)
+        {
+            try
+            {
+                using var origStream = await MicrosoftGraphAuthProvider.PhotoUrl
+                    .GetStreamFromUrlAsync(requestFilter:req => req.AddBearerToken(accessToken)).ConfigAwait();
+                using var origImage = System.Drawing.Image.FromStream(origStream);
+                var parts = savePhotoSize?.Split('x');
+                var width = origImage.Width;
+                var height = origImage.Height;
+
+                if (parts != null && parts.Length > 0)
+                    int.TryParse(parts[0], out width);
+
+                if (parts != null && parts.Length > 1)
+                    int.TryParse(parts[1], out height);
+
+                using var resizedImage = origImage.ResizeToPng(width, height);
+                var base64 = Convert.ToBase64String(resizedImage.GetBuffer(), 0, (int) resizedImage.Length);
+                return "data:image/png;base64," + base64;
             }
             catch (Exception ex)
             {
@@ -222,5 +388,15 @@ namespace ServiceStack.Auth
             var json = url.GetStringFromUrl();
             return json;
         }
+
+        public async Task<string> DownloadYammerUserInfoAsync(string yammerUserId)
+        {
+            yammerUserId.ThrowIfNullOrEmpty("yammerUserId");
+
+            var url = YammerUserUrl.Fmt(yammerUserId);
+            var json = await url.GetStringFromUrlAsync();
+            return json;
+        }
+
     }
 }

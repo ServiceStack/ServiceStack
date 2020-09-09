@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Web;
 
@@ -101,7 +103,7 @@ namespace ServiceStack.Auth
         /// <param name="session"></param>
         /// <param name="request"></param>
         /// <returns></returns>
-        public abstract override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request);
+        public abstract override Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token=default);
 
         /// <summary>
         /// Sets the CallbackUrl and session.ReferrerUrl if not set and initializes the session tokens for this AuthProvider

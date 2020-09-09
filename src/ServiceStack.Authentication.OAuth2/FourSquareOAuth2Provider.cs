@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using DotNetOpenAuth.Messaging;
 using DotNetOpenAuth.OAuth2;
 using ServiceStack.Auth;
@@ -30,13 +32,12 @@ namespace ServiceStack.Authentication.OAuth2
         public FourSquareOAuth2Provider(IAppSettings appSettings)
             : base(appSettings, Realm, Name)
         {
-            this.AuthorizeUrl = this.AuthorizeUrl ?? Realm;
-            this.AccessTokenUrl = this.AccessTokenUrl ?? "https://foursquare.com/oauth2/access_token";
-            this.UserProfileUrl = this.UserProfileUrl ?? "https://api.foursquare.com/v2/users/self";
+            this.AuthorizeUrl ??= Realm;
+            this.AccessTokenUrl ??= "https://foursquare.com/oauth2/access_token";
+            this.UserProfileUrl ??= "https://api.foursquare.com/v2/users/self";
 
             // https://developer.foursquare.com/overview/versioning
-            DateTime versionDate;
-            if (!DateTime.TryParse(appSettings.GetString("oauth.{0}.Version".Fmt(Name)), out versionDate)) 
+            if (!DateTime.TryParse(appSettings.GetString("oauth.{0}.Version".Fmt(Name)), out var versionDate)) 
                 versionDate = DateTime.UtcNow;
 
             // version dates before June 9, 2012 will automatically be rejected
@@ -46,14 +47,12 @@ namespace ServiceStack.Authentication.OAuth2
             this.Version = versionDate;
 
             // Profile Image URL requires dimensions (Width x height) in the URL (default = 64x64 and minimum = 16x16)
-            int profileImageWidth;
-            if (!int.TryParse(appSettings.GetString("oauth.{0}.ProfileImageWidth".Fmt(Name)), out profileImageWidth))
+            if (!int.TryParse(appSettings.GetString("oauth.{0}.ProfileImageWidth".Fmt(Name)), out var profileImageWidth))
                 profileImageWidth = 64;
 
             this.ProfileImageWidth = Math.Max(profileImageWidth, 16);
 
-            int profileImageHeight;
-            if (!int.TryParse(appSettings.GetString("oauth.{0}.ProfileImageHeight".Fmt(Name)), out profileImageHeight))
+            if (!int.TryParse(appSettings.GetString("oauth.{0}.ProfileImageHeight".Fmt(Name)), out var profileImageHeight))
                 profileImageHeight = 64;
 
             this.ProfileImageHeight = Math.Max(profileImageHeight, 16);
@@ -61,7 +60,7 @@ namespace ServiceStack.Authentication.OAuth2
             Scopes = appSettings.Get("oauth.{0}.Scopes".Fmt(Name), new[] { "basic" });
         }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token=default)
         {
             var tokens = this.Init(authService, ref session, request);
 
@@ -100,7 +99,7 @@ namespace ServiceStack.Authentication.OAuth2
                         }
                     }
 
-                    this.SaveSession(authService, session, SessionExpiry);
+                    await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
                     return httpResult;
                 }
                 catch (ProtocolException ex)
@@ -120,7 +119,7 @@ namespace ServiceStack.Authentication.OAuth2
                     tokens.RefreshTokenExpiry = authState.AccessTokenExpirationUtc;
                     session.IsAuthenticated = true;
                     var authInfo = this.CreateAuthInfo(accessToken);
-                    this.OnAuthenticated(authService, session, tokens, authInfo);
+                    await this.OnAuthenticatedAsync(authService, session, tokens, authInfo, token).ConfigAwait();
                     return authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1"));
                 }
                 catch (WebException we)
@@ -179,7 +178,7 @@ namespace ServiceStack.Authentication.OAuth2
             return authInfo;
         }
 
-        protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
+        protected override Task LoadUserAuthInfoAsync(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token=default)
         {
             tokens.Gender = authInfo["gender"];
             if (tokens.Gender != "none")
@@ -208,7 +207,7 @@ namespace ServiceStack.Authentication.OAuth2
                 userSession.TwitterUserId = authInfo["twitter"];
 
             userSession.UserAuthName = tokens.Email;
-            base.LoadUserAuthInfo(userSession, tokens, authInfo);
+            return TypeConstants.EmptyTask;
         }
     }
 }

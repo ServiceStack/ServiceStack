@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
@@ -17,13 +20,13 @@ namespace ServiceStack.Auth
         /// <param name="service"></param>
         /// <param name="request"></param>
         /// <returns></returns>
-        object Logout(IServiceBase service, Authenticate request);
+        Task<object> LogoutAsync(IServiceBase service, Authenticate request, CancellationToken token = default);
 
         /// <summary>
         /// The entry point for all AuthProvider providers. Runs inside the AuthService so exceptions are treated normally.
         /// Overridable so you can provide your own Auth implementation.
         /// </summary>
-        object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request);
+        public Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default);
 
         /// <summary>
         /// Determine if the current session is already authenticated with this AuthProvider
@@ -51,9 +54,15 @@ namespace ServiceStack.Auth
         void Execute(AuthFilterContext authContext);
     }
 
+    [Obsolete("Use IUserSessionSourceAsync")]
     public interface IUserSessionSource
     {
         IAuthSession GetUserSession(string userAuthId);
+    }
+
+    public interface IUserSessionSourceAsync
+    {
+        Task<IAuthSession> GetUserSessionAsync(string userAuthId, CancellationToken token=default);
     }
 
     public class AuthFilterContext

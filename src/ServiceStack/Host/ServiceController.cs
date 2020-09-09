@@ -480,6 +480,9 @@ namespace ServiceStack.Host
                         return taskResponse.GetResult();
                     }
                     appHost.Release(service);
+#if NET472 || NETSTANDARD2_0
+                    await using (service as IAsyncDisposable) {}
+#endif
                     return result;
                 }
                 

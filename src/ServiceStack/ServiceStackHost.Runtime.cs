@@ -654,6 +654,7 @@ namespace ServiceStack
         /// <summary>
         /// Override to intercept when Sessions are saved
         /// </summary>
+        [Obsolete("Use OnSaveSessionAsync")]
         public virtual void OnSaveSession(IRequest httpReq, IAuthSession session, TimeSpan? expiresIn = null)
         {
             if (httpReq == null) return;
@@ -668,9 +669,22 @@ namespace ServiceStack
             httpReq.Items[Keywords.Session] = session;
         }
 
+        /// <summary>
+        /// Override to intercept when Sessions are saved
+        /// </summary>
+        public virtual async Task OnSaveSessionAsync(IRequest httpReq, IAuthSession session, TimeSpan? expiresIn = null, CancellationToken token=default)
+        {
+            if (httpReq == null) return;
+                        
+            if (session.FromToken) // Don't persist Sessions populated from tokens 
+                return; 
 
-        [Obsolete("override OnSessionFilter(IRequest,IAuthSession,string)")]
-        public virtual IAuthSession OnSessionFilter(IAuthSession session, string withSessionId) => session;
+            var sessionKey = SessionFeature.GetSessionKey(session.Id ?? httpReq.GetOrCreateSessionId());
+            session.LastModified = DateTime.UtcNow;
+            await this.GetCacheClientAsync(httpReq).CacheSetAsync(sessionKey, session, expiresIn ?? GetDefaultSessionExpiry(httpReq), token).ConfigAwait();
+
+            httpReq.Items[Keywords.Session] = session;
+        }
 
         /// <summary>
         /// Inspect or modify ever new UserSession created or resolved from cache. 
@@ -682,7 +696,7 @@ namespace ServiceStack
             {
                 authSession.OnLoad(req);
             }
-            return OnSessionFilter(session, withSessionId);
+            return session;
         }
 
 #if NETSTANDARD2_0
@@ -905,14 +919,7 @@ namespace ServiceStack
                 return authRepoAsync;
 
             var authRepo = GetAuthRepository(req);
-            authRepoAsync = authRepo as IAuthRepositoryAsync;
-            if (authRepoAsync != null)
-                return authRepoAsync;
-            
-            if (authRepo != null)
-                return new UserAuthRepositoryAsyncWrapper(authRepo);
-            
-            return null;
+            return authRepo.AsAsync();
         }
 
         /// <summary>

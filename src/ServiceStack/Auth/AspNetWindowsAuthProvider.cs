@@ -4,8 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Principal;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.Host.AspNet;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
@@ -90,14 +93,14 @@ namespace ServiceStack.Auth
             return false;
         }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
         {
             var user = authService.Request.GetUser();
             var userName = user.GetUserName();
             if (!LoginMatchesSession(session, userName))
             {
-                authService.RemoveSession();
-                session = authService.GetSession();
+                await authService.RemoveSessionAsync(token).ConfigAwait();
+                session = await authService.GetSessionAsync(token: token).ConfigAwait();
             }
 
             if (IsAuthorized(user))
@@ -130,14 +133,14 @@ namespace ServiceStack.Auth
 
                 session.ReferrerUrl = GetReferrerUrl(authService, session, request);
 
-                var response = OnAuthenticated(authService, session, tokens, new Dictionary<string, string>());
+                var response = await OnAuthenticatedAsync(authService, session, tokens, new Dictionary<string, string>(), token).ConfigAwait();
 
                 if (session.Roles == null)
                     session.Roles = new List<string>();
 
                 PopulateUserRoles(authService.Request, user, session);
 
-                this.SaveSession(authService, session, SessionExpiry);
+                await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
                 
                 if (response != null)
                     return response;
@@ -188,7 +191,7 @@ namespace ServiceStack.Auth
                     var session = req.GetSession();
                     if (LoginMatchesSession(session, user.Identity.Name)) return;
 
-                    var response = authService.Post(new Authenticate
+                    var response = authService.PostSync(new Authenticate
                     {
                         provider = Name,
                         UserName = user.GetUserName(),

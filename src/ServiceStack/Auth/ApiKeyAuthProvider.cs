@@ -203,10 +203,14 @@ namespace ServiceStack.Auth
             return session != null && session.IsAuthenticated && !session.UserAuthName.IsNullOrEmpty();
         }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token=default)
         {
-            var authRepo = HostContext.AppHost.GetAuthRepository(authService.Request);
+            var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(authService.Request);
+#if NET472 || NETSTANDARD2_0
+            await using (authRepo as IAsyncDisposable)
+#else
             using (authRepo as IDisposable)
+#endif
             {
                 var apiKey = GetApiKey(authService.Request, request.Password);
                 ValidateApiKey(authService.Request, apiKey);
@@ -214,19 +218,19 @@ namespace ServiceStack.Auth
                 if (string.IsNullOrEmpty(apiKey.UserAuthId))
                     throw HttpError.Conflict(ErrorMessages.ApiKeyIsInvalid.Localize(authService.Request));
 
-                var userAuth = authRepo.GetUserAuth(apiKey.UserAuthId);
+                var userAuth = await authRepo.GetUserAuthAsync(apiKey.UserAuthId, token);
                 if (userAuth == null)
                     throw HttpError.Unauthorized(ErrorMessages.UserForApiKeyDoesNotExist.Localize(authService.Request));
 
-                if (IsAccountLocked(authRepo, userAuth))
+                if (await IsAccountLockedAsync(authRepo, userAuth, token: token))
                     throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(authService.Request));
 
-                session.PopulateSession(userAuth, authRepo);
+                await session.PopulateSessionAsync(userAuth, authRepo, token);
 
                 if (session.UserAuthName == null)
                     session.UserAuthName = userAuth.UserName ?? userAuth.Email;
 
-                var response = OnAuthenticated(authService, session, null, null);
+                var response = await OnAuthenticatedAsync(authService, session, null, null, token);
                 if (response != null)
                     return response;
 
@@ -323,7 +327,7 @@ namespace ServiceStack.Auth
 
             using (var authService = HostContext.ResolveService<AuthenticateService>(req))
             {
-                var response = authService.Post(new Authenticate
+                var response = authService.PostSync(new Authenticate
                 {
                     provider = Name,
                     UserName = "ApiKey",

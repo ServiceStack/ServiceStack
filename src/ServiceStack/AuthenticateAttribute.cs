@@ -77,7 +77,7 @@ namespace ServiceStack
             if (res.IsClosed)
                 return;
 
-            var session = req.GetSession();
+            var session = await req.GetSessionAsync();
             if (session == null || !authProviders.Any(x => session.IsAuthorized(x.Provider)))
             {
                 if (this.DoHtmlRedirectIfConfigured(req, res, true))
@@ -113,9 +113,9 @@ namespace ServiceStack
                 }
             }
             
-            return session != null && (authProviders.Length > 0 
-                       ? authProviders.Any(x => session.IsAuthorized(x.Provider))
-                       : session.IsAuthenticated);
+            return session != null && (authProviders.Length > 0
+                ? authProviders.Any(x => session.IsAuthorized(x.Provider))
+                : session.IsAuthenticated);
         }
 
         public static void AssertAuthenticated(IRequest req, object requestDto=null, IAuthSession session=null, IAuthProvider[] authProviders=null)

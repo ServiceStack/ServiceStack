@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
 
@@ -87,10 +89,10 @@ namespace ServiceStack.Auth
             return contents;
         }
 
-        protected override Dictionary<string, string> CreateAuthInfo(string accessToken)
+        protected override async Task<Dictionary<string, string>> CreateAuthInfoAsync(string accessToken, CancellationToken token = default)
         {
             var url = this.UserProfileUrl;
-            var json = url.GetJsonFromUrl(requestFilter:req => req.AddBearerToken(accessToken));
+            var json = await url.GetJsonFromUrlAsync(requestFilter:req => req.AddBearerToken(accessToken)).ConfigAwait();
             var obj = JsonObject.Parse(json);
 
             obj.MoveKey("id", "user_id");
@@ -103,7 +105,7 @@ namespace ServiceStack.Auth
             {
                 try
                 {
-                    obj[AuthMetadataProvider.ProfileUrlKey] = AuthHttpGateway.CreateMicrosoftPhotoUrl(accessToken, SavePhotoSize);
+                    obj[AuthMetadataProvider.ProfileUrlKey] = await AuthHttpGateway.CreateMicrosoftPhotoUrlAsync(accessToken, SavePhotoSize, token).ConfigAwait();
                 }
                 catch (Exception ex)
                 {

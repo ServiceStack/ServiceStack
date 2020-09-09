@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
 
@@ -60,22 +62,22 @@ namespace ServiceStack.Auth
             return issuedTo == ConsumerKey;
         }
 
-        protected override object AuthenticateWithAccessToken(IServiceBase authService, IAuthSession session, IAuthTokens tokens, string accessToken, 
-            Dictionary<string, object> authInfo=null)
+        protected override async Task<object> AuthenticateWithAccessTokenAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens,
+            string accessToken, Dictionary<string, object> authInfo = null, CancellationToken token = default)
         {
             tokens.AccessTokenSecret = accessToken;
 
-            var accessTokenAuthInfo = CreateAuthInfo(accessToken);
+            var accessTokenAuthInfo = await CreateAuthInfoAsync(accessToken, token).ConfigAwait();
 
             session.IsAuthenticated = true;
 
-            return OnAuthenticated(authService, session, tokens, accessTokenAuthInfo);
+            return await OnAuthenticatedAsync(authService, session, tokens, accessTokenAuthInfo, token).ConfigAwait();
         }
 
-        protected override Dictionary<string, string> CreateAuthInfo(string accessToken)
+        protected override async Task<Dictionary<string, string>> CreateAuthInfoAsync(string accessToken, CancellationToken token = default)
         {
             var url = this.UserProfileUrl.AddQueryParam("access_token", accessToken);
-            var json = url.GetJsonFromUrl();
+            var json = await url.GetJsonFromUrlAsync().ConfigAwait();
             var obj = JsonObject.Parse(json);
             
             obj.MoveKey("id", "user_id");

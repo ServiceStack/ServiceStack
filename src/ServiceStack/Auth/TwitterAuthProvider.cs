@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
 
@@ -36,7 +38,7 @@ namespace ServiceStack.Auth
             };
         }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
         {
             var tokens = Init(authService, ref session, request);
 
@@ -46,22 +48,20 @@ namespace ServiceStack.Auth
                 tokens.AccessToken = request.AccessToken;
                 tokens.AccessTokenSecret = request.AccessTokenSecret;
 
-                var validToken = AuthHttpGateway.VerifyTwitterAccessToken(
+                var validToken = await AuthHttpGateway.VerifyTwitterAccessTokenAsync(
                     ConsumerKey, ConsumerSecret,
-                    tokens.AccessToken, tokens.AccessTokenSecret, 
-                    out var userId, 
-                    out var email);
+                    tokens.AccessToken, tokens.AccessTokenSecret, token).ConfigAwait();
 
-                if (!validToken)
+                if (validToken == null)
                     return HttpError.Unauthorized("AccessToken is invalid");
 
-                if (!string.IsNullOrEmpty(request.UserName) && userId != request.UserName)
+                if (!string.IsNullOrEmpty(request.UserName) && validToken.UserId != request.UserName)
                     return HttpError.Unauthorized("AccessToken does not match UserId: " + request.UserName);
 
-                tokens.UserId = userId;
+                tokens.UserId = validToken.UserId;
                 session.IsAuthenticated = true;
 
-                var failedResult = OnAuthenticated(authService, session, tokens, new Dictionary<string, string>());
+                var failedResult = await OnAuthenticatedAsync(authService, session, tokens, new Dictionary<string, string>(), token).ConfigAwait();
                 var isHtml = authService.Request.IsHtml();
                 if (failedResult != null)
                     return ConvertToClientError(failedResult, isHtml);
@@ -80,21 +80,21 @@ namespace ServiceStack.Auth
                     tokens.AccessToken = OAuthUtils.AccessToken;
                     tokens.AccessTokenSecret = OAuthUtils.AccessTokenSecret;
 
-                    return OnAuthenticated(authService, session, tokens, OAuthUtils.AuthInfo)
+                    return await OnAuthenticatedAsync(authService, session, tokens, OAuthUtils.AuthInfo, token).ConfigAwait()
                         ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))); //Haz Access
                 }
 
                 //No Joy :(
                 tokens.RequestToken = null;
                 tokens.RequestTokenSecret = null;
-                this.SaveSession(authService, session, SessionExpiry);
+                await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
                 return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
             }
             if (OAuthUtils.AcquireRequestToken())
             {
                 tokens.RequestToken = OAuthUtils.RequestToken;
                 tokens.RequestTokenSecret = OAuthUtils.RequestTokenSecret;
-                this.SaveSession(authService, session, SessionExpiry);
+                await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
 
                 //Redirect to OAuth provider to approve access
                 return authService.Redirect(AccessTokenUrlFilter(this, this.AuthorizeUrl
@@ -107,7 +107,7 @@ namespace ServiceStack.Auth
             return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "RequestTokenFailed")));
         }
 
-        protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
+        protected override async Task LoadUserAuthInfoAsync(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token = default)
         {
             if (authInfo.ContainsKey("user_id"))
                 tokens.UserId = authInfo.GetValueOrDefault("user_id");
@@ -121,10 +121,10 @@ namespace ServiceStack.Auth
             {
                 if (userId != null)
                 {
-                    var json = AuthHttpGateway.DownloadTwitterUserInfo(
+                    var json = await AuthHttpGateway.DownloadTwitterUserInfoAsync(
                         ConsumerKey, ConsumerSecret,
                         tokens.AccessToken, tokens.AccessTokenSecret,
-                        userId);
+                        userId, token).ConfigAwait();
 
                     var objs = JsonObject.ParseArray(json);
                     if (objs.Count > 0)
@@ -146,12 +146,11 @@ namespace ServiceStack.Auth
                         {
                             try 
                             { 
-                                AuthHttpGateway.VerifyTwitterAccessToken(
+                                var authId = await AuthHttpGateway.VerifyTwitterAccessTokenAsync(
                                     ConsumerKey, ConsumerSecret,
-                                    tokens.AccessToken, tokens.AccessTokenSecret,
-                                    out userId, out email);
+                                    tokens.AccessToken, tokens.AccessTokenSecret, token).ConfigAwait();
 
-                                tokens.Email = email;
+                                tokens.Email = authId?.Email;
                             }
                             catch (Exception ex)
                             {
