@@ -35,7 +35,7 @@ namespace ServiceStack.Auth
     }
 
     public partial class OrmLiteAuthRepositoryMultitenancy<TUserAuth, TUserAuthDetails> 
-        : OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails>, IDisposable, IAsyncDisposable
+        : OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails>, IAsyncDisposable
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
