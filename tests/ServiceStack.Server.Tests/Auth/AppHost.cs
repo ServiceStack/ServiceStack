@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Security.Cryptography;
@@ -30,8 +31,17 @@ namespace ServiceStack.Server.Tests.Auth
         public override void Configure(Container container)
         {
             Use?.Invoke(container);
+            
+            SetConfig(new HostConfig
+            {
+                AdminAuthSecret = "secret",
+                DebugMode = true,
+                WebHostPhysicalPath = Path.GetFullPath("../../../"),
+            });
 
-#if !NETCORE
+#if NETCORE
+            Plugins.Add(new Mvc.RazorFormat());
+#else
             Plugins.Add(new Razor.RazorFormat());
 #endif
 
@@ -51,12 +61,6 @@ namespace ServiceStack.Server.Tests.Auth
                 db.DropAndCreateTable<Rockstar>(); //Create table if not exists
                 db.Insert(new Rockstar(1, "Test", "Database", 27));
             }
-
-            SetConfig(new HostConfig
-            {
-                AdminAuthSecret = "secret",
-                DebugMode = true,
-            });
 
             Plugins.Add(new AuthFeature(() => new AuthUserSession(),
                 new IAuthProvider[] {
