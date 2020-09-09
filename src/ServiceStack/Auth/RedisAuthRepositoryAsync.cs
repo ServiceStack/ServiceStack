@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Text;
 
 namespace ServiceStack.Auth
 {
@@ -17,14 +18,14 @@ namespace ServiceStack.Auth
         {
             if (newUser.UserName != null)
             {
-                var existingUser = await GetUserAuthByUserNameAsync(redis, newUser.UserName, token);
+                var existingUser = await GetUserAuthByUserNameAsync(redis, newUser.UserName, token).ConfigAwait();
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
                     throw new ArgumentException(string.Format(ErrorMessages.UserAlreadyExistsTemplate1, newUser.UserName.SafeInput()));
             }
             if (newUser.Email != null)
             {
-                var existingUser = await GetUserAuthByUserNameAsync(redis, newUser.Email, token);
+                var existingUser = await GetUserAuthByUserNameAsync(redis, newUser.Email, token).ConfigAwait();
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
                     throw new ArgumentException(string.Format(ErrorMessages.EmailAlreadyExistsTemplate1, newUser.Email.SafeInput()));
@@ -35,10 +36,10 @@ namespace ServiceStack.Auth
         {
             newUser.ValidateNewUser(password);
 
-            await using var redis = await factory.GetClientAsync(token);
-            await AssertNoExistingUserAsync(redis, newUser, token: token);
+            await using var redis = await factory.GetClientAsync(token).ConfigAwait();
+            await AssertNoExistingUserAsync(redis, newUser, token: token).ConfigAwait();
 
-            newUser.Id = await redis.AsAsync<IUserAuth>().GetNextSequenceAsync(token);
+            newUser.Id = await redis.AsAsync<IUserAuth>().GetNextSequenceAsync(token).ConfigAwait();
             newUser.PopulatePasswordHashes(password);
             newUser.CreatedDate = DateTime.UtcNow;
             newUser.ModifiedDate = newUser.CreatedDate;
@@ -46,14 +47,14 @@ namespace ServiceStack.Auth
             var userId = newUser.Id.ToString(CultureInfo.InvariantCulture);
             if (!newUser.UserName.IsNullOrEmpty())
             {
-                await redis.SetEntryInHashAsync(IndexUserNameToUserId, newUser.UserName, userId, token);
+                await redis.SetEntryInHashAsync(IndexUserNameToUserId, newUser.UserName, userId, token).ConfigAwait();
             }
             if (!newUser.Email.IsNullOrEmpty())
             {
-                await redis.SetEntryInHashAsync(IndexEmailToUserId, newUser.Email, userId, token);
+                await redis.SetEntryInHashAsync(IndexEmailToUserId, newUser.Email, userId, token).ConfigAwait();
             }
 
-            await redis.StoreAsync(newUser, token);
+            await redis.StoreAsync(newUser, token).ConfigAwait();
 
             return newUser;
         }
@@ -62,16 +63,16 @@ namespace ServiceStack.Auth
         {
             newUser.ValidateNewUser(password);
 
-            await using var redis = await factory.GetClientAsync(token);
-            await AssertNoExistingUserAsync(redis, newUser, existingUser, token);
+            await using var redis = await factory.GetClientAsync(token).ConfigAwait();
+            await AssertNoExistingUserAsync(redis, newUser, existingUser, token).ConfigAwait();
 
             if (existingUser.UserName != newUser.UserName && existingUser.UserName != null)
             {
-                await redis.RemoveEntryFromHashAsync(IndexUserNameToUserId, existingUser.UserName, token);
+                await redis.RemoveEntryFromHashAsync(IndexUserNameToUserId, existingUser.UserName, token).ConfigAwait();
             }
             if (existingUser.Email != newUser.Email && existingUser.Email != null)
             {
-                await redis.RemoveEntryFromHashAsync(IndexEmailToUserId, existingUser.Email, token);
+                await redis.RemoveEntryFromHashAsync(IndexEmailToUserId, existingUser.Email, token).ConfigAwait();
             }
 
             newUser.Id = existingUser.Id;
@@ -82,14 +83,14 @@ namespace ServiceStack.Auth
             var userId = newUser.Id.ToString(CultureInfo.InvariantCulture);
             if (!newUser.UserName.IsNullOrEmpty())
             {
-                await redis.SetEntryInHashAsync(IndexUserNameToUserId, newUser.UserName, userId, token);
+                await redis.SetEntryInHashAsync(IndexUserNameToUserId, newUser.UserName, userId, token).ConfigAwait();
             }
             if (!newUser.Email.IsNullOrEmpty())
             {
-                await redis.SetEntryInHashAsync(IndexEmailToUserId, newUser.Email, userId, token);
+                await redis.SetEntryInHashAsync(IndexEmailToUserId, newUser.Email, userId, token).ConfigAwait();
             }
 
-            await redis.StoreAsync(newUser, token);
+            await redis.StoreAsync(newUser, token).ConfigAwait();
 
             return newUser;
         }
@@ -98,8 +99,8 @@ namespace ServiceStack.Auth
         {
             newUser.ValidateNewUser();
 
-            await using var redis = await factory.GetClientAsync(token);
-            await AssertNoExistingUserAsync(redis, newUser, existingUser, token);
+            await using var redis = await factory.GetClientAsync(token).ConfigAwait();
+            await AssertNoExistingUserAsync(redis, newUser, existingUser, token).ConfigAwait();
 
             newUser.Id = existingUser.Id;
             newUser.PasswordHash = existingUser.PasswordHash;
@@ -108,7 +109,7 @@ namespace ServiceStack.Auth
             newUser.CreatedDate = existingUser.CreatedDate;
             newUser.ModifiedDate = DateTime.UtcNow;
 
-            await redis.StoreAsync(newUser, token);
+            await redis.StoreAsync(newUser, token).ConfigAwait();
 
             return newUser;
         }
@@ -118,8 +119,8 @@ namespace ServiceStack.Auth
             if (userNameOrEmail == null)
                 return null;
 
-            await using var redis = await factory.GetClientAsync(token);
-            return await GetUserAuthByUserNameAsync(redis, userNameOrEmail, token);
+            await using var redis = await factory.GetClientAsync(token).ConfigAwait();
+            return await GetUserAuthByUserNameAsync(redis, userNameOrEmail, token).ConfigAwait();
         }
 
         private async Task<IUserAuth> GetUserAuthByUserNameAsync(IRedisClientFacadeAsync redis, string userNameOrEmail, CancellationToken token=default)
@@ -129,26 +130,26 @@ namespace ServiceStack.Auth
 
             var isEmail = userNameOrEmail.Contains("@");
             var userId = isEmail
-                ? await redis.GetValueFromHashAsync(IndexEmailToUserId, userNameOrEmail, token)
-                : await redis.GetValueFromHashAsync(IndexUserNameToUserId, userNameOrEmail, token);
+                ? await redis.GetValueFromHashAsync(IndexEmailToUserId, userNameOrEmail, token).ConfigAwait()
+                : await redis.GetValueFromHashAsync(IndexUserNameToUserId, userNameOrEmail, token).ConfigAwait();
 
-            return userId == null ? null : await redis.AsAsync<IUserAuth>().GetByIdAsync(userId, token);
+            return userId == null ? null : await redis.AsAsync<IUserAuth>().GetByIdAsync(userId, token).ConfigAwait();
         }
 
         public virtual async Task<IUserAuth> TryAuthenticateAsync(string userName, string password, CancellationToken token=default)
         {
             //userId = null;
-            var userAuth = await GetUserAuthByUserNameAsync(userName, token);
+            var userAuth = await GetUserAuthByUserNameAsync(userName, token).ConfigAwait();
             if (userAuth == null)
                 return null;
 
             if (userAuth.VerifyPassword(password, out var needsRehash))
             {
-                await this.RecordSuccessfulLoginAsync(userAuth, needsRehash, password, token: token);
+                await this.RecordSuccessfulLoginAsync(userAuth, needsRehash, password, token).ConfigAwait();
                 return userAuth;
             }
 
-            await this.RecordInvalidLoginAttemptAsync(userAuth, token);
+            await this.RecordInvalidLoginAttemptAsync(userAuth, token).ConfigAwait();
 
             return null;
         }
@@ -156,17 +157,17 @@ namespace ServiceStack.Auth
         public async Task<IUserAuth> TryAuthenticateAsync(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, 
             CancellationToken token=default)
         {
-            var userAuth = await GetUserAuthByUserNameAsync(digestHeaders["username"], token);
+            var userAuth = await GetUserAuthByUserNameAsync(digestHeaders["username"], token).ConfigAwait();
             if (userAuth == null)
                 return null;
 
             if (userAuth.VerifyDigestAuth(digestHeaders, privateKey, nonceTimeOut, sequence))
             {
-                await this.RecordSuccessfulLoginAsync(userAuth, token);
+                await this.RecordSuccessfulLoginAsync(userAuth, token).ConfigAwait();
                 return userAuth;
             }
 
-            await this.RecordInvalidLoginAttemptAsync(userAuth, token: token);
+            await this.RecordInvalidLoginAttemptAsync(userAuth, token).ConfigAwait();
             return null;
         }
 
@@ -175,35 +176,35 @@ namespace ServiceStack.Auth
             if (session == null)
                 throw new ArgumentNullException(nameof(session));
 
-            var userAuth = await GetUserAuthAsync(session, tokens, token);
-            await LoadUserAuthAsync(session, userAuth, token);
+            var userAuth = await GetUserAuthAsync(session, tokens, token).ConfigAwait();
+            await LoadUserAuthAsync(session, userAuth, token).ConfigAwait();
         }
 
         private async Task LoadUserAuthAsync(IAuthSession session, IUserAuth userAuth, CancellationToken token=default)
         {
-            await session.PopulateSessionAsync(userAuth, this, token: token);
+            await session.PopulateSessionAsync(userAuth, this, token).ConfigAwait();
         }
 
         public virtual async Task DeleteUserAuthAsync(string userAuthId, CancellationToken token=default)
         {
-            await using var redis = await factory.GetClientAsync(token);
-            var existingUser = await GetUserAuthAsync(redis, userAuthId, token);
+            await using var redis = await factory.GetClientAsync(token).ConfigAwait();
+            var existingUser = await GetUserAuthAsync(redis, userAuthId, token).ConfigAwait();
             if (existingUser == null)
                 return;
 
-            await redis.AsAsync<IUserAuth>().DeleteByIdAsync(userAuthId, token);
+            await redis.AsAsync<IUserAuth>().DeleteByIdAsync(userAuthId, token).ConfigAwait();
 
             var idx = IndexUserAuthAndProviderIdsSet(long.Parse(userAuthId));
-            var authProviderIds = await redis.GetAllItemsFromSetAsync(idx, token);
-            await redis.AsAsync<TUserAuthDetails>().DeleteByIdsAsync(authProviderIds, token);
+            var authProviderIds = await redis.GetAllItemsFromSetAsync(idx, token).ConfigAwait();
+            await redis.AsAsync<TUserAuthDetails>().DeleteByIdsAsync(authProviderIds, token).ConfigAwait();
 
             if (existingUser.UserName != null)
             {
-                await redis.RemoveEntryFromHashAsync(IndexUserNameToUserId, existingUser.UserName, token);
+                await redis.RemoveEntryFromHashAsync(IndexUserNameToUserId, existingUser.UserName, token).ConfigAwait();
             }
             if (existingUser.Email != null)
             {
-                await redis.RemoveEntryFromHashAsync(IndexEmailToUserId, existingUser.Email, token);
+                await redis.RemoveEntryFromHashAsync(IndexEmailToUserId, existingUser.Email, token).ConfigAwait();
             }
         }
 
@@ -217,25 +218,25 @@ namespace ServiceStack.Auth
 
         public virtual async Task<IUserAuth> GetUserAuthAsync(string userAuthId, CancellationToken token=default)
         {
-            await using var redis = await factory.GetClientAsync(token);
-            return await GetUserAuthAsync(redis, userAuthId, token);
+            await using var redis = await factory.GetClientAsync(token).ConfigAwait();
+            return await GetUserAuthAsync(redis, userAuthId, token).ConfigAwait();
         }
 
         public virtual async Task SaveUserAuthAsync(IAuthSession authSession, CancellationToken token=default)
         {
-            await using var redis = await factory.GetClientAsync(token);
+            await using var redis = await factory.GetClientAsync(token).ConfigAwait();
             var userAuth = !authSession.UserAuthId.IsNullOrEmpty()
-                ? await GetUserAuthAsync(redis, authSession.UserAuthId, token)
+                ? await GetUserAuthAsync(redis, authSession.UserAuthId, token).ConfigAwait()
                 : authSession.ConvertTo<TUserAuth>();
 
             if (userAuth.Id == default && !authSession.UserAuthId.IsNullOrEmpty())
                 userAuth.Id = int.Parse(authSession.UserAuthId);
 
             userAuth.ModifiedDate = DateTime.UtcNow;
-            if (userAuth.CreatedDate == default(DateTime))
+            if (userAuth.CreatedDate == default)
                 userAuth.CreatedDate = userAuth.ModifiedDate;
 
-            await redis.StoreAsync(userAuth, token);
+            await redis.StoreAsync(userAuth, token).ConfigAwait();
         }
 
         public async Task SaveUserAuthAsync(IUserAuth userAuth, CancellationToken token=default)
@@ -246,17 +247,17 @@ namespace ServiceStack.Auth
                 userAuth.CreatedDate = userAuth.ModifiedDate;
             }
 
-            await using var redis = await factory.GetClientAsync(token);
-            await redis.StoreAsync(userAuth, token);
+            await using var redis = await factory.GetClientAsync(token).ConfigAwait();
+            await redis.StoreAsync(userAuth, token).ConfigAwait();
 
             var userId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
             if (!userAuth.UserName.IsNullOrEmpty())
             {
-                await redis.SetEntryInHashAsync(IndexUserNameToUserId, userAuth.UserName, userId, token);
+                await redis.SetEntryInHashAsync(IndexUserNameToUserId, userAuth.UserName, userId, token).ConfigAwait();
             }
             if (!userAuth.Email.IsNullOrEmpty())
             {
-                await redis.SetEntryInHashAsync(IndexEmailToUserId, userAuth.Email, userId, token);
+                await redis.SetEntryInHashAsync(IndexEmailToUserId, userAuth.Email, userId, token).ConfigAwait();
             }
         }
 
@@ -265,30 +266,30 @@ namespace ServiceStack.Auth
             if (userAuthId == null)
                 throw new ArgumentNullException(nameof(userAuthId));
 
-            await using var redis = await factory.GetClientAsync(token);
+            await using var redis = await factory.GetClientAsync(token).ConfigAwait();
             var idx = IndexUserAuthAndProviderIdsSet(long.Parse(userAuthId));
-            var authProviderIds = await redis.GetAllItemsFromSetAsync(idx, token);
-            return (await redis.AsAsync<TUserAuthDetails>().GetByIdsAsync(authProviderIds, token))
+            var authProviderIds = await redis.GetAllItemsFromSetAsync(idx, token).ConfigAwait();
+            return (await redis.AsAsync<TUserAuthDetails>().GetByIdsAsync(authProviderIds, token).ConfigAwait())
                 .OrderBy(x => x.ModifiedDate).Cast<IUserAuthDetails>().ToList();
         }
 
         public virtual async Task<IUserAuth> GetUserAuthAsync(IAuthSession authSession, IAuthTokens tokens, CancellationToken token=default)
         {
-            await using var redis = await factory.GetClientAsync(token);
-            return await GetUserAuthAsync(redis, authSession, tokens, token);
+            await using var redis = await factory.GetClientAsync(token).ConfigAwait();
+            return await GetUserAuthAsync(redis, authSession, tokens, token).ConfigAwait();
         }
 
         private async Task<IUserAuth> GetUserAuthAsync(IRedisClientFacadeAsync redis, IAuthSession authSession, IAuthTokens tokens, CancellationToken token=default)
         {
             if (!authSession.UserAuthId.IsNullOrEmpty())
             {
-                var userAuth = await GetUserAuthAsync(redis, authSession.UserAuthId, token);
+                var userAuth = await GetUserAuthAsync(redis, authSession.UserAuthId, token).ConfigAwait();
                 if (userAuth != null)
                     return userAuth;
             }
             if (!authSession.UserAuthName.IsNullOrEmpty())
             {
-                var userAuth = await GetUserAuthByUserNameAsync(authSession.UserAuthName, token);
+                var userAuth = await GetUserAuthByUserNameAsync(authSession.UserAuthName, token).ConfigAwait();
                 if (userAuth != null)
                     return userAuth;
             }
@@ -296,10 +297,10 @@ namespace ServiceStack.Auth
             if (tokens == null || tokens.Provider.IsNullOrEmpty() || tokens.UserId.IsNullOrEmpty())
                 return null;
 
-            var oAuthProviderId = await GetAuthProviderByUserIdAsync(redis, tokens.Provider, tokens.UserId, token);
+            var oAuthProviderId = await GetAuthProviderByUserIdAsync(redis, tokens.Provider, tokens.UserId, token).ConfigAwait();
             if (!oAuthProviderId.IsNullOrEmpty())
             {
-                var oauthProvider = await redis.AsAsync<TUserAuthDetails>().GetByIdAsync(oAuthProviderId, token);
+                var oauthProvider = await redis.AsAsync<TUserAuthDetails>().GetByIdAsync(oAuthProviderId, token).ConfigAwait();
                 if (oauthProvider != null)
                     return await redis.AsAsync<IUserAuth>().GetByIdAsync(oauthProvider.UserAuthId, token);
             }
@@ -308,29 +309,29 @@ namespace ServiceStack.Auth
 
         public virtual async Task<IUserAuthDetails> CreateOrMergeAuthSessionAsync(IAuthSession authSession, IAuthTokens tokens, CancellationToken token=default)
         {
-            await using var redis = await factory.GetClientAsync(token);
+            await using var redis = await factory.GetClientAsync(token).ConfigAwait();
             TUserAuthDetails authDetails = null;
 
-            var oAuthProviderId = await GetAuthProviderByUserIdAsync(redis, tokens.Provider, tokens.UserId, token);
+            var oAuthProviderId = await GetAuthProviderByUserIdAsync(redis, tokens.Provider, tokens.UserId, token).ConfigAwait();
             if (!oAuthProviderId.IsNullOrEmpty())
-                authDetails = await redis.AsAsync<TUserAuthDetails>().GetByIdAsync(oAuthProviderId, token);
+                authDetails = await redis.AsAsync<TUserAuthDetails>().GetByIdAsync(oAuthProviderId, token).ConfigAwait();
 
-            var userAuth = await GetUserAuthAsync(redis, authSession, tokens, token);
+            var userAuth = await GetUserAuthAsync(redis, authSession, tokens, token).ConfigAwait();
             if (userAuth == null)
             {
                 userAuth = typeof(TUserAuth).CreateInstance<TUserAuth>();
-                userAuth.Id = await redis.AsAsync<IUserAuth>().GetNextSequenceAsync(token);
+                userAuth.Id = await redis.AsAsync<IUserAuth>().GetNextSequenceAsync(token).ConfigAwait();
             }
 
             if (authDetails == null)
             {
                 authDetails = typeof(TUserAuthDetails).CreateInstance<TUserAuthDetails>();
-                authDetails.Id = await redis.AsAsync<TUserAuthDetails>().GetNextSequenceAsync(token);
+                authDetails.Id = await redis.AsAsync<TUserAuthDetails>().GetNextSequenceAsync(token).ConfigAwait();
                 authDetails.UserAuthId = userAuth.Id;
                 authDetails.Provider = tokens.Provider;
                 authDetails.UserId = tokens.UserId;
                 var idx = IndexProviderToUserIdHash(tokens.Provider);
-                await redis.SetEntryInHashAsync(idx, tokens.UserId, authDetails.Id.ToString(CultureInfo.InvariantCulture), token);
+                await redis.SetEntryInHashAsync(idx, tokens.UserId, authDetails.Id.ToString(CultureInfo.InvariantCulture), token).ConfigAwait();
             }
 
             authDetails.PopulateMissing(tokens, overwriteReserved: true);
@@ -342,9 +343,9 @@ namespace ServiceStack.Auth
 
             authDetails.ModifiedDate = userAuth.ModifiedDate;
 
-            await redis.StoreAsync(userAuth, token);
-            await redis.StoreAsync(authDetails, token);
-            await redis.AddItemToSetAsync(IndexUserAuthAndProviderIdsSet(userAuth.Id), authDetails.Id.ToString(CultureInfo.InvariantCulture), token);
+            await redis.StoreAsync(userAuth, token).ConfigAwait();
+            await redis.StoreAsync(authDetails, token).ConfigAwait();
+            await redis.AddItemToSetAsync(IndexUserAuthAndProviderIdsSet(userAuth.Id), authDetails.Id.ToString(CultureInfo.InvariantCulture), token).ConfigAwait();
 
             return authDetails;
         }
@@ -352,7 +353,7 @@ namespace ServiceStack.Auth
         private async Task<string> GetAuthProviderByUserIdAsync(IRedisClientFacadeAsync redis, string provider, string userId, CancellationToken token=default)
         {
             var idx = IndexProviderToUserIdHash(provider);
-            var oAuthProviderId = await redis.GetValueFromHashAsync(idx, userId, token);
+            var oAuthProviderId = await redis.GetValueFromHashAsync(idx, userId, token).ConfigAwait();
             return oAuthProviderId;
         }
 
@@ -360,22 +361,22 @@ namespace ServiceStack.Auth
 
         public virtual async Task<bool> ApiKeyExistsAsync(string apiKey, CancellationToken token=default)
         {
-            await using var redis = await factory.GetClientAsync(token);
+            await using var redis = await factory.GetClientAsync(token).ConfigAwait();
             return redis.AsAsync<ApiKey>().GetByIdAsync(apiKey, token) != null;
         }
 
         public virtual async Task<ApiKey> GetApiKeyAsync(string apiKey, CancellationToken token=default)
         {
-            await using var redis = await factory.GetClientAsync(token);
-            return await redis.AsAsync<ApiKey>().GetByIdAsync(apiKey, token);
+            await using var redis = await factory.GetClientAsync(token).ConfigAwait();
+            return await redis.AsAsync<ApiKey>().GetByIdAsync(apiKey, token).ConfigAwait();
         }
 
         public virtual async Task<List<ApiKey>> GetUserApiKeysAsync(string userId, CancellationToken token=default)
         {
-            await using var redis = await factory.GetClientAsync(token);
+            await using var redis = await factory.GetClientAsync(token).ConfigAwait();
             var idx = IndexUserAuthAndApiKeyIdsSet(long.Parse(userId));
-            var authProviderIds = await redis.GetAllItemsFromSetAsync(idx, token);
-            var apiKeys = await redis.AsAsync<ApiKey>().GetByIdsAsync(authProviderIds, token);
+            var authProviderIds = await redis.GetAllItemsFromSetAsync(idx, token).ConfigAwait();
+            var apiKeys = await redis.AsAsync<ApiKey>().GetByIdsAsync(authProviderIds, token).ConfigAwait();
             return apiKeys
                 .Where(x => x.CancelledDate == null 
                             && (x.ExpiryDate == null || x.ExpiryDate >= DateTime.UtcNow))
@@ -384,33 +385,33 @@ namespace ServiceStack.Auth
 
         public virtual async Task StoreAllAsync(IEnumerable<ApiKey> apiKeys, CancellationToken token=default)
         {
-            await using var redis = await factory.GetClientAsync(token);
+            await using var redis = await factory.GetClientAsync(token).ConfigAwait();
             foreach (var apiKey in apiKeys)
             {
                 var userAuthId = long.Parse(apiKey.UserAuthId);
-                await redis.StoreAsync(apiKey, token);
-                await redis.AddItemToSetAsync(IndexUserAuthAndApiKeyIdsSet(userAuthId), apiKey.Id, token);
+                await redis.StoreAsync(apiKey, token).ConfigAwait();
+                await redis.AddItemToSetAsync(IndexUserAuthAndApiKeyIdsSet(userAuthId), apiKey.Id, token).ConfigAwait();
             }
         }
 
         public virtual async Task ClearAsync(CancellationToken token=default)
         {
-            await factory.ClearAsync(token);
+            await factory.ClearAsync(token).ConfigAwait();
         }
 
         public async Task<List<IUserAuth>> GetUserAuthsAsync(string orderBy = null, int? skip = null, int? take = null, CancellationToken token=default)
         {
-            await using var redis = await factory.GetClientAsync(token);
+            await using var redis = await factory.GetClientAsync(token).ConfigAwait();
             if (orderBy == null && (skip != null || take != null))
-                return QueryUserAuths(await redis.AsAsync<IUserAuth>().GetAllAsync(skip, take, token));
+                return QueryUserAuths(await redis.AsAsync<IUserAuth>().GetAllAsync(skip, take, token).ConfigAwait());
 
-            return QueryUserAuths(await redis.AsAsync<IUserAuth>().GetAllAsync(token: token), orderBy: orderBy, skip: skip, take: take);
+            return QueryUserAuths(await redis.AsAsync<IUserAuth>().GetAllAsync(token: token).ConfigAwait(), orderBy: orderBy, skip: skip, take: take);
         }
 
         public async Task<List<IUserAuth>> SearchUserAuthsAsync(string query, string orderBy = null, int? skip = null, int? take = null, CancellationToken token=default)
         {
-            await using var redis = await factory.GetClientAsync(token);
-            var results = await redis.AsAsync<IUserAuth>().GetAllAsync(token: token);
+            await using var redis = await factory.GetClientAsync(token).ConfigAwait();
+            var results = await redis.AsAsync<IUserAuth>().GetAllAsync(token: token).ConfigAwait();
             return QueryUserAuths(results, query: query, orderBy: orderBy, skip: skip, take: take);
         }
     }

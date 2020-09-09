@@ -12,6 +12,7 @@ using Raven.Client.Documents;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Session;
 using Raven.Client.Documents.Linq;
+using ServiceStack.Text;
 
 namespace ServiceStack.Authentication.RavenDb
 {
@@ -22,8 +23,8 @@ namespace ServiceStack.Authentication.RavenDb
         public static async Task CreateOrUpdateUserAuthIndexAsync(IDocumentStore store, CancellationToken token=default)
         {
             // put this index into the ravendb database
-            await new UserAuth_By_UserNameOrEmail().ExecuteAsync(store, token: token);
-            await new UserAuth_By_UserAuthDetails().ExecuteAsync(store, token: token);
+            await new UserAuth_By_UserNameOrEmail().ExecuteAsync(store, token: token).ConfigAwait();
+            await new UserAuth_By_UserAuthDetails().ExecuteAsync(store, token: token).ConfigAwait();
             isInitialized = true;
         }
 
@@ -31,7 +32,7 @@ namespace ServiceStack.Authentication.RavenDb
         {
             newUser.ValidateNewUser(password);
 
-            await AssertNoExistingUserAsync(newUser, token: token);
+            await AssertNoExistingUserAsync(newUser, token: token).ConfigAwait();
 
             newUser.PopulatePasswordHashes(password);
             newUser.CreatedDate = DateTime.UtcNow;
@@ -48,7 +49,7 @@ namespace ServiceStack.Authentication.RavenDb
         {
             newUser.ValidateNewUser();
 
-            await AssertNoExistingUserAsync(newUser, existingUser, token);
+            await AssertNoExistingUserAsync(newUser, existingUser, token).ConfigAwait();
 
             UpdateKey(existingUser, newUser);
 
@@ -71,14 +72,14 @@ namespace ServiceStack.Authentication.RavenDb
         {
             if (newUser.UserName != null)
             {
-                var existingUser = await GetUserAuthByUserNameAsync(newUser.UserName, token);
+                var existingUser = await GetUserAuthByUserNameAsync(newUser.UserName, token).ConfigAwait();
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
                     throw new ArgumentException(string.Format(ErrorMessages.UserAlreadyExistsTemplate1, newUser.UserName.SafeInput()));
             }
             if (newUser.Email != null)
             {
-                var existingUser = await GetUserAuthByUserNameAsync(newUser.Email, token);
+                var existingUser = await GetUserAuthByUserNameAsync(newUser.Email, token).ConfigAwait();
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
                     throw new ArgumentException(string.Format(ErrorMessages.EmailAlreadyExistsTemplate1, newUser.Email.SafeInput()));
@@ -89,7 +90,7 @@ namespace ServiceStack.Authentication.RavenDb
         {
             newUser.ValidateNewUser(password);
 
-            await AssertNoExistingUserAsync(newUser, existingUser, token);
+            await AssertNoExistingUserAsync(newUser, existingUser, token).ConfigAwait();
 
             UpdateKey(existingUser, newUser);
 
@@ -115,40 +116,40 @@ namespace ServiceStack.Authentication.RavenDb
                 .Customize(x => x.WaitForNonStaleResults())
                 .Where(x => x.Search.Contains(userNameOrEmail))
                 .OfType<TUserAuth>()
-                .FirstOrDefaultAsync(token);
+                .FirstOrDefaultAsync(token).ConfigAwait();
                 
             return userAuth;
         }
 
         public async Task<IUserAuth> TryAuthenticateAsync(string userName, string password, CancellationToken token = default)
         {
-            var userAuth = await GetUserAuthByUserNameAsync(userName, token);
+            var userAuth = await GetUserAuthByUserNameAsync(userName, token).ConfigAwait();
             if (userAuth == null)
                 return null;
 
             if (userAuth.VerifyPassword(password, out var needsRehash))
             {
-                await this.RecordSuccessfulLoginAsync(userAuth, needsRehash, password, token);
+                await this.RecordSuccessfulLoginAsync(userAuth, needsRehash, password, token).ConfigAwait();
                 return userAuth;
             }
 
-            await this.RecordInvalidLoginAttemptAsync(userAuth, token);
+            await this.RecordInvalidLoginAttemptAsync(userAuth, token).ConfigAwait();
             return null;
         }
 
         public async Task<IUserAuth> TryAuthenticateAsync(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, CancellationToken token = default)
         {
-            var userAuth = await GetUserAuthByUserNameAsync(digestHeaders["username"], token);
+            var userAuth = await GetUserAuthByUserNameAsync(digestHeaders["username"], token).ConfigAwait();
             if (userAuth == null)
                 return null;
 
             if (userAuth.VerifyDigestAuth(digestHeaders, privateKey, nonceTimeOut, sequence))
             {
-                await this.RecordSuccessfulLoginAsync(userAuth, token);
+                await this.RecordSuccessfulLoginAsync(userAuth, token).ConfigAwait();
                 return userAuth;
             }
 
-            await this.RecordInvalidLoginAttemptAsync(userAuth, token);
+            await this.RecordInvalidLoginAttemptAsync(userAuth, token).ConfigAwait();
             return null;
         }
 
@@ -157,14 +158,14 @@ namespace ServiceStack.Authentication.RavenDb
             if (session == null)
                 throw new ArgumentNullException(nameof(session));
 
-            var userAuth = GetUserAuth(session, tokens);
-            await LoadUserAuthAsync(session, (TUserAuth)userAuth, token);
+            var userAuth = await GetUserAuthAsync(session, tokens, token).ConfigAwait();
+            await LoadUserAuthAsync(session, (TUserAuth)userAuth, token).ConfigAwait();
         }
 
         private async Task LoadUserAuthAsync(IAuthSession session, TUserAuth userAuth, CancellationToken token = default)
         {
             UpdateSessionKey(session, userAuth);
-            await session.PopulateSessionAsync(userAuth, this, token);
+            await session.PopulateSessionAsync(userAuth, this, token).ConfigAwait();
         }
 
         public Task DeleteUserAuthAsync(string userAuthId, CancellationToken token = default)
@@ -229,7 +230,7 @@ namespace ServiceStack.Authentication.RavenDb
                     .Where(q => q.UserAuthId == userAuthId)
                     .OrderBy(x => x.ModifiedDate)
                     .OfType<TUserAuthDetails>()
-                    .ToListAsync(token))
+                    .ToListAsync(token).ConfigAwait())
                 .ConvertAll(x => x as IUserAuthDetails);
         }
 
@@ -237,12 +238,12 @@ namespace ServiceStack.Authentication.RavenDb
         {
             if (!authSession.UserAuthId.IsNullOrEmpty())
             {
-                var userAuth = await GetUserAuthAsync(authSession.UserAuthId, token);
+                var userAuth = await GetUserAuthAsync(authSession.UserAuthId, token).ConfigAwait();
                 if (userAuth != null) return userAuth;
             }
             if (!authSession.UserAuthName.IsNullOrEmpty())
             {
-                var userAuth = await GetUserAuthByUserNameAsync(authSession.UserAuthName, token);
+                var userAuth = await GetUserAuthByUserNameAsync(authSession.UserAuthName, token).ConfigAwait();
                 if (userAuth != null) return userAuth;
             }
 
@@ -255,7 +256,7 @@ namespace ServiceStack.Authentication.RavenDb
                 .Customize(x => x.WaitForNonStaleResults())
                 .Where(q => q.Provider == tokens.Provider && q.UserId == tokens.UserId)
                 .OfType<TUserAuthDetails>()
-                .FirstOrDefaultAsync(token);
+                .FirstOrDefaultAsync(token).ConfigAwait();
 
             if (oAuthProvider != null)
             {
@@ -276,7 +277,7 @@ namespace ServiceStack.Authentication.RavenDb
                 .Customize(x => x.WaitForNonStaleResults())
                 .Where(q => q.Provider == tokens.Provider && q.UserId == tokens.UserId)
                 .OfType<TUserAuthDetails>()
-                .FirstOrDefaultAsync(token);
+                .FirstOrDefaultAsync(token).ConfigAwait();
 
             if (authDetails == null)
             {
@@ -324,7 +325,7 @@ namespace ServiceStack.Authentication.RavenDb
         public async Task<List<IUserAuth>> SearchUserAuthsAsync(string query, string orderBy = null, int? skip = null, int? take = null, CancellationToken token = default)
         {
             if (string.IsNullOrEmpty(query))
-                return await GetUserAuthsAsync(orderBy, skip, take, token);
+                return await GetUserAuthsAsync(orderBy, skip, take, token).ConfigAwait();
 
             using var session = documentStore.OpenSession();
             // RavenDB cant query string Contains/IndexOf

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using ServiceStack.Auth;
 using MongoDB.Driver;
+using ServiceStack.Text;
 
 namespace ServiceStack.Authentication.MongoDb
 {
@@ -15,33 +16,33 @@ namespace ServiceStack.Authentication.MongoDb
         {
             newUser.ValidateNewUser(password);
 
-            await AssertNoExistingUserAsync(mongoDatabase, newUser, token: token);
+            await AssertNoExistingUserAsync(mongoDatabase, newUser, token: token).ConfigAwait();
 
             newUser.PopulatePasswordHashes(password);
             newUser.CreatedDate = DateTime.UtcNow;
             newUser.ModifiedDate = newUser.CreatedDate;
 
-            await SaveUserAsync(newUser, token);
+            await SaveUserAsync(newUser, token).ConfigAwait();
             return newUser;
         }
 
         private async Task SaveUserAsync(IUserAuth userAuth, CancellationToken token=default)
         {
             if (userAuth.Id == default)
-                userAuth.Id = await IncUserAuthCounterAsync(token);
+                userAuth.Id = await IncUserAuthCounterAsync(token).ConfigAwait();
             var usersCollection = mongoDatabase.GetCollection<UserAuth>(UserAuthCol);
             await usersCollection.ReplaceOneAsync<UserAuth>(u => u.Id == userAuth.Id, (UserAuth)userAuth, 
-                new ReplaceOptions { IsUpsert = true }, cancellationToken: token);
+                new ReplaceOptions { IsUpsert = true }, token).ConfigAwait();
         }
 
         private async Task<int> IncUserAuthCounterAsync(CancellationToken token=default)
         {
-            return (await IncCounterAsync("UserAuthCounter", token)).UserAuthCounter;
+            return (await IncCounterAsync("UserAuthCounter", token).ConfigAwait()).UserAuthCounter;
         }
 
         private async Task<int> IncUserOAuthProviderCounterAsync(CancellationToken token=default)
         {
-            return (await IncCounterAsync("UserOAuthProviderCounter", token)).UserOAuthProviderCounter;
+            return (await IncCounterAsync("UserOAuthProviderCounter", token).ConfigAwait()).UserOAuthProviderCounter;
         }
 
         private async Task<Counters> IncCounterAsync(string counterName, CancellationToken token=default)
@@ -49,7 +50,7 @@ namespace ServiceStack.Authentication.MongoDb
             var countersCollection = mongoDatabase.GetCollection<Counters>(CountersCol);
             var update = Builders<Counters>.Update.Inc(counterName, 1);
             var updatedCounters = await countersCollection.FindOneAndUpdateAsync(new BsonDocument(), update, 
-                new FindOneAndUpdateOptions<Counters> { IsUpsert = true, ReturnDocument = ReturnDocument.After}, token);
+                new FindOneAndUpdateOptions<Counters> { IsUpsert = true, ReturnDocument = ReturnDocument.After}, token).ConfigAwait();
             return updatedCounters;
         }
 
@@ -58,14 +59,14 @@ namespace ServiceStack.Authentication.MongoDb
         {
             if (newUser.UserName != null)
             {
-                var existingUser = await GetUserAuthByUserNameAsync(mongoDatabase, newUser.UserName, token);
+                var existingUser = await GetUserAuthByUserNameAsync(mongoDatabase, newUser.UserName, token).ConfigAwait();
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
                     throw new ArgumentException(string.Format(ErrorMessages.UserAlreadyExistsTemplate1, newUser.UserName.SafeInput()));
             }
             if (newUser.Email != null)
             {
-                var existingUser = await GetUserAuthByUserNameAsync(mongoDatabase, newUser.Email, token);
+                var existingUser = await GetUserAuthByUserNameAsync(mongoDatabase, newUser.Email, token).ConfigAwait();
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
                     throw new ArgumentException(string.Format(ErrorMessages.EmailAlreadyExistsTemplate1, newUser.Email.SafeInput()));
@@ -76,13 +77,13 @@ namespace ServiceStack.Authentication.MongoDb
         {
             newUser.ValidateNewUser(password);
 
-            await AssertNoExistingUserAsync(mongoDatabase, newUser, existingUser, token);
+            await AssertNoExistingUserAsync(mongoDatabase, newUser, existingUser, token).ConfigAwait();
 
             newUser.Id = existingUser.Id;
             newUser.PopulatePasswordHashes(password, existingUser);
             newUser.CreatedDate = existingUser.CreatedDate;
             newUser.ModifiedDate = DateTime.UtcNow;
-            await SaveUserAsync(newUser, token);
+            await SaveUserAsync(newUser, token).ConfigAwait();
 
             return newUser;
         }
@@ -91,7 +92,7 @@ namespace ServiceStack.Authentication.MongoDb
         {
             newUser.ValidateNewUser();
 
-            await AssertNoExistingUserAsync(mongoDatabase, newUser, token: token);
+            await AssertNoExistingUserAsync(mongoDatabase, newUser, token: token).ConfigAwait();
 
             newUser.Id = existingUser.Id;
             newUser.PasswordHash = existingUser.PasswordHash;
@@ -99,14 +100,14 @@ namespace ServiceStack.Authentication.MongoDb
             newUser.DigestHa1Hash = existingUser.DigestHa1Hash;
             newUser.CreatedDate = existingUser.CreatedDate;
             newUser.ModifiedDate = DateTime.UtcNow;
-            await SaveUserAsync(newUser, token);
+            await SaveUserAsync(newUser, token).ConfigAwait();
 
             return newUser;
         }
 
         public async Task<IUserAuth> GetUserAuthByUserNameAsync(string userNameOrEmail, CancellationToken token=default)
         {
-            return await GetUserAuthByUserNameAsync(mongoDatabase, userNameOrEmail, token);
+            return await GetUserAuthByUserNameAsync(mongoDatabase, userNameOrEmail, token).ConfigAwait();
         }
 
         private static async Task<UserAuth> GetUserAuthByUserNameAsync(IMongoDatabase mongoDatabase, string userNameOrEmail, CancellationToken token=default)
@@ -122,7 +123,7 @@ namespace ServiceStack.Authentication.MongoDb
                 ? builder.Eq(auth => auth.Email, userNameOrEmail)
                 : builder.Eq(auth => auth.UserName, userNameOrEmail);
 
-            var userAuth = (await collection.FindAsync(query, cancellationToken: token)).FirstOrDefault();
+            var userAuth = (await collection.FindAsync(query, cancellationToken: token).ConfigAwait()).FirstOrDefault();
             return userAuth;
         }
 
@@ -139,13 +140,13 @@ namespace ServiceStack.Authentication.MongoDb
             if (take != null)
                 q = q.Limit(take.Value);
 
-            return (await q.ToListAsync(token)).ConvertAll(x => x as IUserAuth);
+            return (await q.ToListAsync(token).ConfigAwait()).ConvertAll(x => x as IUserAuth);
         }
 
         public async Task<List<IUserAuth>> GetUserAuthsAsync(string orderBy = null, int? skip = null, int? take = null, CancellationToken token=default)
         {
             var collection = mongoDatabase.GetCollection<UserAuth>(UserAuthCol);
-            return await SortAndPageAsync(collection.Find(Builders<UserAuth>.Filter.Empty), orderBy, skip, take, token);
+            return await SortAndPageAsync(collection.Find(Builders<UserAuth>.Filter.Empty), orderBy, skip, take, token).ConfigAwait();
         }
 
         public async Task<List<IUserAuth>> SearchUserAuthsAsync(string query, string orderBy = null, int? skip = null, int? take = null, CancellationToken token=default)
@@ -157,40 +158,40 @@ namespace ServiceStack.Authentication.MongoDb
                   x.DisplayName.Contains(query) ||
                   x.Company.Contains(query));
             
-            return await SortAndPageAsync(collection.Find(q), orderBy, skip, take, token);
+            return await SortAndPageAsync(collection.Find(q), orderBy, skip, take, token).ConfigAwait();
         }
 
         public async Task<IUserAuth> TryAuthenticateAsync(string userName, string password, CancellationToken token = default)
         {
-            var userAuth = await GetUserAuthByUserNameAsync(userName, token);
+            var userAuth = await GetUserAuthByUserNameAsync(userName, token).ConfigAwait();
             if (userAuth == null)
                 return null;
 
             if (userAuth.VerifyPassword(password, out var needsRehash))
             {
-                await this.RecordSuccessfulLoginAsync(userAuth, needsRehash, password, token);
+                await this.RecordSuccessfulLoginAsync(userAuth, needsRehash, password, token).ConfigAwait();
 
                 return userAuth;
             }
 
-            await this.RecordInvalidLoginAttemptAsync(userAuth, token);
+            await this.RecordInvalidLoginAttemptAsync(userAuth, token).ConfigAwait();
             return null;
         }
 
         public async Task<IUserAuth> TryAuthenticateAsync(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, CancellationToken token = default)
         {
             //userId = null;
-            var userAuth = await GetUserAuthByUserNameAsync(digestHeaders["username"], token);
+            var userAuth = await GetUserAuthByUserNameAsync(digestHeaders["username"], token).ConfigAwait();
             if (userAuth == null)
                 return null;
 
             if (userAuth.VerifyDigestAuth(digestHeaders, privateKey, nonceTimeOut, sequence))
             {
-                await this.RecordSuccessfulLoginAsync(userAuth, token: token);
+                await this.RecordSuccessfulLoginAsync(userAuth, token).ConfigAwait();
                 return userAuth;
             }
 
-            await this.RecordInvalidLoginAttemptAsync(userAuth, token: token);
+            await this.RecordInvalidLoginAttemptAsync(userAuth, token).ConfigAwait();
             return null;
         }
 
@@ -199,27 +200,27 @@ namespace ServiceStack.Authentication.MongoDb
             if (session == null)
                 throw new ArgumentNullException(nameof(session));
 
-            var userAuth = await GetUserAuthAsync(session, tokens, token);
-            await LoadUserAuthAsync(session, userAuth, token);
+            var userAuth = await GetUserAuthAsync(session, tokens, token).ConfigAwait();
+            await LoadUserAuthAsync(session, userAuth, token).ConfigAwait();
         }
 
         private async Task LoadUserAuthAsync(IAuthSession session, IUserAuth userAuth, CancellationToken token = default)
         {
-            await session.PopulateSessionAsync(userAuth, this, token);
+            await session.PopulateSessionAsync(userAuth, this, token).ConfigAwait();
         }
 
         public async Task<IUserAuth> GetUserAuthAsync(string userAuthId, CancellationToken token = default)
         {
             var collection = mongoDatabase.GetCollection<UserAuth>(UserAuthCol);
             var intUserId = int.Parse(userAuthId);
-            UserAuth userAuth = (await collection.FindAsync(u => u.Id == intUserId, cancellationToken: token)).FirstOrDefault();
+            UserAuth userAuth = (await collection.FindAsync(u => u.Id == intUserId, cancellationToken: token).ConfigAwait()).FirstOrDefault();
             return userAuth;
         }
 
         public async Task SaveUserAuthAsync(IAuthSession authSession, CancellationToken token = default)
         {
             var userAuth = !authSession.UserAuthId.IsNullOrEmpty()
-                ? (UserAuth) await GetUserAuthAsync(authSession.UserAuthId, token)
+                ? (UserAuth) await GetUserAuthAsync(authSession.UserAuthId, token).ConfigAwait()
                 : authSession.ConvertTo<UserAuth>();
 
             if (userAuth.Id == default && !authSession.UserAuthId.IsNullOrEmpty())
@@ -230,7 +231,7 @@ namespace ServiceStack.Authentication.MongoDb
                 userAuth.CreatedDate = userAuth.ModifiedDate;
 
             mongoDatabase.GetCollection<UserAuth>(UserAuthCol);
-            await SaveUserAsync(userAuth, token);
+            await SaveUserAsync(userAuth, token).ConfigAwait();
         }
 
         public async Task SaveUserAuthAsync(IUserAuth userAuth, CancellationToken token = default)
@@ -239,36 +240,36 @@ namespace ServiceStack.Authentication.MongoDb
             if (userAuth.CreatedDate == default)
                 userAuth.CreatedDate = userAuth.ModifiedDate;
 
-            await SaveUserAsync(userAuth, token);
+            await SaveUserAsync(userAuth, token).ConfigAwait();
         }
 
         public async Task DeleteUserAuthAsync(string userAuthId, CancellationToken token = default)
         {
             var userAuthCollection = mongoDatabase.GetCollection<UserAuth>(UserAuthCol);
-            await userAuthCollection.DeleteOneAsync(u => u.Id == int.Parse(userAuthId), token);
+            await userAuthCollection.DeleteOneAsync(u => u.Id == int.Parse(userAuthId), token).ConfigAwait();
 
             var userAuthDetails = mongoDatabase.GetCollection<UserAuthDetails>(UserOAuthProviderCol);
-            await userAuthDetails.DeleteOneAsync(u => u.UserAuthId == int.Parse(userAuthId), token);
+            await userAuthDetails.DeleteOneAsync(u => u.UserAuthId == int.Parse(userAuthId), token).ConfigAwait();
         }
 
         public async Task<List<IUserAuthDetails>> GetUserAuthDetailsAsync(string userAuthId, CancellationToken token = default)
         {
             var collection = mongoDatabase.GetCollection<UserAuthDetails>(UserOAuthProviderCol);
             var intUserId = int.Parse(userAuthId);
-            var queryResult = await collection.FindAsync(ud => ud.UserAuthId == intUserId, cancellationToken: token);
-            return (await queryResult.ToListAsync(token)).Cast<IUserAuthDetails>().ToList();
+            var queryResult = await collection.FindAsync(ud => ud.UserAuthId == intUserId, cancellationToken: token).ConfigAwait();
+            return (await queryResult.ToListAsync(token).ConfigAwait()).Cast<IUserAuthDetails>().ToList();
         }
 
         public async Task<IUserAuth> GetUserAuthAsync(IAuthSession authSession, IAuthTokens tokens, CancellationToken token = default)
         {
             if (!authSession.UserAuthId.IsNullOrEmpty())
             {
-                var userAuth = await GetUserAuthAsync(authSession.UserAuthId, token);
+                var userAuth = await GetUserAuthAsync(authSession.UserAuthId, token).ConfigAwait();
                 if (userAuth != null) return userAuth;
             }
             if (!authSession.UserAuthName.IsNullOrEmpty())
             {
-                var userAuth = await GetUserAuthByUserNameAsync(authSession.UserAuthName, token);
+                var userAuth = await GetUserAuthByUserNameAsync(authSession.UserAuthName, token).ConfigAwait();
                 if (userAuth != null) return userAuth;
             }
 
@@ -278,13 +279,13 @@ namespace ServiceStack.Authentication.MongoDb
             var providerCollection = mongoDatabase.GetCollection<UserAuthDetails>(UserOAuthProviderCol);
             var oAuthProvider =
                 (await providerCollection.FindAsync(ud => ud.Provider == tokens.Provider && ud.UserId == tokens.UserId,
-                    cancellationToken: token)).FirstOrDefault();
+                    cancellationToken: token).ConfigAwait()).FirstOrDefault();
 
             if (oAuthProvider != null)
             {
                 var userAuthCollection = mongoDatabase.GetCollection<UserAuth>(UserAuthCol);
                 var userAuth = (await userAuthCollection.FindAsync(u => u.Id == oAuthProvider.UserAuthId,
-                        cancellationToken: token)).FirstOrDefault();
+                        cancellationToken: token).ConfigAwait()).FirstOrDefault();
                 return userAuth;
             }
             return null;
@@ -292,7 +293,7 @@ namespace ServiceStack.Authentication.MongoDb
 
         public async Task<IUserAuthDetails> CreateOrMergeAuthSessionAsync(IAuthSession authSession, IAuthTokens tokens, CancellationToken token = default)
         {
-            var userAuth = await GetUserAuthAsync(authSession, tokens, token) ?? new UserAuth();
+            var userAuth = await GetUserAuthAsync(authSession, tokens, token).ConfigAwait() ?? new UserAuth();
 
             var providerCollection = mongoDatabase.GetCollection<UserAuthDetails>(UserOAuthProviderCol);
             var authDetails = providerCollection.Find(ud => ud.Provider == tokens.Provider && ud.UserId == tokens.UserId).FirstOrDefault() ??
@@ -309,10 +310,10 @@ namespace ServiceStack.Authentication.MongoDb
             if (userAuth.CreatedDate == default)
                 userAuth.CreatedDate = userAuth.ModifiedDate;
 
-            await SaveUserAsync((UserAuth)userAuth, token);
+            await SaveUserAsync((UserAuth)userAuth, token).ConfigAwait();
 
             if (authDetails.Id == default)
-                authDetails.Id = await IncUserOAuthProviderCounterAsync(token);
+                authDetails.Id = await IncUserOAuthProviderCounterAsync(token).ConfigAwait();
 
             authDetails.UserAuthId = userAuth.Id;
 
@@ -322,41 +323,42 @@ namespace ServiceStack.Authentication.MongoDb
 
             await providerCollection.ReplaceOneAsync(ud => ud.Id == authDetails.Id, authDetails, 
                 new ReplaceOptions {IsUpsert = true}, 
-                token);
+                token).ConfigAwait();
 
             return authDetails;
         }
 
         public async Task CreateMissingCollectionsAsync(CancellationToken token=default)
         {
-            var collections = await (await mongoDatabase.ListCollectionsAsync(cancellationToken: token)).ToListAsync(token);
+            var collections = await (await mongoDatabase.ListCollectionsAsync(cancellationToken: token).ConfigAwait())
+                .ToListAsync(token).ConfigAwait();
             if (!collections.Exists(document => document["name"] == UserAuthCol))
-                await mongoDatabase.CreateCollectionAsync(UserAuthCol, cancellationToken: token);
+                await mongoDatabase.CreateCollectionAsync(UserAuthCol, cancellationToken: token).ConfigAwait();
 
             if (!collections.Exists(document => document["name"] == UserOAuthProviderCol))
-                await mongoDatabase.CreateCollectionAsync(UserOAuthProviderCol, cancellationToken: token);
+                await mongoDatabase.CreateCollectionAsync(UserOAuthProviderCol, cancellationToken: token).ConfigAwait();
 
             if (!collections.Exists(document => document["name"] == CountersCol))
             {
-                await mongoDatabase.CreateCollectionAsync(CountersCol, cancellationToken: token);
+                await mongoDatabase.CreateCollectionAsync(CountersCol, cancellationToken: token).ConfigAwait();
                 var countersCollection = mongoDatabase.GetCollection<Counters>(CountersCol);
                 Counters counters = new Counters();
-                await countersCollection.InsertOneAsync(counters, cancellationToken: token);
+                await countersCollection.InsertOneAsync(counters, cancellationToken: token).ConfigAwait();
             }
         }
 
         public async Task DropAndReCreateCollectionsAsync(CancellationToken token=default)
         {
-            await mongoDatabase.DropCollectionAsync(UserAuthCol, token);
-            await mongoDatabase.DropCollectionAsync(UserOAuthProviderCol, token);
-            await mongoDatabase.DropCollectionAsync(CountersCol, token);
+            await mongoDatabase.DropCollectionAsync(UserAuthCol, token).ConfigAwait();
+            await mongoDatabase.DropCollectionAsync(UserOAuthProviderCol, token).ConfigAwait();
+            await mongoDatabase.DropCollectionAsync(CountersCol, token).ConfigAwait();
 
-            await CreateMissingCollectionsAsync(token);
+            await CreateMissingCollectionsAsync(token).ConfigAwait();
         }
 
         public async Task ClearAsync(CancellationToken token = default)
         {
-            await DropAndReCreateCollectionsAsync(token);
+            await DropAndReCreateCollectionsAsync(token).ConfigAwait();
         }
 
         public async Task<bool> ApiKeyExistsAsync(string apiKey, CancellationToken token = default)
@@ -364,13 +366,13 @@ namespace ServiceStack.Authentication.MongoDb
             if (string.IsNullOrEmpty(apiKey))
                 return false;
             var collection = mongoDatabase.GetCollection<ApiKey>(ApiKeysCol);
-            return await collection.CountDocumentsAsync(key => key.Id == apiKey, cancellationToken: token) > 0;
+            return await collection.CountDocumentsAsync(key => key.Id == apiKey, cancellationToken: token).ConfigAwait() > 0;
         }
 
         public async Task<ApiKey> GetApiKeyAsync(string apiKey, CancellationToken token = default)
         {
             var collection = mongoDatabase.GetCollection<ApiKey>(ApiKeysCol);
-            return (await collection.FindAsync(key => key.Id == apiKey, cancellationToken: token)).FirstOrDefault();
+            return (await collection.FindAsync(key => key.Id == apiKey, cancellationToken: token).ConfigAwait()).FirstOrDefault();
         }
 
         public async Task<List<ApiKey>> GetUserApiKeysAsync(string userId, CancellationToken token = default)
@@ -379,8 +381,8 @@ namespace ServiceStack.Authentication.MongoDb
             var queryResult = await collection.FindAsync(key => 
                 key.UserAuthId == userId
                 && key.CancelledDate == null
-                && (key.ExpiryDate == null || key.ExpiryDate >= DateTime.UtcNow), cancellationToken: token);
-            return await queryResult.ToListAsync(token);
+                && (key.ExpiryDate == null || key.ExpiryDate >= DateTime.UtcNow), cancellationToken: token).ConfigAwait();
+            return await queryResult.ToListAsync(token).ConfigAwait();
         }
 
         public async Task StoreAllAsync(IEnumerable<ApiKey> apiKeys, CancellationToken token = default)
@@ -394,7 +396,7 @@ namespace ServiceStack.Authentication.MongoDb
             }
 
             if (bulkApiKeys.Any())
-                await collection.BulkWriteAsync(bulkApiKeys, cancellationToken: token);
+                await collection.BulkWriteAsync(bulkApiKeys, cancellationToken: token).ConfigAwait();
         }
     }
 }

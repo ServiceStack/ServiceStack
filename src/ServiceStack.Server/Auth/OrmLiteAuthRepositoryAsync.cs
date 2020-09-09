@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Data;
+using ServiceStack.Text;
 using ServiceStack.OrmLite;
 
 namespace ServiceStack.Auth
@@ -17,20 +18,20 @@ namespace ServiceStack.Auth
         protected async Task<IDbConnection> OpenDbConnectionAsync()
         {
             return this.NamedConnection != null
-                ? await dbFactory.OpenDbConnectionAsync(NamedConnection)
-                : await dbFactory.OpenDbConnectionAsync();
+                ? await dbFactory.OpenDbConnectionAsync(NamedConnection).ConfigAwait()
+                : await dbFactory.OpenDbConnectionAsync().ConfigAwait();
         }
 
         public override async Task ExecAsync(Func<IDbConnection,Task> fn)
         {
-            using var db = await OpenDbConnectionAsync();
-            await fn(db);
+            using var db = await OpenDbConnectionAsync().ConfigAwait();
+            await fn(db).ConfigAwait();
         }
 
         public override async Task<T> ExecAsync<T>(Func<IDbConnection, Task<T>> fn)
         {
-            using var db = await OpenDbConnectionAsync();
-            return await fn(db);
+            using var db = await OpenDbConnectionAsync().ConfigAwait();
+            return await fn(db).ConfigAwait();
         }
     }
 
@@ -44,7 +45,7 @@ namespace ServiceStack.Auth
             if (db == null)
                 throw new NotSupportedException("This operation can only be called within context of a Request");
 
-            await fn(db);
+            await fn(db).ConfigAwait();
         }
 
         public override async Task<T> ExecAsync<T>(Func<IDbConnection, Task<T>> fn)
@@ -52,7 +53,7 @@ namespace ServiceStack.Auth
             if (db == null)
                 throw new NotSupportedException("This operation can only be called within context of a Request");
 
-            return await fn(db);
+            return await fn(db).ConfigAwait();
         }
 
         public async Task EachDb(Func<IDbConnection,Task> fn)
@@ -66,12 +67,12 @@ namespace ServiceStack.Auth
             {
                 //Required by In Memory Sqlite
                 var dbConn = connStr == ormLiteDbFactory.ConnectionString
-                    ? await dbFactory.OpenDbConnectionAsync()
-                    : await dbFactory.OpenDbConnectionStringAsync(connStr);
+                    ? await dbFactory.OpenDbConnectionAsync().ConfigAwait()
+                    : await dbFactory.OpenDbConnectionStringAsync(connStr).ConfigAwait();
 
                 using (dbConn)
                 {
-                    await fn(dbConn);
+                    await fn(dbConn).ConfigAwait();
                 }
             }
         }
@@ -79,7 +80,7 @@ namespace ServiceStack.Auth
         public async ValueTask DisposeAsync()
         {
             if (db is IAsyncDisposable asyncDisposable)
-                await asyncDisposable.DisposeAsync();
+                await asyncDisposable.DisposeAsync().ConfigAwait();
             else
                 Dispose();
         }
@@ -100,31 +101,31 @@ namespace ServiceStack.Auth
 
             return await ExecAsync(async db =>
             {
-                await AssertNoExistingUserAsync(db, newUser, token: token);
+                await AssertNoExistingUserAsync(db, newUser, token: token).ConfigAwait();
 
                 newUser.PopulatePasswordHashes(password);
                 newUser.CreatedDate = DateTime.UtcNow;
                 newUser.ModifiedDate = newUser.CreatedDate;
 
-                await db.SaveAsync((TUserAuth)newUser, token: token);
+                await db.SaveAsync((TUserAuth)newUser, token: token).ConfigAwait();
 
-                newUser = await db.SingleByIdAsync<TUserAuth>(newUser.Id, token);
+                newUser = await db.SingleByIdAsync<TUserAuth>(newUser.Id, token).ConfigAwait();
                 return newUser;
-            });
+            }).ConfigAwait();
         }
 
         protected virtual async Task AssertNoExistingUserAsync(IDbConnection db, IUserAuth newUser, IUserAuth exceptForExistingUser = null, CancellationToken token=default)
         {
             if (newUser.UserName != null)
             {
-                var existingUser = await GetUserAuthByUserNameAsync(db, newUser.UserName, token);
+                var existingUser = await GetUserAuthByUserNameAsync(db, newUser.UserName, token).ConfigAwait();
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
                     throw new ArgumentException(string.Format(ErrorMessages.UserAlreadyExistsTemplate1, newUser.UserName.SafeInput()));
             }
             if (newUser.Email != null)
             {
-                var existingUser = await GetUserAuthByUserNameAsync(db, newUser.Email, token);
+                var existingUser = await GetUserAuthByUserNameAsync(db, newUser.Email, token).ConfigAwait();
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
                     throw new ArgumentException(string.Format(ErrorMessages.EmailAlreadyExistsTemplate1, newUser.Email.SafeInput()));
@@ -137,17 +138,17 @@ namespace ServiceStack.Auth
 
             return await ExecAsync(async db =>
             {
-                await AssertNoExistingUserAsync(db, newUser, existingUser, token);
+                await AssertNoExistingUserAsync(db, newUser, existingUser, token).ConfigAwait();
 
                 newUser.Id = existingUser.Id;
                 newUser.PopulatePasswordHashes(password, existingUser);
                 newUser.CreatedDate = existingUser.CreatedDate;
                 newUser.ModifiedDate = DateTime.UtcNow;
 
-                await db.SaveAsync((TUserAuth)newUser, token: token);
+                await db.SaveAsync((TUserAuth)newUser, token: token).ConfigAwait();
 
                 return newUser;
-            });
+            }).ConfigAwait();
         }
 
         public virtual async Task<IUserAuth> UpdateUserAuthAsync(IUserAuth existingUser, IUserAuth newUser, CancellationToken token=default)
@@ -156,7 +157,7 @@ namespace ServiceStack.Auth
 
             return await ExecAsync(async db =>
             {
-                await AssertNoExistingUserAsync(db, newUser, existingUser, token);
+                await AssertNoExistingUserAsync(db, newUser, existingUser, token).ConfigAwait();
 
                 newUser.Id = existingUser.Id;
                 newUser.PasswordHash = existingUser.PasswordHash;
@@ -165,10 +166,10 @@ namespace ServiceStack.Auth
                 newUser.CreatedDate = existingUser.CreatedDate;
                 newUser.ModifiedDate = DateTime.UtcNow;
 
-                await db.SaveAsync((TUserAuth)newUser, token: token);
+                await db.SaveAsync((TUserAuth)newUser, token: token).ConfigAwait();
 
                 return newUser;
-            });
+            }).ConfigAwait();
         }
 
         public virtual async Task<IUserAuth> GetUserAuthByUserNameAsync(string userNameOrEmail, CancellationToken token=default)
@@ -180,13 +181,13 @@ namespace ServiceStack.Auth
             {
                 if (!hasInitSchema)
                 {
-                    hasInitSchema = await db.TableExistsAsync<TUserAuth>(token); 
+                    hasInitSchema = await db.TableExistsAsync<TUserAuth>(token).ConfigAwait(); 
 
                     if (!hasInitSchema)
                         throw new Exception("OrmLiteAuthRepository Db tables have not been initialized. Try calling 'InitSchema()' in your AppHost Configure method.");
                 }
-                return await GetUserAuthByUserNameAsync(db, userNameOrEmail, token);
-            });
+                return await GetUserAuthByUserNameAsync(db, userNameOrEmail, token).ConfigAwait();
+            }).ConfigAwait();
         }
 
         private async Task<TUserAuth> GetUserAuthByUserNameAsync(IDbConnection db, string userNameOrEmail, CancellationToken token=default)
@@ -200,14 +201,14 @@ namespace ServiceStack.Auth
             if (HostContext.GetPlugin<AuthFeature>()?.SaveUserNamesInLowerCase == true)
             {
                 return isEmail
-                    ? (await db.SelectAsync<TUserAuth>(q => q.Email == lowerUserName, token)).FirstOrDefault()
-                    : (await db.SelectAsync<TUserAuth>(q => q.UserName == lowerUserName, token)).FirstOrDefault();
+                    ? (await db.SelectAsync<TUserAuth>(q => q.Email == lowerUserName, token).ConfigAwait()).FirstOrDefault()
+                    : (await db.SelectAsync<TUserAuth>(q => q.UserName == lowerUserName, token).ConfigAwait()).FirstOrDefault();
             }
             
             // Try an exact search using index first
             userAuth = isEmail
-                ? (await db.SelectAsync<TUserAuth>(q => q.Email == userNameOrEmail, token)).FirstOrDefault()
-                : (await db.SelectAsync<TUserAuth>(q => q.UserName == userNameOrEmail, token)).FirstOrDefault();
+                ? (await db.SelectAsync<TUserAuth>(q => q.Email == userNameOrEmail, token).ConfigAwait()).FirstOrDefault()
+                : (await db.SelectAsync<TUserAuth>(q => q.UserName == userNameOrEmail, token).ConfigAwait()).FirstOrDefault();
 
             if (userAuth != null)
                 return userAuth;
@@ -216,8 +217,8 @@ namespace ServiceStack.Auth
             if (ForceCaseInsensitiveUserNameSearch)
             {
                 userAuth = isEmail
-                    ? (await db.SelectAsync<TUserAuth>(q => q.Email.ToLower() == lowerUserName, token)).FirstOrDefault()
-                    : (await db.SelectAsync<TUserAuth>(q => q.UserName.ToLower() == lowerUserName, token)).FirstOrDefault();
+                    ? (await db.SelectAsync<TUserAuth>(q => q.Email.ToLower() == lowerUserName, token).ConfigAwait()).FirstOrDefault()
+                    : (await db.SelectAsync<TUserAuth>(q => q.UserName.ToLower() == lowerUserName, token).ConfigAwait()).FirstOrDefault();
             }
             
             return userAuth;
@@ -231,8 +232,8 @@ namespace ServiceStack.Auth
                     q.OrderBy(orderBy);
                 if (skip != null || take != null)
                     q.Limit(skip, take);
-                return (await db.SelectAsync(q, token)).ConvertAll(x => (IUserAuth)x);
-            });
+                return (await db.SelectAsync(q, token).ConfigAwait()).ConvertAll(x => (IUserAuth)x);
+            }).ConfigAwait();
         }
 
         public async Task<List<IUserAuth>> SearchUserAuthsAsync(string query, string orderBy = null, int? skip = null, int? take = null, CancellationToken token=default)
@@ -251,40 +252,40 @@ namespace ServiceStack.Auth
                     q.OrderBy(orderBy);
                 if (skip != null || take != null)
                     q.Limit(skip, take);
-                return (await db.SelectAsync(q, token)).ConvertAll(x => (IUserAuth)x);
-            });
+                return (await db.SelectAsync(q, token).ConfigAwait()).ConvertAll(x => (IUserAuth)x);
+            }).ConfigAwait();
         }
         
         public virtual async Task<IUserAuth> TryAuthenticateAsync(string userName, string password, CancellationToken token=default)
         {
-            var userAuth = await GetUserAuthByUserNameAsync(userName, token);
+            var userAuth = await GetUserAuthByUserNameAsync(userName, token).ConfigAwait();
             if (userAuth == null)
                 return null;
 
             if (userAuth.VerifyPassword(password, out var needsRehash))
             {
-                await this.RecordSuccessfulLoginAsync(userAuth, needsRehash, password, token: token);
+                await this.RecordSuccessfulLoginAsync(userAuth, needsRehash, password, token).ConfigAwait();
                 return userAuth;
             }
 
-            await this.RecordInvalidLoginAttemptAsync(userAuth, token: token);
+            await this.RecordInvalidLoginAttemptAsync(userAuth, token).ConfigAwait();
 
             return null;
         }
 
         public virtual async Task<IUserAuth> TryAuthenticateAsync(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, CancellationToken token=default)
         {
-            var userAuth = await GetUserAuthByUserNameAsync(digestHeaders["username"], token);
+            var userAuth = await GetUserAuthByUserNameAsync(digestHeaders["username"], token).ConfigAwait();
             if (userAuth == null)
                 return null;
 
             if (userAuth.VerifyDigestAuth(digestHeaders, privateKey, nonceTimeOut, sequence))
             {
-                await this.RecordSuccessfulLoginAsync(userAuth, token);
+                await this.RecordSuccessfulLoginAsync(userAuth, token).ConfigAwait();
                 return userAuth;
             }
 
-            await this.RecordInvalidLoginAttemptAsync(userAuth, token: token);
+            await this.RecordInvalidLoginAttemptAsync(userAuth, token).ConfigAwait();
             return null;
         }
 
@@ -295,12 +296,12 @@ namespace ServiceStack.Auth
                 using var trans = db.OpenTransaction();
                 var userId = int.Parse(userAuthId);
 
-                await db.DeleteAsync<TUserAuth>(x => x.Id == userId, token: token);
-                await db.DeleteAsync<TUserAuthDetails>(x => x.UserAuthId == userId, token: token);
-                await db.DeleteAsync<UserAuthRole>(x => x.UserAuthId == userId, token: token);
+                await db.DeleteAsync<TUserAuth>(x => x.Id == userId, token: token).ConfigAwait();
+                await db.DeleteAsync<TUserAuthDetails>(x => x.UserAuthId == userId, token: token).ConfigAwait();
+                await db.DeleteAsync<UserAuthRole>(x => x.UserAuthId == userId, token: token).ConfigAwait();
 
                 trans.Commit();
-            });
+            }).ConfigAwait();
         }
 
         public virtual async Task LoadUserAuthAsync(IAuthSession session, IAuthTokens tokens, CancellationToken token=default)
@@ -308,13 +309,13 @@ namespace ServiceStack.Auth
             if (session == null)
                 throw new ArgumentNullException(nameof(session));
 
-            var userAuth = await GetUserAuthAsync(session, tokens, token);
-            await LoadUserAuthAsync(session, userAuth, token);
+            var userAuth = await GetUserAuthAsync(session, tokens, token).ConfigAwait();
+            await LoadUserAuthAsync(session, userAuth, token).ConfigAwait();
         }
 
         private async Task LoadUserAuthAsync(IAuthSession session, IUserAuth userAuth, CancellationToken token=default)
         {
-            await session.PopulateSessionAsync(userAuth, this, token: token);
+            await session.PopulateSessionAsync(userAuth, this, token).ConfigAwait();
         }
 
         public virtual async Task<IUserAuth> GetUserAuthAsync(string userAuthId, CancellationToken token=default)
@@ -322,7 +323,8 @@ namespace ServiceStack.Auth
             if (string.IsNullOrEmpty(userAuthId))
                 throw new ArgumentNullException(nameof(userAuthId));
             
-            return await ExecAsync(async db => await db.SingleByIdAsync<TUserAuth>(int.Parse(userAuthId), token));
+            return await ExecAsync(async db => 
+                await db.SingleByIdAsync<TUserAuth>(int.Parse(userAuthId), token).ConfigAwait()).ConfigAwait();
         }
 
         public virtual async Task SaveUserAuthAsync(IAuthSession authSession, CancellationToken token=default)
@@ -333,7 +335,7 @@ namespace ServiceStack.Auth
             await ExecAsync(async db =>
             {
                 var userAuth = !authSession.UserAuthId.IsNullOrEmpty()
-                    ? await db.SingleByIdAsync<TUserAuth>(int.Parse(authSession.UserAuthId), token)
+                    ? await db.SingleByIdAsync<TUserAuth>(int.Parse(authSession.UserAuthId), token).ConfigAwait()
                     : authSession.ConvertTo<TUserAuth>();
 
                 if (userAuth.Id == default && !authSession.UserAuthId.IsNullOrEmpty())
@@ -343,8 +345,8 @@ namespace ServiceStack.Auth
                 if (userAuth.CreatedDate == default)
                     userAuth.CreatedDate = userAuth.ModifiedDate;
 
-                await db.SaveAsync(userAuth, token: token);
-            });
+                await db.SaveAsync(userAuth, token: token).ConfigAwait();
+            }).ConfigAwait();
         }
 
         public virtual async Task SaveUserAuthAsync(IUserAuth userAuth, CancellationToken token=default)
@@ -358,8 +360,8 @@ namespace ServiceStack.Auth
 
             await ExecAsync(async db =>
             {
-                await db.SaveAsync((TUserAuth) userAuth, token: token);
-            });
+                await db.SaveAsync((TUserAuth) userAuth, token: token).ConfigAwait();
+            }).ConfigAwait();
         }
 
         public virtual async Task<List<IUserAuthDetails>> GetUserAuthDetailsAsync(string userAuthId, CancellationToken token=default)
@@ -367,22 +369,22 @@ namespace ServiceStack.Auth
             var id = int.Parse(userAuthId);
             return await ExecAsync(async db =>
             {
-                return (await db.SelectAsync<TUserAuthDetails>(q => q.UserAuthId == id, token))
+                return (await db.SelectAsync<TUserAuthDetails>(q => q.UserAuthId == id, token).ConfigAwait())
                     .OrderBy(x => x.ModifiedDate).Cast<IUserAuthDetails>().ToList();
-            });
+            }).ConfigAwait();
         }
 
         public virtual async Task<IUserAuth> GetUserAuthAsync(IAuthSession authSession, IAuthTokens tokens, CancellationToken token=default)
         {
             if (!authSession.UserAuthId.IsNullOrEmpty())
             {
-                var userAuth = await GetUserAuthAsync(authSession.UserAuthId, token);
+                var userAuth = await GetUserAuthAsync(authSession.UserAuthId, token).ConfigAwait();
                 if (userAuth != null)
                     return userAuth;
             }
             if (!authSession.UserAuthName.IsNullOrEmpty())
             {
-                var userAuth = await GetUserAuthByUserNameAsync(authSession.UserAuthName, token);
+                var userAuth = await GetUserAuthByUserNameAsync(authSession.UserAuthName, token).ConfigAwait();
                 if (userAuth != null)
                     return userAuth;
             }
@@ -393,11 +395,11 @@ namespace ServiceStack.Auth
             return await ExecAsync(async db =>
             {
                 var oAuthProvider = (await db.SelectAsync<TUserAuthDetails>(q =>
-                    q.Provider == tokens.Provider && q.UserId == tokens.UserId, token)).FirstOrDefault();
+                    q.Provider == tokens.Provider && q.UserId == tokens.UserId, token).ConfigAwait()).FirstOrDefault();
 
                 if (oAuthProvider != null)
                 {
-                    var userAuth = await db.SingleByIdAsync<TUserAuth>(oAuthProvider.UserAuthId, token);
+                    var userAuth = await db.SingleByIdAsync<TUserAuth>(oAuthProvider.UserAuthId, token).ConfigAwait();
                     return userAuth;
                 }
                 return null;
@@ -406,13 +408,13 @@ namespace ServiceStack.Auth
 
         public virtual async Task<IUserAuthDetails> CreateOrMergeAuthSessionAsync(IAuthSession authSession, IAuthTokens tokens, CancellationToken token=default)
         {
-            TUserAuth userAuth = (TUserAuth)await GetUserAuthAsync(authSession, tokens, token)
+            TUserAuth userAuth = (TUserAuth)await GetUserAuthAsync(authSession, tokens, token).ConfigAwait()
                 ?? typeof(TUserAuth).CreateInstance<TUserAuth>();
 
             return await ExecAsync(async db =>
             {
                 var authDetails = (await db.SelectAsync<TUserAuthDetails>(
-                    q => q.Provider == tokens.Provider && q.UserId == tokens.UserId, token)).FirstOrDefault();
+                    q => q.Provider == tokens.Provider && q.UserId == tokens.UserId, token).ConfigAwait()).FirstOrDefault();
 
                 if (authDetails == null)
                 {
@@ -428,7 +430,7 @@ namespace ServiceStack.Auth
                 if (userAuth.CreatedDate == default(DateTime))
                     userAuth.CreatedDate = userAuth.ModifiedDate;
 
-                await db.SaveAsync(userAuth, token: token);
+                await db.SaveAsync(userAuth, token: token).ConfigAwait();
 
                 authDetails.UserAuthId = userAuth.Id;
 
@@ -436,19 +438,19 @@ namespace ServiceStack.Auth
                 if (authDetails.CreatedDate == default(DateTime))
                     authDetails.CreatedDate = userAuth.ModifiedDate;
 
-                await db.SaveAsync(authDetails, token: token);
+                await db.SaveAsync(authDetails, token: token).ConfigAwait();
 
                 return authDetails;
-            });
+            }).ConfigAwait();
         }
 
         public virtual async Task ClearAsync(CancellationToken token=default)
         {
             await ExecAsync(async db =>
             {
-                await db.DeleteAllAsync<TUserAuth>(token);
-                await db.DeleteAllAsync<TUserAuthDetails>(token);
-            });
+                await db.DeleteAllAsync<TUserAuth>(token).ConfigAwait();
+                await db.DeleteAllAsync<TUserAuthDetails>(token).ConfigAwait();
+            }).ConfigAwait();
         }
 
         public virtual async Task<ICollection<string>> GetRolesAsync(string userAuthId, CancellationToken token=default)
@@ -456,7 +458,7 @@ namespace ServiceStack.Auth
             AssertUserAuthId(userAuthId);
             if (!UseDistinctRoleTables)
             {
-                var userAuth = await GetUserAuthAsync(userAuthId, token);
+                var userAuth = await GetUserAuthAsync(userAuthId, token).ConfigAwait();
                 if (userAuth == null)
                     return TypeConstants.EmptyStringArray;
 
@@ -466,9 +468,9 @@ namespace ServiceStack.Auth
             {
                 return await ExecAsync(async db =>
                 {
-                    return (await db.SelectAsync<UserAuthRole>(q => q.UserAuthId == int.Parse(userAuthId) && q.Role != null, token))
+                    return (await db.SelectAsync<UserAuthRole>(q => q.UserAuthId == int.Parse(userAuthId) && q.Role != null, token).ConfigAwait())
                         .ConvertAll(x => x.Role);
-                });
+                }).ConfigAwait();
             }
         }
 
@@ -477,7 +479,7 @@ namespace ServiceStack.Auth
             AssertUserAuthId(userAuthId);
             if (!UseDistinctRoleTables)
             {
-                var userAuth = await GetUserAuthAsync(userAuthId, token);
+                var userAuth = await GetUserAuthAsync(userAuthId, token).ConfigAwait();
                 if (userAuth == null)
                     return TypeConstants.EmptyStringArray;
 
@@ -487,9 +489,9 @@ namespace ServiceStack.Auth
             {
                 return await ExecAsync(async db =>
                 {
-                    return (await db.SelectAsync<UserAuthRole>(q => q.UserAuthId == int.Parse(userAuthId) && q.Permission != null, token))
+                    return (await db.SelectAsync<UserAuthRole>(q => q.UserAuthId == int.Parse(userAuthId) && q.Permission != null, token).ConfigAwait())
                         .ConvertAll(x => x.Permission);
-                });
+                }).ConfigAwait();
             }
         }
 
@@ -501,7 +503,7 @@ namespace ServiceStack.Auth
             AssertUserAuthId(userAuthId);
             if (!UseDistinctRoleTables)
             {
-                var userAuth = await GetUserAuthAsync(userAuthId, token);
+                var userAuth = await GetUserAuthAsync(userAuthId, token).ConfigAwait();
                 if (userAuth != null)
                 {
                     roles = userAuth.Roles;
@@ -521,8 +523,8 @@ namespace ServiceStack.Auth
                 {
                     return await db.KeyValuePairsAsync<string,string>(db.From<UserAuthRole>()
                         .Where(x => x.UserAuthId == int.Parse(userAuthId))
-                        .Select(x => new { x.Role, x.Permission }), token); 
-                });
+                        .Select(x => new { x.Role, x.Permission }), token).ConfigAwait(); 
+                }).ConfigAwait();
 
                 foreach (var kvp in rolesAndPerms)
                 {
@@ -545,7 +547,7 @@ namespace ServiceStack.Auth
 
             if (!UseDistinctRoleTables)
             {
-                var userAuth = await GetUserAuthAsync(userAuthId, token);
+                var userAuth = await GetUserAuthAsync(userAuthId, token).ConfigAwait();
                 return userAuth.Roles != null && userAuth.Roles.Contains(role);
             }
             else
@@ -553,8 +555,8 @@ namespace ServiceStack.Auth
                 return await ExecAsync(async db =>
                 {
                     return await db.CountAsync<UserAuthRole>(q =>
-                        q.UserAuthId == int.Parse(userAuthId) && q.Role == role, token) > 0;
-                });
+                        q.UserAuthId == int.Parse(userAuthId) && q.Role == role, token).ConfigAwait() > 0;
+                }).ConfigAwait();
             }
         }
 
@@ -568,7 +570,7 @@ namespace ServiceStack.Auth
 
             if (!UseDistinctRoleTables)
             {
-                var userAuth = await GetUserAuthAsync(userAuthId, token);
+                var userAuth = await GetUserAuthAsync(userAuthId, token).ConfigAwait();
                 return userAuth.Permissions != null && userAuth.Permissions.Contains(permission);
             }
             else
@@ -576,14 +578,14 @@ namespace ServiceStack.Auth
                 return await ExecAsync(async db =>
                 {
                     return await db.CountAsync<UserAuthRole>(q =>
-                        q.UserAuthId == int.Parse(userAuthId) && q.Permission == permission, token) > 0;
-                });
+                        q.UserAuthId == int.Parse(userAuthId) && q.Permission == permission, token).ConfigAwait() > 0;
+                }).ConfigAwait();
             }
         }
 
         public virtual async Task AssignRolesAsync(string userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null, CancellationToken token=default)
         {
-            var userAuth = await GetUserAuthAsync(userAuthId, token);
+            var userAuth = await GetUserAuthAsync(userAuthId, token).ConfigAwait();
             if (!UseDistinctRoleTables)
             {
                 if (!roles.IsEmpty())
@@ -608,14 +610,14 @@ namespace ServiceStack.Auth
                     }
                 }
 
-                await SaveUserAuthAsync(userAuth, token);
+                await SaveUserAuthAsync(userAuth, token).ConfigAwait();
             }
             else
             {
                 await ExecAsync(async db =>
                 {
                     var now = DateTime.UtcNow;
-                    var userRoles = await db.SelectAsync<UserAuthRole>(q => q.UserAuthId == userAuth.Id, token);
+                    var userRoles = await db.SelectAsync<UserAuthRole>(q => q.UserAuthId == userAuth.Id, token).ConfigAwait();
 
                     if (!roles.IsEmpty())
                     {
@@ -630,7 +632,7 @@ namespace ServiceStack.Auth
                                     Role = role,
                                     CreatedDate = now,
                                     ModifiedDate = now,
-                                }, token: token);
+                                }, token: token).ConfigAwait();
                             }
                         }
                     }
@@ -648,17 +650,17 @@ namespace ServiceStack.Auth
                                     Permission = permission,
                                     CreatedDate = now,
                                     ModifiedDate = now,
-                                }, token: token);
+                                }, token: token).ConfigAwait();
                             }
                         }
                     }
-                });
+                }).ConfigAwait();
             }
         }
 
         public virtual async Task UnAssignRolesAsync(string userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null, CancellationToken token=default)
         {
-            var userAuth = await GetUserAuthAsync(userAuthId, token);
+            var userAuth = await GetUserAuthAsync(userAuthId, token).ConfigAwait();
             if (!UseDistinctRoleTables)
             {
                 roles.Each(x => userAuth.Roles.Remove(x));
@@ -666,7 +668,7 @@ namespace ServiceStack.Auth
 
                 if (roles != null || permissions != null)
                 {
-                    await SaveUserAuthAsync(userAuth, token);
+                    await SaveUserAuthAsync(userAuth, token).ConfigAwait();
                 }
             }
             else
@@ -675,13 +677,13 @@ namespace ServiceStack.Auth
                 {
                     if (!roles.IsEmpty())
                     {
-                        await db.DeleteAsync<UserAuthRole>(q => q.UserAuthId == userAuth.Id && roles.Contains(q.Role), token: token);
+                        await db.DeleteAsync<UserAuthRole>(q => q.UserAuthId == userAuth.Id && roles.Contains(q.Role), token: token).ConfigAwait();
                     }
                     if (!permissions.IsEmpty())
                     {
-                        await db.DeleteAsync<UserAuthRole>(q => q.UserAuthId == userAuth.Id && permissions.Contains(q.Permission), token: token);
+                        await db.DeleteAsync<UserAuthRole>(q => q.UserAuthId == userAuth.Id && permissions.Contains(q.Permission), token: token).ConfigAwait();
                     }
-                });
+                }).ConfigAwait();
             }
         }
 
@@ -689,13 +691,14 @@ namespace ServiceStack.Auth
         {
             return await ExecAsync(async db =>
             {
-                return await db.ExistsAsync<ApiKey>(x => x.Id == apiKey, token: token);
-            });
+                return await db.ExistsAsync<ApiKey>(x => x.Id == apiKey, token).ConfigAwait();
+            }).ConfigAwait();
         }
 
         public async Task<ApiKey> GetApiKeyAsync(string apiKey, CancellationToken token=default)
         {
-            return await ExecAsync(async db => await db.SingleByIdAsync<ApiKey>(apiKey, token));
+            return await ExecAsync(async db => 
+                await db.SingleByIdAsync<ApiKey>(apiKey, token).ConfigAwait()).ConfigAwait();
         }
 
         public async Task<List<ApiKey>> GetUserApiKeysAsync(string userId, CancellationToken token=default)
@@ -708,16 +711,16 @@ namespace ServiceStack.Auth
                     .And(x => x.ExpiryDate == null || x.ExpiryDate >= DateTime.UtcNow)
                     .OrderByDescending(x => x.CreatedDate);
 
-                return await db.SelectAsync(q, token);
-            });
+                return await db.SelectAsync(q, token).ConfigAwait();
+            }).ConfigAwait();
         }
 
         public async Task StoreAllAsync(IEnumerable<ApiKey> apiKeys, CancellationToken token=default)
         {
             await ExecAsync(async db =>
             {
-                await db.SaveAllAsync(apiKeys, token);
-            });
+                await db.SaveAllAsync(apiKeys, token).ConfigAwait();
+            }).ConfigAwait();
         }
     }
 }

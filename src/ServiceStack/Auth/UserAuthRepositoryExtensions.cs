@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Text;
 
 namespace ServiceStack.Auth
 {
@@ -34,13 +35,13 @@ namespace ServiceStack.Auth
         {
             if (userAuthRepo is IManageRolesAsync managesRoles)
             {
-                await managesRoles.AssignRolesAsync(userAuth.Id.ToString(), roles, permissions, token);
+                await managesRoles.AssignRolesAsync(userAuth.Id.ToString(), roles, permissions, token).ConfigAwait();
             }
             else
             {
                 AssignRolesInternal(userAuth, roles, permissions);
 
-                await userAuthRepo.SaveUserAuthAsync(userAuth, token);
+                await userAuthRepo.SaveUserAuthAsync(userAuth, token).ConfigAwait();
             }
         }
 
@@ -94,7 +95,7 @@ namespace ServiceStack.Auth
         {
             if (userAuthRepo is IManageRolesAsync managesRoles)
             {
-                await managesRoles.UnAssignRolesAsync(userAuth.Id.ToString(), roles, permissions, token);
+                await managesRoles.UnAssignRolesAsync(userAuth.Id.ToString(), roles, permissions, token).ConfigAwait();
             }
             else
             {
@@ -103,7 +104,7 @@ namespace ServiceStack.Auth
 
                 if (roles != null || permissions != null)
                 {
-                    await userAuthRepo.SaveUserAuthAsync(userAuth, token);
+                    await userAuthRepo.SaveUserAuthAsync(userAuth, token).ConfigAwait();
                 }
             }
         }
@@ -118,7 +119,7 @@ namespace ServiceStack.Auth
         public static async Task<ICollection<string>> GetRolesAsync(this IAuthRepository userAuthRepo, IUserAuth userAuth, CancellationToken token=default)
         {
             return userAuthRepo is IManageRolesAsync managesRoles 
-                ? await managesRoles.GetRolesAsync(userAuth.Id.ToString(), token) 
+                ? await managesRoles.GetRolesAsync(userAuth.Id.ToString(), token).ConfigAwait()
                 : userAuth.Roles;
         }
 
@@ -132,7 +133,7 @@ namespace ServiceStack.Auth
         public static async Task<ICollection<string>> GetPermissionsAsync(this IAuthRepositoryAsync userAuthRepo, IUserAuth userAuth, CancellationToken token=default)
         {
             return userAuthRepo is IManageRolesAsync managesRoles 
-                ? await managesRoles.GetPermissionsAsync(userAuth.Id.ToString(), token) 
+                ? await managesRoles.GetPermissionsAsync(userAuth.Id.ToString(), token).ConfigAwait()
                 : userAuth.Permissions;
         }
 
@@ -143,7 +144,7 @@ namespace ServiceStack.Auth
 
         public static async Task<List<IAuthTokens>> GetAuthTokensAsync(this IAuthRepositoryAsync repo, string userAuthId, CancellationToken token=default) =>
             repo != null && userAuthId != null
-                ? (await repo.GetUserAuthDetailsAsync(userAuthId, token)).ConvertAll(x => (IAuthTokens) x)
+                ? (await repo.GetUserAuthDetailsAsync(userAuthId, token).ConfigAwait()).ConvertAll(x => (IAuthTokens) x)
                 : TypeConstants<IAuthTokens>.EmptyList; 
 
         public static void PopulateSession(this IAuthSession session, IUserAuth userAuth, IAuthRepository authRepo = null)
@@ -182,14 +183,14 @@ namespace ServiceStack.Auth
 
             var hadUserAuthId = session.UserAuthId != null;
             if (hadUserAuthId && authRepo != null)
-                session.ProviderOAuthAccess = await authRepo.GetAuthTokensAsync(session.UserAuthId, token);
+                session.ProviderOAuthAccess = await authRepo.GetAuthTokensAsync(session.UserAuthId, token).ConfigAwait();
             
             var existingPopulator = AutoMappingUtils.GetPopulator(typeof(IAuthSession), typeof(IUserAuth));
             existingPopulator?.Invoke(session, userAuth);
             
             //session.UserAuthId could be populated in populator
             if (!hadUserAuthId && authRepo != null) 
-                session.ProviderOAuthAccess = await authRepo.GetAuthTokensAsync(session.UserAuthId, token);
+                session.ProviderOAuthAccess = await authRepo.GetAuthTokensAsync(session.UserAuthId, token).ConfigAwait();
         }
 
         public static List<IUserAuthDetails> GetUserAuthDetails(this IAuthRepository authRepo, int userAuthId)
@@ -197,9 +198,9 @@ namespace ServiceStack.Auth
             return authRepo.GetUserAuthDetails(userAuthId.ToString(CultureInfo.InvariantCulture));
         }
 
-        public static async Task<List<IUserAuthDetails>> GetUserAuthDetailsAsync(this IAuthRepositoryAsync authRepo, int userAuthId, CancellationToken token=default)
+        public static Task<List<IUserAuthDetails>> GetUserAuthDetailsAsync(this IAuthRepositoryAsync authRepo, int userAuthId, CancellationToken token=default)
         {
-            return await authRepo.GetUserAuthDetailsAsync(userAuthId.ToString(CultureInfo.InvariantCulture), token);
+            return authRepo.GetUserAuthDetailsAsync(userAuthId.ToString(CultureInfo.InvariantCulture), token);
         }
 
         public static IUserAuth GetUserAuth(this IUserAuthRepository authRepo, int userAuthId)
@@ -207,9 +208,9 @@ namespace ServiceStack.Auth
             return authRepo.GetUserAuth(userAuthId.ToString(CultureInfo.InvariantCulture));
         }
 
-        public static async Task<IUserAuth> GetUserAuthAsync(this IUserAuthRepositoryAsync authRepo, int userAuthId, CancellationToken token=default)
+        public static Task<IUserAuth> GetUserAuthAsync(this IUserAuthRepositoryAsync authRepo, int userAuthId, CancellationToken token=default)
         {
-            return await authRepo.GetUserAuthAsync(userAuthId.ToString(CultureInfo.InvariantCulture), token);
+            return authRepo.GetUserAuthAsync(userAuthId.ToString(CultureInfo.InvariantCulture), token);
         }
 
         public static void DeleteUserAuth(this IUserAuthRepository authRepo, int userAuthId)
@@ -217,9 +218,9 @@ namespace ServiceStack.Auth
             authRepo.DeleteUserAuth(userAuthId.ToString(CultureInfo.InvariantCulture));
         }
 
-        public static async Task DeleteUserAuthAsync(this IUserAuthRepositoryAsync authRepo, int userAuthId, CancellationToken token=default)
+        public static Task DeleteUserAuthAsync(this IUserAuthRepositoryAsync authRepo, int userAuthId, CancellationToken token=default)
         {
-            await authRepo.DeleteUserAuthAsync(userAuthId.ToString(CultureInfo.InvariantCulture), token);
+            return authRepo.DeleteUserAuthAsync(userAuthId.ToString(CultureInfo.InvariantCulture), token);
         }
 
         public static ICollection<string> GetRoles(this IManageRoles manageRoles, int userAuthId)
@@ -227,9 +228,9 @@ namespace ServiceStack.Auth
             return manageRoles.GetRoles(userAuthId.ToString(CultureInfo.InvariantCulture));
         }
 
-        public static async Task<ICollection<string>> GetRolesAsync(this IManageRolesAsync manageRoles, int userAuthId, CancellationToken token=default)
+        public static Task<ICollection<string>> GetRolesAsync(this IManageRolesAsync manageRoles, int userAuthId, CancellationToken token=default)
         {
-            return await manageRoles.GetRolesAsync(userAuthId.ToString(CultureInfo.InvariantCulture), token);
+            return manageRoles.GetRolesAsync(userAuthId.ToString(CultureInfo.InvariantCulture), token);
         }
 
         public static ICollection<string> GetPermissions(this IManageRoles manageRoles, int userAuthId)
@@ -237,9 +238,9 @@ namespace ServiceStack.Auth
             return manageRoles.GetPermissions(userAuthId.ToString(CultureInfo.InvariantCulture));
         }
 
-        public static async Task<ICollection<string>> GetPermissionsAsync(this IManageRolesAsync manageRoles, int userAuthId, CancellationToken token=default)
+        public static Task<ICollection<string>> GetPermissionsAsync(this IManageRolesAsync manageRoles, int userAuthId, CancellationToken token=default)
         {
-            return await manageRoles.GetPermissionsAsync(userAuthId.ToString(CultureInfo.InvariantCulture), token);
+            return manageRoles.GetPermissionsAsync(userAuthId.ToString(CultureInfo.InvariantCulture), token);
         }
 
         public static bool HasRole(this IManageRoles manageRoles, int userAuthId, string role)
@@ -247,9 +248,9 @@ namespace ServiceStack.Auth
             return manageRoles.HasRole(userAuthId.ToString(CultureInfo.InvariantCulture), role);
         }
 
-        public static async Task<bool> HasRoleAsync(this IManageRolesAsync manageRoles, int userAuthId, string role, CancellationToken token=default)
+        public static Task<bool> HasRoleAsync(this IManageRolesAsync manageRoles, int userAuthId, string role, CancellationToken token=default)
         {
-            return await manageRoles.HasRoleAsync(userAuthId.ToString(CultureInfo.InvariantCulture), role, token);
+            return manageRoles.HasRoleAsync(userAuthId.ToString(CultureInfo.InvariantCulture), role, token);
         }
 
         public static bool HasPermission(this IManageRoles manageRoles, int userAuthId, string permission)
@@ -257,9 +258,9 @@ namespace ServiceStack.Auth
             return manageRoles.HasPermission(userAuthId.ToString(CultureInfo.InvariantCulture), permission);
         }
 
-        public static async Task<bool> HasPermissionAsync(this IManageRolesAsync manageRoles, int userAuthId, string permission, CancellationToken token=default)
+        public static Task<bool> HasPermissionAsync(this IManageRolesAsync manageRoles, int userAuthId, string permission, CancellationToken token=default)
         {
-            return await manageRoles.HasPermissionAsync(userAuthId.ToString(CultureInfo.InvariantCulture), permission, token);
+            return manageRoles.HasPermissionAsync(userAuthId.ToString(CultureInfo.InvariantCulture), permission, token);
         }
 
         public static void AssignRoles(this IManageRoles manageRoles, int userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null)
@@ -267,9 +268,9 @@ namespace ServiceStack.Auth
             manageRoles.AssignRoles(userAuthId.ToString(CultureInfo.InvariantCulture), roles, permissions);
         }
 
-        public static async Task AssignRolesAsync(this IManageRolesAsync manageRoles, int userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null, CancellationToken token=default)
+        public static Task AssignRolesAsync(this IManageRolesAsync manageRoles, int userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null, CancellationToken token=default)
         {
-            await manageRoles.AssignRolesAsync(userAuthId.ToString(CultureInfo.InvariantCulture), roles, permissions, token);
+            return manageRoles.AssignRolesAsync(userAuthId.ToString(CultureInfo.InvariantCulture), roles, permissions, token);
         }
 
         public static void UnAssignRoles(this IManageRoles manageRoles, int userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null)
@@ -277,9 +278,9 @@ namespace ServiceStack.Auth
             manageRoles.UnAssignRoles(userAuthId.ToString(CultureInfo.InvariantCulture), roles, permissions);
         }
 
-        public static async Task UnAssignRolesAsync(this IManageRolesAsync manageRoles, int userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null, CancellationToken token=default)
+        public static Task UnAssignRolesAsync(this IManageRolesAsync manageRoles, int userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null, CancellationToken token=default)
         {
-            await manageRoles.UnAssignRolesAsync(userAuthId.ToString(CultureInfo.InvariantCulture), roles, permissions, token);
+            return manageRoles.UnAssignRolesAsync(userAuthId.ToString(CultureInfo.InvariantCulture), roles, permissions, token);
         }
 
         static IUserAuthRepository AssertUserAuthRepository(this IAuthRepository repo)
