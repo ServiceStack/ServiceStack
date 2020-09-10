@@ -341,14 +341,12 @@ namespace ServiceStack.AuthWeb.Tests
     {
         public object Any(PrivateAuth request)
         {
-            using (var service = base.ResolveService<AuthenticateService>())
+            using var service = base.ResolveService<AuthenticateService>();
+            return service.PostSync(new Authenticate
             {
-                return service.Post(new Authenticate
-                {
-                    provider = AuthenticateService.CredentialsProvider,
-                    UserName = request.UserName,
-                });
-            }
+                provider = AuthenticateService.CredentialsProvider,
+                UserName = request.UserName,
+            });
         }
     }
 

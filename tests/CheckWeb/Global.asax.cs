@@ -17,7 +17,6 @@ using ServiceStack;
 using ServiceStack.Admin;
 using ServiceStack.Api.OpenApi;
 using ServiceStack.Api.OpenApi.Specification;
-using ServiceStack.Api.Swagger;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
@@ -35,6 +34,7 @@ using ServiceStack.Validation;
 using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Redis;
 
 namespace CheckWeb
 {
@@ -348,6 +348,8 @@ namespace CheckWeb
             razor.Deny.RemoveAt(0);
             Plugins.Add(razor);
 
+            container.Register<IRedisClientsManager>(c => new RedisManagerPool());
+
             Plugins.Add(new OpenApiFeature
             {
                 ApiDeclarationFilter = api =>
@@ -524,6 +526,13 @@ namespace CheckWeb
         public TimeSpan TimeSpan { get; set; }
     }
 
+    [Route("/async/redis")]
+    [Route("/async/redis/{Incr}")]
+    public class AsyncRedis : IReturn<IdResponse>
+    {
+        public uint Incr { get; set; }
+    }
+
     public class MyServices : Service
     {
         //Return default.html for unmatched requests so routing is handled on client
@@ -534,6 +543,17 @@ namespace CheckWeb
         public object Any(ReturnText request) => request.Text;
 
         public object Any(SwaggerModel request) => request;
+
+        public async Task<object> Any(AsyncRedis request)
+        {
+            var redis = await GetRedisAsync();
+            await redis.IncrementAsync(nameof(AsyncRedis), request.Incr);
+            
+            var response = new IdResponse {
+                Id = (await redis.GetAsync<int>(nameof(AsyncRedis))).ToString()
+            };
+            return response;
+        }
     }
 
     [Route("/plain-dto")]

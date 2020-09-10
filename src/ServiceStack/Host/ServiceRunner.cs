@@ -150,6 +150,18 @@ namespace ServiceStack.Host
                     await taskResponse.ConfigAwait();
                     response = taskResponse.GetResult();
                 }
+#if NET472 || NETSTANDARD2_0
+                else if (response is ValueTask<object> valueTaskResponse)
+                {
+                    response = await valueTaskResponse;
+                }
+                else if (response is ValueTask valueTaskVoid)
+                {
+                    await valueTaskVoid;
+                    response = null;
+                }
+#endif
+                
                 LogRequest(req, requestDto, response);
 
                 if (response is IHttpError error)

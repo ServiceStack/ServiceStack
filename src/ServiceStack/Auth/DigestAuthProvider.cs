@@ -181,20 +181,18 @@ namespace ServiceStack.Auth
                 //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
                 SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
 
-                using (var authService = HostContext.ResolveService<AuthenticateService>(req))
+                using var authService = HostContext.ResolveService<AuthenticateService>(req);
+                var response = authService.PostSync(new Authenticate
                 {
-                    var response = authService.PostSync(new Authenticate
-                    {
-                        provider = Name,
-                        nonce = digestAuth["nonce"],
-                        uri = digestAuth["uri"],
-                        response = digestAuth["response"],
-                        qop = digestAuth["qop"],
-                        nc = digestAuth["nc"],
-                        cnonce = digestAuth["cnonce"],
-                        UserName = digestAuth["username"]
-                    });
-                }
+                    provider = Name,
+                    nonce = digestAuth["nonce"],
+                    uri = digestAuth["uri"],
+                    response = digestAuth["response"],
+                    qop = digestAuth["qop"],
+                    nc = digestAuth["nc"],
+                    cnonce = digestAuth["cnonce"],
+                    UserName = digestAuth["username"]
+                });
             }
         }
     }

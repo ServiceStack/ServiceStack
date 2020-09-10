@@ -70,6 +70,17 @@ namespace ServiceStack
             var response = HostContext.ServiceController.Execute(request, req);
             if (response is Task responseTask)
                 response = responseTask.GetResult();
+#if NET472 || NETSTANDARD2_0                
+            else if (response is ValueTask<object> valueTaskResponse)
+            {
+                response = valueTaskResponse.GetAwaiter().GetResult();
+            }
+            else if (response is ValueTask valueTaskVoid)
+            {
+                valueTaskVoid.GetAwaiter().GetResult();
+                response = null;
+            }
+#endif
 
             if (response is Task[] batchResponseTasks)
             {
