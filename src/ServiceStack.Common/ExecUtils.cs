@@ -41,7 +41,7 @@ namespace ServiceStack
             {
                 try
                 {
-                    await action(instance);
+                    await action(instance).ConfigAwait();
                 }
                 catch (Exception ex)
                 {
@@ -96,7 +96,7 @@ namespace ServiceStack
             {
                 try
                 {
-                    var result = await action(instance);
+                    var result = await action(instance).ConfigAwait();
                     if (!Equals(result, default(TReturn)))
                     {
                         return result;
@@ -137,11 +137,11 @@ namespace ServiceStack
             while (timeOut == null || DateTime.UtcNow - firstAttempt < timeOut.Value)
             {
                 i++;
-                if (await action())
+                if (await action().ConfigAwait())
                 {
                     return;
                 }
-                await DelayBackOffMultiplierAsync(i);
+                await DelayBackOffMultiplierAsync(i).ConfigAwait();
             }
 
             throw new TimeoutException($"Exceeded timeout of {timeOut.Value}");
@@ -183,14 +183,14 @@ namespace ServiceStack
                 i++;
                 try
                 {
-                    await action();
+                    await action().ConfigAwait();
                     return;
                 }
                 catch (Exception ex)
                 {
                     lastEx = ex;
 
-                    await DelayBackOffMultiplierAsync(i);
+                    await DelayBackOffMultiplierAsync(i).ConfigAwait();
                 }
             }
 
@@ -221,14 +221,14 @@ namespace ServiceStack
             {
                 try
                 {
-                    await action();
+                    await action().ConfigAwait();
                     break;
                 }
                 catch
                 {
                     if (i == maxRetries - 1) throw;
 
-                    await DelayBackOffMultiplierAsync(i);
+                    await DelayBackOffMultiplierAsync(i).ConfigAwait();
                 }
             }
         }
