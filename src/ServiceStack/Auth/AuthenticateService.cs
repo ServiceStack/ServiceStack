@@ -89,6 +89,7 @@ namespace ServiceStack.Auth
             return AuthProviders;
         }
 
+#pragma warning disable 618
         public static IUserSessionSource GetUserSessionSource()
         {
             var userSessionSource = HostContext.TryResolve<IUserSessionSource>();
@@ -139,6 +140,7 @@ namespace ServiceStack.Auth
                 return source.GetUserSession(userAuthId).InTask();
             }
         }
+#pragma warning restore 618
 
         /// <summary>
         /// Get specific AuthProvider
@@ -265,7 +267,7 @@ namespace ServiceStack.Auth
                     return null;
             }
 
-            var session = this.GetSession();
+            var session = await this.GetSessionAsync().ConfigAwait();
 
             var isHtml = base.Request.ResponseContentType.MatchesContentType(MimeTypes.Html);
             try
@@ -465,7 +467,7 @@ namespace ServiceStack.Auth
                 && request.oauth_token == null && request.State == null; //keep existing session during OAuth flow
 
             if (generateNewCookies)
-                this.Request.GenerateNewSessionCookies(session);
+                await this.Request.GenerateNewSessionCookiesAsync(session, token).ConfigAwait();
 
             var response = await oAuthConfig.AuthenticateAsync(this, session, request, token).ConfigAwait();
 

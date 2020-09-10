@@ -814,6 +814,27 @@ namespace ServiceStack
             return Container.TryResolve<IRedisClientsManager>().GetClient();
         }
 
+#if NET472 || NETSTANDARD2_0
+        /// <summary>
+        /// Resolves <see cref="IRedisClient"></see> based on <see cref="IRedisClientsManager"></see>.GetClient();
+        /// Called by itself, <see cref="Service"></see> and <see cref="ServiceStack.Razor.ViewPageBase"></see>
+        /// </summary>
+        /// <param name="req">Provided by services and pageView, can be helpful when overriding this method</param>
+        /// <returns></returns>
+        public virtual ValueTask<IRedisClientAsync> GetRedisClientAsync(IRequest req = null)
+        {
+            var asyncManager = Container.TryResolve<IRedisClientsManagerAsync>();
+            if (asyncManager != null)
+                return asyncManager.GetClientAsync();
+
+            var manager = Container.TryResolve<IRedisClientsManager>();
+            if (manager is IRedisClientsManagerAsync managerAsync)
+                return managerAsync.GetClientAsync();
+
+            return default;
+        }
+#endif
+
         /// <summary>
         /// If they don't have an ICacheClient configured use an In Memory one.
         /// </summary>

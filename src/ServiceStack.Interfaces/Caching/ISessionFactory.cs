@@ -14,12 +14,14 @@ namespace ServiceStack.Caching
         /// <param name="httpRes"></param>
         /// <returns></returns>
         ISession GetOrCreateSession(IRequest httpReq, IResponse httpRes);
+        ISessionAsync GetOrCreateSessionAsync(IRequest httpReq, IResponse httpRes);
 
         /// <summary>
         /// Gets the Session Bag for this request, creates one if it doesn't exist.
         /// Only for ASP.NET apps. Uses the HttpContext.Current singleton.
         /// </summary>
         ISession GetOrCreateSession();
+        ISessionAsync GetOrCreateSessionAsync();
 
         /// <summary>
         /// Create a Session Bag using a custom sessionId
@@ -27,5 +29,6 @@ namespace ServiceStack.Caching
         /// <param name="sessionId"></param>
         /// <returns></returns>
         ISession CreateSession(string sessionId);
+        ISessionAsync CreateSessionAsync(string sessionId);
     }
 }

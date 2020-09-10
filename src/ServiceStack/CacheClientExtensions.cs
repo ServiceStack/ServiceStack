@@ -456,6 +456,21 @@ namespace ServiceStack
 
             canRemoveByPattern.RemoveByPattern(pattern);
         }
+
+        /// <summary>
+        /// Removes items from cache that have keys matching the specified wildcard pattern
+        /// </summary>
+        /// <param name="cacheClient">Cache client</param>
+        /// <param name="pattern">The wildcard, where "*" means any sequence of characters and "?" means any single character.</param>
+        public static Task RemoveByPatternAsync(this ICacheClientAsync cacheClient, string pattern, CancellationToken token=default)
+        {
+            if (!(cacheClient is IRemoveByPatternAsync canRemoveByPattern))
+                throw new NotImplementedException(
+                    "IRemoveByPattern is not implemented on: " + cacheClient.GetType().FullName);
+
+            return canRemoveByPattern.RemoveByPatternAsync(pattern, token);
+        }
+
         /// <summary>
         /// Removes items from the cache based on the specified regular expression pattern
         /// </summary>
@@ -467,6 +482,19 @@ namespace ServiceStack
                 throw new NotImplementedException("IRemoveByPattern is not implemented by: " + cacheClient.GetType().FullName);
 
             canRemoveByPattern.RemoveByRegex(regex);
+        }
+
+        /// <summary>
+        /// Removes items from the cache based on the specified regular expression pattern
+        /// </summary>
+        /// <param name="cacheClient">Cache client</param>
+        /// <param name="regex">Regular expression pattern to search cache keys</param>
+        public static Task RemoveByRegexAsync(this ICacheClientAsync cacheClient, string regex)
+        {
+            if (!(cacheClient is IRemoveByPatternAsync canRemoveByPattern))
+                throw new NotImplementedException("IRemoveByPattern is not implemented by: " + cacheClient.GetType().FullName);
+
+            return canRemoveByPattern.RemoveByRegexAsync(regex);
         }
 
         public static IEnumerable<string> GetKeysByPattern(this ICacheClient cache, string pattern)
@@ -488,6 +516,11 @@ namespace ServiceStack
         }
         
 #if NET472 || NETSTANDARD2_0
+        public static IAsyncEnumerable<string> GetKeysByPatternAsync(this ICacheClientAsync cache, string pattern)
+        {
+            return cache.GetKeysByPatternAsync(pattern);
+        }
+
         public static async IAsyncEnumerable<string> GetAllKeysAsync(this ICacheClientAsync cache)
         {
             await foreach (var key in cache.GetKeysByPatternAsync("*"))

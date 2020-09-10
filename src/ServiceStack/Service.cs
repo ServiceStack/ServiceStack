@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
@@ -67,12 +68,16 @@ namespace ServiceStack
 
         private IRedisClient redis;
         public virtual IRedisClient Redis => redis ??= HostContext.AppHost.GetRedisClient(Request);
+        
+#if NET472 || NETSTANDARD2_0
+        public virtual ValueTask<IRedisClientAsync> GetRedisAsync() => HostContext.AppHost.GetRedisClientAsync(Request);
+#endif
 
         private IMessageProducer messageProducer;
         public virtual IMessageProducer MessageProducer => messageProducer ??= HostContext.AppHost.GetMessageProducer(Request);
 
         private ISessionFactory sessionFactory;
-        public virtual ISessionFactory SessionFactory => sessionFactory ?? (sessionFactory = TryResolve<ISessionFactory>()) ?? new SessionFactory(Cache);
+        public virtual ISessionFactory SessionFactory => sessionFactory ?? (sessionFactory = TryResolve<ISessionFactory>()) ?? new SessionFactory(Cache, CacheAsync);
 
         private IAuthRepository authRepository;
         public virtual IAuthRepository AuthRepository => authRepository ??= HostContext.AppHost.GetAuthRepository(Request);
@@ -100,12 +105,27 @@ namespace ServiceStack
         public virtual ISession SessionBag => session ??= TryResolve<ISession>() //Easier to mock
             ?? SessionFactory.GetOrCreateSession(Request, Response);
 
+        /// <summary>
+        /// Dynamic Session Bag
+        /// </summary>
+        private ISessionAsync sessionAsync;
+        public virtual ISessionAsync SessionBagAsync => sessionAsync ??= TryResolve<ISessionAsync>() //Easier to mock
+            ?? SessionFactory.GetOrCreateSessionAsync(Request, Response);
+
         public virtual IAuthSession GetSession(bool reload = false)
         {
             var req = this.Request;
             if (req.GetSessionId() == null)
                 req.Response.CreateSessionIds(req);
             return req.GetSession(reload);
+        }
+
+        public virtual Task<IAuthSession> GetSessionAsync(bool reload = false, CancellationToken token=default)
+        {
+            var req = this.Request;
+            if (req.GetSessionId() == null)
+                req.Response.CreateSessionIds(req);
+            return req.GetSessionAsync(reload, token);
         }
 
         /// <summary>
@@ -126,6 +146,26 @@ namespace ServiceStack
             }
 
             return SessionFeature.GetOrCreateSession<TUserSession>(Cache, Request, Response);
+        }
+
+        /// <summary>
+        /// Typed UserSession
+        /// </summary>
+        protected virtual async Task<TUserSession> SessionAsAsync<TUserSession>()
+        {
+            if (HostContext.TestMode)
+            {
+                var mockSession = TryResolve<TUserSession>();
+                if (Equals(mockSession, default(TUserSession)))
+                    mockSession = TryResolve<IAuthSession>() is TUserSession 
+                        ? (TUserSession)TryResolve<IAuthSession>() 
+                        : default;
+
+                if (!Equals(mockSession, default(TUserSession)))
+                    return mockSession;
+            }
+
+            return await SessionFeature.GetOrCreateSessionAsync<TUserSession>(CacheAsync, Request, Response);
         }
 
         /// <summary>
@@ -150,7 +190,7 @@ namespace ServiceStack
             messageProducer?.Dispose();
             using (authRepository as IDisposable) { }
 #if !(NET472 || NETSTANDARD2_0)
-            using (authRepositoryAsync as IDisposable)
+            using (authRepositoryAsync as IDisposable) {}
 #endif
 
             RequestContext.Instance.ReleaseDisposables();

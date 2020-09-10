@@ -82,8 +82,8 @@ namespace ServiceStack.AspNet
 
         private IServiceStackProvider serviceStackProvider;
         public virtual IServiceStackProvider ServiceStackProvider => 
-            serviceStackProvider ?? (serviceStackProvider = new ServiceStackProvider(
-                new AspNetRequest(new HttpContextWrapper(base.Context), GetType().Name)));
+            serviceStackProvider ??= new ServiceStackProvider(
+                new AspNetRequest(new HttpContextWrapper(base.Context), GetType().Name));
 
         public virtual IAppSettings AppSettings => ServiceStackProvider.AppSettings;
 

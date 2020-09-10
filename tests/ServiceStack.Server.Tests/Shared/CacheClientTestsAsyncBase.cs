@@ -268,12 +268,11 @@ namespace ServiceStack.Server.Tests.Shared
         public async Task Can_cache_multiple_items_in_parallel()
         {
             var cache = CreateClient();
-            var fns = 10.Times(i => (Action)(async () =>
-            {
-                await cache.SetAsync("concurrent-test", "Data: {0}".Fmt(i));
-            }));
+            var fns = 10.TimesAsync(async i => 
+                await cache.SetAsync("concurrent-test", "Data: {0}".Fmt(i))
+            );
 
-            Parallel.Invoke(fns.ToArray());
+            await Task.WhenAll(fns);
 
             var entry = await cache.GetAsync<string>("concurrent-test");
             Assert.That(entry, Does.StartWith("Data: "));
