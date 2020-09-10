@@ -54,7 +54,7 @@ namespace ServiceStack.Auth
             //Transferring AccessToken/Secret from Mobile/Desktop App to Server
             if (request?.AccessToken != null)
             {
-                if (!await AuthHttpGateway.VerifyFacebookAccessTokenAsync(AppId, request.AccessToken, token))
+                if (!await AuthHttpGateway.VerifyFacebookAccessTokenAsync(AppId, request.AccessToken, token).ConfigAwait())
                     return HttpError.Unauthorized("AccessToken is not for App: " + AppId);
 
                 var isHtml = authService.Request.IsHtml();
@@ -86,14 +86,14 @@ namespace ServiceStack.Auth
             {
                 var preAuthUrl = $"{PreAuthUrl}?client_id={AppId}&redirect_uri={this.CallbackUrl.UrlEncode()}&scope={string.Join(",", Permissions)}&{Keywords.State}={session.Id}";
 
-                await this.SaveSessionAsync(authService, session, SessionExpiry, token: token);
+                await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
                 return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
             }
 
             try
             {
                 var accessTokenUrl = $"{AccessTokenUrl}?client_id={AppId}&redirect_uri={this.CallbackUrl.UrlEncode()}&client_secret={AppSecret}&code={code}";
-                var contents = await AccessTokenUrlFilter(this, accessTokenUrl).GetJsonFromUrlAsync();
+                var contents = await AccessTokenUrlFilter(this, accessTokenUrl).GetJsonFromUrlAsync().ConfigAwait();
                 var authInfo = JsonObject.Parse(contents);
 
                 var accessToken = authInfo["access_token"];

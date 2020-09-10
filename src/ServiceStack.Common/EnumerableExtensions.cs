@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -378,5 +380,68 @@ namespace ServiceStack
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IEnumerable Safe(this IEnumerable enumerable) => enumerable ?? TypeConstants.EmptyObjectArray;
+
+        public static async Task<bool> AllAsync<T>(this IEnumerable<T> source, Func<T, Task<bool>> predicate)
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+            if (predicate == null)
+                throw new ArgumentNullException(nameof(predicate));
+            foreach (var item in source)
+            {
+                var result = await predicate(item).ConfigAwait();
+                if (!result)
+                    return false;
+            }
+            return true;
+        }
+
+        // This is for synchronous predicates with an async source.
+        public static async Task<bool> AllAsync<T>(this IEnumerable<Task<T>> source, Func<T, bool> predicate)
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+            if (predicate == null)
+                throw new ArgumentNullException(nameof(predicate));
+            foreach (var item in source)
+            {
+                var awaitedItem = await item.ConfigAwait();
+                if (!predicate(awaitedItem))
+                    return false;
+            }
+            return true;
+        }
+
+        public static async Task<bool> AnyAsync<T>(this IEnumerable<T> source, Func<T, Task<bool>> predicate)
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+            if (predicate == null)
+                throw new ArgumentNullException(nameof(predicate));
+            foreach (var item in source)
+            {
+                var result = await predicate(item).ConfigAwait();
+                if (result)
+                    return true;
+            }
+            return false;
+        }
+
+        // This is for synchronous predicates with an async source.
+        public static async Task<bool> AnyAsync<T>(this IEnumerable<Task<T>> source, Func<T, bool> predicate)
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+            if (predicate == null)
+                throw new ArgumentNullException(nameof(predicate));
+            foreach (var item in source)
+            {
+                var awaitedItem = await item.ConfigAwait();
+                if (predicate(awaitedItem))
+                    return true;
+            }
+            return false;
+        }
+        
     }
 }

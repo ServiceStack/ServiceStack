@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Web;
 
@@ -103,6 +104,22 @@ namespace ServiceStack
             return this.Permissions != null && this.Permissions.Contains(permission);
         }
 
+        public virtual async Task<bool> HasPermissionAsync(string permission, IAuthRepositoryAsync authRepo)
+        {
+            if (!FromToken) //If populated from a token it should have the complete list of permissions
+            {
+                if (authRepo is IManageRolesAsync managesRoles)
+                {
+                    if (UserAuthId == null)
+                        return false;
+
+                    return await managesRoles.HasPermissionAsync(this.UserAuthId, permission);
+                }
+            }
+
+            return this.Permissions != null && this.Permissions.Contains(permission);
+        }
+
         public virtual bool HasRole(string role, IAuthRepository authRepo)
         {
             if (!FromToken) //If populated from a token it should have the complete list of roles
@@ -113,6 +130,22 @@ namespace ServiceStack
                         return false;
 
                     return managesRoles.HasRole(this.UserAuthId, role);
+                }
+            }
+
+            return this.Roles != null && this.Roles.Contains(role);
+        }
+
+        public virtual async Task<bool> HasRoleAsync(string role, IAuthRepositoryAsync authRepo)
+        {
+            if (!FromToken) //If populated from a token it should have the complete list of roles
+            {
+                if (authRepo is IManageRolesAsync managesRoles)
+                {
+                    if (UserAuthId == null)
+                        return false;
+
+                    return await managesRoles.HasRoleAsync(this.UserAuthId, role);
                 }
             }
 

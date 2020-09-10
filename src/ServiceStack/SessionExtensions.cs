@@ -8,6 +8,7 @@ using System.Web;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Host;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -221,6 +222,28 @@ namespace ServiceStack
             using (newAuthRepo as IDisposable)
             {
                 var userAuth = authRepo.GetUserAuth(session, null);
+                session.UpdateSession(userAuth);
+            }
+        }
+
+        public static async Task UpdateFromUserAuthRepoAsync(this IAuthSession session, IRequest req, IAuthRepositoryAsync authRepo = null)
+        {
+            if (session == null)
+                return;
+
+            var newAuthRepo = authRepo == null
+                ? HostContext.AppHost.GetAuthRepositoryAsync(req)
+                : null;
+            
+            if (authRepo == null)
+                authRepo = newAuthRepo;
+
+            if (authRepo == null)
+                return;
+
+            using (newAuthRepo as IDisposable)
+            {
+                var userAuth = await authRepo.GetUserAuthAsync(session, null).ConfigAwait();
                 session.UpdateSession(userAuth);
             }
         }

@@ -81,11 +81,11 @@ namespace ServiceStack.Auth
             };
         }
 
-        protected override string GetAccessTokenJson(string code)
+        protected override async Task<string> GetAccessTokenJsonAsync(string code, CancellationToken token = default)
         {
             var accessTokenParams = $"code={code}&client_id={ConsumerKey}&client_secret={ConsumerSecret}&redirect_uri={this.CallbackUrl.UrlEncode()}&grant_type=authorization_code";
-            var contents = AccessTokenUrlFilter(this, AccessTokenUrl)
-                .PostToUrl(accessTokenParams, requestFilter:req => req.ContentType = MimeTypes.FormUrlEncoded);
+            var contents = await AccessTokenUrlFilter(this, AccessTokenUrl)
+                .PostToUrlAsync(accessTokenParams, requestFilter:req => req.ContentType = MimeTypes.FormUrlEncoded).ConfigAwait();
             return contents;
         }
 

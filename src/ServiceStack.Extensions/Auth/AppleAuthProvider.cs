@@ -210,11 +210,11 @@ namespace ServiceStack.Auth
             return Convert.FromBase64String(keyText);
         }
 
-        protected override string GetAccessTokenJson(string code)
+        protected override async Task<string> GetAccessTokenJsonAsync(string code, CancellationToken token=default)
         {
             var clientSecret = GetClientSecret();
             var accessTokenUrl = $"{AccessTokenUrl}?code={code}&client_id={ClientId}&client_secret={clientSecret}&redirect_uri={this.CallbackUrl.UrlEncode()}&grant_type=authorization_code";
-            var contents = AccessTokenUrlFilter(this, accessTokenUrl).PostToUrl("");
+            var contents = await AccessTokenUrlFilter(this, accessTokenUrl).PostToUrlAsync("").ConfigAwait();
             return contents;
         }
 

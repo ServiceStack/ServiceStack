@@ -1214,33 +1214,33 @@ namespace ServiceStack.Mvc
 
         public virtual bool IsAuthenticated => ServiceStackProvider.IsAuthenticated;
 
-        protected virtual IAuthSession GetSession(bool reload = false) => ServiceStackProvider.GetSession(reload);
+        public virtual IAuthSession GetSession(bool reload = false) => ServiceStackProvider.GetSession(reload);
 
-        protected virtual Task<IAuthSession> GetSessionAsync(bool reload = false, CancellationToken token=default) => 
+        public virtual Task<IAuthSession> GetSessionAsync(bool reload = false, CancellationToken token=default) => 
             ServiceStackProvider.GetSessionAsync(reload, token);
 
-        protected virtual IAuthSession UserSession => GetSession();
+        public virtual IAuthSession UserSession => GetSession();
 
-        protected virtual TUserSession SessionAs<TUserSession>() => ServiceStackProvider.SessionAs<TUserSession>();
+        public virtual TUserSession SessionAs<TUserSession>() => ServiceStackProvider.SessionAs<TUserSession>();
 
-        protected virtual Task<TUserSession> SessionAsAsync<TUserSession>(CancellationToken token=default) => 
+        public virtual Task<TUserSession> SessionAsAsync<TUserSession>(CancellationToken token=default) => 
             ServiceStackProvider.SessionAsAsync<TUserSession>(token);
 
         [Obsolete("Use SaveSessionAsync")]
         protected virtual void SaveSession(IAuthSession session, TimeSpan? expiresIn = null) => ServiceStackProvider.Request.SaveSession(session, expiresIn);
 
-        protected virtual Task SaveSessionAsync(IAuthSession session, TimeSpan? expiresIn = null, CancellationToken token=default) => 
+        public virtual Task SaveSessionAsync(IAuthSession session, TimeSpan? expiresIn = null, CancellationToken token=default) => 
             ServiceStackProvider.Request.SaveSessionAsync(session, expiresIn, token);
 
-        protected virtual void ClearSession() => ServiceStackProvider.ClearSession();
+        public virtual void ClearSession() => ServiceStackProvider.ClearSession();
         
-        protected virtual Task ClearSessionAsync(CancellationToken token=default) => ServiceStackProvider.ClearSessionAsync(token);
+        public virtual Task ClearSessionAsync(CancellationToken token=default) => ServiceStackProvider.ClearSessionAsync(token);
 
-        protected virtual TDependency TryResolve<TDependency>() => ServiceStackProvider.TryResolve<TDependency>();
+        public virtual TDependency TryResolve<TDependency>() => ServiceStackProvider.TryResolve<TDependency>();
 
-        protected virtual TService ResolveService<TService>() => ServiceStackProvider.ResolveService<TService>();
+        public virtual TService ResolveService<TService>() => ServiceStackProvider.ResolveService<TService>();
 
-        protected virtual object ForwardRequestToServiceStack(IRequest request = null) => ServiceStackProvider.Execute(request ?? ServiceStackProvider.Request);
+        public virtual object ForwardRequestToServiceStack(IRequest request = null) => ServiceStackProvider.Execute(request ?? ServiceStackProvider.Request);
 
         public virtual IServiceGateway Gateway => ServiceStackProvider.Gateway;
 

@@ -69,7 +69,7 @@ namespace ServiceStack.Authentication.OAuth2
             }
             catch (WebException we)
             {
-                string errorBody = we.GetResponseBody();
+                string errorBody = await we.GetResponseBodyAsync(token);
                 var statusCode = ((HttpWebResponse)we.Response).StatusCode;
                 if (statusCode == HttpStatusCode.BadRequest)
                 {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
@@ -29,7 +30,9 @@ namespace ServiceStack.Auth
         string Sequence { get; set; }
 
         bool HasRole(string role, IAuthRepository authRepo);
+        Task<bool> HasRoleAsync(string role, IAuthRepositoryAsync authRepo);
         bool HasPermission(string permission, IAuthRepository authRepo);
+        Task<bool> HasPermissionAsync(string permission, IAuthRepositoryAsync authRepo);
 
         bool IsAuthorized(string provider);
 

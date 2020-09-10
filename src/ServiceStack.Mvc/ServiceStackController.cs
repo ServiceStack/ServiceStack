@@ -201,28 +201,28 @@ namespace ServiceStack.Mvc
 
         public virtual IAuthSession GetSession(bool reload = true) => ServiceStackProvider.GetSession(reload);
 
-        protected virtual Task<IAuthSession> GetSessionAsync(bool reload = false, CancellationToken token=default) => 
+        public virtual Task<IAuthSession> GetSessionAsync(bool reload = false, CancellationToken token=default) => 
             ServiceStackProvider.GetSessionAsync(reload, token);
 
-        protected virtual Task<TUserSession> SessionAsAsync<TUserSession>(CancellationToken token=default) => 
+        public virtual Task<TUserSession> SessionAsAsync<TUserSession>(CancellationToken token=default) => 
             ServiceStackProvider.SessionAsAsync<TUserSession>(token);
 
         //don't expose public generic methods in MVC Controllers
-        protected virtual TUserSession SessionAs<TUserSession>() => ServiceStackProvider.SessionAs<TUserSession>();
+        public virtual TUserSession SessionAs<TUserSession>() => ServiceStackProvider.SessionAs<TUserSession>();
 
         [Obsolete("Use SaveSessionAsync")]
         public virtual void SaveSession(IAuthSession session, TimeSpan? expiresIn = null) => ServiceStackProvider.Request.SaveSession(session, expiresIn);
 
-        protected virtual Task SaveSessionAsync(IAuthSession session, TimeSpan? expiresIn = null, CancellationToken token=default) => 
+        public virtual Task SaveSessionAsync(IAuthSession session, TimeSpan? expiresIn = null, CancellationToken token=default) => 
             ServiceStackProvider.Request.SaveSessionAsync(session, expiresIn, token);
 
         public virtual void ClearSession() => ServiceStackProvider.ClearSession();
         
-        protected virtual Task ClearSessionAsync(CancellationToken token=default) => ServiceStackProvider.ClearSessionAsync(token);
+        public virtual Task ClearSessionAsync(CancellationToken token=default) => ServiceStackProvider.ClearSessionAsync(token);
 
-        protected virtual T TryResolve<T>() => ServiceStackProvider.TryResolve<T>();
+        public virtual T TryResolve<T>() => ServiceStackProvider.TryResolve<T>();
 
-        protected virtual T ResolveService<T>() => ServiceStackProvider.ResolveService<T>();
+        public virtual T ResolveService<T>() => ServiceStackProvider.ResolveService<T>();
 
         public virtual object ForwardRequestToServiceStack(IRequest request = null) => ServiceStackProvider.Execute(request ?? ServiceStackProvider.Request);
 

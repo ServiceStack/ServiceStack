@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -34,11 +35,11 @@ namespace ServiceStack
             if (HostContext.AppHost.HasValidAuthSecret(req))
                 return;
 
-            await base.ExecuteAsync(req, res, requestDto); //first check if session is authenticated
+            await base.ExecuteAsync(req, res, requestDto).ConfigAwait(); //first check if session is authenticated
             if (res.IsClosed)
                 return; //AuthenticateAttribute already closed the request (ie auth failed)
 
-            if (HasAllPermissions(req, req.GetSession(), RequiredPermissions))
+            if (await HasAllPermissionsAsync(req, await req.GetSessionAsync().ConfigAwait(), RequiredPermissions).ConfigAwait())
                 return;
 
             if (DoHtmlRedirectAccessDeniedIfConfigured(req, res))
@@ -46,7 +47,7 @@ namespace ServiceStack
 
             res.StatusCode = (int)HttpStatusCode.Forbidden;
             res.StatusDescription = ErrorMessages.InvalidPermission.Localize(req);
-            await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto);
+            await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto).ConfigAwait();
         }
 
         public bool HasAllPermissions(IRequest req, IAuthSession session, IAuthRepository authRepo)
@@ -68,6 +69,22 @@ namespace ServiceStack
                 return SessionHasAllPermissions(req, session, authRepo, requiredPermissions);
             }
         }
+        
+        public static async Task<bool> HasAllPermissionsAsync(IRequest req, IAuthSession session, ICollection<string> requiredPermissions)
+        {
+            if (SessionValidForAllPermissions(req, session, requiredPermissions))
+                return true;
+            
+            var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
+#if NET472 || NETSTANDARD2_0
+            await using (authRepo as IAsyncDisposable)
+#else
+            using (authRepo as IDisposable)
+#endif
+            {
+                return await SessionHasAllPermissionsAsync(req, session, authRepo, requiredPermissions).ConfigAwait();
+            }
+        }
 
         /// <summary>
         /// Check all session is in all supplied roles otherwise a 401 HttpError is thrown
@@ -87,7 +104,8 @@ namespace ServiceStack
                 ThrowInvalidPermission(req);
         }
 
-        public static bool HasRequiredPermissions(IRequest req, string[] requiredPermissions) =>  HasAllPermissions(req, req.GetSession(), requiredPermissions);
+        public static bool HasRequiredPermissions(IRequest req, string[] requiredPermissions) => 
+            HasAllPermissions(req, req.GetSession(), requiredPermissions);
 
         private static bool SessionHasAllPermissions(IRequest req, IAuthSession session, IAuthRepository authRepo, ICollection<string> requiredPermissions)
         {
@@ -102,6 +120,25 @@ namespace ServiceStack
             if (requiredPermissions.All(x => session.HasPermission(x, authRepo)))
             {
                 req.SaveSession(session);
+                return true;
+            }
+
+            return false;
+        }
+
+        private static async Task<bool> SessionHasAllPermissionsAsync(IRequest req, IAuthSession session, IAuthRepositoryAsync authRepo, ICollection<string> requiredPermissions)
+        {
+            if (await session.HasRoleAsync(RoleNames.Admin, authRepo).ConfigAwait())
+                return true;
+
+            if (await requiredPermissions.AllAsync(x => session.HasPermissionAsync(x, authRepo)).ConfigAwait())
+                return true;
+
+            await session.UpdateFromUserAuthRepoAsync(req, authRepo).ConfigAwait();
+
+            if (await requiredPermissions.AllAsync(x => session.HasPermissionAsync(x, authRepo)).ConfigAwait())
+            {
+                await req.SaveSessionAsync(session).ConfigAwait();
                 return true;
             }
 

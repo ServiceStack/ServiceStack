@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -33,11 +34,11 @@ namespace ServiceStack
             if (HostContext.AppHost.HasValidAuthSecret(req))
                 return;
 
-            await base.ExecuteAsync(req, res, requestDto); //first check if session is authenticated
+            await base.ExecuteAsync(req, res, requestDto).ConfigAwait(); //first check if session is authenticated
             if (res.IsClosed)
                 return; //AuthenticateAttribute already closed the request (ie auth failed)
 
-            if (HasAllRoles(req, req.GetSession(), RequiredRoles))
+            if (await HasAllRolesAsync(req, await req.GetSessionAsync().ConfigAwait(), RequiredRoles).ConfigAwait())
                 return;
 
             if (DoHtmlRedirectAccessDeniedIfConfigured(req, res))
@@ -45,7 +46,7 @@ namespace ServiceStack
 
             res.StatusCode = (int)HttpStatusCode.Forbidden;
             res.StatusDescription = ErrorMessages.InvalidRole.Localize(req);
-            await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto);
+            await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto).ConfigAwait();
         }
 
         public bool HasAllRoles(IRequest req, IAuthSession session, IAuthRepository authRepo)
@@ -65,6 +66,22 @@ namespace ServiceStack
             using (authRepo as IDisposable)
             {
                 return SessionHasAllRoles(req, session, authRepo, requiredRoles);
+            }
+        }
+        
+        public static async Task<bool> HasAllRolesAsync(IRequest req, IAuthSession session, ICollection<string> requiredRoles)
+        {
+            if (SessionValidForAllRoles(req, session, requiredRoles))
+                return true;
+            
+            var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
+#if NET472 || NETSTANDARD2_0
+            await using (authRepo as IAsyncDisposable)
+#else
+            using (authRepo as IDisposable)
+#endif
+            {
+                return await SessionHasAllRolesAsync(req, session, authRepo, requiredRoles).ConfigAwait();
             }
         }
 
@@ -101,6 +118,25 @@ namespace ServiceStack
             if (requiredRoles.All(x => session.HasRole(x, authRepo)))
             {
                 req.SaveSession(session);
+                return true;
+            }
+
+            return false;
+        }
+
+        private static async Task<bool> SessionHasAllRolesAsync(IRequest req, IAuthSession session, IAuthRepositoryAsync authRepo, ICollection<string> requiredRoles)
+        {
+            if (await session.HasRoleAsync(RoleNames.Admin, authRepo).ConfigAwait())
+                return true;
+
+            if (await requiredRoles.AllAsync(x => session.HasRoleAsync(x, authRepo)).ConfigAwait())
+                return true;
+
+            await session.UpdateFromUserAuthRepoAsync(req, authRepo).ConfigAwait();
+
+            if (await requiredRoles.AllAsync(x => session.HasRoleAsync(x, authRepo)).ConfigAwait())
+            {
+                await req.SaveSessionAsync(session).ConfigAwait();
                 return true;
             }
 

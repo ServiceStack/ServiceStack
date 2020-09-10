@@ -672,18 +672,15 @@ namespace ServiceStack
         /// <summary>
         /// Override to intercept when Sessions are saved
         /// </summary>
-        public virtual async Task OnSaveSessionAsync(IRequest httpReq, IAuthSession session, TimeSpan? expiresIn = null, CancellationToken token=default)
+        public virtual Task OnSaveSessionAsync(IRequest httpReq, IAuthSession session, TimeSpan? expiresIn = null, CancellationToken token=default)
         {
-            if (httpReq == null) return;
-                        
-            if (session.FromToken) // Don't persist Sessions populated from tokens 
-                return; 
+            if (httpReq == null || session.FromToken) // Don't persist Sessions populated from tokens 
+                return TypeConstants.EmptyTask;
 
             var sessionKey = SessionFeature.GetSessionKey(session.Id ?? httpReq.GetOrCreateSessionId());
             session.LastModified = DateTime.UtcNow;
-            await this.GetCacheClientAsync(httpReq).CacheSetAsync(sessionKey, session, expiresIn ?? GetDefaultSessionExpiry(httpReq), token).ConfigAwait();
-
             httpReq.Items[Keywords.Session] = session;
+            return this.GetCacheClientAsync(httpReq).CacheSetAsync(sessionKey, session, expiresIn ?? GetDefaultSessionExpiry(httpReq), token);
         }
 
         /// <summary>

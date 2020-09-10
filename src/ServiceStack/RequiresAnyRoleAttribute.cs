@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -34,19 +35,23 @@ namespace ServiceStack
             if (HostContext.HasValidAuthSecret(req))
                 return;
 
-            await base.ExecuteAsync(req, res, requestDto); //first check if session is authenticated
+            await base.ExecuteAsync(req, res, requestDto).ConfigAwait(); //first check if session is authenticated
             if (res.IsClosed)
                 return; //AuthenticateAttribute already closed the request (ie auth failed)
 
-            var session = req.GetSession();
+            var session = await req.GetSessionAsync().ConfigAwait();
 
-            var authRepo = HostContext.AppHost.GetAuthRepository(req);
+            var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
+#if NET472 || NETSTANDARD2_0
+            await using (authRepo as IAsyncDisposable)
+#else
             using (authRepo as IDisposable)
+#endif
             {
-                if (session != null && session.HasRole(RoleNames.Admin, authRepo))
+                if (session != null && await session.HasRoleAsync(RoleNames.Admin, authRepo).ConfigAwait())
                     return;
 
-                if (HasAnyRoles(req, session, authRepo))
+                if (await HasAnyRolesAsync(req, session, authRepo).ConfigAwait())
                     return;
             }
 
@@ -55,12 +60,13 @@ namespace ServiceStack
 
             res.StatusCode = (int)HttpStatusCode.Forbidden;
             res.StatusDescription = ErrorMessages.InvalidRole.Localize(req);
-            await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto);
+            await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto).ConfigAwait();
         }
 
         public virtual bool HasAnyRoles(IRequest req, IAuthSession session, IAuthRepository authRepo)
         {
-            if (HasAnyRoles(session, authRepo)) return true;
+            if (HasAnyRoles(session, authRepo)) 
+                return true;
 
             session.UpdateFromUserAuthRepo(req, authRepo);
 
@@ -72,11 +78,31 @@ namespace ServiceStack
             return false;
         }
 
+        public virtual async Task<bool> HasAnyRolesAsync(IRequest req, IAuthSession session, IAuthRepositoryAsync authRepo)
+        {
+            if (await HasAnyRolesAsync(session, authRepo).ConfigAwait()) 
+                return true;
+
+            await session.UpdateFromUserAuthRepoAsync(req, authRepo).ConfigAwait();
+
+            if (await HasAnyRolesAsync(session, authRepo).ConfigAwait())
+            {
+                await req.SaveSessionAsync(session).ConfigAwait();
+                return true;
+            }
+            return false;
+        }
+
         public virtual bool HasAnyRoles(IAuthSession session, IAuthRepository authRepo)
         {
-            return this.RequiredRoles
-                .Any(requiredRole => session != null
-                    && session.HasRole(requiredRole, authRepo));
+            return session != null && this.RequiredRoles
+                .Any(requiredRole => session.HasRole(requiredRole, authRepo));
+        }
+
+        public virtual async Task<bool> HasAnyRolesAsync(IAuthSession session, IAuthRepositoryAsync authRepo)
+        {
+            return session != null && await this.RequiredRoles
+                .AnyAsync(requiredRole => session.HasRoleAsync(requiredRole, authRepo)).ConfigAwait();
         }
 
         /// <summary>

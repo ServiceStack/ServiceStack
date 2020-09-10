@@ -101,14 +101,14 @@ namespace ServiceStack.Auth
                 var scopes = Scopes.Join("%20");
                 string preAuthUrl = $"{PreAuthUrl}?client_id={ClientId}&redirect_uri={CallbackUrl.UrlEncode()}&scope={scopes}&{Keywords.State}={session.Id}";
 
-                this.SaveSession(authService, session, SessionExpiry);
+                await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
                 return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
             }
 
             try
             {
                 string accessTokenUrl = $"{AccessTokenUrl}?client_id={ClientId}&redirect_uri={CallbackUrl.UrlEncode()}&client_secret={ClientSecret}&code={code}";
-                var contents = AccessTokenUrlFilter(this, accessTokenUrl).GetStringFromUrl();
+                var contents = await AccessTokenUrlFilter(this, accessTokenUrl).GetStringFromUrlAsync().ConfigAwait();
                 var authInfo = PclExportClient.Instance.ParseQueryString(contents);
 
                 //GitHub does not throw exception, but just return error with descriptions
@@ -144,7 +144,7 @@ namespace ServiceStack.Auth
         {
             tokens.AccessTokenSecret = accessToken;
 
-            var json = await AuthHttpGateway.DownloadGithubUserInfoAsync(accessToken, token);
+            var json = await AuthHttpGateway.DownloadGithubUserInfoAsync(accessToken, token).ConfigAwait();
             var authInfo = JsonObject.Parse(json);
 
             session.IsAuthenticated = true;

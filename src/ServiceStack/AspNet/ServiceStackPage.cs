@@ -2,6 +2,8 @@
 
 using System;
 using System.Data;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.UI;
 using ServiceStack.Auth;
@@ -93,28 +95,50 @@ namespace ServiceStack.AspNet
 
         public new virtual ICacheClient Cache => ServiceStackProvider.Cache;
 
+        public virtual ICacheClientAsync CacheAsync => ServiceStackProvider.CacheAsync;
+
         public virtual IDbConnection Db => ServiceStackProvider.Db;
 
         public virtual IRedisClient Redis => ServiceStackProvider.Redis;
+        
+#if NET472 || NETSTANDARD2_0
+        public virtual ValueTask<IRedisClientAsync> GetRedisAsync() => ServiceStackProvider.GetRedisAsync();
+#endif
 
         public virtual IMessageProducer MessageProducer => ServiceStackProvider.MessageProducer;
 
         public virtual IAuthRepository AuthRepository => ServiceStackProvider.AuthRepository;
+        
+        public virtual IAuthRepositoryAsync AuthRepositoryAsync => ServiceStackProvider.AuthRepositoryAsync;
 
         public virtual ISessionFactory SessionFactory => ServiceStackProvider.SessionFactory;
 
         public virtual ISession SessionBag => ServiceStackProvider.SessionBag;
+        
+        public virtual Caching.ISessionAsync SessionBagAsync => ServiceStackProvider.SessionBagAsync;
 
         public virtual bool IsAuthenticated => ServiceStackProvider.IsAuthenticated;
 
         public virtual IAuthSession GetSession(bool reload = true) => ServiceStackProvider.GetSession(reload);
 
+        public virtual Task<IAuthSession> GetSessionAsync(bool reload = false, CancellationToken token=default) => 
+            ServiceStackProvider.GetSessionAsync(reload, token);
+
         public virtual TUserSession SessionAs<TUserSession>() => ServiceStackProvider.SessionAs<TUserSession>();
 
+        public virtual Task<TUserSession> SessionAsAsync<TUserSession>(CancellationToken token=default) => 
+            ServiceStackProvider.SessionAsAsync<TUserSession>(token);
+
+        [Obsolete("Use SaveSessionAsync")]
         protected virtual void SaveSession(IAuthSession session, TimeSpan? expiresIn = null) => 
             ServiceStackProvider.Request.SaveSession(session, expiresIn);
 
+        public virtual Task SaveSessionAsync(IAuthSession session, TimeSpan? expiresIn = null, CancellationToken token=default) => 
+            ServiceStackProvider.Request.SaveSessionAsync(session, expiresIn, token);
+
         public virtual void ClearSession() => ServiceStackProvider.ClearSession();
+        
+        public virtual Task ClearSessionAsync(CancellationToken token=default) => ServiceStackProvider.ClearSessionAsync(token);
 
         public virtual T TryResolve<T>() => ServiceStackProvider.TryResolve<T>();
 

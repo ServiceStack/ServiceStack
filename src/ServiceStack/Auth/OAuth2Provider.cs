@@ -112,7 +112,7 @@ namespace ServiceStack.Auth
                     authSession.Meta.Remove("oauthstate");
                 }
                 
-                var contents = GetAccessTokenJson(code);
+                var contents = await GetAccessTokenJsonAsync(code, token).ConfigAwait();
                 var authInfo = (Dictionary<string,object>)JSON.parse(contents);
 
                 var accessToken = (string)authInfo["access_token"];
@@ -136,7 +136,7 @@ namespace ServiceStack.Auth
             }
             catch (WebException we)
             {
-                var errorBody = we.GetResponseBody();
+                var errorBody = await we.GetResponseBodyAsync(token).ConfigAwait();
                 Log.Error($"Failed to get Access Token for '{Provider}': {errorBody}");
                 
                 var statusCode = ((HttpWebResponse)we.Response).StatusCode;
@@ -150,10 +150,10 @@ namespace ServiceStack.Auth
             return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
         }
 
-        protected virtual string GetAccessTokenJson(string code)
+        protected virtual async Task<string> GetAccessTokenJsonAsync(string code, CancellationToken token=default)
         {
             var accessTokenUrl = $"{AccessTokenUrl}?code={code}&client_id={ConsumerKey}&client_secret={ConsumerSecret}&redirect_uri={this.CallbackUrl.UrlEncode()}&grant_type=authorization_code";
-            var contents = AccessTokenUrlFilter(this, accessTokenUrl).PostToUrl("");
+            var contents = await AccessTokenUrlFilter(this, accessTokenUrl).PostToUrlAsync("").ConfigAwait();
             return contents;
         }
 
