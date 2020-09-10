@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Logging;
 using ServiceStack.Script;
+using ServiceStack.Text;
 
 #if NETSTANDARD2_0
 using System.Threading.Tasks;
@@ -26,6 +27,21 @@ namespace ServiceStack
                 try
                 {
                     action(instance);
+                }
+                catch (Exception ex)
+                {
+                    LogError(instance.GetType(), action.GetType().Name, ex);
+                }
+            }
+        }
+
+        public static async Task ExecAllAsync<T>(this IEnumerable<T> instances, Func<T,Task> action)
+        {
+            foreach (var instance in instances)
+            {
+                try
+                {
+                    await action(instance);
                 }
                 catch (Exception ex)
                 {
@@ -71,7 +87,28 @@ namespace ServiceStack
                 }
             }
 
-            return default(TReturn);
+            return default;
+        }
+
+        public static async Task<TReturn> ExecReturnFirstWithResultAsync<T, TReturn>(this IEnumerable<T> instances, Func<T, Task<TReturn>> action)
+        {
+            foreach (var instance in instances)
+            {
+                try
+                {
+                    var result = await action(instance);
+                    if (!Equals(result, default(TReturn)))
+                    {
+                        return result;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogError(instance.GetType(), action.GetType().Name, ex);
+                }
+            }
+
+            return default;
         }
 
         public static void RetryUntilTrue(Func<bool> action, TimeSpan? timeOut=null)
@@ -87,6 +124,24 @@ namespace ServiceStack
                     return;
                 }
                 SleepBackOffMultiplier(i);
+            }
+
+            throw new TimeoutException($"Exceeded timeout of {timeOut.Value}");
+        }
+
+        public static async Task RetryUntilTrueAsync(Func<Task<bool>> action, TimeSpan? timeOut=null)
+        {
+            var i = 0;
+            var firstAttempt = DateTime.UtcNow;
+
+            while (timeOut == null || DateTime.UtcNow - firstAttempt < timeOut.Value)
+            {
+                i++;
+                if (await action())
+                {
+                    return;
+                }
+                await DelayBackOffMultiplierAsync(i);
             }
 
             throw new TimeoutException($"Exceeded timeout of {timeOut.Value}");
@@ -117,6 +172,31 @@ namespace ServiceStack
             throw new TimeoutException($"Exceeded timeout of {timeOut.Value}", lastEx);
         }
 
+        public static async Task RetryOnExceptionAsync(Func<Task> action, TimeSpan? timeOut)
+        {
+            var i = 0;
+            Exception lastEx = null;
+            var firstAttempt = DateTime.UtcNow;
+
+            while (timeOut == null || DateTime.UtcNow - firstAttempt < timeOut.Value)
+            {
+                i++;
+                try
+                {
+                    await action();
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    lastEx = ex;
+
+                    await DelayBackOffMultiplierAsync(i);
+                }
+            }
+
+            throw new TimeoutException($"Exceeded timeout of {timeOut.Value}", lastEx);
+        }
+
         public static void RetryOnException(Action action, int maxRetries)
         {
             for (var i = 0; i < maxRetries; i++)
@@ -131,6 +211,24 @@ namespace ServiceStack
                     if (i == maxRetries - 1) throw;
 
                     SleepBackOffMultiplier(i);
+                }
+            }
+        }
+
+        public static async Task RetryOnExceptionAsync(Func<Task> action, int maxRetries)
+        {
+            for (var i = 0; i < maxRetries; i++)
+            {
+                try
+                {
+                    await action();
+                    break;
+                }
+                catch
+                {
+                    if (i == maxRetries - 1) throw;
+
+                    await DelayBackOffMultiplierAsync(i);
                 }
             }
         }
