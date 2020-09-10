@@ -165,7 +165,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void OneTimeTearDown() => appHost.Dispose();
 
         [Test]
-        public void Can_resgiter_user_using_Custom_UserAuth_and_UserAuthDetails()
+        public void Can_register_user_using_Custom_UserAuth_and_UserAuthDetails()
         {
             var client = new JsonServiceClient(Config.ListeningOn);
 

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace ServiceStack.Auth
 {
-    public class UserAuthRepositoryAsyncWrapper : IUserAuthRepositoryAsync, IRequiresSchema
+    public class UserAuthRepositoryAsyncWrapper : IUserAuthRepositoryAsync, IRequiresSchema, ICustomUserAuth
     {
         private readonly IAuthRepository authRepo;
         public UserAuthRepositoryAsyncWrapper(IAuthRepository authRepo) => this.authRepo = authRepo;
@@ -88,6 +88,20 @@ namespace ServiceStack.Auth
         }
 
         public void InitSchema() => authRepo.InitSchema();
+        
+        public IUserAuth CreateUserAuth()
+        {
+            return authRepo is ICustomUserAuth customUserAuth
+                ? customUserAuth.CreateUserAuth()
+                : new UserAuth();
+        }
+
+        public IUserAuthDetails CreateUserAuthDetails()
+        {
+            return authRepo is ICustomUserAuth customUserAuth
+                ? customUserAuth.CreateUserAuthDetails()
+                : new UserAuthDetails();
+        }
     }
 
     public class UserAuthRepositoryAsyncManageRolesWrapper : UserAuthRepositoryAsyncWrapper, IManageRolesAsync
