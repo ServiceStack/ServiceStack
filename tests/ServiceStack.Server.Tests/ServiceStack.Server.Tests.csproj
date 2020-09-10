@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net461;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>net472;netcoreapp3.1</TargetFrameworks>
     <DebugType>full</DebugType>
     <AssemblyName>ServiceStack.Server.Tests</AssemblyName>
     <OutputType>Library</OutputType>
@@ -41,7 +41,7 @@
     <PackageReference Include="ServiceStack.OrmLite.SqlServer" Version="$(Version)" />
     <PackageReference Include="ServiceStack.Aws" Version="$(Version)" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <Reference Include="System.Xml" />
     <Reference Include="System.Data" />
     <Reference Include="System.Configuration" />
