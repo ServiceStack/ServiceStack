@@ -222,6 +222,9 @@ namespace ServiceStack
 
             OnRegister(appHost);
         }
+        
+        public Func<List<Type>,List<Type>> FilterAutoQueryRequestTypes { get; set; }
+        public Func<List<Type>,List<Type>> FilterAutoCrudRequestTypes { get; set; }
 
         public void AfterPluginsLoaded(IAppHost appHost)
         {
@@ -252,6 +255,11 @@ namespace ServiceStack
                             && !appHost.Metadata.OperationsMap.ContainsKey(x)
                             && !IgnoreGeneratingServicesFor.Contains(x))
                 .ToList();
+
+            if (FilterAutoQueryRequestTypes != null)
+                missingQueryRequestTypes = FilterAutoQueryRequestTypes(missingQueryRequestTypes);
+            if (FilterAutoCrudRequestTypes != null)
+                missingCrudRequestTypes = FilterAutoCrudRequestTypes(missingCrudRequestTypes);
 
             if (missingQueryRequestTypes.Count == 0 && missingCrudRequestTypes.Count == 0)
                 return;
