@@ -550,6 +550,8 @@ namespace ServiceStack.Auth
             {
                 db.DeleteAll<TUserAuth>();
                 db.DeleteAll<TUserAuthDetails>();
+                if (UseDistinctRoleTables)
+                    db.DeleteAll<UserAuthRole>();
             });
         }
 

@@ -179,6 +179,8 @@ namespace ServiceStack.Auth
             session.PopulateWith(userAuth);  
             session.Id = holdSessionId;
             session.UserAuthId ??= (userAuth.Id != default ? userAuth.Id.ToString(CultureInfo.InvariantCulture) : null);
+            if (userAuth.Meta != null)
+                session.PopulateFromMap(userAuth.Meta);
             session.IsAuthenticated = true;
 
             var hadUserAuthId = session.UserAuthId != null;
@@ -292,6 +294,7 @@ namespace ServiceStack.Auth
         }
 
         static IUserAuthRepositoryAsync AssertUserAuthRepositoryAsync(this IAuthRepositoryAsync repo)
+        
         {
             if (!(repo is IUserAuthRepositoryAsync userRepo))
                 throw new NotSupportedException("This operation requires a IUserAuthRepositoryAsync");

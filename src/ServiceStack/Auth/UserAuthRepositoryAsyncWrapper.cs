@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace ServiceStack.Auth
 {
-    public class UserAuthRepositoryAsyncWrapper : IUserAuthRepositoryAsync, IRequiresSchema, ICustomUserAuth
+    public class UserAuthRepositoryAsyncWrapper : IUserAuthRepositoryAsync, IRequiresSchema, ICustomUserAuth, IQueryUserAuthAsync
     {
         private readonly IAuthRepository authRepo;
         public UserAuthRepositoryAsyncWrapper(IAuthRepository authRepo) => this.authRepo = authRepo;
@@ -101,6 +101,16 @@ namespace ServiceStack.Auth
             return authRepo is ICustomUserAuth customUserAuth
                 ? customUserAuth.CreateUserAuthDetails()
                 : new UserAuthDetails();
+        }
+
+        public Task<List<IUserAuth>> GetUserAuthsAsync(string orderBy = null, int? skip = null, int? take = null, CancellationToken token = default)
+        {
+            return authRepo.GetUserAuths(orderBy, skip, take).InTask();
+        }
+
+        public Task<List<IUserAuth>> SearchUserAuthsAsync(string query, string orderBy = null, int? skip = null, int? take = null, CancellationToken token = default)
+        {
+            return authRepo.SearchUserAuths(query, orderBy, skip, take).InTask();
         }
     }
 

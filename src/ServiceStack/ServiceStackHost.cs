@@ -184,6 +184,7 @@ namespace ServiceStack
                 typeof(ScriptAdminService),
                 typeof(RequestLogsService),
                 typeof(AutoQueryMetadataService),
+                typeof(AdminUsersService),
                 typeof(Validation.GetValidationRulesService),
                 typeof(Validation.ModifyValidationRulesService),
             };

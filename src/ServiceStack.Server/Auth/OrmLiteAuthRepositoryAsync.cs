@@ -450,6 +450,8 @@ namespace ServiceStack.Auth
             {
                 await db.DeleteAllAsync<TUserAuth>(token).ConfigAwait();
                 await db.DeleteAllAsync<TUserAuthDetails>(token).ConfigAwait();
+                if (UseDistinctRoleTables)
+                    await db.DeleteAllAsync<UserAuthRole>(token).ConfigAwait();
             }).ConfigAwait();
         }
 
