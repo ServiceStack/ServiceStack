@@ -652,7 +652,7 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Override to intercept when Sessions are saved
+        /// Override to intercept when Sessions using sync APIs are saved
         /// </summary>
         [Obsolete("Use OnSaveSessionAsync")]
         public virtual void OnSaveSession(IRequest httpReq, IAuthSession session, TimeSpan? expiresIn = null)
@@ -670,7 +670,7 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Override to intercept when Sessions are saved
+        /// Override to intercept when Sessions using async APIs are saved
         /// </summary>
         public virtual Task OnSaveSessionAsync(IRequest httpReq, IAuthSession session, TimeSpan? expiresIn = null, CancellationToken token=default)
         {

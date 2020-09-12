@@ -768,13 +768,13 @@ Plugins:
 <td>{{#each ip in networkIpv4Addresses}}<div>{{ip}}</div>{{/each}}</td><td>{{#each ip in networkIpv6Addresses}}<div>{{ip}}</div>{{/each}}<td></tr></pre></td>
 </tr></table>";
         
-        public object Any(MetadataDebug request)
+        public async Task<object>  Any(MetadataDebug request)
         {
             if (string.IsNullOrEmpty(request.Script))
                 return null;
 
             var feature = HostContext.AssertPlugin<SharpPagesFeature>();
-            RequestUtils.AssertAccessRoleOrDebugMode(Request, accessRole: feature.MetadataDebugAdminRole, authSecret: request.AuthSecret);
+            await RequestUtils.AssertAccessRoleOrDebugModeAsync(Request, accessRole: feature.MetadataDebugAdminRole, authSecret: request.AuthSecret);
 
             var appHost = HostContext.AppHost;
             var context = new ScriptContext
@@ -794,16 +794,16 @@ Plugins:
 
             feature.Args.Each(x => context.Args[x.Key] = x.Value);
 
-            var result = context.EvaluateScript(request.Script);
+            var result = await context.EvaluateScriptAsync(request.Script);
             return new HttpResult(result) { ContentType = MimeTypes.PlainText }; 
         }
 
-        public object GetHtml(MetadataDebug request)
+        public async Task<object> GetHtml(MetadataDebug request)
         {
             var feature = HostContext.GetPlugin<SharpPagesFeature>();
             if (!HostContext.DebugMode)
             {
-                RequiredRoleAttribute.AssertRequiredRoles(Request, feature.MetadataDebugAdminRole);
+                await RequiredRoleAttribute.AssertRequiredRoleAsync(Request, feature.MetadataDebugAdminRole);
             }
             
             if (request.Script != null)
@@ -849,11 +849,11 @@ Plugins:
             nameof(SharpPagesFeature.RunInitPage),
         };
         
-        public object Any(ScriptAdmin request)
+        public async Task<object> Any(ScriptAdmin request)
         {
             var feature = HostContext.AssertPlugin<SharpPagesFeature>();
             
-            RequiredRoleAttribute.AssertRequiredRoles(Request, feature.ScriptAdminRole);
+            await RequiredRoleAttribute.AssertRequiredRoleAsync(Request, feature.ScriptAdminRole);
             
             if (string.IsNullOrEmpty(request.Actions))
                 return new ScriptAdminResponse { Results = new[]{ "Available actions: " + string.Join(",", Actions) } };
@@ -861,20 +861,18 @@ Plugins:
             var actions = request.Actions.Split(',');
 
             var results = new List<string>();
-            using (var ms = MemoryStreamFactory.GetStream())
-            {
-                var scope = new ScriptScopeContext(new PageResult(feature.EmptyPage), ms, new Dictionary<string, object>());
+            using var ms = MemoryStreamFactory.GetStream();
+            var scope = new ScriptScopeContext(new PageResult(feature.EmptyPage), ms, new Dictionary<string, object>());
             
-                if (actions.Any(x => x.EqualsIgnoreCase(nameof(ProtectedScripts.invalidateAllCaches))))
-                    results.Add(nameof(ProtectedScripts.invalidateAllCaches) + ": " + feature.ProtectedMethods.invalidateAllCaches(scope).ToJsv());
+            if (actions.Any(x => x.EqualsIgnoreCase(nameof(ProtectedScripts.invalidateAllCaches))))
+                results.Add(nameof(ProtectedScripts.invalidateAllCaches) + ": " + feature.ProtectedMethods.invalidateAllCaches(scope).ToJsv());
                 
-                if (actions.Any(x => x.EqualsIgnoreCase(nameof(SharpPagesFeature.RunInitPage))))
-                    results.Add(nameof(SharpPagesFeature.RunInitPage) + ": " + feature.RunInitPage());
+            if (actions.Any(x => x.EqualsIgnoreCase(nameof(SharpPagesFeature.RunInitPage))))
+                results.Add(nameof(SharpPagesFeature.RunInitPage) + ": " + feature.RunInitPage());
                 
-                if (results.Count > 0)
-                    return new ScriptAdminResponse { Results = results.ToArray() };
-            }
-            
+            if (results.Count > 0)
+                return new ScriptAdminResponse { Results = results.ToArray() };
+
             throw new NotSupportedException("Unknown Action. Available actions: " + string.Join(",", Actions));
         }
     }

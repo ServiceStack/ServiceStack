@@ -42,7 +42,7 @@ namespace ServiceStack
         {
             var appHost = HostContext.AppHost;
             var feature = appHost.AssertPlugin<AutoQueryFeature>();
-            RequestUtils.AssertAccessRole(base.Request, accessRole:feature.AccessRole, authSecret:request.AuthSecret);
+            await RequestUtils.AssertAccessRoleAsync(base.Request, accessRole:feature.AccessRole, authSecret:request.AuthSecret);
 
             if (string.IsNullOrEmpty(request.Model))
                 throw new ArgumentNullException(nameof(request.Model));
@@ -71,7 +71,7 @@ namespace ServiceStack
         {
             var appHost = HostContext.AppHost;
             var feature = appHost.AssertPlugin<AutoQueryFeature>();
-            RequestUtils.AssertAccessRole(base.Request, accessRole:feature.AccessRole, authSecret:request.AuthSecret);
+            await RequestUtils.AssertAccessRoleAsync(base.Request, accessRole:feature.AccessRole, authSecret:request.AuthSecret);
 
             if (string.IsNullOrEmpty(request.Model))
                 throw new ArgumentNullException(nameof(request.Model));

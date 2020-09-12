@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
@@ -1307,12 +1308,12 @@ namespace ServiceStack
     public class CrudCodeGenTypesService : Service
     {
         [AddHeader(ContentType = MimeTypes.PlainText)]
-        public object Any(CrudCodeGenTypes request)
+        public async Task<object> Any(CrudCodeGenTypes request)
         {
             try
             {
                 var genServices = HostContext.AssertPlugin<AutoQueryFeature>().GenerateCrudServices;
-                RequestUtils.AssertAccessRoleOrDebugMode(base.Request, accessRole: genServices.AccessRole, authSecret: request.AuthSecret);
+                await RequestUtils.AssertAccessRoleOrDebugModeAsync(base.Request, accessRole: genServices.AccessRole, authSecret: request.AuthSecret);
                 
                 var src = GenerateCrudServices.GenerateSource(Request, request, genServices.GenerateOperationsFilter);
                 return src;
@@ -1330,10 +1331,10 @@ namespace ServiceStack
     [DefaultRequest(typeof(CrudTables))]
     public class CrudTablesService : Service
     {
-        public object Any(CrudTables request)
+        public async Task<object> Any(CrudTables request)
         {
             var genServices = HostContext.AssertPlugin<AutoQueryFeature>().GenerateCrudServices;
-            RequestUtils.AssertAccessRoleOrDebugMode(Request, accessRole: genServices.AccessRole, authSecret: request.AuthSecret);
+            await RequestUtils.AssertAccessRoleOrDebugModeAsync(Request, accessRole: genServices.AccessRole, authSecret: request.AuthSecret);
             
             var dbFactory = TryResolve<IDbConnectionFactory>();
             var results = request.NoCache == true 

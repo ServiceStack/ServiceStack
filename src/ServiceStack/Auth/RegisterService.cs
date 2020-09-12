@@ -158,30 +158,28 @@ namespace ServiceStack.Auth
 
             if (request.AutoLogin.GetValueOrDefault())
             {
-                using (var authService = base.ResolveService<AuthenticateService>())
+                using var authService = base.ResolveService<AuthenticateService>();
+                var authResponse = await authService.Post(
+                    new Authenticate {
+                        provider = CredentialsAuthProvider.Name,
+                        UserName = request.UserName ?? request.Email,
+                        Password = request.Password,
+                    });
+
+                if (authResponse is IHttpError)
+                    throw (Exception)authResponse;
+
+                if (authResponse is AuthenticateResponse typedResponse)
                 {
-                    var authResponse = await authService.Post(
-                        new Authenticate {
-                            provider = CredentialsAuthProvider.Name,
-                            UserName = request.UserName ?? request.Email,
-                            Password = request.Password,
-                        });
-
-                    if (authResponse is IHttpError)
-                        throw (Exception)authResponse;
-
-                    if (authResponse is AuthenticateResponse typedResponse)
+                    response = new RegisterResponse
                     {
-                        response = new RegisterResponse
-                        {
-                            SessionId = typedResponse.SessionId,
-                            UserName = typedResponse.UserName,
-                            ReferrerUrl = typedResponse.ReferrerUrl,
-                            UserId = user.Id.ToString(CultureInfo.InvariantCulture),
-                            BearerToken = typedResponse.BearerToken,
-                            RefreshToken = typedResponse.RefreshToken,
-                        };
-                    }
+                        SessionId = typedResponse.SessionId,
+                        UserName = typedResponse.UserName,
+                        ReferrerUrl = typedResponse.ReferrerUrl,
+                        UserId = user.Id.ToString(CultureInfo.InvariantCulture),
+                        BearerToken = typedResponse.BearerToken,
+                        RefreshToken = typedResponse.RefreshToken,
+                    };
                 }
             }
 

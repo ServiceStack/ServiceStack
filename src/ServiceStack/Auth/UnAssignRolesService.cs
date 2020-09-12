@@ -12,7 +12,7 @@ namespace ServiceStack.Auth
         public async Task<object> Post(UnAssignRoles request)
         {
             if (!Request.IsInProcessRequest())
-                RequiredRoleAttribute.AssertRequiredRoles(Request, RoleNames.Admin);
+                await RequiredRoleAttribute.AssertRequiredRoleAsync(Request, RoleNames.Admin);
 
             if (string.IsNullOrEmpty(request.UserName))
                 throw new ArgumentNullException(nameof(request.UserName));

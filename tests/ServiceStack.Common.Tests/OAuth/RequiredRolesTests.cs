@@ -1,5 +1,6 @@
 ﻿#if !NETCORE_SUPPORT
 using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
@@ -99,14 +100,14 @@ namespace ServiceStack.Common.Tests.OAuth
         }
 
         [Test]
-        public void Does_validate_AssertRequiredRoles_with_UserAuthRepo_When_Role_not_in_Session()
+        public async Task Does_validate_AssertRequiredRoles_with_UserAuthRepo_When_Role_not_in_Session()
         {
             var registrationService = GetRegistrationService();
 
             var request = registrationService.Request;
             HostContext.Container.Register(userAuth);
 
-            RequiredRoleAttribute.AssertRequiredRoles(request, RoleNames.Admin);
+            await RequiredRoleAttribute.AssertRequiredRoleAsync(request, RoleNames.Admin);
 
             Assert.That(!request.Response.IsClosed);
         }

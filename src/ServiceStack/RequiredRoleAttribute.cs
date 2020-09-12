@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
@@ -94,6 +95,27 @@ namespace ServiceStack
         {
             var session = req.GetSession();
             if (HasAllRoles(req, session, requiredRoles))
+                return;
+
+            var isAuthenticated = session != null && session.IsAuthenticated;
+            if (!isAuthenticated)
+                ThrowNotAuthenticated(req);
+            else
+                ThrowInvalidRole(req);
+        }
+
+        public static Task AssertRequiredRoleAsync(IRequest req, string requiredRole, CancellationToken token = default) =>
+            AssertRequiredRolesAsync(req, new[] { requiredRole }, token);
+
+        /// <summary>
+        /// Check all session is in all supplied roles otherwise a 401 HttpError is thrown
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="requiredRoles"></param>
+        public static async Task AssertRequiredRolesAsync(IRequest req, string[] requiredRoles, CancellationToken token=default)
+        {
+            var session = await req.GetSessionAsync(token: token);
+            if (await HasAllRolesAsync(req, session, requiredRoles))
                 return;
 
             var isAuthenticated = session != null && session.IsAuthenticated;

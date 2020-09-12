@@ -353,22 +353,22 @@ namespace ServiceStack
     
     public static class RequestUtils
     {
-        public static void AssertAccessRoleOrDebugMode(IRequest req, string accessRole=null, string authSecret=null)
+        public static async Task AssertAccessRoleOrDebugModeAsync(IRequest req, string accessRole=null, string authSecret=null, CancellationToken token=default)
         {
             if (!HostContext.DebugMode)
             {
                 if (HostContext.Config.AdminAuthSecret == null || HostContext.Config.AdminAuthSecret != authSecret)
                 {
-                    RequiredRoleAttribute.AssertRequiredRoles(req, accessRole);
+                    await RequiredRoleAttribute.AssertRequiredRoleAsync(req, accessRole, token);
                 }
             }
         }
 
-        public static void AssertAccessRole(IRequest req, string accessRole=null, string authSecret=null)
+        public static async Task AssertAccessRoleAsync(IRequest req, string accessRole=null, string authSecret=null, CancellationToken token=default)
         {
             if (HostContext.Config.AdminAuthSecret == null || HostContext.Config.AdminAuthSecret != authSecret)
             {
-                RequiredRoleAttribute.AssertRequiredRoles(req, accessRole);
+                await RequiredRoleAttribute.AssertRequiredRoleAsync(req, accessRole, token);
             }
         }
     }

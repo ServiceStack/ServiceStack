@@ -225,7 +225,7 @@ namespace ServiceStack.Desktop
         public async Task Any(EvalScript request)
         {
             var feature = HostContext.AssertPlugin<DesktopFeature>();
-            RequestUtils.AssertAccessRole(base.Request, accessRole: feature.AccessRole, authSecret: request.AuthSecret);
+            await RequestUtils.AssertAccessRoleAsync(base.Request, accessRole: feature.AccessRole, authSecret: request.AuthSecret);
 
             var appHost = HostContext.AppHost;
             string script;
