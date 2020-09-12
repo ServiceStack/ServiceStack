@@ -31,24 +31,32 @@ namespace ServiceStack.Auth
                     RuleFor(x => x.UserName).NotEmpty().When(x => x.Email.IsNullOrEmpty());
                     RuleFor(x => x.Email).NotEmpty().EmailAddress().When(x => x.UserName.IsNullOrEmpty());
                     RuleFor(x => x.UserName)
-                        .Must(x =>
+                        .MustAsync(async (x,token) =>
                         {
-                            var authRepo = HostContext.AppHost.GetAuthRepository(base.Request);
+                            var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(base.Request);
+#if NET472 || NETSTANDARD2_0
+                            await using (authRepo as IAsyncDisposable)
+#else
                             using (authRepo as IDisposable)
+#endif
                             {
-                                return authRepo.GetUserAuthByUserName(x) == null;
+                                return await authRepo.GetUserAuthByUserNameAsync(x).ConfigAwait() == null;
                             }
                         })
                         .WithErrorCode("AlreadyExists")
                         .WithMessage(ErrorMessages.UsernameAlreadyExists.Localize(base.Request))
                         .When(x => !x.UserName.IsNullOrEmpty());
                     RuleFor(x => x.Email)
-                        .Must(x =>
+                        .MustAsync(async (x,token) =>
                         {
-                            var authRepo = HostContext.AppHost.GetAuthRepository(base.Request);
+                            var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(base.Request);
+#if NET472 || NETSTANDARD2_0
+                            await using (authRepo as IAsyncDisposable)
+#else
                             using (authRepo as IDisposable)
+#endif
                             {
-                                return x.IsNullOrEmpty() || authRepo.GetUserAuthByUserName(x) == null;
+                                return x.IsNullOrEmpty() || await authRepo.GetUserAuthByUserNameAsync(x).ConfigAwait() == null;
                             }
                         })
                         .WithErrorCode("AlreadyExists")
@@ -112,7 +120,7 @@ namespace ServiceStack.Auth
             var authFeature = GetPlugin<AuthFeature>();
             if (authFeature != null)
             {
-                if (authFeature.SaveUserNamesInLowerCase == true)
+                if (authFeature.SaveUserNamesInLowerCase)
                 {
                     if (request.UserName != null)
                         request.UserName = request.UserName.ToLower();
@@ -208,7 +216,7 @@ namespace ServiceStack.Auth
             return response;
         }
 
-        public IUserAuth ToUserAuth(ICustomUserAuth customUserAuth, Register request)
+        public static IUserAuth ToUserAuth(ICustomUserAuth customUserAuth, Register request)
         {
             var to = customUserAuth != null
                 ? customUserAuth.CreateUserAuth()

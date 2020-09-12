@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Web;
 
@@ -30,9 +31,9 @@ namespace ServiceStack.Auth
         string Sequence { get; set; }
 
         bool HasRole(string role, IAuthRepository authRepo);
-        Task<bool> HasRoleAsync(string role, IAuthRepositoryAsync authRepo);
+        Task<bool> HasRoleAsync(string role, IAuthRepositoryAsync authRepo, CancellationToken token=default);
         bool HasPermission(string permission, IAuthRepository authRepo);
-        Task<bool> HasPermissionAsync(string permission, IAuthRepositoryAsync authRepo);
+        Task<bool> HasPermissionAsync(string permission, IAuthRepositoryAsync authRepo, CancellationToken token=default);
 
         bool IsAuthorized(string provider);
 

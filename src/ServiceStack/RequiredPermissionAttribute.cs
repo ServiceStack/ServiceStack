@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
@@ -70,7 +71,7 @@ namespace ServiceStack
             }
         }
         
-        public static async Task<bool> HasAllPermissionsAsync(IRequest req, IAuthSession session, ICollection<string> requiredPermissions)
+        public static async Task<bool> HasAllPermissionsAsync(IRequest req, IAuthSession session, ICollection<string> requiredPermissions, CancellationToken token=default)
         {
             if (SessionValidForAllPermissions(req, session, requiredPermissions))
                 return true;
@@ -82,7 +83,7 @@ namespace ServiceStack
             using (authRepo as IDisposable)
 #endif
             {
-                return await SessionHasAllPermissionsAsync(req, session, authRepo, requiredPermissions).ConfigAwait();
+                return await SessionHasAllPermissionsAsync(req, session, authRepo, requiredPermissions, token).ConfigAwait();
             }
         }
 
@@ -95,6 +96,24 @@ namespace ServiceStack
         {
             var session = req.GetSession();
             if (HasAllPermissions(req, session, requiredPermissions))
+                return;
+
+            var isAuthenticated = session != null && session.IsAuthenticated;
+            if (!isAuthenticated)
+                ThrowNotAuthenticated(req);
+            else
+                ThrowInvalidPermission(req);
+        }
+
+        /// <summary>
+        /// Check all session is in all supplied roles otherwise a 401 HttpError is thrown
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="requiredPermissions"></param>
+        public static async Task AssertRequiredPermissionsAsync(IRequest req, string[] requiredPermissions, CancellationToken token=default)
+        {
+            var session = await req.GetSessionAsync(token: token);
+            if (await HasAllPermissionsAsync(req, session, requiredPermissions, token))
                 return;
 
             var isAuthenticated = session != null && session.IsAuthenticated;
@@ -126,19 +145,19 @@ namespace ServiceStack
             return false;
         }
 
-        private static async Task<bool> SessionHasAllPermissionsAsync(IRequest req, IAuthSession session, IAuthRepositoryAsync authRepo, ICollection<string> requiredPermissions)
+        private static async Task<bool> SessionHasAllPermissionsAsync(IRequest req, IAuthSession session, IAuthRepositoryAsync authRepo, ICollection<string> requiredPermissions, CancellationToken token=default)
         {
-            if (await session.HasRoleAsync(RoleNames.Admin, authRepo).ConfigAwait())
+            if (await session.HasRoleAsync(RoleNames.Admin, authRepo, token).ConfigAwait())
                 return true;
 
-            if (await requiredPermissions.AllAsync(x => session.HasPermissionAsync(x, authRepo)).ConfigAwait())
+            if (await requiredPermissions.AllAsync(x => session.HasPermissionAsync(x, authRepo, token)).ConfigAwait())
                 return true;
 
             await session.UpdateFromUserAuthRepoAsync(req, authRepo).ConfigAwait();
 
-            if (await requiredPermissions.AllAsync(x => session.HasPermissionAsync(x, authRepo)).ConfigAwait())
+            if (await requiredPermissions.AllAsync(x => session.HasPermissionAsync(x, authRepo, token)).ConfigAwait())
             {
-                await req.SaveSessionAsync(session).ConfigAwait();
+                await req.SaveSessionAsync(session, token: token).ConfigAwait();
                 return true;
             }
 

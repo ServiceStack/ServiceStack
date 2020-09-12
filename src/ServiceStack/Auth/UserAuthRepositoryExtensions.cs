@@ -308,7 +308,7 @@ namespace ServiceStack.Auth
         public static IUserAuth UpdateUserAuth(this IAuthRepository authRepo, IUserAuth existingUser, IUserAuth newUser) => 
             authRepo.AssertUserAuthRepository().UpdateUserAuth(existingUser, newUser);
 
-        public static Task<IUserAuth> UpdateUserAuthAsync(this IUserAuthRepositoryAsync authRepo, IUserAuth existingUser, IUserAuth newUser, CancellationToken token=default) => 
+        public static Task<IUserAuth> UpdateUserAuthAsync(this IAuthRepositoryAsync authRepo, IUserAuth existingUser, IUserAuth newUser, CancellationToken token=default) => 
             authRepo.AssertUserAuthRepositoryAsync().UpdateUserAuthAsync(existingUser, newUser, token);
 
         public static IUserAuth UpdateUserAuth(this IAuthRepository authRepo, IUserAuth existingUser, IUserAuth newUser, string password) => 
