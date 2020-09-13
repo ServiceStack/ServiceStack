@@ -19,11 +19,33 @@ namespace ServiceStack.Admin
         public void Register(IAppHost appHost)
         {
             appHost.RegisterService(typeof(AdminUsersService));
+            
+            appHost.AddToAppMetadata(meta => {
+                var host = (ServiceStackHost) appHost;
+                var authRepo = host.GetAuthRepository();
+                if (authRepo == null)
+                    return;
+                using (authRepo as IDisposable)
+                {
+                    var metaPlugin = new CustomPlugin {
+                        AccessRole = AdminRole,
+                        Enabled = new List<string>()
+                    };
+                    if (authRepo is IQueryUserAuth)
+                        metaPlugin.Enabled.Add("query");
+                    if (authRepo is ICustomUserAuth)
+                        metaPlugin.Enabled.Add("custom");
+                    if (authRepo is IManageRoles)
+                        metaPlugin.Enabled.Add("manageRoles");
+                    
+                    meta.CustomPlugins[Id] = metaPlugin;
+                }
+            });
         }
 
         public void AfterPluginsLoaded(IAppHost appHost)
         {
-            var authRepo = ((ServiceStackHost) appHost).GetAuthRepositoryAsync();
+            var authRepo = ((ServiceStackHost)appHost).GetAuthRepositoryAsync();
             if (authRepo == null)
                 throw new Exception("UserAuth Repository is required to use " + nameof(AdminUsersFeature));
         }
