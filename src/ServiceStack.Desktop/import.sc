@@ -1,3 +1,4 @@
+* Usage: x run import.sc *
 * x mix svg-action svg-alert svg-av svg-communication svg-content svg-device svg-editor svg-file svg-hardware svg-image svg-maps svg-navigation svg-places svg-social svg-toggle *
 
 {{ const libs = { 
