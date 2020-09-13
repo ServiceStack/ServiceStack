@@ -655,6 +655,45 @@ namespace ServiceStack.Host
             return soapTypes;
         }
 #endif
+
+        public List<string> GetAllRoles()
+        {
+            var to = new List<string>();
+            var requiredRoles = OperationsMap
+                .SelectMany(x => x.Key.AllAttributes<RequiredRoleAttribute>()
+                    .Concat(x.Value.ServiceType.AllAttributes<RequiredRoleAttribute>()))
+                .SelectMany(x => x.RequiredRoles);
+
+            requiredRoles.Each(x => to.AddIfNotExists(x));
+
+            var requireAnyRoles = OperationsMap
+                .SelectMany(x => x.Key.AllAttributes<RequiresAnyRoleAttribute>()
+                    .Concat(x.Value.ServiceType.AllAttributes<RequiresAnyRoleAttribute>()))
+                .SelectMany(x => x.RequiredRoles);
+
+            requireAnyRoles.Each(x => to.AddIfNotExists(x));
+            return to;
+        }
+
+        public List<string> GetAllPermissions()
+        {
+            var to = new List<string>();
+            var requiredPermissions = OperationsMap
+                .SelectMany(x => x.Key.AllAttributes<RequiredPermissionAttribute>()
+                    .Concat(x.Value.ServiceType.AllAttributes<RequiredPermissionAttribute>()))
+                .SelectMany(x => x.RequiredPermissions);
+
+            requiredPermissions.Each(x => to.AddIfNotExists(x));
+
+            var requireAnyPermissions = OperationsMap
+                .SelectMany(x => x.Key.AllAttributes<RequiresAnyPermissionAttribute>()
+                    .Concat(x.Value.ServiceType.AllAttributes<RequiresAnyPermissionAttribute>()))
+                .SelectMany(x => x.RequiredPermissions);
+
+            requireAnyPermissions.Each(x => to.AddIfNotExists(x));
+            return to;
+        }
+        
     }
 
     public class Operation

@@ -38,19 +38,8 @@ namespace ServiceStack.Auth
             //Add all pre-defined Roles used to in App to 'AllRoles'
             appHost.AfterInitCallbacks.Add(host =>
             {
-                var requiredRoles = host.Metadata.OperationsMap
-                    .SelectMany(x => x.Key.AllAttributes<RequiredRoleAttribute>()
-                        .Concat(x.Value.ServiceType.AllAttributes<RequiredRoleAttribute>()))
-                    .SelectMany(x => x.RequiredRoles);
-
-                requiredRoles.Each(x => AllRoles.AddIfNotExists(x));
-
-                var requireAnyRoles = host.Metadata.OperationsMap
-                    .SelectMany(x => x.Key.AllAttributes<RequiresAnyRoleAttribute>()
-                        .Concat(x.Value.ServiceType.AllAttributes<RequiresAnyRoleAttribute>()))
-                    .SelectMany(x => x.RequiredRoles);
-
-                requireAnyRoles.Each(x => AllRoles.AddIfNotExists(x));
+                var allExistingRoles = host.Metadata.GetAllRoles();
+                allExistingRoles.Each(x => AllRoles.AddIfNotExists(x));
             });
         }
 

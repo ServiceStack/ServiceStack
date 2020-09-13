@@ -8,6 +8,7 @@ using ServiceStack.Admin;
 using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

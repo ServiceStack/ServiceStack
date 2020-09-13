@@ -118,7 +118,9 @@ namespace ServiceStack.Admin
     {
         [DataMember(Order = 1)] public MetadataType UserAuth { get; set; }
         [DataMember(Order = 2)] public MetadataType UserAuthDetails { get; set; }
-        [DataMember(Order = 3)] public ResponseStatus ResponseStatus { get; set; }
+        [DataMember(Order = 3)] public List<string> AllRoles { get; set; }
+        [DataMember(Order = 4)] public List<string> AllPermissions { get; set; }
+        [DataMember(Order = 10)] public ResponseStatus ResponseStatus { get; set; }
     }
 
     [Restrict(VisibilityTo = RequestAttributes.None)]
@@ -164,6 +166,8 @@ namespace ServiceStack.Admin
             return new AdminMetaUserResponse {
                 UserAuth = metaGen.ToType(userAuth.GetType()),
                 UserAuthDetails = metaGen.ToType(userAuthDetails.GetType()),
+                AllRoles = HostContext.Metadata.GetAllRoles(),
+                AllPermissions = HostContext.Metadata.GetAllPermissions(),
             };
         }
 
