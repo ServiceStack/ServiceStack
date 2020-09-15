@@ -108,10 +108,7 @@
 
 
 <script>
-    lib = window["@servicestack/client"];
-    for (var k in lib) {
-        window[k] = lib[k]
-    }
+    Object.assign(window, window['@servicestack/client']); //import into global namespace
     client = new JsonServiceClient('/');
     // regen dtos: `x ts && tsc wwwroot/assets/js/dtos.ts`
 </script>
