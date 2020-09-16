@@ -13,6 +13,7 @@
     </PackageDescription>
     <PackageTags>ServiceStack;AutoQuery;OrmLite;Redis;MQ;Caching;ServerEvents</PackageTags>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <DefineConstants>$(DefineConstants);SOURCE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

@@ -314,9 +314,8 @@ namespace ServiceStack
         [DataMember(Order = 3)] public ResponseStatus ResponseStatus { get; set; }
     }
 
-    [ExcludeMetadata]
     [DataContract]
-    public class GetNavItems : IReturn<GetNavItemsResponse>
+    public partial class GetNavItems : IReturn<GetNavItemsResponse>
     {
         [DataMember(Order = 1)]
         public string Name { get; set; }
@@ -337,9 +336,8 @@ namespace ServiceStack
         public ResponseStatus ResponseStatus { get; set; }
     }
 
-    [ExcludeMetadata]
     [DataContract]
-    public class MetadataApp { }
+    public partial class MetadataApp { }
 
     [DataContract]
     public class GetFile : IReturn<FileContent>, IGet
@@ -482,9 +480,8 @@ namespace ServiceStack
     }
     
     //CrudEvents
-    [ExcludeMetadata]
     [DataContract]
-    public class GetCrudEvents : QueryDb<CrudEvent>
+    public partial class GetCrudEvents : QueryDb<CrudEvent>
     {
         [DataMember(Order = 1)]
         public string AuthSecret { get; set; }
@@ -494,9 +491,8 @@ namespace ServiceStack
         public string ModelId { get; set; }
     }
 
-    [ExcludeMetadata]
     [DataContract]
-    public class CheckCrudEvents : IReturn<CheckCrudEventsResponse>
+    public partial class CheckCrudEvents : IReturn<CheckCrudEventsResponse>
     {
         [DataMember(Order = 1)]
         public string AuthSecret { get; set; }
@@ -599,5 +595,13 @@ namespace ServiceStack
         [DataMember(Order = 15)]
         public Dictionary<string, string> Meta { get; set; }
     }
+    
+/* Allow metadata discovery & code-gen in *.Source.csproj builds */    
+#if !SOURCE
+    [ExcludeMetadata] public partial class GetNavItems {}
+    [ExcludeMetadata] public partial class MetadataApp { }
+    [ExcludeMetadata] public partial class GetCrudEvents {}
+    [ExcludeMetadata] public partial class CheckCrudEvents {}
+#endif
     
 }

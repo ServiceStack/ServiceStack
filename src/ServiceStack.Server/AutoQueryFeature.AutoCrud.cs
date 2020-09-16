@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Data;
+using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -31,9 +32,16 @@ namespace ServiceStack
         }
     }
     
+/* Allow metadata discovery & code-gen in *.Source.csproj builds */    
+#if !SOURCE
+    [Restrict(VisibilityTo = RequestAttributes.None)]
+    public partial class GetCrudEventsService {}
+    [Restrict(VisibilityTo = RequestAttributes.None)]
+    public partial class CheckCrudEventService {}
+#endif
+    
     [DefaultRequest(typeof(GetCrudEvents))]
-    [Restrict(VisibilityTo = RequestAttributes.Localhost)]
-    public class GetCrudEventsService : Service
+    public partial class GetCrudEventsService : Service
     {
         public IAutoQueryDb AutoQuery { get; set; }
         public IDbConnectionFactory DbFactory { get; set; }
@@ -62,8 +70,7 @@ namespace ServiceStack
     }
 
     [DefaultRequest(typeof(CheckCrudEvents))]
-    [Restrict(VisibilityTo = RequestAttributes.Localhost)]
-    public class CheckCrudEventService : Service
+    public partial class CheckCrudEventService : Service
     {
         public IDbConnectionFactory DbFactory { get; set; }
 

@@ -63,16 +63,29 @@ namespace ServiceStack.Desktop
         }
     }
 
-    [ExcludeMetadata]
-    public class DesktopFile : IRequiresRequestStream, IReturn<string>
+    
+/* Allow metadata discovery & code-gen in *.Source.csproj builds */    
+#if !SOURCE
+    [ExcludeMetadata] public partial class DesktopFile {}
+    [ExcludeMetadata] public partial class DesktopDownloadUrl {}
+    [ExcludeMetadata] public partial class EvalScript {}
+    
+    [Restrict(VisibilityTo = RequestAttributes.None)]
+    public partial class DesktopFileService {}
+    [Restrict(VisibilityTo = RequestAttributes.None)]
+    public partial class DesktopDownloadUrlService {}
+    [Restrict(VisibilityTo = RequestAttributes.None)]
+    public partial class DesktopScriptServices {}
+#endif
+    
+    public partial class DesktopFile : IRequiresRequestStream, IReturn<string>
     {
         public string File { get; set; }
         public Stream RequestStream { get; set; }
     }
 
     [DefaultRequest(typeof(DesktopFile))]
-    [Restrict(VisibilityTo = RequestAttributes.None)]
-    public class DesktopFileService : Service
+    public partial class DesktopFileService : Service
     {
         public async Task Get(DesktopFile request)
         {
@@ -141,8 +154,7 @@ namespace ServiceStack.Desktop
         }
     }
 
-    [ExcludeMetadata]
-    public class DesktopDownloadUrl : IRequiresRequestStream, IReturnVoid
+    public partial class DesktopDownloadUrl : IRequiresRequestStream, IReturnVoid
     {
         public string File { get; set; }
         public string Url { get; set; }
@@ -152,8 +164,7 @@ namespace ServiceStack.Desktop
     }
 
     [DefaultRequest(typeof(DesktopDownloadUrl))]
-    [Restrict(VisibilityTo = RequestAttributes.None)]
-    public class DesktopDownloadUrlService : Service
+    public partial class DesktopDownloadUrlService : Service
     {
         public async Task Any(DesktopDownloadUrl request)
         {
@@ -196,8 +207,7 @@ namespace ServiceStack.Desktop
         }
     }
 
-    [ExcludeMetadata]
-    public class EvalScript : IReturn<string>
+    public partial class EvalScript : IReturn<string>
     {
         public string AuthSecret { get; set; }
         
@@ -217,8 +227,7 @@ namespace ServiceStack.Desktop
     }
 
     [DefaultRequest(typeof(EvalScript))]
-    [Restrict(VisibilityTo = RequestAttributes.None)]
-    public class DesktopScriptServices : Service
+    public partial class DesktopScriptServices : Service
     {
         public static ILog log = LogManager.GetLogger(typeof(DesktopScriptServices));
         

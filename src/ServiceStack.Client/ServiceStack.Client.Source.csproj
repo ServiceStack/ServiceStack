@@ -10,6 +10,7 @@
     </PackageDescription>
     <PackageTags>ServiceStack;Common;Framework;Clients;ServiceClients;Gateway</PackageTags>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <DefineConstants>$(DefineConstants);SOURCE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

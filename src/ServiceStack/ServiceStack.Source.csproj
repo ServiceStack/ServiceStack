@@ -13,6 +13,7 @@
     </PackageDescription>
     <PackageTags>Fast;JSON;XML;CSV;HTML;SOAP;JSV;REST;Web;Service;Framework;ServiceStack</PackageTags>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <DefineConstants>$(DefineConstants);SOURCE</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Templates\*.*;js\*.*;css\*.*" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />

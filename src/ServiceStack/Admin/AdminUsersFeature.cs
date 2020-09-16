@@ -64,17 +64,28 @@ namespace ServiceStack.Admin
         [DataMember(Order = 9)] public Dictionary<string, string> Meta { get; set; }
     }
     
+/* Allow metadata discovery & code-gen in *.Source.csproj builds */    
+#if !SOURCE
+    [ExcludeMetadata] public partial class AdminCreateUser {}
+    [ExcludeMetadata] public partial class AdminUpdateUser {}
+    [ExcludeMetadata] public partial class AdminGetUser {}
+    [ExcludeMetadata] public partial class AdminDeleteUser {}
+    [ExcludeMetadata] public partial class AdminQueryUsers {}
+    [ExcludeMetadata] public partial class AdminMetaUser {}
+    
+    [Restrict(VisibilityTo = RequestAttributes.None)]
+    public partial class AdminUsersService {}
+#endif
+    
     [DataContract]
-    [ExcludeMetadata]
-    public class AdminCreateUser : AdminUserBase, IPost, IReturn<AdminUserResponse>
+    public partial class AdminCreateUser : AdminUserBase, IPost, IReturn<AdminUserResponse>
     {
         [DataMember(Order = 10)] public List<string> Roles { get; set; }
         [DataMember(Order = 11)] public List<string> Permissions { get; set; }
     }
     
     [DataContract]
-    [ExcludeMetadata]
-    public class AdminUpdateUser : AdminUserBase, IPut, IReturn<AdminUserResponse>
+    public partial class AdminUpdateUser : AdminUserBase, IPut, IReturn<AdminUserResponse>
     {
         [DataMember(Order = 10)] public string Id { get; set; }
         [DataMember(Order = 11)] public List<string> AddRoles { get; set; }
@@ -84,15 +95,13 @@ namespace ServiceStack.Admin
     }
     
     [DataContract]
-    [ExcludeMetadata]
-    public class AdminGetUser : IGet, IReturn<AdminUserResponse>
+    public partial class AdminGetUser : IGet, IReturn<AdminUserResponse>
     {
         [DataMember(Order = 10)] public string Id { get; set; }
     }
     
     [DataContract]
-    [ExcludeMetadata]
-    public class AdminDeleteUser : IDelete, IReturn<AdminDeleteUserResponse>
+    public partial class AdminDeleteUser : IDelete, IReturn<AdminDeleteUserResponse>
     {
         [DataMember(Order = 10)] public string Id { get; set; }
     }
@@ -105,7 +114,7 @@ namespace ServiceStack.Admin
     }
 
     [DataContract]
-    public class AdminUserResponse : IHasResponseStatus
+    public partial class AdminUserResponse : IHasResponseStatus
     {
         [DataMember(Order = 1)] public string Id { get; set; }
         [DataMember(Order = 2)] public Dictionary<string,object> Result { get; set; }
@@ -113,8 +122,7 @@ namespace ServiceStack.Admin
     }
     
     [DataContract]
-    [ExcludeMetadata]
-    public class AdminQueryUsers : IGet, IReturn<AdminUsersResponse>
+    public partial class AdminQueryUsers : IGet, IReturn<AdminUsersResponse>
     {
         [DataMember(Order = 1)] public string Query { get; set; }
         [DataMember(Order = 2)] public string OrderBy { get; set; }
@@ -130,8 +138,7 @@ namespace ServiceStack.Admin
     }
     
     [DataContract]
-    [ExcludeMetadata]
-    public class AdminMetaUser : IGet, IReturn<AdminMetaUserResponse>
+    public partial class AdminMetaUser : IGet, IReturn<AdminMetaUserResponse>
     {
     }
 
@@ -145,8 +152,7 @@ namespace ServiceStack.Admin
         [DataMember(Order = 10)] public ResponseStatus ResponseStatus { get; set; }
     }
 
-    [Restrict(VisibilityTo = RequestAttributes.None)]
-    public class AdminUsersService : Service
+    public partial class AdminUsersService : Service
     {
         public static ValidateFn ValidateFn { get; set; }
 

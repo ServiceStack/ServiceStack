@@ -4,6 +4,7 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <AssemblyName>ServiceStack.Desktop</AssemblyName>
         <RootNamespace>ServiceStack.Desktop</RootNamespace>
+        <DefineConstants>$(DefineConstants);SOURCE</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>
