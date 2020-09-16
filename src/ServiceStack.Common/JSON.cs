@@ -20,6 +20,9 @@ namespace ServiceStack
                 return null;
             var firstChar = json[0];
 
+            bool isEscapedJsonString(ReadOnlySpan<char> js) =>
+                js.StartsWith(@"{\") || js.StartsWith(@"[{\");
+
             if (firstChar >= '0' && firstChar <= '9')
             {
                 try {
@@ -33,7 +36,7 @@ namespace ServiceStack
                     return doubleValue;
             }
             else if (firstChar == '{' || firstChar == '[' 
-                && json.Length >= 2 && json[1] != '\\') // not escaped serialized json string
+                && !isEscapedJsonString(json.TrimStart())) 
             {
                 json.ParseJsToken(out var token);
                 return token.Evaluate(JS.CreateScope());
