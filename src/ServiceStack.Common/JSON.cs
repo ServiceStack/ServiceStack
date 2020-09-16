@@ -32,7 +32,8 @@ namespace ServiceStack
                 if (json.TryParseDouble(out var doubleValue))
                     return doubleValue;
             }
-            else if (firstChar == '{' || firstChar == '[')
+            else if (firstChar == '{' || firstChar == '[' 
+                && json.Length >= 2 && json[1] != '\\') // not escaped serialized json string
             {
                 json.ParseJsToken(out var token);
                 return token.Evaluate(JS.CreateScope());
