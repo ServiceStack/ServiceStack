@@ -224,6 +224,15 @@ namespace ServiceStack.Admin
 
         public async Task<object> Get(AdminQueryUsers request)
         {
+            // Do exact search by Username/Email if Auth Repo doesn't support querying
+            if (!(AuthRepositoryAsync is IQueryUserAuthAsync) && !(AuthRepository is IQueryUserAuth))
+            {
+                var user = await AuthRepositoryAsync.GetUserAuthByUserNameAsync(request.Query);
+                return new AdminUsersResponse {
+                    Results = new List<Dictionary<string, object>> { ToUserProps(user) }
+                };
+            }
+            
             var users = !string.IsNullOrEmpty(request.Query)
                 ? await AuthRepositoryAsync.SearchUserAuthsAsync(request.Query, request.OrderBy, request.Skip, request.Take)
                 : await AuthRepositoryAsync.GetUserAuthsAsync(request.OrderBy, request.Skip, request.Take);
