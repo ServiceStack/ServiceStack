@@ -16,6 +16,15 @@ namespace ServiceStack.Admin
         public string Id { get; set; } = Plugins.AdminUsers;
         public string AdminRole { get; set; } = RoleNames.Admin;
         
+        /// <summary>
+        /// Remove UserAuth Properties from Admin Metadata
+        /// </summary>
+        public List<string> ExcludeUserAuthProperties { get; set; }
+        /// <summary>
+        /// Remove UserAuthDetails Properties from Admin Metadata
+        /// </summary>
+        public List<string> ExcludeUserAuthDetailsProperties { get; set; }
+        
         public void Register(IAppHost appHost)
         {
             appHost.RegisterService(typeof(AdminUsersService));
@@ -191,12 +200,20 @@ namespace ServiceStack.Admin
                 ?? new NativeTypesMetadata(HostContext.AppHost.Metadata, new MetadataTypesConfig());
             var metaGen = nativeTypesMeta.GetGenerator();
             
-            return new AdminMetaUserResponse {
+            var response = new AdminMetaUserResponse {
                 UserAuth = metaGen.ToType(userAuth.GetType()),
                 UserAuthDetails = metaGen.ToType(userAuthDetails.GetType()),
                 AllRoles = HostContext.Metadata.GetAllRoles(),
                 AllPermissions = HostContext.Metadata.GetAllPermissions(),
             };
+
+            var feature = HostContext.GetPlugin<AdminUsersFeature>();
+            if (feature?.ExcludeUserAuthProperties != null)
+                response.UserAuth.Properties.RemoveAll(x => feature.ExcludeUserAuthProperties.Contains(x.Name)); 
+            if (feature?.ExcludeUserAuthDetailsProperties != null)
+                response.UserAuthDetails.Properties.RemoveAll(x => feature.ExcludeUserAuthDetailsProperties.Contains(x.Name)); 
+
+            return response;
         }
 
         public async Task<object> Get(AdminGetUser request)
