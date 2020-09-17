@@ -32,6 +32,7 @@ namespace ServiceStack.Admin
             nameof(UserAuth.Id),
             nameof(UserAuth.UserName),
             nameof(UserAuth.Email),
+            nameof(UserAuth.DisplayName),
             nameof(UserAuth.FirstName),
             nameof(UserAuth.LastName),
             nameof(UserAuth.Company),
