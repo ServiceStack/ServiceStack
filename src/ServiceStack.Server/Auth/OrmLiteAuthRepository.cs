@@ -326,7 +326,7 @@ namespace ServiceStack.Auth
             return Exec(db => {
                 var q = db.From<TUserAuth>();
                 if (orderBy != null)
-                    q.OrderBy(orderBy);
+                    q.OrderByFields(orderBy);
                 if (skip != null || take != null)
                     q.Limit(skip, take);
                 return db.Select(q).ConvertAll(x => (IUserAuth)x);
@@ -346,7 +346,7 @@ namespace ServiceStack.Auth
                                  x.Company.Contains(query));
                 }
                 if (orderBy != null)
-                    q.OrderBy(orderBy);
+                    q.OrderByFields(orderBy);
                 if (skip != null || take != null)
                     q.Limit(skip, take);
                 return db.Select(q).ConvertAll(x => (IUserAuth)x);
