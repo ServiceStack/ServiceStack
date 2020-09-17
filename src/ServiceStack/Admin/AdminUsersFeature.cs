@@ -24,6 +24,22 @@ namespace ServiceStack.Admin
         /// Remove UserAuthDetails Properties from Admin Metadata
         /// </summary>
         public List<string> ExcludeUserAuthDetailsProperties { get; set; }
+
+        /// <summary>
+        /// Return only specified UserAuth Properties in AdminQueryUsers
+        /// </summary>
+        public List<string> QueryUserAuthProperties { get; set; } = new List<string> {
+            nameof(UserAuth.Id),
+            nameof(UserAuth.UserName),
+            nameof(UserAuth.Email),
+            nameof(UserAuth.FirstName),
+            nameof(UserAuth.LastName),
+            nameof(UserAuth.Company),
+            nameof(UserAuth.State),
+            nameof(UserAuth.Country),
+            nameof(UserAuth.CreatedDate),
+            nameof(UserAuth.ModifiedDate),
+        };
         
         public void Register(IAppHost appHost)
         {
@@ -168,7 +184,7 @@ namespace ServiceStack.Admin
         private async Task<object> Validate(AdminUserBase request)
         {
             await RequiredRoleAttribute.AssertRequiredRoleAsync(
-                Request, GetPlugin<AdminUsersFeature>().AdminRole);
+                Request, AssertPlugin<AdminUsersFeature>().AdminRole);
             
             var authFeature = GetPlugin<AuthFeature>();
             if (authFeature != null)
@@ -207,7 +223,7 @@ namespace ServiceStack.Admin
                 AllPermissions = HostContext.Metadata.GetAllPermissions(),
             };
 
-            var feature = HostContext.GetPlugin<AdminUsersFeature>();
+            var feature = AssertPlugin<AdminUsersFeature>();
             if (feature?.ExcludeUserAuthProperties != null)
                 response.UserAuth.Properties.RemoveAll(x => feature.ExcludeUserAuthProperties.Contains(x.Name)); 
             if (feature?.ExcludeUserAuthDetailsProperties != null)
@@ -237,10 +253,33 @@ namespace ServiceStack.Admin
                 ? await AuthRepositoryAsync.SearchUserAuthsAsync(request.Query, request.OrderBy, request.Skip, request.Take)
                 : await AuthRepositoryAsync.GetUserAuthsAsync(request.OrderBy, request.Skip, request.Take);
 
-            var userResults = users.Map(ToUserProps);
+            var feature = AssertPlugin<AdminUsersFeature>();
+            var userResults = FilterResults(users.Map(ToUserProps), feature.QueryUserAuthProperties);
             return new AdminUsersResponse {
                 Results = userResults,
             };
+        }
+
+        private List<Dictionary<string, object>> FilterResults(List<Dictionary<string, object>> results, List<string> includeProps)
+        {
+            if (includeProps == null)
+                return results;
+
+            var to = new List<Dictionary<string, object>>();
+
+            foreach (var result in results)
+            {
+                var row = new Dictionary<string, object>();
+                foreach (var includeProp in includeProps)
+                {
+                    row[includeProp] = result.TryGetValue(includeProp, out var value)
+                        ? value
+                        : null;
+                }
+                to.Add(row);
+            }
+            
+            return to;
         }
         
         public async Task<object> Post(AdminCreateUser request)
