@@ -918,7 +918,7 @@ namespace ServiceStack
             var typesToGenerateMap = new Dictionary<string, TableSchema>();
             foreach (var result in results)
             {
-                var keysCount = result.Columns.Count(x => x.IsKey);
+                var keysCount = result.Columns?.Count(x => x.IsKey) ?? 0;
                 if (keysCount != 1) // Only support tables with 1 PK
                     continue;
                 
