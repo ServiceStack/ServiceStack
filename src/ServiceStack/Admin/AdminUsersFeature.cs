@@ -98,10 +98,27 @@ namespace ServiceStack.Admin
                         plugin.Enabled.Add("custom");
                     if (authRepo is IManageRoles)
                         plugin.Enabled.Add("manageRoles");
+
                     if (IncludeUserAuthProperties != null)
-                        plugin.UserAuth.Properties.RemoveAll(x => !IncludeUserAuthProperties.Contains(x.Name)); 
+                    {
+                        var map = plugin.UserAuth.Properties.ToDictionary(x => x.Name);
+                        plugin.UserAuth.Properties = new List<MetadataPropertyType>();
+                        foreach (var includeProp in IncludeUserAuthProperties)
+                        {
+                            if (map.TryGetValue(includeProp, out var prop))
+                                plugin.UserAuth.Properties.Add(prop);
+                        }
+                    }
                     if (IncludeUserAuthDetailsProperties != null)
-                        plugin.UserAuthDetails.Properties.RemoveAll(x => !IncludeUserAuthDetailsProperties.Contains(x.Name)); 
+                    {
+                        var map = plugin.UserAuthDetails.Properties.ToDictionary(x => x.Name);
+                        plugin.UserAuthDetails.Properties = new List<MetadataPropertyType>();
+                        foreach (var includeProp in IncludeUserAuthDetailsProperties)
+                        {
+                            if (map.TryGetValue(includeProp, out var prop))
+                                plugin.UserAuthDetails.Properties.Add(prop);
+                        }
+                    }
                 }
             });
         }
