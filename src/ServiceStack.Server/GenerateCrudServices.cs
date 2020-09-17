@@ -743,12 +743,13 @@ namespace ServiceStack
             return orderedTypes;
         }
 
-        public DbSchema GetCachedDbSchema(IDbConnectionFactory dbFactory, string schema=null, string namedConnection=null)
+        public DbSchema GetCachedDbSchema(IDbConnectionFactory dbFactory, string schema=null, string namedConnection=null,
+            List<string> includeTables = null, List<string> excludeTables = null)
         {
             var key = new Tuple<string, string>(schema ?? NoSchema, namedConnection);
             return CachedDbSchemas.GetOrAdd(key, k => {
 
-                var tables = GetTableSchemas(dbFactory, schema, namedConnection);
+                var tables = GetTableSchemas(dbFactory, schema, namedConnection, includeTables, excludeTables);
                 return new DbSchema {
                     Schema = schema,
                     NamedConnection = namedConnection,
@@ -757,7 +758,8 @@ namespace ServiceStack
             });
         }
 
-        public static List<TableSchema> GetTableSchemas(IDbConnectionFactory dbFactory, string schema=null, string namedConnection=null)
+        public static List<TableSchema> GetTableSchemas(IDbConnectionFactory dbFactory, string schema=null, string namedConnection=null,
+            List<string> includeTables = null, List<string> excludeTables = null)
         {
             using var db = namedConnection != null
                 ? dbFactory.OpenDbConnection(namedConnection)
@@ -769,6 +771,11 @@ namespace ServiceStack
             var dialect = db.GetDialectProvider();
             foreach (var table in tables)
             {
+                if (includeTables != null && !includeTables.Contains(table, StringComparer.OrdinalIgnoreCase))
+                    continue;
+                if (excludeTables != null && excludeTables.Contains(table, StringComparer.OrdinalIgnoreCase))
+                    continue;
+                
                 var to = new TableSchema {
                     Name = table,
                 };
@@ -789,7 +796,6 @@ namespace ServiceStack
 
             return results;
         }
-
 
         public static string GenerateSourceCode(IRequest req, CrudCodeGenTypes request, 
             MetadataTypesConfig typesConfig, MetadataTypes crudMetadataTypes)
@@ -851,8 +857,8 @@ namespace ServiceStack
 
             var dbFactory = req.TryResolve<IDbConnectionFactory>();
             var results = request.NoCache == true 
-                ? GetTableSchemas(dbFactory, request.Schema, request.NamedConnection)
-                : genServices.GetCachedDbSchema(dbFactory, request.Schema, request.NamedConnection).Tables;
+                ? GetTableSchemas(dbFactory, request.Schema, request.NamedConnection, request.IncludeTables, request.ExcludeTables)
+                : genServices.GetCachedDbSchema(dbFactory, request.Schema, request.NamedConnection, request.IncludeTables, request.ExcludeTables).Tables;
 
             var appHost = HostContext.AppHost;
             request.BaseUrl ??= HostContext.GetPlugin<NativeTypesFeature>().MetadataTypesConfig.BaseUrl ?? appHost.GetBaseUrl(req);
@@ -1338,8 +1344,8 @@ namespace ServiceStack
             
             var dbFactory = TryResolve<IDbConnectionFactory>();
             var results = request.NoCache == true 
-                ? GenerateCrudServices.GetTableSchemas(dbFactory, request.Schema, request.NamedConnection)
-                : genServices.GetCachedDbSchema(dbFactory, request.Schema, request.NamedConnection).Tables;
+                ? GenerateCrudServices.GetTableSchemas(dbFactory, request.Schema, request.NamedConnection, request.IncludeTables, request.ExcludeTables)
+                : genServices.GetCachedDbSchema(dbFactory, request.Schema, request.NamedConnection, request.IncludeTables, request.ExcludeTables).Tables;
 
             return new AutoCodeSchemaResponse {
                 Results = results,
