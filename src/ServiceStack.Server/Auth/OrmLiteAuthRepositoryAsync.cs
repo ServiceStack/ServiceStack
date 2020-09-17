@@ -228,8 +228,7 @@ namespace ServiceStack.Auth
         {
             return await ExecAsync(async db => {
                 var q = db.From<TUserAuth>();
-                if (orderBy != null)
-                    q.OrderByFields(orderBy);
+                SetOrderBy(q, orderBy);
                 if (skip != null || take != null)
                     q.Limit(skip, take);
                 return (await db.SelectAsync(q, token).ConfigAwait()).ConvertAll(x => (IUserAuth)x);
@@ -248,8 +247,7 @@ namespace ServiceStack.Auth
                                  x.DisplayName.Contains(query) ||
                                  x.Company.Contains(query));
                 }
-                if (orderBy != null)
-                    q.OrderByFields(orderBy);
+                SetOrderBy(q, orderBy);
                 if (skip != null || take != null)
                     q.Limit(skip, take);
                 return (await db.SelectAsync(q, token).ConfigAwait()).ConvertAll(x => (IUserAuth)x);

@@ -321,12 +321,23 @@ namespace ServiceStack.Auth
             return userAuth;
         }
 
+        private void SetOrderBy(SqlExpression<TUserAuth> q, string orderBy)
+        {
+            if (string.IsNullOrEmpty(orderBy))
+                return;
+            
+            var orderByField = AuthRepositoryUtils.ParseOrderBy(orderBy, out var desc);
+            if (!desc)
+                q.OrderBy(orderByField);
+            else
+                q.OrderByDescending(orderByField);
+        }
+
         public List<IUserAuth> GetUserAuths(string orderBy = null, int? skip = null, int? take = null)
         {
             return Exec(db => {
                 var q = db.From<TUserAuth>();
-                if (orderBy != null)
-                    q.OrderByFields(orderBy);
+                SetOrderBy(q, orderBy);
                 if (skip != null || take != null)
                     q.Limit(skip, take);
                 return db.Select(q).ConvertAll(x => (IUserAuth)x);
@@ -345,8 +356,7 @@ namespace ServiceStack.Auth
                                  x.DisplayName.Contains(query) ||
                                  x.Company.Contains(query));
                 }
-                if (orderBy != null)
-                    q.OrderByFields(orderBy);
+                SetOrderBy(q, orderBy);
                 if (skip != null || take != null)
                     q.Limit(skip, take);
                 return db.Select(q).ConvertAll(x => (IUserAuth)x);
