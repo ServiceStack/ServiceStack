@@ -29,6 +29,12 @@ namespace ServiceStack.Admin
             nameof(IAuthSession.ProfileUrl),
             nameof(UserAuth.Roles),
             nameof(UserAuth.Permissions),
+            nameof(UserAuth.Salt),
+            nameof(UserAuth.PasswordHash),
+            nameof(UserAuth.DigestHa1Hash),
+            nameof(UserAuth.RecoveryToken),
+            nameof(UserAuth.RefId),
+            nameof(UserAuth.RefIdStr),
             nameof(UserAuth.Meta),
         };
 
