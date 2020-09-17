@@ -130,6 +130,7 @@ namespace ServiceStack
         public ValidationInfo Validation { get; set; }
         public SharpPagesInfo SharpPages { get; set; }
         public RequestLogsInfo RequestLogs { get; set; }
+        public AdminUsersInfo AdminUsers { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
 
@@ -188,6 +189,18 @@ namespace ServiceStack
         public string[] RequiredRoles { get; set; }
         public string RequestLogger { get; set; }
         public Dictionary<string,string[]> ServiceRoutes { get; set; }
+        public Dictionary<string, string> Meta { get; set; }
+    }
+
+    public class AdminUsersInfo : IMeta
+    {
+        public string AccessRole { get; set; }
+        public List<string> Enabled { get; set; }
+        public MetadataType UserAuth { get; set; }
+        public MetadataType UserAuthDetails { get; set; }
+        public List<string> AllRoles { get; set; }
+        public List<string> AllPermissions { get; set; }
+        public List<string> QueryUserAuthProperties { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
 

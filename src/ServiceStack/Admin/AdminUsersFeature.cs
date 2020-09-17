@@ -51,20 +51,40 @@ namespace ServiceStack.Admin
                 var authRepo = host.GetAuthRepository();
                 if (authRepo == null)
                     return;
+                
                 using (authRepo as IDisposable)
                 {
-                    var metaPlugin = new CustomPlugin {
+                    IUserAuth userAuth = new UserAuth();
+                    IUserAuthDetails userAuthDetails = new UserAuthDetails();
+                    if (authRepo is ICustomUserAuth customUserAuth)
+                    {
+                        userAuth = customUserAuth.CreateUserAuth();
+                        userAuthDetails = customUserAuth.CreateUserAuthDetails();
+                    }
+
+                    var nativeTypesMeta = appHost.TryResolve<INativeTypesMetadata>() as NativeTypesMetadata 
+                        ?? new NativeTypesMetadata(HostContext.AppHost.Metadata, new MetadataTypesConfig());
+                    var metaGen = nativeTypesMeta.GetGenerator();
+
+                    var plugin = meta.Plugins.AdminUsers = new AdminUsersInfo {
                         AccessRole = AdminRole,
-                        Enabled = new List<string>()
+                        Enabled = new List<string>(),
+                        UserAuth = metaGen.ToType(userAuth.GetType()),
+                        UserAuthDetails = metaGen.ToType(userAuthDetails.GetType()),
+                        AllRoles = HostContext.Metadata.GetAllRoles(),
+                        AllPermissions = HostContext.Metadata.GetAllPermissions(),
+                        QueryUserAuthProperties = QueryUserAuthProperties,
                     };
                     if (authRepo is IQueryUserAuth)
-                        metaPlugin.Enabled.Add("query");
+                        plugin.Enabled.Add("query");
                     if (authRepo is ICustomUserAuth)
-                        metaPlugin.Enabled.Add("custom");
+                        plugin.Enabled.Add("custom");
                     if (authRepo is IManageRoles)
-                        metaPlugin.Enabled.Add("manageRoles");
-                    
-                    meta.CustomPlugins[Id] = metaPlugin;
+                        plugin.Enabled.Add("manageRoles");
+                    if (ExcludeUserAuthProperties != null)
+                        plugin.UserAuth.Properties.RemoveAll(x => ExcludeUserAuthProperties.Contains(x.Name)); 
+                    if (ExcludeUserAuthDetailsProperties != null)
+                        plugin.UserAuthDetails.Properties.RemoveAll(x => ExcludeUserAuthDetailsProperties.Contains(x.Name)); 
                 }
             });
         }
@@ -97,7 +117,6 @@ namespace ServiceStack.Admin
     [ExcludeMetadata] public partial class AdminGetUser {}
     [ExcludeMetadata] public partial class AdminDeleteUser {}
     [ExcludeMetadata] public partial class AdminQueryUsers {}
-    [ExcludeMetadata] public partial class AdminMetaUser {}
     
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public partial class AdminUsersService {}
@@ -162,22 +181,6 @@ namespace ServiceStack.Admin
         [DataMember(Order = 1)] public List<Dictionary<string,object>> Results { get; set; }
         [DataMember(Order = 2)] public ResponseStatus ResponseStatus { get; set; }
     }
-    
-    [DataContract]
-    public partial class AdminMetaUser : IGet, IReturn<AdminMetaUserResponse>
-    {
-    }
-
-    [DataContract]
-    public class AdminMetaUserResponse : IHasResponseStatus
-    {
-        [DataMember(Order = 1)] public MetadataType UserAuth { get; set; }
-        [DataMember(Order = 2)] public MetadataType UserAuthDetails { get; set; }
-        [DataMember(Order = 3)] public List<string> AllRoles { get; set; }
-        [DataMember(Order = 4)] public List<string> AllPermissions { get; set; }
-        [DataMember(Order = 5)] public List<string> QueryUserAuthProperties { get; set; }
-        [DataMember(Order = 10)] public ResponseStatus ResponseStatus { get; set; }
-    }
 
     public partial class AdminUsersService : Service
     {
@@ -202,37 +205,6 @@ namespace ServiceStack.Admin
                         
             var validateResponse = ValidateFn?.Invoke(this, HttpMethods.Post, request);
             return validateResponse;
-        }
-
-        public object Get(AdminMetaUser request)
-        {
-            IUserAuth userAuth = new UserAuth();
-            IUserAuthDetails userAuthDetails = new UserAuthDetails();
-            if (AuthRepositoryAsync is ICustomUserAuth customUserAuth)
-            {
-                userAuth = customUserAuth.CreateUserAuth();
-                userAuthDetails = customUserAuth.CreateUserAuthDetails();
-            }
-
-            var nativeTypesMeta = TryResolve<INativeTypesMetadata>() as NativeTypesMetadata 
-                ?? new NativeTypesMetadata(HostContext.AppHost.Metadata, new MetadataTypesConfig());
-            var metaGen = nativeTypesMeta.GetGenerator();
-            
-            var feature = AssertPlugin<AdminUsersFeature>();
-            var response = new AdminMetaUserResponse {
-                UserAuth = metaGen.ToType(userAuth.GetType()),
-                UserAuthDetails = metaGen.ToType(userAuthDetails.GetType()),
-                AllRoles = HostContext.Metadata.GetAllRoles(),
-                AllPermissions = HostContext.Metadata.GetAllPermissions(),
-                QueryUserAuthProperties = feature.QueryUserAuthProperties,
-            };
-
-            if (feature.ExcludeUserAuthProperties != null)
-                response.UserAuth.Properties.RemoveAll(x => feature.ExcludeUserAuthProperties.Contains(x.Name)); 
-            if (feature.ExcludeUserAuthDetailsProperties != null)
-                response.UserAuthDetails.Properties.RemoveAll(x => feature.ExcludeUserAuthDetailsProperties.Contains(x.Name)); 
-
-            return response;
         }
 
         public async Task<object> Get(AdminGetUser request)

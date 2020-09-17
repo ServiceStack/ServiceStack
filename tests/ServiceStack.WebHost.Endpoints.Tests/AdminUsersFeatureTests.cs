@@ -103,13 +103,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Result[nameof(UserAuth.Roles)], Is.EqualTo(new List<string> {"TheRole"}));
             Assert.That(response.Result[nameof(IAuthSession.ProfileUrl)], Is.EqualTo(Svg.Images[Svg.Icons.MaleBusiness]));
         }
-
-        [Test]
-        public void Can_AdminMetaUser()
-        {
-            var response = client.Get(new AdminMetaUser());
-            // response.PrintDump();
-        }
         
         [Test]
         public async Task Can_AdminCreateUser()
