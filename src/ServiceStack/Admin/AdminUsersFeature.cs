@@ -19,11 +19,23 @@ namespace ServiceStack.Admin
         /// <summary>
         /// Remove UserAuth Properties from Admin Metadata
         /// </summary>
-        public List<string> ExcludeUserAuthProperties { get; set; }
+        public List<string> ExcludeUserAuthProperties { get; set; } = new List<string> {
+            nameof(UserAuth.Id),
+            nameof(UserAuth.Email),
+            nameof(UserAuth.UserName),
+            nameof(UserAuth.FirstName),
+            nameof(UserAuth.LastName),
+            nameof(UserAuth.DisplayName),
+            nameof(IAuthSession.ProfileUrl),
+            nameof(UserAuth.Roles),
+            nameof(UserAuth.Permissions),
+            nameof(UserAuth.Meta),
+        };
+
         /// <summary>
         /// Remove UserAuthDetails Properties from Admin Metadata
         /// </summary>
-        public List<string> ExcludeUserAuthDetailsProperties { get; set; }
+        public List<string> ExcludeUserAuthDetailsProperties { get; set; } = new List<string>();
 
         /// <summary>
         /// Return only specified UserAuth Properties in AdminQueryUsers
