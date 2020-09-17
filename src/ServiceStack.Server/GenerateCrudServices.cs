@@ -13,6 +13,7 @@ using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.FluentValidation.Internal;
 using ServiceStack.Host;
+using ServiceStack.Logging;
 using ServiceStack.NativeTypes;
 using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.NativeTypes.Dart;
@@ -31,6 +32,8 @@ namespace ServiceStack
     //TODO: persist AutoCrud
     public class GenerateCrudServices : IGenerateCrudServices
     {
+        private static ILog log = LogManager.GetLogger(typeof(GenerateCrudServices));
+        
         public List<string> IncludeCrudOperations { get; set; } = new List<string> {
             AutoCrudOperation.Query,
             AutoCrudOperation.Create,
@@ -780,15 +783,17 @@ namespace ServiceStack
                     Name = table,
                 };
 
+                string quotedTable = null;
                 try
                 {
-                    var quotedTable = dialect.GetQuotedTableName(table, schema);
+                    quotedTable = dialect.GetQuotedTableName(table, schema);
                     to.Columns = db.GetTableColumns($"SELECT * FROM {quotedTable}");
                 }
                 catch (Exception e)
                 {
                     to.ErrorType = e.GetType().Name;
                     to.ErrorMessage = e.Message;
+                    log.Error($"GetTableSchemas(): Failed to GetTableColumns() for '{quotedTable}'", e);
                 }
 
                 results.Add(to);
