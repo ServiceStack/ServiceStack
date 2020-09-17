@@ -175,6 +175,7 @@ namespace ServiceStack.Admin
         [DataMember(Order = 2)] public MetadataType UserAuthDetails { get; set; }
         [DataMember(Order = 3)] public List<string> AllRoles { get; set; }
         [DataMember(Order = 4)] public List<string> AllPermissions { get; set; }
+        [DataMember(Order = 5)] public List<string> QueryUserAuthProperties { get; set; }
         [DataMember(Order = 10)] public ResponseStatus ResponseStatus { get; set; }
     }
 
@@ -217,17 +218,18 @@ namespace ServiceStack.Admin
                 ?? new NativeTypesMetadata(HostContext.AppHost.Metadata, new MetadataTypesConfig());
             var metaGen = nativeTypesMeta.GetGenerator();
             
+            var feature = AssertPlugin<AdminUsersFeature>();
             var response = new AdminMetaUserResponse {
                 UserAuth = metaGen.ToType(userAuth.GetType()),
                 UserAuthDetails = metaGen.ToType(userAuthDetails.GetType()),
                 AllRoles = HostContext.Metadata.GetAllRoles(),
                 AllPermissions = HostContext.Metadata.GetAllPermissions(),
+                QueryUserAuthProperties = feature.QueryUserAuthProperties,
             };
 
-            var feature = AssertPlugin<AdminUsersFeature>();
-            if (feature?.ExcludeUserAuthProperties != null)
+            if (feature.ExcludeUserAuthProperties != null)
                 response.UserAuth.Properties.RemoveAll(x => feature.ExcludeUserAuthProperties.Contains(x.Name)); 
-            if (feature?.ExcludeUserAuthDetailsProperties != null)
+            if (feature.ExcludeUserAuthDetailsProperties != null)
                 response.UserAuthDetails.Properties.RemoveAll(x => feature.ExcludeUserAuthDetailsProperties.Contains(x.Name)); 
 
             return response;
