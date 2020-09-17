@@ -19,29 +19,28 @@ namespace ServiceStack.Admin
         /// <summary>
         /// Remove UserAuth Properties from Admin Metadata
         /// </summary>
-        public List<string> ExcludeUserAuthProperties { get; set; } = new List<string> {
+        public List<string> IncludeUserAuthProperties { get; set; } = new List<string> {
             nameof(UserAuth.Id),
-            nameof(UserAuth.Email),
             nameof(UserAuth.UserName),
+            nameof(UserAuth.Email),
+            nameof(UserAuth.DisplayName),
             nameof(UserAuth.FirstName),
             nameof(UserAuth.LastName),
-            nameof(UserAuth.DisplayName),
+            nameof(UserAuth.Company),
+            nameof(UserAuth.Address),
+            nameof(UserAuth.City),
+            nameof(UserAuth.State),
+            nameof(UserAuth.Country),
+            nameof(UserAuth.PhoneNumber),
+            nameof(UserAuth.InvalidLoginAttempts),
+            nameof(UserAuth.LockedDate),
             nameof(IAuthSession.ProfileUrl),
-            nameof(UserAuth.Roles),
-            nameof(UserAuth.Permissions),
-            nameof(UserAuth.Salt),
-            nameof(UserAuth.PasswordHash),
-            nameof(UserAuth.DigestHa1Hash),
-            nameof(UserAuth.RecoveryToken),
-            nameof(UserAuth.RefId),
-            nameof(UserAuth.RefIdStr),
-            nameof(UserAuth.Meta),
         };
 
         /// <summary>
         /// Remove UserAuthDetails Properties from Admin Metadata
         /// </summary>
-        public List<string> ExcludeUserAuthDetailsProperties { get; set; } = new List<string>();
+        public List<string> IncludeUserAuthDetailsProperties { get; set; } = new List<string>();
 
         /// <summary>
         /// Return only specified UserAuth Properties in AdminQueryUsers
@@ -99,10 +98,10 @@ namespace ServiceStack.Admin
                         plugin.Enabled.Add("custom");
                     if (authRepo is IManageRoles)
                         plugin.Enabled.Add("manageRoles");
-                    if (ExcludeUserAuthProperties != null)
-                        plugin.UserAuth.Properties.RemoveAll(x => ExcludeUserAuthProperties.Contains(x.Name)); 
-                    if (ExcludeUserAuthDetailsProperties != null)
-                        plugin.UserAuthDetails.Properties.RemoveAll(x => ExcludeUserAuthDetailsProperties.Contains(x.Name)); 
+                    if (IncludeUserAuthProperties != null)
+                        plugin.UserAuth.Properties.RemoveAll(x => !IncludeUserAuthProperties.Contains(x.Name)); 
+                    if (IncludeUserAuthDetailsProperties != null)
+                        plugin.UserAuthDetails.Properties.RemoveAll(x => !IncludeUserAuthDetailsProperties.Contains(x.Name)); 
                 }
             });
         }
