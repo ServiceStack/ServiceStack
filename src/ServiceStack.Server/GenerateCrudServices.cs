@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -764,42 +765,57 @@ namespace ServiceStack
         public static List<TableSchema> GetTableSchemas(IDbConnectionFactory dbFactory, string schema=null, string namedConnection=null,
             List<string> includeTables = null, List<string> excludeTables = null)
         {
-            using var db = namedConnection != null
+            var db = namedConnection != null
                 ? dbFactory.OpenDbConnection(namedConnection)
                 : dbFactory.OpenDbConnection();
 
-            var tables = db.GetTableNames(schema);
-            var results = new List<TableSchema>();
-
-            var dialect = db.GetDialectProvider();
-            foreach (var table in tables)
+            try
             {
-                if (includeTables != null && !includeTables.Contains(table, StringComparer.OrdinalIgnoreCase))
-                    continue;
-                if (excludeTables != null && excludeTables.Contains(table, StringComparer.OrdinalIgnoreCase))
-                    continue;
+                var tables = db.GetTableNames(schema);
+                var results = new List<TableSchema>();
+
+                var dialect = db.GetDialectProvider();
+                foreach (var table in tables)
+                {
+                    if (includeTables != null && !includeTables.Contains(table, StringComparer.OrdinalIgnoreCase))
+                        continue;
+                    if (excludeTables != null && excludeTables.Contains(table, StringComparer.OrdinalIgnoreCase))
+                        continue;
                 
-                var to = new TableSchema {
-                    Name = table,
-                };
+                    var to = new TableSchema {
+                        Name = table,
+                    };
 
-                string quotedTable = null;
-                try
-                {
-                    quotedTable = dialect.GetQuotedTableName(table, schema);
-                    to.Columns = db.GetTableColumns($"SELECT * FROM {quotedTable}");
-                }
-                catch (Exception e)
-                {
-                    to.ErrorType = e.GetType().Name;
-                    to.ErrorMessage = e.Message;
-                    log.Error($"GetTableSchemas(): Failed to GetTableColumns() for '{quotedTable}'", e);
+                    string quotedTable = null;
+                    try
+                    {
+                        quotedTable = dialect.GetQuotedTableName(table, schema);
+                        to.Columns = db.GetTableColumns($"SELECT * FROM {quotedTable}");
+                    }
+                    catch (Exception e)
+                    {
+                        to.ErrorType = e.GetType().Name;
+                        to.ErrorMessage = e.Message;
+                        log.Error($"GetTableSchemas(): Failed to GetTableColumns() for '{quotedTable}'", e);
+
+                        if (db.State != ConnectionState.Open)
+                        {
+                            try { db.Dispose(); } catch {}
+                            db = namedConnection != null
+                                ? dbFactory.OpenDbConnection(namedConnection)
+                                : dbFactory.OpenDbConnection();
+                        }
+                    }
+
+                    results.Add(to);
                 }
 
-                results.Add(to);
+                return results;
             }
-
-            return results;
+            finally
+            {
+                db.Dispose();
+            }
         }
 
         public static string GenerateSourceCode(IRequest req, CrudCodeGenTypes request, 
