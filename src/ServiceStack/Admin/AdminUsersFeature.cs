@@ -330,7 +330,7 @@ namespace ServiceStack.Admin
             if (existingUser == null)
                 throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(Request));
             
-            var newUser = PopulateUserAuth(AuthRepositoryAsync is ICustomUserAuth customUserAuth ? customUserAuth.CreateUserAuth() : new UserAuth(), request);
+            var newUser = PopulateUserAuth(existingUser, request);
 
             if (request.LockUser == true)
             {
