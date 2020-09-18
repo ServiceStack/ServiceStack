@@ -167,10 +167,12 @@ namespace ServiceStack.Admin
     public partial class AdminUpdateUser : AdminUserBase, IPut, IReturn<AdminUserResponse>
     {
         [DataMember(Order = 10)] public string Id { get; set; }
-        [DataMember(Order = 11)] public List<string> AddRoles { get; set; }
-        [DataMember(Order = 12)] public List<string> RemoveRoles { get; set; }
-        [DataMember(Order = 13)] public List<string> AddPermissions { get; set; }
-        [DataMember(Order = 14)] public List<string> RemovePermissions { get; set; }
+        [DataMember(Order = 11)] public bool? LockUser { get; set; }
+        [DataMember(Order = 12)] public bool? UnlockUser { get; set; }
+        [DataMember(Order = 13)] public List<string> AddRoles { get; set; }
+        [DataMember(Order = 14)] public List<string> RemoveRoles { get; set; }
+        [DataMember(Order = 15)] public List<string> AddPermissions { get; set; }
+        [DataMember(Order = 16)] public List<string> RemovePermissions { get; set; }
     }
     
     [DataContract]
@@ -323,6 +325,17 @@ namespace ServiceStack.Admin
                 throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(Request));
             
             var newUser = PopulateUserAuth(AuthRepositoryAsync is ICustomUserAuth customUserAuth ? customUserAuth.CreateUserAuth() : new UserAuth(), request);
+
+            if (request.LockUser == true)
+            {
+                newUser.LockedDate = DateTime.UtcNow;
+            }
+            if (request.UnlockUser == true)
+            {
+                newUser.LockedDate = null;
+                newUser.InvalidLoginAttempts = 0;
+            }
+            
             if (!string.IsNullOrEmpty(request.Password))
                 existingUser = await AuthRepositoryAsync.UpdateUserAuthAsync(existingUser, newUser, request.Password);
             else
