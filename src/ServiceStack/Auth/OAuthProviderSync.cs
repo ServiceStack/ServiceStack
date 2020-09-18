@@ -7,7 +7,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
-    public abstract class OAuthProvider : AuthProvider, IOAuthProvider
+    public abstract class OAuthProviderSync : AuthProvider, IOAuthProvider
     {
         public override string Type => "oauth";
 
@@ -20,9 +20,9 @@ namespace ServiceStack.Auth
             : null;
 
         
-        public OAuthProvider() { }
+        public OAuthProviderSync() { }
 
-        public OAuthProvider(IAppSettings appSettings, string authRealm, string oAuthProvider,
+        public OAuthProviderSync(IAppSettings appSettings, string authRealm, string oAuthProvider,
             string consumerKeyName = nameof(ConsumerKey), string consumerSecretName = nameof(ConsumerSecret))
         {
             this.ConsumerKeyName = consumerKeyName;
