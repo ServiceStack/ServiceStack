@@ -245,6 +245,9 @@ namespace ServiceStack.Admin
 
         public async Task<object> Get(AdminGetUser request)
         {
+            if (request.Id == null)
+                throw new ArgumentNullException(nameof(request.Id));
+            
             var existingUser = await AuthRepositoryAsync.GetUserAuthAsync(request.Id);
             return await CreateUserResponse(existingUser);
         }
@@ -316,6 +319,9 @@ namespace ServiceStack.Admin
 
         public async Task<object> Put(AdminUpdateUser request)
         {
+            if (request.Id == null)
+                throw new ArgumentNullException(nameof(request.Id));
+            
             var validateResponse = await Validate(request);
             if (validateResponse != null)
                 return validateResponse;
@@ -351,6 +357,9 @@ namespace ServiceStack.Admin
         
         public async Task<object> Delete(AdminDeleteUser request)
         {
+            if (request.Id == null)
+                throw new ArgumentNullException(nameof(request.Id));
+            
             await AuthRepositoryAsync.DeleteUserAuthAsync(request.Id);
             return new AdminDeleteUserResponse {
                 Id = request.Id,
