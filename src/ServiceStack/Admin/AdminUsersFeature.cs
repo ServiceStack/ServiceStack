@@ -30,6 +30,7 @@ namespace ServiceStack.Admin
             nameof(UserAuth.Address),
             nameof(UserAuth.City),
             nameof(UserAuth.State),
+            nameof(UserAuth.PostalCode),
             nameof(UserAuth.Country),
             nameof(UserAuth.PhoneNumber),
             nameof(UserAuth.InvalidLoginAttempts),
