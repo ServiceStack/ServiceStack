@@ -146,6 +146,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Id = response.Id,
                 FirstName = "Given",
                 LastName = "Surname",
+                DisplayName = "Display Name",
                 Email = "newuser@email.com",
                 Password = "newp@ss",
                 ProfileUrl = Svg.Images[Svg.Icons.FemaleBusiness],
@@ -158,7 +159,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(updated.Id, Is.EqualTo(response.Id));
             Assert.That(updated.Result[nameof(UserAuth.FirstName)], Is.EqualTo("Given"));
             Assert.That(updated.Result[nameof(UserAuth.LastName)], Is.EqualTo("Surname"));
-            Assert.That(updated.Result[nameof(UserAuth.DisplayName)], Is.EqualTo("Given Surname"));
+            Assert.That(updated.Result[nameof(UserAuth.DisplayName)], Is.EqualTo("Display Name"));
             Assert.That(updated.Result[nameof(UserAuth.Email)], Is.EqualTo("newuser@email.com"));
             Assert.That(updated.Result[nameof(UserAuth.PrimaryEmail)], Is.EqualTo("newuser@email.com"));
             Assert.That(updated.Result[nameof(UserAuth.Roles)], Is.EqualTo(new List<string> {"NewRole"}));
