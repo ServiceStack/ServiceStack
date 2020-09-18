@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using ServiceStack.Auth;
+using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
 using ServiceStack.FluentValidation;
 using ServiceStack.NativeTypes;
@@ -658,7 +659,9 @@ namespace ServiceStack.Host
 
         public List<string> GetAllRoles()
         {
-            var to = new List<string>();
+            var to = new List<string> {
+                RoleNames.Admin
+            };
             var requiredRoles = OperationsMap
                 .SelectMany(x => x.Key.AllAttributes<RequiredRoleAttribute>()
                     .Concat(x.Value.ServiceType.AllAttributes<RequiredRoleAttribute>()))
