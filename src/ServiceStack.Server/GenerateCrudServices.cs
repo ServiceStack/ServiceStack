@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -798,7 +797,7 @@ namespace ServiceStack
                         to.ErrorMessage = e.Message;
                         log.Error($"GetTableSchemas(): Failed to GetTableColumns() for '{quotedTable}'", e);
 
-                        if (db.State != ConnectionState.Open)
+                        if (db.State != System.Data.ConnectionState.Open)
                         {
                             try { db.Dispose(); } catch {}
                             db = namedConnection != null
