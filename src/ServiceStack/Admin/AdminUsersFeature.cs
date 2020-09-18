@@ -33,7 +33,6 @@ namespace ServiceStack.Admin
             nameof(UserAuth.PostalCode),
             nameof(UserAuth.Country),
             nameof(UserAuth.PhoneNumber),
-            nameof(UserAuth.InvalidLoginAttempts),
             nameof(UserAuth.LockedDate),
             nameof(IAuthSession.ProfileUrl),
         };
