@@ -359,7 +359,7 @@ namespace ServiceStack.Admin
                 }
             }
 
-            userAuthProps.PopulateInstance(request);
+            userAuthProps.PopulateInstance(to);
 
             var hasProfileUrlProp = TypeProperties.Get(to.GetType()).PropertyMap.ContainsKey(nameof(IAuthSession.ProfileUrl));
             if (request.ProfileUrl != null && !hasProfileUrlProp)
