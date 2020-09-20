@@ -662,38 +662,27 @@ namespace ServiceStack.Host
             var to = new List<string> {
                 RoleNames.Admin
             };
-            var requiredRoles = OperationsMap
-                .SelectMany(x => x.Key.AllAttributes<RequiredRoleAttribute>()
-                    .Concat(x.Value.ServiceType.AllAttributes<RequiredRoleAttribute>()))
-                .SelectMany(x => x.RequiredRoles);
 
-            requiredRoles.Each(x => to.AddIfNotExists(x));
+            foreach (var op in OperationsMap.Values)
+            {
+                op.RequiredRoles.Each(x => to.AddIfNotExists(x));
+                op.RequiresAnyRole.Each(x => to.AddIfNotExists(x));
+            }
 
-            var requireAnyRoles = OperationsMap
-                .SelectMany(x => x.Key.AllAttributes<RequiresAnyRoleAttribute>()
-                    .Concat(x.Value.ServiceType.AllAttributes<RequiresAnyRoleAttribute>()))
-                .SelectMany(x => x.RequiredRoles);
-
-            requireAnyRoles.Each(x => to.AddIfNotExists(x));
             return to;
         }
 
         public List<string> GetAllPermissions()
         {
-            var to = new List<string>();
-            var requiredPermissions = OperationsMap
-                .SelectMany(x => x.Key.AllAttributes<RequiredPermissionAttribute>()
-                    .Concat(x.Value.ServiceType.AllAttributes<RequiredPermissionAttribute>()))
-                .SelectMany(x => x.RequiredPermissions);
+            var to = new List<string> {
+            };
 
-            requiredPermissions.Each(x => to.AddIfNotExists(x));
+            foreach (var op in OperationsMap.Values)
+            {
+                op.RequiredPermissions.Each(x => to.AddIfNotExists(x));
+                op.RequiresAnyPermission.Each(x => to.AddIfNotExists(x));
+            }
 
-            var requireAnyPermissions = OperationsMap
-                .SelectMany(x => x.Key.AllAttributes<RequiresAnyPermissionAttribute>()
-                    .Concat(x.Value.ServiceType.AllAttributes<RequiresAnyPermissionAttribute>()))
-                .SelectMany(x => x.RequiredPermissions);
-
-            requireAnyPermissions.Each(x => to.AddIfNotExists(x));
             return to;
         }
         
