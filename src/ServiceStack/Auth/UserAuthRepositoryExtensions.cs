@@ -363,7 +363,7 @@ namespace ServiceStack.Auth
         public static void ValidateNewUser(this IUserAuth newUser)
         {
             if (newUser.UserName.IsNullOrEmpty() && newUser.Email.IsNullOrEmpty())
-                throw new ArgumentNullException(ErrorMessages.UsernameOrEmailRequired);
+                throw new ArgumentException(ErrorMessages.UsernameOrEmailRequired, nameof(IUserAuth.UserName));
 
             if (!newUser.UserName.IsNullOrEmpty() && !HostContext.GetPlugin<AuthFeature>().IsValidUsername(newUser.UserName))
                 throw new ArgumentException(ErrorMessages.IllegalUsername, "UserName");
@@ -375,7 +375,7 @@ namespace ServiceStack.Auth
             password.ThrowIfNullOrEmpty("password");
 
             if (newUser.UserName.IsNullOrEmpty() && newUser.Email.IsNullOrEmpty())
-                throw new ArgumentNullException(ErrorMessages.UsernameOrEmailRequired);
+                throw new ArgumentException(ErrorMessages.UsernameOrEmailRequired, nameof(IUserAuth.UserName));
 
             if (!newUser.UserName.IsNullOrEmpty())
             {
