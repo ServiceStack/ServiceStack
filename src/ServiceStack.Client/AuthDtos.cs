@@ -595,13 +595,93 @@ namespace ServiceStack
         [DataMember(Order = 15)]
         public Dictionary<string, string> Meta { get; set; }
     }
+
+    public abstract class AdminUserBase : IMeta
+    {
+        [DataMember(Order = 1)] public string UserName { get; set; }
+        [DataMember(Order = 2)] public string FirstName { get; set; }
+        [DataMember(Order = 3)] public string LastName { get; set; }
+        [DataMember(Order = 4)] public string DisplayName { get; set; }
+        [DataMember(Order = 5)] public string Email { get; set; }
+        [DataMember(Order = 6)] public string Password { get; set; }
+        [DataMember(Order = 7)] public string ProfileUrl { get; set; }
+        [DataMember(Order = 8)] public Dictionary<string, string> UserAuthProperties { get; set; }
+        [DataMember(Order = 9)] public Dictionary<string, string> Meta { get; set; }
+    }
     
+    [DataContract]
+    public partial class AdminCreateUser : AdminUserBase, IPost, IReturn<AdminUserResponse>
+    {
+        [DataMember(Order = 10)] public List<string> Roles { get; set; }
+        [DataMember(Order = 11)] public List<string> Permissions { get; set; }
+    }
+    
+    [DataContract]
+    public partial class AdminUpdateUser : AdminUserBase, IPut, IReturn<AdminUserResponse>
+    {
+        [DataMember(Order = 10)] public string Id { get; set; }
+        [DataMember(Order = 11)] public bool? LockUser { get; set; }
+        [DataMember(Order = 12)] public bool? UnlockUser { get; set; }
+        [DataMember(Order = 13)] public List<string> AddRoles { get; set; }
+        [DataMember(Order = 14)] public List<string> RemoveRoles { get; set; }
+        [DataMember(Order = 15)] public List<string> AddPermissions { get; set; }
+        [DataMember(Order = 16)] public List<string> RemovePermissions { get; set; }
+    }
+    
+    [DataContract]
+    public partial class AdminGetUser : IGet, IReturn<AdminUserResponse>
+    {
+        [DataMember(Order = 10)] public string Id { get; set; }
+    }
+    
+    [DataContract]
+    public partial class AdminDeleteUser : IDelete, IReturn<AdminDeleteUserResponse>
+    {
+        [DataMember(Order = 10)] public string Id { get; set; }
+    }
+
+    [DataContract]
+    public class AdminDeleteUserResponse : IHasResponseStatus
+    {
+        [DataMember(Order = 1)] public string Id { get; set; }
+        [DataMember(Order = 2)] public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    [DataContract]
+    public partial class AdminUserResponse : IHasResponseStatus
+    {
+        [DataMember(Order = 1)] public string Id { get; set; }
+        [DataMember(Order = 2)] public Dictionary<string,object> Result { get; set; }
+        [DataMember(Order = 3)] public ResponseStatus ResponseStatus { get; set; }
+    }
+    
+    [DataContract]
+    public partial class AdminQueryUsers : IGet, IReturn<AdminUsersResponse>
+    {
+        [DataMember(Order = 1)] public string Query { get; set; }
+        [DataMember(Order = 2)] public string OrderBy { get; set; }
+        [DataMember(Order = 3)] public int? Skip { get; set; }
+        [DataMember(Order = 4)] public int? Take { get; set; }
+    }
+
+    [DataContract]
+    public class AdminUsersResponse : IHasResponseStatus
+    {
+        [DataMember(Order = 1)] public List<Dictionary<string,object>> Results { get; set; }
+        [DataMember(Order = 2)] public ResponseStatus ResponseStatus { get; set; }
+    }
+
 /* Allow metadata discovery & code-gen in *.Source.csproj builds */    
 #if !SOURCE
     [ExcludeMetadata] public partial class GetNavItems {}
     [ExcludeMetadata] public partial class MetadataApp { }
     [ExcludeMetadata] public partial class GetCrudEvents {}
     [ExcludeMetadata] public partial class CheckCrudEvents {}
+    [ExcludeMetadata] public partial class AdminCreateUser {}
+    [ExcludeMetadata] public partial class AdminUpdateUser {}
+    [ExcludeMetadata] public partial class AdminGetUser {}
+    [ExcludeMetadata] public partial class AdminDeleteUser {}
+    [ExcludeMetadata] public partial class AdminQueryUsers {}
 #endif
     
 }
