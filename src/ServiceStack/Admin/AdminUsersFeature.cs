@@ -59,6 +59,20 @@ namespace ServiceStack.Admin
             nameof(UserAuth.ModifiedDate),
         };
         
+        /// <summary>
+        /// Which UserAuth fields cannot be updated using UserAuthProperties dictionary
+        /// </summary>
+        public List<string> RestrictedUserAuthProperties { get; set; } = new List<string> {
+            nameof(UserAuth.Id),
+            nameof(UserAuth.Roles),
+            nameof(UserAuth.Permissions),
+            nameof(UserAuth.CreatedDate),
+            nameof(UserAuth.ModifiedDate),
+            nameof(UserAuth.PasswordHash),
+            nameof(UserAuth.Salt),
+            nameof(UserAuth.DigestHa1Hash),
+        };
+        
         public void Register(IAppHost appHost)
         {
             appHost.RegisterService(typeof(AdminUsersService));
@@ -334,7 +348,18 @@ namespace ServiceStack.Admin
             if (to.DisplayName == null && to.FirstName != null)
                 to.DisplayName = to.FirstName + (to.LastName != null ? " " + to.LastName : "");
 
-            request.UserAuthProperties.PopulateInstance(request);
+            var userAuthProps = request.UserAuthProperties;
+            if (userAuthProps != null)
+            {
+                userAuthProps = new Dictionary<string, string>(request.UserAuthProperties, StringComparer.OrdinalIgnoreCase);
+                var feature = AssertPlugin<AdminUsersFeature>();
+                foreach (var restrictedProp in feature.RestrictedUserAuthProperties)
+                {
+                    userAuthProps.RemoveKey(restrictedProp);
+                }
+            }
+
+            userAuthProps.PopulateInstance(request);
 
             var hasProfileUrlProp = TypeProperties.Get(to.GetType()).PropertyMap.ContainsKey(nameof(IAuthSession.ProfileUrl));
             if (request.ProfileUrl != null && !hasProfileUrlProp)
