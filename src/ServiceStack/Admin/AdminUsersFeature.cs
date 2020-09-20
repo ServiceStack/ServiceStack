@@ -309,7 +309,7 @@ namespace ServiceStack.Admin
 
             var newUser = PopulateUserAuth(AuthRepositoryAsync is ICustomUserAuth customUserAuth ? customUserAuth.CreateUserAuth() : new UserAuth(), request);
             IUserAuth user = await AuthRepositoryAsync.CreateUserAuthAsync(newUser, request.Password).ConfigAwait();
-            if (!request.Roles.IsEmpty() || !request.Roles.IsEmpty())
+            if (!request.Roles.IsEmpty() || !request.Permissions.IsEmpty())
             {
                 await AuthRepositoryAsync.AssignRolesAsync(user, request.Roles, request.Permissions);
             }
