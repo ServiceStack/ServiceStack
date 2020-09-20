@@ -54,19 +54,19 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AWSSDK.Core, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604">
-      <HintPath>..\..\src\packages\AWSSDK.Core.3.3.107.8\lib\net45\AWSSDK.Core.dll</HintPath>
+      <HintPath>..\..\src\packages\AWSSDK.Core.3.5.1.15\lib\net45\AWSSDK.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="AWSSDK.DynamoDBv2, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604">
-      <HintPath>..\..\src\packages\AWSSDK.DynamoDBv2.3.3.106.16\lib\net45\AWSSDK.DynamoDBv2.dll</HintPath>
+      <HintPath>..\..\src\packages\AWSSDK.DynamoDBv2.3.5.0.17\lib\net45\AWSSDK.DynamoDBv2.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="AWSSDK.S3, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604">
-      <HintPath>..\..\src\packages\AWSSDK.S3.3.3.111.9\lib\net45\AWSSDK.S3.dll</HintPath>
+      <HintPath>..\..\src\packages\AWSSDK.S3.3.5.1.6\lib\net45\AWSSDK.S3.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="AWSSDK.SQS, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604">
-      <HintPath>..\..\src\packages\AWSSDK.SQS.3.3.102.123\lib\net45\AWSSDK.SQS.dll</HintPath>
+      <HintPath>..\..\src\packages\AWSSDK.SQS.3.5.0.17\lib\net45\AWSSDK.SQS.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Crc32C.NET, Version=1.0.5.0, Culture=neutral, PublicKeyToken=null">
@@ -435,11 +435,6 @@
     <Folder Include="App_Data\" />
   </ItemGroup>
   <ItemGroup>
-    <Analyzer Include="..\..\src\packages\AWSSDK.DynamoDBv2.3.3.106.16\analyzers\dotnet\cs\AWSSDK.DynamoDBv2.CodeAnalysis.dll" />
-    <Analyzer Include="..\..\src\packages\AWSSDK.S3.3.3.111.9\analyzers\dotnet\cs\AWSSDK.S3.CodeAnalysis.dll" />
-    <Analyzer Include="..\..\src\packages\AWSSDK.SQS.3.3.102.123\analyzers\dotnet\cs\AWSSDK.SQS.CodeAnalysis.dll" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\src\ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.csproj">
       <Project>{5e258282-86a6-4780-ab25-5e458f2e6f70}</Project>
       <Name>ServiceStack.Api.OpenApi</Name>
@@ -480,6 +475,11 @@
       <Project>{680a1709-25eb-4d52-a87f-ee03ffd94baa}</Project>
       <Name>ServiceStack</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\..\src\packages\AWSSDK.DynamoDBv2.3.5.0.17\analyzers\dotnet\cs\AWSSDK.DynamoDBv2.CodeAnalysis.dll" />
+    <Analyzer Include="..\..\src\packages\AWSSDK.S3.3.5.1.6\analyzers\dotnet\cs\AWSSDK.S3.CodeAnalysis.dll" />
+    <Analyzer Include="..\..\src\packages\AWSSDK.SQS.3.5.0.17\analyzers\dotnet\cs\AWSSDK.SQS.CodeAnalysis.dll" />
   </ItemGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
