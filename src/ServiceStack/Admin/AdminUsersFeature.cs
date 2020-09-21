@@ -328,19 +328,19 @@ namespace ServiceStack.Admin
                 await feature.OnBeforeUpdateUser(newUser, existingUser, this);
 
             if (!string.IsNullOrEmpty(request.Password))
-                existingUser = await AuthRepositoryAsync.UpdateUserAuthAsync(existingUser, newUser, request.Password);
+                newUser = await AuthRepositoryAsync.UpdateUserAuthAsync(existingUser, newUser, request.Password);
             else
-                existingUser = await AuthRepositoryAsync.UpdateUserAuthAsync(existingUser, newUser);
+                newUser = await AuthRepositoryAsync.UpdateUserAuthAsync(existingUser, newUser);
 
             if (!request.AddRoles.IsEmpty() || !request.AddPermissions.IsEmpty())
-                await AuthRepositoryAsync.AssignRolesAsync(existingUser, request.AddRoles, request.AddPermissions);
+                await AuthRepositoryAsync.AssignRolesAsync(newUser, request.AddRoles, request.AddPermissions);
             if (!request.RemoveRoles.IsEmpty() || !request.RemovePermissions.IsEmpty())
-                await AuthRepositoryAsync.UnAssignRolesAsync(existingUser, request.RemoveRoles, request.RemovePermissions);
+                await AuthRepositoryAsync.UnAssignRolesAsync(newUser, request.RemoveRoles, request.RemovePermissions);
 
             if (feature.OnAfterUpdateUser != null)
                 await feature.OnAfterUpdateUser(newUser, existingUser, this);
 
-            return await CreateUserResponse(existingUser);
+            return await CreateUserResponse(newUser);
         }
         
         public async Task<object> Delete(AdminDeleteUser request)
