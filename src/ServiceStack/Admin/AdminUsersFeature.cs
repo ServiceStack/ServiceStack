@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
-using ServiceStack.DataAnnotations;
 using ServiceStack.NativeTypes;
 using ServiceStack.Text;
 
@@ -72,6 +70,42 @@ namespace ServiceStack.Admin
             nameof(UserAuth.Salt),
             nameof(UserAuth.DigestHa1Hash),
         };
+
+        /// <summary>
+        /// Invoked before user is created or updated.
+        /// A non-null return (e.g. HttpResult/HttpError) invalidates the request and is used as the API Response instead
+        /// </summary>
+        public ValidateAsyncFn ValidateFn { get; set; }
+
+        /// <summary>
+        /// Invoked before a User is created
+        /// </summary>
+        public Func<IUserAuth, Service, Task> OnBeforeCreateUser { get; set; }
+
+        /// <summary>
+        /// Invoked after a User is created
+        /// </summary>
+        public Func<IUserAuth, Service, Task> OnAfterCreateUser { get; set; }
+
+        /// <summary>
+        /// Invoked before a User is updated. (NewUser, ExistingUser, Service)
+        /// </summary>
+        public Func<IUserAuth, IUserAuth, Service, Task> OnBeforeUpdateUser { get; set; }
+
+        /// <summary>
+        /// Invoked after a User is updated. (NewUser, ExistingUser, Service)
+        /// </summary>
+        public Func<IUserAuth, IUserAuth, Service, Task> OnAfterUpdateUser { get; set; }
+
+        /// <summary>
+        /// Invoked before a User is deleted
+        /// </summary>
+        public Func<string, Service, Task> OnBeforeDeleteUser { get; set; }
+
+        /// <summary>
+        /// Invoked after a User is deleted
+        /// </summary>
+        public Func<string, Service, Task> OnAfterDeleteUser { get; set; }
         
         public void Register(IAppHost appHost)
         {
@@ -153,12 +187,10 @@ namespace ServiceStack.Admin
 
     public partial class AdminUsersService : Service
     {
-        public static ValidateFn ValidateFn { get; set; }
-
         private async Task<object> Validate(AdminUserBase request)
         {
-            await RequiredRoleAttribute.AssertRequiredRoleAsync(
-                Request, AssertPlugin<AdminUsersFeature>().AdminRole);
+            var feature = AssertPlugin<AdminUsersFeature>();
+            await RequiredRoleAttribute.AssertRequiredRoleAsync(Request, feature.AdminRole);
             
             var authFeature = GetPlugin<AuthFeature>();
             if (authFeature != null)
@@ -171,8 +203,11 @@ namespace ServiceStack.Admin
                         request.Email = request.Email.ToLower();
                 }
             }
-                        
-            var validateResponse = ValidateFn?.Invoke(this, HttpMethods.Post, request);
+
+            if (feature.ValidateFn == null)
+                return null;
+
+            var validateResponse = await feature.ValidateFn(this, HttpMethods.Post, request);
             return validateResponse;
         }
 
@@ -241,11 +276,19 @@ namespace ServiceStack.Admin
                 throw HttpError.Validation("AlreadyExists", ErrorMessages.EmailAlreadyExists.Localize(base.Request), nameof(request.Email));
 
             var newUser = PopulateUserAuth(AuthRepositoryAsync is ICustomUserAuth customUserAuth ? customUserAuth.CreateUserAuth() : new UserAuth(), request);
+
+            var feature = AssertPlugin<AdminUsersFeature>();
+            if (feature.OnBeforeCreateUser != null)
+                await feature.OnBeforeCreateUser(newUser, this);
+            
             IUserAuth user = await AuthRepositoryAsync.CreateUserAuthAsync(newUser, request.Password).ConfigAwait();
             if (!request.Roles.IsEmpty() || !request.Permissions.IsEmpty())
             {
                 await AuthRepositoryAsync.AssignRolesAsync(user, request.Roles, request.Permissions);
             }
+
+            if (feature.OnAfterCreateUser != null)
+                await feature.OnAfterCreateUser(newUser, this);
 
             return await CreateUserResponse(user);
         }
@@ -275,6 +318,10 @@ namespace ServiceStack.Admin
                 newUser.InvalidLoginAttempts = 0;
             }
             
+            var feature = AssertPlugin<AdminUsersFeature>();
+            if (feature.OnBeforeUpdateUser != null)
+                await feature.OnBeforeUpdateUser(newUser, existingUser, this);
+
             if (!string.IsNullOrEmpty(request.Password))
                 existingUser = await AuthRepositoryAsync.UpdateUserAuthAsync(existingUser, newUser, request.Password);
             else
@@ -285,6 +332,9 @@ namespace ServiceStack.Admin
             if (!request.RemoveRoles.IsEmpty() || !request.RemovePermissions.IsEmpty())
                 await AuthRepositoryAsync.UnAssignRolesAsync(existingUser, request.RemoveRoles, request.RemovePermissions);
 
+            if (feature.OnAfterUpdateUser != null)
+                await feature.OnAfterUpdateUser(newUser, existingUser, this);
+
             return await CreateUserResponse(existingUser);
         }
         
@@ -293,7 +343,15 @@ namespace ServiceStack.Admin
             if (request.Id == null)
                 throw new ArgumentNullException(nameof(request.Id));
             
+            var feature = AssertPlugin<AdminUsersFeature>();
+            if (feature.OnBeforeDeleteUser != null)
+                await feature.OnBeforeDeleteUser(request.Id, this);
+            
             await AuthRepositoryAsync.DeleteUserAuthAsync(request.Id);
+
+            if (feature.OnAfterDeleteUser != null)
+                await feature.OnAfterDeleteUser(request.Id, this);
+
             return new AdminDeleteUserResponse {
                 Id = request.Id,
             };
