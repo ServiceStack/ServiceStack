@@ -173,9 +173,12 @@ namespace ServiceStack.Admin
 
         public void AfterInit(IAppHost appHost)
         {
-            var authRepo = ((ServiceStackHost)appHost).GetAuthRepositoryAsync();
-            if (authRepo == null)
-                throw new Exception("UserAuth Repository is required to use " + nameof(AdminUsersFeature));
+            var authRepo = ((ServiceStackHost)appHost).GetAuthRepository();
+            using (authRepo as IDisposable)
+            {
+                if (authRepo == null)
+                    throw new Exception("UserAuth Repository is required to use " + nameof(AdminUsersFeature));
+            }
         }
     }
         
