@@ -9,7 +9,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Admin
 {
-    public class AdminUsersFeature : IPlugin, Model.IHasStringId, IPostInitPlugin
+    public class AdminUsersFeature : IPlugin, Model.IHasStringId, IAfterInitAppHost
     {
         public string Id { get; set; } = Plugins.AdminUsers;
         public string AdminRole { get; set; } = RoleNames.Admin;
@@ -171,7 +171,7 @@ namespace ServiceStack.Admin
             });
         }
 
-        public void AfterPluginsLoaded(IAppHost appHost)
+        public void AfterInit(IAppHost appHost)
         {
             var authRepo = ((ServiceStackHost)appHost).GetAuthRepositoryAsync();
             if (authRepo == null)
