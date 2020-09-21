@@ -278,7 +278,7 @@ namespace ServiceStack.Admin
             if (await AuthRepositoryAsync.GetUserAuthByUserNameAsync(request.Email).ConfigAwait() != null)
                 throw HttpError.Validation("AlreadyExists", ErrorMessages.EmailAlreadyExists.Localize(base.Request), nameof(request.Email));
 
-            var newUser = PopulateUserAuth(AuthRepositoryAsync is ICustomUserAuth customUserAuth ? customUserAuth.CreateUserAuth() : new UserAuth(), request);
+            var newUser = PopulateUserAuth(NewUserAuth(), request);
 
             var feature = AssertPlugin<AdminUsersFeature>();
             if (feature.OnBeforeCreateUser != null)
@@ -296,6 +296,8 @@ namespace ServiceStack.Admin
             return await CreateUserResponse(user);
         }
 
+        private IUserAuth NewUserAuth() => AuthRepositoryAsync is ICustomUserAuth customUserAuth ? customUserAuth.CreateUserAuth() : new UserAuth();
+
         public async Task<object> Put(AdminUpdateUser request)
         {
             if (request.Id == null)
@@ -308,8 +310,8 @@ namespace ServiceStack.Admin
             var existingUser = await AuthRepositoryAsync.GetUserAuthAsync(request.Id);
             if (existingUser == null)
                 throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(Request));
-            
-            var newUser = PopulateUserAuth(existingUser, request);
+
+            var newUser = PopulateUserAuth(NewUserAuth().PopulateWith(existingUser), request);
 
             if (request.LockUser == true)
             {
