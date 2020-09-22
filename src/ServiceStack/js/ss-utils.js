@@ -723,7 +723,7 @@
                         $.ss.CONNECT_ID = $.ss.CONNECT_ID ? $.ss.CONNECT_ID + 1 : 1;
                         (function(connectId) {
                             function sendHeartbeat() {
-                                if (connectId !== $.ss.CONNECT_ID) // Only allow latest connections heartbeat callback through 
+                                if ($.ss.eventSource == null || connectId !== $.ss.CONNECT_ID) // Only allow latest connections heartbeat callback through 
                                     return;
                                 if ($.ss.eventSource.readyState === 2) //CLOSED
                                 {
