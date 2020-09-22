@@ -189,11 +189,17 @@ namespace ServiceStack.Admin
 
     public partial class AdminUsersService : Service
     {
-        private async Task<object> Validate(AdminUserBase request)
+        private async Task<AdminUsersFeature> AssertRequiredRole()
         {
             var feature = AssertPlugin<AdminUsersFeature>();
             await RequiredRoleAttribute.AssertRequiredRoleAsync(Request, feature.AdminRole);
-            
+            return feature;
+        }
+
+        private async Task<object> Validate(AdminUserBase request)
+        {
+            var feature = await AssertRequiredRole();
+
             var authFeature = GetPlugin<AuthFeature>();
             if (authFeature != null)
             {
@@ -215,6 +221,8 @@ namespace ServiceStack.Admin
 
         public async Task<object> Get(AdminGetUser request)
         {
+            await AssertRequiredRole();
+
             if (request.Id == null)
                 throw new ArgumentNullException(nameof(request.Id));
             
@@ -224,6 +232,8 @@ namespace ServiceStack.Admin
 
         public async Task<object> Get(AdminQueryUsers request)
         {
+            await AssertRequiredRole();
+
             // Do exact search by Username/Email if Auth Repo doesn't support querying
             if (!(AuthRepositoryAsync is IQueryUserAuthAsync) && !(AuthRepository is IQueryUserAuth))
             {
@@ -344,10 +354,10 @@ namespace ServiceStack.Admin
         
         public async Task<object> Delete(AdminDeleteUser request)
         {
+            var feature = await AssertRequiredRole();
             if (request.Id == null)
                 throw new ArgumentNullException(nameof(request.Id));
             
-            var feature = AssertPlugin<AdminUsersFeature>();
             if (feature.OnBeforeDeleteUser != null)
                 await feature.OnBeforeDeleteUser(request.Id, this);
             
@@ -401,7 +411,7 @@ namespace ServiceStack.Admin
             return userProps;
         }
 
-        public IUserAuth PopulateUserAuth(IUserAuth to, AdminUserBase request)
+        private IUserAuth PopulateUserAuth(IUserAuth to, AdminUserBase request)
         {
             to.PopulateWithNonDefaultValues(request);
             if (!string.IsNullOrEmpty(request.Email))
