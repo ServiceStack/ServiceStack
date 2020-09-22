@@ -146,7 +146,7 @@ namespace ServiceStack
                     if (UserAuthId == null)
                         return false;
 
-                    return await managesRoles.HasRoleAsync(this.UserAuthId, role);
+                    return await managesRoles.HasRoleAsync(this.UserAuthId, role, token);
                 }
             }
 

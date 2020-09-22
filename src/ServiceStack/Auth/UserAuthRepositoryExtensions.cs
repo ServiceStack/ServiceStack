@@ -152,22 +152,18 @@ namespace ServiceStack.Auth
             if (userAuth == null)
                 return;
 
-            var holdSessionId = session.Id;
-            session.PopulateWith(userAuth);  
-            session.Id = holdSessionId;
-            session.UserAuthId ??= (userAuth.Id != default ? userAuth.Id.ToString(CultureInfo.InvariantCulture) : null);
-            session.IsAuthenticated = true;
+            PopulateSessionInternal(session, userAuth);
 
             var hadUserAuthId = session.UserAuthId != null;
             if (hadUserAuthId && authRepo != null)
                 session.ProviderOAuthAccess = authRepo.GetAuthTokens(session.UserAuthId);
             
-            var existingPopulator = AutoMappingUtils.GetPopulator(typeof(IAuthSession), typeof(IUserAuth));
-            existingPopulator?.Invoke(session, userAuth);
-            
             //session.UserAuthId could be populated in populator
             if (!hadUserAuthId && authRepo != null) 
                 session.ProviderOAuthAccess = authRepo.GetAuthTokens(session.UserAuthId);
+            
+            var existingPopulator = AutoMappingUtils.GetPopulator(typeof(IAuthSession), typeof(IUserAuth));
+            existingPopulator?.Invoke(session, userAuth);
         }
 
         public static async Task PopulateSessionAsync(this IAuthSession session, IUserAuth userAuth, IAuthRepositoryAsync authRepo = null, CancellationToken token=default)
@@ -175,24 +171,41 @@ namespace ServiceStack.Auth
             if (userAuth == null)
                 return;
 
+            PopulateSessionInternal(session, userAuth);
+
+            var hadUserAuthId = session.UserAuthId != null;
+            if (hadUserAuthId && authRepo != null)
+                session.ProviderOAuthAccess = await authRepo.GetAuthTokensAsync(session.UserAuthId, token).ConfigAwait();
+            
+            //session.UserAuthId could be populated in populator
+            if (!hadUserAuthId && authRepo != null) 
+                session.ProviderOAuthAccess = await authRepo.GetAuthTokensAsync(session.UserAuthId, token).ConfigAwait();
+            
+            var existingPopulator = AutoMappingUtils.GetPopulator(typeof(IAuthSession), typeof(IUserAuth));
+            existingPopulator?.Invoke(session, userAuth);
+        }
+
+        private static void PopulateSessionInternal(IAuthSession session, IUserAuth userAuth)
+        {
             var holdSessionId = session.Id;
-            session.PopulateWith(userAuth);  
+            session.PopulateWith(userAuth);
             session.Id = holdSessionId;
             session.UserAuthId ??= (userAuth.Id != default ? userAuth.Id.ToString(CultureInfo.InvariantCulture) : null);
             if (userAuth.Meta != null)
                 session.PopulateFromMap(userAuth.Meta);
             session.IsAuthenticated = true;
 
-            var hadUserAuthId = session.UserAuthId != null;
-            if (hadUserAuthId && authRepo != null)
-                session.ProviderOAuthAccess = await authRepo.GetAuthTokensAsync(session.UserAuthId, token).ConfigAwait();
-            
-            var existingPopulator = AutoMappingUtils.GetPopulator(typeof(IAuthSession), typeof(IUserAuth));
-            existingPopulator?.Invoke(session, userAuth);
-            
-            //session.UserAuthId could be populated in populator
-            if (!hadUserAuthId && authRepo != null) 
-                session.ProviderOAuthAccess = await authRepo.GetAuthTokensAsync(session.UserAuthId, token).ConfigAwait();
+            if (string.IsNullOrEmpty(session.DisplayName))
+            {
+                session.DisplayName = session.UserName;
+                if (string.IsNullOrEmpty(session.DisplayName)
+                    && (!string.IsNullOrEmpty(session.FirstName) || !string.IsNullOrEmpty(session.LastName)))
+                {
+                    session.DisplayName = !string.IsNullOrEmpty(session.FirstName)
+                        ? session.FirstName + (!string.IsNullOrEmpty(session.LastName) ? " " + session.LastName : "")
+                        : session.LastName;
+                }
+            }
         }
 
         public static List<IUserAuthDetails> GetUserAuthDetails(this IAuthRepository authRepo, int userAuthId)
