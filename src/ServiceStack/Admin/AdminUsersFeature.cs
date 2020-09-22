@@ -32,7 +32,6 @@ namespace ServiceStack.Admin
             nameof(UserAuth.Country),
             nameof(UserAuth.PhoneNumber),
             nameof(UserAuth.LockedDate),
-            nameof(IAuthSession.ProfileUrl),
         };
 
         /// <summary>
