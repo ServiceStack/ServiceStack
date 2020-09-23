@@ -10,9 +10,11 @@ namespace ServiceStack.Configuration
             : base(new MultiSettingsWrapper(appSettings))
         {
             this.instance = (MultiSettingsWrapper)settings;
+            AppSettings = appSettings;
         }
 
         private MultiSettingsWrapper instance;
+        public IAppSettings[] AppSettings { get; }
 
         class MultiSettingsWrapper : ISettingsWriter
         {
@@ -44,6 +46,20 @@ namespace ServiceStack.Configuration
             {
                 appSettings.Each(x => x.Set(key, value));
             }
+        }
+
+        public override T Get<T>(string name)
+        {
+            return AppSettings
+                .Select(appSetting => appSetting.Get<T>(name))
+                .FirstOrDefault(value => value != null);
+        }
+
+        public override T Get<T>(string name, T defaultValue)
+        {
+            return AppSettings
+                .Select(appSetting => appSetting.Get<T>(name))
+                .FirstOrDefault(value => value != null) ?? defaultValue;
         }
     }
 }
