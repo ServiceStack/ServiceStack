@@ -147,7 +147,7 @@ namespace ServiceStack.Host
             return op;
         }
 
-        public List<MethodInfo> GetImplementedActions(Type serviceType, Type requestType)
+        public List<ActionMethod> GetImplementedActions(Type serviceType, Type requestType)
         {
             if (!typeof(IService).IsAssignableFrom(serviceType))
                 throw new NotSupportedException("All Services must implement IService");

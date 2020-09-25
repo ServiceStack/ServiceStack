@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using ServiceStack.Web;
@@ -23,17 +24,51 @@ namespace ServiceStack.Host
         }
     }
 
+    public class ActionMethod
+    {
+        public const string Async = nameof(Async);
+        public MethodInfo MethodInfo { get; }
+        public bool IsAsync { get; }
+        public string Name { get; }
+        public ActionMethod(MethodInfo methodInfo)
+        {
+            MethodInfo = methodInfo;
+            IsAsync = methodInfo.Name.EndsWith(Async);
+            Name = IsAsync
+                ? methodInfo.Name.Substring(0, methodInfo.Name.Length - Async.Length)
+                : methodInfo.Name;
+        }
+        
+        public ParameterInfo[] GetParameters() => MethodInfo.GetParameters();
+        public bool IsGenericMethod => MethodInfo.IsGenericMethod;
+        public Type ReturnType => MethodInfo.ReturnType;
+        public object[] GetCustomAttributes(bool inherit) => MethodInfo.GetCustomAttributes(inherit);
+
+        public object[] AllAttributes() => MethodInfo.AllAttributes();
+        public T[] AllAttributes<T>() => MethodInfo.AllAttributes<T>();
+    }
+
     public static class ServiceExecExtensions
     {
-        public static IEnumerable<MethodInfo> GetActions(this Type serviceType)
+        public static List<ActionMethod> GetActions(this Type serviceType)
         {
+            var to = new List<ActionMethod>();
+            
             foreach (var mi in serviceType.GetMethods(BindingFlags.Public | BindingFlags.Instance))
             {
-                if (!ServiceController.IsServiceAction(mi)) 
+                var actionMethod = new ActionMethod(mi);
+                if (!ServiceController.IsServiceAction(actionMethod)) 
                     continue;
 
-                yield return mi;
+                to.Add(actionMethod);
             }
+
+            // Remove all sync methods where async equivalents exist & have async methods masquerades as sync methods for cheaper runtime invokation  
+            var asyncActions = new HashSet<string>(to.Where(x => x.IsAsync).Select(x => x.Name), StringComparer.OrdinalIgnoreCase);
+            if (asyncActions.Count > 0)
+                to.RemoveAll(x => asyncActions.Contains(x.Name) && !x.IsAsync);
+
+            return to;
         }
     }
 
@@ -54,28 +89,18 @@ namespace ServiceStack.Host
                 var args = mi.GetParameters();
 
                 var requestType = args[0].ParameterType;
-                var actionCtx = new ActionContext
-                {
+                var actionCtx = new ActionContext {
                     Id = ActionContext.Key(actionName, requestType.GetOperationName()),
                     ServiceType = typeof(TService),
                     RequestType = requestType,
+                    ServiceAction = CreateExecFn(requestType, mi.MethodInfo),
                 };
 
-                try
-                {
-                    actionCtx.ServiceAction = CreateExecFn(requestType, mi);
-                }
-                catch
-                {
-                    //Potential problems with MONO, using reflection for fallback
-                    actionCtx.ServiceAction = (service, request) =>
-                      mi.Invoke(service, new[] { request });
-                }
 
                 var reqFilters = new List<IRequestFilterBase>();
                 var resFilters = new List<IResponseFilterBase>();
 
-                foreach (var attr in mi.GetCustomAttributes(true))
+                foreach (var attr in mi.MethodInfo.GetCustomAttributes(true))
                 {
                     var hasReqFilter = attr as IRequestFilterBase;
                     var hasResFilter = attr as IResponseFilterBase;
@@ -115,8 +140,11 @@ namespace ServiceStack.Host
 
             if (mi.ReturnType != typeof(void))
             {
+                if (mi.ReturnType.IsValueType)
+                    callExecute = Expression.Convert(callExecute, typeof(object));
+                    
                 var executeFunc = Expression.Lambda<ActionInvokerFn>
-                (callExecute, serviceParam, requestDtoParam).Compile();
+                    (callExecute, serviceParam, requestDtoParam).Compile();
 
                 return executeFunc;
             }
@@ -144,7 +172,8 @@ namespace ServiceStack.Host
         {
             foreach (var actionCtx in GetActionsFor<TRequest>())
             {
-                if (execMap.ContainsKey(actionCtx.Id)) continue;
+                if (execMap.ContainsKey(actionCtx.Id)) 
+                    continue;
 
                 var serviceRunner = HostContext.CreateServiceRunner<TRequest>(actionCtx);
                 execMap[actionCtx.Id] = serviceRunner.Process;

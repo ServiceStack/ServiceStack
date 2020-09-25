@@ -201,7 +201,7 @@ namespace ServiceStack.Host
                 && !serviceType.ContainsGenericParameters;
         }
 
-        public static bool IsServiceAction(MethodInfo mi)
+        public static bool IsServiceAction(ActionMethod mi)
         {
             if (mi.IsGenericMethod || mi.GetParameters().Length != 1)
                 return false;
@@ -421,19 +421,19 @@ namespace ServiceStack.Host
             ResetServiceExecCachesIfNeeded(serviceType, requestType);
 
             var serviceExecDef = typeof(ServiceRequestExec<,>).MakeGenericType(serviceType, requestType);
-            var iserviceExec = (IServiceExec)serviceExecDef.CreateInstance();
+            var iServiceExec = (IServiceExec)serviceExecDef.CreateInstance();
 
-            ServiceExecFn handlerFn = (req, dto) =>
+            Task<object> HandlerFn(IRequest req, object dto)
             {
                 var service = serviceFactoryFn.CreateInstance(req, serviceType);
 
-                ServiceExecFn serviceExec = (reqCtx, requestDto) =>
-                    iserviceExec.Execute(reqCtx, service, requestDto).InTask();
+                Task<object> ServiceExec(IRequest reqCtx, object requestDto) => 
+                    iServiceExec.Execute(reqCtx, service, requestDto).InTask();
 
-                return ManagedServiceExec(serviceExec, (IService)service, req, dto);
-            };
+                return ManagedServiceExec(ServiceExec, (IService) service, req, dto);
+            }
 
-            AddToRequestExecMap(requestType, serviceType, handlerFn);
+            AddToRequestExecMap(requestType, serviceType, HandlerFn);
         }
 
         private void AddToRequestExecMap(Type requestType, Type serviceType, ServiceExecFn handlerFn)
