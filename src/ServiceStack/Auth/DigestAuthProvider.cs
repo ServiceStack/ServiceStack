@@ -182,7 +182,7 @@ namespace ServiceStack.Auth
                 SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
 
                 using var authService = HostContext.ResolveService<AuthenticateService>(req);
-                var response = authService.PostSync(new Authenticate
+                var response = authService.Post(new Authenticate
                 {
                     provider = Name,
                     nonce = digestAuth["nonce"],

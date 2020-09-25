@@ -79,7 +79,7 @@ namespace ServiceStack.Common.Tests.OAuth
             var registrationService = RegistrationServiceTests.GetRegistrationService(authRepo: userAuth);
             var request = RegistrationServiceTests.GetValidRegistration(autoLogin: true);
 
-            registrationService.Post(request);
+            registrationService.PostAsync(request);
             return registrationService;
         }
 

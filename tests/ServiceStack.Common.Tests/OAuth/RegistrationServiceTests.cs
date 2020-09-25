@@ -88,7 +88,7 @@ namespace ServiceStack.Common.Tests.OAuth
 
         private static HttpError PostRegistrationError(RegisterService service, Register register)
         {
-            var response = (HttpError)service.RunAction(register, (svc, req) => svc.PostSync(req));
+            var response = (HttpError)service.RunAction(register, (svc, req) => svc.Post(req));
             return response;
         }
 
@@ -118,7 +118,7 @@ namespace ServiceStack.Common.Tests.OAuth
 
             var request = GetValidRegistration();
 
-            var response = await service.Post(request);
+            var response = await service.PostAsync(request);
 
             Assert.That(response as RegisterResponse, Is.Not.Null);
         }
@@ -190,7 +190,7 @@ namespace ServiceStack.Common.Tests.OAuth
             var request = GetValidRegistration();
 
             service.Request.QueryString[Keywords.Continue] = "http://localhost/home";
-            var response = (await service.Post(request)) as HttpResult;
+            var response = (await service.PostAsync(request)) as HttpResult;
 
             Assert.That(response, Is.Not.Null);
             Assert.That(response.Status, Is.EqualTo(302));
@@ -205,7 +205,7 @@ namespace ServiceStack.Common.Tests.OAuth
             var request = GetValidRegistration();
             service.Request.QueryString[Keywords.Continue] = string.Empty;
 
-            var response = await service.Post(request);
+            var response = await service.PostAsync(request);
 
             Assert.That(response as HttpResult, Is.Null);
             Assert.That(response as RegisterResponse, Is.Not.Null);
@@ -219,7 +219,7 @@ namespace ServiceStack.Common.Tests.OAuth
             var request = GetValidRegistration();
             service.Request.QueryString[Keywords.Continue] = "http://localhost/home";
 
-            var response = await service.Post(request);
+            var response = await service.PostAsync(request);
 
             Assert.That(response as HttpResult, Is.Null);
             Assert.That(response as RegisterResponse, Is.Not.Null);

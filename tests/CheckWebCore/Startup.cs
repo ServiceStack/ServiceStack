@@ -463,9 +463,9 @@ namespace CheckWebCore
         {
             using (var service = base.ResolveService<AuthenticateService>()) //In Process
             {
-                service.PostSync(new Authenticate { provider = "logout" });
+                service.Post(new Authenticate { provider = "logout" });
                 
-                return service.PostSync(new Authenticate {
+                return service.Post(new Authenticate {
                     provider = AuthenticateService.CredentialsProvider,
                     UserName = request.UserName,
                 });

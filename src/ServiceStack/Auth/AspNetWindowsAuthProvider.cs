@@ -180,7 +180,7 @@ namespace ServiceStack.Auth
                     var session = req.GetSession();
                     if (LoginMatchesSession(session, user.Identity.Name)) return;
 
-                    var response = authService.PostSync(new Authenticate
+                    var response = authService.Post(new Authenticate
                     {
                         provider = Name,
                         UserName = user.GetUserName(),

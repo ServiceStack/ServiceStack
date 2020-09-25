@@ -88,19 +88,21 @@ namespace ServiceStack.Auth
         /// <summary>
         /// Update an existing registration
         /// </summary>
-        public Task<object> Put(Register request)
+        [Obsolete("Use PostAsync")]
+        public Task<object> PutAsync(Register request)
         {
-            return Post(request);
+            return PostAsync(request);
         }
 
         /// <summary>
-        ///     Create new Registration
+        /// Create new Registration
         /// </summary>
-        public object PostSync(Register request)
+        [Obsolete("Use PostAsync")]
+        public object Post(Register request)
         {
             try
             {
-                var task = Post(request);
+                var task = PostAsync(request);
                 var response = task.GetResult();
                 return response;
             }
@@ -111,9 +113,9 @@ namespace ServiceStack.Auth
         }
         
         /// <summary>
-        ///     Create new Registration
+        /// Create new Registration
         /// </summary>
-        public async Task<object> Post(Register request)
+        public async Task<object> PostAsync(Register request)
         {
             var returnUrl = Request.GetReturnUrl();
 
@@ -167,7 +169,7 @@ namespace ServiceStack.Auth
             if (request.AutoLogin.GetValueOrDefault())
             {
                 using var authService = base.ResolveService<AuthenticateService>();
-                var authResponse = await authService.Post(
+                var authResponse = await authService.PostAsync(
                     new Authenticate {
                         provider = CredentialsAuthProvider.Name,
                         UserName = request.UserName ?? request.Email,

@@ -12,6 +12,10 @@ using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.Web;
 
+#if NETCORE
+using Microsoft.Extensions.DependencyInjection;
+#endif
+
 //The entire C# code for the stand-alone RazorRockstars demo.
 namespace ServiceStack.Server.Tests.Auth
 {
@@ -27,6 +31,13 @@ namespace ServiceStack.Server.Tests.Auth
         public Func<IRequest, IAuthRepository> GetAuthRepositoryFn;
 
         public Action<Container> Use;
+
+#if NETCORE
+        public override void Configure(Microsoft.Extensions.DependencyInjection.IServiceCollection services)
+        {
+            services.AddMvc();
+        }
+#endif
 
         public override void Configure(Container container)
         {

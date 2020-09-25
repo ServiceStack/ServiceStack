@@ -327,7 +327,7 @@ namespace ServiceStack.Auth
 
             using (var authService = HostContext.ResolveService<AuthenticateService>(req))
             {
-                var response = authService.PostSync(new Authenticate
+                var response = authService.Post(new Authenticate
                 {
                     provider = Name,
                     UserName = "ApiKey",

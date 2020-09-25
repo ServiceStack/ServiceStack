@@ -202,7 +202,7 @@ namespace ServiceStack.Auth
 
         public void Options(Authenticate request) { }
 
-        public Task<object> Get(Authenticate request)
+        public Task<object> GetAsync(Authenticate request)
         {
             var allowGetAuthRequests = HostContext.AssertPlugin<AuthFeature>().AllowGetAuthenticateRequests;
 
@@ -210,14 +210,15 @@ namespace ServiceStack.Auth
             if (allowGetAuthRequests != null && !allowGetAuthRequests(Request))
                 throw new NotSupportedException("GET Authenticate requests are disabled, to enable set AuthFeature.AllowGetAuthenticateRequests = req => true");
             
-            return Post(request);
+            return PostAsync(request);
         }
 
-        public object PostSync(Authenticate request)
+        [Obsolete("Use PostAsync")]
+        public object Post(Authenticate request)
         {
             try
             {
-                var task = Post(request);
+                var task = PostAsync(request);
                 var response = task.GetResult();
                 return response;
             }
@@ -227,7 +228,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public async Task<object> Post(Authenticate request)
+        public async Task<object> PostAsync(Authenticate request)
         {
             AssertAuthProviders();
 
@@ -475,7 +476,7 @@ namespace ServiceStack.Auth
             return response;
         }
 
-        public async Task<object> Delete(Authenticate request)
+        public async Task<object> DeleteAsync(Authenticate request)
         {
             var response = ValidateFn?.Invoke(this, HttpMethods.Delete, request);
             if (response != null)

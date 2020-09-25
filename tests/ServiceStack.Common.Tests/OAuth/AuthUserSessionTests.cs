@@ -237,7 +237,7 @@ namespace ServiceStack.Common.Tests.OAuth
 
             var registrationService = GetRegistrationService(userAuthRepository);
 
-            var responseObj = await registrationService.Post(RegisterDto);
+            var responseObj = await registrationService.PostAsync(RegisterDto);
 
             if (responseObj is IHttpResult httpResult)
             {
@@ -284,7 +284,7 @@ namespace ServiceStack.Common.Tests.OAuth
 
             var registrationService = GetRegistrationService(userAuthRepository);
 
-            var responseObj = await registrationService.Post(RegisterDto);
+            var responseObj = await registrationService.PostAsync(RegisterDto);
 
             if (responseObj is IHttpResult httpResult)
             {
@@ -332,7 +332,7 @@ namespace ServiceStack.Common.Tests.OAuth
             //Register
             var registrationService = GetRegistrationService(userAuthRepository, oAuthUserSession, requestContext);
 
-            var responseObj = await registrationService.Post(RegisterDto);
+            var responseObj = await registrationService.PostAsync(RegisterDto);
             Assert.That(responseObj as IHttpError, Is.Null, responseObj.ToString());
 
             Console.WriteLine("UserId: " + oAuthUserSession.UserAuthId);
