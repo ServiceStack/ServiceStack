@@ -98,6 +98,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public ulong RowVersion { get; set; }
     }
     
+    public class CreateRockstarWithId : Rockstar, ICreateDb<Rockstar>, IReturn<RockstarWithIdAndResultResponse>
+    {
+    }
+
     public class CreateRockstar : RockstarBase, ICreateDb<RockstarAuto>, IReturn<CreateRockstarResponse>
     {
     }

@@ -184,6 +184,17 @@ namespace ServiceStack
                         selectIdentity = false;
                     }
 
+                    var isAutoId = pkField.AutoIncrement || pkField.AutoId;
+                    if (!isAutoId)
+                    {
+                        selectIdentity = false;
+                        var pkValue = dtoValues.TryGetValue(pkField.Name, out var value)
+                            ? value
+                            : null;
+                        if (pkValue == null || pkValue.Equals(pkField.FieldTypeDefaultValue))
+                            throw new ArgumentException($"Non auto assigned PrimaryKey '{ctx.ModelDef.Name}.{pkField.Name}' must be provided", pkField.Name);
+                    }
+
                     var autoIntId = db.Insert<Table>(dtoValues, selectIdentity: selectIdentity);
                     return CreateInternal(dtoValues, pkField, selectIdentity, autoIntId);
                 });
@@ -209,6 +220,17 @@ namespace ServiceStack
                     {
                         dtoValues[pkField.Name] = eventId.ConvertTo(pkField.PropertyInfo.PropertyType);
                         selectIdentity = false;
+                    }
+
+                    var isAutoId = pkField.AutoIncrement || pkField.AutoId;
+                    if (!isAutoId)
+                    {
+                        selectIdentity = false;
+                        var pkValue = dtoValues.TryGetValue(pkField.Name, out var value)
+                            ? value
+                            : null;
+                        if (pkValue == null || pkValue.Equals(pkField.FieldTypeDefaultValue))
+                            throw new ArgumentException($"Non auto assigned PrimaryKey '{ctx.ModelDef.Name}.{pkField.Name}' must be provided", pkField.Name);
                     }
                     
                     var autoIntId = await db.InsertAsync<Table>(dtoValues, selectIdentity: selectIdentity).ConfigAwait();

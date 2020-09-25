@@ -1337,5 +1337,38 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             });
         }
 
+        [Test]
+        public void Does_not_allow_inserting_with_default_primary_key()
+        {
+            try
+            {
+                var response = client.Post(new CreateRockstarWithId());
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.ErrorCode, Is.EqualTo(nameof(ArgumentException)));
+                Assert.That(ex.ResponseStatus.Errors[0].ErrorCode, Is.EqualTo(nameof(ArgumentException)));
+                Assert.That(ex.ResponseStatus.Errors[0].FieldName, Is.EqualTo(nameof(Rockstar.Id)));
+            }
+        }
+
+        [Test]
+        public async Task Does_not_allow_inserting_with_default_primary_key_Async()
+        {
+            try
+            {
+                var response = await client.PostAsync(new CreateRockstarWithId());
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.ErrorCode, Is.EqualTo(nameof(ArgumentException)));
+                Assert.That(ex.ResponseStatus.Errors[0].ErrorCode, Is.EqualTo(nameof(ArgumentException)));
+                Assert.That(ex.ResponseStatus.Errors[0].FieldName, Is.EqualTo(nameof(Rockstar.Id)));
+            }
+        }
+
+
     }
 }
