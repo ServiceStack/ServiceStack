@@ -192,7 +192,7 @@ namespace ServiceStack
                             ? value
                             : null;
                         if (pkValue == null || pkValue.Equals(pkField.FieldTypeDefaultValue))
-                            throw new ArgumentException($"Non auto assigned PrimaryKey '{ctx.ModelDef.Name}.{pkField.Name}' must be provided", pkField.Name);
+                            throw new ArgumentException(ErrorMessages.PrimaryKeyRequired, pkField.Name);
                     }
 
                     var autoIntId = db.Insert<Table>(dtoValues, selectIdentity: selectIdentity);
@@ -230,7 +230,7 @@ namespace ServiceStack
                             ? value
                             : null;
                         if (pkValue == null || pkValue.Equals(pkField.FieldTypeDefaultValue))
-                            throw new ArgumentException($"Non auto assigned PrimaryKey '{ctx.ModelDef.Name}.{pkField.Name}' must be provided", pkField.Name);
+                            throw new ArgumentException(ErrorMessages.PrimaryKeyRequired, pkField.Name);
                     }
                     
                     var autoIntId = await db.InsertAsync<Table>(dtoValues, selectIdentity: selectIdentity).ConfigAwait();
