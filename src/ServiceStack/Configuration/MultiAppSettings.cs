@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 
 namespace ServiceStack.Configuration
@@ -50,16 +51,24 @@ namespace ServiceStack.Configuration
 
         public override T Get<T>(string name)
         {
-            return AppSettings
-                .Select(appSetting => appSetting.Get<T>(name))
-                .FirstOrDefault(value => value != null);
+            try
+            {
+                return AppSettings
+                    .Select(appSetting => appSetting.Get<T>(name))
+                    .FirstOrDefault(value => value != null);
+            }
+            catch (Exception ex)
+            {
+                if (ex is ConfigurationErrorsException)
+                    throw;
+                var message = $"The {name} setting had an invalid format and could not be cast to type {typeof(T).FullName}";
+                throw new ConfigurationErrorsException(message, ex);
+            }
         }
 
         public override T Get<T>(string name, T defaultValue)
         {
-            return AppSettings
-                .Select(appSetting => appSetting.Get<T>(name))
-                .FirstOrDefault(value => value != null) ?? defaultValue;
+            return Get<T>(name) ?? defaultValue;
         }
     }
 }

@@ -259,7 +259,7 @@ ObjectKey {SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}";
             var settings = textFile.ParseKeyValueText();
             var appSettings = new DictionarySettings(settings);
 
-            Assert.That(appSettings.Get("EmptyKey"), Is.EqualTo(""));
+            Assert.That(appSettings.Get("EmptyKey"), Is.EqualTo("").Or.Null);
             Assert.That(appSettings.Get("RealKey"), Is.EqualTo("This is a real value"));
 
             Assert.That(appSettings.Get("IntKey", defaultValue: 1), Is.EqualTo(42));

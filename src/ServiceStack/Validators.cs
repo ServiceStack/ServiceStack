@@ -54,7 +54,7 @@ namespace ServiceStack
 
         public static bool HasValidateRequestAttributes(Type type) => type.HasAttributeOf<ValidateRequestAttribute>();
 
-        public static bool HasValidateAttributes(Type type) => type.GetPublicProperties().Any(x => x.HasAttributeOf<ValidateRequestAttribute>());
+        public static bool HasValidateAttributes(Type type) => type.GetPublicProperties().Any(x => x.HasAttributeOf<ValidateAttribute>());
 
         public static async Task AssertTypeValidatorsAsync(IRequest req, object requestDto, Type requestType)
         {
