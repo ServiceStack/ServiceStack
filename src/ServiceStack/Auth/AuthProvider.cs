@@ -117,14 +117,6 @@ namespace ServiceStack.Auth
         }
 
         public HashSet<string> ExcludeAuthInfoItems { get; set; } = new HashSet<string>(new[]{ "user_id", "email", "username", "name", "first_name", "last_name", "email" }, StringComparer.OrdinalIgnoreCase);
-
-        // [Obsolete("Use OnAuthenticatedAsync")]
-        // public virtual IHttpResult OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
-        // {
-        //     var task = OnAuthenticatedAsync(authService, session, tokens, authInfo);
-        //     var result = task.GetResult();
-        //     return result;
-        // }
         
         public virtual async Task<IHttpResult> OnAuthenticatedAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token=default)
         {
