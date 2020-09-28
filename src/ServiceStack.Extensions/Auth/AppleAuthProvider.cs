@@ -156,29 +156,22 @@ namespace ServiceStack.Auth
                 if (ValidateRefreshTokenExpiry != null)
                 {
                     var userName = idTokenAuthInfo.Get("sub");
-                    var cache = ctx.Request.GetCacheClientAsync();
-                    var cacheKey = "apple:userauthid:" + userName;
                 
                     var authRepo = GetAuthRepositoryAsync(ctx.Request);
                     await using (authRepo as IAsyncDisposable)
                     {
                         var cacheExpiry = ValidateRefreshTokenExpiry.GetValueOrDefault();
-                        var userAuthId = await cache.GetOrCreateAsync(cacheKey, cacheExpiry, async () => {
-                            var userAuth = await authRepo.GetUserAuthByUserNameAsync(userName);
-                            return userAuth.Id.ToString();
-                        });
-
-                        var validateCacheKey = $"apple:refreshtoken:{userAuthId}";
+                        var userAuth = await authRepo.GetUserAuthByUserNameAsync(userName);
+                        var userAuthId = userAuth.Id.ToString();
+                        var validateCacheKey = $"apple:validate:refresh:{userAuthId}";
+                        var cache = ctx.Request.GetCacheClientAsync();
                         var contents = await cache.GetOrCreateAsync(validateCacheKey, cacheExpiry, async () => {
                             var userAuthDetails = await authRepo.GetUserAuthDetailsAsync(userAuthId);
                             var appleAuthDetails = userAuthDetails.FirstOrDefault(x => x.Provider == Name);
-                            if (appleAuthDetails == null)
-                                throw new Exception($"User {userAuthId} is missing 'apple' UserAuthDetails");
-                            var refreshToken = appleAuthDetails.RefreshToken;
-                            if (refreshToken == null)
-                                throw new Exception($"User {userAuthId} is missing 'apple' RefreshToken");
+                            if (appleAuthDetails?.RefreshToken == null)
+                                throw new Exception($"User {userAuthId} is missing '{Name}' RefreshToken");
 
-                            var contents = await ValidateRefreshToken(refreshToken, ctx);
+                            var contents = await ValidateRefreshToken(appleAuthDetails.RefreshToken, ctx); //expensive
                             return contents;
                         });
                         
@@ -188,6 +181,7 @@ namespace ServiceStack.Auth
                 }
                 else
                 {
+                    // ctx.AuthInfo is used & required in AuthenticateWithAccessTokenAsync()
                     ctx.AuthInfo = new Dictionary<string, string> {
                         ["id_token"] = idToken
                     };
@@ -196,7 +190,7 @@ namespace ServiceStack.Auth
             }
             catch (Exception ex)
             {
-                Log.Error($"OnVerifyAccessTokenAsync(): Could not validate Apple ID Token: {idToken}", ex);
+                Log.Error($"OnVerifyAccessTokenAsync(): Could not validate Apple ID Token '{idToken}': {ex.Message}", ex);
                 return false;
             }
         }
@@ -206,7 +200,7 @@ namespace ServiceStack.Auth
             var redirectUri = GetRedirectUri(ctx);
             var clientSecret = GetClientSecret();
             var accessTokenUrl = $"{AccessTokenUrl}?client_id={ClientId}&client_secret={clientSecret}&redirect_uri={redirectUri.UrlEncode()}&grant_type=refresh_token&refresh_token={refreshToken}";
-            var contents = await AccessTokenUrlFilter(ctx, accessTokenUrl).PostToUrlAsync("").ConfigAwait();
+            var contents = await AccessTokenUrlFilter(ctx, accessTokenUrl).PostToUrlAsync("").ConfigAwait(); //expensive
             return contents;
         }
 
@@ -381,7 +375,7 @@ namespace ServiceStack.Auth
             }
             catch (Exception ex)
             {
-                Log.Error($"Could not validate Apple ID Token: {idToken}", ex);
+                Log.Error($"Could not validate Apple ID Token '{idToken}': {ex.Message}", ex);
                 throw;
             }
 
