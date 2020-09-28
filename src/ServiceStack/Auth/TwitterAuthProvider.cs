@@ -67,7 +67,7 @@ namespace ServiceStack.Auth
                     return ConvertToClientError(failedResult, isHtml);
 
                 return isHtml
-                    ? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1")))
+                    ? await authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait()
                     : null; //return default AuthenticateResponse
             }
 
@@ -80,8 +80,9 @@ namespace ServiceStack.Auth
                     tokens.AccessToken = OAuthUtils.AccessToken;
                     tokens.AccessTokenSecret = OAuthUtils.AccessTokenSecret;
 
+                    //Haz Access
                     return await OnAuthenticatedAsync(authService, session, tokens, OAuthUtils.AuthInfo, token).ConfigAwait()
-                        ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))); //Haz Access
+                        ?? await authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait();
                 }
 
                 //No Joy :(

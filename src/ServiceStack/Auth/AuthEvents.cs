@@ -8,7 +8,6 @@ namespace ServiceStack.Auth
         /// <summary>
         /// Fired when a new Session is created
         /// </summary>
-        /// <param name="httpReq"></param>
         void OnCreated(IRequest httpReq, IAuthSession session);
 
         /// <summary>

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
@@ -62,6 +63,21 @@ namespace ServiceStack.Auth
                         ? CreateJwtRefreshToken(authService.Request, session.UserAuthId, ExpireRefreshTokensIn)
                         : null;
                 }
+            }
+        }
+
+        public async Task ResultFilterAsync(AuthResultContext authContext, CancellationToken token=default)
+        {
+            if (UseTokenCookie && authContext.Result.Cookies.All(x => x.Name != Keywords.TokenCookie))
+            {
+                var accessToken = CreateJwtBearerToken(authContext.Request, authContext.Session);
+                await authContext.Request.RemoveSessionAsync(authContext.Session.Id, token);
+                authContext.Result.Cookies.Add(
+                    new Cookie(Keywords.TokenCookie, accessToken, Cookies.RootPath) {
+                        HttpOnly = true,
+                        Secure = authContext.Request.IsSecureConnection,
+                        Expires = DateTime.UtcNow.Add(ExpireTokensIn),
+                    });
             }
         }
 
@@ -421,7 +437,7 @@ namespace ServiceStack.Auth
                 AccessToken = accessToken
             };
 
-            if (request.UseTokenCookie != true)
+            if (request.UseTokenCookie.GetValueOrDefault(jwtAuthProvider.UseTokenCookie) != true)
                 return response;
             
             return new HttpResult(new GetAccessTokenResponse())

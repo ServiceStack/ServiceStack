@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
@@ -357,6 +358,52 @@ namespace ServiceStack
 
             return feature.IsValidUsernameFn?.Invoke(userName) 
                 ?? feature.ValidUserNameRegEx.IsMatch(userName);
+        }
+
+        public static async Task<IHttpResult> SuccessAuthResultAsync(this IHttpResult result, IServiceBase service, IAuthSession session)
+        {
+            var feature = HostContext.GetPlugin<AuthFeature>();
+            if (result != null && feature != null)
+            {
+                var hasAuthResponseFilter = feature.AuthProviders.Any(x => x is IAuthResponseFilter);
+                if (hasAuthResponseFilter)
+                {
+                    var ctx = new AuthResultContext {
+                        Result = result,
+                        Service = service,
+                        Session = session,
+                        Request = service.Request,
+                    };
+                    foreach (var responseFilter in feature.AuthProviders.OfType<IAuthResponseFilter>())
+                    {
+                        await responseFilter.ResultFilterAsync(ctx).ConfigAwait();
+                    }
+                }
+            }
+            return result;
+        }
+
+        public static IHttpResult SuccessAuthResult(this IHttpResult result, IServiceBase service, IAuthSession session)
+        {
+            var feature = HostContext.GetPlugin<AuthFeature>();
+            if (result != null && feature != null)
+            {
+                var hasAuthResponseFilter = feature.AuthProviders.Any(x => x is IAuthResponseFilter);
+                if (hasAuthResponseFilter)
+                {
+                    var ctx = new AuthResultContext {
+                        Result = result,
+                        Service = service,
+                        Session = session,
+                        Request = service.Request,
+                    };
+                    foreach (var responseFilter in feature.AuthProviders.OfType<IAuthResponseFilter>())
+                    {
+                        responseFilter.ResultFilterAsync(ctx).Wait();
+                    }
+                }
+            }
+            return result;
         }
     }
 }

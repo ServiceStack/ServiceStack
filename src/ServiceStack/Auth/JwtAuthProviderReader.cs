@@ -272,6 +272,11 @@ namespace ServiceStack.Auth
         /// </summary>
         public bool IncludeJwtInConvertSessionToTokenResponse { get; set; }
 
+        /// <summary>
+        /// Whether to convert successful Authenticated User Sessions to JWT Token in ss-tok Cookie 
+        /// </summary>
+        public bool UseTokenCookie { get; set; }
+
         public JwtAuthProviderReader()
             : base(null, Realm, Name)
         {
@@ -820,7 +825,7 @@ namespace ServiceStack.Auth
 
         public object AuthenticateResponseDecorator(AuthFilterContext authCtx)
         {
-            if (authCtx.AuthResponse.BearerToken == null || authCtx.AuthRequest.UseTokenCookie != true)
+            if (authCtx.AuthResponse.BearerToken == null || authCtx.AuthRequest.UseTokenCookie.GetValueOrDefault(UseTokenCookie) != true)
                 return authCtx.AuthResponse;
 
             authCtx.AuthService.Request.RemoveSession(authCtx.AuthService.GetSessionId());

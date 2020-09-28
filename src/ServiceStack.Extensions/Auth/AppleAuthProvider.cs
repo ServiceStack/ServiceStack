@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Threading;
@@ -214,8 +215,17 @@ namespace ServiceStack.Auth
         {
             var clientSecret = GetClientSecret();
             var accessTokenUrl = $"{AccessTokenUrl}?code={code}&client_id={ClientId}&client_secret={clientSecret}&redirect_uri={this.CallbackUrl.UrlEncode()}&grant_type=authorization_code";
-            var contents = await AccessTokenUrlFilter(this, accessTokenUrl).PostToUrlAsync("").ConfigAwait();
-            return contents;
+            try
+            {
+                var contents = await AccessTokenUrlFilter(this, accessTokenUrl).PostToUrlAsync("").ConfigAwait();
+                return contents;
+            }
+            catch (WebException e)
+            {
+                var body = await e.GetResponseBodyAsync(token);
+                Log.Error($"GetAccessTokenJsonAsync() for {ClientId}: {body}", e);
+                throw;
+            }
         }
 
         protected virtual string GetIssuerSigningKeysJson()

@@ -159,7 +159,7 @@ namespace ServiceStack.Auth
                     return response;
 
                 // Has access!
-                return authService.Redirect(SuccessRedirectUrlFilter(this, this.CallbackUrl.SetParam("s", "1")));
+                return await authService.Redirect(SuccessRedirectUrlFilter(this, this.CallbackUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait();
             }
             catch (WebException webEx)
             {

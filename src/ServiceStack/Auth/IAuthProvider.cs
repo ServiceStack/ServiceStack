@@ -52,6 +52,8 @@ namespace ServiceStack.Auth
     public interface IAuthResponseFilter
     {
         void Execute(AuthFilterContext authContext);
+
+        Task ResultFilterAsync(AuthResultContext authContext, CancellationToken token=default);
     }
 
     [Obsolete("Use IUserSessionSourceAsync")]
@@ -75,5 +77,13 @@ namespace ServiceStack.Auth
         public string ReferrerUrl { get; internal set; }
         public bool AlreadyAuthenticated { get; internal set; }
         public bool DidAuthenticate { get; internal set; }
+    }
+
+    public class AuthResultContext
+    {
+        public IHttpResult Result { get; set; }
+        public IServiceBase Service { get; internal set; }
+        public IRequest Request { get; internal set; }
+        public IAuthSession Session { get; internal set; }
     }
 }

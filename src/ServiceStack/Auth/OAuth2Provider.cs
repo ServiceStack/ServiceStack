@@ -56,7 +56,7 @@ namespace ServiceStack.Auth
                     return ConvertToClientError(failedResult, isHtml);
 
                 return isHtml
-                    ? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1")))
+                    ? await authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait()
                     : null; //return default AuthenticateResponse
             }
 
@@ -74,7 +74,7 @@ namespace ServiceStack.Auth
                     : httpRequest.FormData;
                 Log.Error($"OAuth2 Error callback. {httpParams}");
                 return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", error)));
-            }             
+            }
         
             var code = httpRequest.GetQueryStringOrForm(Keywords.Code);
             var isPreAuthCallback = !code.IsNullOrEmpty();
@@ -90,7 +90,7 @@ namespace ServiceStack.Auth
 
                 if (ResponseMode != null)
                     preAuthUrl = preAuthUrl.AddQueryParam("response_mode", ResponseMode);
-                        
+
                 if (session is AuthUserSession authSession)
                     (authSession.Meta ?? (authSession.Meta = new Dictionary<string, string>()))["oauthstate"] = oauthstate;
 
@@ -124,15 +124,14 @@ namespace ServiceStack.Auth
                     return errorResult;
                 
                 //Haz Access!
-
                 if (HostContext.Config?.UseSameSiteCookies == true)
                 {
                     // Workaround Set-Cookie HTTP Header not being honoured in 302 Redirects 
                     var redirectHtml = HtmlTemplates.GetHtmlRedirectTemplate(redirectUrl);
-                    return new HttpResult(redirectHtml, MimeTypes.Html);
+                    return await new HttpResult(redirectHtml, MimeTypes.Html).SuccessAuthResultAsync(authService,session).ConfigAwait();
                 }
                 
-                return authService.Redirect(redirectUrl); 
+                return await authService.Redirect(redirectUrl).SuccessAuthResultAsync(authService,session).ConfigAwait();
             }
             catch (WebException we)
             {
