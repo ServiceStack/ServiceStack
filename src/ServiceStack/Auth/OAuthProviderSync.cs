@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
-    public abstract class OAuthProviderSync : AuthProvider, IOAuthProvider
+    public abstract class OAuthProviderSync : AuthProviderSync, IOAuthProvider
     {
         public override string Type => "oauth";
 
@@ -22,8 +20,11 @@ namespace ServiceStack.Auth
         
         public OAuthProviderSync() { }
 
+        public OAuthProviderSync(IAppSettings appSettings, string authRealm, string oAuthProvider)
+            : this(appSettings, authRealm, oAuthProvider, "ConsumerKey", "ConsumerSecret") { }
+
         public OAuthProviderSync(IAppSettings appSettings, string authRealm, string oAuthProvider,
-            string consumerKeyName = nameof(ConsumerKey), string consumerSecretName = nameof(ConsumerSecret))
+                             string consumerKeyName, string consumerSecretName)
         {
             this.ConsumerKeyName = consumerKeyName;
             this.ConsumerSecretName = consumerSecretName;
@@ -32,9 +33,9 @@ namespace ServiceStack.Auth
 
             this.Provider = oAuthProvider;
             this.RedirectUrl = appSettings.GetString($"oauth.{Provider}.{nameof(RedirectUrl)}")
-                ?? FallbackConfig(appSettings.GetString($"oauth.{nameof(RedirectUrl)}"));
+                               ?? FallbackConfig(appSettings.GetString($"oauth.{nameof(RedirectUrl)}"));
             this.CallbackUrl = appSettings.GetString($"oauth.{Provider}.{nameof(CallbackUrl)}")
-                ?? FallbackConfig(appSettings.GetString($"oauth.{nameof(CallbackUrl)}"));
+                               ?? FallbackConfig(appSettings.GetString($"oauth.{nameof(CallbackUrl)}"));
             this.ConsumerKey = appSettings.GetString($"oauth.{Provider}.{consumerKeyName}");
             this.ConsumerSecret = appSettings.GetString($"oauth.{Provider}.{consumerSecretName}");
 
@@ -54,7 +55,7 @@ namespace ServiceStack.Auth
 
         protected readonly string ConsumerKeyName;
         protected readonly string ConsumerSecretName;
-        
+
         public string ConsumerKey { get; set; }
         public string ConsumerSecret { get; set; }
         public string RequestTokenUrl { get; set; }
@@ -64,6 +65,7 @@ namespace ServiceStack.Auth
         public string UserProfileUrl { get; set; }
         public string VerifyTokenUrl { get; set; }
         public string IssuerSigningKeysUrl { get; set; }
+
         public OAuthAuthorizer OAuthUtils { get; set; }
 
 
@@ -103,7 +105,7 @@ namespace ServiceStack.Auth
         /// <param name="session"></param>
         /// <param name="request"></param>
         /// <returns></returns>
-        public abstract override Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token=default);
+        public abstract override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request);
 
         /// <summary>
         /// Sets the CallbackUrl and session.ReferrerUrl if not set and initializes the session tokens for this AuthProvider
