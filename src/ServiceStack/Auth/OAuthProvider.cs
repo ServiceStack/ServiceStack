@@ -11,9 +11,9 @@ namespace ServiceStack.Auth
     {
         public override string Type => "oauth";
 
-        public Func<string, bool> VerifyAccessToken { get; set; }
+        public Func<string, AuthContext, Task<bool>> VerifyAccessTokenAsync { get; set; }
 
-        public override Dictionary<string, string> Meta => VerifyAccessToken != null
+        public override Dictionary<string, string> Meta => VerifyAccessTokenAsync != null
             ? new Dictionary<string, string> {
                 [Keywords.Allows] = Keywords.AccessTokenAuth,
             }
@@ -65,7 +65,6 @@ namespace ServiceStack.Auth
         public string VerifyTokenUrl { get; set; }
         public string IssuerSigningKeysUrl { get; set; }
         public OAuthAuthorizer OAuthUtils { get; set; }
-
 
         public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null)
         {

@@ -58,6 +58,7 @@ namespace ServiceStack.Auth
         public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
         {
             var tokens = Init(authService, ref session, request);
+            var ctx = CreateAuthContext(authService, session, tokens);
 
             //Transferring AccessToken/Secret from Mobile/Desktop App to Server
             if (request?.AccessToken != null)
@@ -76,7 +77,7 @@ namespace ServiceStack.Auth
                     return ConvertToClientError(failedResult, isHtml);
 
                 return isHtml
-                    ? await authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait()
+                    ? await authService.Redirect(SuccessRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait()
                     : null; //return default AuthenticateResponse
             }
 
@@ -91,7 +92,7 @@ namespace ServiceStack.Auth
             if (hasError)
             {
                 Log.Error($"GitHub error callback. {httpRequest.QueryString}");
-                return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", error)));
+                return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", error)));
             }
 
             var code = httpRequest.QueryString["code"];
@@ -102,13 +103,13 @@ namespace ServiceStack.Auth
                 string preAuthUrl = $"{PreAuthUrl}?client_id={ClientId}&redirect_uri={CallbackUrl.UrlEncode()}&scope={scopes}&{Keywords.State}={session.Id}";
 
                 await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
-                return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
+                return authService.Redirect(PreAuthUrlFilter(ctx, preAuthUrl));
             }
 
             try
             {
                 string accessTokenUrl = $"{AccessTokenUrl}?client_id={ClientId}&redirect_uri={CallbackUrl.UrlEncode()}&client_secret={ClientSecret}&code={code}";
-                var contents = await AccessTokenUrlFilter(this, accessTokenUrl).GetStringFromUrlAsync().ConfigAwait();
+                var contents = await AccessTokenUrlFilter(ctx, accessTokenUrl).GetStringFromUrlAsync().ConfigAwait();
                 var authInfo = PclExportClient.Instance.ParseQueryString(contents);
 
                 //GitHub does not throw exception, but just return error with descriptions
@@ -120,14 +121,14 @@ namespace ServiceStack.Auth
                 if (!accessTokenError.IsNullOrEmpty())
                 {
                     Log.Error($"GitHub access_token error callback. {authInfo}");
-                    return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
+                    return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
                 }
 
                 var accessToken = authInfo["access_token"];
 
                 //Haz Access!
                 return await AuthenticateWithAccessTokenAsync(authService, session, tokens, accessToken, token).ConfigAwait()
-                    ?? await authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait();
+                    ?? await authService.Redirect(SuccessRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait();
             }
             catch (WebException webException)
             {
@@ -135,10 +136,10 @@ namespace ServiceStack.Auth
                 var statusCode = ((HttpWebResponse)webException.Response).StatusCode;
                 if (statusCode == HttpStatusCode.BadRequest)
                 {
-                    return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
+                    return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
                 }
             }
-            return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
+            return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "Unknown")));
         }
 
         protected virtual async Task<object> AuthenticateWithAccessTokenAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens, string accessToken, CancellationToken token=default)

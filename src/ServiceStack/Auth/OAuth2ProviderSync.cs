@@ -114,7 +114,7 @@ namespace ServiceStack.Auth
 
                 var redirectUrl = SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"));
 
-                var errorResult = AuthenticateWithAccessToken(authService, session, tokens, accessToken, authInfo);
+                var errorResult = AuthenticateWithAccessToken(authService, session, tokens, accessToken, authInfo.ToStringDictionary());
                 if (errorResult != null)
                     return errorResult;
                 
@@ -152,7 +152,7 @@ namespace ServiceStack.Auth
             return contents;
         }
 
-        protected virtual object AuthenticateWithAccessToken(IServiceBase authService, IAuthSession session, IAuthTokens tokens, string accessToken, Dictionary<string,object> authInfo = null)
+        protected virtual object AuthenticateWithAccessToken(IServiceBase authService, IAuthSession session, IAuthTokens tokens, string accessToken, Dictionary<string,string> authInfo = null)
         {
             tokens.AccessToken = accessToken;
             if (authInfo != null)

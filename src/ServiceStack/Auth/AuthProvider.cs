@@ -34,15 +34,15 @@ namespace ServiceStack.Auth
 
         public Func<AuthContext, IHttpResult> CustomValidationFilter { get; set; }
 
-        public Func<AuthProvider, string, string> PreAuthUrlFilter = UrlFilter;
-        public Func<AuthProvider, string, string> AccessTokenUrlFilter = UrlFilter;
-        public Func<AuthProvider, string, string> SuccessRedirectUrlFilter = UrlFilter;
-        public Func<AuthProvider, string, string> FailedRedirectUrlFilter = UrlFilter;
-        public Func<AuthProvider, string, string> LogoutUrlFilter = UrlFilter;
+        public Func<AuthContext, string, string> PreAuthUrlFilter = UrlFilter;
+        public Func<AuthContext, string, string> AccessTokenUrlFilter = UrlFilter;
+        public Func<AuthContext, string, string> SuccessRedirectUrlFilter = UrlFilter;
+        public Func<AuthContext, string, string> FailedRedirectUrlFilter = UrlFilter;
+        public Func<AuthContext, string, string> LogoutUrlFilter = UrlFilter;
         
         public Func<IAuthRepository, IUserAuth, IAuthTokens, bool> AccountLockedValidator { get; set; }
 
-        public static string UrlFilter(AuthProvider provider, string url) => url;
+        public static string UrlFilter(AuthContext provider, string url) => url;
 
         public NavItem NavItem { get; set; }
 
@@ -82,6 +82,17 @@ namespace ServiceStack.Auth
             return fallback?.Fmt(Provider);
         }
 
+        protected virtual AuthContext CreateAuthContext(IServiceBase authService=null, IAuthSession session=null, IAuthTokens tokens=null)
+        {
+            return new AuthContext {
+                AuthProvider = this,
+                Service = authService,
+                Request = authService?.Request,
+                Session = session,
+                AuthTokens = tokens,
+            };
+        }
+
         /// <summary>
         /// Remove the Users Session
         /// </summary>
@@ -111,7 +122,7 @@ namespace ServiceStack.Auth
             }
 
             if (service.Request.ResponseContentType == MimeTypes.Html && !string.IsNullOrEmpty(referrerUrl))
-                return service.Redirect(LogoutUrlFilter(this, referrerUrl));
+                return service.Redirect(LogoutUrlFilter(CreateAuthContext(service,session), referrerUrl));
 
             return new AuthenticateResponse();
         }
@@ -381,22 +392,23 @@ namespace ServiceStack.Auth
         protected virtual async Task<IHttpResult> ValidateAccountAsync(IServiceBase authService, IAuthRepositoryAsync authRepo, IAuthSession session, IAuthTokens tokens, CancellationToken token=default)
         {
             var userAuth = await authRepo.GetUserAuthAsync(session, tokens, token).ConfigAwait();
+            var ctx = CreateAuthContext(authService, session, tokens);
 
             var authFeature = HostContext.GetPlugin<AuthFeature>();
 
             if (authFeature != null && authFeature.ValidateUniqueUserNames && await UserNameAlreadyExistsAsync(authRepo, userAuth, tokens, token).ConfigAwait())
             {
-                return authService.Redirect(FailedRedirectUrlFilter(this, GetReferrerUrl(authService, session).SetParam("f", "UserNameAlreadyExists")));
+                return authService.Redirect(FailedRedirectUrlFilter(ctx, GetReferrerUrl(authService, session).SetParam("f", "UserNameAlreadyExists")));
             }
 
             if (authFeature != null && authFeature.ValidateUniqueEmails && await EmailAlreadyExistsAsync(authRepo, userAuth, tokens, token).ConfigAwait())
             {
-                return authService.Redirect(FailedRedirectUrlFilter(this, GetReferrerUrl(authService, session).SetParam("f", "EmailAlreadyExists")));
+                return authService.Redirect(FailedRedirectUrlFilter(ctx, GetReferrerUrl(authService, session).SetParam("f", "EmailAlreadyExists")));
             }
 
             if (await IsAccountLockedAsync(authRepo, userAuth, tokens, token).ConfigAwait())
             {
-                return authService.Redirect(FailedRedirectUrlFilter(this, GetReferrerUrl(authService, session).SetParam("f", "AccountLocked")));
+                return authService.Redirect(FailedRedirectUrlFilter(ctx, GetReferrerUrl(authService, session).SetParam("f", "AccountLocked")));
             }
 
             return null;
@@ -460,7 +472,7 @@ namespace ServiceStack.Auth
         }
     }
 
-    public class AuthContext
+    public class AuthContext : IMeta
     {
         public IRequest Request { get; set; }
         public IServiceBase Service { get; set; }
@@ -471,6 +483,7 @@ namespace ServiceStack.Auth
         public Dictionary<string, string> AuthInfo { get; set; }
         public IAuthRepository AuthRepository { get; set; }
         public IAuthRepositoryAsync AuthRepositoryAsync { get; set; }
+        public Dictionary<string, string> Meta { get; set; }
     }
 }
 

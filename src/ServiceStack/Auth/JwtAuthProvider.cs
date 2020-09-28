@@ -68,7 +68,8 @@ namespace ServiceStack.Auth
 
         public async Task ResultFilterAsync(AuthResultContext authContext, CancellationToken token=default)
         {
-            if (UseTokenCookie && authContext.Result.Cookies.All(x => x.Name != Keywords.TokenCookie))
+            if (UseTokenCookie 
+                && authContext.Result.Cookies.All(x => x.Name != Keywords.TokenCookie))
             {
                 var accessToken = CreateJwtBearerToken(authContext.Request, authContext.Session);
                 await authContext.Request.RemoveSessionAsync(authContext.Session.Id, token);

@@ -64,6 +64,7 @@ namespace ServiceStack.Auth
         public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
         {
             IAuthTokens tokens = Init(authService, ref session, request);
+            var ctx = CreateAuthContext(authService, session, tokens);
             IRequest httpRequest = authService.Request;
 
             if (request?.AccessToken != null && request?.AccessTokenSecret != null) {
@@ -83,7 +84,7 @@ namespace ServiceStack.Auth
                     return ConvertToClientError(failedResult, isHtml);
 
                 return isHtml
-                    ? await authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait()
+                    ? await authService.Redirect(SuccessRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait()
                     : null; //return default AuthenticateResponse
             }
 
@@ -95,7 +96,7 @@ namespace ServiceStack.Auth
             if (hasError) 
             {
                 Log.Error($"VK error callback. {httpRequest.QueryString}");
-                return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", error)));
+                return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", error)));
             }
 
             string code = httpRequest.QueryString["code"];
@@ -104,7 +105,7 @@ namespace ServiceStack.Auth
                 string preAuthUrl = $"{PreAuthUrl}?client_id={ApplicationId}&scope={Scope}&redirect_uri={CallbackUrl.UrlEncode()}&response_type=code&v={ApiVersion}";
 
                 await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
-                return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
+                return authService.Redirect(PreAuthUrlFilter(ctx, preAuthUrl));
             }
 
             try {
@@ -112,7 +113,7 @@ namespace ServiceStack.Auth
 
                 string accessTokeUrl = $"{AccessTokenUrl}?client_id={ApplicationId}&client_secret={SecureKey}&code={code}&redirect_uri={CallbackUrl.UrlEncode()}";
 
-                string contents = await AccessTokenUrlFilter(this, accessTokeUrl).GetStringFromUrlAsync("*/*", RequestFilter).ConfigAwait();
+                string contents = await AccessTokenUrlFilter(ctx, accessTokeUrl).GetStringFromUrlAsync("*/*", RequestFilter).ConfigAwait();
 
                 var authInfo = JsonObject.Parse(contents);
 
@@ -130,17 +131,17 @@ namespace ServiceStack.Auth
 
                 //Haz Access
                 return await OnAuthenticatedAsync(authService, session, tokens, authInfo.ToDictionary(), token).ConfigAwait()
-                    ?? await authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait();
+                    ?? await authService.Redirect(SuccessRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait();
             } 
             catch (WebException webException) 
             {
                 //just in case VK will start throwing exceptions 
                 HttpStatusCode statusCode = ((HttpWebResponse)webException.Response).StatusCode;
                 if (statusCode == HttpStatusCode.BadRequest) {
-                    return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
+                    return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
                 }
             }
-            return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
+            return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "Unknown")));
         }
 
         /// <summary>

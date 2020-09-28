@@ -30,7 +30,7 @@ namespace ServiceStack.Auth
         public GoogleAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name)
         {
-            VerifyAccessToken = OnVerifyAccessToken;
+            VerifyAccessTokenAsync = OnVerifyAccessTokenAsync;
             this.AuthorizeUrl = appSettings.Get($"oauth.{Name}.AuthorizeUrl", DefaultAuthorizeUrl);
             this.AccessTokenUrl = appSettings.Get($"oauth.{Name}.AccessTokenUrl", DefaultAccessTokenUrl);
             this.UserProfileUrl = appSettings.Get($"oauth.{Name}.UserProfileUrl", DefaultUserProfileUrl);
@@ -53,17 +53,17 @@ namespace ServiceStack.Auth
             };
         }
 
-        public virtual bool OnVerifyAccessToken(string accessToken)
+        public virtual async Task<bool> OnVerifyAccessTokenAsync(string accessToken, AuthContext ctx)
         {
             var url = VerifyTokenUrl.Fmt(accessToken);
-            var json = url.GetJsonFromUrl();
+            var json = await url.GetJsonFromUrlAsync();
             var obj = JsonObject.Parse(json);
             var issuedTo = obj["issued_to"];
             return issuedTo == ConsumerKey;
         }
 
         protected override async Task<object> AuthenticateWithAccessTokenAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens,
-            string accessToken, Dictionary<string, object> authInfo = null, CancellationToken token = default)
+            string accessToken, Dictionary<string, string> authInfo = null, CancellationToken token = default)
         {
             tokens.AccessTokenSecret = accessToken;
 

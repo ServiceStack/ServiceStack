@@ -50,6 +50,7 @@ namespace ServiceStack.Auth
         public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
         {
             var tokens = Init(authService, ref session, request);
+            var ctx = CreateAuthContext(authService, session, tokens);
 
             //Transferring AccessToken/Secret from Mobile/Desktop App to Server
             if (request?.AccessToken != null)
@@ -63,7 +64,7 @@ namespace ServiceStack.Auth
                     return ConvertToClientError(failedResult, isHtml);
 
                 return isHtml
-                    ? await authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait()
+                    ? await authService.Redirect(SuccessRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait()
                     : null; //return default AuthenticateResponse
             }
 
@@ -77,7 +78,7 @@ namespace ServiceStack.Auth
             if (hasError)
             {
                 Log.Error($"Facebook error callback. {httpRequest.QueryString}");
-                return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", error)));
+                return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", error)));
             }             
         
             var code = httpRequest.QueryString[Keywords.Code];
@@ -87,32 +88,32 @@ namespace ServiceStack.Auth
                 var preAuthUrl = $"{PreAuthUrl}?client_id={AppId}&redirect_uri={this.CallbackUrl.UrlEncode()}&scope={string.Join(",", Permissions)}&{Keywords.State}={session.Id}";
 
                 await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
-                return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
+                return authService.Redirect(PreAuthUrlFilter(ctx, preAuthUrl));
             }
 
             try
             {
                 var accessTokenUrl = $"{AccessTokenUrl}?client_id={AppId}&redirect_uri={this.CallbackUrl.UrlEncode()}&client_secret={AppSecret}&code={code}";
-                var contents = await AccessTokenUrlFilter(this, accessTokenUrl).GetJsonFromUrlAsync().ConfigAwait();
+                var contents = await AccessTokenUrlFilter(ctx, accessTokenUrl).GetJsonFromUrlAsync().ConfigAwait();
                 var authInfo = JsonObject.Parse(contents);
 
                 var accessToken = authInfo["access_token"];
 
                 //Haz Access!
                 return await AuthenticateWithAccessTokenAsync(authService, session, tokens, accessToken, token).ConfigAwait()
-                    ?? await authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait();
+                    ?? await authService.Redirect(SuccessRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait();
             }
             catch (WebException we)
             {
                 var statusCode = ((HttpWebResponse)we.Response).StatusCode;
                 if (statusCode == HttpStatusCode.BadRequest)
                 {
-                    return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
+                    return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
                 }
             }
 
             //Shouldn't get here
-            return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
+            return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "Unknown")));
         }
 
         protected virtual async Task<object> AuthenticateWithAccessTokenAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens, string accessToken, CancellationToken token=default)

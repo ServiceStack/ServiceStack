@@ -47,8 +47,8 @@ namespace ServiceStack.Auth
         public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
         {
             IAuthTokens tokens = Init(authService, ref session, request);
+            var ctx = CreateAuthContext(authService, session, tokens);
             IRequest httpRequest = authService.Request;
-
 
             string error = httpRequest.QueryString["error"]
                            ?? httpRequest.QueryString["error_uri"]
@@ -58,7 +58,7 @@ namespace ServiceStack.Auth
             if (hasError)
             {
                 Log.Error($"Yandex error callback. {httpRequest.QueryString}");
-                return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", error)));
+                return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", error)));
             }
 
             string code = httpRequest.QueryString["code"];
@@ -67,7 +67,7 @@ namespace ServiceStack.Auth
             {
                 string preAuthUrl = $"{PreAuthUrl}?response_type=code&client_id={ApplicationId}&redirect_uri={CallbackUrl.UrlEncode()}&display=popup&state={Guid.NewGuid().ToString("N")}";
                 await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
-                return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
+                return authService.Redirect(PreAuthUrlFilter(ctx, preAuthUrl));
             }
 
             try
@@ -91,7 +91,7 @@ namespace ServiceStack.Auth
                 session.IsAuthenticated = true;
 
                 return await OnAuthenticatedAsync(authService, session, tokens, authInfo.ToDictionary(), token).ConfigAwait()
-                    ?? await authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait();
+                    ?? await authService.Redirect(SuccessRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait();
             }
             catch (WebException webException)
             {
@@ -99,10 +99,10 @@ namespace ServiceStack.Auth
                 var statusCode = ((HttpWebResponse)webException.Response).StatusCode;
                 if (statusCode == HttpStatusCode.BadRequest)
                 {
-                    return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
+                    return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
                 }
             }
-            return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
+            return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "Unknown")));
         }
 
         protected override async Task LoadUserAuthInfoAsync(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token = default)

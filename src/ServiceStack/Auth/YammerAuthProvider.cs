@@ -97,6 +97,7 @@ namespace ServiceStack.Auth
         public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
         {
             var tokens = this.Init(authService, ref session, request);
+            var ctx = CreateAuthContext(authService, session, tokens);
 
             // Check if this is a callback from Yammer OAuth,
             // if not, get the code.
@@ -107,7 +108,7 @@ namespace ServiceStack.Auth
                 var preAuthUrl = $"{this.PreAuthUrl}?client_id={this.ClientId}&redirect_uri={this.RedirectUrl.UrlEncode()}";
 
                 await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
-                return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
+                return authService.Redirect(PreAuthUrlFilter(ctx, preAuthUrl));
             }
 
             // If access code exists, get access token to be able to call APIs.
@@ -116,7 +117,7 @@ namespace ServiceStack.Auth
             try
             {
                 // Get access response object
-                var contents = await AccessTokenUrlFilter(this, accessTokenUrl).GetStringFromUrlAsync().ConfigAwait();
+                var contents = await AccessTokenUrlFilter(ctx, accessTokenUrl).GetStringFromUrlAsync().ConfigAwait();
 
                 var authInfo = PclExportClient.Instance.ParseQueryString(contents);
                 var authObj = JsonObject.Parse(contents);
@@ -159,19 +160,19 @@ namespace ServiceStack.Auth
                     return response;
 
                 // Has access!
-                return await authService.Redirect(SuccessRedirectUrlFilter(this, this.CallbackUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait();
+                return await authService.Redirect(SuccessRedirectUrlFilter(ctx, this.CallbackUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait();
             }
             catch (WebException webEx)
             {
                 var statusCode = ((HttpWebResponse)webEx.Response).StatusCode;
                 if (statusCode == HttpStatusCode.BadRequest)
                 {
-                    return authService.Redirect(FailedRedirectUrlFilter(this, this.CallbackUrl.SetParam("f", "AccessTokenFailed")));
+                    return authService.Redirect(FailedRedirectUrlFilter(ctx, this.CallbackUrl.SetParam("f", "AccessTokenFailed")));
                 }
             }
 
             // Unknown error, shouldn't get here.
-            return authService.Redirect(FailedRedirectUrlFilter(this, this.CallbackUrl.SetParam("f", "Unknown")));
+            return authService.Redirect(FailedRedirectUrlFilter(ctx, this.CallbackUrl.SetParam("f", "Unknown")));
         }
 
         /// <summary>

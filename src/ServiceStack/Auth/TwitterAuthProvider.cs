@@ -41,6 +41,7 @@ namespace ServiceStack.Auth
         public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
         {
             var tokens = Init(authService, ref session, request);
+            var ctx = CreateAuthContext(authService, session, tokens);
 
             //Transferring AccessToken/Secret from Mobile/Desktop App to Server
             if (request.AccessToken != null && request.AccessTokenSecret != null)
@@ -67,7 +68,7 @@ namespace ServiceStack.Auth
                     return ConvertToClientError(failedResult, isHtml);
 
                 return isHtml
-                    ? await authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait()
+                    ? await authService.Redirect(SuccessRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait()
                     : null; //return default AuthenticateResponse
             }
 
@@ -82,14 +83,14 @@ namespace ServiceStack.Auth
 
                     //Haz Access
                     return await OnAuthenticatedAsync(authService, session, tokens, OAuthUtils.AuthInfo, token).ConfigAwait()
-                        ?? await authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait();
+                        ?? await authService.Redirect(SuccessRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait();
                 }
 
                 //No Joy :(
                 tokens.RequestToken = null;
                 tokens.RequestTokenSecret = null;
                 await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
-                return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
+                return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
             }
             if (OAuthUtils.AcquireRequestToken())
             {
@@ -98,14 +99,14 @@ namespace ServiceStack.Auth
                 await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
 
                 //Redirect to OAuth provider to approve access
-                return authService.Redirect(AccessTokenUrlFilter(this, this.AuthorizeUrl
+                return authService.Redirect(AccessTokenUrlFilter(ctx, this.AuthorizeUrl
                     .AddQueryParam("oauth_token", tokens.RequestToken)
                     .AddQueryParam("oauth_callback", session.ReferrerUrl)
                     .AddQueryParam(Keywords.State, session.Id) // doesn't support state param atm, but it's here when it does
                 ));
             }
 
-            return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "RequestTokenFailed")));
+            return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "RequestTokenFailed")));
         }
 
         protected override async Task LoadUserAuthInfoAsync(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token = default)
