@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -20,8 +21,8 @@ namespace ServiceStack.Auth
     ///  - Use App Id to create & configure Service ID from https://developer.apple.com/account/resources/identifiers/list/serviceId
     ///  - Use App Id to create & configure Private Key from https://developer.apple.com/account/resources/authkeys/list
     ///  Service ID must be configured with non-localhost trusted domain and HTTPS callback URL, for development can use:
-    ///   - Domain: localtest.me
-    ///   - Callback URL: https://localtest.me:5001/auth/apple
+    ///   - Domain: local.servicestack.com
+    ///   - Callback URL: https://local.servicestack.com:5001/auth/apple
     /// </summary>
     public class AppleAuthProvider : OAuth2Provider, IAuthPlugin
     {
@@ -96,12 +97,19 @@ namespace ServiceStack.Auth
         /// Whether to cache Apple's public keys, defaults: true
         /// </summary>
         public bool CacheIssuerSigningKeys { get; set; }
+        
+        /// <summary>
+        /// How long before re-validating RefreshToken, default: 1 day.
+        /// Set to null to disable RefreshToken validation.
+        /// </summary>
+        public TimeSpan? ValidateRefreshTokenExpiry { get; set; }// = TimeSpan.FromDays(1);
 
         public AppleAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name, "ClientId", "ClientSecret")
         {
             ResponseMode = "form_post";
             RestoreSessionFromState = true;
+            VerifyAccessTokenAsync = OnVerifyAccessTokenAsync;
             ResolveUnknownDisplayName = DefaultResolveUnknownDisplayName;
             
             ClientId = appSettings.GetString($"oauth.{Name}.{nameof(ClientId)}");
@@ -137,7 +145,71 @@ namespace ServiceStack.Auth
             appHost.Register(new CryptoProviderFactory { CacheSignatureProviders = false });
             appHost.Register(new JwtSecurityTokenHandler());
         }
-        
+
+        public virtual async Task<bool> OnVerifyAccessTokenAsync(string idToken, AuthContext ctx)
+        {
+            try
+            {
+                ValidateIdentityToken(idToken);
+                var idTokenAuthInfo = await CreateAuthInfoAsync(idToken).ConfigAwait();
+
+                if (ValidateRefreshTokenExpiry != null)
+                {
+                    var userName = idTokenAuthInfo.Get("sub");
+                    var cache = ctx.Request.GetCacheClientAsync();
+                    var cacheKey = "apple:userauthid:" + userName;
+                
+                    var authRepo = GetAuthRepositoryAsync(ctx.Request);
+                    await using (authRepo as IAsyncDisposable)
+                    {
+                        var cacheExpiry = ValidateRefreshTokenExpiry.GetValueOrDefault();
+                        var userAuthId = await cache.GetOrCreateAsync(cacheKey, cacheExpiry, async () => {
+                            var userAuth = await authRepo.GetUserAuthByUserNameAsync(userName);
+                            return userAuth.Id.ToString();
+                        });
+
+                        var validateCacheKey = $"apple:refreshtoken:{userAuthId}";
+                        var contents = await cache.GetOrCreateAsync(validateCacheKey, cacheExpiry, async () => {
+                            var userAuthDetails = await authRepo.GetUserAuthDetailsAsync(userAuthId);
+                            var appleAuthDetails = userAuthDetails.FirstOrDefault(x => x.Provider == Name);
+                            if (appleAuthDetails == null)
+                                throw new Exception($"User {userAuthId} is missing 'apple' UserAuthDetails");
+                            var refreshToken = appleAuthDetails.RefreshToken;
+                            if (refreshToken == null)
+                                throw new Exception($"User {userAuthId} is missing 'apple' RefreshToken");
+
+                            var contents = await ValidateRefreshToken(refreshToken, ctx);
+                            return contents;
+                        });
+                        
+                        var authInfo = (Dictionary<string, object>) JSON.parse(contents);
+                        ctx.AuthInfo = authInfo.ToStringDictionary();
+                    }
+                }
+                else
+                {
+                    ctx.AuthInfo = new Dictionary<string, string> {
+                        ["id_token"] = idToken
+                    };
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"OnVerifyAccessTokenAsync(): Could not validate Apple ID Token: {idToken}", ex);
+                return false;
+            }
+        }
+
+        public async Task<string> ValidateRefreshToken(string refreshToken, AuthContext ctx)
+        {
+            var redirectUri = GetRedirectUri(ctx);
+            var clientSecret = GetClientSecret();
+            var accessTokenUrl = $"{AccessTokenUrl}?client_id={ClientId}&client_secret={clientSecret}&redirect_uri={redirectUri.UrlEncode()}&grant_type=refresh_token&refresh_token={refreshToken}";
+            var contents = await AccessTokenUrlFilter(ctx, accessTokenUrl).PostToUrlAsync("").ConfigAwait();
+            return contents;
+        }
+
         protected override void AssertValidState()
         {
             base.AssertValidState();
@@ -211,21 +283,28 @@ namespace ServiceStack.Auth
             return Convert.FromBase64String(keyText);
         }
 
-        protected override async Task<string> GetAccessTokenJsonAsync(string code, CancellationToken token=default)
+        protected override async Task<string> GetAccessTokenJsonAsync(string code, AuthContext ctx, CancellationToken token=default)
         {
+            var redirectUri = GetRedirectUri(ctx);
             var clientSecret = GetClientSecret();
-            var accessTokenUrl = $"{AccessTokenUrl}?code={code}&client_id={ClientId}&client_secret={clientSecret}&redirect_uri={this.CallbackUrl.UrlEncode()}&grant_type=authorization_code";
-            try
+            var accessTokenUrl = $"{AccessTokenUrl}?code={code}&client_id={ClientId}&client_secret={clientSecret}&redirect_uri={redirectUri.UrlEncode()}&grant_type=authorization_code";
+            var contents = await AccessTokenUrlFilter(ctx, accessTokenUrl).PostToUrlAsync("").ConfigAwait();
+            return contents;
+        }
+
+        protected virtual string GetRedirectUri(AuthContext ctx)
+        {
+            var redirectUri = this.CallbackUrl;
+            var returnUrl = ctx.Request.GetQueryStringOrForm(Keywords.ReturnUrl);
+            if (!string.IsNullOrEmpty(returnUrl))
             {
-                var contents = await AccessTokenUrlFilter(this, accessTokenUrl).PostToUrlAsync("").ConfigAwait();
-                return contents;
+                // When authenticating from an Android App we need to redirect back to an App's intent,
+                // The ReturnUrl is used to identify which app to redirect to, e.g:
+                //  - /auth/apple?ReturnUrl=android:com.example.fluweb
+                // The same Callback URL also needs to be used when  
+                redirectUri = redirectUri.AddQueryParam(Keywords.ReturnUrl, returnUrl, encode: false);
             }
-            catch (WebException e)
-            {
-                var body = await e.GetResponseBodyAsync(token);
-                Log.Error($"GetAccessTokenJsonAsync() for {ClientId}: {body}", e);
-                throw;
-            }
+            return redirectUri;
         }
 
         protected virtual string GetIssuerSigningKeysJson()
@@ -269,7 +348,7 @@ namespace ServiceStack.Auth
          */
 
         protected override async Task<object> AuthenticateWithAccessTokenAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens,
-            string accessToken, Dictionary<string, object> authInfo = null, CancellationToken token = default)
+            string accessToken, Dictionary<string, string> authInfo = null, CancellationToken token = default)
         {
             if (authInfo == null)
                 throw new ArgumentNullException(nameof(authInfo));
@@ -294,27 +373,15 @@ namespace ServiceStack.Auth
                 }
             }
 
-            var appHost = HostContext.AssertAppHost();
-            var tokenHandler = appHost.Resolve<JwtSecurityTokenHandler>();
+            var idToken = authInfo["id_token"];
 
-            var jsonKeys = GetIssuerSigningKeysJson();
-            var keySet = JsonWebKeySet.Create(jsonKeys);
-
-            var parameters = new TokenValidationParameters {
-                CryptoProviderFactory = appHost.Resolve<CryptoProviderFactory>(),
-                IssuerSigningKeys = keySet.Keys,
-                ValidAudience = ClientId,
-                ValidIssuer = Audience,
-            };
-
-            var idToken = (string)authInfo["id_token"];
             try
             {
-                tokenHandler.ValidateToken(idToken, parameters, out _);
+                ValidateIdentityToken(idToken);
             }
             catch (Exception ex)
             {
-                Log.Error($"Could not validate Apple ID Token: {idToken}");
+                Log.Error($"Could not validate Apple ID Token: {idToken}", ex);
                 throw;
             }
 
@@ -337,6 +404,24 @@ namespace ServiceStack.Auth
 
             session.IsAuthenticated = true;
             return await OnAuthenticatedAsync(authService, session, tokens, idTokenAuthInfo, token).ConfigAwait();
+        }
+
+        public void ValidateIdentityToken(string idToken)
+        {
+            var appHost = HostContext.AssertAppHost();
+            var tokenHandler = appHost.Resolve<JwtSecurityTokenHandler>();
+
+            var jsonKeys = GetIssuerSigningKeysJson();
+            var keySet = JsonWebKeySet.Create(jsonKeys);
+
+            var parameters = new TokenValidationParameters {
+                CryptoProviderFactory = appHost.Resolve<CryptoProviderFactory>(),
+                IssuerSigningKeys = keySet.Keys,
+                ValidAudience = ClientId,
+                ValidIssuer = Audience,
+            };
+
+            tokenHandler.ValidateToken(idToken, parameters, out _);
         }
 
         protected override Task<Dictionary<string, string>> CreateAuthInfoAsync(string idToken, CancellationToken token = default)
@@ -376,5 +461,58 @@ namespace ServiceStack.Auth
             return TypeConstants.EmptyTask;
         }
     }
-    
+
+    public enum AppleAuthFeature
+    {
+        /// <summary>
+        /// Android support for https://pub.dev/packages/sign_in_with_apple
+        /// </summary>
+        FlutterSignInWithApple,
+    }
+
+    public static class AppleAuthProviderExtensions
+    {
+        public static string SignInWithAppleUrlFilter(AuthContext ctx, string url)
+        {
+            if (url.StartsWith("android:"))
+            {
+                var packageId = url.RightPart(':');
+                string hashParams = null;
+                if (packageId.IndexOf('#') >= 0)
+                {
+                    hashParams = packageId.RightPart('#');
+                    packageId = packageId.LeftPart('#');
+                }
+
+                var sb = StringBuilderCache.Allocate();
+                if (hashParams?.StartsWith("f=") == true) //error
+                {
+                    sb.Append(hashParams.Replace('/', '&'));
+                }
+                else
+                {
+                    var reqParams = ctx.Request.GetRequestParams();
+                    foreach (var entry in reqParams)
+                    {
+                        if (sb.Length > 0)
+                            sb.Append('&');
+                        sb.Append(entry.Key).Append('=').Append(entry.Value.UrlEncode());
+                    }
+                }
+                
+                url = $"intent://callback?{sb}#Intent;package={packageId};scheme=signinwithapple;end";
+            }
+            return url;
+        }
+        
+        public static AppleAuthProvider Use(this AppleAuthProvider provider, AppleAuthFeature feature)
+        {
+            if (feature == AppleAuthFeature.FlutterSignInWithApple)
+            {
+                provider.SuccessRedirectUrlFilter = SignInWithAppleUrlFilter;
+                provider.FailedRedirectUrlFilter = SignInWithAppleUrlFilter;
+            }
+            return provider;
+        }
+    }
 }
