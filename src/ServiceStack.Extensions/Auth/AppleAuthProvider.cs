@@ -102,7 +102,7 @@ namespace ServiceStack.Auth
         /// How long before re-validating RefreshToken, default: 1 day.
         /// Set to null to disable RefreshToken validation.
         /// </summary>
-        public TimeSpan? ValidateRefreshTokenExpiry { get; set; }// = TimeSpan.FromDays(1);
+        public TimeSpan? ValidateRefreshTokenExpiry { get; set; } = TimeSpan.FromDays(1);
 
         public AppleAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name, "ClientId", "ClientSecret")
