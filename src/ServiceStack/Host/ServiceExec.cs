@@ -50,20 +50,32 @@ namespace ServiceStack.Host
 
     public static class ServiceExecExtensions
     {
+        public static List<ActionMethod> GetRequestActions(this Type serviceType, Type requestType)
+        {
+            if (!typeof(IService).IsAssignableFrom(serviceType))
+                throw new NotSupportedException("All Services must implement IService");
+
+            var to = serviceType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                .Where(x => x.GetParameters().Length == 1 && x.GetParameters()[0].ParameterType == requestType && !x.IsGenericMethod && 
+                            ServiceController.IsServiceAction(x.Name, x.GetParameters()[0].ParameterType))
+                .Map(x => new ActionMethod(x));
+
+            return MergeAsyncActions(to);
+        }
+
         public static List<ActionMethod> GetActions(this Type serviceType)
         {
-            var to = new List<ActionMethod>();
-            
-            foreach (var mi in serviceType.GetMethods(BindingFlags.Public | BindingFlags.Instance))
-            {
-                var actionMethod = new ActionMethod(mi);
-                if (!ServiceController.IsServiceAction(actionMethod)) 
-                    continue;
+            var to = serviceType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                .Where(x => x.GetParameters().Length == 1 && x.DeclaringType != typeof(Service) && !x.IsGenericMethod
+                        && ServiceController.IsServiceAction(x.Name, x.GetParameters()[0].ParameterType))
+                .Map(x => new ActionMethod(x));
 
-                to.Add(actionMethod);
-            }
+            return MergeAsyncActions(to);
+        }
 
-            // Remove all sync methods where async equivalents exist & have async methods masquerades as sync methods for cheaper runtime invokation  
+        private static List<ActionMethod> MergeAsyncActions(List<ActionMethod> to)
+        {
+            // Remove all sync methods where async equivalents exist & have async methods masquerades as sync methods for cheaper runtime invocation  
             var asyncActions = new HashSet<string>(to.Where(x => x.IsAsync).Select(x => x.Name), StringComparer.OrdinalIgnoreCase);
             if (asyncActions.Count > 0)
                 to.RemoveAll(x => asyncActions.Contains(x.Name) && !x.IsAsync);

@@ -725,23 +725,12 @@ namespace ServiceStack.Api.OpenApi
                 }
 
                 var op = HostContext.Metadata.OperationsMap[requestType];
-                var actions = HostContext.Metadata.GetImplementedActions(op.ServiceType, op.RequestType);
-
-                var authAttrs = new[] { op.ServiceType, op.RequestType }
-                    .SelectMany(x => x.AllAttributes().OfType<AuthenticateAttribute>()).ToList();
-
-                authAttrs.AddRange(actions
-                    .Where(x => x.Name.ToUpperInvariant() == ActionContext.AnyAction)
-                    .SelectMany(x => x.AllAttributes<AuthenticateAttribute>())
-                );
 
                 var annotatingTagAttributes = requestType.AllAttributes<TagAttribute>();
 
                 foreach (var verb in verbs)
                 {
-                    var needAuth = authAttrs.Count > 0
-                        || actions.Where(x => x.Name.ToUpperInvariant() == verb)
-                            .SelectMany(x => x.AllAttributes<AuthenticateAttribute>()).Any();
+                    var needAuth = op.RequiresAuthentication;
 
                     var userTags = new List<string>();
                     if (ApplyToUtils.VerbsApplyTo.TryGetValue(verb, out var applyToVerb))

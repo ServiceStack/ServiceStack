@@ -53,7 +53,7 @@ namespace ServiceStack.Host
                 .SelectMany(x => x.AllAttributes().OfType<IResponseFilterBase>()).ToList();
 
             var authAttrs = reqFilterAttrs.OfType<AuthenticateAttribute>().ToList();
-            var actions = GetImplementedActions(serviceType, requestType);
+            var actions = serviceType.GetRequestActions(requestType);
             authAttrs.AddRange(actions.SelectMany(x => x.AllAttributes<AuthenticateAttribute>()));
             var tagAttrs = requestType.AllAttributes<TagAttribute>().ToList();
 
