@@ -27,6 +27,7 @@ namespace ServiceStack.Host
     public class ActionMethod
     {
         public const string Async = nameof(Async);
+        public const string AsyncUpper = "ASYNC";
         public MethodInfo MethodInfo { get; }
         public bool IsAsync { get; }
         public string Name { get; }

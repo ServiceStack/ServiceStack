@@ -213,18 +213,18 @@ namespace ServiceStack.Host
 
         public static bool IsServiceAction(string actionName, Type requestType)
         {
-            actionName = actionName.ToUpper();
             if (requestType.IsValueType || requestType == typeof(string))
                 return false;
 
-            if (!HttpMethods.AllVerbs.Contains(actionName) &&
-                actionName != ActionContext.AnyAction &&
-                !HttpMethods.AllVerbs.Any(verb =>
-                    ContentTypes.KnownFormats.Any(format => actionName.EqualsIgnoreCase(verb + format))) &&
-                !ContentTypes.KnownFormats.Any(format => actionName.EqualsIgnoreCase(ActionContext.AnyAction + format)))
-                return false;
+            actionName = actionName.ToUpper();
+            if (actionName.EndsWith(ActionMethod.AsyncUpper))
+                actionName = actionName.Substring(0, actionName.Length - ActionMethod.Async.Length);
 
-            return true;
+            var ret = HttpMethods.AllVerbs.Contains(actionName) || actionName == ActionContext.AnyAction 
+                || HttpMethods.AllVerbs.Any(verb => 
+                    ContentTypes.KnownFormats.Any(format => actionName.EqualsIgnoreCase(verb + format))) 
+                || ContentTypes.KnownFormats.Any(format => actionName.EqualsIgnoreCase(ActionContext.AnyAction + format));
+            return ret;
         }
 
         public readonly Dictionary<string, List<RestPath>> RestPathMap = new Dictionary<string, List<RestPath>>();
