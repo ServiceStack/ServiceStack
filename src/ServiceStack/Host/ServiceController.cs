@@ -218,7 +218,7 @@ namespace ServiceStack.Host
 
             actionName = actionName.ToUpper();
             if (actionName.EndsWith(ActionMethod.AsyncUpper))
-                actionName = actionName.Substring(0, actionName.Length - ActionMethod.Async.Length);
+                actionName = actionName.Substring(0, actionName.Length - ActionMethod.AsyncUpper.Length);
 
             var ret = HttpMethods.AllVerbs.Contains(actionName) || actionName == ActionContext.AnyAction 
                 || HttpMethods.AllVerbs.Any(verb => 

@@ -63,7 +63,7 @@ namespace ServiceStack.Host
                 RequestType = requestType,
                 ResponseType = responseType,
                 RestrictTo = restrictTo,
-                Actions = actions.Map(x => x.Name.ToUpper()),
+                Actions = actions.Select(x => x.NameUpper).Distinct().ToList(),
                 Routes = new List<RestPath>(),
                 RequestFilterAttributes = reqFilterAttrs,
                 ResponseFilterAttributes = resFilterAttrs,
