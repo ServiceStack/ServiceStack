@@ -59,5 +59,38 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             });
             Assert.That(verbs, Is.EquivalentTo(expected));
         }
+        
+        [Test]
+        public void Does_resolve_all_TestService_methods()
+        {
+            var actions = typeof(TestService).GetActions();
+            Assert.That(actions.Count, Is.EqualTo(6));
+            var verbs = ActionVerbs(actions);
+            var expected = StripAsync(new[] {
+                nameof(TestService.Any),
+                nameof(TestService.Get),
+                nameof(TestService.GetJson),
+            });
+            Assert.That(verbs, Is.EquivalentTo(expected));
+        }
+
+        public class Request1 {}
+        public class Request2 {}
+        
+        public class TestService : Service
+        {
+            public object Any(Request1 request) => request;
+            public object AnyAsync(Request1 request) => request;
+            public object Get(Request1 request) => request;
+            public object GetAsync(Request1 request) => request;
+            public object GetJson(Request1 request) => request;
+            public object GetJsonAsync(Request1 request) => request;
+            public object Any(Request2 request) => request;
+            public object AnyAsync(Request2 request) => request;
+            public object Get(Request2 request) => request;
+            public object GetAsync(Request2 request) => request;
+            public object GetJson(Request2 request) => request;
+            public object GetJsonAsync(Request2 request) => request;
+        }
     }
 }
