@@ -166,6 +166,8 @@ namespace ServiceStack.Host
                         responseType = null;
                     else if (responseType?.Name == "Task`1" && responseType.GetGenericArguments()[0] != typeof(object))
                         responseType = responseType.GetGenericArguments()[0];
+                    else if (responseType?.Name == "ValueTask`1" && responseType.GetGenericArguments()[0] != typeof(object))
+                        responseType = responseType.GetGenericArguments()[0];
                     
                     RegisterRestPaths(requestType);
 
@@ -206,19 +208,23 @@ namespace ServiceStack.Host
             if (mi.IsGenericMethod || mi.GetParameters().Length != 1)
                 return false;
 
-            var paramType = mi.GetParameters()[0].ParameterType;
-            if (paramType.IsValueType || paramType == typeof(string))
+            return IsServiceAction(mi.Name, mi.GetParameters()[0].ParameterType);
+        }
+
+        public static bool IsServiceAction(string actionName, Type requestType)
+        {
+            if (requestType.IsValueType || requestType == typeof(string))
                 return false;
 
-            var actionName = mi.Name.ToUpper();
-            if (!HttpMethods.AllVerbs.Contains(actionName) &&
-                actionName != ActionContext.AnyAction &&
-                !HttpMethods.AllVerbs.Any(verb =>
-                    ContentTypes.KnownFormats.Any(format => actionName.EqualsIgnoreCase(verb + format))) &&
-                !ContentTypes.KnownFormats.Any(format => actionName.EqualsIgnoreCase(ActionContext.AnyAction + format)))
-                return false;
-            
-            return true;
+            actionName = actionName.ToUpper();
+            if (actionName.EndsWith(ActionMethod.AsyncUpper))
+                actionName = actionName.Substring(0, actionName.Length - ActionMethod.AsyncUpper.Length);
+
+            var ret = HttpMethods.AllVerbs.Contains(actionName) || actionName == ActionContext.AnyAction 
+                || HttpMethods.AllVerbs.Any(verb => 
+                    ContentTypes.KnownFormats.Any(format => actionName.EqualsIgnoreCase(verb + format))) 
+                || ContentTypes.KnownFormats.Any(format => actionName.EqualsIgnoreCase(ActionContext.AnyAction + format));
+            return ret;
         }
 
         public readonly Dictionary<string, List<RestPath>> RestPathMap = new Dictionary<string, List<RestPath>>();

@@ -73,6 +73,7 @@ namespace ServiceStack.Authentication.OAuth2
         public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token=default)
         {
             var tokens = this.Init(authService, ref session, request);
+            var ctx = CreateAuthContext(authService, session, tokens);
 
             //Transferring AccessToken/Secret from Mobile/Desktop App to Server
             if (request?.AccessToken != null)
@@ -89,7 +90,7 @@ namespace ServiceStack.Authentication.OAuth2
                     return ConvertToClientError(failedResult, isHtml);
 
                 return isHtml
-                    ? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1")))
+                    ? authService.Redirect(SuccessRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("s", "1")))
                     : null; //return default AuthenticateResponse
             }
 
@@ -131,7 +132,7 @@ namespace ServiceStack.Authentication.OAuth2
                 catch (ProtocolException ex)
                 {
                     Log.Error("Failed to login to {0}".Fmt(this.Provider), ex);
-                    return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
+                    return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "Unknown")));
                 }
             }
 
@@ -147,19 +148,19 @@ namespace ServiceStack.Authentication.OAuth2
                 try
                 {
                     return await AuthenticateWithAccessTokenAsync(authService, session, tokens, accessToken, token).ConfigAwait()
-                        ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1")));
+                        ?? authService.Redirect(SuccessRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("s", "1")));
                 }
                 catch (WebException we)
                 {
                     var statusCode = ((HttpWebResponse)we.Response).StatusCode;
                     if (statusCode == HttpStatusCode.BadRequest)
                     {
-                        return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
+                        return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
                     }
                 }
             }
 
-            return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "RequestTokenFailed")));
+            return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "RequestTokenFailed")));
         }
 
         protected virtual async Task<object> AuthenticateWithAccessTokenAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens, string accessToken, CancellationToken token=default)

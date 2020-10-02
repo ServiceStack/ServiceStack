@@ -55,17 +55,18 @@ namespace ServiceStack.Authentication.OAuth2
                 return await base.AuthenticateAsync(authService, session, request, token).ConfigAwait();
 
             var tokens = Init(authService, ref session, request);
+            var ctx = CreateAuthContext(authService, session, tokens);
 
             try
             {
                 var accessTokenUrl = $"{AccessTokenUrl}?code={code}&client_id={ConsumerKey}&client_secret={ConsumerSecret}&redirect_uri={this.CallbackUrl.UrlEncode()}&grant_type=authorization_code";
-                var contents = await AccessTokenUrlFilter(this, accessTokenUrl).PostToUrlAsync("").ConfigAwait();
+                var contents = await AccessTokenUrlFilter(ctx, accessTokenUrl).PostToUrlAsync("").ConfigAwait();
                 var authInfo = JsonObject.Parse(contents);
 
                 var accessToken = authInfo["access_token"];
 
                 return await AuthenticateWithAccessTokenAsync(authService, session, tokens, accessToken, token).ConfigAwait()
-                       ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))); //Haz Access!
+                       ?? authService.Redirect(SuccessRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("s", "1"))); //Haz Access!
             }
             catch (WebException we)
             {
@@ -73,12 +74,12 @@ namespace ServiceStack.Authentication.OAuth2
                 var statusCode = ((HttpWebResponse)we.Response).StatusCode;
                 if (statusCode == HttpStatusCode.BadRequest)
                 {
-                    return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
+                    return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
                 }
             }
 
             //Shouldn't get here
-            return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
+            return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "Unknown")));
         }
 
         public bool OnVerifyAccessToken(string accessToken)

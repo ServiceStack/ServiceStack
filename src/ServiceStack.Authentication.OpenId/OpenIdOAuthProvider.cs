@@ -46,6 +46,7 @@ namespace ServiceStack.Authentication.OpenId
         public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token=default)
         {
             var tokens = Init(authService, ref session, request);
+            var ctx = CreateAuthContext(authService, session, tokens);
 
             var httpReq = authService.Request;
             var isOpenIdRequest = !httpReq.GetParam("openid.mode").IsNullOrEmpty();
@@ -87,7 +88,7 @@ namespace ServiceStack.Authentication.OpenId
                 catch (ProtocolException ex)
                 {
                     Log.Error("Failed to login to {0}".Fmt(openIdUrl), ex);
-                    return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
+                    return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "Unknown")));
                 }
             }
 
@@ -109,20 +110,20 @@ namespace ServiceStack.Authentication.OpenId
                                 session.IsAuthenticated = true;
 
                                 return await OnAuthenticatedAsync(authService, session, tokens, authInfo, token).ConfigAwait()
-                                    ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))); //Haz access!
+                                    ?? authService.Redirect(SuccessRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("s", "1"))); //Haz access!
 
                             case AuthenticationStatus.Canceled:
-                                return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "ProviderCancelled")));
+                                return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "ProviderCancelled")));
 
                             case AuthenticationStatus.Failed:
-                                return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
+                                return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "Unknown")));
                         }
                     }
                 }
             }
 
             //Shouldn't get here
-            return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
+            return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "Unknown")));
         }
 
         protected virtual Dictionary<string, string> CreateAuthInfo(IAuthenticationResponse response)
