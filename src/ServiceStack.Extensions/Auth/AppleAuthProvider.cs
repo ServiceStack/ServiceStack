@@ -49,6 +49,11 @@ namespace ServiceStack.Auth
         /// Service ID
         /// </summary>
         public string ClientId { get; set; }
+        
+        /// <summary>
+        /// Bundle ID
+        /// </summary>
+        public string BundleId { get; set; }
 
         /// <summary>
         /// The Private Key ID
@@ -113,6 +118,7 @@ namespace ServiceStack.Auth
             ResolveUnknownDisplayName = DefaultResolveUnknownDisplayName;
             
             ClientId = appSettings.GetString($"oauth.{Name}.{nameof(ClientId)}");
+            BundleId = appSettings.GetString($"oauth.{Name}.{nameof(BundleId)}");
             Audience = appSettings.Get($"oauth.{Name}.{nameof(Audience)}", DefaultAudience);
             TeamId = appSettings.GetString($"oauth.{Name}.{nameof(TeamId)}");
             KeyId = appSettings.GetString($"oauth.{Name}.{nameof(KeyId)}");
@@ -153,40 +159,73 @@ namespace ServiceStack.Auth
                 ValidateIdentityToken(idToken);
                 var idTokenAuthInfo = await CreateAuthInfoAsync(idToken).ConfigAwait();
 
-                if (ValidateRefreshTokenExpiry != null)
+                var authRepo = GetAuthRepositoryAsync(ctx.Request);
+                await using (authRepo as IAsyncDisposable)
                 {
+                    // If the User doesn't exist this successful Apple SignIn attempt should create the user
                     var userName = idTokenAuthInfo.Get("sub");
-                
-                    var authRepo = GetAuthRepositoryAsync(ctx.Request);
-                    await using (authRepo as IAsyncDisposable)
+                    var userAuth = await authRepo.GetUserAuthByUserNameAsync(userName);
+                    if (userAuth == null)
                     {
-                        var cacheExpiry = ValidateRefreshTokenExpiry.GetValueOrDefault();
-                        var userAuth = await authRepo.GetUserAuthByUserNameAsync(userName);
+                        // Look for 1st time info (pass through from App) in Meta dictionary or ?QueryString / FormData
+                        ctx.AuthInfo = (ctx.Request.Dto as Authenticate)?.Meta;
+                        if (ctx.AuthInfo == null || ctx.AuthInfo.Count == 0)
+                        {
+                            ctx.AuthInfo = new Dictionary<string, string> {
+                                ["authorizationCode"] = ctx.Request.GetQueryStringOrForm("authorizationCode"),
+                                ["givenName"] = ctx.Request.GetQueryStringOrForm("givenName"),
+                                ["familyName"] = ctx.Request.GetQueryStringOrForm("familyName"),
+                            };
+                        }
+                        
+                        if (!ctx.AuthInfo.TryGetValue("authorizationCode", out var code) || string.IsNullOrEmpty(code))
+                            throw new Exception("authorizationCode is required for new Users");
+
+                        // Validates the authorizationCode & Retrieves the RefreshToken for the user
+                        var clientId = idTokenAuthInfo.Get("aud");
+                        var clientSecret = GetClientSecret(clientId);
+                        var accessTokenUrl = $"{AccessTokenUrl}?code={code}&client_id={clientId}&client_secret={clientSecret}&grant_type=authorization_code";
+                        var contents = await AccessTokenUrlFilter(ctx, accessTokenUrl).PostToUrlAsync("").ConfigAwait();
+                        
+                        var authInfo = (Dictionary<string,object>)JSON.parse(contents);
+                        foreach (var entry in authInfo.ToStringDictionary())
+                        {
+                            ctx.AuthInfo[entry.Key] = entry.Value;
+                        }
+
+                        return true; // Calls AuthenticateWithAccessTokenAsync to register user
+                    }
+
+                    // Whether to validate the Users Refresh Token + validate User is still in good standing 
+                    if (ValidateRefreshTokenExpiry != null)
+                    {
                         var userAuthId = userAuth.Id.ToString();
                         var validateCacheKey = $"apple:validate:refresh:{userAuthId}";
                         var cache = ctx.Request.GetCacheClientAsync();
+                        var cacheExpiry = ValidateRefreshTokenExpiry.GetValueOrDefault();
                         var contents = await cache.GetOrCreateAsync(validateCacheKey, cacheExpiry, async () => {
                             var userAuthDetails = await authRepo.GetUserAuthDetailsAsync(userAuthId);
                             var appleAuthDetails = userAuthDetails.FirstOrDefault(x => x.Provider == Name);
                             if (appleAuthDetails?.RefreshToken == null)
                                 throw new Exception($"User {userAuthId} is missing '{Name}' RefreshToken");
 
-                            var contents = await ValidateRefreshToken(appleAuthDetails.RefreshToken, ctx); //expensive
+                            var clientId = appleAuthDetails.Items.Get("aud") ?? ClientId;
+                            var contents = await ValidateRefreshToken(appleAuthDetails.RefreshToken, clientId, ctx); //expensive
                             return contents;
                         });
                         
                         var authInfo = (Dictionary<string, object>) JSON.parse(contents);
                         ctx.AuthInfo = authInfo.ToStringDictionary();
                     }
+                    else
+                    {
+                        // ctx.AuthInfo is used & required in AuthenticateWithAccessTokenAsync()
+                        ctx.AuthInfo = new Dictionary<string, string> {
+                            ["id_token"] = idToken
+                        };
+                    }
+                    return true;
                 }
-                else
-                {
-                    // ctx.AuthInfo is used & required in AuthenticateWithAccessTokenAsync()
-                    ctx.AuthInfo = new Dictionary<string, string> {
-                        ["id_token"] = idToken
-                    };
-                }
-                return true;
             }
             catch (Exception ex)
             {
@@ -195,11 +234,11 @@ namespace ServiceStack.Auth
             }
         }
 
-        public async Task<string> ValidateRefreshToken(string refreshToken, AuthContext ctx)
+        public async Task<string> ValidateRefreshToken(string refreshToken, string clientId, AuthContext ctx)
         {
             var redirectUri = GetRedirectUri(ctx);
-            var clientSecret = GetClientSecret();
-            var accessTokenUrl = $"{AccessTokenUrl}?client_id={ClientId}&client_secret={clientSecret}&redirect_uri={redirectUri.UrlEncode()}&grant_type=refresh_token&refresh_token={refreshToken}";
+            var clientSecret = GetClientSecret(clientId);
+            var accessTokenUrl = $"{AccessTokenUrl}?client_id={clientId}&client_secret={clientSecret}&redirect_uri={redirectUri.UrlEncode()}&grant_type=refresh_token&refresh_token={refreshToken}";
             var contents = await AccessTokenUrlFilter(ctx, accessTokenUrl).PostToUrlAsync("").ConfigAwait(); //expensive
             return contents;
         }
@@ -222,7 +261,7 @@ namespace ServiceStack.Auth
                 throw new Exception($"{ConsumerSecretName} is required otherwise configure either Private Key or ClientSecretFactory");
         }
 
-        protected virtual string GetClientSecret()
+        protected virtual string GetClientSecret(string clientId)
         {
             if (ClientSecretFactory != null)
                 return ClientSecretFactory(this);
@@ -238,7 +277,7 @@ namespace ServiceStack.Auth
                 Audience = Audience,
                 Expires = DateTime.UtcNow.Add(ClientSecretExpiry),
                 Issuer = TeamId,
-                Subject = new ClaimsIdentity(new[] { new Claim("sub", ClientId) }),
+                Subject = new ClaimsIdentity(new[] { new Claim("sub", clientId) }),
                 SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.EcdsaSha256Signature) {
                     CryptoProviderFactory = appHost.Resolve<CryptoProviderFactory>(),
                 },
@@ -280,7 +319,7 @@ namespace ServiceStack.Auth
         protected override async Task<string> GetAccessTokenJsonAsync(string code, AuthContext ctx, CancellationToken token=default)
         {
             var redirectUri = GetRedirectUri(ctx);
-            var clientSecret = GetClientSecret();
+            var clientSecret = GetClientSecret(ClientId);
             var accessTokenUrl = $"{AccessTokenUrl}?code={code}&client_id={ClientId}&client_secret={clientSecret}&redirect_uri={redirectUri.UrlEncode()}&grant_type=authorization_code";
             var contents = await AccessTokenUrlFilter(ctx, accessTokenUrl).PostToUrlAsync("").ConfigAwait();
             return contents;
@@ -350,7 +389,7 @@ namespace ServiceStack.Auth
             tokens.AccessToken = accessToken;
 
             tokens.Items ??= new Dictionary<string, string>();
-            foreach (var entry in authInfo.ToStringDictionary())
+            foreach (var entry in authInfo)
             {
                 if (entry.Key == "refresh_token")
                 {
@@ -381,6 +420,7 @@ namespace ServiceStack.Auth
 
             var idTokenAuthInfo = await CreateAuthInfoAsync(idToken, token).ConfigAwait();
             
+            // User Info only on first time by ?user for Web OAuth or givenName/familyName by Native App
             var userJson = authService.Request.GetQueryStringOrForm("user");
             if (userJson != null)
             {
@@ -395,6 +435,21 @@ namespace ServiceStack.Auth
                     }
                 }
             }
+            else
+            {
+                // Use userIdentifier/email from signed/verified JWT instead
+                authInfo.TryGetValue("givenName", out var firstName);
+                if (string.IsNullOrEmpty(firstName))
+                    authInfo.TryGetValue("firstName", out firstName);
+                if (!string.IsNullOrEmpty(firstName))
+                    idTokenAuthInfo["firstName"] = firstName;
+
+                authInfo.TryGetValue("familyName", out var lastName);
+                if (string.IsNullOrEmpty(lastName))
+                    authInfo.TryGetValue("lastName", out lastName);
+                if (!string.IsNullOrEmpty(lastName))
+                    idTokenAuthInfo["lastName"] = lastName;
+            }
 
             session.IsAuthenticated = true;
             return await OnAuthenticatedAsync(authService, session, tokens, idTokenAuthInfo, token).ConfigAwait();
@@ -407,11 +462,17 @@ namespace ServiceStack.Auth
 
             var jsonKeys = GetIssuerSigningKeysJson();
             var keySet = JsonWebKeySet.Create(jsonKeys);
+            
+            // Uses BundleId when authenticating via Native App or ClientId/ServicesID via Web/OAuth flows 
+            var idTokenPayload = JwtAuthProviderReader.ExtractPayload(idToken);
+            var useAudience = idTokenPayload.TryGetValue("aud", out var oAud) && oAud is string aud && aud == BundleId
+                ? BundleId
+                : ClientId;
 
             var parameters = new TokenValidationParameters {
                 CryptoProviderFactory = appHost.Resolve<CryptoProviderFactory>(),
                 IssuerSigningKeys = keySet.Keys,
-                ValidAudience = ClientId,
+                ValidAudience = useAudience,
                 ValidIssuer = Audience,
             };
 
