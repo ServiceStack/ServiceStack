@@ -51,8 +51,14 @@ namespace ServiceStack.Auth
 
     public interface IAuthResponseFilter
     {
+        /// <summary>
+        /// Intercept successful Authenticate Request DTO requests 
+        /// </summary>
         void Execute(AuthFilterContext authContext);
 
+        /// <summary>
+        /// Intercept successful OAuth redirect requests 
+        /// </summary>
         Task ResultFilterAsync(AuthResultContext authContext, CancellationToken token=default);
     }
 
@@ -69,21 +75,57 @@ namespace ServiceStack.Auth
 
     public class AuthFilterContext
     {
+        /// <summary>
+        /// Instance of AuthenticateService
+        /// </summary>
         public AuthenticateService AuthService { get; internal set; }
+        /// <summary>
+        /// Selected Auth Provider for Request
+        /// </summary>
         public IAuthProvider AuthProvider { get; internal set; }
+        /// <summary>
+        /// Authenticated Users Session
+        /// </summary>
         public IAuthSession Session { get; internal set; }
+        /// <summary>
+        /// Authenticate Request DTO
+        /// </summary>
         public Authenticate AuthRequest { get; internal set; }
+        /// <summary>
+        /// Authenticate Response DTO
+        /// </summary>
         public AuthenticateResponse AuthResponse { get; internal set; }
+        /// <summary>
+        /// Optimal Session Referrer URL to use redirects
+        /// </summary>
         public string ReferrerUrl { get; internal set; }
+        /// <summary>
+        /// If User was already authenticated
+        /// </summary>
         public bool AlreadyAuthenticated { get; internal set; }
+        /// <summary>
+        /// If User Authenticated in this request
+        /// </summary>
         public bool DidAuthenticate { get; internal set; }
     }
 
     public class AuthResultContext
     {
+        /// <summary>
+        /// The Response returned for this successful Auth Request 
+        /// </summary>
         public IHttpResult Result { get; set; }
+        /// <summary>
+        /// Instance of Service used in this Request
+        /// </summary>
         public IServiceBase Service { get; internal set; }
+        /// <summary>
+        /// Current HTTP Request Context
+        /// </summary>
         public IRequest Request { get; internal set; }
+        /// <summary>
+        /// Authenticated Users Session
+        /// </summary>
         public IAuthSession Session { get; internal set; }
     }
 }
