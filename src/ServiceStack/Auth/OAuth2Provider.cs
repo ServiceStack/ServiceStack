@@ -49,7 +49,7 @@ namespace ServiceStack.Auth
             if (request?.AccessToken != null && VerifyAccessTokenAsync != null)
             {
                 if (!await VerifyAccessTokenAsync(request.AccessToken, ctx).ConfigAwait())
-                    return HttpError.Unauthorized("AccessToken is not for client_id: " + ConsumerKey);
+                    return HttpError.Unauthorized(ErrorMessages.InvalidAccessToken.Localize(authService.Request));
 
                 var isHtml = authService.Request.IsHtml();
                 var failedResult = await AuthenticateWithAccessTokenAsync(authService, session, tokens, request.AccessToken, ctx.AuthInfo, token: token).ConfigAwait();

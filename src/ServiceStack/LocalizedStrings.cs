@@ -101,6 +101,7 @@
         public static string TokenInvalid = "Token is invalid";
         public static string RefreshTokenInvalid = "RefreshToken is Invalid";
         public static string PrimaryKeyRequired = "Primary Key is Required";
+        public static string InvalidAccessToken = "AccessToken is Invalid";
 
         public static string InvalidRole = "Invalid Role";
         public static string InvalidPermission = "Invalid Permission";
