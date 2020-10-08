@@ -50,6 +50,26 @@ namespace ServiceStack
             }
         }
 
+        public static async Task<TReturn> ExecAllReturnFirstAsync<T,TReturn>(this IEnumerable<T> instances, Func<T,Task<TReturn>> action)
+        {
+            TReturn firstResult = default;
+            var i = 0; 
+            foreach (var instance in instances)
+            {
+                try
+                {
+                    var ret = await action(instance).ConfigAwait();
+                    if (i++ == 0)
+                        firstResult = ret;
+                }
+                catch (Exception ex)
+                {
+                    LogError(instance.GetType(), action.GetType().Name, ex);
+                }
+            }
+            return firstResult;
+        }
+
         public static void ExecAllWithFirstOut<T, TReturn>(this IEnumerable<T> instances, Func<T, TReturn> action, ref TReturn firstResult)
         {
             foreach (var instance in instances)
