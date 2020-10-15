@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Text;
@@ -265,12 +266,14 @@ namespace ServiceStack.Caching
             }
         }
 
-        public async IAsyncEnumerable<string> GetKeysByPatternAsync(string pattern, CancellationToken token = default)
+        public async IAsyncEnumerable<string> GetKeysByPatternAsync(string pattern, [EnumeratorCancellation] CancellationToken token = default)
         {
             var results = cacheClientsAsync.ExecReturnFirstWithResult(client => 
                 client.GetKeysByPatternAsync(pattern, token)).ConfigureAwait(false);
             await foreach (var key in results)
             {
+                token.ThrowIfCancellationRequested();
+                
                 yield return key;
             }
         }
