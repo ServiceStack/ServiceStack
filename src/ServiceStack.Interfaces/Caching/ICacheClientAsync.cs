@@ -101,6 +101,7 @@ namespace ServiceStack.Caching
         /// The default value of T is set for all keys that do not exist.
         /// </summary>
         /// <param name="keys">The list of identifiers for the items to retrieve.</param>
+        /// <param name="token"></param>
         /// <returns>
         /// a Dictionary holding all items indexed by their key.
         /// </returns>
@@ -109,8 +110,6 @@ namespace ServiceStack.Caching
         /// <summary>
         /// Sets multiple items to the cache. 
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="values">The values.</param>
         Task SetAllAsync<T>(IDictionary<string, T> values, CancellationToken token=default);
         
         Task<TimeSpan?> GetTimeToLiveAsync(string key, CancellationToken token=default);

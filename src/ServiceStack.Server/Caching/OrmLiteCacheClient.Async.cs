@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.OrmLite;
@@ -385,7 +386,7 @@ namespace ServiceStack.Caching
         }
 
 #if NET472 || NETSTANDARD2_0
-        public async IAsyncEnumerable<string> GetKeysByPatternAsync(string pattern, CancellationToken token = default)
+        public async IAsyncEnumerable<string> GetKeysByPatternAsync(string pattern, [EnumeratorCancellation] CancellationToken token = default)
         {
             var results = await ExecAsync(async db =>
             {
@@ -402,6 +403,8 @@ namespace ServiceStack.Caching
             
             foreach (var key in results)
             {
+                token.ThrowIfCancellationRequested();
+                
                 yield return key;
             }
         }
