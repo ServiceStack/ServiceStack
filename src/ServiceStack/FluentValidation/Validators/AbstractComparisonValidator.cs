@@ -28,12 +28,22 @@ namespace ServiceStack.FluentValidation.Validators {
 	public abstract class AbstractComparisonValidator : PropertyValidator, IComparisonValidator {
 
 		readonly Func<object, object> _valueToCompareFunc;
+		private readonly string _comparisonMemberDisplayName;
 
 		/// <summary>
 		/// </summary>
 		/// <param name="value"></param>
 		/// <param name="errorSource"></param>
+		[Obsolete("This constructor will be removed from FV10. Use the overload that doesn't take an errorSource")]
 		protected AbstractComparisonValidator(IComparable value, IStringSource errorSource) : base(errorSource) {
+			value.Guard("value must not be null.", nameof(value));
+			ValueToCompare = value;
+		}
+
+		/// <summary>
+		/// </summary>
+		/// <param name="value"></param>
+		protected AbstractComparisonValidator(IComparable value) {
 			value.Guard("value must not be null.", nameof(value));
 			ValueToCompare = value;
 		}
@@ -42,10 +52,24 @@ namespace ServiceStack.FluentValidation.Validators {
 		/// </summary>
 		/// <param name="valueToCompareFunc"></param>
 		/// <param name="member"></param>
+		/// <param name="memberDisplayName"></param>
 		/// <param name="errorSource"></param>
-		protected AbstractComparisonValidator(Func<object, object> valueToCompareFunc, MemberInfo member, IStringSource errorSource) : base(errorSource) {
-			this._valueToCompareFunc = valueToCompareFunc;
-			this.MemberToCompare = member;
+		[Obsolete("This constructor will be removed from FV10. Use the overload that doesn't take an errorSource")]
+		protected AbstractComparisonValidator(Func<object, object> valueToCompareFunc, MemberInfo member, string memberDisplayName, IStringSource errorSource) : base(errorSource) {
+			_valueToCompareFunc = valueToCompareFunc;
+			_comparisonMemberDisplayName = memberDisplayName;
+			MemberToCompare = member;
+		}
+
+		/// <summary>
+		/// </summary>
+		/// <param name="valueToCompareFunc"></param>
+		/// <param name="member"></param>
+		/// <param name="memberDisplayName"></param>
+		protected AbstractComparisonValidator(Func<object, object> valueToCompareFunc, MemberInfo member, string memberDisplayName) {
+			_valueToCompareFunc = valueToCompareFunc;
+			_comparisonMemberDisplayName = memberDisplayName;
+			MemberToCompare = member;
 		}
 
 		/// <summary>
@@ -64,7 +88,7 @@ namespace ServiceStack.FluentValidation.Validators {
 
 			if (!IsValid((IComparable)context.PropertyValue, value)) {
 				context.MessageFormatter.AppendArgument("ComparisonValue", value);
-				context.MessageFormatter.AppendArgument("ComparisonProperty", MemberToCompare == null ? "" : MemberToCompare.Name.SplitPascalCase());
+				context.MessageFormatter.AppendArgument("ComparisonProperty", _comparisonMemberDisplayName ?? "");
 				return false;
 			}
 

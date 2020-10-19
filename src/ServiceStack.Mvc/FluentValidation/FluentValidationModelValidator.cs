@@ -26,7 +26,7 @@ namespace ServiceStack.FluentValidation.Mvc {
 			if (Metadata.Model != null && !_customizations.Skip) {
 				var selector = _customizations.ToValidatorSelector();
 				var interceptor = _customizations.GetInterceptor() ?? (_validator as IValidatorInterceptor);
-				var context = new ValidationContext(Metadata.Model, new PropertyChain(), selector);
+				IValidationContext context = new ValidationContext<object>(Metadata.Model, new PropertyChain(), selector);
 				context.RootContextData["InvokedByMvc"] = true;
 
 				if(interceptor != null) {

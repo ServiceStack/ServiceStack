@@ -42,7 +42,7 @@ namespace ServiceStack.FluentValidation.Mvc {
 					DisplayName = Rule == null ? null : Rule.DisplayName,
 				};
 
-				var fakeParentContext = new ValidationContext(container);
+				var fakeParentContext = new ValidationContext<object>(container);
 				var context = new PropertyValidatorContext(fakeParentContext, fakeRule, Metadata.PropertyName);
 				var result = Validator.Validate(context);
 

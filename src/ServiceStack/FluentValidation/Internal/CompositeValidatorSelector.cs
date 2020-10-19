@@ -16,24 +16,19 @@
 // The latest version of this file can be found at https://github.com/FluentValidation/FluentValidation
 #endregion
 
-namespace ServiceStack.FluentValidation.Validators {
-	using System;
-	using Resources;
+namespace ServiceStack.FluentValidation.Internal {
+	using System.Collections.Generic;
+	using System.Linq;
 
-	public class NotNullValidator : PropertyValidator, INotNullValidator {
+	internal class CompositeValidatorSelector : IValidatorSelector {
+		private IEnumerable<IValidatorSelector> _selectors;
 
-		protected override bool IsValid(PropertyValidatorContext context) {
-			if (context.PropertyValue == null) {
-				return false;
-			}
-			return true;
+		public CompositeValidatorSelector(IEnumerable<IValidatorSelector> selectors) {
+			_selectors = selectors;
 		}
 
-		protected override string GetDefaultMessageTemplate() {
-			return Localized(nameof(NotNullValidator));
+		public bool CanExecute(IValidationRule rule, string propertyPath, IValidationContext context) {
+			return _selectors.Any(s => s.CanExecute(rule, propertyPath, context));
 		}
-	}
-
-	public interface INotNullValidator : IPropertyValidator {
 	}
 }

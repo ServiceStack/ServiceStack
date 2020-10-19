@@ -24,11 +24,12 @@ namespace ServiceStack.FluentValidation.Resources {
 	/// <summary>
 	/// Provides error message templates
 	/// </summary>
+	[Obsolete("IStringSource is deprecated and will be removed in FluentValidation 10.")]
 	public interface IStringSource {
 		/// <summary>
 		/// Construct the error message template
 		/// </summary>
 		/// <returns>Error message template</returns>
-		string GetString(IValidationContext context);
+		string GetString(ICommonContext context);
 	}
 }

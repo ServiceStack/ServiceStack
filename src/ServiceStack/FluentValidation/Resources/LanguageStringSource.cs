@@ -24,31 +24,32 @@ namespace ServiceStack.FluentValidation.Resources {
 	/// <summary>
 	/// IStringSource implementation that uses the default language manager.
 	/// </summary>
+	[Obsolete("LanguageStringSource is deprecated and will be removed in FluentValidation 10. Use a Func<PropertyValidatorContext, string> instead.")]
 	public class LanguageStringSource : IStringSource {
 		private readonly string _key;
-		internal Func<IValidationContext, string> ErrorCodeFunc { get; set; }
+		internal Func<ICommonContext, string> ErrorCodeFunc { get; set; }
 
 		public LanguageStringSource(string key) {
 			_key = key;
 		}
 
-		public LanguageStringSource(Func<IValidationContext, string> errorCodeFunc, string fallbackKey) {
+		public LanguageStringSource(Func<ICommonContext, string> errorCodeFunc, string fallbackKey) {
 			ErrorCodeFunc = errorCodeFunc;
 			_key = fallbackKey;
 		}
 
-		public virtual string GetString(IValidationContext context) {
-			var errorCode = ErrorCodeFunc?.Invoke(context);
+		public virtual string GetString(ICommonContext context) {
+				var errorCode = ErrorCodeFunc?.Invoke(context);
 
-			if (errorCode != null) {
-				string result = ValidatorOptions.LanguageManager.GetString(errorCode);
+				if (errorCode != null) {
+					string result = ValidatorOptions.Global.LanguageManager.GetString(errorCode);
 
-				if (!string.IsNullOrEmpty(result)) {
-					return result;
+					if (!string.IsNullOrEmpty(result)) {
+						return result;
+					}
 				}
-			}
 
-			return ValidatorOptions.LanguageManager.GetString(_key);
+				return ValidatorOptions.Global.LanguageManager.GetString(_key);
 		}
 	}
 }

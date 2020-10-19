@@ -26,15 +26,16 @@ namespace ServiceStack.FluentValidation {
 	/// Validation context
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	public partial class ValidationContext<T> : ValidationContext {
+	public partial class ValidationContext<T> : IValidationContext {
+		//Migration: Needs to be injected in Clone(), CloneForChildValidator() + all new ValidationContext()
+		public IRequest Request { get; set; }
 	}
 
 	/// <summary>
 	/// Validation context
 	/// </summary>
-	public partial class ValidationContext {
+	public partial interface IValidationContext {
 
-        //Migration: Needs to be injected in Clone(), CloneForChildValidator() + all new ValidationContext()
-        public IRequest Request { get; internal set; }
+        IRequest Request { get; set; }
 	}
 }

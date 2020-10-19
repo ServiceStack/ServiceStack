@@ -113,7 +113,7 @@ namespace ServiceStack.FluentValidation
         }
 
         //TODO: [SYNC] Call from AbstractValidator.Validate/ValidateAsync(context)
-        private void Init(ValidationContext context)
+        private void Init(IValidationContext context)
         {
             if (this.Request == null)
                 this.Request = context.Request;

@@ -18,7 +18,7 @@ namespace ServiceStack.Common.Tests
         {
             this.dtoBValidator = dtoBValidator;
             RuleFor(dto => dto.FieldA).NotEmpty();
-            RuleFor(dto => dto.Items).SetCollectionValidator(dtoBValidator);
+            RuleForEach(dto => dto.Items).SetValidator(dtoBValidator);
         }
     }
 

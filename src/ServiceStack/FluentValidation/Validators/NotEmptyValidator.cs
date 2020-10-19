@@ -27,7 +27,7 @@ namespace ServiceStack.FluentValidation.Validators {
 	public class NotEmptyValidator : PropertyValidator, INotEmptyValidator {
 		private readonly object _defaultValueForType;
 
-		public NotEmptyValidator(object defaultValueForType) : base(new LanguageStringSource(nameof(NotEmptyValidator))) {
+		public NotEmptyValidator(object defaultValueForType) {
 			_defaultValueForType = defaultValueForType;
 		}
 
@@ -47,9 +47,12 @@ namespace ServiceStack.FluentValidation.Validators {
 
 			return true;
 		}
+
+		protected override string GetDefaultMessageTemplate() {
+			return Localized(nameof(NotEmptyValidator));
+		}
 	}
 
-	[Obsolete("FluentValidation metadata interfaces are deprecated and will be removed in FluentValidation 10.")]
 	public interface INotEmptyValidator : IPropertyValidator {
 	}
 }

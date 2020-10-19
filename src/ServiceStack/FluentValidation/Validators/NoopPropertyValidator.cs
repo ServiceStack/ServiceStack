@@ -31,7 +31,7 @@ namespace ServiceStack.FluentValidation.Validators {
 			return Task.FromResult(Validate(context));
 		}
 
-		public virtual bool ShouldValidateAsynchronously(ValidationContext context) {
+		public virtual bool ShouldValidateAsynchronously(IValidationContext context) {
 			return false;
 		}
 

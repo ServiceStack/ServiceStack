@@ -20,42 +20,66 @@ namespace ServiceStack.FluentValidation.Validators {
 	using System;
 	using Internal;
 
-	public class PropertyValidatorContext : IValidationContext {
+	public class PropertyValidatorContext : ICommonContext {
 		private MessageFormatter _messageFormatter;
-		private readonly Lazy<object> _propertyValueContainer;
+		private bool _propertyValueSet = false;
+		private object _propertyValue;
+		private Lazy<object> _propertyValueAccessor;
 
-		public ValidationContext ParentContext { get; private set; }
+		public IValidationContext ParentContext { get; private set; }
 		public PropertyRule Rule { get; private set; }
 		public string PropertyName { get; private set; }
 
 		public string DisplayName => Rule.GetDisplayName(ParentContext);
 
 		public object InstanceToValidate => ParentContext.InstanceToValidate;
-		public MessageFormatter MessageFormatter => _messageFormatter ?? (_messageFormatter = ValidatorOptions.MessageFormatterFactory());
+		public MessageFormatter MessageFormatter => _messageFormatter ??= ValidatorOptions.Global.MessageFormatterFactory();
 
 		//Lazily load the property value
 		//to allow the delegating validator to cancel validation before value is obtained
-		public object PropertyValue => _propertyValueContainer.Value;
+		public object PropertyValue {
+			get {
+				if (_propertyValueAccessor != null) {
+					return _propertyValueAccessor.Value;
+				}
+
+				if (_propertyValueSet) {
+					return _propertyValue;
+				}
+
+				// TODO: This is for backwards compatibility. Remove this for 10.0 as the value will always be passed
+				// via the accessor.
+				_propertyValue = Rule.GetPropertyValue(ParentContext.InstanceToValidate);
+				_propertyValueSet = true;
+				return _propertyValue;
+			}
+		}
 
 		// Explicit implementation so we don't have to expose the base interface.
-		IValidationContext IValidationContext.ParentContext => ParentContext;
+		ICommonContext ICommonContext.ParentContext => ParentContext;
 
-		public PropertyValidatorContext(ValidationContext parentContext, PropertyRule rule, string propertyName) {
+		[Obsolete("This constructor will be removed from FluentValidation 10. Use the constructor that receives a property value or an accessor instead.")]
+		public PropertyValidatorContext(IValidationContext parentContext, PropertyRule rule, string propertyName) {
 			ParentContext = parentContext;
 			Rule = rule;
 			PropertyName = propertyName;
-			_propertyValueContainer = new Lazy<object>( () => {
-				var value = rule.PropertyFunc(parentContext.InstanceToValidate);
-				if (rule.Transformer != null) value = rule.Transformer(value);
-				return value;
-			});
 		}
 
-		public PropertyValidatorContext(ValidationContext parentContext, PropertyRule rule, string propertyName, object propertyValue) {
+		public PropertyValidatorContext(IValidationContext parentContext, PropertyRule rule, string propertyName, object propertyValue) {
 			ParentContext = parentContext;
 			Rule = rule;
 			PropertyName = propertyName;
-			_propertyValueContainer = new Lazy<object>(() => propertyValue);
+			_propertyValue = propertyValue;
+			_propertyValueSet = true;
 		}
+
+		public PropertyValidatorContext(IValidationContext parentContext, PropertyRule rule, string propertyName, Lazy<object> propertyValueAccessor) {
+			ParentContext = parentContext;
+			Rule = rule;
+			PropertyName = propertyName;
+			_propertyValueAccessor = propertyValueAccessor;
+		}
+
+
 	}
 }

@@ -197,7 +197,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
             };
 
             var validationResult = validator.Validate(
-            new ValidationContext(request, null, new MultiRuleSetValidatorSelector(httpMethod)));
+            new ValidationContext<object>(request, null, new MultiRuleSetValidatorSelector(httpMethod)));
 
             var responseStatus = validationResult.ToErrorResult().ToResponseStatus();
 

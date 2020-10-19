@@ -389,7 +389,7 @@ namespace ServiceStack.Validation
             }
         }
 
-        public static bool HasAsyncValidators(this IValidator validator, ValidationContext context, string ruleSet=null)
+        public static bool HasAsyncValidators(this IValidator validator, IValidationContext context, string ruleSet=null)
         {
             if (validator is IEnumerable<IValidationRule> rules)
             {

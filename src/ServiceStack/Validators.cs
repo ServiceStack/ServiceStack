@@ -22,7 +22,7 @@ namespace ServiceStack
             Code = code;
         }
 
-        public override bool ShouldValidateAsynchronously(ValidationContext context) => true;
+        public override bool ShouldValidateAsynchronously(IValidationContext context) => true;
         //public override bool ShouldValidateAsync(ValidationContext context) => true;
 
         protected override async Task<bool> IsValidAsync(PropertyValidatorContext context, CancellationToken cancellation)

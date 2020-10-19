@@ -26,14 +26,16 @@ namespace ServiceStack.FluentValidation.Validators {
 	public class NotEqualValidator : PropertyValidator, IComparisonValidator {
 		private readonly IEqualityComparer _comparer;
 		private readonly Func<object, object> _func;
+		private readonly string _memberDisplayName;
 
-		public NotEqualValidator(Func<object, object> func, MemberInfo memberToCompare, IEqualityComparer equalityComparer = null) : base(new LanguageStringSource(nameof(NotEqualValidator))) {
+		public NotEqualValidator(Func<object, object> func, MemberInfo memberToCompare, string memberDisplayName, IEqualityComparer equalityComparer = null) {
 			_func = func;
 			_comparer = equalityComparer;
+			_memberDisplayName = memberDisplayName;
 			MemberToCompare = memberToCompare;
 		}
 
-		public NotEqualValidator(object comparisonValue, IEqualityComparer equalityComparer = null) :base(new LanguageStringSource(nameof(NotEqualValidator)) ){
+		public NotEqualValidator(object comparisonValue, IEqualityComparer equalityComparer = null) {
 			ValueToCompare = comparisonValue;
 			_comparer = equalityComparer;
 		}
@@ -44,6 +46,7 @@ namespace ServiceStack.FluentValidation.Validators {
 
 			if (!success) {
 				context.MessageFormatter.AppendArgument("ComparisonValue", comparisonValue);
+				context.MessageFormatter.AppendArgument("ComparisonProperty", _memberDisplayName ?? "");
 				return false;
 			}
 
@@ -69,6 +72,10 @@ namespace ServiceStack.FluentValidation.Validators {
 			}
 
 			return Equals(comparisonValue, propertyValue);
+		}
+
+		protected override string GetDefaultMessageTemplate() {
+			return Localized(nameof(NotEqualValidator));
 		}
 	}
 }

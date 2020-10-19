@@ -26,15 +26,17 @@ namespace ServiceStack.FluentValidation.Validators {
 
 	public class EqualValidator : PropertyValidator, IComparisonValidator {
 		readonly Func<object, object> _func;
+		private readonly string _memberDisplayName;
 		readonly IEqualityComparer _comparer;
 
-		public EqualValidator(object valueToCompare, IEqualityComparer comparer = null) : base(new LanguageStringSource(nameof(EqualValidator))) {
+		public EqualValidator(object valueToCompare, IEqualityComparer comparer = null) {
 			ValueToCompare = valueToCompare;
 			_comparer = comparer;
 		}
 
-		public EqualValidator(Func<object, object> comparisonProperty, MemberInfo member, IEqualityComparer comparer = null) : base(new LanguageStringSource(nameof(EqualValidator))) {
+		public EqualValidator(Func<object, object> comparisonProperty, MemberInfo member, string memberDisplayName, IEqualityComparer comparer = null) {
 			_func = comparisonProperty;
+			_memberDisplayName = memberDisplayName;
 			MemberToCompare = member;
 			_comparer = comparer;
 		}
@@ -45,6 +47,8 @@ namespace ServiceStack.FluentValidation.Validators {
 
 			if (!success) {
 				context.MessageFormatter.AppendArgument("ComparisonValue", comparisonValue);
+				context.MessageFormatter.AppendArgument("ComparisonProperty", _memberDisplayName ?? "");
+
 				return false;
 			}
 
@@ -70,6 +74,10 @@ namespace ServiceStack.FluentValidation.Validators {
 			}
 
 			return Equals(comparisonValue, propertyValue);
+		}
+
+		protected override string GetDefaultMessageTemplate() {
+			return Localized(nameof(EqualValidator));
 		}
 	}
 }

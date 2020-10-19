@@ -28,7 +28,7 @@ namespace ServiceStack.FluentValidation.Validators {
 
 		private readonly bool _caseSensitive;
 
-		public StringEnumValidator(Type enumType, bool caseSensitive) : base(new LanguageStringSource(nameof(EnumValidator))) { // Default message identical to EnumValidator
+		public StringEnumValidator(Type enumType, bool caseSensitive) {
 			if (enumType == null) throw new ArgumentNullException(nameof(enumType));
 
 			CheckTypeIsEnum(enumType);
@@ -47,10 +47,15 @@ namespace ServiceStack.FluentValidation.Validators {
 		}
 
 		private void CheckTypeIsEnum(Type enumType) {
-			if (!enumType.GetTypeInfo().IsEnum) {
+			if (!enumType.IsEnum) {
 				string message = $"The type '{enumType.Name}' is not an enum and can't be used with IsEnumName.";
 				throw new ArgumentOutOfRangeException(nameof(enumType), message);
 			}
+		}
+
+		protected override string GetDefaultMessageTemplate() {
+			// Intentionally the same message as EnumValidator.
+			return Localized(nameof(EnumValidator));
 		}
 	}
 }

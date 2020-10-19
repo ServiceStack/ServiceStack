@@ -27,7 +27,7 @@ namespace ServiceStack.FluentValidation.Validators {
 	public class EnumValidator : PropertyValidator {
 		private readonly Type _enumType;
 
-		public EnumValidator(Type enumType) : base(new LanguageStringSource(nameof(EnumValidator))) {
+		public EnumValidator(Type enumType) {
 			this._enumType = enumType;
 		}
 
@@ -36,9 +36,9 @@ namespace ServiceStack.FluentValidation.Validators {
 
 			var underlyingEnumType = Nullable.GetUnderlyingType(_enumType) ?? _enumType;
 
-			if (!underlyingEnumType.GetTypeInfo().IsEnum) return false;
+			if (!underlyingEnumType.IsEnum) return false;
 
-			if (underlyingEnumType.GetTypeInfo().GetCustomAttribute<FlagsAttribute>() != null) {
+			if (underlyingEnumType.GetCustomAttribute<FlagsAttribute>() != null) {
 				return IsFlagsEnumDefined(underlyingEnumType, context.PropertyValue);
 			}
 
@@ -111,6 +111,10 @@ namespace ServiceStack.FluentValidation.Validators {
 			}
 
 			return false;
+		}
+
+		protected override string GetDefaultMessageTemplate() {
+			return Localized(nameof(EnumValidator));
 		}
 	}
 }

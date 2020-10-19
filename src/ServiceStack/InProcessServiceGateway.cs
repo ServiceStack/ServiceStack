@@ -157,7 +157,7 @@ namespace ServiceStack
                 if (validator != null)
                 {
                     var ruleSet = (string) (req.GetItem(Keywords.InvokeVerb) ?? req.Verb);
-                    var validationContext = new ValidationContext(request, null, new MultiRuleSetValidatorSelector(ruleSet))
+                    var validationContext = new ValidationContext<object>(request, null, new MultiRuleSetValidatorSelector(ruleSet))
                     {
                         Request = req
                     };
@@ -165,6 +165,7 @@ namespace ServiceStack
                     ValidationResult result;
                     if (!validator.HasAsyncValidators(validationContext))
                     {
+                        // ReSharper disable once MethodHasAsyncOverload
                         result = validator.Validate(validationContext);
                     }
                     else

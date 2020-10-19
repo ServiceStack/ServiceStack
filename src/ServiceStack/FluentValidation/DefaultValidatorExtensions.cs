@@ -22,6 +22,7 @@ namespace ServiceStack.FluentValidation {
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Linq.Expressions;
+	using System.Reflection;
 	using System.Text.RegularExpressions;
 	using System.Threading;
 	using System.Threading.Tasks;
@@ -32,7 +33,7 @@ namespace ServiceStack.FluentValidation {
 	/// <summary>
 	/// Extension methods that provide the default set of validators.
 	/// </summary>
-	public static class DefaultValidatorExtensions {
+	public static partial class DefaultValidatorExtensions {
 		/// <summary>
 		/// Defines a 'not null' validator on the current rule builder.
 		/// Validation will fail if the property is null.
@@ -236,10 +237,12 @@ namespace ServiceStack.FluentValidation {
 		/// </summary>
 		/// <typeparam name="T">Type of object being validated</typeparam>
 		/// <param name="ruleBuilder">The rule builder on which the validator should be defined</param>
-		/// <param name="mode">The mode to use for email validation. If set to <see cref="EmailValidationMode.Net4xRegex"/>, then a regular expression will be used. This is the same regex used by <see cref="System.ComponentModel.DataAnnotations.EmailAddressAttribute"/> in .NET 4.x. If set to <see cref="EmailValidationMode.AspNetCoreCompatible"/> then this uses the simplified ASP.NET Core logic for checking an email address, which just checks for the presence of an @ sign.</param>
+		/// <param name="mode">The mode to use for email validation. If set to <see cref="EmailValidationMode.Net4xRegex"/>, then a regular expression will be used. This is the same regex used by the EmailAddressAttribute in .NET 4.x. If set to <see cref="EmailValidationMode.AspNetCoreCompatible"/> then this uses the simplified ASP.NET Core logic for checking an email address, which just checks for the presence of an @ sign.</param>
 		/// <returns></returns>
 		public static IRuleBuilderOptions<T, string> EmailAddress<T>(this IRuleBuilder<T, string> ruleBuilder, EmailValidationMode mode = EmailValidationMode.AspNetCoreCompatible) {
+#pragma warning disable 618
 			var validator = mode == EmailValidationMode.AspNetCoreCompatible ? new AspNetCoreCompatibleEmailValidator() : (PropertyValidator)new EmailValidator();
+#pragma warning restore 618
 			return ruleBuilder.SetValidator(validator);
 		}
 
@@ -278,8 +281,11 @@ namespace ServiceStack.FluentValidation {
 			if (comparer == null && typeof(TProperty) == typeof(string)) {
 				comparer = StringComparer.Ordinal;
 			}
-			var func = expression.Compile();
-			return ruleBuilder.SetValidator(new NotEqualValidator(func.CoerceToNonGeneric(), expression.GetMember(), comparer));
+
+			var member = expression.GetMember();
+			var func = AccessorCache<T>.GetCachedAccessor(member, expression);
+			string comparisonPropertyName = GetDisplayName(member, expression);
+			return ruleBuilder.SetValidator(new NotEqualValidator(func.CoerceToNonGeneric(), member, comparisonPropertyName, comparer));
 		}
 
 		/// <summary>
@@ -315,8 +321,11 @@ namespace ServiceStack.FluentValidation {
 			if (comparer == null && typeof(TProperty) == typeof(string)) {
 				comparer = StringComparer.Ordinal;
 			}
-			var func = expression.Compile();
-			return ruleBuilder.SetValidator(new EqualValidator(func.CoerceToNonGeneric(), expression.GetMember(), comparer));
+
+			var member = expression.GetMember();
+			var func = AccessorCache<T>.GetCachedAccessor(member, expression);
+			var name = GetDisplayName(member, expression);
+			return ruleBuilder.SetValidator(new EqualValidator(func.CoerceToNonGeneric(), member, name, comparer));
 		}
 
 		/// <summary>
@@ -331,7 +340,6 @@ namespace ServiceStack.FluentValidation {
 		/// <returns></returns>
 		public static IRuleBuilderOptions<T, TProperty> Must<T, TProperty>(this IRuleBuilder<T, TProperty> ruleBuilder, Func<TProperty, bool> predicate) {
 			predicate.Guard("Cannot pass a null predicate to Must.", nameof(predicate));
-
 			return ruleBuilder.Must((x, val) => predicate(val));
 		}
 
@@ -553,9 +561,10 @@ namespace ServiceStack.FluentValidation {
 			where TProperty : IComparable<TProperty>, IComparable {
 			expression.Guard("Cannot pass null to LessThan", nameof(expression));
 
-			var func = expression.Compile();
-
-			return ruleBuilder.SetValidator(new LessThanValidator(func.CoerceToNonGeneric(), expression.GetMember()));
+			var member = expression.GetMember();
+			var func = AccessorCache<T>.GetCachedAccessor(member, expression);
+			var name = GetDisplayName(member, expression);
+			return ruleBuilder.SetValidator(new LessThanValidator(func.CoerceToNonGeneric(), member, name));
 		}
 
 		/// <summary>
@@ -573,9 +582,11 @@ namespace ServiceStack.FluentValidation {
 			where TProperty : struct, IComparable<TProperty>, IComparable {
 			expression.Guard("Cannot pass null to LessThan", nameof(expression));
 
-			var func = expression.Compile();
+			var member = expression.GetMember();
+			var func = AccessorCache<T>.GetCachedAccessor(member, expression);
+			var name = GetDisplayName(member, expression);
 
-			return ruleBuilder.SetValidator(new LessThanValidator(func.CoerceToNonGeneric(), expression.GetMember()));
+			return ruleBuilder.SetValidator(new LessThanValidator(func.CoerceToNonGeneric(), member, name));
 		}
 
 		/// <summary>
@@ -593,9 +604,11 @@ namespace ServiceStack.FluentValidation {
 			where TProperty : struct, IComparable<TProperty>, IComparable {
 			expression.Guard("Cannot pass null to LessThan", nameof(expression));
 
-			var func = expression.Compile();
+			var member = expression.GetMember();
+			var func = AccessorCache<T>.GetCachedAccessor(member, expression);
+			var name = GetDisplayName(member, expression);
 
-			return ruleBuilder.SetValidator(new LessThanValidator(func.CoerceToNonGeneric(), expression.GetMember()));
+			return ruleBuilder.SetValidator(new LessThanValidator(func.CoerceToNonGeneric(), member, name));
 		}
 
 		/// <summary>
@@ -613,9 +626,11 @@ namespace ServiceStack.FluentValidation {
 			where TProperty : struct, IComparable<TProperty>, IComparable {
 			expression.Guard("Cannot pass null to LessThan", nameof(expression));
 
-			var func = expression.Compile();
+			var member = expression.GetMember();
+			var func = AccessorCache<T>.GetCachedAccessor(member, expression);
+			var name = GetDisplayName(member, expression);
 
-			return ruleBuilder.SetValidator(new LessThanValidator(func.CoerceToNonGeneric(), expression.GetMember()));
+			return ruleBuilder.SetValidator(new LessThanValidator(func.CoerceToNonGeneric(), member, name));
 		}
 
 		/// <summary>
@@ -631,9 +646,11 @@ namespace ServiceStack.FluentValidation {
 		public static IRuleBuilderOptions<T, TProperty> LessThanOrEqualTo<T, TProperty>(
 			this IRuleBuilder<T, TProperty> ruleBuilder, Expression<Func<T, TProperty>> expression)
 			where TProperty : IComparable<TProperty>, IComparable {
-			var func = expression.Compile();
+			var member = expression.GetMember();
+			var func = AccessorCache<T>.GetCachedAccessor(member, expression);
+			var name = GetDisplayName(member, expression);
 
-			return ruleBuilder.SetValidator(new LessThanOrEqualValidator(func.CoerceToNonGeneric(), expression.GetMember()));
+			return ruleBuilder.SetValidator(new LessThanOrEqualValidator(func.CoerceToNonGeneric(), member, name));
 		}
 
 		/// <summary>
@@ -649,9 +666,11 @@ namespace ServiceStack.FluentValidation {
 		public static IRuleBuilderOptions<T, TProperty> LessThanOrEqualTo<T, TProperty>(
 			this IRuleBuilder<T, TProperty> ruleBuilder, Expression<Func<T, Nullable<TProperty>>> expression)
 			where TProperty : struct, IComparable<TProperty>, IComparable {
-			var func = expression.Compile();
+			var member = expression.GetMember();
+			var func = AccessorCache<T>.GetCachedAccessor(member, expression);
+			var name = GetDisplayName(member, expression);
 
-			return ruleBuilder.SetValidator(new LessThanOrEqualValidator(func.CoerceToNonGeneric(), expression.GetMember()));
+			return ruleBuilder.SetValidator(new LessThanOrEqualValidator(func.CoerceToNonGeneric(), member, name));
 		}
 
 		/// <summary>
@@ -667,9 +686,11 @@ namespace ServiceStack.FluentValidation {
 		public static IRuleBuilderOptions<T, Nullable<TProperty>> LessThanOrEqualTo<T, TProperty>(
 			this IRuleBuilder<T, Nullable<TProperty>> ruleBuilder, Expression<Func<T, TProperty>> expression)
 			where TProperty : struct, IComparable<TProperty>, IComparable {
-			var func = expression.Compile();
+			var member = expression.GetMember();
+			var func = AccessorCache<T>.GetCachedAccessor(member, expression);
+			var name = GetDisplayName(member, expression);
 
-			return ruleBuilder.SetValidator(new LessThanOrEqualValidator(func.CoerceToNonGeneric(), expression.GetMember()));
+			return ruleBuilder.SetValidator(new LessThanOrEqualValidator(func.CoerceToNonGeneric(), member, name));
 		}
 
 		/// <summary>
@@ -685,9 +706,11 @@ namespace ServiceStack.FluentValidation {
 		public static IRuleBuilderOptions<T, TProperty?> LessThanOrEqualTo<T, TProperty>(
 		  this IRuleBuilder<T, TProperty?> ruleBuilder, Expression<Func<T, TProperty?>> expression)
 		  where TProperty : struct, IComparable<TProperty>, IComparable {
-			var func = expression.Compile();
+			var member = expression.GetMember();
+			var func = AccessorCache<T>.GetCachedAccessor(member, expression);
+			var name = GetDisplayName(member, expression);
 
-			return ruleBuilder.SetValidator(new LessThanOrEqualValidator(func.CoerceToNonGeneric(), expression.GetMember()));
+			return ruleBuilder.SetValidator(new LessThanOrEqualValidator(func.CoerceToNonGeneric(), member, name));
 		}
 
 		/// <summary>
@@ -703,9 +726,11 @@ namespace ServiceStack.FluentValidation {
 		public static IRuleBuilderOptions<T, TProperty> GreaterThan<T, TProperty>(this IRuleBuilder<T, TProperty> ruleBuilder,
 																				  Expression<Func<T, TProperty>> expression)
 			where TProperty : IComparable<TProperty>, IComparable {
-			var func = expression.Compile();
+			var member = expression.GetMember();
+			var func = AccessorCache<T>.GetCachedAccessor(member, expression);
+			var name = GetDisplayName(member, expression);
 
-			return ruleBuilder.SetValidator(new GreaterThanValidator(func.CoerceToNonGeneric(), expression.GetMember()));
+			return ruleBuilder.SetValidator(new GreaterThanValidator(func.CoerceToNonGeneric(), member, name));
 		}
 
 		/// <summary>
@@ -721,9 +746,11 @@ namespace ServiceStack.FluentValidation {
 		public static IRuleBuilderOptions<T, TProperty> GreaterThan<T, TProperty>(this IRuleBuilder<T, TProperty> ruleBuilder,
 																				  Expression<Func<T, Nullable<TProperty>>> expression)
 			where TProperty : struct, IComparable<TProperty>, IComparable {
-			var func = expression.Compile();
+			var member = expression.GetMember();
+			var func = AccessorCache<T>.GetCachedAccessor(member, expression);
+			var name = GetDisplayName(member, expression);
 
-			return ruleBuilder.SetValidator(new GreaterThanValidator(func.CoerceToNonGeneric(), expression.GetMember()));
+			return ruleBuilder.SetValidator(new GreaterThanValidator(func.CoerceToNonGeneric(), member, name));
 		}
 
 		/// <summary>
@@ -739,9 +766,11 @@ namespace ServiceStack.FluentValidation {
 		public static IRuleBuilderOptions<T, Nullable<TProperty>> GreaterThan<T, TProperty>(this IRuleBuilder<T, Nullable<TProperty>> ruleBuilder,
 																				  Expression<Func<T, TProperty>> expression)
 			where TProperty : struct, IComparable<TProperty>, IComparable {
-			var func = expression.Compile();
+			var member = expression.GetMember();
+			var func = AccessorCache<T>.GetCachedAccessor(member, expression);
+			var name = GetDisplayName(member, expression);
 
-			return ruleBuilder.SetValidator(new GreaterThanValidator(func.CoerceToNonGeneric(), expression.GetMember()));
+			return ruleBuilder.SetValidator(new GreaterThanValidator(func.CoerceToNonGeneric(), member, name));
 		}
 
 		/// <summary>
@@ -757,9 +786,11 @@ namespace ServiceStack.FluentValidation {
 		public static IRuleBuilderOptions<T, Nullable<TProperty>> GreaterThan<T, TProperty>(this IRuleBuilder<T, Nullable<TProperty>> ruleBuilder,
 																				  Expression<Func<T, Nullable<TProperty>>> expression)
 			where TProperty : struct, IComparable<TProperty>, IComparable {
-			var func = expression.Compile();
+			var member = expression.GetMember();
+			var func = AccessorCache<T>.GetCachedAccessor(member, expression);
+			var name = GetDisplayName(member, expression);
 
-			return ruleBuilder.SetValidator(new GreaterThanValidator(func.CoerceToNonGeneric(), expression.GetMember()));
+			return ruleBuilder.SetValidator(new GreaterThanValidator(func.CoerceToNonGeneric(), member, name));
 		}
 
 		/// <summary>
@@ -775,9 +806,11 @@ namespace ServiceStack.FluentValidation {
 		public static IRuleBuilderOptions<T, TProperty> GreaterThanOrEqualTo<T, TProperty>(
 			this IRuleBuilder<T, TProperty> ruleBuilder, Expression<Func<T, TProperty>> valueToCompare)
 			where TProperty : IComparable<TProperty>, IComparable {
-			var func = valueToCompare.Compile();
+			var member = valueToCompare.GetMember();
+			var func = AccessorCache<T>.GetCachedAccessor(member, valueToCompare);
+			var name = GetDisplayName(member, valueToCompare);
 
-			return ruleBuilder.SetValidator(new GreaterThanOrEqualValidator(func.CoerceToNonGeneric(), valueToCompare.GetMember()));
+			return ruleBuilder.SetValidator(new GreaterThanOrEqualValidator(func.CoerceToNonGeneric(), member, name));
 		}
 
 		/// <summary>
@@ -793,9 +826,11 @@ namespace ServiceStack.FluentValidation {
 		public static IRuleBuilderOptions<T, TProperty> GreaterThanOrEqualTo<T, TProperty>(
 			this IRuleBuilder<T, TProperty> ruleBuilder, Expression<Func<T, Nullable<TProperty>>> valueToCompare)
 			where TProperty : struct, IComparable<TProperty>, IComparable {
-			var func = valueToCompare.Compile();
+			var member = valueToCompare.GetMember();
+			var func = AccessorCache<T>.GetCachedAccessor(member, valueToCompare);
+			var name = GetDisplayName(member, valueToCompare);
 
-			return ruleBuilder.SetValidator(new GreaterThanOrEqualValidator(func.CoerceToNonGeneric(), valueToCompare.GetMember()));
+			return ruleBuilder.SetValidator(new GreaterThanOrEqualValidator(func.CoerceToNonGeneric(), member, name));
 		}
 
 		/// <summary>
@@ -810,8 +845,11 @@ namespace ServiceStack.FluentValidation {
 		/// <returns></returns>
 		public static IRuleBuilderOptions<T, TProperty?> GreaterThanOrEqualTo<T, TProperty>(this IRuleBuilder<T, TProperty?> ruleBuilder, Expression<Func<T, TProperty?>> valueToCompare)
 		  where TProperty : struct, IComparable<TProperty>, IComparable {
-			var func = valueToCompare.Compile();
-			return ruleBuilder.SetValidator(new GreaterThanOrEqualValidator(func.CoerceToNonGeneric(), valueToCompare.GetMember()));
+			var member = valueToCompare.GetMember();
+			var func = AccessorCache<T>.GetCachedAccessor(member, valueToCompare);
+			var name = GetDisplayName(member, valueToCompare);
+
+			return ruleBuilder.SetValidator(new GreaterThanOrEqualValidator(func.CoerceToNonGeneric(), member, name));
 		}
 
 		/// <summary>
@@ -827,144 +865,11 @@ namespace ServiceStack.FluentValidation {
 		public static IRuleBuilderOptions<T, TProperty?> GreaterThanOrEqualTo<T, TProperty>(
 		  this IRuleBuilder<T, TProperty?> ruleBuilder, Expression<Func<T, TProperty>> valueToCompare)
 		  where TProperty : struct, IComparable<TProperty>, IComparable {
-			var func = valueToCompare.Compile();
+			var member = valueToCompare.GetMember();
+			var func = AccessorCache<T>.GetCachedAccessor(member, valueToCompare);
+			var name = GetDisplayName(member, valueToCompare);
 
-			return ruleBuilder.SetValidator(new GreaterThanOrEqualValidator(func.CoerceToNonGeneric(), valueToCompare.GetMember()));
-		}
-
-		/// <summary>
-		/// Validates certain properties of the specified instance.
-		/// </summary>
-		/// <param name="validator">The current validator</param>
-		/// <param name="instance">The object to validate</param>
-		/// <param name="propertyExpressions">Expressions to specify the properties to validate</param>
-		/// <returns>A ValidationResult object containing any validation failures</returns>
-		public static ValidationResult Validate<T>(this IValidator<T> validator, T instance, params Expression<Func<T, object>>[] propertyExpressions) {
-			var selector = ValidatorOptions.ValidatorSelectors.MemberNameValidatorSelectorFactory(MemberNameValidatorSelector.MemberNamesFromExpressions(propertyExpressions));
-			var context = new ValidationContext<T>(instance, new PropertyChain(), selector);
-			return validator.Validate(context);
-		}
-
-		/// <summary>
-		/// Validates certain properties of the specified instance.
-		/// </summary>
-		/// <param name="validator"></param>
-		/// <param name="instance">The object to validate</param>
-		/// <param name="properties">The names of the properties to validate.</param>
-		/// <returns>A ValidationResult object containing any validation failures.</returns>
-		public static ValidationResult Validate<T>(this IValidator<T> validator, T instance, params string[] properties) {
-			var context = new ValidationContext<T>(instance, new PropertyChain(), ValidatorOptions.ValidatorSelectors.MemberNameValidatorSelectorFactory(properties));
-			return validator.Validate(context);
-		}
-
-		/// <summary>
-		/// Validates an object using either a custom validator selector or a ruleset.
-		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <param name="validator"></param>
-		/// <param name="instance"></param>
-		/// <param name="selector"></param>
-		/// <param name="ruleSet"></param>
-		/// <returns></returns>
-		public static ValidationResult Validate<T>(this IValidator<T> validator, T instance, IValidatorSelector selector = null, string ruleSet = null) {
-			if (selector != null && ruleSet != null) {
-				throw new InvalidOperationException("Cannot specify both an IValidatorSelector and a RuleSet.");
-			}
-
-			if (selector == null) {
-				selector = ValidatorOptions.ValidatorSelectors.DefaultValidatorSelectorFactory();
-			}
-
-			if (ruleSet != null) {
-				var ruleSetNames = ruleSet.Split(',', ';').Select(x => x.Trim());
-				selector = ValidatorOptions.ValidatorSelectors.RulesetValidatorSelectorFactory(ruleSetNames.ToArray());
-			}
-
-			var context = new ValidationContext<T>(instance, new PropertyChain(), selector);
-			return validator.Validate(context);
-		}
-
-		/// <summary>
-		/// Validates certain properties of the specified instance asynchronously.
-		/// </summary>
-		/// <param name="validator">The current validator</param>
-		/// <param name="instance">The object to validate</param>
-		/// <param name="cancellationToken"></param>
-		/// <param name="propertyExpressions">Expressions to specify the properties to validate</param>
-		/// <returns>A ValidationResult object containing any validation failures</returns>
-		public static Task<ValidationResult> ValidateAsync<T>(this IValidator<T> validator, T instance, CancellationToken cancellationToken = default, params Expression<Func<T, object>>[] propertyExpressions) {
-			var selector = ValidatorOptions.ValidatorSelectors.MemberNameValidatorSelectorFactory(MemberNameValidatorSelector.MemberNamesFromExpressions(propertyExpressions));
-			var context = new ValidationContext<T>(instance, new PropertyChain(), selector);
-			return validator.ValidateAsync(context, cancellationToken);
-		}
-
-		/// <summary>
-		/// Validates certain properties of the specified instance asynchronously.
-		/// </summary>
-		/// <param name="validator"></param>
-		/// <param name="instance">The object to validate</param>
-		/// <param name="cancellationToken"></param>
-		/// <param name="properties">The names of the properties to validate.</param>
-		/// <returns>A ValidationResult object containing any validation failures.</returns>
-		public static Task<ValidationResult> ValidateAsync<T>(this IValidator<T> validator, T instance, CancellationToken cancellationToken = default, params string[] properties) {
-			var context = new ValidationContext<T>(instance, new PropertyChain(), ValidatorOptions.ValidatorSelectors.MemberNameValidatorSelectorFactory(properties));
-			return validator.ValidateAsync(context, cancellationToken);
-		}
-
-		/// <summary>
-		/// Validates an object asynchronously using a custom validator selector or a ruleset
-		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <param name="validator"></param>
-		/// <param name="instance"></param>
-		/// <param name="cancellationToken"></param>
-		/// <param name="selector"></param>
-		/// <param name="ruleSet"></param>
-		/// <returns></returns>
-		public static Task<ValidationResult> ValidateAsync<T>(this IValidator<T> validator, T instance, CancellationToken cancellationToken = default, IValidatorSelector selector = null, string ruleSet = null) {
-			if (selector != null && ruleSet != null) {
-				throw new InvalidOperationException("Cannot specify both an IValidatorSelector and a RuleSet.");
-			}
-
-			if (selector == null) {
-				selector = ValidatorOptions.ValidatorSelectors.DefaultValidatorSelectorFactory();
-			}
-
-			if (ruleSet != null) {
-				var ruleSetNames = ruleSet.Split(',', ';');
-				selector = ValidatorOptions.ValidatorSelectors.RulesetValidatorSelectorFactory(ruleSetNames);
-			}
-
-			var context = new ValidationContext<T>(instance, new PropertyChain(), selector);
-			return validator.ValidateAsync(context, cancellationToken);
-		}
-
-		/// <summary>
-		/// Performs validation and then throws an exception if validation fails.
-		/// </summary>
-		/// <param name="validator">The validator this method is extending.</param>
-		/// <param name="instance">The instance of the type we are validating.</param>
-		/// <param name="ruleSet">Optional: a ruleset when need to validate against.</param>
-		public static void ValidateAndThrow<T>(this IValidator<T> validator, T instance, string ruleSet = null) {
-			var result = validator.Validate(instance, ruleSet: ruleSet);
-
-			if (!result.IsValid) {
-				throw new ValidationException(result.Errors);
-			}
-		}
-
-		/// <summary>
-		/// Performs validation asynchronously and then throws an exception if validation fails.
-		/// </summary>
-		/// <param name="validator">The validator this method is extending.</param>
-		/// <param name="instance">The instance of the type we are validating.</param>
-		/// <param name="cancellationToken"></param>
-		/// <param name="ruleSet">Optional: a ruleset when need to validate against.</param>
-		public static async Task ValidateAndThrowAsync<T>(this IValidator<T> validator, T instance, string ruleSet = null, CancellationToken cancellationToken = default) {
-			var result = await validator.ValidateAsync(instance, cancellationToken, ruleSet: ruleSet);
-			if (!result.IsValid) {
-				throw new ValidationException(result.Errors);
-			}
+			return ruleBuilder.SetValidator(new GreaterThanOrEqualValidator(func.CoerceToNonGeneric(), member, name));
 		}
 
 		/// <summary>
@@ -1120,6 +1025,25 @@ namespace ServiceStack.FluentValidation {
 			var validator = new InlineValidator<TProperty>();
 			action(validator);
 			return ruleBuilder.SetValidator(validator);
+		}
+
+		/// <summary>
+		/// Defines one or more validators that can be used to validate sub-classes or implementors
+		/// in an inheritance hierarchy. This is useful when the property being validated is an interface
+		/// or base-class, but you want to define rules for properties of a specific subclass.
+		/// </summary>
+		/// <param name="ruleBuilder"></param>
+		/// <param name="validatorConfiguration">Callback for setting up the inheritance validators.</param>
+		/// <returns></returns>
+		public static IRuleBuilderOptions<T, TProperty> SetInheritanceValidator<T,TProperty>(this IRuleBuilder<T, TProperty> ruleBuilder, Action<PolymorphicValidator<T, TProperty>> validatorConfiguration) {
+			if (validatorConfiguration == null) throw new ArgumentNullException(nameof(validatorConfiguration));
+			var validator = new PolymorphicValidator<T, TProperty>();
+			validatorConfiguration(validator);
+			return ruleBuilder.SetValidator(validator);
+		}
+
+		private static string GetDisplayName<T, TProperty>(MemberInfo member, Expression<Func<T, TProperty>> expression) {
+			return ValidatorOptions.Global.DisplayNameResolver(typeof(T), member, expression) ?? member?.Name.SplitPascalCase();
 		}
 	}
 }

@@ -24,11 +24,11 @@ namespace ServiceStack.FluentValidation.Validators {
 
 	public class GreaterThanOrEqualValidator : AbstractComparisonValidator  {
 		public GreaterThanOrEqualValidator(IComparable value) :
-			base(value, new LanguageStringSource(nameof(GreaterThanOrEqualValidator))) {
+			base(value) {
 		}
 
-		public GreaterThanOrEqualValidator(Func<object, object> valueToCompareFunc, MemberInfo member)
-			: base(valueToCompareFunc, member, new LanguageStringSource(nameof(GreaterThanOrEqualValidator))) {
+		public GreaterThanOrEqualValidator(Func<object, object> valueToCompareFunc, MemberInfo member, string memberDisplayName)
+			: base(valueToCompareFunc, member, memberDisplayName) {
 		}
 
 		public override bool IsValid(IComparable value, IComparable valueToCompare) {
@@ -39,5 +39,9 @@ namespace ServiceStack.FluentValidation.Validators {
 		}
 
 		public override Comparison Comparison => Validators.Comparison.GreaterThanOrEqual;
+
+		protected override string GetDefaultMessageTemplate() {
+			return Localized(nameof(GreaterThanOrEqualValidator));
+		}
 	}
 }
