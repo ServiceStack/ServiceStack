@@ -200,7 +200,7 @@ namespace ServiceStack
                     : req.PathInfo + ToQueryString(req.QueryString);
 
                 var returnParam = HostContext.ResolveLocalizedString(AuthenticateService.HtmlRedirectReturnParam) ??
-                                  HostContext.ResolveLocalizedString(LocalizedStrings.Redirect);
+                    HostContext.ResolveLocalizedString(LocalizedStrings.Redirect);
 
                 if (url.IndexOf("?" + returnParam, StringComparison.OrdinalIgnoreCase) == -1 &&
                     url.IndexOf("&" + returnParam, StringComparison.OrdinalIgnoreCase) == -1)
