@@ -603,13 +603,15 @@ Kurt Cobain (27)
         public void Does_handle_error_calling_sendToGateway()
         {
             var html = BaseUrl.AppendPath("rockstar-gateway").GetStringFromUrl();
-            Assert.That(html.NormalizeNewLines(), Does.StartWith(@"<html>
+            Assert.That(html.NormalizeNewLines()
+              .Replace("\nParameter name: firstName","")
+              .Replace(" (Parameter 'firstName')",""), 
+                Does.StartWith(@"<html>
 <body id=root>
 
 
 
 <pre class=""alert alert-danger"">ArgumentNullException: Value cannot be null.
-Parameter name: firstName
 
 StackTrace:
    at JsObjectExpression: {:qs.:id,:qs.:firstName}".NormalizeNewLines()));
@@ -658,12 +660,14 @@ Amy Winehouse (27)
                 .AddQueryParam("age","27")
                 .GetStringFromUrl();
 
-            Assert.That(html.NormalizeNewLines(), Does.StartWith(@"<html>
+            Assert.That(html.NormalizeNewLines()
+                    .Replace("\nParameter name: lastName","")
+                    .Replace(" (Parameter 'lastName')",""), 
+                Does.StartWith(@"<html>
 <body id=root>
 
 
 <pre class=""alert alert-danger"">ArgumentNullException: Value cannot be null.
-Parameter name: lastName
 
 StackTrace:
    at JsObjectExpression: {:id,".NormalizeNewLines()));

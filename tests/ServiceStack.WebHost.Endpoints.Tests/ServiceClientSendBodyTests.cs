@@ -44,27 +44,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class SendRawService : Service
     {
         [JsonOnly]
-        public object Any(SendJson request)
+        public async Task<object> Any(SendJson request)
         {
             base.Response.AddHeader("X-Args", $"{request.Id},{request.Name}");
 
-            return request.RequestStream.ReadFully();
+            return await request.RequestStream.ReadToEndAsync();
         }
 
-        public object Any(SendText request)
+        public async Task<object> Any(SendText request)
         {
             base.Response.AddHeader("X-Args", $"{request.Id},{request.Name}");
 
             base.Request.ResponseContentType = request.ContentType ?? base.Request.AcceptTypes[0];
-            return request.RequestStream.ReadFully();
+            return await request.RequestStream.ReadToEndAsync();
         }
 
-        public object Any(SendRaw request)
+        public async Task<object> Any(SendRaw request)
         {
             base.Response.AddHeader("X-Args", $"{request.Id},{request.Name}");
 
             base.Request.ResponseContentType = request.ContentType ?? base.Request.AcceptTypes[0];
-            return request.RequestStream.ReadFully();
+            return await request.RequestStream.ReadToEndAsync();
         }
     }
 

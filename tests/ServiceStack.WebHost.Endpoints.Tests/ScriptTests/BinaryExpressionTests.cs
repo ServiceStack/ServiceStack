@@ -240,7 +240,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(context.EvaluateScript("{{ (1 + 2) }}"), Is.EqualTo("3"));
             Assert.That(context.EvaluateScript("{{ (1 + 2) * 3 }}"), Is.EqualTo("9"));
             Assert.That(context.EvaluateScript("{{ (1 + 2) * (3 - 4) }}"), Is.EqualTo("-3"));
-            Assert.That(context.EvaluateScript("{{ (1 + 2) * ((3 - 4) / 5.0) }}"), Is.EqualTo("-0.6"));
+            Assert.That(context.EvaluateScript("{{ (1 + 2) * ((3 - 4) / 5.0) }}"), 
+                Is.EqualTo("-0.6").Or.EqualTo("-0.6000000000000001")); // .NET Core 3.1+
         }
 
         [Test]

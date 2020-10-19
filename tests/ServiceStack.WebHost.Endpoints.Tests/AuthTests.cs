@@ -1483,7 +1483,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException webEx)
             {
                 Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.PaymentRequired));
-                Console.WriteLine(webEx.Dump());
+                Console.WriteLine(webEx.ToString());
             }
         }
 
@@ -1561,7 +1561,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException webEx)
             {
                 Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.PaymentRequired));
-                Console.WriteLine(webEx.Dump());
+                Console.WriteLine(webEx.ToString());
             }
         }
     }
