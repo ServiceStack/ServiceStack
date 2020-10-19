@@ -784,7 +784,8 @@ namespace ServiceStack
         public static string GetReturnUrl(this IRequest req)
         {
             var redirectUrl = req.GetQueryStringOrForm(Keywords.Continue) ??
-                              req.GetQueryStringOrForm(Keywords.ReturnUrl);
+                req.GetQueryStringOrForm(Keywords.ReturnUrl) ??
+                req.GetQueryStringOrForm(Keywords.Redirect);
             if (redirectUrl != null)
                 HostContext.GetPlugin<AuthFeature>()?.ValidateRedirectLinks?.Invoke(req, redirectUrl);
             return redirectUrl;
