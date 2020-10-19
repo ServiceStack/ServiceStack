@@ -116,7 +116,7 @@
 <script>
     var BaseUrl = "${BaseUrl}";
     var qs = queryString(location.href);
-    var CONTINUE = qs.redirect || (BaseUrl + '/auth');
+    var CONTINUE = qs['continue'] || qs.ReturnUrl || qs.redirect || (BaseUrl + '/auth');
 
     function inIframe () {
         try {
