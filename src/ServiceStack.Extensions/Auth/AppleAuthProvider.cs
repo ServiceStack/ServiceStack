@@ -104,7 +104,7 @@ namespace ServiceStack.Auth
         public bool CacheIssuerSigningKeys { get; set; }
         
         /// <summary>
-        /// How long before re-validating RefreshToken, default: 1 day.
+        /// How long before re-validating Sign in RefreshToken, default: 1 day.
         /// Set to null to disable RefreshToken validation.
         /// </summary>
         public TimeSpan? ValidateRefreshTokenExpiry { get; set; } = TimeSpan.FromDays(1);

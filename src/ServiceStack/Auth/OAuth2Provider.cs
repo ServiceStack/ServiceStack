@@ -213,6 +213,9 @@ namespace ServiceStack.Auth
             return TypeConstants.EmptyTask;
         }
 
+        /// <summary>
+        /// Custom DisplayName resolver function when not provided
+        /// </summary>
         public Func<IAuthSession,IAuthTokens, string> ResolveUnknownDisplayName { get; set; }
         
         public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
