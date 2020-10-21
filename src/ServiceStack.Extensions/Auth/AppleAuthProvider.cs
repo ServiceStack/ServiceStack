@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
@@ -150,6 +151,8 @@ namespace ServiceStack.Auth
         {
             appHost.Register(new CryptoProviderFactory { CacheSignatureProviders = false });
             appHost.Register(new JwtSecurityTokenHandler());
+            // UserName validation Regex to increase to allow for Apple's 44 char userid
+            feature.ValidUserNameRegEx= new Regex(@"^(?=.{3,44}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
         }
 
         public virtual async Task<bool> OnVerifyAccessTokenAsync(string idToken, AuthContext ctx)
