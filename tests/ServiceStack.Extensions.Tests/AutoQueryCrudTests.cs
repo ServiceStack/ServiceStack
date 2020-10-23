@@ -1258,14 +1258,20 @@ namespace ServiceStack.Extensions.Tests
             var booking1 = client.Get(new QueryBookings {
                 Ids = new[] { booking1Id }
             }).Results[0];
+            Assert.That(booking1.Cancelled, Is.True);
+            Assert.That(booking1.Notes, Is.EqualTo("Missed Flight"));
             Assert.That(booking1.ModifiedDate, Is.Not.EqualTo(booking1.CreatedDate));
 
             authClient.Delete(new DeleteBooking {
                 Id = booking2Id,
             });
+            var booking2 = client.Get(new QueryBookings {
+                Ids = new[] { booking2Id }
+            }).Results?.FirstOrDefault();
+            Assert.That(booking2, Is.Null);
 
             using var db = appHost.Resolve<IDbConnectionFactory>().OpenDbConnection();
-            var booking2 = db.SingleById<Booking>(booking2Id);
+            booking2 = db.SingleById<Booking>(booking2Id);
             // booking2.PrintDump();
             Assert.That(booking2, Is.Not.Null);
             Assert.That(booking2.SoftDeletedBy, Is.Not.Null);
