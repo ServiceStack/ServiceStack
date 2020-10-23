@@ -9,6 +9,24 @@ namespace ServiceStack
 
     public static class ValidationResultExtensions
     {
+        internal static Dictionary<string, string> CustomStateAsDictionary(this ValidationFailure error)
+        {
+            try
+            {
+                if (error.CustomState != null)
+                {
+                    if (error.CustomState is IEnumerable<KeyValuePair<string,string>>)
+                        return error.CustomState.ToStringDictionary();
+                    return error.CustomState.ToObjectDictionary().ToStringDictionary();
+                }
+                return error.FormattedMessagePlaceholderValues.ToStringDictionary();
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
+        }
+
         /// <summary>
         /// Converts the validation result to an error result which will be serialized by ServiceStack in a clean and human-readable way.
         /// </summary>
@@ -16,24 +34,12 @@ namespace ServiceStack
         /// <returns></returns>
         public static ValidationErrorResult ToErrorResult(this ValidationResult result)
         {
-            Dictionary<string, string> ToStringDictionary(ValidationFailure error)
-            {
-                try
-                {
-                    return error.FormattedMessagePlaceholderValues.ToStringDictionary();
-                }
-                catch (Exception e)
-                {
-                    return null;
-                }
-            }
-
             var validationResult = new ValidationErrorResult();
             foreach (var error in result.Errors)
             {
                 validationResult.Errors.Add(new ValidationErrorField(error.ErrorCode, error.PropertyName, error.ErrorMessage, error.AttemptedValue)
                 {
-                    Meta = error.CustomState as Dictionary<string, string> ?? ToStringDictionary(error)
+                    Meta = error.CustomStateAsDictionary()
                 });
             }
 

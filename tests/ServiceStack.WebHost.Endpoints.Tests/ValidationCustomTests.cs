@@ -29,7 +29,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public CustomValidationValidator()
         {
-            RuleFor(request => request.Name).NotEmpty();
+            RuleFor(request => request.Name)
+                .NotEmpty()
+                .WithState(x => new Dictionary<string,string> { ["Custom"] = "Dictionary" });
             RuleFor(request => request)
                 .Custom((request, context) => {
                     if (request.Name?.StartsWith("A") != true)
@@ -59,11 +61,39 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    [Route("/validation/inline")]
+    public class InlineValidation : IReturn<InlineValidation>
+    {
+    }
+
+    public class InlineModel
+    {
+        public string Name { get; set; }
+    }
+    public class InlineModelValidator : AbstractValidator<InlineModel>
+    {
+        public InlineModelValidator()
+        {
+            RuleFor(request => request.Name)
+                .NotEmpty()
+                .WithState(x => new { Custom = "State" });
+        }
+    }
+
     public class CustomValidationService : Service
     {
         public object Any(CustomValidation request)
         {
             return new CustomValidationResponse { Result = "Hello, " + request.Name };
+        }
+
+        public object Any(InlineValidation request)
+        {
+            var validationResult = new InlineModelValidator().Validate(new InlineModel());
+            if (!validationResult.IsValid)
+                throw validationResult.ToException();
+
+            return request;
         }
     }
 
@@ -98,7 +128,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             try
             {
-                using(var response = client.Get<HttpWebResponse>(new CustomValidation { Name = "Joan" })){}
+                using var response = client.Get<HttpWebResponse>(new CustomValidation {Name = "Joan"});
                 Assert.Fail("Should throw");
             }
             catch (WebServiceException ex)
@@ -126,7 +156,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             try
             {
-                using (var response = client.Get<HttpWebResponse>(new CustomValidation())) {}
+                using var response = client.Get<HttpWebResponse>(new CustomValidation());
                 Assert.Fail("Should throw");
             }
             catch (WebServiceException ex)
@@ -140,10 +170,37 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(status.Errors[0].ErrorCode, Is.EqualTo("NotEmpty"));
                 Assert.That(status.Errors[0].FieldName, Is.EqualTo("Name"));
                 Assert.That(status.Errors[0].Message, Is.EqualTo("'Name' must not be empty."));
+                Assert.That(status.Errors[0].Meta["Custom"], Is.EqualTo("Dictionary"));
 
                 Assert.That(status.Errors[1].ErrorCode, Is.EqualTo("NotFound"));
                 Assert.That(status.Errors[1].FieldName, Is.EqualTo("Name:0"));
                 Assert.That(status.Errors[1].Message, Is.EqualTo("Incorrect prefix."));
+            }
+        }
+
+        [Test]
+        public void Does_include_CustomState_for_inline_validation()
+        {
+            var client = new JsonServiceClient(Config.ListeningOn);
+
+            try
+            {
+                var response = client.Get(new InlineValidation());
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                var status = ex.GetResponseStatus();
+                status.PrintDump();
+
+                Assert.That(status.ErrorCode, Is.EqualTo("NotEmpty"));
+                Assert.That(status.Message, Is.EqualTo("'Name' must not be empty."));
+                Assert.That(status.Errors.Count, Is.EqualTo(1));
+
+                Assert.That(status.Errors[0].ErrorCode, Is.EqualTo("NotEmpty"));
+                Assert.That(status.Errors[0].FieldName, Is.EqualTo("Name"));
+                Assert.That(status.Errors[0].Message, Is.EqualTo("'Name' must not be empty."));
+                Assert.That(status.Errors[0].Meta["Custom"], Is.EqualTo("State"));
             }
         }
 
