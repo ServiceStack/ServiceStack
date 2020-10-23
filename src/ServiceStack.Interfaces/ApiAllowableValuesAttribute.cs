@@ -33,7 +33,7 @@ namespace ServiceStack
             if (enumType.IsEnum)
             {
                 Type = "LIST";
-                Values = System.Enum.GetNames(enumType);
+                Values = Enum.GetNames(enumType);
             }
         }
 
