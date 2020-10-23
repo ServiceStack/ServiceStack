@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
+using ServiceStack.Model;
 using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.NativeTypes.Dart;
 using ServiceStack.NativeTypes.FSharp;
@@ -260,6 +261,7 @@ namespace ServiceStack.NativeTypes
             typeof(IPatchDb<>),
             typeof(IDeleteDb<>),
             typeof(ISaveDb<>),
+            typeof(IAudit),
         }.ToList();
 
         public static List<Type> BuiltInClientDtos = new[] {
@@ -307,6 +309,7 @@ namespace ServiceStack.NativeTypes
             typeof(FileContent),
             typeof(StreamFiles), // gRPC Server Stream
             typeof(StreamServerEvents), // gRPC Server Stream
+            typeof(AuditBase),
         }.ToList();
 
         private MetadataTypes ConfigureScript(MetadataTypesConfig typesConfig)

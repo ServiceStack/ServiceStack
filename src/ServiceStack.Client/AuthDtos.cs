@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Model;
 
 namespace ServiceStack
 {
@@ -599,6 +600,19 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
     }
 
+    [DataContract]
+    public abstract class AuditBase : IAudit
+    {
+        [DataMember(Order = 1)] public DateTime CreatedDate { get; set; }
+        [DataMember(Order = 2), Required] public string CreatedBy { get; set; }
+        [DataMember(Order = 3)] public DateTime ModifiedDate { get; set; }
+        [DataMember(Order = 4), Required] public string ModifiedBy { get; set; }
+        [DataMember(Order = 5), Index] //Check if Deleted
+        public DateTime? SoftDeletedDate { get; set; }
+        [DataMember(Order = 6)] public string SoftDeletedBy { get; set; }
+    }
+
+    [DataContract]
     public abstract class AdminUserBase : IMeta
     {
         [DataMember(Order = 1)] public string UserName { get; set; }
