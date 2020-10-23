@@ -21,11 +21,11 @@ namespace ServiceStack.FluentValidation.Validators {
 	using System.Reflection;
 	using Internal;
 	using Resources;
-
+	
 	/// <summary>
 	/// Base class for all comparison validators
 	/// </summary>
-	public abstract class AbstractComparisonValidator : PropertyValidator, IComparisonValidator {
+	public abstract partial class AbstractComparisonValidator : PropertyValidator, IComparisonValidator {
 
 		readonly Func<object, object> _valueToCompareFunc;
 		private readonly string _comparisonMemberDisplayName;
@@ -100,7 +100,8 @@ namespace ServiceStack.FluentValidation.Validators {
 				return (IComparable)_valueToCompareFunc(context.InstanceToValidate);
 			}
 
-			return (IComparable)ValueToCompare;
+			return GetComparableValue(context, ValueToCompare);
+			// return (IComparable)ValueToCompare;
 		}
 
 		/// <summary>
