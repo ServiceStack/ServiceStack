@@ -261,7 +261,6 @@ namespace ServiceStack.NativeTypes
             typeof(IPatchDb<>),
             typeof(IDeleteDb<>),
             typeof(ISaveDb<>),
-            typeof(IAudit),
         }.ToList();
 
         public static List<Type> BuiltInClientDtos = new[] {

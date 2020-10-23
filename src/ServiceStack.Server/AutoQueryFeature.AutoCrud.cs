@@ -8,6 +8,7 @@ using ServiceStack.Configuration;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Model;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -16,6 +17,11 @@ namespace ServiceStack
 {
     public partial class AutoQueryFeature
     {
+        public List<Action<AutoCrudMetadata>> AutoCrudMetadataFilters { get; set; } = new List<Action<AutoCrudMetadata>>
+        {
+            AuditAutoCrudMetadataFilter
+        };
+        
         public string AccessRole { get; set; } = RoleNames.Admin;
 
         public Dictionary<Type, string[]> ServiceRoutes { get; set; } = new Dictionary<Type, string[]> {
@@ -28,6 +34,57 @@ namespace ServiceStack
             if (AccessRole != null && appHost.GetContainer().Exists<ICrudEvents>())
             {
                 appHost.RegisterServices(ServiceRoutes);
+            }
+        }
+
+        public static void AuditAutoCrudMetadataFilter(AutoCrudMetadata meta)
+        {
+            var applyAttrs = meta.AutoApplyAttrs;
+            if (applyAttrs.IsEmpty())
+                return;
+
+            var hasAuditQuery = applyAttrs.Any(x => x.Name == AutoApply.AuditQuery);
+            var hasAuditCreate = applyAttrs.Any(x => x.Name == AutoApply.AuditCreate);
+            var hasAuditModify = applyAttrs.Any(x => x.Name == AutoApply.AuditModify);
+            var hasAuditSoftDelete = applyAttrs.Any(x => x.Name == AutoApply.AuditSoftDelete);
+
+            if (hasAuditQuery)
+            {
+                meta.AddFilterAttribute(new AutoFilterAttribute(
+                    QueryTerm.Ensure, nameof(AuditBase.SoftDeletedDate), SqlTemplate.IsNull));
+            }
+            
+            if (!hasAuditCreate && !hasAuditModify && !hasAuditSoftDelete)
+                return;
+            
+            meta.PopulateAttrs ??= new List<AutoPopulateAttribute>();
+            if (hasAuditCreate)
+            {
+                meta.PopulateAttrs.Add(new AutoPopulateAttribute(nameof(AuditBase.CreatedDate)) {
+                    Eval = "utcNow"
+                });
+                meta.PopulateAttrs.Add(new AutoPopulateAttribute(nameof(AuditBase.CreatedBy)) {
+                    Eval = "userAuthName"
+                });
+            }
+            if (hasAuditCreate || hasAuditModify)
+            {
+                meta.PopulateAttrs.Add(new AutoPopulateAttribute(nameof(AuditBase.ModifiedDate)) {
+                    Eval = "utcNow"
+                });
+                meta.PopulateAttrs.Add(new AutoPopulateAttribute(nameof(AuditBase.ModifiedBy)) {
+                    Eval = "userAuthName"
+                });
+            }
+            if (hasAuditSoftDelete)
+            {
+                meta.PopulateAttrs.Add(new AutoPopulateAttribute(nameof(AuditBase.SoftDeletedDate)) {
+                    Eval = "utcNow"
+                });
+                meta.PopulateAttrs.Add(new AutoPopulateAttribute(nameof(AuditBase.SoftDeletedBy)) {
+                    Eval = "userAuthName"
+                });
+                meta.SoftDelete = true;
             }
         }
     }
@@ -162,8 +219,139 @@ namespace ServiceStack
         }
     }
 
+    public class AutoCrudMetadata
+    {
+        public Type DtoType { get; set; }
+        public Type ModelType { get; set; }
+        public ModelDefinition ModelDef { get; set; }
+        public TypeProperties DtoProps { get; set; }
+        public List<AutoPopulateAttribute> PopulateAttrs { get; set; }
+        public List<AutoFilterAttribute> AutoFilters { get; set; }
+        public List<QueryDbFieldAttribute> AutoFiltersDbFields { get; set; }
+        public List<AutoApplyAttribute> AutoApplyAttrs { get; set; }
+        public Dictionary<string, AutoUpdateAttribute> UpdateAttrs { get; set; }
+        public Dictionary<string, AutoDefaultAttribute> DefaultAttrs { get; set; }
+        public Dictionary<string, AutoMapAttribute> MapAttrs { get; set; }
+        public HashSet<string> NullableProps { get; set; }
+        public GetMemberDelegate RowVersionGetter { get; set; }
+        public List<string> RemoveDtoProps { get; set; }
+        public bool SoftDelete { get; set; }
+        
+        static readonly ConcurrentDictionary<Type, AutoCrudMetadata> cache = 
+            new ConcurrentDictionary<Type, AutoCrudMetadata>();
+
+        internal static AutoCrudMetadata Create(Type dtoType)
+        {
+            if (cache.TryGetValue(dtoType, out var to))
+                return to;
+
+            to = new AutoCrudMetadata {
+                DtoType = dtoType,
+                ModelType = AutoCrudOperation.GetModelType(dtoType),
+                DtoProps = TypeProperties.Get(dtoType),
+            };
+            if (to.ModelType != null)
+                to.ModelDef = to.ModelType.GetModelMetadata();
+            
+            to.RowVersionGetter = to.DtoProps.GetPublicGetter(Keywords.RowVersion);
+            
+            var dtoAttrs = dtoType.AllAttributes();
+            foreach (var dtoAttr in dtoAttrs)
+            {
+                if (dtoAttr is AutoPopulateAttribute populateAttr)
+                {
+                    to.PopulateAttrs ??= new List<AutoPopulateAttribute>();
+                    to.PopulateAttrs.Add(populateAttr);
+                }
+                else if (dtoAttr is AutoFilterAttribute filterAttr)
+                {
+                    to.AddFilterAttribute(filterAttr);
+                }
+                else if (dtoAttr is AutoApplyAttribute applyAttr)
+                {
+                    to.AutoApplyAttrs ??= new List<AutoApplyAttribute>();
+                    to.AutoApplyAttrs.Add(applyAttr);
+                }
+            }
+
+            foreach (var pi in to.DtoProps.PublicPropertyInfos)
+            {
+                var allAttrs = pi.AllAttributes();
+                var propName = pi.Name;
+            
+                if (allAttrs.FirstOrDefault(x => x is AutoMapAttribute) is AutoMapAttribute mapAttr)
+                {
+                    to.MapAttrs ??= new Dictionary<string, AutoMapAttribute>();
+                    to.MapAttrs[propName] = mapAttr;
+                    propName = mapAttr.To;
+                }
+
+                if (allAttrs.FirstOrDefault(x => x is AutoUpdateAttribute) is AutoUpdateAttribute updateAttr)
+                {
+                    to.UpdateAttrs ??= new Dictionary<string, AutoUpdateAttribute>();
+                    to.UpdateAttrs[propName] = updateAttr;
+                }
+
+                if (allAttrs.FirstOrDefault(x => x is AutoDefaultAttribute) is AutoDefaultAttribute defaultAttr)
+                {
+                    to.DefaultAttrs ??= new Dictionary<string, AutoDefaultAttribute>();
+                    to.DefaultAttrs[propName] = defaultAttr;
+                }
+
+                if (pi.PropertyType.IsNullableType())
+                {
+                    to.NullableProps ??= new HashSet<string>();
+                    to.NullableProps.Add(propName);
+                }
+
+                if (!AutoQuery.IncludeCrudProperties.Contains(propName))
+                {
+                    var hasProp = to.ModelDef.GetFieldDefinition(propName) != null; 
+                    if (!hasProp
+                        || (AutoQuery.IgnoreCrudProperties.Contains(pi.Name) && !hasProp)
+                        || pi.HasAttribute<AutoIgnoreAttribute>())
+                    {
+                        to.RemoveDtoProps ??= new List<string>();
+                        to.RemoveDtoProps.Add(pi.Name);
+                    }
+                }
+            }
+
+            var feature = HostContext.GetPlugin<AutoQueryFeature>();
+            if (feature?.AutoCrudMetadataFilters != null)
+            {
+                foreach (var fn in feature.AutoCrudMetadataFilters)
+                {
+                    fn(to);
+                }
+            }
+            
+            return cache[dtoType] = to;
+        }
+
+        public void AddFilterAttribute(AutoFilterAttribute filterAttr)
+        {
+            AutoFilters ??= new List<AutoFilterAttribute>();
+            AutoFiltersDbFields ??= new List<QueryDbFieldAttribute>();
+
+            AutoFilters.Add(filterAttr);
+            AutoFiltersDbFields.Add(ExprResult.ToDbFieldAttribute(filterAttr));
+        }
+    }
+        
     public partial class AutoQuery : IAutoCrudDb
     {
+        public static HashSet<string> IgnoreCrudProperties { get; } = new HashSet<string> {
+            nameof(IHasSessionId.SessionId),
+            nameof(IHasBearerToken.BearerToken),
+            nameof(IHasVersion.Version),
+        };
+        
+        public static HashSet<string> IncludeCrudProperties { get; set; } = new HashSet<string> {
+            Keywords.Reset,
+            Keywords.RowVersion,
+        };
+
         public object Create<Table>(ICreateDb<Table> dto, IRequest req)
         {
             //TODO: Allow Create to use Default Values
@@ -276,11 +464,75 @@ namespace ServiceStack
             return UpdateInternalAsync<Table>(req, dto, AutoCrudOperation.Patch);
         }
 
+        private object UpdateInternal<Table>(IRequest req, object dto, string operation)
+        {
+            var skipDefaults = operation == AutoCrudOperation.Patch;
+            using var db = GetDb<Table>(req);
+            using (Profiler.Current.Step("AutoQuery.Update"))
+            {
+                var response = ExecAndReturnResponse<Table>(CrudContext.Create<Table>(req,db,dto,operation),
+                    ctx => {
+                        var dtoValues = ResolveDtoValues(req, dto, skipDefaults);
+                        var pkField = ctx.ModelDef?.PrimaryKey;
+                        if (pkField == null)
+                            throw new NotSupportedException($"Table '{typeof(Table).Name}' does not have a primary key");
+                        if (!dtoValues.TryGetValue(pkField.Name, out var idValue) || AutoMappingUtils.IsDefaultValue(idValue))
+                            throw new ArgumentNullException(pkField.Name);
+                        
+                        // Should only update a Single Row
+                        var rowsUpdated = GetAutoFilterExpressions(ctx, dtoValues, out var expr, out var exprParams) 
+                            ? ctx.Db.UpdateOnly<Table>(dtoValues, expr, exprParams.ToArray())
+                            : ctx.Db.UpdateOnly<Table>(dtoValues);
+
+                        if (rowsUpdated != 1)
+                            throw new OptimisticConcurrencyException($"{rowsUpdated} rows were updated by '{dto.GetType().Name}'");
+
+                        return new ExecValue(idValue, rowsUpdated);
+                    }); //TODO: UpdateOnly
+
+                return response;
+            }
+        }
+
+        private async Task<object> UpdateInternalAsync<Table>(IRequest req, object dto, string operation)
+        {
+            var skipDefaults = operation == AutoCrudOperation.Patch;
+            using var db = GetDb<Table>(req);
+            using (Profiler.Current.Step("AutoQuery.Update"))
+            {
+                var response = await ExecAndReturnResponseAsync<Table>(CrudContext.Create<Table>(req,db,dto,operation), 
+                    async ctx => {
+                        var dtoValues = ResolveDtoValues(req, dto, skipDefaults);
+                        var pkField = ctx.ModelDef?.PrimaryKey;
+                        if (pkField == null)
+                            throw new NotSupportedException($"Table '{typeof(Table).Name}' does not have a primary key");
+                        if (!dtoValues.TryGetValue(pkField.Name, out var idValue) || AutoMappingUtils.IsDefaultValue(idValue))
+                            throw new ArgumentNullException(pkField.Name);
+                        
+                        // Should only update a Single Row
+                        var rowsUpdated = GetAutoFilterExpressions(ctx, dtoValues, out var expr, out var exprParams) 
+                            ? await ctx.Db.UpdateOnlyAsync<Table>(dtoValues, expr, exprParams.ToArray()).ConfigAwait()
+                            : await ctx.Db.UpdateOnlyAsync<Table>(dtoValues).ConfigAwait();
+
+                        if (rowsUpdated != 1)
+                            throw new OptimisticConcurrencyException($"{rowsUpdated} rows were updated by '{dto.GetType().Name}'");
+
+                        return new ExecValue(idValue, rowsUpdated);
+                    }).ConfigAwait(); //TODO: UpdateOnly
+
+                return response;
+            }
+        }
+
         public object Delete<Table>(IDeleteDb<Table> dto, IRequest req)
         {
             using var db = GetDb<Table>(req);
             using var profiler = Profiler.Current.Step("AutoQuery.Delete");
-            
+
+            var meta = AutoCrudMetadata.Create(dto.GetType());
+            if (meta.SoftDelete)
+                return UpdateInternal<Table>(req, dto, AutoCrudOperation.Patch);
+                
             var response = ExecAndReturnResponse<Table>(CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Delete),
                 ctx => {
                     var dtoValues = ResolveDtoValues(ctx.Request, ctx.Dto, skipDefaults:true);
@@ -300,6 +552,10 @@ namespace ServiceStack
         {
             using var db = GetDb<Table>(req);
             using var profiler = Profiler.Current.Step("AutoQuery.Delete");
+
+            var meta = AutoCrudMetadata.Create(dto.GetType());
+            if (meta.SoftDelete)
+                return await UpdateInternalAsync<Table>(req, dto, AutoCrudOperation.Patch).ConfigAwait();
             
             var response = await ExecAndReturnResponseAsync<Table>(CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Delete),
                 async ctx => {
@@ -579,177 +835,7 @@ namespace ServiceStack
             exprParams = null;
             return false;
         }
-
-        private object UpdateInternal<Table>(IRequest req, object dto, string operation)
-        {
-            var skipDefaults = operation == AutoCrudOperation.Patch;
-            using var db = GetDb<Table>(req);
-            using (Profiler.Current.Step("AutoQuery.Update"))
-            {
-                var response = ExecAndReturnResponse<Table>(CrudContext.Create<Table>(req,db,dto,operation),
-                    ctx => {
-                        var dtoValues = ResolveDtoValues(req, dto, skipDefaults);
-                        var pkField = ctx.ModelDef?.PrimaryKey;
-                        if (pkField == null)
-                            throw new NotSupportedException($"Table '{typeof(Table).Name}' does not have a primary key");
-                        if (!dtoValues.TryGetValue(pkField.Name, out var idValue) || AutoMappingUtils.IsDefaultValue(idValue))
-                            throw new ArgumentNullException(pkField.Name);
-                        
-                        // Should only update a Single Row
-                        var rowsUpdated = GetAutoFilterExpressions(ctx, dtoValues, out var expr, out var exprParams) 
-                            ? ctx.Db.UpdateOnly<Table>(dtoValues, expr, exprParams.ToArray())
-                            : ctx.Db.UpdateOnly<Table>(dtoValues);
-
-                        if (rowsUpdated != 1)
-                            throw new OptimisticConcurrencyException($"{rowsUpdated} rows were updated by '{dto.GetType().Name}'");
-
-                        return new ExecValue(idValue, rowsUpdated);
-                    }); //TODO: UpdateOnly
-
-                return response;
-            }
-        }
-
-        private async Task<object> UpdateInternalAsync<Table>(IRequest req, object dto, string operation)
-        {
-            var skipDefaults = operation == AutoCrudOperation.Patch;
-            using var db = GetDb<Table>(req);
-            using (Profiler.Current.Step("AutoQuery.Update"))
-            {
-                var response = await ExecAndReturnResponseAsync<Table>(CrudContext.Create<Table>(req,db,dto,operation), 
-                    async ctx => {
-                        var dtoValues = ResolveDtoValues(req, dto, skipDefaults);
-                        var pkField = ctx.ModelDef?.PrimaryKey;
-                        if (pkField == null)
-                            throw new NotSupportedException($"Table '{typeof(Table).Name}' does not have a primary key");
-                        if (!dtoValues.TryGetValue(pkField.Name, out var idValue) || AutoMappingUtils.IsDefaultValue(idValue))
-                            throw new ArgumentNullException(pkField.Name);
-                        
-                        // Should only update a Single Row
-                        var rowsUpdated = GetAutoFilterExpressions(ctx, dtoValues, out var expr, out var exprParams) 
-                            ? await ctx.Db.UpdateOnlyAsync<Table>(dtoValues, expr, exprParams.ToArray()).ConfigAwait()
-                            : await ctx.Db.UpdateOnlyAsync<Table>(dtoValues).ConfigAwait();
-
-                        if (rowsUpdated != 1)
-                            throw new OptimisticConcurrencyException($"{rowsUpdated} rows were updated by '{dto.GetType().Name}'");
-
-                        return new ExecValue(idValue, rowsUpdated);
-                    }).ConfigAwait(); //TODO: UpdateOnly
-
-                return response;
-            }
-        }
         
-        internal class AutoCrudMetadata
-        {
-            internal Type DtoType;
-            internal Type ModelType;
-            internal ModelDefinition ModelDef;
-            internal TypeProperties DtoProps;
-            internal List<AutoPopulateAttribute> PopulateAttrs;
-            internal List<AutoFilterAttribute> AutoFilters;
-            internal List<QueryDbFieldAttribute> AutoFiltersDbFields;
-            internal Dictionary<string, AutoUpdateAttribute> UpdateAttrs;
-            internal Dictionary<string, AutoDefaultAttribute> DefaultAttrs;
-            internal Dictionary<string, AutoMapAttribute> MapAttrs;
-            internal HashSet<string> NullableProps;
-            internal GetMemberDelegate RowVersionGetter;
-            internal List<string> RemoveDtoProps;
-            
-            static readonly ConcurrentDictionary<Type, AutoCrudMetadata> cache = 
-                new ConcurrentDictionary<Type, AutoCrudMetadata>();
-
-            internal static AutoCrudMetadata Create(Type dtoType)
-            {
-                if (cache.TryGetValue(dtoType, out var to))
-                    return to;
-                
-                to = new AutoCrudMetadata {
-                    DtoType = dtoType,
-                    ModelType = AutoCrudOperation.GetModelType(dtoType),
-                    DtoProps = TypeProperties.Get(dtoType),
-                };
-                if (to.ModelType != null)
-                    to.ModelDef = to.ModelType.GetModelMetadata();
-                
-                to.RowVersionGetter = to.DtoProps.GetPublicGetter(Keywords.RowVersion);
-                
-                var dtoAttrs = dtoType.AllAttributes();
-                foreach (var dtoAttr in dtoAttrs)
-                {
-                    if (dtoAttr is AutoPopulateAttribute populateAttr)
-                    {
-                        to.PopulateAttrs ??= new List<AutoPopulateAttribute>();
-                        to.PopulateAttrs.Add(populateAttr);
-                    }
-                    else if (dtoAttr is AutoFilterAttribute filterAttr)
-                    {
-                        to.AutoFilters ??= new List<AutoFilterAttribute>();
-                        to.AutoFiltersDbFields ??= new List<QueryDbFieldAttribute>();
-
-                        to.AutoFilters.Add(filterAttr);
-                        to.AutoFiltersDbFields.Add(ExprResult.ToDbFieldAttribute(filterAttr));
-                    }
-                }
-
-                foreach (var pi in to.DtoProps.PublicPropertyInfos)
-                {
-                    var allAttrs = pi.AllAttributes();
-                    var propName = pi.Name;
-                
-                    if (allAttrs.FirstOrDefault(x => x is AutoMapAttribute) is AutoMapAttribute mapAttr)
-                    {
-                        to.MapAttrs ??= new Dictionary<string, AutoMapAttribute>();
-                        to.MapAttrs[propName] = mapAttr;
-                        propName = mapAttr.To;
-                    }
-
-                    if (allAttrs.FirstOrDefault(x => x is AutoUpdateAttribute) is AutoUpdateAttribute updateAttr)
-                    {
-                        to.UpdateAttrs ??= new Dictionary<string, AutoUpdateAttribute>();
-                        to.UpdateAttrs[propName] = updateAttr;
-                    }
-
-                    if (allAttrs.FirstOrDefault(x => x is AutoDefaultAttribute) is AutoDefaultAttribute defaultAttr)
-                    {
-                        to.DefaultAttrs ??= new Dictionary<string, AutoDefaultAttribute>();
-                        to.DefaultAttrs[propName] = defaultAttr;
-                    }
-
-                    if (pi.PropertyType.IsNullableType())
-                    {
-                        to.NullableProps ??= new HashSet<string>();
-                        to.NullableProps.Add(propName);
-                    }
-
-                    if (!IncludeCrudProperties.Contains(propName))
-                    {
-                        var hasProp = to.ModelDef.GetFieldDefinition(propName) != null; 
-                        if (!hasProp
-                            || (IgnoreCrudProperties.Contains(pi.Name) && !hasProp)
-                            || pi.HasAttribute<AutoIgnoreAttribute>())
-                        {
-                            to.RemoveDtoProps ??= new List<string>();
-                            to.RemoveDtoProps.Add(pi.Name);
-                        }
-                    }
-                }
-
-                return cache[dtoType] = to;
-            }
-        }
-        
-        public static HashSet<string> IgnoreCrudProperties { get; } = new HashSet<string> {
-            nameof(IHasSessionId.SessionId),
-            nameof(IHasBearerToken.BearerToken),
-            nameof(IHasVersion.Version),
-        };
-        
-        public static HashSet<string> IncludeCrudProperties { get; set; } = new HashSet<string> {
-            Keywords.Reset,
-            Keywords.RowVersion,
-        };
-
         private Dictionary<string, object> ResolveDtoValues(IRequest req, object dto, bool skipDefaults=false)
         {
             var dtoValues = dto.ToObjectDictionary();

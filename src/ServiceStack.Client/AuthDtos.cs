@@ -601,7 +601,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public abstract class AuditBase : IAudit
+    public abstract class AuditBase
     {
         [DataMember(Order = 1)] public DateTime CreatedDate { get; set; }
         [DataMember(Order = 2), Required] public string CreatedBy { get; set; }

@@ -209,6 +209,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             db.CreateTable<RockstarVersion>();
             db.CreateTable<Bookmark>();
             db.CreateTable<DefaultValue>();
+            db.CreateTable<Booking>();
 
             AutoMapping.RegisterPopulator((Dictionary<string,object> target, CreateRockstarWithAutoGuid source) => {
                 if (source.FirstName == "Created")
@@ -1369,6 +1370,64 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
+        [Test]
+        public void Does_apply_Audit_behavior()
+        {
+            var authClient = new JsonServiceClient(Config.ListeningOn);
+            authClient.Post(new Authenticate {
+                provider = "credentials",
+                UserName = "admin@email.com",
+                Password = "p@55wOrd",
+                RememberMe = true,
+            });
+
+            var booking1Id = authClient.Post(new CreateBooking {
+                RoomNumber = 1,
+                BookingStartDate = DateTime.Today.AddDays(1),
+                BookingEndDate = DateTime.Today.AddDays(5),
+                Cost = 100,
+            }).Id.ToInt();
+            var booking2Id = authClient.Post(new CreateBooking {
+                RoomNumber = 2,
+                BookingStartDate = DateTime.Today.AddDays(2),
+                BookingEndDate = DateTime.Today.AddDays(6),
+                Cost = 200,
+            }).Id.ToInt();
+
+            var bookings = client.Get(new QueryBookings {
+                Ids = new []{ booking1Id, booking2Id }
+            });
+            
+            // bookings.PrintDump();
+            Assert.That(bookings.Results.Count, Is.EqualTo(2));
+
+            Assert.That(bookings.Results.All(x => x.CreatedBy != null));
+            Assert.That(bookings.Results.All(x => x.CreatedDate >= DateTime.UtcNow.Date));
+            Assert.That(bookings.Results.All(x => x.ModifiedBy != null));
+            Assert.That(bookings.Results.All(x => x.ModifiedDate >= DateTime.UtcNow.Date));
+            Assert.That(bookings.Results.All(x => x.ModifiedDate == x.CreatedDate));
+
+            authClient.Patch(new UpdateBooking {
+                Id = booking1Id,
+                Cancelled = true,
+                Notes = "Missed Flight",
+            });
+            var booking1 = client.Get(new QueryBookings {
+                Ids = new[] { booking1Id }
+            }).Results[0];
+            Assert.That(booking1.ModifiedDate, Is.Not.EqualTo(booking1.CreatedDate));
+
+            authClient.Delete(new DeleteBooking {
+                Id = booking2Id,
+            });
+
+            using var db = appHost.Resolve<IDbConnectionFactory>().OpenDbConnection();
+            var booking2 = db.SingleById<Booking>(booking2Id);
+            // booking2.PrintDump();
+            Assert.That(booking2, Is.Not.Null);
+            Assert.That(booking2.SoftDeletedBy, Is.Not.Null);
+            Assert.That(booking2.SoftDeletedDate, Is.Not.Null);
+        }
 
     }
 }
