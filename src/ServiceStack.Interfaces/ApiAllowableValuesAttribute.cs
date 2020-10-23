@@ -2,7 +2,6 @@
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
-using System.Reflection;
 
 namespace ServiceStack
 {
@@ -13,6 +12,7 @@ namespace ServiceStack
         {
             this.Name = name;
         }
+        
         public ApiAllowableValuesAttribute(string name, int min, int max) : this(name)
         {
             Type = "RANGE";
@@ -30,11 +30,7 @@ namespace ServiceStack
         public ApiAllowableValuesAttribute(string name, Type enumType)
             : this(name)
         {
-#if NETFX_CORE || NETSTANDARD1_1 || PORTABLE7
-			if (enumType.GetTypeInfo().IsEnum)
-#else
             if (enumType.IsEnum)
-#endif
             {
                 Type = "LIST";
                 Values = System.Enum.GetNames(enumType);
@@ -61,7 +57,7 @@ namespace ServiceStack
 
         public int? Max { get; set; }
 
-        public String[] Values { get; set; }
+        public string[] Values { get; set; }
 
         //TODO: should be implemented according to:
         //https://github.com/wordnik/swagger-core/wiki/datatypes
