@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.MiniProfiler;
@@ -51,7 +52,7 @@ namespace ServiceStack
             if (hasAuditQuery)
             {
                 meta.AddFilterAttribute(new AutoFilterAttribute(
-                    QueryTerm.Ensure, nameof(AuditBase.SoftDeletedDate), SqlTemplate.IsNull));
+                    QueryTerm.Ensure, nameof(AuditBase.DeletedDate), SqlTemplate.IsNull));
             }
             
             if (!hasAuditCreate && !hasAuditModify && !hasAuditSoftDelete)
@@ -78,10 +79,10 @@ namespace ServiceStack
             }
             if (hasAuditSoftDelete)
             {
-                meta.PopulateAttrs.Add(new AutoPopulateAttribute(nameof(AuditBase.SoftDeletedDate)) {
+                meta.PopulateAttrs.Add(new AutoPopulateAttribute(nameof(AuditBase.DeletedDate)) {
                     Eval = "utcNow"
                 });
-                meta.PopulateAttrs.Add(new AutoPopulateAttribute(nameof(AuditBase.SoftDeletedBy)) {
+                meta.PopulateAttrs.Add(new AutoPopulateAttribute(nameof(AuditBase.DeletedBy)) {
                     Eval = "userAuthName"
                 });
                 meta.SoftDelete = true;
@@ -260,8 +261,7 @@ namespace ServiceStack
             {
                 if (dtoAttr is AutoPopulateAttribute populateAttr)
                 {
-                    to.PopulateAttrs ??= new List<AutoPopulateAttribute>();
-                    to.PopulateAttrs.Add(populateAttr);
+                    to.AddPopulateAttribute(populateAttr);
                 }
                 else if (dtoAttr is AutoFilterAttribute filterAttr)
                 {
@@ -281,38 +281,34 @@ namespace ServiceStack
             
                 if (allAttrs.FirstOrDefault(x => x is AutoMapAttribute) is AutoMapAttribute mapAttr)
                 {
-                    to.MapAttrs ??= new Dictionary<string, AutoMapAttribute>();
-                    to.MapAttrs[propName] = mapAttr;
+                    to.AddPropertyMapAttribute(propName, mapAttr);
                     propName = mapAttr.To;
                 }
 
                 if (allAttrs.FirstOrDefault(x => x is AutoUpdateAttribute) is AutoUpdateAttribute updateAttr)
                 {
-                    to.UpdateAttrs ??= new Dictionary<string, AutoUpdateAttribute>();
-                    to.UpdateAttrs[propName] = updateAttr;
+                    to.AddUpdateAttribute(propName, updateAttr);
                 }
 
                 if (allAttrs.FirstOrDefault(x => x is AutoDefaultAttribute) is AutoDefaultAttribute defaultAttr)
                 {
-                    to.DefaultAttrs ??= new Dictionary<string, AutoDefaultAttribute>();
-                    to.DefaultAttrs[propName] = defaultAttr;
+                    to.AddDefaultAttribute(propName, defaultAttr);
                 }
 
                 if (pi.PropertyType.IsNullableType())
                 {
-                    to.NullableProps ??= new HashSet<string>();
-                    to.NullableProps.Add(propName);
+                    to.AddNullableProperty(propName);
                 }
 
                 if (!AutoQuery.IncludeCrudProperties.Contains(propName))
                 {
                     var hasProp = to.ModelDef.GetFieldDefinition(propName) != null; 
                     if (!hasProp
+                        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
                         || (AutoQuery.IgnoreCrudProperties.Contains(pi.Name) && !hasProp)
                         || pi.HasAttribute<AutoIgnoreAttribute>())
                     {
-                        to.RemoveDtoProps ??= new List<string>();
-                        to.RemoveDtoProps.Add(pi.Name);
+                        to.AddDtoPropertyToRemove(pi);
                     }
                 }
             }
@@ -327,6 +323,42 @@ namespace ServiceStack
             }
             
             return cache[dtoType] = to;
+        }
+
+        public void AddPropertyMapAttribute(string propName, AutoMapAttribute mapAttr)
+        {
+            MapAttrs ??= new Dictionary<string, AutoMapAttribute>();
+            MapAttrs[propName] = mapAttr;
+        }
+
+        public void AddDtoPropertyToRemove(PropertyInfo pi)
+        {
+            RemoveDtoProps ??= new List<string>();
+            RemoveDtoProps.Add(pi.Name);
+        }
+
+        public void AddNullableProperty(string propName)
+        {
+            NullableProps ??= new HashSet<string>();
+            NullableProps.Add(propName);
+        }
+
+        public void AddDefaultAttribute(string propName, AutoDefaultAttribute defaultAttr)
+        {
+            DefaultAttrs ??= new Dictionary<string, AutoDefaultAttribute>();
+            DefaultAttrs[propName] = defaultAttr;
+        }
+
+        public void AddUpdateAttribute(string propName, AutoUpdateAttribute updateAttr)
+        {
+            UpdateAttrs ??= new Dictionary<string, AutoUpdateAttribute>();
+            UpdateAttrs[propName] = updateAttr;
+        }
+
+        public void AddPopulateAttribute(AutoPopulateAttribute populateAttr)
+        {
+            PopulateAttrs ??= new List<AutoPopulateAttribute>();
+            PopulateAttrs.Add(populateAttr);
         }
 
         public void AddFilterAttribute(AutoFilterAttribute filterAttr)

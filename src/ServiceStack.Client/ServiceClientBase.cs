@@ -901,29 +901,23 @@ namespace ServiceStack
 
         protected virtual WebRequest SendRequest(string httpMethod, string requestUri, object request)
         {
-            return PrepareWebRequest(httpMethod, requestUri, request, client =>
-            {
-                using (var requestStream = PclExport.Instance.GetRequestStream(client))
-                {
-                    SerializeRequestToStream(request, requestStream);
-                }
+            return PrepareWebRequest(httpMethod, requestUri, request, client => {
+                using var requestStream = PclExport.Instance.GetRequestStream(client);
+                SerializeRequestToStream(request, requestStream);
             });
         }
         
         protected virtual void SerializeRequestToStream(object request, Stream requestStream, bool keepOpen=false)
         {
-            var str = request as string;
-            var bytes = request as byte[];
-            var stream = request as Stream;
-            if (str != null)
+            if (request is string str)
             {
                 requestStream.Write(str);
             }
-            else if (bytes != null)
+            else if (request is byte[] bytes)
             {
                 requestStream.Write(bytes, 0, bytes.Length);
             }
-            else if (stream != null)
+            else if (request is Stream stream)
             {
                 stream.WriteTo(requestStream);
             }

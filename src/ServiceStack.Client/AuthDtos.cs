@@ -608,8 +608,8 @@ namespace ServiceStack
         [DataMember(Order = 3)] public DateTime ModifiedDate { get; set; }
         [DataMember(Order = 4), Required] public string ModifiedBy { get; set; }
         [DataMember(Order = 5), Index] //Check if Deleted
-        public DateTime? SoftDeletedDate { get; set; }
-        [DataMember(Order = 6)] public string SoftDeletedBy { get; set; }
+        public DateTime? DeletedDate { get; set; }
+        [DataMember(Order = 6)] public string DeletedBy { get; set; }
     }
 
     [DataContract]

@@ -1195,10 +1195,10 @@ namespace ServiceStack
                 if (queryAttr != null)
                     QueryFieldMap[pi.Name] = queryAttr.Init();
             }
-            
+
             var meta = AutoCrudMetadata.Create(typeof(QueryModel));
-            AutoFilters = meta.AutoFilters.ToArray();
-            AutoFiltersDbFields = meta.AutoFiltersDbFields.ToArray();
+            AutoFilters = meta.AutoFilters?.ToArray() ?? TypeConstants<AutoFilterAttribute>.EmptyArray;
+            AutoFiltersDbFields = meta.AutoFiltersDbFields?.ToArray() ?? TypeConstants<QueryDbFieldAttribute>.EmptyArray;
         }
 
         public ISqlExpression CreateQuery(IDbConnection db) => db.From<From>();

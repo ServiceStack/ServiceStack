@@ -1274,8 +1274,8 @@ namespace ServiceStack.Extensions.Tests
             booking2 = db.SingleById<Booking>(booking2Id);
             // booking2.PrintDump();
             Assert.That(booking2, Is.Not.Null);
-            Assert.That(booking2.SoftDeletedBy, Is.Not.Null);
-            Assert.That(booking2.SoftDeletedDate, Is.Not.Null);
+            Assert.That(booking2.DeletedBy, Is.Not.Null);
+            Assert.That(booking2.DeletedDate, Is.Not.Null);
         }
     }
 }
