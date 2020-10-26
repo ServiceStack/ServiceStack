@@ -976,10 +976,22 @@ namespace ServiceStack
             appHost.ServiceAssemblies.Each(x => appDlls.Add(x));
             var existingAppTypes = new HashSet<string>();
             var existingExactAppTypes = new HashSet<Tuple<string,string>>();
+            var existingModelOperationTypes = new HashSet<Tuple<string,string>>();
+            
             foreach (var appType in appDlls.SelectMany(x => x.GetTypes()))
             {
                 existingAppTypes.Add(appType.Name);
                 existingExactAppTypes.Add(keyNs(appType.Namespace, appType.Name));
+                
+                if (appType.HasInterface(typeof(ICrud)))
+                {
+                    var autoQueryType = AutoCrudOperation.GetAutoQueryDtoType(appType);
+                    if (autoQueryType != null)
+                    {
+                        existingModelOperationTypes.Add(new Tuple<string, string>(
+                            autoQueryType.Value.ModelType.Name, autoQueryType.Value.Operation));
+                    }
+                }
             }
 
             // Re-use existing Types with same name for default DB Connection
@@ -1118,9 +1130,11 @@ namespace ServiceStack
             foreach (var entry in typesToGenerateMap)
             {
                 var genModelName = StringUtils.SnakeCaseToPascalCase(entry.Key);
+                var pluralGenModelName = Words.Pluralize(genModelName);
                 var ctx = new AutoGenContext(request, entry.Key, entry.Value) {
                     DataModelName = genModelName,
-                    RoutePathBase = "/" + Words.Pluralize(genModelName).ToLower(),
+                    PluralDataModelName = pluralGenModelName,
+                    RoutePathBase = "/" + pluralGenModelName.ToLower(),
                 };
                 
                 generateOperationsFilter?.Invoke(ctx);
@@ -1137,8 +1151,15 @@ namespace ServiceStack
                         if (!AutoCrudOperation.IsOperation(operation))
                             continue;
 
+                        var modelOperation = new Tuple<string, string>(dataModelName, operation);
+                        if (existingModelOperationTypes.Contains(modelOperation))
+                            continue;
+                        existingModelOperationTypes.Add(modelOperation);
+
                         var requestType = (ctx.OperationNames.TryGetValue(operation, out var customOpName) ? customOpName : null) 
-                                          ?? operation + dataModelName;
+                          ?? (operation == AutoCrudOperation.Query 
+                              ? operation + ctx.PluralDataModelName
+                              : operation + dataModelName);
                         if (containsType(serviceModelNs, requestType))
                             continue;
 

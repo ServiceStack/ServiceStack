@@ -77,25 +77,47 @@ namespace ServiceStack
             return null;
         }
 
-        public static AutoCrudDtoType? GetCrudGenericDefTypes(Type requestType, Type crudType)
+        public static string ToOperation(Type genericDef)
         {
-            var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(crudType);
-            if (genericDef != null)
-                return new AutoCrudDtoType(genericDef, crudType);
+            return (genericDef == typeof(IQueryDb<>) || genericDef == typeof(IQueryDb<,>))
+                ? Query
+                : genericDef == typeof(ICreateDb<>)
+                    ? Create
+                    : genericDef == typeof(IUpdateDb<>)
+                        ? Update
+                        : genericDef == typeof(IPatchDb<>)
+                            ? Patch
+                            : genericDef == typeof(IDeleteDb<>)
+                                ? Delete
+                                : genericDef == typeof(ISaveDb<>)
+                                    ? Save
+                                    : null;
+        }
+
+        public static AutoQueryDtoType? GetAutoQueryGenericDefTypes(Type requestType, Type opType)
+        {
+            var genericType = requestType.GetTypeWithGenericTypeDefinitionOf(opType);
+            if (genericType != null)
+                return new AutoQueryDtoType(genericType, opType);
             return null;
         }
 
-        public static AutoCrudDtoType? GetAutoCrudDtoType(Type requestType)
+        public static AutoQueryDtoType? GetAutoQueryDtoType(Type requestType) =>
+            GetAutoQueryGenericDefTypes(requestType, typeof(IQueryDb<>)) ??
+            GetAutoQueryGenericDefTypes(requestType, typeof(IQueryDb<,>)) ??
+            GetAutoCrudDtoType(requestType);
+        
+        public static AutoQueryDtoType? GetAutoCrudDtoType(Type requestType)
         {
-            var crudTypes = GetCrudGenericDefTypes(requestType, typeof(ICreateDb<>))
-                ?? GetCrudGenericDefTypes(requestType, typeof(IUpdateDb<>))
-                ?? GetCrudGenericDefTypes(requestType, typeof(IDeleteDb<>))
-                ?? GetCrudGenericDefTypes(requestType, typeof(IPatchDb<>))
-                ?? GetCrudGenericDefTypes(requestType, typeof(ISaveDb<>));
+            var crudTypes = GetAutoQueryGenericDefTypes(requestType, typeof(ICreateDb<>))
+                ?? GetAutoQueryGenericDefTypes(requestType, typeof(IUpdateDb<>))
+                ?? GetAutoQueryGenericDefTypes(requestType, typeof(IDeleteDb<>))
+                ?? GetAutoQueryGenericDefTypes(requestType, typeof(IPatchDb<>))
+                ?? GetAutoQueryGenericDefTypes(requestType, typeof(ISaveDb<>));
             return crudTypes;
         }
 
-        public static AutoCrudDtoType AssertAutoCrudDtoType(Type requestType) =>
+        public static AutoQueryDtoType AssertAutoCrudDtoType(Type requestType) =>
             GetAutoCrudDtoType(requestType) ??
             throw new NotSupportedException($"{requestType.Name} is not an ICrud Type");
 
@@ -116,7 +138,7 @@ namespace ServiceStack
             }
                 
             var crudTypes = GetAutoCrudDtoType(requestType);
-            return crudTypes?.GenericDef.GenericTypeArguments[0];
+            return crudTypes?.GenericType.GenericTypeArguments[0];
         }
 
         public static Type GetViewModelType(Type requestType, Type responseType)
@@ -160,14 +182,25 @@ namespace ServiceStack
             op.Request.Inherits?.Name == typeof(QueryDb<>).Name || op.Request.Inherits?.Name == typeof(QueryDb<,>).Name;
     }
     
-    public struct AutoCrudDtoType
+    public struct AutoQueryDtoType
     {
-        public Type GenericDef { get; }
+        public Type GenericType { get; }
+        public Type GenericDefType { get; }
         public Type ModelType { get; }
-        public AutoCrudDtoType(Type genericDef, Type modelType)
+        public Type ModelIntoType { get; }
+        public string Operation { get; }
+        public bool IsRead => AutoCrudOperation.Read.Contains(Operation);
+        public bool IsWrite => AutoCrudOperation.Write.Contains(Operation);
+        
+        public AutoQueryDtoType(Type genericType, Type genericDefType)
         {
-            GenericDef = genericDef;
-            ModelType = modelType;
+            GenericType = genericType;
+            GenericDefType = genericDefType;
+            var genericArgs = GenericType.GetGenericArguments();
+            ModelType = genericArgs[0];
+            ModelIntoType = genericDefType == typeof(IQueryDb<,>) ? genericArgs[1] : null;
+            Operation = AutoCrudOperation.ToOperation(GenericDefType)
+                ?? throw new ArgumentException($"{GenericDefType.Name} is not an AutoQuery Generic Definition Type");
         }
     }
     

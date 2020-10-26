@@ -332,8 +332,8 @@ namespace ServiceStack
                 if (crudTypes == null)
                     continue;
 
-                var genericDef = crudTypes.Value.GenericDef;
-                var crudType = crudTypes.Value.ModelType;
+                var genericDef = crudTypes.Value.GenericType;
+                var crudType = crudTypes.Value.GenericDefType;
                 var methodName = crudType.Name.LeftPart('`').Substring(1);
                 methodName = methodName.Substring(0, methodName.Length - 2);
                 

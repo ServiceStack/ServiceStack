@@ -34,6 +34,11 @@ namespace ServiceStack
         /// Generated DataModel Name to use 
         /// </summary>
         public string DataModelName { get; set; }
+        
+        /// <summary>
+        /// Generated DataModel Name to use for Query Services 
+        /// </summary>
+        public string PluralDataModelName { get; set; }
 
         /// <summary>
         /// Generated Route Path base to use 
