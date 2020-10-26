@@ -32,6 +32,7 @@ namespace ServiceStack
         /// Export built-in Types so they're available from /metadata/app
         /// </summary>
         public List<Type> ExportTypes { get; } = new List<Type> {
+            typeof(AuditBase),
         };
         
         public Dictionary<Type, string[]> ServiceRoutes { get; set; } = new Dictionary<Type, string[]> {
