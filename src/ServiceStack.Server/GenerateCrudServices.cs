@@ -297,6 +297,13 @@ namespace ServiceStack
                 if (entry.Key.Item2 == typeName)
                     return entry.Value;
             }
+
+            foreach (var asm in HostContext.AppHost.ServiceAssemblies)
+            {
+                var type = asm.GetTypes().FirstOrDefault(x => x.Name == typeName);
+                if (type != null)
+                    return type;
+            }
             
             var ssInterfacesType = typeof(IQuery).Assembly.GetTypes().FirstOrDefault(x => x.Name == typeName);
             if (ssInterfacesType != null)
