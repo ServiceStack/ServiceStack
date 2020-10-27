@@ -31,10 +31,9 @@ namespace ServiceStack.Host
             {
                 Expires = DateTime.UtcNow.AddYears(20)
             };
-            if (secureOnly != null)
-            {
-                cookie.Secure = secureOnly.Value;
-            }
+            var secure = secureOnly.GetValueOrDefault(HostContext.Config.UseSecureCookies);
+            if (secure)
+                cookie.Secure = true;
             httpRes.SetCookie(cookie);
         }
 
@@ -44,10 +43,9 @@ namespace ServiceStack.Host
         public void AddSessionCookie(string cookieName, string cookieValue, bool? secureOnly = null)
         {
             var cookie = new Cookie(cookieName, cookieValue, RootPath);
-            if (secureOnly != null)
-            {
-                cookie.Secure = secureOnly.Value;
-            }
+            var secure = secureOnly.GetValueOrDefault(HostContext.Config.UseSecureCookies);
+            if (secure)
+                cookie.Secure = true;
             httpRes.SetCookie(cookie);
         }
 
@@ -60,6 +58,8 @@ namespace ServiceStack.Host
             {
                 Expires = DateTime.UtcNow.AddDays(-1)
             };
+            if (HostContext.Config.UseSecureCookies)
+                cookie.Secure = true;
             httpRes.SetCookie(cookie);
         }
     }
