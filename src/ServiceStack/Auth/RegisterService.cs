@@ -163,12 +163,20 @@ namespace ServiceStack.Auth
             {
                 session.PopulateSession(user);
                 session.OnRegistered(Request, session, this);
+                if (session is IAuthSessionExtended sessionExt)
+                    await sessionExt.OnRegisteredAsync(Request, session, this).ConfigAwait();
                 AuthEvents?.OnRegistered(this.Request, session, this);
+                if (AuthEvents is IAuthEventsAsync asyncEvents)
+                    await asyncEvents.OnRegisteredAsync(this.Request, session, this).ConfigAwait();
             }
 
             if (request.AutoLogin.GetValueOrDefault())
             {
+#if NETSTANDARD2_0 || NET472
+                await using var authService = base.ResolveService<AuthenticateService>();
+#else
                 using var authService = base.ResolveService<AuthenticateService>();
+#endif                
                 var authResponse = await authService.PostAsync(
                     new Authenticate {
                         provider = CredentialsAuthProvider.Name,

@@ -112,7 +112,11 @@ namespace ServiceStack.Auth
             if (session is IAuthSessionExtended authSession)
             {
                 var failed = authSession.Validate(authService, session, tokens, authInfo)
-                    ?? AuthEvents.Validate(authService, session, tokens, authInfo);
+                    ?? await authSession.ValidateAsync(authService, session, tokens, authInfo, token) 
+                    ?? AuthEvents.Validate(authService, session, tokens, authInfo)
+                    ?? (AuthEvents is IAuthEventsAsync asyncEvents 
+                        ? await asyncEvents.ValidateAsync(authService, session, tokens, authInfo, token)
+                        : null);
                 if (failed != null)
                 {
                     await authService.RemoveSessionAsync(token).ConfigAwait();
@@ -151,8 +155,13 @@ namespace ServiceStack.Auth
 
             try
             {
+                session.IsAuthenticated = true;
                 session.OnAuthenticated(authService, session, tokens, authInfo);
+                if (session is IAuthSessionExtended sessionExt)
+                    await sessionExt.OnAuthenticatedAsync(authService, session, tokens, authInfo, token).ConfigAwait();
                 AuthEvents.OnAuthenticated(authService.Request, session, authService, tokens, authInfo);
+                if (AuthEvents is IAuthEventsAsync asyncEvents)
+                    await asyncEvents.OnAuthenticatedAsync(authService.Request, session, authService, tokens, authInfo, token).ConfigAwait();
             }
             finally
             {

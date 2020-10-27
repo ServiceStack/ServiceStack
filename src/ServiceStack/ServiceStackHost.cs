@@ -1234,8 +1234,7 @@ namespace ServiceStack
                 }
                 else
                 {
-                    var disposable = instance as IDisposable;
-                    disposable?.Dispose();
+                    using (instance as IDisposable) {}
                 }
             }
             catch (Exception ex)

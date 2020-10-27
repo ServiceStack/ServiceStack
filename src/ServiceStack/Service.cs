@@ -178,6 +178,7 @@ namespace ServiceStack
         /// </summary>
         public virtual void PublishMessage<T>(T message) => HostContext.AppHost.PublishMessage(MessageProducer, message);
 
+        private bool hasDisposed = false;
         /// <summary>
         /// Disposes all created disposable properties of this service
         /// and executes disposing of all request <see cref="IDisposable"></see>s 
@@ -185,14 +186,15 @@ namespace ServiceStack
         /// </summary>
         public virtual void Dispose()
         {
-            db?.Dispose();
-            redis?.Dispose();
-            messageProducer?.Dispose();
-            using (authRepository as IDisposable) { }
+            if (hasDisposed) return;
+            hasDisposed = true;
 #if !(NET472 || NETSTANDARD2_0)
             using (authRepositoryAsync as IDisposable) {}
 #endif
-
+            using (authRepository as IDisposable) { }
+            db?.Dispose();
+            redis?.Dispose();
+            messageProducer?.Dispose();
             RequestContext.Instance.ReleaseDisposables();
 
             Request.ReleaseIfInProcessRequest();
@@ -205,7 +207,9 @@ namespace ServiceStack
 #if NET472 || NETSTANDARD2_0
         public async ValueTask DisposeAsync()
         {
+            if (hasDisposed) return;
             await using (authRepositoryAsync as IAsyncDisposable) {}
+            Dispose();
         }
 #endif
     }

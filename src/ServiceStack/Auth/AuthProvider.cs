@@ -111,7 +111,11 @@ namespace ServiceStack.Auth
                 ?? this.RedirectUrl;
 
             session.OnLogout(service);
+            if (service is IAuthSessionExtended sessionExt)
+                await sessionExt.OnLogoutAsync(service, token).ConfigAwait();
             AuthEvents.OnLogout(service.Request, session, service);
+            if (AuthEvents is IAuthEventsAsync asyncEvents)
+                await asyncEvents.OnLogoutAsync(service.Request, session, service, token).ConfigAwait();
 
             await service.RemoveSessionAsync(token).ConfigAwait();
 
@@ -132,6 +136,7 @@ namespace ServiceStack.Auth
         public virtual async Task<IHttpResult> OnAuthenticatedAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token=default)
         {
             session.AuthProvider = Provider;
+            var asyncEvents = AuthEvents as IAuthEventsAsync;
 
             if (session is AuthUserSession userSession)
             {
@@ -159,7 +164,9 @@ namespace ServiceStack.Auth
             if (session is IAuthSessionExtended authSession)
             {
                 var failed = authSession.Validate(authService, session, tokens, authInfo)
-                    ?? AuthEvents.Validate(authService, session, tokens, authInfo);
+                    ?? await authSession.ValidateAsync(authService, session, tokens, authInfo, token).ConfigAwait() 
+                    ?? AuthEvents.Validate(authService, session, tokens, authInfo)
+                    ?? (asyncEvents != null ? await asyncEvents.ValidateAsync(authService, session, tokens, authInfo, token).ConfigAwait() : null);
                 if (failed != null)
                 {
                     await authService.RemoveSessionAsync(token).ConfigAwait();
@@ -213,7 +220,11 @@ namespace ServiceStack.Auth
                         if (firstTimeAuthenticated)
                         {
                             session.OnRegistered(authService.Request, session, authService);
+                            if (session is IAuthSessionExtended sessionExt)
+                                await sessionExt.OnRegisteredAsync(authService.Request, session, authService, token).ConfigAwait();
                             AuthEvents.OnRegistered(authService.Request, session, authService);
+                            if (asyncEvents != null)
+                                await asyncEvents.OnRegisteredAsync(authService.Request, session, authService, token).ConfigAwait();
                         }
                     }
 
@@ -245,7 +256,11 @@ namespace ServiceStack.Auth
             {
                 session.IsAuthenticated = true;
                 session.OnAuthenticated(authService, session, tokens, authInfo);
+                if (session is IAuthSessionExtended sessionExt)
+                    await sessionExt.OnAuthenticatedAsync(authService, session, tokens, authInfo, token).ConfigAwait();
                 AuthEvents.OnAuthenticated(authService.Request, session, authService, tokens, authInfo);
+                if (asyncEvents != null)
+                    await asyncEvents.OnAuthenticatedAsync(authService.Request, session, authService, tokens, authInfo, token).ConfigAwait();
             }
             finally
             {

@@ -153,13 +153,26 @@ namespace ServiceStack
             return this.Roles != null && this.Roles.Contains(role);
         }
 
-        public virtual void OnRegistered(IRequest httpReq, IAuthSession session, IServiceBase service) {}
-        public virtual void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo) { }
-        public virtual void OnLogout(IServiceBase authService) {}
+        public virtual void OnLoad(IRequest httpReq) {}
         public virtual void OnCreated(IRequest httpReq) {}
 
-        public virtual void OnLoad(IRequest httpReq) {}
+        public virtual void OnRegistered(IRequest httpReq, IAuthSession session, IServiceBase service) {}
+
+        public virtual Task OnRegisteredAsync(IRequest httpReq, IAuthSession session, IServiceBase service, CancellationToken token = default) =>
+            TypeConstants.EmptyTask;
+
+        public virtual void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo) { }
+
+        public virtual Task OnAuthenticatedAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo,
+            CancellationToken token = default) => TypeConstants.EmptyTask;
+
+        public virtual void OnLogout(IServiceBase authService) {}
+        public virtual Task OnLogoutAsync(IServiceBase authService, CancellationToken token = default) => TypeConstants.EmptyTask;
+
+        
         public virtual IHttpResult Validate(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo) => null;
+        public virtual Task<IHttpResult> ValidateAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo,
+            CancellationToken token = default) => ((IHttpResult)null).InTask();
     }
 
     public class WebSudoAuthUserSession : AuthUserSession, IWebSudoAuthSession

@@ -476,7 +476,7 @@ namespace ServiceStack.Host
 
                 object response = null;
 
-                async Task<object> Release(object result)
+                async Task<object> ReleaseAsync(object result)
                 {
                     //Gets disposed by AppHost or ContainerAdapter if set
                     if (result is Task taskResponse)
@@ -485,10 +485,10 @@ namespace ServiceStack.Host
                         appHost.Release(service);
                         return taskResponse.GetResult();
                     }
-                    appHost.Release(service);
 #if NET472 || NETSTANDARD2_0
                     await using (service as IAsyncDisposable) {}
 #endif
+                    appHost.Release(service);
                     return result;
                 }
                 
@@ -504,11 +504,11 @@ namespace ServiceStack.Host
 
                     response = appHost.OnPostExecuteServiceFilter(service, response, request, request.Response);
 
-                    return await Release(response).ConfigAwait();
+                    return await ReleaseAsync(response).ConfigAwait();
                 }
                 catch (Exception)
                 {
-                    await Release(response).ConfigAwait();
+                    await ReleaseAsync(response).ConfigAwait();
                     throw;
                 }
             }
