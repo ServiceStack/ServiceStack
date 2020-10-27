@@ -44,10 +44,10 @@ namespace ServiceStack
             if (applyAttrs.IsEmpty())
                 return;
 
-            var hasAuditQuery = applyAttrs.Any(x => x.Name == AutoApply.AuditQuery);
-            var hasAuditCreate = applyAttrs.Any(x => x.Name == AutoApply.AuditCreate);
-            var hasAuditModify = applyAttrs.Any(x => x.Name == AutoApply.AuditModify);
-            var hasAuditSoftDelete = applyAttrs.Any(x => x.Name == AutoApply.AuditSoftDelete);
+            var hasAuditQuery = applyAttrs.Any(x => x.Name == Behavior.AuditQuery);
+            var hasAuditCreate = applyAttrs.Any(x => x.Name == Behavior.AuditCreate);
+            var hasAuditModify = applyAttrs.Any(x => x.Name == Behavior.AuditModify);
+            var hasAuditSoftDelete = applyAttrs.Any(x => x.Name == Behavior.AuditSoftDelete);
 
             if (hasAuditQuery)
             {

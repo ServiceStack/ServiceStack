@@ -354,7 +354,7 @@ namespace ServiceStack
     /// Available built-in operations for AutoQuery Crud Services, executed by
     /// AuditAutoCrudMetadataFilter in AutoQueryFeature.AutoCrudMetadataFilters
     /// </summary>
-    public static class AutoApply
+    public static class Behavior
     {
         /// <summary>
         /// Auto Filter SoftDeleted Results

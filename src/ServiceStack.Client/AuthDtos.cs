@@ -601,18 +601,6 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public abstract class AuditBase
-    {
-        [DataMember(Order = 1)] public DateTime CreatedDate { get; set; }
-        [DataMember(Order = 2), Required] public string CreatedBy { get; set; }
-        [DataMember(Order = 3)] public DateTime ModifiedDate { get; set; }
-        [DataMember(Order = 4), Required] public string ModifiedBy { get; set; }
-        [DataMember(Order = 5), Index] //Check if Deleted
-        public DateTime? DeletedDate { get; set; }
-        [DataMember(Order = 6)] public string DeletedBy { get; set; }
-    }
-
-    [DataContract]
     public abstract class AdminUserBase : IMeta
     {
         [DataMember(Order = 1)] public string UserName { get; set; }

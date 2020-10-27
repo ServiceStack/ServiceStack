@@ -708,7 +708,7 @@ namespace ServiceStack.Extensions.Tests
     }
 
     [DataContract]
-    [AutoApply(AutoApply.AuditQuery)]
+    [AutoApply(Behavior.AuditQuery)]
     public class QueryBookings : QueryDb<Booking>
     {
         [DataMember(Order = 1)] public int[] Ids { get; set; }
@@ -716,7 +716,7 @@ namespace ServiceStack.Extensions.Tests
 
     [DataContract]
     [ValidateIsAuthenticated]
-    [AutoApply(AutoApply.AuditCreate)]
+    [AutoApply(Behavior.AuditCreate)]
     public class CreateBooking
         : ICreateDb<Booking>, IReturn<IdResponse>
     {
@@ -733,7 +733,7 @@ namespace ServiceStack.Extensions.Tests
 
     [DataContract]
     [ValidateIsAuthenticated]
-    [AutoApply(AutoApply.AuditModify)]
+    [AutoApply(Behavior.AuditModify)]
     public class UpdateBooking
         : IPatchDb<Booking>, IReturn<IdResponse>
     {
@@ -752,7 +752,7 @@ namespace ServiceStack.Extensions.Tests
 
     [DataContract]
     [ValidateIsAuthenticated]
-    [AutoApply(AutoApply.AuditSoftDelete)]
+    [AutoApply(Behavior.AuditSoftDelete)]
     public class DeleteBooking : IDeleteDb<Booking>, IReturnVoid
     {
         [DataMember(Order = 1)] public int Id { get; set; }
