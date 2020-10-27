@@ -49,7 +49,6 @@ namespace ServiceStack
                 AllowJsonpRequests = true,
                 AllowRouteContentTypeExtensions = true,
                 BufferSyncSerializers = Env.IsNetCore3,
-                AllowNonHttpOnlyCookies = false,
                 DebugMode = false,
                 StrictMode = Env.StrictMode,
                 DefaultDocuments = new List<string> {
@@ -127,7 +126,8 @@ namespace ServiceStack
                 UseSaltedHash = false,
                 FallbackPasswordHashers = new List<IPasswordHasher>(),
                 UseSameSiteCookies = null,
-                UseSecureCookies = true,   // good default to have, but needed if UseSameSiteCookies=true 
+                UseSecureCookies = true,   // good default to have, but needed if UseSameSiteCookies=true
+                UseHttpOnlyCookies = true,
                 AllowSessionIdsInHttpParams = false,
                 AllowSessionCookies = true,
                 RestrictAllCookiesToDomain = null,
@@ -241,7 +241,7 @@ namespace ServiceStack
             this.DefaultJsonpCacheExpiration = instance.DefaultJsonpCacheExpiration;
             this.MetadataVisibility = instance.MetadataVisibility;
             this.Return204NoContentForEmptyResponse = instance.Return204NoContentForEmptyResponse;
-            this.AllowNonHttpOnlyCookies = instance.AllowNonHttpOnlyCookies;
+            this.UseHttpOnlyCookies = instance.UseHttpOnlyCookies;
             this.UseSameSiteCookies = instance.UseSameSiteCookies;
             this.AllowJsConfig = instance.AllowJsConfig;
             this.AllowPartialResponses = instance.AllowPartialResponses;
@@ -358,10 +358,6 @@ namespace ServiceStack
         /// the current registered IPasswordHasher.
         /// </summary>
         public List<IPasswordHasher> FallbackPasswordHashers { get; private set; }
-
-        [Obsolete("Use UseSecureCookies")]
-        public bool OnlySendSessionCookiesSecurely { set => UseSecureCookies = value; }
-        public bool UseSecureCookies { get; set; }
         public bool AllowSessionIdsInHttpParams { get; set; }
         public bool AllowSessionCookies { get; set; }
         public string RestrictAllCookiesToDomain { get; set; }
@@ -370,7 +366,14 @@ namespace ServiceStack
         public bool Return204NoContentForEmptyResponse { get; set; }
         public bool AllowJsConfig { get; set; }
         public bool AllowPartialResponses { get; set; }
-        public bool AllowNonHttpOnlyCookies { get; set; }
+
+        [Obsolete("Use !UseHttpOnlyCookies")]
+        public bool AllowNonHttpOnlyCookies { set => UseHttpOnlyCookies = !value; }
+        [Obsolete("Use UseSecureCookies")]
+        public bool OnlySendSessionCookiesSecurely { set => UseSecureCookies = value; }
+
+        public bool UseSecureCookies { get; set; }
+        public bool UseHttpOnlyCookies { get; set; }
         public bool? UseSameSiteCookies { get; set; }
         public bool AllowAclUrlReservation { get; set; }
         public bool AddRedirectParamsToQueryString { get; set; }
