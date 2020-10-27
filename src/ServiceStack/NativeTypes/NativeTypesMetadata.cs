@@ -384,6 +384,34 @@ namespace ServiceStack.NativeTypes
             };
         }
 
+        public MetadataType ToFlattenedType(Type type)
+        {
+            if (type == null) 
+                return null;
+
+            MetadataType to = null;
+            do
+            {
+                var metaType = ToType(type);
+                if (to == null)
+                {
+                    to = metaType;
+                }
+                else
+                {
+                    if (metaType.Properties != null)
+                    {
+                        to.Properties ??= new List<MetadataPropertyType>();
+                        foreach (var metaProp in metaType.Properties)
+                        {
+                            to.Properties.Add(metaProp);
+                        }
+                    }
+                }
+            } while ((type = type.BaseType) != typeof(object) && type != null);
+            return to;
+        }
+
         public MetadataType ToType(Type type)
         {
             if (type == null) 

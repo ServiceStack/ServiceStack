@@ -133,8 +133,8 @@ namespace ServiceStack.Admin
                     var plugin = meta.Plugins.AdminUsers = new AdminUsersInfo {
                         AccessRole = AdminRole,
                         Enabled = new List<string>(),
-                        UserAuth = metaGen.ToType(userAuth.GetType()),
-                        UserAuthDetails = metaGen.ToType(userAuthDetails.GetType()),
+                        UserAuth = metaGen.ToFlattenedType(userAuth.GetType()),
+                        UserAuthDetails = metaGen.ToFlattenedType(userAuthDetails.GetType()),
                         AllRoles = HostContext.Metadata.GetAllRoles(),
                         AllPermissions = HostContext.Metadata.GetAllPermissions(),
                         QueryUserAuthProperties = QueryUserAuthProperties,
