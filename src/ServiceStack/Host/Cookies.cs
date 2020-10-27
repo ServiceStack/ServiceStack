@@ -67,6 +67,8 @@ namespace ServiceStack.Host
         private static readonly DateTime Session = DateTime.MinValue;
 
 #if !NETSTANDARD2_0
+
+#if !NET472
         private static SetMemberDelegate sameSiteFn;
         private static Enum sameSiteNone;
         private static Enum sameSiteStrict;
@@ -74,11 +76,6 @@ namespace ServiceStack.Host
 
         public static void Init()
         {
-#if NET472
-            sameSiteNone = SameSiteMode.None;
-            sameSiteStrict = SameSiteMode.Strict;
-            sameSiteLax = SameSiteMode.Lax;
-#else
             // Use reflection to avoid tfm builds and binary dependency on .NET Framework v4.7.2+
             sameSiteFn = TypeProperties<HttpCookie>.GetAccessor("SameSite")?.PublicSetter;
             if (sameSiteFn != null)
@@ -91,8 +88,8 @@ namespace ServiceStack.Host
                     sameSiteLax = (Enum) Enum.Parse(sameSiteMode, "Lax");
                 }
             }
-#endif
         }
+#endif
         
         public static HttpCookie ToHttpCookie(this Cookie cookie)
         {
@@ -113,12 +110,20 @@ namespace ServiceStack.Host
                 httpCookie.Domain = config.RestrictAllCookiesToDomain;
             }
 
+#if NET472
+            httpCookie.SameSite = config.UseSameSiteCookies == null
+                ? SameSiteMode.Lax
+                : config.UseSameSiteCookies == true
+                    ? SameSiteMode.Strict
+                    : SameSiteMode.None;
+#else
             var sameSiteCookie = config.UseSameSiteCookies == null
                 ? sameSiteLax
                 : config.UseSameSiteCookies == true
                     ? sameSiteStrict
                     : sameSiteNone;
             sameSiteFn?.Invoke(httpCookie, sameSiteCookie);
+#endif
 
             HostContext.AppHost?.HttpCookieFilter(httpCookie);
 
