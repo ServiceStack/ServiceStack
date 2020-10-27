@@ -1077,6 +1077,8 @@ namespace ServiceStack
                     {
                         dataType = typeof(Nullable<>).MakeGenericType(dataType);
                     }
+
+                    var underlyingType = Nullable.GetUnderlyingType(dataType) ?? dataType;
                     
                     var prop = new MetadataPropertyType {
                         PropertyType = dataType,
@@ -1085,9 +1087,9 @@ namespace ServiceStack
                         },
                         Name = StringUtils.SnakeCaseToPascalCase(column.ColumnName),
                         Type = dataType.GetMetadataPropertyType(),
-                        IsValueType = dataType.IsValueType ? true : (bool?) null,
-                        IsSystemType = dataType.IsSystemType() ? true : (bool?) null,
-                        IsEnum = dataType.IsEnum ? true : (bool?) null,
+                        IsValueType = underlyingType.IsValueType ? true : (bool?) null,
+                        IsSystemType = underlyingType.IsSystemType() ? true : (bool?) null,
+                        IsEnum = underlyingType.IsEnum ? true : (bool?) null,
                         TypeNamespace = dataType.Namespace,
                         GenericArgs = MetadataTypesGenerator.ToGenericArgs(dataType),
                         DataMember = typesConfig.AddDataContractAttributes

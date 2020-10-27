@@ -714,19 +714,21 @@ namespace ServiceStack.NativeTypes
 
         public MetadataPropertyType ToProperty(PropertyInfo pi, object instance = null, Dictionary<string, object> ignoreValues = null)
         {
+            var propType = pi.PropertyType;
+            var underlyingType = Nullable.GetUnderlyingType(propType) ?? propType;
             var property = new MetadataPropertyType
             {
                 PropertyInfo = pi,
-                PropertyType = pi.PropertyType,
+                PropertyType = propType,
                 Name = pi.Name,
                 Attributes = ToAttributes(pi.GetCustomAttributes(false)),
-                Type = pi.PropertyType.GetMetadataPropertyType(),
-                IsValueType = pi.PropertyType.IsValueType.NullIfFalse(),
-                IsSystemType = pi.PropertyType.IsSystemType().NullIfFalse(),
-                IsEnum = pi.PropertyType.IsEnum.NullIfFalse(),
-                TypeNamespace = pi.PropertyType.Namespace,
+                Type = propType.GetMetadataPropertyType(),
+                IsValueType = underlyingType.IsValueType.NullIfFalse(),
+                IsSystemType = underlyingType.IsSystemType().NullIfFalse(),
+                IsEnum = underlyingType.IsEnum.NullIfFalse(),
+                TypeNamespace = propType.Namespace,
                 DataMember = ToDataMember(pi.GetDataMember()),
-                GenericArgs = ToGenericArgs(pi.PropertyType),
+                GenericArgs = ToGenericArgs(propType),
                 Description = pi.GetDescription(),
             };
 
@@ -758,7 +760,7 @@ namespace ServiceStack.NativeTypes
             {
                 var ignoreValue = ignoreValues != null && ignoreValues.TryGetValue(pi.Name, out var oValue)
                     ? oValue
-                    : pi.PropertyType.GetDefaultValue();
+                    : propType.GetDefaultValue();
                 property.Value = PropertyValue(pi, instance, ignoreValue);
 
                 if (pi.GetSetMethod() == null) //ReadOnly is bool? to minimize serialization
@@ -812,17 +814,19 @@ namespace ServiceStack.NativeTypes
 
         public MetadataPropertyType ToProperty(ParameterInfo pi)
         {
+            var paramType = pi.ParameterType;
+            var underlyingType = Nullable.GetUnderlyingType(paramType) ?? paramType;
             var propertyAttrs = pi.AllAttributes();
             var property = new MetadataPropertyType
             {
-                PropertyType = pi.ParameterType,
+                PropertyType = paramType,
                 Name = pi.Name,
                 Attributes = ToAttributes(propertyAttrs),
-                Type = pi.ParameterType.GetOperationName(),
-                IsValueType = pi.ParameterType.IsValueType.NullIfFalse(),
-                IsSystemType = pi.ParameterType.IsSystemType().NullIfFalse(),
-                IsEnum = pi.ParameterType.IsEnum.NullIfFalse(),
-                TypeNamespace = pi.ParameterType.Namespace,
+                Type = paramType.GetOperationName(),
+                IsValueType = underlyingType.IsValueType.NullIfFalse(),
+                IsSystemType = underlyingType.IsSystemType().NullIfFalse(),
+                IsEnum = underlyingType.IsEnum.NullIfFalse(),
+                TypeNamespace = paramType.Namespace,
                 Description = pi.GetDescription(),
             };
 
