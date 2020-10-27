@@ -22,18 +22,18 @@ namespace ServiceStack.Host
             this.httpRes = httpRes;
         }
 
+        private bool UseSecureCookie(bool? secureOnly) =>
+            (secureOnly ?? HostContext.Config?.UseSecureCookies ?? true) && httpRes.Request.IsSecureConnection;
+
         /// <summary>
         /// Sets a persistent cookie which never expires
         /// </summary>
         public void AddPermanentCookie(string cookieName, string cookieValue, bool? secureOnly = null)
         {
-            var cookie = new Cookie(cookieName, cookieValue, RootPath)
-            {
-                Expires = DateTime.UtcNow.AddYears(20)
+            var cookie = new Cookie(cookieName, cookieValue, RootPath) {
+                Expires = DateTime.UtcNow.AddYears(20),
+                Secure = UseSecureCookie(secureOnly)
             };
-            var secure = secureOnly.GetValueOrDefault(HostContext.Config.UseSecureCookies);
-            if (secure)
-                cookie.Secure = true;
             httpRes.SetCookie(cookie);
         }
 
@@ -42,10 +42,9 @@ namespace ServiceStack.Host
         /// </summary>
         public void AddSessionCookie(string cookieName, string cookieValue, bool? secureOnly = null)
         {
-            var cookie = new Cookie(cookieName, cookieValue, RootPath);
-            var secure = secureOnly.GetValueOrDefault(HostContext.Config.UseSecureCookies);
-            if (secure)
-                cookie.Secure = true;
+            var cookie = new Cookie(cookieName, cookieValue, RootPath) {
+                Secure = UseSecureCookie(secureOnly)
+            };
             httpRes.SetCookie(cookie);
         }
 
@@ -56,10 +55,9 @@ namespace ServiceStack.Host
         {
             var cookie = new Cookie(cookieName, string.Empty, RootPath)
             {
-                Expires = DateTime.UtcNow.AddDays(-1)
+                Expires = DateTime.UtcNow.AddDays(-1),
+                Secure = UseSecureCookie(null)
             };
-            if (HostContext.Config.UseSecureCookies)
-                cookie.Secure = true;
             httpRes.SetCookie(cookie);
         }
     }
