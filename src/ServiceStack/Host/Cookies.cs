@@ -74,6 +74,11 @@ namespace ServiceStack.Host
 
         public static void Init()
         {
+#if NET472
+            sameSiteNone = SameSiteMode.None;
+            sameSiteStrict = SameSiteMode.Strict;
+            sameSiteLax = SameSiteMode.Lax;
+#else
             // Use reflection to avoid tfm builds and binary dependency on .NET Framework v4.7.2+
             sameSiteFn = TypeProperties<HttpCookie>.GetAccessor("SameSite")?.PublicSetter;
             if (sameSiteFn != null)
@@ -86,6 +91,7 @@ namespace ServiceStack.Host
                     sameSiteLax = (Enum) Enum.Parse(sameSiteMode, "Lax");
                 }
             }
+#endif
         }
         
         public static HttpCookie ToHttpCookie(this Cookie cookie)
