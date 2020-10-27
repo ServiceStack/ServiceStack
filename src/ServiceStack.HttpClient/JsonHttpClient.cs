@@ -954,7 +954,7 @@ namespace ServiceStack
         public virtual async Task<TResponse> PostFileAsync<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType = null, CancellationToken token = default)
         {
             using var content = new MultipartFormDataContent();
-            var fileBytes = fileToUpload.ReadFully();
+            var fileBytes = await fileToUpload.ReadFullyAsync(token);
             using var fileContent = new ByteArrayContent(fileBytes, 0, fileBytes.Length);
             fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
             {
@@ -998,7 +998,7 @@ namespace ServiceStack
                 content.Add(new StringContent(value), $"\"{key}\"");
             }
 
-            var fileBytes = fileToUpload.ReadFully();
+            var fileBytes = await fileToUpload.ReadFullyAsync(token);
             using var fileContent = new ByteArrayContent(fileBytes, 0, fileBytes.Length);
             fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
             {
@@ -1056,7 +1056,7 @@ namespace ServiceStack
             for (int i = 0; i < files.Length; i++)
             {
                 var file = files[i];
-                var fileBytes = file.Stream.ReadFully();
+                var fileBytes = await file.Stream.ReadFullyAsync(token);
                 var fileContent = new ByteArrayContent(fileBytes, 0, fileBytes.Length);
                 disposables.Add(fileContent);
                 var fieldName = file.FieldName ?? $"upload{i}";

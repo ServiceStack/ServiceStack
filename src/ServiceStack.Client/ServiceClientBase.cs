@@ -298,7 +298,7 @@ namespace ServiceStack
 
         /// <summary>
         /// Gets or sets authentication information for the request.
-        /// Warning: It's recommened to use <see cref="UserName"/> and <see cref="Password"/> for basic auth.
+        /// Warning: It's recommend to use <see cref="UserName"/> and <see cref="Password"/> for basic auth.
         /// This property is only used for IIS level authentication.
         /// </summary>
         public ICredentials Credentials
@@ -339,12 +339,7 @@ namespace ServiceStack
         }
         private CookieContainer cookieContainer;
 
-        public bool AllowAutoRedirect
-        {
-            get => allowAutoRedirect;
-            set => allowAutoRedirect = value;
-        }
-        private bool allowAutoRedirect = true;
+        public bool AllowAutoRedirect { get; set; } = true;
 
         /// <summary>
         /// Called before request resend, when the initial request required authentication
@@ -1026,15 +1021,22 @@ namespace ServiceStack
             GlobalRequestFilter?.Invoke(client);
         }
 
-        private byte[] DownloadBytes(string httpMethod, string requestUri, object request)
+        public byte[] DownloadBytes(string httpMethod, string requestUri, object request)
         {
             var webRequest = SendRequest(httpMethod, requestUri, request);
-            using (var response = webRequest.GetResponse())
-            {
-                ApplyWebResponseFilters(response);
-                using (var stream = response.ResponseStream())
-                    return stream.ReadFully();
-            }
+            using var response = webRequest.GetResponse();
+            ApplyWebResponseFilters(response);
+            using var stream = response.ResponseStream();
+            return stream.ReadFully();
+        }
+
+        public async Task<byte[]> DownloadBytesAsync(string httpMethod, string requestUri, object request)
+        {
+            var webRequest = SendRequest(httpMethod, requestUri, request);
+            using var response = await webRequest.GetResponseAsync();
+            ApplyWebResponseFilters(response);
+            using var stream = response.ResponseStream();
+            return await stream.ReadFullyAsync();
         }
 
         public virtual void Publish(object requestDto)
@@ -1670,44 +1672,42 @@ namespace ServiceStack
                 webRequest.ContentType = "multipart/form-data; boundary=\"" + boundary + "\"";
                 boundary = "--" + boundary;
                 var newLine = "\r\n";
-                using (var outputStream = PclExport.Instance.GetRequestStream(webRequest))
+                using var outputStream = PclExport.Instance.GetRequestStream(webRequest);
+                foreach (var key in nameValueCollection.AllKeys)
                 {
-                    foreach (var key in nameValueCollection.AllKeys)
-                    {
-                        outputStream.Write(boundary + newLine);
-                        outputStream.Write($"Content-Disposition: form-data;name=\"{key}\"{newLine}");
-                        outputStream.Write($"Content-Type: text/plain;charset=utf-8{newLine}{newLine}");
-                        outputStream.Write(nameValueCollection[key] + newLine);
-                    }
+                    outputStream.Write(boundary + newLine);
+                    outputStream.Write($"Content-Disposition: form-data;name=\"{key}\"{newLine}");
+                    outputStream.Write($"Content-Type: text/plain;charset=utf-8{newLine}{newLine}");
+                    outputStream.Write(nameValueCollection[key] + newLine);
+                }
 
-                    var buffer = new byte[4096];
-                    for (fileCount = 0; fileCount < files.Length; fileCount++)
-                    {
-                        var file = files[fileCount];
-                        currentStreamPosition = file.Stream.Position;
-                        outputStream.Write(boundary + newLine);
-                        var fileName = file.FileName ?? $"upload{fileCount}";
-                        var fieldName = file.FieldName ?? $"upload{fileCount}";
-                        var contentType = file.ContentType ?? (file.FileName != null ? MimeTypes.GetMimeType(file.FileName) : null) ?? "application/octet-stream";
-                        outputStream.Write($"Content-Disposition: form-data;name=\"{fieldName}\";filename=\"{fileName}\"{newLine}Content-Type: {contentType}{newLine}{newLine}");
+                var buffer = new byte[4096];
+                for (fileCount = 0; fileCount < files.Length; fileCount++)
+                {
+                    var file = files[fileCount];
+                    currentStreamPosition = file.Stream.Position;
+                    outputStream.Write(boundary + newLine);
+                    var fileName = file.FileName ?? $"upload{fileCount}";
+                    var fieldName = file.FieldName ?? $"upload{fileCount}";
+                    var contentType = file.ContentType ?? (file.FileName != null ? MimeTypes.GetMimeType(file.FileName) : null) ?? "application/octet-stream";
+                    outputStream.Write($"Content-Disposition: form-data;name=\"{fieldName}\";filename=\"{fileName}\"{newLine}Content-Type: {contentType}{newLine}{newLine}");
 
-                        int byteCount;
-                        int bytesWritten = 0;
-                        while ((byteCount = file.Stream.Read(buffer, 0, 4096)) > 0)
+                    int byteCount;
+                    int bytesWritten = 0;
+                    while ((byteCount = file.Stream.Read(buffer, 0, 4096)) > 0)
+                    {
+                        outputStream.Write(buffer, 0, byteCount);
+
+                        if (OnUploadProgress != null)
                         {
-                            outputStream.Write(buffer, 0, byteCount);
-
-                            if (OnUploadProgress != null)
-                            {
-                                bytesWritten += byteCount;
-                                OnUploadProgress(bytesWritten, file.Stream.Length);
-                            }
+                            bytesWritten += byteCount;
+                            OnUploadProgress(bytesWritten, file.Stream.Length);
                         }
-
-                        outputStream.Write(newLine);
-                        if (fileCount == files.Length - 1) 
-                            outputStream.Write(boundary + "--");
                     }
+
+                    outputStream.Write(newLine);
+                    if (fileCount == files.Length - 1) 
+                        outputStream.Write(boundary + "--");
                 }
 
                 return webRequest;
@@ -1757,34 +1757,32 @@ namespace ServiceStack
                 webRequest.ContentType = "multipart/form-data; boundary=" + boundary;
                 boundary = "--" + boundary;
                 var newLine = "\r\n";
-                using (var outputStream = PclExport.Instance.GetRequestStream(webRequest))
+                using var outputStream = PclExport.Instance.GetRequestStream(webRequest);
+                foreach (var key in nameValueCollection.AllKeys)
                 {
-                    foreach (var key in nameValueCollection.AllKeys)
-                    {
-                        outputStream.Write(boundary + newLine);
-                        outputStream.Write($"Content-Disposition: form-data;name=\"{key}\"{newLine}");
-                        outputStream.Write($"Content-Type: text/plain;charset=utf-8{newLine}{newLine}");
-                        outputStream.Write(nameValueCollection[key] + newLine);
-                    }
-
                     outputStream.Write(boundary + newLine);
-                    outputStream.Write($"Content-Disposition: form-data;name=\"{fieldName}\";filename=\"{fileName}\"{newLine}{newLine}");
-                    var buffer = new byte[4096];
-                    int byteCount;
-                    int bytesWritten = 0;
-                    while ((byteCount = fileToUpload.Read(buffer, 0, 4096)) > 0)
-                    {
-                        outputStream.Write(buffer, 0, byteCount);
-
-                        if (OnUploadProgress != null)
-                        {
-                            bytesWritten += byteCount;
-                            OnUploadProgress(bytesWritten, fileToUpload.Length);
-                        }
-                    }
-                    outputStream.Write(newLine);
-                    outputStream.Write(boundary + "--");
+                    outputStream.Write($"Content-Disposition: form-data;name=\"{key}\"{newLine}");
+                    outputStream.Write($"Content-Type: text/plain;charset=utf-8{newLine}{newLine}");
+                    outputStream.Write(nameValueCollection[key] + newLine);
                 }
+
+                outputStream.Write(boundary + newLine);
+                outputStream.Write($"Content-Disposition: form-data;name=\"{fieldName}\";filename=\"{fileName}\"{newLine}{newLine}");
+                var buffer = new byte[4096];
+                int byteCount;
+                int bytesWritten = 0;
+                while ((byteCount = fileToUpload.Read(buffer, 0, 4096)) > 0)
+                {
+                    outputStream.Write(buffer, 0, byteCount);
+
+                    if (OnUploadProgress != null)
+                    {
+                        bytesWritten += byteCount;
+                        OnUploadProgress(bytesWritten, fileToUpload.Length);
+                    }
+                }
+                outputStream.Write(newLine);
+                outputStream.Write(boundary + "--");
 
                 return webRequest;
             }
@@ -1881,20 +1879,18 @@ namespace ServiceStack
                 return (TResponse)(object)webResponse.ResponseStream();
             }
 
-            using (var responseStream = webResponse.ResponseStream())
+            using var responseStream = webResponse.ResponseStream();
+            if (typeof(TResponse) == typeof(string))
             {
-                if (typeof(TResponse) == typeof(string))
-                {
-                    return (TResponse)(object)responseStream.ReadToEnd();
-                }
-                if (typeof(TResponse) == typeof(byte[]))
-                {
-                    return (TResponse)(object)responseStream.ReadFully();
-                }
-
-                var response = DeserializeFromStream<TResponse>(responseStream);
-                return response;
+                return (TResponse)(object)responseStream.ReadToEnd();
             }
+            if (typeof(TResponse) == typeof(byte[]))
+            {
+                return (TResponse)(object)responseStream.ReadFully();
+            }
+
+            var response = DeserializeFromStream<TResponse>(responseStream);
+            return response;
         }
 
         public void Dispose() { }
@@ -1914,10 +1910,8 @@ namespace ServiceStack
         public static TResponse PostFile<TResponse>(this IRestClient client,
             string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
         {
-            using (FileStream fileStream = fileToUpload.OpenRead())
-            {
-                return client.PostFile<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, mimeType);
-            }
+            using var fileStream = fileToUpload.OpenRead();
+            return client.PostFile<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, mimeType);
         }
 
         public static TResponse PostFileWithRequest<TResponse>(this IRestClient client,
@@ -1929,10 +1923,8 @@ namespace ServiceStack
         public static TResponse PostFileWithRequest<TResponse>(this IRestClient client,
             string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request, string fieldName = "upload")
         {
-            using (FileStream fileStream = fileToUpload.OpenRead())
-            {
-                return client.PostFileWithRequest<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, request, fieldName);
-            }
+            using var fileStream = fileToUpload.OpenRead();
+            return client.PostFileWithRequest<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, request, fieldName);
         }
 
         public static void PopulateRequestMetadatas(this IHasSessionId client, IEnumerable<object> requests)
