@@ -19,6 +19,9 @@ namespace ServiceStack
             Executor = executor ?? throw new ArgumentNullException(nameof(executor));
         }
 
+        public virtual Task<TResponse> ExecuteAsync<TResponse>(IReturn<TResponse> requestDto, IRequest req) =>
+            ExecuteAsync<TResponse>((object) requestDto, req);
+        
         public virtual async Task<TResponse> ExecuteAsync<TResponse>(object requestDto, IRequest req)
         {
             try
