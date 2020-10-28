@@ -341,10 +341,9 @@ namespace ServiceStack
         public Dictionary<string, object> Items { get; set; }
         [IgnoreDataMember]
         public MetadataOperationType RequestType { get; set; }
-        // [IgnoreDataMember, Obsolete("Use MetadataOperationType.ReturnVoidMarker")]
-        // public bool ReturnVoidMarker => RequestType?.ReturnVoidMarker == true;
-        // [IgnoreDataMember, Obsolete("Use MetadataOperationType.ReturnMarkerTypeName")]
-        // public MetadataTypeName ReturnMarkerTypeName => RequestType?.ReturnMarkerTypeName;
+
+        [IgnoreDataMember]
+        public bool IsClass => Type?.IsClass ?? !(IsEnum == true || IsInterface == true);
         
         public string Name { get; set; }
         public string Namespace { get; set; }
