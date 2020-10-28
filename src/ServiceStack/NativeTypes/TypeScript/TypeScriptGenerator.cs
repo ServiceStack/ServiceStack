@@ -27,6 +27,9 @@ namespace ServiceStack.NativeTypes.TypeScript
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
         
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
+        
         public static List<string> DefaultImports = new List<string>
         {
         };
@@ -545,7 +548,10 @@ namespace ServiceStack.NativeTypes.TypeScript
                     wasAdded = AppendComments(sb, prop.Description);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
+
+                    PrePropertyFilter?.Invoke(sb, prop, type);
                     sb.AppendLine(modifier + "{1}{2}: {0};".Fmt(propType, prop.Name.SafeToken().PropertyStyle(), optional));
+                    PostPropertyFilter?.Invoke(sb, prop, type);
                 }
             }
 

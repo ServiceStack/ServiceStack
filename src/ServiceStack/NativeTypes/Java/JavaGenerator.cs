@@ -22,6 +22,8 @@ namespace ServiceStack.NativeTypes.Java
 
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
 
         public static string DefaultGlobalNamespace = "dtos";
 
@@ -476,6 +478,7 @@ namespace ServiceStack.NativeTypes.Java
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
+                    PrePropertyFilter?.Invoke(sb, prop, type);
                     if (!fieldName.IsKeyWord())
                     {
                         sb.AppendLine("public {0} {1} = null;".Fmt(propType, fieldName));
@@ -483,9 +486,10 @@ namespace ServiceStack.NativeTypes.Java
                     else
                     {
                         var originalName = fieldName;
-                        fieldName = Char.ToUpper(fieldName[0]) + fieldName.SafeSubstring(1);
+                        fieldName = char.ToUpper(fieldName[0]) + fieldName.SafeSubstring(1);
                         sb.AppendLine("@SerializedName(\"{0}\") public {1} {2} = null;".Fmt(originalName, propType, fieldName));
                     }
+                    PostPropertyFilter?.Invoke(sb, prop, type);
 
                     if (addPropertyAccessors)
                         sbAccessors.AppendPropertyAccessor(propType, fieldName, accessorName, settersReturnType);

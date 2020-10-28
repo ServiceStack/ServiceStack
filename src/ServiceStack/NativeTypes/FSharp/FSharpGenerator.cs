@@ -22,6 +22,8 @@ namespace ServiceStack.NativeTypes.FSharp
 
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
 
         public static Dictionary<string, string> TypeAliases = new Dictionary<string, string> 
         {
@@ -303,6 +305,7 @@ namespace ServiceStack.NativeTypes.FSharp
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
+                    PrePropertyFilter?.Invoke(sb, prop, type);
                     if (!type.IsInterface())
                     {
                         sb.AppendLine("member val {1}:{0} = {2} with get,set".Fmt(
@@ -313,6 +316,7 @@ namespace ServiceStack.NativeTypes.FSharp
                         sb.AppendLine("abstract {1}:{0} with get,set".Fmt(
                             propType, prop.Name.SafeToken()));                        
                     }
+                    PostPropertyFilter?.Invoke(sb, prop, type);
                 }
             }
 

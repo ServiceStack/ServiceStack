@@ -24,6 +24,8 @@ namespace ServiceStack.NativeTypes.Kotlin
 
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
 
         public static List<string> DefaultImports = new List<string>
         {
@@ -446,6 +448,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                     var initProp = initCollections && !prop.GenericArgs.IsEmpty() &&
                                    (ArrayTypes.Contains(prop.Type) || DictionaryTypes.Contains(prop.Type));
 
+                    PrePropertyFilter?.Invoke(sb, prop, type);
                     if (!fieldName.IsKeyWord())
                     {
                         sb.AppendLine(!initProp
@@ -460,6 +463,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                             ? $"@SerializedName(\"{originalName}\") var {fieldName}:{propType}?{defaultValue}"
                             : $"@SerializedName(\"{originalName}\") var {fieldName}:{propType} = {propType}()");
                     }
+                    PostPropertyFilter?.Invoke(sb, prop, type);
                 }
             }
 

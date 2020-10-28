@@ -23,6 +23,8 @@ namespace ServiceStack.NativeTypes.VbNet
 
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
 
         public static Dictionary<string, string> TypeAliases = new Dictionary<string, string>
         {
@@ -462,11 +464,13 @@ namespace ServiceStack.NativeTypes.VbNet
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
                     var visibility = type.IsInterface() ? "" : "Public ";
+                    PrePropertyFilter?.Invoke(sb, prop, type);
                     sb.AppendLine("{0}{1}Property {2} As {3}".Fmt(
                         visibility,
                         @virtual,
                         EscapeKeyword(prop.Name).SafeToken(), 
                         propType));
+                    PostPropertyFilter?.Invoke(sb, prop, type);
                 }
             }
 

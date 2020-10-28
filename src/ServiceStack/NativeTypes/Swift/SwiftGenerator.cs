@@ -24,6 +24,8 @@ namespace ServiceStack.NativeTypes.Swift
 
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
 
         public static List<string> DefaultImports = new List<string>
         {
@@ -667,6 +669,7 @@ namespace ServiceStack.NativeTypes.Swift
                 wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                 wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
+                PrePropertyFilter?.Invoke(sb, prop, type);
                 if (type.IsInterface())
                 {
                     sb.AppendLine("var {0}:{1}{2} {{ get set }}".Fmt(
@@ -677,6 +680,7 @@ namespace ServiceStack.NativeTypes.Swift
                     sb.AppendLine("public var {0}:{1}{2}{3}".Fmt(
                         prop.Name.SafeToken().PropertyStyle(), propTypeName, optional, defaultValue));
                 }
+                PostPropertyFilter?.Invoke(sb, prop, type);
             }
 
             if (includeResponseStatus)

@@ -23,6 +23,8 @@ namespace ServiceStack.NativeTypes.CSharp
         
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
 
         public static Dictionary<string, string> TypeAliases = new Dictionary<string, string> 
         {
@@ -423,7 +425,9 @@ namespace ServiceStack.NativeTypes.CSharp
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
                     var visibility = type.IsInterface() ? "" : "public ";
+                    PrePropertyFilter?.Invoke(sb, prop, type);
                     sb.AppendLine($"{visibility}{virt}{propType} {prop.Name.SafeToken()} {{ get; set; }}");
+                    PostPropertyFilter?.Invoke(sb, prop, type);
                 }
             }
 

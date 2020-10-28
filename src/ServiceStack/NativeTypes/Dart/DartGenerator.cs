@@ -25,6 +25,8 @@ namespace ServiceStack.NativeTypes.Dart
 
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
 
         public static List<string> DefaultImports = new List<string>
         {
@@ -827,7 +829,9 @@ namespace ServiceStack.NativeTypes.Dart
                     wasAdded = AppendComments(sb, prop.Description);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
+                    PrePropertyFilter?.Invoke(sb, prop, type);
                     sb.AppendLine($"{propType} {prop.Name.SafeToken().PropertyStyle().PropertyName()};");
+                    PostPropertyFilter?.Invoke(sb, prop, type);
                 }
             }
 
