@@ -20,6 +20,7 @@ namespace ServiceStack
     {
         public Lang Lang { get; set; }
         public string[] Statements { get; set; }
+        public EmitCodeAttribute(Lang lang, string statement) : this(lang, new[] {statement}) {}
         public EmitCodeAttribute(Lang lang, string[] statements)
         {
             Lang = lang;
