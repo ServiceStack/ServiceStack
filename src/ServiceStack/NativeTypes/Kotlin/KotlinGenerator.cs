@@ -310,6 +310,7 @@ namespace ServiceStack.NativeTypes.Kotlin
 
             var typeName = Type(type.Name, type.GenericArgs);
 
+            sb.Emit(type, Lang.Kotlin);
             PreTypeFilter?.Invoke(sb, type);
 
             if (type.IsEnum.GetValueOrDefault())
@@ -448,6 +449,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                     var initProp = initCollections && !prop.GenericArgs.IsEmpty() &&
                                    (ArrayTypes.Contains(prop.Type) || DictionaryTypes.Contains(prop.Type));
 
+                    sb.Emit(prop, Lang.Kotlin);
                     PrePropertyFilter?.Invoke(sb, prop, type);
                     if (!fieldName.IsKeyWord())
                     {

@@ -1575,5 +1575,37 @@ namespace ServiceStack.NativeTypes
             var directInterfaces = type.GetInterfaces().Except(childInterfaces);
             return directInterfaces.ToArray();
         }
+
+        public static void Emit(this StringBuilderWrapper sb, MetadataType type, Lang lang)
+        {
+            var attrs = type.Type?.AllAttributes<EmitCodeAttribute>()
+                ?.Where(x => x.Lang.HasFlag(lang));
+            if (attrs != null)
+            {
+                foreach (var attr in attrs)
+                {
+                    foreach (var statement in attr.Statements)
+                    {
+                        sb.AppendLine(statement);
+                    }
+                }
+            }
+        }
+        
+        public static void Emit(this StringBuilderWrapper sb, MetadataPropertyType propType, Lang lang)
+        {
+            var attrs = propType.PropertyInfo?.AllAttributes<EmitCodeAttribute>()
+                ?.Where(x => x.Lang.HasFlag(lang));
+            if (attrs != null)
+            {
+                foreach (var attr in attrs)
+                {
+                    foreach (var statement in attr.Statements)
+                    {
+                        sb.AppendLine(statement);
+                    }
+                }
+            }
+        }
     }
 }

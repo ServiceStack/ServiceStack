@@ -275,6 +275,7 @@ namespace ServiceStack.NativeTypes.Swift
             AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);
 
+            sb.Emit(type, Lang.Swift);
             PreTypeFilter?.Invoke(sb, type);
 
             if (type.IsEnum.GetValueOrDefault())
@@ -669,6 +670,7 @@ namespace ServiceStack.NativeTypes.Swift
                 wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                 wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
+                sb.Emit(prop, Lang.Swift);
                 PrePropertyFilter?.Invoke(sb, prop, type);
                 if (type.IsInterface())
                 {

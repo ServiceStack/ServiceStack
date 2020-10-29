@@ -324,6 +324,7 @@ namespace ServiceStack.NativeTypes.Java
 
             var typeName = Type(type.Name, type.GenericArgs);
 
+            sb.Emit(type, Lang.Java);
             PreTypeFilter?.Invoke(sb, type);
 
             if (type.IsEnum.GetValueOrDefault())
@@ -478,6 +479,7 @@ namespace ServiceStack.NativeTypes.Java
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
+                    sb.Emit(prop, Lang.Java);
                     PrePropertyFilter?.Invoke(sb, prop, type);
                     if (!fieldName.IsKeyWord())
                     {

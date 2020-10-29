@@ -265,6 +265,7 @@ namespace ServiceStack.NativeTypes.CSharp
 
             var typeAccessor = !Config.MakeInternal ? "public" : "internal";
 
+            sb.Emit(type, Lang.CSharp);
             PreTypeFilter?.Invoke(sb, type);
 
             if (type.IsEnum.GetValueOrDefault())
@@ -425,6 +426,8 @@ namespace ServiceStack.NativeTypes.CSharp
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
                     var visibility = type.IsInterface() ? "" : "public ";
+                    
+                    sb.Emit(prop, Lang.CSharp);
                     PrePropertyFilter?.Invoke(sb, prop, type);
                     sb.AppendLine($"{visibility}{virt}{propType} {prop.Name.SafeToken()} {{ get; set; }}");
                     PostPropertyFilter?.Invoke(sb, prop, type);

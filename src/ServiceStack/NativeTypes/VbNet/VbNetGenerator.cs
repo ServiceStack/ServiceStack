@@ -301,6 +301,7 @@ namespace ServiceStack.NativeTypes.VbNet
             if (Config.AddGeneratedCodeAttributes)
                 sb.AppendLine($"<GeneratedCode(\"AddServiceStackReference\", \"{Env.VersionString}\")>");
 
+            sb.Emit(type, Lang.Vb);
             PreTypeFilter?.Invoke(sb, type);
 
             if (type.IsEnum.GetValueOrDefault())
@@ -464,6 +465,8 @@ namespace ServiceStack.NativeTypes.VbNet
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
                     var visibility = type.IsInterface() ? "" : "Public ";
+
+                    sb.Emit(prop, Lang.Vb);
                     PrePropertyFilter?.Invoke(sb, prop, type);
                     sb.AppendLine("{0}{1}Property {2} As {3}".Fmt(
                         visibility,

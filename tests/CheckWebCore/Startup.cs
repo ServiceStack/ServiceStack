@@ -398,9 +398,23 @@ namespace CheckWebCore
         public decimal ScalePrecision { get; set; }
     }
 
+    [EmitCSharp("[Validate]","[Serializable]")]
+    [EmitTypeScript("@Validate()", "@Serializable()")]
+    [EmitCode(Lang.Dart | Lang.Java | Lang.Swift, new[]{ "@validate()", "@serializable()" })]
+    public class EmitCode : IReturn<EmitCode>
+    {
+        [EmitCSharp("[Validate]","[Serializable]")]
+        public string CSharp { get; set; }
+        [EmitTypeScript("@Validate()", "@Serializable()")]
+        public string TypeScript { get; set; }
+        [EmitCode(Lang.Dart | Lang.Java | Lang.Swift, new[]{ "@validate()", "@serializable()" })]
+        public string DartJavaSwift { get; set; }
+    }
+
     //    [Authenticate]
     public class MyServices : Service
     {
+        public object Any(EmitCode request) => request;
         public object Any(CreateBookings request) => new CreateBookingsResponse();
         
         public object Any(Dummy request) => request;

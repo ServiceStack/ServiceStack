@@ -320,6 +320,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);
 
+            sb.Emit(type, Lang.TypeScript);
             PreTypeFilter?.Invoke(sb, type);
 
             if (type.IsEnum.GetValueOrDefault())
@@ -549,6 +550,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
+                    sb.Emit(prop, Lang.TypeScript);
                     PrePropertyFilter?.Invoke(sb, prop, type);
                     sb.AppendLine(modifier + "{1}{2}: {0};".Fmt(propType, prop.Name.SafeToken().PropertyStyle(), optional));
                     PostPropertyFilter?.Invoke(sb, prop, type);

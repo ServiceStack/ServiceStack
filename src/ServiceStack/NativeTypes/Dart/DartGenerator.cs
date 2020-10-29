@@ -390,6 +390,7 @@ namespace ServiceStack.NativeTypes.Dart
             AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);
 
+            sb.Emit(type, Lang.Dart);
             PreTypeFilter?.Invoke(sb, type);
 
             if (type.IsEnum.GetValueOrDefault())
@@ -829,6 +830,8 @@ namespace ServiceStack.NativeTypes.Dart
                     wasAdded = AppendComments(sb, prop.Description);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
+
+                    sb.Emit(prop, Lang.Dart);
                     PrePropertyFilter?.Invoke(sb, prop, type);
                     sb.AppendLine($"{propType} {prop.Name.SafeToken().PropertyStyle().PropertyName()};");
                     PostPropertyFilter?.Invoke(sb, prop, type);

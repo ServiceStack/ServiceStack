@@ -215,6 +215,7 @@ namespace ServiceStack.NativeTypes.FSharp
                 sb.AppendLine("[<GeneratedCode(\"AddServiceStackReference\", \"{0}\")>]".Fmt(Env.VersionString));
             }
 
+            sb.Emit(type, Lang.FSharp);
             PreTypeFilter?.Invoke(sb, type);
 
             if (type.IsEnum.GetValueOrDefault())
@@ -305,6 +306,7 @@ namespace ServiceStack.NativeTypes.FSharp
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
+                    sb.Emit(prop, Lang.FSharp);
                     PrePropertyFilter?.Invoke(sb, prop, type);
                     if (!type.IsInterface())
                     {
