@@ -398,23 +398,21 @@ namespace CheckWebCore
         public decimal ScalePrecision { get; set; }
     }
 
-    [EmitCSharp("[Validate]","[Serializable]")]
-    [EmitTypeScript("@Validate()", "@Serializable()")]
-    [EmitCode(Lang.Dart | Lang.Java | Lang.Swift, new[]{ "@validate()", "@serializable()" })]
-    public class EmitCode : IReturn<EmitCode>
+    [EmitCSharp("[Validate]")]
+    [EmitTypeScript("@Validate()")]
+    [EmitCode(Lang.Swift | Lang.Dart, "@validate()")]
+    public class User : IReturn<User>
     {
-        [EmitCSharp("[Validate]","[Serializable]")]
-        public string CSharp { get; set; }
-        [EmitTypeScript("@Validate()", "@Serializable()")]
-        public string TypeScript { get; set; }
-        [EmitCode(Lang.Dart | Lang.Java | Lang.Swift, new[]{ "@validate()", "@serializable()" })]
-        public string DartJavaSwift { get; set; }
+        [EmitCSharp("[IsNotEmpty]","[IsEmail]")]
+        [EmitTypeScript("@IsNotEmpty()", "@IsEmail()")]
+        [EmitCode(Lang.Swift | Lang.Dart, new[]{ "@isNotEmpty()", "@isEmail()" })]
+        public string Email { get; set; }
     }
 
     //    [Authenticate]
     public class MyServices : Service
     {
-        public object Any(EmitCode request) => request;
+        public object Any(User request) => request;
         public object Any(CreateBookings request) => new CreateBookingsResponse();
         
         public object Any(Dummy request) => request;
