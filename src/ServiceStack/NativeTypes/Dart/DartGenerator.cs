@@ -24,6 +24,7 @@ namespace ServiceStack.NativeTypes.Dart
         }
 
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataType> InnerTypeFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
@@ -524,6 +525,7 @@ namespace ServiceStack.NativeTypes.Dart
                 sb.AppendLine("{");
 
                 sb = sb.Indent();
+                InnerTypeFilter?.Invoke(sb, type);
 
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest && !isAbstractClass;
                 if (addVersionInfo)

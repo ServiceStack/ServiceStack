@@ -1534,7 +1534,7 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Return the [Route] attributes for this Requesty DTO Type
+        /// Return the [Route] attributes for this Request DTO Type
         /// </summary>
         public virtual RouteAttribute[] GetRouteAttributes(Type requestType)
         {

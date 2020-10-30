@@ -25,6 +25,7 @@ namespace ServiceStack.NativeTypes.TypeScript
         public static bool EmitPartialConstructors { get; set; } = true;
 
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataType> InnerTypeFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
         
         public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
@@ -467,6 +468,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 sb.AppendLine("{");
 
                 sb = sb.Indent();
+                InnerTypeFilter?.Invoke(sb, type);
 
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
                 if (addVersionInfo)

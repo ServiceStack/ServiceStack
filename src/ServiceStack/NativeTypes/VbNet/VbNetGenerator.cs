@@ -22,6 +22,7 @@ namespace ServiceStack.NativeTypes.VbNet
         }
 
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataType> InnerTypeFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
@@ -378,6 +379,7 @@ namespace ServiceStack.NativeTypes.VbNet
                 }
 
                 sb = sb.Indent();
+                InnerTypeFilter?.Invoke(sb, type);
 
                 AddConstructor(sb, type, options);
                 AddProperties(sb, type,
