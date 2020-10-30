@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Funq;
@@ -1488,6 +1489,18 @@ namespace ServiceStack
         /// Override to intercept MQ Requests
         /// </summary>
         public virtual object ExecuteMessage(IMessage dto, IRequest req) => ServiceController.ExecuteMessage(dto, req);
+
+        /// <summary>
+        /// Override to intercept MQ Requests
+        /// </summary>
+        public Task<object> ExecuteMessageAsync(IMessage mqMessage, CancellationToken token=default) =>
+            ServiceController.ExecuteMessageAsync(mqMessage, token);
+
+        /// <summary>
+        /// Override to intercept MQ Requests
+        /// </summary>
+        public Task<object> ExecuteMessageAsync(IMessage mqMessage, IRequest req, CancellationToken token=default) =>
+            ServiceController.ExecuteMessageAsync(mqMessage, req, token);
 
         /// <summary>
         /// Manually register ServiceStack Service at these routes

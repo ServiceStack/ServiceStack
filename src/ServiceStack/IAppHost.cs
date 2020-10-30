@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Funq;
@@ -337,6 +338,11 @@ namespace ServiceStack
         /// Execute MQ Message in ServiceStack
         /// </summary>
         object ExecuteMessage(IMessage mqMessage);
+
+        /// <summary>
+        /// Execute MQ Message in ServiceStack
+        /// </summary>
+        Task<object> ExecuteMessageAsync(IMessage mqMessage, CancellationToken token=default);
         
         /// <summary>
         /// Access Service Controller for ServiceStack

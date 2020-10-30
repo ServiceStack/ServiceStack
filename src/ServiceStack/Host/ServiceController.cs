@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using ServiceStack.Auth;
@@ -561,6 +562,14 @@ namespace ServiceStack.Host
         }
 
         /// <summary>
+        /// Execute MQ
+        /// </summary>
+        public Task<object> ExecuteMessageAsync(IMessage mqMessage, CancellationToken token=default)
+        {
+            return ExecuteMessageAsync(mqMessage, new BasicRequest(mqMessage), token);
+        }
+
+        /// <summary>
         /// Execute MQ with requestContext
         /// </summary>
         public object ExecuteMessage(IMessage dto, IRequest req)
@@ -582,6 +591,34 @@ namespace ServiceStack.Host
                 response = taskResponse.GetResult();
 
             response = appHost.ApplyResponseConvertersAsync(req, response).GetAwaiter().GetResult();
+
+            if (appHost.ApplyMessageResponseFilters(req, req.Response, response))
+                response = req.Response.Dto;
+
+            req.Response.EndMqRequest();
+
+            return response;
+        }
+
+        /// <summary>
+        /// Execute MQ with requestContext
+        /// </summary>
+        public async Task<object> ExecuteMessageAsync(IMessage dto, IRequest req, CancellationToken token=default)
+        {
+            RequestContext.Instance.StartRequestContext();
+#if NETSTANDARD2_0
+            using var scope = req.StartScope();
+#endif
+            
+            req.PopulateFromRequestIfHasSessionId(dto.Body);
+
+            req.Dto = await appHost.ApplyRequestConvertersAsync(req, dto.Body).ConfigAwait();
+            if (appHost.ApplyMessageRequestFilters(req, req.Response, dto.Body))
+                return req.Response.Dto;
+
+            var response = await ExecuteAsync(dto.Body, req);
+
+            response = await appHost.ApplyResponseConvertersAsync(req, response).ConfigAwait();
 
             if (appHost.ApplyMessageResponseFilters(req, req.Response, response))
                 response = req.Response.Dto;
