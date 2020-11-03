@@ -56,13 +56,13 @@ namespace ServiceStack
             {
                 filter(req, request);
                 if (req.Response.IsClosed)
-                    return default(TResponse);
+                    return default;
             }
             foreach (var filter in HostContext.AppHost.GatewayRequestFiltersAsyncArray)
             {
                 filter(req, request).Wait();
                 if (req.Response.IsClosed)
-                    return default(TResponse);
+                    return default;
             }
 
             ExecValidators(request).Wait();
@@ -99,13 +99,13 @@ namespace ServiceStack
             {
                 filter(req, responseDto);
                 if (req.Response.IsClosed)
-                    return default(TResponse);
+                    return default;
             }
             foreach (var filter in HostContext.AppHost.GatewayResponseFiltersAsyncArray)
             {
                 filter(req, responseDto).Wait();
                 if (req.Response.IsClosed)
-                    return default(TResponse);
+                    return default;
             }
 
             return responseDto;

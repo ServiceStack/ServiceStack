@@ -51,6 +51,8 @@ namespace ServiceStack
         T ResolveService<T>();
 
         IServiceGateway Gateway { get; }
+        
+        RpcGateway RpcGateway { get; }
 
         object Execute(IRequest request);
 
@@ -169,6 +171,9 @@ namespace ServiceStack
 
         private IServiceGateway gateway;
         public virtual IServiceGateway Gateway => gateway ??= HostContext.AppHost.GetServiceGateway(Request);
+
+        private RpcGateway rpcGateway;
+        public RpcGateway RpcGateway => rpcGateway ??= HostContext.AppHost.RpcGateway;
 
         public object Execute(object requestDto)
         {

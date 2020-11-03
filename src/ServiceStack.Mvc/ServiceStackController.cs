@@ -227,6 +227,7 @@ namespace ServiceStack.Mvc
         public virtual object ForwardRequestToServiceStack(IRequest request = null) => ServiceStackProvider.Execute(request ?? ServiceStackProvider.Request);
 
         public virtual IServiceGateway Gateway => ServiceStackProvider.Gateway;
+        public virtual RpcGateway RpcGateway => ServiceStackProvider.RpcGateway;
 
         private bool hasDisposed = false;
         protected override void Dispose(bool disposing)

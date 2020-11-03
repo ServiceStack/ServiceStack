@@ -148,7 +148,9 @@ namespace ServiceStack.AspNet
             ServiceStackProvider.Execute(request ?? ServiceStackProvider.Request);
 
         public virtual IServiceGateway Gateway => ServiceStackProvider.Gateway;
-
+        
+        public virtual RpcGateway RpcGateway => ServiceStackProvider.RpcGateway;
+        
         private bool hasDisposed;
         public override void Dispose()
         {
