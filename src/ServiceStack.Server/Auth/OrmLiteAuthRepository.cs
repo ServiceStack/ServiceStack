@@ -38,18 +38,14 @@ namespace ServiceStack.Auth
 
         public override void Exec(Action<IDbConnection> fn)
         {
-            using (var db = OpenDbConnection())
-            {
-                fn(db);
-            }
+            using var db = OpenDbConnection();
+            fn(db);
         }
 
         public override T Exec<T>(Func<IDbConnection, T> fn)
         {
-            using (var db = OpenDbConnection())
-            {
-                return fn(db);
-            }
+            using var db = OpenDbConnection();
+            return fn(db);
         }
     }
 
@@ -401,18 +397,15 @@ namespace ServiceStack.Auth
 
         public virtual void DeleteUserAuth(string userAuthId)
         {
-            Exec(db =>
-            {
-                using (var trans = db.OpenTransaction())
-                {
-                    var userId = int.Parse(userAuthId);
+            Exec(db => {
+                using var trans = db.OpenTransaction();
+                var userId = int.Parse(userAuthId);
 
-                    db.Delete<TUserAuth>(x => x.Id == userId);
-                    db.Delete<TUserAuthDetails>(x => x.UserAuthId == userId);
-                    db.Delete<UserAuthRole>(x => x.UserAuthId == userId);
+                db.Delete<TUserAuth>(x => x.Id == userId);
+                db.Delete<TUserAuthDetails>(x => x.UserAuthId == userId);
+                db.Delete<UserAuthRole>(x => x.UserAuthId == userId);
 
-                    trans.Commit();
-                }
+                trans.Commit();
             });
         }
 
@@ -817,10 +810,7 @@ namespace ServiceStack.Auth
 
         public ApiKey GetApiKey(string apiKey)
         {
-            return Exec(db =>
-            {
-                return db.SingleById<ApiKey>(apiKey);
-            });
+            return Exec(db => db.SingleById<ApiKey>(apiKey));
         }
 
         public List<ApiKey> GetUserApiKeys(string userId)

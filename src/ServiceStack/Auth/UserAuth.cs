@@ -105,7 +105,7 @@ namespace ServiceStack.Auth
         public virtual Dictionary<string, string> Meta { get; set; }
     }
 
-    public class UserAuthRole
+    public class UserAuthRole : IMeta
     {
         [AutoIncrement]
         public virtual int Id { get; set; }
