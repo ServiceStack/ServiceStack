@@ -45,24 +45,24 @@ namespace ServiceStack
                 switch (applyAttr.Name)
                 {
                     case Behavior.AuditQuery:
-                        meta.AddFilterAttribute(new AutoFilterAttribute(
+                        meta.Add(new AutoFilterAttribute(
                             QueryTerm.Ensure, nameof(AuditBase.DeletedDate), SqlTemplate.IsNull));
                         break;
                     case Behavior.AuditCreate:
                     case Behavior.AuditModify:
                         if (applyAttr.Name == Behavior.AuditCreate)
                         {
-                            meta.AddPopulateAttribute(new AutoPopulateAttribute(nameof(AuditBase.CreatedDate)) {
+                            meta.Add(new AutoPopulateAttribute(nameof(AuditBase.CreatedDate)) {
                                 Eval = "utcNow"
                             });
-                            meta.AddPopulateAttribute(new AutoPopulateAttribute(nameof(AuditBase.CreatedBy)) {
+                            meta.Add(new AutoPopulateAttribute(nameof(AuditBase.CreatedBy)) {
                                 Eval = "userAuthName"
                             });
                         }
-                        meta.AddPopulateAttribute(new AutoPopulateAttribute(nameof(AuditBase.ModifiedDate)) {
+                        meta.Add(new AutoPopulateAttribute(nameof(AuditBase.ModifiedDate)) {
                             Eval = "utcNow"
                         });
-                        meta.AddPopulateAttribute(new AutoPopulateAttribute(nameof(AuditBase.ModifiedBy)) {
+                        meta.Add(new AutoPopulateAttribute(nameof(AuditBase.ModifiedBy)) {
                             Eval = "userAuthName"
                         });
                         break;
@@ -71,10 +71,10 @@ namespace ServiceStack
                         if (applyAttr.Name == Behavior.AuditSoftDelete)
                             meta.SoftDelete = true;
 
-                        meta.AddPopulateAttribute(new AutoPopulateAttribute(nameof(AuditBase.DeletedDate)) {
+                        meta.Add(new AutoPopulateAttribute(nameof(AuditBase.DeletedDate)) {
                             Eval = "utcNow"
                         });
-                        meta.AddPopulateAttribute(new AutoPopulateAttribute(nameof(AuditBase.DeletedBy)) {
+                        meta.Add(new AutoPopulateAttribute(nameof(AuditBase.DeletedBy)) {
                             Eval = "userAuthName"
                         });
                         break;
@@ -254,11 +254,11 @@ namespace ServiceStack
             {
                 if (dtoAttr is AutoPopulateAttribute populateAttr)
                 {
-                    to.AddPopulateAttribute(populateAttr);
+                    to.Add(populateAttr);
                 }
                 else if (dtoAttr is AutoFilterAttribute filterAttr)
                 {
-                    to.AddFilterAttribute(filterAttr);
+                    to.Add(filterAttr);
                 }
                 else if (dtoAttr is AutoApplyAttribute applyAttr)
                 {
@@ -274,18 +274,18 @@ namespace ServiceStack
             
                 if (allAttrs.FirstOrDefault(x => x is AutoMapAttribute) is AutoMapAttribute mapAttr)
                 {
-                    to.AddPropertyMapAttribute(propName, mapAttr);
+                    to.Set(propName, mapAttr);
                     propName = mapAttr.To;
                 }
 
                 if (allAttrs.FirstOrDefault(x => x is AutoUpdateAttribute) is AutoUpdateAttribute updateAttr)
                 {
-                    to.AddUpdateAttribute(propName, updateAttr);
+                    to.Set(propName, updateAttr);
                 }
 
                 if (allAttrs.FirstOrDefault(x => x is AutoDefaultAttribute) is AutoDefaultAttribute defaultAttr)
                 {
-                    to.AddDefaultAttribute(propName, defaultAttr);
+                    to.Set(propName, defaultAttr);
                 }
 
                 if (pi.PropertyType.IsNullableType())
@@ -318,12 +318,6 @@ namespace ServiceStack
             return cache[dtoType] = to;
         }
 
-        public void AddPropertyMapAttribute(string propName, AutoMapAttribute mapAttr)
-        {
-            MapAttrs ??= new Dictionary<string, AutoMapAttribute>();
-            MapAttrs[propName] = mapAttr;
-        }
-
         public void AddDtoPropertyToRemove(PropertyInfo pi)
         {
             RemoveDtoProps ??= new List<string>();
@@ -336,25 +330,31 @@ namespace ServiceStack
             NullableProps.Add(propName);
         }
 
-        public void AddDefaultAttribute(string propName, AutoDefaultAttribute defaultAttr)
+        public void Set(string propName, AutoMapAttribute mapAttr)
+        {
+            MapAttrs ??= new Dictionary<string, AutoMapAttribute>();
+            MapAttrs[propName] = mapAttr;
+        }
+
+        public void Set(string propName, AutoDefaultAttribute defaultAttr)
         {
             DefaultAttrs ??= new Dictionary<string, AutoDefaultAttribute>();
             DefaultAttrs[propName] = defaultAttr;
         }
 
-        public void AddUpdateAttribute(string propName, AutoUpdateAttribute updateAttr)
+        public void Set(string propName, AutoUpdateAttribute updateAttr)
         {
             UpdateAttrs ??= new Dictionary<string, AutoUpdateAttribute>();
             UpdateAttrs[propName] = updateAttr;
         }
 
-        public void AddPopulateAttribute(AutoPopulateAttribute populateAttr)
+        public void Add(AutoPopulateAttribute populateAttr)
         {
             PopulateAttrs ??= new List<AutoPopulateAttribute>();
             PopulateAttrs.Add(populateAttr);
         }
 
-        public void AddFilterAttribute(AutoFilterAttribute filterAttr)
+        public void Add(AutoFilterAttribute filterAttr)
         {
             AutoFilters ??= new List<AutoFilterAttribute>();
             AutoFiltersDbFields ??= new List<QueryDbFieldAttribute>();
