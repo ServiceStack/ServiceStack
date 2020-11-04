@@ -318,6 +318,9 @@ namespace ServiceStack
             return cache[dtoType] = to;
         }
 
+        public bool HasAutoApply(string name) => 
+            AutoApplyAttrs != null && AutoApplyAttrs.Any(x => x.Name == name);
+
         public void AddDtoPropertyToRemove(PropertyInfo pi)
         {
             RemoveDtoProps ??= new List<string>();
