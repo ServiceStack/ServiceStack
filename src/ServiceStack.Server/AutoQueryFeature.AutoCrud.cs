@@ -42,41 +42,42 @@ namespace ServiceStack
         {
             foreach (var applyAttr in meta.AutoApplyAttrs.Safe())
             {
-                var name = applyAttr.Name;
-                if (name == Behavior.AuditQuery)
+                switch (applyAttr.Name)
                 {
-                    meta.AddFilterAttribute(new AutoFilterAttribute(
-                        QueryTerm.Ensure, nameof(AuditBase.DeletedDate), SqlTemplate.IsNull));
-                }
-                else if (name == Behavior.AuditCreate || name == Behavior.AuditModify)
-                {
-                    if (name == Behavior.AuditCreate)
-                    {
-                        meta.AddPopulateAttribute(new AutoPopulateAttribute(nameof(AuditBase.CreatedDate)) {
+                    case Behavior.AuditQuery:
+                        meta.AddFilterAttribute(new AutoFilterAttribute(
+                            QueryTerm.Ensure, nameof(AuditBase.DeletedDate), SqlTemplate.IsNull));
+                        break;
+                    case Behavior.AuditCreate:
+                    case Behavior.AuditModify:
+                        if (applyAttr.Name == Behavior.AuditCreate)
+                        {
+                            meta.AddPopulateAttribute(new AutoPopulateAttribute(nameof(AuditBase.CreatedDate)) {
+                                Eval = "utcNow"
+                            });
+                            meta.AddPopulateAttribute(new AutoPopulateAttribute(nameof(AuditBase.CreatedBy)) {
+                                Eval = "userAuthName"
+                            });
+                        }
+                        meta.AddPopulateAttribute(new AutoPopulateAttribute(nameof(AuditBase.ModifiedDate)) {
                             Eval = "utcNow"
                         });
-                        meta.AddPopulateAttribute(new AutoPopulateAttribute(nameof(AuditBase.CreatedBy)) {
+                        meta.AddPopulateAttribute(new AutoPopulateAttribute(nameof(AuditBase.ModifiedBy)) {
                             Eval = "userAuthName"
                         });
-                    }
-                    meta.AddPopulateAttribute(new AutoPopulateAttribute(nameof(AuditBase.ModifiedDate)) {
-                        Eval = "utcNow"
-                    });
-                    meta.AddPopulateAttribute(new AutoPopulateAttribute(nameof(AuditBase.ModifiedBy)) {
-                        Eval = "userAuthName"
-                    });
-                }
-                else if (name == Behavior.AuditDelete || name == Behavior.AuditSoftDelete)
-                {
-                    if (name == Behavior.AuditSoftDelete)
-                        meta.SoftDelete = true;
+                        break;
+                    case Behavior.AuditDelete:
+                    case Behavior.AuditSoftDelete:
+                        if (applyAttr.Name == Behavior.AuditSoftDelete)
+                            meta.SoftDelete = true;
 
-                    meta.AddPopulateAttribute(new AutoPopulateAttribute(nameof(AuditBase.DeletedDate)) {
-                        Eval = "utcNow"
-                    });
-                    meta.AddPopulateAttribute(new AutoPopulateAttribute(nameof(AuditBase.DeletedBy)) {
-                        Eval = "userAuthName"
-                    });
+                        meta.AddPopulateAttribute(new AutoPopulateAttribute(nameof(AuditBase.DeletedDate)) {
+                            Eval = "utcNow"
+                        });
+                        meta.AddPopulateAttribute(new AutoPopulateAttribute(nameof(AuditBase.DeletedBy)) {
+                            Eval = "userAuthName"
+                        });
+                        break;
                 }
             }
         }
