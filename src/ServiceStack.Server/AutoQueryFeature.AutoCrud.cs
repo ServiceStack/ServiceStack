@@ -8,8 +8,6 @@ using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Data;
-using ServiceStack.DataAnnotations;
-using ServiceStack.Model;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -29,6 +27,26 @@ namespace ServiceStack
             { typeof(GetCrudEventsService), new []{ "/" + "crudevents".Localize() + "/{Model}" } },
             { typeof(CheckCrudEventService), new []{ "/" + "crudevents".Localize() + "/check" } },
         };
+
+        public Action<CrudContext> OnBeforeCreate { get; set; }
+        public Func<CrudContext,Task> OnBeforeCreateAsync { get; set; }
+        public Action<CrudContext> OnAfterCreate { get; set; }
+        public Func<CrudContext,Task> OnAfterCreateAsync { get; set; }
+
+        public Action<CrudContext> OnBeforePatch { get; set; }
+        public Func<CrudContext,Task> OnBeforePatchAsync { get; set; }
+        public Action<CrudContext> OnAfterPatch { get; set; }
+        public Func<CrudContext,Task> OnAfterPatchAsync { get; set; }
+
+        public Action<CrudContext> OnBeforeUpdate { get; set; }
+        public Func<CrudContext,Task> OnBeforeUpdateAsync { get; set; }
+        public Action<CrudContext> OnAfterUpdate { get; set; }
+        public Func<CrudContext,Task> OnAfterUpdateAsync { get; set; }
+
+        public Action<CrudContext> OnBeforeDelete { get; set; }
+        public Func<CrudContext,Task> OnBeforeDeleteAsync { get; set; }
+        public Action<CrudContext> OnAfterDelete { get; set; }
+        public Func<CrudContext,Task> OnAfterDeleteAsync { get; set; }
 
         protected void OnRegister(IAppHost appHost)
         {
@@ -174,6 +192,8 @@ namespace ServiceStack
         public PropertyAccessor RowVersionProp { get; private set; }
         
         public object Id { get; set; }
+        
+        public object Response { get; set; }
         
         public long? RowsUpdated { get; set; }
 
@@ -366,7 +386,7 @@ namespace ServiceStack
             AutoFiltersDbFields.Add(ExprResult.ToDbFieldAttribute(filterAttr));
         }
     }
-        
+
     public partial class AutoQuery : IAutoCrudDb
     {
         public static HashSet<string> IgnoreCrudProperties { get; } = new HashSet<string> {
@@ -386,7 +406,11 @@ namespace ServiceStack
             using var db = GetDb<Table>(req);
             using var profiler = Profiler.Current.Step("AutoQuery.Create");
 
-            var response = ExecAndReturnResponse<Table>(CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Create),
+            var ctx = CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Create);
+            var feature = HostContext.GetPlugin<AutoQueryFeature>();
+            feature.OnBeforeCreate?.Invoke(ctx);
+
+            ctx.Response = ExecAndReturnResponse<Table>(ctx,
                 ctx => {
                     var dtoValues = ResolveDtoValues(req, dto);
                     var pkField = ctx.ModelDef.PrimaryKey;
@@ -414,8 +438,9 @@ namespace ServiceStack
                     var autoIntId = db.Insert<Table>(dtoValues, selectIdentity: selectIdentity);
                     return CreateInternal(dtoValues, pkField, selectIdentity, autoIntId);
                 });
-                
-            return response;
+
+            feature.OnAfterCreate?.Invoke(ctx);
+            return ctx.Response;
         }
 
         public async Task<object> CreateAsync<Table>(ICreateDb<Table> dto, IRequest req)
@@ -424,7 +449,12 @@ namespace ServiceStack
             using var db = GetDb<Table>(req);
             using var profiler = Profiler.Current.Step("AutoQuery.Create");
 
-            var response = await ExecAndReturnResponseAsync<Table>(CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Create),
+            var ctx = CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Create);
+            var feature = HostContext.GetPlugin<AutoQueryFeature>();
+            if (feature.OnBeforeCreateAsync != null)
+                await feature.OnBeforeCreateAsync(ctx);
+            
+            ctx.Response = await ExecAndReturnResponseAsync<Table>(ctx,
                 async ctx => {
                     var dtoValues = ResolveDtoValues(ctx.Request, ctx.Dto);
                     var pkField = ctx.ModelDef.PrimaryKey;
@@ -452,8 +482,10 @@ namespace ServiceStack
                     var autoIntId = await db.InsertAsync<Table>(dtoValues, selectIdentity: selectIdentity).ConfigAwait();
                     return CreateInternal(dtoValues, pkField, selectIdentity, autoIntId);
                 }).ConfigAwait();
-                
-            return response;
+
+            if (feature.OnAfterCreateAsync != null)
+                await feature.OnAfterCreateAsync(ctx);
+            return ctx.Response;
         }
 
         private static ExecValue CreateInternal(Dictionary<string, object> dtoValues,
@@ -504,7 +536,15 @@ namespace ServiceStack
             using var db = GetDb<Table>(req);
             using (Profiler.Current.Step("AutoQuery.Update"))
             {
-                var response = ExecAndReturnResponse<Table>(CrudContext.Create<Table>(req,db,dto,operation),
+                var ctx = CrudContext.Create<Table>(req,db,dto,operation);
+                
+                var feature = HostContext.GetPlugin<AutoQueryFeature>();
+                if (skipDefaults)
+                    feature.OnBeforePatch?.Invoke(ctx);
+                else
+                    feature.OnBeforeUpdate?.Invoke(ctx);
+
+                ctx.Response = ExecAndReturnResponse<Table>(ctx,
                     ctx => {
                         var dtoValues = ResolveDtoValues(req, dto, skipDefaults);
                         var pkField = ctx.ModelDef?.PrimaryKey;
@@ -524,7 +564,12 @@ namespace ServiceStack
                         return new ExecValue(idValue, rowsUpdated);
                     }); //TODO: UpdateOnly
 
-                return response;
+                if (skipDefaults)
+                    feature.OnAfterPatch?.Invoke(ctx);
+                else
+                    feature.OnAfterUpdate?.Invoke(ctx);
+
+                return ctx.Response;
             }
         }
 
@@ -534,7 +579,21 @@ namespace ServiceStack
             using var db = GetDb<Table>(req);
             using (Profiler.Current.Step("AutoQuery.Update"))
             {
-                var response = await ExecAndReturnResponseAsync<Table>(CrudContext.Create<Table>(req,db,dto,operation), 
+                var ctx = CrudContext.Create<Table>(req,db,dto,operation);
+                
+                var feature = HostContext.GetPlugin<AutoQueryFeature>();
+                if (skipDefaults)
+                {
+                    if (feature.OnBeforePatchAsync != null) 
+                        await feature.OnBeforePatchAsync(ctx);
+                }
+                else
+                {
+                    if (feature.OnBeforeUpdateAsync != null) 
+                        await feature.OnBeforeUpdateAsync(ctx);
+                }
+                
+                ctx.Response = await ExecAndReturnResponseAsync<Table>(ctx, 
                     async ctx => {
                         var dtoValues = ResolveDtoValues(req, dto, skipDefaults);
                         var pkField = ctx.ModelDef?.PrimaryKey;
@@ -554,7 +613,18 @@ namespace ServiceStack
                         return new ExecValue(idValue, rowsUpdated);
                     }).ConfigAwait(); //TODO: UpdateOnly
 
-                return response;
+                if (skipDefaults)
+                {
+                    if (feature.OnAfterPatchAsync != null) 
+                        await feature.OnAfterPatchAsync(ctx);
+                }
+                else
+                {
+                    if (feature.OnAfterUpdateAsync != null) 
+                        await feature.OnAfterUpdateAsync(ctx);
+                }
+
+                return ctx.Response;
             }
         }
 
@@ -565,9 +635,13 @@ namespace ServiceStack
 
             var meta = AutoCrudMetadata.Create(dto.GetType());
             if (meta.SoftDelete)
-                return UpdateInternal<Table>(req, dto, AutoCrudOperation.Patch);
-                
-            var response = ExecAndReturnResponse<Table>(CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Delete),
+                return PartialUpdate<Table>(dto, req);
+
+            var ctx = CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Delete);
+            var feature = HostContext.GetPlugin<AutoQueryFeature>();
+            feature.OnBeforeDelete?.Invoke(ctx);
+
+            ctx.Response = ExecAndReturnResponse<Table>(ctx,
                 ctx => {
                     var dtoValues = ResolveDtoValues(ctx.Request, ctx.Dto, skipDefaults:true);
                     var idValue = ctx.ModelDef.PrimaryKey != null && dtoValues.TryGetValue(ctx.ModelDef.PrimaryKey.Name, out var oId)
@@ -579,7 +653,8 @@ namespace ServiceStack
                     return new ExecValue(idValue, ctx.Db.Delete<Table>(dtoValues));
                 });
             
-            return response;
+            feature.OnAfterDelete?.Invoke(ctx);
+            return ctx.Response;
         }
 
         public async Task<object> DeleteAsync<Table>(IDeleteDb<Table> dto, IRequest req)
@@ -590,8 +665,13 @@ namespace ServiceStack
             var meta = AutoCrudMetadata.Create(dto.GetType());
             if (meta.SoftDelete)
                 return await UpdateInternalAsync<Table>(req, dto, AutoCrudOperation.Patch).ConfigAwait();
+
+            var ctx = CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Delete);
+            var feature = HostContext.GetPlugin<AutoQueryFeature>();
+            if (feature.OnBeforeDeleteAsync != null)
+                await feature.OnBeforeDeleteAsync(ctx);
             
-            var response = await ExecAndReturnResponseAsync<Table>(CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Delete),
+            ctx.Response = await ExecAndReturnResponseAsync<Table>(ctx,
                 async ctx => {
                     var dtoValues = ResolveDtoValues(req, dto, skipDefaults:true);
                     var idValue = ctx.ModelDef.PrimaryKey != null && dtoValues.TryGetValue(ctx.ModelDef.PrimaryKey.Name, out var oId)
@@ -603,7 +683,10 @@ namespace ServiceStack
                     return new ExecValue(idValue, await ctx.Db.DeleteAsync<Table>(dtoValues).ConfigAwait());
                 }).ConfigAwait();
             
-            return response;
+            if (feature.OnAfterDeleteAsync != null)
+                await feature.OnAfterDeleteAsync(ctx);
+
+            return ctx.Response;
         }
 
         internal SqlExpression<Table> DeleteInternal<Table>(CrudContext ctx, Dictionary<string, object> dtoValues)
