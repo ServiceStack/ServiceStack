@@ -496,6 +496,12 @@ namespace ServiceStack
             return UpdateInternalAsync<Table>(req, dto, AutoCrudOperation.Patch);
         }
 
+        public object PartialUpdate<Table>(object dto, IRequest req) =>
+            UpdateInternal<Table>(req, dto, AutoCrudOperation.Patch);
+
+        public Task<object> PartialUpdateAsync<Table>(object dto, IRequest req) =>
+            UpdateInternalAsync<Table>(req, dto, AutoCrudOperation.Patch);
+
         private object UpdateInternal<Table>(IRequest req, object dto, string operation)
         {
             var skipDefaults = operation == AutoCrudOperation.Patch;

@@ -572,12 +572,12 @@ namespace ServiceStack
         Task<object> UpdateAsync<Table>(IUpdateDb<Table> dto, IRequest req);
         
         /// <summary>
-        /// Partially Updates entry into Table (Uses OrmLite UpdateNonDefaults behavior)
+        /// Partially Updates entry into Table
         /// </summary>
         object Patch<Table>(IPatchDb<Table> dto, IRequest req);
         
         /// <summary>
-        /// Partially Updates entry into Table Async (Uses OrmLite UpdateNonDefaults behavior)
+        /// Partially Updates entry into Table Async
         /// </summary>
         Task<object> PatchAsync<Table>(IPatchDb<Table> dto, IRequest req);
         
@@ -600,6 +600,16 @@ namespace ServiceStack
         /// Inserts or Updates entry into Table Async
         /// </summary>
         Task<object> SaveAsync<Table>(ISaveDb<Table> dto, IRequest req);
+
+        /// <summary>
+        /// Partially Update non-null properties of DTO
+        /// </summary>
+        public object PartialUpdate<Table>(object dto, IRequest req);
+
+        /// <summary>
+        /// Partially Update non-null properties of DTO Async
+        /// </summary>
+        Task<object> PartialUpdateAsync<Table>(object dto, IRequest req);
     }
     
     public abstract partial class AutoQueryServiceBase : Service
