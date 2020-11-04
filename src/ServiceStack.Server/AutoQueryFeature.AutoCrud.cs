@@ -40,65 +40,43 @@ namespace ServiceStack
 
         public static void AuditAutoCrudMetadataFilter(AutoCrudMetadata meta)
         {
-            var applyAttrs = meta.AutoApplyAttrs;
-            if (applyAttrs.IsEmpty())
-                return;
-
-            bool hasAuditQuery = false, hasAuditCreate = false, hasAuditModify = false, hasAuditDelete = false, hasAuditSoftDelete = false;
-            foreach (var applyAttr in applyAttrs)
+            foreach (var applyAttr in meta.AutoApplyAttrs.Safe())
             {
                 var name = applyAttr.Name;
                 if (name == Behavior.AuditQuery)
-                    hasAuditQuery = true;
-                else if (name == Behavior.AuditCreate)
-                    hasAuditCreate = true;
-                else if (name == Behavior.AuditModify)
-                    hasAuditModify = true;
-                else if (name == Behavior.AuditDelete) 
-                    hasAuditDelete = true;
-                else if (name == Behavior.AuditSoftDelete)
-                    hasAuditSoftDelete = true;
-            }
-
-            if (hasAuditQuery)
-            {
-                meta.AddFilterAttribute(new AutoFilterAttribute(
-                    QueryTerm.Ensure, nameof(AuditBase.DeletedDate), SqlTemplate.IsNull));
-            }
-            
-            if (!hasAuditCreate && !hasAuditModify && !hasAuditDelete && !hasAuditSoftDelete)
-                return;
-            
-            meta.PopulateAttrs ??= new List<AutoPopulateAttribute>();
-            if (hasAuditCreate)
-            {
-                meta.PopulateAttrs.Add(new AutoPopulateAttribute(nameof(AuditBase.CreatedDate)) {
-                    Eval = "utcNow"
-                });
-                meta.PopulateAttrs.Add(new AutoPopulateAttribute(nameof(AuditBase.CreatedBy)) {
-                    Eval = "userAuthName"
-                });
-            }
-            if (hasAuditCreate || hasAuditModify)
-            {
-                meta.PopulateAttrs.Add(new AutoPopulateAttribute(nameof(AuditBase.ModifiedDate)) {
-                    Eval = "utcNow"
-                });
-                meta.PopulateAttrs.Add(new AutoPopulateAttribute(nameof(AuditBase.ModifiedBy)) {
-                    Eval = "userAuthName"
-                });
-            }
-            if (hasAuditSoftDelete || hasAuditDelete)
-            {
-                meta.PopulateAttrs.Add(new AutoPopulateAttribute(nameof(AuditBase.DeletedDate)) {
-                    Eval = "utcNow"
-                });
-                meta.PopulateAttrs.Add(new AutoPopulateAttribute(nameof(AuditBase.DeletedBy)) {
-                    Eval = "userAuthName"
-                });
-                if (hasAuditSoftDelete)
                 {
-                    meta.SoftDelete = true;
+                    meta.AddFilterAttribute(new AutoFilterAttribute(
+                        QueryTerm.Ensure, nameof(AuditBase.DeletedDate), SqlTemplate.IsNull));
+                }
+                else if (name == Behavior.AuditCreate || name == Behavior.AuditModify)
+                {
+                    if (name == Behavior.AuditCreate)
+                    {
+                        meta.AddPopulateAttribute(new AutoPopulateAttribute(nameof(AuditBase.CreatedDate)) {
+                            Eval = "utcNow"
+                        });
+                        meta.AddPopulateAttribute(new AutoPopulateAttribute(nameof(AuditBase.CreatedBy)) {
+                            Eval = "userAuthName"
+                        });
+                    }
+                    meta.AddPopulateAttribute(new AutoPopulateAttribute(nameof(AuditBase.ModifiedDate)) {
+                        Eval = "utcNow"
+                    });
+                    meta.AddPopulateAttribute(new AutoPopulateAttribute(nameof(AuditBase.ModifiedBy)) {
+                        Eval = "userAuthName"
+                    });
+                }
+                else if (name == Behavior.AuditDelete || name == Behavior.AuditSoftDelete)
+                {
+                    if (name == Behavior.AuditSoftDelete)
+                        meta.SoftDelete = true;
+
+                    meta.AddPopulateAttribute(new AutoPopulateAttribute(nameof(AuditBase.DeletedDate)) {
+                        Eval = "utcNow"
+                    });
+                    meta.AddPopulateAttribute(new AutoPopulateAttribute(nameof(AuditBase.DeletedBy)) {
+                        Eval = "userAuthName"
+                    });
                 }
             }
         }
