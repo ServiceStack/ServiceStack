@@ -44,7 +44,7 @@ namespace ServiceStack
             if (applyAttrs.IsEmpty())
                 return;
 
-            bool hasAuditQuery, hasAuditCreate, hasAuditModify, hasAuditDelete, hasAuditSoftDelete;
+            bool hasAuditQuery = false, hasAuditCreate = false, hasAuditModify = false, hasAuditDelete = false, hasAuditSoftDelete = false;
             foreach (var applyAttr in applyAttrs)
             {
                 var name = applyAttr.Name;
