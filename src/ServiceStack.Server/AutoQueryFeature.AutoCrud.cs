@@ -66,7 +66,7 @@ namespace ServiceStack
                     QueryTerm.Ensure, nameof(AuditBase.DeletedDate), SqlTemplate.IsNull));
             }
             
-            if (!hasAuditCreate && !hasAuditModify && !hasAuditSoftDelete)
+            if (!hasAuditCreate && !hasAuditModify && !hasAuditDelete && !hasAuditSoftDelete)
                 return;
             
             meta.PopulateAttrs ??= new List<AutoPopulateAttribute>();
