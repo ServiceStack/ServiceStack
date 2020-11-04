@@ -44,10 +44,21 @@ namespace ServiceStack
             if (applyAttrs.IsEmpty())
                 return;
 
-            var hasAuditQuery = applyAttrs.Any(x => x.Name == Behavior.AuditQuery);
-            var hasAuditCreate = applyAttrs.Any(x => x.Name == Behavior.AuditCreate);
-            var hasAuditModify = applyAttrs.Any(x => x.Name == Behavior.AuditModify);
-            var hasAuditSoftDelete = applyAttrs.Any(x => x.Name == Behavior.AuditSoftDelete);
+            bool hasAuditQuery, hasAuditCreate, hasAuditModify, hasAuditDelete, hasAuditSoftDelete;
+            foreach (var applyAttr in applyAttrs)
+            {
+                var name = applyAttr.Name;
+                if (name == Behavior.AuditQuery)
+                    hasAuditQuery = true;
+                else if (name == Behavior.AuditCreate)
+                    hasAuditCreate = true;
+                else if (name == Behavior.AuditModify)
+                    hasAuditModify = true;
+                else if (name == Behavior.AuditDelete) 
+                    hasAuditDelete = true;
+                else if (name == Behavior.AuditSoftDelete)
+                    hasAuditSoftDelete = true;
+            }
 
             if (hasAuditQuery)
             {
@@ -77,7 +88,7 @@ namespace ServiceStack
                     Eval = "userAuthName"
                 });
             }
-            if (hasAuditSoftDelete)
+            if (hasAuditSoftDelete || hasAuditDelete)
             {
                 meta.PopulateAttrs.Add(new AutoPopulateAttribute(nameof(AuditBase.DeletedDate)) {
                     Eval = "utcNow"
@@ -85,7 +96,10 @@ namespace ServiceStack
                 meta.PopulateAttrs.Add(new AutoPopulateAttribute(nameof(AuditBase.DeletedBy)) {
                     Eval = "userAuthName"
                 });
-                meta.SoftDelete = true;
+                if (hasAuditSoftDelete)
+                {
+                    meta.SoftDelete = true;
+                }
             }
         }
     }

@@ -372,7 +372,12 @@ namespace ServiceStack
         public const string AuditModify = nameof(AuditModify);
         
         /// <summary>
-        /// Auto Populate SoftDeletedDate & SoftDeletedBy fields
+        /// Auto Populate DeletedDate & DeletedBy fields
+        /// </summary>
+        public const string AuditDelete = nameof(AuditDelete);
+        
+        /// <summary>
+        /// Auto Populate DeletedDate & DeletedBy fields
         /// and changes IDeleteDb operation to Update
         /// </summary>
         public const string AuditSoftDelete = nameof(AuditSoftDelete);
