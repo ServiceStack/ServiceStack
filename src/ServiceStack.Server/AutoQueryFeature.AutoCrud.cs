@@ -179,7 +179,7 @@ namespace ServiceStack
     public class CrudContext
     {
         public IRequest Request { get; private set; }
-        public IAuthSession Session => Request.GetSession();
+        public Task<IAuthSession> GetSessionAsync() => Request.GetSessionAsync();
         public IDbConnection Db { get; private set; }
         public ICrudEvents Events { get; private set; }
         public string Operation { get; set; }
