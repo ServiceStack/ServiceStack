@@ -325,13 +325,10 @@ namespace ServiceStack
                 }
             }
 
-            var feature = HostContext.GetPlugin<AutoQueryFeature>();
-            if (feature?.AutoCrudMetadataFilters != null)
+            var feature = HostContext.AssertPlugin<AutoQueryFeature>();
+            foreach (var fn in feature.AutoCrudMetadataFilters)
             {
-                foreach (var fn in feature.AutoCrudMetadataFilters)
-                {
-                    fn(to);
-                }
+                fn(to);
             }
             
             return cache[dtoType] = to;
@@ -883,7 +880,7 @@ namespace ServiceStack
         internal bool GetAutoFilterExpressions(CrudContext ctx, Dictionary<string, object> dtoValues, out string expr, out List<object> exprParams)
         {
             var meta = AutoCrudMetadata.Create(ctx.RequestType);
-            if (meta.AutoFilters != null)
+            if (meta.AutoFilters.Count > 0)
             {
                 var dialectProvider = ctx.Db.GetDialectProvider();
                 var sb = StringBuilderCache.Allocate();
@@ -965,7 +962,7 @@ namespace ServiceStack
             }
 
             var appHost = HostContext.AppHost;
-            if (skipDefaults || meta.UpdateAttrs != null || meta.DefaultAttrs != null)
+            if (skipDefaults || meta.UpdateAttrs.Count > 0 || meta.DefaultAttrs.Count > 0)
             {
                 Dictionary<string, object> replaceValues = null;
 
@@ -976,7 +973,7 @@ namespace ServiceStack
                     if (isDefaultValue)
                     {
                         var handled = false;
-                        if (meta.DefaultAttrs != null && meta.DefaultAttrs.TryGetValue(entry.Key, out var defaultAttr))
+                        if (meta.DefaultAttrs.TryGetValue(entry.Key, out var defaultAttr))
                         {
                             handled = true;
                             replaceValues ??= new Dictionary<string, object>();
@@ -985,7 +982,7 @@ namespace ServiceStack
                         if (!handled)
                         {
                             if (skipDefaults ||
-                                (meta.UpdateAttrs != null && meta.UpdateAttrs.TryGetValue(entry.Key, out var attr) &&
+                                (meta.UpdateAttrs.TryGetValue(entry.Key, out var attr) &&
                                  attr.Style == AutoUpdateStyle.NonDefaults))
                             {
                                 removeKeys ??= new List<string>();
