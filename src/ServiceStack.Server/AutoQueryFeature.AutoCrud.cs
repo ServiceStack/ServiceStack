@@ -5,6 +5,7 @@ using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Data;
@@ -178,6 +179,7 @@ namespace ServiceStack
     public class CrudContext
     {
         public IRequest Request { get; private set; }
+        public IAuthSession Session => Request.GetSession();
         public IDbConnection Db { get; private set; }
         public ICrudEvents Events { get; private set; }
         public string Operation { get; set; }
