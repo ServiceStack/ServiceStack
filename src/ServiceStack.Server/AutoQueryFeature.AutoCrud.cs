@@ -58,7 +58,7 @@ namespace ServiceStack
 
         public static void AuditAutoCrudMetadataFilter(AutoCrudMetadata meta)
         {
-            foreach (var applyAttr in meta.AutoApplyAttrs.Safe())
+            foreach (var applyAttr in meta.AutoApplyAttrs)
             {
                 switch (applyAttr.Name)
                 {
@@ -239,16 +239,16 @@ namespace ServiceStack
         public Type ModelType { get; set; }
         public ModelDefinition ModelDef { get; set; }
         public TypeProperties DtoProps { get; set; }
-        public List<AutoPopulateAttribute> PopulateAttrs { get; set; }
-        public List<AutoFilterAttribute> AutoFilters { get; set; }
-        public List<QueryDbFieldAttribute> AutoFiltersDbFields { get; set; }
-        public List<AutoApplyAttribute> AutoApplyAttrs { get; set; }
-        public Dictionary<string, AutoUpdateAttribute> UpdateAttrs { get; set; }
-        public Dictionary<string, AutoDefaultAttribute> DefaultAttrs { get; set; }
-        public Dictionary<string, AutoMapAttribute> MapAttrs { get; set; }
-        public HashSet<string> NullableProps { get; set; }
+        public List<AutoPopulateAttribute> PopulateAttrs { get; set; } = new List<AutoPopulateAttribute>();
+        public List<AutoFilterAttribute> AutoFilters { get; set; } = new List<AutoFilterAttribute>();
+        public List<QueryDbFieldAttribute> AutoFiltersDbFields { get; set; } = new List<QueryDbFieldAttribute>();
+        public List<AutoApplyAttribute> AutoApplyAttrs { get; set; } = new List<AutoApplyAttribute>();
+        public Dictionary<string, AutoUpdateAttribute> UpdateAttrs { get; set; } = new Dictionary<string, AutoUpdateAttribute>();
+        public Dictionary<string, AutoDefaultAttribute> DefaultAttrs { get; set; } = new Dictionary<string, AutoDefaultAttribute>();
+        public Dictionary<string, AutoMapAttribute> MapAttrs { get; set; } = new Dictionary<string, AutoMapAttribute>();
+        public HashSet<string> NullableProps { get; set; } = new HashSet<string>();
+        public List<string> RemoveDtoProps { get; set; } = new List<string>();
         public GetMemberDelegate RowVersionGetter { get; set; }
-        public List<string> RemoveDtoProps { get; set; }
         public bool SoftDelete { get; set; }
         
         static readonly ConcurrentDictionary<Type, AutoCrudMetadata> cache = 
@@ -282,7 +282,6 @@ namespace ServiceStack
                 }
                 else if (dtoAttr is AutoApplyAttribute applyAttr)
                 {
-                    to.AutoApplyAttrs ??= new List<AutoApplyAttribute>();
                     to.AutoApplyAttrs.Add(applyAttr);
                 }
             }
@@ -343,45 +342,36 @@ namespace ServiceStack
 
         public void AddDtoPropertyToRemove(PropertyInfo pi)
         {
-            RemoveDtoProps ??= new List<string>();
             RemoveDtoProps.Add(pi.Name);
         }
 
         public void AddNullableProperty(string propName)
         {
-            NullableProps ??= new HashSet<string>();
             NullableProps.Add(propName);
         }
 
         public void Set(string propName, AutoMapAttribute mapAttr)
         {
-            MapAttrs ??= new Dictionary<string, AutoMapAttribute>();
             MapAttrs[propName] = mapAttr;
         }
 
         public void Set(string propName, AutoDefaultAttribute defaultAttr)
         {
-            DefaultAttrs ??= new Dictionary<string, AutoDefaultAttribute>();
             DefaultAttrs[propName] = defaultAttr;
         }
 
         public void Set(string propName, AutoUpdateAttribute updateAttr)
         {
-            UpdateAttrs ??= new Dictionary<string, AutoUpdateAttribute>();
             UpdateAttrs[propName] = updateAttr;
         }
 
         public void Add(AutoPopulateAttribute populateAttr)
         {
-            PopulateAttrs ??= new List<AutoPopulateAttribute>();
             PopulateAttrs.Add(populateAttr);
         }
 
         public void Add(AutoFilterAttribute filterAttr)
         {
-            AutoFilters ??= new List<AutoFilterAttribute>();
-            AutoFiltersDbFields ??= new List<QueryDbFieldAttribute>();
-
             AutoFilters.Add(filterAttr);
             AutoFiltersDbFields.Add(ExprResult.ToDbFieldAttribute(filterAttr));
         }
@@ -959,24 +949,19 @@ namespace ServiceStack
 
             var meta = AutoCrudMetadata.Create(dto.GetType());
 
-            if (meta.MapAttrs != null)
+            foreach (var entry in meta.MapAttrs)
             {
-                foreach (var entry in meta.MapAttrs)
+                if (dtoValues.TryRemove(entry.Key, out var value))
                 {
-                    if (dtoValues.TryRemove(entry.Key, out var value))
-                    {
-                        dtoValues[entry.Value.To] = value;
-                    }
+                    dtoValues[entry.Value.To] = value;
                 }
             }
+
             List<string> removeKeys = null;
-            if (meta.RemoveDtoProps != null)
+            foreach (var removeDtoProp in meta.RemoveDtoProps)
             {
-                foreach (var removeDtoProp in meta.RemoveDtoProps)
-                {
-                    removeKeys ??= new List<string>();
-                    removeKeys.Add(removeDtoProp);
-                }
+                removeKeys ??= new List<string>();
+                removeKeys.Add(removeDtoProp);
             }
 
             var appHost = HostContext.AppHost;
@@ -1027,12 +1012,9 @@ namespace ServiceStack
                 }
             }
 
-            if (meta.PopulateAttrs != null)
+            foreach (var populateAttr in meta.PopulateAttrs)
             {
-                foreach (var populateAttr in meta.PopulateAttrs)
-                {
-                    dtoValues[populateAttr.Field] = appHost.EvalScriptValue(populateAttr, req);
-                }
+                dtoValues[populateAttr.Field] = appHost.EvalScriptValue(populateAttr, req);
             }
 
             var populatorFn = AutoMappingUtils.GetPopulator(
