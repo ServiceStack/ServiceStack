@@ -2,7 +2,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Mvc</PackageId>
     <AssemblyName>ServiceStack.Mvc</AssemblyName>
-    <TargetFrameworks>net45;netstandard2.0;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>net45;net472;netstandard2.0;netcoreapp3.1</TargetFrameworks>
     <Title>MVC Adapters for integrating with ServiceStack webservices</Title>
     <PackageDescription>
     MVC Adapter classes to provide tight integration and re-usable functionality between ServiceStack and MVC.
@@ -19,7 +19,7 @@
     <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
   </ItemGroup>
   
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' OR '$(TargetFramework)' == 'net472' ">
     <ProjectReference Include="..\ServiceStack.NetFramework\ServiceStack.NetFramework.csproj" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
@@ -29,7 +29,10 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <PackageReference Include="Microsoft.AspNet.Mvc" Version="5.2.7" />
   </ItemGroup>
-  
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.0" />
+  </ItemGroup>
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.3" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor" Version="2.1.3" />
