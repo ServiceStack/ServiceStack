@@ -104,8 +104,10 @@ namespace ServiceStack
                     responseBytes = rawStr.ToUtf8Bytes();
                 else
                 {
+                    if (dto is MemoryStream ms)
+                        responseBytes = ms.ReadFully();
                     if (dto is Stream stream)
-                        responseBytes = stream.ReadFully();
+                        responseBytes = await stream.ReadFullyAsync();
                 }
             }
 

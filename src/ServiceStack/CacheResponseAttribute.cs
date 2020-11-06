@@ -87,7 +87,7 @@ namespace ServiceStack
 
             if (VaryByRoles != null && VaryByRoles.Length > 0)
             {
-                var userSession = req.GetSession();
+                var userSession = await req.GetSessionAsync();
                 if (userSession != null)
                 {
                     var authRepo = HostContext.AppHost.GetAuthRepository(req);
