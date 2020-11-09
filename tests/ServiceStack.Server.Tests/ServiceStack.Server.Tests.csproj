@@ -23,9 +23,9 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.1.1" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" />
     <PackageReference Include="NUnit" Version="3.12.0" />
-    <PackageReference Include="MongoDB.Bson" Version="2.10.3" />
-    <PackageReference Include="MongoDB.Driver" Version="2.10.3" />
-    <PackageReference Include="MongoDB.Driver.Core" Version="2.10.3" />
+    <PackageReference Include="MongoDB.Bson" Version="2.11.4" />
+    <PackageReference Include="MongoDB.Driver" Version="2.11.4" />
+    <PackageReference Include="MongoDB.Driver.Core" Version="2.11.4" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.0" />
     <PackageReference Include="System.Linq.Async" Version="4.1.1" />
     <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
@@ -52,16 +52,16 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <ProjectReference Include="..\..\src\ServiceStack.Razor\ServiceStack.Razor.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Authentication.MongoDb\ServiceStack.Authentication.MongoDb.csproj" />
-    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.113.1" />
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.113.6" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
     <DefineConstants>$(DefineConstants);NETCORE_SUPPORT;NETCORE</DefineConstants>
   </PropertyGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="3.1.4" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="3.1.9" />
     <PackageReference Include="System.Threading" Version="4.3.0" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.0" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.1" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
     <ProjectReference Include="..\..\src\ServiceStack.Mvc\ServiceStack.Mvc.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
   </ItemGroup>

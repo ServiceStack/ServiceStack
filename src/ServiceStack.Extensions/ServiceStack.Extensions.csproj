@@ -13,15 +13,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Grpc.AspNetCore.Server" Version="2.29.0" />
-        <PackageReference Include="Grpc.Core.Api" Version="2.29.0" />
-        <PackageReference Include="protobuf-net" Version="3.0.0" />
-        <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.0.90" />
+        <PackageReference Include="Grpc.AspNetCore.Server" Version="2.33.1" />
+        <PackageReference Include="Grpc.Core.Api" Version="2.33.1" />
+        <PackageReference Include="protobuf-net" Version="3.0.52" />
+        <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.0.123" />
         
         <PackageReference Include="System.Threading.Channels" Version="4.7.1" />
 
-        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.7.1" />
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.7.1" />
+        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.8.0" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.8.0" />
         
         <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
         <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
