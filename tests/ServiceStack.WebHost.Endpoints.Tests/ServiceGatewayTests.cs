@@ -80,6 +80,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Required { get; set; }
     }
 
+    public class SGSyncPostValidationAsyncExternal : IReturn<SGSyncPostValidationAsyncExternal>
+    {
+        public string Value { get; set; }
+        public string Required { get; set; }
+    }
+
     public class ServiceGatewayServices : Service
     {
         public object Any(SGSendSyncGetInternal request)
@@ -173,7 +179,36 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public object Any(SGSyncPostValidationExternal request)
         {
             request.Value += "> " + Request.Verb + " " + nameof(SGSyncPostValidationExternal);
-            return Gateway.Send(request.ConvertTo<SGSyncPostValidationInternal>());
+            try
+            {
+                return Gateway.Send(request.ConvertTo<SGSyncPostValidationInternal>());
+            }
+            catch (WebServiceException e)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                throw new NotImplementedException("Should throw WebServiceException", e);
+            }
+        }
+        
+        public async Task<object> Any(SGSyncPostValidationAsyncExternal request)
+        {
+            await Task.Yield();
+            request.Value += "> " + Request.Verb + " " + nameof(SGSyncPostValidationAsyncExternal);
+            try
+            {
+                return await Gateway.SendAsync(request.ConvertTo<SGSyncPostValidationAsyncInternal>());
+            }
+            catch (WebServiceException e)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                throw new NotImplementedException("Should throw WebServiceException", e);
+            }
         }
 
     }
@@ -244,6 +279,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public class SGSyncPostValidationAsyncInternal : IReturn<SGSyncPostValidationAsyncInternal>
+    {
+        public string Value { get; set; }
+        public string Required { get; set; }
+    }
+
+    public class SGSyncPostValidationAsyncInternalValidator : AbstractValidator<SGSyncPostValidationAsyncInternal>
+    {
+        public SGSyncPostValidationAsyncInternalValidator()
+        {
+            RuleFor(x => x.Required).NotEmpty();
+        }
+    }
+
     public class ServiceGatewayInternalServices : Service
     {
         public object Get(SGSyncGetInternal request)
@@ -281,6 +330,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public object Any(SGSyncPostValidationInternal request)
         {
             request.Value += "> ANY " + nameof(SGSyncPostValidationInternal);
+            return request;
+        }
+
+        public async Task<object> Any(SGSyncPostValidationAsyncInternal request)
+        {
+            await Task.Yield();
+            request.Value += "> ANY " + nameof(SGSyncPostValidationAsyncInternal);
             return request;
         }
     }
@@ -529,6 +585,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             try
             {
                 var response = client.Get(new SGSyncPostValidationExternal { Value = "GET CLIENT" });
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo(400));
+                Assert.That(ex.StatusDescription, Is.EqualTo("NotEmpty"));
+                Assert.That(ex.ErrorCode, Is.EqualTo("NotEmpty"));
+                Assert.That(ex.ResponseStatus.ErrorCode, Is.EqualTo("NotEmpty"));
+                Assert.That(ex.ResponseStatus.Message, Is.EqualTo("'Required' must not be empty."));
+            }
+        }
+
+        [Test]
+        public void Does_throw_original_ValidationException_in_SGSyncPostValidationAsyncExternal()
+        {
+            try
+            {
+                var response = client.Get(new SGSyncPostValidationAsyncExternal { Value = "GET CLIENT" });
                 Assert.Fail("Should throw");
             }
             catch (WebServiceException ex)

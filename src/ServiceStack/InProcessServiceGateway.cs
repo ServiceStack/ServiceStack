@@ -201,6 +201,12 @@ namespace ServiceStack
             {
                 return ExecSync<TResponse>(requestDto);
             }
+            catch (AggregateException ae)
+            {
+                var ex = ae.UnwrapIfSingleException();
+                HostContext.RaiseGatewayException(req, requestDto, ex).Wait();
+                throw ex;
+            }
             catch (Exception ex)
             {
                 HostContext.RaiseGatewayException(req, requestDto, ex).Wait();
@@ -268,6 +274,12 @@ namespace ServiceStack
             try
             {
                 return ExecSync<TResponse[]>(typedArray).ToList();
+            }
+            catch (AggregateException ae)
+            {
+                var ex = ae.UnwrapIfSingleException();
+                HostContext.RaiseGatewayException(req, requestDtos, ex).Wait();
+                throw ex;
             }
             catch (Exception ex)
             {
