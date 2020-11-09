@@ -324,6 +324,14 @@ namespace ServiceStack
             response.SetContentLength(bytes.Length);
             return response.OutputStream.WriteAsync(bytes);
         }
+ 
+        public static void EndWith(this IResponse res, HttpStatusCode code, string description=null)
+        {
+            res.StatusCode = (int)code;
+            if (description != null)
+                res.StatusDescription = description;
+            res.EndRequest();
+        }
     }
 
     public enum AuthenticationHeaderType
