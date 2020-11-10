@@ -53,8 +53,8 @@ namespace ServiceStack.Auth
 
         public static string YammerUserUrl = "https://www.yammer.com/api/v1/users/{0}.json";
 
-        public static string GithubUserUrl = "https://api.github.com/user?access_token={0}";
-        public static string GithubUserEmailsUrl = "https://api.github.com/user/emails?access_token={0}";
+        public static string GithubUserUrl = "https://api.github.com/user";
+        public static string GithubUserEmailsUrl = "https://api.github.com/user/emails";
 
         public string DownloadTwitterUserInfo(string consumerKey, string consumerSecret,
             string accessToken, string accessTokenSecret, string twitterUserId)
@@ -217,58 +217,46 @@ namespace ServiceStack.Auth
             return json;
         }
 
-        public string DownloadGithubUserInfo(string accessToken)
+        public string GetJsonFromGitHub(string url, string accessToken)
         {
             if (string.IsNullOrEmpty(accessToken))
                 throw new ArgumentNullException(nameof(accessToken));
-
-            var url = GithubUserUrl.Fmt(accessToken);
 
             var json = url.GetJsonFromUrl(
-                httpReq => PclExport.Instance.SetUserAgent(httpReq, ServiceClientBase.DefaultUserAgent));
+                requestFilter: httpReq => {
+                    PclExport.Instance.AddHeader(httpReq, HttpHeaders.Authorization, "token " + accessToken);
+                    PclExport.Instance.SetUserAgent(httpReq, ServiceClientBase.DefaultUserAgent);
+                });
 
             return json;
         }
 
-        public async Task<string> DownloadGithubUserInfoAsync(string accessToken, CancellationToken token=default)
+        public async Task<string> GetJsonFromGitHubAsync(string url, string accessToken, CancellationToken token=default)
         {
             if (string.IsNullOrEmpty(accessToken))
                 throw new ArgumentNullException(nameof(accessToken));
-
-            var url = GithubUserUrl.Fmt(accessToken);
 
             var json = await url.GetJsonFromUrlAsync(
-                httpReq => PclExport.Instance.SetUserAgent(httpReq, ServiceClientBase.DefaultUserAgent));
+                requestFilter: httpReq => {
+                    PclExport.Instance.AddHeader(httpReq, HttpHeaders.Authorization, "token " + accessToken);
+                    PclExport.Instance.SetUserAgent(httpReq, ServiceClientBase.DefaultUserAgent);
+                }).ConfigAwait();
 
             return json;
         }
 
-        public string DownloadGithubUserEmailsInfo(string accessToken)
-        {
-            if (string.IsNullOrEmpty(accessToken))
-                throw new ArgumentNullException(nameof(accessToken));
+        public string DownloadGithubUserInfo(string accessToken) =>
+            GetJsonFromGitHub(GithubUserUrl, accessToken);
 
-            var url = GithubUserEmailsUrl.Fmt(accessToken);
+        public Task<string> DownloadGithubUserInfoAsync(string accessToken, CancellationToken token = default) =>
+            GetJsonFromGitHubAsync(GithubUserUrl, accessToken, token);
 
-            var json = url.GetJsonFromUrl(
-                httpReq => PclExport.Instance.SetUserAgent(httpReq, ServiceClientBase.DefaultUserAgent));
+        public string DownloadGithubUserEmailsInfo(string accessToken) =>
+            GetJsonFromGitHub(GithubUserEmailsUrl, accessToken);
 
-            return json;
-        }
-
-        public async Task<string> DownloadGithubUserEmailsInfoAsync(string accessToken, CancellationToken token=default)
-        {
-            if (string.IsNullOrEmpty(accessToken))
-                throw new ArgumentNullException(nameof(accessToken));
-
-            var url = GithubUserEmailsUrl.Fmt(accessToken);
-
-            var json = await url.GetJsonFromUrlAsync(
-                httpReq => PclExport.Instance.SetUserAgent(httpReq, ServiceClientBase.DefaultUserAgent)).ConfigAwait();
-
-            return json;
-        }
-
+        public Task<string> DownloadGithubUserEmailsInfoAsync(string accessToken, CancellationToken token=default) =>
+            GetJsonFromGitHubAsync(GithubUserEmailsUrl, accessToken, token);
+        
         public string DownloadGoogleUserInfo(string accessToken)
         {
             var json = GoogleAuthProvider.DefaultUserProfileUrl

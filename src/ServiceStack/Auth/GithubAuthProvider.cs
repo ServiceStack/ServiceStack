@@ -132,6 +132,9 @@ namespace ServiceStack.Auth
             }
             catch (WebException webException)
             {
+                var errorBody = webException.GetResponseBodyAsync(token);
+                Log.Error("GitHub AccessToken Failed:\n" + errorBody);
+                
                 //just in case GitHub will start throwing exceptions 
                 var statusCode = ((HttpWebResponse)webException.Response).StatusCode;
                 if (statusCode == HttpStatusCode.BadRequest)
