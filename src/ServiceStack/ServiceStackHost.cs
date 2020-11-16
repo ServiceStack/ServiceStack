@@ -186,6 +186,10 @@ namespace ServiceStack
                 typeof(RequestLogsService),
                 typeof(AutoQueryMetadataService),
                 typeof(AdminUsersService),
+                typeof(GetApiKeysService),
+                typeof(RegenerateApiKeysService),
+                typeof(ConvertSessionToTokenService),
+                typeof(GetAccessTokenService),
                 typeof(Validation.GetValidationRulesService),
                 typeof(Validation.ModifyValidationRulesService),
             };
