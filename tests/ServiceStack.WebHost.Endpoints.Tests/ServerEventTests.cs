@@ -5,9 +5,6 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Funq;
-#if !NETCORE_SUPPORT
-using MySql.Data.MySqlClient.Memcached;
-#endif
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
