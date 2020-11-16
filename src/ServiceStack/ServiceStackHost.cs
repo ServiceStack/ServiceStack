@@ -188,6 +188,8 @@ namespace ServiceStack
                 typeof(AdminUsersService),
                 typeof(GetApiKeysService),
                 typeof(RegenerateApiKeysService),
+                typeof(ConvertSessionToTokenService),
+                typeof(GetAccessTokenService),
                 typeof(Validation.GetValidationRulesService),
                 typeof(Validation.ModifyValidationRulesService),
             };
