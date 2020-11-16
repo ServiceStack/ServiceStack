@@ -186,6 +186,8 @@ namespace ServiceStack
                 typeof(RequestLogsService),
                 typeof(AutoQueryMetadataService),
                 typeof(AdminUsersService),
+                typeof(GetApiKeysService),
+                typeof(RegenerateApiKeysService),
                 typeof(Validation.GetValidationRulesService),
                 typeof(Validation.ModifyValidationRulesService),
             };
