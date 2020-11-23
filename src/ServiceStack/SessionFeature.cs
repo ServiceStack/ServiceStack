@@ -112,6 +112,25 @@ namespace ServiceStack
             return (T)CreateNewSession(httpReq, sessionId);
         }
 
+        /// <summary>
+        /// Creates a new Session without an Id
+        /// </summary>
+        public static IAuthSession CreateNewSession(IRequest httpReq)
+        {
+            var session = AuthenticateService.CurrentSessionFactory();
+            session.CreatedAt = session.LastModified = DateTime.UtcNow;
+            session.OnCreated(httpReq);
+
+            var authEvents = HostContext.TryResolve<IAuthEvents>();
+            authEvents?.OnCreated(httpReq, session);
+
+            return session;
+        }
+
+        /// <summary>
+        /// Creates a new Session with the specified sessionId otherwise it's populated with a new
+        /// generated Session Id that's 
+        /// </summary>
         public static IAuthSession CreateNewSession(IRequest httpReq, string sessionId)
         {
             var session = AuthenticateService.CurrentSessionFactory();
