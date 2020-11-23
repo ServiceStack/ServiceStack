@@ -835,14 +835,8 @@ namespace ServiceStack.Auth
             });
         }
 
-        public IUserAuth CreateUserAuth()
-        {
-            return (IUserAuth) typeof(TUserAuth).CreateInstance();
-        }
+        public IUserAuth CreateUserAuth() => (IUserAuth) typeof(TUserAuth).CreateInstance();
 
-        public IUserAuthDetails CreateUserAuthDetails()
-        {
-            return (IUserAuthDetails)typeof(TUserAuthDetails).CreateInstance();
-        }
+        public IUserAuthDetails CreateUserAuthDetails() => (IUserAuthDetails)typeof(TUserAuthDetails).CreateInstance();
     }
 }
