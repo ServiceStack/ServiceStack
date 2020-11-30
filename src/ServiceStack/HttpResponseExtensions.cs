@@ -125,7 +125,10 @@ namespace ServiceStack
         {
             // AllowSynchronousIO for sync SSE notifications https://github.com/aspnet/AspNetCore/issues/7644 
             var feature = ctx.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
-            feature.AllowSynchronousIO = true;
+            if (feature != null) // Not available in AWS
+            {
+                feature.AllowSynchronousIO = true;
+            }
             return ctx;
         }
 #endif
