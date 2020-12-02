@@ -132,8 +132,8 @@ namespace ServiceStack
                 return true;
                    
             var authProvider = AuthenticateService.GetAuthProvider(provider);
-            return authProvider  == null ||        // throw unknown provider in AuthService 
-                   authProvider is OAuthProvider;  // Allow all OAuth Providers by default 
+            return authProvider  == null ||        // Unknown provider thrown in AuthService 
+                   authProvider is IOAuthProvider; // Allow all OAuth Providers by default 
         }
 
         public Func<AuthFilterContext, object> AuthResponseDecorator { get; set; }
