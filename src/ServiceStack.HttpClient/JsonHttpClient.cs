@@ -733,27 +733,50 @@ namespace ServiceStack
             SendAsync<byte[]>(HttpMethods.Post, ResolveTypedUrl(HttpMethods.Post, requestDto), requestDto, token);
 
 
-        public Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default) =>
+
+        public Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto) =>
+            SendAsync<TResponse>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto);
+        public Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token) =>
             SendAsync<TResponse>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto, token);
 
-        public Task<TResponse> PutAsync<TResponse>(object requestDto, CancellationToken token = default) =>
+        public Task<TResponse> PutAsync<TResponse>(object requestDto) =>
+            SendAsync<TResponse>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto);
+        public Task<TResponse> PutAsync<TResponse>(object requestDto, CancellationToken token) =>
             SendAsync<TResponse>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto, token);
 
-        public Task<TResponse> PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, CancellationToken token = default) =>
+        public Task<TResponse> PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request) =>
+            SendAsync<TResponse>(HttpMethods.Put, ResolveUrl(HttpMethods.Put, relativeOrAbsoluteUrl), request);
+        public Task<TResponse> PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, CancellationToken token) =>
             SendAsync<TResponse>(HttpMethods.Put, ResolveUrl(HttpMethods.Put, relativeOrAbsoluteUrl), request, token);
 
-        public Task<TResponse> PatchAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default) =>
-            SendAsync<TResponse>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto);
-
-        public Task PutAsync(IReturnVoid requestDto, CancellationToken token = default) =>
+        public Task PutAsync(IReturnVoid requestDto) =>
+            SendAsync<byte[]>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto);
+        public Task PutAsync(IReturnVoid requestDto, CancellationToken token) =>
             SendAsync<byte[]>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto, token);
 
-        public Task<TResponse> PatchAsync<TResponse>(object requestDto, CancellationToken token = default) =>
+        
+
+        public Task<TResponse> PatchAsync<TResponse>(IReturn<TResponse> requestDto) =>
+            SendAsync<TResponse>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, requestDto), requestDto);
+        public Task<TResponse> PatchAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token) =>
             SendAsync<TResponse>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, requestDto), requestDto, token);
 
-        public Task PatchAsync(IReturnVoid requestDto, CancellationToken token = default) =>
-            SendAsync<byte[]>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, requestDto), requestDto, token);
+        public Task<TResponse> PatchAsync<TResponse>(object requestDto) =>
+            SendAsync<TResponse>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, requestDto), requestDto);
+        public Task<TResponse> PatchAsync<TResponse>(object requestDto, CancellationToken token) =>
+            SendAsync<TResponse>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, requestDto), requestDto, token);
 
+        public Task<TResponse> PatchAsync<TResponse>(string relativeOrAbsoluteUrl, object request) =>
+            SendAsync<TResponse>(HttpMethods.Patch, ResolveUrl(HttpMethods.Patch, relativeOrAbsoluteUrl), request);
+        public Task<TResponse> PatchAsync<TResponse>(string relativeOrAbsoluteUrl, object request, CancellationToken token) =>
+            SendAsync<TResponse>(HttpMethods.Patch, ResolveUrl(HttpMethods.Patch, relativeOrAbsoluteUrl), request, token);
+
+        public Task PatchAsync(IReturnVoid requestDto) =>
+            SendAsync<byte[]>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, requestDto), requestDto);
+        public Task PatchAsync(IReturnVoid requestDto, CancellationToken token) =>
+            SendAsync<byte[]>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, requestDto), requestDto, token);
+        
+        
         public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto, CancellationToken token = default)
         {
             if (!HttpMethods.Exists(httpVerb))
