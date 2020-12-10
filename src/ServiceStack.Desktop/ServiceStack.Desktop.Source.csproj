@@ -5,6 +5,7 @@
         <AssemblyName>ServiceStack.Desktop</AssemblyName>
         <RootNamespace>ServiceStack.Desktop</RootNamespace>
         <DefineConstants>$(DefineConstants);SOURCE</DefineConstants>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>

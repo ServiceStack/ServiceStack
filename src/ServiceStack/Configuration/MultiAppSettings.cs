@@ -49,13 +49,18 @@ namespace ServiceStack.Configuration
             }
         }
 
-        public override T Get<T>(string name)
+        public override T Get<T>(string name) => Get<T>(name, default);
+
+        public override T Get<T>(string name, T defaultValue)
         {
             try
             {
-                return AppSettings
-                    .Select(appSetting => appSetting.Get<T>(name))
-                    .FirstOrDefault(value => value != null);
+                foreach (var appSettings in AppSettings)
+                {
+                    if (appSettings.Exists(name))
+                        return appSettings.Get<T>(name);
+                }
+                return defaultValue;
             }
             catch (Exception ex)
             {
@@ -64,11 +69,6 @@ namespace ServiceStack.Configuration
                 var message = $"The {name} setting had an invalid format and could not be cast to type {typeof(T).FullName}";
                 throw new ConfigurationErrorsException(message, ex);
             }
-        }
-
-        public override T Get<T>(string name, T defaultValue)
-        {
-            return Get<T>(name) ?? defaultValue;
         }
     }
 }

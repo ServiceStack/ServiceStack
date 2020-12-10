@@ -8,6 +8,7 @@
         <Title>Lightweight and implementation-free interfaces for ServiceStack</Title>
         <PackageDescription>Lightweight and implementation-free interfaces for DTO's, providers and adapters.</PackageDescription>
         <PackageTags>ServiceStack;Common;Framework;Clients;ServiceClients;Gateway</PackageTags>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
     </PropertyGroup>
     
     <ItemGroup Condition="'$(TargetFramework)'=='net45'">
