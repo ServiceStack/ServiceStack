@@ -177,7 +177,7 @@ namespace ServiceStack.IO
 
             var dirPath = GetDirPath(filePath);
             return new GistVirtualFile(this, new GistVirtualDirectory(this, dirPath, GetParentDirectory(dirPath)))
-                .Init(filePath, gist.Updated_At ?? gist.Created_at, text, stream);
+                .Init(filePath, gist.Updated_At ?? gist.Created_At, text, stream);
         }
 
         private GistVirtualDirectory GetParentDirectory(string dirPath)
@@ -339,7 +339,7 @@ namespace ServiceStack.IO
 
                 yield return new GistVirtualFile(this,
                         new GistVirtualDirectory(this, dirPath, GetParentDirectory(dirPath)))
-                    .Init(filePath, gist.Updated_At ?? gist.Created_at, text, stream);
+                    .Init(filePath, gist.Updated_At ?? gist.Created_At, text, stream);
             }
         }
 
@@ -483,7 +483,7 @@ namespace ServiceStack.IO
                 if (!GistVirtualFiles.GetGistContents(FilePath, gist, out var text, out var stream))
                     throw new FileNotFoundException("Gist File no longer exists", FilePath);
 
-                Init(FilePath, gist.Updated_At ?? gist.Created_at, text, stream);
+                Init(FilePath, gist.Updated_At ?? gist.Created_At, text, stream);
                 return;
             }
 
