@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using ServiceStack;
 using ServiceStack.IO;
 using ServiceStack.Script;
 using ServiceStack.Text;
@@ -17,7 +18,9 @@ namespace ServiceStack
         Gist CreateGist(string description, bool isPublic, Dictionary<string, object> files);
         Gist CreateGist(string description, bool isPublic, Dictionary<string, string> textFiles);
         Gist GetGist(string gistId);
+        Gist GetGist(string gistId, string version);
         Task<Gist> GetGistAsync(string gistId);
+        Task<Gist> GetGistAsync(string gistId, string version);
         void WriteGistFiles(string gistId, Dictionary<string, object> files);
         void WriteGistFiles(string gistId, Dictionary<string, string> textFiles);
         void CreateGistFile(string gistId, string filePath, string contents);
@@ -303,8 +306,13 @@ namespace ServiceStack
         public virtual GithubGist GetGithubGist(string gistId)
         {
             var json = GetJson($"/gists/{gistId}");
-            var response = json.FromJson<GithubGist>();
-            return response;
+            return json.FromJson<GithubGist>();
+        }
+
+        public virtual GithubGist GetGithubGist(string gistId, string version)
+        {
+            var json = GetJson($"/gists/{gistId}/{version}");
+            return json.FromJson<GithubGist>();
         }
 
         public virtual Gist GetGist(string gistId)
@@ -313,9 +321,21 @@ namespace ServiceStack
             return PopulateGist(response);
         }
 
+        public Gist GetGist(string gistId, string version)
+        {
+            var response = GetGithubGist(gistId, version);
+            return PopulateGist(response);
+        }
+
         public async Task<Gist> GetGistAsync(string gistId)
         {
             var response = await GetJsonAsync<GithubGist>($"/gists/{gistId}").ConfigAwait();
+            return PopulateGist(response);
+        }
+
+        public async Task<Gist> GetGistAsync(string gistId, string version)
+        {
+            var response = await GetJsonAsync<GithubGist>($"/gists/{gistId}/{version}").ConfigAwait();
             return PopulateGist(response);
         }
 
@@ -556,7 +576,7 @@ namespace ServiceStack
         public int Stargazers_Count { get; set; }
         public int Size { get; set; }
         public string Full_Name { get; set; }
-        public DateTime Created_at { get; set; }
+        public DateTime Created_At { get; set; }
         public DateTime? Updated_At { get; set; }
 
         public bool Has_Downloads { get; set; }
@@ -576,7 +596,7 @@ namespace ServiceStack
         public string Html_Url { get; set; }
         public Dictionary<string, GistFile> Files { get; set; }
         public bool Public { get; set; }
-        public DateTime Created_at { get; set; }
+        public DateTime Created_At { get; set; }
         public DateTime? Updated_At { get; set; }
         public string Description { get; set; }
         public string UserId { get; set; }
@@ -604,6 +624,23 @@ namespace ServiceStack
         public string Comments_Url { get; set; }
         public bool Truncated { get; set; }
         public GithubUser Owner { get; set; }
+        public GistHistory[] History { get; set; }
+    }
+
+    public class GistHistory
+    {
+        public GithubUser User { get; set; }
+        public string Version { get; set; }
+        public DateTime Committed_At { get; set; }
+        public GistChangeStatus Change_Status { get; set; }
+        public string Url { get; set; }
+    }
+
+    public class GistChangeStatus
+    {
+        public int Total { get; set; }
+        public int Additions { get; set; }
+        public int Deletions { get; set; }
     }
 
     public class GistUser
