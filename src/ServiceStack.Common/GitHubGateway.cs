@@ -50,6 +50,25 @@ namespace ServiceStack
         void DownloadFile(string downloadUrl, string fileName);
     }
 
+    public class GithubRateLimit
+    {
+        public int Limit { get; set; }
+        public int Remaining { get; set; }
+        public long Reset { get; set; }
+        public int Used { get; set; }
+    }
+    public class GithubResourcesRateLimits
+    {
+        public GithubRateLimit Core { get; set; }
+        public GithubRateLimit Graphql { get; set; }
+        public GithubRateLimit Integration_Manifest { get; set; }
+        public GithubRateLimit Search { get; set; }
+    }
+    public class GithubRateLimits
+    {
+        public GithubResourcesRateLimits Resources { get; set; }
+    }
+
     public class GitHubGateway : IGistGateway, IGitHubGateway
     {
         public string UserAgent { get; set; } = nameof(GitHubGateway);
@@ -68,6 +87,12 @@ namespace ServiceStack
 
         public GitHubGateway() {}
         public GitHubGateway(string accessToken) => AccessToken = accessToken;
+
+        public async Task<GithubRateLimits> GetRateLimitsAsync()
+            => await GetJsonAsync<GithubRateLimits>("/rate_limit").ConfigAwait();
+
+        public GithubRateLimits GetRateLimits()
+            => GetJson<GithubRateLimits>("/rate_limit");
 
         internal string UnwrapRepoFullName(string orgName, string name, bool useFork=false)
         {
