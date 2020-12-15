@@ -630,7 +630,9 @@ namespace ServiceStack
         public static string TextDump(this object target) => DefaultScripts.TextDump(target, null); 
         public static string TextDump(this object target, TextDumpOptions options) => DefaultScripts.TextDump(target, options); 
         public static string DumpTable(this object target) => DefaultScripts.TextDump(target, null); 
-        public static string DumpTable(this object target, TextDumpOptions options) => DefaultScripts.TextDump(target, options); 
+        public static void PrintDumpTable(this object target) => DumpTable(target).Print(); 
+        public static string DumpTable(this object target, TextDumpOptions options) => DefaultScripts.TextDump(target, options);
+        public static void PrintDumpTable(this object target, TextDumpOptions options) => DumpTable(target, options).Print(); 
         
         public static string HtmlDump(object target) => HtmlScripts.HtmlDump(target, null); 
         public static string HtmlDump(object target, HtmlDumpOptions options) => HtmlScripts.HtmlDump(target, options); 
