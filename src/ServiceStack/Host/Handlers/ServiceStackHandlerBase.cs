@@ -226,7 +226,7 @@ namespace ServiceStack.Host.Handlers
             }
             catch (Exception ex)
             {
-                var msg = $"Could not deserialize '{contentType}' request using {requestType}'\nError: {ex}";
+                var msg = $"Could not deserialize '{contentType}' request using {requestType}'\nError: {ex.Message}";
                 throw new SerializationException(msg, ex);
             }
             return requestType.CreateInstance().InTask(); //Return an empty DTO, even for empty request bodies
