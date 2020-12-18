@@ -305,8 +305,7 @@ namespace ServiceStack.Auth
 
         public Task<object> LogoutAsync(IServiceBase service, Authenticate request, CancellationToken token = default)
         {
-            Logout(service, request);
-            return TypeConstants.EmptyTask;
+            return Logout(service, request).InTask();
         }
 
         public Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
