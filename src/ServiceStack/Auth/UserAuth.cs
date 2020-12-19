@@ -389,7 +389,6 @@ namespace ServiceStack.Auth
         {
             var authSession = session as AuthUserSession ?? new AuthUserSession(); //Null Object Pattern
             session.IsAuthenticated = true;
-            session.FromToken = true;
 
             foreach (var entry in map)
             {

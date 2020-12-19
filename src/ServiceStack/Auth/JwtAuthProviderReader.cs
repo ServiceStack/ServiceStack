@@ -690,6 +690,7 @@ namespace ServiceStack.Auth
             var session = SessionFeature.CreateNewSession(req, sessionId);
 
             session.AuthProvider = Name;
+            session.FromToken = true;
             session.PopulateFromMap(jwtPayload);
 
             PopulateSessionFilter?.Invoke(session, jwtPayload, req);
