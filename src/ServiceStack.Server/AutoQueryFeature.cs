@@ -554,62 +554,62 @@ namespace ServiceStack
         /// <summary>
         /// Inserts new entry into Table
         /// </summary>
-        object Create<Table>(ICreateDb<Table> dto, IRequest req);
+        object Create<Table>(ICreateDb<Table> dto, IRequest req, IDbConnection db = null);
         
         /// <summary>
         /// Inserts new entry into Table Async
         /// </summary>
-        Task<object> CreateAsync<Table>(ICreateDb<Table> dto, IRequest req);
+        Task<object> CreateAsync<Table>(ICreateDb<Table> dto, IRequest req, IDbConnection db = null);
         
         /// <summary>
         /// Updates entry into Table
         /// </summary>
-        object Update<Table>(IUpdateDb<Table> dto, IRequest req);
+        object Update<Table>(IUpdateDb<Table> dto, IRequest req, IDbConnection db = null);
         
         /// <summary>
         /// Updates entry into Table Async
         /// </summary>
-        Task<object> UpdateAsync<Table>(IUpdateDb<Table> dto, IRequest req);
+        Task<object> UpdateAsync<Table>(IUpdateDb<Table> dto, IRequest req, IDbConnection db = null);
         
         /// <summary>
         /// Partially Updates entry into Table
         /// </summary>
-        object Patch<Table>(IPatchDb<Table> dto, IRequest req);
+        object Patch<Table>(IPatchDb<Table> dto, IRequest req, IDbConnection db = null);
         
         /// <summary>
         /// Partially Updates entry into Table Async
         /// </summary>
-        Task<object> PatchAsync<Table>(IPatchDb<Table> dto, IRequest req);
+        Task<object> PatchAsync<Table>(IPatchDb<Table> dto, IRequest req, IDbConnection db = null);
         
         /// <summary>
         /// Deletes entry from Table
         /// </summary>
-        object Delete<Table>(IDeleteDb<Table> dto, IRequest req);
+        object Delete<Table>(IDeleteDb<Table> dto, IRequest req, IDbConnection db = null);
         
         /// <summary>
         /// Deletes entry from Table Async
         /// </summary>
-        Task<object> DeleteAsync<Table>(IDeleteDb<Table> dto, IRequest req);
+        Task<object> DeleteAsync<Table>(IDeleteDb<Table> dto, IRequest req, IDbConnection db = null);
 
         /// <summary>
         /// Inserts or Updates entry into Table
         /// </summary>
-        object Save<Table>(ISaveDb<Table> dto, IRequest req);
+        object Save<Table>(ISaveDb<Table> dto, IRequest req, IDbConnection db = null);
 
         /// <summary>
         /// Inserts or Updates entry into Table Async
         /// </summary>
-        Task<object> SaveAsync<Table>(ISaveDb<Table> dto, IRequest req);
+        Task<object> SaveAsync<Table>(ISaveDb<Table> dto, IRequest req, IDbConnection db = null);
 
         /// <summary>
         /// Partially Update non-null properties of DTO
         /// </summary>
-        public object PartialUpdate<Table>(object dto, IRequest req);
+        public object PartialUpdate<Table>(object dto, IRequest req, IDbConnection db = null);
 
         /// <summary>
         /// Partially Update non-null properties of DTO Async
         /// </summary>
-        Task<object> PartialUpdateAsync<Table>(object dto, IRequest req);
+        Task<object> PartialUpdateAsync<Table>(object dto, IRequest req, IDbConnection db = null);
     }
     
     public abstract partial class AutoQueryServiceBase : Service

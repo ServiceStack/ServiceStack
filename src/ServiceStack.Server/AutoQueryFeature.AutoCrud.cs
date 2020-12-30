@@ -388,10 +388,11 @@ namespace ServiceStack
             Keywords.RowVersion,
         };
 
-        public object Create<Table>(ICreateDb<Table> dto, IRequest req)
+        public object Create<Table>(ICreateDb<Table> dto, IRequest req, IDbConnection db = null)
         {
             //TODO: Allow Create to use Default Values
-            using var db = GetDb<Table>(req);
+            using var newDb = db == null ? GetDb<Table>(req) : null;
+            db ??= newDb;
             using var profiler = Profiler.Current.Step("AutoQuery.Create");
 
             var ctx = CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Create);
@@ -431,10 +432,11 @@ namespace ServiceStack
             return ctx.Response;
         }
 
-        public async Task<object> CreateAsync<Table>(ICreateDb<Table> dto, IRequest req)
+        public async Task<object> CreateAsync<Table>(ICreateDb<Table> dto, IRequest req, IDbConnection db = null)
         {
             //TODO: Allow Create to use Default Values
-            using var db = GetDb<Table>(req);
+            using var newDb = db == null ? GetDb<Table>(req) : null;
+            db ??= newDb;
             using var profiler = Profiler.Current.Step("AutoQuery.Create");
 
             var ctx = CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Create);
@@ -492,36 +494,37 @@ namespace ServiceStack
                     : new ExecValue(null, autoIntId);
         }
 
-        public object Update<Table>(IUpdateDb<Table> dto, IRequest req)
+        public object Update<Table>(IUpdateDb<Table> dto, IRequest req, IDbConnection db = null)
         {
-            return UpdateInternal<Table>(req, dto,AutoCrudOperation.Update);
+            return UpdateInternal<Table>(req, dto,AutoCrudOperation.Update, db);
         }
 
-        public Task<object> UpdateAsync<Table>(IUpdateDb<Table> dto, IRequest req)
+        public Task<object> UpdateAsync<Table>(IUpdateDb<Table> dto, IRequest req, IDbConnection db = null)
         {
-            return UpdateInternalAsync<Table>(req, dto, AutoCrudOperation.Update);
+            return UpdateInternalAsync<Table>(req, dto, AutoCrudOperation.Update, db);
         }
 
-        public object Patch<Table>(IPatchDb<Table> dto, IRequest req)
+        public object Patch<Table>(IPatchDb<Table> dto, IRequest req, IDbConnection db = null)
         {
-            return UpdateInternal<Table>(req, dto, AutoCrudOperation.Patch);
+            return UpdateInternal<Table>(req, dto, AutoCrudOperation.Patch, db);
         }
 
-        public Task<object> PatchAsync<Table>(IPatchDb<Table> dto, IRequest req)
+        public Task<object> PatchAsync<Table>(IPatchDb<Table> dto, IRequest req, IDbConnection db = null)
         {
-            return UpdateInternalAsync<Table>(req, dto, AutoCrudOperation.Patch);
+            return UpdateInternalAsync<Table>(req, dto, AutoCrudOperation.Patch, db);
         }
 
-        public object PartialUpdate<Table>(object dto, IRequest req) =>
+        public object PartialUpdate<Table>(object dto, IRequest req, IDbConnection db = null) =>
             UpdateInternal<Table>(req, dto, AutoCrudOperation.Patch);
 
-        public Task<object> PartialUpdateAsync<Table>(object dto, IRequest req) =>
+        public Task<object> PartialUpdateAsync<Table>(object dto, IRequest req, IDbConnection db = null) =>
             UpdateInternalAsync<Table>(req, dto, AutoCrudOperation.Patch);
 
-        private object UpdateInternal<Table>(IRequest req, object dto, string operation)
+        private object UpdateInternal<Table>(IRequest req, object dto, string operation, IDbConnection db = null)
         {
             var skipDefaults = operation == AutoCrudOperation.Patch;
-            using var db = GetDb<Table>(req);
+            using var newDb = db == null ? GetDb<Table>(req) : null;
+            db ??= newDb;
             using (Profiler.Current.Step("AutoQuery.Update"))
             {
                 var ctx = CrudContext.Create<Table>(req,db,dto,operation);
@@ -561,10 +564,11 @@ namespace ServiceStack
             }
         }
 
-        private async Task<object> UpdateInternalAsync<Table>(IRequest req, object dto, string operation)
+        private async Task<object> UpdateInternalAsync<Table>(IRequest req, object dto, string operation, IDbConnection db = null)
         {
             var skipDefaults = operation == AutoCrudOperation.Patch;
-            using var db = GetDb<Table>(req);
+            using var newDb = db == null ? GetDb<Table>(req) : null;
+            db ??= newDb;
             using (Profiler.Current.Step("AutoQuery.Update"))
             {
                 var ctx = CrudContext.Create<Table>(req,db,dto,operation);
@@ -616,9 +620,10 @@ namespace ServiceStack
             }
         }
 
-        public object Delete<Table>(IDeleteDb<Table> dto, IRequest req)
+        public object Delete<Table>(IDeleteDb<Table> dto, IRequest req, IDbConnection db = null)
         {
-            using var db = GetDb<Table>(req);
+            using var newDb = db == null ? GetDb<Table>(req) : null;
+            db ??= newDb;
             using var profiler = Profiler.Current.Step("AutoQuery.Delete");
 
             var meta = AutoCrudMetadata.Create(dto.GetType());
@@ -645,9 +650,10 @@ namespace ServiceStack
             return ctx.Response;
         }
 
-        public async Task<object> DeleteAsync<Table>(IDeleteDb<Table> dto, IRequest req)
+        public async Task<object> DeleteAsync<Table>(IDeleteDb<Table> dto, IRequest req, IDbConnection db = null)
         {
-            using var db = GetDb<Table>(req);
+            using var newDb = db == null ? GetDb<Table>(req) : null;
+            db ??= newDb;
             using var profiler = Profiler.Current.Step("AutoQuery.Delete");
 
             var meta = AutoCrudMetadata.Create(dto.GetType());
@@ -709,9 +715,10 @@ namespace ServiceStack
             return null;
         }
 
-        public object Save<Table>(ISaveDb<Table> dto, IRequest req)
+        public object Save<Table>(ISaveDb<Table> dto, IRequest req, IDbConnection db = null)
         {
-            using var db = GetDb<Table>(req);
+            using var newDb = db == null ? GetDb<Table>(req) : null;
+            db ??= newDb;
             using var profiler = Profiler.Current.Step("AutoQuery.Save");
 
             var row = dto.ConvertTo<Table>();
@@ -724,9 +731,10 @@ namespace ServiceStack
             return response;
         }
 
-        public async Task<object> SaveAsync<Table>(ISaveDb<Table> dto, IRequest req)
+        public async Task<object> SaveAsync<Table>(ISaveDb<Table> dto, IRequest req, IDbConnection db = null)
         {
-            using var db = GetDb<Table>(req);
+            using var newDb = db == null ? GetDb<Table>(req) : null;
+            db ??= newDb;
             using var profiler = Profiler.Current.Step("AutoQuery.Save");
 
             var row = dto.ConvertTo<Table>();
