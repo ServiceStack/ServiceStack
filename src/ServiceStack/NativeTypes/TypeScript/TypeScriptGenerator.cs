@@ -571,7 +571,7 @@ namespace ServiceStack.NativeTypes.TypeScript
 
         public static bool? DefaultIsPropertyOptional(TypeScriptGenerator generator, MetadataType type, MetadataPropertyType prop)
         {
-            if (prop.Attributes.Safe().FirstOrDefault(x => x.Name == "Required") != null)
+            if (prop.IsRequired == true)
                 return false;
             
             if (generator.Config.MakePropertiesOptional)

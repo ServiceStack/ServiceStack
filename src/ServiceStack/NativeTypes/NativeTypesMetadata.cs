@@ -772,9 +772,15 @@ namespace ServiceStack.NativeTypes
 
             var validateProp = pi.AllAttributes<ValidateAttribute>();
             if (validateProp.Any(x => x.Validator != null && ValidateScripts.RequiredValidators.Contains(x.Validator)))
-            {
                 property.IsRequired = true;
-            }
+
+            var requiredProp = pi.AllAttributes<RequiredAttribute>();
+            if (requiredProp != null)
+                property.IsRequired = true;
+
+            var notNullRefType = pi.IsNotNullable();
+            if (notNullRefType == true)
+                property.IsRequired = true;
 
             var apiAllowableValues = pi.FirstAttribute<ApiAllowableValuesAttribute>();
             if (apiAllowableValues != null)
