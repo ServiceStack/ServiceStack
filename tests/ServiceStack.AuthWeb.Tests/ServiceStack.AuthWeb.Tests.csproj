@@ -80,8 +80,8 @@
       <HintPath>..\..\src\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Npgsql, Version=4.1.5.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7">
-      <HintPath>..\..\src\packages\Npgsql.4.1.5\lib\net461\Npgsql.dll</HintPath>
+    <Reference Include="Npgsql, Version=4.1.7.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7">
+      <HintPath>..\..\src\packages\Npgsql.4.1.7\lib\net461\Npgsql.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="nunit.framework, Version=3.12.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb">
