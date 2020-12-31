@@ -778,9 +778,12 @@ namespace ServiceStack.NativeTypes
             if (requiredProp != null)
                 property.IsRequired = true;
 
-            var notNullRefType = pi.IsNotNullable();
-            if (notNullRefType == true)
-                property.IsRequired = true;
+            if (HostContext.AppHost.Config.TreatNonNullableRefTypesAsRequired)
+            {
+                var notNullRefType = pi.IsNotNullable();
+                if (notNullRefType == true)
+                    property.IsRequired = true;
+            }
 
             var apiAllowableValues = pi.FirstAttribute<ApiAllowableValuesAttribute>();
             if (apiAllowableValues != null)

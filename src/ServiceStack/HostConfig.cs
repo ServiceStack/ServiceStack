@@ -169,6 +169,7 @@ namespace ServiceStack
                 UseHttpsLinks = false,
                 UseJsObject = true,
                 EnableOptimizations = true,
+                TreatNonNullableRefTypesAsRequired = false,
 
 #if !NETSTANDARD2_0
                 UseCamelCase = false,
@@ -261,6 +262,7 @@ namespace ServiceStack
             this.UseCamelCase = instance.UseCamelCase;
             this.UseJsObject = instance.UseJsObject;
             this.EnableOptimizations = instance.EnableOptimizations;
+            this.TreatNonNullableRefTypesAsRequired = instance.TreatNonNullableRefTypesAsRequired;
         }
 
         public string WsdlServiceNamespace { get; set; }
@@ -392,6 +394,7 @@ namespace ServiceStack
         public bool UseCamelCase { get; set; }
         public bool UseJsObject { get; set; }
         public bool EnableOptimizations { get; set; }
+        public bool TreatNonNullableRefTypesAsRequired { get; set; }
 
         public string AdminAuthSecret { get; set; }
 
