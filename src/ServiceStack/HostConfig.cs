@@ -169,7 +169,7 @@ namespace ServiceStack
                 UseHttpsLinks = false,
                 UseJsObject = true,
                 EnableOptimizations = true,
-                TreatNonNullableRefTypesAsRequired = false,
+                TreatNonNullableRefTypesAsRequired = true,
 
 #if !NETSTANDARD2_0
                 UseCamelCase = false,

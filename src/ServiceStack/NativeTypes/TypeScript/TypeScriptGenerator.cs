@@ -105,6 +105,8 @@ namespace ServiceStack.NativeTypes.TypeScript
 
         public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types.OrderTypesByDeps();
         
+        public static bool InsertTsNoCheck { get; set; }
+        
         /// <summary>
         /// Add Code to top of generated code
         /// </summary>
@@ -232,6 +234,9 @@ namespace ServiceStack.NativeTypes.TypeScript
             var insertCode = InsertCodeFilter?.Invoke(AllTypes, Config);
             if (insertCode != null)
                 sb.AppendLine(insertCode);
+            
+            if (InsertTsNoCheck)
+                sb.AppendLine("// @ts-nocheck");
 
             //ServiceStack core interfaces
             foreach (var type in AllTypes)
