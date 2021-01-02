@@ -774,7 +774,7 @@ namespace ServiceStack.NativeTypes
             if (validateProp.Any(x => x.Validator != null && ValidateScripts.RequiredValidators.Contains(x.Validator)))
                 property.IsRequired = true;
 
-            var requiredProp = pi.AllAttributes<RequiredAttribute>();
+            var requiredProp = pi.FirstAttribute<RequiredAttribute>();
             if (requiredProp != null)
                 property.IsRequired = true;
 

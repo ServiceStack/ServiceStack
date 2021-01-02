@@ -138,7 +138,9 @@ namespace ServiceStack.NativeTypes.TypeScript
                 {
                     IsPropertyOptional = (gen, type, prop) => false;
                     PropertyTypeFilter = (gen, type, prop) => 
-                        gen.GetPropertyType(prop, out var isNullable) + "|null";
+                        prop.IsRequired == true
+                            ? gen.GetPropertyType(prop, out _)
+                            : gen.GetPropertyType(prop, out _) + "|null";
                 }
             }
         }
