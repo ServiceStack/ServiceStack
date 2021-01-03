@@ -29,6 +29,67 @@ namespace ServiceStack
             };
             return to;
         }
+
+        /// <summary>
+        /// Run the command with the OS's command runner 
+        /// </summary>
+        public static string RunShell(string arguments, string workingDir=null)
+        {
+            if (string.IsNullOrEmpty(arguments))
+                throw new ArgumentNullException(nameof(arguments));
+
+            if (Env.IsWindows)
+            {
+                var cmdArgs = "/C " + arguments; 
+                return Run("cmd.exe", cmdArgs, workingDir);
+            }
+            else
+            {
+                var escapedArgs = arguments.Replace("\"", "\\\"");
+                var cmdArgs = $"-c \"{escapedArgs}\"";
+                return Run("/bin/bash", cmdArgs, workingDir);
+            }
+        }
+        
+        /// <summary>
+        /// Run the process and return the Standard Output, any Standard Error output will throw an Exception
+        /// </summary>
+        public static string Run(string fileName, string arguments=null, string workingDir=null)
+        {
+            var process = new Process
+            {
+                StartInfo =
+                {
+                    FileName = fileName,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                }
+            };
+
+            if (arguments != null)
+                process.StartInfo.Arguments = arguments;
+            
+            if (workingDir != null)
+                process.StartInfo.WorkingDirectory = workingDir;
+
+            using (process)
+            {
+                process.StartInfo.RedirectStandardError = true;
+                process.Start();
+
+                var output = process.StandardOutput.ReadToEnd();
+                var error = process.StandardError.ReadToEnd();
+
+                process.WaitForExit();
+                process.Close();
+
+                if (!string.IsNullOrEmpty(error))
+                    throw new Exception($"`{fileName} {process.StartInfo.Arguments}` command failed, stderr: " + error + ", stdout:" + output);
+
+                return output;
+            }
+        }
         
         /// <summary>
         /// Run a Process asynchronously
