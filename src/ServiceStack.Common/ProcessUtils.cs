@@ -31,6 +31,43 @@ namespace ServiceStack
         }
 
         /// <summary>
+        /// Returns path of executable if exists with PATH
+        /// </summary>
+        public static string FindExePath(string exeName)
+        {
+            try
+            {
+                var p = new Process
+                {
+                    StartInfo =
+                    {
+                        UseShellExecute = false,
+                        FileName = Env.IsWindows 
+                            ? "where"  //Win 7/Server 2003+
+                            : "which", //macOS / Linux
+                        Arguments = exeName,
+                        RedirectStandardOutput = true
+                    }
+                };
+                p.Start();
+                var output = p.StandardOutput.ReadToEnd();
+                p.WaitForExit();
+
+                if (p.ExitCode == 0)
+                {
+                    // just return first match
+                    var fullPath = output.Substring(0, output.IndexOf(Environment.NewLine, StringComparison.Ordinal));
+                    if (!string.IsNullOrEmpty(fullPath))
+                    {
+                        return fullPath;
+                    }
+                }
+            }
+            catch {}               
+            return null;
+        }
+        
+        /// <summary>
         /// Run the command with the OS's command runner 
         /// </summary>
         public static string RunShell(string arguments, string workingDir=null)
