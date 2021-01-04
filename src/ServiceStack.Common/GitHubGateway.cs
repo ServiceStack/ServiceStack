@@ -528,6 +528,8 @@ namespace ServiceStack
 
             if (!string.IsNullOrEmpty(description))
             {
+                if (i++ > 0)
+                    sb.Append(",");
                 sb.Append("\"description\":").Append(description.ToJson());
             }
             sb.Append("}");
