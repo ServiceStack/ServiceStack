@@ -21,8 +21,8 @@ namespace ServiceStack
         Gist GetGist(string gistId, string version);
         Task<Gist> GetGistAsync(string gistId);
         Task<Gist> GetGistAsync(string gistId, string version);
-        void WriteGistFiles(string gistId, Dictionary<string, object> files);
-        void WriteGistFiles(string gistId, Dictionary<string, string> textFiles);
+        void WriteGistFiles(string gistId, Dictionary<string, object> files, string description=null, bool deleteMissing=false);
+        void WriteGistFiles(string gistId, Dictionary<string, string> textFiles, string description=null, bool deleteMissing=false);
         void CreateGistFile(string gistId, string filePath, string contents);
         void WriteGistFile(string gistId, string filePath, string contents);
         void DeleteGistFiles(string gistId, params string[] filePaths);
@@ -483,13 +483,13 @@ namespace ServiceStack
         internal static NotSupportedException CreateContentNotSupportedException(object value) =>
             new NotSupportedException($"Could not write '{value?.GetType().Name ?? "null"}' value. Only string, byte[], Stream or IVirtualFile content is supported.");
 
-        public virtual void WriteGistFiles(string gistId, Dictionary<string, object> files) =>
-            WriteGistFiles(gistId, ToTextFiles(files));
+        public virtual void WriteGistFiles(string gistId, Dictionary<string, object> files, string description=null, bool deleteMissing=false) =>
+            WriteGistFiles(gistId, ToTextFiles(files), description, deleteMissing);
         
         /// <summary>
         /// Create or Write Gist Text Files. Requires AccessToken
         /// </summary>
-        public virtual void WriteGistFiles(string gistId, Dictionary<string,string> textFiles)
+        public virtual void WriteGistFiles(string gistId, Dictionary<string,string> textFiles, string description=null, bool deleteMissing=false)
         {
             AssertAccessToken();
 
@@ -508,7 +508,29 @@ namespace ServiceStack
                     .Append(entry.Value.ToJson())
                     .Append("}");
             }
-            sb.Append("}}");
+
+            if (deleteMissing)
+            {
+                var gist = GetGist(gistId);
+                foreach (var existingFile in gist.Files.Keys)
+                {
+                    if (textFiles.ContainsKey(existingFile)) 
+                        continue;
+                    
+                    if (i++ > 0)
+                        sb.Append(",");
+                
+                    sb.Append(existingFile.ToJson())
+                        .Append(":null");
+                }
+            }
+            sb.Append("}");
+
+            if (!string.IsNullOrEmpty(description))
+            {
+                sb.Append("\"description\":").Append(description.ToJson());
+            }
+            sb.Append("}");
                 
             var json = StringBuilderCache.ReturnAndFree(sb);
             BaseUrl.CombineWith($"/gists/{gistId}")
