@@ -712,7 +712,7 @@ namespace ServiceStack
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
         public List<Action<QueryDbFilterContext>> ResponseFilters { get; set; }
 
-        private static Dictionary<Type, ITypedQuery> TypedQueries = new Dictionary<Type, ITypedQuery>();
+        private static Dictionary<Type, ITypedQuery> TypedQueries = new();
 
         public Type GetFromType(Type requestDtoType)
         {
@@ -1187,8 +1187,7 @@ namespace ServiceStack
         static readonly Dictionary<string, QueryDbFieldAttribute> QueryFieldMap =
             new Dictionary<string, QueryDbFieldAttribute>();
 
-        static readonly AutoFilterAttribute[] AutoFilters;
-        static readonly QueryDbFieldAttribute[] AutoFiltersDbFields;
+        static readonly AutoCrudMetadata Meta;
 
         static TypedQuery()
         {
@@ -1202,9 +1201,11 @@ namespace ServiceStack
                     QueryFieldMap[pi.Name] = queryAttr.Init();
             }
 
-            var meta = AutoCrudMetadata.Create(typeof(QueryModel));
-            AutoFilters = meta.AutoFilters?.ToArray() ?? TypeConstants<AutoFilterAttribute>.EmptyArray;
-            AutoFiltersDbFields = meta.AutoFiltersDbFields?.ToArray() ?? TypeConstants<QueryDbFieldAttribute>.EmptyArray;
+            Meta = AutoCrudMetadata.Create(typeof(QueryModel));
+            // AutoFilters = meta.AutoFilters?.ToArray() ?? TypeConstants<AutoFilterAttribute>.EmptyArray;
+            // PopulateAttrs = meta.PopulateAttrs?.ToArray() ?? TypeConstants<AutoPopulateAttribute>.EmptyArray;
+            // MapAttrs = meta.MapAttrs;
+            // AutoFiltersDbFields = meta.AutoFiltersDbFields?.ToArray() ?? TypeConstants<QueryDbFieldAttribute>.EmptyArray;
         }
 
         public ISqlExpression CreateQuery(IDbConnection db) => db.From<From>();
@@ -1218,6 +1219,17 @@ namespace ServiceStack
         {
             dynamicParams = new Dictionary<string, string>(dynamicParams, StringComparer.OrdinalIgnoreCase);
 
+            if (Meta.PopulateAttrs.Count > 0)
+            {
+                var appHost = HostContext.AppHost;
+                var updateProps = new Dictionary<string, object>();
+                foreach (var populateAttr in Meta.PopulateAttrs)
+                {
+                    updateProps[populateAttr.Field] = appHost.EvalScriptValue(populateAttr, req);
+                }
+                updateProps.PopulateInstance(dto);
+            }
+            
             var q = (SqlExpression<From>) query;
             if (options != null && options.EnableSqlFilters)
             {
@@ -1239,7 +1251,11 @@ namespace ServiceStack
                 if (attr?.Name == null) continue;
                 aliases[attr.Name] = pi.Name;
             }
-
+            foreach (var entry in Meta.MapAttrs)
+            {
+                aliases[entry.Key] = entry.Value.To;
+            }
+            
             AppendAutoFilters(q, dto, options, req);
 
             AppendTypedQueries(q, dto, dynamicParams, defaultTerm, options, aliases);
@@ -1357,13 +1373,13 @@ namespace ServiceStack
 
         private static void AppendAutoFilters(SqlExpression<From> q, IQueryDb dto, IAutoQueryOptions options, IRequest req)
         {
-            if (AutoFilters.Length == 0)
+            if (Meta.AutoFilters.Count == 0)
                 return;
             
             var appHost = HostContext.AppHost;
-            for (var i = 0; i < AutoFilters.Length; i++)
+            for (var i = 0; i < Meta.AutoFilters.Count; i++)
             {
-                var filter = AutoFilters[i];
+                var filter = Meta.AutoFilters[i];
                 var fieldDef = q.ModelDef.GetFieldDefinition(filter.Field);
                 if (fieldDef == null)
                     throw new NotSupportedException($"{dto.GetType().Name} '{filter.Field}' AutoFilter was not found on '{typeof(From).Name}'");
@@ -1372,7 +1388,7 @@ namespace ServiceStack
 
                 var value = appHost.EvalScriptValue(filter, req);
 
-                var dbField = AutoFiltersDbFields[i];
+                var dbField = Meta.AutoFiltersDbFields[i];
                 AddCondition(q, "AND", quotedColumn, value, dbField);
             }
         }

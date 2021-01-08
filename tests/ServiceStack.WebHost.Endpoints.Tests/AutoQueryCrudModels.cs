@@ -558,6 +558,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     [DataContract]
     [ValidateIsAuthenticated]
+    [AutoPopulate(nameof(CreatedBy), Eval = "userAuthName")]
+    [AutoApply(Behavior.AuditQuery)]
+    public class QueryUserBookings : QueryDb<Booking>
+    {
+        [DataMember(Order = 1)] public string CreatedBy { get; set; }
+    }
+
+    [DataContract]
+    [ValidateIsAuthenticated]
+    [AutoPopulate(nameof(UserName), Eval = "userAuthName")]
+    [AutoApply(Behavior.AuditQuery)]
+    public class QueryUserMapBookings : QueryDb<Booking>
+    {
+        [AutoMap(nameof(ServiceStack.AuditBase.CreatedBy))]
+        [DataMember(Order = 1)] public string UserName { get; set; }
+    }
+
+    [DataContract]
+    [ValidateIsAuthenticated]
     [AutoApply(Behavior.AuditCreate)]
     public class CreateBooking
         : ICreateDb<Booking>, IReturn<IdResponse>

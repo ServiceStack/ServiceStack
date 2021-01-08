@@ -1433,6 +1433,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(booking2, Is.Not.Null);
             Assert.That(booking2.DeletedBy, Is.Not.Null);
             Assert.That(booking2.DeletedDate, Is.Not.Null);
+            
+            authClient.Post(new Authenticate {
+                provider = "credentials",
+                UserName = "manager",
+                Password = "p@55wOrd",
+                RememberMe = true,
+            });
+            var booking3Id = authClient.Post(new CreateBooking {
+                RoomNumber = 3,
+                BookingStartDate = DateTime.Today.AddDays(3),
+                BookingEndDate = DateTime.Today.AddDays(7),
+                Cost = 100,
+            }).Id.ToInt();
+
+            var managerBookings = authClient.Get(new QueryUserBookings());
+            Assert.That(managerBookings.Results.Count, Is.EqualTo(1));
+            Assert.That(managerBookings.Results[0].RoomNumber, Is.EqualTo(3));
+
+            managerBookings = authClient.Get(new QueryUserMapBookings());
+            Assert.That(managerBookings.Results.Count, Is.EqualTo(1));
+            Assert.That(managerBookings.Results[0].RoomNumber, Is.EqualTo(3));
         }
 
     }

@@ -240,15 +240,15 @@ namespace ServiceStack
         public Type ModelType { get; set; }
         public ModelDefinition ModelDef { get; set; }
         public TypeProperties DtoProps { get; set; }
-        public List<AutoPopulateAttribute> PopulateAttrs { get; set; } = new List<AutoPopulateAttribute>();
-        public List<AutoFilterAttribute> AutoFilters { get; set; } = new List<AutoFilterAttribute>();
-        public List<QueryDbFieldAttribute> AutoFiltersDbFields { get; set; } = new List<QueryDbFieldAttribute>();
-        public List<AutoApplyAttribute> AutoApplyAttrs { get; set; } = new List<AutoApplyAttribute>();
-        public Dictionary<string, AutoUpdateAttribute> UpdateAttrs { get; set; } = new Dictionary<string, AutoUpdateAttribute>();
-        public Dictionary<string, AutoDefaultAttribute> DefaultAttrs { get; set; } = new Dictionary<string, AutoDefaultAttribute>();
-        public Dictionary<string, AutoMapAttribute> MapAttrs { get; set; } = new Dictionary<string, AutoMapAttribute>();
-        public HashSet<string> NullableProps { get; set; } = new HashSet<string>();
-        public List<string> RemoveDtoProps { get; set; } = new List<string>();
+        public List<AutoPopulateAttribute> PopulateAttrs { get; set; } = new();
+        public List<AutoFilterAttribute> AutoFilters { get; set; } = new();
+        public List<QueryDbFieldAttribute> AutoFiltersDbFields { get; set; } = new();
+        public List<AutoApplyAttribute> AutoApplyAttrs { get; set; } = new();
+        public Dictionary<string, AutoUpdateAttribute> UpdateAttrs { get; set; } = new();
+        public Dictionary<string, AutoDefaultAttribute> DefaultAttrs { get; set; } = new();
+        public Dictionary<string, AutoMapAttribute> MapAttrs { get; set; } = new();
+        public HashSet<string> NullableProps { get; set; } = new();
+        public List<string> RemoveDtoProps { get; set; } = new();
         public GetMemberDelegate RowVersionGetter { get; set; }
         public bool SoftDelete { get; set; }
         
