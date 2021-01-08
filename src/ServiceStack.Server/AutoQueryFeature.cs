@@ -34,9 +34,9 @@ namespace ServiceStack
         public string Id { get; set; } = Plugins.AutoQuery;
         private static readonly string[] DefaultIgnoreProperties = 
             {"Skip", "Take", "OrderBy", "OrderByDesc", "Fields", "_select", "_from", "_join", "_where"};
-        public HashSet<string> IgnoreProperties { get; set; } = new HashSet<string>(DefaultIgnoreProperties, StringComparer.OrdinalIgnoreCase);
-        public HashSet<string> IllegalSqlFragmentTokens { get; set; } = new HashSet<string>(OrmLiteUtils.IllegalSqlFragmentTokens);
-        public HashSet<Assembly> LoadFromAssemblies { get; set; } = new HashSet<Assembly>();
+        public HashSet<string> IgnoreProperties { get; set; } = new(DefaultIgnoreProperties, StringComparer.OrdinalIgnoreCase);
+        public HashSet<string> IllegalSqlFragmentTokens { get; set; } = new(OrmLiteUtils.IllegalSqlFragmentTokens);
+        public HashSet<Assembly> LoadFromAssemblies { get; set; } = new();
         public int? MaxLimit { get; set; }
         public bool IncludeTotal { get; set; }
         public bool StripUpperInLike { get; set; } = OrmLiteConfig.StripUpperInLike;
@@ -48,7 +48,7 @@ namespace ServiceStack
         public string UseNamedConnection { get; set; }
         public Type AutoQueryServiceBaseType { get; set; } = typeof(AutoQueryServiceBase);
         public QueryFilterDelegate GlobalQueryFilter { get; set; }
-        public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; } = new Dictionary<Type, QueryFilterDelegate>();
+        public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; } = new();
         public List<Action<QueryDbFilterContext>> ResponseFilters { get; set; }
         public Action<Type, TypeBuilder, MethodBuilder, ILGenerator> GenerateServiceFilter { get; set; }
 
@@ -62,8 +62,7 @@ namespace ServiceStack
         /// </summary>
         public IGenerateCrudServices GenerateCrudServices { get; set; }
 
-        public Dictionary<string, string> ImplicitConventions = new Dictionary<string, string> 
-        {
+        public Dictionary<string, string> ImplicitConventions = new() {
             {"%Above%",         SqlTemplate.GreaterThan},
             {"Begin%",          SqlTemplate.GreaterThan},
             {"%Beyond%",        SqlTemplate.GreaterThan},
@@ -109,35 +108,32 @@ namespace ServiceStack
             {"%IsNotNull",      SqlTemplate.IsNotNull},
         };
 
-        public Dictionary<string, QueryDbFieldAttribute> StartsWithConventions =
-            new Dictionary<string, QueryDbFieldAttribute>();
+        public Dictionary<string, QueryDbFieldAttribute> StartsWithConventions = new();
 
-        public Dictionary<string, QueryDbFieldAttribute> EndsWithConventions = new Dictionary<string, QueryDbFieldAttribute>
-        {
+        public Dictionary<string, QueryDbFieldAttribute> EndsWithConventions = new() {
             { "StartsWith", new QueryDbFieldAttribute { Template = SqlTemplate.CaseInsensitiveLike, ValueFormat = "{0}%" }},
             { "Contains", new QueryDbFieldAttribute { Template = SqlTemplate.CaseInsensitiveLike, ValueFormat = "%{0}%" }},
             { "EndsWith", new QueryDbFieldAttribute { Template = SqlTemplate.CaseInsensitiveLike, ValueFormat = "%{0}" }},
         };
         
-        public List<Type> IgnoreGeneratingServicesFor { get; } = new List<Type> {
+        public List<Type> IgnoreGeneratingServicesFor { get; } = new() {
             typeof(GetCrudEvents),
         };
 
-        public List<AutoQueryConvention> ViewerConventions { get; set; } = new List<AutoQueryConvention> 
-        {
-            new AutoQueryConvention {Name = "=", Value = "%"},
-            new AutoQueryConvention {Name = "!=", Value = "%!"},
-            new AutoQueryConvention {Name = ">=", Value = ">%"},
-            new AutoQueryConvention {Name = ">", Value = "%>"},
-            new AutoQueryConvention {Name = "<=", Value = "%<"},
-            new AutoQueryConvention {Name = "<", Value = "<%"},
-            new AutoQueryConvention {Name = "In", Value = "%In"},
-            new AutoQueryConvention {Name = "Between", Value = "%Between"},
-            new AutoQueryConvention {Name = "Starts With", Value = "%StartsWith", Types = "string"},
-            new AutoQueryConvention {Name = "Contains", Value = "%Contains", Types = "string"},
-            new AutoQueryConvention {Name = "Ends With", Value = "%EndsWith", Types = "string"},
-            new AutoQueryConvention {Name = "Is Null", Value = "%IsNull", ValueType = "none"},
-            new AutoQueryConvention {Name = "Not Null", Value = "%IsNotNull", ValueType = "none"},
+        public List<AutoQueryConvention> ViewerConventions { get; set; } = new() {
+            new() {Name = "=", Value = "%"},
+            new() {Name = "!=", Value = "%!"},
+            new() {Name = ">=", Value = ">%"},
+            new() {Name = ">", Value = "%>"},
+            new() {Name = "<=", Value = "%<"},
+            new() {Name = "<", Value = "<%"},
+            new() {Name = "In", Value = "%In"},
+            new() {Name = "Between", Value = "%Between"},
+            new() {Name = "Starts With", Value = "%StartsWith", Types = "string"},
+            new() {Name = "Contains", Value = "%Contains", Types = "string"},
+            new() {Name = "Ends With", Value = "%EndsWith", Types = "string"},
+            new() {Name = "Is Null", Value = "%IsNull", ValueType = "none"},
+            new() {Name = "Not Null", Value = "%IsNotNull", ValueType = "none"},
         };
 
         public AutoQueryFeature()
@@ -382,7 +378,7 @@ namespace ServiceStack
             return this;
         }
 
-        public readonly HashSet<string> SqlAggregateFunctions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        public readonly HashSet<string> SqlAggregateFunctions = new(StringComparer.OrdinalIgnoreCase)
         {
             "AVG", "COUNT", "FIRST", "LAST", "MAX", "MIN", "SUM"
         };
