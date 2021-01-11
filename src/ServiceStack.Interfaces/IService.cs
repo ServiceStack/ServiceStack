@@ -1,6 +1,8 @@
 ﻿//Copyright (c) ServiceStack, Inc. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
+using System.Threading.Tasks;
+
 namespace ServiceStack
 {
     /// <summary>
@@ -12,13 +14,21 @@ namespace ServiceStack
     {
         void OnBeforeExecute(object requestDto);
     }
+    public interface IServiceBeforeFilterAsync
+    {
+        Task OnBeforeExecuteAsync(object requestDto);
+    }
     public interface IServiceAfterFilter
     {
         object OnAfterExecute(object response);
     }
+    public interface IServiceAfterFilterAsync
+    {
+        Task<object> OnAfterExecuteAsync(object response);
+    }
     public interface IServiceErrorFilter
     {
-        System.Threading.Tasks.Task<object> OnExceptionAsync(object requestDto, System.Exception ex);
+        Task<object> OnExceptionAsync(object requestDto, System.Exception ex);
     }
     public interface IServiceFilters : IServiceBeforeFilter, IServiceAfterFilter, IServiceErrorFilter {}
 
