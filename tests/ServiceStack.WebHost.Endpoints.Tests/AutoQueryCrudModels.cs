@@ -577,6 +577,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     [DataContract]
     [ValidateIsAuthenticated]
+    [AutoFilter(QueryTerm.Ensure, nameof(ServiceStack.AuditBase.CreatedBy),  Eval = "userAuthName")]
+    [AutoApply(Behavior.AuditQuery)]
+    public class QueryEnsureUserBookings : QueryDb<Booking> {}
+
+    [DataContract]
+    [ValidateIsAuthenticated]
     [AutoApply(Behavior.AuditCreate)]
     public class CreateBooking
         : ICreateDb<Booking>, IReturn<IdResponse>

@@ -1454,6 +1454,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             managerBookings = authClient.Get(new QueryUserMapBookings());
             Assert.That(managerBookings.Results.Count, Is.EqualTo(1));
             Assert.That(managerBookings.Results[0].RoomNumber, Is.EqualTo(3));
+
+            managerBookings = authClient.Get(new QueryEnsureUserBookings());
+            Assert.That(managerBookings.Results.Count, Is.EqualTo(1));
+            Assert.That(managerBookings.Results[0].RoomNumber, Is.EqualTo(3));
         }
 
     }
