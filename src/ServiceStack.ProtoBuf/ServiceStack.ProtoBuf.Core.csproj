@@ -16,6 +16,6 @@
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.Core.csproj" />
     <ProjectReference Include="..\ServiceStack\ServiceStack.Core.csproj" />
     <PackageReference Include="ServiceStack.Text.Core" Version="$(Version)" />
-    <PackageReference Include="protobuf-net" Version="3.0.52" />
+    <PackageReference Include="protobuf-net" Version="3.0.73" />
   </ItemGroup>
 </Project>
