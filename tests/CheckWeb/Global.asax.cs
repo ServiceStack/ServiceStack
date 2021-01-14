@@ -5,34 +5,24 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using System.Web;
 using Check.ServiceInterface;
 using Check.ServiceModel;
 using Check.ServiceModel.Operations;
 using Check.ServiceModel.Types;
 using Funq;
 using ServiceStack;
-using ServiceStack.Admin;
 using ServiceStack.Api.OpenApi;
 using ServiceStack.Api.OpenApi.Specification;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
-using ServiceStack.Data;
-using ServiceStack.Formats;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.MiniProfiler;
-using ServiceStack.MiniProfiler.Data;
-using ServiceStack.NativeTypes;
-using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.ProtoBuf;
 using ServiceStack.Razor;
 using ServiceStack.Text;
 using ServiceStack.Validation;
-using ServiceStack.VirtualPath;
-using ServiceStack.Web;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Redis;
 
@@ -90,7 +80,7 @@ namespace CheckWeb
                 ScriptAdminRole = RoleNames.AllowAnon,
             });
 
-            //ProxyFetureTests
+            //ProxyFeatureTests
             Plugins.Add(new ProxyFeature(
                 matchingRequests: req => req.PathInfo.StartsWith("/proxy/test"),
                 resolveUrl: req => "http://test.servicestack.net".CombineWith(req.RawUrl.Replace("/test", "/"))));
