@@ -804,8 +804,9 @@ namespace ServiceStack.Auth
             return null;
         }
 
-        public void Register(IAppHost appHost, AuthFeature feature)
+        public override void Register(IAppHost appHost, AuthFeature feature)
         {
+            base.Register(appHost, feature);
             var isHmac = HmacAlgorithms.ContainsKey(HashAlgorithm);
             var isRsa = RsaSignAlgorithms.ContainsKey(HashAlgorithm);
             if (!isHmac && !isRsa)

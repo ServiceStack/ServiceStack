@@ -344,8 +344,9 @@ namespace ServiceStack.Auth
 
         public static string GetSessionKey(string apiKey) => "key:sess:" + apiKey;
 
-        public void Register(IAppHost appHost, AuthFeature feature)
+        public override void Register(IAppHost appHost, AuthFeature feature)
         {
+            base.Register(appHost, feature);
             var authRepo = HostContext.AppHost.GetAuthRepository();
             if (authRepo == null)
                 throw new NotSupportedException("ApiKeyAuthProvider requires a registered IAuthRepository");
