@@ -147,8 +147,9 @@ namespace ServiceStack.Auth
             };
         }
 
-        public void Register(IAppHost appHost, AuthFeature feature)
+        public override void Register(IAppHost appHost, AuthFeature feature)
         {
+            base.Register(appHost, feature);
             appHost.Register(new CryptoProviderFactory { CacheSignatureProviders = false });
             appHost.Register(new JwtSecurityTokenHandler());
             // UserName validation Regex to increase to allow for Apple's 44 char userid
