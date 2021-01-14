@@ -14,7 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
     <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
-    <PackageReference Include="NLog" Version="4.7.0" />
+    <PackageReference Include="NLog" Version="4.7.6" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
