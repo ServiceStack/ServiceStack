@@ -101,6 +101,12 @@
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
+    <!-- ServiceStack.Mvc.Core -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Mvc/ServiceStack.Mvc.Core.csproj" Targets="Restore" />
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Mvc/ServiceStack.Mvc.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
     <!-- ServiceStack.HttpClient.Core -->
     <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.HttpClient/ServiceStack.HttpClient.Core.csproj" Targets="Restore" />
     <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.HttpClient/ServiceStack.HttpClient.Core.csproj"
@@ -128,12 +134,6 @@
     <!-- ServiceStack.MsgPack.Core -->
     <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.MsgPack/ServiceStack.MsgPack.Core.csproj" Targets="Restore" />
     <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.MsgPack/ServiceStack.MsgPack.Core.csproj"
-             Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" />
-
-    <!-- ServiceStack.Mvc.Core -->
-    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Mvc/ServiceStack.Mvc.Core.csproj" Targets="Restore" />
-    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Mvc/ServiceStack.Mvc.Core.csproj"
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
