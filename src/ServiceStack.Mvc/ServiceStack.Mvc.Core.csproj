@@ -3,7 +3,7 @@
     <PackageId>ServiceStack.Mvc.Core</PackageId>
     <AssemblyName>ServiceStack.Mvc</AssemblyName>
     <RootNamespace>ServiceStack.Mvc</RootNamespace>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Title>ServiceStack.Mvc .NET Standard 2.0</Title>
     <PackageDescription>
       Full details in MVC PowerPack: http://mono.servicestack.net/mvc-powerpack/

@@ -1,3 +1,4 @@
+using System.ServiceModel.Channels;
 using System.Web.UI;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
@@ -8,7 +9,7 @@ namespace ServiceStack.WebHost.IntegrationTests
 {
     public class CustomUserSession : AuthUserSession
     {
-        public string CustomPropety { get; set; }
+        public string CustomProperty { get; set; }
 
         public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, System.Collections.Generic.Dictionary<string, string> authInfo)
         {
@@ -29,7 +30,7 @@ namespace ServiceStack.WebHost.IntegrationTests
         /// Typed UserSession
         /// </summary>
         private object userSession;
-        protected virtual TUserSession SessionAs<TUserSession>() => (TUserSession)(userSession ?? (userSession = Cache.SessionAs<TUserSession>()));
+        protected virtual TUserSession SessionAs<TUserSession>() => (TUserSession)(userSession ??= Cache.SessionAs<TUserSession>());
 
         protected CustomUserSession UserSession => SessionAs<CustomUserSession>();
 
@@ -41,8 +42,8 @@ namespace ServiceStack.WebHost.IntegrationTests
         /// <summary>
         /// Dynamic Session Bag
         /// </summary>
-        private ISession session;
-        public new ISession SessionBag => session ?? (session = SessionFactory.GetOrCreateSession());
+        private Caching.ISession session;
+        public Caching.ISession SessionBag => session ??= SessionFactory.GetOrCreateSession();
 
         public void ClearSession()
         {

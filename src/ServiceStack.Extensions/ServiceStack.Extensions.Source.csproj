@@ -3,22 +3,21 @@
     <PropertyGroup>
         <PackageId>ServiceStack.Extensions</PackageId>
         <AssemblyName>ServiceStack.Extensions</AssemblyName>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
         <RootNamespace>ServiceStack</RootNamespace>
-        <DefineConstants>$(DefineConstants);PLAT_PBN_NOSPAN</DefineConstants>
-        <LangVersion>8</LangVersion>
+        <LangVersion>default</LangVersion>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Grpc.AspNetCore.Server" Version="2.29.0" />
-        <PackageReference Include="Grpc.Core.Api" Version="2.29.0" />
-        <PackageReference Include="protobuf-net" Version="3.0.0" />
-        <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.0.90" />
+        <PackageReference Include="Grpc.AspNetCore.Server" Version="2.34.0" />
+        <PackageReference Include="Grpc.Core.Api" Version="2.34.0" />
+        <PackageReference Include="protobuf-net" Version="3.0.73" />
+        <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.0.123" />
 
-        <PackageReference Include="System.Threading.Channels" Version="4.7.1" />
+        <PackageReference Include="System.Threading.Channels" Version="5.0.0" />
 
-        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.7.1" />
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.7.1" />
+        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.8.0" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.8.0" />
         
         <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
         <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.Source.csproj" />

@@ -3,13 +3,12 @@
     <PropertyGroup>
         <PackageId>ServiceStack.Extensions</PackageId>
         <AssemblyName>ServiceStack.Extensions</AssemblyName>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
         <RootNamespace>ServiceStack</RootNamespace>
-        <DefineConstants>$(DefineConstants);PLAT_PBN_NOSPAN</DefineConstants>
-        <LangVersion>8</LangVersion>
+        <LangVersion>default</LangVersion>
         <Title>ServiceStack.Extensions</Title>
         <PackageDescription>ServiceStack extensions for .NET Core Apps, including GrpcFeature</PackageDescription>
         <PackageTags>ServiceStack;gRPC;server;GrpcFeature</PackageTags>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
@@ -18,7 +17,7 @@
         <PackageReference Include="protobuf-net" Version="3.0.73" />
         <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.0.123" />
         
-        <PackageReference Include="System.Threading.Channels" Version="4.7.1" />
+        <PackageReference Include="System.Threading.Channels" Version="5.0.0" />
 
         <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.8.0" />
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.8.0" />

@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
         <MvcRazorCompileOnBuild>false</MvcRazorCompileOnBuild>
+        <TargetFramework>net5.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
       <!-- required for Razor compilation on change: https://docs.microsoft.com/en-us/aspnet/core/mvc/views/view-compilation?view=aspnetcore-3.1 -->
-      <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="3.1.0" Condition="'$(Configuration)' == 'Debug'" />
+      <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="5.0.2" Condition="'$(Configuration)' == 'Debug'" />
         
       <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
       <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
@@ -16,17 +16,6 @@
       <ProjectReference Include="..\..\src\ServiceStack.Mvc\ServiceStack.Mvc.csproj" />
       <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
       <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <_ContentIncludedByDefault Remove="wwwroot\js\default.js" />
-      <_ContentIncludedByDefault Remove="wwwroot\lib\vue\dist\vue.js" />
-      <_ContentIncludedByDefault Remove="wwwroot\lib\vue\dist\vue.min.js" />
-      <_ContentIncludedByDefault Remove="wwwroot\lib\vue\types\index.d.ts" />
-      <_ContentIncludedByDefault Remove="wwwroot\lib\vue\types\options.d.ts" />
-      <_ContentIncludedByDefault Remove="wwwroot\lib\vue\types\plugin.d.ts" />
-      <_ContentIncludedByDefault Remove="wwwroot\lib\vue\types\vnode.d.ts" />
-      <_ContentIncludedByDefault Remove="wwwroot\lib\vue\types\vue.d.ts" />
     </ItemGroup>
 
 </Project>

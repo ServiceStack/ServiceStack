@@ -3,9 +3,9 @@
     <PropertyGroup>
         <PackageId>ServiceStack.GrpcClient</PackageId>
         <AssemblyName>ServiceStack.GrpcClient</AssemblyName>
-        <TargetFrameworks>netstandard2.1;netcoreapp3.0</TargetFrameworks>
+        <TargetFramework>netstandard2.1</TargetFramework>
         <RootNamespace>ServiceStack</RootNamespace>
-        <LangVersion>8</LangVersion>
+        <LangVersion>default</LangVersion>
         <Title>ServiceStack.GrpcClient</Title>
         <PackageDescription>ServiceStack's gRPC GrpcServiceClient</PackageDescription>
         <PackageTags>ServiceStack;ServiceClients;gRPC</PackageTags>
@@ -14,7 +14,7 @@
     <ItemGroup>
         <PackageReference Include="Grpc.Net.Client" Version="2.34.0" />
         <PackageReference Include="Grpc.Core" Version="2.34.0" />
-        <PackageReference Include="protobuf-net.Grpc" Version="1.0.123" />
+        <PackageReference Include="protobuf-net.Grpc" Version="1.0.140" />
         <!-- the transitive import of protobuf-net is lower; we need at least this -->
         <PackageReference Include="protobuf-net" Version="3.0.73" />
         <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
