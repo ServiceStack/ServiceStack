@@ -80,7 +80,7 @@ namespace ServiceStack.Auth
         public async ValueTask DisposeAsync()
         {
             if (db is IAsyncDisposable asyncDisposable)
-                await asyncDisposable.DisposeAsync().ConfigAwait();
+                await asyncDisposable.DisposeAsync().ConfigureAwait(false);
             else
                 Dispose();
         }
