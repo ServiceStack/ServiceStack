@@ -136,8 +136,12 @@ namespace ServiceStack
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsEmpty<T>(this T[] collection) => collection == null || collection.Length == 0;
 
+        [Obsolete("Use ToSet() or 'using System.Linq;'")]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static HashSet<T> ToHashSet<T>(this IEnumerable<T> items) => new(items);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static HashSet<T> ToSet<T>(this IEnumerable<T> items) => new(items);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Each<T>(this IEnumerable<T> values, Action<T> action)
