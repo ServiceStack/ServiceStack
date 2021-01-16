@@ -87,7 +87,7 @@
     <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
     <PackageReference Include="System.Buffers" Version="4.5.1" />
     <PackageReference Include="System.Memory" Version="4.5.4" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.3" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
