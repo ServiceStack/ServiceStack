@@ -1452,5 +1452,7 @@ namespace ServiceStack.Script
         }
 
         public void exit(int exitCode) => Environment.Exit(exitCode);
+
+        public void inspectVars(object vars) => Inspect.vars(vars);
     }
 }
