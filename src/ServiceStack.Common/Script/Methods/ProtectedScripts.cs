@@ -1459,7 +1459,7 @@ namespace ServiceStack.Script
 
         public IgnoreResult inspectVars(object vars)
         {
-            Inspect.vars(vars)
+            Inspect.vars(vars);
             return IgnoreResult.Value;
         }
     }
