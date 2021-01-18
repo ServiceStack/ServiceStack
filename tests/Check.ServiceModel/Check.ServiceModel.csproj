@@ -56,6 +56,7 @@
     <Compile Include="Rockstar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SwaggerTest.cs" />
+    <Compile Include="TechStacks.cs" />
     <Compile Include="ThrowHttpError.cs" />
   </ItemGroup>
   <ItemGroup>

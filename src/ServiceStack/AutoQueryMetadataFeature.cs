@@ -205,7 +205,7 @@ namespace ServiceStack
                     });
 
                     response.Types.Add(op.Request);
-                    op.Request.GetReferencedTypeNames().Each(x => includeTypeNames.Add(x));
+                    op.Request.GetReferencedTypeNames(metadataTypes).Each(x => includeTypeNames.Add(x));
                 }
             }
 
@@ -213,7 +213,7 @@ namespace ServiceStack
             var types = allTypes.Where(x => includeTypeNames.Contains(x.Name)).ToList();
 
             //Add referenced types to type name search
-            types.SelectMany(x => x.GetReferencedTypeNames()).Each(x => includeTypeNames.Add(x));
+            types.SelectMany(x => x.GetReferencedTypeNames(metadataTypes)).Each(x => includeTypeNames.Add(x));
 
             //Only need to seek 1-level deep in AutoQuery's (db.LoadSelect)
             types = allTypes.Where(x => includeTypeNames.Contains(x.Name)).ToList();

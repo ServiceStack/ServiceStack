@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using Check.ServiceInterface;
 using Check.ServiceModel;
 using Funq;
 using ServiceStack;
@@ -28,7 +29,7 @@ namespace CheckHttpListener
         };
 
         public AppSelfHost()
-            : base("DocuRec Services", typeof(TestService).Assembly)
+            : base("DocuRec Services", typeof(TestService).Assembly, typeof(TechStacksService).Assembly)
         { }
 
         public override void Configure(Container container)

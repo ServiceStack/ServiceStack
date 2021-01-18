@@ -74,6 +74,7 @@
     <Compile Include="ReturnGenericListServices.cs" />
     <Compile Include="RouteMatchService.cs" />
     <Compile Include="SwaggerServices.cs" />
+    <Compile Include="TechStacksService.cs" />
     <Compile Include="TestErrorService.cs" />
     <Compile Include="TestMinifierServices.cs" />
     <Compile Include="TestProfilerService.cs" />

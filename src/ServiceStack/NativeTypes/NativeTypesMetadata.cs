@@ -1011,27 +1011,53 @@ namespace ServiceStack.NativeTypes
             return allTypes.ToList();
         }
 
-        public static HashSet<string> GetReferencedTypeNames(this MetadataType type)
+        public static HashSet<string> GetReferencedTypeNames(this MetadataType type, MetadataTypes metadataTypes)
         {
             var to = new HashSet<string>();
 
+            void Add(string name)
+            {
+                to.Add(name);
+                var metaTypes = metadataTypes.Types.Where(x => x.Name == name).ToList();
+                if (metaTypes.Count == 1)
+                {
+                    var metaType = metaTypes[0];
+                    if (metaType.Inherits != null)
+                    {
+                        Add(metaType.Inherits.Name);
+                        foreach (var genericArg in metaType.Inherits.GenericArgs.Safe())
+                        {
+                            Add(genericArg);
+                        }
+                    }
+                    foreach (var pi in metaType.Properties.Safe())
+                    {
+                        Add(pi.Type);
+                        foreach (var genericArg in pi.GenericArgs.Safe())
+                        {
+                            Add(genericArg);
+                        }
+                    }
+                }
+            }
+            
             if (type.Inherits != null)
             {
-                to.Add(type.Inherits.Name);
+                Add(type.Inherits.Name);
 
                 foreach (var genericArg in type.Inherits.GenericArgs.Safe())
                 {
-                    to.Add(genericArg);
+                    Add(genericArg);
                 }
             }
 
             foreach (var pi in type.Properties.Safe())
             {
-                to.Add(pi.Type);
+                Add(pi.Type);
 
                 foreach (var genericArg in pi.GenericArgs.Safe())
                 {
-                    to.Add(genericArg);
+                    Add(genericArg);
                 }
             }
 
@@ -1219,7 +1245,7 @@ namespace ServiceStack.NativeTypes
                 var referenceTypes = includedMetadataTypes
                     .Union(returnTypesForInclude)
                     .Where(x => x != null)
-                    .SelectMany(x => x.GetReferencedTypeNames());
+                    .SelectMany(x => x.GetReferencedTypeNames(metadata));
 
                 return referenceTypes
                     .Union(explicitTypes)
