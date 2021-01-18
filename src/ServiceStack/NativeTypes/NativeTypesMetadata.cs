@@ -1030,6 +1030,13 @@ namespace ServiceStack.NativeTypes
                             Add(genericArg);
                         }
                     }
+                    foreach (var iface in metaType.Implements.Safe())
+                    {
+                        if (!iface.IsSystemOrServiceStackType())
+                        {
+                            Add(iface.Name);
+                        }
+                    }
                     foreach (var pi in metaType.Properties.Safe())
                     {
                         Add(pi.Type);
@@ -1050,7 +1057,13 @@ namespace ServiceStack.NativeTypes
                     Add(genericArg);
                 }
             }
-
+            foreach (var iface in type.Implements.Safe())
+            {
+                if (!iface.IsSystemOrServiceStackType())
+                {
+                    Add(iface.Name);
+                }
+            }
             foreach (var pi in type.Properties.Safe())
             {
                 Add(pi.Type);

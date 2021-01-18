@@ -495,5 +495,15 @@ namespace ServiceStack
         public static List<MetadataOperationType> GetOperationsByTags(this MetadataTypes types, string[] tags) => 
             types.Operations.Where(x => x.Tags != null && x.Tags.Any(t => Array.IndexOf(tags, t) >= 0)).ToList();
 
+    
+        private static readonly char[] SystemTypeChars = { '<', '>', '+' };
+        public static bool IsSystemOrServiceStackType(this MetadataTypeName metaRef)
+        {
+            if (metaRef.Namespace == null)
+                return false;
+            return metaRef.Namespace.StartsWith("System") || 
+                   metaRef.Namespace.StartsWith("ServiceStack") ||
+                   metaRef.Name.IndexOfAny(SystemTypeChars) >= 0;
+        }
     }
 }
