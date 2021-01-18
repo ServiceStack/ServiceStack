@@ -542,6 +542,14 @@ namespace ServiceStack
 
         private readonly IResponse response;
         private long msgId;
+        
+        private Dictionary<string, string> _meta;
+              
+        public override Dictionary<string, string> Meta
+        {
+            get => new Dictionary<string, string>(_meta);
+            set => _meta = value;
+        }
 
         public IResponse Response => this.response;
         public IRequest Request => this.response.Request;
@@ -552,8 +560,8 @@ namespace ServiceStack
         public EventSubscription(IResponse response)
         {
             this.response = response;
-            this.Meta = new Dictionary<string, string>();
             var feature = HostContext.GetPlugin<ServerEventsFeature>();
+            this._meta = new Dictionary<string, string>(); 
             this.WriteEvent = feature.WriteEvent;
             this.WriteEventAsync = feature.WriteEventAsync;
             this.OnHungConnection = feature.OnHungConnection;
@@ -567,7 +575,10 @@ namespace ServiceStack
             
             this.Channels = channels;
             this.MergedChannels = mergedChannels.ToArray();
-            this.Meta["channels"] = string.Join(",", channels);
+            this._meta = new Dictionary<string, string>(this._meta)
+            {
+                ["channels"] = string.Join(",", channels)
+            };
             jsonArgs = null; //refresh
         }
 
@@ -975,7 +986,7 @@ namespace ServiceStack
         public string UserAddress { get; set; }
         public bool IsAuthenticated { get; set; }
 
-        public Dictionary<string, string> Meta { get; set; }
+        public virtual Dictionary<string, string> Meta { get; set; }
         public Dictionary<string, string> ConnectArgs { get; set; }
         public Dictionary<string, string> ServerArgs { get; set; }
     }
