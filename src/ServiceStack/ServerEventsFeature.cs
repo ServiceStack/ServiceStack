@@ -272,17 +272,17 @@ namespace ServiceStack
                     OnPublish = feature.OnPublish,
                     OnPublishAsync = feature.OnPublishAsync,
                     OnError = feature.OnError,
-                    Meta = {
+                    Meta = new Dictionary<string, string> {
                         { "userId", userId },
                         { "isAuthenticated", session != null && session.IsAuthenticated ? "true": "false" },
                         { "displayName", displayName },
                         { "channels", string.Join(",", channels) },
                         { "createdAt", now.ToUnixTimeMs().ToString() },
                         { AuthMetadataProvider.ProfileUrlKey, session.GetProfileUrl() ?? Svg.GetDataUri(Svg.Icons.DefaultProfile) },
-                    },
+                    }.ToConcurrentDictionary(),
                     ServerArgs = new Dictionary<string, string>(),
                 };
-                subscription.ConnectArgs = new Dictionary<string, string>(subscription.Meta);
+                subscription.ConnectArgs = subscription.Meta.ToDictionary();
 
                 feature.OnCreated?.Invoke(subscription, req);
 
@@ -552,7 +552,7 @@ namespace ServiceStack
         public EventSubscription(IResponse response)
         {
             this.response = response;
-            this.Meta = new Dictionary<string, string>();
+            this.Meta = new ConcurrentDictionary<string, string>();
             var feature = HostContext.GetPlugin<ServerEventsFeature>();
             this.WriteEvent = feature.WriteEvent;
             this.WriteEventAsync = feature.WriteEventAsync;
@@ -582,7 +582,7 @@ namespace ServiceStack
         public Action<IEventSubscription, Exception> OnError { get; set; }
         public bool IsClosed => this.response.IsClosed;
 
-        private readonly StringBuilder buffer = new StringBuilder();
+        private readonly StringBuilder buffer = new();
         
         public void Pulse()
         {
@@ -817,7 +817,7 @@ namespace ServiceStack
             return DisposeAsync();
         }
 
-        public static string SerializeDictionary(Dictionary<string, string> map)
+        public static string SerializeDictionary(IDictionary<string, string> map)
         {
             if (map == null)
                 return null;
@@ -925,7 +925,7 @@ namespace ServiceStack
         }
     }
 
-    public interface IEventSubscription : IMeta, IDisposable
+    public interface IEventSubscription : IDisposable
     {
         DateTime CreatedAt { get; set; }
         DateTime LastPulseAt { get; set; }
@@ -956,6 +956,7 @@ namespace ServiceStack
         Task PublishRawAsync(string frame, CancellationToken token=default);
         void Pulse();
 
+        ConcurrentDictionary<string,string> Meta { get; set; }
         Dictionary<string,string> ServerArgs { get; set; }
         Dictionary<string,string> ConnectArgs { get; set; }
         
@@ -975,7 +976,7 @@ namespace ServiceStack
         public string UserAddress { get; set; }
         public bool IsAuthenticated { get; set; }
 
-        public Dictionary<string, string> Meta { get; set; }
+        public ConcurrentDictionary<string, string> Meta { get; set; }
         public Dictionary<string, string> ConnectArgs { get; set; }
         public Dictionary<string, string> ServerArgs { get; set; }
     }
@@ -1139,8 +1140,7 @@ namespace ServiceStack
         public Task NotifySessionJsonAsync(string sessionId, string selector, string json, string channel = null, CancellationToken token = default) =>
             NotifyRawAsync(SessionSubscriptions, sessionId, selector, json, channel, token);
 
-        public Dictionary<string, string> GetStats() => new Dictionary<string, string>
-        {
+        public Dictionary<string, string> GetStats() => new() {
             {nameof(TotalConnections), Interlocked.Read(ref TotalConnections).ToString()},
             {nameof(TotalUnsubscriptions), Interlocked.Read(ref TotalUnsubscriptions).ToString()},
             {nameof(EventSubscription.NotificationsSent), Interlocked.Read(ref EventSubscription.NotificationsSent).ToString()},
@@ -1626,7 +1626,7 @@ namespace ServiceStack
                     if (alreadyAdded.Contains(sub.SubscriptionId))
                         continue;
 
-                    ret.Add(sub.Meta);
+                    ret.Add(sub.Meta.ToDictionary());
                     alreadyAdded.Add(sub.SubscriptionId);
                 }
             }
@@ -1639,7 +1639,7 @@ namespace ServiceStack
             var ret = new List<Dictionary<string, string>>();
             foreach (var sub in Subscriptions.ValuesWithoutLock())
             {
-                ret.Add(sub.Meta);
+                ret.Add(sub.Meta.ToDictionary());
             }
             return ret;
         }

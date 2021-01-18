@@ -112,14 +112,12 @@ namespace ServiceStack
 
         public void UnRegisterExpiredSubscriptions()
         {
-            using (var redis = clientsManager.GetClient())
-            {
-                var lastPulseBefore = (RedisPubSub.CurrentServerTime - Timeout).Ticks;
-                var expiredSubIds = redis.GetRangeFromSortedSetByLowestScore(
-                    RedisIndex.ActiveSubscriptionsSet, 0, lastPulseBefore);
+            using var redis = clientsManager.GetClient();
+            var lastPulseBefore = (RedisPubSub.CurrentServerTime - Timeout).Ticks;
+            var expiredSubIds = redis.GetRangeFromSortedSetByLowestScore(
+                RedisIndex.ActiveSubscriptionsSet, 0, lastPulseBefore);
                 
-                UnRegisterSubIds(redis, expiredSubIds);
-            }
+            UnRegisterSubIds(redis, expiredSubIds);
         }
 
         public void UnRegisterSubIds(IRedisClient redis, List<string> expiredSubIds)
@@ -149,7 +147,7 @@ namespace ServiceStack
 
         Task HandleOnJoinAsync(IEventSubscription sub)
         {
-            return NotifyChannelsAsync(sub.Channels, "cmd.onJoin", sub.Meta);
+            return NotifyChannelsAsync(sub.Channels, "cmd.onJoin", sub.Meta.ToDictionary());
         }
 
         Task HandleOnLeaveAsync(IEventSubscription sub)
@@ -157,7 +155,7 @@ namespace ServiceStack
             var info = sub.GetInfo();
             RemoveSubscriptionFromRedis(info);
 
-            return NotifyChannelsAsync(sub.Channels, "cmd.onLeave", sub.Meta);
+            return NotifyChannelsAsync(sub.Channels, "cmd.onLeave", sub.Meta.ToDictionary());
         }
 
         Task HandleOnUpdate(IEventSubscription sub)
@@ -166,7 +164,7 @@ namespace ServiceStack
             {
                 StoreSubscriptionInfo(redis, sub.GetInfo());
             }
-            return NotifyChannelsAsync(sub.Channels, "cmd.onUpdate", sub.Meta);
+            return NotifyChannelsAsync(sub.Channels, "cmd.onUpdate", sub.Meta.ToDictionary());
         }
 
         Task NotifyHeartbeatAsync(IEventSubscription sub) =>
@@ -176,25 +174,23 @@ namespace ServiceStack
         {
             var id = info.SubscriptionId;
 
-            using (var redis = clientsManager.GetClient())
-            using (var trans = redis.CreateTransaction())
+            using var redis = clientsManager.GetClient();
+            using var trans = redis.CreateTransaction();
+            trans.QueueCommand(r => r.Remove(RedisIndex.Subscription.Fmt(id)));
+            trans.QueueCommand(r => r.RemoveItemFromSortedSet(RedisIndex.ActiveSubscriptionsSet, id));
+            trans.QueueCommand(r => r.RemoveItemFromSet(RedisIndex.UserIdSet.Fmt(info.UserId), id));
+
+            foreach (var channel in info.Channels)
             {
-                trans.QueueCommand(r => r.Remove(RedisIndex.Subscription.Fmt(id)));
-                trans.QueueCommand(r => r.RemoveItemFromSortedSet(RedisIndex.ActiveSubscriptionsSet, id));
-                trans.QueueCommand(r => r.RemoveItemFromSet(RedisIndex.UserIdSet.Fmt(info.UserId), id));
-
-                foreach (var channel in info.Channels)
-                {
-                    trans.QueueCommand(r => r.RemoveItemFromSet(RedisIndex.ChannelSet.Fmt(channel), id));
-                }
-
-                if (info.UserName != null)
-                    trans.QueueCommand(r => r.RemoveItemFromSet(RedisIndex.UserNameSet.Fmt(info.UserName), id));
-                if (info.SessionId != null)
-                    trans.QueueCommand(r => r.RemoveItemFromSet(RedisIndex.SessionSet.Fmt(info.SessionId), id));
-
-                trans.Commit();
+                trans.QueueCommand(r => r.RemoveItemFromSet(RedisIndex.ChannelSet.Fmt(channel), id));
             }
+
+            if (info.UserName != null)
+                trans.QueueCommand(r => r.RemoveItemFromSet(RedisIndex.UserNameSet.Fmt(info.UserName), id));
+            if (info.SessionId != null)
+                trans.QueueCommand(r => r.RemoveItemFromSet(RedisIndex.SessionSet.Fmt(info.SessionId), id));
+
+            trans.Commit();
         }
 
         string HandleSerialize(object o)
@@ -268,23 +264,19 @@ namespace ServiceStack
 
         public SubscriptionInfo GetSubscriptionInfo(string id)
         {
-            using (var redis = clientsManager.GetClient())
-            {
-                var info = redis.Get<SubscriptionInfo>(RedisIndex.Subscription.Fmt(id));
-                return info;
-            }
+            using var redis = clientsManager.GetClient();
+            var info = redis.Get<SubscriptionInfo>(RedisIndex.Subscription.Fmt(id));
+            return info;
         }
 
         public List<SubscriptionInfo> GetSubscriptionInfosByUserId(string userId)
         {
-            using (var redis = clientsManager.GetClient())
-            {
-                var ids = redis.GetAllItemsFromSet(RedisIndex.UserIdSet.Fmt(userId));
-                var keys = ids.Map(x => RedisIndex.Subscription.Fmt(x));
-                var infos = redis.GetValues<SubscriptionInfo>(keys);
+            using var redis = clientsManager.GetClient();
+            var ids = redis.GetAllItemsFromSet(RedisIndex.UserIdSet.Fmt(userId));
+            var keys = ids.Map(x => RedisIndex.Subscription.Fmt(x));
+            var infos = redis.GetValues<SubscriptionInfo>(keys);
 
-                return infos;
-            }
+            return infos;
         }
 
         public async Task RegisterAsync(IEventSubscription sub, Dictionary<string, string> connectArgs = null, CancellationToken token=default)
@@ -307,24 +299,22 @@ namespace ServiceStack
         private void StoreSubscriptionInfo(IRedisClient redis, SubscriptionInfo info)
         {
             var id = info.SubscriptionId;
-            using (var trans = redis.CreateTransaction())
+            using var trans = redis.CreateTransaction();
+            trans.QueueCommand(r => r.AddItemToSortedSet(RedisIndex.ActiveSubscriptionsSet, id, RedisPubSub.CurrentServerTime.Ticks));
+            trans.QueueCommand(r => r.Set(RedisIndex.Subscription.Fmt(id), info));
+            trans.QueueCommand(r => r.AddItemToSet(RedisIndex.UserIdSet.Fmt(info.UserId), id));
+
+            foreach (var channel in info.Channels)
             {
-                trans.QueueCommand(r => r.AddItemToSortedSet(RedisIndex.ActiveSubscriptionsSet, id, RedisPubSub.CurrentServerTime.Ticks));
-                trans.QueueCommand(r => r.Set(RedisIndex.Subscription.Fmt(id), info));
-                trans.QueueCommand(r => r.AddItemToSet(RedisIndex.UserIdSet.Fmt(info.UserId), id));
-
-                foreach (var channel in info.Channels)
-                {
-                    trans.QueueCommand(r => r.AddItemToSet(RedisIndex.ChannelSet.Fmt(channel), id));
-                }
-
-                if (info.UserName != null)
-                    trans.QueueCommand(r => r.AddItemToSet(RedisIndex.UserNameSet.Fmt(info.UserName), id));
-                if (info.SessionId != null)
-                    trans.QueueCommand(r => r.AddItemToSet(RedisIndex.SessionSet.Fmt(info.SessionId), id));
-
-                trans.Commit();
+                trans.QueueCommand(r => r.AddItemToSet(RedisIndex.ChannelSet.Fmt(channel), id));
             }
+
+            if (info.UserName != null)
+                trans.QueueCommand(r => r.AddItemToSet(RedisIndex.UserNameSet.Fmt(info.UserName), id));
+            if (info.SessionId != null)
+                trans.QueueCommand(r => r.AddItemToSet(RedisIndex.SessionSet.Fmt(info.SessionId), id));
+
+            trans.Commit();
         }
 
         public void UnRegister(string subscriptionId)
@@ -399,103 +389,93 @@ namespace ServiceStack
 
         public List<Dictionary<string, string>> GetSubscriptionsDetails(params string[] channels)
         {
-            using (var redis = clientsManager.GetClient())
+            using var redis = clientsManager.GetClient();
+            var ids = new HashSet<string>();
+            foreach (var channel in channels)
             {
-                var ids = new HashSet<string>();
-                foreach (var channel in channels)
+                var channelIds = redis.GetAllItemsFromSet(RedisIndex.ChannelSet.Fmt(channel));
+                foreach (var channelId in channelIds)
                 {
-                    var channelIds = redis.GetAllItemsFromSet(RedisIndex.ChannelSet.Fmt(channel));
-                    foreach (var channelId in channelIds)
-                    {
-                        ids.Add(channelId);
-                    }
+                    ids.Add(channelId);
                 }
-
-                var keys = ids.Map(x => RedisIndex.Subscription.Fmt(x));
-                var infos = redis.GetValues<SubscriptionInfo>(keys);
-
-                var metas = infos.Map(x => x.Meta);
-                return metas;
             }
+
+            var keys = ids.Map(x => RedisIndex.Subscription.Fmt(x));
+            var infos = redis.GetValues<SubscriptionInfo>(keys);
+
+            var metas = infos.Map(x => x.Meta.ToDictionary());
+            return metas;
         }
 
         public List<Dictionary<string, string>> GetAllSubscriptionsDetails()
         {
-            using (var redis = clientsManager.GetClient())
+            using var redis = clientsManager.GetClient();
+            var ids = new HashSet<string>();
+
+            var channelSetKeys = redis.ScanAllKeys(pattern: RedisIndex.ChannelSet.Fmt("*"));
+            foreach (var channelSetKey in channelSetKeys)
             {
-                var ids = new HashSet<string>();
-
-                var channelSetKeys = redis.ScanAllKeys(pattern: RedisIndex.ChannelSet.Fmt("*"));
-                foreach (var channelSetKey in channelSetKeys)
+                var channelIds = redis.GetAllItemsFromSet(channelSetKey);
+                foreach (var channelId in channelIds)
                 {
-                    var channelIds = redis.GetAllItemsFromSet(channelSetKey);
-                    foreach (var channelId in channelIds)
-                    {
-                        ids.Add(channelId);
-                    }
+                    ids.Add(channelId);
                 }
-
-                var keys = ids.Map(x => RedisIndex.Subscription.Fmt(x));
-                var infos = redis.GetValues<SubscriptionInfo>(keys);
-
-                var metas = infos.Map(x => x.Meta);
-                return metas;
             }
+
+            var keys = ids.Map(x => RedisIndex.Subscription.Fmt(x));
+            var infos = redis.GetValues<SubscriptionInfo>(keys);
+
+            var metas = infos.Map(x => x.Meta.ToDictionary());
+            return metas;
         }
 
         public List<SubscriptionInfo> GetAllSubscriptionInfos()
         {
-            using (var redis = clientsManager.GetClient())
+            using var redis = clientsManager.GetClient();
+            var ids = new HashSet<string>();
+
+            var channelSetKeys = redis.ScanAllKeys(pattern: RedisIndex.ChannelSet.Fmt("*"));
+            foreach (var channelSetKey in channelSetKeys)
             {
-                var ids = new HashSet<string>();
-
-                var channelSetKeys = redis.ScanAllKeys(pattern: RedisIndex.ChannelSet.Fmt("*"));
-                foreach (var channelSetKey in channelSetKeys)
+                var channelIds = redis.GetAllItemsFromSet(channelSetKey);
+                foreach (var channelId in channelIds)
                 {
-                    var channelIds = redis.GetAllItemsFromSet(channelSetKey);
-                    foreach (var channelId in channelIds)
-                    {
-                        ids.Add(channelId);
-                    }
+                    ids.Add(channelId);
                 }
-
-                var keys = ids.Map(x => RedisIndex.Subscription.Fmt(x));
-                var infos = redis.GetValues<SubscriptionInfo>(keys);
-                return infos;
             }
+
+            var keys = ids.Map(x => RedisIndex.Subscription.Fmt(x));
+            var infos = redis.GetValues<SubscriptionInfo>(keys);
+            return infos;
         }
 
         public Task<bool> PulseAsync(string subscriptionId, CancellationToken token=default)
         {
-            using (var redis = clientsManager.GetClient())
-            {
-                var info = redis.Get<SubscriptionInfo>(RedisIndex.Subscription.Fmt(subscriptionId));
-                if (info == null)
-                    return TypeConstants.FalseTask;
+            using var redis = clientsManager.GetClient();
+            var info = redis.Get<SubscriptionInfo>(RedisIndex.Subscription.Fmt(subscriptionId));
+            if (info == null)
+                return TypeConstants.FalseTask;
 
-                redis.AddItemToSortedSet(RedisIndex.ActiveSubscriptionsSet,
-                    info.SubscriptionId, RedisPubSub.CurrentServerTime.Ticks);
+            redis.AddItemToSortedSet(RedisIndex.ActiveSubscriptionsSet,
+                info.SubscriptionId, RedisPubSub.CurrentServerTime.Ticks);
 
-                NotifyRedis("pulse.id." + subscriptionId, null, null);
+            NotifyRedis("pulse.id." + subscriptionId, null, null);
 
-                return TypeConstants.TrueTask;
-            }
+            return TypeConstants.TrueTask;
         }
 
         public void Reset()
         {
             local.Reset();
-            using (var redis = clientsManager.GetClient())
-            {
-                var keysToDelete = new List<string> { RedisIndex.ActiveSubscriptionsSet };
+            using var redis = clientsManager.GetClient();
+            var keysToDelete = new List<string> { RedisIndex.ActiveSubscriptionsSet };
 
-                keysToDelete.AddRange(redis.SearchKeys(RedisIndex.Subscription.Replace("{0}", "*")));
-                keysToDelete.AddRange(redis.SearchKeys(RedisIndex.ChannelSet.Replace("{0}", "*")));
-                keysToDelete.AddRange(redis.SearchKeys(RedisIndex.UserIdSet.Replace("{0}", "*")));
-                keysToDelete.AddRange(redis.SearchKeys(RedisIndex.UserNameSet.Replace("{0}", "*")));
-                keysToDelete.AddRange(redis.SearchKeys(RedisIndex.SessionSet.Replace("{0}", "*")));
-                redis.RemoveAll(keysToDelete);
-            }
+            keysToDelete.AddRange(redis.SearchKeys(RedisIndex.Subscription.Replace("{0}", "*")));
+            keysToDelete.AddRange(redis.SearchKeys(RedisIndex.ChannelSet.Replace("{0}", "*")));
+            keysToDelete.AddRange(redis.SearchKeys(RedisIndex.UserIdSet.Replace("{0}", "*")));
+            keysToDelete.AddRange(redis.SearchKeys(RedisIndex.UserNameSet.Replace("{0}", "*")));
+            keysToDelete.AddRange(redis.SearchKeys(RedisIndex.SessionSet.Replace("{0}", "*")));
+            redis.RemoveAll(keysToDelete);
         }
 
         public void Start()
@@ -526,31 +506,29 @@ namespace ServiceStack
         
         protected void NotifyRedisRaw(string key, string selector, string json, string channel = null)
         {
-            using (var redis = clientsManager.GetClient())
+            using var redis = clientsManager.GetClient();
+            var sb = StringBuilderCache.Allocate().Append(key);
+
+            if (selector != null)
             {
-                var sb = StringBuilderCache.Allocate().Append(key);
+                sb.Append(' ').Append(selector);
 
-                if (selector != null)
+                if (channel != null)
                 {
-                    sb.Append(' ').Append(selector);
-
-                    if (channel != null)
-                    {
-                        sb.Append('@');
-                        sb.Append(channel);
-                    }
+                    sb.Append('@');
+                    sb.Append(channel);
                 }
-
-                if (json != null)
-                {
-                    sb.Append(' ');
-                    sb.Append(json);
-                }
-
-                var msg = StringBuilderCache.ReturnAndFree(sb);
-
-                redis.PublishMessage(Topic, msg);
             }
+
+            if (json != null)
+            {
+                sb.Append(' ');
+                sb.Append(json);
+            }
+
+            var msg = StringBuilderCache.ReturnAndFree(sb);
+
+            redis.PublishMessage(Topic, msg);
         }
 
         protected void NotifyRedis(string key, string selector, object message, string channel = null) =>

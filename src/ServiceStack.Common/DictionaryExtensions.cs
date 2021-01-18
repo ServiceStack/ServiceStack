@@ -69,16 +69,10 @@ namespace ServiceStack
         {
             return new KeyValuePair<TKey, TValue>(key, value);
         }
-    
-        public static ConcurrentDictionary<TKey, TValue> ToConcurrentDictionary<TKey, TValue>(this IDictionary<TKey, TValue> from)
-        {
-            var to = new ConcurrentDictionary<TKey, TValue>();
-            foreach (var entry in from)
-            {
-                to[entry.Key] = entry.Value;
-            }
-            return to;
-        }
+
+        public static Dictionary<TKey, TValue>ToDictionary<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> map) => new(map);
+
+        public static ConcurrentDictionary<TKey, TValue> ToConcurrentDictionary<TKey, TValue>(this IDictionary<TKey, TValue> from) => new(from);
     
         public static bool TryRemove<TKey, TValue>(this Dictionary<TKey, TValue> map, TKey key, out TValue value)
         {
@@ -121,6 +115,6 @@ namespace ServiceStack
             }
             return to;
         }
-    
+
     }
 }
