@@ -147,7 +147,7 @@ namespace ServiceStack
 
         Task HandleOnJoinAsync(IEventSubscription sub)
         {
-            return NotifyChannelsAsync(sub.Channels, "cmd.onJoin", sub.Meta.ToDictionary());
+            return NotifyChannelsAsync(sub.Channels, "cmd.onJoin", sub.Meta);
         }
 
         Task HandleOnLeaveAsync(IEventSubscription sub)
@@ -155,7 +155,7 @@ namespace ServiceStack
             var info = sub.GetInfo();
             RemoveSubscriptionFromRedis(info);
 
-            return NotifyChannelsAsync(sub.Channels, "cmd.onLeave", sub.Meta.ToDictionary());
+            return NotifyChannelsAsync(sub.Channels, "cmd.onLeave", sub.Meta);
         }
 
         Task HandleOnUpdate(IEventSubscription sub)
@@ -164,7 +164,7 @@ namespace ServiceStack
             {
                 StoreSubscriptionInfo(redis, sub.GetInfo());
             }
-            return NotifyChannelsAsync(sub.Channels, "cmd.onUpdate", sub.Meta.ToDictionary());
+            return NotifyChannelsAsync(sub.Channels, "cmd.onUpdate", sub.Meta);
         }
 
         Task NotifyHeartbeatAsync(IEventSubscription sub) =>
@@ -203,7 +203,7 @@ namespace ServiceStack
         public Task NotifyAllAsync(string selector, object message, CancellationToken token = default) => NotifyRedisAsync("notify.all", selector, message, token:token);
         public Task NotifyAllJsonAsync(string selector, string json, CancellationToken token = default) => NotifyRedisRawAsync("notify.all", selector, json, token:token);
 
-        public void NotifyChannels(string[] channels, string selector, Dictionary<string, string> meta)
+        public void NotifyChannels(string[] channels, string selector, IDictionary<string, string> meta)
         {
             foreach (var channel in channels)
             {
@@ -212,7 +212,7 @@ namespace ServiceStack
             }
         }
 
-        public Task NotifyChannelsAsync(string[] channels, string selector, Dictionary<string, string> meta, CancellationToken token=default)
+        public Task NotifyChannelsAsync(string[] channels, string selector, IDictionary<string, string> meta, CancellationToken token=default)
         {
             NotifyChannels(channels, selector, meta);
             return TypeConstants.EmptyTask;
