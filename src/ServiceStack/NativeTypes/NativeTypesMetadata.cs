@@ -1047,7 +1047,7 @@ namespace ServiceStack.NativeTypes
 
         public static HashSet<string> GetDefaultNamespaces(this MetadataTypesConfig config, MetadataTypes metadata)
         {
-            var namespaces = config.DefaultNamespaces.ToHashSet();
+            var namespaces = config.DefaultNamespaces.ToSet();
             config.AddNamespaces.Safe().Each(x => namespaces.Add(x));
 
             //Add any ignored namespaces used
@@ -1180,7 +1180,7 @@ namespace ServiceStack.NativeTypes
                     ? metadata.GetAllMetadataTypes()
                         .Where(x => namespacedTypes.Any(ns => x.Namespace?.StartsWith(ns) == true))
                         .Select(x => x.Name)
-                        .ToHashSet()
+                        .ToSet()
                     : TypeConstants<string>.EmptyHashSet;
 
                 var includedMetadataTypes = metadata.Operations
@@ -1191,7 +1191,7 @@ namespace ServiceStack.NativeTypes
                 var includeSet = includedMetadataTypes
                     .Where(x => x.RequestType?.ReturnType != null)
                     .Select(x => x.RequestType.ReturnType.Name)
-                    .ToHashSet();
+                    .ToSet();
 
                 var includedResponses = metadata.Operations
                     .Where(t => typesToExpand.Contains(t.Request.Name) && t.Response != null)
@@ -1203,13 +1203,13 @@ namespace ServiceStack.NativeTypes
                     .Where(x => x.Response != null && includeSet.Contains(x.Response.Name))
                     .Map(x => x.Response);
 
-                var crudInterfaces = AutoCrudOperation.CrudInterfaceMetadataNames().ToHashSet();
+                var crudInterfaces = AutoCrudOperation.CrudInterfaceMetadataNames().ToSet();
                 var crudTypeNamesForInclude = metadata.Operations
                     .Where(t => typesToExpand.Contains(t.Request.Name))
                     .SelectMany(x => x.Request.Implements)
                     .Where(x => x != null && crudInterfaces.Contains(x.Name))
                     .Map(x => x.GenericArgs[0])
-                    .ToHashSet()
+                    .ToSet()
                     .ToList();
                 var reverseTypeReferencesToInclude = metadata.Operations
                     .Where(x => x.ReferencesAny(reverseTypesToExpand))

@@ -134,12 +134,12 @@ namespace ServiceStack.NativeTypes.Swift
 
             var existingTypes = new HashSet<string>();
 
-            var requestTypes = metadata.Operations.Select(x => x.Request).ToHashSet();
+            var requestTypes = metadata.Operations.Select(x => x.Request).ToSet();
             var requestTypesMap = metadata.Operations.ToSafeDictionary(x => x.Request);
             var responseTypes = metadata.Operations
                 .Where(x => x.Response != null)
-                .Select(x => x.Response).ToHashSet();
-            var types = metadata.Types.ToHashSet();
+                .Select(x => x.Response).ToSet();
+            var types = metadata.Types.ToSet();
 
             allTypes = new List<MetadataType>();
             allTypes.AddRange(requestTypes);
@@ -148,7 +148,7 @@ namespace ServiceStack.NativeTypes.Swift
 
             allTypes = FilterTypes(allTypes);
 
-            //Swift doesn't support reusing same type name with different generic airity
+            //Swift doesn't support reusing same type name with different generic arity
             var conflictPartialNames = allTypes.Map(x => x.Name).Distinct()
                 .GroupBy(g => g.LeftPart('`'))
                 .Where(g => g.Count() > 1)

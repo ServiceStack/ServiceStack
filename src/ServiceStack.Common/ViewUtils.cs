@@ -1061,7 +1061,7 @@ namespace ServiceStack
                         : oValue == null
                             ? TypeConstants<string>.EmptyHashSet
                             : (FormValues(req, name) ?? ToStringList(oValue as IEnumerable).ToArray())
-                                  .ToHashSet();
+                                  .ToSet();
                                 
                     foreach (var kvp in kvps)
                     {

@@ -191,11 +191,11 @@ namespace ServiceStack.NativeTypes.TypeScript
 
             var existingTypes = new HashSet<string>();
 
-            var requestTypes = metadata.Operations.Select(x => x.Request).ToHashSet();
+            var requestTypes = metadata.Operations.Select(x => x.Request).ToSet();
             var requestTypesMap = metadata.Operations.ToSafeDictionary(x => x.Request);
             var responseTypes = metadata.Operations
                 .Where(x => x.Response != null)
-                .Select(x => x.Response).ToHashSet();
+                .Select(x => x.Response).ToSet();
             var types = metadata.Types.CreateSortedTypeList();
 
             AllTypes = metadata.GetAllTypesOrdered();

@@ -178,7 +178,7 @@ namespace ServiceStack
                         .SelectMany(x => x == ActionContext.AnyAction
                         ? feature.DefaultVerbsForAny
                         : new List<string> { x })
-                    .ToHashSet();
+                    .ToSet();
 
                 var propertyTypes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 op.RequestType.GetSerializableFields()

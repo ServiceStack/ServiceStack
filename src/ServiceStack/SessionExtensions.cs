@@ -182,7 +182,7 @@ namespace ServiceStack
             var sessionOptions = httpReq.GetSessionParam(SessionFeature.SessionOptionsKey);
             return sessionOptions.IsNullOrEmpty()
                 ? new HashSet<string>()
-                : sessionOptions.Split(',').ToHashSet();
+                : sessionOptions.Split(',').ToSet();
         }
         
         public static string GetUserAuthName(this IAuthSession session) => session == null ? null

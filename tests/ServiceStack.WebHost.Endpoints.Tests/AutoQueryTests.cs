@@ -1934,7 +1934,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response.PrintDump();
 
             Assert.That(response.Results.Any(x => x.Age > 0));
-            Assert.That(response.Results.Count, Is.EqualTo(response.Results.Select(x => x.Age).ToHashSet().Count));
+            Assert.That(response.Results.Count, Is.EqualTo(response.Results.Select(x => x.Age).ToSet().Count));
             Assert.That(response.Results.All(x => x.Id == 0));
             Assert.That(response.Results.All(x => x.FirstName == null));
             Assert.That(response.Results.All(x => x.LastName == null));

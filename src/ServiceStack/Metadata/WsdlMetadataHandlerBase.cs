@@ -57,7 +57,7 @@ namespace ServiceStack.Metadata
             wsdlTemplate.Xsd = xsd;
             wsdlTemplate.ServiceName = serviceName;
 
-            var soapTypesSet = soapTypes.ToHashSet();
+            var soapTypesSet = soapTypes.ToSet();
             wsdlTemplate.ReplyOperationNames = operations.GetReplyOperationNames(soapFormat, soapTypesSet);
             wsdlTemplate.OneWayOperationNames = operations.GetOneWayOperationNames(soapFormat, soapTypesSet);
 

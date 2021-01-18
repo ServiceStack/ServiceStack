@@ -109,8 +109,7 @@ namespace ServiceStack.NativeTypes
     public class NativeTypesService : Service
     {
         public INativeTypesMetadata NativeTypesMetadata { get; set; }
-        public static List<Action<IRequest,Dictionary<string, string>>> TypeLinksFilters { get; set; } = 
-            new List<Action<IRequest,Dictionary<string, string>>>();
+        public static List<Action<IRequest,Dictionary<string, string>>> TypeLinksFilters { get; set; } = new();
         
         public object Any(TypeLinks request)
         {
@@ -337,7 +336,7 @@ namespace ServiceStack.NativeTypes
                 var generator = ((NativeTypesMetadata) NativeTypesMetadata).GetGenerator(typesConfig);
 
                 var allTypes = metadataTypes.GetAllTypesOrdered();
-                var allTypeNames = allTypes.Select(x => x.Name).ToHashSet();
+                var allTypeNames = allTypes.Select(x => x.Name).ToSet();
                 foreach (var type in allTypes)
                 {
                     foreach (var typeName in type.Implements.Safe())

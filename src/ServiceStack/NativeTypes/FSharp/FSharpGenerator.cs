@@ -101,12 +101,12 @@ namespace ServiceStack.NativeTypes.FSharp
 
             var existingTypes = new HashSet<string>();
 
-            var requestTypes = metadata.Operations.Select(x => x.Request).ToHashSet();
+            var requestTypes = metadata.Operations.Select(x => x.Request).ToSet();
             var requestTypesMap = metadata.Operations.ToSafeDictionary(x => x.Request);
             var responseTypes = metadata.Operations
                 .Where(x => x.Response != null)
-                .Select(x => x.Response).ToHashSet();
-            var types = metadata.Types.ToHashSet();
+                .Select(x => x.Response).ToSet();
+            var types = metadata.Types.ToSet();
 
             allTypes = new List<MetadataType>();
             allTypes.AddRange(types);

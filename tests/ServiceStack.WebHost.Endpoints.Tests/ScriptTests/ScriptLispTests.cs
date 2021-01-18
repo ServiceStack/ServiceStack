@@ -388,7 +388,7 @@ Global: {{ retVal + newVal }}
             var context = LispScriptContext(new ObjectDictionary {
                 ["numArray"] = new[] { 1, 2, 3 },
                 ["numList"] = new[] { 1, 2, 3 }.ToList(),
-                ["numSet"] = new[] { 1, 2, 3 }.ToHashSet(),
+                ["numSet"] = new[] { 1, 2, 3 }.ToSet(),
             });
             
             string render(string lisp) => context.EvaluateScript(lisp).NormalizeNewLines();
@@ -687,7 +687,7 @@ C
             var context = LispScriptContext(new ObjectDictionary {
                 ["numArray"] = new[] { 1, 2, 3 },
                 ["numList"] = new[] { 1, 2, 3 }.ToList(),
-                ["numSet"] = new[] { 1, 2, 3 }.ToHashSet(),
+                ["numSet"] = new[] { 1, 2, 3 }.ToSet(),
             });
 
             string render(string lisp) => context.RenderLisp(lisp).NormalizeNewLines();

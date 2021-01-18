@@ -58,7 +58,7 @@ namespace ServiceStack.Configuration
 
         public virtual List<string> GetAllKeys()
         {
-            var keys = settings.GetAllKeys().ToHashSet();
+            var keys = settings.GetAllKeys().ToSet();
             settingsWriter?.GetAllKeys().Each(x => keys.Add(x));
 
             return keys.ToList();
