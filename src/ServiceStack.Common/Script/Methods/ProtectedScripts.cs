@@ -727,12 +727,14 @@ namespace ServiceStack.Script
 
         static string MethodNotExists(string methodName) => $"Method {methodName} does not exist"; 
 
-        public MemoryVirtualFiles vfsMemory() => new MemoryVirtualFiles();
+        public MemoryVirtualFiles vfsMemory() => new();
 
-        public FileSystemVirtualFiles vfsFileSystem(string dirPath) => new FileSystemVirtualFiles(dirPath);
+        public FileSystemVirtualFiles vfsFileSystem(string dirPath) => new(dirPath);
+        public FileSystemVirtualFiles vfs() => new(Environment.CurrentDirectory);
+        public FileSystemVirtualFiles vfs(string path) => new(path);
         
-        public GistVirtualFiles vfsGist(string gistId) => new GistVirtualFiles(gistId);
-        public GistVirtualFiles vfsGist(string gistId, string accessToken) => new GistVirtualFiles(gistId, accessToken);
+        public GistVirtualFiles vfsGist(string gistId) => new(gistId);
+        public GistVirtualFiles vfsGist(string gistId, string accessToken) => new(gistId, accessToken);
 
         public string osPaths(string path) => Env.IsWindows
             ? path.Replace('/', '\\')
