@@ -17,14 +17,35 @@ namespace ServiceStack.Authentication.RavenDb
     [Index(Name = nameof(Key))]
     public class RavenUserAuth : UserAuth
     {
-        public string Key { get; set; }
+        string key;
+
+        public string Key
+        {
+            get => key;
+
+            set
+            {
+                key = value;
+                Id = RavenIdConverter.ToInt(key);
+            }
+        }
     }
     
     [Index(Name = nameof(Key))]
     public class RavenUserAuthDetails : UserAuthDetails
     {
-        public string Key { get; set; }
-        // RefIdStr => RavenUserAuth.Key
+        string key;
+
+        public string Key
+        {
+            get => key;
+
+            set
+            {
+                key = value;
+                Id = RavenIdConverter.ToInt(key);
+            }
+        }
     }
     
     public class RavenDbUserAuthRepository : RavenDbUserAuthRepository<RavenUserAuth, RavenUserAuthDetails>, IUserAuthRepository
@@ -35,9 +56,6 @@ namespace ServiceStack.Authentication.RavenDb
 
         public static bool DefaultFindIdentityProperty(MemberInfo p) => 
             p.Name == (p.DeclaringType.FirstAttribute<IndexAttribute>()?.Name ?? "Id");
-
-        public static Func<string, int> ParseIntId { get; set; } = DefaultParseIntId;
-        public static int DefaultParseIntId(string key) => int.Parse(key.RightPart('/').LeftPart('-'));
     }
 
     public partial class RavenDbUserAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IQueryUserAuth
@@ -46,12 +64,6 @@ namespace ServiceStack.Authentication.RavenDb
     {
         private readonly IDocumentStore documentStore;
         private static bool isInitialized = false;
-
-        static TypeProperties UserAuthProps = TypeProperties<TUserAuth>.Instance;
-        static TypeProperties UserAuthDetailsProps = TypeProperties<TUserAuthDetails>.Instance;
-
-        public string UserAuthIdentifier { get; set; } = nameof(RavenUserAuth.Key);
-        public string UserAuthDetailsIdentifier { get; set; } = nameof(RavenUserAuthDetails.Key);
 
         public static void CreateOrUpdateUserAuthIndex(IDocumentStore store)
         {
@@ -131,46 +143,33 @@ namespace ServiceStack.Authentication.RavenDb
 
         public virtual void UpdateSessionKey(IAuthSession session, IUserAuth userAuth)
         {
-            var keyProp = UserAuthProps.GetAccessor(UserAuthIdentifier);
-            if (keyProp != null)
-            {
-                session.UserAuthId = (string) keyProp.PublicGetter(userAuth);
-            }
+            var ra = userAuth.ConvertTo<RavenUserAuth>();
+            if (ra.Id != default)
+                ra.Key = RavenIdConverter.ToString(Consts.RavenUserAuthsPrefix, ra.Id);
+            session.UserAuthId = ra.Key;
         }
 
         public IUserAuth CreateUserAuth(IUserAuth newUser, string password)
         {
-            newUser.ValidateNewUser(password);
+            var nu = ((UserAuth)newUser).ToRavenUserAuth();
+            nu.ValidateNewUser(password);
 
-            AssertNoExistingUser(newUser);
+            AssertNoExistingUser(nu);
 
-            newUser.PopulatePasswordHashes(password);
-            newUser.CreatedDate = DateTime.UtcNow;
-            newUser.ModifiedDate = newUser.CreatedDate;
+            nu.PopulatePasswordHashes(password);
+            nu.CreatedDate = DateTime.UtcNow;
+            nu.ModifiedDate = nu.CreatedDate;
 
             using var session = documentStore.OpenSession();
-            session.Store(newUser);
+            session.Store(nu);
             session.SaveChanges();
 
-            return newUser;
+            return nu;
         }
 
-        private PropertyAccessor userAuthKeyProp;
-        private PropertyAccessor UserAuthKeyProp => userAuthKeyProp 
-            ??= UserAuthProps.GetAccessor(UserAuthIdentifier) 
-            ?? throw new NotSupportedException($"{typeof(TUserAuth).Name} does not contain '{UserAuthIdentifier}' property, add property or specify alternate Raven Identifier in UserAuthIdentifier");
-
-
-        private PropertyAccessor userAuthDetailsKeyProp;
-        private PropertyAccessor UserAuthDetailsKeyProp => userAuthDetailsKeyProp 
-            ??= UserAuthDetailsProps.GetAccessor(UserAuthDetailsIdentifier) 
-            ?? throw new NotSupportedException(typeof(TUserAuthDetails).Name +
-                $" does not contain '{UserAuthDetailsIdentifier}' property, add property or specify alternate Raven Identifier in UserAuthDetailsIdentifier");
-        
         private void UpdateKey(IUserAuth existingUser, IUserAuth newUser)
         {
-            var keyProp = UserAuthKeyProp;
-            keyProp.PublicSetter(newUser, keyProp.PublicGetter(existingUser));
+            ((RavenUserAuth)newUser).Key = ((RavenUserAuth)existingUser).Key;
         }
 
         public IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser)
@@ -428,11 +427,10 @@ namespace ServiceStack.Authentication.RavenDb
             session.Store(userAuth);
             session.SaveChanges();
 
-            var key = (string)UserAuthKeyProp.PublicGetter(userAuth); 
+            var key = ((RavenUserAuth)userAuth).Key;
+
             if (userAuth.Id == default)
-            {
-                userAuth.Id = RavenDbUserAuthRepository.ParseIntId(key);
-            }
+                userAuth.Id = RavenIdConverter.ToInt(key);
 
             authDetails.UserAuthId = userAuth.Id; // Partial FK int Id
             authDetails.RefIdStr = key; // FK

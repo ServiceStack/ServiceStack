@@ -24,19 +24,20 @@ namespace ServiceStack.Authentication.RavenDb
 
         public async Task<IUserAuth> CreateUserAuthAsync(IUserAuth newUser, string password, CancellationToken token = default)
         {
-            newUser.ValidateNewUser(password);
+            var nu = ((UserAuth)newUser).ToRavenUserAuth();
+            nu.ValidateNewUser(password);
 
-            await AssertNoExistingUserAsync(newUser, token: token).ConfigAwait();
+            await AssertNoExistingUserAsync(nu, token: token).ConfigAwait();
 
-            newUser.PopulatePasswordHashes(password);
-            newUser.CreatedDate = DateTime.UtcNow;
-            newUser.ModifiedDate = newUser.CreatedDate;
+            nu.PopulatePasswordHashes(password);
+            nu.CreatedDate = DateTime.UtcNow;
+            nu.ModifiedDate = nu.CreatedDate;
 
             using var session = documentStore.OpenAsyncSession();
-            await session.StoreAsync(newUser, token);
+            await session.StoreAsync(nu, token);
             await session.SaveChangesAsync(token);
 
-            return newUser;
+            return nu;
         }
 
         public async Task<IUserAuth> UpdateUserAuthAsync(IUserAuth existingUser, IUserAuth newUser, CancellationToken token = default)
@@ -286,11 +287,11 @@ namespace ServiceStack.Authentication.RavenDb
             await session.StoreAsync(userAuth, token);
             await session.SaveChangesAsync(token);
 
-            var key = (string)UserAuthKeyProp.PublicGetter(userAuth); 
+            var key = ((RavenUserAuth)userAuth).Key;
+
             if (userAuth.Id == default)
-            {
-                userAuth.Id = RavenDbUserAuthRepository.ParseIntId(key);
-            }
+                userAuth.Id = RavenIdConverter.ToInt(key);
+
 
             authDetails.UserAuthId = userAuth.Id; // Partial FK int Id
             authDetails.RefIdStr = key; // FK
