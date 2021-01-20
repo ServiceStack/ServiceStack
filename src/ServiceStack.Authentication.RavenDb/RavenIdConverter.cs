@@ -7,6 +7,7 @@ namespace ServiceStack.Authentication.RavenDb
         public const string RavenUserAuthsIdPrefix = "RavenUserAuths";
         const int ClusterTagOffset = 100;
         const int ASCIIOffset = 65;
+
         public static int ToInt(string ravenId)
         {
             string compositeId = ravenId.Split('/')[1];
