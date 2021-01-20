@@ -327,6 +327,5 @@ namespace ServiceStack.Authentication.RavenDb
 
             return (await SortAndPage(q, orderBy, skip, take).ToListAsync(token)).OfType<IUserAuth>().ToList();
         }
-        
     }
 }

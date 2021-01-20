@@ -145,7 +145,7 @@ namespace ServiceStack.Authentication.RavenDb
         {
             var ra = userAuth.ConvertTo<RavenUserAuth>();
             if (ra.Id != default)
-                ra.Key = RavenIdConverter.ToString(Consts.RavenUserAuthsPrefix, ra.Id);
+                ra.Key = RavenIdConverter.ToString(RavenIdConverter.RavenUserAuthsIdPrefix, ra.Id);
             session.UserAuthId = ra.Key;
         }
 

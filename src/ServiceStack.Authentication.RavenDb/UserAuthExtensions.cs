@@ -1,5 +1,4 @@
 ﻿using ServiceStack.Auth;
-using System;
 
 namespace ServiceStack.Authentication.RavenDb
 {
@@ -9,7 +8,7 @@ namespace ServiceStack.Authentication.RavenDb
         {
             var ra = ua.ConvertTo<RavenUserAuth>();
             if (ua.Id > 0)
-                ra.Key = RavenIdConverter.ToString(Consts.RavenUserAuthsPrefix, ua.Id);
+                ra.Key = RavenIdConverter.ToString(RavenIdConverter.RavenUserAuthsIdPrefix, ua.Id);
             return ra;
         }
     }
