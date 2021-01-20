@@ -167,7 +167,7 @@ namespace ServiceStack.Auth
 
         protected virtual bool EnableRefreshToken()
         {
-            var userSessionSource = AuthenticateService.GetUserSessionSource();
+            var userSessionSource = AuthenticateService.GetUserSessionSourceAsync();
             if (userSessionSource != null)
                 return true;
 

@@ -91,6 +91,7 @@ namespace ServiceStack.Auth
         }
 
 #pragma warning disable 618
+        [Obsolete("Use GetUserSessionSourceAsync()")]
         public static IUserSessionSource GetUserSessionSource()
         {
             var userSessionSource = HostContext.TryResolve<IUserSessionSource>();
