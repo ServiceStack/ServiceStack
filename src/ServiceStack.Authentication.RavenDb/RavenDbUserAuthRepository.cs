@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
 
 using Raven.Client;
@@ -305,12 +306,13 @@ namespace ServiceStack.Authentication.RavenDb
         {
             using var session = documentStore.OpenSession();
             var userAuth = session.Load<TUserAuth>(userAuthId);
-            session.Delete(userAuth);
 
             var userAuthDetails = session.Query<UserAuth_By_UserAuthDetails.Result, UserAuth_By_UserAuthDetails>()
                 .Customize(x => x.WaitForNonStaleResults())
                 .Where(q => q.UserAuthId == userAuthId);
+            session.Delete(userAuth);
             userAuthDetails.Each(session.Delete);
+            session.SaveChanges();
         }
 
         public IUserAuth GetUserAuth(string userAuthId)
@@ -445,15 +447,15 @@ namespace ServiceStack.Authentication.RavenDb
             return authDetails;
         }
 
-        public static IEnumerable<TUserAuth> SortAndPage(IRavenQueryable<TUserAuth> q, string orderBy, int? skip, int? take)
+        public static IQueryable<TUserAuth> SortAndPage(IRavenQueryable<TUserAuth> q, string orderBy, int? skip, int? take)
         {
-            var qEnum = q.AsEnumerable();
+            var qEnum = q.AsQueryable();
             if (!string.IsNullOrEmpty(orderBy))
             {
                 orderBy = AuthRepositoryUtils.ParseOrderBy(orderBy, out var desc);
                 qEnum = desc
-                    ? q.OrderByDescending(orderBy).AsEnumerable()
-                    : q.OrderBy(orderBy).AsEnumerable();
+                    ? q.OrderByDescending(orderBy)
+                    : q.OrderBy(orderBy);
             }
 
             if (skip != null)

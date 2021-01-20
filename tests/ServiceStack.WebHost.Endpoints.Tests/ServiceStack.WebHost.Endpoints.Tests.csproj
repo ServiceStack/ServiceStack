@@ -48,7 +48,7 @@
     <PackageReference Include="MongoDB.Bson" Version="2.11.4" />
     <PackageReference Include="MongoDB.Driver" Version="2.11.4" />
     <PackageReference Include="MongoDB.Driver.Core" Version="2.11.4" />
-    <PackageReference Include="RavenDB.Client" Version="4.2.106" />
+    <PackageReference Include="RavenDB.Client" Version="5.1.2" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <ProjectReference Include="..\..\src\ServiceStack.NetFramework\ServiceStack.NetFramework.csproj" />
