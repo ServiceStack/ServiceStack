@@ -716,35 +716,55 @@ namespace ServiceStack.Auth
                 throw new TokenException(errorMessage);
         }
 
-        public string GetInvalidJwtPayloadError(JsonObject jwtPayload)
+        public virtual string GetInvalidJwtPayloadError(JsonObject jwtPayload)
         {
             if (jwtPayload == null)
                 throw new ArgumentNullException(nameof(jwtPayload));
 
-            var expiresAt = GetUnixTime(jwtPayload, "exp");
-            var secondsSinceEpoch = DateTime.UtcNow.ToUnixTime();
-            if (secondsSinceEpoch >= expiresAt)
+            if (HasExpired(jwtPayload))
                 return ErrorMessages.TokenExpired;
 
+            if (HasBeenInvalidated(jwtPayload))
+                return ErrorMessages.TokenInvalidated;
+
+            if (HasInvalidAudience(jwtPayload, out var audience))
+                return ErrorMessages.TokenInvalidAudienceFmt.Fmt(audience);
+
+            return null;
+        }
+
+        public virtual bool HasExpired(JsonObject jwtPayload)
+        {
+            var expiresAt = GetUnixTime(jwtPayload, "exp");
+            var secondsSinceEpoch = DateTime.UtcNow.ToUnixTime();
+            var hasExpired = secondsSinceEpoch >= expiresAt;
+            return hasExpired;
+        }
+
+        public virtual bool HasBeenInvalidated(JsonObject jwtPayload)
+        {
             if (InvalidateTokensIssuedBefore != null)
             {
                 var issuedAt = GetUnixTime(jwtPayload, "iat");
                 if (issuedAt == null || issuedAt < InvalidateTokensIssuedBefore.Value.ToUnixTime())
-                    return ErrorMessages.TokenInvalidated;
+                    return true;
             }
+            return false;
+        }
 
-            if (jwtPayload.TryGetValue("aud", out var audience))
+        public virtual bool HasInvalidAudience(JsonObject jwtPayload, out string audience)
+        {
+            if (jwtPayload.TryGetValue("aud", out audience))
             {
                 var jwtAudiences = audience.FromJson<List<string>>();
                 if (jwtAudiences?.Count > 0 && Audiences.Count > 0)
                 {
                     var containsAnyAudience = jwtAudiences.Any(x => Audiences.Contains(x));
                     if (!containsAnyAudience)
-                        return "Invalid Audience: " + audience;
+                        return true;
                 }
             }
-
-            return null;
+            return false;
         }
 
         public virtual bool VerifyPayload(IRequest req, string algorithm, byte[] bytesToSign, byte[] sentSignatureBytes)
@@ -788,7 +808,7 @@ namespace ServiceStack.Auth
             return false;
         }
 
-        static int? GetUnixTime(Dictionary<string, string> jwtPayload, string key)
+        public static int? GetUnixTime(Dictionary<string, string> jwtPayload, string key)
         {
             if (jwtPayload.TryGetValue(key, out var value) && !string.IsNullOrEmpty(value))
             {
