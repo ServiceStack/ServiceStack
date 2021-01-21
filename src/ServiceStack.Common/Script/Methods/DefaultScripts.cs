@@ -412,9 +412,9 @@ namespace ServiceStack.Script
         public object echo(object value) => value;
         public IRawString pass(string target) => ("{{ " + target + " }}").ToRawString();
 
-        public IEnumerable join(IEnumerable<object> values) => join(values, ",");
-        public IEnumerable joinln(IEnumerable<object> values) => join(values, "\n");
-        public IEnumerable join(IEnumerable<object> values, string delimiter) => values.Map(x => x.AsString()).Join(delimiter);
+        public string join(IEnumerable<object> values) => join(values, ",");
+        public string joinln(IEnumerable<object> values) => join(values, "\n");
+        public string join(IEnumerable<object> values, string delimiter) => values.Map(x => x.AsString()).Join(delimiter);
 
         public IEnumerable<object> reverse(ScriptScopeContext scope, IEnumerable<object> original) => original.Reverse();
 
