@@ -128,6 +128,11 @@ namespace ServiceStack.Auth
         /// A JWT is valid if it contains ANY audience in this List
         /// </summary>
         public List<string> Audiences { get; set; }
+        
+        /// <summary>
+        /// Tokens must contain aud which is validated
+        /// </summary>
+        public bool RequiresAudience { get; set; }
 
         /// <summary>
         /// What Id to use to identify the Key used to sign the token. (default First 3 chars of Base64 Key)
@@ -277,6 +282,17 @@ namespace ServiceStack.Auth
         /// </summary>
         public bool UseTokenCookie { get; set; }
 
+        /// <summary>
+        /// Override conversion to Unix Time used in issuing JWTs and validation
+        /// </summary>
+        public Func<DateTime,long> ResolveUnixTime { get; set; } = DefaultResolveUnixTime;
+        public static long DefaultResolveUnixTime(DateTime dateTime) => dateTime.ToUnixTime();
+
+        /// <summary>
+        /// Inspect or modify JWT Payload before validation 
+        /// </summary>
+        public Action<Dictionary<string,string>> PreValidateJwtPayloadFilter { get; set; }
+
         public JwtAuthProviderReader()
             : base(null, Realm, Name)
         {
@@ -311,6 +327,7 @@ namespace ServiceStack.Auth
                 EncryptPayload = appSettings.Get("jwt.EncryptPayload", EncryptPayload);
                 AllowInQueryString = appSettings.Get("jwt.AllowInQueryString", AllowInQueryString);
                 AllowInFormData = appSettings.Get("jwt.AllowInFormData", AllowInFormData);
+                RequiresAudience = appSettings.Get("jwt.RequiresAudience", RequiresAudience);
                 IncludeJwtInConvertSessionToTokenResponse = appSettings.Get("jwt.IncludeJwtInConvertSessionToTokenResponse", IncludeJwtInConvertSessionToTokenResponse);
 
                 Issuer = appSettings.GetString("jwt.Issuer");
@@ -715,36 +732,73 @@ namespace ServiceStack.Auth
             if (errorMessage != null)
                 throw new TokenException(errorMessage);
         }
-
-        public string GetInvalidJwtPayloadError(JsonObject jwtPayload)
+        
+        public virtual string GetInvalidJwtPayloadError(JsonObject jwtPayload)
         {
             if (jwtPayload == null)
                 throw new ArgumentNullException(nameof(jwtPayload));
 
-            var expiresAt = GetUnixTime(jwtPayload, "exp");
-            var secondsSinceEpoch = DateTime.UtcNow.ToUnixTime();
-            if (secondsSinceEpoch >= expiresAt)
+            PreValidateJwtPayloadFilter?.Invoke(jwtPayload);
+
+            if (HasExpired(jwtPayload))
                 return ErrorMessages.TokenExpired;
 
+            if (HasInvalidNotBefore(jwtPayload))
+                return ErrorMessages.TokenInvalidNotBefore;
+
+            if (HasBeenInvalidated(jwtPayload))
+                return ErrorMessages.TokenInvalidated;
+
+            if (HasInvalidAudience(jwtPayload, out var audience))
+                return ErrorMessages.TokenInvalidAudienceFmt.Fmt(audience);
+
+            return null;
+        }
+
+        public virtual bool HasExpired(JsonObject jwtPayload)
+        {
+            var expiresAt = GetUnixTime(jwtPayload, "exp");
+            var secondsSinceEpoch = ResolveUnixTime(DateTime.UtcNow);
+            var hasExpired = secondsSinceEpoch >= expiresAt;
+            return hasExpired;
+        }
+
+        public virtual bool HasInvalidNotBefore(JsonObject jwtPayload)
+        {
+            var notValidBefore = GetUnixTime(jwtPayload, "nbf");
+            if (notValidBefore != null)
+            {
+                var secondsSinceEpoch = ResolveUnixTime(DateTime.UtcNow);
+                var notValidYet = notValidBefore > secondsSinceEpoch;
+                return notValidYet;
+            }
+            return false;
+        }
+
+        public virtual bool HasBeenInvalidated(JsonObject jwtPayload)
+        {
             if (InvalidateTokensIssuedBefore != null)
             {
                 var issuedAt = GetUnixTime(jwtPayload, "iat");
-                if (issuedAt == null || issuedAt < InvalidateTokensIssuedBefore.Value.ToUnixTime())
-                    return ErrorMessages.TokenInvalidated;
+                if (issuedAt == null || issuedAt < ResolveUnixTime(InvalidateTokensIssuedBefore.Value))
+                    return true;
             }
+            return false;
+        }
 
-            if (jwtPayload.TryGetValue("aud", out var audience))
+        public virtual bool HasInvalidAudience(JsonObject jwtPayload, out string audience)
+        {
+            if (jwtPayload.TryGetValue("aud", out audience))
             {
                 var jwtAudiences = audience.FromJson<List<string>>();
                 if (jwtAudiences?.Count > 0 && Audiences.Count > 0)
                 {
                     var containsAnyAudience = jwtAudiences.Any(x => Audiences.Contains(x));
                     if (!containsAnyAudience)
-                        return "Invalid Audience: " + audience;
+                        return true;
                 }
             }
-
-            return null;
+            return RequiresAudience;
         }
 
         public virtual bool VerifyPayload(IRequest req, string algorithm, byte[] bytesToSign, byte[] sentSignatureBytes)
@@ -788,13 +842,13 @@ namespace ServiceStack.Auth
             return false;
         }
 
-        static int? GetUnixTime(Dictionary<string, string> jwtPayload, string key)
+        public static long? GetUnixTime(Dictionary<string, string> jwtPayload, string key)
         {
             if (jwtPayload.TryGetValue(key, out var value) && !string.IsNullOrEmpty(value))
             {
                 try
                 {
-                    return int.Parse(value);
+                    return long.Parse(value);
                 }
                 catch (Exception)
                 {
