@@ -98,6 +98,7 @@
         public static string JwtRequiresSecureConnection = "Sending JWT over insecure connection forbidden when RequireSecureConnection=true";
         public static string TokenInvalidated = "Token has been invalidated";
         public static string TokenExpired = "Token has expired";
+        public static string TokenInvalidNotBefore = "Token not valid yet";
         public static string TokenInvalid = "Token is invalid";
         public static string TokenInvalidAudienceFmt = "Invalid Audience: {0}";
         public static string RefreshTokenInvalid = "RefreshToken is Invalid";

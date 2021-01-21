@@ -154,8 +154,8 @@ namespace ServiceStack.Auth
             var jwtPayload = new JsonObject
             {
                 {"sub", userId},
-                {"iat", now.ToUnixTime().ToString()},
-                {"exp", now.Add(expireRefreshTokenIn).ToUnixTime().ToString()},
+                {"iat", ResolveUnixTime(now).ToString()},
+                {"exp", ResolveUnixTime(now.Add(expireRefreshTokenIn)).ToString()},
             };
 
             jwtPayload.SetAudience(Audiences);

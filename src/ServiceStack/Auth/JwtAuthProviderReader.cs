@@ -128,6 +128,11 @@ namespace ServiceStack.Auth
         /// A JWT is valid if it contains ANY audience in this List
         /// </summary>
         public List<string> Audiences { get; set; }
+        
+        /// <summary>
+        /// Tokens must contain aud which is validated
+        /// </summary>
+        public bool RequiresAudience { get; set; }
 
         /// <summary>
         /// What Id to use to identify the Key used to sign the token. (default First 3 chars of Base64 Key)
@@ -277,6 +282,10 @@ namespace ServiceStack.Auth
         /// </summary>
         public bool UseTokenCookie { get; set; }
 
+        public Func<DateTime,long> ResolveUnixTime { get; set; } = DefaultResolveUnixTime;
+
+        public static long DefaultResolveUnixTime(DateTime dateTime) => dateTime.ToUnixTime();
+
         public JwtAuthProviderReader()
             : base(null, Realm, Name)
         {
@@ -311,6 +320,7 @@ namespace ServiceStack.Auth
                 EncryptPayload = appSettings.Get("jwt.EncryptPayload", EncryptPayload);
                 AllowInQueryString = appSettings.Get("jwt.AllowInQueryString", AllowInQueryString);
                 AllowInFormData = appSettings.Get("jwt.AllowInFormData", AllowInFormData);
+                RequiresAudience = appSettings.Get("jwt.RequiresAudience", RequiresAudience);
                 IncludeJwtInConvertSessionToTokenResponse = appSettings.Get("jwt.IncludeJwtInConvertSessionToTokenResponse", IncludeJwtInConvertSessionToTokenResponse);
 
                 Issuer = appSettings.GetString("jwt.Issuer");
@@ -736,7 +746,7 @@ namespace ServiceStack.Auth
         public virtual bool HasExpired(JsonObject jwtPayload)
         {
             var expiresAt = GetUnixTime(jwtPayload, "exp");
-            var secondsSinceEpoch = DateTime.UtcNow.ToUnixTime();
+            var secondsSinceEpoch = ResolveUnixTime(DateTime.UtcNow);
             var hasExpired = secondsSinceEpoch >= expiresAt;
             return hasExpired;
         }
@@ -746,7 +756,7 @@ namespace ServiceStack.Auth
             if (InvalidateTokensIssuedBefore != null)
             {
                 var issuedAt = GetUnixTime(jwtPayload, "iat");
-                if (issuedAt == null || issuedAt < InvalidateTokensIssuedBefore.Value.ToUnixTime())
+                if (issuedAt == null || issuedAt < ResolveUnixTime(InvalidateTokensIssuedBefore.Value))
                     return true;
             }
             return false;
@@ -764,7 +774,7 @@ namespace ServiceStack.Auth
                         return true;
                 }
             }
-            return false;
+            return RequiresAudience;
         }
 
         public virtual bool VerifyPayload(IRequest req, string algorithm, byte[] bytesToSign, byte[] sentSignatureBytes)
@@ -808,13 +818,13 @@ namespace ServiceStack.Auth
             return false;
         }
 
-        public static int? GetUnixTime(Dictionary<string, string> jwtPayload, string key)
+        public static long? GetUnixTime(Dictionary<string, string> jwtPayload, string key)
         {
             if (jwtPayload.TryGetValue(key, out var value) && !string.IsNullOrEmpty(value))
             {
                 try
                 {
-                    return int.Parse(value);
+                    return long.Parse(value);
                 }
                 catch (Exception)
                 {
