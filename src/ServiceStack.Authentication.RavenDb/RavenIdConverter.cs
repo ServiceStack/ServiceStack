@@ -2,6 +2,10 @@
 
 namespace ServiceStack.Authentication.RavenDb
 {
+    /// <summary>
+    /// Converts string Id to integer Id used by UserAuth.
+    /// Supports up to 21,474,836 ids and 26 servers in the cluster (A-Z)
+    /// </summary>
     public static class RavenIdConverter
     {
         public const string RavenUserAuthsIdPrefix = "RavenUserAuths";
