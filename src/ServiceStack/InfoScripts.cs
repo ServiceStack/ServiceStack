@@ -18,7 +18,7 @@ namespace ServiceStack
     
     public class InfoScripts : ScriptMethods
     {
-
+        public string env(string variable) => Environment.GetEnvironmentVariable(variable);
         public string envVariable(string variable) => Environment.GetEnvironmentVariable(variable);
         public string envExpandVariables(string name) => Environment.ExpandEnvironmentVariables(name);
         public string envStackTrace() => Environment.StackTrace;
