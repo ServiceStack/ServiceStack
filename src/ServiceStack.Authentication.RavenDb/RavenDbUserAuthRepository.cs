@@ -194,7 +194,6 @@ namespace ServiceStack.Authentication.RavenDb
             return newUser;
         }
 
-
         private void AssertNoExistingUser(IUserAuth newUser, IUserAuth exceptForExistingUser = null)
         {
             if (newUser.UserName != null)
