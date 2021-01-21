@@ -282,9 +282,16 @@ namespace ServiceStack.Auth
         /// </summary>
         public bool UseTokenCookie { get; set; }
 
+        /// <summary>
+        /// Override conversion to Unix Time used in issuing JWTs and validation
+        /// </summary>
         public Func<DateTime,long> ResolveUnixTime { get; set; } = DefaultResolveUnixTime;
-
         public static long DefaultResolveUnixTime(DateTime dateTime) => dateTime.ToUnixTime();
+
+        /// <summary>
+        /// Inspect or modify JWT Payload before validation 
+        /// </summary>
+        public Action<Dictionary<string,string>> PreValidateJwtPayloadFilter { get; set; }
 
         public JwtAuthProviderReader()
             : base(null, Realm, Name)
@@ -725,11 +732,13 @@ namespace ServiceStack.Auth
             if (errorMessage != null)
                 throw new TokenException(errorMessage);
         }
-
+        
         public virtual string GetInvalidJwtPayloadError(JsonObject jwtPayload)
         {
             if (jwtPayload == null)
                 throw new ArgumentNullException(nameof(jwtPayload));
+
+            PreValidateJwtPayloadFilter?.Invoke(jwtPayload);
 
             if (HasExpired(jwtPayload))
                 return ErrorMessages.TokenExpired;
