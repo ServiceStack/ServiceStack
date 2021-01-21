@@ -308,10 +308,16 @@ namespace ServiceStack.Script
                     var afterExpr = line.Span.ParseExpression(out var expr, out var filters);
                     afterExpr = afterExpr.AdvancePastWhitespace();
 
-                    if (!afterExpr.IsEmpty)
+                    var isStatementDelim = afterExpr.FirstCharEquals(ScriptTemplateUtils.StatementsSep);
+
+                    if (!afterExpr.IsEmpty && !isStatementDelim)
                         throw new SyntaxErrorException($"Unexpected syntax after expression: {afterExpr.ToString()}, near {line.DebugLiteral()}");
-                    
-                    to.AddExpression(line, expr, filters);
+
+                    var exprSrc = line.SafeSlice(0, line.Length - afterExpr.Length);
+                    to.AddExpression(exprSrc, expr, filters);
+
+                    if (isStatementDelim)
+                        cursorPos = cursorPos - afterExpr.Length + 1;
                 }
             }
 
@@ -544,7 +550,7 @@ namespace ServiceStack.Script
 
                     literal = literal.AdvancePastWhitespace();
 
-                    if (literal.IsNullOrEmpty())
+                    if (literal.IsNullOrEmpty() || literal.FirstCharEquals(ScriptTemplateUtils.StatementsSep))
                         return literal;
 
                     if (!literal.FirstCharEquals(ScriptTemplateUtils.FilterSep))
@@ -552,6 +558,10 @@ namespace ServiceStack.Script
 
                     literal = literal.AdvancePastPipeOperator();
                 }
+            }
+            else if (literal.FirstCharEquals(ScriptTemplateUtils.StatementsSep))
+            {
+                return literal;
             }
             else if (!literal.AdvancePastWhitespace().IsNullOrEmpty())
             {

@@ -132,6 +132,35 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         }
 
         [Test]
+        public void Can_parse_multiple_statements_delimited_by_semicolons()
+        {
+            var context = new ScriptContext().Init();
+
+            JsStatement[] ParseCode(string str)
+            {
+                var statements = context.ParseCode(str).Statements;
+                return statements;
+            }
+
+            var expr = new JsStatement[] {
+                new JsExpressionStatement(
+                    new JsAssignmentExpression(new JsIdentifier("a"), JsAssignment.Operator, new JsLiteral(1))),
+                new JsFilterExpressionStatement("a |> add(2)", new JsIdentifier("a"),
+                    new JsCallExpression(new JsIdentifier("add"), new JsLiteral(2))),
+                new JsExpressionStatement(
+                    new JsVariableDeclaration(JsVariableDeclarationKind.Var, new [] {
+                        new JsDeclaration(new JsIdentifier("b"), new JsLiteral(3)),
+                        new JsDeclaration(new JsIdentifier("d"), new JsLiteral(4))
+                    })),
+                new JsFilterExpressionStatement("d |> sub(b)", new JsIdentifier("d"),
+                    new JsCallExpression(new JsIdentifier("sub"), new JsIdentifier("b"))),
+            };
+
+            var result = ParseCode("a = 1; a |> add(2); var b = 3, d=4; d |> sub(b)");
+            Assert.That(result, Is.EqualTo(expr));
+        }
+
+        [Test]
         public void Can_parse_code_statements_with_blocks()
         {
             var context = new ScriptContext().Init();

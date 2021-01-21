@@ -213,6 +213,7 @@ namespace ServiceStack.Script
         }
 
         internal const char FilterSep = '|';
+        internal const char StatementsSep = ';';
 
         // {{#name}}  {{else if a=b}}  {{else}}  {{/name}}
         //          ^
