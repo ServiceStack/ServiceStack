@@ -734,6 +734,9 @@ namespace ServiceStack.Auth
             if (HasExpired(jwtPayload))
                 return ErrorMessages.TokenExpired;
 
+            if (HasInvalidNotBefore(jwtPayload))
+                return ErrorMessages.TokenInvalidNotBefore;
+
             if (HasBeenInvalidated(jwtPayload))
                 return ErrorMessages.TokenInvalidated;
 
@@ -749,6 +752,18 @@ namespace ServiceStack.Auth
             var secondsSinceEpoch = ResolveUnixTime(DateTime.UtcNow);
             var hasExpired = secondsSinceEpoch >= expiresAt;
             return hasExpired;
+        }
+
+        public virtual bool HasInvalidNotBefore(JsonObject jwtPayload)
+        {
+            var notValidBefore = GetUnixTime(jwtPayload, "nbf");
+            if (notValidBefore != null)
+            {
+                var secondsSinceEpoch = ResolveUnixTime(DateTime.UtcNow);
+                var notValidYet = notValidBefore > secondsSinceEpoch;
+                return notValidYet;
+            }
+            return false;
         }
 
         public virtual bool HasBeenInvalidated(JsonObject jwtPayload)
