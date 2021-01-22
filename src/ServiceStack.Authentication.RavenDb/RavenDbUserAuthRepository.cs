@@ -12,7 +12,7 @@ namespace ServiceStack.Authentication.RavenDb
 
         public static Func<MemberInfo, bool> FindIdentityProperty { get; set; } = DefaultFindIdentityProperty;
 
-        public static bool DefaultFindIdentityProperty(MemberInfo p) => 
+        public static bool DefaultFindIdentityProperty(MemberInfo p) =>
             p.Name == (p.DeclaringType.FirstAttribute<IndexAttribute>()?.Name ?? "Id");
     }
 }
