@@ -8,7 +8,6 @@ namespace ServiceStack.Authentication.RavenDb
     /// </summary>
     public static class RavenIdConverter
     {
-        public const string RavenUserAuthsIdPrefix = "RavenUserAuths";
         const int ClusterTagOffset = 100;
         const int ASCIIOffset = 65;
 
@@ -19,10 +18,10 @@ namespace ServiceStack.Authentication.RavenDb
             return Convert.ToInt32(idParts[0]) * ClusterTagOffset + ClusterTagToInt(idParts[1]);
         }
 
-            static int ClusterTagToInt(string tag)
-            {
-                return tag[0] - ASCIIOffset;
-            }
+        static int ClusterTagToInt(string tag)
+        {
+            return tag[0] - ASCIIOffset;
+        }
 
         public static string ToString(string prefix, int id)
         {

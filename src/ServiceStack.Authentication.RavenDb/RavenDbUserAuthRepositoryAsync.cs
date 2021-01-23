@@ -14,32 +14,33 @@ namespace ServiceStack.Authentication.RavenDb
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
-        public static async Task CreateOrUpdateUserAuthIndexAsync(IDocumentStore store, CancellationToken token=default)
+        public static async Task CreateOrUpdateUserAuthIndexAsync(IDocumentStore store, CancellationToken token = default)
         {
             // put this index into the ravendb database
             await new UserAuth_By_UserNameOrEmail().ExecuteAsync(store, token: token).ConfigAwait();
             await new UserAuth_By_UserAuthDetails().ExecuteAsync(store, token: token).ConfigAwait();
-            UserAuthIndexCreated = true;
+            IsInitialized = true;
         }
 
         #region IUserAuthRepositoryAsync
 
         public async Task<IUserAuth> CreateUserAuthAsync(IUserAuth newUser, string password, CancellationToken token = default)
         {
-            var nu = ((UserAuth)newUser).ToRavenUserAuth();
-            nu.ValidateNewUser(password);
 
-            await AssertNoExistingUserAsync(nu, token: token).ConfigAwait();
+            newUser.ValidateNewUser(password);
 
-            nu.PopulatePasswordHashes(password);
-            nu.CreatedDate = DateTime.UtcNow;
-            nu.ModifiedDate = nu.CreatedDate;
+            await AssertNoExistingUserAsync(newUser, token: token).ConfigAwait();
+
+            newUser.PopulatePasswordHashes(password);
+            newUser.CreatedDate = DateTime.UtcNow;
+            newUser.ModifiedDate = newUser.CreatedDate;
 
             using var session = documentStore.OpenAsyncSession();
-            await session.StoreAsync(nu, token);
+            await session.StoreAsync(newUser, token);
+            UpdateIntKey(newUser);
             await session.SaveChangesAsync(token);
 
-            return nu;
+            return newUser;
         }
 
         public async Task DeleteUserAuthAsync(string ravenUserAuthId, CancellationToken token = default)
@@ -102,7 +103,7 @@ namespace ServiceStack.Authentication.RavenDb
 
             return newUser;
         }
-        
+
         #endregion
 
         #region IAuthRepositoryAsync
@@ -135,13 +136,10 @@ namespace ServiceStack.Authentication.RavenDb
                 userAuth.CreatedDate = userAuth.ModifiedDate;
 
             await session.StoreAsync(userAuth, token);
+            UpdateIntKey(userAuth);
             await session.SaveChangesAsync(token);
 
-            var key = ((RavenUserAuth)userAuth).Key;
-
-            if (userAuth.Id == default)
-                userAuth.Id = RavenIdConverter.ToInt(key);
-
+            var key = GetKey(userAuth);
 
             authDetails.UserAuthId = userAuth.Id; // Partial FK int Id
             authDetails.RefIdStr = key; // FK
@@ -182,7 +180,7 @@ namespace ServiceStack.Authentication.RavenDb
 
             if (oAuthProvider != null)
             {
-                var userAuth = await session.LoadAsync<TUserAuth>(RavenIdConverter.ToString(RavenIdConverter.RavenUserAuthsIdPrefix, oAuthProvider.UserAuthId), token);
+                var userAuth = await session.LoadAsync<TUserAuth>(RavenIdConverter.ToString(UserAuthCollectionName, oAuthProvider.UserAuthId), token);
                 return userAuth;
             }
             return null;
@@ -196,7 +194,7 @@ namespace ServiceStack.Authentication.RavenDb
                 .Where(x => x.Search.Contains(userNameOrEmail))
                 .OfType<TUserAuth>()
                 .FirstOrDefaultAsync(token).ConfigAwait();
-                
+
             return userAuth;
         }
 
@@ -221,11 +219,11 @@ namespace ServiceStack.Authentication.RavenDb
             await LoadUserAuthAsync(session, (TUserAuth)userAuth, token).ConfigAwait();
         }
 
-            async Task LoadUserAuthAsync(IAuthSession session, TUserAuth userAuth, CancellationToken token = default)
-            {
-                UpdateSessionKey(session, userAuth);
-                await session.PopulateSessionAsync(userAuth, this, token).ConfigAwait();
-            }
+        async Task LoadUserAuthAsync(IAuthSession session, TUserAuth userAuth, CancellationToken token = default)
+        {
+            UpdateSessionKey(session, userAuth);
+            await session.PopulateSessionAsync(userAuth, this, token).ConfigAwait();
+        }
 
         public async Task SaveUserAuthAsync(IAuthSession authSession, CancellationToken token = default)
         {
@@ -240,18 +238,18 @@ namespace ServiceStack.Authentication.RavenDb
             await session.SaveChangesAsync(token);
         }
 
-            static async Task<TUserAuth> LoadOrCreateFromSessionAsync(IAuthSession authSession, Raven.Client.Documents.Session.IAsyncDocumentSession session)
+        static async Task<TUserAuth> LoadOrCreateFromSessionAsync(IAuthSession authSession, Raven.Client.Documents.Session.IAsyncDocumentSession session)
+        {
+            TUserAuth userAuth;
+            if (!authSession.UserAuthId.IsNullOrEmpty())
             {
-                TUserAuth userAuth;
-                if (!authSession.UserAuthId.IsNullOrEmpty())
-                {
-                    var ravenKey = RavenIdConverter.ToString(RavenIdConverter.RavenUserAuthsIdPrefix, int.Parse(authSession.UserAuthId));
-                    userAuth = await session.LoadAsync<TUserAuth>(ravenKey);
-                }
-                else
-                    userAuth = authSession.ConvertTo<TUserAuth>();
-                return userAuth;
+                var ravenKey = RavenIdConverter.ToString(UserAuthCollectionName, int.Parse(authSession.UserAuthId));
+                userAuth = await session.LoadAsync<TUserAuth>(ravenKey);
             }
+            else
+                userAuth = authSession.ConvertTo<TUserAuth>();
+            return userAuth;
+        }
 
         public async Task SaveUserAuthAsync(IUserAuth userAuth, CancellationToken token = default)
         {
@@ -296,7 +294,7 @@ namespace ServiceStack.Authentication.RavenDb
             return null;
         }
 
-        
+
         async Task AssertNoExistingUserAsync(IUserAuth newUser, IUserAuth exceptForExistingUser = null, CancellationToken token = default)
         {
             if (newUser.UserName != null)
@@ -332,7 +330,7 @@ namespace ServiceStack.Authentication.RavenDb
             using var session = documentStore.OpenAsyncSession();
             // RavenDB cant query string Contains/IndexOf
             var q = session.Query<TUserAuth>()
-                .Where(x => x.UserName.StartsWith(query) || x.UserName.EndsWith(query) || 
+                .Where(x => x.UserName.StartsWith(query) || x.UserName.EndsWith(query) ||
                             x.Email.StartsWith(query) || x.Email.EndsWith(query))
                 .Customize(x => x.WaitForNonStaleResults());
 
