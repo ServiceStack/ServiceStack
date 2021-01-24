@@ -24,8 +24,8 @@ namespace ServiceStack
                     : "/bin/bash",
                 WorkingDirectory = startInfo.WorkingDirectory,
                 Arguments = Env.IsWindows
-                    ? $"/c \"{startInfo.FileName}\" {startInfo.Arguments}"
-                    : $"-c \"{startInfo.FileName}\" {startInfo.Arguments}",
+                    ? $"/c \"{startInfo.FileName} {startInfo.Arguments}\""
+                    : $"-c \"{startInfo.FileName} {startInfo.Arguments}\"",
             };
             return to;
         }
