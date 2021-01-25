@@ -115,6 +115,10 @@ namespace ServiceStack
             }
         }
 
+        public virtual Tuple<string,string> AssertRepo(string[] orgs, string name, bool useFork=false) =>
+            FindRepo(orgs, name, useFork)
+            ?? throw new Exception($"'{name}' was not found in sources: {orgs.Join(", ")}");
+
         public virtual Tuple<string,string> FindRepo(string[] orgs, string name, bool useFork=false)
         {
             foreach (var orgName in orgs)
@@ -127,8 +131,7 @@ namespace ServiceStack
                 var repo = repoFullName.RightPart('/');
                 return Tuple.Create(user, repo);
             }
-
-            throw new Exception($"'{name}' was not found in sources: {orgs.Join(", ")}");
+            return null;
         }
 
         public virtual string GetSourceZipUrl(string user, string repo) => 
