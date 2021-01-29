@@ -13,7 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.Core.csproj" />
     <PackageReference Include="ServiceStack.Text.Core" Version="$(Version)" />
-    <PackageReference Include="log4net" Version="2.0.8" />
+    <PackageReference Include="log4net" Version="2.0.10" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.0" />
