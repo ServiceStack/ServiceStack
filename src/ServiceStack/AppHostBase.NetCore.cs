@@ -85,7 +85,7 @@ namespace ServiceStack
             if (logFactory != null)
             {
                 NetCoreLogFactory.FallbackLoggerFactory = logFactory;
-                if (LogManager.LogFactory == null)
+                if (LogManager.LogFactory.IsNullOrNullLogFactory())
                     LogManager.LogFactory = new NetCoreLogFactory(logFactory);
             }
 

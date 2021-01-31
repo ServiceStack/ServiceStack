@@ -11,5 +11,10 @@ namespace ServiceStack
                 throw ex;
             log.Error(message, ex);
         }
+
+        public static bool IsNullOrNullLogFactory(this ILogFactory factory)
+        {
+            return factory == null || factory.GetType() == typeof(NullLogFactory);
+        }
     }
 }
