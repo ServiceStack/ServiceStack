@@ -108,7 +108,7 @@ namespace ServiceStack.Auth
             throw new NotImplementedException("NetCoreIdentityAuthProvider Authenticate() should not be called directly");
         }
 
-        public virtual PreAuthenticate(IRequest req, IResponse res)
+        public virtual void PreAuthenticate(IRequest req, IResponse res)
         {
             var coreReq = (HttpRequest)req.OriginalRequest;
             var claimsPrincipal = coreReq.HttpContext.User;
