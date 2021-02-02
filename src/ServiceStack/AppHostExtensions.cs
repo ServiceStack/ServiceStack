@@ -146,7 +146,7 @@ namespace ServiceStack
         {
             return (appHost.Config.WebHostUrl ??
                 (!string.IsNullOrEmpty(appHost.PathBase)
-                    ? "/" + appHost.PathBase
+                    ? ("/" + appHost.PathBase).ReplaceAll("//", "/")
                     : "")).TrimEnd('/');
         }
     }
