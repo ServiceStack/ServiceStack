@@ -158,7 +158,7 @@ namespace ServiceStack
             }
             
             //Keep in sync with Kestrel/AppSelfHostBase.cs
-            var operationName = context.Request.GetOperationName().UrlDecode() ?? "Home";
+            var operationName = context.Request.GetOperationName() ?? "Home"; //already decoded
             var pathInfo = context.Request.Path.HasValue
                 ? context.Request.Path.Value
                 : "/";
