@@ -568,56 +568,43 @@ namespace ServiceStack
         public static string GetQueryStringContentType(this IRequest httpReq)
         {
             var callback = httpReq.QueryString[Keywords.Callback];
-            if (!string.IsNullOrEmpty(callback)) return MimeTypes.Json;
+            if (!string.IsNullOrEmpty(callback)) 
+                return MimeTypes.Json;
 
             var format = httpReq.QueryString[Keywords.Format];
             if (format == null)
             {
-                // 3 or 4 letters in URI between slashes `/[xml|json|html|jsv|csv]/[reply|oneway]/[servicename]`
+                // 3 or 4 letters in URI between slashes `/[xml|json|html|jsv|csv]/[reply|oneway]/[ServiceName]`
                 //see https://docs.servicestack.net/formats#pre-defined-routes
                 const int formatMaxLength = 4;
                 const int formatMinLength = 3;
                 int start = 0, end = -1;
 
                 var pi = httpReq.PathInfo;
-                if (pi == null || pi.Length < formatMinLength) return null;
+                if (pi == null || pi.Length < formatMinLength) 
+                    return null;
 
                 if (pi[0] == '/') start = 1;
                 end = pi.IndexOf('/', start, Math.Min(pi.Length - start, formatMaxLength));
 
-                if (end == -1) 
+                if (end == -1)
                 {
                     if (pi.Length - start > formatMaxLength)
                         return null;
-                    else
-                        end = pi.Length;
-                } else if (end - start > formatMaxLength) return null;
-
-                //check for xml or jsv content-type
-                if (end - start == 3)
-                {
-                    if (String.Compare(pi, start, "xml", 0, "xml".Length, StringComparison.OrdinalIgnoreCase) == 0)
-                         return MimeTypes.Xml;
-                    if (String.Compare(pi, start, "jsv", 0, "jsv".Length, StringComparison.OrdinalIgnoreCase) == 0)
-                         return MimeTypes.Jsv;
-                } else if (end - start == 4) //check for "json" content-type
-                {
-                    if (String.Compare(pi, start, "json", 0, "json".Length, StringComparison.OrdinalIgnoreCase) == 0)
-                         return MimeTypes.Json;
-                }
+                    
+                    end = pi.Length;
+                } 
+                else if (end - start > formatMaxLength) 
+                    return null;
 
                 format = pi.Substring(start, end - start).ToLowerInvariant();
-            } else 
+            } 
+            else 
             {
                 format = format.LeftPart('.').ToLowerInvariant();
-                if (format.Contains("json")) return MimeTypes.Json;
-                if (format.Contains("xml")) return MimeTypes.Xml;
-                if (format.Contains("jsv")) return MimeTypes.Jsv;
             }
 
-            HostContext.ContentTypes.ContentTypeFormats.TryGetValue(format, out var contentType);
-
-            return contentType;
+            return HostContext.ContentTypes.GetFormatContentType(format);
         }
 
         /// <summary>

@@ -67,9 +67,15 @@ namespace ServiceStack.Host
         
         public string GetFormatContentType(string format)
         {
-            return ContentTypeFormats.TryGetValue(format, out var registeredFormats)
-                ? registeredFormats
-                : null;
+            return ContentTypeFormats.TryGetValue(format, out var registeredFormat)
+                ? registeredFormat
+                : format switch {
+                    "json" => MimeTypes.Json,
+                    "xml" => MimeTypes.Xml,
+                    "jsv" => MimeTypes.Jsv,
+                    "csv" => MimeTypes.Csv,
+                    _ => null,
+                };
         }
 
         public void Register(string contentType, StreamSerializerDelegate streamSerializer, StreamDeserializerDelegate streamDeserializer)
