@@ -1093,7 +1093,7 @@ namespace ServiceStack
 
             foreach (var channel in channels)
             {
-                await NotifyRawAsync(ChannelSubscriptions, channel, channel + "@" + selector, body, channel, token).ConfigAwait();
+                await NotifyRawAsync(ChannelSubscriptions, channel, channel.AssertChannel() + "@" + selector.AssertSelector(), body, channel, token).ConfigAwait();
             }
         }
 
@@ -1107,13 +1107,13 @@ namespace ServiceStack
             NotifyRawAsync(Subscriptions, subscriptionId, selector, json, channel, token);
 
         public void NotifyChannel(string channel, string selector, object message) =>
-            Notify(ChannelSubscriptions, channel, channel + "@" + selector, message, channel);
+            Notify(ChannelSubscriptions, channel, channel.AssertChannel() + "@" + selector.AssertSelector(), message, channel);
 
         public Task NotifyChannelAsync(string channel, string selector, object message, CancellationToken token = default) =>
-            NotifyAsync(ChannelSubscriptions, channel, channel + "@" + selector, message, channel, token);
+            NotifyAsync(ChannelSubscriptions, channel, channel.AssertChannel() + "@" + selector.AssertSelector(), message, channel, token);
 
         public Task NotifyChannelJsonAsync(string channel, string selector, string json, CancellationToken token = default) =>
-            NotifyRawAsync(ChannelSubscriptions, channel, channel + "@" + selector, json, channel, token);
+            NotifyRawAsync(ChannelSubscriptions, channel, channel.AssertChannel() + "@" + selector.AssertSelector(), json, channel, token);
 
         public void NotifyUserId(string userId, string selector, object message, string channel = null) =>
             Notify(UserIdSubscriptions, userId, selector, message, channel);
@@ -2035,5 +2035,13 @@ namespace ServiceStack
                 yield return item.Key;
             }
         }
+
+        internal static string AssertChannel(this string channel) => channel == null || channel.IndexOf('@') == -1
+            ? channel
+            : throw new ArgumentException(@"Illegal '@' used in name", nameof(channel));
+
+        internal static string AssertSelector(this string selector) => selector == null || selector.IndexOf('@') == -1
+            ? selector
+            : throw new ArgumentException(@"Illegal '@' used in name", nameof(selector));
     }
 }
