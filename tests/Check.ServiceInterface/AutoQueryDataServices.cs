@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Check.ServiceModel;
 using ServiceStack;
 
 namespace Check.ServiceInterface
@@ -22,6 +23,8 @@ namespace Check.ServiceInterface
     public class AutoQueryDataServices : Service
     {
         public IAutoQueryData AutoQuery { get; set; }
+
+        public object Any(QueryPosts request) => request;
 
         public object Any(QueryRequestLogs query)
         {

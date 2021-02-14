@@ -52,6 +52,7 @@
     <Compile Include="Errors.cs" />
     <Compile Include="MetadataTest.cs" />
     <Compile Include="NativeTypeIssues.cs" />
+    <Compile Include="QueryPosts.cs" />
     <Compile Include="ReturnData.cs" />
     <Compile Include="Rockstar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

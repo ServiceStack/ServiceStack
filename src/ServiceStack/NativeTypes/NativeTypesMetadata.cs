@@ -1222,9 +1222,12 @@ namespace ServiceStack.NativeTypes
                         .ToSet()
                     : TypeConstants<string>.EmptyHashSet;
 
-                var includedMetadataTypes = metadata.Operations
+                var includedMetadataOperations = metadata.Operations
+                    .Where(t => typesToExpand.Contains(t.Request.Name))
+                    .ToList();
+
+                var includedMetadataTypes = includedMetadataOperations
                     .Select(o => o.Request)
-                    .Where(t => typesToExpand.Contains(t.Name))
                     .ToList();
 
                 var includeSet = includedMetadataTypes
@@ -1237,6 +1240,23 @@ namespace ServiceStack.NativeTypes
                     .Select(o => o.Response)
                     .ToList();
                 includedResponses.ForEach(x => includeSet.Add(x.Name));
+
+                var includedTypeNames = includedMetadataTypes
+                    .Where(x => x.Implements?.Length > 0)
+                    .SelectMany(x => x.Implements.Select(i => i.Name))
+                    .ToSet();
+                foreach (var op in includedMetadataOperations)
+                {
+                    if (op.ReturnType != null)
+                        includedTypeNames.Add(typeof(IReturn<>).Name);
+                    if (op.ReturnsVoid)
+                        includedTypeNames.Add(nameof(IReturnVoid));
+                }
+                foreach (var metaType in metadata.Types)
+                {
+                    if (includedTypeNames.Contains(metaType.Name))
+                        includedMetadataTypes.Add(metaType);
+                }
 
                 var returnTypesForInclude = metadata.Operations
                     .Where(x => x.Response != null && includeSet.Contains(x.Response.Name))
@@ -1260,15 +1280,17 @@ namespace ServiceStack.NativeTypes
                     .Where(x => x != null)
                     .SelectMany(x => x.GetReferencedTypeNames(metadata));
 
-                return referenceTypes
+                var ret = referenceTypes
                     .Union(explicitTypes)
                     .Union(includeTypesInNamespace)
                     .Union(typesToExpand)
+                    .Union(includedTypeNames)
                     .Union(crudTypeNamesForInclude)
                     .Union(reverseTypeReferencesToInclude)
                     .Union(returnTypesForInclude.Select(x => x.Name))
                     .Distinct()
                     .ToList();
+                return ret;
             }
 
             // From IncludeTypes get the corresponding MetadataTypes
