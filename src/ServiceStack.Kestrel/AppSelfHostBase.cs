@@ -32,7 +32,7 @@ namespace ServiceStack
         }
 
         private string pathBase;
-        public string PathBase
+        public override string PathBase
         {
             get => pathBase;
             set
