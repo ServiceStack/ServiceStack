@@ -664,10 +664,10 @@ text |> markdown
             
             result = context.EvaluateCode(code);
             Assert.That(result, Is.EquivalentTo(new List<KeyValuePair<string, string>> {
-                 new KeyValuePair<string, string>("Apples","2"),
-                 new KeyValuePair<string, string>("Oranges","3"),
-                 new KeyValuePair<string, string>("Grape Fruit","2"),
-                 new KeyValuePair<string, string>("Rock Melon","3"),
+                 new("Apples","2"),
+                 new("Oranges","3"),
+                 new("Grape Fruit","2"),
+                 new("Rock Melon","3"),
             }));
             Assert.That(context.EvaluateCode(code.Trim()), Is.EquivalentTo((List<KeyValuePair<string, string>>)result));
 
@@ -681,10 +681,10 @@ text |> markdown
                 list |> return";
             result = context.EvaluateCode(code);
             Assert.That(result, Is.EquivalentTo(new List<List<string>> {
-                new List<string> { "Apples", "2", "2" },
-                new List<string> { "Oranges", "3", "3" },
-                new List<string> { "Grape Fruit", "2", "2" },
-                new List<string> { "Rock Melon", "3", "3" },
+                new() { "Apples", "2", "2" },
+                new() { "Oranges", "3", "3" },
+                new() { "Grape Fruit", "2", "2" },
+                new() { "Rock Melon", "3", "3" },
             }));
             Assert.That(context.EvaluateCode(code.Trim()), Is.EquivalentTo((List<List<string>>)result));
 

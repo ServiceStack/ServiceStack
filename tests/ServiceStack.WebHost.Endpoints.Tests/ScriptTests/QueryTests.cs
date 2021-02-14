@@ -13,9 +13,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var context = new ScriptContext {
                 Args = {
                     ["items"] = new List<KeyValuePair<string, object>> {
-                        new KeyValuePair<string, object>("A", 1),
-                        new KeyValuePair<string, object>("B", 2),
-                        new KeyValuePair<string, object>("C", 3),
+                        new("A", 1),
+                        new("B", 2),
+                        new("C", 3),
                     }
                 }
             }.Init();
@@ -38,9 +38,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var context = new ScriptContext {
                 Args = {
                     ["items"] = new List<KeyValuePair<string, long>> {
-                        new KeyValuePair<string, long>("A", 1),
-                        new KeyValuePair<string, long>("B", 2),
-                        new KeyValuePair<string, long>("C", 3),
+                        new("A", 1),
+                        new("B", 2),
+                        new("C", 3),
                     }
                 }
             }.Init();

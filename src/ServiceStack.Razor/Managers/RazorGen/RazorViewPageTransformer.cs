@@ -13,13 +13,12 @@ namespace ServiceStack.Razor.Managers.RazorGen
             this.codeTransformers.Add(new SetBaseType(pageBaseType));
         }
 
-        private static readonly HashSet<string> namespaces = new HashSet<string>()
+        private static readonly HashSet<string> namespaces = new()
         {
             "System",
         };
 
-        private readonly List<RazorCodeTransformerBase> codeTransformers = new List<RazorCodeTransformerBase>
-        {
+        private readonly List<RazorCodeTransformerBase> codeTransformers = new() {
             new AddGeneratedClassAttribute(),
             new AddPageVirtualPathAttribute(),
             new SetImports( namespaces, replaceExisting: false ),
@@ -28,10 +27,7 @@ namespace ServiceStack.Razor.Managers.RazorGen
             new WebConfigTransformer()
         };
 
-        protected override IEnumerable<RazorCodeTransformerBase> CodeTransformers
-        {
-            get { return this.codeTransformers; }
-        }
+        protected override IEnumerable<RazorCodeTransformerBase> CodeTransformers => this.codeTransformers;
 
         public override void Initialize(RazorPageHost razorHost, IDictionary<string, string> directives)
         {
