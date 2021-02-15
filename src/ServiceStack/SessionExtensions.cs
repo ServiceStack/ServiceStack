@@ -406,6 +406,7 @@ namespace ServiceStack
         {
             var httpRes = response as IHttpResponse;
             httpRes?.Cookies.DeleteCookie(Keywords.TokenCookie);
+            httpRes?.Cookies.DeleteCookie(Keywords.RefreshTokenCookie);
         }
 
         public static async Task GenerateNewSessionCookiesAsync(this IRequest req, IAuthSession session, CancellationToken token=default)
