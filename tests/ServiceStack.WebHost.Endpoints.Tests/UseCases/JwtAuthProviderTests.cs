@@ -779,7 +779,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
     
     public class JwtAuthProviderTokenCookieTests
     {
-        public const string Username = "mythz";
+        public const string Username = "ss-reftok";
         public const string Password = "p@55word";
         private static readonly byte[] AuthKey = AesUtils.CreateKey();
 
@@ -804,9 +804,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             {
                 // just for testing, create a privateKeyXml on every instance
                 Plugins.Add(new AuthFeature(() => new AuthUserSession(),
-                    new IAuthProvider[]
-                    {
-                        new BasicAuthProvider(),
+                    new IAuthProvider[] {
                         new CredentialsAuthProvider(),
                         new JwtAuthProvider
                         {
@@ -818,8 +816,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                             AllowInFormData = true,
                         },
                     }));
-
-                Plugins.Add(new RegistrationFeature());
 
                 container.Register<IAuthRepository>(c => new InMemoryAuthRepository());
 
