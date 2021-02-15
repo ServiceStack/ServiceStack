@@ -2096,9 +2096,21 @@ namespace ServiceStack
             return token;
         }
 
+        public static string GetRefreshTokenCookie(this IServiceClient client)
+        {
+            client.GetCookieValues().TryGetValue("ss-reftok", out var token);
+            return token;
+        }
+
         public static string GetTokenCookie(this CookieContainer cookies, string baseUri)
         {
             cookies.ToDictionary(baseUri).TryGetValue("ss-tok", out var token);
+            return token;
+        }
+
+        public static string GetRefreshTokenCookie(this CookieContainer cookies, string baseUri)
+        {
+            cookies.ToDictionary(baseUri).TryGetValue("ss-reftok", out var token);
             return token;
         }
 
@@ -2110,12 +2122,29 @@ namespace ServiceStack
             client.SetCookie("ss-tok", token, expiresIn: TimeSpan.FromDays(365 * 20));
         }
 
+        public static void SetRefreshTokenCookie(this IServiceClient client, string token)
+        {
+            if (token == null)
+                return;
+
+            client.SetCookie("ss-reftok", token, expiresIn: TimeSpan.FromDays(365 * 20));
+        }
+
         public static void SetTokenCookie(this CookieContainer cookies, string baseUri, string token)
         {
             if (token == null)
                 return;
 
             cookies.SetCookie(new Uri(baseUri), "ss-tok", token,
+                expiresAt: DateTime.UtcNow.Add(TimeSpan.FromDays(365 * 20)));
+        }
+
+        public static void SetRefreshTokenCookie(this CookieContainer cookies, string baseUri, string token)
+        {
+            if (token == null)
+                return;
+
+            cookies.SetCookie(new Uri(baseUri), "ss-reftok", token,
                 expiresAt: DateTime.UtcNow.Add(TimeSpan.FromDays(365 * 20)));
         }
 
