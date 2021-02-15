@@ -68,8 +68,7 @@ namespace ServiceStack.Auth
 
         public async Task ResultFilterAsync(AuthResultContext authContext, CancellationToken token=default)
         {
-            if (UseTokenCookie 
-                && authContext.Result.Cookies.All(x => x.Name != Keywords.TokenCookie))
+            if (UseTokenCookie && authContext.Result.Cookies.All(x => x.Name != Keywords.TokenCookie))
             {
                 var accessToken = CreateJwtBearerToken(authContext.Request, authContext.Session);
                 await authContext.Request.RemoveSessionAsync(authContext.Session.Id, token);
@@ -78,6 +77,17 @@ namespace ServiceStack.Auth
                         HttpOnly = true,
                         Secure = authContext.Request.IsSecureConnection,
                         Expires = DateTime.UtcNow.Add(ExpireTokensIn),
+                    });
+            }
+            if (UseRefreshTokenCookie && authContext.Result.Cookies.All(x => x.Name != Keywords.RefreshTokenCookie)
+                && EnableRefreshToken())
+            {
+                var refreshToken = CreateJwtRefreshToken(authContext.Request, authContext.Session.Id, ExpireRefreshTokensIn);
+                authContext.Result.Cookies.Add(
+                    new Cookie(Keywords.RefreshTokenCookie, refreshToken, Cookies.RootPath) {
+                        HttpOnly = true,
+                        Secure = authContext.Request.IsSecureConnection,
+                        Expires = DateTime.UtcNow.Add(ExpireRefreshTokensIn),
                     });
             }
         }
@@ -395,13 +405,17 @@ namespace ServiceStack.Auth
             if (jwtAuthProvider.RequireSecureConnection && !Request.IsSecureConnection)
                 throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection.Localize(Request));
 
-            if (string.IsNullOrEmpty(request.RefreshToken))
-                throw new ArgumentNullException(nameof(request.RefreshToken));
+            var refreshToken = request.RefreshToken 
+                ?? (Request.Cookies.TryGetValue(Keywords.RefreshTokenCookie, out var refTok)
+                    ? refTok.Value
+                    : null);
+            if (string.IsNullOrEmpty(refreshToken))
+                throw new ArgumentNullException(nameof(refreshToken));
 
             JsonObject jwtPayload;
             try
             {
-                jwtPayload = jwtAuthProvider.GetVerifiedJwtPayload(Request, request.RefreshToken.Split('.'));
+                jwtPayload = jwtAuthProvider.GetVerifiedJwtPayload(Request, refreshToken.Split('.'));
             }
             catch (ArgumentException)
             {
@@ -418,7 +432,7 @@ namespace ServiceStack.Auth
             jwtAuthProvider.AssertJwtPayloadIsValid(jwtPayload);
 
             if (jwtAuthProvider.ValidateRefreshToken != null && !jwtAuthProvider.ValidateRefreshToken(jwtPayload, Request))
-                throw new ArgumentException(ErrorMessages.RefreshTokenInvalid.Localize(Request), nameof(request.RefreshToken));
+                throw new ArgumentException(ErrorMessages.RefreshTokenInvalid.Localize(Request), nameof(refreshToken));
 
             var userId = jwtPayload["sub"];
 
@@ -440,8 +454,8 @@ namespace ServiceStack.Auth
 
             if (request.UseTokenCookie.GetValueOrDefault(jwtAuthProvider.UseTokenCookie) != true)
                 return response;
-            
-            return new HttpResult(new GetAccessTokenResponse())
+
+            var httpResult = new HttpResult(new GetAccessTokenResponse())
             {
                 Cookies = {
                     new Cookie(Keywords.TokenCookie, accessToken, Cookies.RootPath) {
@@ -451,6 +465,7 @@ namespace ServiceStack.Auth
                     }
                 }
             };
+            return httpResult;
         }
     }
 

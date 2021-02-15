@@ -283,6 +283,11 @@ namespace ServiceStack.Auth
         public bool UseTokenCookie { get; set; }
 
         /// <summary>
+        /// Whether to create a refresh token in ss-reftok Cookie 
+        /// </summary>
+        public bool UseRefreshTokenCookie { get; set; }
+
+        /// <summary>
         /// Override conversion to Unix Time used in issuing JWTs and validation
         /// </summary>
         public Func<DateTime,long> ResolveUnixTime { get; set; } = DefaultResolveUnixTime;
@@ -329,6 +334,8 @@ namespace ServiceStack.Auth
                 AllowInFormData = appSettings.Get("jwt.AllowInFormData", AllowInFormData);
                 RequiresAudience = appSettings.Get("jwt.RequiresAudience", RequiresAudience);
                 IncludeJwtInConvertSessionToTokenResponse = appSettings.Get("jwt.IncludeJwtInConvertSessionToTokenResponse", IncludeJwtInConvertSessionToTokenResponse);
+                UseTokenCookie = appSettings.Get("jwt.UseTokenCookie", UseTokenCookie);
+                UseRefreshTokenCookie = appSettings.Get("jwt.UseRefreshTokenCookie", UseRefreshTokenCookie);
 
                 Issuer = appSettings.GetString("jwt.Issuer");
                 KeyId = appSettings.GetString("jwt.KeyId");
@@ -896,6 +903,14 @@ namespace ServiceStack.Auth
                     }
                 }
             };
+            if (UseRefreshTokenCookie && authCtx.AuthResponse.RefreshToken != null)
+            {
+                httpResult.Cookies.Add(new Cookie(Keywords.RefreshTokenCookie, authCtx.AuthResponse.RefreshToken, Cookies.RootPath) {
+                    HttpOnly = true,
+                    Secure = authCtx.AuthService.Request.IsSecureConnection,
+                    Expires = DateTime.UtcNow.Add(ExpireRefreshTokensIn),
+                });
+            }
 
             var isHtml = authCtx.AuthService.Request.ResponseContentType.MatchesContentType(MimeTypes.Html);
             if (isHtml)
