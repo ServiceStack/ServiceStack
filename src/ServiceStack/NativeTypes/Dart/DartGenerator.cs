@@ -802,6 +802,24 @@ namespace ServiceStack.NativeTypes.Dart
             {
                 sbTypeInfos.AppendLine($"    '{dartType}': new TypeInfo(TypeOf.Class, create:{factoryFn}),");
             }
+
+            //base classes need to be abstract and can't be instantiated in TypeContext mappings
+            if (metaType.Inherits != null)
+            {
+                //AutoQuery Base types are existing but still need to register the List<Result> type
+                var baseType = metaType.Inherits;
+                if (baseType.Name.StartsWith("QueryDb`") || baseType.Name.StartsWith("QueryData`"))
+                {
+                    var listArgType = baseType.GenericArgs.Last();
+                    var listType = new MetadataType
+                    {
+                        Name = $"List<{listArgType}>",
+                        Namespace = typeof(List<>).Namespace,
+                        GenericArgs = new[] { listArgType },
+                    };
+                    RegisterType(listType, listType.Name);
+                }
+            }
         }
 
         public bool UseTypeConversion(MetadataPropertyType prop)
