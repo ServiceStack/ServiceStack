@@ -405,6 +405,20 @@ namespace ServiceStack.NativeTypes.FSharp
         public string TypeValue(string type, string value)
         {
             var alias = TypeAlias(type);
+            if (type == nameof(Int32))
+            {
+                if (value == int.MinValue.ToString())
+                    return "Int32.MinValue";
+                if (value == int.MaxValue.ToString())
+                    return "Int32.MaxValue";
+            }
+            if (type == nameof(Int64))
+            {
+                if (value == long.MinValue.ToString())
+                    return "Int64.MinValue";
+                if (value == long.MaxValue.ToString())
+                    return "Int64.MaxValue";
+            }
             if (value == null)
                 return "null";
             if (alias == "string" || type == "String")

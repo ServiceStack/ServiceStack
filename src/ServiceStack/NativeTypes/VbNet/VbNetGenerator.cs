@@ -56,6 +56,7 @@ namespace ServiceStack.NativeTypes.VbNet
             "Finally",
             "Function",
             "Global",
+            "Is",
             "If",
             "Imports",
             "Inherits",
@@ -326,7 +327,7 @@ namespace ServiceStack.NativeTypes.VbNet
                                 new MetadataAttribute {
                                     Name = "EnumMember",
                                     Args = new List<MetadataPropertyType> {
-                                        new MetadataPropertyType {
+                                        new() {
                                             Name = "Value",
                                             Value = memberValue,
                                             Type = "String",
@@ -336,8 +337,8 @@ namespace ServiceStack.NativeTypes.VbNet
                             });
                         }
                         sb.AppendLine(value == null 
-                            ? $"{name},"
-                            : $"{name} = {value},");
+                            ? $"{name}"
+                            : $"{name} = {value}");
                     }
                 }
 
@@ -440,7 +441,7 @@ namespace ServiceStack.NativeTypes.VbNet
             foreach (var prop in collectionProps)
             {
                 var suffix = prop.IsArray() ? "{}" : "";
-                sb.AppendLine($"{MetadataExtensions.SafeToken(prop.Name)} = New {Type(prop.Type, prop.GenericArgs,true)}{suffix}");
+                sb.AppendLine($"{EscapeKeyword(prop.Name).SafeToken()} = New {Type(prop.Type, prop.GenericArgs,true)}{suffix}");
             }
 
             sb = sb.UnIndent();
@@ -546,6 +547,20 @@ namespace ServiceStack.NativeTypes.VbNet
         public string TypeValue(string type, string value)
         {
             var alias = TypeAlias(type);
+            if (type == nameof(Int32))
+            {
+                if (value == int.MinValue.ToString())
+                    return "Integer.MinValue";
+                if (value == int.MaxValue.ToString())
+                    return "Integer.MaxValue";
+            }
+            if (type == nameof(Int64))
+            {
+                if (value == long.MinValue.ToString())
+                    return "Long.MinValue";
+                if (value == long.MaxValue.ToString())
+                    return "Long.MaxValue";
+            }
             if (value == null)
                 return "Nothing";
             if (alias == "String")
