@@ -1154,7 +1154,10 @@ namespace ServiceStack.NativeTypes
                 if (!metadata.Operations.Any(x => x.Response != null && x.Response.Name == responseType.Name)
                     && metadata.Types.All(x => x.Name != responseType.Name))
                 {
-                    metadata.Types.Add(responseType);
+                    if (!responseType.IgnoreType(config, includeList))
+                    {
+                        metadata.Types.Add(responseType);
+                    }
                 }
             }
             
