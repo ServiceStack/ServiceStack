@@ -1077,7 +1077,7 @@ namespace ServiceStack
             if (value is string)
                 seq = null;
 
-            if (seq != null && value is ICollection collection && collection.Count == 0)
+            if (seq != null && value is ICollection collection && collection.Count == 0) //ignore empty ICollection filters
                 return null;
 
             var format = seq == null
@@ -1145,7 +1145,12 @@ namespace ServiceStack
             else
             {
                 if (seq != null)
-                    value = new SqlInValues(seq);
+                {
+                    var sqlInValues = new SqlInValues(seq);
+                    if (sqlInValues.Count == 0)
+                        return null; //ignore empty IEnumerable filters
+                    value = sqlInValues;
+                }
             }
 
             return new ExprResult(defaultTerm, format, value);

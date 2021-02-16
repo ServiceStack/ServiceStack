@@ -377,13 +377,13 @@ namespace ServiceStack
 
     public partial class AutoQuery : IAutoCrudDb
     {
-        public static HashSet<string> IgnoreCrudProperties { get; } = new HashSet<string> {
+        public static HashSet<string> IgnoreCrudProperties { get; } = new() {
             nameof(IHasSessionId.SessionId),
             nameof(IHasBearerToken.BearerToken),
             nameof(IHasVersion.Version),
         };
         
-        public static HashSet<string> IncludeCrudProperties { get; set; } = new HashSet<string> {
+        public static HashSet<string> IncludeCrudProperties { get; set; } = new() {
             Keywords.Reset,
             Keywords.RowVersion,
         };

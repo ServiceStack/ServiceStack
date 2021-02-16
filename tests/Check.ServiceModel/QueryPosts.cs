@@ -7,8 +7,17 @@ namespace Check.ServiceModel
 {
     [Route("/posts", "GET")]
     public partial class QueryPosts
-        : QueryDb<Post>, IGet
+        : QueryDb<Post>, IReturn<QueryResponse<Post>>, IGet
     {
+        public QueryPosts()
+        {
+            Ids = new int[]{};
+            OrganizationIds = new List<int>{};
+            Types = new HashSet<string>{};
+            AnyTechnologyIds = new HashSet<int>{};
+            Is = new string[]{};
+        }
+
         public virtual int[] Ids { get; set; }
         public virtual int? OrganizationId { get; set; }
         public virtual List<int> OrganizationIds { get; set; }
@@ -19,6 +28,15 @@ namespace Check.ServiceModel
 
     public partial class Post
     {
+        public Post()
+        {
+            TechnologyIds = new int[]{};
+            Labels = new string[]{};
+            RefUserIds = new int[]{};
+            RefLinks = new string[]{};
+            MuteUserIds = new int[]{};
+        }
+
         public virtual long Id { get; set; }
         public virtual int OrganizationId { get; set; }
         public virtual int UserId { get; set; }

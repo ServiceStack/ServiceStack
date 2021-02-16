@@ -447,7 +447,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public int[] Ids { get; set; }
         public List<int> Ages { get; set; }
-        public List<string> FirstNames { get; set; }
+        public HashSet<string> FirstNames { get; set; }
         public int[] IdsBetween { get; set; }
     }
 
@@ -1516,7 +1516,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Ids = new int[] {},
                 Ages = new List<int>(),
-                FirstNames = new List<string>(),
+                FirstNames = new HashSet<string>(),
                 IdsBetween = new int[] {},               
             });
             Assert.That(response.Results.Count, Is.EqualTo(AutoQueryAppHost.SeedRockstars.Length));
