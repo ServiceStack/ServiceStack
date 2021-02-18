@@ -53,6 +53,10 @@ namespace ServiceStack.NativeTypes
     public class TypesSwift : NativeTypesBase { }
 
     [Exclude(Feature.Soap)]
+    [Route("/types/swift4")]
+    public class TypesSwift4 : NativeTypesBase { }
+
+    [Exclude(Feature.Soap)]
     [Route("/types/java")]
     public class TypesJava : NativeTypesBase { }
 
@@ -354,7 +358,6 @@ namespace ServiceStack.NativeTypes
             return metadataTypes;
         }
 
-
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(TypesSwift request)
         {
@@ -382,6 +385,41 @@ namespace ServiceStack.NativeTypes
             try
             {
                 var swift = new SwiftGenerator(typesConfig).GetCode(metadataTypes, base.Request);
+                return swift;
+            }
+            catch (System.Exception)
+            {
+                throw;
+            }
+        }
+
+        [AddHeader(ContentType = MimeTypes.PlainText)]
+        public object Any(TypesSwift4 request)
+        {
+            request.BaseUrl = GetBaseUrl(request.BaseUrl);
+
+            var typesConfig = NativeTypesMetadata.GetConfig(request);
+
+            //Include SS types by removing ServiceStack namespaces
+            if (typesConfig.AddServiceStackTypes)
+                typesConfig.IgnoreTypesInNamespaces = new List<string>();
+
+            ExportMissingSystemTypes(typesConfig);
+            
+            //Swift doesn't support generic protocols (requires Type modification)
+            typesConfig.ExportTypes.Remove(typeof(ICreateDb<>));
+            typesConfig.ExportTypes.Remove(typeof(IUpdateDb<>));
+            typesConfig.ExportTypes.Remove(typeof(IPatchDb<>));
+            typesConfig.ExportTypes.Remove(typeof(IDeleteDb<>));
+            typesConfig.ExportTypes.Remove(typeof(ISaveDb<>));
+
+            var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
+
+            metadataTypes.Types.RemoveAll(x => x.Name == "Service");
+
+            try
+            {
+                var swift = new Swift4Generator(typesConfig).GetCode(metadataTypes, base.Request);
                 return swift;
             }
             catch (System.Exception)

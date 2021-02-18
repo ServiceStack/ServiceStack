@@ -62,9 +62,7 @@ namespace ServiceStack
             {
                 if (value)
                 {
-                    this.CreateServices = new List<CreateCrudServices> {
-                        new CreateCrudServices()
-                    };
+                    this.CreateServices = new List<CreateCrudServices> { new() };
                 }
                 else
                 {
@@ -83,8 +81,7 @@ namespace ServiceStack
         
         public string AccessRole { get; set; } = RoleNames.Admin;
         
-        internal ConcurrentDictionary<Tuple<string,string>, DbSchema> CachedDbSchemas { get; } 
-            = new ConcurrentDictionary<Tuple<string,string>, DbSchema>();
+        internal ConcurrentDictionary<Tuple<string,string>, DbSchema> CachedDbSchemas { get; } = new();
 
         public Func<ColumnSchema, IOrmLiteDialectProvider, Type> ResolveColumnType { get; set; }
         
@@ -835,6 +832,7 @@ namespace ServiceStack
                 "typescript" => new TypeScriptGenerator(typesConfig).GetCode(crudMetadataTypes, req, metadata),
                 "dart" => new DartGenerator(typesConfig).GetCode(crudMetadataTypes, req, metadata),
                 "swift" => new SwiftGenerator(typesConfig).GetCode(crudMetadataTypes, req),
+                "swift4" => new Swift4Generator(typesConfig).GetCode(crudMetadataTypes, req),
                 "java" => new JavaGenerator(typesConfig).GetCode(crudMetadataTypes, req, metadata),
                 "kotlin" => new KotlinGenerator(typesConfig).GetCode(crudMetadataTypes, req, metadata),
                 "typescript.d" => new FSharpGenerator(typesConfig).GetCode(crudMetadataTypes, req),
