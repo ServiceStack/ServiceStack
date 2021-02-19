@@ -30,6 +30,6 @@ namespace Funq
         /// <summary>
         /// Default scope, which equals <see cref="Hierarchy"/>.
         /// </summary>
-        Default = Hierarchy,
+        Default = Container,
     }
 }
