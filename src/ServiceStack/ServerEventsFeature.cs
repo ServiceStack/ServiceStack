@@ -207,7 +207,7 @@ namespace ServiceStack
 
             var feature = HostContext.AssertPlugin<ServerEventsFeature>();
 
-            var session = req.GetSession();
+            var session = await req.GetSessionAsync();
             if (feature.LimitToAuthenticatedUsers && !session.IsAuthenticated)
             {
                 await session.ReturnFailedAuthentication(req).ConfigAwait();

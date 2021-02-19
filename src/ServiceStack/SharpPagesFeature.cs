@@ -392,8 +392,7 @@ namespace ServiceStack
             return null;
         }
 
-        private readonly ConcurrentDictionary<string, SharpPage> viewPagesMap = 
-            new ConcurrentDictionary<string, SharpPage>();
+        private readonly ConcurrentDictionary<string, SharpPage> viewPagesMap = new();
 
         private void InitViewPages(IAppHost appHost)
         {
