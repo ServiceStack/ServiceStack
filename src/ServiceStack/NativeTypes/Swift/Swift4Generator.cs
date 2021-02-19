@@ -739,6 +739,20 @@ namespace ServiceStack.NativeTypes.Swift
             var alias = TypeAlias(type);
             if (value == null)
                 return "null";
+            if (type == nameof(Int32))
+            {
+                if (value == int.MinValue.ToString())
+                    return "Int32.min";
+                if (value == int.MaxValue.ToString())
+                    return "Int32.max";
+            }
+            if (type == nameof(Int64))
+            {
+                if (value == long.MinValue.ToString())
+                    return "Int64.min";
+                if (value == long.MaxValue.ToString())
+                    return "Int64.max";
+            }
             if (alias == "string" || type == "String")
                 return value.ToEscapedString();
 
