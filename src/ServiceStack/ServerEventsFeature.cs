@@ -447,6 +447,7 @@ namespace ServiceStack
     {
         public IServerEvents ServerEvents { get; set; }
 
+        [AddHeader(ContentType = MimeTypes.Json)]
         public async Task<object> Any(UnRegisterEventSubscriber request)
         {
             var subscription = ServerEvents.GetSubscriptionInfo(request.Id);
