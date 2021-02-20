@@ -272,6 +272,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                                         : null;
                                 },
                                 IsRequest = true,
+                                Op = operation,
                             });
 
                         existingTypes.Add(fullTypeName);

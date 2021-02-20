@@ -242,6 +242,7 @@ namespace ServiceStack.NativeTypes.Java
                                         : null;
                                 },
                                 IsRequest = true,
+                                Op = operation,
                             });
 
                         existingTypes.Add(fullTypeName);

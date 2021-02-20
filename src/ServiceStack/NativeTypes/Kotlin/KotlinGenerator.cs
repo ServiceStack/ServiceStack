@@ -234,6 +234,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                                         : null;
                                 },
                                 IsRequest = true,
+                                Op = operation,
                             });
 
                         existingTypes.Add(fullTypeName);

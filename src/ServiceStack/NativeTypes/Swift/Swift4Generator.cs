@@ -199,6 +199,7 @@ namespace ServiceStack.NativeTypes.Swift
                                         : null;
                                 },
                                 IsRequest = true,
+                                Op = operation,
                             });
 
                         existingTypes.Add(fullTypeName);
@@ -437,7 +438,7 @@ namespace ServiceStack.NativeTypes.Swift
             }
         }
 
-        public List<MetadataPropertyType> GetPropertes(MetadataType type)
+        public List<MetadataPropertyType> GetProperties(MetadataType type)
         {
             var to = new List<MetadataPropertyType>();
 
@@ -449,7 +450,7 @@ namespace ServiceStack.NativeTypes.Swift
                 var baseType = FindType(type.Inherits);
                 if (baseType != null)
                 {
-                    to.AddRange(GetPropertes(baseType));
+                    to.AddRange(GetProperties(baseType));
                 }
             }
 
@@ -492,7 +493,7 @@ namespace ServiceStack.NativeTypes.Swift
 
             sbExt = sbExt.Indent();
 
-            foreach (var prop in GetPropertes(type))
+            foreach (var prop in GetProperties(type))
             {
                 var propType = FindType(prop.Type, prop.TypeNamespace, prop.GenericArgs);
                 if (propType.IsInterface()

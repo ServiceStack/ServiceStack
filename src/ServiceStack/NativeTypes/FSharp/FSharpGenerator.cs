@@ -161,6 +161,7 @@ namespace ServiceStack.NativeTypes.FSharp
                                         : null;
                                 },
                                 IsRequest = true,
+                                Op = operation,
                             });
 
                         existingTypes.Add(fullTypeName);

@@ -338,6 +338,7 @@ namespace ServiceStack.NativeTypes.Dart
                                         : null;
                                 },
                                 IsRequest = true,
+                                Op = operation,
                             });
 
                         existingTypes.Add(fullTypeName);

@@ -232,6 +232,7 @@ namespace ServiceStack.NativeTypes.VbNet
                                         : null;
                                 },
                                 IsRequest = true,
+                                Op = operation,
                             });
 
                         existingTypes.Add(fullTypeName);

@@ -194,6 +194,7 @@ namespace ServiceStack.NativeTypes.CSharp
                                             : null;
                                     },
                                 IsRequest = true,
+                                Op = operation,
                             });
 
                         existingTypes.Add(fullTypeName);

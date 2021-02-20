@@ -904,6 +904,7 @@ namespace ServiceStack.NativeTypes
         public bool IsResponse { get; set; }
         public bool IsType { get; set; }
         public bool IsNestedType { get; set; }
+        public MetadataOperationType Op { get; set; }
     }
 
     public static class MetadataExtensions

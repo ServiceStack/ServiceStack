@@ -199,6 +199,7 @@ namespace ServiceStack.NativeTypes.Swift
                                         : null;
                                 },
                                 IsRequest = true,
+                                Op = operation
                             });
 
                         existingTypes.Add(fullTypeName);
