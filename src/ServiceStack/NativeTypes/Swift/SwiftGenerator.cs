@@ -333,11 +333,13 @@ namespace ServiceStack.NativeTypes.Swift
 
                 var typeAliases = new List<string>();
 
+                var isSelfRefType = false;
                 if (options.ImplementsFn != null)
                 {
                     //Swift doesn't support Generic Interfaces like IReturn<T> 
                     //Converting them into protocols with type aliases instead 
                     ExtractTypeAliases(options, typeAliases, extends, ref sbExt);
+                    isSelfRefType = options.Op != null && type == options.Op.Request;
                 }
                 type.Implements.Each(x => extends.Add(Type(x)));
 
@@ -409,8 +411,9 @@ namespace ServiceStack.NativeTypes.Swift
                     }
                 }
 
-                var needsExplicitCodableImpl = !type.IsInterface() && type.Inherits != null;
-                if (needsExplicitCodableImpl)
+                //Swift compiler wont synthesize Codable impls for inherited types or types with self-referencing type aliases 
+                var needsExplicitCodableImpl = type.Inherits != null || isSelfRefType;
+                if (!type.IsInterface() && needsExplicitCodableImpl)
                 {
                     sb.AppendLine();
                     if (typeProps.Count > 0)
@@ -427,7 +430,8 @@ namespace ServiceStack.NativeTypes.Swift
                     }
                     sb.AppendLine("required init(from decoder: Decoder) throws {");
                     sb = sb.Indent();
-                    sb.AppendLine("try super.init(from: decoder)");
+                    if (type.Inherits != null)
+                        sb.AppendLine("try super.init(from: decoder)");
                     if (typeProps.Count > 0)
                     {
                         sb.AppendLine("let container = try decoder.container(keyedBy: CodingKeys.self)");
@@ -454,7 +458,8 @@ namespace ServiceStack.NativeTypes.Swift
                     sb.AppendLine();
                     sb.AppendLine("public override func encode(to encoder: Encoder) throws {");
                     sb = sb.Indent();
-                    sb.AppendLine("try super.encode(to: encoder)");
+                    if (type.Inherits != null)
+                        sb.AppendLine("try super.encode(to: encoder)");
                     if (typeProps.Count > 0)
                     {
                         sb.AppendLine("var container = encoder.container(keyedBy: CodingKeys.self)");
@@ -506,7 +511,7 @@ namespace ServiceStack.NativeTypes.Swift
             }
         }
 
-        public List<MetadataPropertyType> GetPropertes(MetadataType type)
+        public List<MetadataPropertyType> GetProperties(MetadataType type)
         {
             var to = new List<MetadataPropertyType>();
 
@@ -518,7 +523,7 @@ namespace ServiceStack.NativeTypes.Swift
                 var baseType = FindType(type.Inherits);
                 if (baseType != null)
                 {
-                    to.AddRange(GetPropertes(baseType));
+                    to.AddRange(GetProperties(baseType));
                 }
             }
 

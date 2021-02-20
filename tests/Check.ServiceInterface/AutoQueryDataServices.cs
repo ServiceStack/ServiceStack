@@ -25,6 +25,7 @@ namespace Check.ServiceInterface
         public IAutoQueryData AutoQuery { get; set; }
 
         public object Any(QueryPosts request) => request;
+        public object Any(EchoTypes request) => request;
 
         public object Any(QueryRequestLogs query)
         {

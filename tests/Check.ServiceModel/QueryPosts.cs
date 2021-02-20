@@ -109,5 +109,27 @@ namespace Check.ServiceModel
         Question,
         Request,
     }
+    
+    [Route("/echo/types")]
+    public partial class EchoTypes
+        : IReturn<EchoTypes>
+    {
+        public virtual byte Byte { get; set; }
+        public virtual short Short { get; set; }
+        public virtual int Int { get; set; }
+        public virtual long Long { get; set; }
+        public virtual ushort UShort { get; set; }
+        public virtual uint UInt { get; set; }
+        public virtual ulong ULong { get; set; }
+        public virtual float Float { get; set; }
+        public virtual double Double { get; set; }
+        public virtual decimal Decimal { get; set; }
+        public virtual string String { get; set; }
+        public virtual DateTime DateTime { get; set; }
+        public virtual TimeSpan TimeSpan { get; set; }
+        public virtual DateTimeOffset DateTimeOffset { get; set; }
+        public virtual Guid Guid { get; set; }
+        public virtual Char Char { get; set; }
+    }
 
 }
