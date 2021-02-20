@@ -14,7 +14,7 @@ namespace ServiceStack.NativeTypes.Swift
         readonly MetadataTypesConfig Config;
         readonly NativeTypesFeature feature;
         List<MetadataType> allTypes;
-        List<string> conflictTypeNames = new List<string>();
+        List<string> conflictTypeNames = new();
 
         public SwiftGenerator(MetadataTypesConfig config)
         {
@@ -28,8 +28,7 @@ namespace ServiceStack.NativeTypes.Swift
         public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
 
-        public static List<string> DefaultImports = new List<string>
-        {
+        public static List<string> DefaultImports = new() {
             "Foundation",
             "ServiceStack", //Required when referencing ServiceStack.framework in CocoaPods, Carthage or SwiftPM
         };
@@ -60,6 +59,13 @@ namespace ServiceStack.NativeTypes.Swift
             {"IntPtr", "Int64"},
             {"Stream", "Data"},
             {"Type", "String"},
+        }.ToConcurrentDictionary();
+
+        /// <summary>
+        /// Customize how types are encoded & decoded with a Type Converter
+        /// </summary>
+        public static ConcurrentDictionary<string, SwiftTypeConverter> Converters = new Dictionary<string, SwiftTypeConverter> {
+            ["TimeInterval"] = new() { Attribute = "@TimeSpan" },
         }.ToConcurrentDictionary();
 
         public static TypeFilterDelegate TypeFilter { get; set; }
@@ -439,6 +445,9 @@ namespace ServiceStack.NativeTypes.Swift
                         {
                             var propTypeName = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
                             var realTypeName = propTypeName.TrimEnd('?');
+                            var converter = Converters.TryGetValue(realTypeName, out var c)
+                                ? c
+                                : null;
                             var propName = prop.Name.SafeToken().PropertyStyle();
                             var defaultValue = prop.IsArray()
                                 ? " ?? []"
@@ -449,7 +458,8 @@ namespace ServiceStack.NativeTypes.Swift
                                         ? " ?? [:]"
                                         : ""
                                     : "";
-                            sb.AppendLine($"{propName} = try container.decodeIfPresent({realTypeName}.self, forKey: .{propName}){defaultValue}");
+                            var method = converter?.DecodeMethod ?? "decodeIfPresent";
+                            sb.AppendLine($"{propName} = try container.{method}({realTypeName}.self, forKey: .{propName}){defaultValue}");
                         }
                     }
                     sb = sb.UnIndent();
@@ -466,11 +476,18 @@ namespace ServiceStack.NativeTypes.Swift
                         sb.AppendLine("var container = encoder.container(keyedBy: CodingKeys.self)");
                         foreach (var prop in typeProps)
                         {
+                            var propTypeName = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
+                            var realTypeName = propTypeName.TrimEnd('?');
+                            var converter = Converters.TryGetValue(realTypeName, out var c)
+                                ? c
+                                : null;
+                            
                             var propName = prop.Name.SafeToken().PropertyStyle();
                             var isCollection = prop.IsArray() || ArrayTypes.Contains(prop.Type) || DictionaryTypes.Contains(prop.Type);
+                            var method = converter?.EncodeMethod ?? "encode";
                             sb.AppendLine(isCollection
-                                ? $"if {propName}.count > 0 {{ try container.encode({propName}, forKey: .{propName}) }}"
-                                : $"if {propName} != nil {{ try container.encode({propName}, forKey: .{propName}) }}");
+                                ? $"if {propName}.count > 0 {{ try container.{method}({propName}, forKey: .{propName}) }}"
+                                : $"if {propName} != nil {{ try container.{method}({propName}, forKey: .{propName}) }}");
                         }
                     }
                     sb = sb.UnIndent();
@@ -543,6 +560,7 @@ namespace ServiceStack.NativeTypes.Swift
 
                 var propTypeName = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
                 var propType = FindType(prop.Type, prop.TypeNamespace, prop.GenericArgs);
+                    
                 var optional = "";
                 var defaultValue = "";
                 if (propTypeName.EndsWith("?"))
@@ -605,7 +623,13 @@ namespace ServiceStack.NativeTypes.Swift
                 }
                 else
                 {
-                    sb.AppendLine("public var {0}:{1}{2}{3}".Fmt(
+                    var converter = Converters.TryGetValue(propTypeName, out var c)
+                        ? c
+                        : null;
+                    var attr = converter?.Attribute != null
+                        ? converter.Attribute + " "
+                        : "";
+                    sb.AppendLine(attr + "public var {0}:{1}{2}{3}".Fmt(
                         prop.Name.SafeToken().PropertyStyle(), propTypeName, optional, defaultValue));
                 }
                 PostPropertyFilter?.Invoke(sb, prop, type);
