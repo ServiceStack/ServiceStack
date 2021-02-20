@@ -24,7 +24,7 @@ namespace Funq
         /// </summary>
         None,
         /// <summary>
-        /// Instaces are reused within the given request
+        /// Instances are reused within the given request
         /// </summary>
         Request,
         /// <summary>
