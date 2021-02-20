@@ -46,7 +46,7 @@ namespace ServiceStack.NativeTypes.Swift
             {"TimeSpan", "TimeInterval"},
             {"DateTimeOffset", "Date"},
             {"Guid", "String"},
-            {"Char", "Character"},
+            {"Char", "String"}, //no encoder/decoder for Char
             {"Byte", "Int8"},
             {"Int16", "Int16"},
             {"Int32", "Int"},
@@ -428,7 +428,7 @@ namespace ServiceStack.NativeTypes.Swift
                         sb.AppendLine("}");
                         sb.AppendLine();
                     }
-                    sb.AppendLine("required init(from decoder: Decoder) throws {");
+                    sb.AppendLine("required public init(from decoder: Decoder) throws {");
                     sb = sb.Indent();
                     if (type.Inherits != null)
                         sb.AppendLine("try super.init(from: decoder)");
@@ -456,7 +456,8 @@ namespace ServiceStack.NativeTypes.Swift
                     sb.AppendLine("}");
                     
                     sb.AppendLine();
-                    sb.AppendLine("public override func encode(to encoder: Encoder) throws {");
+                    var sig = type.Inherits != null ? " override" : "";
+                    sb.AppendLine($"public{sig} func encode(to encoder: Encoder) throws {{");
                     sb = sb.Indent();
                     if (type.Inherits != null)
                         sb.AppendLine("try super.encode(to: encoder)");

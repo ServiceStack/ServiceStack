@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Check.ServiceModel.Types;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
 
@@ -131,5 +132,5 @@ namespace Check.ServiceModel
         public virtual Guid Guid { get; set; }
         public virtual Char Char { get; set; }
     }
-
+    
 }
