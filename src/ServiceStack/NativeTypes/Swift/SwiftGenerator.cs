@@ -48,8 +48,8 @@ namespace ServiceStack.NativeTypes.Swift
             {"Char", "String"}, //no encoder/decoder for Char
             {"Byte", "Int8"},
             {"Int16", "Int16"},
-            {"Int32", "Int32"},
-            {"Int64", "Int64"},
+            {"Int32", "Int"},   // Keep as `Int` as only String/Int Keys use Dictionary, otherwise they use [K1,V1,K2,V2] Arrays
+            {"Int64", "Int"},   // https://forums.swift.org/t/json-encoding-decoding-weird-encoding-of-dictionary-with-enum-values/12995/2
             {"UInt16", "UInt16"},
             {"UInt32", "UInt32"},
             {"UInt64", "UInt64"},
