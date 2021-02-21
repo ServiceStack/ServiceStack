@@ -48,7 +48,7 @@ namespace ServiceStack.NativeTypes.Swift
             {"Char", "String"}, //no encoder/decoder for Char
             {"Byte", "Int8"},
             {"Int16", "Int16"},
-            {"Int32", "Int"},
+            {"Int32", "Int32"},
             {"Int64", "Int64"},
             {"UInt16", "UInt16"},
             {"UInt32", "UInt32"},
@@ -856,9 +856,9 @@ namespace ServiceStack.NativeTypes.Swift
             type = type.SanitizeType();
 
             // Incorrectly converts: [[String:Poco]] -> [String:Poco]
-            // var isArray = type.StartsWith("[") || type.EndsWith("[]");
-            // if (isArray)
-            //     return "[{0}]".Fmt(TypeAlias(type.Trim('[', ']')));
+            var isArray = type.EndsWith("[]");
+            if (isArray)
+                return "[{0}]".Fmt(TypeAlias(type.Substring(0, type.Length - 2)));
 
             TypeAliases.TryGetValue(type, out var typeAlias);
 
