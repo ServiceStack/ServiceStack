@@ -417,8 +417,9 @@ namespace ServiceStack.NativeTypes.Swift
                     }
                 }
 
-                //Swift compiler wont synthesize Codable impls for inherited types or types with self-referencing type aliases 
-                var needsExplicitCodableImpl = type.Inherits != null || isSelfRefType;
+                //Swift compiler wont synthesize Codable impls for inherited types or types with self-referencing type aliases
+                var hasSynthesize = type.Type?.HasAttribute<SynthesizeAttribute>() == true;
+                var needsExplicitCodableImpl = type.Inherits != null || isSelfRefType || hasSynthesize;
                 if (!type.IsInterface() && needsExplicitCodableImpl)
                 {
                     sb.AppendLine();
