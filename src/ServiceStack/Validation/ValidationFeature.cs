@@ -24,11 +24,12 @@ namespace ServiceStack.Validation
         public bool TreatInfoAndWarningsAsErrors { get; set; } = true;
         public bool EnableDeclarativeValidation { get; set; } = true;
 
+        public bool ImplicitlyValidateChildProperties { get; set; } = true;
         public string AccessRole { get; set; } = RoleNames.Admin;
         
         public IValidationSource ValidationSource { get; set; } 
         
-        public Dictionary<Type, string[]> ServiceRoutes { get; set; } = new Dictionary<Type, string[]> {
+        public Dictionary<Type, string[]> ServiceRoutes { get; set; } = new() {
             { typeof(GetValidationRulesService), new []{ "/" + "validation/rules".Localize() + "/{Type}" } },
             { typeof(ModifyValidationRulesService), new []{ "/" + "validation/rules".Localize() } },
         };
@@ -331,7 +332,7 @@ namespace ServiceStack.Validation
 
     public static class ValidationExtensions
     {
-        public static HashSet<Type> RegisteredDtoValidators { get; } = new HashSet<Type>();
+        public static HashSet<Type> RegisteredDtoValidators { get; } = new();
         
         /// <summary>
         /// Auto-scans the provided assemblies for a <see cref="IValidator"/>

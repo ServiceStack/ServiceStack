@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +10,8 @@ using ServiceStack.FluentValidation.Internal;
 using ServiceStack.FluentValidation.Resources;
 using ServiceStack.FluentValidation.Validators;
 using ServiceStack.Script;
+using ServiceStack.Text;
+using ServiceStack.Validation;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -40,17 +43,14 @@ namespace ServiceStack
 
     public static class Validators
     {
-        public static Dictionary<Type, List<ITypeValidator>> TypeRulesMap { get; } =
-            new Dictionary<Type, List<ITypeValidator>>();
+        public static Dictionary<Type, List<ITypeValidator>> TypeRulesMap { get; } = new();
 
-        public static Dictionary<Type, List<IValidationRule>> TypePropertyRulesMap { get; } =
-            new Dictionary<Type, List<IValidationRule>>();
+        public static Dictionary<Type, List<IValidationRule>> TypePropertyRulesMap { get; } = new();
 
-        public static Dictionary<string, string> ConditionErrorCodes { get; } = new Dictionary<string, string>();
-        public static Dictionary<string, string> ErrorCodeMessages { get; } = new Dictionary<string, string>();
+        public static Dictionary<string, string> ConditionErrorCodes { get; } = new();
+        public static Dictionary<string, string> ErrorCodeMessages { get; } = new();
 
-        //TODO FV9: ValidatorOptions.Global.CascadeMode;
-        static readonly Func<CascadeMode> CascadeMode = () => ValidatorOptions.CascadeMode;
+        static readonly Func<CascadeMode> CascadeMode = () => ValidatorOptions.Global.CascadeMode;
 
         public static bool HasValidateRequestAttributes(Type type) => type.HasAttributeOf<ValidateRequestAttribute>();
 
@@ -144,21 +144,67 @@ namespace ServiceStack
         /// <returns></returns>
         public static bool RegisterPropertyRulesFor(Type type)
         {
+            var registerChildValidators = HostContext.GetPlugin<ValidationFeature>()?.ImplicitlyValidateChildProperties == true;
             var typeRules = new List<IValidationRule>();
             foreach (var pi in type.GetPublicProperties())
             {
-                var allAttrs = pi.AllAttributes();
-                var validateAttrs = allAttrs.Where(x => x is ValidateAttribute).ToList();
-
-                if (validateAttrs.Count > 0)
+                var rule = CreateDeclarativePropertyRuleIfExists(type, pi);
+                if (rule != null)
                 {
-                    var rule = CreatePropertyRule(type, pi);
                     typeRules.Add(rule);
-                    var validators = (List<IPropertyValidator>) rule.Validators;
-
-                    foreach (ValidateAttribute attr in validateAttrs)
+                }
+                if (rule == null && registerChildValidators && pi.PropertyType.IsClass && pi.PropertyType != typeof(string))
+                {
+                    var container = HostContext.AppHost.Container;
+                    var collectionGenericType = pi.PropertyType.GetTypeWithGenericInterfaceOf(typeof(IEnumerable<>));
+                    if (collectionGenericType != null)
                     {
-                        validators.AddRule(pi, attr);
+                        var elementType = collectionGenericType.GetGenericArguments()[0];
+                        if (!elementType.IsClass || elementType == typeof(string))
+                            continue;
+                        
+                        var elementProps = elementType.GetPublicProperties();
+                        var hasAnyChildValidators = elementProps 
+                            .Any(elProp => elProp.HasAttributeOf<ValidateAttribute>());
+                        if (hasAnyChildValidators)
+                        {
+                            // This code simulates setting a FluentValidation Collection validator:
+                            // var RuleBuilder = RuleForEach(x => x.ChildCollection);
+                            // RuleBuilder.SetValidator(new ChildValidator());
+                            
+                            //RuleForEach() does: 
+                            //  - expression: x => x.ChildCollection
+                            // var rule = CollectionPropertyRule<T, TElement>.Create(expression, () => CascadeMode);
+                            // AddRule(rule);
+
+                            var genericTypeDef = typeof(CollectionPropertyRule<,>).MakeGenericType(type, elementType);
+                            var member = pi;
+                            var propAccessorExpr = TypeExtensions.CreatePropertyAccessorExpression(type, pi);
+                            var propAccessorFn = (Func<object,object>)propAccessorExpr.Compile();
+                            var ciCollectionPropRule = genericTypeDef.GetConstructor(CollectionCtorTypes)
+                                ?? throw new Exception("Could not find CollectionPropertyRule<T,TElement> constructor");
+                            var collectionRule = (PropertyRule)ciCollectionPropRule.Invoke(new object[]
+                                {member, propAccessorFn, propAccessorExpr, CascadeMode, elementType, type});
+
+                            // RuleBuilder.SetValidator(new ChildValidator()) does:
+                            // var adaptor = new ChildValidatorAdaptor<T,TProperty>(validator, validator.GetType());
+                            // Rule.AddValidator(validator);
+                            
+                            //validator: Generate the declarative TypeValidator for this property 
+                            var propValidatorType = typeof(IValidator<>).MakeGenericType(elementType);
+                            container.RegisterNewValidatorIfNotExists(elementType);
+                            var validator = container.TryResolve(propValidatorType);
+                            
+                            // var adaptor = new ChildValidatorAdaptor<T,TProperty>(validator, validator.GetType());
+                            var childAdapterGenericTypeDef = typeof(ChildValidatorAdaptor<,>).MakeGenericType(type, elementType);
+                            var ciChildAdaptor = childAdapterGenericTypeDef.GetConstructor(new[] { propValidatorType, typeof(Type) })
+                                ?? throw new Exception("Could not find ChildValidatorAdaptor<T,TElement> constructor");
+                            var childAdaptor = ciChildAdaptor.Invoke(new[] { validator, propValidatorType }) as IPropertyValidator; 
+                            // Rule.AddValidator(validator);
+                            collectionRule.AddValidator(childAdaptor);
+                            
+                            typeRules.Add(collectionRule);
+                        }
                     }
                 }
             }
@@ -170,6 +216,29 @@ namespace ServiceStack
             }
 
             return false;
+        }
+
+        private static readonly Type[] CollectionCtorTypes = {
+            typeof(MemberInfo), typeof(Func<object, object>), typeof(LambdaExpression), typeof(Func<CascadeMode>), typeof(Type), typeof(Type)
+        };
+
+        private static IValidationRule CreateDeclarativePropertyRuleIfExists(Type type, PropertyInfo pi)
+        {
+            var allAttrs = pi.AllAttributes();
+            var validateAttrs = allAttrs.Where(x => x is ValidateAttribute).ToList();
+
+            if (validateAttrs.Count > 0)
+            {
+                var rule = CreatePropertyRule(type, pi);
+                var validators = (List<IPropertyValidator>) rule.Validators;
+
+                foreach (ValidateAttribute attr in validateAttrs)
+                {
+                    validators.AddRule(pi, attr);
+                }
+                return rule;
+            }
+            return null;
         }
 
         public static List<ITypeValidator> GetTypeRules(Type type) => TypeRulesMap.TryGetValue(type, out var rules)
@@ -203,10 +272,15 @@ namespace ServiceStack
             return new PropertyRule(pi, x => fn(x), null, CascadeMode, type, null);
         }
 
-        public static List<Action<PropertyInfo, IValidateRule>> RuleFilters { get; } =
-            new List<Action<PropertyInfo, IValidateRule>> {
-                AppendDefaultValueOnEmptyValidators,
-            };
+        public static IValidationRule CreateCollectionPropertyRule(Type type, PropertyInfo pi)
+        {
+            var fn = pi.CreateGetter();
+            return new PropertyRule(pi, x => fn(x), null, CascadeMode, type, null);
+        }
+
+        public static List<Action<PropertyInfo, IValidateRule>> RuleFilters { get; } = new() {
+            AppendDefaultValueOnEmptyValidators,
+        };
 
         public static void AppendDefaultValueOnEmptyValidators(PropertyInfo pi, IValidateRule rule)
         {

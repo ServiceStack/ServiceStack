@@ -18,6 +18,12 @@ namespace ServiceStack
     
     public delegate void StaticActionInvoker(params object[] args);
 
+    /// <summary>
+    /// Delegate to return a different value from an instance (e.g. member accessor)
+    /// </summary>
+    public delegate object InstanceMapper(object instance);
+
+
     public static class TypeExtensions
     {
         public static Type[] GetReferencedTypes(this Type type)
@@ -274,7 +280,7 @@ namespace ServiceStack
             return fn;
         }
         
-        static Dictionary<MethodInfo, MethodInvoker> invokerCache = new Dictionary<MethodInfo, MethodInvoker>();
+        static Dictionary<MethodInfo, MethodInvoker> invokerCache = new();
 
         /// <summary>
         /// Create the correct Invoker Delegate Type based on the type of Method
@@ -317,7 +323,7 @@ namespace ServiceStack
             return fn;
         }
         
-        static Dictionary<MethodInfo, StaticMethodInvoker> staticInvokerCache = new Dictionary<MethodInfo, StaticMethodInvoker>();
+        static Dictionary<MethodInfo, StaticMethodInvoker> staticInvokerCache = new();
 
         /// <summary>
         /// Create an Invoker for public static methods
@@ -341,7 +347,7 @@ namespace ServiceStack
             return fn;
         }
         
-        static Dictionary<MethodInfo, ActionInvoker> actionInvokerCache = new Dictionary<MethodInfo, ActionInvoker>();
+        static Dictionary<MethodInfo, ActionInvoker> actionInvokerCache = new();
 
         /// <summary>
         /// Create an Invoker for public instance void methods
@@ -365,7 +371,7 @@ namespace ServiceStack
             return fn;
         }
         
-        static Dictionary<MethodInfo, StaticActionInvoker> staticActionInvokerCache = new Dictionary<MethodInfo, StaticActionInvoker>();
+        static Dictionary<MethodInfo, StaticActionInvoker> staticActionInvokerCache = new();
 
         /// <summary>
         /// Create an Invoker for public static void methods
@@ -457,7 +463,29 @@ namespace ServiceStack
             }
             return null;
         }
-        
+
+        public static Func<object,object> GetPropertyAccessor(this Type type, PropertyInfo forProperty)
+        {
+            var lambda = CreatePropertyAccessorExpression(type, forProperty);
+            var fn = (Func<object,object>)lambda.Compile();
+            return fn;
+        }
+
+        public static LambdaExpression CreatePropertyAccessorExpression(Type type, PropertyInfo forProperty)
+        {
+            var paramInstance = Expression.Parameter(typeof(object), "instance");
+
+            var castToType = type.IsValueType
+                ? Expression.Convert(paramInstance, type)
+                : Expression.TypeAs(paramInstance, type);
+
+            var propExpr = Expression.Property(castToType, forProperty);
+
+            var lambda = Expression.Lambda(typeof(Func<object, object>),
+                propExpr,
+                paramInstance);
+            return lambda;
+        }
     }
 
 }
