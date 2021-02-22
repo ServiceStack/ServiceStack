@@ -51,11 +51,8 @@ namespace ServiceStack.Host
             this.ResolveServicesFn = () => GetAssemblyTypes(assembliesWithServices);
         }
 
-        readonly Dictionary<Type, ServiceExecFn> requestExecMap
-            = new Dictionary<Type, ServiceExecFn>();
-
-        readonly Dictionary<Type, RestrictAttribute> requestServiceAttrs
-            = new Dictionary<Type, RestrictAttribute>();
+        readonly Dictionary<Type, ServiceExecFn> requestExecMap = new();
+        readonly Dictionary<Type, RestrictAttribute> requestServiceAttrs = new();
 
         public Dictionary<Type, Func<IRequest, object>> RequestTypeFactoryMap { get; set; }
 
@@ -415,7 +412,7 @@ namespace ServiceStack.Host
                 var mi = typeof(ServiceExec<>)
                     .MakeGenericType(serviceType)
                     .GetMethod("CreateServiceRunnersFor", BindingFlags.Public | BindingFlags.Static)
-                    .MakeGenericMethod(requestType);
+                    ?.MakeGenericMethod(requestType) ?? throw new Exception("ServiceExec.CreateServiceRunnersFor does not exist");
 
                 mi.Invoke(null, new object[] { });
 

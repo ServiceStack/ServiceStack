@@ -96,9 +96,9 @@ namespace ServiceStack
             this.StartedAt = DateTime.UtcNow;
 
             ServiceName = serviceName;
+            ServiceAssemblies = assembliesWithServices.ToList();
             AppSettings = new AppSettings();
             Container = new Container { DefaultOwner = Owner.External };
-            ServiceAssemblies = assembliesWithServices.ToList();
 
             ContentTypes = new ContentTypes();
             RestPaths = new List<RestPath>();
@@ -204,9 +204,12 @@ namespace ServiceStack
 
         protected virtual ServiceController CreateServiceController(params Assembly[] assembliesWithServices)
         {
-            return new ServiceController(this, assembliesWithServices);
-            //Alternative way to inject Service Resolver strategy
-            //return new ServiceController(this, () => assembliesWithServices.ToList().SelectMany(x => x.GetTypes()));
+            return new(this, assembliesWithServices);
+        }
+
+        protected virtual ServiceController CreateServiceController(params Type[] serviceTypes)
+        {
+            return new(this, () => serviceTypes);
         }
 
         /// <summary>
