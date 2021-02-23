@@ -333,7 +333,7 @@ namespace ServiceStack.Validation
     public static class ValidationExtensions
     {
         public static HashSet<Type> RegisteredDtoValidators { get; private set; } = new();
-        internal static List<Type> TypesWithValidators { get; private set; } = new();
+        internal static Dictionary<Type,Type> TypesValidatorsMap { get; private set; } = new();
         internal static List<Type> ValidatorTypes { get; private set; } = new();
         private static List<Assembly> RegisteredAssemblies { get; set; } = new();
         private static List<Type> RegisteredValidators { get; set; } = new();
@@ -341,7 +341,7 @@ namespace ServiceStack.Validation
         internal static void Reset()
         {
             RegisteredDtoValidators = new HashSet<Type>();
-            TypesWithValidators = new List<Type>();
+            TypesValidatorsMap = new Dictionary<Type, Type>();
             ValidatorTypes = new List<Type>();
             RegisteredAssemblies = new List<Assembly>();
             RegisteredValidators = new List<Type>();
@@ -360,8 +360,6 @@ namespace ServiceStack.Validation
                         if (genericValidator != null)
                         {
                             ValidatorTypes.Add(type);
-                            var typeWithValidator = genericValidator.GenericTypeArguments[0];
-                            TypesWithValidators.Add(typeWithValidator);
                         }
                     }
                 }
@@ -408,10 +406,10 @@ namespace ServiceStack.Validation
             RegisteredValidators.Add(validator);
 
             var dtoType = baseType.GetGenericArguments()[0];
-            TypesWithValidators.AddIfNotExists(dtoType);
             
             var validatorType = typeof(IValidator<>).MakeGenericType(dtoType);
             ValidatorTypes.AddIfNotExists(validator);
+            TypesValidatorsMap[dtoType] = validator;
 
             container.RegisterAutoWiredType(validator, validatorType, scope);
 

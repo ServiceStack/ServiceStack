@@ -147,6 +147,7 @@ namespace ServiceStack
             else ThrowInvalidValidateRequest();
         }
 
+
         /// <summary>
         /// Register declarative property [Validate] attributes.
         /// </summary>
@@ -158,8 +159,8 @@ namespace ServiceStack
             var registerChildValidators = HostContext.GetPlugin<ValidationFeature>()?.ImplicitlyValidateChildProperties == true;
 
             // Don't register child validators for explicit FluentValidation validators to avoid double registration
-            var typeValidator = container.TryResolve(typeof(IValidator<>).MakeGenericType(type));
-            var typesValidatorIsDefault = typeValidator is IDefaultValidator; 
+            var typesValidatorIsDefault = ValidationExtensions.TypesValidatorsMap.TryGetValue(type, out var typeValidator) 
+                                          && typeValidator.HasInterface(typeof(IDefaultValidator));
 
             var typeRules = new List<IValidationRule>();
             foreach (var pi in type.GetPublicProperties())
@@ -179,7 +180,7 @@ namespace ServiceStack
                             continue;
 
                         // Wire up child validators for auto generated validators
-                        var customValidatorExist = ValidationExtensions.TypesWithValidators.Contains(elementType) && typesValidatorIsDefault;
+                        var customValidatorExist = ValidationExtensions.TypesValidatorsMap.ContainsKey(elementType) && typesValidatorIsDefault;
 
                         if (customValidatorExist || 
                             elementType.GetPublicProperties().Any(elProp => elProp.HasAttributeOf<ValidateAttribute>()))
@@ -225,7 +226,7 @@ namespace ServiceStack
                     else
                     {
                         // Wire up child validators for auto generated validators
-                        var customValidatorExist = ValidationExtensions.TypesWithValidators.Contains(pi.PropertyType) && typesValidatorIsDefault;
+                        var customValidatorExist = ValidationExtensions.TypesValidatorsMap.ContainsKey(pi.PropertyType) && typesValidatorIsDefault;
                         if (customValidatorExist ||
                             pi.PropertyType.GetPublicProperties().Any(elProp => elProp.HasAttributeOf<ValidateAttribute>()))
                         {
