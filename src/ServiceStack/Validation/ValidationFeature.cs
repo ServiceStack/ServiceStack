@@ -333,6 +333,31 @@ namespace ServiceStack.Validation
     public static class ValidationExtensions
     {
         public static HashSet<Type> RegisteredDtoValidators { get; } = new();
+        internal static List<Type> TypesWithValidators { get; private set; } = new();
+        internal static List<Type> ValidatorTypes { get; private set; } = new();
+        private static List<Assembly> RegisteredAssemblies { get; set; } = new();
+        private static List<Type> RegisteredValidators { get; set; } = new();
+
+        public static void Init(Assembly[] assemblies)
+        {
+            foreach (var assembly in assemblies)
+            {
+                if (!RegisteredAssemblies.Contains(assembly))
+                {
+                    RegisteredAssemblies.Add(assembly);
+                    foreach (var type in assembly.GetTypes())
+                    {
+                        var genericValidator = type.GetTypeWithGenericInterfaceOf(typeof(IValidator<>));
+                        if (genericValidator != null)
+                        {
+                            ValidatorTypes.Add(type);
+                            var typeWithValidator = genericValidator.GenericTypeArguments[0];
+                            TypesWithValidators.Add(typeWithValidator);
+                        }
+                    }
+                }
+            }
+        }
         
         /// <summary>
         /// Auto-scans the provided assemblies for a <see cref="IValidator"/>
@@ -347,18 +372,18 @@ namespace ServiceStack.Validation
 
         public static void RegisterValidators(this Container container, ReuseScope scope, params Assembly[] assemblies)
         {
-            foreach (var assembly in assemblies)
+            Init(assemblies);
+            foreach (var validatorType in ValidatorTypes)
             {
-                foreach (var validator in assembly.GetTypes()
-                    .Where(t => t.IsOrHasGenericInterfaceTypeOf(typeof(IValidator<>))))
-                {
-                    container.RegisterValidator(validator, scope);
-                }
+                container.RegisterValidator(validatorType, scope);
             }
         }
 
         public static void RegisterValidator(this Container container, Type validator, ReuseScope scope=ReuseScope.None)
         {
+            if (RegisteredValidators.Contains(validator))
+                return;
+
             var baseType = validator.BaseType;
             if (validator.IsInterface || baseType == null)
                 return;
@@ -371,8 +396,13 @@ namespace ServiceStack.Validation
             if (baseType == null)
                 return;
 
+            RegisteredValidators.Add(validator);
+
             var dtoType = baseType.GetGenericArguments()[0];
+            TypesWithValidators.AddIfNotExists(dtoType);
+            
             var validatorType = typeof(IValidator<>).MakeGenericType(dtoType);
+            ValidatorTypes.AddIfNotExists(validator);
 
             container.RegisterAutoWiredType(validator, validatorType, scope);
 

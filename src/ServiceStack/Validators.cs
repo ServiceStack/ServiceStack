@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Funq;
 using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Internal;
 using ServiceStack.FluentValidation.Resources;
@@ -144,7 +145,13 @@ namespace ServiceStack
         /// <returns></returns>
         public static bool RegisterPropertyRulesFor(Type type)
         {
+            var container = HostContext.AppHost.Container;
             var registerChildValidators = HostContext.GetPlugin<ValidationFeature>()?.ImplicitlyValidateChildProperties == true;
+
+            // Don't register child validators for explicit FluentValidation validators to avoid double registration
+            var typeValidator = container.TryResolve(typeof(IValidator<>).MakeGenericType(type));
+            var typesValidatorIsDefault = typeValidator is IDefaultValidator; 
+
             var typeRules = new List<IValidationRule>();
             foreach (var pi in type.GetPublicProperties())
             {
@@ -155,18 +162,18 @@ namespace ServiceStack
                 }
                 if (rule == null && registerChildValidators && pi.PropertyType.IsClass && pi.PropertyType != typeof(string))
                 {
-                    var container = HostContext.AppHost.Container;
                     var collectionGenericType = pi.PropertyType.GetTypeWithGenericInterfaceOf(typeof(IEnumerable<>));
                     if (collectionGenericType != null)
                     {
                         var elementType = collectionGenericType.GetGenericArguments()[0];
                         if (!elementType.IsClass || elementType == typeof(string))
                             continue;
-                        
-                        var elementProps = elementType.GetPublicProperties();
-                        var hasAnyChildValidators = elementProps 
-                            .Any(elProp => elProp.HasAttributeOf<ValidateAttribute>());
-                        if (hasAnyChildValidators)
+
+                        // Wire up child validators for auto generated validators
+                        var customValidatorExist = ValidationExtensions.TypesWithValidators.Contains(elementType) && typesValidatorIsDefault;
+
+                        if (customValidatorExist || 
+                            elementType.GetPublicProperties().Any(elProp => elProp.HasAttributeOf<ValidateAttribute>()))
                         {
                             // This code simulates setting a FluentValidation Collection validator:
                             // var RuleBuilder = RuleForEach(x => x.ChildCollection);
@@ -182,7 +189,7 @@ namespace ServiceStack
                             var propAccessorExpr = TypeExtensions.CreatePropertyAccessorExpression(type, pi);
                             var propAccessorFn = (Func<object,object>)propAccessorExpr.Compile();
                             var ciCollectionPropRule = genericTypeDef.GetConstructor(CollectionCtorTypes)
-                                ?? throw new Exception("Could not find CollectionPropertyRule<T,TElement> constructor");
+                                ?? throw new Exception("Could not find CollectionPropertyRule<T,TElement> Constructor");
                             var collectionRule = (PropertyRule)ciCollectionPropRule.Invoke(new object[]
                                 {member, propAccessorFn, propAccessorExpr, CascadeMode, elementType, type});
 
@@ -198,7 +205,7 @@ namespace ServiceStack
                             // var adaptor = new ChildValidatorAdaptor<T,TProperty>(validator, validator.GetType());
                             var childAdapterGenericTypeDef = typeof(ChildValidatorAdaptor<,>).MakeGenericType(type, elementType);
                             var ciChildAdaptor = childAdapterGenericTypeDef.GetConstructor(new[] { propValidatorType, typeof(Type) })
-                                ?? throw new Exception("Could not find ChildValidatorAdaptor<T,TElement> constructor");
+                                ?? throw new Exception("Could not find ChildValidatorAdaptor<T,TElement> Constructor");
                             var childAdaptor = ciChildAdaptor.Invoke(new[] { validator, propValidatorType }) as IPropertyValidator; 
                             // Rule.AddValidator(validator);
                             collectionRule.AddValidator(childAdaptor);
@@ -206,6 +213,51 @@ namespace ServiceStack
                             typeRules.Add(collectionRule);
                         }
                     }
+                    else
+                    {
+                        // Wire up child validators for auto generated validators
+                        var customValidatorExist = ValidationExtensions.TypesWithValidators.Contains(pi.PropertyType) && typesValidatorIsDefault;
+                        if (customValidatorExist ||
+                            pi.PropertyType.GetPublicProperties().Any(elProp => elProp.HasAttributeOf<ValidateAttribute>()))
+                        {
+                            // var rule = PropertyRule.Create(expression, () => CascadeMode);
+                            // var member = expression.GetMember();
+                            // var compiled = AccessorCache<T>.GetCachedAccessor(member, expression, bypassCache);
+                            // return new PropertyRule(member, compiled.CoerceToNonGeneric(), expression, cascadeModeThunk, typeof(TProperty), typeof(T));
+                            
+                            var member = pi;
+                            var propAccessorExpr = TypeExtensions.CreatePropertyAccessorExpression(type, pi);
+                            var propAccessorFn = (Func<object,object>)propAccessorExpr.Compile();
+                            var propertyRuleCtor = typeof(PropertyRule).GetConstructor(CollectionCtorTypes)
+                                               ?? throw new Exception("Could not find PropertyRule Constructor");
+                            var propRule = (PropertyRule)propertyRuleCtor.Invoke(new object[]
+                                {member, propAccessorFn, propAccessorExpr, CascadeMode, pi.PropertyType, type});
+
+                            // var propAccessorExpr = TypeExtensions.CreatePropertyAccessorExpression(type, pi);
+                            // var propertyCreateMethod = typeof(PropertyRule)
+                            //        .GetMethods().FirstOrDefault(x => x.Name == nameof(PropertyRule.Create) && x.GetParameters().Length == 3) 
+                            //    ?? throw new MissingMethodException("PropertyRule.Create");
+                            // var genericMethod = propertyCreateMethod
+                            //     .MakeGenericMethod(type, pi.PropertyType);
+                            //var propRule = (PropertyRule)genericMethod.Invoke(typeValidator, new object[]{ propAccessorExpr, CascadeMode, false });
+
+                            // var adaptor = new ChildValidatorAdaptor<T,TProperty>(validator, validator.GetType());
+                            // Rule.AddValidator(validator);
+                            var propValidatorType = typeof(IValidator<>).MakeGenericType(pi.PropertyType);
+                            container.RegisterNewValidatorIfNotExists(pi.PropertyType);
+                            var validator = container.TryResolve(propValidatorType);
+
+                            var childAdapterGenericTypeDef = typeof(ChildValidatorAdaptor<,>).MakeGenericType(type, pi.PropertyType);
+                            var ciChildAdaptor = childAdapterGenericTypeDef.GetConstructor(new[] { propValidatorType, typeof(Type) })
+                                                 ?? throw new Exception("Could not find ChildValidatorAdaptor<T,TElement> Constructor");
+                            var childAdaptor = ciChildAdaptor.Invoke(new object[] { validator, propValidatorType }) as IPropertyValidator; 
+                            propRule.AddValidator(childAdaptor);
+
+                            typeRules.Add(propRule);
+                        }
+                        
+                    }
+                    
                 }
             }
 

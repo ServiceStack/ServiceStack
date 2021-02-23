@@ -26,7 +26,8 @@ using ServiceStack.Web;
 
 namespace ServiceStack.FluentValidation
 {
-    public class DefaultValidator<T> : AbstractValidator<T> {}
+    public interface IDefaultValidator {}
+    public class DefaultValidator<T> : AbstractValidator<T>, IDefaultValidator {}
 
     public interface IServiceStackValidator
     {
