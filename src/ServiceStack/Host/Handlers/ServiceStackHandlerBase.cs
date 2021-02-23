@@ -195,7 +195,7 @@ namespace ServiceStack.Host.Handlers
             }
         }
 
-        protected static Task<object> CreateContentTypeRequestAsync(IRequest httpReq, Type requestType, string contentType)
+        protected static async Task<object> CreateContentTypeRequestAsync(IRequest httpReq, Type requestType, string contentType)
         {
             try
             {
@@ -219,7 +219,7 @@ namespace ServiceStack.Host.Handlers
                         if (deserializer != null)
                         {
                             httpReq.AllowSyncIO();
-                            return deserializer(requestType, httpReq.InputStream);
+                            return await deserializer(requestType, httpReq.InputStream);
                         }
                     }
                 }
@@ -229,7 +229,7 @@ namespace ServiceStack.Host.Handlers
                 var msg = $"Could not deserialize '{contentType}' request using {requestType}'\nError: {ex.Message}";
                 throw new SerializationException(msg, ex);
             }
-            return requestType.CreateInstance().InTask(); //Return an empty DTO, even for empty request bodies
+            return requestType.CreateInstance(); //Return an empty DTO, even for empty request bodies
         }
 
         protected static object GetCustomRequestFromBinder(IRequest httpReq, Type requestType)
