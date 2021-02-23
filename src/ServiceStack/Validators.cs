@@ -233,14 +233,6 @@ namespace ServiceStack
                             var propRule = (PropertyRule)propertyRuleCtor.Invoke(new object[]
                                 {member, propAccessorFn, propAccessorExpr, CascadeMode, pi.PropertyType, type});
 
-                            // var propAccessorExpr = TypeExtensions.CreatePropertyAccessorExpression(type, pi);
-                            // var propertyCreateMethod = typeof(PropertyRule)
-                            //        .GetMethods().FirstOrDefault(x => x.Name == nameof(PropertyRule.Create) && x.GetParameters().Length == 3) 
-                            //    ?? throw new MissingMethodException("PropertyRule.Create");
-                            // var genericMethod = propertyCreateMethod
-                            //     .MakeGenericMethod(type, pi.PropertyType);
-                            //var propRule = (PropertyRule)genericMethod.Invoke(typeValidator, new object[]{ propAccessorExpr, CascadeMode, false });
-
                             // var adaptor = new ChildValidatorAdaptor<T,TProperty>(validator, validator.GetType());
                             // Rule.AddValidator(validator);
                             var propValidatorType = typeof(IValidator<>).MakeGenericType(pi.PropertyType);
