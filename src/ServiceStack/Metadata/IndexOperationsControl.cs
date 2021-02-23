@@ -41,7 +41,7 @@ namespace ServiceStack.Metadata
                 if (MetadataConfig.IsVisible(Request, config.Format.ToFormat(), operationName))
                 {
                     show = true;
-                    opTemplate.Append($@"<td><a href=""{uri}?op={{0}}"">{config.Name.UrlEncode()}</a></td>");
+                    opTemplate.Append($@"<td><a href=""{uri}?op={{0}}"">{config.Name}</a></td>");
                 }
                 else
                 {

@@ -145,6 +145,8 @@ namespace ServiceStack
                             : null, "Operations");
 
                 default:
+                    if (pathController.IndexOf(' ') >= 0)
+                        pathController = pathController.Replace(' ', '+'); //Convert 'x-custom csv' -> 'x-custom+csv'
                     if (HostContext.ContentTypes
                         .ContentTypeFormats.TryGetValue(pathController, out var contentType))
                     {
