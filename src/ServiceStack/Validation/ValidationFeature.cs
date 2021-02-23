@@ -332,6 +332,15 @@ namespace ServiceStack.Validation
 
     public static class ValidationExtensions
     {
+        internal static void Reset()
+        {
+            RegisteredValidators = new List<Type>();
+            TypesWithValidators = new List<Type>();
+            ValidatorTypes = new List<Type>();
+            RegisteredAssemblies = new List<Assembly>();
+            RegisteredValidators = new List<Type>();
+        }
+        
         public static HashSet<Type> RegisteredDtoValidators { get; } = new();
         internal static List<Type> TypesWithValidators { get; private set; } = new();
         internal static List<Type> ValidatorTypes { get; private set; } = new();

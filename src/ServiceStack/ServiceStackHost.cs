@@ -31,6 +31,7 @@ using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 using ServiceStack.Redis;
 using ServiceStack.Script;
+using ServiceStack.Validation;
 
 namespace ServiceStack
 {
@@ -1725,7 +1726,8 @@ namespace ServiceStack
                 AuthenticateService.Reset();
                 JS.UnConfigure();
                 JsConfig.Reset(); //Clears Runtime Attributes
-
+                ValidationExtensions.Reset();
+                
                 TaskScheduler.UnobservedTaskException -= this.HandleUnobservedTaskException;
 
                 Instance = null;
