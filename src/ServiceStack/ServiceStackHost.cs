@@ -1726,7 +1726,7 @@ namespace ServiceStack
                 AuthenticateService.Reset();
                 JS.UnConfigure();
                 JsConfig.Reset(); //Clears Runtime Attributes
-                ValidationExtensions.Reset();
+                Validators.Reset();
                 
                 TaskScheduler.UnobservedTaskException -= this.HandleUnobservedTaskException;
 

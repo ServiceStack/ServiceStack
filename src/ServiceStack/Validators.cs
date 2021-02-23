@@ -44,12 +44,21 @@ namespace ServiceStack
 
     public static class Validators
     {
-        public static Dictionary<Type, List<ITypeValidator>> TypeRulesMap { get; } = new();
+        public static Dictionary<Type, List<ITypeValidator>> TypeRulesMap { get; private set; } = new();
 
-        public static Dictionary<Type, List<IValidationRule>> TypePropertyRulesMap { get; } = new();
+        public static Dictionary<Type, List<IValidationRule>> TypePropertyRulesMap { get; private set; } = new();
 
-        public static Dictionary<string, string> ConditionErrorCodes { get; } = new();
-        public static Dictionary<string, string> ErrorCodeMessages { get; } = new();
+        public static Dictionary<string, string> ConditionErrorCodes { get; private set; } = new();
+        public static Dictionary<string, string> ErrorCodeMessages { get; private set; } = new();
+
+        internal static void Reset()
+        {
+            TypeRulesMap = new Dictionary<Type, List<ITypeValidator>>();
+            TypePropertyRulesMap = new Dictionary<Type, List<IValidationRule>>();
+            ConditionErrorCodes = new Dictionary<string, string>();
+            ErrorCodeMessages = new Dictionary<string, string>();
+            ValidationExtensions.Reset();
+        }
 
         static readonly Func<CascadeMode> CascadeMode = () => ValidatorOptions.Global.CascadeMode;
 
