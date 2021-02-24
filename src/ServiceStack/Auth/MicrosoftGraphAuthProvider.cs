@@ -85,14 +85,15 @@ namespace ServiceStack.Auth
         {
             var accessTokenParams = $"code={code}&client_id={ConsumerKey}&client_secret={ConsumerSecret}&redirect_uri={this.CallbackUrl.UrlEncode()}&grant_type=authorization_code";
             var contents = await AccessTokenUrlFilter(ctx, AccessTokenUrl)
-                .PostToUrlAsync(accessTokenParams, requestFilter:req => req.ContentType = MimeTypes.FormUrlEncoded).ConfigAwait();
+                .PostToUrlAsync(accessTokenParams, requestFilter:req => req.ContentType = MimeTypes.FormUrlEncoded, token: token).ConfigAwait();
             return contents;
         }
 
         protected override async Task<Dictionary<string, string>> CreateAuthInfoAsync(string accessToken, CancellationToken token = default)
         {
             var url = this.UserProfileUrl;
-            var json = await url.GetJsonFromUrlAsync(requestFilter:req => req.AddBearerToken(accessToken)).ConfigAwait();
+            var json = await url.GetJsonFromUrlAsync(
+                req => req.AddBearerToken(accessToken), token: token).ConfigAwait();
             var obj = JsonObject.Parse(json);
 
             obj.MoveKey("id", "user_id");

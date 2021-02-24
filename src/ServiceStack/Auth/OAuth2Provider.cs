@@ -154,7 +154,7 @@ namespace ServiceStack.Auth
         protected virtual async Task<string> GetAccessTokenJsonAsync(string code, AuthContext ctx, CancellationToken token=default)
         {
             var accessTokenUrl = $"{AccessTokenUrl}?code={code}&client_id={ConsumerKey}&client_secret={ConsumerSecret}&redirect_uri={this.CallbackUrl.UrlEncode()}&grant_type=authorization_code";
-            var contents = await AccessTokenUrlFilter(ctx, accessTokenUrl).PostToUrlAsync("").ConfigAwait();
+            var contents = await AccessTokenUrlFilter(ctx, accessTokenUrl).PostToUrlAsync("", token: token).ConfigAwait();
             return contents;
         }
 

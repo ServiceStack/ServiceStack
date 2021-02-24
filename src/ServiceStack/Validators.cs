@@ -252,7 +252,7 @@ namespace ServiceStack
                             var childAdapterGenericTypeDef = typeof(ChildValidatorAdaptor<,>).MakeGenericType(type, pi.PropertyType);
                             var ciChildAdaptor = childAdapterGenericTypeDef.GetConstructor(new[] { propValidatorType, typeof(Type) })
                                                  ?? throw new Exception("Could not find ChildValidatorAdaptor<T,TElement> Constructor");
-                            var childAdaptor = ciChildAdaptor.Invoke(new object[] { validator, propValidatorType }) as IPropertyValidator; 
+                            var childAdaptor = ciChildAdaptor.Invoke(new[] { validator, propValidatorType }) as IPropertyValidator; 
                             propRule.AddValidator(childAdaptor);
 
                             typeRules.Add(propRule);
