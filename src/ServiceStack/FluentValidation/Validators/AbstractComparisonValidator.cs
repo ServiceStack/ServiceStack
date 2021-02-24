@@ -21,7 +21,7 @@ namespace ServiceStack.FluentValidation.Validators {
 	using System.Reflection;
 	using Internal;
 	using Resources;
-	
+
 	/// <summary>
 	/// Base class for all comparison validators
 	/// </summary>
@@ -95,14 +95,15 @@ namespace ServiceStack.FluentValidation.Validators {
 			return true;
 		}
 
+		/*
 		public IComparable GetComparisonValue(PropertyValidatorContext context) {
 			if(_valueToCompareFunc != null) {
 				return (IComparable)_valueToCompareFunc(context.InstanceToValidate);
 			}
 
-			return GetComparableValue(context, ValueToCompare);
-			// return (IComparable)ValueToCompare;
+			return (IComparable)ValueToCompare;
 		}
+		*/
 
 		/// <summary>
 		/// Override to perform the comparison
