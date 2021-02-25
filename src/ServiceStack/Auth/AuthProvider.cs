@@ -31,6 +31,7 @@ namespace ServiceStack.Auth
         public bool? RestoreSessionFromState { get; set; }
 
         public Action<AuthUserSession, IAuthTokens, Dictionary<string, string>> LoadUserAuthFilter { get; set; }
+        public Func<AuthUserSession, IAuthTokens, Dictionary<string, string>, CancellationToken, Task> LoadUserAuthInfoFilterAsync { get; set; }
 
         public Func<AuthContext, IHttpResult> CustomValidationFilter { get; set; }
 
@@ -45,6 +46,8 @@ namespace ServiceStack.Auth
         public static string UrlFilter(AuthContext provider, string url) => url;
 
         public NavItem NavItem { get; set; }
+
+        public HashSet<string> ExcludeAuthInfoItems { get; set; } = new(new[]{ "user_id", "email", "username", "name", "first_name", "last_name", "email" }, StringComparer.OrdinalIgnoreCase);
 
         protected AuthProvider()
         {
@@ -130,8 +133,6 @@ namespace ServiceStack.Auth
 
             return new AuthenticateResponse();
         }
-
-        public HashSet<string> ExcludeAuthInfoItems { get; set; } = new HashSet<string>(new[]{ "user_id", "email", "username", "name", "first_name", "last_name", "email" }, StringComparer.OrdinalIgnoreCase);
         
         public virtual async Task<IHttpResult> OnAuthenticatedAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token=default)
         {
@@ -144,6 +145,8 @@ namespace ServiceStack.Auth
                 HostContext.TryResolve<IAuthMetadataProvider>().SafeAddMetadata(tokens, authInfo);
 
                 LoadUserAuthFilter?.Invoke(userSession, tokens, authInfo);
+                if (LoadUserAuthInfoFilterAsync != null)
+                    await LoadUserAuthInfoFilterAsync(userSession, tokens, authInfo, token);
             }
 
             var hasTokens = tokens != null && authInfo != null;
@@ -163,6 +166,7 @@ namespace ServiceStack.Auth
 
             if (session is IAuthSessionExtended authSession)
             {
+                // ReSharper disable once MethodHasAsyncOverloadWithCancellation
                 var failed = authSession.Validate(authService, session, tokens, authInfo)
                     ?? await authSession.ValidateAsync(authService, session, tokens, authInfo, token).ConfigAwait() 
                     ?? AuthEvents.Validate(authService, session, tokens, authInfo)

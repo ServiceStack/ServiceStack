@@ -107,16 +107,21 @@ namespace ServiceStack.Auth
             {
                 await LoadUserAuthInfoAsync(userSession, tokens, authInfo, token).ConfigAwait();
                 HostContext.TryResolve<IAuthMetadataProvider>().SafeAddMetadata(tokens, authInfo);
+
+                LoadUserAuthFilter?.Invoke(userSession, tokens, authInfo);
+                if (LoadUserAuthInfoFilterAsync != null)
+                    await LoadUserAuthInfoFilterAsync(userSession, tokens, authInfo, token);
             }
 
             if (session is IAuthSessionExtended authSession)
             {
+                // ReSharper disable once MethodHasAsyncOverloadWithCancellation
                 var failed = authSession.Validate(authService, session, tokens, authInfo)
-                    ?? await authSession.ValidateAsync(authService, session, tokens, authInfo, token) 
-                    ?? AuthEvents.Validate(authService, session, tokens, authInfo)
-                    ?? (AuthEvents is IAuthEventsAsync asyncEvents 
-                        ? await asyncEvents.ValidateAsync(authService, session, tokens, authInfo, token)
-                        : null);
+                     ?? await authSession.ValidateAsync(authService, session, tokens, authInfo, token) 
+                     ?? AuthEvents.Validate(authService, session, tokens, authInfo)
+                     ?? (AuthEvents is IAuthEventsAsync asyncEvents 
+                         ? await asyncEvents.ValidateAsync(authService, session, tokens, authInfo, token)
+                         : null);
                 if (failed != null)
                 {
                     await authService.RemoveSessionAsync(token).ConfigAwait();

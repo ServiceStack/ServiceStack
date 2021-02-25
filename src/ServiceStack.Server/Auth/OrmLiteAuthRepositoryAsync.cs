@@ -425,7 +425,7 @@ namespace ServiceStack.Auth
                 userAuth.PopulateMissingExtended(authDetails);
 
                 userAuth.ModifiedDate = DateTime.UtcNow;
-                if (userAuth.CreatedDate == default(DateTime))
+                if (userAuth.CreatedDate == default)
                     userAuth.CreatedDate = userAuth.ModifiedDate;
 
                 await db.SaveAsync(userAuth, token: token).ConfigAwait();
@@ -433,7 +433,7 @@ namespace ServiceStack.Auth
                 authDetails.UserAuthId = userAuth.Id;
 
                 authDetails.ModifiedDate = userAuth.ModifiedDate;
-                if (authDetails.CreatedDate == default(DateTime))
+                if (authDetails.CreatedDate == default)
                     authDetails.CreatedDate = userAuth.ModifiedDate;
 
                 await db.SaveAsync(authDetails, token: token).ConfigAwait();
