@@ -87,6 +87,7 @@ namespace ServiceStack
             }
         }
 
+        [Obsolete("Use AuthenticateAsync")]
         public static bool Authenticate(IRequest req, object requestDto=null, IAuthSession session=null, IAuthProvider[] authProviders=null)
         {
             if (HostContext.HasValidAuthSecret(req))
@@ -105,6 +106,12 @@ namespace ServiceStack
             {
                 var mockResponse = new BasicRequest().Response;
                 req.Items[Keywords.HasPreAuthenticated] = true;
+                foreach (var authWithRequest in authProviders.OfType<IAuthWithRequestAsync>())
+                {
+                    authWithRequest.PreAuthenticateAsync(req, mockResponse).Wait();
+                    if (mockResponse.IsClosed)
+                        return false;
+                }
                 foreach (var authWithRequest in authProviders.OfType<IAuthWithRequest>())
                 {
                     authWithRequest.PreAuthenticate(req, mockResponse);
@@ -118,9 +125,55 @@ namespace ServiceStack
                 : session.IsAuthenticated);
         }
 
+        public static async Task<bool> AuthenticateAsync(IRequest req, object requestDto=null, IAuthSession session=null, IAuthProvider[] authProviders=null)
+        {
+            if (HostContext.HasValidAuthSecret(req))
+                return true;
+
+            session ??= await (req ?? throw new ArgumentNullException(nameof(req))).GetSessionAsync();
+            authProviders ??= AuthenticateService.GetAuthProviders();
+            var authValidate = HostContext.GetPlugin<AuthFeature>()?.OnAuthenticateValidate;
+            var ret = authValidate?.Invoke(req);
+            if (ret != null)
+                return false;
+
+            req.PopulateFromRequestIfHasSessionId(requestDto);
+
+            if (!req.Items.ContainsKey(Keywords.HasPreAuthenticated))
+            {
+                var mockResponse = new BasicRequest().Response;
+                req.Items[Keywords.HasPreAuthenticated] = true;
+                foreach (var authWithRequest in authProviders.OfType<IAuthWithRequestAsync>())
+                {
+                    await authWithRequest.PreAuthenticateAsync(req, mockResponse);
+                    if (mockResponse.IsClosed)
+                        return false;
+                }
+                foreach (var authWithRequest in authProviders.OfType<IAuthWithRequest>())
+                {
+                    authWithRequest.PreAuthenticate(req, mockResponse);
+                    if (mockResponse.IsClosed)
+                        return false;
+                }
+            }
+            
+            return session != null && (authProviders.Length > 0
+                ? authProviders.Any(x => session.IsAuthorized(x.Provider))
+                : session.IsAuthenticated);
+        }
+
+        [Obsolete("Use AuthenticateAsync")]
         public static void AssertAuthenticated(IRequest req, object requestDto=null, IAuthSession session=null, IAuthProvider[] authProviders=null)
         {
             if (Authenticate(req, requestDto:requestDto, session:session))
+                return;
+
+            ThrowNotAuthenticated(req);
+        }
+
+        public static async Task AssertAuthenticatedAsync(IRequest req, object requestDto=null, IAuthSession session=null, IAuthProvider[] authProviders=null)
+        {
+            if (await AuthenticateAsync(req, requestDto:requestDto, session:session))
                 return;
 
             ThrowNotAuthenticated(req);
@@ -148,6 +201,12 @@ namespace ServiceStack
             if (!req.Items.ContainsKey(Keywords.HasPreAuthenticated))
             {
                 req.Items[Keywords.HasPreAuthenticated] = true;
+                foreach (var authWithRequest in authProviders.OfType<IAuthWithRequestAsync>())
+                {
+                    authWithRequest.PreAuthenticateAsync(req, req.Response);
+                    if (req.Response.IsClosed)
+                        return TypeConstants.EmptyTask;
+                }
                 foreach (var authWithRequest in authProviders.OfType<IAuthWithRequest>())
                 {
                     authWithRequest.PreAuthenticate(req, req.Response);

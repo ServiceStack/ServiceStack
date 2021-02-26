@@ -13,7 +13,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
-    public class NetCoreIdentityAuthProvider : AuthProvider, IAuthWithRequest, IAuthPlugin
+    public class NetCoreIdentityAuthProvider : AuthProvider, IAuthWithRequestAsync, IAuthPlugin
     {
         public const string Name = AuthenticateService.IdentityProvider;
         public const string Realm = "/auth/" + AuthenticateService.IdentityProvider;
@@ -108,14 +108,14 @@ namespace ServiceStack.Auth
             throw new NotImplementedException("NetCoreIdentityAuthProvider Authenticate() should not be called directly");
         }
 
-        public virtual void PreAuthenticate(IRequest req, IResponse res)
+        public virtual async Task PreAuthenticateAsync(IRequest req, IResponse res)
         {
             var coreReq = (HttpRequest)req.OriginalRequest;
             var claimsPrincipal = coreReq.HttpContext.User;
             if (claimsPrincipal.Identity?.IsAuthenticated != true)
                 return;
 
-            var session = req.GetSession();
+            var session = await req.GetSessionAsync();
             if (session.IsAuthenticated) // if existing Session exists use it instead
                 return;
 

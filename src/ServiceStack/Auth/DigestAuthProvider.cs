@@ -11,7 +11,7 @@ using ServiceStack.Web;
 namespace ServiceStack.Auth
 {
     //DigestAuth Info: http://www.ntu.edu.sg/home/ehchua/programming/webprogramming/HTTP_Authentication.html
-    public class DigestAuthProvider : AuthProvider, IAuthWithRequest
+    public class DigestAuthProvider : AuthProvider, IAuthWithRequestAsync
     {
         public override string Type => "Digest";
         
@@ -187,7 +187,7 @@ namespace ServiceStack.Auth
             return HostContext.AppHost.HandleShortCircuitedErrors(httpReq, httpRes, httpReq.Dto);
         }
 
-        public void PreAuthenticate(IRequest req, IResponse res)
+        public async Task PreAuthenticateAsync(IRequest req, IResponse res)
         {
             var digestAuth = req.GetDigestAuth();
             if (digestAuth != null)
@@ -196,7 +196,7 @@ namespace ServiceStack.Auth
                 SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
 
                 using var authService = HostContext.ResolveService<AuthenticateService>(req);
-                var response = authService.Post(new Authenticate
+                var response = await authService.PostAsync(new Authenticate
                 {
                     provider = Name,
                     nonce = digestAuth["nonce"],

@@ -51,6 +51,7 @@ namespace ServiceStack
             await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto).ConfigAwait();
         }
 
+        [Obsolete("Use HasAllPermissionsAsync")]
         public bool HasAllPermissions(IRequest req, IAuthSession session, IAuthRepository authRepo)
         {
             if (SessionValidForAllPermissions(req, session, RequiredPermissions))
@@ -58,7 +59,16 @@ namespace ServiceStack
 
             return SessionHasAllPermissions(req, session, authRepo, RequiredPermissions);
         }
-        
+
+        public async Task<bool> HasAllPermissionsAsync(IRequest req, IAuthSession session, IAuthRepositoryAsync authRepo)
+        {
+            if (await SessionValidForAllPermissionsAsync(req, session, RequiredPermissions))
+                return true;
+
+            return await SessionHasAllPermissionsAsync(req, session, authRepo, RequiredPermissions);
+        }
+
+        [Obsolete("Use HasAllPermissionsAsync")]
         public static bool HasAllPermissions(IRequest req, IAuthSession session, ICollection<string> requiredPermissions)
         {
             if (SessionValidForAllPermissions(req, session, requiredPermissions))
@@ -73,7 +83,7 @@ namespace ServiceStack
         
         public static async Task<bool> HasAllPermissionsAsync(IRequest req, IAuthSession session, ICollection<string> requiredPermissions, CancellationToken token=default)
         {
-            if (SessionValidForAllPermissions(req, session, requiredPermissions))
+            if (await SessionValidForAllPermissionsAsync(req, session, requiredPermissions))
                 return true;
             
             var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
@@ -87,11 +97,7 @@ namespace ServiceStack
             }
         }
 
-        /// <summary>
-        /// Check all session is in all supplied roles otherwise a 401 HttpError is thrown
-        /// </summary>
-        /// <param name="req"></param>
-        /// <param name="requiredPermissions"></param>
+        [Obsolete("AssertRequiredPermissionsAsync")]
         public static void AssertRequiredPermissions(IRequest req, params string[] requiredPermissions)
         {
             var session = req.GetSession();
@@ -123,9 +129,14 @@ namespace ServiceStack
                 ThrowInvalidPermission(req);
         }
 
+        [Obsolete("Use HasRequiredPermissionsAsync")]
         public static bool HasRequiredPermissions(IRequest req, string[] requiredPermissions) => 
             HasAllPermissions(req, req.GetSession(), requiredPermissions);
 
+        public static Task<bool> HasRequiredPermissionsAsync(IRequest req, string[] requiredPermissions) => 
+            HasAllPermissionsAsync(req, req.GetSession(), requiredPermissions);
+
+        [Obsolete("Use SessionHasAllPermissionsAsync")]
         private static bool SessionHasAllPermissions(IRequest req, IAuthSession session, IAuthRepository authRepo, ICollection<string> requiredPermissions)
         {
             if (session.HasRole(RoleNames.Admin, authRepo))
@@ -164,6 +175,7 @@ namespace ServiceStack
             return false;
         }
 
+        [Obsolete("Use SessionValidForAllPermissionsAsync")]
         private static bool SessionValidForAllPermissions(IRequest req, IAuthSession session, ICollection<string> requiredPermissions)
         {
             if (requiredPermissions.IsEmpty()) 
@@ -173,6 +185,19 @@ namespace ServiceStack
                 return true;
 
             AssertAuthenticated(req, requestDto:req.Dto, session:session);
+
+            return false;
+        }
+
+        private static async Task<bool> SessionValidForAllPermissionsAsync(IRequest req, IAuthSession session, ICollection<string> requiredPermissions)
+        {
+            if (requiredPermissions.IsEmpty()) 
+                return true;
+            
+            if (HostContext.HasValidAuthSecret(req))
+                return true;
+
+            await AssertAuthenticatedAsync(req, requestDto:req.Dto, session:session);
 
             return false;
         }

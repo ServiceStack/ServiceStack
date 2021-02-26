@@ -13,7 +13,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
-    public class AspNetWindowsAuthProvider : AuthProvider, IAuthWithRequest
+    public class AspNetWindowsAuthProvider : AuthProvider, IAuthWithRequestAsync
     {
         public override string Type => "NTLM";
         public static string Name = AuthenticateService.WindowsAuthProvider;
@@ -169,23 +169,21 @@ namespace ServiceStack.Auth
             winAuthProvider?.IsAuthorized(req.GetUser());
         }
 
-        public void PreAuthenticate(IRequest req, IResponse res)
+        public async Task PreAuthenticateAsync(IRequest req, IResponse res)
         {
             var user = req.GetUser();
             if (user != null)
             {
                 SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
-                using (var authService = HostContext.ResolveService<AuthenticateService>(req))
-                {
-                    var session = req.GetSession();
-                    if (LoginMatchesSession(session, user.Identity.Name)) return;
+                using var authService = HostContext.ResolveService<AuthenticateService>(req);
+                var session = await req.GetSessionAsync();
+                if (LoginMatchesSession(session, user.Identity.Name)) return;
 
-                    var response = authService.Post(new Authenticate
-                    {
-                        provider = Name,
-                        UserName = user.GetUserName(),
-                    });
-                }
+                var response = await authService.PostAsync(new Authenticate
+                {
+                    provider = Name,
+                    UserName = user.GetUserName(),
+                });
             }
         }
     }

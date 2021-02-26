@@ -67,7 +67,7 @@ namespace ServiceStack.Auth
     /// <summary>
     /// Enable access to protected Services using API Keys
     /// </summary>
-    public class ApiKeyAuthProvider : AuthProvider, IAuthWithRequest, IAuthPlugin
+    public class ApiKeyAuthProvider : AuthProvider, IAuthWithRequestAsync, IAuthPlugin
     {
         public override string Type => "Bearer";
         public const string Name = AuthenticateService.ApiKeyProvider;
@@ -249,14 +249,14 @@ namespace ServiceStack.Auth
             }
         }
 
-        public void PreAuthenticate(IRequest req, IResponse res)
+        public async Task PreAuthenticateAsync(IRequest req, IResponse res)
         {
             //The API Key is sent in the Basic Auth Username and Password is Empty
             var userPass = req.GetBasicAuthUserAndPassword();
             if (userPass != null && string.IsNullOrEmpty(userPass.Value.Value))
             {
                 var apiKey = GetApiKey(req, userPass.Value.Key);
-                PreAuthenticateWithApiKey(req, res, apiKey);
+                await PreAuthenticateWithApiKeyAsync(req, res, apiKey);
             }
             var bearerToken = req.GetBearerToken();
             if (bearerToken != null)
@@ -264,7 +264,7 @@ namespace ServiceStack.Auth
                 var apiKey = GetApiKey(req, bearerToken);
                 if (apiKey != null)
                 {
-                    PreAuthenticateWithApiKey(req, res, apiKey);
+                    await PreAuthenticateWithApiKeyAsync(req, res, apiKey);
                 }
             }
 
@@ -273,7 +273,7 @@ namespace ServiceStack.Auth
                 var apiKey = req.QueryString[Keywords.ApiKeyParam] ?? req.FormData[Keywords.ApiKeyParam];
                 if (apiKey != null)
                 {
-                    PreAuthenticateWithApiKey(req, res, GetApiKey(req, apiKey));
+                    await PreAuthenticateWithApiKeyAsync(req, res, GetApiKey(req, apiKey));
                 }
             }
         }
@@ -299,7 +299,7 @@ namespace ServiceStack.Auth
                 throw HttpError.Forbidden(ErrorMessages.ApiKeyHasExpired.Localize(req));
         }
 
-        public void PreAuthenticateWithApiKey(IRequest req, IResponse res, ApiKey apiKey)
+        public async Task PreAuthenticateWithApiKeyAsync(IRequest req, IResponse res, ApiKey apiKey)
         {
             if (RequireSecureConnection && !req.IsSecureConnection)
                 throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection.Localize(req));
@@ -325,19 +325,17 @@ namespace ServiceStack.Auth
             //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
             SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
 
-            using (var authService = HostContext.ResolveService<AuthenticateService>(req))
+            using var authService = HostContext.ResolveService<AuthenticateService>(req);
+            var response = await authService.PostAsync(new Authenticate
             {
-                var response = authService.Post(new Authenticate
-                {
-                    provider = Name,
-                    UserName = "ApiKey",
-                    Password = apiKey.Id,
-                });
-            }
+                provider = Name,
+                UserName = "ApiKey",
+                Password = apiKey.Id,
+            });
 
             if (SessionCacheDuration != null)
             {
-                var session = req.GetSession();
+                var session = await req.GetSessionAsync();
                 req.GetCacheClient().Set(apiSessionKey, session, SessionCacheDuration);
             }
         }

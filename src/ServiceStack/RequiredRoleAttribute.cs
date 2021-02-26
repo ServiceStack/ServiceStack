@@ -50,6 +50,7 @@ namespace ServiceStack
             await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto).ConfigAwait();
         }
 
+        [Obsolete("Use HasAllRolesAsync")]
         public bool HasAllRoles(IRequest req, IAuthSession session, IAuthRepository authRepo)
         {
             if (SessionValidForAllRoles(req, session, RequiredRoles))
@@ -57,7 +58,16 @@ namespace ServiceStack
 
             return SessionHasAllRoles(req, session, authRepo, RequiredRoles);
         }
+
+        public async Task<bool> HasAllRolesAsync(IRequest req, IAuthSession session, IAuthRepositoryAsync authRepo)
+        {
+            if (await SessionValidForAllRolesAsync(req, session, RequiredRoles))
+                return true;
+
+            return await SessionHasAllRolesAsync(req, session, authRepo, RequiredRoles);
+        }
         
+        [Obsolete("Use HasAllRolesAsync")]
         public static bool HasAllRoles(IRequest req, IAuthSession session, ICollection<string> requiredRoles)
         {
             if (SessionValidForAllRoles(req, session, requiredRoles))
@@ -72,7 +82,7 @@ namespace ServiceStack
         
         public static async Task<bool> HasAllRolesAsync(IRequest req, IAuthSession session, ICollection<string> requiredRoles, CancellationToken token=default)
         {
-            if (SessionValidForAllRoles(req, session, requiredRoles))
+            if (await SessionValidForAllRolesAsync(req, session, requiredRoles))
                 return true;
             
             var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
@@ -125,7 +135,10 @@ namespace ServiceStack
                 ThrowInvalidRole(req);
         }
 
+        [Obsolete("Use HasRequiredRolesAsync")]
         public static bool HasRequiredRoles(IRequest req, string[] requiredRoles) => HasAllRoles(req, req.GetSession(), requiredRoles);
+
+        public static Task<bool> HasRequiredRolesAsync(IRequest req, string[] requiredRoles) => HasAllRolesAsync(req, req.GetSession(), requiredRoles);
 
         private static bool SessionHasAllRoles(IRequest req, IAuthSession session, IAuthRepository authRepo, ICollection<string> requiredRoles)
         {
@@ -178,6 +191,26 @@ namespace ServiceStack
                 return true;
 
             AssertAuthenticated(req, requestDto:req.Dto, session:session);
+
+            if (session != null && singleRequiredRole == RoleNames.AllowAnyUser && session.IsAuthenticated)
+                return true;
+
+            return false;
+        }
+        
+        private static async Task<bool> SessionValidForAllRolesAsync(IRequest req, IAuthSession session, ICollection<string> requiredRoles)
+        {
+            var singleRequiredRole = requiredRoles.Count == 1 ? requiredRoles.First() : null; 
+            if (singleRequiredRole == RoleNames.AllowAnon)
+                return true;
+
+            if (requiredRoles.IsEmpty()) 
+                return true;
+            
+            if (HostContext.HasValidAuthSecret(req))
+                return true;
+
+            await AssertAuthenticatedAsync(req, requestDto:req.Dto, session:session);
 
             if (session != null && singleRequiredRole == RoleNames.AllowAnyUser && session.IsAuthenticated)
                 return true;

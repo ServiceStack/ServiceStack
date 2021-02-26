@@ -44,9 +44,15 @@ namespace ServiceStack.Auth
         string AccessTokenUrl { get; set; }
     }
 
+    [Obsolete("Use IAuthWithRequestAsync")]
     public interface IAuthWithRequest
     {
         void PreAuthenticate(IRequest req, IResponse res);
+    }
+
+    public interface IAuthWithRequestAsync
+    {
+        Task PreAuthenticateAsync(IRequest req, IResponse res);
     }
 
     public interface IAuthResponseFilter

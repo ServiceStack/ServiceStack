@@ -200,21 +200,24 @@ namespace ServiceStack
             return await SessionFeature.GetOrCreateSessionAsync<TUserSession>(req.GetCacheClientAsync(), req, req.Response, token).ConfigAwait();
         }
 
+        [Obsolete("Use IsAuthenticatedAsync")]
         public static bool IsAuthenticated(this IRequest req) => AuthenticateAttribute.Authenticate(req, req.Dto);
+
+        public static Task<bool> IsAuthenticatedAsync(this IRequest req) => AuthenticateAttribute.AuthenticateAsync(req, req.Dto);
 
         public static IAuthSession GetSession(this IRequest httpReq, bool reload = false)
         {
-            var task = GetSessionInternal(httpReq, reload, async: false);
+            var task = GetSessionInternalAsync(httpReq, reload, async: false);
             var ret = task.GetResult();
             return ret;
         }
 
         public static Task<IAuthSession> GetSessionAsync(this IRequest httpReq, bool reload = false, CancellationToken token=default)
         {
-            return GetSessionInternal(httpReq, reload, async: true, token);
+            return GetSessionInternalAsync(httpReq, reload, async: true, token);
         }
 
-        internal static async Task<IAuthSession> GetSessionInternal(this IRequest httpReq, bool reload, bool async, CancellationToken token=default)
+        internal static async Task<IAuthSession> GetSessionInternalAsync(this IRequest httpReq, bool reload, bool async, CancellationToken token=default)
         {
             if (httpReq == null)
                 return null;
@@ -235,7 +238,7 @@ namespace ServiceStack
             {
                 try
                 {
-                    appHost.ApplyPreAuthenticateFilters(httpReq, httpReq.Response);
+                    await appHost.ApplyPreAuthenticateFiltersAsync(httpReq, httpReq.Response);
                     httpReq.Items.TryGetValue(Keywords.Session, out oSession);
                 }
                 catch (Exception ex)

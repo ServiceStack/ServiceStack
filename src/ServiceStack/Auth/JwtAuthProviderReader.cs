@@ -17,7 +17,7 @@ namespace ServiceStack.Auth
     /// <summary>
     /// Enable access to protected Services using JWT Tokens
     /// </summary>
-    public class JwtAuthProviderReader : AuthProvider, IAuthWithRequest, IAuthPlugin
+    public class JwtAuthProviderReader : AuthProvider, IAuthWithRequestAsync, IAuthPlugin
     {
         public override string Type => "Bearer";
         public static RsaKeyLengths UseRsaKeyLength = RsaKeyLengths.Bit2048;
@@ -468,10 +468,10 @@ namespace ServiceStack.Auth
             throw new NotImplementedException("JWT Authenticate() should not be called directly");
         }
 
-        public void PreAuthenticate(IRequest req, IResponse res)
+        public Task PreAuthenticateAsync(IRequest req, IResponse res)
         {
             if (req.OperationName != null && IgnoreForOperationTypes.Contains(req.OperationName))
-                return;
+                return TypeConstants.EmptyTask;
 
             var bearerToken = req.GetJwtToken();
 
@@ -487,7 +487,7 @@ namespace ServiceStack.Auth
 
                         var jwtPayload = GetVerifiedJwtPayload(req, parts);
                         if (jwtPayload == null) //not verified
-                            return;
+                            return TypeConstants.EmptyTask;
 
                         if (ValidateToken != null)
                         {
@@ -505,7 +505,7 @@ namespace ServiceStack.Auth
 
                         var jwtPayload = GetVerifiedJwtPayload(req, parts);
                         if (jwtPayload == null) //not verified
-                            return;
+                            return TypeConstants.EmptyTask;
 
                         if (ValidateToken != null)
                         {
@@ -527,6 +527,7 @@ namespace ServiceStack.Auth
                     throw;
                 }
             }
+            return TypeConstants.EmptyTask;
         }
 
         public bool IsJwtValid(string jwt) => GetValidJwtPayload(jwt) != null;

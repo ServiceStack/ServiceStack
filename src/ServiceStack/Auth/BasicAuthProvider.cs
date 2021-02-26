@@ -7,7 +7,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
-    public class BasicAuthProvider : CredentialsAuthProvider, IAuthWithRequest
+    public class BasicAuthProvider : CredentialsAuthProvider, IAuthWithRequestAsync
     {
         public new static string Name = AuthenticateService.BasicProvider;
         public new static string Realm = "/auth/" + AuthenticateService.BasicProvider;
@@ -36,7 +36,7 @@ namespace ServiceStack.Auth
             return await AuthenticateAsync(authService, session, userName, password, authService.Request.GetReturnUrl(), token).ConfigAwait();
         }
 
-        public virtual void PreAuthenticate(IRequest req, IResponse res)
+        public virtual async Task PreAuthenticateAsync(IRequest req, IResponse res)
         {
             //API Keys are sent in Basic Auth Username and Password is Empty
             var userPass = req.GetBasicAuthUserAndPassword();
@@ -46,7 +46,7 @@ namespace ServiceStack.Auth
                 SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
 
                 using var authService = HostContext.ResolveService<AuthenticateService>(req);
-                var response = authService.Post(new Authenticate
+                var response = await authService.PostAsync(new Authenticate
                 {
                     provider = Name,
                     UserName = userPass.Value.Key,
