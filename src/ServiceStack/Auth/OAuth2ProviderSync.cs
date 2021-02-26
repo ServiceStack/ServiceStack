@@ -203,7 +203,7 @@ namespace ServiceStack.Auth
 
             LoadUserOAuthProvider(userSession, tokens);
         }
-        
+
         public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
         {
             if (!(authSession is AuthUserSession userSession))
@@ -215,6 +215,5 @@ namespace ServiceStack.Auth
             userSession.LastName = tokens.LastName ?? userSession.LastName;
             userSession.Email = userSession.PrimaryEmail = tokens.Email ?? userSession.PrimaryEmail ?? userSession.Email;
         }
-
     }
 }

@@ -69,6 +69,7 @@ namespace ServiceStack.Auth
             {
                 this.Scopes = new[] {
                     "User.Read",
+                    "openid",
                 };
             }
 
@@ -115,6 +116,23 @@ namespace ServiceStack.Auth
             }
 
             return obj;
+        }
+
+        public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
+        {
+            if (!(authSession is AuthUserSession userSession))
+                return;
+            
+            base.LoadUserOAuthProvider(authSession, tokens);
+            
+            // if the id_token has been returned populate any roles
+            var idTokens  = JwtAuthProviderReader.ExtractPayload(tokens.Items["id_token"]);
+            if(idTokens.ContainsKey("roles"))
+            {
+                authSession.Roles ??= new List<string>();
+                var roles = (idTokens["roles"] as List<object>).ConvertTo<List<string>>();
+                authSession.Roles.AddRange(roles);
+            }
         }
     }
 }

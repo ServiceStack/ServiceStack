@@ -232,6 +232,5 @@ namespace ServiceStack.Auth
             if (userSession.DisplayName == null && ResolveUnknownDisplayName != null)
                 userSession.DisplayName = ResolveUnknownDisplayName(authSession, tokens);
         }
-
     }
 }
