@@ -926,31 +926,4 @@ namespace ServiceStack.Auth
             return httpResult;
         }
     }
-
-    public static class JwtExtensions
-    {
-        public static string GetJwtToken(this IRequest req)
-        {
-            var jwtAuthProvider = AuthenticateService.GetJwtAuthProvider();
-            if (jwtAuthProvider != null)
-            {
-                if (jwtAuthProvider.AllowInFormData)
-                {
-                    var jwt = req.FormData[Keywords.TokenCookie];
-                    if (!string.IsNullOrEmpty(jwt))
-                        return jwt;
-                }
-
-                if (jwtAuthProvider.AllowInQueryString)
-                {
-                    var jwt = req.QueryString[Keywords.TokenCookie];
-                    if (!string.IsNullOrEmpty(jwt))
-                        return jwt;
-                }
-            }
-
-            return req.GetBearerToken() ??
-                   req.GetCookieValue(Keywords.TokenCookie);
-        }
-    }
 }

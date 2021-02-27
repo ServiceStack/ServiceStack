@@ -1013,6 +1013,74 @@ namespace ServiceStack
             var pluginIds = Plugins.OfType<IHasStringId>().Map(x => x.Id);
             return pluginIds;
         }
+
+        /// <summary>
+        /// Override Authorization Header resolution
+        /// </summary>
+        public virtual string GetAuthorization(IRequest req)
+        {
+            var auth = req.Items.TryGetValue(Keywords.Authorization, out var oAuth)
+                ? oAuth as string
+                : null;
+            if (!string.IsNullOrEmpty(auth))
+                return auth;
+            
+            auth = req.Authorization;
+            return string.IsNullOrEmpty(auth) ? null : auth;
+        }
+
+        /// <summary>
+        /// Override Authorization Bearer Token resolution
+        /// </summary>
+        public virtual string GetBearerToken(IRequest req)
+        {
+            if (req.Dto is IHasBearerToken dto && dto.BearerToken != null)
+                return dto.BearerToken;
+            
+            var auth = GetAuthorization(req);
+            if (string.IsNullOrEmpty(auth))
+                return null;
+
+            var pos = auth.IndexOf(' ');
+            if (pos < 0)
+                return null;
+
+            var ret = auth.StartsWith("Bearer", StringComparison.OrdinalIgnoreCase) 
+                ? auth.Substring(pos + 1) 
+                : null;
+            if (!string.IsNullOrEmpty(ret))
+                return ret;
+            return null;            
+        }
+
+        /// <summary>
+        /// Override JWT Token resolution
+        /// </summary>
+        /// <param name="req"></param>
+        /// <returns></returns>
+        public virtual string GetJwtToken(IRequest req)
+        {
+            var jwtAuthProvider = AuthenticateService.GetJwtAuthProvider();
+            if (jwtAuthProvider != null)
+            {
+                if (jwtAuthProvider.AllowInFormData)
+                {
+                    var jwt = req.FormData[Keywords.TokenCookie];
+                    if (!string.IsNullOrEmpty(jwt))
+                        return jwt;
+                }
+
+                if (jwtAuthProvider.AllowInQueryString)
+                {
+                    var jwt = req.QueryString[Keywords.TokenCookie];
+                    if (!string.IsNullOrEmpty(jwt))
+                        return jwt;
+                }
+            }
+
+            return GetBearerToken(req) ??
+                   req.GetCookieValue(Keywords.TokenCookie);
+        }
     }
 
 }
