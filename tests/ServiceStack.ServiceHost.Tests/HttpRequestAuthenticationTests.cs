@@ -1,12 +1,17 @@
 ﻿using System.Collections.Specialized;
 using NUnit.Framework;
 using ServiceStack.Host;
+using ServiceStack.Testing;
 
 namespace ServiceStack.ServiceHost.Tests
 {
     [TestFixture]
     class HttpRequestAuthenticationTests
     {
+        private readonly ServiceStackHost appHost;
+        public HttpRequestAuthenticationTests() => appHost = new BasicAppHost().Init();
+        [OneTimeTearDown] public void OneTimeTearDown() => appHost.Dispose();
+
         private static BasicRequest CreateRequest(string authHeader) => new BasicRequest {
             Headers = new NameValueCollection { {HttpHeaders.Authorization, authHeader} }
         };
