@@ -11,7 +11,7 @@ using ServiceStack.Web;
 namespace ServiceStack.Auth
 {
     //DigestAuth Info: http://www.ntu.edu.sg/home/ehchua/programming/webprogramming/HTTP_Authentication.html
-    public class DigestAuthProvider : AuthProvider, IAuthWithRequestAsync
+    public class DigestAuthProvider : AuthProvider, IAuthWithRequest
     {
         public override string Type => "Digest";
         

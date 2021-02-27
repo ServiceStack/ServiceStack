@@ -17,7 +17,7 @@ namespace ServiceStack.Auth
     /// <summary>
     /// Enable access to protected Services using JWT Tokens
     /// </summary>
-    public class JwtAuthProviderReader : AuthProvider, IAuthWithRequestAsync, IAuthPlugin
+    public class JwtAuthProviderReader : AuthProvider, IAuthWithRequest, IAuthPlugin
     {
         public override string Type => "Bearer";
         public static RsaKeyLengths UseRsaKeyLength = RsaKeyLengths.Bit2048;

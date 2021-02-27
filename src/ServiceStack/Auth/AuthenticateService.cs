@@ -52,8 +52,8 @@ namespace ServiceStack.Auth
         
         public static Func<AuthFilterContext, object> AuthResponseDecorator { get; internal set; }
         internal static IAuthProvider[] AuthProviders;
-        internal static IAuthWithRequestAsync[] AuthWithRequestAsyncProviders;
         internal static IAuthWithRequest[] AuthWithRequestProviders;
+        internal static IAuthWithRequestSync[] AuthWithRequestSyncProviders;
         internal static IAuthResponseFilter[] AuthResponseFilters;
 
         static AuthenticateService()
@@ -189,8 +189,8 @@ namespace ServiceStack.Auth
             DefaultOAuthRealm = authProviders[0].AuthRealm;
 
             AuthProviders = authProviders;
-            AuthWithRequestAsyncProviders = authProviders.OfType<IAuthWithRequestAsync>().ToArray();
             AuthWithRequestProviders = authProviders.OfType<IAuthWithRequest>().ToArray();
+            AuthWithRequestSyncProviders = authProviders.OfType<IAuthWithRequestSync>().ToArray();
             AuthResponseFilters = authProviders.OfType<IAuthResponseFilter>().ToArray();
 
             if (sessionFactory != null)
@@ -263,7 +263,7 @@ namespace ServiceStack.Auth
             if (LogoutAction.EqualsIgnoreCase(request.provider))
                 return await authProvider.LogoutAsync(this, request).ConfigAwait();
 
-            if (authProvider is IAuthWithRequestAsync && !base.Request.IsInProcessRequest())
+            if (authProvider is IAuthWithRequest && !base.Request.IsInProcessRequest())
             {
                 //IAuthWithRequest normally doesn't call Authenticate directly, but they can to return Auth Info
                 //But as AuthenticateService doesn't have [Authenticate] we need to call it manually

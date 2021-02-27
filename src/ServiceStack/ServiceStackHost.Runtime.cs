@@ -81,13 +81,14 @@ namespace ServiceStack
         public virtual async Task ApplyPreAuthenticateFiltersAsync(IRequest httpReq, IResponse httpRes)
         {
             httpReq.Items[Keywords.HasPreAuthenticated] = bool.TrueString;
-            foreach (var authProvider in AuthenticateService.AuthWithRequestAsyncProviders.Safe())
+            
+            foreach (var authProvider in AuthenticateService.AuthWithRequestProviders.Safe())
             {
                 await authProvider.PreAuthenticateAsync(httpReq, httpRes).ConfigAwait();
                 if (httpRes.IsClosed)
                     return;
             }
-            foreach (var authProvider in AuthenticateService.AuthWithRequestProviders.Safe())
+            foreach (var authProvider in AuthenticateService.AuthWithRequestSyncProviders.Safe())
             {
                 authProvider.PreAuthenticate(httpReq, httpRes);
                 if (httpRes.IsClosed)

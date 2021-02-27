@@ -13,7 +13,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
-    public class NetCoreIdentityAuthProvider : AuthProvider, IAuthWithRequestAsync, IAuthPlugin
+    public class NetCoreIdentityAuthProvider : AuthProvider, IAuthWithRequest, IAuthPlugin
     {
         public const string Name = AuthenticateService.IdentityProvider;
         public const string Realm = "/auth/" + AuthenticateService.IdentityProvider;

@@ -51,7 +51,7 @@ namespace ServiceStack.Auth
 
         protected AuthProvider()
         {
-            PersistSession = !(GetType().HasInterface(typeof(IAuthWithRequestAsync)) || GetType().HasInterface(typeof(IAuthWithRequest)));
+            PersistSession = !(GetType().HasInterface(typeof(IAuthWithRequest)) || GetType().HasInterface(typeof(IAuthWithRequestSync)));
         }
 
         protected AuthProvider(IAppSettings appSettings, string authRealm, string oAuthProvider)

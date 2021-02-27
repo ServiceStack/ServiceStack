@@ -4,7 +4,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
-    public class BasicAuthProviderSync : CredentialsAuthProviderSync, IAuthWithRequest
+    public class BasicAuthProviderSync : CredentialsAuthProviderSync, IAuthWithRequestSync
     {
         public new static string Name = AuthenticateService.BasicProvider;
         public new static string Realm = "/auth/" + AuthenticateService.BasicProvider;

@@ -106,13 +106,13 @@ namespace ServiceStack
             {
                 var mockResponse = new BasicRequest().Response;
                 req.Items[Keywords.HasPreAuthenticated] = true;
-                foreach (var authWithRequest in authProviders.OfType<IAuthWithRequestAsync>())
+                foreach (var authWithRequest in authProviders.OfType<IAuthWithRequest>())
                 {
                     authWithRequest.PreAuthenticateAsync(req, mockResponse).Wait();
                     if (mockResponse.IsClosed)
                         return false;
                 }
-                foreach (var authWithRequest in authProviders.OfType<IAuthWithRequest>())
+                foreach (var authWithRequest in authProviders.OfType<IAuthWithRequestSync>())
                 {
                     authWithRequest.PreAuthenticate(req, mockResponse);
                     if (mockResponse.IsClosed)
@@ -143,13 +143,13 @@ namespace ServiceStack
             {
                 var mockResponse = new BasicRequest().Response;
                 req.Items[Keywords.HasPreAuthenticated] = true;
-                foreach (var authWithRequest in authProviders.OfType<IAuthWithRequestAsync>())
+                foreach (var authWithRequest in authProviders.OfType<IAuthWithRequest>())
                 {
                     await authWithRequest.PreAuthenticateAsync(req, mockResponse).ConfigAwait();
                     if (mockResponse.IsClosed)
                         return false;
                 }
-                foreach (var authWithRequest in authProviders.OfType<IAuthWithRequest>())
+                foreach (var authWithRequest in authProviders.OfType<IAuthWithRequestSync>())
                 {
                     authWithRequest.PreAuthenticate(req, mockResponse);
                     if (mockResponse.IsClosed)
@@ -202,13 +202,13 @@ namespace ServiceStack
             if (!req.Items.ContainsKey(Keywords.HasPreAuthenticated))
             {
                 req.Items[Keywords.HasPreAuthenticated] = true;
-                foreach (var authWithRequest in authProviders.OfType<IAuthWithRequestAsync>())
+                foreach (var authWithRequest in authProviders.OfType<IAuthWithRequest>())
                 {
                     await authWithRequest.PreAuthenticateAsync(req, req.Response).ConfigAwait();
                     if (req.Response.IsClosed)
                         return;
                 }
-                foreach (var authWithRequest in authProviders.OfType<IAuthWithRequest>())
+                foreach (var authWithRequest in authProviders.OfType<IAuthWithRequestSync>())
                 {
                     authWithRequest.PreAuthenticate(req, req.Response);
                     if (req.Response.IsClosed)

@@ -68,7 +68,7 @@ namespace ServiceStack.Auth
     /// <summary>
     /// Enable access to protected Services using API Keys
     /// </summary>
-    public class ApiKeyAuthProvider : AuthProvider, IAuthWithRequestAsync, IAuthPlugin
+    public class ApiKeyAuthProvider : AuthProvider, IAuthWithRequest, IAuthPlugin
     {
         public override string Type => "Bearer";
         public const string Name = AuthenticateService.ApiKeyProvider;

@@ -45,12 +45,12 @@ namespace ServiceStack.Auth
     }
 
     [Obsolete("Use IAuthWithRequestAsync")]
-    public interface IAuthWithRequest
+    public interface IAuthWithRequestSync
     {
         void PreAuthenticate(IRequest req, IResponse res);
     }
 
-    public interface IAuthWithRequestAsync
+    public interface IAuthWithRequest
     {
         Task PreAuthenticateAsync(IRequest req, IResponse res);
     }
