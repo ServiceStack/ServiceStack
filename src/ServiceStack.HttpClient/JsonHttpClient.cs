@@ -253,7 +253,10 @@ namespace ServiceStack
 
                 if (httpRes.StatusCode == HttpStatusCode.Unauthorized)
                 {
-                    if (RefreshToken != null)
+                    var hasRefreshTokenCookie = this.GetRefreshTokenCookie() != null;
+                    var hasRefreshToken = RefreshToken != null || hasRefreshTokenCookie;
+                    
+                    if (hasRefreshToken)
                     {
                         var refreshDto = new GetAccessToken { RefreshToken = RefreshToken, UseTokenCookie = UseTokenCookie };
                         var uri = this.RefreshTokenUri ?? this.BaseUri.CombineWith(refreshDto.ToPostUrl());

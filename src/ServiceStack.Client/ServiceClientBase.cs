@@ -659,14 +659,17 @@ namespace ServiceStack
             var webEx = ex as WebException;
             try
             {
+                var hasRefreshTokenCookie = this.GetRefreshTokenCookie() != null;
+                var hasRefreshToken = refreshToken != null || hasRefreshTokenCookie;
+                
                 if (WebRequestUtils.ShouldAuthenticate(webEx,
                     (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
                     || credentials != null
                     || bearerToken != null
-                    || refreshToken != null
+                    || hasRefreshToken
                     || OnAuthenticationRequired != null))
                 {
-                    if (RefreshToken != null)
+                    if (hasRefreshToken)
                     {
                         var refreshRequest = new GetAccessToken {
                             RefreshToken = RefreshToken,
@@ -683,7 +686,7 @@ namespace ServiceStack
                         try
                         {
                             tokenResponse = uri.PostJsonToUrl(refreshRequest, requestFilter: req => {
-                                if (UseTokenCookie) {
+                                if (UseTokenCookie || hasRefreshTokenCookie) {
                                     req.CookieContainer = CookieContainer;
                                 }
                             }).FromJson<GetAccessTokenResponse>();
