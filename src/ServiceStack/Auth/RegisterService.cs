@@ -138,7 +138,7 @@ namespace ServiceStack.Auth
                 return validateResponse;
 
             RegisterResponse response = null;
-            var session = await this.GetSessionAsync();
+            var session = await this.GetSessionAsync().ConfigAwait();
             var newUserAuth = ToUserAuth(AuthRepositoryAsync as ICustomUserAuth, request);
 
             var existingUser = session.IsAuthenticated 

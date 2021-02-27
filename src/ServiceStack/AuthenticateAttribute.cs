@@ -77,7 +77,7 @@ namespace ServiceStack
             if (res.IsClosed)
                 return;
 
-            var session = await req.GetSessionAsync();
+            var session = await req.GetSessionAsync().ConfigAwait();
             if (session == null || !authProviders.Any(x => session.IsAuthorized(x.Provider)))
             {
                 if (this.DoHtmlRedirectIfConfigured(req, res, true))
@@ -130,7 +130,7 @@ namespace ServiceStack
             if (HostContext.HasValidAuthSecret(req))
                 return true;
 
-            session ??= await (req ?? throw new ArgumentNullException(nameof(req))).GetSessionAsync();
+            session ??= await (req ?? throw new ArgumentNullException(nameof(req))).GetSessionAsync().ConfigAwait();
             authProviders ??= AuthenticateService.GetAuthProviders();
             var authValidate = HostContext.GetPlugin<AuthFeature>()?.OnAuthenticateValidate;
             var ret = authValidate?.Invoke(req);
@@ -145,7 +145,7 @@ namespace ServiceStack
                 req.Items[Keywords.HasPreAuthenticated] = true;
                 foreach (var authWithRequest in authProviders.OfType<IAuthWithRequestAsync>())
                 {
-                    await authWithRequest.PreAuthenticateAsync(req, mockResponse);
+                    await authWithRequest.PreAuthenticateAsync(req, mockResponse).ConfigAwait();
                     if (mockResponse.IsClosed)
                         return false;
                 }
@@ -173,7 +173,7 @@ namespace ServiceStack
 
         public static async Task AssertAuthenticatedAsync(IRequest req, object requestDto=null, IAuthSession session=null, IAuthProvider[] authProviders=null)
         {
-            if (await AuthenticateAsync(req, requestDto:requestDto, session:session))
+            if (await AuthenticateAsync(req, requestDto:requestDto, session:session).ConfigAwait())
                 return;
 
             ThrowNotAuthenticated(req);
@@ -188,13 +188,14 @@ namespace ServiceStack
         public static void ThrowInvalidPermission(IRequest req=null) => 
             throw new HttpError(403, nameof(HttpStatusCode.Forbidden), ErrorMessages.InvalidPermission.Localize(req));
 
-        internal static Task PreAuthenticateAsync(IRequest req, IEnumerable<IAuthProvider> authProviders)
+        internal static async Task PreAuthenticateAsync(IRequest req, IEnumerable<IAuthProvider> authProviders)
         {
             var authValidate = HostContext.GetPlugin<AuthFeature>()?.OnAuthenticateValidate;
             var ret = authValidate?.Invoke(req);
             if (ret != null)
             {
-                return req.Response.WriteToResponse(req, ret);
+                await req.Response.WriteToResponse(req, ret).ConfigAwait();
+                return;
             }
 
             //Call before GetSession so Exceptions can bubble
@@ -203,18 +204,17 @@ namespace ServiceStack
                 req.Items[Keywords.HasPreAuthenticated] = true;
                 foreach (var authWithRequest in authProviders.OfType<IAuthWithRequestAsync>())
                 {
-                    authWithRequest.PreAuthenticateAsync(req, req.Response);
+                    await authWithRequest.PreAuthenticateAsync(req, req.Response).ConfigAwait();
                     if (req.Response.IsClosed)
-                        return TypeConstants.EmptyTask;
+                        return;
                 }
                 foreach (var authWithRequest in authProviders.OfType<IAuthWithRequest>())
                 {
                     authWithRequest.PreAuthenticate(req, req.Response);
                     if (req.Response.IsClosed)
-                        return TypeConstants.EmptyTask;
+                        return;
                 }
             }
-            return TypeConstants.EmptyTask;
         }
 
         protected bool DoHtmlRedirectIfConfigured(IRequest req, IResponse res, bool includeRedirectParam = false)

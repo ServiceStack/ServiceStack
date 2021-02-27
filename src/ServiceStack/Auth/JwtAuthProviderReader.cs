@@ -889,6 +889,9 @@ namespace ServiceStack.Auth
 
         public object AuthenticateResponseDecorator(AuthFilterContext authCtx)
         {
+            if (authCtx.AuthService.Request.IsInProcessRequest())
+                return authCtx.AuthResponse;
+
             if (authCtx.AuthResponse.BearerToken == null || authCtx.AuthRequest.UseTokenCookie.GetValueOrDefault(UseTokenCookie) != true)
                 return authCtx.AuthResponse;
 

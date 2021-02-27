@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
@@ -218,19 +219,19 @@ namespace ServiceStack.Auth
                 if (string.IsNullOrEmpty(apiKey.UserAuthId))
                     throw HttpError.Conflict(ErrorMessages.ApiKeyIsInvalid.Localize(authService.Request));
 
-                var userAuth = await authRepo.GetUserAuthAsync(apiKey.UserAuthId, token);
+                var userAuth = await authRepo.GetUserAuthAsync(apiKey.UserAuthId, token).ConfigAwait();
                 if (userAuth == null)
                     throw HttpError.Unauthorized(ErrorMessages.UserForApiKeyDoesNotExist.Localize(authService.Request));
 
-                if (await IsAccountLockedAsync(authRepo, userAuth, token: token))
+                if (await IsAccountLockedAsync(authRepo, userAuth, token: token).ConfigAwait())
                     throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(authService.Request));
 
-                await session.PopulateSessionAsync(userAuth, authRepo, token);
+                await session.PopulateSessionAsync(userAuth, authRepo, token).ConfigAwait();
 
                 if (session.UserAuthName == null)
                     session.UserAuthName = userAuth.UserName ?? userAuth.Email;
 
-                var response = await OnAuthenticatedAsync(authService, session, null, null, token);
+                var response = await OnAuthenticatedAsync(authService, session, null, null, token).ConfigAwait();
                 if (response != null)
                     return response;
 
@@ -256,7 +257,7 @@ namespace ServiceStack.Auth
             if (userPass != null && string.IsNullOrEmpty(userPass.Value.Value))
             {
                 var apiKey = GetApiKey(req, userPass.Value.Key);
-                await PreAuthenticateWithApiKeyAsync(req, res, apiKey);
+                await PreAuthenticateWithApiKeyAsync(req, res, apiKey).ConfigAwait();
             }
             var bearerToken = req.GetBearerToken();
             if (bearerToken != null)
@@ -264,7 +265,7 @@ namespace ServiceStack.Auth
                 var apiKey = GetApiKey(req, bearerToken);
                 if (apiKey != null)
                 {
-                    await PreAuthenticateWithApiKeyAsync(req, res, apiKey);
+                    await PreAuthenticateWithApiKeyAsync(req, res, apiKey).ConfigAwait();
                 }
             }
 
@@ -273,7 +274,7 @@ namespace ServiceStack.Auth
                 var apiKey = req.QueryString[Keywords.ApiKeyParam] ?? req.FormData[Keywords.ApiKeyParam];
                 if (apiKey != null)
                 {
-                    await PreAuthenticateWithApiKeyAsync(req, res, GetApiKey(req, apiKey));
+                    await PreAuthenticateWithApiKeyAsync(req, res, GetApiKey(req, apiKey)).ConfigAwait();
                 }
             }
         }
@@ -331,11 +332,11 @@ namespace ServiceStack.Auth
                 provider = Name,
                 UserName = "ApiKey",
                 Password = apiKey.Id,
-            });
+            }).ConfigAwait();
 
             if (SessionCacheDuration != null)
             {
-                var session = await req.GetSessionAsync();
+                var session = await req.GetSessionAsync().ConfigAwait();
                 req.GetCacheClient().Set(apiSessionKey, session, SessionCacheDuration);
             }
         }

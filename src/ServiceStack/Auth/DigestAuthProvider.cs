@@ -206,7 +206,7 @@ namespace ServiceStack.Auth
                     nc = digestAuth["nc"],
                     cnonce = digestAuth["cnonce"],
                     UserName = digestAuth["username"]
-                });
+                }).ConfigAwait();
             }
         }
     }

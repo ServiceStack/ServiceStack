@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -37,7 +38,7 @@ namespace ServiceStack
         {
             if (dto == null) return;
 
-            var session = await request.GetSessionAsync();
+            var session = await request.GetSessionAsync().ConfigAwait();
             if (!session.IsAuthenticated) return;
 
             if (dto is Authenticate authenticateDto && !AuthenticateService.LogoutAction.EqualsIgnoreCase(authenticateDto.provider))
@@ -59,7 +60,7 @@ namespace ServiceStack
             if (!request.Items.ContainsKey(SessionCopyRequestItemKey)) return;
             if (!(request.Items[SessionCopyRequestItemKey] is IWebSudoAuthSession copy)) return;
 
-            var session = await request.GetSessionAsync();
+            var session = await request.GetSessionAsync().ConfigAwait();
             if (!session.IsAuthenticated)
             {
                 // if the credential check failed, restore the session to it's prior, valid state.
@@ -67,7 +68,7 @@ namespace ServiceStack
                 session.PopulateWith(copy);
             }
 
-            await request.SaveSessionAsync(session);
+            await request.SaveSessionAsync(session).ConfigAwait();
         }
 
         public override void OnCreated(IRequest httpReq, IAuthSession session)

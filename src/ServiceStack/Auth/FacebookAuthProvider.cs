@@ -94,7 +94,7 @@ namespace ServiceStack.Auth
             try
             {
                 var accessTokenUrl = $"{AccessTokenUrl}?client_id={AppId}&redirect_uri={this.CallbackUrl.UrlEncode()}&client_secret={AppSecret}&code={code}";
-                var contents = await AccessTokenUrlFilter(ctx, accessTokenUrl).GetJsonFromUrlAsync().ConfigAwait();
+                var contents = await AccessTokenUrlFilter(ctx, accessTokenUrl).GetJsonFromUrlAsync(token: token).ConfigAwait();
                 var authInfo = JsonObject.Parse(contents);
 
                 var accessToken = authInfo["access_token"];

@@ -33,7 +33,8 @@ namespace ServiceStack.Auth
             var userName = basicAuth.Value.Key;
             var password = basicAuth.Value.Value;
 
-            return await AuthenticateAsync(authService, session, userName, password, authService.Request.GetReturnUrl(), token).ConfigAwait();
+            var ret = await AuthenticateAsync(authService, session, userName, password, authService.Request.GetReturnUrl(), token).ConfigAwait();
+            return ret;
         }
 
         public virtual async Task PreAuthenticateAsync(IRequest req, IResponse res)
@@ -51,7 +52,7 @@ namespace ServiceStack.Auth
                     provider = Name,
                     UserName = userPass.Value.Key,
                     Password = userPass.Value.Value
-                });
+                }).ConfigAwait();
             }
         }
     }
