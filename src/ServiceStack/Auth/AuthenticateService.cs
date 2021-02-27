@@ -261,7 +261,7 @@ namespace ServiceStack.Auth
                 throw HttpError.NotFound(ErrorMessages.UnknownAuthProviderFmt.Fmt(provider.SafeInput()));
 
             if (LogoutAction.EqualsIgnoreCase(request.provider))
-                return await authProvider.LogoutAsync(this, request);
+                return await authProvider.LogoutAsync(this, request).ConfigAwait();
 
             if (authProvider is IAuthWithRequestAsync && !base.Request.IsInProcessRequest())
             {

@@ -83,7 +83,7 @@ namespace ServiceStack
             httpReq.Items[Keywords.HasPreAuthenticated] = bool.TrueString;
             foreach (var authProvider in AuthenticateService.AuthWithRequestAsyncProviders.Safe())
             {
-                await authProvider.PreAuthenticateAsync(httpReq, httpRes);
+                await authProvider.PreAuthenticateAsync(httpReq, httpRes).ConfigAwait();
                 if (httpRes.IsClosed)
                     return;
             }

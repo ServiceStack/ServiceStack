@@ -62,10 +62,10 @@ namespace ServiceStack
 
         public async Task<bool> HasAllPermissionsAsync(IRequest req, IAuthSession session, IAuthRepositoryAsync authRepo)
         {
-            if (await SessionValidForAllPermissionsAsync(req, session, RequiredPermissions))
+            if (await SessionValidForAllPermissionsAsync(req, session, RequiredPermissions).ConfigAwait())
                 return true;
 
-            return await SessionHasAllPermissionsAsync(req, session, authRepo, RequiredPermissions);
+            return await SessionHasAllPermissionsAsync(req, session, authRepo, RequiredPermissions).ConfigAwait();
         }
 
         [Obsolete("Use HasAllPermissionsAsync")]
@@ -83,7 +83,7 @@ namespace ServiceStack
         
         public static async Task<bool> HasAllPermissionsAsync(IRequest req, IAuthSession session, ICollection<string> requiredPermissions, CancellationToken token=default)
         {
-            if (await SessionValidForAllPermissionsAsync(req, session, requiredPermissions))
+            if (await SessionValidForAllPermissionsAsync(req, session, requiredPermissions).ConfigAwait())
                 return true;
             
             var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
@@ -118,8 +118,8 @@ namespace ServiceStack
         /// <param name="requiredPermissions"></param>
         public static async Task AssertRequiredPermissionsAsync(IRequest req, string[] requiredPermissions, CancellationToken token=default)
         {
-            var session = await req.GetSessionAsync(token: token);
-            if (await HasAllPermissionsAsync(req, session, requiredPermissions, token))
+            var session = await req.GetSessionAsync(token: token).ConfigAwait();
+            if (await HasAllPermissionsAsync(req, session, requiredPermissions, token).ConfigAwait())
                 return;
 
             var isAuthenticated = session != null && session.IsAuthenticated;
@@ -197,7 +197,7 @@ namespace ServiceStack
             if (HostContext.HasValidAuthSecret(req))
                 return true;
 
-            await AssertAuthenticatedAsync(req, requestDto:req.Dto, session:session);
+            await AssertAuthenticatedAsync(req, requestDto:req.Dto, session:session).ConfigAwait();
 
             return false;
         }

@@ -180,7 +180,7 @@ namespace ServiceStack.Validation
         public async Task<object> Any(GetValidationRules request)
         {
             var feature = HostContext.AssertPlugin<ValidationFeature>();
-            await RequestUtils.AssertAccessRoleAsync(base.Request, accessRole: feature.AccessRole, authSecret: request.AuthSecret);
+            await RequestUtils.AssertAccessRoleAsync(base.Request, accessRole: feature.AccessRole, authSecret: request.AuthSecret).ConfigAwait();
 
             var type = HostContext.Metadata.FindDtoType(request.Type);
             if (type == null)
@@ -202,10 +202,10 @@ namespace ServiceStack.Validation
         {
             var appHost = HostContext.AssertAppHost();
             var feature = appHost.AssertPlugin<ValidationFeature>();
-            await RequestUtils.AssertAccessRoleAsync(base.Request, accessRole: feature.AccessRole, authSecret: request.AuthSecret);
+            await RequestUtils.AssertAccessRoleAsync(base.Request, accessRole: feature.AccessRole, authSecret: request.AuthSecret).ConfigAwait();
 
             var utcNow = DateTime.UtcNow;
-            var userName = (await base.GetSessionAsync()).GetUserAuthName();
+            var userName = (await base.GetSessionAsync().ConfigAwait()).GetUserAuthName();
             var rules = request.SaveRules;
 
             if (!rules.IsEmpty())

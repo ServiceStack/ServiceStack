@@ -115,7 +115,7 @@ namespace ServiceStack.Auth
             if (claimsPrincipal.Identity?.IsAuthenticated != true)
                 return;
 
-            var session = await req.GetSessionAsync();
+            var session = await req.GetSessionAsync().ConfigAwait();
             if (session.IsAuthenticated) // if existing Session exists use it instead
                 return;
 

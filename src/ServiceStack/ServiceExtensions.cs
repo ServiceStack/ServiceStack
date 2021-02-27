@@ -106,9 +106,9 @@ namespace ServiceStack
         public static async Task CacheSetAsync<T>(this ICacheClientAsync cache, string key, T value, TimeSpan? expiresIn, CancellationToken token=default)
         {
             if (expiresIn.HasValue)
-                await cache.SetAsync(key, value, expiresIn.Value, token);
+                await cache.SetAsync(key, value, expiresIn.Value, token).ConfigAwait();
             else
-                await cache.SetAsync(key, value, token);
+                await cache.SetAsync(key, value, token).ConfigAwait();
         }
 
         [Obsolete("Use SaveSessionAsync")]
@@ -238,7 +238,7 @@ namespace ServiceStack
             {
                 try
                 {
-                    await appHost.ApplyPreAuthenticateFiltersAsync(httpReq, httpReq.Response);
+                    await appHost.ApplyPreAuthenticateFiltersAsync(httpReq, httpReq.Response).ConfigAwait();
                     httpReq.Items.TryGetValue(Keywords.Session, out oSession);
                 }
                 catch (Exception ex)

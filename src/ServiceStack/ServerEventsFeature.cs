@@ -207,7 +207,7 @@ namespace ServiceStack
 
             var feature = HostContext.AssertPlugin<ServerEventsFeature>();
 
-            var session = await req.GetSessionAsync();
+            var session = await req.GetSessionAsync().ConfigAwait();
             if (feature.LimitToAuthenticatedUsers && !session.IsAuthenticated)
             {
                 await session.ReturnFailedAuthentication(req).ConfigAwait();
@@ -1218,7 +1218,7 @@ namespace ServiceStack
                     if (OnUnsubscribeAsync != null)
                         await OnUnsubscribeAsync(sub).ConfigAwait();
 
-                    await sub.DisposeAsync();
+                    await sub.DisposeAsync().ConfigAwait();
 
                     if (NotifyChannelOfSubscriptions && sub.Channels != null && NotifyLeaveAsync != null)
                         await NotifyLeaveAsync(sub).ConfigAwait();
@@ -1528,7 +1528,7 @@ namespace ServiceStack
         {
             // ReSharper disable once MethodHasAsyncOverloadWithCancellation
             var count = RemoveExpiredSubscriptions();
-            await DoAsyncTasks(token);
+            await DoAsyncTasks(token).ConfigAwait();
             return count;
         }
 
