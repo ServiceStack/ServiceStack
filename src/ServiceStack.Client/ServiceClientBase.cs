@@ -1960,7 +1960,7 @@ namespace ServiceStack
         public static Dictionary<string, string> ToDictionary(this CookieContainer cookies, string baseUri)
         {
             var to = new Dictionary<string, string>();
-            if (cookies == null)
+            if (cookies == null || baseUri == null)
                 return to;
 
             foreach (Cookie cookie in cookies.GetCookies(new Uri(baseUri)))
