@@ -90,6 +90,8 @@ namespace ServiceStack.Auth
                         Expires = DateTime.UtcNow.Add(ExpireRefreshTokensIn),
                     });
             }
+
+            NotifyJwtCookiesUsed(authContext.Result);
         }
 
         public Func<byte[], byte[]> GetHashAlgorithm() => GetHashAlgorithm(null);

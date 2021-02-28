@@ -18,6 +18,7 @@
         public static string SessionOptionsKey = "ss-opt";
         public static string TokenCookie = "ss-tok";
         public static string RefreshTokenCookie = "ss-reftok";
+        public static string XCookies = "X-Cookies";
         public static string ApiKeyParam = "apikey";
         public static string Continue = "continue";
         public static string Redirect = "redirect";

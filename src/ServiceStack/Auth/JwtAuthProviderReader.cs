@@ -997,8 +997,10 @@ namespace ServiceStack.Auth
                 });
             }
 
+            NotifyJwtCookiesUsed(httpResult);
+
             var isHtml = authCtx.AuthService.Request.ResponseContentType.MatchesContentType(MimeTypes.Html);
-            if (isHtml)
+            if (isHtml && authCtx.ReferrerUrl != null)
             {
                 httpResult.StatusCode = HttpStatusCode.Redirect;
                 httpResult.Location = authCtx.ReferrerUrl;
@@ -1006,5 +1008,19 @@ namespace ServiceStack.Auth
 
             return httpResult;
         }
+
+        //Notify HttpClients which can't access HttpOnly cookies (i.e. web) that JWT Token Cookies are being used 
+        internal static void NotifyJwtCookiesUsed(IHttpResult httpResult)
+        {
+            var cookies = new List<string>();
+            foreach (var cookie in httpResult.Cookies)
+            {
+                cookies.Add(cookie.Name);
+            }
+
+            if (cookies.Count > 0)
+                httpResult.Headers.Add(Keywords.XCookies, string.Join(",", cookies));
+        }
+        
     }
 }
