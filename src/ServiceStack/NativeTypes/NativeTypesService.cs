@@ -271,6 +271,8 @@ namespace ServiceStack.NativeTypes
             typeof(ResponseError),
             typeof(EmptyResponse),
             typeof(IdResponse),
+            typeof(StringResponse),
+            typeof(StringsResponse),
             typeof(QueryBase),
             typeof(QueryData<>),
             typeof(QueryDb<>),
