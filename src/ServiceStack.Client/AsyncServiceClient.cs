@@ -2,6 +2,7 @@
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
@@ -132,6 +133,11 @@ namespace ServiceStack
         public string BearerToken { get; set; }
 
         public static bool DisableTimer { get; set; }
+
+        public Dictionary<string, string> GetCookieValues()
+        {
+            return CookieContainer.ToDictionary(BaseUri);
+        }
 
         public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request, CancellationToken token = default(CancellationToken))
         {
@@ -325,16 +331,19 @@ namespace ServiceStack
             {
                 var webEx = ex as WebException;
                 var firstCall = !recall;
+                var hasRefreshTokenCookie = this.CookieContainer.GetRefreshTokenCookie(BaseUri) != null;
+                var hasRefreshToken = RefreshToken != null || hasRefreshTokenCookie;
+                
                 if (firstCall && WebRequestUtils.ShouldAuthenticate(webEx,
                         (!string.IsNullOrEmpty(UserName) && !string.IsNullOrEmpty(Password))
                         || Credentials != null
                         || BearerToken != null
-                        || RefreshToken != null
+                        || hasRefreshToken
                         || OnAuthenticationRequired != null))
                 {
                     try
                     {
-                        if (RefreshToken != null)
+                        if (hasRefreshToken)
                         {
                             var refreshRequest = new GetAccessToken {
                                 RefreshToken = RefreshToken,
@@ -346,10 +355,10 @@ namespace ServiceStack
                             try
                             {
                                 tokenResponse = (await uri.PostJsonToUrlAsync(refreshRequest, requestFilter: req => {
-                                    if (UseTokenCookie) {
+                                    if (UseTokenCookie || hasRefreshTokenCookie) {
                                         req.CookieContainer = CookieContainer;
                                     }
-                                }).ConfigAwait()).FromJson<GetAccessTokenResponse>();
+                                }, token: token).ConfigAwait()).FromJson<GetAccessTokenResponse>();
                             }
                             catch (WebException refreshEx)
                             {

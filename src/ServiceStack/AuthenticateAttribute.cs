@@ -141,6 +141,7 @@ namespace ServiceStack
 
             if (!req.Items.ContainsKey(Keywords.HasPreAuthenticated))
             {
+                //Unauthorized or invalid requests will terminate the response and return false
                 var mockResponse = new BasicRequest().Response;
                 req.Items[Keywords.HasPreAuthenticated] = true;
                 foreach (var authWithRequest in authProviders.OfType<IAuthWithRequest>())
@@ -156,10 +157,11 @@ namespace ServiceStack
                         return false;
                 }
             }
-            
-            return session != null && (authProviders.Length > 0
+
+            var sessionIsAuthenticated = session != null && (authProviders.Length > 0
                 ? authProviders.Any(x => session.IsAuthorized(x.Provider))
                 : session.IsAuthenticated);
+            return sessionIsAuthenticated;
         }
 
         [Obsolete("Use AuthenticateAsync")]

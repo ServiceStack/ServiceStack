@@ -916,6 +916,42 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             var latestAccessToken = client.GetTokenCookie();
             Assert.That(latestAccessToken, Is.Not.EqualTo(initialAccessToken));
         }
+
+        [Test]
+        public async Task Does_auto_fetch_new_AccessToken_with_RefreshTokenCookie_ServiceClient_Async() => 
+            await AssertDoesGetAccessTokenUsingRefreshTokenCookieAsync(new JsonServiceClient(Config.ListeningOn));
+
+        [Test]
+        public async Task Does_auto_fetch_new_AccessToken_with_RefreshTokenCookie_HttpClient_Async() => 
+            await AssertDoesGetAccessTokenUsingRefreshTokenCookieAsync(new JsonHttpClient(Config.ListeningOn));
+
+        private static async Task AssertDoesGetAccessTokenUsingRefreshTokenCookieAsync(IJsonServiceClient client)
+        {
+            var authResponse = await client.PostAsync(new Authenticate {
+                provider = "credentials",
+                UserName = Username,
+                Password = Password
+            });
+
+            var initialAccessToken = client.GetTokenCookie();
+            var initialRefreshToken = client.GetRefreshTokenCookie();
+            Assert.That(initialAccessToken, Is.Not.Null);
+            Assert.That(initialRefreshToken, Is.Not.Null);
+
+            var request = new Secured {Name = "test"};
+            var response = await client.SendAsync(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            var jwtAuthProvider = AuthenticateService.GetRequiredJwtAuthProvider();
+            jwtAuthProvider.InvalidateJwtIds.Add(jwtAuthProvider.LastJwtId());
+            // JwtAuthProvider.PrintDump(initialAccessToken);
+            // JwtAuthProvider.PrintDump(initialRefreshToken);
+
+            response = await client.SendAsync(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+            var latestAccessToken = client.GetTokenCookie();
+            Assert.That(latestAccessToken, Is.Not.EqualTo(initialAccessToken));
+        }
     }
 
 }

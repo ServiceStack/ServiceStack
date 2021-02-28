@@ -24,6 +24,19 @@ namespace ServiceStack
     }
     
     [DataContract]
+    public class StringResponse : IHasResponseStatus, IMeta
+    {
+        [DataMember(Order = 1)]
+        public string Results { get; set; }
+
+        [DataMember(Order = 2)]
+        public Dictionary<string, string> Meta { get; set; }
+
+        [DataMember(Order = 3)]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+    
+    [DataContract]
     public class StringsResponse : IHasResponseStatus, IMeta
     {
         [DataMember(Order = 1)]

@@ -2151,6 +2151,15 @@ namespace ServiceStack
                 expiresAt: DateTime.UtcNow.Add(TimeSpan.FromDays(365 * 20)));
         }
 
+        public static string GetCookieValue(this AsyncServiceClient client, string name) =>
+            client.GetCookieValues().TryGetValue(name, out var token) ? token : null;
+
+        public static string GetTokenCookie(this AsyncServiceClient client) =>
+            client.GetCookieValues().TryGetValue("ss-tok", out var token) ? token : null;
+
+        public static string GetRefreshTokenCookie(this AsyncServiceClient client) =>
+            client.GetCookieValues().TryGetValue("ss-reftok", out var token) ? token : null;
+
         public static void SetUserAgent(this HttpWebRequest req, string userAgent)
         {
             PclExport.Instance.SetUserAgent(req, userAgent);
