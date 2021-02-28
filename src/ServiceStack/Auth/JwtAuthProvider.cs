@@ -79,7 +79,7 @@ namespace ServiceStack.Auth
                         Expires = DateTime.UtcNow.Add(ExpireTokensIn),
                     });
             }
-            if (UseRefreshTokenCookie && authContext.Result.Cookies.All(x => x.Name != Keywords.RefreshTokenCookie)
+            if (UseRefreshTokenCookie.GetValueOrDefault(UseTokenCookie) && authContext.Result.Cookies.All(x => x.Name != Keywords.RefreshTokenCookie)
                 && EnableRefreshToken())
             {
                 var refreshToken = CreateJwtRefreshToken(authContext.Request, authContext.Session.Id, ExpireRefreshTokensIn);

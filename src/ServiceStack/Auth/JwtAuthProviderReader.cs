@@ -283,9 +283,9 @@ namespace ServiceStack.Auth
         public bool UseTokenCookie { get; set; }
 
         /// <summary>
-        /// Whether to create a refresh token in ss-reftok Cookie 
+        /// Whether to create a refresh token in ss-reftok Cookie, defaults to: UseTokenCookie
         /// </summary>
-        public bool UseRefreshTokenCookie { get; set; }
+        public bool? UseRefreshTokenCookie { get; set; }
 
         /// <summary>
         /// Override conversion to Unix Time used in issuing JWTs and validation
@@ -335,7 +335,8 @@ namespace ServiceStack.Auth
                 RequiresAudience = appSettings.Get("jwt.RequiresAudience", RequiresAudience);
                 IncludeJwtInConvertSessionToTokenResponse = appSettings.Get("jwt.IncludeJwtInConvertSessionToTokenResponse", IncludeJwtInConvertSessionToTokenResponse);
                 UseTokenCookie = appSettings.Get("jwt.UseTokenCookie", UseTokenCookie);
-                UseRefreshTokenCookie = appSettings.Get("jwt.UseRefreshTokenCookie", UseRefreshTokenCookie);
+                if (appSettings.Exists("jwt.UseRefreshTokenCookie"))
+                    UseRefreshTokenCookie = appSettings.Get("jwt.UseRefreshTokenCookie", UseTokenCookie);
 
                 Issuer = appSettings.GetString("jwt.Issuer");
                 KeyId = appSettings.GetString("jwt.KeyId");
@@ -907,7 +908,7 @@ namespace ServiceStack.Auth
                     }
                 }
             };
-            if (UseRefreshTokenCookie && authCtx.AuthResponse.RefreshToken != null)
+            if (UseRefreshTokenCookie.GetValueOrDefault(UseTokenCookie) && authCtx.AuthResponse.RefreshToken != null)
             {
                 httpResult.Cookies.Add(new Cookie(Keywords.RefreshTokenCookie, authCtx.AuthResponse.RefreshToken, Cookies.RootPath) {
                     HttpOnly = true,
