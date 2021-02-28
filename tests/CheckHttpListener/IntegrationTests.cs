@@ -36,8 +36,8 @@ namespace CheckHttpListener
             public virtual string DisplayName { get; set; }
             public virtual ResponseStatus ResponseStatus { get; set; }
         }
-        // static string TestUrl = "http://test.servicestack.net";
-        static string TestUrl = "https://localhost:5001";
+        static string TestUrl = "http://test.servicestack.net";
+        // static string TestUrl = "https://localhost:5001";
 
         [Test]
         public void Can_authenticate_via_HTTP_BasicAuth()
