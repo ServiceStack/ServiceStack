@@ -811,7 +811,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                             AuthKey = AuthKey,
                             RequireSecureConnection = false,
                             UseTokenCookie = true,
-                            UseRefreshTokenCookie = true,
                             AllowInQueryString = true,
                             AllowInFormData = true,
                         },
@@ -881,6 +880,38 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             } 
             while (lastAccessToken != initialAccessToken);
         }
+
+        [Test]
+        public void Does_auto_fetch_new_AccessToken_with_RefreshTokenCookie()
+        {
+            var client = new JsonServiceClient(Config.ListeningOn);
+            
+            var authResponse = client.Post(new Authenticate {
+                provider = "credentials",
+                UserName = Username,
+                Password = Password
+            });
+
+            var initialAccessToken = client.GetTokenCookie();
+            var initialRefreshToken = client.GetRefreshTokenCookie();
+            Assert.That(initialAccessToken, Is.Not.Null);
+            Assert.That(initialRefreshToken, Is.Not.Null);
+            
+            var request = new Secured { Name = "test" };
+            var response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+
+            var jwtAuthProvider = AuthenticateService.GetRequiredJwtAuthProvider();
+            jwtAuthProvider.InvalidateJwtIds.Add(jwtAuthProvider.LastAutoId(back:1)); //AccessToken
+            // JwtAuthProvider.PrintDump(initialAccessToken);
+            // JwtAuthProvider.PrintDump(initialRefreshToken);
+            
+            response = client.Send(request);
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+            var latestAccessToken = client.GetTokenCookie();
+            Assert.That(latestAccessToken, Is.Not.EqualTo(initialAccessToken));
+        }
+
     }
 
 }

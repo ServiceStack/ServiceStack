@@ -248,9 +248,14 @@ namespace ServiceStack.Auth
         public Func<JsonObject, IRequest, bool> ValidateRefreshToken { get; set; }
 
         /// <summary>
-        /// Whether to invalidate all JWT Tokens issued before a specified date.
+        /// Whether to invalidate all JWT Access Tokens issued before a specified date.
         /// </summary>
         public DateTime? InvalidateTokensIssuedBefore { get; set; }
+
+        /// <summary>
+        /// Whether to invalidate all JWT Refresh Tokens issued before a specified date.
+        /// </summary>
+        public DateTime? InvalidateRefreshTokensIssuedBefore { get; set; }
 
         /// <summary>
         /// Modify the registration of ConvertSessionToToken Service
@@ -298,6 +303,28 @@ namespace ServiceStack.Auth
         /// </summary>
         public Action<Dictionary<string,string>> PreValidateJwtPayloadFilter { get; set; }
 
+        /// <summary>
+        /// Change resolution for resolving unique jti id for Access & Refresh Tokens
+        /// </summary>
+        public Func<IRequest,string> ResolveUniqueJwtId { get; set; }
+
+        private long idCounter;
+
+        /// <summary>
+        /// Get the next AutoId for usage in jti JWT identifiers  
+        /// </summary>
+        public string NextAutoId() => Interlocked.Increment(ref idCounter).ToString(); 
+        
+        /// <summary>
+        /// Get the last jti AutoId generated  
+        /// </summary>
+        public string LastAutoId(long back=0) => (Interlocked.Read(ref idCounter) - back).ToString();
+
+        /// <summary>
+        /// Invalidate JWTs with ids
+        /// </summary>
+        public HashSet<string> InvalidateJwtIds { get; set; } = new();
+        
         public JwtAuthProviderReader()
             : base(null, Realm, Name)
         {
@@ -754,14 +781,58 @@ namespace ServiceStack.Auth
 
             if (HasInvalidNotBefore(jwtPayload))
                 return ErrorMessages.TokenInvalidNotBefore;
+            
+            if (HasInvalidatedId(jwtPayload))
+                return ErrorMessages.TokenInvalidated;
 
-            if (HasBeenInvalidated(jwtPayload))
+            if (InvalidateTokensIssuedBefore != null && 
+                HasBeenInvalidated(jwtPayload, ResolveUnixTime(InvalidateTokensIssuedBefore.Value)))
                 return ErrorMessages.TokenInvalidated;
 
             if (HasInvalidAudience(jwtPayload, out var audience))
                 return ErrorMessages.TokenInvalidAudienceFmt.Fmt(audience);
 
             return null;
+        }
+
+        public void AssertRefreshJwtPayloadIsValid(JsonObject jwtPayload)
+        {
+            var errorMessage = GetInvalidRefreshJwtPayloadError(jwtPayload);
+            if (errorMessage != null)
+                throw new TokenException(errorMessage);
+        }
+        
+        public virtual string GetInvalidRefreshJwtPayloadError(JsonObject jwtPayload)
+        {
+            if (jwtPayload == null)
+                throw new ArgumentNullException(nameof(jwtPayload));
+
+            PreValidateJwtPayloadFilter?.Invoke(jwtPayload);
+
+            if (HasExpired(jwtPayload))
+                return ErrorMessages.TokenExpired;
+
+            if (HasInvalidNotBefore(jwtPayload))
+                return ErrorMessages.TokenInvalidNotBefore;
+            
+            if (HasInvalidatedId(jwtPayload))
+                return ErrorMessages.TokenInvalidated;
+
+            if (InvalidateRefreshTokensIssuedBefore != null && 
+                HasBeenInvalidated(jwtPayload, ResolveUnixTime(InvalidateRefreshTokensIssuedBefore.Value)))
+                return ErrorMessages.TokenInvalidated;
+
+            if (HasInvalidAudience(jwtPayload, out var audience))
+                return ErrorMessages.TokenInvalidAudienceFmt.Fmt(audience);
+
+            return null;
+        }
+
+        public virtual bool HasInvalidatedId(JsonObject jwtPayload)
+        {
+            if (InvalidateJwtIds.Count > 0 && jwtPayload.TryGetValue("jti", out var jti))
+                return InvalidateJwtIds.Contains(jti);
+            return false;
         }
 
         public virtual bool HasExpired(JsonObject jwtPayload)
@@ -784,14 +855,11 @@ namespace ServiceStack.Auth
             return false;
         }
 
-        public virtual bool HasBeenInvalidated(JsonObject jwtPayload)
+        public virtual bool HasBeenInvalidated(JsonObject jwtPayload, long unixTime)
         {
-            if (InvalidateTokensIssuedBefore != null)
-            {
-                var issuedAt = GetUnixTime(jwtPayload, "iat");
-                if (issuedAt == null || issuedAt < ResolveUnixTime(InvalidateTokensIssuedBefore.Value))
-                    return true;
-            }
+            var issuedAt = GetUnixTime(jwtPayload, "iat");
+            if (issuedAt == null || issuedAt < unixTime)
+                return true;
             return false;
         }
 

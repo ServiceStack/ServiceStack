@@ -128,6 +128,10 @@ namespace ServiceStack.Auth
         public string CreateJwtBearerToken(IRequest req, IAuthSession session, IEnumerable<string> roles = null, IEnumerable<string> perms = null)
         {
             var jwtPayload = CreateJwtPayload(session, Issuer, ExpireTokensIn, Audiences, roles, perms);
+            var jti = GetNextJwtId(req);
+            if (jti != null)
+                jwtPayload[nameof(jti)] = jti;
+
             CreatePayloadFilter?.Invoke(jwtPayload, session);
 
             if (EncryptPayload)
@@ -145,6 +149,14 @@ namespace ServiceStack.Auth
             var hashAlgorithm = GetHashAlgorithm(req);
             var bearerToken = CreateJwt(jwtHeader, jwtPayload, hashAlgorithm);
             return bearerToken;
+        }
+
+        public virtual string GetNextJwtId(IRequest req=null)
+        {
+            var jti = ResolveUniqueJwtId != null
+                ? ResolveUniqueJwtId(req)
+                : NextAutoId();
+            return jti;
         }
 
         public string CreateJwtRefreshToken(string userId, TimeSpan expireRefreshTokenIn) => CreateJwtRefreshToken(null, userId, expireRefreshTokenIn);
@@ -169,6 +181,10 @@ namespace ServiceStack.Auth
             };
 
             jwtPayload.SetAudience(Audiences);
+
+            var jti = GetNextJwtId(req);
+            if (jti != null)
+                jwtPayload[nameof(jti)] = jti;
 
             var hashAlgorithm = GetHashAlgorithm(req);
             var refreshToken = CreateJwt(jwtHeader, jwtPayload, hashAlgorithm);
@@ -429,7 +445,7 @@ namespace ServiceStack.Auth
             if (jwtPayload == null)
                 throw new ArgumentException(ErrorMessages.TokenInvalid.Localize(Request));
 
-            jwtAuthProvider.AssertJwtPayloadIsValid(jwtPayload);
+            jwtAuthProvider.AssertRefreshJwtPayloadIsValid(jwtPayload);
 
             if (jwtAuthProvider.ValidateRefreshToken != null && !jwtAuthProvider.ValidateRefreshToken(jwtPayload, Request))
                 throw new ArgumentException(ErrorMessages.RefreshTokenInvalid.Localize(Request), nameof(refreshToken));
