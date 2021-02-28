@@ -304,21 +304,33 @@ namespace ServiceStack.Auth
         public Action<Dictionary<string,string>> PreValidateJwtPayloadFilter { get; set; }
 
         /// <summary>
-        /// Change resolution for resolving unique jti id for Access & Refresh Tokens
+        /// Change resolution for resolving unique jti id for Access Tokens
         /// </summary>
-        public Func<IRequest,string> ResolveUniqueJwtId { get; set; }
-
-        private long idCounter;
+        public Func<IRequest,string> ResolveJwtId { get; set; }
 
         /// <summary>
-        /// Get the next AutoId for usage in jti JWT identifiers  
+        /// Get the next AutoId for usage in jti JWT Access Tokens  
         /// </summary>
-        public string NextAutoId() => Interlocked.Increment(ref idCounter).ToString(); 
+        public string NextJwtId() => Interlocked.Increment(ref accessIdCounter).ToString(); 
+        private long accessIdCounter;
         
         /// <summary>
         /// Get the last jti AutoId generated  
         /// </summary>
-        public string LastAutoId(long back=0) => (Interlocked.Read(ref idCounter) - back).ToString();
+        public string LastJwtId() => Interlocked.Read(ref accessIdCounter).ToString();
+
+        /// <summary>
+        /// Change resolution for resolving unique jti id for Refresh Tokens
+        /// </summary>
+        public Func<IRequest,string> ResolveRefreshJwtId { get; set; }
+
+        /// <summary>
+        /// Get the next AutoId for usage in jti JWT Refresh Tokens  
+        /// </summary>
+        public string NextRefreshJwtId() => Interlocked.Decrement(ref refreshIdCounter).ToString(); 
+
+        private long refreshIdCounter;
+        public string LastRefreshJwtId() => Interlocked.Read(ref refreshIdCounter).ToString();
 
         /// <summary>
         /// Invalidate JWTs with ids

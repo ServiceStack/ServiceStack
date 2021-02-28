@@ -128,7 +128,10 @@ namespace ServiceStack.Auth
         public string CreateJwtBearerToken(IRequest req, IAuthSession session, IEnumerable<string> roles = null, IEnumerable<string> perms = null)
         {
             var jwtPayload = CreateJwtPayload(session, Issuer, ExpireTokensIn, Audiences, roles, perms);
-            var jti = GetNextJwtId(req);
+
+            var jti = ResolveJwtId != null
+                ? ResolveJwtId(req)
+                : NextJwtId();
             if (jti != null)
                 jwtPayload[nameof(jti)] = jti;
 
@@ -149,14 +152,6 @@ namespace ServiceStack.Auth
             var hashAlgorithm = GetHashAlgorithm(req);
             var bearerToken = CreateJwt(jwtHeader, jwtPayload, hashAlgorithm);
             return bearerToken;
-        }
-
-        public virtual string GetNextJwtId(IRequest req=null)
-        {
-            var jti = ResolveUniqueJwtId != null
-                ? ResolveUniqueJwtId(req)
-                : NextAutoId();
-            return jti;
         }
 
         public string CreateJwtRefreshToken(string userId, TimeSpan expireRefreshTokenIn) => CreateJwtRefreshToken(null, userId, expireRefreshTokenIn);
@@ -182,7 +177,9 @@ namespace ServiceStack.Auth
 
             jwtPayload.SetAudience(Audiences);
 
-            var jti = GetNextJwtId(req);
+            var jti = ResolveJwtId != null
+                ? ResolveRefreshJwtId(req)
+                : NextRefreshJwtId();
             if (jti != null)
                 jwtPayload[nameof(jti)] = jti;
 

@@ -878,14 +878,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 var accessTokenResponse = client.Post(new GetAccessToken());
                 ExecUtils.SleepBackOffMultiplier(++i); //need to wait for iat to tick +1s so JWT's are different
             } 
-            while (lastAccessToken != initialAccessToken);
+            while (lastAccessToken == initialAccessToken);
         }
 
         [Test]
-        public void Does_auto_fetch_new_AccessToken_with_RefreshTokenCookie()
+        public void Does_auto_fetch_new_AccessToken_with_RefreshTokenCookie_ServiceClient() => 
+            AssertDoesGetAccessTokenUsingRefreshTokenCookie(new JsonServiceClient(Config.ListeningOn));
+
+        [Test]
+        public void Does_auto_fetch_new_AccessToken_with_RefreshTokenCookie_HttpClient() => 
+            AssertDoesGetAccessTokenUsingRefreshTokenCookie(new JsonHttpClient(Config.ListeningOn));
+
+        private static void AssertDoesGetAccessTokenUsingRefreshTokenCookie(IJsonServiceClient client)
         {
-            var client = new JsonServiceClient(Config.ListeningOn);
-            
             var authResponse = client.Post(new Authenticate {
                 provider = "credentials",
                 UserName = Username,
@@ -896,22 +901,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             var initialRefreshToken = client.GetRefreshTokenCookie();
             Assert.That(initialAccessToken, Is.Not.Null);
             Assert.That(initialRefreshToken, Is.Not.Null);
-            
-            var request = new Secured { Name = "test" };
+
+            var request = new Secured {Name = "test"};
             var response = client.Send(request);
             Assert.That(response.Result, Is.EqualTo(request.Name));
 
             var jwtAuthProvider = AuthenticateService.GetRequiredJwtAuthProvider();
-            jwtAuthProvider.InvalidateJwtIds.Add(jwtAuthProvider.LastAutoId(back:1)); //AccessToken
+            jwtAuthProvider.InvalidateJwtIds.Add(jwtAuthProvider.LastJwtId());
             // JwtAuthProvider.PrintDump(initialAccessToken);
             // JwtAuthProvider.PrintDump(initialRefreshToken);
-            
+
             response = client.Send(request);
             Assert.That(response.Result, Is.EqualTo(request.Name));
             var latestAccessToken = client.GetTokenCookie();
             Assert.That(latestAccessToken, Is.Not.EqualTo(initialAccessToken));
         }
-
     }
 
 }
