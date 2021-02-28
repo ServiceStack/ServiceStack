@@ -70,13 +70,13 @@ namespace CheckHttpListener
         public class InvalidateLastAccessToken : IReturn<EmptyResponse> {}
 
         [Test]
-        public async Task Does_auto_fetch_AccessToken_using_RefreshTokenCookies_ServiceClient()
+        public async Task Does_fetch_AccessToken_using_RefreshTokenCookies_ServiceClient()
         {
             await AssertDoesGetAccessTokenUsingRefreshTokenCookie(new JsonServiceClient(TestUrl));
         }
 
         [Test]
-        public async Task Does_auto_fetch_AccessToken_using_RefreshTokenCookies_HttpClient()
+        public async Task Does_fetch_AccessToken_using_RefreshTokenCookies_HttpClient()
         {
             await AssertDoesGetAccessTokenUsingRefreshTokenCookie(new JsonHttpClient(TestUrl));
         }
