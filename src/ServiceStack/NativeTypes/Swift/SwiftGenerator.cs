@@ -1082,6 +1082,8 @@ namespace ServiceStack.NativeTypes.Swift
             "postfix",
             "precedence",
             "prefix",
+            "private",
+            "public",
             "right",
             "set",
             "unowned",
