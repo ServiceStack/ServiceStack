@@ -258,7 +258,7 @@ namespace ServiceStack.Auth
 
             var authProvider = GetAuthProvider(provider);
             if (authProvider == null)
-                throw HttpError.NotFound(ErrorMessages.UnknownAuthProviderFmt.Fmt(provider.SafeInput()));
+                throw HttpError.NotFound(ErrorMessages.UnknownAuthProviderFmt.LocalizeFmt(Request, provider.SafeInput()));
 
             if (LogoutAction.EqualsIgnoreCase(request.provider))
                 return await authProvider.LogoutAsync(this, request).ConfigAwait();
@@ -439,7 +439,7 @@ namespace ServiceStack.Auth
                 var provider = request.provider ?? AuthProviders[0].Provider;
                 var oAuthConfig = GetAuthProvider(provider);
                 if (oAuthConfig == null)
-                    throw HttpError.NotFound(ErrorMessages.UnknownAuthProviderFmt.Fmt(provider.SafeInput()));
+                    throw HttpError.NotFound(ErrorMessages.UnknownAuthProviderFmt.LocalizeFmt(Request,provider.SafeInput()));
 
                 if (request.provider == LogoutAction)
                     return await oAuthConfig.LogoutAsync(this, request, token).ConfigAwait() as AuthenticateResponse;

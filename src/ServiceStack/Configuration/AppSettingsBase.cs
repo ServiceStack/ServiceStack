@@ -78,7 +78,7 @@ namespace ServiceStack.Configuration
         {
             var value = GetNullableString(name);
             if (value == null)
-                throw new ConfigurationErrorsException(string.Format(ErrorMessages.AppsettingNotFound, name));
+                throw new ConfigurationErrorsException(ErrorMessages.AppSettingNotFoundFmt.LocalizeFmt(name));
 
             return value;
         }
@@ -180,7 +180,7 @@ namespace ServiceStack.Configuration
 
             var value = settings.GetString(name);
             if (value == null)
-                throw new ConfigurationErrorsException(string.Format(ErrorMessages.AppsettingNotFound, name));
+                throw new ConfigurationErrorsException(ErrorMessages.AppSettingNotFoundFmt.LocalizeFmt(name));
 
             return value;
         }

@@ -40,7 +40,7 @@ namespace ServiceStack
                 return;
 
             res.StatusCode = (int)HttpStatusCode.Forbidden;
-            res.StatusDescription = ErrorMessages.ClaimDoesNotExistFmt.Fmt(Type, Value).Localize(req);
+            res.StatusDescription = ErrorMessages.ClaimDoesNotExistFmt.LocalizeFmt(req, Type, Value);
             await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto);
         }
 

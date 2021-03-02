@@ -85,7 +85,7 @@ namespace ServiceStack
         {
             var child = GetSection(key);
             if (!child.Exists())
-                throw new ConfigurationErrorsException(string.Format(ErrorMessages.AppsettingNotFound, key));
+                throw new ConfigurationErrorsException(ErrorMessages.AppSettingNotFoundFmt.LocalizeFmt(key));
 
             return child;
         }

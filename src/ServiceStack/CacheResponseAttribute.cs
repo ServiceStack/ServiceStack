@@ -67,7 +67,7 @@ namespace ServiceStack
 
             var feature = HostContext.GetPlugin<HttpCacheFeature>();
             if (feature == null)
-                throw new NotSupportedException(ErrorMessages.CacheFeatureMustBeEnabled.Fmt("[CacheResponse]"));
+                throw new NotSupportedException(ErrorMessages.CacheFeatureMustBeEnabled.LocalizeFmt(req, "[CacheResponse]"));
             if (feature.DisableCaching)
                 return;
 

@@ -83,7 +83,7 @@ namespace ServiceStack.Platforms
             string value = GetNullableAppSetting(key);
 
             if (value == null)
-                throw new ConfigurationErrorsException(string.Format(ErrorMessages.AppsettingNotFound, key));
+                throw new ConfigurationErrorsException(ErrorMessages.AppSettingNotFoundFmt.LocalizeFmt(key));
 
             return value;
         }

@@ -284,7 +284,7 @@ namespace Funq
         {
             var ctorWithMostParameters = GetConstructorWithMostParams(type);
             if (ctorWithMostParameters == null)
-                throw new Exception(ErrorMessages.ConstructorNotFoundForType.Fmt(type.Name));
+                throw new Exception(ErrorMessages.ConstructorNotFoundForType.LocalizeFmt(type.Name));
 
             var constructorParameterInfos = ctorWithMostParameters.GetParameters();
             var regParams = constructorParameterInfos

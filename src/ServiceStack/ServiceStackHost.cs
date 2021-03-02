@@ -1380,6 +1380,14 @@ namespace ServiceStack
         }
 
         /// <summary>
+        /// Override to use a localized string for internal routes & text used by ServiceStack 
+        /// </summary>
+        public virtual string ResolveLocalizedStringFormat(string text, object[] args, IRequest request=null)
+        {
+            return string.Format(text, args);
+        }
+
+        /// <summary>
         /// Override to customize the Absolute URL for this virtualPath for this IRequest
         /// </summary>
         public virtual string ResolveAbsoluteUrl(string virtualPath, IRequest httpReq)

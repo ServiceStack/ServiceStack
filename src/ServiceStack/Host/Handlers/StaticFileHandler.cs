@@ -144,7 +144,7 @@ namespace ServiceStack.Host.Handlers
 
                         if (file == null)
                         {
-                            var msg = ErrorMessages.FileNotExistsFmt.Fmt(request.PathInfo.SafeInput());
+                            var msg = ErrorMessages.FileNotExistsFmt.LocalizeFmt(request, request.PathInfo.SafeInput());
                             log.Warn($"{msg} in path: {originalFileName}");
                             response.StatusCode = 404;
                             response.StatusDescription = msg;

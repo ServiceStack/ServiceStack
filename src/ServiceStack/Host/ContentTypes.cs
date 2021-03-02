@@ -173,7 +173,7 @@ namespace ServiceStack.Host
                     break;
 #endif
                 default:
-                    throw new NotSupportedException(ErrorMessages.ContentTypeNotSupported.Fmt(req.ResponseContentType));
+                    throw new NotSupportedException(ErrorMessages.ContentTypeNotSupportedFmt.LocalizeFmt(req, req.ResponseContentType));
             }
         }
         
@@ -203,7 +203,7 @@ namespace ServiceStack.Host
                 }
             }
 
-            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupported.Fmt(contentType));
+            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupportedFmt.LocalizeFmt(req, contentType));
         }
 
         public string SerializeToString(IRequest req, object response)
@@ -235,7 +235,7 @@ namespace ServiceStack.Host
                 }
             }
 
-            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupported.Fmt(contentType));
+            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupportedFmt.LocalizeFmt(req, contentType));
         }
 
         private static Task serializeAsync(StreamSerializerDelegateAsync serializer, IRequest httpReq, object dto, Stream stream)
@@ -280,7 +280,7 @@ namespace ServiceStack.Host
             if (serializerAsync != null)
                 return serializerAsync(req, response, responseStream);
             
-            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupported.Fmt(contentType));
+            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupportedFmt.LocalizeFmt(req, contentType));
         }
         
         public StreamSerializerDelegateAsync GetStreamSerializerAsync(string contentType)
@@ -316,14 +316,12 @@ namespace ServiceStack.Host
             var deserializerAsync = GetStreamDeserializerAsync(contentType);
             if (deserializerAsync != null)
             {
-                using (var ms = MemoryStreamFactory.GetStream(request.ToUtf8Bytes()))
-                {
-                    var task = deserializerAsync(type, ms);
-                    return task.Result;
-                }
+                using var ms = MemoryStreamFactory.GetStream(request.ToUtf8Bytes());
+                var task = deserializerAsync(type, ms);
+                return task.Result;
             }
             
-            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupported.Fmt(contentType));
+            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupportedFmt.LocalizeFmt(contentType));
         }
 
         public object DeserializeFromStream(string contentType, Type type, Stream fromStream)
@@ -341,7 +339,7 @@ namespace ServiceStack.Host
                 return task.Result;
             }
             
-            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupported.Fmt(contentType));
+            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupportedFmt.LocalizeFmt(contentType));
         }
 
         public StreamDeserializerDelegate GetStreamDeserializer(string contentType)

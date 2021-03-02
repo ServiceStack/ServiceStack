@@ -802,7 +802,7 @@ namespace ServiceStack.Auth
                 return ErrorMessages.TokenInvalidated;
 
             if (HasInvalidAudience(jwtPayload, out var audience))
-                return ErrorMessages.TokenInvalidAudienceFmt.Fmt(audience);
+                return ErrorMessages.TokenInvalidAudienceFmt.LocalizeFmt(audience);
 
             return null;
         }
@@ -835,7 +835,7 @@ namespace ServiceStack.Auth
                 return ErrorMessages.TokenInvalidated;
 
             if (HasInvalidAudience(jwtPayload, out var audience))
-                return ErrorMessages.TokenInvalidAudienceFmt.Fmt(audience);
+                return ErrorMessages.TokenInvalidAudienceFmt.LocalizeFmt(audience);
 
             return null;
         }
