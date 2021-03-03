@@ -250,9 +250,11 @@
                 table.querySelectorAll('[data-tags]').forEach(function (x) {
                     Array.prototype.push.apply(tagNames,x.getAttribute('data-tags').split(','));
                 });
-                var tagsHtml = tagNames.filter(function(value,index,self) {
+                tagNames = tagNames.filter(function(value,index,self) {
                     return value && self.indexOf(value) === index;
-                }).map(function(x) { return "<span><b>" + x + "</b></span>"}).join('');
+                });
+                tagNames.sort();
+                var tagsHtml = tagNames.map(function(x) { return "<span><b>" + x + "</b></span>"}).join('');
                 if (tagsHtml !== "") {
                     tagsHtml = '<div class="tags">' + tagsHtml + '</div>';
                 }
