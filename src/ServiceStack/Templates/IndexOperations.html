@@ -242,19 +242,21 @@
     
     <script type="text/javascript">
         if (document.querySelectorAll) {
-            var table = document.querySelectorAll("table")[0];
+            function $(sel,el) { return (el||document).querySelector(sel); }
+            function $$(sel,el) { return Array.prototype.slice.call((el||document).querySelectorAll(sel)); }
+            var table = $$("table")[0];
             if (table) {
-                var cols = table.querySelectorAll("tr:first-child td").length + 1; //th
+                var cols = $$("tr:first-child td",table).length + 1; //th
                 var isIE9 = document.documentMode <= 9;
                 var tagNames = []
-                table.querySelectorAll('[data-tags]').forEach(function (x) {
+                $$('[data-tags]',table).forEach(function (x) {
                     Array.prototype.push.apply(tagNames,x.getAttribute('data-tags').split(','));
                 });
                 tagNames = tagNames.filter(function(value,index,self) {
                     return value && self.indexOf(value) === index;
                 });
                 tagNames.sort();
-                var tagsHtml = tagNames.map(function(x) { return "<span><b>" + x + "</b></span>"}).join('');
+                var tagsHtml = tagNames.map(function(x) { return "<span data-tag='" + x + "'><b>" + x + "</b></span>"}).join('');
                 if (tagsHtml !== "") {
                     tagsHtml = '<div class="tags">' + tagsHtml + '</div>';
                 }
@@ -275,13 +277,13 @@
                     table.insertBefore(thead, table.firstChild);
                 }
 
-                var tagEls = document.querySelectorAll('.tags span');
-                var input = document.querySelectorAll("#filter input")[0];
+                var tagEls = $$('.tags span');
+                var input = $$("#filter input")[0];
                 function filter() {
-                    var activeTagEl = document.querySelector('.tags span.active b');
+                    var activeTagEl = $('.tags span.active b');
                     var activeTag = activeTagEl && activeTagEl.innerHTML;
                     
-                    var rows = document.querySelectorAll("tbody tr");
+                    var rows = $$("tbody tr");
                     for (var i = 0; i < rows.length; i++) {
                         var th = rows[i].firstChild;
                         var thTags = th.getAttribute('data-tags').split(',').filter(function(x){ return !!x});
@@ -299,14 +301,30 @@
                 function selectTag() {
                     var $this = this;
                     tagEls.forEach(function(el) {
-                        console.log(el, $this);
                         el.className = el === $this && $this.className !== 'active' ? 'active' : '';
                     });
+                    var isActive = this.className.indexOf('active') >= 0;
+                    var tag = this.getAttribute('data-tag');
+                    if (tag) {
+                        if (isActive)
+                            location.href = '#tag=' + tag;
+                        else
+                            history.pushState("", document.title, window.location.pathname + window.location.search);
+                    }
                     filter();
                 }
                 tagEls.forEach(function(el) {
                     el.onclick = selectTag;
                 });
+            }
+            if (location.hash) {
+                let hash = location.hash.substring(1);
+                var name = hash.split('=')[0];
+                if (name === 'tag') {
+                    var tag = hash.split('=')[1];
+                    var el = $('[data-tag="' + tag + '"]');
+                    if (el) selectTag.bind(el)();
+                }
             }
         }
     </script>
