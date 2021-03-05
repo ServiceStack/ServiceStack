@@ -26,8 +26,8 @@ namespace ServiceStack.NativeTypes.FSharp
         public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
 
-        public static Dictionary<string, string> TypeAliases = new Dictionary<string, string> 
-        {
+        public static Dictionary<string, string> TypeAliases = new() {
+            ["List"] = "ResizeArray"
         };
 
         public static TypeFilterDelegate TypeFilter { get; set; }
@@ -461,7 +461,7 @@ namespace ServiceStack.NativeTypes.FSharp
                     }
 
                     var typeName = NameOnly(type);
-                    return "{0}<{1}>".Fmt(typeName, StringBuilderCacheAlt.ReturnAndFree(args));
+                    return "{0}<{1}>".Fmt(TypeAlias(typeName), StringBuilderCacheAlt.ReturnAndFree(args));
                 }
             }
 
@@ -474,8 +474,7 @@ namespace ServiceStack.NativeTypes.FSharp
             if (arrParts.Length > 1)
                 return "{0}[]".Fmt(TypeAlias(arrParts[0]));
 
-            string typeAlias;
-            TypeAliases.TryGetValue(type, out typeAlias);
+            TypeAliases.TryGetValue(type, out var typeAlias);
 
             return typeAlias ?? NameOnly(type);
         }
