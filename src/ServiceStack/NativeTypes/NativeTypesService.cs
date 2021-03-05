@@ -143,7 +143,7 @@ namespace ServiceStack.NativeTypes
             request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
-            var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
+            var metadataTypes = ResolveMetadataTypes(typesConfig);
             return metadataTypes;
         }
 
@@ -205,7 +205,7 @@ namespace ServiceStack.NativeTypes
 
         public string GenerateTypeScript(NativeTypesBase request, MetadataTypesConfig typesConfig)
         {
-            var metadataTypes = ConfigureScript(typesConfig);
+            var metadataTypes = ResolveMetadataTypes(typesConfig);
 
             var typeScript = new TypeScriptGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
             return typeScript;
@@ -219,7 +219,7 @@ namespace ServiceStack.NativeTypes
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             typesConfig.ExportAsTypes = true;
             
-            var metadataTypes = ConfigureScript(typesConfig);
+            var metadataTypes = ResolveMetadataTypes(typesConfig);
 
             if (!DartGenerator.GenerateServiceStackTypes)
             {
@@ -243,7 +243,7 @@ namespace ServiceStack.NativeTypes
             return dart;
         }
 
-        public static List<Type> ReturnInterfaces = new List<Type> {
+        public static List<Type> ReturnInterfaces = new() {
             typeof(IReturn<>),
             typeof(IReturnVoid),
         };
@@ -316,7 +316,10 @@ namespace ServiceStack.NativeTypes
             typeof(AuditBase),
         }.ToList();
 
-        private MetadataTypes ConfigureScript(MetadataTypesConfig typesConfig)
+        public MetadataTypes ResolveMetadataTypes(MetadataTypesConfig typesConfig) =>
+            ResolveMetadataTypes(typesConfig, NativeTypesMetadata, Request);
+        
+        public static MetadataTypes ResolveMetadataTypes(MetadataTypesConfig typesConfig, INativeTypesMetadata nativeTypesMetadata, IRequest req)
         {
             //Include SS types by removing ServiceStack namespaces
             if (typesConfig.AddServiceStackTypes)
@@ -329,8 +332,7 @@ namespace ServiceStack.NativeTypes
             typesConfig.ExportTypes.Add(typeof(Tuple<,,,>));
             typesConfig.ExportTypes.Remove(typeof(IMeta));
 
-
-            var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
+            var metadataTypes = nativeTypesMetadata.GetMetadataTypes(req, typesConfig);
 
             metadataTypes.Types.RemoveAll(x => x.Name == "Service");
 
@@ -339,7 +341,7 @@ namespace ServiceStack.NativeTypes
             if (typesConfig.AddServiceStackTypes)
             {
                 //IReturn markers are metadata properties that are not included as normal interfaces
-                var generator = ((NativeTypesMetadata) NativeTypesMetadata).GetGenerator(typesConfig);
+                var generator = ((NativeTypesMetadata) nativeTypesMetadata).GetGenerator(typesConfig);
 
                 var allTypes = metadataTypes.GetAllTypesOrdered();
                 var allTypeNames = allTypes.Select(x => x.Name).ToSet();
