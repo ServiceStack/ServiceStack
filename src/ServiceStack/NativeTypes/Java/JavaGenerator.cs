@@ -12,7 +12,7 @@ namespace ServiceStack.NativeTypes.Java
     public class JavaGenerator
     {
         readonly MetadataTypesConfig Config;
-        List<string> conflictTypeNames = new List<string>();
+        List<string> conflictTypeNames = new();
         List<MetadataType> allTypes;
 
         public JavaGenerator(MetadataTypesConfig config)
@@ -28,8 +28,7 @@ namespace ServiceStack.NativeTypes.Java
 
         public static string DefaultGlobalNamespace = "dtos";
 
-        public static List<string> DefaultImports = new List<string>
-        {
+        public static List<string> DefaultImports = new() {
             /* built-in types used
             "java.math.BigInteger",
             "java.math.BigDecimal",

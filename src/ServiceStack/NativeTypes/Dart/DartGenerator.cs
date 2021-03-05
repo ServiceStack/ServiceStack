@@ -29,15 +29,13 @@ namespace ServiceStack.NativeTypes.Dart
         public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
 
-        public static List<string> DefaultImports = new List<string>
-        {
+        public static List<string> DefaultImports = new() {
 //            "dart:collection",  Required for inheriting List<T> / ListBase 
 //            "dart:typed_data",  Required for byte[] / Uint8List
             "package:servicestack/servicestack.dart"
         };
         
-        public static Dictionary<string, string> TypeAliases = new Dictionary<string, string>
-        {
+        public static Dictionary<string, string> TypeAliases = new() {
             {"Object", "dynamic"},
             {"String", "String"},
             {"Boolean", "bool"},
@@ -65,8 +63,7 @@ namespace ServiceStack.NativeTypes.Dart
             {"Type", "String"},
         };
         private static string declaredEmptyString = "\"\"";
-        private static readonly Dictionary<string, string> defaultValues = new Dictionary<string, string>
-        {
+        private static readonly Dictionary<string, string> defaultValues = new() {
             {"String", declaredEmptyString},
             {"string", declaredEmptyString},
             {"Boolean", "false"},
@@ -96,7 +93,7 @@ namespace ServiceStack.NativeTypes.Dart
             {"DateTimeOffset", "new DateTime(0)"},
         };
         
-        static HashSet<string> BasicJsonTypes = new HashSet<string> {
+        static HashSet<string> BasicJsonTypes = new() {
             nameof(String),
             nameof(Boolean),
             nameof(Guid),
@@ -116,7 +113,7 @@ namespace ServiceStack.NativeTypes.Dart
             "Dictionary<String,String>",
         };
         
-        public static Dictionary<string,string> DartToJsonConverters = new Dictionary<string, string> {
+        public static Dictionary<string,string> DartToJsonConverters = new() {
             { "double", "toDouble" },
             { "Map<String,String>", "toStringMap" },
         };
@@ -124,7 +121,7 @@ namespace ServiceStack.NativeTypes.Dart
         public static bool GenerateServiceStackTypes => IgnoreTypeInfosFor.Count == 0;
 
         //In _builtInTypes servicestack dart library 
-        public static HashSet<string> IgnoreTypeInfosFor = new HashSet<string> {
+        public static HashSet<string> IgnoreTypeInfosFor = new() {
             "dynamic",
             "String",
             "int",

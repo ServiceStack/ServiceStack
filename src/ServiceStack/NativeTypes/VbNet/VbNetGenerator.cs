@@ -27,16 +27,14 @@ namespace ServiceStack.NativeTypes.VbNet
         public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
 
-        public static Dictionary<string, string> TypeAliases = new Dictionary<string, string>
-        {
+        public static Dictionary<string, string> TypeAliases = new() {
             {"Int16", "Short"},
             {"Int32", "Integer"},
             {"Int64", "Long"},
             {"DateTime", "Date"},
         };
 
-        public static HashSet<string> KeyWords = new HashSet<string>
-        {
+        public static HashSet<string> KeyWords = new() {
             "Default",
             "Dim",
             "Catch",

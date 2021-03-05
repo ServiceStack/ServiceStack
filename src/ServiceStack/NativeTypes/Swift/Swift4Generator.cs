@@ -64,7 +64,7 @@ namespace ServiceStack.NativeTypes.Swift
 
         public static TypeFilterDelegate TypeFilter { get; set; }
 
-        public static HashSet<string> OverrideInitForBaseClasses = new HashSet<string> {
+        public static HashSet<string> OverrideInitForBaseClasses = new() {
             "NSObject"
         };
 

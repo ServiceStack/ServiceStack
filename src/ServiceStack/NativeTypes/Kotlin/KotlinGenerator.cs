@@ -13,7 +13,7 @@ namespace ServiceStack.NativeTypes.Kotlin
     {
         readonly MetadataTypesConfig Config;
         readonly NativeTypesFeature feature;
-        List<string> conflictTypeNames = new List<string>();
+        List<string> conflictTypeNames = new();
         List<MetadataType> allTypes;
 
         public KotlinGenerator(MetadataTypesConfig config)
@@ -28,8 +28,7 @@ namespace ServiceStack.NativeTypes.Kotlin
         public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
 
-        public static List<string> DefaultImports = new List<string>
-        {
+        public static List<string> DefaultImports = new() {
             /* built-in types used
             "java.math.BigInteger",
             "java.math.BigDecimal",

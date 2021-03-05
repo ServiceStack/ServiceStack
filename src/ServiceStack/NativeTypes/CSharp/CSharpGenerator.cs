@@ -27,8 +27,7 @@ namespace ServiceStack.NativeTypes.CSharp
         public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
 
-        public static Dictionary<string, string> TypeAliases = new Dictionary<string, string> 
-        {
+        public static Dictionary<string, string> TypeAliases = new() {
             { "String", "string" },    
             { "Boolean", "bool" },    
             { "Byte", "byte" },    
