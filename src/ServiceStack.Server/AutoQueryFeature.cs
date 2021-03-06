@@ -1324,8 +1324,6 @@ namespace ServiceStack
             }
         }
 
-        private static readonly char[] FieldSeperators = new[] {',', ';'};
-
         private static void AppendLimits(SqlExpression<From> q, IQueryDb dto, IAutoQueryOptions options)
         {
             var maxLimit = options?.MaxLimit;
@@ -1334,14 +1332,14 @@ namespace ServiceStack
                 take = maxLimit;
             q.Limit(dto.Skip, take);
 
-            if (dto.OrderBy != null)
+            if (!string.IsNullOrEmpty(dto.OrderBy))
             {
-                var fieldNames = dto.OrderBy.Split(FieldSeperators, StringSplitOptions.RemoveEmptyEntries);
+                var fieldNames = StringUtils.SplitVarNames(dto.OrderBy);
                 q.OrderByFields(fieldNames);
             }
-            else if (dto.OrderByDesc != null)
+            else if (!string.IsNullOrEmpty(dto.OrderByDesc))
             {
-                var fieldNames = dto.OrderByDesc.Split(FieldSeperators, StringSplitOptions.RemoveEmptyEntries);
+                var fieldNames = StringUtils.SplitVarNames(dto.OrderByDesc);
                 q.OrderByFieldsDescending(fieldNames);
             }
             else if ((dto.Skip != null || dto.Take != null)

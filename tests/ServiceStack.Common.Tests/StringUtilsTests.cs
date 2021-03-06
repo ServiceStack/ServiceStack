@@ -68,5 +68,16 @@ Werde Teil unseres Teams und gestalte aktiv die technische Zukunft der weltweit 
             Assert.That(StringUtils.SnakeCaseToPascalCase("aa_bb"), Is.EqualTo("AaBb"));
             Assert.That(StringUtils.SnakeCaseToPascalCase("aaBb"), Is.EqualTo("AaBb"));
         }
+
+        [Test]
+        public void Does_split_fields()
+        {
+            Assert.That(StringUtils.SplitVarNames(""), Is.EqualTo(new string[0]));
+            Assert.That(StringUtils.SplitVarNames("A"), Is.EqualTo(new[]{ "A"}));
+            Assert.That(StringUtils.SplitVarNames("A,B,C"), Is.EqualTo(new[]{ "A","B","C" }));
+            Assert.That(StringUtils.SplitVarNames("A, B , C"), Is.EqualTo(new[]{ "A","B","C" }));
+            Assert.That(StringUtils.SplitVarNames("A, B , C, "), Is.EqualTo(new[]{ "A","B","C" }));
+        }
+
     }
 }

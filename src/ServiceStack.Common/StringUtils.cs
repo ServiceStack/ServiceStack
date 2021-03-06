@@ -541,6 +541,21 @@ namespace ServiceStack
             return Convert.ToString(Convert.ToChar(codePoint), CultureInfo.InvariantCulture);
         }
 
+        private static readonly char[] FieldSeparators = {',', ';'};
+        public static string[] SplitVarNames(string fields)
+        {
+            if (string.IsNullOrEmpty(fields))
+                return TypeConstants.EmptyStringArray;
+
+            var sanitizedFields = fields.Trim().TrimEnd(FieldSeparators);
+            if (string.IsNullOrEmpty(sanitizedFields))
+                return TypeConstants.EmptyStringArray;
+            
+            return sanitizedFields
+                .Split(FieldSeparators, StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Trim()).ToArray();
+        }
+
         public static List<string> SplitGenericArgs(string argList)
         {
             var to = new List<string>();
