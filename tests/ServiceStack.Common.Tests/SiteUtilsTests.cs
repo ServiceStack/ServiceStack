@@ -13,6 +13,7 @@ namespace ServiceStack.Common.Tests
         [TestCase("techstacks.io:site1%7Csite2", "https://techstacks.io/site1|site2")]
         [TestCase("http://techstacks.io:1000/site1/site2", "http://techstacks.io:1000/site1/site2")]
         [TestCase("https://techstacks.io:1000/site1/site2", "https://techstacks.io:1000/site1/site2")]
+        [TestCase("techstacks.io:1000:site1:site2(a:1,b:\"c,d\",e:f)", "https://techstacks.io:1000/site1/site2(a:1,b:\"c,d\",e:f)")]
         public void Can_resolve_url_from_slug(string slug, string expected)
         {
             var url = SiteUtils.UrlFromSlug(slug);
@@ -28,6 +29,7 @@ namespace ServiceStack.Common.Tests
         [TestCase("techstacks.io:site1%7Csite2", "https://techstacks.io/site1%7Csite2")]
         [TestCase("http:techstacks.io:1000:site1:site2", "http://techstacks.io:1000/site1/site2")]
         [TestCase("techstacks.io:1000:site1:site2", "https://techstacks.io:1000/site1/site2")]
+        [TestCase("techstacks.io:1000:site1:site2(a:1,b:\"c,d\",e:f)", "https://techstacks.io:1000/site1/site2(a:1,b:\"c,d\",e:f)")]
         public void Can_convert_url_to_slug(string expected, string url)
         {
             var slug = SiteUtils.UrlToSlug(url);

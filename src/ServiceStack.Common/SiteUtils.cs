@@ -14,6 +14,7 @@ namespace ServiceStack
         /// techstacks.io:1000             => https://techstacks.io:1000
         /// techstacks.io:1000:site1:site2 => https://techstacks.io:1000/site1/site2
         /// techstacks.io:site1%7Csite2    => https://techstacks.io/site1|site2
+        /// techstacks.io:1000:site1:site2(a:1,b:"c,d",e:f) => https://techstacks.io:1000/site1/site2(a:1,b:"c,d",e:f)
         /// </summary>
         public static string UrlFromSlug(string slug)
         {
@@ -38,8 +39,8 @@ namespace ServiceStack
                     ? atPort.Substring(0,endPos)
                     : atPort.Substring(0,atPort.Length - 1);
                 url = int.TryParse(testPort, out _)
-                    ? url.LeftPart(':') + ':' + atPort.Replace(':', '/')
-                    : url.LeftPart(':') + '/' + atPort.Replace(':', '/');
+                    ? url.LeftPart(':') + ':' + UnSlash(atPort)
+                    : url.LeftPart(':') + '/' + UnSlash(atPort);
             }
             url = url.UrlDecode();
             if (!isUrl)
@@ -51,13 +52,26 @@ namespace ServiceStack
             return url;
         }
 
+        private static string UnSlash(string urlComponent)
+        {
+            // don't replace ':' after '('...)
+            if (urlComponent.IndexOf('(') >= 0)
+            {
+                var target = urlComponent.LeftPart('(');
+                var suffix = urlComponent.RightPart('(');
+                return target.Replace(':', '/') + '(' + suffix;
+            }
+            return urlComponent.Replace(':', '/');
+        }
+
         /// <summary>
         /// Convert URL to URL-friendly slugs, Examples:
         /// https://techstacks.io                  => techstacks.io 
         /// http://techstacks.io                   => http:techstacks.io 
         /// https://techstacks.io:1000             => techstacks.io:1000 
         /// https://techstacks.io:1000/site1/site2 => techstacks.io:1000:site1:site2 
-        /// https://techstacks.io/site1|site2      => techstacks.io:site|site2 
+        /// https://techstacks.io/site1|site2      => techstacks.io:site|site2
+        /// https://techstacks.io:1000/site1/site2(a:1,b:"c,d",e:f) => techstacks.io:1000:site1:site2(a:1,b:"c,d",e:f)
         /// </summary>
         public static string UrlToSlug(string url)
         {
