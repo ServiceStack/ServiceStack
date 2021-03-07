@@ -1280,18 +1280,13 @@ namespace ServiceStack
                 var fields = dto.Fields;
                 var selectDistinct = fields.StartsWith("DISTINCT ", StringComparison.OrdinalIgnoreCase);
                 if (selectDistinct)
-                {
                     fields = fields.Substring("DISTINCT ".Length);
-                }
 
-                var fieldNames = fields.Split(',')
-                    .Where(x => x.Trim().Length > 0)
-                    .Map(x => x.Trim());
-
+                var fieldNames = StringUtils.SplitVarNames(fields);
                 if (selectDistinct)
-                    q.SelectDistinct(fieldNames.ToArray());
+                    q.SelectDistinct(fieldNames);
                 else
-                    q.Select(fieldNames.ToArray());
+                    q.Select(fieldNames);
             }
 
             return q;
