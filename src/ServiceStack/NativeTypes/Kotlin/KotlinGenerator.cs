@@ -66,7 +66,7 @@ namespace ServiceStack.NativeTypes.Kotlin
             {"Boolean", "Boolean"},
             {"Char", "String"},
             {"SByte", "Byte"},
-            {"Byte", "Short"},
+            {"Byte", "byte"},
             {"Int16", "Short"},
             {"Int32", "Int"},
             {"Int64", "Long"},

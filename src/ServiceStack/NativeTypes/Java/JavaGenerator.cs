@@ -65,7 +65,7 @@ namespace ServiceStack.NativeTypes.Java
             {"Boolean", "Boolean"},
             {"Char", "String"},
             {"SByte", "Byte"},
-            {"Byte", "Short"},
+            {"Byte", "byte"},
             {"Int16", "Short"},
             {"Int32", "Integer"},
             {"Int64", "Long"},
