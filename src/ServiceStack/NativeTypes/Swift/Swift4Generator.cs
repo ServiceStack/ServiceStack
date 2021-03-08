@@ -242,8 +242,7 @@ namespace ServiceStack.NativeTypes.Swift
         }
 
         //Use built-in types already in net.servicestack.client package
-        public static HashSet<string> IgnoreTypeNames = new HashSet<string>
-        {
+        public static HashSet<string> IgnoreTypeNames = new() {
             nameof(ResponseStatus),
             nameof(ResponseError),
             nameof(ErrorResponse),
@@ -390,7 +389,7 @@ namespace ServiceStack.NativeTypes.Swift
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
                 if (addVersionInfo)
                 {
-                    sb.AppendLine($"public var {"Version".PropertyStyle()}:Int = {Config.AddImplicitVersion}");
+                    sb.AppendLine($"public var {GetPropertyName("Version")}:Int = {Config.AddImplicitVersion}");
                 }
 
                 AddProperties(sb, type,
@@ -526,7 +525,7 @@ namespace ServiceStack.NativeTypes.Swift
                     }
                 }
 
-                var propName = prop.Name.SafeToken().PropertyStyle();
+                var propName = GetPropertyName(prop.Name);
                 var unescapedName = propName.UnescapeReserved();
                 sbExt.AppendLine("Type<{0}>.{1}(\"{2}\", get: {{ $0.{3} }}, set: {{ $0.{3} = $1 }}),".Fmt(
                         typeName, fnName, unescapedName, propName));
@@ -658,13 +657,13 @@ namespace ServiceStack.NativeTypes.Swift
                 if (propType.IsInterface() || IgnorePropertyNames.Contains(prop.Name))
                 {
                     sb.AppendLine("//{0}:{1} ignored. Swift doesn't support interface properties"
-                        .Fmt(prop.Name.SafeToken().PropertyStyle(), propTypeName));
+                        .Fmt(GetPropertyName(prop.Name), propTypeName));
                     continue;
                 }
                 else if (IgnorePropertyTypeNames.Contains(propTypeName))
                 {
                     sb.AppendLine("//{0}:{1} ignored. Type could not be extended in Swift"
-                        .Fmt(prop.Name.SafeToken().PropertyStyle(), propTypeName));
+                        .Fmt(GetPropertyName(prop.Name), propTypeName));
                     continue;
                 }
 
@@ -677,12 +676,12 @@ namespace ServiceStack.NativeTypes.Swift
                 if (type.IsInterface())
                 {
                     sb.AppendLine("var {0}:{1}{2} {{ get set }}".Fmt(
-                        prop.Name.SafeToken().PropertyStyle(), propTypeName, optional));
+                        GetPropertyName(prop.Name), propTypeName, optional));
                 }
                 else
                 {
                     sb.AppendLine("public var {0}:{1}{2}{3}".Fmt(
-                        prop.Name.SafeToken().PropertyStyle(), propTypeName, optional, defaultValue));
+                        GetPropertyName(prop.Name), propTypeName, optional, defaultValue));
                 }
                 PostPropertyFilter?.Invoke(sb, prop, type);
             }
@@ -692,7 +691,7 @@ namespace ServiceStack.NativeTypes.Swift
                 if (wasAdded) sb.AppendLine();
 
                 AppendDataMember(sb, null, dataMemberIndex++);
-                sb.AppendLine("public var {0}:ResponseStatus?".Fmt(nameof(ResponseStatus).PropertyStyle()));
+                sb.AppendLine("public var {0}:ResponseStatus?".Fmt(GetPropertyName(nameof(ResponseStatus))));
             }
         }
 
@@ -796,13 +795,13 @@ namespace ServiceStack.NativeTypes.Swift
                 return foundType;
 
 #pragma warning disable 618
-            if (typeName.Name == typeof(QueryBase).Name || 
+            if (typeName.Name == nameof(QueryBase) || 
                 typeName.Name == typeof(QueryDb<>).Name)
                 return CreateType(typeof(QueryBase)); //Properties are on QueryBase
 #pragma warning restore 618
 
 
-            if (typeName.Name == typeof(AuthUserSession).Name)
+            if (typeName.Name == nameof(AuthUserSession))
                 return CreateType(typeof(AuthUserSession));
 
             return null;
@@ -819,8 +818,7 @@ namespace ServiceStack.NativeTypes.Swift
             return null;
         }
 
-        public static HashSet<string> ArrayTypes = new HashSet<string>
-        {
+        public static HashSet<string> ArrayTypes = new() {
             "List`1",
             "IEnumerable`1",
             "ICollection`1",
@@ -830,8 +828,7 @@ namespace ServiceStack.NativeTypes.Swift
             "IEnumerable",
         };
 
-        public static HashSet<string> DictionaryTypes = new HashSet<string>
-        {
+        public static HashSet<string> DictionaryTypes = new() {
             "Dictionary`2",
             "IDictionary`2",
             "IOrderedDictionary`2",
@@ -841,13 +838,11 @@ namespace ServiceStack.NativeTypes.Swift
             "IOrderedDictionary",
         };
 
-        public static HashSet<string> IgnorePropertyTypeNames = new HashSet<string>
-        {
+        public static HashSet<string> IgnorePropertyTypeNames = new() {
             "Object",
         };
 
-        public static HashSet<string> IgnorePropertyNames = new HashSet<string>
-        {
+        public static HashSet<string> IgnorePropertyNames = new() {
             "ProviderOAuthAccess",
         };
 
@@ -909,8 +904,7 @@ namespace ServiceStack.NativeTypes.Swift
             if (isArray)
                 return "[{0}]".Fmt(TypeAlias(type.Trim('[', ']')));
 
-            string typeAlias;
-            TypeAliases.TryGetValue(type, out typeAlias);
+            TypeAliases.TryGetValue(type, out var typeAlias);
 
             return typeAlias ?? NameOnly(type);
         }
@@ -1070,5 +1064,7 @@ namespace ServiceStack.NativeTypes.Swift
                 .Replace(",", " : JsonSerializable,")
                 .Replace(">", " : JsonSerializable>");
         }
+
+        public string GetPropertyName(string name) => name.SafeToken().PropertyStyle();
     }
 }

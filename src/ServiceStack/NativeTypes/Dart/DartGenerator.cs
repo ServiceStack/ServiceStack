@@ -890,7 +890,7 @@ namespace ServiceStack.NativeTypes.Dart
                 if ((attr.Args == null || attr.Args.Count == 0)
                     && (attr.ConstructorArgs == null || attr.ConstructorArgs.Count == 0))
                 {
-                    sb.AppendLine($"// @{attr.Name}()");
+                    sb.AppendLine($"// @{GetPropertyName(attr.Name)}()");
                 }
                 else
                 {
@@ -943,8 +943,7 @@ namespace ServiceStack.NativeTypes.Dart
             return Type(typeName.Name, typeName.GenericArgs);
         }
 
-        public static HashSet<string> ArrayTypes = new HashSet<string>
-        {
+        public static HashSet<string> ArrayTypes = new() {
             "List`1",
             "IEnumerable`1",
             "ICollection`1",
@@ -954,8 +953,7 @@ namespace ServiceStack.NativeTypes.Dart
             "IEnumerable",
         };
 
-        public static HashSet<string> DictionaryTypes = new HashSet<string>
-        {
+        public static HashSet<string> DictionaryTypes = new() {
             "Dictionary`2",
             "IDictionary`2",
             "IOrderedDictionary`2",
@@ -965,8 +963,7 @@ namespace ServiceStack.NativeTypes.Dart
             "IOrderedDictionary",
         };
 
-        public static HashSet<string> SetTypes = new HashSet<string>
-        {
+        public static HashSet<string> SetTypes = new() {
             "HashSet`1",
         };
 
@@ -1225,12 +1222,13 @@ namespace ServiceStack.NativeTypes.Dart
 
             return sb.ToString();
         }
+
+        public string GetPropertyName(string name) => name.PropertyName();
     }
     
     public static class DartGeneratorExtensions
     {
-        public static HashSet<string> DartKeyWords = new HashSet<string>
-        {
+        public static HashSet<string> DartKeyWords = new() {
             "context", // IConvertible code-gen property
             "abstract",
             "deferred",

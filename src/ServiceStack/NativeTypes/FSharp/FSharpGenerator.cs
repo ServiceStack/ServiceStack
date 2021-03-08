@@ -313,11 +313,11 @@ namespace ServiceStack.NativeTypes.FSharp
                     PrePropertyFilter?.Invoke(sb, prop, type);
                     if (!type.IsInterface())
                     {
-                        sb.AppendLine($"member val {prop.Name.SafeToken()}:{propType} = {GetDefaultLiteral(prop, type)} with get,set");
+                        sb.AppendLine($"member val {GetPropertyName(prop.Name)}:{propType} = {GetDefaultLiteral(prop, type)} with get,set");
                     }
                     else
                     {
-                        sb.AppendLine($"abstract {prop.Name.SafeToken()}:{propType} with get,set");                        
+                        sb.AppendLine($"abstract {GetPropertyName(prop.Name)}:{propType} with get,set");                        
                     }
                     PostPropertyFilter?.Invoke(sb, prop, type);
                 }
@@ -581,6 +581,8 @@ namespace ServiceStack.NativeTypes.FSharp
 
             return true;
         }
+
+        public string GetPropertyName(string name) => name.SafeToken();
     }
 
     public static class FSharpGeneratorExtensions

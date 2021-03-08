@@ -11,7 +11,7 @@ namespace ServiceStack.NativeTypes.TypeScript
     {
         public readonly MetadataTypesConfig Config;
         readonly NativeTypesFeature feature;
-        List<string> conflictTypeNames = new List<string>();
+        List<string> conflictTypeNames = new();
         public List<MetadataType> AllTypes { get; set; }
 
         public TypeScriptGenerator(MetadataTypesConfig config)
@@ -31,12 +31,10 @@ namespace ServiceStack.NativeTypes.TypeScript
         public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
         
-        public static List<string> DefaultImports = new List<string>
-        {
+        public static List<string> DefaultImports = new() {
         };
 
-        public static Dictionary<string, string> TypeAliases = new Dictionary<string, string>
-        {
+        public static Dictionary<string, string> TypeAliases = new() {
             {"String", "string"},
             {"Boolean", "boolean"},
             {"DateTime", "string"},
@@ -65,8 +63,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"Type", "string"},
         };
         private static string declaredEmptyString = "''";
-        private static readonly Dictionary<string, string> primitiveDefaultValues = new Dictionary<string, string>
-        {
+        private static readonly Dictionary<string, string> primitiveDefaultValues = new() {
             {"String", declaredEmptyString},
             {"string", declaredEmptyString},
             {"Boolean", "false"},
@@ -482,7 +479,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 if (addVersionInfo)
                 {
                     sb.AppendLine(modifier + "{0}{1}: number; //{2}".Fmt(
-                        "Version".PropertyStyle(), isClass ? "" : "?", Config.AddImplicitVersion));
+                        GetPropertyName("Version"), isClass ? "" : "?", Config.AddImplicitVersion));
                 }
 
                 if (Config.ExportAsTypes)
@@ -562,7 +559,7 @@ namespace ServiceStack.NativeTypes.TypeScript
 
                     sb.Emit(prop, Lang.TypeScript);
                     PrePropertyFilter?.Invoke(sb, prop, type);
-                    sb.AppendLine(modifier + "{1}{2}: {0};".Fmt(propType, prop.Name.SafeToken().PropertyStyle(), optional));
+                    sb.AppendLine(modifier + "{1}{2}: {0};".Fmt(propType, GetPropertyName(prop.Name), optional));
                     PostPropertyFilter?.Invoke(sb, prop, type);
                 }
             }
@@ -573,7 +570,7 @@ namespace ServiceStack.NativeTypes.TypeScript
 
                 AppendDataMember(sb, null, dataMemberIndex++);
                 sb.AppendLine(modifier + "{0}{1}: ResponseStatus;".Fmt(
-                    nameof(ResponseStatus).PropertyStyle(), Config.ExportAsTypes ? "" : "?"));
+                    GetPropertyName(nameof(ResponseStatus)), Config.ExportAsTypes ? "" : "?"));
             }
         }
 
@@ -645,8 +642,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             return value;
         }
 
-        public static HashSet<string> ArrayTypes = new HashSet<string>
-        {
+        public static HashSet<string> ArrayTypes = new() {
             "List`1",
             "IEnumerable`1",
             "ICollection`1",
@@ -656,8 +652,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             "IEnumerable",
         };
 
-        public static HashSet<string> DictionaryTypes = new HashSet<string>
-        {
+        public static HashSet<string> DictionaryTypes = new() {
             "Dictionary`2",
             "IDictionary`2",
             "IOrderedDictionary`2",
@@ -929,6 +924,8 @@ namespace ServiceStack.NativeTypes.TypeScript
 
             return sb.ToString();
         }
+
+        public string GetPropertyName(string name) => name.SafeToken().PropertyStyle();
     }
 
     public static class TypeScriptGeneratorExtensions

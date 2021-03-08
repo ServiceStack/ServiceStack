@@ -403,7 +403,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
                 if (addVersionInfo)
                 {
-                    sb.AppendLine($"val {"Version".PropertyStyle()}:Int = {Config.AddImplicitVersion}");
+                    sb.AppendLine($"val {GetPropertyName("Version")}:Int = {Config.AddImplicitVersion}");
                 }
 
                 AddProperties(sb, type,
@@ -442,7 +442,7 @@ namespace ServiceStack.NativeTypes.Kotlin
 
                     var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
 
-                    var fieldName = prop.Name.SafeToken().PropertyStyle();
+                    var fieldName = GetPropertyName(prop.Name);
 
                     wasAdded = AppendComments(sb, prop.Description);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
@@ -476,7 +476,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                 if (wasAdded) sb.AppendLine();
 
                 AppendDataMember(sb, null, dataMemberIndex++);
-                sb.AppendLine($"var {nameof(ResponseStatus).PropertyStyle()}:ResponseStatus?{defaultValue}");
+                sb.AppendLine($"var {GetPropertyName(nameof(ResponseStatus))}:ResponseStatus?{defaultValue}");
             }
         }
         
@@ -784,6 +784,8 @@ namespace ServiceStack.NativeTypes.Kotlin
             var typeName = sb.ToString();
             return typeName.LastRightPart('.'); //remove nested class
         }
+
+        public string GetPropertyName(string name) => name.SafeToken().PropertyStyle();
     }
 
     public static class KotlinGeneratorExtensions
@@ -793,8 +795,7 @@ namespace ServiceStack.NativeTypes.Kotlin
             return type;
         }
 
-        public static HashSet<string> KotlinKeyWords = new HashSet<string>
-        {
+        public static HashSet<string> KotlinKeyWords = new() {
             //Java Keywords
             "abstract",
             "assert",
@@ -910,8 +911,8 @@ namespace ServiceStack.NativeTypes.Kotlin
                 {
                     Name = "Route",
                     Args = new List<MetadataPropertyType> {
-                        new MetadataPropertyType { Name = "Path", Type = "string", Value = route.Path },
-                        new MetadataPropertyType { Name = "Verbs", Type = "string", Value = route.Verbs },
+                        new() { Name = "Path", Type = "string", Value = route.Path },
+                        new() { Name = "Verbs", Type = "string", Value = route.Verbs },
                     },
                 };
             }
@@ -921,7 +922,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                 Name = "Route",
                 ConstructorArgs = new List<MetadataPropertyType>
                 {
-                    new MetadataPropertyType { Type = "string", Value = route.Path },
+                    new() { Type = "string", Value = route.Path },
                 },
             };
         }

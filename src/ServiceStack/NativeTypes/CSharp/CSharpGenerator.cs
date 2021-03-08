@@ -289,7 +289,7 @@ namespace ServiceStack.NativeTypes.CSharp
                                 new MetadataAttribute {
                                     Name = "EnumMember",
                                     Args = new List<MetadataPropertyType> {
-                                        new MetadataPropertyType {
+                                        new() {
                                             Name = "Value",
                                             Value = memberValue,
                                             Type = "String",
@@ -402,7 +402,7 @@ namespace ServiceStack.NativeTypes.CSharp
 
             foreach (var prop in collectionProps)
             {
-                sb.AppendLine($"{prop.Name.SafeToken()} = new {Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs,includeNested:true)}{{}};");
+                sb.AppendLine($"{GetPropertyName(prop.Name)} = new {Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs,includeNested:true)}{{}};");
             }
 
             sb = sb.UnIndent();
@@ -432,7 +432,7 @@ namespace ServiceStack.NativeTypes.CSharp
                     
                     sb.Emit(prop, Lang.CSharp);
                     PrePropertyFilter?.Invoke(sb, prop, type);
-                    sb.AppendLine($"{visibility}{virt}{propType} {prop.Name.SafeToken()} {{ get; set; }}");
+                    sb.AppendLine($"{visibility}{virt}{propType} {GetPropertyName(prop.Name)} {{ get; set; }}");
                     PostPropertyFilter?.Invoke(sb, prop, type);
                 }
             }
@@ -474,7 +474,7 @@ namespace ServiceStack.NativeTypes.CSharp
                 if ((attr.Args == null || attr.Args.Count == 0)
                     && (attr.ConstructorArgs == null || attr.ConstructorArgs.Count == 0))
                 {
-                    sb.AppendLine($"[{attr.Name}]");
+                    sb.AppendLine($"[{GetPropertyName(attr.Name)}]");
                 }
                 else
                 {
@@ -692,6 +692,8 @@ namespace ServiceStack.NativeTypes.CSharp
 
             return true;
         }
+
+        public string GetPropertyName(string name) => name.SafeToken();
     }
 
     public static class CSharpGeneratorExtensions

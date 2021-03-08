@@ -440,7 +440,7 @@ namespace ServiceStack.NativeTypes.VbNet
             foreach (var prop in collectionProps)
             {
                 var suffix = prop.IsArray() ? "{}" : "";
-                sb.AppendLine($"{EscapeKeyword(prop.Name).SafeToken()} = New {Type(prop.Type, prop.GenericArgs,true)}{suffix}");
+                sb.AppendLine($"{GetPropertyName(prop.Name)} = New {Type(prop.Type, prop.GenericArgs,true)}{suffix}");
             }
 
             sb = sb.UnIndent();
@@ -473,7 +473,7 @@ namespace ServiceStack.NativeTypes.VbNet
                     sb.AppendLine("{0}{1}Property {2} As {3}".Fmt(
                         visibility,
                         @virtual,
-                        EscapeKeyword(prop.Name).SafeToken(), 
+                        GetPropertyName(prop.Name), 
                         propType));
                     PostPropertyFilter?.Invoke(sb, prop, type);
                 }
@@ -508,7 +508,7 @@ namespace ServiceStack.NativeTypes.VbNet
 
             foreach (var attr in attributes)
             {
-                var attrName = EscapeKeyword(attr.Name);
+                var attrName = GetPropertyName(attr.Name);
 
                 if ((attr.Args == null || attr.Args.Count == 0)
                     && (attr.ConstructorArgs == null || attr.ConstructorArgs.Count == 0))
@@ -639,6 +639,8 @@ namespace ServiceStack.NativeTypes.VbNet
         }
 
         public string EscapeKeyword(string name) => KeyWords.Contains(name) ? $"[{name}]" : name;
+
+        public string GetPropertyName(string name) => EscapeKeyword(name).SafeToken();
 
         public bool AppendComments(StringBuilderWrapper sb, string desc)
         {

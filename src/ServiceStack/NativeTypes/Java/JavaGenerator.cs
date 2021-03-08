@@ -283,7 +283,7 @@ namespace ServiceStack.NativeTypes.Java
         private bool ReferencesGson(MetadataTypes metadata)
         {
             return metadata.GetAllMetadataTypes()
-                .Any(x => x.Properties.Safe().Any(p => JavaGeneratorExtensions.JavaKeyWords.Contains(p.Name.PropertyStyle()))
+                .Any(x => x.Properties.Safe().Any(p => JavaGeneratorExtensions.JavaKeyWords.Contains(GetPropertyName(p.Name)))
                     || x.Properties.Safe().Any(p => p.DataMember?.Name != null)
                     || (x.RequestType?.ReturnType != null && x.RequestType?.ReturnType.Name.IndexOf('`') >= 0) //uses TypeToken<T>
                 );
@@ -295,8 +295,7 @@ namespace ServiceStack.NativeTypes.Java
         }
 
         //Use built-in types already in net.servicestack.client package
-        public static HashSet<string> IgnoreTypeNames = new HashSet<string>
-        {
+        public static HashSet<string> IgnoreTypeNames = new() {
             nameof(ResponseStatus),
             nameof(ResponseError),
             nameof(ErrorResponse),
@@ -421,7 +420,7 @@ namespace ServiceStack.NativeTypes.Java
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
                 if (addVersionInfo)
                 {
-                    sb.AppendLine("public Integer {0} = {1};".Fmt("Version".PropertyStyle(), Config.AddImplicitVersion));
+                    sb.AppendLine("public Integer {0} = {1};".Fmt(GetPropertyName("Version"), Config.AddImplicitVersion));
 
                     if (addPropertyAccessors)
                         sb.AppendPropertyAccessor("Integer", "Version", settersReturnType);
@@ -474,7 +473,7 @@ namespace ServiceStack.NativeTypes.Java
 
                     var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
 
-                    var fieldName = prop.Name.SafeToken().PropertyStyle();
+                    var fieldName = GetPropertyName(prop.Name);
                     var accessorName = fieldName.ToPascalCase();
 
                     wasAdded = AppendComments(sb, prop.Description);
@@ -505,7 +504,7 @@ namespace ServiceStack.NativeTypes.Java
                 if (wasAdded) sb.AppendLine();
 
                 AppendDataMember(sb, null, dataMemberIndex++);
-                sb.AppendLine("public ResponseStatus {0} = null;".Fmt(nameof(ResponseStatus).PropertyStyle()));
+                sb.AppendLine("public ResponseStatus {0} = null;".Fmt(GetPropertyName(nameof(ResponseStatus))));
 
                 if (addPropertyAccessors)
                     sbAccessors.AppendPropertyAccessor("ResponseStatus", "ResponseStatus", settersReturnType);
@@ -588,8 +587,7 @@ namespace ServiceStack.NativeTypes.Java
             return Type(typeName.Name, typeName.GenericArgs);
         }
 
-        public static HashSet<string> ArrayTypes = new HashSet<string>
-        {
+        public static HashSet<string> ArrayTypes = new() {
             "List`1",
             "IEnumerable`1",
             "ICollection`1",
@@ -599,8 +597,7 @@ namespace ServiceStack.NativeTypes.Java
             "IEnumerable",
         };
 
-        public static HashSet<string> DictionaryTypes = new HashSet<string>
-        {
+        public static HashSet<string> DictionaryTypes = new() {
             "Dictionary`2",
             "IDictionary`2",
             "IOrderedDictionary`2",
@@ -819,6 +816,8 @@ namespace ServiceStack.NativeTypes.Java
             var typeName = sb.ToString();
             return typeName.LastRightPart('.'); //remove nested class
         }
+
+        public string GetPropertyName(string name) => name.SafeToken().PropertyStyle();
     }
 
     public static class JavaGeneratorExtensions
@@ -828,8 +827,7 @@ namespace ServiceStack.NativeTypes.Java
             return type;
         }
 
-        public static HashSet<string> JavaKeyWords = new HashSet<string>
-        {
+        public static HashSet<string> JavaKeyWords = new() {
             "abstract",
             "assert",
             "boolean",
@@ -905,8 +903,8 @@ namespace ServiceStack.NativeTypes.Java
                 {
                     Name = "Route",
                     Args = new List<MetadataPropertyType> {
-                        new MetadataPropertyType { Name = "Path", Type = "string", Value = route.Path },
-                        new MetadataPropertyType { Name = "Verbs", Type = "string", Value = route.Verbs },
+                        new() { Name = "Path", Type = "string", Value = route.Path },
+                        new() { Name = "Verbs", Type = "string", Value = route.Verbs },
                     },
                 };
             }
@@ -916,7 +914,7 @@ namespace ServiceStack.NativeTypes.Java
                 Name = "Route",
                 ConstructorArgs = new List<MetadataPropertyType>
                 {
-                    new MetadataPropertyType { Type = "string", Value = route.Path },
+                    new() { Type = "string", Value = route.Path },
                 },
             };
         }
