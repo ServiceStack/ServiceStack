@@ -302,6 +302,11 @@ namespace ServiceStack
         public string IconUrl { get; set; }
 
         /// <summary>
+        /// The configured JsConfig.TextCase
+        /// </summary>
+        public string JsTextCase { get; set; }
+        
+        /// <summary>
         /// Custom User-Defined Attributes
         /// </summary>
         public Dictionary<string, string> Meta { get; set; }

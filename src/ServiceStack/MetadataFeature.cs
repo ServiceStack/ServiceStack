@@ -208,6 +208,8 @@ namespace ServiceStack
                 response.App.BaseUrl = Request.GetBaseUrl();
             if (response.App.ServiceName == null)
                 response.App.ServiceName = appHost.ServiceName;
+            if (response.App.JsTextCase == null)
+                response.App.JsTextCase = Text.JsConfig.TextCase.ToString();
 
             foreach (var fn in feature.AppMetadataFilters)
             {
