@@ -88,6 +88,7 @@ namespace ServiceStack.NativeTypes.Java
 
         public static ConcurrentDictionary<string, string> ArrayAliases = new Dictionary<string, string> {
             { "Byte[]", "byte[]" },
+            { "byte[]", "byte[]" }, //GenericArg()
         }.ToConcurrentDictionary();
 
         public static TypeFilterDelegate TypeFilter { get; set; }
