@@ -66,7 +66,8 @@ namespace ServiceStack.NativeTypes.Kotlin
             {"Boolean", "Boolean"},
             {"Char", "String"},
             {"SByte", "Byte"},
-            {"Byte", "byte"},
+            {"Byte", "Short"},
+            {"Byte[]", "byte[]"},
             {"Int16", "Short"},
             {"Int32", "Int"},
             {"Int64", "Long"},
@@ -84,6 +85,10 @@ namespace ServiceStack.NativeTypes.Kotlin
             {"Type", "Class"},
             {"List", "ArrayList"},
             {"Dictionary", "HashMap"},
+        }.ToConcurrentDictionary();
+
+        public static ConcurrentDictionary<string, string> ArrayAliases = new Dictionary<string, string> {
+            { "Byte[]", "byte[]" },
         }.ToConcurrentDictionary();
 
         public static TypeFilterDelegate TypeFilter { get; set; }
@@ -619,11 +624,13 @@ namespace ServiceStack.NativeTypes.Kotlin
             type = type.SanitizeType();
             var arrParts = type.SplitOnFirst('[');
             if (arrParts.Length > 1)
-                return $"ArrayList<{TypeAlias(arrParts[0])}>";
+            {
+                return ArrayAliases.TryGetValue(type, out var arrayAlias) 
+                    ? arrayAlias
+                    : $"ArrayList<{TypeAlias(arrParts[0])}>";
+            }
 
-            string typeAlias;
-            TypeAliases.TryGetValue(type, out typeAlias);
-
+            TypeAliases.TryGetValue(type, out var typeAlias);
             return typeAlias ?? NameOnly(type);
         }
 
