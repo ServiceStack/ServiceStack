@@ -6,6 +6,7 @@ using System.Text;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.Host;
+using ServiceStack.NativeTypes.TypeScript;
 
 namespace ServiceStack.NativeTypes.Kotlin
 {
@@ -442,7 +443,6 @@ namespace ServiceStack.NativeTypes.Kotlin
 
                     var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
 
-                    var fieldName = GetPropertyName(prop.Name);
 
                     wasAdded = AppendComments(sb, prop.Description);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
@@ -453,7 +453,10 @@ namespace ServiceStack.NativeTypes.Kotlin
 
                     sb.Emit(prop, Lang.Kotlin);
                     PrePropertyFilter?.Invoke(sb, prop, type);
-                    if (!fieldName.IsKeyWord())
+
+                    var defaultName = prop.Name.PropertyStyle();
+                    var fieldName = GetPropertyName(prop.Name);
+                    if (fieldName == defaultName)
                     {
                         sb.AppendLine(!initProp
                             ? $"var {fieldName}:{propType}?{defaultValue}"
@@ -461,11 +464,9 @@ namespace ServiceStack.NativeTypes.Kotlin
                     }
                     else
                     {
-                        var originalName = fieldName;
-                        fieldName = char.ToUpper(fieldName[0]) + fieldName.SafeSubstring(1);
                         sb.AppendLine(!initProp
-                            ? $"@SerializedName(\"{originalName}\") var {fieldName}:{propType}?{defaultValue}"
-                            : $"@SerializedName(\"{originalName}\") var {fieldName}:{propType} = {propType}()");
+                            ? $"@SerializedName(\"{defaultName}\") var {fieldName}:{propType}?{defaultValue}"
+                            : $"@SerializedName(\"{defaultName}\") var {fieldName}:{propType} = {propType}()");
                     }
                     PostPropertyFilter?.Invoke(sb, prop, type);
                 }
@@ -553,8 +554,7 @@ namespace ServiceStack.NativeTypes.Kotlin
             return Type(typeName.Name, typeName.GenericArgs);
         }
 
-        public static HashSet<string> ArrayTypes = new HashSet<string>
-        {
+        public static HashSet<string> ArrayTypes = new() {
             "List`1",
             "IEnumerable`1",
             "ICollection`1",
@@ -564,8 +564,7 @@ namespace ServiceStack.NativeTypes.Kotlin
             "IEnumerable",
         };
 
-        public static HashSet<string> DictionaryTypes = new HashSet<string>
-        {
+        public static HashSet<string> DictionaryTypes = new() {
             "Dictionary`2",
             "IDictionary`2",
             "IOrderedDictionary`2",
@@ -785,7 +784,13 @@ namespace ServiceStack.NativeTypes.Kotlin
             return typeName.LastRightPart('.'); //remove nested class
         }
 
-        public string GetPropertyName(string name) => name.SafeToken().PropertyStyle();
+        public string GetPropertyName(string name)
+        {
+            var fieldName = name.SafeToken().PropertyStyle();
+            if (fieldName.IsKeyWord())
+                fieldName = char.ToUpper(fieldName[0]) + fieldName.SafeSubstring(1);
+            return fieldName;
+        }
     }
 
     public static class KotlinGeneratorExtensions
