@@ -6,6 +6,7 @@ using System.Text;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.Host;
+using ServiceStack.NativeTypes.Kotlin;
 
 namespace ServiceStack.NativeTypes.Java
 {
@@ -283,10 +284,9 @@ namespace ServiceStack.NativeTypes.Java
         private bool ReferencesGson(MetadataTypes metadata)
         {
             return metadata.GetAllMetadataTypes()
-                .Any(x => x.Properties.Safe().Any(p => JavaGeneratorExtensions.JavaKeyWords.Contains(GetPropertyName(p.Name)))
-                    || x.Properties.Safe().Any(p => p.DataMember?.Name != null)
-                    || (x.RequestType?.ReturnType != null && x.RequestType?.ReturnType.Name.IndexOf('`') >= 0) //uses TypeToken<T>
-                );
+                .Any(x => x.Properties.Safe().Any(p => p.Name.PropertyStyle().IsKeyWord())
+                  || x.Properties.Safe().Any(p => p.DataMember?.Name != null)
+                  || (x.RequestType?.ReturnType != null && x.RequestType?.ReturnType.Name.IndexOf('`') >= 0)); //uses TypeToken<T>
         }
 
         private static bool ReferencesStream(MetadataTypes metadata)

@@ -6,6 +6,7 @@ using System.Text;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.Host;
+using ServiceStack.NativeTypes.Java;
 using ServiceStack.NativeTypes.TypeScript;
 
 namespace ServiceStack.NativeTypes.Kotlin
@@ -272,9 +273,10 @@ namespace ServiceStack.NativeTypes.Kotlin
 
         private bool ReferencesGson(MetadataTypes metadata)
         {
-            return metadata.GetAllMetadataTypes().Any(x => KotlinGeneratorExtensions.KotlinKeyWords.Contains(x.Name)
-                || x.Properties.Safe().Any(p => p.DataMember != null && p.DataMember.Name != null)
-                || (x.RequestType?.ReturnType != null && x.RequestType?.ReturnType.Name.IndexOf('`') >= 0)); //uses TypeToken<T>
+            return metadata.GetAllMetadataTypes()
+                .Any(x => x.Properties.Safe().Any(p => p.Name.PropertyStyle().IsKeyWord())
+                  || x.Properties.Safe().Any(p => p.DataMember?.Name != null)
+                  || (x.RequestType?.ReturnType != null && x.RequestType?.ReturnType.Name.IndexOf('`') >= 0)); //uses TypeToken<T>
         }
 
         private static bool ReferencesStream(MetadataTypes metadata)
@@ -283,8 +285,7 @@ namespace ServiceStack.NativeTypes.Kotlin
         }
 
         //Use built-in types already in net.servicestack.client package
-        public static HashSet<string> IgnoreTypeNames = new HashSet<string>
-        {
+        public static HashSet<string> IgnoreTypeNames = new() {
             nameof(ResponseStatus),
             nameof(ResponseError),
             nameof(ErrorResponse),
