@@ -528,7 +528,7 @@ namespace ServiceStack.NativeTypes.Dart
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest && !isAbstractClass;
                 if (addVersionInfo)
                 {
-                    sb.AppendLine($"int {"Version".PropertyStyle()};");
+                    sb.AppendLine($"int {GetPropertyName("Version")};");
                 }
 
                 if (type.Name == "IReturn`1")
@@ -554,7 +554,7 @@ namespace ServiceStack.NativeTypes.Dart
                     if (addVersionInfo)
                     {
                         props.Insert(0, new MetadataPropertyType {
-                            Name = "Version".PropertyStyle(),
+                            Name = GetPropertyName("Version"),
                             Type = "Int32",
                             TypeNamespace = "System",
                             IsValueType = true,            
@@ -584,7 +584,7 @@ namespace ServiceStack.NativeTypes.Dart
                                 sbBody.Append(typeNameWithoutGenericArgs + "({");
                             else
                                 sbBody.Append(",");
-                            sbBody.Append($"this.{prop.Name.PropertyStyle().PropertyName()}");
+                            sbBody.Append($"this.{GetPropertyName(prop.Name)}");
                             if (!string.IsNullOrEmpty(prop.Value))
                             {
                                 sbBody.Append("=" + prop.Value);
@@ -622,7 +622,7 @@ namespace ServiceStack.NativeTypes.Dart
                     {
                         var propType = DartPropertyType(prop);
                         var jsonName = prop.Name.PropertyStyle();
-                        var propName = jsonName.PropertyName();
+                        var propName = GetPropertyName(prop.Name);
                         if (UseTypeConversion(prop))
                         {
                             bool registerType = true;
@@ -684,7 +684,7 @@ namespace ServiceStack.NativeTypes.Dart
     
                             var propType = DartPropertyType(prop);
                             var jsonName = prop.Name.PropertyStyle();
-                            var propName = jsonName.PropertyName();
+                            var propName = GetPropertyName(prop.Name);
                             if (UseTypeConversion(prop))
                             {
                                 sbBody.Append($"        '{jsonName}': JsonConverters.toJson({propName},'{propType}',context)");
@@ -851,7 +851,7 @@ namespace ServiceStack.NativeTypes.Dart
 
                     sb.Emit(prop, Lang.Dart);
                     PrePropertyFilter?.Invoke(sb, prop, type);
-                    sb.AppendLine($"{propType} {prop.Name.SafeToken().PropertyStyle().PropertyName()};");
+                    sb.AppendLine($"{propType} {GetPropertyName(prop.Name)};");
                     PostPropertyFilter?.Invoke(sb, prop, type);
                 }
             }
@@ -861,7 +861,7 @@ namespace ServiceStack.NativeTypes.Dart
                 if (wasAdded) sb.AppendLine();
 
                 AppendDataMember(sb, null, dataMemberIndex++);
-                sb.AppendLine($"ResponseStatus {nameof(ResponseStatus).PropertyStyle().PropertyName()};");
+                sb.AppendLine($"ResponseStatus {GetPropertyName(nameof(ResponseStatus))};");
             }
         }
 
@@ -1223,7 +1223,7 @@ namespace ServiceStack.NativeTypes.Dart
             return sb.ToString();
         }
 
-        public string GetPropertyName(string name) => name.PropertyName();
+        public string GetPropertyName(string name) => name.SafeToken().PropertyStyle().PropertyName();
     }
     
     public static class DartGeneratorExtensions
