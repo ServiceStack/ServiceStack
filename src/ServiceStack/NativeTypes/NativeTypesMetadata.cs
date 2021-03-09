@@ -1217,6 +1217,20 @@ namespace ServiceStack.NativeTypes
                 }
             }
 
+            // Operation Return Types should always be included 
+            var ops = metadata.Operations.Where(x => explicitTypes.Contains(x.Request.Name));
+            foreach (var op in ops)
+            {
+                if (op.ReturnType != null)
+                {
+                    typesToExpand.Add(op.ReturnType.Name);
+                    foreach (var arg in op.ReturnType.GenericArgs.Safe())
+                    {
+                        typesToExpand.Add(arg);
+                    }
+                }
+            }
+
             if (typesToExpand.Count != 0 || namespacedTypes.Count != 0)
             {
                 var includeTypesInNamespace = namespacedTypes.Count > 0

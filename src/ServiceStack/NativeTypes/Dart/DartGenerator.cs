@@ -428,7 +428,6 @@ namespace ServiceStack.NativeTypes.Dart
                         }
                     }
 
-
                     sb.AppendLine();
                     sb.AppendLine("final int _value;");
                     sb.AppendLine($"const {enumType}._(this._value);");
@@ -450,6 +449,7 @@ namespace ServiceStack.NativeTypes.Dart
                     extends.Add(Type(type.Inherits).InDeclarationType());
 
                 string responseTypeExpression = null;
+                string responseTypeName = null;
 
                 var interfaces = new List<string>();
                 var implStr = options.ImplementsFn?.Invoke();
@@ -467,8 +467,13 @@ namespace ServiceStack.NativeTypes.Dart
 
                         // This is to avoid invalid syntax such as "return new string()"
                         responseTypeExpression = defaultValues.TryGetValue(returnType, out var newReturnInstance)
-                            ? $"createResponse() {{ return {newReturnInstance}; }}"
-                            : $"createResponse() {{ return new {returnType}(); }}";
+                            ? $"createResponse() => {newReturnInstance};"
+                            : $"createResponse() => {returnType}();";
+                        responseTypeName = $"getResponseTypeName() => \"{returnType}\";";
+                        
+                        var isGeneric = returnType.IndexOf('<') >= 0;
+                        if (isGeneric)
+                            RegisterType(null, returnType);
                     }
                     else if (implStr == "IReturnVoid")
                     {
@@ -704,13 +709,15 @@ namespace ServiceStack.NativeTypes.Dart
                     else
                     {
                         sb.AppendLine("Map<String, dynamic> toJson() => " + 
-                                      (hasDtoBaseClass ? "super.toJson();" : "{};"));
+                            (hasDtoBaseClass ? "super.toJson();" : "{};"));
                     }
                     
                     if (responseTypeExpression != null)
                     {
                         sb.AppendLine(responseTypeExpression);
-                        sb.AppendLine($"String getTypeName() {{ return \"{type.Name}\"; }}");
+                        if (responseTypeName != null)
+                            sb.AppendLine(responseTypeName);
+                        sb.AppendLine($"getTypeName() => \"{type.Name}\";");
                     }
 
                     if (isClass)
