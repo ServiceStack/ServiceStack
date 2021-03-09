@@ -47,7 +47,7 @@ namespace ServiceStack.NativeTypes.Swift
             {"DateTimeOffset", "Date"},
             {"Guid", "String"},
             {"Char", "Character"},
-            {"Byte", "Int8"},
+            {"Byte", "UInt8"},
             {"Int16", "Int16"},
             {"Int32", "Int"},
             {"Int64", "Int64"},
