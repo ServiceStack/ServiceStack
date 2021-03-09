@@ -86,11 +86,11 @@ namespace ServiceStack.NativeTypes.Dart
             {"IntPtr", "0"},
             {"number", "0"},
             {"List", "[]"},
-            {"Byte[]", "new Uint8List(0)"},
-            {"Stream", "new Uint8List(0)"},
-            {"Uint8List", "new Uint8List(0)"},
-            {"DateTime", "new DateTime(0)"},
-            {"DateTimeOffset", "new DateTime(0)"},
+            {"Byte[]", "Uint8List(0)"},
+            {"Stream", "Uint8List(0)"},
+            {"Uint8List", "Uint8List(0)"},
+            {"DateTime", "DateTime(0)"},
+            {"DateTimeOffset", "DateTime(0)"},
         };
         
         static HashSet<string> BasicJsonTypes = new() {
@@ -756,11 +756,11 @@ namespace ServiceStack.NativeTypes.Dart
             existingTypeInfos.Add(dartType);
 
             if (factoryFn == null)
-                factoryFn = $"() => new {dartType}()"; 
+                factoryFn = $"() => {dartType}()"; 
             
             if (metaType == null)
             {
-                sbTypeInfos.AppendLine($"    '{dartType}': new TypeInfo(TypeOf.Class, create:{factoryFn}),");
+                sbTypeInfos.AppendLine($"    '{dartType}': TypeInfo(TypeOf.Class, create:{factoryFn}),");
 
                 var hasGenericArgs = dartType.IndexOf("<", StringComparison.Ordinal) >= 0;
                 if (hasGenericArgs)
@@ -789,23 +789,23 @@ namespace ServiceStack.NativeTypes.Dart
             if (isGenericTypeDef)
             {
                 var dartGenericBaseType = dartType.LeftPart("<");
-                sbTypeInfos.AppendLine($"    '{dartType}': new TypeInfo(TypeOf.GenericDef,create:() => new {dartGenericBaseType}()),");
+                sbTypeInfos.AppendLine($"    '{dartType}': TypeInfo(TypeOf.GenericDef,create:() => {dartGenericBaseType}()),");
             }
             else if (metaType?.IsInterface == true)
             {
-                sbTypeInfos.AppendLine($"    '{dartType}': new TypeInfo(TypeOf.Interface),");
+                sbTypeInfos.AppendLine($"    '{dartType}': TypeInfo(TypeOf.Interface),");
             }
             else if (metaType?.IsAbstract == true)
             {
-                sbTypeInfos.AppendLine($"    '{dartType}': new TypeInfo(TypeOf.AbstractClass),");
+                sbTypeInfos.AppendLine($"    '{dartType}': TypeInfo(TypeOf.AbstractClass),");
             }
             else if (metaType?.IsEnum == true)
             {
-                sbTypeInfos.AppendLine($"    '{dartType}': new TypeInfo(TypeOf.Enum, enumValues:{dartType}.values),");
+                sbTypeInfos.AppendLine($"    '{dartType}': TypeInfo(TypeOf.Enum, enumValues:{dartType}.values),");
             }
             else
             {
-                sbTypeInfos.AppendLine($"    '{dartType}': new TypeInfo(TypeOf.Class, create:{factoryFn}),");
+                sbTypeInfos.AppendLine($"    '{dartType}': TypeInfo(TypeOf.Class, create:{factoryFn}),");
             }
 
             //base classes need to be abstract and can't be instantiated in TypeContext mappings
