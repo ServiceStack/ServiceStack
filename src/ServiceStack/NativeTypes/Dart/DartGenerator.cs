@@ -719,8 +719,8 @@ namespace ServiceStack.NativeTypes.Dart
                         sb.AppendLine(responseTypeExpression);
                         if (responseTypeName != null)
                             sb.AppendLine(responseTypeName);
-                        sb.AppendLine($"getTypeName() => \"{type.Name}\";");
                     }
+                    sb.AppendLine($"getTypeName() => \"{typeName}\";");
 
                     if (isClass)
                     {
