@@ -468,7 +468,7 @@ namespace ServiceStack.NativeTypes.Dart
                         // This is to avoid invalid syntax such as "return new string()"
                         responseTypeExpression = defaultValues.TryGetValue(returnType, out var newReturnInstance)
                             ? $"createResponse() => {newReturnInstance};"
-                            : $"createResponse() => {returnType}();";
+                            : $"createResponse() => {DartLiteral(returnType + "()")};";
                         responseTypeName = $"getResponseTypeName() => \"{returnType}\";";
                         
                         var isGeneric = returnType.IndexOf('<') >= 0;
@@ -751,6 +751,17 @@ namespace ServiceStack.NativeTypes.Dart
             RegisterType(metaType, dartType, factoryFn);
         }
 
+        public string DartLiteral(string typeName)
+        {
+            // List<T>() is deprecated for literal: <T>[]
+            if (typeName.StartsWith("List<"))
+            {
+                var listLiteral = typeName.Substring("List".Length);
+                return listLiteral.Substring(0,listLiteral.Length - 2) + "[]";
+            }
+            return typeName;
+        }
+
         private void RegisterType(MetadataType metaType, string dartType, string factoryFn = null)
         {
             if (existingTypeInfos.Contains(dartType))
@@ -760,11 +771,10 @@ namespace ServiceStack.NativeTypes.Dart
             if (factoryFn == null)
                 factoryFn = $"() => {dartType}()";
 
-            // List<T>() is deprecated for literal: <T>[]
             if (factoryFn.StartsWith("() => List<"))
             {
-                var listSuffix = factoryFn.Substring("() => List".Length);
-                factoryFn = "() => " + listSuffix.Substring(0, listSuffix.Length - 2) + "[]";
+                var listLiteral = DartLiteral(factoryFn.Substring("() => ".Length));
+                factoryFn = "() => " + listLiteral;
             }
             
             if (metaType == null)
