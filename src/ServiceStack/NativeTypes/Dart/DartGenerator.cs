@@ -472,7 +472,9 @@ namespace ServiceStack.NativeTypes.Dart
                         responseTypeName = $"getResponseTypeName() => \"{returnType}\";";
                         
                         var isGeneric = returnType.IndexOf('<') >= 0;
-                        if (isGeneric)
+                        //Don't register non-existent 'T Generic Type
+                        var hasGenericBase = type.Inherits != null && type.Inherits?.Name.IndexOf('`') >= 0;  
+                        if (isGeneric && hasGenericBase)
                             RegisterType(null, returnType);
                     }
                     else if (implStr == "IReturnVoid")
@@ -756,7 +758,14 @@ namespace ServiceStack.NativeTypes.Dart
             existingTypeInfos.Add(dartType);
 
             if (factoryFn == null)
-                factoryFn = $"() => {dartType}()"; 
+                factoryFn = $"() => {dartType}()";
+
+            // List<T>() is deprecated for literal: <T>[]
+            if (factoryFn.StartsWith("() => List<"))
+            {
+                var listSuffix = factoryFn.Substring("() => List".Length);
+                factoryFn = "() => " + listSuffix.Substring(0, listSuffix.Length - 2) + "[]";
+            }
             
             if (metaType == null)
             {
@@ -813,7 +822,8 @@ namespace ServiceStack.NativeTypes.Dart
             {
                 //AutoQuery Base types are existing but still need to register the List<Result> type
                 var baseType = metaType.Inherits;
-                if (baseType.Name.StartsWith("QueryDb`") || baseType.Name.StartsWith("QueryData`"))
+                if ((baseType.Name.StartsWith("QueryDb`") || baseType.Name.StartsWith("QueryData`"))
+                    && metaType.IsAbstract != true) //Don't register non-existent 'T Generic Type
                 {
                     var listArgType = baseType.GenericArgs.Last();
                     var listType = new MetadataType
