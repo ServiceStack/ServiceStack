@@ -299,7 +299,7 @@ namespace ServiceStack.NativeTypes.Dart
             existingTypeInfos = new HashSet<string>(IgnoreTypeInfosFor);
             sbTypeInfos = new StringBuilder();
             var dtosName = Config.GlobalNamespace ?? new Uri(Config.BaseUrl).Host;
-            sbTypeInfos.AppendLine().AppendLine("TypeContext _ctx = new TypeContext(library: '" + dtosName.SafeVarRef() + "', types: <String, TypeInfo> {");
+            sbTypeInfos.AppendLine().AppendLine("TypeContext _ctx = TypeContext(library: '" + dtosName.SafeVarRef() + "', types: <String, TypeInfo> {");
 
             //ServiceStack core interfaces
             foreach (var type in allTypes)
