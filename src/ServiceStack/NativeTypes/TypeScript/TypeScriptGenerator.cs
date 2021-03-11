@@ -661,6 +661,12 @@ namespace ServiceStack.NativeTypes.TypeScript
             "IDictionary",
             "IOrderedDictionary",
         };
+
+        public static HashSet<string> AllowedKeyTypes = new() {
+            "string",
+            "boolean",
+            "number",
+        };
         
         public string Type(MetadataTypeName typeName) => Type(typeName.Name, typeName.GenericArgs);
 
@@ -721,7 +727,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 else if (DictionaryTypes.Contains(type))
                 {
                     cooked = "{{ [index: {0}]: {1}; }}".Fmt(
-                        GenericArg(genericArgs[0]),
+                        GetKeyType(GenericArg(genericArgs[0])),
                         GenericArg(genericArgs[1]));
                 }
                 else
@@ -882,6 +888,9 @@ namespace ServiceStack.NativeTypes.TypeScript
         {
             var sb = new StringBuilder();
 
+            if (node.Text == "Nullable")
+                return TypeAlias(node.Children[0].Text);
+
             if (node.Text == "List")
             {
                 sb.Append(ConvertFromCSharp(node.Children[0]));
@@ -895,7 +904,8 @@ namespace ServiceStack.NativeTypes.TypeScript
             else if (node.Text == "Dictionary")
             {
                 sb.Append("{ [index:");
-                sb.Append(ConvertFromCSharp(node.Children[0]));
+                var keyType = ConvertFromCSharp(node.Children[0]);
+                sb.Append(GetKeyType(keyType));
                 sb.Append("]: ");
                 sb.Append(ConvertFromCSharp(node.Children[1]));
                 sb.Append("; }");
@@ -923,6 +933,14 @@ namespace ServiceStack.NativeTypes.TypeScript
             }
 
             return sb.ToString();
+        }
+
+        private static string GetKeyType(string keyType)
+        {
+            var jsKeyType = AllowedKeyTypes.Contains(keyType)
+                ? keyType
+                : "string";
+            return jsKeyType;
         }
 
         public string GetPropertyName(string name) => name.SafeToken().PropertyStyle();
