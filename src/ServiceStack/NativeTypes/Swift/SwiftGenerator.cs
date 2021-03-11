@@ -319,17 +319,6 @@ namespace ServiceStack.NativeTypes.Swift
                 if (type.Inherits != null)
                 {
                     var baseType = Type(type.Inherits).InheritedType();
-
-                    //Swift requires re-declaring base type generics definition on super type
-                    var genericDefPos = baseType.IndexOf("<", StringComparison.Ordinal);
-                    if (genericDefPos >= 0)
-                    {
-                        //Need to declare BaseType is Codable
-                        var subBaseType = AddGenericConstraints(baseType.Substring(genericDefPos));
-
-                        typeName += subBaseType;
-                    }
-
                     extends.Add(baseType);
                 }
                 else if (Config.BaseClass != null && !type.IsInterface())
@@ -972,6 +961,9 @@ namespace ServiceStack.NativeTypes.Swift
         public string ConvertFromCSharp(TextNode node)
         {
             var sb = new StringBuilder();
+
+            if (node.Text == "Nullable")
+                return TypeAlias(node.Children[0].Text) + "?";
 
             if (node.Text == "List")
             {
