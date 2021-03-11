@@ -720,7 +720,23 @@ namespace ServiceStack.NativeTypes.Dart
                         if (responseTypeName != null)
                             sb.AppendLine(responseTypeName);
                     }
-                    sb.AppendLine($"getTypeName() => \"{typeName}\";");
+                    if ((type.GenericArgs?.Length ?? 0) == 0)
+                    {
+                        sb.AppendLine($"getTypeName() => \"{typeName}\";");
+                    }
+                    else
+                    {
+                        // Return the reified generic type name instead of the non-existent generic template arg type
+                        var sbGeneric = StringBuilderCacheAlt.Allocate();
+                        foreach (var arg in type.GenericArgs)
+                        {
+                            if (sbGeneric.Length > 0)
+                                sbGeneric.Append(',');
+                            sbGeneric.Append("$").Append(arg.TrimStart('\''));
+                        }
+                        var genericTypeName = type.Name.LeftPart('`') + '<' + StringBuilderCacheAlt.ReturnAndFree(sbGeneric) + '>';
+                        sb.AppendLine($"getTypeName() => \"{genericTypeName}\";");
+                    }
 
                     if (isClass)
                     {
