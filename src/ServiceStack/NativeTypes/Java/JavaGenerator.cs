@@ -786,6 +786,9 @@ namespace ServiceStack.NativeTypes.Java
         {
             var sb = new StringBuilder();
 
+            if (node.Text == "Nullable")
+                return TypeAlias(node.Children[0].Text);
+
             if (node.Text == "List")
             {
                 sb.Append("ArrayList<");

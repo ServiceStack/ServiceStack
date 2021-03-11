@@ -85,6 +85,7 @@ namespace ServiceStack.NativeTypes.Kotlin
             {"Type", "Class"},
             {"List", "ArrayList"},
             {"Dictionary", "HashMap"},
+            {"Stream", "InputStream"},
         }.ToConcurrentDictionary();
 
         public static ConcurrentDictionary<string, string> ArrayAliases = new Dictionary<string, string> {
@@ -752,6 +753,9 @@ namespace ServiceStack.NativeTypes.Kotlin
         public string ConvertFromCSharp(TextNode node)
         {
             var sb = new StringBuilder();
+
+            if (node.Text == "Nullable")
+                return TypeAlias(node.Children[0].Text) + "?";
 
             if (node.Text == "List")
             {
