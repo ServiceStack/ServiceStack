@@ -54,7 +54,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"Decimal", "number"},
             {"IntPtr", "number"},
             {"List", "Array"},
-            {"Byte[]", "Uint8Array"},
+            {"Byte[]", "string"},
             {"Stream", "Blob"},
             {"HttpWebResponse", "Blob"},
             {"IDictionary", "any"},
