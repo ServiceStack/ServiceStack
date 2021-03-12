@@ -1649,5 +1649,8 @@ namespace ServiceStack
 
         public static IDbConnection GetDb<From>(this IAutoQueryDb autoQuery, IQueryDb<From> dto, IRequest req = null) => 
             autoQuery.GetDb(typeof(From), req);
+
+        public static IDbConnection GetDb<From, Into>(this IAutoQueryDb autoQuery, IQueryDb<From,Into> dto, IRequest req = null) => 
+            autoQuery.GetDb(typeof(From), req);
     }
 }
