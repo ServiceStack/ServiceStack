@@ -39,7 +39,7 @@ namespace ServiceStack
                 else
                 {
                     if (src is Stream stream)
-                        responseBytes = stream.ReadFully();
+                        responseBytes = await stream.ReadFullyAsync().ConfigAwait();
                 }
             }
 

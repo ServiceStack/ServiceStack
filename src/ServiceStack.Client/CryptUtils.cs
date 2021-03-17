@@ -42,92 +42,72 @@ namespace ServiceStack
 
         public static RsaKeyPair CreatePublicAndPrivateKeyPair(RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
         {
-            using (var rsa = CreateRsa(rsaKeyLength))
-            {
-                return new RsaKeyPair
-                {
-                    PrivateKey = rsa.ToXml(includePrivateParameters: true),
-                    PublicKey = rsa.ToXml(includePrivateParameters: false),
-                };
-            }
+            using var rsa = CreateRsa(rsaKeyLength);
+            return new RsaKeyPair {
+                PrivateKey = rsa.ToXml(includePrivateParameters: true),
+                PublicKey = rsa.ToXml(includePrivateParameters: false),
+            };
         }
 
         public static RSAParameters CreatePrivateKeyParams(RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
         {
-            using (var rsa = CreateRsa(rsaKeyLength))
-            {
-                return rsa.ExportParameters(includePrivateParameters: true);
-            }
+            using var rsa = CreateRsa(rsaKeyLength);
+            return rsa.ExportParameters(includePrivateParameters: true);
         }
 
         public static string FromPrivateRSAParameters(this RSAParameters privateKey)
         {
-            using (var rsa = RSA.Create())
-            {
-                rsa.ImportParameters(privateKey);
-                return rsa.ToXml(includePrivateParameters: true);
-            }
+            using var rsa = RSA.Create();
+            rsa.ImportParameters(privateKey);
+            return rsa.ToXml(includePrivateParameters: true);
         }
 
         public static string FromPublicRSAParameters(this RSAParameters publicKey)
         {
-            using (var rsa = RSA.Create())
-            {
-                rsa.ImportParameters(publicKey);
-                return rsa.ToXml(includePrivateParameters: false);
-            }
+            using var rsa = RSA.Create();
+            rsa.ImportParameters(publicKey);
+            return rsa.ToXml(includePrivateParameters: false);
         }
 
         public static RSAParameters ToPrivateRSAParameters(this string privateKeyXml)
         {
-            using (var rsa = RSA.Create())
-            {
-                rsa.FromXml(privateKeyXml);
-                return rsa.ExportParameters(includePrivateParameters: true);
-            }
+            using var rsa = RSA.Create();
+            rsa.FromXml(privateKeyXml);
+            return rsa.ExportParameters(includePrivateParameters: true);
         }
 
         public static RSAParameters ToPublicRSAParameters(this string publicKeyXml)
         {
-            using (var rsa = RSA.Create())
-            {
-                rsa.FromXml(publicKeyXml);
-                return rsa.ExportParameters(includePrivateParameters: false);
-            }
+            using var rsa = RSA.Create();
+            rsa.FromXml(publicKeyXml);
+            return rsa.ExportParameters(includePrivateParameters: false);
         }
 
         public static string ToPublicKeyXml(this RSAParameters publicKey)
         {
-            using (var rsa = RSA.Create())
-            {
-                rsa.ImportParameters(publicKey);
-                return rsa.ToXml(includePrivateParameters: false);
-            }
+            using var rsa = RSA.Create();
+            rsa.ImportParameters(publicKey);
+            return rsa.ToXml(includePrivateParameters: false);
         }
 
         public static RSAParameters ToPublicRsaParameters(this RSAParameters privateKey)
         {
-            using (var rsa = RSA.Create())
-            {
-                rsa.ImportParameters(privateKey);
-                return rsa.ExportParameters(includePrivateParameters: false);
-            }
+            using var rsa = RSA.Create();
+            rsa.ImportParameters(privateKey);
+            return rsa.ExportParameters(includePrivateParameters: false);
         }
 
         public static string ToPrivateKeyXml(this RSAParameters privateKey)
         {
-            using (var rsa = RSA.Create())
-            {
-                rsa.ImportParameters(privateKey);
-                return rsa.ToXml(includePrivateParameters: true);
-            }
+            using var rsa = RSA.Create();
+            rsa.ImportParameters(privateKey);
+            return rsa.ToXml(includePrivateParameters: true);
         }
 
         public static string Encrypt(this string text)
         {
             if (DefaultKeyPair != null)
                 return Encrypt(text, DefaultKeyPair.PublicKey, KeyLength);
-
             throw new ArgumentNullException("DefaultKeyPair", "No KeyPair given for encryption in CryptUtils");
         }
 
@@ -135,8 +115,7 @@ namespace ServiceStack
         {
             if (DefaultKeyPair != null)
                 return Decrypt(text, DefaultKeyPair.PrivateKey, KeyLength);
-            else
-                throw new ArgumentNullException("DefaultKeyPair", "No KeyPair given for encryption in CryptUtils");
+            throw new ArgumentNullException("DefaultKeyPair", "No KeyPair given for encryption in CryptUtils");
         }
 
         public static string Encrypt(string text, string publicKeyXml, RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
@@ -157,20 +136,16 @@ namespace ServiceStack
 
         public static byte[] Encrypt(byte[] bytes, string publicKeyXml, RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
         {
-            using (var rsa = CreateRsa(rsaKeyLength))
-            {
-                rsa.FromXml(publicKeyXml);
-                return rsa.Encrypt(bytes);
-            }
+            using var rsa = CreateRsa(rsaKeyLength);
+            rsa.FromXml(publicKeyXml);
+            return rsa.Encrypt(bytes);
         }
 
         public static byte[] Encrypt(byte[] bytes, RSAParameters publicKey, RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
         {
-            using (var rsa = CreateRsa(rsaKeyLength))
-            {
-                rsa.ImportParameters(publicKey);
-                return rsa.Encrypt(bytes);
-            }
+            using var rsa = CreateRsa(rsaKeyLength);
+            rsa.ImportParameters(publicKey);
+            return rsa.Encrypt(bytes);
         }
 
         public static string Decrypt(string encryptedText, string privateKeyXml, RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
@@ -191,44 +166,36 @@ namespace ServiceStack
 
         public static byte[] Decrypt(byte[] encryptedBytes, string privateKeyXml, RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
         {
-            using (var rsa = CreateRsa(rsaKeyLength))
-            {
-                rsa.FromXml(privateKeyXml);
-                byte[] bytes = rsa.Decrypt(encryptedBytes);
-                return bytes;
-            }
+            using var rsa = CreateRsa(rsaKeyLength);
+            rsa.FromXml(privateKeyXml);
+            byte[] bytes = rsa.Decrypt(encryptedBytes);
+            return bytes;
         }
 
         public static byte[] Decrypt(byte[] encryptedBytes, RSAParameters privateKey, RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
         {
-            using (var rsa = CreateRsa(rsaKeyLength))
-            {
-                rsa.ImportParameters(privateKey);
-                byte[] bytes = rsa.Decrypt(encryptedBytes);
-                return bytes;
-            }
+            using var rsa = CreateRsa(rsaKeyLength);
+            rsa.ImportParameters(privateKey);
+            byte[] bytes = rsa.Decrypt(encryptedBytes);
+            return bytes;
         }
 
         public static byte[] Authenticate(byte[] dataToSign, RSAParameters privateKey, string hashAlgorithm = "SHA512", RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
         {
-            using (var rsa = CreateRsa(rsaKeyLength))
-            {
-                rsa.ImportParameters(privateKey);
+            using var rsa = CreateRsa(rsaKeyLength);
+            rsa.ImportParameters(privateKey);
 
-                //.NET 4.5 doesn't let you specify padding, defaults to PKCS#1 v1.5 padding
-                var signature = rsa.SignData(dataToSign, hashAlgorithm);
-                return signature;
-            }
+            //.NET 4.5 doesn't let you specify padding, defaults to PKCS#1 v1.5 padding
+            var signature = rsa.SignData(dataToSign, hashAlgorithm);
+            return signature;
         }
 
         public static bool Verify(byte[] dataToVerify, byte[] signature, RSAParameters publicKey, string hashAlgorithm = "SHA512", RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
         {
-            using (var rsa = CreateRsa(rsaKeyLength))
-            {
-                rsa.ImportParameters(publicKey);
-                var verified = rsa.VerifyData(dataToVerify, signature, hashAlgorithm);
-                return verified;
-            }
+            using var rsa = CreateRsa(rsaKeyLength);
+            rsa.ImportParameters(publicKey);
+            var verified = rsa.VerifyData(dataToVerify, signature, hashAlgorithm);
+            return verified;
         }
     }
 
@@ -236,17 +203,12 @@ namespace ServiceStack
     {
         public static HashAlgorithm GetHashAlgorithm(string hashAlgorithm)
         {
-            switch (hashAlgorithm)
-            {
-                case "SHA1":
-                    return SHA1.Create();
-                case "SHA256":
-                    return SHA256.Create();
-                case "SHA512":
-                    return SHA512.Create();
-                default:
-                    throw new NotSupportedException(hashAlgorithm);
-            }
+            return hashAlgorithm switch {
+                "SHA1" => SHA1.Create(),
+                "SHA256" => SHA256.Create(),
+                "SHA512" => SHA512.Create(),
+                _ => throw new NotSupportedException(hashAlgorithm)
+            };
         }
     }
 
@@ -269,27 +231,21 @@ namespace ServiceStack
 
         public static byte[] CreateKey()
         {
-            using (var aes = CreateSymmetricAlgorithm())
-            {
-                return aes.Key;
-            }
+            using var aes = CreateSymmetricAlgorithm();
+            return aes.Key;
         }
 
         public static byte[] CreateIv()
         {
-            using (var aes = CreateSymmetricAlgorithm())
-            {
-                return aes.IV;
-            }
+            using var aes = CreateSymmetricAlgorithm();
+            return aes.IV;
         }
 
         public static void CreateKeyAndIv(out byte[] cryptKey, out byte[] iv)
         {
-            using (var aes = CreateSymmetricAlgorithm())
-            {
-                cryptKey = aes.Key;
-                iv = aes.IV;
-            }
+            using var aes = CreateSymmetricAlgorithm();
+            cryptKey = aes.Key;
+            iv = aes.IV;
         }
 
         public static void CreateCryptAuthKeysAndIv(out byte[] cryptKey, out byte[] authKey, out byte[] iv)
@@ -313,17 +269,15 @@ namespace ServiceStack
 
         public static byte[] Encrypt(byte[] bytesToEncrypt, byte[] cryptKey, byte[] iv)
         {
-            using (var aes = CreateSymmetricAlgorithm())
-            using (var encrypter = aes.CreateEncryptor(cryptKey, iv))
-            using (var cipherStream = new MemoryStream())
+            using var aes = CreateSymmetricAlgorithm();
+            using var encrypter = aes.CreateEncryptor(cryptKey, iv);
+            using var cipherStream = new MemoryStream();
+            using (var cryptoStream = new CryptoStream(cipherStream, encrypter, CryptoStreamMode.Write))
+            using (var binaryWriter = new BinaryWriter(cryptoStream))
             {
-                using (var cryptoStream = new CryptoStream(cipherStream, encrypter, CryptoStreamMode.Write))
-                using (var binaryWriter = new BinaryWriter(cryptoStream))
-                {
-                    binaryWriter.Write(bytesToEncrypt);
-                }
-                return cipherStream.ToArray();
+                binaryWriter.Write(bytesToEncrypt);
             }
+            return cipherStream.ToArray();
         }
 
         public static string Decrypt(string encryptedBase64, byte[] cryptKey, byte[] iv)
@@ -334,13 +288,11 @@ namespace ServiceStack
 
         public static byte[] Decrypt(byte[] encryptedBytes, byte[] cryptKey, byte[] iv)
         {
-            using (var aes = CreateSymmetricAlgorithm())
-            using (var decryptor = aes.CreateDecryptor(cryptKey, iv))
-            using (var ms = MemoryStreamFactory.GetStream(encryptedBytes))
-            using (var cryptStream = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
-            {
-                return cryptStream.ReadFully();
-            }
+            using var aes = CreateSymmetricAlgorithm();
+            using var decryptor = aes.CreateDecryptor(cryptKey, iv);
+            using var ms = MemoryStreamFactory.GetStream(encryptedBytes);
+            using var cryptStream = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
+            return cryptStream.ReadFully();
         }
     }
 
@@ -363,25 +315,21 @@ namespace ServiceStack
 
         public static byte[] Authenticate(byte[] encryptedBytes, byte[] authKey, byte[] iv)
         {
-            using (var hmac = CreateHashAlgorithm(authKey))
-            using (var ms = MemoryStreamFactory.GetStream())
-            {
-                using (var writer = new BinaryWriter(ms))
-                {
-                    //Prepend IV
-                    writer.Write(iv);
-                    //Write Ciphertext
-                    writer.Write(encryptedBytes);
-                    writer.Flush();
+            using var hmac = CreateHashAlgorithm(authKey);
+            using var ms = MemoryStreamFactory.GetStream();
+            using var writer = new BinaryWriter(ms);
+            //Prepend IV
+            writer.Write(iv);
+            //Write Ciphertext
+            writer.Write(encryptedBytes);
+            writer.Flush();
 
-                    //Authenticate all data
-                    var tag = hmac.ComputeHash(ms.GetBuffer(), 0, (int)ms.Length);
-                    //Postpend tag
-                    writer.Write(tag);
+            //Authenticate all data
+            var tag = hmac.ComputeHash(ms.GetBuffer(), 0, (int)ms.Length);
+            //Append tag
+            writer.Write(tag);
 
-                    return ms.ToArray();
-                }
-            }
+            return ms.ToArray();
         }
 
         public static bool Verify(byte[] authEncryptedBytes, byte[] authKey)
@@ -392,29 +340,27 @@ namespace ServiceStack
             if (authEncryptedBytes == null || authEncryptedBytes.Length == 0)
                 throw new ArgumentException("Encrypted Message Required!", nameof(authEncryptedBytes));
 
-            using (var hmac = CreateHashAlgorithm(authKey))
-            {
-                var sentTag = new byte[KeySizeBytes];
-                //Calculate Tag
-                var calcTag = hmac.ComputeHash(authEncryptedBytes, 0, authEncryptedBytes.Length - sentTag.Length);
-                const int ivLength = AesUtils.BlockSizeBytes;
+            using var hmac = CreateHashAlgorithm(authKey);
+            var sentTag = new byte[KeySizeBytes];
+            //Calculate Tag
+            var calcTag = hmac.ComputeHash(authEncryptedBytes, 0, authEncryptedBytes.Length - sentTag.Length);
+            const int ivLength = AesUtils.BlockSizeBytes;
 
-                //return false if message length is too small
-                if (authEncryptedBytes.Length < sentTag.Length + ivLength)
-                    return false;
+            //return false if message length is too small
+            if (authEncryptedBytes.Length < sentTag.Length + ivLength)
+                return false;
 
-                //Grab Sent Tag
-                Buffer.BlockCopy(authEncryptedBytes, authEncryptedBytes.Length - sentTag.Length, sentTag, 0, sentTag.Length);
+            //Grab Sent Tag
+            Buffer.BlockCopy(authEncryptedBytes, authEncryptedBytes.Length - sentTag.Length, sentTag, 0, sentTag.Length);
 
-                //Compare Tag with constant time comparison
-                var compare = 0;
-                for (var i = 0; i < sentTag.Length; i++)
-                    compare |= sentTag[i] ^ calcTag[i];
+            //Compare Tag with constant time comparison
+            var compare = 0;
+            for (var i = 0; i < sentTag.Length; i++)
+                compare |= sentTag[i] ^ calcTag[i];
 
-                //return false if message doesn't authenticate
-                if (compare != 0)
-                    return false;
-            }
+            //return false if message doesn't authenticate
+            if (compare != 0)
+                return false;
 
             return true; //Haz Success!
         }
@@ -428,24 +374,20 @@ namespace ServiceStack
             var iv = new byte[AesUtils.BlockSizeBytes];
             Buffer.BlockCopy(authEncryptedBytes, 0, iv, 0, iv.Length);
 
-            using (var aes = AesUtils.CreateSymmetricAlgorithm())
+            using var aes = AesUtils.CreateSymmetricAlgorithm();
+            using var decryptor = aes.CreateDecryptor(cryptKey, iv);
+            using var decryptedStream = new MemoryStream();
+            using (var decryptorStream = new CryptoStream(decryptedStream, decryptor, CryptoStreamMode.Write))
+            using (var writer = new BinaryWriter(decryptorStream))
             {
-                using (var decrypter = aes.CreateDecryptor(cryptKey, iv))
-                using (var decryptedStream = new MemoryStream())
-                {
-                    using (var decrypterStream = new CryptoStream(decryptedStream, decrypter, CryptoStreamMode.Write))
-                    using (var writer = new BinaryWriter(decrypterStream))
-                    {
-                        //Decrypt Cipher Text from Message
-                        writer.Write(
-                            authEncryptedBytes,
-                            iv.Length,
-                            authEncryptedBytes.Length - iv.Length - KeySizeBytes);
-                    }
-
-                    return decryptedStream.ToArray();
-                }
+                //Decrypt Cipher Text from Message
+                writer.Write(
+                    authEncryptedBytes,
+                    iv.Length,
+                    authEncryptedBytes.Length - iv.Length - KeySizeBytes);
             }
+
+            return decryptedStream.ToArray();
         }
     }
 
@@ -475,21 +417,14 @@ namespace ServiceStack
 #if NETSTANDARD2_0
         public static HashAlgorithmName ToHashAlgorithmName(string hashAlgorithm)
         {
-            switch (hashAlgorithm.ToUpper())
-            {
-                case "MD5":
-                    return HashAlgorithmName.MD5;
-                case "SHA1":
-                     return HashAlgorithmName.SHA1;
-                case "SHA256":
-                     return HashAlgorithmName.SHA256;
-                case "SHA384":
-                     return HashAlgorithmName.SHA384;
-                case "SHA512":
-                     return HashAlgorithmName.SHA512;
-                default:
-                     throw new NotImplementedException(hashAlgorithm);
-            }
+            return hashAlgorithm.ToUpper() switch {
+                "MD5" => HashAlgorithmName.MD5,
+                "SHA1" => HashAlgorithmName.SHA1,
+                "SHA256" => HashAlgorithmName.SHA256,
+                "SHA384" => HashAlgorithmName.SHA384,
+                "SHA512" => HashAlgorithmName.SHA512,
+                _ => throw new NotImplementedException(hashAlgorithm)
+            };
         }
 #endif
 
@@ -532,56 +467,54 @@ namespace ServiceStack
         public static RSAParameters ExtractFromXml(string xml)
         {
             var csp = new RSAParameters();
-            using (var reader = XmlReader.Create(new StringReader(xml)))
+            using var reader = XmlReader.Create(new StringReader(xml));
+            while (reader.Read())
             {
-                while (reader.Read())
+                if (reader.NodeType != XmlNodeType.Element)
+                    continue;
+
+                var elName = reader.Name;
+                if (elName == "RSAKeyValue")
+                    continue;
+
+                do {
+                    reader.Read();
+                } while (reader.NodeType != XmlNodeType.Text && reader.NodeType != XmlNodeType.EndElement);
+
+                if (reader.NodeType == XmlNodeType.EndElement)
+                    continue;
+
+                var value = reader.Value;
+                switch (elName)
                 {
-                    if (reader.NodeType != XmlNodeType.Element)
-                        continue;
-
-                    var elName = reader.Name;
-                    if (elName == "RSAKeyValue")
-                        continue;
-
-                    do {
-                        reader.Read();
-                    } while (reader.NodeType != XmlNodeType.Text && reader.NodeType != XmlNodeType.EndElement);
-
-                    if (reader.NodeType == XmlNodeType.EndElement)
-                        continue;
-
-                    var value = reader.Value;
-                    switch (elName)
-                    {
-                        case "Modulus":
-                            csp.Modulus = Convert.FromBase64String(value);
-                            break;
-                        case "Exponent":
-                            csp.Exponent = Convert.FromBase64String(value);
-                            break;
-                        case "P":
-                            csp.P = Convert.FromBase64String(value);
-                            break;
-                        case "Q":
-                            csp.Q = Convert.FromBase64String(value);
-                            break;
-                        case "DP":
-                            csp.DP = Convert.FromBase64String(value);
-                            break;
-                        case "DQ":
-                            csp.DQ = Convert.FromBase64String(value);
-                            break;
-                        case "InverseQ":
-                            csp.InverseQ = Convert.FromBase64String(value);
-                            break;
-                        case "D":
-                            csp.D = Convert.FromBase64String(value);
-                            break;
-                    }
+                    case "Modulus":
+                        csp.Modulus = Convert.FromBase64String(value);
+                        break;
+                    case "Exponent":
+                        csp.Exponent = Convert.FromBase64String(value);
+                        break;
+                    case "P":
+                        csp.P = Convert.FromBase64String(value);
+                        break;
+                    case "Q":
+                        csp.Q = Convert.FromBase64String(value);
+                        break;
+                    case "DP":
+                        csp.DP = Convert.FromBase64String(value);
+                        break;
+                    case "DQ":
+                        csp.DQ = Convert.FromBase64String(value);
+                        break;
+                    case "InverseQ":
+                        csp.InverseQ = Convert.FromBase64String(value);
+                        break;
+                    case "D":
+                        csp.D = Convert.FromBase64String(value);
+                        break;
                 }
-
-                return csp;
             }
+
+            return csp;
         }
 
         public static string ExportToXml(RSAParameters csp, bool includePrivateParameters)

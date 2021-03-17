@@ -41,10 +41,8 @@ namespace ServiceStack
 
         public static byte[] ReadFully(this FileInfo file)
         {
-            using (var fs = file.OpenRead())
-            {
-                return fs.ReadFully();
-            }
+            using var fs = file.OpenRead();
+            return fs.ReadFully();
         }
 
         public static string ReadAllText(this FileInfo file)

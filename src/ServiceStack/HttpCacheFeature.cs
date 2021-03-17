@@ -102,8 +102,8 @@ namespace ServiceStack
             {
                 responseBytes = dto switch {
                     string rawStr => rawStr.ToUtf8Bytes(),
-                    MemoryStream ms => ms.ReadFully(),
-                    Stream stream => await stream.ReadFullyAsync(),
+                    MemoryStream ms => await ms.ReadFullyAsync().ConfigAwait(),
+                    Stream stream => await stream.ReadFullyAsync().ConfigAwait(),
                     _ => responseBytes
                 };
             }
