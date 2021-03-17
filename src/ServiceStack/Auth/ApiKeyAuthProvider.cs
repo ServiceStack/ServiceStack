@@ -308,19 +308,10 @@ namespace ServiceStack.Auth
             ValidateApiKey(req, apiKey);
 
             var apiSessionKey = GetSessionKey(apiKey.Id);
-            if (SessionCacheDuration != null)
+            if (await HasCachedSessionAsync(req, apiSessionKey).ConfigAwait())
             {
-                var session = req.GetCacheClient().Get<IAuthSession>(apiSessionKey);
-
-                if (session != null)
-                    session = HostContext.AppHost.OnSessionFilter(req, session, session.Id);
-
-                if (session != null)
-                {
-                    req.Items[Keywords.ApiKey] = apiKey;
-                    req.Items[Keywords.Session] = session;
-                    return;
-                }
+                req.Items[Keywords.ApiKey] = apiKey;
+                return;
             }
 
             //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
@@ -334,10 +325,33 @@ namespace ServiceStack.Auth
                 Password = apiKey.Id,
             }).ConfigAwait();
 
+            await CacheSessionAsync(req, apiSessionKey);
+        }
+
+        public virtual async Task<bool> HasCachedSessionAsync(IRequest req, string apiSessionKey)
+        {
+            if (SessionCacheDuration != null)
+            {
+                var session = await req.GetCacheClientAsync().GetAsync<IAuthSession>(apiSessionKey).ConfigAwait();
+
+                if (session != null)
+                    session = HostContext.AppHost.OnSessionFilter(req, session, session.Id);
+
+                if (session != null)
+                {
+                    req.Items[Keywords.Session] = session;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public virtual async Task CacheSessionAsync(IRequest req, string apiSessionKey)
+        {
             if (SessionCacheDuration != null)
             {
                 var session = await req.GetSessionAsync().ConfigAwait();
-                req.GetCacheClient().Set(apiSessionKey, session, SessionCacheDuration);
+                await req.GetCacheClientAsync().SetAsync(apiSessionKey, session, SessionCacheDuration).ConfigAwait();
             }
         }
 
