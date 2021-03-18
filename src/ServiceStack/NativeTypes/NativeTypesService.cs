@@ -388,6 +388,7 @@ namespace ServiceStack.NativeTypes
                 typeof(QueryDb<,>),
                 typeof(QueryData<>),
                 typeof(QueryData<,>),
+                typeof(AuditBase),
                 typeof(Service),
             }.Map(x => x.Name).ToSet();
             
