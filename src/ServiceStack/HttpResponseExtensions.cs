@@ -31,14 +31,14 @@ namespace ServiceStack
 
             //IsWebDevServer = !Env.IsMono;
             //IsIis = !Env.IsMono;
-#if !NETSTANDARD2_0
+#if NETFRAMEWORK
             IsHttpListener = HttpContext.Current == null;
 #else
             IsNetCore = true;
 #endif
         }
 
-#if !NETSTANDARD2_0
+#if NETFRAMEWORK
         public static void CloseOutputStream(this HttpResponseBase response)
         {
             try
@@ -81,7 +81,7 @@ namespace ServiceStack
 
         public static void TransmitFile(this IResponse httpRes, string filePath)
         {
-#if !NETSTANDARD2_0
+#if NETFRAMEWORK
             if (httpRes is ServiceStack.Host.AspNet.AspNetResponse aspNetRes)
             {
                 aspNetRes.Response.TransmitFile(filePath);
@@ -99,7 +99,7 @@ namespace ServiceStack
 
         public static void WriteFile(this IResponse httpRes, string filePath)
         {
-#if !NETSTANDARD2_0
+#if NETFRAMEWORK
             if (httpRes is ServiceStack.Host.AspNet.AspNetResponse aspNetRes)
             {
                 aspNetRes.Response.WriteFile(filePath);
@@ -115,7 +115,7 @@ namespace ServiceStack
             httpRes.EndRequest();
         }
 
-#if NETSTANDARD
+#if NETSTANDARD || NETCOREAPP3_1 || NET5_0
         public static Microsoft.AspNetCore.Http.HttpRequest AllowSyncIO(this Microsoft.AspNetCore.Http.HttpRequest req)
         {
             req.HttpContext.AllowSyncIO();
@@ -135,7 +135,7 @@ namespace ServiceStack
 
         public static IRequest AllowSyncIO(this IRequest req)
         {
-#if NETSTANDARD
+#if NETSTANDARD || NETCOREAPP3_1 || NET5_0
             (req as ServiceStack.Host.NetCore.NetCoreRequest)?.HttpContext.AllowSyncIO();
 #endif
             return req;
@@ -143,7 +143,7 @@ namespace ServiceStack
 
         public static IResponse AllowSyncIO(this IResponse res)
         {
-#if NETSTANDARD
+#if NETSTANDARD || NETCOREAPP3_1 || NET5_0
             (res as ServiceStack.Host.NetCore.NetCoreResponse)?.HttpContext.AllowSyncIO();
 #endif
             return res;
@@ -286,7 +286,7 @@ namespace ServiceStack
         [Obsolete("Use WriteAsync")]
         public static void Write(this IResponse response, string contents)
         {
-#if !NETSTANDARD2_0
+#if NETFRAMEWORK
             if (response is Host.AspNet.AspNetResponse aspRes)
             {
                 aspRes.Response.Write(contents);
@@ -310,13 +310,13 @@ namespace ServiceStack
             response.AllowSyncIO().OutputStream.Write(bytes, 0, bytes.Length);
         }
 
-        public static Task WriteAsync(this IResponse response, string contents)
+        public static async Task WriteAsync(this IResponse response, string contents)
         {
             if (contents == null)
             {
                 response.SetContentLength(0);
                 response.EndRequest();
-                return TypeConstants.EmptyTask;
+                return;
             }
 
             //retain behavior with ASP.NET's response.Write(string)
@@ -325,7 +325,7 @@ namespace ServiceStack
 
             var bytes = contents.ToUtf8Bytes();
             response.SetContentLength(bytes.Length);
-            return response.OutputStream.WriteAsync(bytes);
+            await response.OutputStream.WriteAsync(bytes);
         }
  
         public static void EndWith(this IResponse res, HttpStatusCode code, string description=null)

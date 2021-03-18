@@ -189,7 +189,7 @@ namespace ServiceStack.Host.Handlers
             {
                 return stream.Length; //can throw NotSupportedException
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return -1;
             }
@@ -205,7 +205,7 @@ namespace ServiceStack.Host.Handlers
                     var hasContentBody = httpReq.ContentLength > 0
                         || (HttpUtils.HasRequestBody(httpReq.Verb) && 
                                 (httpReq.GetContentEncoding() != null
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
                                 || GetStreamLengthSafe(httpReq.InputStream) > 0 // AWS API Gateway reports ContentLength=0,ContentEncoding=null
 #endif
                                 ));

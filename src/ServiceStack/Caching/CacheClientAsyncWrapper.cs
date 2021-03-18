@@ -77,7 +77,7 @@ namespace ServiceStack.Caching
             return TypeConstants.EmptyTask;
         }
 
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
         public async IAsyncEnumerable<string> GetKeysByPatternAsync(string pattern, [EnumeratorCancellation] CancellationToken token = default)
         {
             foreach (var key in Cache.GetKeysByPattern(pattern))

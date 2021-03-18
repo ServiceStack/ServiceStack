@@ -16,7 +16,7 @@ namespace ServiceStack
     /// Generic + Useful IService base class
     /// </summary>
     public class Service : IService, IServiceBase, IDisposable, IServiceFilters
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
         , IAsyncDisposable
 #endif
     {
@@ -69,7 +69,7 @@ namespace ServiceStack
         private IRedisClient redis;
         public virtual IRedisClient Redis => redis ??= HostContext.AppHost.GetRedisClient(Request);
         
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
         public virtual ValueTask<IRedisClientAsync> GetRedisAsync() => HostContext.AppHost.GetRedisClientAsync(Request);
 #endif
 
@@ -188,7 +188,7 @@ namespace ServiceStack
         {
             if (hasDisposed) return;
             hasDisposed = true;
-#if !(NET472 || NETSTANDARD2_0)
+#if !(NET472 || NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0)
             using (authRepositoryAsync as IDisposable) {}
 #endif
             using (authRepository as IDisposable) { }
@@ -204,7 +204,7 @@ namespace ServiceStack
         public virtual object OnAfterExecute(object response) => response;
         public virtual Task<object> OnExceptionAsync(object requestDto, Exception ex) => TypeConstants.EmptyTask;
         
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
         public async ValueTask DisposeAsync()
         {
             if (hasDisposed) return;

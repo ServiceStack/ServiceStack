@@ -1,4 +1,4 @@
-﻿#if !NETSTANDARD2_0
+﻿#if NETFRAMEWORK
 using System.Web;
 #endif
 using System;
@@ -34,10 +34,6 @@ namespace ServiceStack
         [Obsolete("Use ScriptBlocks")]
         public List<ScriptBlock> TemplateBlocks => ScriptBlocks;
 
-        [Obsolete("Use DefaultMethods")]
-        public DefaultScripts DefaultFilters => DefaultMethods;
-        [Obsolete("Use ProtectedMethods")]
-        public ProtectedScripts ProtectedFilters => ProtectedMethods;
         [Obsolete("Use HtmlMethods")]
         public HtmlScripts HtmlFilters => HtmlMethods;
 

@@ -36,7 +36,7 @@ namespace ServiceStack
                     
             return ServiceStackHost.Instance;
         }
-#if !NETSTANDARD2_0
+#if NETFRAMEWORK
         public static bool IsAspNetHost => ServiceStackHost.Instance is AppHostBase;
         public static bool IsHttpListenerHost => ServiceStackHost.Instance is Host.HttpListener.HttpListenerBase;
         public static bool IsNetCore => false;
@@ -260,7 +260,7 @@ namespace ServiceStack
             await AssertAppHost().HandleResponseException(httpReq, httpRes, operationName, ex).ConfigAwait();
         }
 
-#if !NETSTANDARD2_0
+#if NETFRAMEWORK
         /// <summary>
         /// Resolves and auto-wires a ServiceStack Service from a ASP.NET HttpContext.
         /// </summary>

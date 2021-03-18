@@ -70,7 +70,7 @@ namespace ServiceStack
             var response = HostContext.ServiceController.Execute(request, req);
             if (response is Task responseTask)
                 response = responseTask.GetResult();
-#if NET472 || NETSTANDARD2_0                
+#if NET472 || NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
             else if (response is ValueTask<object> valueTaskResponse)
             {
                 response = valueTaskResponse.GetAwaiter().GetResult();

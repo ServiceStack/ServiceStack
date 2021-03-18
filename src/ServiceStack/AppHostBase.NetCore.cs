@@ -1,4 +1,4 @@
-﻿#if NETSTANDARD2_0
+﻿#if NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
 
 using System;
 using System.Collections.Generic;
@@ -22,6 +22,10 @@ using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Configuration;
 using ServiceStack.IO;
 using ServiceStack.Text;
+
+#if !NETSTANDARD2_0
+using Microsoft.Extensions.Hosting;
+#endif
 
 namespace ServiceStack
 {
@@ -109,9 +113,15 @@ namespace ServiceStack
             return HostingEnvironment.WebRootPath ?? HostingEnvironment.ContentRootPath;
         }
 
+#if NETSTANDARD2_0
         private IHostingEnvironment env;
-
-        public IHostingEnvironment HostingEnvironment => env ??= app?.ApplicationServices.GetService<IHostingEnvironment>();  
+        
+        public IHostingEnvironment HostingEnvironment => env ??= app?.ApplicationServices.GetService<IHostingEnvironment>();
+#else
+        private IWebHostEnvironment env;
+        
+        public IWebHostEnvironment HostingEnvironment => env ??= app?.ApplicationServices.GetService<IWebHostEnvironment>();
+#endif
 
         public override void OnConfigLoad()
         {
@@ -317,7 +327,12 @@ namespace ServiceStack
     public interface IAppHostNetCore : IAppHost, IRequireConfiguration
     {
         IApplicationBuilder App { get; }
+
+#if NETSTANDARD2_0
         IHostingEnvironment HostingEnvironment { get; }
+#else
+        IWebHostEnvironment HostingEnvironment { get; }
+#endif
     }
 
     public static class NetCoreAppHostExtensions
@@ -325,7 +340,12 @@ namespace ServiceStack
         public static IConfiguration GetConfiguration(this IAppHost appHost) => ((IAppHostNetCore)appHost).Configuration;
         public static IApplicationBuilder GetApp(this IAppHost appHost) => ((IAppHostNetCore)appHost).App;
         public static IServiceProvider GetApplicationServices(this IAppHost appHost) => ((IAppHostNetCore)appHost).App.ApplicationServices;
+
+#if NETSTANDARD2_0
         public static IHostingEnvironment GetHostingEnvironment(this IAppHost appHost) => ((IAppHostNetCore)appHost).HostingEnvironment;
+#else
+        public static IWebHostEnvironment GetHostingEnvironment(this IAppHost appHost) => ((IAppHostNetCore)appHost).HostingEnvironment;
+#endif
         
         public static IApplicationBuilder UseServiceStack(this IApplicationBuilder app, AppHostBase appHost)
         {

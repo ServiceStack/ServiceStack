@@ -18,7 +18,7 @@ using ServiceStack.Text;
 using ServiceStack.Validation;
 using ServiceStack.Web;
 
-#if !NETSTANDARD2_0
+#if NETFRAMEWORK
 using ServiceStack.Host.AspNet;
 using ServiceStack.Host.HttpListener;
 #endif
@@ -119,7 +119,7 @@ namespace ServiceStack
 
         public static string GetUrlHostName(this IRequest httpReq)
         {
-#if !NETSTANDARD2_0
+#if NETFRAMEWORK
             if (httpReq is ServiceStack.Host.AspNet.AspNetRequest aspNetReq)
             {
                 return aspNetReq.UrlHostName;
@@ -382,7 +382,7 @@ namespace ServiceStack
             return pathInfo;
         }
 
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
         public static string GetLastPathInfo(this Microsoft.AspNetCore.Http.HttpRequest request)
         {
             var rawUrl = Microsoft.AspNetCore.Http.Extensions.UriHelper.GetDisplayUrl(request);
@@ -403,7 +403,7 @@ namespace ServiceStack
             return new Uri(request.AbsoluteUri).GetLeftAuthority() + endpointsPath;
         }
 
-#if !NETSTANDARD2_0
+#if NETFRAMEWORK
         //http://stackoverflow.com/a/757251/85785
         static readonly string[] VirtualPathPrefixes = System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath == null || System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath == "/"
             ? TypeConstants.EmptyStringArray
@@ -747,7 +747,7 @@ namespace ServiceStack
         public static string GetRawUrl(this IRequest httpReq)
         {
             var appPath = HostContext.Config.HandlerFactoryPath;
-#if !NETSTANDARD2_0
+#if NETFRAMEWORK
             if (httpReq.OriginalRequest is HttpRequestBase aspReq && aspReq.ApplicationPath?.Length > 1)
                 appPath = aspReq.ApplicationPath.CombineWith(appPath);
 #endif
@@ -936,7 +936,7 @@ namespace ServiceStack
             return false;
         }
 
-#if !NETSTANDARD2_0
+#if NETFRAMEWORK
         public static HttpContextBase ToHttpContextBase(this HttpRequestBase aspnetHttpReq)
         {
             return aspnetHttpReq.RequestContext.HttpContext;
@@ -1108,7 +1108,7 @@ namespace ServiceStack
 
         public static IEnumerable<Claim> GetClaims(this IRequest req)
         {
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
             if (req.OriginalRequest is Microsoft.AspNetCore.Http.HttpRequest httpReq)
                 return httpReq.HttpContext.User?.Claims;
 #else

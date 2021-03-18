@@ -155,7 +155,7 @@ namespace ServiceStack.Host
                           returnMarker.GetGenericArguments()[0]
                         : mi.ReturnType != typeof(object) && mi.ReturnType != typeof(void) ?
                           mi.ReturnType
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
                         : Type.GetType(requestType.FullName + ResponseDtoSuffix + "," + requestType.Assembly.GetName().Name);
 #else                                                  
                         : AssemblyUtils.FindType(requestType.FullName + ResponseDtoSuffix);
@@ -483,7 +483,7 @@ namespace ServiceStack.Host
                         appHost.Release(service);
                         return taskResponse.GetResult();
                     }
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
                     await using (service as IAsyncDisposable) {}
 #endif
                     appHost.Release(service);
@@ -572,7 +572,7 @@ namespace ServiceStack.Host
         public object ExecuteMessage(IMessage dto, IRequest req)
         {
             RequestContext.Instance.StartRequestContext();
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
             using var scope = req.StartScope();
 #endif
             
@@ -603,7 +603,7 @@ namespace ServiceStack.Host
         public async Task<object> ExecuteMessageAsync(IMessage dto, IRequest req, CancellationToken token=default)
         {
             RequestContext.Instance.StartRequestContext();
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
             using var scope = req.StartScope();
 #endif
             

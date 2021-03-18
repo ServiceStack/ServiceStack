@@ -1,4 +1,4 @@
-﻿#if NETSTANDARD2_0        
+﻿#if NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0        
 using ServiceStack.Host;
 #else
 using System.Web;
@@ -311,7 +311,7 @@ namespace ServiceStack
 
                 feature.OnConnect?.Invoke(subscription, subscription.ConnectArgs);                
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 res.StatusCode = 500;
                 throw;

@@ -41,7 +41,7 @@ namespace ServiceStack
             var session = await req.GetSessionAsync().ConfigAwait();
 
             var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
             await using (authRepo as IAsyncDisposable)
 #else
             using (authRepo as IDisposable)
@@ -97,7 +97,7 @@ namespace ServiceStack
             if (authRepo == null)
                 return false;
 
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
             await using (authRepo as IAsyncDisposable)
 #else
             using (authRepo as IDisposable)

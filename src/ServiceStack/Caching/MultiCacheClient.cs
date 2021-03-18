@@ -253,7 +253,7 @@ namespace ServiceStack.Caching
             await cacheClientsAsync.ExecAllAsync(client => client.RemoveExpiredEntriesAsync(token)).ConfigAwait();
         }
 
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
         public async ValueTask DisposeAsync()
         {
             foreach (var cache in cacheClientsAsync)

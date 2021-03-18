@@ -131,7 +131,7 @@ namespace ServiceStack.Metadata
                 ForEachItem = RenderRow
             }.ToString();
 
-#if !NETSTANDARD2_0
+#if NETFRAMEWORK
             var xsdsPart = new ListTemplate
             {
                 Title = "XSDS:",

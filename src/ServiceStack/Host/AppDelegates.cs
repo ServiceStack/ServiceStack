@@ -1,4 +1,4 @@
-﻿#if !NETSTANDARD2_0
+﻿#if NETFRAMEWORK
 using System.Web;
 #endif
 using System;

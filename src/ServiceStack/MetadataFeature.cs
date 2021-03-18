@@ -1,4 +1,4 @@
-﻿#if NETSTANDARD2_0        
+﻿#if NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0        
 using ServiceStack.Host;
 #else
 using System.Web;
@@ -108,7 +108,7 @@ namespace ServiceStack
             }
 
             var pathAction = pathParts[1].ToLowerInvariant();
-#if !NETSTANDARD2_0
+#if NETFRAMEWORK
             if (pathAction == "wsdl")
             {
                 if (pathController == "soap11")
@@ -130,7 +130,7 @@ namespace ServiceStack
 
                 case "jsv":
                     return new JsvMetadataHandler();
-#if !NETSTANDARD2_0
+#if NETFRAMEWORK
                 case "soap11":
                     return new Soap11MetadataHandler();
 

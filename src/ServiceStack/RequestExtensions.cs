@@ -274,7 +274,7 @@ namespace ServiceStack
         {
             if (disposable == null)
                 return;
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
             var netcoreReq = (Microsoft.AspNetCore.Http.HttpRequest) request.OriginalRequest;
             netcoreReq.HttpContext.Response.RegisterForDispose(disposable);
 #else
@@ -310,7 +310,7 @@ namespace ServiceStack
             }
 
             var userRepo = HostContext.AppHost.GetAuthRepositoryAsync(request);
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
             await using (userRepo as IAsyncDisposable)
 #else
             using (userRepo as IDisposable)
@@ -333,8 +333,6 @@ namespace ServiceStack
                 }
                 return new SessionSourceResult(session, roles, permissions);
             }
-            
-            return null;
         }
     }
 

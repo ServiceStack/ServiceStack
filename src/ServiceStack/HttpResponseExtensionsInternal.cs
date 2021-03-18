@@ -552,7 +552,7 @@ namespace ServiceStack
             return false;
         }
 
-#if !NETSTANDARD2_0
+#if NETFRAMEWORK
         public static void ApplyGlobalResponseHeaders(this HttpListenerResponse httpRes)
         {
             if (HostContext.Config == null) return;

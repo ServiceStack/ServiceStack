@@ -34,7 +34,7 @@ namespace ServiceStack.Auth
                         .MustAsync(async (x,token) =>
                         {
                             var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(base.Request);
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
                             await using (authRepo as IAsyncDisposable)
 #else
                             using (authRepo as IDisposable)
@@ -50,7 +50,7 @@ namespace ServiceStack.Auth
                         .MustAsync(async (x,token) =>
                         {
                             var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(base.Request);
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
                             await using (authRepo as IAsyncDisposable)
 #else
                             using (authRepo as IDisposable)
@@ -172,7 +172,7 @@ namespace ServiceStack.Auth
 
             if (request.AutoLogin.GetValueOrDefault())
             {
-#if NETSTANDARD2_0 || NET472
+#if NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0 || NET472
                 await using var authService = base.ResolveService<AuthenticateService>();
 #else
                 using var authService = base.ResolveService<AuthenticateService>();
@@ -287,7 +287,7 @@ namespace ServiceStack.Auth
             var session = await this.GetSessionAsync().ConfigAwait();
 
             var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(base.Request);
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
             await using (authRepo as IAsyncDisposable)
 #else
             using (authRepo as IDisposable)

@@ -596,7 +596,7 @@ namespace ServiceStack.Auth
                 if (ValidateToken != null && !ValidateToken(verifiedPayload, req)) 
                     return null;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return null;
             }

@@ -10,7 +10,7 @@ namespace ServiceStack
     public class Platform
     {
         public static Platform Instance =
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
             new PlatformNetCore();
 #else
             new PlatformNet();

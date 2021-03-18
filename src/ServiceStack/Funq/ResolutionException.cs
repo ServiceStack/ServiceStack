@@ -6,7 +6,7 @@ namespace Funq
     /// <summary>
     /// Exception thrown by the container when a service cannot be resolved.
     /// </summary>
-#if !(SL5 || NETSTANDARD2_0)
+#if !(SL5 || NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0)
     [Serializable]
 #endif
     public class ResolutionException : Exception

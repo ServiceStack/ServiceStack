@@ -1,4 +1,4 @@
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
 using System;
 using System.Collections.Generic;
 using System.Globalization;

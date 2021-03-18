@@ -1,7 +1,7 @@
 ﻿
 
 using System.Threading.Tasks;
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,7 +13,9 @@ using ServiceStack.Logging;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+#if NETSTANDARD2_0
 using Microsoft.AspNetCore.Http.Internal;
+#endif
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Configuration;
 using ServiceStack.IO;

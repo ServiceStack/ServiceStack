@@ -6,7 +6,7 @@ namespace ServiceStack.Host
     {
         private string acceptEncoding;
 
-#if !NETSTANDARD2_0
+#if NETFRAMEWORK
         private readonly System.Web.HttpContextBase httpContext;
 
         public RequestPreferences(System.Web.HttpContextBase httpContext)

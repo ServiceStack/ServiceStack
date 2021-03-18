@@ -179,7 +179,7 @@ namespace ServiceStack.Auth
             }
 
             var authRepo = GetAuthRepositoryAsync(authService.Request);
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
             await using (authRepo as IAsyncDisposable)
 #else
             using (authRepo as IDisposable)

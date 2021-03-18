@@ -63,7 +63,7 @@ namespace ServiceStack.MiniProfiler
     }
 
     public class HtmlString : IHtmlString,
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0
         ServiceStack.Host.IHtmlString
 #else
         System.Web.IHtmlString
@@ -94,7 +94,7 @@ namespace ServiceStack.Html
 {
     public static class HtmlStringExtensions
     {
-#if NETSTANDARD2_0        
+#if NETSTANDARD2_0 || NETCOREAPP3_1 || NET5_0        
         public static ServiceStack.Host.IHtmlString AsRaw(this IHtmlString htmlString) => 
             htmlString is ServiceStack.Host.IHtmlString aspRawStr ? aspRawStr :
                 new HtmlString(htmlString?.ToHtmlString() ?? "");

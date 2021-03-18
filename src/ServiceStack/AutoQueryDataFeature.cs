@@ -10,7 +10,9 @@ using System.Runtime.Serialization;
 using System.Threading;
 using ServiceStack.Caching;
 using ServiceStack.DataAnnotations;
+#if NETFRAMEWORK || NETSTANDARD
 using ServiceStack.Extensions;
+#endif
 using ServiceStack.Host;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
