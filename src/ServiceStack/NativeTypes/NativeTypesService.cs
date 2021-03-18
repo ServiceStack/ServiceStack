@@ -382,9 +382,18 @@ namespace ServiceStack.NativeTypes
             typesConfig.ExportTypes.Remove(typeof(IDeleteDb<>));
             typesConfig.ExportTypes.Remove(typeof(ISaveDb<>));
 
+            var ignoreBuiltInLibraryTypes = new[] {
+                typeof(QueryBase),
+                typeof(QueryDb<>),
+                typeof(QueryDb<,>),
+                typeof(QueryData<>),
+                typeof(QueryData<,>),
+                typeof(Service),
+            }.Map(x => x.Name).ToSet();
+            
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
 
-            metadataTypes.Types.RemoveAll(x => x.Name == "Service");
+            metadataTypes.Types.RemoveAll(x => ignoreBuiltInLibraryTypes.Contains(x.Name));
 
             try
             {

@@ -59,6 +59,10 @@ namespace ServiceStack.NativeTypes.Swift
             {"IntPtr", "Int64"},
             {"Stream", "Data"},
             {"Type", "String"},
+            {"QueryDb`1", "QueryDb"},
+            {"QueryDb`2", "QueryDb2"},
+            {"QueryData`1", "QueryData"},
+            {"QueryData`2", "QueryData2"},
         }.ToConcurrentDictionary();
 
         /// <summary>
@@ -70,7 +74,7 @@ namespace ServiceStack.NativeTypes.Swift
 
         public static TypeFilterDelegate TypeFilter { get; set; }
 
-        public static HashSet<string> OverrideInitForBaseClasses = new HashSet<string> {
+        public static HashSet<string> OverrideInitForBaseClasses = new() {
             "NSObject"
         };
 

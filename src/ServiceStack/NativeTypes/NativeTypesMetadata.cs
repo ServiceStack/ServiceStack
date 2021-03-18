@@ -28,8 +28,7 @@ namespace ServiceStack.NativeTypes
 
         public MetadataTypesConfig GetConfig(NativeTypesBase req)
         {
-            return new MetadataTypesConfig
-            {
+            return new() {
                 BaseUrl = req.BaseUrl ?? defaults.BaseUrl,
                 MakePartial = req.MakePartial ?? defaults.MakePartial,
                 MakeVirtual = req.MakeVirtual ?? defaults.MakeVirtual,
