@@ -72,7 +72,7 @@ namespace ServiceStack.Auth
             {
                 var accessToken = CreateJwtBearerToken(authContext.Request, authContext.Session);
                 await authContext.Request.RemoveSessionAsync(authContext.Session.Id, token);
-                authContext.Result.Cookies.Add(
+                authContext.Result.AddCookie(authContext.Request,
                     new Cookie(Keywords.TokenCookie, accessToken, Cookies.RootPath) {
                         HttpOnly = true,
                         Secure = authContext.Request.IsSecureConnection,
@@ -83,7 +83,7 @@ namespace ServiceStack.Auth
                 && EnableRefreshToken())
             {
                 var refreshToken = CreateJwtRefreshToken(authContext.Request, authContext.Session.Id, ExpireRefreshTokensIn);
-                authContext.Result.Cookies.Add(
+                authContext.Result.AddCookie(authContext.Request,
                     new Cookie(Keywords.RefreshTokenCookie, refreshToken, Cookies.RootPath) {
                         HttpOnly = true,
                         Secure = authContext.Request.IsSecureConnection,
@@ -424,16 +424,12 @@ namespace ServiceStack.Auth
                 RefreshToken = createFromSession && includeTokensInResponse && !request.PreserveSession
                     ? jwtAuthProvider.CreateJwtRefreshToken(Request, session.UserAuthId, jwtAuthProvider.ExpireRefreshTokensIn)
                     : null
-            })
-            {
-                Cookies = {
-                    new Cookie(Keywords.TokenCookie, token, Cookies.RootPath) {
-                        HttpOnly = true,
-                        Secure = Request.IsSecureConnection,
-                        Expires = DateTime.UtcNow.Add(jwtAuthProvider.ExpireTokensIn),
-                    }
-                }
-            };
+            }).AddCookie(Request,
+                new Cookie(Keywords.TokenCookie, token, Cookies.RootPath) {
+                    HttpOnly = true,
+                    Secure = Request.IsSecureConnection,
+                    Expires = DateTime.UtcNow.Add(jwtAuthProvider.ExpireTokensIn),
+                });
         }
     }
     
@@ -498,15 +494,12 @@ namespace ServiceStack.Auth
                 return response;
 
             var httpResult = new HttpResult(new GetAccessTokenResponse())
-            {
-                Cookies = {
+                .AddCookie(Request,
                     new Cookie(Keywords.TokenCookie, accessToken, Cookies.RootPath) {
                         HttpOnly = true,
                         Secure = Request.IsSecureConnection,
                         Expires = DateTime.UtcNow.Add(jwtAuthProvider.ExpireTokensIn),
-                    }
-                }
-            };
+                    });
             return httpResult;
         }
     }

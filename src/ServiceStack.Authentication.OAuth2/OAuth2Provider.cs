@@ -122,7 +122,7 @@ namespace ServiceStack.Authentication.OAuth2
                         var cookie = authReq.Cookies[name];
                         if (cookie != null)
                         {
-                            httpResult.Cookies.Add(cookie.ToCookie());
+                            httpResult.AddCookie(authService.Request, cookie.ToCookie());
                         }
                     }
 

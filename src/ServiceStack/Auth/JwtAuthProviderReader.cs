@@ -970,36 +970,35 @@ namespace ServiceStack.Auth
 
         public object AuthenticateResponseDecorator(AuthFilterContext authCtx)
         {
-            if (authCtx.AuthService.Request.IsInProcessRequest())
+            var req = authCtx.AuthService.Request;
+            if (req.IsInProcessRequest())
                 return authCtx.AuthResponse;
 
             if (authCtx.AuthResponse.BearerToken == null || authCtx.AuthRequest.UseTokenCookie.GetValueOrDefault(UseTokenCookie) != true)
                 return authCtx.AuthResponse;
 
-            authCtx.AuthService.Request.RemoveSession(authCtx.AuthService.GetSessionId());
+            req.RemoveSession(authCtx.AuthService.GetSessionId());
 
-            var httpResult = new HttpResult(authCtx.AuthResponse)
-            {
-                Cookies = {
-                    new Cookie(Keywords.TokenCookie, authCtx.AuthResponse.BearerToken, Cookies.RootPath) {
-                        HttpOnly = true,
-                        Secure = authCtx.AuthService.Request.IsSecureConnection,
-                        Expires = DateTime.UtcNow.Add(ExpireTokensIn),
-                    }
-                }
-            };
+            var httpResult = new HttpResult(authCtx.AuthResponse);
+            httpResult.AddCookie(req,
+                new Cookie(Keywords.TokenCookie, authCtx.AuthResponse.BearerToken, Cookies.RootPath) {
+                    HttpOnly = true,
+                    Secure = req.IsSecureConnection,
+                    Expires = DateTime.UtcNow.Add(ExpireTokensIn),
+                });
             if (UseRefreshTokenCookie.GetValueOrDefault(UseTokenCookie) && authCtx.AuthResponse.RefreshToken != null)
             {
-                httpResult.Cookies.Add(new Cookie(Keywords.RefreshTokenCookie, authCtx.AuthResponse.RefreshToken, Cookies.RootPath) {
-                    HttpOnly = true,
-                    Secure = authCtx.AuthService.Request.IsSecureConnection,
-                    Expires = DateTime.UtcNow.Add(ExpireRefreshTokensIn),
-                });
+                httpResult.AddCookie(req,
+                    new Cookie(Keywords.RefreshTokenCookie, authCtx.AuthResponse.RefreshToken, Cookies.RootPath) {
+                        HttpOnly = true,
+                        Secure = req.IsSecureConnection,
+                        Expires = DateTime.UtcNow.Add(ExpireRefreshTokensIn),
+                    });
             }
 
             NotifyJwtCookiesUsed(httpResult);
 
-            var isHtml = authCtx.AuthService.Request.ResponseContentType.MatchesContentType(MimeTypes.Html);
+            var isHtml = req.ResponseContentType.MatchesContentType(MimeTypes.Html);
             if (isHtml && authCtx.ReferrerUrl != null)
             {
                 httpResult.StatusCode = HttpStatusCode.Redirect;
