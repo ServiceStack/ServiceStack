@@ -65,6 +65,22 @@ namespace ServiceStack.NativeTypes.Swift
             {"QueryData`2", "QueryData2"},
         }.ToConcurrentDictionary();
 
+        //Use built-in types already in net.servicestack.client package
+        public static HashSet<string> IgnoreTypeNames = new[] {
+            typeof(QueryBase),
+            typeof(QueryDb<>),
+            typeof(QueryDb<,>),
+            typeof(QueryData<>),
+            typeof(QueryData<,>),
+            typeof(QueryResponse<>),
+            typeof(AuditBase),
+            typeof(EmptyResponse),
+            typeof(ResponseStatus),
+            typeof(ResponseError),
+            typeof(ErrorResponse),
+            typeof(Service),
+        }.Map(x => x.Name).ToSet();
+        
         /// <summary>
         /// Customize how types are encoded & decoded with a Type Converter
         /// </summary>
@@ -251,14 +267,6 @@ namespace ServiceStack.NativeTypes.Swift
             return StringBuilderCache.ReturnAndFree(sbInner);
         }
 
-        //Use built-in types already in net.servicestack.client package
-        public static HashSet<string> IgnoreTypeNames = new HashSet<string>
-        {
-            nameof(ResponseStatus),
-            nameof(ResponseError),
-            nameof(ErrorResponse),
-        };
-
         private List<string> RemoveIgnoredTypes(MetadataTypes metadata)
         {
             var includeList = metadata.RemoveIgnoredTypes(Config);
@@ -270,6 +278,8 @@ namespace ServiceStack.NativeTypes.Swift
             CreateTypeOptions options)
         {
             //sb = sb.Indent();
+            if (IgnoreTypeNames.Contains(type.Name))
+                return lastNS;
 
             var hasGenericBaseType = type.Inherits != null && !type.Inherits.GenericArgs.IsEmpty();
             if (Config.ExcludeGenericBaseTypes && hasGenericBaseType)
