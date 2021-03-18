@@ -21,7 +21,7 @@ namespace ServiceStack.Auth
         public OAuthProviderSync() { }
 
         public OAuthProviderSync(IAppSettings appSettings, string authRealm, string oAuthProvider)
-            : this(appSettings, authRealm, oAuthProvider, "ConsumerKey", "ConsumerSecret") { }
+            : this(appSettings, authRealm, oAuthProvider, nameof(ConsumerKey), nameof(ConsumerSecret)) { }
 
         public OAuthProviderSync(IAppSettings appSettings, string authRealm, string oAuthProvider,
                              string consumerKeyName, string consumerSecretName)

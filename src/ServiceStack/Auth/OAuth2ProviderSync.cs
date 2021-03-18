@@ -9,12 +9,20 @@ namespace ServiceStack.Auth
 {
     public abstract class OAuth2ProviderSync : OAuthProviderSync
     {
-        public OAuth2ProviderSync(IAppSettings appSettings, string authRealm, string oAuthProvider) 
-            : base(appSettings, authRealm, oAuthProvider) {}
-        public OAuth2ProviderSync(IAppSettings appSettings, string authRealm, string oAuthProvider, string consumerKeyName, string consumerSecretName) 
-            : base(appSettings, authRealm, oAuthProvider, consumerKeyName, consumerSecretName) {}
+        public OAuth2ProviderSync(IAppSettings appSettings, string authRealm, string oAuthProvider)
+            : base(appSettings, authRealm, oAuthProvider)
+        {
+            Scopes = appSettings.Get($"oauth.{Provider}.{nameof(Scopes)}", TypeConstants.EmptyStringArray);
+        }
 
-        protected string[] Scopes { get; set; }
+        public OAuth2ProviderSync(IAppSettings appSettings, string authRealm, string oAuthProvider,
+            string consumerKeyName, string consumerSecretName)
+            : base(appSettings, authRealm, oAuthProvider, consumerKeyName, consumerSecretName)
+        {
+            Scopes = appSettings.Get($"oauth.{Provider}.{nameof(Scopes)}", TypeConstants.EmptyStringArray);
+        }
+
+        public string[] Scopes { get; set; }
         
         public string ResponseMode { get; set; }
 
