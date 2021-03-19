@@ -1497,7 +1497,7 @@ namespace ServiceStack.Script
             _ = check(target) ?? throw new ArgumentNullException(nameof(target));
             return Env.IsWindows
                 ? sh(scope, $"RMDIR /Q /S {winpath(target)}")
-                : sh(scope, $"rm -f {unixpath(target)}");
+                : sh(scope, $"rm -rf {unixpath(target)}");
         }
         public string mkdir(ScriptScopeContext scope, string target)
         {
