@@ -111,9 +111,11 @@ namespace ServiceStack
             GlobalRequestFilters = new List<Action<IRequest, IResponse, object>>();
             GlobalRequestFiltersAsync = new List<Func<IRequest, IResponse, object, Task>>();
             GlobalTypedRequestFilters = new Dictionary<Type, ITypedFilter>();
+            GlobalTypedRequestFiltersAsync = new Dictionary<Type, ITypedFilterAsync>();
             GlobalResponseFilters = new List<Action<IRequest, IResponse, object>>();
             GlobalResponseFiltersAsync = new List<Func<IRequest, IResponse, object, Task>>();
             GlobalTypedResponseFilters = new Dictionary<Type, ITypedFilter>();
+            GlobalTypedResponseFiltersAsync = new Dictionary<Type, ITypedFilterAsync>();
             GlobalMessageRequestFilters = new List<Action<IRequest, IResponse, object>>();
             GlobalMessageRequestFiltersAsync = new List<Func<IRequest, IResponse, object, Task>>();
             GlobalTypedMessageRequestFilters = new Dictionary<Type, ITypedFilter>();
@@ -542,6 +544,7 @@ namespace ServiceStack
         internal Func<IRequest, IResponse, object, Task>[] GlobalRequestFiltersAsyncArray;
 
         public Dictionary<Type, ITypedFilter> GlobalTypedRequestFilters { get; set; }
+        public Dictionary<Type, ITypedFilterAsync> GlobalTypedRequestFiltersAsync { get; set; }
 
         public List<Action<IRequest, IResponse, object>> GlobalResponseFilters { get; set; }
         internal Action<IRequest, IResponse, object>[] GlobalResponseFiltersArray;
@@ -550,6 +553,7 @@ namespace ServiceStack
         internal Func<IRequest, IResponse, object, Task>[] GlobalResponseFiltersAsyncArray;
 
         public Dictionary<Type, ITypedFilter> GlobalTypedResponseFilters { get; set; }
+        public Dictionary<Type, ITypedFilterAsync> GlobalTypedResponseFiltersAsync { get; set; }
 
         public List<Action<IRequest, IResponse, object>> GlobalMessageRequestFilters { get; }
         internal Action<IRequest, IResponse, object>[] GlobalMessageRequestFiltersArray;
@@ -1583,11 +1587,27 @@ namespace ServiceStack
         }
 
         /// <summary>
+        /// Register Async Typed Service Request Filter
+        /// </summary>
+        public void RegisterTypedRequestFilterAsync<T>(Func<IRequest, IResponse, T, Task> filterFn)
+        {
+            GlobalTypedRequestFiltersAsync[typeof(T)] = new TypedFilterAsync<T>(filterFn);
+        }
+
+        /// <summary>
         /// Register Typed Service Request Filter
         /// </summary>
         public void RegisterTypedRequestFilter<T>(Func<Container, ITypedFilter<T>> filter)
         {
             RegisterTypedFilter(RegisterTypedRequestFilter, filter);
+        }
+
+        /// <summary>
+        /// Register Async Typed Service Request Filter
+        /// </summary>
+        public void RegisterTypedRequestFilterAsync<T>(Func<Container, ITypedFilterAsync<T>> filter)
+        {
+            RegisterTypedFilterAsync(RegisterTypedRequestFilterAsync, filter);
         }
 
         /// <summary>
@@ -1599,6 +1619,14 @@ namespace ServiceStack
         }
 
         /// <summary>
+        /// Register Async Typed Service Response Filter
+        /// </summary>
+        public void RegisterTypedResponseFilterAsync<T>(Func<IRequest, IResponse, T, Task> filterFn)
+        {
+            GlobalTypedResponseFiltersAsync[typeof(T)] = new TypedFilterAsync<T>(filterFn);
+        }
+
+        /// <summary>
         /// Register Typed Service Response Filter
         /// </summary>
         public void RegisterTypedResponseFilter<T>(Func<Container, ITypedFilter<T>> filter)
@@ -1606,16 +1634,30 @@ namespace ServiceStack
             RegisterTypedFilter(RegisterTypedResponseFilter, filter);
         }
 
+        /// <summary>
+        /// Register Async Typed Service Response Filter
+        /// </summary>
+        public void RegisterTypedResponseFilterAsync<T>(Func<Container, ITypedFilterAsync<T>> filter)
+        {
+            RegisterTypedFilterAsync(RegisterTypedResponseFilterAsync, filter);
+        }
+
         private void RegisterTypedFilter<T>(Action<Action<IRequest, IResponse, T>> registerTypedFilter, Func<Container, ITypedFilter<T>> filter)
         {
-            registerTypedFilter.Invoke((request, response, dto) =>
-            {
-                // The filter MUST be resolved inside the RegisterTypedFilter call.
-                // Otherwise, the container will not be able to resolve some auto-wired dependencies.
-                filter
-                    .Invoke(Container)
-                    .Invoke(request, response, dto);
-            });
+            // The filter MUST be resolved inside the RegisterTypedFilter call.
+            // Otherwise, the container will not be able to resolve some auto-wired dependencies.
+            registerTypedFilter.Invoke((request, response, dto) => filter
+                .Invoke(Container)
+                .Invoke(request, response, dto));
+        }
+
+        private void RegisterTypedFilterAsync<T>(Action<Func<IRequest, IResponse, T, Task>> registerTypedFilter, Func<Container, ITypedFilterAsync<T>> filter)
+        {
+            // The filter MUST be resolved inside the RegisterTypedFilter call.
+            // Otherwise, the container will not be able to resolve some auto-wired dependencies.
+            registerTypedFilter((request, response, dto) => filter
+                .Invoke(Container)
+                .InvokeAsync(request, response, dto));
         }
 
         /// <summary>

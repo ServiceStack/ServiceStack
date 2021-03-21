@@ -185,9 +185,18 @@ namespace ServiceStack
                     return;
             }
 
-            ExecTypedFilters(GlobalTypedRequestFilters, req, res, requestDto);
-            if (res.IsClosed) 
-                return;
+            if (GlobalTypedRequestFilters.Count > 0)
+            {
+                ExecTypedFilters(GlobalTypedRequestFilters, req, res, requestDto);
+                if (res.IsClosed)
+                    return;
+            }
+            if (GlobalTypedRequestFiltersAsync.Count > 0)
+            {
+                await ExecTypedFiltersAsync(GlobalTypedRequestFiltersAsync, req, res, requestDto);
+                if (res.IsClosed)
+                    return;
+            }
 
             //Exec global filters
             foreach (var requestFilter in GlobalRequestFiltersArray)
@@ -298,9 +307,18 @@ namespace ServiceStack
 
             if (response != null)
             {
-                ExecTypedFilters(GlobalTypedResponseFilters, req, res, response);
-                if (res.IsClosed) 
-                    return;
+                if (GlobalTypedResponseFilters.Count > 0)
+                {
+                    ExecTypedFilters(GlobalTypedResponseFilters, req, res, response);
+                    if (res.IsClosed) 
+                        return;
+                }
+                if (GlobalTypedResponseFiltersAsync.Count > 0)
+                {
+                    await ExecTypedFiltersAsync(GlobalTypedResponseFiltersAsync, req, res, response);
+                    if (res.IsClosed) 
+                        return;
+                }
             }
 
             //Exec global filters
@@ -408,6 +426,33 @@ namespace ServiceStack
                 if (typedFilter != null)
                 {
                     typedFilter.Invoke(req, res, dto);
+                    if (res.IsClosed) return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Executes Typed Request Filters 
+        /// </summary>
+        public async Task ExecTypedFiltersAsync(Dictionary<Type, ITypedFilterAsync> typedFilters, IRequest req, IResponse res, object dto)
+        {
+            if (typedFilters.Count == 0) return;
+
+            var dtoType = dto.GetType();
+            typedFilters.TryGetValue(dtoType, out var typedFilter);
+            if (typedFilter != null)
+            {
+                await typedFilter.InvokeAsync(req, res, dto);
+                if (res.IsClosed) return;
+            }
+
+            var dtoInterfaces = dtoType.GetInterfaces();
+            foreach (var dtoInterface in dtoInterfaces)
+            {
+                typedFilters.TryGetValue(dtoInterface, out typedFilter);
+                if (typedFilter != null)
+                {
+                    await typedFilter.InvokeAsync(req, res, dto);
                     if (res.IsClosed) return;
                 }
             }
