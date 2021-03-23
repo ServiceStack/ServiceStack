@@ -1416,8 +1416,8 @@ namespace ServiceStack.NativeTypes
                 .Where(x => x.Response != null)
                 .Select(x => x.Response)
                 .Distinct());
-            allTypes.AddRange(metadata.Operations.Select(x => x.Request).Distinct());
-            return allTypes;
+            allTypes.AddRange(metadata.Operations.Select(x => x.Request));
+            return allTypes.Distinct().ToList();
         }
 
         public static List<MetadataType> CreateSortedTypeList(this List<MetadataType> allTypes)

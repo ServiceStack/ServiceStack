@@ -378,6 +378,27 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
 
         public string GetFullName() => Namespace + "." + Name;
+
+        protected bool Equals(MetadataType other)
+        {
+            return Name == other.Name && Namespace == other.Namespace;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((MetadataType) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((Name != null ? Name.GetHashCode() : 0) * 397) ^ (Namespace != null ? Namespace.GetHashCode() : 0);
+            }
+        }
     }
 
     public class MetadataTypeName
