@@ -155,12 +155,7 @@ namespace ServiceStack.NativeTypes
                         //Config.IgnoreTypesInNamespaces in CSharpGenerator
                         opType.Response = null;
                     }
-                    else
-                    {
-                        opTypes.Add(operation.ResponseType);
-                    }
                 }
-
                 if (operation.RequestType.GetTypeWithInterfaceOf(typeof(IReturnVoid)) != null)
                 {
                     opType.ReturnsVoid = true;
@@ -190,6 +185,14 @@ namespace ServiceStack.NativeTypes
                             Summary = x.Summary,
                             Verbs = x.Verbs,
                         });
+                }
+            }
+            // Add all Request Types before Response Types
+            foreach (var operation in meta.Operations)
+            {
+                if (operation.ResponseType != null)
+                {
+                    opTypes.Add(operation.ResponseType);
                 }
             }
 
