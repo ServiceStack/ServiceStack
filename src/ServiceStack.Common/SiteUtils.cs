@@ -34,19 +34,25 @@ namespace ServiceStack
                 var isColonPos = url.IndexOfAny(UrlCharChecks);
                 if (isColonPos >= 0 && url[isColonPos] == ':')
                 {
-                
                     var atPort = url.RightPart(':');
-                    var delim1Pos = atPort.IndexOf(':');
-                    var delim2Pos = atPort.IndexOf('/');
-                    var endPos = delim1Pos >= 0 && delim2Pos >= 0
-                        ? Math.Min(delim1Pos, delim2Pos)
-                        : Math.Max(delim1Pos, delim2Pos);
-                    var testPort = endPos >= 0
-                        ? atPort.Substring(0,endPos)
-                        : atPort.Substring(0,atPort.Length - 1);
-                    url = int.TryParse(testPort, out _)
-                        ? url.LeftPart(':') + ':' + UnSlash(atPort)
-                        : url.LeftPart(':') + '/' + UnSlash(atPort);
+                    if (atPort.Length > 0)
+                    {
+                        var delim1Pos = atPort.IndexOf(':');
+                        var delim2Pos = atPort.IndexOf('/');
+                        var endPos = delim1Pos >= 0 && delim2Pos >= 0
+                            ? Math.Min(delim1Pos, delim2Pos)
+                            : Math.Max(delim1Pos, delim2Pos);
+                        var testPort = endPos >= 0
+                            ? atPort.Substring(0,endPos)
+                            : atPort.Substring(0,atPort.Length - 1);
+                        url = int.TryParse(testPort, out _)
+                            ? url.LeftPart(':') + ':' + UnSlash(atPort)
+                            : url.LeftPart(':') + '/' + UnSlash(atPort);
+                    }
+                    else
+                    {
+                        url = url.LeftPart(':') + '/' + UnSlash(atPort);
+                    }
                 }
             }
             url = url.UrlDecode();

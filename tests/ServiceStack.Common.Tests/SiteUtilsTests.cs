@@ -5,6 +5,7 @@ namespace ServiceStack.Common.Tests
     public class SiteUtilsTests
     {
         [Test]
+        [TestCase("northwind.netcore.io:", "https://northwind.netcore.io/")]
         [TestCase("techstacks.io", "https://techstacks.io")]
         [TestCase("http:techstacks.io", "http://techstacks.io")]
         [TestCase("http:techstacks.io:1000", "http://techstacks.io:1000")]
