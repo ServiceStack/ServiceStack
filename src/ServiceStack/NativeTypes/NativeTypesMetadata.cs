@@ -121,9 +121,6 @@ namespace ServiceStack.NativeTypes
                 if (!meta.IsVisible(req, op))
                     return true;
 
-                if (opTypes.Contains(op.RequestType))
-                    return true;
-
                 if (skipTypes.Contains(op.RequestType))
                     return true;
 
@@ -135,6 +132,9 @@ namespace ServiceStack.NativeTypes
             foreach (var operation in meta.Operations)
             {
                 if (ShouldIgnoreOperation(operation)) 
+                    continue;
+
+                if (opTypes.Contains(operation.RequestType))
                     continue;
 
                 var opType = new MetadataOperationType
