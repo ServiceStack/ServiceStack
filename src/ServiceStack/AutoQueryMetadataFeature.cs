@@ -94,7 +94,7 @@ namespace ServiceStack
         public string DefaultSearchText { get; set; }
     }
 
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [Route("/autoquery/metadata")]
     public class AutoQueryMetadata : IReturn<AutoQueryMetadataResponse> { }
 

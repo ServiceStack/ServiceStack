@@ -8,7 +8,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Admin
 {
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [DataContract]
     public class RequestLogs
     {
@@ -34,7 +34,7 @@ namespace ServiceStack.Admin
         [DataMember(Order=20)] public TimeSpan? DurationLessThan { get; set; }
     }
 
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [DataContract]
     public class RequestLogsResponse
     {

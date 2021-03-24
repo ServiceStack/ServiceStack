@@ -13,11 +13,11 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
 {
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [DataContract]
     public class RequestInfo { }
 
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [DataContract]
     public class RequestInfoResponse
     {
@@ -184,7 +184,7 @@ namespace ServiceStack.Host.Handlers
         public List<string> VirtualPathProviderFiles { get; set; }
     }
 
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     public class RequestHandlerInfo
     {
         public string HandlerType { get; set; }

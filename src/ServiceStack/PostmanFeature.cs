@@ -52,7 +52,7 @@ namespace ServiceStack
         }
     }
 
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     public class Postman
     {
         public List<string> Label { get; set; }

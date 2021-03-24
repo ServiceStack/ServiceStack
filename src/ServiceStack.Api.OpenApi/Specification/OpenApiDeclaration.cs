@@ -6,7 +6,7 @@ using ServiceStack.DataAnnotations;
 namespace ServiceStack.Api.OpenApi.Specification
 {
     [DataContract]
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     public class OpenApiDeclaration
     {
         [DataMember(Name = "swagger")]

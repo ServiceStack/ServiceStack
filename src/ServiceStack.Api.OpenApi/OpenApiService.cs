@@ -16,7 +16,7 @@ using ServiceStack.Api.OpenApi.Specification;
 namespace ServiceStack.Api.OpenApi
 {
     [DataContract]
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     public class OpenApiSpecification : IReturn<OpenApiDeclaration>
     {
         [DataMember(Name = "apiKey")]

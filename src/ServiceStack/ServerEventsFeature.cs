@@ -435,7 +435,7 @@ namespace ServiceStack
         }
     }
 
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     public class UnRegisterEventSubscriber : IReturn<Dictionary<string, string>>
     {
         public string Id { get; set; }

@@ -208,7 +208,7 @@ namespace ServiceStack
         public ResponseStatus ResponseStatus { get; set; }
     }
 
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [DataContract]
     [Route("/event-subscribers/{Id}", "POST")]
     public class UpdateEventSubscriber : IPost, IReturn<UpdateEventSubscriberResponse>
@@ -228,7 +228,7 @@ namespace ServiceStack
         public ResponseStatus ResponseStatus { get; set; }
     }
 
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     public class GetEventSubscribers : IGet, IReturn<List<Dictionary<string, string>>>
     {
         public string[] Channels { get; set; }

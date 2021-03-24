@@ -16,51 +16,51 @@ using ServiceStack.Web;
 
 namespace ServiceStack.NativeTypes
 {
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [Route("/types")]
     public class TypeLinks : NativeTypesBase, IReturn<Dictionary<string, string>> { }
 
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [Route("/types/metadata")]
     public class TypesMetadata : NativeTypesBase { }
 
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [Route("/types/csharp")]
     public class TypesCSharp : NativeTypesBase { }
 
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [Route("/types/fsharp")]
     public class TypesFSharp : NativeTypesBase { }
 
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [Route("/types/vbnet")]
     public class TypesVbNet : NativeTypesBase { }
 
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [Route("/types/typescript")]
     public class TypesTypeScript : NativeTypesBase { }
 
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [Route("/types/typescript.d")]
     public class TypesTypeScriptDefinition : NativeTypesBase { }
 
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [Route("/types/dart")]
     public class TypesDart : NativeTypesBase { }
 
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [Route("/types/swift")]
     public class TypesSwift : NativeTypesBase { }
 
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [Route("/types/swift4")]
     public class TypesSwift4 : NativeTypesBase { }
 
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [Route("/types/java")]
     public class TypesJava : NativeTypesBase { }
 
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [Route("/types/kotlin")]
     public class TypesKotlin : NativeTypesBase { }
 
