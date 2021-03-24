@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -53,17 +53,17 @@ namespace ServiceStack.NativeTypes
                 ExportAsTypes = req.ExportAsTypes ?? defaults.ExportAsTypes,
                 ExcludeImplementedInterfaces = defaults.ExcludeImplementedInterfaces,
                 AddDefaultXmlNamespace = req.AddDefaultXmlNamespace ?? defaults.AddDefaultXmlNamespace,
-                AddNamespaces = req.AddNamespaces ?? defaults.AddNamespaces,
-                DefaultNamespaces = req.DefaultNamespaces ?? defaults.DefaultNamespaces,
-                DefaultImports = req.DefaultImports ?? defaults.DefaultImports,
-                IncludeTypes = TrimArgs(req.IncludeTypes ?? defaults.IncludeTypes),
-                ExcludeTypes = TrimArgs(req.ExcludeTypes ?? defaults.ExcludeTypes),
-                TreatTypesAsStrings = TrimArgs(req.TreatTypesAsStrings ?? defaults.TreatTypesAsStrings),
+                AddNamespaces = req.AddNamespaces ?? defaults.AddNamespaces?.ToList(),
+                DefaultNamespaces = req.DefaultNamespaces ?? defaults.DefaultNamespaces?.ToList(),
+                DefaultImports = req.DefaultImports ?? defaults.DefaultImports?.ToList(),
+                IncludeTypes = TrimArgs(req.IncludeTypes ?? defaults.IncludeTypes?.ToList()),
+                ExcludeTypes = TrimArgs(req.ExcludeTypes ?? defaults.ExcludeTypes?.ToList()),
+                TreatTypesAsStrings = TrimArgs(req.TreatTypesAsStrings ?? defaults.TreatTypesAsStrings?.ToList()),
                 ExportValueTypes = req.ExportValueTypes ?? defaults.ExportValueTypes,
-                ExportAttributes = defaults.ExportAttributes,
-                ExportTypes = defaults.ExportTypes,
-                IgnoreTypes = defaults.IgnoreTypes,
-                IgnoreTypesInNamespaces = defaults.IgnoreTypesInNamespaces,
+                ExportAttributes = defaults.ExportAttributes?.ToSet(),
+                ExportTypes = defaults.ExportTypes?.ToSet(),
+                IgnoreTypes = defaults.IgnoreTypes?.ToSet(),
+                IgnoreTypesInNamespaces = defaults.IgnoreTypesInNamespaces?.ToList(),
                 GlobalNamespace = req.GlobalNamespace ?? defaults.GlobalNamespace,
                 ExcludeNamespace = req.ExcludeNamespace ?? defaults.ExcludeNamespace
             };
