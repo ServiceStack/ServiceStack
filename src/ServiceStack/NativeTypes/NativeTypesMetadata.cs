@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -113,21 +113,28 @@ namespace ServiceStack.NativeTypes
             var ignoreNamespaces = config.IgnoreTypesInNamespaces ?? new List<string>();
             var exportTypes = config.ExportTypes ?? new HashSet<Type>();
 
+            bool ShouldIgnoreOperation(Operation op)
+            {
+                if (predicate != null && !predicate(op))
+                    return true;
+
+                if (!meta.IsVisible(req, op))
+                    return true;
+
+                if (opTypes.Contains(op.RequestType))
+                    return true;
+
+                if (skipTypes.Contains(op.RequestType))
+                    return true;
+
+                if (ignoreNamespaces.Contains(op.RequestType.Namespace))
+                    return true;
+                return false;
+            }
+
             foreach (var operation in meta.Operations)
             {
-                if (predicate != null && !predicate(operation))
-                    continue;
-
-                if (!meta.IsVisible(req, operation))
-                    continue;
-
-                if (opTypes.Contains(operation.RequestType))
-                    continue;
-
-                if (skipTypes.Contains(operation.RequestType))
-                    continue;
-
-                if (ignoreNamespaces.Contains(operation.RequestType.Namespace))
+                if (ShouldIgnoreOperation(operation)) 
                     continue;
 
                 var opType = new MetadataOperationType
@@ -190,6 +197,9 @@ namespace ServiceStack.NativeTypes
             // Add all Request Types before Response Types
             foreach (var operation in meta.Operations)
             {
+                if (ShouldIgnoreOperation(operation)) 
+                    continue;
+
                 if (operation.ResponseType != null)
                 {
                     opTypes.Add(operation.ResponseType);
