@@ -447,7 +447,7 @@ namespace ServiceStack
         }
     }
     
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [Route("/types/proto")]
     public class TypesProto : NativeTypesBase { }
 

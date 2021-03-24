@@ -9,7 +9,7 @@ namespace ServiceStack.MiniProfiler
     /// <summary>
     /// Information about a DbParameter used in the sql statement profiled by SqlTiming.
     /// </summary>
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [DataContract] 
     public class SqlTimingParameter
     {

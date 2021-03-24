@@ -14,7 +14,7 @@ namespace ServiceStack.MiniProfiler
     /// <summary>
     /// An individual profiling step that can contain child steps.
     /// </summary>
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [DataContract]
     public class Timing : IDisposable
     {

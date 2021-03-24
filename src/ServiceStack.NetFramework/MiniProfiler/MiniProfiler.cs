@@ -35,7 +35,7 @@ namespace ServiceStack.MiniProfiler
     /// A single MiniProfiler can be used to represent any number of steps/levels in a call-graph, via Step()
     /// </summary>
     /// <remarks>Totally baller.</remarks>
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [DataContract]
     public partial class MiniProfiler : IProfiler 
     {
