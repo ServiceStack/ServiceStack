@@ -180,10 +180,6 @@ namespace ServiceStack.Mvc
         public virtual IDbConnection Db => ServiceStackProvider.Db;
 
         public virtual IRedisClient Redis => ServiceStackProvider.Redis;
-        
-#if NET472 || NETSTANDARD
-        public virtual ValueTask<IRedisClientAsync> GetRedisAsync() => ServiceStackProvider.GetRedisAsync();
-#endif
 
         public virtual IMessageProducer MessageProducer => ServiceStackProvider.MessageProducer;
 
@@ -199,32 +195,26 @@ namespace ServiceStack.Mvc
 
         public virtual bool IsAuthenticated => ServiceStackProvider.IsAuthenticated;
 
-        public virtual IAuthSession GetSession(bool reload = true) => ServiceStackProvider.GetSession(reload);
+        protected virtual IAuthSession GetSession(bool reload = true) => ServiceStackProvider.GetSession(reload);
 
-        public virtual Task<IAuthSession> GetSessionAsync(bool reload = false, CancellationToken token=default) => 
+        protected virtual Task<IAuthSession> GetSessionAsync(bool reload = false, CancellationToken token=default) => 
             ServiceStackProvider.GetSessionAsync(reload, token);
 
-        public virtual Task<TUserSession> SessionAsAsync<TUserSession>(CancellationToken token=default) => 
+        protected virtual Task<TUserSession> SessionAsAsync<TUserSession>(CancellationToken token=default) => 
             ServiceStackProvider.SessionAsAsync<TUserSession>(token);
 
         //don't expose public generic methods in MVC Controllers
-        public virtual TUserSession SessionAs<TUserSession>() => ServiceStackProvider.SessionAs<TUserSession>();
+        protected virtual TUserSession SessionAs<TUserSession>() => ServiceStackProvider.SessionAs<TUserSession>();
 
         [Obsolete("Use SaveSessionAsync")]
-        public virtual void SaveSession(IAuthSession session, TimeSpan? expiresIn = null) => ServiceStackProvider.Request.SaveSession(session, expiresIn);
+        protected virtual void SaveSession(IAuthSession session, TimeSpan? expiresIn = null) => ServiceStackProvider.Request.SaveSession(session, expiresIn);
 
-        public virtual Task SaveSessionAsync(IAuthSession session, TimeSpan? expiresIn = null, CancellationToken token=default) => 
+        protected virtual Task SaveSessionAsync(IAuthSession session, TimeSpan? expiresIn = null, CancellationToken token=default) => 
             ServiceStackProvider.Request.SaveSessionAsync(session, expiresIn, token);
 
-        public virtual void ClearSession() => ServiceStackProvider.ClearSession();
+        protected virtual void ClearSession() => ServiceStackProvider.ClearSession();
         
-        public virtual Task ClearSessionAsync(CancellationToken token=default) => ServiceStackProvider.ClearSessionAsync(token);
-
-        public virtual T TryResolve<T>() => ServiceStackProvider.TryResolve<T>();
-
-        public virtual T ResolveService<T>() => ServiceStackProvider.ResolveService<T>();
-
-        public virtual object ForwardRequestToServiceStack(IRequest request = null) => ServiceStackProvider.Execute(request ?? ServiceStackProvider.Request);
+        protected virtual Task ClearSessionAsync(CancellationToken token=default) => ServiceStackProvider.ClearSessionAsync(token);
 
         public virtual IServiceGateway Gateway => ServiceStackProvider.Gateway;
         public virtual RpcGateway RpcGateway => ServiceStackProvider.RpcGateway;
@@ -247,10 +237,24 @@ namespace ServiceStack.Mvc
             EndServiceStackRequest();
         }
 
-        public virtual void EndServiceStackRequest() => 
+        protected virtual void EndServiceStackRequest() => 
             HostContext.AppHost.OnEndRequest(ServiceStackRequest);
     }
 
+    // Move non session public convenience methods out of ServiceStackController so it doesn't interfere with routes.MapMvcAttributeRoutes()
+    public static class ServiceStackControllerExt
+    {
+        public static object ForwardRequestToServiceStack(this ServiceStackController controller, IRequest request = null) 
+            => controller.ServiceStackProvider.Execute(request ?? controller.ServiceStackProvider.Request);
+        
+#if NET472 || NETSTANDARD
+        public static ValueTask<IRedisClientAsync> GetRedisAsync(this ServiceStackController controller) => 
+            controller.ServiceStackProvider.GetRedisAsync();
+#endif
+        public static T TryResolve<T>(this ServiceStackController controller) => controller.ServiceStackProvider.TryResolve<T>();
+        public static T ResolveService<T>(this ServiceStackController controller) => controller.ServiceStackProvider.ResolveService<T>();
+    }
+    
 #if !NETSTANDARD
     public class ServiceStackJsonResult : JsonResult
     {
