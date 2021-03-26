@@ -15,7 +15,7 @@ namespace ServiceStack.MiniProfiler
     /// <summary>
     /// Profiles a single sql execution.
     /// </summary>
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [DataContract]
     public class SqlTiming
     {
