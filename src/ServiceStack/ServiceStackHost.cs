@@ -39,6 +39,7 @@ namespace ServiceStack
         : IAppHost, IFunqlet, IHasContainer, IDisposable
     {
         private readonly ILog Log = LogManager.GetLogger(typeof(ServiceStackHost));
+        public bool IsDebugLogEnabled => Log.IsDebugEnabled;
 
         /// <summary>
         /// Singleton access to AppHost

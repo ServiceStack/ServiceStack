@@ -632,10 +632,7 @@ namespace ServiceStack
         /// </summary>
         public virtual ResponseStatus CreateResponseStatus(Exception ex, object request=null)
         {
-            var useEx = (Config.ReturnsInnerException && ex.InnerException != null && !(ex is IHttpError)
-                ? ex.InnerException
-                : null) ?? ex;
-
+            var useEx = UseException(ex);
             var responseStatus = DtoUtils.CreateResponseStatus(useEx, request, Config.DebugMode);
 
             OnExceptionTypeFilter(useEx, responseStatus);
@@ -645,6 +642,14 @@ namespace ServiceStack
             
             return responseStatus;
         }
+
+        /// <summary>
+        /// Return the Exception to use when creating the Error Response DTO and ResponseStatus 
+        /// </summary>
+        public Exception UseException(Exception ex) =>
+            (Config.ReturnsInnerException && ex.InnerException != null && !(ex is IHttpError)
+                ? ex.InnerException
+                : null) ?? ex;
 
         /// <summary>
         /// Callback for handling when errors are logged, also called for non-Exception error logging like 404 requests   

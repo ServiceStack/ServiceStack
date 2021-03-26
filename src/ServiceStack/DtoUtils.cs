@@ -184,17 +184,30 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// 
+        /// Create an Error Response DTO for the specified Request DTO from the Exception 
         /// </summary>
-        /// <param name="iocResolver"></param>
         /// <param name="request"></param>
         /// <param name="ex"></param>
         /// <returns></returns>
         public static object CreateErrorResponse(object request, Exception ex)
         {
-            var responseStatus = ex.ToResponseStatus(request);
-            var errorResponse = CreateErrorResponse(request, ex, responseStatus);
-            return errorResponse;
+            var appHost = HostContext.AppHost;
+            if (appHost != null)
+            {
+                var useEx = appHost.UseException(ex);
+                var responseStatus = CreateResponseStatus(useEx, request, appHost.Config.DebugMode);
+
+                appHost.OnExceptionTypeFilter(useEx, responseStatus);
+
+                if (appHost.Config.DebugMode || appHost.IsDebugLogEnabled)
+                    appHost.OnLogError(appHost.GetType(), responseStatus.Message, useEx);
+                return CreateErrorResponse(request, useEx, responseStatus);
+            }
+            else
+            {
+                var responseStatus = CreateResponseStatus(ex, request);
+                return CreateErrorResponse(request, ex, responseStatus);
+            }
         }
     }
 }
