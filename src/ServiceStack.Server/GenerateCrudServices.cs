@@ -862,10 +862,10 @@ namespace ServiceStack
             return src;
         }
 
-        static Tuple<string, string> key(Type type) => new Tuple<string, string>(type.Namespace, type.Name);
-        static Tuple<string, string> key(MetadataType type) => new Tuple<string, string>(type.Namespace, type.Name);
-        static Tuple<string, string> key(MetadataTypeName type) => new Tuple<string, string>(type.Namespace, type.Name);
-        static Tuple<string, string> keyNs(string ns, string name) => new Tuple<string, string>(ns, name);
+        static Tuple<string, string> key(Type type) => new(type.Namespace, type.Name);
+        static Tuple<string, string> key(MetadataType type) => new(type.Namespace, type.Name);
+        static Tuple<string, string> key(MetadataTypeName type) => new(type.Namespace, type.Name);
+        static Tuple<string, string> keyNs(string ns, string name) => new(ns, name);
 
         public static Tuple<MetadataTypes, MetadataTypesConfig> ResolveMetadataTypes(
             CrudCodeGenTypes request, IRequest req, Action<AutoGenContext> generateOperationsFilter)
@@ -940,7 +940,8 @@ namespace ServiceStack
                 }
             }
 
-            var typesToGenerateMap = new Dictionary<string, TableSchema>(StringComparer.OrdinalIgnoreCase);
+            var typesToGenerateMap = new Dictionary<string, TableSchema>();
+            var typesToGenerateSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var result in results)
             {
                 var keysCount = result.Columns?.Count(x => x.IsKey) ?? 0;
@@ -948,7 +949,12 @@ namespace ServiceStack
                     continue;
                 
                 typesToGenerateMap[result.Name] = result;
+                typesToGenerateSet.Add(StringUtils.SnakeCaseToPascalCase(result.Name));
             }
+
+            bool ContainsTypeToGenerate(string name) =>
+                typesToGenerateMap.ContainsKey(name) ||
+                typesToGenerateSet.Contains(StringUtils.SnakeCaseToPascalCase(name));
             
             var includeCrudServices = request.IncludeCrudOperations ?? genServices.IncludeCrudOperations;
             var includeCrudInterfaces = AutoCrudOperation.CrudInterfaceMetadataNames(includeCrudServices);
@@ -1015,7 +1021,7 @@ namespace ServiceStack
                 }
                 foreach (var metaType in metadataTypes.Types)
                 {
-                    if (typesToGenerateMap.ContainsKey(metaType.Name))
+                    if (ContainsTypeToGenerate(metaType.Name))
                     {
                         types.Add(metaType);
                     }
@@ -1040,7 +1046,7 @@ namespace ServiceStack
                 }
                 foreach (var metaType in metadataTypes.Types)
                 {
-                    if (typesToGenerateMap.ContainsKey(metaType.Name) && 
+                    if (ContainsTypeToGenerate(metaType.Name) && 
                         exactTypesLookup.ContainsKey(keyNs(serviceModelNs, metaType.Name)))
                     {
                         types.Add(metaType);
