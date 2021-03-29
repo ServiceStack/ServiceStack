@@ -940,7 +940,7 @@ namespace ServiceStack
                 }
             }
 
-            var typesToGenerateMap = new Dictionary<string, TableSchema>();
+            var typesToGenerateMap = new Dictionary<string, TableSchema>(StringComparer.OrdinalIgnoreCase);
             foreach (var result in results)
             {
                 var keysCount = result.Columns?.Count(x => x.IsKey) ?? 0;
@@ -979,6 +979,7 @@ namespace ServiceStack
             
             // Also don't include Types in App's Implementation Assemblies
             appHost.ServiceAssemblies.Each(x => appDlls.Add(x));
+            appDlls = appDlls.Distinct().ToList();
             var existingAppTypes = new HashSet<string>();
             var existingExactAppTypes = new HashSet<Tuple<string,string>>();
             var existingModelOperationTypes = new HashSet<Tuple<string,string>>();
