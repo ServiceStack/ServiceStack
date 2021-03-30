@@ -985,7 +985,7 @@ namespace ServiceStack
             
             // Also don't include Types in App's Implementation Assemblies
             appHost.ServiceAssemblies.Each(x => appDlls.Add(x));
-            appDlls = appDlls.Distinct().ToList();
+            appDlls = appDlls.Where(x => !x.IsDynamic).Distinct().ToList();
             var existingAppTypes = new HashSet<string>();
             var existingExactAppTypes = new HashSet<Tuple<string,string>>();
             var existingModelOperationTypes = new HashSet<Tuple<string,string>>();
@@ -1006,12 +1006,26 @@ namespace ServiceStack
                 }
             }
 
+            bool ImplementsIncludedCrudInterface(MetadataType request)
+            {
+                if (request.Implements?.Any(x => includeCrudInterfaces.Contains(x.Name)) == true)
+                    return true;
+                if (includeCrudInterfaces.Contains("IQueryDb`1"))
+                {
+                    if (request.Inherits?.Name.StartsWith("QueryDb`") == true)
+                        return true;
+                    if (request.Type != null && request.Type.HasInterface(typeof(IQueryDb)))
+                        return true;
+                }
+                return false;
+            }
+
             // Re-use existing Types with same name for default DB Connection
             if (request.NamedConnection == null)
             {
                 foreach (var op in metadataTypes.Operations)
                 {
-                    if (op.Request.Implements?.Any(x => includeCrudInterfaces.Contains(x.Name)) == true)
+                    if (ImplementsIncludedCrudInterface(op.Request))
                     {
                         operations.Add(op);
                     }
@@ -1033,7 +1047,7 @@ namespace ServiceStack
                 // Only re-use existing Types with exact Namespace + Name for NamedConnection Types
                 foreach (var op in metadataTypes.Operations)
                 {
-                    if (op.Request.Implements?.Any(x => includeCrudInterfaces.Contains(x.Name)) == true &&
+                    if (ImplementsIncludedCrudInterface(op.Request) &&
                         exactTypesLookup.ContainsKey(keyNs(serviceModelNs, op.Request.Name)))
                     {
                         operations.Add(op);
