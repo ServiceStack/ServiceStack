@@ -66,6 +66,8 @@ namespace ServiceStack
         Action<MetadataOperationType, IRequest> ServiceFilter { get; set; }
         Func<MetadataType, bool> IncludeType { get; set; }
         Func<MetadataOperationType, bool> IncludeService { get; set; }
+        bool AddDataContractAttributes { get; set; }
+        bool AddIndexesToDataMembers { get; set; }
         string AccessRole { get; set; }
         DbSchema GetCachedDbSchema(IDbConnectionFactory dbFactory, string schema = null, string namedConnection = null,
             List<string> includeTables = null, List<string> excludeTables = null);

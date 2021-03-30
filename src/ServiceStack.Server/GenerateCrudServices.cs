@@ -78,6 +78,9 @@ namespace ServiceStack
         
         public Func<MetadataType, bool> IncludeType { get; set; }
         public Func<MetadataOperationType, bool> IncludeService { get; set; }
+
+        public bool AddDataContractAttributes { get; set; } = true; //required by protobuf/gRPC
+        public bool AddIndexesToDataMembers { get; set; } = true;   //required by protobuf/gRPC
         
         public string AccessRole { get; set; } = RoleNames.Admin;
         
@@ -878,7 +881,7 @@ namespace ServiceStack
                     nameof(request.Include));
             
             var metadata = req.Resolve<INativeTypesMetadata>();
-            var genServices = HostContext.AssertPlugin<AutoQueryFeature>().GenerateCrudServices;
+            IGenerateCrudServices genServices = HostContext.AssertPlugin<AutoQueryFeature>().GenerateCrudServices;
 
             var dbFactory = req.TryResolve<IDbConnectionFactory>();
             var results = request.NoCache == true 
@@ -894,14 +897,25 @@ namespace ServiceStack
                 typesConfig.MakeVirtual = false;
             if (request.InitializeCollections == null)
                 typesConfig.InitializeCollections = false;
-            if (request.AddDataContractAttributes == null) //required for gRPC
-                typesConfig.AddDataContractAttributes = true;
-            if (request.AddIndexesToDataMembers == null) //required for gRPC
-                typesConfig.AddIndexesToDataMembers = true;
+            if (request.AddDataContractAttributes == null)
+                typesConfig.AddDataContractAttributes = genServices.AddDataContractAttributes;
+            if (request.AddIndexesToDataMembers == null)
+                typesConfig.AddIndexesToDataMembers = genServices.AddIndexesToDataMembers;
             if (string.IsNullOrEmpty(request.AddDefaultXmlNamespace))
                 typesConfig.AddDefaultXmlNamespace = null;
 
             typesConfig.UsePath = req.PathInfo;
+            var exportDbAttrs = new[] {
+                typeof(PrimaryKeyAttribute),
+                typeof(AutoIncrementAttribute),
+                typeof(AliasAttribute),
+                typeof(RequiredAttribute),
+            };
+            if (typesConfig.ExportAttributes == null)
+                typesConfig.ExportAttributes = new HashSet<Type>(exportDbAttrs);
+            else
+                exportDbAttrs.Each(x => typesConfig.ExportAttributes.Add(x));
+            
             var metadataTypes = metadata.GetMetadataTypes(req, typesConfig);
             var serviceModelNs = appHost.GetType().Namespace + ".ServiceModel";
             var typesNs = serviceModelNs + ".Types";
