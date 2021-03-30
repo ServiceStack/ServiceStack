@@ -906,11 +906,14 @@ namespace ServiceStack
 
             typesConfig.UsePath = req.PathInfo;
             var exportDbAttrs = new[] {
+                typeof(NamedConnectionAttribute),
+                typeof(SchemaAttribute),
                 typeof(PrimaryKeyAttribute),
                 typeof(AutoIncrementAttribute),
                 typeof(AliasAttribute),
                 typeof(RequiredAttribute),
             };
+            
             if (typesConfig.ExportAttributes == null)
                 typesConfig.ExportAttributes = new HashSet<Type>(exportDbAttrs);
             else
@@ -1247,7 +1250,7 @@ namespace ServiceStack
                             op.ViewModel = new MetadataTypeName { Name = dataModelName };
                             
                             var uniqueRoute = ctx.RoutePathBase + "/{" + id + "}";
-                            if (!existingRoutes.Contains(new Tuple<string, string>(uniqueRoute, verb)))
+                            if (!existingRoutes.Contains(new(uniqueRoute, verb)))
                             {
                                 op.Routes.Add(new MetadataRoute {
                                     Path = uniqueRoute, 
@@ -1258,7 +1261,7 @@ namespace ServiceStack
                         else
                         {
                             op.Request.Implements = new List<MetadataTypeName>(op.Request.Implements) {
-                                new MetadataTypeName {
+                                new() {
                                     Namespace = "ServiceStack",
                                     Name = $"I{operation}Db`1",
                                     GenericArgs = new[] {
@@ -1354,6 +1357,11 @@ namespace ServiceStack
                     addToExistingTypes(typesNs, modelType);
                 }
             }
+
+            // Remove from metadata types where Existing Types exist
+            crudMetadataTypes.Types = crudMetadataTypes.Types
+                .Where(x => !existingExactAppTypes.Contains(new(x.Namespace, x.Name)))
+                .ToList();
 
             if (genServices.IncludeService != null)
             {
