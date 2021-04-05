@@ -119,6 +119,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             jwtToken.Print();
 
             var jwtAuth = CreateJwtAuthProviderReader();
+            
+            // JWT Signature is Verified
+            var jwtBody = jwtAuth.GetVerifiedJwtPayload(null, jwtToken.Split('.'));
+            Assert.That(jwtBody, Is.Not.Null);
+            Assert.That(jwtBody["sub"], Is.EqualTo("1"));
+            
+            // JWT is Valid
+            var invalidError = jwtAuth.GetInvalidJwtPayloadError(jwtBody);
+            Assert.That(invalidError, Is.Null);
+
             Assert.That(jwtAuth.IsJwtValid(jwtToken));
         }
 
