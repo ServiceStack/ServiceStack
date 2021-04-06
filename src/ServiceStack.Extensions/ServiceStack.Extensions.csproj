@@ -12,10 +12,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Grpc.AspNetCore.Server" Version="2.34.0" />
-        <PackageReference Include="Grpc.Core.Api" Version="2.34.0" />
-        <PackageReference Include="protobuf-net" Version="3.0.73" />
-        <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.0.140" />
+        <PackageReference Include="Grpc.AspNetCore.Server" Version="2.36.0" />
+        <PackageReference Include="Grpc.Core.Api" Version="2.36.4" />
+        <PackageReference Include="protobuf-net" Version="3.0.101" />
+        <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.0.152" />
         
         <PackageReference Include="System.Threading.Channels" Version="5.0.0" />
 

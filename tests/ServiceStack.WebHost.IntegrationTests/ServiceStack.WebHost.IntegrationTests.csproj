@@ -279,8 +279,8 @@
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
     <PackageReference Include="NUnit" Version="3.12.0" />
-    <PackageReference Include="protobuf-net" Version="3.0.73" />
-    <PackageReference Include="protobuf-net.Core" Version="3.0.73" />
+    <PackageReference Include="protobuf-net" Version="3.0.101" />
+    <PackageReference Include="protobuf-net.Core" Version="3.0.101" />
     <PackageReference Include="ServiceStack" Version="$(Version)" />
     <PackageReference Include="ServiceStack.Api.OpenApi" Version="$(Version)" />
     <PackageReference Include="ServiceStack.Client" Version="$(Version)" />
