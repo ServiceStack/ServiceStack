@@ -176,6 +176,8 @@ namespace ServiceStack
             {
                 appHost.RegisterService(typeof(ServerEventsSubscribersService), SubscribersPath);
             }
+            
+            appHost.OnDisposeCallbacks.Add(host => container.Resolve<IServerEvents>().Stop());
         }
 
         internal bool CanAccessSubscription(IRequest req, SubscriptionInfo sub)
@@ -1049,6 +1051,33 @@ namespace ServiceStack
 
         public void Stop()
         {
+            foreach (var sub in Subscriptions.ValuesWithoutLock())
+            {
+                try
+                {
+                    sub.Dispose();
+                }
+                catch (Exception e)
+                {
+                    Log.Warn($"Error disposing sub {sub.SessionId}", e);
+                }
+            }
+            Reset();
+        }
+
+        public async Task StopAsync()
+        {
+            foreach (var sub in Subscriptions.ValuesWithoutLock())
+            {
+                try
+                {
+                    await sub.DisposeAsync();
+                }
+                catch (Exception e)
+                {
+                    Log.Warn($"Error disposing sub {sub.SessionId}", e);
+                }
+            }
             Reset();
         }
 
@@ -1921,6 +1950,7 @@ namespace ServiceStack
         void Reset();
         void Start();
         void Stop();
+        Task StopAsync();
         
         // Observation APIs
         Dictionary<string, string> GetStats();

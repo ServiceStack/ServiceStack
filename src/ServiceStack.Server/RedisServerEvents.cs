@@ -490,6 +490,12 @@ namespace ServiceStack
             local.Stop();
         }
 
+        public async Task StopAsync()
+        {
+            RedisPubSub.Stop();
+            await local.StopAsync();
+        }
+
         public Dictionary<string, string> GetStats() => local.GetStats();
 
         protected Task NotifyRedisAsync(string key, string selector, object message, string channel = null, CancellationToken token=default)
