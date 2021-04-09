@@ -13,7 +13,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         readonly string privateKeyXml;
         readonly string publicKeyXml;
 
-        public const string Username = "mythz";
+        public const string Username = "rsa256reader";
         public const string Password = "p@55word";
         private readonly ServiceStackHost appHost;
         class AppHost : AppSelfHostBase
