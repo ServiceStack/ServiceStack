@@ -326,7 +326,11 @@ namespace ServiceStack
         public static IApplicationBuilder GetApp(this IAppHost appHost) => ((IAppHostNetCore)appHost).App;
         public static IServiceProvider GetApplicationServices(this IAppHost appHost) => ((IAppHostNetCore)appHost).App.ApplicationServices;
         public static IHostingEnvironment GetHostingEnvironment(this IAppHost appHost) => ((IAppHostNetCore)appHost).HostingEnvironment;
-        
+
+        public static bool IsDevelopmentEnvironment(this IAppHost appHost) => appHost.GetHostingEnvironment().EnvironmentName == "Development";
+        public static bool IsStagingEnvironment(this IAppHost appHost) => appHost.GetHostingEnvironment().EnvironmentName == "Staging";
+        public static bool IsProductionEnvironment(this IAppHost appHost) => appHost.GetHostingEnvironment().EnvironmentName == "Production";
+
         public static IApplicationBuilder UseServiceStack(this IApplicationBuilder app, AppHostBase appHost)
         {
             appHost.Bind(app);
