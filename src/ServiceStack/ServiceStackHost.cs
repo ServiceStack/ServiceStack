@@ -1754,6 +1754,11 @@ namespace ServiceStack
             return null;
         }
 
+        public virtual void OnApplicationStopping()
+        {
+            Dispose();
+        }
+
         /// <summary>
         /// Executes OnDisposeCallbacks and Disposes IDisposable's dependencies in the IOC & reset singleton states
         /// </summary>

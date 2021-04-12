@@ -96,6 +96,9 @@ namespace ServiceStack
             {
                 requiresConfig.Configuration = config.Configuration;
             }
+
+            var appLifetime = app.ApplicationServices.GetService<IApplicationLifetime>();
+            appLifetime?.ApplicationStopping.Register(appHost.OnApplicationStopping);
         }
 
         /// <summary>
