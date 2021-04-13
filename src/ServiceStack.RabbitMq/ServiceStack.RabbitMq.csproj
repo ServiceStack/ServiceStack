@@ -18,7 +18,7 @@
         <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj"/>
         <ProjectReference Include="..\ServiceStack\ServiceStack.csproj"/>
         <PackageReference Include="ServiceStack.Text" Version="$(Version)"/>
-        <PackageReference Include="RabbitMQ.Client" Version="5.1.2"/>
+        <PackageReference Include="RabbitMQ.Client" Version="5.2.0"/>
     </ItemGroup>
 
 </Project>

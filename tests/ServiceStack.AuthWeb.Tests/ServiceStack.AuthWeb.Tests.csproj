@@ -179,7 +179,7 @@
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="Npgsql" Version="4.1.7" />
+    <PackageReference Include="Npgsql" Version="4.1.9" />
     <PackageReference Include="NUnit" Version="3.12.0" />
     <PackageReference Include="RavenDB.Client" Version="5.1.5" />
     <PackageReference Include="ServiceStack.Common" Version="$(Version)" />
