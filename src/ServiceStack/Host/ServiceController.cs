@@ -51,6 +51,7 @@ namespace ServiceStack.Host
             this.ResolveServicesFn = () => GetAssemblyTypes(assembliesWithServices);
         }
 
+        private readonly HashSet<Type> registeredServices = new();
         readonly Dictionary<Type, ServiceExecFn> requestExecMap = new();
         readonly Dictionary<Type, RestrictAttribute> requestServiceAttrs = new();
 
@@ -142,6 +143,10 @@ namespace ServiceStack.Host
 
             if (IsServiceType(serviceType))
             {
+                if (registeredServices.Contains(serviceType))
+                    return;
+                registeredServices.Add(serviceType);
+                
                 foreach (var mi in serviceType.GetActions())
                 {
                     var requestType = mi.GetParameters()[0].ParameterType;
