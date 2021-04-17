@@ -706,20 +706,18 @@ namespace ServiceStack.Auth
                 Buffer.BlockCopy(cryptAuthKeys256, 0, authKey, 0, authKey.Length);
                 Buffer.BlockCopy(cryptAuthKeys256, authKey.Length, cryptKey, 0, cryptKey.Length);
 
-                using (var hmac = new HMACSHA256(authKey))
-                using (var encryptedStream = MemoryStreamFactory.GetStream())
-                using (var writer = new BinaryWriter(encryptedStream))
-                {
-                    writer.Write(aadBytes);
-                    writer.Write(iv);
-                    writer.Write(cipherText);
-                    writer.Flush();
+                using var hmac = new HMACSHA256(authKey);
+                using var encryptedStream = MemoryStreamFactory.GetStream();
+                using var writer = new BinaryWriter(encryptedStream);
+                writer.Write(aadBytes);
+                writer.Write(iv);
+                writer.Write(cipherText);
+                writer.Flush();
 
-                    var calcTag = hmac.ComputeHash(encryptedStream.GetBuffer(), 0, (int) encryptedStream.Length);
+                var calcTag = hmac.ComputeHash(encryptedStream.GetBuffer(), 0, (int) encryptedStream.Length);
 
-                    if (calcTag.EquivalentTo(sentTag))
-                        return true;
-                }
+                if (calcTag.EquivalentTo(sentTag))
+                    return true;
             }
 
             iv = null;
