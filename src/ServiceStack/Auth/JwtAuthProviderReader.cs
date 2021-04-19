@@ -299,9 +299,9 @@ namespace ServiceStack.Auth
         public static long DefaultResolveUnixTime(DateTime dateTime) => dateTime.ToUnixTime();
 
         /// <summary>
-        /// Inspect or modify JWT Payload before validation 
+        /// Inspect or modify JWT Payload before validation, return error message if invalid else null 
         /// </summary>
-        public Action<Dictionary<string,string>> PreValidateJwtPayloadFilter { get; set; }
+        public Func<Dictionary<string,string>, string> PreValidateJwtPayloadFilter { get; set; }
 
         /// <summary>
         /// Change resolution for resolving unique jti id for Access Tokens
@@ -784,7 +784,9 @@ namespace ServiceStack.Auth
             if (jwtPayload == null)
                 throw new ArgumentNullException(nameof(jwtPayload));
 
-            PreValidateJwtPayloadFilter?.Invoke(jwtPayload);
+            var errorMsg = PreValidateJwtPayloadFilter?.Invoke(jwtPayload);
+            if (errorMsg != null)
+                return errorMsg;
 
             if (HasExpired(jwtPayload))
                 return ErrorMessages.TokenExpired;
@@ -817,7 +819,9 @@ namespace ServiceStack.Auth
             if (jwtPayload == null)
                 throw new ArgumentNullException(nameof(jwtPayload));
 
-            PreValidateJwtPayloadFilter?.Invoke(jwtPayload);
+            var errorMsg = PreValidateJwtPayloadFilter?.Invoke(jwtPayload);
+            if (errorMsg != null)
+                return errorMsg;
 
             if (HasExpired(jwtPayload))
                 return ErrorMessages.TokenExpired;
