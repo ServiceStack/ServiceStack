@@ -31,7 +31,7 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Returns path of executable if exists with PATH
+        /// Returns path of executable if exists within PATH
         /// </summary>
         public static string FindExePath(string exeName)
         {
@@ -129,7 +129,7 @@ namespace ServiceStack
         }
         
         /// <summary>
-        /// Run a Process asynchronously
+        /// Run a Process asynchronously, returning  entire captured process output, whilst streaming stdOut, stdErr callbacks
         /// </summary>
         public static async Task<ProcessResult> RunAsync(ProcessStartInfo startInfo, int? timeoutMs = null,
             Action<string> onOut=null, Action<string> onError=null)
