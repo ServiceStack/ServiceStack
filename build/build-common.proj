@@ -37,7 +37,7 @@
     <MSBuild Projects="$(SrcDir)/ServiceStack.Common/ServiceStack.Common.csproj" Targets="Restore" />
     <MSBuild Projects="$(SrcDir)/ServiceStack/ServiceStack.csproj" Targets="Restore" />
     <MSBuild Projects="$(SrcDir)/ServiceStack.Kestrel/ServiceStack.Kestrel.csproj" Targets="Restore" />
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Server/ServiceStack.Server.csproj" Targets="Restore" />
+<!--    <MSBuild Projects="$(SrcDir)/ServiceStack.Server/ServiceStack.Server.csproj" Targets="Restore" />-->
   </Target>
 
   <!-- need to remove old caches from nuget restore from .Core csproj's -->
