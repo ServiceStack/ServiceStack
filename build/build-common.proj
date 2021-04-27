@@ -96,9 +96,9 @@
              Properties="Configuration=$(Configuration)" />
 
     <!-- ServiceStack.Server --><!-- used in ServiceStack.Admin.Core.csproj -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Server/ServiceStack.Server.csproj"
-             Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" />
+<!--    <MSBuild Projects="$(SrcDir)/ServiceStack.Server/ServiceStack.Server.csproj"-->
+<!--             Targets="Build;Pack"-->
+<!--             Properties="Configuration=$(Configuration)" />-->
 
 
     <!-- Copy all *.nupkg to /NuGet -->

@@ -99,10 +99,10 @@
              Properties="Configuration=$(Configuration)" />
 
     <!-- ServiceStack.Server.Core -->
-    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Server/ServiceStack.Server.Core.csproj" Targets="Restore" />
-    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Server/ServiceStack.Server.Core.csproj"
-             Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" />
+<!--    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Server/ServiceStack.Server.Core.csproj" Targets="Restore" />-->
+<!--    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Server/ServiceStack.Server.Core.csproj"-->
+<!--             Targets="Build;Pack"-->
+<!--             Properties="Configuration=$(Configuration)" />-->
 
     <!-- Copy all *.nupkg to /NuGet -->
     <ItemGroup>
