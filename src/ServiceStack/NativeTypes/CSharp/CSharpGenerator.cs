@@ -56,7 +56,7 @@ namespace ServiceStack.NativeTypes.CSharp
                 if (value)
                 {
                     PropertyTypeFilter = (gen, type, prop) => 
-                        prop.IsRequired == true
+                        prop.IsRequired == true && type.IsClass
                             ? gen.GetPropertyType(prop)
                             : gen.GetPropertyType(prop).EnsureSuffix('?');
                 }
