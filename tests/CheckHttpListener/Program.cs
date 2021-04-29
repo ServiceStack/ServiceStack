@@ -7,7 +7,7 @@ using Check.ServiceInterface;
 using Check.ServiceModel;
 using Funq;
 using ServiceStack;
-using ServiceStack.Admin;
+// using ServiceStack.Admin;
 using ServiceStack.Api.OpenApi;
 using ServiceStack.Auth;
 using ServiceStack.Data;
@@ -50,7 +50,7 @@ namespace CheckHttpListener
             Plugins.Add(new OpenApiFeature());
 
             Plugins.Add(new AutoQueryFeature { MaxLimit = 100 });
-            Plugins.Add(new AdminFeature());
+            // Plugins.Add(new AdminFeature());
 
             Plugins.Add(new AuthFeature(() => new AuthUserSession(),
                 new[] { new BasicAuthProvider(AppSettings) })

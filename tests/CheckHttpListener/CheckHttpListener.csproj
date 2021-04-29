@@ -122,7 +122,7 @@
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
     <PackageReference Include="NUnit" Version="3.12.0" />
     <PackageReference Include="ServiceStack" Version="$(Version)" />
-    <PackageReference Include="ServiceStack.Admin" Version="$(Version)" />
+<!--    <PackageReference Include="ServiceStack.Admin" Version="$(Version)" />-->
     <PackageReference Include="ServiceStack.Client" Version="$(Version)" />
     <PackageReference Include="ServiceStack.HttpClient" Version="$(Version)" />
     <PackageReference Include="ServiceStack.Common" Version="$(Version)" />
