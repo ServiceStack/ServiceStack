@@ -82,6 +82,8 @@ namespace ServiceStack.NativeTypes.VbNet
         };
 
         public static TypeFilterDelegate TypeFilter { get; set; }
+        
+        public static Func<VbNetGenerator, MetadataType, MetadataPropertyType, string> PropertyTypeFilter { get; set; }
 
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
@@ -462,7 +464,9 @@ namespace ServiceStack.NativeTypes.VbNet
                 {
                     if (wasAdded) sb.AppendLine();
 
-                    var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs, includeNested:true);
+                    var propType = GetPropertyType(prop);
+                    propType = PropertyTypeFilter?.Invoke(this, type, prop) ?? propType;
+                    
                     wasAdded = AppendComments(sb, prop.Description);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
@@ -500,6 +504,12 @@ namespace ServiceStack.NativeTypes.VbNet
 
                 sb.AppendLine("Public {0}Property ExtensionData As ExtensionDataObject Implements IExtensibleDataObject.ExtensionData".Fmt(@virtual));
             }
+        }
+
+        public virtual string GetPropertyType(MetadataPropertyType prop)
+        {
+            var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs, includeNested: true);
+            return propType;
         }
 
         public bool AppendAttributes(StringBuilderWrapper sb, List<MetadataAttribute> attributes)

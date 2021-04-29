@@ -32,6 +32,8 @@ namespace ServiceStack.NativeTypes.FSharp
 
         public static TypeFilterDelegate TypeFilter { get; set; }
 
+        public static Func<FSharpGenerator, MetadataType, MetadataPropertyType, string> PropertyTypeFilter { get; set; }
+
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
         public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types.OrderTypesByDeps();
@@ -304,7 +306,9 @@ namespace ServiceStack.NativeTypes.FSharp
                 {
                     if (wasAdded) sb.AppendLine();
 
-                    var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
+                    var propType = GetPropertyType(prop);
+                    propType = PropertyTypeFilter?.Invoke(this, type, prop) ?? propType;
+
                     wasAdded = AppendComments(sb, prop.Description);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
@@ -344,6 +348,12 @@ namespace ServiceStack.NativeTypes.FSharp
 
                 sb.AppendLine("member val ExtensionData:ExtensionDataObject = null with get,set");
             }
+        }
+
+        public virtual string GetPropertyType(MetadataPropertyType prop)
+        {
+            var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
+            return propType;
         }
 
         private string GetDefaultLiteral(MetadataPropertyType prop, MetadataType type)

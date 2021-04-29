@@ -180,6 +180,8 @@ namespace ServiceStack.NativeTypes.Dart
         
         public static TypeFilterDelegate TypeFilter { get; set; }
 
+        public static Func<DartGenerator, MetadataType, MetadataPropertyType, string> PropertyTypeFilter { get; set; }
+
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
         public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types.OrderTypesByDeps();
@@ -627,7 +629,7 @@ namespace ServiceStack.NativeTypes.Dart
                         sbBody.AppendLine("        super.fromMap(json);");
                     foreach (var prop in props)
                     {
-                        var propType = DartPropertyType(prop);
+                        var propType = GetPropertyType(prop);
                         var jsonName = prop.Name.PropertyStyle();
                         var propName = GetPropertyName(prop.Name);
                         if (UseTypeConversion(prop))
@@ -689,7 +691,7 @@ namespace ServiceStack.NativeTypes.Dart
                                 sbBody.AppendLine(",");
                             }
     
-                            var propType = DartPropertyType(prop);
+                            var propType = GetPropertyType(prop);
                             var jsonName = prop.Name.PropertyStyle();
                             var propName = GetPropertyName(prop.Name);
                             if (UseTypeConversion(prop))
@@ -886,7 +888,8 @@ namespace ServiceStack.NativeTypes.Dart
                 {
                     if (wasAdded) sb.AppendLine();
 
-                    var propType = DartPropertyType(prop);
+                    var propType = GetPropertyType(prop);
+                    propType = PropertyTypeFilter?.Invoke(this, type, prop) ?? propType;
 
                     wasAdded = AppendComments(sb, prop.Description);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
@@ -908,7 +911,7 @@ namespace ServiceStack.NativeTypes.Dart
             }
         }
 
-        private string DartPropertyType(MetadataPropertyType prop)
+        public virtual string GetPropertyType(MetadataPropertyType prop)
         {
             var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
             if (propType.EndsWith("?"))

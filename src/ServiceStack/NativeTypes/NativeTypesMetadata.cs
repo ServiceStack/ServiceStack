@@ -1707,5 +1707,8 @@ namespace ServiceStack.NativeTypes
                 }
             }
         }
+
+        internal static string EnsureSuffix(this string s, char suffix) =>
+            s == null ? null : s[s.Length - 1] == suffix ? s : s + suffix;
     }
 }

@@ -89,6 +89,8 @@ namespace ServiceStack.NativeTypes.Swift
         }.ToConcurrentDictionary();
 
         public static TypeFilterDelegate TypeFilter { get; set; }
+        
+        public static Func<SwiftGenerator, MetadataType, MetadataPropertyType, string> PropertyTypeFilter { get; set; }
 
         public static HashSet<string> OverrideInitForBaseClasses = new() {
             "NSObject"
@@ -562,7 +564,9 @@ namespace ServiceStack.NativeTypes.Swift
             {
                 if (wasAdded) sb.AppendLine();
 
-                var propTypeName = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
+                var propTypeName = GetPropertyType(prop);
+                propTypeName = PropertyTypeFilter?.Invoke(this, type, prop) ?? propTypeName;
+
                 var propType = FindType(prop.Type, prop.TypeNamespace, prop.GenericArgs);
                     
                 var optional = "";
@@ -646,6 +650,12 @@ namespace ServiceStack.NativeTypes.Swift
                 AppendDataMember(sb, null, dataMemberIndex++);
                 sb.AppendLine("public var {0}:ResponseStatus?".Fmt(GetPropertyName(nameof(ResponseStatus))));
             }
+        }
+
+        public virtual string GetPropertyType(MetadataPropertyType prop)
+        {
+            var propTypeName = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
+            return propTypeName;
         }
 
         public bool AppendAttributes(StringBuilderWrapper sb, List<MetadataAttribute> attributes)

@@ -93,6 +93,8 @@ namespace ServiceStack.NativeTypes.Java
 
         public static TypeFilterDelegate TypeFilter { get; set; }
 
+        public static Func<JavaGenerator, MetadataType, MetadataPropertyType, string> PropertyTypeFilter { get; set; }
+
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
         public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types;
@@ -476,7 +478,8 @@ namespace ServiceStack.NativeTypes.Java
                 {
                     if (wasAdded) sb.AppendLine();
 
-                    var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
+                    var propType = GetPropertyType(prop);
+                    propType = PropertyTypeFilter?.Invoke(this, type, prop) ?? propType;
 
                     wasAdded = AppendComments(sb, prop.Description);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
@@ -519,7 +522,13 @@ namespace ServiceStack.NativeTypes.Java
             if (sbAccessors.Length > 0)
                 sb.AppendLine(StringBuilderCacheAlt.ReturnAndFree(sbInner).TrimEnd()); //remove last \n
         }
-        
+
+        public virtual string GetPropertyType(MetadataPropertyType prop)
+        {
+            var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
+            return propType;
+        }
+
         public bool AppendAttributes(StringBuilderWrapper sb, List<MetadataAttribute> attributes)
         {
             if (attributes == null || attributes.Count == 0) return false;

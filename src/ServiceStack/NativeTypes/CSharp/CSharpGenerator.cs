@@ -44,6 +44,25 @@ namespace ServiceStack.NativeTypes.CSharp
 
         public static TypeFilterDelegate TypeFilter { get; set; }
 
+        public static Func<CSharpGenerator, MetadataType, MetadataPropertyType, string> PropertyTypeFilter { get; set; }
+
+        /// <summary>
+        /// Helper to make Nullable Reference Type Annotations
+        /// </summary>
+        public static bool UseNullableAnnotations
+        {
+            set
+            {
+                if (value)
+                {
+                    PropertyTypeFilter = (gen, type, prop) => 
+                        prop.IsRequired == true
+                            ? gen.GetPropertyType(prop)
+                            : gen.GetPropertyType(prop).EnsureSuffix('?');
+                }
+            }
+        }
+
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
         public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types;
@@ -424,7 +443,9 @@ namespace ServiceStack.NativeTypes.CSharp
                 {
                     if (wasAdded) sb.AppendLine();
 
-                    var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs, includeNested:true);
+                    var propType = GetPropertyType(prop);
+                    propType = PropertyTypeFilter?.Invoke(this, type, prop) ?? propType;
+
                     wasAdded = AppendComments(sb, prop.Description);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
@@ -459,7 +480,13 @@ namespace ServiceStack.NativeTypes.CSharp
                 sb.AppendLine($"public {virt}ExtensionDataObject ExtensionData {{ get; set; }}");
             }
         }
-        
+
+        public virtual string GetPropertyType(MetadataPropertyType prop)
+        {
+            var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs, includeNested: true);
+            return propType;
+        }
+
         public static Dictionary<string,string[]> AttributeConstructorArgs { get; set; } = new Dictionary<string, string[]> {
             ["ValidateRequest"] = new[] { nameof(ValidateRequestAttribute.Validator) },
             ["Validate"] = new[] { nameof(ValidateRequestAttribute.Validator) },
