@@ -10,6 +10,7 @@ namespace ServiceStack.Redis
         Action OnDispose { get; set; }
         Action<string, string> OnMessage { get; set; }
         Action<string> OnUnSubscribe { get; set; }
+        Action<string> OnEvent { get; set; }
         Action<Exception> OnError { get; set; }
         Action<IRedisPubSubServer> OnFailover { get; set; }
 

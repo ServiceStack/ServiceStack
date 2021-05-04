@@ -123,7 +123,11 @@ namespace ServiceStack.Messaging.Redis
 
         public List<Type> RegisteredTypes => handlerMap.Keys.ToList();
         
-        public bool CaptureEvents { get; set; }
+        public bool CaptureEvents
+        {
+            get => RedisPubSub.OnEvent != null;
+            set => RedisPubSub.OnEvent = value ? OnEvent : null;
+        }
 
         private readonly StringBuilder sbCapturedEvents = new();
         public string GetCapturedEvents()
@@ -143,7 +147,6 @@ namespace ServiceStack.Messaging.Redis
                 OnInit = OnInit,
                 OnStart = OnStart,
                 OnStop = OnStop,
-                OnEvent = OnEvent,
                 OnError = OnError,
                 OnMessage = OnMessage,
             };
