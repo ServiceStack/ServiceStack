@@ -262,21 +262,20 @@ namespace ServiceStack.AuthWeb.Tests
 #if !MONO
             try
             {
-                using (PrincipalContext pc = new PrincipalContext(ContextType.Domain))
-                {
-                    var user = UserPrincipal.FindByIdentity(pc, userSession.UserAuthName);
+                using var pc = new PrincipalContext(ContextType.Domain);
+                var user = UserPrincipal.FindByIdentity(pc, userSession.UserAuthName);
+                if (user == null)
+                    return;
 
-                    tokens.DisplayName = user.DisplayName;
-                    tokens.Email = user.EmailAddress;
-                    tokens.FirstName = user.GivenName;
-                    tokens.LastName = user.Surname;
-                    tokens.FullName = (String.IsNullOrWhiteSpace(user.MiddleName))
-                        ? "{0} {1}".Fmt(user.GivenName, user.Surname)
-                        : "{0} {1} {2}".Fmt(user.GivenName, user.MiddleName, user.Surname);
-                    tokens.PhoneNumber = user.VoiceTelephoneNumber;
-
-                    userSession.UserAuthName = tokens.Email ?? tokens.UserName;
-                }
+                tokens.DisplayName = user.DisplayName;
+                tokens.Email = user.EmailAddress;
+                tokens.FirstName = user.GivenName;
+                tokens.LastName = user.Surname;
+                tokens.FullName = (string.IsNullOrWhiteSpace(user.MiddleName))
+                    ? $"{user.GivenName} {user.Surname}"
+                    : $"{user.GivenName} {user.MiddleName} {user.Surname}";
+                tokens.PhoneNumber = user.VoiceTelephoneNumber;
+                userSession.UserAuthName = tokens.Email ?? tokens.UserName;
             }
             catch (MultipleMatchesException mmex)
             {
