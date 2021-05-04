@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
 using ServiceStack.Text;
@@ -113,16 +114,25 @@ namespace ServiceStack.Messaging.Redis
             set => PublishToOutqWhitelist = value ? TypeConstants.EmptyStringArray : null;
         }
 
-        private readonly Dictionary<Type, IMessageHandlerFactory> handlerMap
-            = new Dictionary<Type, IMessageHandlerFactory>();
+        private readonly Dictionary<Type, IMessageHandlerFactory> handlerMap = new();
 
-        private readonly Dictionary<Type, int> handlerThreadCountMap
-            = new Dictionary<Type, int>();
+        private readonly Dictionary<Type, int> handlerThreadCountMap = new();
 
         private MessageHandlerWorker[] workers;
         private Dictionary<string, int[]> queueWorkerIndexMap;
 
         public List<Type> RegisteredTypes => handlerMap.Keys.ToList();
+        
+        public bool CaptureEvents { get; set; }
+
+        private readonly StringBuilder sbCapturedEvents = new();
+        public string GetCapturedEvents()
+        {
+            lock (sbCapturedEvents)
+            {
+                return sbCapturedEvents.ToString();
+            }
+        }
 
         public RedisMqServer(IRedisClientsManager clientsManager,
             int retryCount = DefaultRetryCount, TimeSpan? requestTimeOut = null)
@@ -133,6 +143,7 @@ namespace ServiceStack.Messaging.Redis
                 OnInit = OnInit,
                 OnStart = OnStart,
                 OnStop = OnStop,
+                OnEvent = OnEvent,
                 OnError = OnError,
                 OnMessage = OnMessage,
             };
@@ -185,7 +196,21 @@ namespace ServiceStack.Messaging.Redis
 
         public void OnError(Exception ex)
         {
+            if (CaptureEvents) AppendEvent(ex.GetType().Name + ": " + ex.Message);
             ErrorHandler?.Invoke(ex);
+        }
+
+        public void OnEvent(string message)
+        {
+            if (CaptureEvents) AppendEvent(message);
+        }
+
+        private void AppendEvent(string message)
+        {
+            lock (sbCapturedEvents)
+            {
+                sbCapturedEvents.AppendLine(message);
+            }
         }
 
         public void OnStart()
@@ -267,6 +292,13 @@ namespace ServiceStack.Messaging.Redis
 
         public void Start()
         {
+            if (CaptureEvents)
+            {
+                lock (sbCapturedEvents)
+                {
+                    sbCapturedEvents.Clear();
+                }
+            }
             RedisPubSub.Start();
         }
 
