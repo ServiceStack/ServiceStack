@@ -37,7 +37,7 @@
 
 {{ css = {
     'bootstrap/bootstrap.css': 'https://cdn.jsdelivr.net/npm/bootstrap/dist/css/bootstrap.min.css',
-    'tailwind/tailwind.css':   'https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css',
+    'litewind/litewind.css':   'https://raw.githubusercontent.com/mythz/site/main/css/litewind.css',
 }
 }}
 
