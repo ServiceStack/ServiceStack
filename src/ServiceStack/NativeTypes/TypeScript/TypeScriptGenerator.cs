@@ -55,13 +55,20 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"IntPtr", "number"},
             {"List", "Array"},
             {"Byte[]", "string"},
-            {"Stream", "Blob"},
+            {"Stream", "string"},
             {"HttpWebResponse", "Blob"},
             {"IDictionary", "any"},
             {"OrderedDictionary", "any"},
             {"Uri", "string"},
             {"Type", "string"},
         };
+
+        public static Dictionary<string, string> ReturnTypeAliases = new() {
+            {"Byte[]", "Blob"},
+            {"Stream", "Blob"},
+            {"HttpWebResponse", "Blob"},
+        };
+        
         private static string declaredEmptyString = "''";
         private static readonly Dictionary<string, string> primitiveDefaultValues = new() {
             {"String", declaredEmptyString},
@@ -263,7 +270,11 @@ namespace ServiceStack.NativeTypes.TypeScript
                                     if (operation?.ReturnsVoid == true)
                                         return nameof(IReturnVoid);
                                     if (operation?.ReturnType != null)
-                                        return Type("IReturn`1", new[] { Type(operation.ReturnType) });
+                                        return Type("IReturn`1", new[] {
+                                            ReturnTypeAliases.TryGetValue(operation.ReturnType.Name, out var returnTypeAlias)
+                                                ? returnTypeAlias
+                                                : Type(operation.ReturnType)
+                                        });
                                     return response != null
                                         ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
                                         : null;
