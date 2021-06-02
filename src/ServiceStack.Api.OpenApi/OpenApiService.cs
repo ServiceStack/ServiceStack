@@ -812,7 +812,7 @@ namespace ServiceStack.Api.OpenApi
         };
 
 
-        HashSet<string> operationIds = new HashSet<string>();
+        HashSet<string> operationIds = new();
 
         /// Returns operation postfix to make operationId unique and swagger json be validable
         private string GetOperationName(string name, string route, string verb)
@@ -827,7 +827,7 @@ namespace ServiceStack.Api.OpenApi
                 pathPostfix = string.Join(string.Empty, entries, 1, entries.Length - 1);
 
             postfixes.TryGetValue(verb, out var verbPostfix);
-            verbPostfix = verbPostfix ?? string.Empty;
+            verbPostfix ??= string.Empty;
 
             var operationId = name + pathPostfix + verbPostfix;
 
