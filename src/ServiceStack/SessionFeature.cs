@@ -144,4 +144,16 @@ namespace ServiceStack
             return session;
         }
     }
+
+    public static class SessionFeatureUtils
+    {
+        public static IAuthSession CreateNewSession(this IUserAuth user, IRequest httpReq)
+        {
+            var sessionId = SessionExtensions.CreateRandomSessionId();
+            var newSession = SessionFeature.CreateNewSession(httpReq, sessionId);
+            var session = HostContext.AppHost.OnSessionFilter(httpReq, newSession, sessionId) ?? newSession;
+            session.PopulateSession(user);
+            return session;
+        }
+    }
 }
