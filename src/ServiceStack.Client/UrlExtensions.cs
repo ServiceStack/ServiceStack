@@ -120,7 +120,7 @@ namespace ServiceStack
                 return genericPrefixIndex > 0 ? "'" + type.Name : type.Name;
 
             int startIndex = type.Namespace != null ? type.Namespace.Length + 1: 0; //trim namespace + "."
-            int endIndex = fullname.IndexOf("[[", startIndex);  //Generic Fullname
+            int endIndex = fullname.IndexOf("[[", startIndex, StringComparison.Ordinal);  //Generic Fullname
             if (endIndex == -1)
                 endIndex = fullname.Length;
 

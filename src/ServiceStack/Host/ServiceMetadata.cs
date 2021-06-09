@@ -38,8 +38,11 @@ namespace ServiceStack.Host
 
         public void Add(Type serviceType, Type requestType, Type responseType)
         {
-            if (requestType.IsArray) 
-                return; //Custom AutoBatched requests
+            if (requestType.IsArray) //Custom AutoBatched requests
+            {
+                this.ServiceTypes.Add(serviceType);
+                return;
+            }
             
             this.ServiceTypes.Add(serviceType);
             this.RequestTypes.Add(requestType);
