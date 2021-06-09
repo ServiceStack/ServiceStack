@@ -532,6 +532,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [AutoIncrement]
         [DataMember(Order = 1)] public int Id { get; set; }
         [DataMember(Order = 2)] public RoomType RoomType { get; set; }
+        [CheckConstraint("RoomNumber < 500")]
         [DataMember(Order = 3)] public int RoomNumber { get; set; }
         [DataMember(Order = 4)] public DateTime BookingStartDate { get; set; }
         [DataMember(Order = 5)] public DateTime? BookingEndDate { get; set; }
@@ -624,4 +625,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         [DataMember(Order = 1)] public int Id { get; set; }
     }
+    
+
+    [ValidateIsAuthenticated]
+    [AutoApply(Behavior.AuditCreate)]
+    public class CustomCreateBooking
+        : ICreateDb<Booking>, IReturn<IdResponse>
+    {
+        [ApiAllowableValues(typeof(RoomType))]
+        public RoomType RoomType { get; set; }
+        [ValidateGreaterThan(0)]
+        public int RoomNumber { get; set; }
+        public DateTime BookingStartDate { get; set; }
+        public DateTime? BookingEndDate { get; set; }
+        public string Notes { get; set; }
+        [ValidateGreaterThan(0)]
+        public decimal Cost { get; set; }
+    }
+    
 }

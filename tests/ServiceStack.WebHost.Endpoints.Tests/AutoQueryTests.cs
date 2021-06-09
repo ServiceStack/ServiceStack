@@ -186,6 +186,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             ConfigureFn?.Invoke(this,container);
         }
 
+        public override void OnExceptionTypeFilter(Exception ex, ResponseStatus responseStatus)
+        {
+            base.OnExceptionTypeFilter(ex, responseStatus);
+        }
+
         public static Rockstar[] SeedRockstars = {
             new() { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27, LivingStatus = LivingStatus.Dead, DateOfBirth = new DateTime(1942, 11, 27), DateDied = new DateTime(1970, 09, 18), },
             new() { Id = 2, FirstName = "Jim", LastName = "Morrison", Age = 27, LivingStatus = LivingStatus.Dead, DateOfBirth = new DateTime(1943, 12, 08), DateDied = new DateTime(1971, 07, 03),  },

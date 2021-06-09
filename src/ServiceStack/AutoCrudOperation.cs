@@ -14,7 +14,7 @@ namespace ServiceStack
         public const string Delete = nameof(Delete);
         public const string Save = nameof(Save);
 
-        public static List<string> Default { get; } = new List<string> {
+        public static List<string> Default { get; } = new() {
             Query,
             Create,
             Update,
@@ -22,7 +22,7 @@ namespace ServiceStack
             Delete,
         };
 
-        public static HashSet<string> All { get; } = new HashSet<string> {
+        public static HashSet<string> All { get; } = new() {
             Query,
             Create,
             Update,
@@ -31,14 +31,14 @@ namespace ServiceStack
             Save,
         };
 
-        public static List<string> Read { get; } = new List<string> {
+        public static List<string> Read { get; } = new() {
             Query,
         };
 
         private static string[] readInterfaces;
         public static string[] ReadInterfaces => readInterfaces ??= CrudInterfaceMetadataNames(Read).ToArray();
 
-        public static List<string> Write { get; } = new List<string> {
+        public static List<string> Write { get; } = new() {
             Create,
             Update,
             Patch,

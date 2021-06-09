@@ -88,6 +88,40 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             AutoQuery.UpdateAsync(request, Request);
     }
 
+    public class AutoCrudBatchServices : Service
+    {
+        public IAutoQueryDb AutoQuery { get; set; }
+
+        protected virtual async Task<object> BatchCreateAsync<T>(IEnumerable<ICreateDb<T>> requests)
+        {
+            using var db = AutoQuery.GetDb<T>(Request);
+            using var dbTrans = db.OpenTransaction();
+
+            var results = new List<object>();
+            foreach (var request in requests)
+            {
+                var response = await AutoQuery.CreateAsync(request, Request, db);
+                results.Add(response);
+            }
+
+            dbTrans.Commit();
+            return results;            
+        }
+
+        public object Any(CustomCreateBooking[] requests) => BatchCreateAsync(requests);
+    }
+
+    /*
+    public abstract class B
+    {
+        public virtual async Task<object> BatchCreateAsync<T>(IEnumerable<ICreateDb<T>> requests) => Task.FromResult("A");
+    }
+    public class A : B
+    {
+        public object Any(CustomCreateBooking[] requests) => BatchCreateAsync(requests);
+    }
+    */
+
     public partial class AutoQueryCrudTests
     {
         private readonly ServiceStackHost appHost;
@@ -1460,5 +1494,112 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(managerBookings.Results[0].RoomNumber, Is.EqualTo(3));
         }
 
+        [Test]
+        public void Can_override_custom_Batch_Crud_Operation()
+        {
+            using var db = appHost.TryResolve<IDbConnectionFactory>().OpenDbConnection();
+            db.DropAndCreateTable<Booking>();
+            
+            var items = new CustomCreateBooking[] {
+                new() { RoomType = RoomType.Double, RoomNumber = 10, Cost = 100, BookingStartDate = new DateTime(2021,01,01) }, 
+                new() { RoomType = RoomType.Queen, RoomNumber = 11, Cost = 200, BookingStartDate = new DateTime(2021,01,02) }, 
+                new() { RoomType = RoomType.Single, RoomNumber = 12, Cost = 300, BookingStartDate = new DateTime(2021,01,03) }, 
+                new() { RoomType = RoomType.Suite, RoomNumber = 13, Cost = 400, BookingStartDate = new DateTime(2021,01,04) }, 
+                new() { RoomType = RoomType.Twin, RoomNumber = 14, Cost = 500, BookingStartDate = new DateTime(2021,01,05) }, 
+            };
+
+            var authClient = new JsonServiceClient(Config.ListeningOn);
+            authClient.Post(new Authenticate {
+                provider = "credentials",
+                UserName = "admin@email.com",
+                Password = "p@55wOrd",
+                RememberMe = true,
+            });
+
+            var responses = authClient.SendAll(items);
+            var responseIds = responses.Map(x => x.Id.ToInt());
+            var results = db.SelectByIds<Booking>(responseIds);
+            Assert.That(results.Map(x => x.RoomNumber), Is.EquivalentTo(new[]{ 10, 11, 12, 13, 14 }));
+            
+            db.DropAndCreateTable<Booking>();
+
+            items[2].RoomNumber = 0; //Validation Error
+            try
+            {
+                responses = authClient.SendAll(items);
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException e)
+            {
+                Assert.That(e.Message, Is.EqualTo("'Room Number' must be greater than '0'."));
+            }
+            Assert.That(db.SelectByIds<Booking>(responseIds).Count, Is.EqualTo(0));
+            
+            items[2].RoomNumber = 500; //DB Check Constraint Error
+            try
+            {
+                responses = authClient.SendAll(items);
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException e)
+            {
+                Assert.That(e.Message, Does.Contain("CHECK constraint failed"));
+            }
+            Assert.That(db.SelectByIds<Booking>(responseIds).Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Does_execute_AutoBatch_CRUD_Create_Operation()
+        {
+            using var db = appHost.TryResolve<IDbConnectionFactory>().OpenDbConnection();
+            db.DropAndCreateTable<Booking>();
+            
+            var items = new CreateBooking[] {
+                new() { RoomType = RoomType.Double, RoomNumber = 10, Cost = 100, BookingStartDate = new DateTime(2021,01,01) }, 
+                new() { RoomType = RoomType.Queen, RoomNumber = 11, Cost = 200, BookingStartDate = new DateTime(2021,01,02) }, 
+                new() { RoomType = RoomType.Single, RoomNumber = 12, Cost = 300, BookingStartDate = new DateTime(2021,01,03) }, 
+                new() { RoomType = RoomType.Suite, RoomNumber = 13, Cost = 400, BookingStartDate = new DateTime(2021,01,04) }, 
+                new() { RoomType = RoomType.Twin, RoomNumber = 14, Cost = 500, BookingStartDate = new DateTime(2021,01,05) }, 
+            };
+            
+            var authClient = new JsonServiceClient(Config.ListeningOn);
+            authClient.Post(new Authenticate {
+                provider = "credentials",
+                UserName = "admin@email.com",
+                Password = "p@55wOrd",
+                RememberMe = true,
+            });
+
+            var responses = authClient.SendAll(items);
+            var responseIds = responses.Map(x => x.Id.ToInt());
+            var results = db.SelectByIds<Booking>(responseIds);
+            Assert.That(results.Map(x => x.RoomNumber), Is.EquivalentTo(new[]{ 10, 11, 12, 13, 14 }));
+            
+            db.DropAndCreateTable<Booking>();
+
+            items[2].RoomNumber = 0; //Validation Error
+            try
+            {
+                responses = authClient.SendAll(items);
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException e)
+            {
+                Assert.That(e.Message, Is.EqualTo("'Room Number' must be greater than '0'."));
+            }
+            Assert.That(db.SelectByIds<Booking>(responseIds).Count, Is.EqualTo(0));
+            
+            items[2].RoomNumber = 500; //DB Check Constraint Error
+            try
+            {
+                responses = authClient.SendAll(items);
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException e)
+            {
+                Assert.That(e.Message, Does.Contain("CHECK constraint failed"));
+            }
+            Assert.That(db.SelectByIds<Booking>(responseIds).Count, Is.EqualTo(0));
+        }
     }
 }
