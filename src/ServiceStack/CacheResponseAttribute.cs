@@ -199,7 +199,11 @@ namespace ServiceStack
                     res.AddHeader(HttpHeaders.CacheControl, cacheControl);
 
                 if (!doHttpCaching)
-                    lastModified = cache.Get<DateTime?>(cacheInfo.LastModifiedKey());
+                {
+                    lastModified = cacheAsync != null ?
+                        await cacheAsync.GetAsync<DateTime?>(cacheInfo.LastModifiedKey(), token).ConfigAwait() :
+                        cache.Get<DateTime?>(cacheInfo.LastModifiedKey());
+                }
 
                 if (lastModified != null)
                     res.AddHeader(HttpHeaders.LastModified, lastModified.Value.ToUniversalTime().ToString("r"));
