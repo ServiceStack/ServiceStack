@@ -1127,7 +1127,7 @@ namespace ServiceStack
             if (!Container.Exists<ICacheClient>())
             {
 #if NETSTANDARD2_0
-                if (!Container.Exists<ICacheClientAsync>() && Container.Exists<ValueTask<ICacheClientAsync>>())
+                if (Env.StrictMode && !Container.Exists<ICacheClientAsync>() && Container.Exists<ValueTask<ICacheClientAsync>>())
                 {
                     throw new Exception("Invalid attempt to register `ValueTask<ICacheClientAsync>`. Register ICacheClient or ICacheClientAsync instead to use async Cache Client");
                 }

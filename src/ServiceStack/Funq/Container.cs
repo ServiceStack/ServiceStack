@@ -475,7 +475,7 @@ namespace Funq
                         {
                             //Container.Exists<> needs to return null if no dependency exists
                             var instance = Adapter.TryResolve<TService>();
-                            if (instance == null || (typeof(TService).IsValueType && EqualityComparer<TService>.Default.Equals(default(TService))))
+                            if (instance == null || (typeof(TService).IsValueType && default(TService)?.Equals(instance) == true))
                                 return null;
 
                             return new ServiceEntry<TService, TFunc>(
