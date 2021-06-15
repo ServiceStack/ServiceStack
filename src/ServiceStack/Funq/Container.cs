@@ -394,7 +394,7 @@ namespace Funq
         }
 
         public bool CheckAdapterFirst { get; set; }
-
+        
         protected virtual ServiceEntry<TService, TFunc> GetEntry<TService, TFunc>(string serviceName, bool throwIfMissing)
         {
             try
@@ -475,7 +475,7 @@ namespace Funq
                         {
                             //Container.Exists<> needs to return null if no dependency exists
                             var instance = Adapter.TryResolve<TService>();
-                            if (instance == null)
+                            if (instance == null || (typeof(TService).IsValueType && EqualityComparer<TService>.Default.Equals(default(TService))))
                                 return null;
 
                             return new ServiceEntry<TService, TFunc>(
