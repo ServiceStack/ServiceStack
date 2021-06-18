@@ -6,6 +6,7 @@ using System.Web;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -75,6 +76,12 @@ namespace ServiceStack
         public bool NotifyChannelOfSubscriptions { get; set; }
         public bool LimitToAuthenticatedUsers { get; set; }
         public bool ValidateUserAddress { get; set; }
+
+        internal readonly ConcurrentDictionary<string, long> Counters = new();
+        public void IncrementCounter(string name)
+        {
+            Counters.AddOrUpdate(name, 1, (key, oldValue) => oldValue + 1);
+        }
 
         public ServerEventsFeature()
         {
@@ -202,6 +209,10 @@ namespace ServiceStack
         public static int RemoveExpiredSubscriptionsEvery { get; } = 1000;
         private static int ConnectionsCount = 0;
 
+        public const string EventStreamDenyNoAuth = nameof(EventStreamDenyNoAuth);
+        public const string EventStreamDenyOnInit = nameof(EventStreamDenyOnInit);
+        public const string EventStreamDenyOnCreated = nameof(EventStreamDenyOnCreated);
+
         public override async Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
         {
             if (HostContext.ApplyCustomHandlerRequestFilters(req, res))
@@ -212,6 +223,7 @@ namespace ServiceStack
             var session = await req.GetSessionAsync().ConfigAwait();
             if (feature.LimitToAuthenticatedUsers && !session.IsAuthenticated)
             {
+                feature.IncrementCounter(EventStreamDenyNoAuth);
                 await session.ReturnFailedAuthentication(req).ConfigAwait();
                 return;
             }
@@ -234,7 +246,10 @@ namespace ServiceStack
                 feature.OnInit?.Invoke(req);
 
                 if (req.Response.IsClosed)
+                {
+                    feature.IncrementCounter(EventStreamDenyOnInit);
                     return; //Allow short-circuiting in OnInit callback
+                }
 
                 await res.FlushAsync().ConfigAwait();
 
@@ -289,7 +304,10 @@ namespace ServiceStack
                 feature.OnCreated?.Invoke(subscription, req);
 
                 if (req.Response.IsClosed)
+                {
+                    feature.IncrementCounter(EventStreamDenyOnCreated);
                     return; //Allow short-circuiting in OnCreated callback
+                }
 
                 var heartbeatUrl = feature.HeartbeatPath != null
                     ? req.ResolveAbsoluteUrl("~/".CombineWith(feature.HeartbeatPath)).AddQueryParam("id", subscriptionId)
@@ -315,6 +333,7 @@ namespace ServiceStack
             }
             catch (Exception e)
             {
+                feature.IncrementCounter("Error.EventStream." + e.GetType().Name);
                 res.StatusCode = 500;
                 throw;
             }
@@ -375,6 +394,9 @@ namespace ServiceStack
     {
         public override bool RunAsAsync() { return true; }
 
+        private const string HeartbeatSubNotExists = nameof(HeartbeatSubNotExists);
+        private const string HeartbeatInvalidAccess = nameof(HeartbeatInvalidAccess);
+
         public override async Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
         {
             if (HostContext.ApplyCustomHandlerRequestFilters(req, res))
@@ -398,16 +420,19 @@ namespace ServiceStack
             {
                 res.StatusCode = 404;
                 res.StatusDescription = ErrorMessages.SubscriptionNotExistsFmt.LocalizeFmt(req, subscriptionId.SafeInput());
+                feature.IncrementCounter(HeartbeatSubNotExists);
             }
             else if (!feature.CanAccessSubscription(req, subscription))
             {
                 res.StatusCode = 403;
                 res.StatusDescription = "Invalid User Address";
+                feature.IncrementCounter(HeartbeatInvalidAccess);
             }
             else if (!await serverEvents.PulseAsync(subscriptionId).ConfigAwait())
             {
                 res.StatusCode = 404;
                 res.StatusDescription = ErrorMessages.SubscriptionNotExistsFmt.LocalizeFmt(req, subscriptionId.SafeInput());
+                feature.IncrementCounter(HeartbeatSubNotExists);
             }
             
             await res.EndHttpHandlerRequestAsync(skipHeaders: true).ConfigAwait();
@@ -449,33 +474,53 @@ namespace ServiceStack
     {
         public IServerEvents ServerEvents { get; set; }
 
+        public const string UnRegisterSubNotExists = nameof(UnRegisterSubNotExists);
+        private const string UnRegisterInvalidAccess = nameof(UnRegisterInvalidAccess);
+        private const string UnRegisterApi = nameof(UnRegisterApi);
+
         [AddHeader(ContentType = MimeTypes.Json)]
         public async Task<object> Any(UnRegisterEventSubscriber request)
         {
             var subscription = ServerEvents.GetSubscriptionInfo(request.Id);
 
-            if (subscription == null)
-                throw HttpError.NotFound(ErrorMessages.SubscriptionNotExistsFmt.LocalizeFmt(Request, request.Id).SafeInput());
-
             var feature = HostContext.GetPlugin<ServerEventsFeature>();
-            if (!feature.CanAccessSubscription(base.Request, subscription))
-                throw HttpError.Forbidden(ErrorMessages.SubscriptionForbiddenFmt.LocalizeFmt(Request, request.Id.SafeInput()));
+            if (subscription == null)
+            {
+                feature.IncrementCounter(UnRegisterSubNotExists);
+                throw HttpError.NotFound(ErrorMessages.SubscriptionNotExistsFmt.LocalizeFmt(Request, request.Id).SafeInput());
+            }
 
+            if (!feature.CanAccessSubscription(base.Request, subscription))
+            {
+                feature.IncrementCounter(UnRegisterInvalidAccess);
+                throw HttpError.Forbidden(ErrorMessages.SubscriptionForbiddenFmt.LocalizeFmt(Request, request.Id.SafeInput()));
+            }
+
+            feature.IncrementCounter(UnRegisterApi);
             await ServerEvents.UnRegisterAsync(subscription.SubscriptionId).ConfigAwait();
 
             return subscription.Meta;
         }
 
+        public const string UpdateEventSubNotExists = nameof(UpdateEventSubNotExists);
+        private const string UpdateEventInvalidAccess = nameof(UpdateEventInvalidAccess);
+
         public async Task<object> Any(UpdateEventSubscriber request)
         {
             var subscription = ServerEvents.GetSubscriptionInfo(request.Id);
 
-            if (subscription == null)
-                throw HttpError.NotFound(ErrorMessages.SubscriptionNotExistsFmt.LocalizeFmt(Request, request.Id.SafeInput()));
-
             var feature = HostContext.GetPlugin<ServerEventsFeature>();
+            if (subscription == null)
+            {
+                feature.IncrementCounter(UpdateEventSubNotExists);
+                throw HttpError.NotFound(ErrorMessages.SubscriptionNotExistsFmt.LocalizeFmt(Request, request.Id).SafeInput());
+            }
+
             if (!feature.CanAccessSubscription(base.Request, subscription))
+            {
+                feature.IncrementCounter(UpdateEventInvalidAccess);
                 throw HttpError.Forbidden(ErrorMessages.SubscriptionForbiddenFmt.LocalizeFmt(Request, request.Id.SafeInput()));
+            }
 
             if (request.UnsubscribeChannels != null)
                 await ServerEvents.UnsubscribeFromChannelsAsync(subscription.SubscriptionId, request.UnsubscribeChannels).ConfigAwait();
@@ -556,7 +601,7 @@ namespace ServiceStack
         {
             this.response = response;
             this.Meta = new ConcurrentDictionary<string, string>();
-            var feature = HostContext.GetPlugin<ServerEventsFeature>();
+            this.feature = HostContext.GetPlugin<ServerEventsFeature>();
             this.WriteEvent = feature.WriteEvent;
             this.WriteEventAsync = feature.WriteEventAsync;
             this.OnHungConnection = feature.OnHungConnection;
@@ -580,6 +625,7 @@ namespace ServiceStack
         public Func<IEventSubscription, IResponse, string, Task> OnPublishAsync { get; set; }
         public Action<IEventSubscription> OnHungConnection { get; set; }
         public Action<IEventSubscription> OnDispose { get; set; }
+        private ServerEventsFeature feature;
         public Action<IResponse, string> WriteEvent { get; set; }
         public Func<IResponse, string, Task> WriteEventAsync { get; set; }
         public Action<IEventSubscription, Exception> OnError { get; set; }
@@ -663,6 +709,7 @@ namespace ServiceStack
                         catch (Exception ex)
                         {
                             writeEx = ex;
+                            this.feature.IncrementCounter("Error.Sub." + ex.GetType().Name);
                         }
                     }
                 }
@@ -728,6 +775,7 @@ namespace ServiceStack
                         catch (Exception ex)
                         {
                             writeEx = ex;
+                            this.feature.IncrementCounter("Error.Sub." + ex.GetType().Name);
                         }
                     }
                 }
@@ -788,6 +836,7 @@ namespace ServiceStack
                 catch (Exception innerEx)
                 {
                     Log.Error("OutputStream.Close()", innerEx);
+                    this.feature.IncrementCounter("Error.SubClose." + innerEx.GetType().Name);
                 }
             }
 
@@ -920,6 +969,7 @@ namespace ServiceStack
             catch (Exception ex)
             {
                 Log.Error("Error ending subscription response", ex);
+                this.feature.IncrementCounter("Error.SubRelease." + ex.GetType().Name);
             }
             
             var fn = OnDispose;
@@ -1012,6 +1062,7 @@ namespace ServiceStack
         public Action<IEventSubscription, Exception> OnError { get; set; }
 
         private bool isDisposed;
+        private ServerEventsFeature feature;
 
         public MemoryServerEvents()
         {
@@ -1024,8 +1075,8 @@ namespace ServiceStack
             Serialize = JsonSerializer.SerializeToString;
 
             var appHost = HostContext.AppHost;
-            var feature = appHost?.GetPlugin<ServerEventsFeature>();
-            if (feature != null)
+            this.feature = appHost?.GetPlugin<ServerEventsFeature>();
+            if (this.feature != null)
             {
                 IdleTimeout = feature.IdleTimeout;
                 HouseKeepingInterval = feature.HouseKeepingInterval;
@@ -1060,6 +1111,7 @@ namespace ServiceStack
                 catch (Exception e)
                 {
                     Log.Warn($"Error disposing sub {sub.SessionId}", e);
+                    this.feature?.IncrementCounter("Error.MemStop." + e.GetType().Name);
                 }
             }
             Reset();
@@ -1076,6 +1128,7 @@ namespace ServiceStack
                 catch (Exception e)
                 {
                     Log.Warn($"Error disposing sub {sub.SessionId}", e);
+                    this.feature?.IncrementCounter("Error.MemStopAsync." + e.GetType().Name);
                 }
             }
             Reset();
@@ -1170,13 +1223,26 @@ namespace ServiceStack
         public Task NotifySessionJsonAsync(string sessionId, string selector, string json, string channel = null, CancellationToken token = default) =>
             NotifyRawAsync(SessionSubscriptions, sessionId, selector, json, channel, token);
 
-        public Dictionary<string, string> GetStats() => new() {
-            {nameof(TotalConnections), Interlocked.Read(ref TotalConnections).ToString()},
-            {nameof(TotalUnsubscriptions), Interlocked.Read(ref TotalUnsubscriptions).ToString()},
-            {nameof(EventSubscription.NotificationsSent), Interlocked.Read(ref EventSubscription.NotificationsSent).ToString()},
-            {nameof(HungConnectionsDetected), Interlocked.Read(ref HungConnectionsDetected).ToString()},
-            {nameof(HungConnectionsReleased), Interlocked.Read(ref HungConnectionsReleased).ToString()},
-        };
+        public Dictionary<string, string> GetStats()
+        {
+            var to = new Dictionary<string, string> {
+                {nameof(TotalConnections), Interlocked.Read(ref TotalConnections).ToString()},
+                {nameof(TotalUnsubscriptions), Interlocked.Read(ref TotalUnsubscriptions).ToString()}, {
+                    nameof(EventSubscription.NotificationsSent),
+                    Interlocked.Read(ref EventSubscription.NotificationsSent).ToString()
+                },
+                {nameof(HungConnectionsDetected), Interlocked.Read(ref HungConnectionsDetected).ToString()},
+                {nameof(HungConnectionsReleased), Interlocked.Read(ref HungConnectionsReleased).ToString()},
+            };
+            if (this.feature != null)
+            {
+                foreach (var entry in this.feature.Counters)
+                {
+                    to[entry.Key] = entry.Value.ToString();
+                }
+            }
+            return to;
+        }
 
         private long TotalConnections = 0;
         private long TotalUnsubscriptions = 0;
@@ -1190,19 +1256,19 @@ namespace ServiceStack
         }
 
         // Send Update Notification
-        readonly ConcurrentBag<IEventSubscription> pendingSubscriptionUpdates = new ConcurrentBag<IEventSubscription>();
+        readonly ConcurrentBag<IEventSubscription> pendingSubscriptionUpdates = new();
 
         // Full Unsubscription + Notifications
-        readonly ConcurrentBag<IEventSubscription> pendingUnSubscriptions = new ConcurrentBag<IEventSubscription>();
+        readonly ConcurrentBag<IEventSubscription> pendingUnSubscriptions = new();
         
         // Just Unsubscribe
-        readonly ConcurrentBag<IEventSubscription> expiredSubs = new ConcurrentBag<IEventSubscription>();
+        readonly ConcurrentBag<IEventSubscription> expiredSubs = new();
         
         // Generic Async Tasks
-        readonly ConcurrentBag<Func<Task>> pendingAsyncTasks = new ConcurrentBag<Func<Task>>();
+        readonly ConcurrentBag<Func<Task>> pendingAsyncTasks = new();
         
         // Connections that are hung on their last write/flush, move here to free-up disposing thread 
-        readonly ConcurrentBag<IEventSubscription> hungConnections = new ConcurrentBag<IEventSubscription>();
+        readonly ConcurrentBag<IEventSubscription> hungConnections = new();
         
         public void QueueAsyncTask(Func<Task> task)
         {
@@ -1220,11 +1286,14 @@ namespace ServiceStack
                 && (!doLongLastingTasks || hungConnections.IsEmpty))
                 return;
             
+            var sw = Stopwatch.StartNew();
             while (!pendingAsyncTasks.IsEmpty)
             {
                 if (pendingAsyncTasks.TryTake(out var asyncTask))
                 {
                     await asyncTask().ConfigAwait();
+
+                    this.feature?.IncrementCounter("MemDoAsyncTasks");
                 }
             }
             
@@ -1237,6 +1306,8 @@ namespace ServiceStack
                     
                     if (NotifyUpdateAsync != null)
                         await NotifyUpdateAsync(sub).ConfigAwait();
+                    
+                    this.feature?.IncrementCounter("MemDoSubUpdates");
                 }
             }
             
@@ -1251,6 +1322,8 @@ namespace ServiceStack
 
                     if (NotifyChannelOfSubscriptions && sub.Channels != null && NotifyLeaveAsync != null)
                         await NotifyLeaveAsync(sub).ConfigAwait();
+
+                    this.feature?.IncrementCounter("MemDoUnSubs");
                 }
             }
             
@@ -1259,6 +1332,7 @@ namespace ServiceStack
                 if (expiredSubs.TryTake(out var sub))
                 {
                     await sub.UnsubscribeAsync().ConfigAwait();
+                    this.feature?.IncrementCounter("MemDoExpiredSubs");
                 }
             }
 
@@ -1288,6 +1362,14 @@ namespace ServiceStack
                     hungConnections.Add(sub);
                 }
             }
+
+            var elapsedMs = sw.ElapsedMilliseconds;
+            if (elapsedMs > 30*1000)
+                this.feature?.IncrementCounter("MemDoDuration30s");
+            else if (elapsedMs > 10*1000)
+                this.feature?.IncrementCounter("MemDoDuration10s");
+            else if (elapsedMs > 5*1000)
+                this.feature?.IncrementCounter("MemDoDuration5s");
         }
 
         protected void NotifyRaw(ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> map, string key, 
@@ -1312,6 +1394,7 @@ namespace ServiceStack
                             Log.DebugFormat("[SSE-SERVER] Expired {0} Sub {1} on ({2})", selector, sub.SubscriptionId,
                                 string.Join(", ", sub.Channels));
 
+                        if (sub.IsClosed) this.feature?.IncrementCounter("MemSubClosed");
                         expiredSubs.Add(sub);
                         continue;
                     }
@@ -1339,12 +1422,13 @@ namespace ServiceStack
                 return;
 
             var now = DateTime.UtcNow;
-            if (now - sub.LastPulseAt > IdleTimeout)
+            if (now - sub.LastPulseAt > IdleTimeout || sub.IsClosed)
             {
                 if (Log.IsDebugEnabled)
                     Log.DebugFormat("[SSE-SERVER] Expired {0} Sub {1} on ({2})", selector, sub.SubscriptionId,
                         string.Join(", ", sub.Channels));
 
+                if (sub.IsClosed) this.feature?.IncrementCounter("MemSubClosed");
                 expiredSubs.Add(sub);
                 return;
             }
@@ -1379,6 +1463,7 @@ namespace ServiceStack
                             Log.DebugFormat("[SSE-SERVER] Expired {0} Sub {1} on ({2})", selector, sub.SubscriptionId,
                                 string.Join(", ", sub.Channels));
 
+                        if (sub.IsClosed) this.feature?.IncrementCounter("MemSubClosed");
                         expiredSubs.Add(sub);
                         continue;
                     }
@@ -1408,12 +1493,13 @@ namespace ServiceStack
                 return;
 
             var now = DateTime.UtcNow;
-            if (now - sub.LastPulseAt > IdleTimeout)
+            if (now - sub.LastPulseAt > IdleTimeout || sub.IsClosed)
             {
                 if (Log.IsDebugEnabled)
                     Log.DebugFormat("[SSE-SERVER] Expired {0} Sub {1} on ({2})", selector, sub.SubscriptionId,
                         string.Join(", ", sub.Channels));
 
+                if (sub.IsClosed) this.feature?.IncrementCounter("MemSubClosed");
                 expiredSubs.Add(sub);
                 return;
             }
@@ -1519,7 +1605,7 @@ namespace ServiceStack
             return subInfos;
         }
 
-        readonly ConcurrentDictionary<string, long> SequenceCounters = new ConcurrentDictionary<string, long>();
+        readonly ConcurrentDictionary<string, long> SequenceCounters = new();
 
         public long GetNextSequence(string sequenceId)
         {
@@ -1731,6 +1817,7 @@ namespace ServiceStack
             {
                 Log.Error("Register: " + ex.Message, ex);
                 OnError?.Invoke(subscription, ex);
+                this.feature?.IncrementCounter("Error.RegisterAsync." + ex.GetType().Name);
 
                 throw;
             }
@@ -1840,6 +1927,7 @@ namespace ServiceStack
             {
                 Log.Error("UnRegisterSubscription: " + ex.Message, ex);
                 OnError?.Invoke(subscription, ex);
+                this.feature?.IncrementCounter("Error.UnRegisterSub." + ex.GetType().Name);
                 throw;
             }
         }
