@@ -77,6 +77,8 @@ namespace ServiceStack
         public bool LimitToAuthenticatedUsers { get; set; }
         public bool ValidateUserAddress { get; set; }
 
+        public int ThrottlePublisherAfterBufferExceedsBytes { get; set; } = 1000 * 1024; 
+
         internal readonly ConcurrentDictionary<string, long> Counters = new();
         public void IncrementCounter(string name)
         {
@@ -661,7 +663,7 @@ namespace ServiceStack
         {
             // throttle publisher if buffer gets too full
             lock (buffer)
-                return buffer.Length < 1000 * 1024 
+                return buffer.Length < this.feature.ThrottlePublisherAfterBufferExceedsBytes 
                     ? 0 
                     : (int) Math.Ceiling(buffer.Length / 1000d);
         }
