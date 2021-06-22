@@ -31,6 +31,7 @@ namespace CheckWebCore
                     new CredentialsAuthProvider {
                         SkipPasswordVerificationForInProcessRequests = true,
                     }, //HTML Form post of UserName/Password credentials
+                    new ApiKeyAuthProvider(AppSettings),
                     new TwitterAuthProvider(AppSettings),
                     new GithubAuthProvider(AppSettings), 
                     new GoogleAuthProvider(AppSettings),
@@ -49,6 +50,8 @@ namespace CheckWebCore
             var newAdmin = new AppUser {Email = "admin@email.com", DisplayName = "Admin User"};
             var user = authRepo.CreateUserAuth(newAdmin, "p@55wOrd");
             authRepo.AssignRoles(user, new List<string> {"Admin"});
+
+            authRepo.CreateUserAuth(new AppUser {UserName = "test", DisplayName = "Test"}, "test");
         }
     }
     
@@ -64,6 +67,24 @@ namespace CheckWebCore
                 RuleFor(x => x.ConfirmPassword).NotEmpty();
             });
         }
+    }
+    
+    [Route("/apikeyonly")]
+    public class ApiKeyOnly : IReturn<string> {}
+
+    [Authenticate(AuthenticateService.ApiKeyProvider)]
+    public class ApiKeyAuthServices : Service
+    {
+        public object Any(ApiKeyOnly request) => "OK";
+    }
+    
+    [Route("/jwtonly")]
+    public class JwtOnly : IReturn<string> {}
+
+    [Authenticate(AuthenticateService.JwtProvider)]
+    public class JwtAuthServices : Service
+    {
+        public object Any(JwtOnly request) => "OK";
     }
 
 }
