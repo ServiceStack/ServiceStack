@@ -34,7 +34,7 @@ namespace ServiceStack
                 if (requestType.HasInterface(typeof(IQueryData)))
                 {
                     if (!(Context.ScriptMethods.FirstOrDefault(x => x is ServiceStackScripts) is ServiceStackScripts ssFilter))
-                        throw new NotImplementedException("sendToAutoQuery Data requires TemplateServiceStackFilters");
+                        throw new NotImplementedException("sendToAutoQuery Data requires ServiceStackScripts");
 
                     return ssFilter.sendToAutoQuery(scope, dto, requestName, options);
                 }
