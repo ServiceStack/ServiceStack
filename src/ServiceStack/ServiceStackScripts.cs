@@ -211,9 +211,8 @@ namespace ServiceStack
 
                 if (requestType.HasInterface(typeof(IQueryDb)))
                 {
-                    var ssFilter = Context.ScriptMethods.FirstOrDefault(x => x is IAutoQueryDbFilters) as IAutoQueryDbFilters;
-                    if (ssFilter == null)
-                        throw new NotImplementedException(nameof(sendToAutoQuery) + " RDBMS requires " + nameof(ServiceStackScripts));
+                    if (Context.ScriptMethods.FirstOrDefault(x => x is IAutoQueryDbFilters) is not IAutoQueryDbFilters ssFilter)
+                        throw new NotImplementedException(nameof(sendToAutoQuery) + " RDBMS requires AutoQueryScripts");
 
                     return ssFilter.sendToAutoQuery(scope, dto, requestName, options);
                 }
