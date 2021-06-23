@@ -213,7 +213,7 @@ namespace ServiceStack
                 {
                     var ssFilter = Context.ScriptMethods.FirstOrDefault(x => x is IAutoQueryDbFilters) as IAutoQueryDbFilters;
                     if (ssFilter == null)
-                        throw new NotImplementedException("sendToAutoQuery RDBMS requires TemplateAutoQueryFilters");
+                        throw new NotImplementedException(nameof(sendToAutoQuery) + " RDBMS requires " + nameof(ServiceStackScripts));
 
                     return ssFilter.sendToAutoQuery(scope, dto, requestName, options);
                 }
