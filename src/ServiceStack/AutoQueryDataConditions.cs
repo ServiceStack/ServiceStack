@@ -23,7 +23,7 @@ namespace ServiceStack
 
     public class EqualsCondition : QueryCondition
     {
-        public static EqualsCondition Instance = new EqualsCondition();
+        public static EqualsCondition Instance = new();
 
         public override string Alias => ConditionAlias.Equals;
 
@@ -34,6 +34,7 @@ namespace ServiceStack
     }
     public class NotEqualCondition : QueryCondition
     {
+        public static NotEqualCondition Instance = new();
         public override string Alias => ConditionAlias.NotEqual;
 
         public override bool Match(object a, object b)
@@ -43,6 +44,7 @@ namespace ServiceStack
     }
     public class GreaterCondition : QueryCondition
     {
+        public static GreaterCondition Instance = new();
         public override string Alias => ConditionAlias.Greater;
 
         public override bool Match(object a, object b)
@@ -54,8 +56,7 @@ namespace ServiceStack
     }
     public class GreaterEqualCondition : QueryCondition
     {
-        public static GreaterEqualCondition Instance = new GreaterEqualCondition();
-
+        public static GreaterEqualCondition Instance = new();
         public override string Alias => ConditionAlias.GreaterEqual;
 
         public override bool Match(object a, object b)
@@ -65,6 +66,7 @@ namespace ServiceStack
     }
     public class LessCondition : QueryCondition
     {
+        public static LessCondition Instance = new();
         public override string Alias => ConditionAlias.Less;
 
         public override bool Match(object a, object b)
@@ -74,8 +76,7 @@ namespace ServiceStack
     }
     public class LessEqualCondition : QueryCondition
     {
-        public static LessEqualCondition Instance = new LessEqualCondition();
-
+        public static LessEqualCondition Instance = new();
         public override string Alias => ConditionAlias.LessEqual;
 
         public override bool Match(object a, object b)
@@ -85,6 +86,7 @@ namespace ServiceStack
     }
     public class CaseInsensitiveEqualCondition : QueryCondition
     {
+        public static CaseInsensitiveEqualCondition Instance = new();
         public override string Alias => ConditionAlias.Like;
 
         public override bool Match(object a, object b)
@@ -96,27 +98,43 @@ namespace ServiceStack
     }
     public class InCollectionCondition : QueryCondition, IQueryMultiple
     {
-        public static InCollectionCondition Instance = new InCollectionCondition();
-
+        public static InCollectionCondition Instance = new();
         public override string Alias => ConditionAlias.In;
 
         public override bool Match(object a, object b)
         {
-            var bValues = b as IEnumerable;
-            if (bValues == null)
+            if (b is not IEnumerable bValues)
                 return EqualsCondition.Instance.Match(a, b);
-
             foreach (var item in bValues)
             {
                 if (EqualsCondition.Instance.Match(a, item))
                     return true;
             }
-
             return false;
         }
     }
+    
+    public class CaseInsensitiveInCollectionCondition : QueryCondition, IQueryMultiple
+    {
+        public static CaseInsensitiveInCollectionCondition Instance = new();
+        public override string Alias => ConditionAlias.In;
+
+        public override bool Match(object a, object b)
+        {
+            if (b is not IEnumerable bValues)
+                return CaseInsensitiveEqualCondition.Instance.Match(a, b);
+            foreach (var item in bValues)
+            {
+                if (CaseInsensitiveEqualCondition.Instance.Match(a, item))
+                    return true;
+            }
+            return false;
+        }
+    }
+    
     public class InBetweenCondition : QueryCondition, IQueryMultiple
     {
+        public static InBetweenCondition Instance = new();
         public override string Alias => ConditionAlias.Between;
 
         public override bool Match(object a, object b)
@@ -135,6 +153,7 @@ namespace ServiceStack
     }
     public class StartsWithCondition : QueryCondition
     {
+        public static StartsWithCondition Instance = new();
         public override string Alias => ConditionAlias.StartsWith;
 
         public override bool Match(object a, object b)
@@ -148,6 +167,7 @@ namespace ServiceStack
     }
     public class ContainsCondition : QueryCondition
     {
+        public static ContainsCondition Instance = new();
         public override string Alias => ConditionAlias.Contains;
 
         public override bool Match(object a, object b)
@@ -161,6 +181,7 @@ namespace ServiceStack
     }
     public class EndsWithCondition : QueryCondition
     {
+        public static EndsWithCondition Instance = new();
         public override string Alias => ConditionAlias.EndsWith;
 
         public override bool Match(object a, object b)
@@ -174,8 +195,7 @@ namespace ServiceStack
     }
     public class AlwaysFalseCondition : QueryCondition
     {
-        public static AlwaysFalseCondition Instance = new AlwaysFalseCondition();
-
+        public static AlwaysFalseCondition Instance = new();
         public override string Alias => ConditionAlias.False;
 
         public override bool Match(object a, object b)

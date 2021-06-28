@@ -105,6 +105,11 @@ namespace ServiceStack.Admin
         /// Invoked after a User is deleted
         /// </summary>
         public Func<string, Service, Task> OnAfterDeleteUser { get; set; }
+
+        /// <summary>
+        /// Whether to execute OnRegistered Events for Users created through Admin UI (default true).
+        /// </summary>
+        public bool ExecuteOnRegisteredEventsForCreatedUsers { get; set; } = true;
         
         public void Register(IAppHost appHost)
         {
@@ -301,6 +306,14 @@ namespace ServiceStack.Admin
 
             if (feature.OnAfterCreateUser != null)
                 await feature.OnAfterCreateUser(newUser, this);
+
+            if (feature.ExecuteOnRegisteredEventsForCreatedUsers)
+            {
+                var session = user.CreateNewSession(Request);
+                var authEvents = TryResolve<IAuthEvents>();
+                if (authEvents != null && session != null)
+                    await authEvents.ExecuteOnRegisteredUserEventsAsync(session, this);
+            }
 
             return await CreateUserResponse(user);
         }

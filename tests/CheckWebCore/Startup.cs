@@ -144,6 +144,7 @@ namespace CheckWebCore
                 ScriptMethods = { new CustomScriptMethods() }
             }); 
             
+            Plugins.Add(new ServerEventsFeature());
             Plugins.Add(new LispReplTcpServer {
 //                RequireAuthSecret = true,
                 AllowScriptingOfAllTypes = true,
@@ -493,6 +494,20 @@ namespace CheckWebCore
     public class ImpersonateUser
     {
         public string UserName { get; set; }
+    }
+
+        
+    [Route("/sse-stats")]
+    public class GetSseStats {}
+
+    public class ServerEventsStats : Service
+    {
+        public IServerEvents ServerEvents { get; set; }
+
+        public object Any(GetSseStats request)
+        {
+            return ServerEvents.GetStats();
+        }
     }
 
 }

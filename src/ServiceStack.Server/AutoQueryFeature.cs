@@ -267,6 +267,7 @@ namespace ServiceStack
         Type GenerateMissingQueryServices(
             List<Type> missingQueryRequestTypes, List<Type> missingCrudRequestTypes)
         {
+            var appHost = HostContext.AssertAppHost();
             var assemblyName = new AssemblyName { Name = "tmpAssembly" };
             var typeBuilder =
                 AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run)
@@ -364,6 +365,34 @@ namespace ServiceStack
                 il.Emit(OpCodes.Box, crudTypeArg);
                 il.Emit(OpCodes.Callvirt, genericMi);
                 il.Emit(OpCodes.Ret);
+
+                // Generate AutoBatch Implementation
+                if (GenerateAutoBatchImplementationsFor.Contains(crudTypes.Value.Operation))
+                {
+                    var requestArrayType = requestType.MakeArrayType();
+                    var hasCustomBatchImpl = appHost.ServiceController.HasService(requestArrayType); 
+                    if (!hasCustomBatchImpl)
+                    {
+                        var baseBatchMethodName = $"Batch{crudTypes.Value.Operation}Async";
+                        var baseBatchMethod = AutoQueryServiceBaseType.GetMethod(baseBatchMethodName);
+                        if (baseBatchMethod == null)
+                            throw new NotSupportedException($"'{baseBatchMethodName}' does not exist on '{AutoQueryServiceBaseType.Name}'");
+
+                        var batchMethod = typeBuilder.DefineMethod(ActionContext.AnyMethod, MethodAttributes.Public | MethodAttributes.Virtual,
+                            CallingConventions.Standard,
+                            returnType: typeof(object),
+                            parameterTypes: new[] { requestArrayType });
+                        il = batchMethod.GetILGenerator();
+
+                        var batchGenericMi = baseBatchMethod.MakeGenericMethod(crudTypes.Value.ModelType);
+                    
+                        il.Emit(OpCodes.Nop);
+                        il.Emit(OpCodes.Ldarg_0);
+                        il.Emit(OpCodes.Ldarg_1);
+                        il.Emit(OpCodes.Callvirt, batchGenericMi);
+                        il.Emit(OpCodes.Ret);
+                    }
+                }
             }
 
             var servicesType = typeBuilder.CreateTypeInfo().AsType();

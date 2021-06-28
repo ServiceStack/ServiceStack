@@ -788,6 +788,8 @@ namespace ServiceStack.Host
             return response;
         }
 
+        public bool HasService(Type requestType) => requestExecMap.ContainsKey(requestType);
+
         public virtual ServiceExecFn GetService(Type requestType)
         {
             if (!requestExecMap.TryGetValue(requestType, out var handlerFn))

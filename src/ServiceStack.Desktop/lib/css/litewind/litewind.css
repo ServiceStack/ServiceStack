@@ -207,6 +207,9 @@ FORM [type=checkbox]+label, FORM label+[type=checkbox] {
 .inset-y-0 {top:0;bottom:0}.inset-x-0{right:0;left:0}.-inset-y-0{top:0;bottom:0}.-inset-x-0{right:0;left:0}
 .top-0{top:0}.right-0{right:0}.bottom-0{bottom:0}.left-0{left:0}
 .-top-0{top:0}.-right-0{right:0}.-bottom-0{bottom:0}.-left-0{left:0}
+.-top-2{top: -0.5rem;}
+.-top-4{top: -1.0rem;}
+.-top-6{top: -1.5rem;}
 
 .flex{display:flex} .block{display:block} .inline-block{display:inline-block} .inline{display:inline} .grid{display:grid} .hidden{display:none}.table-cell{display:table-cell}
 .visible{visibility:visible} .invisible{visibility:hidden}
@@ -563,6 +566,7 @@ FORM [type=checkbox]+label, FORM label+[type=checkbox] {
 
 .hover\:opacity-100:hover {opacity:1; transition:opacity 0.4s}
 .hover\:opacity-80:hover {opacity:.8; transition:opacity 0.4s}
+.hover\:opacity-50:hover {opacity:.5; transition:opacity 0.4s}
 .hover\:text-blue-800:hover{--tw-text-opacity:1;color: rgba(30, 64, 175, var(--tw-text-opacity))}
 .hover\:bg-white:hover{--tw-bg-opacity:1;background-color:rgba(255,255,255,var(--tw-bg-opacity))}
 .hover\:bg-black:hover{--tw-bg-opacity:1;background-color:rgba(0,0,0,var(--tw-bg-opacity))}
@@ -586,6 +590,7 @@ FORM [type=checkbox]+label, FORM label+[type=checkbox] {
 .hover\:border-blue-600:hover { --border-opacity:1;border-color:#3182ce;border-color:rgba(49,130,206,var(--border-opacity)) }
 .hover\:border-blue-800:hover { --border-opacity:1;border-color:#3182ce;border-color:rgba(30,64,175,var(--border-opacity)) }
 .hover\:border-indigo-500:hover {--tw-border-opacity:1;border-color: rgba(99, 102, 241, var(--tw-border-opacity))}
+.hover\:shadow-2xl:hover {--tw-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);}
 
 .container { width: 100% }
 @media (min-width: 640px) {

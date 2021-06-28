@@ -17,17 +17,21 @@ namespace ServiceStack
 {
     public partial class AutoQueryFeature
     {
-        public List<Action<AutoCrudMetadata>> AutoCrudMetadataFilters { get; set; } = new List<Action<AutoCrudMetadata>>
-        {
+        public List<Action<AutoCrudMetadata>> AutoCrudMetadataFilters { get; set; } = new() {
             AuditAutoCrudMetadataFilter
         };
         
         public string AccessRole { get; set; } = RoleNames.Admin;
 
-        public Dictionary<Type, string[]> ServiceRoutes { get; set; } = new Dictionary<Type, string[]> {
+        public Dictionary<Type, string[]> ServiceRoutes { get; set; } = new() {
             { typeof(GetCrudEventsService), new []{ "/" + "crudevents".Localize() + "/{Model}" } },
             { typeof(CheckCrudEventService), new []{ "/" + "crudevents".Localize() + "/check" } },
         };
+
+        /// <summary>
+        /// Which CRUD operations to implement AutoBatch implementations for 
+        /// </summary>
+        public List<string> GenerateAutoBatchImplementationsFor { get; set; } = AutoCrudOperation.Write;
 
         public Action<CrudContext> OnBeforeCreate { get; set; }
         public Func<CrudContext,Task> OnBeforeCreateAsync { get; set; }
@@ -1073,20 +1077,100 @@ namespace ServiceStack
 
         public virtual Task<object> CreateAsync<Table>(ICreateDb<Table> dto) => AutoQuery.CreateAsync(dto, Request);
 
+        public virtual async Task<object> BatchCreateAsync<T>(IEnumerable<ICreateDb<T>> requests)
+        {
+            using var db = AutoQuery.GetDb<T>(Request);
+            using var dbTrans = db.OpenTransaction();
+
+            var results = new List<object>();
+            foreach (var request in requests)
+            {
+                var response = await AutoQuery.CreateAsync(request, Request, db);
+                results.Add(response);
+            }
+
+            dbTrans.Commit();
+            return results;            
+        }
+
         public virtual object Update<Table>(IUpdateDb<Table> dto) => AutoQuery.Update(dto, Request);
 
         public virtual Task<object> UpdateAsync<Table>(IUpdateDb<Table> dto) => AutoQuery.UpdateAsync(dto, Request);
+
+        public virtual async Task<object> BatchUpdateAsync<T>(IEnumerable<IUpdateDb<T>> requests)
+        {
+            using var db = AutoQuery.GetDb<T>(Request);
+            using var dbTrans = db.OpenTransaction();
+
+            var results = new List<object>();
+            foreach (var request in requests)
+            {
+                var response = await AutoQuery.UpdateAsync(request, Request, db);
+                results.Add(response);
+            }
+
+            dbTrans.Commit();
+            return results;            
+        }
 
         public virtual object Patch<Table>(IPatchDb<Table> dto) => AutoQuery.Patch(dto, Request);
 
         public virtual Task<object> PatchAsync<Table>(IPatchDb<Table> dto) => AutoQuery.PatchAsync(dto, Request);
 
+        public virtual async Task<object> BatchPatchAsync<T>(IEnumerable<IPatchDb<T>> requests)
+        {
+            using var db = AutoQuery.GetDb<T>(Request);
+            using var dbTrans = db.OpenTransaction();
+
+            var results = new List<object>();
+            foreach (var request in requests)
+            {
+                var response = await AutoQuery.PartialUpdateAsync<T>(request, Request, db);
+                results.Add(response);
+            }
+
+            dbTrans.Commit();
+            return results;            
+        }
+
         public virtual object Delete<Table>(IDeleteDb<Table> dto) => AutoQuery.Delete(dto, Request);
 
         public virtual Task<object> DeleteAsync<Table>(IDeleteDb<Table> dto) => AutoQuery.DeleteAsync(dto, Request);
 
+        public virtual async Task<object> BatchDeleteAsync<T>(IEnumerable<IDeleteDb<T>> requests)
+        {
+            using var db = AutoQuery.GetDb<T>(Request);
+            using var dbTrans = db.OpenTransaction();
+
+            var results = new List<object>();
+            foreach (var request in requests)
+            {
+                var response = await AutoQuery.DeleteAsync(request, Request, db);
+                results.Add(response);
+            }
+
+            dbTrans.Commit();
+            return results;            
+        }
+
         public virtual object Save<Table>(ISaveDb<Table> dto) => AutoQuery.Save(dto, Request);
 
         public virtual Task<object> SaveAsync<Table>(ISaveDb<Table> dto) => AutoQuery.SaveAsync(dto, Request);
+
+        public virtual async Task<object> BatchSaveAsync<T>(IEnumerable<ISaveDb<T>> requests)
+        {
+            using var db = AutoQuery.GetDb<T>(Request);
+            using var dbTrans = db.OpenTransaction();
+
+            var results = new List<object>();
+            foreach (var request in requests)
+            {
+                var response = await AutoQuery.SaveAsync(request, Request, db);
+                results.Add(response);
+            }
+
+            dbTrans.Commit();
+            return results;            
+        }
     }
 }

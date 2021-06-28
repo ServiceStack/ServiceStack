@@ -20,9 +20,16 @@ namespace ServiceStack.NetCore
 
         public T TryResolve<T>()
         {
-            return httpContextAccessor?.HttpContext != null 
-                ? httpContextAccessor.HttpContext.RequestServices.GetService<T>() 
-                : scope.ServiceProvider.GetService<T>();
+            try
+            {
+                return httpContextAccessor?.HttpContext != null 
+                    ? httpContextAccessor.HttpContext.RequestServices.GetService<T>() 
+                    : scope.ServiceProvider.GetService<T>();
+            }
+            catch (NullReferenceException) // treat as not registered, happens with `ValueTask<ICacheClientAsync>`
+            {
+                return default;
+            }
         }
 
         public T Resolve<T>()

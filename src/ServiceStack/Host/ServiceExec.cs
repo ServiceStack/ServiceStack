@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
@@ -113,7 +114,6 @@ namespace ServiceStack.Host
                     RequestType = requestType,
                     ServiceAction = CreateExecFn(requestType, mi.MethodInfo),
                 };
-
 
                 var reqFilters = new List<IRequestFilterBase>();
                 var resFilters = new List<IResponseFilterBase>();

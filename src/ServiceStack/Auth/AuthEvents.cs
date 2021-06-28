@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -167,6 +168,26 @@ namespace ServiceStack.Auth
                 await childEvent.OnLogoutAsync(httpReq, session, authService, token).ConfigAwait();
             }
         }
+    }
 
+    public static class AuthEventsUtils
+    {
+        public static async Task ExecuteOnRegisteredUserEventsAsync(this IAuthEvents authEvents, IAuthSession session, IServiceBase service)
+        {
+            if (authEvents == null)
+                throw new ArgumentNullException(nameof(authEvents));
+            if (session == null)
+                throw new ArgumentNullException(nameof(session));
+            if (service == null)
+                throw new ArgumentNullException(nameof(service));
+
+            var httpReq = service.Request;
+            session.OnRegistered(httpReq, session, service);
+            if (session is IAuthSessionExtended sessionExt)
+                await sessionExt.OnRegisteredAsync(httpReq, session, service).ConfigAwait();
+            authEvents?.OnRegistered(httpReq, session, service);
+            if (authEvents is IAuthEventsAsync asyncEvents)
+                await asyncEvents.OnRegisteredAsync(httpReq, session, service).ConfigAwait();
+        }
     }
 }
