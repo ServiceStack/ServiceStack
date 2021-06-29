@@ -115,7 +115,7 @@ namespace ServiceStack.NativeTypes.Dart
         
         public static Dictionary<string,string> DartToJsonConverters = new() {
             { "double", "toDouble" },
-            { "Map<String,String>", "toStringMap" },
+            { "Map<String,String?>", "toStringMap" },
         };
         
         public static bool GenerateServiceStackTypes => IgnoreTypeInfosFor.Count == 0;
