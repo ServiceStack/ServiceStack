@@ -405,7 +405,8 @@ namespace ServiceStack.Auth
 
                 db.Delete<TUserAuth>(x => x.Id == userId);
                 db.Delete<TUserAuthDetails>(x => x.UserAuthId == userId);
-                db.Delete<UserAuthRole>(x => x.UserAuthId == userId);
+                if (UseDistinctRoleTables)
+                    db.Delete<UserAuthRole>(x => x.UserAuthId == userId);
 
                 trans.Commit();
             });
