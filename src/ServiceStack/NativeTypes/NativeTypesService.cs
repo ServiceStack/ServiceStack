@@ -9,6 +9,7 @@ using ServiceStack.NativeTypes.Dart;
 using ServiceStack.NativeTypes.FSharp;
 using ServiceStack.NativeTypes.Java;
 using ServiceStack.NativeTypes.Kotlin;
+using ServiceStack.NativeTypes.Python;
 using ServiceStack.NativeTypes.Swift;
 using ServiceStack.NativeTypes.TypeScript;
 using ServiceStack.NativeTypes.VbNet;
@@ -63,6 +64,10 @@ namespace ServiceStack.NativeTypes
     [ExcludeMetadata]
     [Route("/types/kotlin")]
     public class TypesKotlin : NativeTypesBase { }
+
+    [ExcludeMetadata]
+    [Route("/types/python")]
+    public class TypesPython : NativeTypesBase { }
 
     public class NativeTypesBase
     {
@@ -128,6 +133,7 @@ namespace ServiceStack.NativeTypes
                 {"Java", new TypesJava().ToAbsoluteUri(Request)},
                 {"Kotlin", new TypesKotlin().ToAbsoluteUri(Request)},
                 {"Swift", new TypesSwift().ToAbsoluteUri(Request)},
+                {"Python", new TypesPython().ToAbsoluteUri(Request)},
             };
             foreach (var linksFilter in TypeLinksFilters)
             {
@@ -209,6 +215,21 @@ namespace ServiceStack.NativeTypes
 
             var typeScript = new TypeScriptGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
             return typeScript;
+        }
+
+        [AddHeader(ContentType = MimeTypes.PlainText)]
+        public object Any(TypesPython request)
+        {
+            request.BaseUrl = GetBaseUrl(request.BaseUrl);
+
+            var typesConfig = NativeTypesMetadata.GetConfig(request);
+            typesConfig.MakePropertiesOptional = request.MakePropertiesOptional ?? false;
+            typesConfig.ExportAsTypes = true;
+
+            var metadataTypes = ResolveMetadataTypes(typesConfig);
+
+            var gen = new PythonGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
+            return gen;
         }
 
         [AddHeader(ContentType = MimeTypes.PlainText)]

@@ -13,6 +13,9 @@ namespace ServiceStack
         Swift =      1 << 5,
         Java =       1 << 6,
         Kotlin =     1 << 7,
+        Python =     1 << 8,
+        Go =         1 << 9,
+        Php =        1 << 10,
     }
     
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
