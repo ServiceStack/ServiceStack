@@ -47,6 +47,7 @@ namespace ServiceStack.NativeTypes.Python
             "dataclasses_json:dataclass_json/LetterCase/Undefined",
             "enum:Enum",
             "datetime:datetime/timedelta",
+            "servicestack:*",
         };
 
         public static Dictionary<string, string> TypeAliases = new() {
@@ -145,6 +146,71 @@ namespace ServiceStack.NativeTypes.Python
             {"number", "0"},
             {"List", "field(default_factory=lambda:([]))"},
             {"Dictionary", "field(default_factory=lambda:({}))"},
+        };
+        
+        public static bool GenerateServiceStackTypes => IgnoreTypeInfosFor.Count == 0;
+
+        //In _builtInTypes servicestack dart library 
+        public static HashSet<string> IgnoreTypeInfosFor = new() {
+            "dynamic",
+            "String",
+            "int",
+            "bool",
+            "double",
+            "Map<String,String>",
+            "List<String>",
+            "List<int>",
+            "List<double>",
+            "DateTime",
+            "Duration",
+            "Tuple<T1,T2>",
+            "Tuple2<T1,T2>",
+            "Tuple3<T1,T2,T3>",
+            "Tuple4<T1,T2,T3,T4>",
+            "KeyValuePair<K,V>",
+            "KeyValuePair<String,String>",
+            "ResponseStatus",
+            "ResponseError",
+            "List<ResponseError>",
+            "QueryBase",
+            "QueryData<T>",
+            "QueryDb<T>",
+            "QueryDb1<T>",
+            "QueryDb2<From,Into>",
+            "QueryResponse<T>",
+            "List<UserApiKey>",
+            nameof(Authenticate),
+            nameof(AuthenticateResponse),
+            nameof(Register),
+            nameof(RegisterResponse),
+            nameof(AssignRoles),
+            nameof(AssignRolesResponse),
+            nameof(UnAssignRoles),
+            nameof(UnAssignRolesResponse),
+            nameof(CancelRequest),
+            nameof(CancelRequestResponse),
+            nameof(UpdateEventSubscriber),
+            nameof(UpdateEventSubscriberResponse),
+            nameof(GetEventSubscribers),
+            nameof(GetApiKeys),
+            nameof(GetApiKeysResponse),
+            nameof(RegenerateApiKeys),
+            nameof(RegenerateApiKeysResponse),
+            nameof(UserApiKey),
+            nameof(ConvertSessionToToken),
+            nameof(ConvertSessionToTokenResponse),
+            nameof(GetAccessToken),
+            nameof(GetAccessTokenResponse),
+            "List<NavItem>",
+            "Map<String,List<NavItem>>",
+            nameof(NavItem),
+            nameof(GetNavItems),
+            nameof(GetNavItemsResponse),
+            nameof(EmptyResponse),
+            nameof(IdResponse),
+            nameof(StringResponse),
+            nameof(StringsResponse),
+            nameof(AuditBase),
         };
         
         public static TypeFilterDelegate TypeFilter { get; set; }
@@ -248,7 +314,8 @@ namespace ServiceStack.NativeTypes.Python
 
             string lastNS = null;
 
-            var existingTypes = new HashSet<string>();
+            // IgnoreTypeInfosFor.Clear();
+            var existingTypes = new HashSet<string>(IgnoreTypeInfosFor);
 
             var requestTypes = metadata.Operations.Select(x => x.Request).ToSet();
             var requestTypesMap = metadata.Operations.ToSafeDictionary(x => x.Request);
@@ -271,6 +338,9 @@ namespace ServiceStack.NativeTypes.Python
             this.conflictTypeNames = AllTypes
                 .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
                 .Map(x => x.Name);
+
+            this.conflictTypeNames.Add(typeof(QueryDb<,>).Name);
+            this.conflictTypeNames.Add(typeof(QueryData<,>).Name);
 
             foreach (var import in defaultImports)
             {
@@ -821,7 +891,7 @@ namespace ServiceStack.NativeTypes.Python
         public string NameOnly(string type)
         {
             var name = conflictTypeNames.Contains(type)
-                ? type.Replace('`','_')
+                ? type.Replace("`","")
                 : type.LeftPart('`');
 
             return name.LastRightPart('.').SafeToken();

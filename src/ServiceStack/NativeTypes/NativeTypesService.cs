@@ -227,8 +227,24 @@ namespace ServiceStack.NativeTypes
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             typesConfig.MakePropertiesOptional = request.MakePropertiesOptional ?? false;
             typesConfig.ExportAsTypes = true;
-
+            
             var metadataTypes = ResolveMetadataTypes(typesConfig);
+
+            if (!PythonGenerator.GenerateServiceStackTypes)
+            {
+                var ignoreLibraryTypes = ReturnInterfaces.Map(x => x.Name);
+                ignoreLibraryTypes.AddRange(BuiltinInterfaces.Select(x => x.Name));
+                ignoreLibraryTypes.AddRange(BuiltInClientDtos.Select(x => x.Name));
+
+                metadataTypes.Operations.RemoveAll(x => ignoreLibraryTypes.Contains(x.Request.Name));
+                metadataTypes.Operations.Each(x => {
+                    if (x.Response != null && ignoreLibraryTypes.Contains(x.Response.Name))
+                    {
+                        x.Response = null;
+                    }
+                });
+                metadataTypes.Types.RemoveAll(x => ignoreLibraryTypes.Contains(x.Name));
+            }
 
             var gen = new PythonGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
             return gen;
@@ -246,22 +262,20 @@ namespace ServiceStack.NativeTypes
 
             if (!DartGenerator.GenerateServiceStackTypes)
             {
-                var ignoreDartLibraryTypes = ReturnInterfaces.Map(x => x.Name);
-                ignoreDartLibraryTypes.AddRange(BuiltinInterfaces.Select(x => x.Name));
-                ignoreDartLibraryTypes.AddRange(BuiltInClientDtos.Select(x => x.Name));
+                var ignoreLibraryTypes = ReturnInterfaces.Map(x => x.Name);
+                ignoreLibraryTypes.AddRange(BuiltinInterfaces.Select(x => x.Name));
+                ignoreLibraryTypes.AddRange(BuiltInClientDtos.Select(x => x.Name));
 
-                metadataTypes.Operations.RemoveAll(x => ignoreDartLibraryTypes.Contains(x.Request.Name));
+                metadataTypes.Operations.RemoveAll(x => ignoreLibraryTypes.Contains(x.Request.Name));
                 metadataTypes.Operations.Each(x => {
-                    if (x.Response != null && ignoreDartLibraryTypes.Contains(x.Response.Name))
+                    if (x.Response != null && ignoreLibraryTypes.Contains(x.Response.Name))
                     {
                         x.Response = null;
                     }
                 });
-                metadataTypes.Types.RemoveAll(x => ignoreDartLibraryTypes.Contains(x.Name));
+                metadataTypes.Types.RemoveAll(x => ignoreLibraryTypes.Contains(x.Name));
             }
             
-            var generator = ((NativeTypesMetadata) NativeTypesMetadata).GetGenerator(typesConfig);
-    
             var dart = new DartGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
             return dart;
         }

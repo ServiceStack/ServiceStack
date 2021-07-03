@@ -273,8 +273,8 @@ namespace ServiceStack.NativeTypes.Dart
                 .Map(x => x.Name);
             
             //Need to add removed built-in Types
-            this.conflictTypeNames.Add(typeof(QueryDb<>).Name);
             this.conflictTypeNames.Add(typeof(QueryDb<,>).Name);
+            this.conflictTypeNames.Add(typeof(QueryData<,>).Name);
             this.conflictTypeNames.Add(typeof(Tuple<>).Name);
             this.conflictTypeNames.Add(typeof(Tuple<,>).Name);
             this.conflictTypeNames.Add(typeof(Tuple<,,>).Name);
