@@ -176,6 +176,11 @@ namespace ServiceStack.NativeTypes.Dart
             nameof(NavItem),
             nameof(GetNavItems),
             nameof(GetNavItemsResponse),
+            nameof(EmptyResponse),
+            nameof(IdResponse),
+            nameof(StringResponse),
+            nameof(StringsResponse),
+            nameof(AuditBase),
         };
         
         public static TypeFilterDelegate TypeFilter { get; set; }
