@@ -90,6 +90,8 @@ namespace ServiceStack
 
         public string GlobalNamespace { get; set; }
         public bool ExcludeNamespace { get; set; }
+        public string DataClass { get; set; }
+        public string DataClassJson { get; set; }
 
         public HashSet<Type> IgnoreTypes { get; set; }
         public HashSet<Type> ExportTypes { get; set; }

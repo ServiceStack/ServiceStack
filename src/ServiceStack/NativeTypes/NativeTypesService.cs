@@ -97,6 +97,8 @@ namespace ServiceStack.NativeTypes
         public string GlobalNamespace { get; set; }
         public string BaseClass { get; set; }
         public string Package { get; set; }
+        public string DataClass { get; set; }
+        public string DataClassJson { get; set; }
         public List<string> AddNamespaces { get; set; }
         public List<string> DefaultNamespaces { get; set; }
         public List<string> DefaultImports { get; set; }

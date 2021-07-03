@@ -37,11 +37,14 @@ namespace ServiceStack.NativeTypes.Python
             get => IgnoreAttributes == null;
             set => IgnoreAttributes = null;
         }
+
+        public string DataClass { get; set; } = "@dataclass";
+        public string DataClassJson { get; set; } = "@dataclass_json(letter_case=LetterCase.CAMEL,undefined=Undefined.EXCLUDE)";
         
         public static List<string> DefaultImports = new() {
             "typing:TypeVar/Generic/Optional/Dict/List/Tuple",
             "dataclasses:dataclass/field",
-            "dataclasses_json:dataclass_json/LetterCase",
+            "dataclasses_json:dataclass_json/LetterCase/Undefined",
             "enum:Enum",
             "datetime:datetime/timedelta",
         };
@@ -230,6 +233,15 @@ namespace ServiceStack.NativeTypes.Python
             sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
+            sb.AppendLine("{0}DataClass: {1}".Fmt(defaultValue(nameof(DataClass)), Config.DataClass));
+            sb.AppendLine("{0}DataClassJson: {1}".Fmt(defaultValue(nameof(DataClassJson)), Config.DataClassJson));
+
+            Config.DataClass = string.IsNullOrEmpty(Config.DataClass)
+                ? DataClass
+                : $"@dataclass({Config.DataClass})";
+            Config.DataClassJson = string.IsNullOrEmpty(Config.DataClassJson)
+                ? DataClassJson
+                : $"@dataclass_json({Config.DataClassJson})";
 
             sb.AppendLine("\"\"\"");
             sb.AppendLine();
@@ -485,8 +497,10 @@ namespace ServiceStack.NativeTypes.Python
                 }
                 if (!type.IsInterface.GetValueOrDefault())
                 {
-                    sb.AppendLine("@dataclass_json(letter_case=LetterCase.CAMEL)");
-                    sb.AppendLine("@dataclass");
+                    if (!string.IsNullOrEmpty(Config.DataClassJson))
+                        sb.AppendLine(Config.DataClassJson);
+                    if (!string.IsNullOrEmpty(Config.DataClass))
+                        sb.AppendLine(Config.DataClass);
                 }
                 sb.AppendLine($"class {className}:");
 

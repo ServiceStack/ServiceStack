@@ -65,7 +65,9 @@ namespace ServiceStack.NativeTypes
                 IgnoreTypes = defaults.IgnoreTypes?.ToSet(),
                 IgnoreTypesInNamespaces = defaults.IgnoreTypesInNamespaces?.ToList(),
                 GlobalNamespace = req.GlobalNamespace ?? defaults.GlobalNamespace,
-                ExcludeNamespace = req.ExcludeNamespace ?? defaults.ExcludeNamespace
+                ExcludeNamespace = req.ExcludeNamespace ?? defaults.ExcludeNamespace,
+                DataClass = req.DataClass ?? defaults.DataClass,
+                DataClassJson = req.DataClassJson ?? defaults.DataClassJson,
             };
         }
 
