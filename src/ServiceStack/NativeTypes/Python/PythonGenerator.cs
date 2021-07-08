@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+using ServiceStack.NativeTypes.Dart;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -47,6 +48,7 @@ namespace ServiceStack.NativeTypes.Python
             "dataclasses_json:dataclass_json/LetterCase/Undefined",
             "enum:Enum",
             "datetime:datetime/timedelta",
+            "decimal:Decimal",
             "servicestack:*",
         };
 
@@ -67,9 +69,9 @@ namespace ServiceStack.NativeTypes.Python
             {"UInt64", "int"},
             {"Single", "float"},
             {"Double", "float"},
-            {"Decimal", "float"},
+            {"Decimal", "Decimal"},
             {"IntPtr", "number"},
-            {"List", "list"},
+            {"List", "List"},
             {"Byte[]", "bytes"},
             {"Stream", "bytes"},
             {"HttpWebResponse", "bytes"},
@@ -78,6 +80,8 @@ namespace ServiceStack.NativeTypes.Python
             {"Uri", "str"},
             {"Type", "str"},
         };
+
+        internal static HashSet<string> typeAliasValues;
 
         public static Dictionary<string, string> ReturnTypeAliases = new() {
         };
@@ -117,21 +121,12 @@ namespace ServiceStack.NativeTypes.Python
             "with",
             "yield",
         };
-        
-        private static string declaredEmptyString = "''";
-        private static readonly Dictionary<string, string> primitiveDefaultValues = new() {
-            {"String", declaredEmptyString},
-            {"string", declaredEmptyString},
+
+        public static readonly Dictionary<string, string> DefaultValues = new() {
             {"Boolean", "False"},
-            {"boolean", "False"},
             {"DateTime", "datetime(1,1,1)"},
             {"DateTimeOffset", "datetime(1,1,1)"},
             {"TimeSpan", "timedelta()"},
-            {"Guid", declaredEmptyString},
-            {"Char", declaredEmptyString},
-            {"int", "0"},
-            {"float", "0"},
-            {"double", "0"},
             {"Byte", "0"},
             {"Int16", "0"},
             {"Int32", "0"},
@@ -141,11 +136,10 @@ namespace ServiceStack.NativeTypes.Python
             {"UInt64", "0"},
             {"Single", "0"},
             {"Double", "0"},
-            {"Decimal", "0"},
+            {"Decimal", "Decimal(0)"},
             {"IntPtr", "0"},
-            {"number", "0"},
-            {"List", "field(default_factory=lambda:([]))"},
-            {"Dictionary", "field(default_factory=lambda:({}))"},
+            {"List", "field(default_factory=list)"},
+            {"Dictionary", "field(default_factory=dict)"},
         };
         
         public static bool GenerateServiceStackTypes => IgnoreTypeInfosFor.Count == 0;
@@ -245,26 +239,10 @@ namespace ServiceStack.NativeTypes.Python
         public static Func<PythonGenerator, MetadataType, MetadataPropertyType, bool?> IsPropertyOptional { get; set; } =
             DefaultIsPropertyOptional;
 
-        /// <summary>
-        /// Helper to make Nullable properties
-        /// </summary>
-        public static bool UseOptionalProperties
-        {
-            set
-            {
-                if (value)
-                {
-                    IsPropertyOptional = (gen, type, prop) => false;
-                    PropertyTypeFilter = (gen, type, prop) => 
-                        prop.IsRequired == true
-                            ? gen.GetPropertyType(prop, out _)
-                            : gen.GetPropertyType(prop, out _) + "|None";
-                }
-            }
-        }
-
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
+            typeAliasValues ??= new HashSet<string>(TypeAliases.Values);
+            
             var typeNamespaces = new HashSet<string>();
             var includeList = metadata.RemoveIgnoredTypes(Config);
             metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
@@ -523,7 +501,7 @@ namespace ServiceStack.NativeTypes.Python
                         var returnType = types.Substring(0, types.Length - 1);
 
                         // This is to avoid invalid syntax such as "return new string()"
-                        primitiveDefaultValues.TryGetValue(returnType, out var replaceReturnType);
+                        DefaultValues.TryGetValue(returnType, out var replaceReturnType);
                             
                         responseTypeExpression = replaceReturnType == null 
                             ? $"def createResponse(): return new {returnType}()"
@@ -565,6 +543,7 @@ namespace ServiceStack.NativeTypes.Python
                 {
                     sb.AppendLine($"{genericArg} = TypeVar('{genericArg}')");
                 }
+                
                 if (!type.IsInterface.GetValueOrDefault())
                 {
                     if (!string.IsNullOrEmpty(Config.DataClassJson))
@@ -638,6 +617,8 @@ namespace ServiceStack.NativeTypes.Python
             return propType;
         }
 
+        static string asOptional(string type) => type.StartsWith("Optional[") ? type : $"Optional[{type}]";
+        
         public void AddProperties(StringBuilderWrapper sb, MetadataType type, bool includeResponseStatus)
         {
             var wasAdded = false;
@@ -664,7 +645,15 @@ namespace ServiceStack.NativeTypes.Python
                     var defaultValue = " = None";
                     if (IsPropertyOptional(this, type, prop) ?? optionalProperty)
                     {
-                        propType = $"Optional[{propType}]";
+                        propType = asOptional(propType);
+                    }
+                    else if (DefaultValues.TryGetValue(prop.Type, out var requiredDefaultValue))
+                    {
+                        defaultValue = " = " + requiredDefaultValue;
+                    }
+                    else
+                    {
+                        propType = asOptional(propType);
                     }
 
                     sb.AppendLine($"{GetPropertyName(prop.Name)}: {propType}{defaultValue}");
@@ -689,7 +678,7 @@ namespace ServiceStack.NativeTypes.Python
             if (generator.Config.MakePropertiesOptional)
                 return true;
 
-            return null;
+            return prop.IsValueType != true;
         }
 
         public bool AppendAttributes(StringBuilderWrapper sb, List<MetadataAttribute> attributes)
@@ -1070,7 +1059,7 @@ namespace ServiceStack.NativeTypes.Python
                     ? name.ToLowercaseUnderscore()
                     : name;
 
-            if (PythonGenerator.KeyWords.Contains(toName))
+            if (PythonGenerator.KeyWords.Contains(toName) || PythonGenerator.typeAliasValues?.Contains(toName) == true)
                 toName += "_";
             return toName;
         }
