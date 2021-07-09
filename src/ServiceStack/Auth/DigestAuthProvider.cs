@@ -28,8 +28,8 @@ namespace ServiceStack.Auth
             AuthRealm = Realm;
         }
 
-        public DigestAuthProvider(IAppSettings appSettings, string authRealm, string oAuthProvider)
-            : base(appSettings, authRealm, oAuthProvider) { }
+        public DigestAuthProvider(IAppSettings appSettings, string authRealm, string authProvider)
+            : base(appSettings, authRealm, authProvider) { }
 
         public DigestAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name) { }
