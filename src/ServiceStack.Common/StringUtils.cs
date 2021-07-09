@@ -599,14 +599,18 @@ namespace ServiceStack
             return to;
         }
 
-        static char[] blockChars = new[] { '<', '>' };
-        public static TextNode ParseTypeIntoNodes(this string typeDef)
+        static readonly char[] csharpGenericDelimChars = { '<', '>' };
+        public static TextNode ParseTypeIntoNodes(this string typeDef) => typeDef.ParseTypeIntoNodes(csharpGenericDelimChars);
+        public static TextNode ParseTypeIntoNodes(this string typeDef, char[] genericDelimChars)
         {
             if (string.IsNullOrEmpty(typeDef))
                 return null;
 
+            var openDelim = genericDelimChars[0];
+            var openDelimStr = openDelim.ToString();
+
             var node = new TextNode();
-            var lastBlockPos = typeDef.IndexOf('<');
+            var lastBlockPos = typeDef.IndexOf(openDelim);
 
             if (lastBlockPos >= 0)
             {
@@ -615,15 +619,15 @@ namespace ServiceStack
                 var blockStartingPos = new Stack<int>();
                 blockStartingPos.Push(lastBlockPos);
 
-                while (lastBlockPos != -1 || blockStartingPos.Count == 0)
+                while (true)
                 {
-                    var nextPos = typeDef.IndexOfAny(blockChars, lastBlockPos + 1);
+                    var nextPos = typeDef.IndexOfAny(genericDelimChars, lastBlockPos + 1);
                     if (nextPos == -1)
                         break;
 
                     var blockChar = typeDef.Substring(nextPos, 1);
 
-                    if (blockChar == "<")
+                    if (blockChar == openDelimStr)
                     {
                         blockStartingPos.Push(nextPos);
                     }
@@ -638,9 +642,9 @@ namespace ServiceStack
                             var args = SplitGenericArgs(childBlock);
                             foreach (var arg in args)
                             {
-                                if (arg.IndexOfAny(blockChars) >= 0)
+                                if (arg.IndexOfAny(genericDelimChars) >= 0)
                                 {
-                                    var childNode = ParseTypeIntoNodes(arg);
+                                    var childNode = ParseTypeIntoNodes(arg, genericDelimChars);
                                     if (childNode != null)
                                     {
                                         node.Children.Add(childNode);
