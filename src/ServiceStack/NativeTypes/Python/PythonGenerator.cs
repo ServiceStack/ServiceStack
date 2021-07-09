@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
-using ServiceStack.NativeTypes.Dart;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -43,21 +42,22 @@ namespace ServiceStack.NativeTypes.Python
         public string DataClassJson { get; set; } = "@dataclass_json(letter_case=LetterCase.CAMEL,undefined=Undefined.EXCLUDE)";
         
         public static List<string> DefaultImports = new() {
-            "typing:TypeVar/Generic/Optional/Dict/List/Tuple",
-            "dataclasses:dataclass/field",
-            "dataclasses_json:dataclass_json/LetterCase/Undefined",
-            "enum:Enum",
-            "datetime:datetime/timedelta",
-            "decimal:Decimal",
+            "datetime",
+            "decimal",
+            "marshmallow.fields:*",
             "servicestack:*",
+            "typing:*",
+            "dataclasses:dataclass/field",
+            "dataclasses_json:dataclass_json/LetterCase/Undefined/config",
+            "enum:Enum",
         };
 
         public static Dictionary<string, string> TypeAliases = new() {
             {"String", "str"},
             {"Boolean", "bool"},
-            {"DateTime", "datetime"},
-            {"DateTimeOffset", "datetime"},
-            {"TimeSpan", "timedelta"},
+            {"DateTime", "DateTime"},
+            {"DateTimeOffset", "DateTime"},
+            {"TimeSpan", "TimeDelta"},
             {"Guid", "str"},
             {"Char", "str"},
             {"Byte", "int"},
@@ -67,14 +67,14 @@ namespace ServiceStack.NativeTypes.Python
             {"UInt16", "int"},
             {"UInt32", "int"},
             {"UInt64", "int"},
-            {"Single", "float"},
-            {"Double", "float"},
+            {"Single", "Float"},
+            {"Double", "Float"},
             {"Decimal", "Decimal"},
-            {"IntPtr", "number"},
+            {"IntPtr", "int"},
             {"List", "List"},
-            {"Byte[]", "bytes"},
-            {"Stream", "bytes"},
-            {"HttpWebResponse", "bytes"},
+            {"Byte[]", "Bytes"},
+            {"Stream", "Bytes"},
+            {"HttpWebResponse", "Bytes"},
             {"IDictionary", "Dict"},
             {"OrderedDictionary", "Dict"},
             {"Uri", "str"},
@@ -124,9 +124,9 @@ namespace ServiceStack.NativeTypes.Python
 
         public static readonly Dictionary<string, string> DefaultValues = new() {
             {"Boolean", "False"},
-            {"DateTime", "datetime(1,1,1)"},
-            {"DateTimeOffset", "datetime(1,1,1)"},
-            {"TimeSpan", "timedelta()"},
+            {"DateTime", "datetime.datetime(1,1,1)"},
+            {"DateTimeOffset", "datetime.datetime(1,1,1)"},
+            {"TimeSpan", "datetime.timedelta()"},
             {"Byte", "0"},
             {"Int16", "0"},
             {"Int32", "0"},
@@ -134,9 +134,9 @@ namespace ServiceStack.NativeTypes.Python
             {"UInt16", "0"},
             {"UInt32", "0"},
             {"UInt64", "0"},
-            {"Single", "0"},
-            {"Double", "0"},
-            {"Decimal", "Decimal(0)"},
+            {"Single", "0.0"},
+            {"Double", "0.0"},
+            {"Decimal", "decimal.Decimal(0)"},
             {"IntPtr", "0"},
             {"List", "field(default_factory=list)"},
             {"Dictionary", "field(default_factory=dict)"},
@@ -656,7 +656,16 @@ namespace ServiceStack.NativeTypes.Python
                         propType = asOptional(propType);
                     }
 
-                    sb.AppendLine($"{GetPropertyName(prop.Name)}: {propType}{defaultValue}");
+                    var propName = GetPropertyName(prop.Name);
+                    if (!propName.EndsWith("_"))
+                    {
+                        sb.AppendLine($"{propName}: {propType}{defaultValue}");
+                    }
+                    else
+                    {
+                        var fieldConfig = $" = field(metadata=config(field_name='{propName.TrimEnd('_')}'),default{defaultValue})";
+                        sb.AppendLine($"{propName}: {propType}{fieldConfig}");
+                    }
                     PostPropertyFilter?.Invoke(sb, prop, type);
                 }
             }
