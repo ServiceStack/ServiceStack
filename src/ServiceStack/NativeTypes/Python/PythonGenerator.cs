@@ -206,6 +206,13 @@ namespace ServiceStack.NativeTypes.Python
             nameof(StringsResponse),
             nameof(AuditBase),
         };
+
+        public static HashSet<string> IgnoreReturnMarkersForSubTypesOf = new() {
+            "QueryDb`1",
+            "QueryDb`2",
+            "QueryData`1",
+            "QueryData`2",
+        };
         
         public static TypeFilterDelegate TypeFilter { get; set; }
         public static Func<string, string> CookedTypeFilter { get; set; }
@@ -353,6 +360,8 @@ namespace ServiceStack.NativeTypes.Python
                             response = operation.Response;
                         }
 
+                        string AsIReturn(string genericArg) => $"IReturn[{genericArg}]";
+
                         lastNS = AppendType(ref sb, type, lastNS,
                             new CreateTypeOptions
                             {
@@ -367,13 +376,12 @@ namespace ServiceStack.NativeTypes.Python
                                     if (operation?.ReturnsVoid == true)
                                         return nameof(IReturnVoid);
                                     if (operation?.ReturnType != null)
-                                        return Type("IReturn`1", new[] {
-                                            ReturnTypeAliases.TryGetValue(operation.ReturnType.Name, out var returnTypeAlias)
-                                                ? returnTypeAlias
-                                                : Type(operation.ReturnType)
-                                        });
+                                        return AsIReturn(ReturnTypeAliases.TryGetValue(operation.ReturnType.Name,
+                                           out var returnTypeAlias)
+                                           ? returnTypeAlias
+                                           : Type(operation.ReturnType));
                                     return response != null
-                                        ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
+                                        ? AsIReturn(Type(response.Name, response.GenericArgs))
                                         : null;
                                 },
                                 IsRequest = true,
@@ -493,23 +501,23 @@ namespace ServiceStack.NativeTypes.Python
                 var implStr = options.ImplementsFn?.Invoke();
                 if (!string.IsNullOrEmpty(implStr))
                 {
-                    interfaces.Add(implStr);
+                    if (type.Inherits == null || !IgnoreReturnMarkersForSubTypesOf.Contains(type.Inherits.Name))
+                        interfaces.Add(implStr);
 
-                    if (implStr.StartsWith("IReturn<"))
+                    if (implStr.StartsWith("IReturn["))
                     {
-                        var types = implStr.RightPart('<');
+                        var types = implStr.RightPart('[');
                         var returnType = types.Substring(0, types.Length - 1);
 
                         // This is to avoid invalid syntax such as "return new string()"
-                        DefaultValues.TryGetValue(returnType, out var replaceReturnType);
-                            
-                        responseTypeExpression = replaceReturnType == null 
-                            ? $"def createResponse(): return new {returnType}()"
-                            : $"def createResponse(): return {replaceReturnType}";
+                        // DefaultValues.TryGetValue(returnType, out var replaceReturnType);
+                        // responseTypeExpression = replaceReturnType == null 
+                        //     ? $"def createResponse(): return new {returnType}()"
+                        //     : $"def createResponse(): return {replaceReturnType}";
                     }
                     else if (implStr == "IReturnVoid")
                     {
-                        responseTypeExpression = "def createResponse(): return None";
+                        // responseTypeExpression = "def createResponse(): return None";
                     }
                 }
 
@@ -1072,5 +1080,9 @@ namespace ServiceStack.NativeTypes.Python
                 toName += "_";
             return toName;
         }
+
+        static readonly char[] pythonGenericDelimChars = { '[', ']' };
+        public static TextNode ParsePythonTypeIntoNodes(this string typeDef) =>
+            typeDef.ParseTypeIntoNodes(pythonGenericDelimChars);
     }
 }
