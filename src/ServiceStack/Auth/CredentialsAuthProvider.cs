@@ -41,8 +41,8 @@ namespace ServiceStack.Auth
             AuthRealm = Realm;
         }
 
-        public CredentialsAuthProvider(IAppSettings appSettings, string authRealm, string oAuthProvider)
-            : base(appSettings, authRealm, oAuthProvider) { }
+        public CredentialsAuthProvider(IAppSettings appSettings, string authRealm, string authProvider)
+            : base(appSettings, authRealm, authProvider) { }
 
         public CredentialsAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name) { }

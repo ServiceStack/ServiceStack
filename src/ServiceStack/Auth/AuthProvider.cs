@@ -54,18 +54,18 @@ namespace ServiceStack.Auth
             PersistSession = !(GetType().HasInterface(typeof(IAuthWithRequest)) || GetType().HasInterface(typeof(IAuthWithRequestSync)));
         }
 
-        protected AuthProvider(IAppSettings appSettings, string authRealm, string oAuthProvider)
+        protected AuthProvider(IAppSettings appSettings, string authRealm, string authProvider)
             : this()
         {
             // Enhancement per https://github.com/ServiceStack/ServiceStack/issues/741
             this.AuthRealm = appSettings != null ? appSettings.Get("OAuthRealm", authRealm) : authRealm;
 
-            this.Provider = oAuthProvider;
+            this.Provider = authProvider;
             if (appSettings != null)
             {
-                this.CallbackUrl = appSettings.GetString($"oauth.{oAuthProvider}.CallbackUrl")
+                this.CallbackUrl = appSettings.GetString($"oauth.{authProvider}.CallbackUrl")
                     ?? FallbackConfig(appSettings.GetString("oauth.CallbackUrl"));
-                this.RedirectUrl = appSettings.GetString($"oauth.{oAuthProvider}.RedirectUrl")
+                this.RedirectUrl = appSettings.GetString($"oauth.{authProvider}.RedirectUrl")
                     ?? FallbackConfig(appSettings.GetString("oauth.RedirectUrl"));
             }
         }
