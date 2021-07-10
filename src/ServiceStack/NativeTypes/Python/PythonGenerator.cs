@@ -39,7 +39,7 @@ namespace ServiceStack.NativeTypes.Python
         }
 
         public string DataClass { get; set; } = "@dataclass";
-        public string DataClassJson { get; set; } = "@dataclass_json(letter_case=LetterCase.CAMEL,undefined=Undefined.EXCLUDE)";
+        public string DataClassJson { get; set; } = "@dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)";
         
         public static List<string> DefaultImports = new() {
             "datetime",
@@ -433,7 +433,7 @@ namespace ServiceStack.NativeTypes.Python
             CreateTypeOptions options)
         {
             sb.AppendLine();
-            AppendComments(sb, type.Description);
+            sb.AppendLine(); // PEP double lines separating classes
             if (options?.Routes != null)
             {
                 AppendAttributes(sb, options.Routes.ConvertAll(x => x.ToMetadataAttribute()));
@@ -453,6 +453,9 @@ namespace ServiceStack.NativeTypes.Python
                     
                 sb.AppendLine($"class {Type(type.Name, type.GenericArgs)}({enumDec}):");
                 sb = sb.Indent();
+                AppendTripleDocs(sb, type.Description);
+                if (!string.IsNullOrEmpty(type.Description)) sb.AppendLine();
+
                 if (type.EnumNames != null)
                 {
                     for (var i = 0; i < type.EnumNames.Count; i++)
@@ -541,8 +544,8 @@ namespace ServiceStack.NativeTypes.Python
                     }
                     
                     if (!string.IsNullOrEmpty(extend)) 
-                        extend += ",";
-                    extend += string.Join(",", interfaces.ToArray());
+                        extend += ", ";
+                    extend += string.Join(", ", interfaces.ToArray());
                 }
 
                 var typeName = Type(type.Name, type.GenericArgs);
@@ -550,6 +553,11 @@ namespace ServiceStack.NativeTypes.Python
                 foreach (var genericArg in typeArgs)
                 {
                     sb.AppendLine($"{genericArg} = TypeVar('{genericArg}')");
+                }
+                if (typeArgs.Length > 0) //PEP double lines
+                {
+                    sb.AppendLine();
+                    sb.AppendLine();
                 }
                 
                 if (!type.IsInterface.GetValueOrDefault())
@@ -562,6 +570,9 @@ namespace ServiceStack.NativeTypes.Python
                 sb.AppendLine($"class {className}:");
 
                 sb = sb.Indent();
+                AppendTripleDocs(sb, type.Description);
+                if (!string.IsNullOrEmpty(type.Description)) sb.AppendLine();
+
                 InnerTypeFilter?.Invoke(sb, type);
 
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
@@ -630,7 +641,6 @@ namespace ServiceStack.NativeTypes.Python
         public void AddProperties(StringBuilderWrapper sb, MetadataType type, bool includeResponseStatus)
         {
             var wasAdded = false;
-            var isClass = Config.ExportAsTypes && !type.IsInterface.GetValueOrDefault();
             var modifier = "";
 
             var dataMemberIndex = 1;
@@ -643,7 +653,6 @@ namespace ServiceStack.NativeTypes.Python
                     var propType = GetPropertyType(prop, out var optionalProperty);
                     propType = PropertyTypeFilter?.Invoke(this, type, prop) ?? propType;
 
-                    wasAdded = AppendComments(sb, prop.Description);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
@@ -674,6 +683,9 @@ namespace ServiceStack.NativeTypes.Python
                         var fieldConfig = $" = field(metadata=config(field_name='{propName.TrimEnd('_')}'),default{defaultValue})";
                         sb.AppendLine($"{propName}: {propType}{fieldConfig}");
                     }
+                    AppendTripleDocs(sb, prop.Description);
+                    if (!string.IsNullOrEmpty(prop.Description)) sb.AppendLine();
+
                     PostPropertyFilter?.Invoke(sb, prop, type);
                 }
             }
@@ -901,6 +913,17 @@ namespace ServiceStack.NativeTypes.Python
                 : type.LeftPart('`');
 
             return name.LastRightPart('.').SafeToken();
+        }
+
+        public bool AppendTripleDocs(StringBuilderWrapper sb, string desc)
+        {
+            if (desc != null && Config.AddDescriptionAsComments)
+            {
+                sb.AppendLine("\"\"\"");
+                sb.AppendLine(desc.SafeComment());
+                sb.AppendLine("\"\"\"");
+            }
+            return false;
         }
 
         public bool AppendComments(StringBuilderWrapper sb, string desc)
