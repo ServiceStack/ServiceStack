@@ -124,8 +124,8 @@ namespace ServiceStack.NativeTypes.Python
 
         public static readonly Dictionary<string, string> DefaultValues = new() {
             {"Boolean", "False"},
-            {"DateTime", "datetime.datetime(1,1,1)"},
-            {"DateTimeOffset", "datetime.datetime(1,1,1)"},
+            {"DateTime", "datetime.datetime(1, 1, 1)"},
+            {"DateTimeOffset", "datetime.datetime(1, 1, 1)"},
             {"TimeSpan", "datetime.timedelta()"},
             {"Byte", "0"},
             {"Int16", "0"},
