@@ -449,7 +449,7 @@ namespace ServiceStack.NativeTypes.Python
                 var isIntEnum = type.IsEnumInt.GetValueOrDefault() || type.EnumValues != null; 
                 var enumDec = isIntEnum
                     ? "Enum"
-                    : "str,Enum";
+                    : "str, Enum";
                     
                 sb.AppendLine($"class {Type(type.Name, type.GenericArgs)}({enumDec}):");
                 sb = sb.Indent();
@@ -512,7 +512,6 @@ namespace ServiceStack.NativeTypes.Python
                         var types = implStr.RightPart('[');
                         var returnType = types.Substring(0, types.Length - 1);
 
-                        // This is to avoid invalid syntax such as "return new string()"
                         // DefaultValues.TryGetValue(returnType, out var replaceReturnType);
                         // responseTypeExpression = replaceReturnType == null 
                         //     ? $"def createResponse(): return new {returnType}()"
@@ -646,8 +645,9 @@ namespace ServiceStack.NativeTypes.Python
             var dataMemberIndex = 1;
             if (type.Properties != null)
             {
-                foreach (var prop in type.Properties)
+                for (var i = 0; i < type.Properties.Count; i++)
                 {
+                    var prop = type.Properties[i];
                     if (wasAdded) sb.AppendLine();
 
                     var propType = GetPropertyType(prop, out var optionalProperty);
@@ -680,11 +680,14 @@ namespace ServiceStack.NativeTypes.Python
                     }
                     else
                     {
-                        var fieldConfig = $" = field(metadata=config(field_name='{propName.TrimEnd('_')}'),default{defaultValue})";
+                        var defaultValueInAttr = defaultValue.Replace(" = ", "=");
+                        var fieldConfig =
+                            $" = field(metadata=config(field_name='{propName.TrimEnd('_')}'), default{defaultValueInAttr})";
                         sb.AppendLine($"{propName}: {propType}{fieldConfig}");
                     }
+
                     AppendTripleDocs(sb, prop.Description);
-                    if (!string.IsNullOrEmpty(prop.Description)) sb.AppendLine();
+                    if (!string.IsNullOrEmpty(prop.Description) && i != type.Properties.Count - 1) sb.AppendLine();
 
                     PostPropertyFilter?.Invoke(sb, prop, type);
                 }
@@ -836,7 +839,7 @@ namespace ServiceStack.NativeTypes.Python
             if (typeName.IndexOf('[') >= 0)
             {
                 var argsDef = typeName.RightPart('[');
-                var classDef = typeName.LeftPart('[') + "(Generic[" + argsDef + (!string.IsNullOrEmpty(extend) ? "," : "") + extend + ")";
+                var classDef = typeName.LeftPart('[') + "(Generic[" + argsDef + (!string.IsNullOrEmpty(extend) ? ", " : "") + extend + ")";
                 genericArgs = argsDef.LastLeftPart(']').Split(',').Select(x => x.Trim()).ToArray();
                 return classDef;
             }
@@ -858,7 +861,7 @@ namespace ServiceStack.NativeTypes.Python
                     cooked = $"List[{GenericArg(genericArgs[0])}]".StripNullable();
                 else if (DictionaryTypes.Contains(type))
                 {
-                    cooked = $"Dict[{GetKeyType(GenericArg(genericArgs[0]))},{GenericArg(genericArgs[1])}]";
+                    cooked = $"Dict[{GetKeyType(GenericArg(genericArgs[0]))}, {GenericArg(genericArgs[1])}]";
                 }
                 else
                 {
@@ -1052,7 +1055,7 @@ namespace ServiceStack.NativeTypes.Python
                 sb.Append("Dict[");
                 var keyType = ConvertFromCSharp(node.Children[0]);
                 sb.Append(GetKeyType(keyType));
-                sb.Append(",");
+                sb.Append(", ");
                 sb.Append(ConvertFromCSharp(node.Children[1]));
                 sb.Append("]");
             }
@@ -1067,7 +1070,7 @@ namespace ServiceStack.NativeTypes.Python
                         var childNode = node.Children[i];
 
                         if (i > 0)
-                            sb.Append(",");
+                            sb.Append(", ");
 
                         sb.Append(ConvertFromCSharp(childNode));
                     }
