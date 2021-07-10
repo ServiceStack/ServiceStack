@@ -208,10 +208,10 @@ namespace ServiceStack.NativeTypes.Python
         };
 
         public static HashSet<string> IgnoreReturnMarkersForSubTypesOf = new() {
-            "QueryDb`1",
-            "QueryDb`2",
-            "QueryData`1",
-            "QueryData`2",
+            // "QueryDb`1",
+            // "QueryDb`2",
+            // "QueryData`1",
+            // "QueryData`2",
         };
         
         public static TypeFilterDelegate TypeFilter { get; set; }
@@ -360,8 +360,6 @@ namespace ServiceStack.NativeTypes.Python
                             response = operation.Response;
                         }
 
-                        string AsIReturn(string genericArg) => $"IReturn[{genericArg}]";
-
                         lastNS = AppendType(ref sb, type, lastNS,
                             new CreateTypeOptions
                             {
@@ -376,10 +374,17 @@ namespace ServiceStack.NativeTypes.Python
                                     if (operation?.ReturnsVoid == true)
                                         return nameof(IReturnVoid);
                                     if (operation?.ReturnType != null)
-                                        return AsIReturn(ReturnTypeAliases.TryGetValue(operation.ReturnType.Name,
-                                           out var returnTypeAlias)
-                                           ? returnTypeAlias
-                                           : Type(operation.ReturnType));
+                                    {
+                                        var retType = ReturnTypeAliases.TryGetValue(operation.ReturnType.Name, out var returnTypeAlias)
+                                            ? returnTypeAlias
+                                            : Type(operation.ReturnType);
+                                        // need to quote self refs in order to use ForwardRef's
+                                        return retType == operation.Request.Name || 
+                                               retType.IndexOf($"[{operation.Request.Name}]", StringComparison.Ordinal) >= 0
+                                            ? AsIReturn(retType.Replace(operation.Request.Name, $"\"{operation.Request.Name}\""))
+                                            : AsIReturn(retType);
+                                    }
+
                                     return response != null
                                         ? AsIReturn(Type(response.Name, response.GenericArgs))
                                         : null;
@@ -428,6 +433,8 @@ namespace ServiceStack.NativeTypes.Python
 
             return StringBuilderCache.ReturnAndFree(sbInner);
         }
+
+        string AsIReturn(string genericArg) => $"IReturn[{genericArg}]";
 
         private string AppendType(ref StringBuilderWrapper sb, MetadataType type, string lastNS,
             CreateTypeOptions options)
@@ -502,6 +509,38 @@ namespace ServiceStack.NativeTypes.Python
 
                 var interfaces = new List<string>();
                 var implStr = options.ImplementsFn?.Invoke();
+                if (string.IsNullOrEmpty(implStr) && type.Type is {IsAbstract: true})
+                {
+                    // need to emit type hint when a generic base class contains a generic response type
+                    var genericIReturn = type.Type.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
+                    if (genericIReturn != null)
+                    {
+                        var existsInBase = type.Type.BaseType?.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
+                        if (existsInBase == null)
+                        {
+                            var retType = genericIReturn.GetGenericArguments()[0];
+                            var pythonRetType = retType.IsGenericType
+                                ? Type(retType.Name, retType.GetGenericArguments().Select(x => x.Name).ToArray())
+                                : Type(retType.Name, TypeConstants.EmptyStringArray);
+                            implStr = AsIReturn(pythonRetType);
+                            responseTypeExpression = "def response_type(): return " + pythonRetType;
+                        }
+                    }
+                    else
+                    {
+                        var returnVoid = type.Type.GetTypeWithInterfaceOf(typeof(IReturnVoid));
+                        if (returnVoid != null)
+                        {
+                            var existsInBase = type.Type.BaseType?.GetTypeWithInterfaceOf(typeof(IReturnVoid));
+                            if (existsInBase == null)
+                            {
+                                implStr = nameof(IReturnVoid);
+                                responseTypeExpression = "def response_type(): return None";
+                            }
+                        }
+                    }
+                }
+                
                 if (!string.IsNullOrEmpty(implStr))
                 {
                     if (type.Inherits == null || !IgnoreReturnMarkersForSubTypesOf.Contains(type.Inherits.Name))
@@ -595,8 +634,8 @@ namespace ServiceStack.NativeTypes.Python
 
                 if (responseTypeExpression != null)
                 {
+                    sb.AppendLine("@staticmethod"); // needs to change if responseTypeExpression is no longer a static method 
                     sb.AppendLine(responseTypeExpression);
-                    sb.AppendLine($"def getTypeName(): return '{type.Name}'");
                 }
                 else if (type.Properties.IsEmpty() && !addVersionInfo && type.Name != "IReturn`1" && type.Name != "IReturnVoid")
                 {
