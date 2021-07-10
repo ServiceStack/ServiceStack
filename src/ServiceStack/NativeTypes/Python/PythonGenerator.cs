@@ -692,7 +692,7 @@ namespace ServiceStack.NativeTypes.Python
                     var propType = GetPropertyType(prop, out var optionalProperty);
                     propType = PropertyTypeFilter?.Invoke(this, type, prop) ?? propType;
 
-                    wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
+                    wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++);
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
                     sb.Emit(prop, Lang.Python);
@@ -725,7 +725,7 @@ namespace ServiceStack.NativeTypes.Python
                         sb.AppendLine($"{propName}: {propType}{fieldConfig}");
                     }
 
-                    AppendTripleDocs(sb, prop.Description);
+                    wasAdded = AppendTripleDocs(sb, prop.Description) || wasAdded;
                     if (!string.IsNullOrEmpty(prop.Description) && i != type.Properties.Count - 1) sb.AppendLine();
 
                     PostPropertyFilter?.Invoke(sb, prop, type);
