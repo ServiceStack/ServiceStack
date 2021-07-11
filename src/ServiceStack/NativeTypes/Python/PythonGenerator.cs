@@ -467,7 +467,8 @@ namespace ServiceStack.NativeTypes.Python
                 {
                     for (var i = 0; i < type.EnumNames.Count; i++)
                     {
-                        var name = type.EnumNames[i].PropertyStyle().ToUpper();
+                        var origName = type.EnumNames[i];
+                        var name = origName.PropertyStyle().ToUpper();
                         var value = type.EnumValues?[i];
 
                         var memberValue = type.GetEnumMemberValue(i);
@@ -478,7 +479,7 @@ namespace ServiceStack.NativeTypes.Python
                         }
 
                         sb.AppendLine(value == null 
-                            ? $"{name} = '{name}'"
+                            ? $"{name} = '{origName}'"
                             : $"{name} = {value}");
                     }
                 }
