@@ -55,9 +55,9 @@ namespace ServiceStack.NativeTypes.Python
         public static Dictionary<string, string> TypeAliases = new() {
             {"String", "str"},
             {"Boolean", "bool"},
-            {"DateTime", "DateTime"},
-            {"DateTimeOffset", "DateTime"},
-            {"TimeSpan", "TimeDelta"},
+            {"DateTime", "datetime.datetime"},
+            {"DateTimeOffset", "datetime.datetime"},
+            {"TimeSpan", "datetime.timedelta"},
             {"Guid", "str"},
             {"Char", "str"},
             {"Byte", "int"},
