@@ -49,7 +49,7 @@ namespace ServiceStack.NativeTypes.Python
             "typing:*",
             "dataclasses:dataclass/field",
             "dataclasses_json:dataclass_json/LetterCase/Undefined/config",
-            "enum:Enum",
+            "enum:Enum/IntEnum",
         };
 
         public static Dictionary<string, string> TypeAliases = new() {
@@ -455,7 +455,7 @@ namespace ServiceStack.NativeTypes.Python
             {
                 var isIntEnum = type.IsEnumInt.GetValueOrDefault() || type.EnumValues != null; 
                 var enumDec = isIntEnum
-                    ? "Enum"
+                    ? "IntEnum"
                     : "str, Enum";
                     
                 sb.AppendLine($"class {Type(type.Name, type.GenericArgs)}({enumDec}):");
