@@ -27,13 +27,13 @@ namespace ServiceStack
             if (res.IsClosed)
                 return;
 
-            var session = req.GetSession();
+            var session = await req.GetSessionAsync();
 
             var authRepo = HostContext.AppHost.GetAuthRepository(req);
             using (authRepo as IDisposable)
             {
                 if (session != null && session.HasRole("Admin", authRepo)
-                    || (this.HasWebSudo(req, session as IWebSudoAuthSession)
+                    || (await this.HasWebSudoAsync(req, session as IWebSudoAuthSession)
                     || this.DoHtmlRedirectAccessDeniedIfConfigured(req, res)))
                     return;
             }
@@ -43,7 +43,7 @@ namespace ServiceStack
             res.EndRequest();
         }
 
-        public bool HasWebSudo(IRequest req, IWebSudoAuthSession session)
+        public async Task<bool> HasWebSudoAsync(IRequest req, IWebSudoAuthSession session)
         {
             if (session?.AuthenticatedWebSudoUntil == null)
                 return false;
@@ -53,7 +53,7 @@ namespace ServiceStack
                 return true;
 
             session.AuthenticatedWebSudoUntil = null;
-            req.SaveSession(session);
+            await req.SaveSessionAsync(session);
             return false;
         }
     }

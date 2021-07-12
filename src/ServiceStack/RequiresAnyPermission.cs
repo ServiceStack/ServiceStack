@@ -62,6 +62,7 @@ namespace ServiceStack
             await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto).ConfigAwait();
         }
 
+        [Obsolete("Use HasAnyPermissionsAsync")]
         public bool HasAnyPermissions(IRequest req, IAuthSession session, IAuthRepository authRepo)
         {
             if (HasAnyPermissions(session, authRepo)) return true;

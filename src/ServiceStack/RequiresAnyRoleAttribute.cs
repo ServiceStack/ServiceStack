@@ -63,6 +63,7 @@ namespace ServiceStack
             await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto).ConfigAwait();
         }
 
+        [Obsolete("Use HasAnyRolesAsync")]
         public virtual bool HasAnyRoles(IRequest req, IAuthSession session, IAuthRepository authRepo)
         {
             if (HasAnyRoles(session, authRepo)) 
