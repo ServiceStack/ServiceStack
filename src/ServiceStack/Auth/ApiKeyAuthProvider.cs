@@ -250,7 +250,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public async Task PreAuthenticateAsync(IRequest req, IResponse res)
+        public virtual async Task PreAuthenticateAsync(IRequest req, IResponse res)
         {
             //The API Key is sent in the Basic Auth Username and Password is Empty
             var userPass = req.GetBasicAuthUserAndPassword();
@@ -300,7 +300,7 @@ namespace ServiceStack.Auth
                 throw HttpError.Forbidden(ErrorMessages.ApiKeyHasExpired.Localize(req));
         }
 
-        public async Task PreAuthenticateWithApiKeyAsync(IRequest req, IResponse res, ApiKey apiKey)
+        public virtual async Task PreAuthenticateWithApiKeyAsync(IRequest req, IResponse res, ApiKey apiKey)
         {
             if (RequireSecureConnection && !req.IsSecureConnection)
                 throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection.Localize(req));
