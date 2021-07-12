@@ -49,15 +49,15 @@ namespace ServiceStack.NativeTypes.Python
             "typing:*",
             "dataclasses:dataclass/field",
             "dataclasses_json:dataclass_json/LetterCase/Undefined/config",
-            "enum:Enum",
+            "enum:Enum/IntEnum",
         };
 
         public static Dictionary<string, string> TypeAliases = new() {
             {"String", "str"},
             {"Boolean", "bool"},
-            {"DateTime", "DateTime"},
-            {"DateTimeOffset", "DateTime"},
-            {"TimeSpan", "TimeDelta"},
+            {"DateTime", "datetime.datetime"},
+            {"DateTimeOffset", "datetime.datetime"},
+            {"TimeSpan", "datetime.timedelta"},
             {"Guid", "str"},
             {"Char", "str"},
             {"Byte", "int"},
@@ -67,14 +67,14 @@ namespace ServiceStack.NativeTypes.Python
             {"UInt16", "int"},
             {"UInt32", "int"},
             {"UInt64", "int"},
-            {"Single", "Float"},
-            {"Double", "Float"},
+            {"Single", "float"},
+            {"Double", "float"},
             {"Decimal", "Decimal"},
             {"IntPtr", "int"},
             {"List", "List"},
-            {"Byte[]", "Bytes"},
-            {"Stream", "Bytes"},
-            {"HttpWebResponse", "Bytes"},
+            {"Byte[]", "bytes"},
+            {"Stream", "bytes"},
+            {"HttpWebResponse", "bytes"},
             {"IDictionary", "Dict"},
             {"OrderedDictionary", "Dict"},
             {"Uri", "str"},
@@ -455,7 +455,7 @@ namespace ServiceStack.NativeTypes.Python
             {
                 var isIntEnum = type.IsEnumInt.GetValueOrDefault() || type.EnumValues != null; 
                 var enumDec = isIntEnum
-                    ? "Enum"
+                    ? "IntEnum"
                     : "str, Enum";
                     
                 sb.AppendLine($"class {Type(type.Name, type.GenericArgs)}({enumDec}):");
@@ -467,7 +467,8 @@ namespace ServiceStack.NativeTypes.Python
                 {
                     for (var i = 0; i < type.EnumNames.Count; i++)
                     {
-                        var name = type.EnumNames[i].PropertyStyle().ToUpper();
+                        var origName = type.EnumNames[i];
+                        var name = origName.PropertyStyle().ToUpper();
                         var value = type.EnumValues?[i];
 
                         var memberValue = type.GetEnumMemberValue(i);
@@ -478,7 +479,7 @@ namespace ServiceStack.NativeTypes.Python
                         }
 
                         sb.AppendLine(value == null 
-                            ? $"{name} = '{name}'"
+                            ? $"{name} = '{origName}'"
                             : $"{name} = {value}");
                     }
                 }
@@ -692,7 +693,7 @@ namespace ServiceStack.NativeTypes.Python
                     var propType = GetPropertyType(prop, out var optionalProperty);
                     propType = PropertyTypeFilter?.Invoke(this, type, prop) ?? propType;
 
-                    wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
+                    wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++);
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
                     sb.Emit(prop, Lang.Python);
@@ -725,7 +726,7 @@ namespace ServiceStack.NativeTypes.Python
                         sb.AppendLine($"{propName}: {propType}{fieldConfig}");
                     }
 
-                    AppendTripleDocs(sb, prop.Description);
+                    wasAdded = AppendTripleDocs(sb, prop.Description) || wasAdded;
                     if (!string.IsNullOrEmpty(prop.Description) && i != type.Properties.Count - 1) sb.AppendLine();
 
                     PostPropertyFilter?.Invoke(sb, prop, type);
