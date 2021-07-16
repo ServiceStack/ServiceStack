@@ -17,7 +17,7 @@ namespace ServiceStack.Formats
             //Add a response filter to add a 'Content-Disposition' header so browsers treat it natively as a .csv file
             appHost.GlobalResponseFilters.Add((req, res, dto) =>
             {
-                if (req.ResponseContentType == MimeTypes.Csv)
+                if (req.ResponseContentType == MimeTypes.Csv && dto is not IHttpResult) //avoid double Content-Disposition headers
                 {
                     var fileName = req.OperationName + ".csv";
                     res.AddHeader(HttpHeaders.ContentDisposition, $"attachment;{HttpExt.GetDispositionFileName(fileName)}");
