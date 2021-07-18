@@ -159,7 +159,7 @@ namespace ServiceStack.Script
                         
                         foreach (var key in keys)
                         {
-                            var value = d[key];
+                            var value = d.ContainsKey(key) ? d[key] : null;
                             if (ReferenceEquals(value, items)) break; // Prevent cyclical deps like 'it' binding
                             
                             if (!isComplexType(value))
