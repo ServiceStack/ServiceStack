@@ -179,7 +179,7 @@ namespace ServiceStack
             {
                 using (var zip = new GZipStream(stream, CompressionMode.Compress, true))
                 {
-                    await content.CopyToAsync(zip);
+                    await content.CopyToAsync(zip).ConfigAwait();
                 }
             }
 
@@ -206,7 +206,7 @@ namespace ServiceStack
             {
                 using (var zip = new DeflateStream(stream, CompressionMode.Compress, true))
                 {
-                    await content.CopyToAsync(zip);
+                    await content.CopyToAsync(zip).ConfigAwait();
                 }
             }
 
@@ -246,7 +246,7 @@ namespace ServiceStack
 
             try
             {
-                var httpRes = await client.SendAsync(httpReq, token);
+                var httpRes = await client.SendAsync(httpReq, token).ConfigAwait();
 
                 if (typeof(TResponse) == typeof(HttpResponseMessage))
                     return (TResponse)(object) httpRes;
@@ -266,7 +266,7 @@ namespace ServiceStack
 
                         try
                         {
-                            var accessTokenResponse = await this.PostAsync<GetAccessTokenResponse>(uri, refreshDto, token);
+                            var accessTokenResponse = await this.PostAsync<GetAccessTokenResponse>(uri, refreshDto, token).ConfigAwait();
                             
                             var accessToken = accessTokenResponse?.AccessToken;
                             var tokenCookie = this.GetTokenCookie();
@@ -294,8 +294,8 @@ namespace ServiceStack
                                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
                                 }
                             }
-                            var refreshTokenResponse = await client.SendAsync(refreshRequest, token);
-                            return await ConvertToResponse<TResponse>(refreshTokenResponse, httpMethod, absoluteUrl, refreshRequest, token);
+                            var refreshTokenResponse = await client.SendAsync(refreshRequest, token).ConfigAwait();
+                            return await ConvertToResponse<TResponse>(refreshTokenResponse, httpMethod, absoluteUrl, refreshRequest, token).ConfigAwait();
                         }
                         catch (Exception e)
                         {
@@ -309,12 +309,12 @@ namespace ServiceStack
                     {
                         AddBasicAuth(client);
                         httpReq = CreateRequest(httpMethod, absoluteUrl, request);
-                        var response = await client.SendAsync(httpReq, token);
-                        return await ConvertToResponse<TResponse>(response, httpMethod, absoluteUrl, request, token);
+                        var response = await client.SendAsync(httpReq, token).ConfigAwait();
+                        return await ConvertToResponse<TResponse>(response, httpMethod, absoluteUrl, request, token).ConfigAwait();
                     }
                 }
 
-                return await ConvertToResponse<TResponse>(httpRes, httpMethod, absoluteUrl, request, token);
+                return await ConvertToResponse<TResponse>(httpRes, httpMethod, absoluteUrl, request, token).ConfigAwait();
             }
             catch (Exception e)
             {
@@ -394,27 +394,27 @@ namespace ServiceStack
 
             if (typeof(TResponse) == typeof(string))
             {
-                var result = await ThrowIfError(() => httpRes.Content.ReadAsStringAsync(), httpRes, request, absoluteUrl);
+                var result = await ThrowIfError(() => httpRes.Content.ReadAsStringAsync(), httpRes, request, absoluteUrl).ConfigAwait();
                 var response = (TResponse) (object) result;
                 ResultsFilterResponse?.Invoke(httpRes, response, httpMethod, absoluteUrl, request);
                 return response;
             }
             if (typeof(TResponse) == typeof(byte[]))
             {
-                var result = await ThrowIfError(() => httpRes.Content.ReadAsByteArrayAsync(), httpRes, request, absoluteUrl);
+                var result = await ThrowIfError(() => httpRes.Content.ReadAsByteArrayAsync(), httpRes, request, absoluteUrl).ConfigAwait();
                 var response = (TResponse) (object) result;
                 ResultsFilterResponse?.Invoke(httpRes, response, httpMethod, absoluteUrl, request);
                 return response;
             }
             if (typeof(TResponse) == typeof(Stream))
             {
-                var result = await ThrowIfError(() => httpRes.Content.ReadAsStreamAsync(), httpRes, request, absoluteUrl);
+                var result = await ThrowIfError(() => httpRes.Content.ReadAsStreamAsync(), httpRes, request, absoluteUrl).ConfigAwait();
                 var response = (TResponse) (object) result;
                 ResultsFilterResponse?.Invoke(httpRes, response, httpMethod, absoluteUrl, request);
                 return response;
             }
 
-            var json = await ThrowIfError(() => httpRes.Content.ReadAsStringAsync(), httpRes, request, absoluteUrl);
+            var json = await ThrowIfError(() => httpRes.Content.ReadAsStringAsync(), httpRes, request, absoluteUrl).ConfigAwait();
             var obj = json.FromJson<TResponse>();
             ResultsFilterResponse?.Invoke(httpRes, obj, httpMethod, absoluteUrl, request);
             return obj;
@@ -445,7 +445,7 @@ namespace ServiceStack
             TResponse response;
             try
             {
-                response = await fn();
+                response = await fn().ConfigAwait();
             }
             catch (Exception e)
             {
@@ -606,22 +606,22 @@ namespace ServiceStack
         {
             if (typeof(TResponse) == typeof(object))
             {
-                var result = await this.SendAsync(this.GetResponseType(request), request, token);
+                var result = await this.SendAsync(this.GetResponseType(request), request, token).ConfigAwait();
                 return (TResponse) result;
             }
 
             if (request is IVerb)
             {
                 if (request is IGet)
-                    return await GetAsync<TResponse>(request, token);
+                    return await GetAsync<TResponse>(request, token).ConfigAwait();
                 if (request is IPost)
-                    return await PostAsync<TResponse>(request, token);
+                    return await PostAsync<TResponse>(request, token).ConfigAwait();
                 if (request is IPut)
-                    return await PutAsync<TResponse>(request, token);
+                    return await PutAsync<TResponse>(request, token).ConfigAwait();
                 if (request is IDelete)
-                    return await DeleteAsync<TResponse>(request, token);
+                    return await DeleteAsync<TResponse>(request, token).ConfigAwait();
                 if (request is IPatch)
-                    return await PatchAsync<TResponse>(request, token);
+                    return await PatchAsync<TResponse>(request, token).ConfigAwait();
             }
 
             if (request is IQuery)
@@ -632,11 +632,11 @@ namespace ServiceStack
                 if (crudMethod != null)
                 {
                     return crudMethod switch {
-                        HttpMethods.Post => await PostAsync<TResponse>(request, token),
-                        HttpMethods.Put => await PutAsync<TResponse>(request, token),
-                        HttpMethods.Delete => await DeleteAsync<TResponse>(request, token),
-                        HttpMethods.Patch => await PatchAsync<TResponse>(request, token),
-                        HttpMethods.Get => await GetAsync<TResponse>(request, token),
+                        HttpMethods.Post => await PostAsync<TResponse>(request, token).ConfigAwait(),
+                        HttpMethods.Put => await PutAsync<TResponse>(request, token).ConfigAwait(),
+                        HttpMethods.Delete => await DeleteAsync<TResponse>(request, token).ConfigAwait(),
+                        HttpMethods.Patch => await PatchAsync<TResponse>(request, token).ConfigAwait(),
+                        HttpMethods.Get => await GetAsync<TResponse>(request, token).ConfigAwait(),
                         _ => throw new NotSupportedException("Unknown " + crudMethod),
                     };
                 }
@@ -647,7 +647,7 @@ namespace ServiceStack
                 ? this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name
                 : Format + "/reply/" + request.GetType().Name);
 
-            return await SendAsync<TResponse>(httpMethod, requestUri, request, token);
+            return await SendAsync<TResponse>(httpMethod, requestUri, request, token).ConfigAwait();
         }
 
         public virtual Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<object> requests, CancellationToken token)
@@ -980,7 +980,7 @@ namespace ServiceStack
         public virtual async Task<TResponse> PostFileAsync<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType = null, CancellationToken token = default)
         {
             using var content = new MultipartFormDataContent();
-            var fileBytes = await fileToUpload.ReadFullyAsync(token);
+            var fileBytes = await fileToUpload.ReadFullyAsync(token).ConfigAwait();
             using var fileContent = new ByteArrayContent(fileBytes, 0, fileBytes.Length);
             fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
             {
@@ -991,7 +991,7 @@ namespace ServiceStack
             content.Add(fileContent, "file", fileName);
 
             var result = await SendAsync<TResponse>(HttpMethods.Post,
-                ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), content, token);
+                ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), content, token).ConfigAwait();
             return result;
         }
 
@@ -1024,7 +1024,7 @@ namespace ServiceStack
                 content.Add(new StringContent(value), $"\"{key}\"");
             }
 
-            var fileBytes = await fileToUpload.ReadFullyAsync(token);
+            var fileBytes = await fileToUpload.ReadFullyAsync(token).ConfigAwait();
             using var fileContent = new ByteArrayContent(fileBytes, 0, fileBytes.Length);
             fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
             {
@@ -1035,7 +1035,7 @@ namespace ServiceStack
             content.Add(fileContent, "file", fileName);
 
             var result = await SendAsync<TResponse>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl),
-                content, token);
+                content, token).ConfigAwait();
             return result;
         }
 
@@ -1082,7 +1082,7 @@ namespace ServiceStack
             for (int i = 0; i < files.Length; i++)
             {
                 var file = files[i];
-                var fileBytes = await file.Stream.ReadFullyAsync(token);
+                var fileBytes = await file.Stream.ReadFullyAsync(token).ConfigAwait();
                 var fileContent = new ByteArrayContent(fileBytes, 0, fileBytes.Length);
                 disposables.Add(fileContent);
                 var fieldName = file.FieldName ?? $"upload{i}";
@@ -1101,7 +1101,7 @@ namespace ServiceStack
 
             try
             {
-                var result = await SendAsync<TResponse>(HttpMethods.Post, requestUri, content, token);
+                var result = await SendAsync<TResponse>(HttpMethods.Post, requestUri, content, token).ConfigAwait();
                 return result;
             }
             finally
@@ -1169,7 +1169,7 @@ namespace ServiceStack
         {
             try
             {
-                return task.Result;
+                return task.GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
