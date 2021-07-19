@@ -493,7 +493,10 @@ namespace ServiceStack.Auth
             if (request.UseTokenCookie.GetValueOrDefault(jwtAuthProvider.UseTokenCookie) != true)
                 return response;
 
-            var httpResult = new HttpResult(new GetAccessTokenResponse())
+            var httpResult = new HttpResult(new GetAccessTokenResponse
+            {
+                AccessToken = accessToken
+            })
                 .AddCookie(Request,
                     new Cookie(Keywords.TokenCookie, accessToken, Cookies.RootPath) {
                         HttpOnly = true,
