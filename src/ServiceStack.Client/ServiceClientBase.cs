@@ -385,20 +385,6 @@ namespace ServiceStack
         private string refreshTokenUri;
 
         /// <summary>
-        /// Whether new AccessToken from GetAccessToken should return BearerToken in Response DTO or Cookie
-        /// </summary>
-        public bool UseTokenCookie
-        {
-            get => useTokenCookie;
-            set
-            {
-                useTokenCookie = value;
-                asyncClient.UseTokenCookie = value;
-            }
-        }
-        private bool useTokenCookie;
-
-        /// <summary>
         /// The request filter is called before any request.
         /// This request filter only works with the instance where it was set (not global).
         /// </summary>
@@ -672,21 +658,18 @@ namespace ServiceStack
                     if (hasRefreshToken)
                     {
                         var refreshRequest = new GetAccessToken {
-                            RefreshToken = RefreshToken,
-                            UseTokenCookie = UseTokenCookie,
+                            RefreshToken = hasRefreshTokenCookie ? null : RefreshToken,
                         };                        
                         var uri = this.RefreshTokenUri ?? this.BaseUri.CombineWith(refreshRequest.ToPostUrl());
-
-                        if (this.UseTokenCookie)
-                        {
-                            this.BearerToken = null;
-                        }
+                        
+                        this.BearerToken = null;
+                        this.CookieContainer?.DeleteCookie(new Uri(BaseUri), "ss-tok");
 
                         GetAccessTokenResponse tokenResponse;
                         try
                         {
                             tokenResponse = uri.PostJsonToUrl(refreshRequest, requestFilter: req => {
-                                if (UseTokenCookie || hasRefreshTokenCookie) {
+                                if (hasRefreshTokenCookie) {
                                     req.CookieContainer = CookieContainer;
                                 }
                             }).FromJson<GetAccessTokenResponse>();
@@ -706,29 +689,16 @@ namespace ServiceStack
                         var accessToken = tokenResponse?.AccessToken;
                         var refreshClient = (HttpWebRequest) createWebRequest();
                         var tokenCookie = this.GetTokenCookie();
-                        
-                        if (UseTokenCookie)
+
+                        if (string.IsNullOrEmpty(accessToken))
                         {
-                            if (tokenCookie == null)
-                                throw new RefreshTokenException("Could not retrieve new AccessToken Cooke from: " + uri);
-                            
+                            refreshClient.AddBearerToken(this.BearerToken = accessToken);
+                        }
+                        else if (tokenCookie != null)
+                        {
                             refreshClient.CookieContainer.SetTokenCookie(BaseUri, tokenCookie);
                         }
-                        else
-                        {
-                            if (string.IsNullOrEmpty(accessToken))
-                                throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
-
-                            if (tokenCookie != null)
-                            {
-                                this.SetTokenCookie(accessToken);
-                                refreshClient.CookieContainer.SetTokenCookie(BaseUri, accessToken);
-                            }
-                            else
-                            {
-                                refreshClient.AddBearerToken(this.BearerToken = accessToken);
-                            }
-                        }
+                        else throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
 
                         var refreshResponse = getResponse(refreshClient);
                         response = HandleResponse<TResponse>(refreshResponse);
@@ -1391,7 +1361,6 @@ namespace ServiceStack
                 expiresIn != null ? DateTime.UtcNow.Add(expiresIn.Value) : (DateTime?)null);
         }
 
-
         public virtual void Get(IReturnVoid requestDto)
         {
             Send<byte[]>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null);
@@ -1974,10 +1943,25 @@ namespace ServiceStack
             DateTime? expiresAt = null, string path = "/",
             bool? httpOnly = null, bool? secure = null)
         {
-            if (!(client is IHasCookieContainer hasCookies))
-                throw new NotSupportedException("Client does not implement IHasCookieContainer");
+            AssertCookieContainer(client).SetCookie(baseUri, name, value, expiresAt, path, httpOnly, secure);
+        }
 
-            hasCookies.CookieContainer.SetCookie(baseUri, name, value, expiresAt, path, httpOnly, secure);
+        public static CookieContainer AssertCookieContainer(this IServiceClient client)
+        {
+            if (client is not IHasCookieContainer hasCookies)
+                throw new NotSupportedException("Client does not implement IHasCookieContainer");
+            return hasCookies.CookieContainer;
+        }
+
+        public static void DeleteCookie(this CookieContainer cookieContainer, Uri uri, string name)
+        {
+            var cookies = cookieContainer.GetCookies(uri);
+            foreach (Cookie cookie in cookies)
+            {
+                if (cookie.Name != name) continue;
+                cookie.Expired = true;
+                return;
+            }
         }
 
         public static TResponse PostBody<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, object requestBody) =>

@@ -49,8 +49,6 @@ namespace ServiceStack
 
         public string RefreshTokenUri { get; set; }
         
-        public bool UseTokenCookie { get; set; }
-
         public static int BufferSize = 8192;
 
         public ICredentials Credentials { get; set; }
@@ -346,16 +344,18 @@ namespace ServiceStack
                         if (hasRefreshToken)
                         {
                             var refreshRequest = new GetAccessToken {
-                                RefreshToken = RefreshToken,
-                                UseTokenCookie = UseTokenCookie,
+                                RefreshToken = hasRefreshTokenCookie ? null : RefreshToken,
                             };                        
                             var uri = this.RefreshTokenUri ?? this.BaseUri.CombineWith(refreshRequest.ToPostUrl());
+                        
+                            this.BearerToken = null;
+                            this.CookieContainer?.DeleteCookie(new Uri(BaseUri), "ss-tok");
 
                             GetAccessTokenResponse tokenResponse;
                             try
                             {
                                 tokenResponse = (await uri.PostJsonToUrlAsync(refreshRequest, requestFilter: req => {
-                                    if (UseTokenCookie || hasRefreshTokenCookie) {
+                                    if (hasRefreshTokenCookie) {
                                         req.CookieContainer = CookieContainer;
                                     }
                                 }, token: token).ConfigAwait()).FromJson<GetAccessTokenResponse>();
@@ -376,28 +376,15 @@ namespace ServiceStack
                             var refreshClient = webReq = (HttpWebRequest) WebRequest.Create(requestUri);
                             var tokenCookie = this.CookieContainer.GetTokenCookie(BaseUri);
 
-                            if (UseTokenCookie)
+                            if (string.IsNullOrEmpty(accessToken))
                             {
-                                if (tokenCookie == null)
-                                    throw new RefreshTokenException("Could not retrieve new AccessToken Cooke from: " + uri);
-                            
+                                refreshClient.AddBearerToken(this.BearerToken = accessToken);
+                            }
+                            else if (tokenCookie != null)
+                            {
                                 refreshClient.CookieContainer.SetTokenCookie(BaseUri, tokenCookie);
                             }
-                            else
-                            {
-                                if (string.IsNullOrEmpty(accessToken))
-                                    throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
-
-                                if (tokenCookie != null)
-                                {
-                                    this.CookieContainer.SetTokenCookie(accessToken, BaseUri);
-                                    refreshClient.CookieContainer.SetTokenCookie(BaseUri, accessToken);
-                                }
-                                else
-                                {
-                                    refreshClient.AddBearerToken(this.BearerToken = accessToken);
-                                }
-                            }
+                            else throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
 
                             return await SendWebRequestAsync<T>(httpMethod, absoluteUrl, request, token, recall: true).ConfigAwait();
                         }

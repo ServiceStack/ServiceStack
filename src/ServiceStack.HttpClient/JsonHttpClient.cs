@@ -59,7 +59,6 @@ namespace ServiceStack
         public string RefreshToken { get; set; }
         public string RefreshTokenUri { get; set; }
 
-        public bool UseTokenCookie { get; set; }
         public bool UseCookies { get; set; } = true;
 
         /// <summary>
@@ -258,11 +257,13 @@ namespace ServiceStack
                     
                     if (hasRefreshToken)
                     {
-                        var refreshDto = new GetAccessToken { RefreshToken = RefreshToken, UseTokenCookie = UseTokenCookie };
+                        var refreshDto = new GetAccessToken {
+                            RefreshToken = hasRefreshTokenCookie ? null : RefreshToken,
+                        };
                         var uri = this.RefreshTokenUri ?? this.BaseUri.CombineWith(refreshDto.ToPostUrl());
 
-                        if (this.UseTokenCookie)
-                            this.BearerToken = null;
+                        this.BearerToken = null;
+                        this.CookieContainer?.DeleteCookie(new Uri(BaseUri), "ss-tok");
 
                         try
                         {
@@ -272,28 +273,17 @@ namespace ServiceStack
                             var tokenCookie = this.GetTokenCookie();
                             var refreshRequest = CreateRequest(httpMethod, absoluteUrl, request);
 
-                            if (UseTokenCookie)
+                            if (string.IsNullOrEmpty(accessToken))
                             {
-                                if (tokenCookie == null)
-                                    throw new RefreshTokenException("Could not retrieve new AccessToken Cooke from: " + uri);
-
+                                refreshRequest.AddBearerToken(this.BearerToken = accessToken);
+                                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                            }
+                            else if (tokenCookie != null)
+                            {
                                 this.SetTokenCookie(tokenCookie);
                             }
-                            else
-                            {
-                                if (string.IsNullOrEmpty(accessToken))
-                                    throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
-
-                                if (tokenCookie != null)
-                                {
-                                    this.SetTokenCookie(accessToken);
-                                }
-                                else
-                                {
-                                    refreshRequest.AddBearerToken(this.BearerToken = accessToken);
-                                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-                                }
-                            }
+                            else throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
+                            
                             var refreshTokenResponse = await client.SendAsync(refreshRequest, token).ConfigAwait();
                             return await ConvertToResponse<TResponse>(refreshTokenResponse, httpMethod, absoluteUrl, refreshRequest, token).ConfigAwait();
                         }
