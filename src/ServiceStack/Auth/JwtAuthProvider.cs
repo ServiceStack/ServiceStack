@@ -490,7 +490,7 @@ namespace ServiceStack.Auth
                 AccessToken = accessToken
             };
 
-            if (request.UseTokenCookie.GetValueOrDefault(jwtAuthProvider.UseTokenCookie) != true)
+            if (!jwtAuthProvider.UseTokenCookie && request.UseTokenCookie != true)
                 return response;
 
             var httpResult = new HttpResult(new GetAccessTokenResponse())
