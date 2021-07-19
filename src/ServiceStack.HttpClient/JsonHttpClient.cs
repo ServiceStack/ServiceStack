@@ -273,7 +273,7 @@ namespace ServiceStack
                             var tokenCookie = this.GetTokenCookie();
                             var refreshRequest = CreateRequest(httpMethod, absoluteUrl, request);
 
-                            if (string.IsNullOrEmpty(accessToken))
+                            if (!string.IsNullOrEmpty(accessToken))
                             {
                                 refreshRequest.AddBearerToken(this.BearerToken = accessToken);
                                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);

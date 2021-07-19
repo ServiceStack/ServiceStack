@@ -376,12 +376,13 @@ namespace ServiceStack
                             var refreshClient = webReq = (HttpWebRequest) WebRequest.Create(requestUri);
                             var tokenCookie = this.CookieContainer.GetTokenCookie(BaseUri);
 
-                            if (string.IsNullOrEmpty(accessToken))
+                            if (!string.IsNullOrEmpty(accessToken))
                             {
                                 refreshClient.AddBearerToken(this.BearerToken = accessToken);
                             }
                             else if (tokenCookie != null)
                             {
+                                refreshClient.CookieContainer = CookieContainer;
                                 refreshClient.CookieContainer.SetTokenCookie(BaseUri, tokenCookie);
                             }
                             else throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
