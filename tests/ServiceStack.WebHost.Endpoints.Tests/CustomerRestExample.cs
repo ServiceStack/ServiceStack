@@ -17,10 +17,8 @@ namespace NewApi.Customers
             container.Register<IDbConnectionFactory>(c => 
                 new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
 
-            using (var db = container.Resolve<IDbConnectionFactory>().Open())
-            {
-                db.CreateTableIfNotExists<Customer>();
-            }
+            using var db = container.Resolve<IDbConnectionFactory>().Open();
+            db.CreateTableIfNotExists<Customer>();
         }
     }
 

@@ -443,10 +443,11 @@ namespace ServiceStack.Auth
             if (jwtAuthProvider.RequireSecureConnection && !Request.IsSecureConnection)
                 throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection.Localize(Request));
 
-            var refreshToken = request.RefreshToken 
-                ?? (Request.Cookies.TryGetValue(Keywords.RefreshTokenCookie, out var refTok)
-                    ? refTok.Value
-                    : null);
+            var refreshTokenCookie = Request.Cookies.TryGetValue(Keywords.RefreshTokenCookie, out var refTok)
+                ? refTok.Value
+                : null; 
+
+            var refreshToken = request.RefreshToken ?? refreshTokenCookie;
             if (string.IsNullOrEmpty(refreshToken))
                 throw new ArgumentNullException(nameof(refreshToken));
 
@@ -490,7 +491,8 @@ namespace ServiceStack.Auth
                 AccessToken = accessToken
             };
 
-            if (!jwtAuthProvider.UseTokenCookie && request.UseTokenCookie != true)
+            // Don't return JWT in Response Body if Refresh Token Cookie was used
+            if (refreshTokenCookie == null && request.UseTokenCookie.GetValueOrDefault(jwtAuthProvider.UseTokenCookie) != true)
                 return response;
 
             var httpResult = new HttpResult(new GetAccessTokenResponse())

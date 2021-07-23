@@ -295,9 +295,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             if (client is JsonServiceClient serviceClient)
             {
                 serviceClient.RefreshToken = refreshToken;
-                if (useTokenCookie)
-                    serviceClient.UseTokenCookie = true;
-                else
+                if (!useTokenCookie)
                     serviceClient.BearerToken = accessToken;
                 return serviceClient;
             }
@@ -305,9 +303,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             if (client is JsonHttpClient httpClient)
             {
                 httpClient.RefreshToken = refreshToken;
-                if (useTokenCookie)
-                    httpClient.UseTokenCookie = true;
-                else
+                if (!useTokenCookie)
                     httpClient.BearerToken = accessToken;
                 return httpClient;
             }
