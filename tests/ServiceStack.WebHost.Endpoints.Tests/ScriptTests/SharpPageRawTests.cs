@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Caching;
@@ -950,14 +949,5 @@ model.Dictionary['map-key'].Object.AltNested.Field |> lower = 'dictionary altnes
             Assert.That(context.EvaluateScript("{{ it.customer |> assignTo: c }}{{ c.missing }}"), Is.EqualTo(""));
         }
 
-    }
-
-    public static class TestUtils
-    {
-        public static string NormalizeNewLines(this string text) => text.Trim().Replace("\r", "");
-        public static string RemoveNewLines(this string text) => text.Trim().Replace("\r", "").Replace("\n", "");
-        
-        static readonly Regex whitespace = new Regex(@"\s+", RegexOptions.Compiled);
-        public static string RemoveAllWhitespace(this string text) => whitespace.Replace(text, "");
     }
 }
