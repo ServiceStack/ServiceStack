@@ -120,7 +120,7 @@ namespace ServiceStack.Script
         public IRawString textDump(object target) => TextDump(target, new TextDumpOptions { Defaults = Context.DefaultMethods }).ToRawString();
         public IRawString textDump(object target, Dictionary<string, object> options) => 
             TextDump(target, TextDumpOptions.Parse(options, Context.DefaultMethods)).ToRawString();
-        
+
         public static string TextList(IEnumerable items, TextDumpOptions options)
         {
             if (options == null)
@@ -148,7 +148,7 @@ namespace ServiceStack.Script
                     {
                         if (keys == null)
                         {
-                            keys = d.Keys.ToList();
+                            keys = EnumerableExtensions.AllKeysWithDefaultValues(items);
                             foreach (var key in keys)
                             {
                                 table.Headers.Add(ViewUtils.StyleText(key, headerStyle));
@@ -464,14 +464,14 @@ namespace ServiceStack.Script
             {
                 var isMoney = dec == Math.Floor(dec * 100);
                 if (isMoney)
-                    return defaults?.currency(dec) ?? dec.ToString(defaults.GetDefaultCulture());
+                    return defaults?.currency(dec) ?? dec.ToString(defaults?.GetDefaultCulture() ?? ScriptConfig.DefaultCulture);
             }
 
             if (target.GetType().IsNumericType() || target is bool)
                 return target.ToString();
 
             if (target is DateTime d)
-                return defaults?.dateFormat(d) ?? d.ToString(defaults.GetDefaultCulture());
+                return defaults?.dateFormat(d) ?? d.ToString(defaults?.GetDefaultCulture() ?? ScriptConfig.DefaultCulture);
 
             if (target is TimeSpan t)
                 return defaults?.timeFormat(t) ?? t.ToString();

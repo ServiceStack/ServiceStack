@@ -65,6 +65,11 @@ namespace ServiceStack
         public static string dumpTable(object instance) => DefaultScripts.TextDump(instance, null); 
         
         /// <summary>
+        /// Dump object in Ascii Markdown table
+        /// </summary>
+        public static string dumpTable(object instance, TextDumpOptions options) => DefaultScripts.TextDump(instance, options); 
+        
+        /// <summary>
         /// Print Dump object in Ascii Markdown table
         /// </summary>
         public static void printDumpTable(object instance) => PclExport.Instance.WriteLine(dumpTable(instance));

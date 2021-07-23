@@ -446,6 +446,32 @@ namespace ServiceStack
             }
             return false;
         }
-        
+
+        public static List<string> AllKeysWithDefaultValues(IEnumerable collection)
+        {
+            List<string> allKeys = new();
+            HashSet<string> keysWithValues = new();
+
+            foreach (var o in collection)
+            {
+                if (o is IEnumerable<KeyValuePair<string, object>> d)
+                {
+                    foreach (var entry in d)
+                    {
+                        if (!allKeys.Contains(entry.Key))
+                            allKeys.Add(entry.Key);
+                        if (entry.Value == null)
+                            continue;
+                        var valueType = entry.Value.GetType();
+                        if (valueType.IsValueType && entry.Value.Equals(valueType.GetDefaultValue()))
+                            continue;
+                        keysWithValues.Add(entry.Key);
+                    }
+                }
+            }
+            allKeys.RemoveAll(x => !keysWithValues.Contains(x));
+            return allKeys;
+        }
+
     }
 }
