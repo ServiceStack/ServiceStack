@@ -80,7 +80,7 @@ namespace ServiceStack.NativeTypes.FSharp
                 sb.AppendLine("UsePath: {0}".Fmt(Config.UsePath));
 
             sb.AppendLine();
-            sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(DefaultValue("GlobalNamespace"), Config.GlobalNamespace));
+            sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(DefaultValue("GlobalNamespace"), Config.GlobalNamespace)); // ExcludeNamespace=true excludes namespace
             sb.AppendLine("{0}MakeDataContractsExtensible: {1}".Fmt(DefaultValue("MakeDataContractsExtensible"), Config.MakeDataContractsExtensible));
             sb.AppendLine("{0}AddReturnMarker: {1}".Fmt(DefaultValue("AddReturnMarker"), Config.AddReturnMarker));
             sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(DefaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
@@ -116,8 +116,11 @@ namespace ServiceStack.NativeTypes.FSharp
 
             var orderedTypes = FilterTypes(allTypes);
 
-            sb.AppendLine("namespace {0}".Fmt(globalNamespace.SafeToken()));
-            sb.AppendLine();
+            if (!Config.ExcludeNamespace)
+            {
+                sb.AppendLine("namespace {0}".Fmt(globalNamespace.SafeToken()));
+                sb.AppendLine();
+            }
             foreach (var ns in namespaces.Where(x => !string.IsNullOrEmpty(x)))
             {
                 sb.AppendLine("open " + ns);
