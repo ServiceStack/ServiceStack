@@ -26,7 +26,7 @@ namespace ServiceStack.Script
     
     public partial class ScriptContext : IDisposable
     {
-        public List<PageFormat> PageFormats { get; set; } = new List<PageFormat>();
+        public List<PageFormat> PageFormats { get; set; } = new();
         
         public string IndexPage { get; set; } = "index";
 
@@ -41,7 +41,7 @@ namespace ServiceStack.Script
         /// </summary>
         public IVirtualFiles CacheFiles { get; set; }
 
-        public Dictionary<string, object> Args { get; } = new Dictionary<string, object>();
+        public Dictionary<string, object> Args { get; } = new();
 
         public bool DebugMode { get; set; } = true;
 
@@ -50,27 +50,27 @@ namespace ServiceStack.Script
         /// <summary>
         /// Scan Types and auto-register any Script Methods, Blocks and Code Pages
         /// </summary>
-        public List<Type> ScanTypes { get; set; } = new List<Type>();
+        public List<Type> ScanTypes { get; set; } = new();
 
         /// <summary>
         /// Scan Assemblies and auto-register any Script Methods, Blocks and Code Pages
         /// </summary>
-        public List<Assembly> ScanAssemblies { get; set; } = new List<Assembly>();
+        public List<Assembly> ScanAssemblies { get; set; } = new();
 
         /// <summary>
         /// Allow scripting of Types from specified Assemblies
         /// </summary>
-        public List<Assembly> ScriptAssemblies { get; set; } = new List<Assembly>();
+        public List<Assembly> ScriptAssemblies { get; set; } = new();
         
         /// <summary>
         /// Allow scripting of the specified Types
         /// </summary>
-        public List<Type> ScriptTypes { get; set; } = new List<Type>();
+        public List<Type> ScriptTypes { get; set; } = new();
         
         /// <summary>
         /// Lookup Namespaces for resolving Types in Scripts
         /// </summary>
-        public List<string> ScriptNamespaces { get; set; } = new List<string>();
+        public List<string> ScriptNamespaces { get; set; } = new();
         
         /// <summary>
         /// Allow scripting of all Types in loaded Assemblies 
@@ -80,75 +80,75 @@ namespace ServiceStack.Script
         /// <summary>
         /// Register short Type name accessible from scripts. (Advanced, use ScriptAssemblies/ScriptTypes first)
         /// </summary>
-        public Dictionary<string, Type> ScriptTypeNameMap { get; } = new Dictionary<string, Type>(); 
+        public Dictionary<string, Type> ScriptTypeNameMap { get; } = new(); 
         /// <summary>
         /// Register long qualified Type name accessible from scripts. (Advanced, use ScriptAssemblies/ScriptTypes first)
         /// </summary>
-        public Dictionary<string, Type> ScriptTypeQualifiedNameMap { get; } = new Dictionary<string, Type>(); 
+        public Dictionary<string, Type> ScriptTypeQualifiedNameMap { get; } = new(); 
 
         public IContainer Container { get; set; } = new SimpleContainer();
         
         public IAppSettings AppSettings { get; set; } = new SimpleAppSettings();
         
-        public List<Func<string,string>> Preprocessors { get; } = new List<Func<string, string>>();
+        public List<Func<string,string>> Preprocessors { get; } = new();
         
         public ScriptLanguage DefaultScriptLanguage { get; set; }
 
-        public List<ScriptLanguage> ScriptLanguages { get; } = new List<ScriptLanguage>(); 
+        public List<ScriptLanguage> ScriptLanguages { get; } = new(); 
 
         internal ScriptLanguage[] ScriptLanguagesArray { get; private set; } 
 
-        public List<ScriptMethods> ScriptMethods { get; } = new List<ScriptMethods>();
+        public List<ScriptMethods> ScriptMethods { get; } = new();
 
         /// <summary>
         /// Insert additional Methods at the start so they have priority over default Script Methods   
         /// </summary>
-        public List<ScriptMethods> InsertScriptMethods { get; } = new List<ScriptMethods>();
+        public List<ScriptMethods> InsertScriptMethods { get; } = new();
 
-        public List<ScriptBlock> ScriptBlocks { get; } = new List<ScriptBlock>();
+        public List<ScriptBlock> ScriptBlocks { get; } = new();
 
         /// <summary>
         /// Insert additional Blocks at the start so they have priority over default Script Blocks   
         /// </summary>
-        public List<ScriptBlock> InsertScriptBlocks { get; } = new List<ScriptBlock>();
+        public List<ScriptBlock> InsertScriptBlocks { get; } = new();
 
-        public Dictionary<string, Type> CodePages { get; } = new Dictionary<string, Type>();
+        public Dictionary<string, Type> CodePages { get; } = new();
         
-        public HashSet<string> ExcludeFiltersNamed { get; } = new HashSet<string>();
+        public HashSet<string> ExcludeFiltersNamed { get; } = new();
 
-        private readonly Dictionary<string, ScriptLanguage> scriptLanguagesMap = new Dictionary<string, ScriptLanguage>(); 
+        private readonly Dictionary<string, ScriptLanguage> scriptLanguagesMap = new(); 
         public ScriptLanguage GetScriptLanguage(string name) => scriptLanguagesMap.TryGetValue(name, out var block) ? block : null;
 
-        private readonly Dictionary<string, ScriptBlock> blocksMap = new Dictionary<string, ScriptBlock>(); 
+        private readonly Dictionary<string, ScriptBlock> blocksMap = new(); 
         public ScriptBlock GetBlock(string name) => blocksMap.TryGetValue(name, out var block) ? block : null;
 
-        public ConcurrentDictionary<string, object> Cache { get; } = new ConcurrentDictionary<string, object>();
+        public ConcurrentDictionary<string, object> Cache { get; } = new();
 
-        public ConcurrentDictionary<ReadOnlyMemory<char>, object> CacheMemory { get; } = new ConcurrentDictionary<ReadOnlyMemory<char>, object>();
+        public ConcurrentDictionary<ReadOnlyMemory<char>, object> CacheMemory { get; } = new();
 
-        public ConcurrentDictionary<string, Tuple<DateTime, object>> ExpiringCache { get; } = new ConcurrentDictionary<string, Tuple<DateTime, object>>();
+        public ConcurrentDictionary<string, Tuple<DateTime, object>> ExpiringCache { get; } = new();
         
-        public ConcurrentDictionary<ReadOnlyMemory<char>, JsToken> JsTokenCache { get; } = new ConcurrentDictionary<ReadOnlyMemory<char>, JsToken>();
+        public ConcurrentDictionary<ReadOnlyMemory<char>, JsToken> JsTokenCache { get; } = new();
 
-        public ConcurrentDictionary<string, Action<ScriptScopeContext, object, object>> AssignExpressionCache { get; } = new ConcurrentDictionary<string, Action<ScriptScopeContext, object, object>>();
+        public ConcurrentDictionary<string, Action<ScriptScopeContext, object, object>> AssignExpressionCache { get; } = new();
 
-        public ConcurrentDictionary<Type, Tuple<MethodInfo, MethodInvoker>> CodePageInvokers { get; } = new ConcurrentDictionary<Type, Tuple<MethodInfo, MethodInvoker>>();
+        public ConcurrentDictionary<Type, Tuple<MethodInfo, MethodInvoker>> CodePageInvokers { get; } = new();
 
-        public ConcurrentDictionary<string, string> PathMappings { get; } = new ConcurrentDictionary<string, string>();
+        public ConcurrentDictionary<string, string> PathMappings { get; } = new();
        
-        public List<IScriptPlugin> Plugins { get; } = new List<IScriptPlugin>();
+        public List<IScriptPlugin> Plugins { get; } = new();
 
         /// <summary>
         /// Insert plugins at the start of Plugins so they're registered first
         /// </summary>
-        public List<IScriptPlugin> InsertPlugins { get; } = new List<IScriptPlugin>();
+        public List<IScriptPlugin> InsertPlugins { get; } = new();
         
-        public HashSet<string> FileFilterNames { get; } = new HashSet<string> { "includeFile", "fileContents" };
+        public HashSet<string> FileFilterNames { get; } = new() { "includeFile", "fileContents" };
         
         /// <summary>
         /// Available transformers that can transform context filter stream outputs
         /// </summary>
-        public Dictionary<string, Func<Stream, Task<Stream>>> FilterTransformers { get; set; } = new Dictionary<string, Func<Stream, Task<Stream>>>();
+        public Dictionary<string, Func<Stream, Task<Stream>>> FilterTransformers { get; set; } = new();
 
         /// <summary>
         /// Whether to check for modified pages by default when not in DebugMode
@@ -198,10 +198,10 @@ namespace ServiceStack.Script
         private ILog log;
         public ILog Log => log ??= LogManager.GetLogger(GetType());
         
-        public HashSet<string> RemoveNewLineAfterFiltersNamed { get; set; } = new HashSet<string>();
-        public HashSet<string> OnlyEvaluateFiltersWhenSkippingPageFilterExecution { get; set; } = new HashSet<string>();
+        public HashSet<string> RemoveNewLineAfterFiltersNamed { get; set; } = new();
+        public HashSet<string> OnlyEvaluateFiltersWhenSkippingPageFilterExecution { get; set; } = new();
         
-        public Dictionary<string, ScriptLanguage> ParseAsLanguage { get; set; } = new Dictionary<string, ScriptLanguage>();
+        public Dictionary<string, ScriptLanguage> ParseAsLanguage { get; set; } = new();
         
         public Func<PageVariableFragment, ReadOnlyMemory<byte>> OnUnhandledExpression { get; set; }
         public Action<PageResult, Exception> OnRenderException { get; set; }

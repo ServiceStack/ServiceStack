@@ -343,8 +343,8 @@ namespace ServiceStack
     /// </summary>
     public static class ViewUtils
     {
-        internal static readonly DefaultScripts DefaultScripts = new DefaultScripts();
-        private static readonly HtmlScripts HtmlScripts = new HtmlScripts();
+        internal static readonly DefaultScripts DefaultScripts = new() { Context = new ScriptContext() };
+        private static readonly HtmlScripts HtmlScripts = new() { Context = new ScriptContext() };
 
         public static string NavItemsKey { get; set; } = "NavItems";
         public static string NavItemsMapKey { get; set; } = "NavItemsMap";
