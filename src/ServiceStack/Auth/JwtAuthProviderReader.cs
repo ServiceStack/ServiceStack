@@ -606,6 +606,14 @@ namespace ServiceStack.Auth
                 : verifiedPayload;
         }
 
+        public static Dictionary<string, object> ExtractHeader(string jwt)
+        {
+            var headerBase64 = jwt.AsSpan().LeftPart('.');
+            var headerBytes = headerBase64.ToString().FromBase64UrlSafe();
+            var headerJson = MemoryProvider.Instance.FromUtf8Bytes(headerBytes);
+            return (Dictionary<string, object>) JSON.parse(headerJson);
+        }
+
         public static Dictionary<string, object> ExtractPayload(string jwt)
         {
             var payloadBase64 = jwt.AsSpan().RightPart('.').LeftPart('.');

@@ -14,8 +14,8 @@ namespace ServiceStack.Script
         public bool IncludeHeaders { get; set; } = true;
         public bool IncludeRowNumbers { get; set; } = true;
         public string Caption { get; set; }
-        public List<string> Headers { get; } = new List<string>();
-        public List<List<string>> Rows { get; } = new List<List<string>>();
+        public List<string> Headers { get; } = new();
+        public List<List<string>> Rows { get; } = new();
         
         public string Render()
         {
@@ -235,61 +235,106 @@ namespace ServiceStack.Script
                         options.HasCaption = true;
                     }
 
-                    if (!isEmpty)
+                    var keys = new List<string>();
+                    var values = new List<string>();
+
+                    string TextKvps(StringBuilder s, IEnumerable<KeyValuePair<string, object>> kvps)
                     {
-                        var keys = new List<string>();
-                        var values = new List<string>();
-
-                        string TextKvps(StringBuilder s, IEnumerable<KeyValuePair<string, object>> kvps)
+                        foreach (var kvp in kvps)
                         {
-                            foreach (var kvp in kvps)
+                            if (kvp.Value == target) 
+                                break; // Prevent cyclical deps like 'it' binding
+
+                            keys.Add(ViewUtils.StyleText(kvp.Key, headerStyle) ?? "");
+
+                            var field = !isComplexType(kvp.Value)
+                                ? GetScalarText(kvp.Value, options.Defaults)
+                                : TextDump(kvp.Value, options);
+
+                            values.Add(field);
+                        }
+
+                        var keySize = keys.Max(x => x.Length);
+                        var valuesSize = values.Max(x => x.Length);
+
+                        s.AppendLine(writeCaption != null
+                            ? $"| {writeCaption.PadRight(keySize + valuesSize + 2, ' ')} ||"
+                            : $"|||");
+                        s.AppendLine(writeCaption != null
+                            ? $"|-{"".PadRight(keySize, '-')}-|-{"".PadRight(valuesSize, '-')}-|"
+                            : "|-|-|");
+
+                        for (var i = 0; i < keys.Count; i++)
+                        {
+                            s.Append("| ")
+                                .Append(keys[i].PadRight(keySize, ' '))
+                                .Append(" | ")
+                                .Append(values[i].PadRight(valuesSize, ' '))
+                                .Append(" |")
+                                .AppendLine();
+                        }
+
+                        return StringBuilderCache.ReturnAndFree(s);
+                    }
+
+                    if (first is KeyValuePair<string, object>)
+                    {
+                        return TextKvps(sb, objs.Cast<KeyValuePair<string, object>>());
+                    }
+                    else
+                    {
+                        if (!isComplexType(first))
+                        {
+                            foreach (var o in objs)
                             {
-                                if (kvp.Value == target) 
-                                    break; // Prevent cyclical deps like 'it' binding
-
-                                keys.Add(ViewUtils.StyleText(kvp.Key, headerStyle) ?? "");
-
-                                var field = !isComplexType(kvp.Value)
-                                    ? GetScalarText(kvp.Value, options.Defaults)
-                                    : TextDump(kvp.Value, options);
-
-                                values.Add(field);
+                                values.Add(GetScalarText(o, options.Defaults));
                             }
+                            
+                            var valuesSize = values.Max(MaxLineLength);
+                            if (writeCaption?.Length > valuesSize)
+                                valuesSize = writeCaption.Length;
 
-                            var keySize = keys.Max(x => x.Length);
-                            var valuesSize = values.Max(x => x.Length);
+                            sb.AppendLine(writeCaption != null 
+                                ? $"| {writeCaption.PadRight(valuesSize)} |" 
+                                : $"||");
+                            sb.AppendLine(writeCaption != null 
+                                ? $"|-{"".PadRight(valuesSize,'-')}-|" 
+                                : "|-|");
 
-                            s.AppendLine(writeCaption != null
-                                ? $"| {writeCaption.PadRight(keySize + valuesSize + 2, ' ')} ||"
-                                : $"|||");
-                            s.AppendLine(writeCaption != null
-                                ? $"|-{"".PadRight(keySize, '-')}-|-{"".PadRight(valuesSize, '-')}-|"
-                                : "|-|-|");
-
-                            for (var i = 0; i < keys.Count; i++)
+                            foreach (var value in values)
                             {
-                                s.Append("| ")
-                                    .Append(keys[i].PadRight(keySize, ' '))
-                                    .Append(" | ")
-                                    .Append(values[i].PadRight(valuesSize, ' '))
+                                sb.Append("| ")
+                                    .Append(value.PadRight(valuesSize, ' '))
                                     .Append(" |")
                                     .AppendLine();
                             }
-
-                            return StringBuilderCache.ReturnAndFree(s);
-                        }
-
-                        if (first is KeyValuePair<string, object>)
-                        {
-                            return TextKvps(sb, objs.Cast<KeyValuePair<string, object>>());
                         }
                         else
                         {
-                            if (!isComplexType(first))
+                            if (objs.Count > 1)
+                            {
+                                if (writeCaption != null)
+                                    sb.AppendLine(writeCaption)
+                                      .AppendLine();
+                        
+                                var rows = objs.Map(x => x.ToObjectDictionary());
+                                var list = TextList(rows, options);
+                                sb.AppendLine(list);
+                                return StringBuilderCache.ReturnAndFree(sb);
+                            }
+                            else
                             {
                                 foreach (var o in objs)
                                 {
-                                    values.Add(GetScalarText(o, options.Defaults));
+                                    if (!isComplexType(o))
+                                    {
+                                        values.Add(GetScalarText(o, options.Defaults));
+                                    }
+                                    else
+                                    {
+                                        var body = TextDump(o, options);
+                                        values.Add(body);
+                                    }
                                 }
                                 
                                 var valuesSize = values.Max(MaxLineLength);
@@ -297,11 +342,9 @@ namespace ServiceStack.Script
                                     valuesSize = writeCaption.Length;
 
                                 sb.AppendLine(writeCaption != null 
-                                    ? $"| {writeCaption.PadRight(valuesSize)} |" 
+                                    ? $"| {writeCaption.PadRight(valuesSize, ' ')} |" 
                                     : $"||");
-                                sb.AppendLine(writeCaption != null 
-                                    ? $"|-{"".PadRight(valuesSize,'-')}-|" 
-                                    : "|-|");
+                                sb.AppendLine(writeCaption != null ? $"|-{"".PadRight(valuesSize,'-')}-|" : "|-|");
 
                                 foreach (var value in values)
                                 {
@@ -311,55 +354,8 @@ namespace ServiceStack.Script
                                         .AppendLine();
                                 }
                             }
-                            else
-                            {
-                                if (objs.Count > 1)
-                                {
-                                    if (writeCaption != null)
-                                        sb.AppendLine(writeCaption)
-                                          .AppendLine();
-                            
-                                    var rows = objs.Map(x => x.ToObjectDictionary());
-                                    var list = TextList(rows, options);
-                                    sb.AppendLine(list);
-                                    return StringBuilderCache.ReturnAndFree(sb);
-                                }
-                                else
-                                {
-                                    foreach (var o in objs)
-                                    {
-                                        if (!isComplexType(o))
-                                        {
-                                            values.Add(GetScalarText(o, options.Defaults));
-                                        }
-                                        else
-                                        {
-                                            var body = TextDump(o, options);
-                                            values.Add(body);
-                                        }
-                                    }
-                                    
-                                    var valuesSize = values.Max(MaxLineLength);
-                                    if (writeCaption?.Length > valuesSize)
-                                        valuesSize = writeCaption.Length;
-
-                                    sb.AppendLine(writeCaption != null 
-                                        ? $"| {writeCaption.PadRight(valuesSize, ' ')} |" 
-                                        : $"||");
-                                    sb.AppendLine(writeCaption != null ? $"|-{"".PadRight(valuesSize,'-')}-|" : "|-|");
-
-                                    foreach (var value in values)
-                                    {
-                                        sb.Append("| ")
-                                            .Append(value.PadRight(valuesSize, ' '))
-                                            .Append(" |")
-                                            .AppendLine();
-                                    }
-                                }
-                            }
                         }
                     }
-
                     return StringBuilderCache.ReturnAndFree(sb);
                 }
 

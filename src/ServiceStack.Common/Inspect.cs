@@ -67,6 +67,21 @@ namespace ServiceStack
         /// <summary>
         /// Print Dump object in Ascii Markdown table
         /// </summary>
-        public static void printDumpTable(object instance) => PclExport.Instance.WriteLine(dumpTable(instance)); 
+        public static void printDumpTable(object instance) => PclExport.Instance.WriteLine(dumpTable(instance));
+        
+        /// <summary>
+        /// Recursively prints the contents of any POCO object to HTML
+        /// </summary>
+        public static string htmlDump(object target) => HtmlScripts.HtmlDump(target, null); 
+
+        /// <summary>
+        /// Recursively prints the contents of any POCO object to HTML
+        /// </summary>
+        public static string htmlDump(object target, HtmlDumpOptions options) => HtmlScripts.HtmlDump(target, options); 
+         
+        /// <summary>
+        /// Print htmlDump object
+        /// </summary>
+        public static void printHtmlDump(object instance) => PclExport.Instance.WriteLine(htmlDump(instance));
     }
 }
