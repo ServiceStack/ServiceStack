@@ -473,5 +473,36 @@ namespace ServiceStack
             return allKeys;
         }
 
+        public static Type FirstElementType(IEnumerable collection, string key)
+        {
+            foreach (var o in collection)
+            {
+                if (o is IEnumerable<KeyValuePair<string, object>> d)
+                {
+                    foreach (var entry in d)
+                    {
+                        if (entry.Key != key) continue;
+                        if (entry.Value == null) continue;
+                        var entryType = entry.Value.GetType();
+                        return Nullable.GetUnderlyingType(entryType) ?? entryType;
+                    }
+                }
+            }
+            foreach (var o in collection)
+            {
+                if (o is IEnumerable<KeyValuePair<string, object>> d)
+                {
+                    foreach (var entry in d)
+                    {
+                        if (entry.Key.EqualsIgnoreCase(key)) continue;
+                        if (entry.Value == null) continue;
+                        var entryType = entry.Value.GetType();
+                        return Nullable.GetUnderlyingType(entryType) ?? entryType;
+                    }
+                }
+            }
+            return typeof(string);
+        }
+        
     }
 }

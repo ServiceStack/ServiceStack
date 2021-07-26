@@ -15,6 +15,7 @@ namespace ServiceStack.Script
         public bool IncludeRowNumbers { get; set; } = true;
         public string Caption { get; set; }
         public List<string> Headers { get; } = new();
+        public List<Type> HeaderTypes { get; set; }
         public List<List<string>> Rows { get; } = new();
         
         public string Render()
@@ -100,8 +101,12 @@ namespace ServiceStack.Script
                 for (i = 0; i < headersCount; i++)
                 {
                     var field = i < row.Count ? row[i] : null;
-                    sb.Append((field ?? "").PadRight(colSize[i], ' '))
-                        .Append( i + 1 < headersCount ? " | " : " |");
+                    var headerType = HeaderTypes?.Count > i ? HeaderTypes[i] : typeof(string);
+                    var cellValue = headerType.IsNumericType() || headerType == typeof(DateTime) || headerType == typeof(TimeSpan)
+                        ? (field ?? "").PadLeft(colSize[i], ' ')
+                        : (field ?? "").PadRight(colSize[i], ' ');
+                    sb.Append(cellValue)
+                      .Append( i + 1 < headersCount ? " | " : " |");
                 }
                 sb.AppendLine();
             }
@@ -148,10 +153,12 @@ namespace ServiceStack.Script
                     {
                         if (keys == null)
                         {
-                            keys = EnumerableExtensions.AllKeysWithDefaultValues(items);
+                            keys = options.Headers?.ToList() ?? EnumerableExtensions.AllKeysWithDefaultValues(items);
+                            table.HeaderTypes ??= new List<Type>();
                             foreach (var key in keys)
                             {
                                 table.Headers.Add(ViewUtils.StyleText(key, headerStyle));
+                                table.HeaderTypes.Add(EnumerableExtensions.FirstElementType(items, key));
                             }
                         }
 

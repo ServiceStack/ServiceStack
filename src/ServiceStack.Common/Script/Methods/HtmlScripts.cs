@@ -64,7 +64,7 @@ namespace ServiceStack.Script
                     {
                         if (keys == null)
                         {
-                            keys = EnumerableExtensions.AllKeysWithDefaultValues(items);
+                            keys = options.Headers?.ToList() ?? EnumerableExtensions.AllKeysWithDefaultValues(items);
                             sbHeader.Append("<tr>");
                             foreach (var key in keys)
                             {

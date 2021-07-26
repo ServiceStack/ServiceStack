@@ -129,6 +129,8 @@ namespace ServiceStack
         public TextStyle HeaderStyle { get; set; }
         public string Caption { get; set; }
         public string CaptionIfEmpty { get; set; }
+        
+        public string[] Headers { get; set; }
         public bool IncludeRowNumbers { get; set; } = true;
 
         public DefaultScripts Defaults { get; set; } = ViewUtils.DefaultScripts;
@@ -138,8 +140,7 @@ namespace ServiceStack
 
         public static TextDumpOptions Parse(Dictionary<string, object> options, DefaultScripts defaults=null)
         {
-            return new TextDumpOptions 
-            {
+            return new() {
                 HeaderStyle = options.TryGetValue("headerStyle", out var oHeaderStyle)
                     ? oHeaderStyle.ConvertTo<TextStyle>()
                     : TextStyle.SplitCase,
@@ -150,7 +151,7 @@ namespace ServiceStack
                     ? captionIfEmpty?.ToString()
                     : null,
                 IncludeRowNumbers = !options.TryGetValue("rowNumbers", out var rowNumbers) 
-                    || (!(rowNumbers is bool b) || b),
+                    || (rowNumbers is not bool b || b),
                 Defaults = defaults ?? ViewUtils.DefaultScripts,
             };
         }
@@ -167,6 +168,8 @@ namespace ServiceStack
         
         public string Caption { get; set; }
         public string CaptionIfEmpty { get; set; }
+        
+        public string[] Headers { get; set; }
 
         public DefaultScripts Defaults { get; set; } = ViewUtils.DefaultScripts;
         

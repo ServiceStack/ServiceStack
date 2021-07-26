@@ -70,9 +70,21 @@ namespace ServiceStack
         public static string dumpTable(object instance, TextDumpOptions options) => DefaultScripts.TextDump(instance, options); 
         
         /// <summary>
+        /// Dump object in Ascii Markdown table using specified column headers
+        /// </summary>
+        public static string dumpTable(object instance, string[] headers) => 
+            DefaultScripts.TextDump(instance, new TextDumpOptions { Headers = headers, IncludeRowNumbers = false }); 
+        
+        /// <summary>
         /// Print Dump object in Ascii Markdown table
         /// </summary>
         public static void printDumpTable(object instance) => PclExport.Instance.WriteLine(dumpTable(instance));
+        
+        /// <summary>
+        /// Print Dump object in Ascii Markdown table using specified column headers
+        /// </summary>
+        public static void printDumpTable(object instance, string[] headers) => 
+            PclExport.Instance.WriteLine(dumpTable(instance, new TextDumpOptions { Headers = headers, IncludeRowNumbers = false }));
         
         /// <summary>
         /// Recursively prints the contents of any POCO object to HTML
@@ -83,10 +95,22 @@ namespace ServiceStack
         /// Recursively prints the contents of any POCO object to HTML
         /// </summary>
         public static string htmlDump(object target, HtmlDumpOptions options) => HtmlScripts.HtmlDump(target, options); 
+
+        /// <summary>
+        /// Recursively prints the contents of any POCO object to HTML with specified columns
+        /// </summary>
+        public static string htmlDump(object target, string[] headers) => 
+            HtmlScripts.HtmlDump(target, new HtmlDumpOptions { Headers = headers }); 
          
         /// <summary>
         /// Print htmlDump object
         /// </summary>
         public static void printHtmlDump(object instance) => PclExport.Instance.WriteLine(htmlDump(instance));
+         
+        /// <summary>
+        /// Print htmlDump object with specified columns
+        /// </summary>
+        public static void printHtmlDump(object instance, string[] headers) => 
+            PclExport.Instance.WriteLine(htmlDump(instance, headers));
     }
 }
