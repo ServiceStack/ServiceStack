@@ -206,7 +206,8 @@ namespace ServiceStack.NativeTypes.FSharp
         private string AppendType(ref StringBuilderWrapper sb, MetadataType type, string lastNS,
             CreateTypeOptions options)
         {
-            sb = sb.Indent();
+            if (!Config.ExcludeNamespace)
+                sb = sb.Indent();
 
             sb.AppendLine();
             AppendComments(sb, type.Description);
@@ -292,7 +293,9 @@ namespace ServiceStack.NativeTypes.FSharp
             
             PostTypeFilter?.Invoke(sb, type);
 
-            sb = sb.UnIndent();
+            if (!Config.ExcludeNamespace)
+                sb = sb.UnIndent();
+            
             return lastNS;
         }
 
