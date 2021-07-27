@@ -1,5 +1,10 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
+using ServiceStack.Logging;
 using ServiceStack.Script;
 using ServiceStack.Text;
 
@@ -52,7 +57,36 @@ namespace ServiceStack
         /// <summary>
         /// Recursively prints the contents of any POCO object in a human-friendly, readable format
         /// </summary>
-        public static string dump<T>(T instance) => instance.Dump();
+        public static string dump<T>(T instance)
+        {
+            try
+            {
+                // convert into common common collection type for generic dump routine 
+                var use = UseType(instance);
+                return dumpInternal(use);
+            }
+            catch (Exception e)
+            {
+                var log = LogManager.GetLogger(typeof(Inspect));
+                if (log.IsDebugEnabled)
+                    log.Debug($"Could not pretty print {typeof(T).Name}", e);
+            }
+            return instance.Dump();
+        }
+
+        private static object UseType<T>(T instance)
+        {
+            if (typeof(T).IsValueType || typeof(T) == typeof(string))
+                return instance;
+            if (instance is IEnumerable e)
+            {
+                var elType = EnumerableUtils.FirstOrDefault(e);
+                if (elType?.GetType().GetTypeWithGenericTypeDefinitionOf(typeof(KeyValuePair<,>)) != null)
+                    return instance.ToObjectDictionary();
+                return new List<object>(e.Cast<object>());
+            }
+            return instance.ToObjectDictionary();
+        }
 
         /// <summary>
         /// Print Dump to Console.WriteLine
@@ -112,5 +146,94 @@ namespace ServiceStack
         /// </summary>
         public static void printHtmlDump(object instance, string[] headers) => 
             PclExport.Instance.WriteLine(htmlDump(instance, headers));
+
+        private static string dumpInternal(object instance)
+        {
+            if (instance is Dictionary<string, object> obj)
+            {
+                var sb = StringBuilderCache.Allocate();
+                var keyLen = obj.Keys.Map(x => x.Length).Max() + 2;
+                foreach (var entry in obj)
+                {
+                    var k = entry.Key;
+                    var value = entry.Value;
+                    var key = k + ":";
+                    if (value is Dictionary<string, object> nestedObj)
+                    {
+                        if (nestedObj.Count > 0)
+                        {
+                            sb.AppendLine($"{key}");
+                            sb.AppendLine(nestedObj.Dump());
+                        }
+                    }
+                    else if (value is List<object> nestedList)
+                    {
+                        if (nestedList.Count > 0)
+                        {
+                            sb.AppendOneNewLine();
+                            if (nestedList.Count == 1)
+                            {
+                                sb.AppendLine($"[{k}]");
+                                sb.AppendLine(dumpInternal(nestedList[0]));
+                            }
+                            else
+                            {
+                                var showNakedList = nestedList
+                                    .All(x => x is not Dictionary<string, object> and not List<object>);
+                                var showTable = nestedList
+                                    .All(x => x is Dictionary<string, object> nestedItem && nestedItem.Values
+                                        .All(y => y is not Dictionary<string, object> and not List<object>));
+
+                                sb.AppendLine(key);
+                                if (showNakedList)
+                                {
+                                    foreach (var item in nestedList)
+                                    {
+                                        sb.AppendLine($"  {item}");
+                                    }
+                                }
+                                else if (showTable)
+                                {
+                                    sb.AppendLine(nestedList.DumpTable());
+                                }
+                                else
+                                {
+                                    sb.AppendLine(nestedList.Dump());
+                                }
+                            }
+                            sb.AppendOneNewLine();
+                        }
+                    }
+                    else
+                    {
+                        sb.AppendLine($"{key.PadRight(keyLen, ' ')} {value}");
+                    }
+                }
+                return StringBuilderCache.ReturnAndFree(sb).TrimStart();
+            }
+            if (instance is List<object> list)
+                return list.DumpTable();
+            return instance.Dump();
+        }
+
+        private static StringBuilder AppendOneNewLine(this StringBuilder sb)
+        {
+            if (sb.Length <= 2)
+            {
+                sb.AppendLine();
+            }
+            else
+            {
+                var c1 = sb[sb.Length - 1];
+                var c2 = sb[sb.Length - 2];
+
+                var hasNewLine = c1 == '\n' && c2 == '\n'
+                    || (sb.Length > 4 && c1 == '\n' && c2 == '\r' && sb[sb.Length - 3] == '\n' && sb[sb.Length - 4] == '\r');
+
+                if (!hasNewLine)
+                    sb.AppendLine();
+            }
+            return sb;
+        }
     }
 }
