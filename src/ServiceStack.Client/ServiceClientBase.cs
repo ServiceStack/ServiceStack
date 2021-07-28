@@ -8,6 +8,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using ServiceStack.Logging;
@@ -294,8 +295,6 @@ namespace ServiceStack
             set => asyncClient.Proxy = this.proxy = value;
         }
 
-        private ICredentials credentials;
-
         /// <summary>
         /// Gets or sets authentication information for the request.
         /// Warning: It's recommend to use <see cref="UserName"/> and <see cref="Password"/> for basic auth.
@@ -310,6 +309,7 @@ namespace ServiceStack
                 this.asyncClient.Credentials = value;
             }
         }
+        private ICredentials credentials;
 
         /// <summary>
         /// Determines if the basic auth header should be sent with every request.
@@ -457,6 +457,36 @@ namespace ServiceStack
         }
         private Action<HttpWebResponse> responseFilter;
 
+        public StringBuilder HttpLog
+        {
+            get => httpLog;
+            set
+            {
+                httpLog = value;
+                asyncClient.HttpLog = value;
+            }
+        }
+        private StringBuilder httpLog;
+        public Action<StringBuilder> HttpLogFilter { get; set; }
+
+        public void CaptureHttp(bool print = false, bool log = false, bool clear = true)
+        {
+            CaptureHttp(sb => {
+                if (print)
+                    PclExport.Instance.WriteLine(sb.ToString());
+                if (log && ServiceClientBase.log?.IsDebugEnabled == true)
+                    ServiceClientBase.log.Debug(sb.ToString());
+                if (clear)
+                    sb.Clear();
+            });
+        }
+
+        public void CaptureHttp(Action<StringBuilder> httpFilter)
+        {
+            HttpLog ??= new StringBuilder();
+            asyncClient.HttpLogFilter = HttpLogFilter = httpFilter;
+        }
+
         public UrlResolverDelegate UrlResolver { get; set; }
 
         public TypedUrlResolverDelegate TypedUrlResolver { get; set; }
@@ -595,8 +625,8 @@ namespace ServiceStack
             if (ResultsFilter != null)
             {
                 var response = ResultsFilter(typeof(TResponse), httpMethod, requestUri, request);
-                if (response is TResponse)
-                    return (TResponse)response;
+                if (response is TResponse res)
+                    return res;
             }
 
             var client = SendRequest(httpMethod, requestUri, request);
@@ -779,8 +809,7 @@ namespace ServiceStack
             }
         }
 
-        readonly ConcurrentDictionary<Type, Action<Exception, string>> ResponseHandlers
-            = new ConcurrentDictionary<Type, Action<Exception, string>>();
+        readonly ConcurrentDictionary<Type, Action<Exception, string>> ResponseHandlers = new();
 
         protected void ThrowResponseTypeException<TResponse>(object request, Exception ex, string requestUri)
         {
@@ -877,17 +906,36 @@ namespace ServiceStack
         
         protected virtual void SerializeRequestToStream(object request, Stream requestStream, bool keepOpen=false)
         {
+            HttpLog?.AppendLine();
+            
             if (request is string str)
             {
                 requestStream.Write(str);
+                HttpLog?.AppendLine(str);
             }
             else if (request is byte[] bytes)
             {
                 requestStream.Write(bytes, 0, bytes.Length);
+                HttpLog?.Append("(base64) ");
+                HttpLog?.AppendLine(Convert.ToBase64String(bytes));
             }
             else if (request is Stream stream)
             {
                 stream.WriteTo(requestStream);
+
+                if (HttpLog != null)
+                {
+                    if (stream.CanSeek)
+                    {
+                        stream.Position = 0;
+                        HttpLog.Append("(base64) ");
+                        HttpLog.AppendLine(Convert.ToBase64String(stream.ReadFully()));
+                    }
+                    else
+                    {
+                        HttpLog.Append("(non-seekable stream)");
+                    }
+                }
             }
             else
             {
@@ -899,12 +947,34 @@ namespace ServiceStack
                 {
                     requestStream = new System.IO.Compression.GZipStream(requestStream, System.IO.Compression.CompressionMode.Compress);
                 }
-                SerializeToStream(null, request, requestStream);
+
+                if (HttpLog == null)
+                {
+                    SerializeToStream(null, request, requestStream);
+                }
+                else
+                {
+                    using var ms = MemoryStreamFactory.GetStream();
+                    SerializeToStream(null, request, ms);
+                    ms.Position = 0;
+
+                    if (ContentType.IsBinary())
+                    {
+                        HttpLog.Append("(base64) ");
+                        HttpLog.AppendLine(Convert.ToBase64String(ms.ReadFully()));
+                    }
+                    else
+                    {
+                        var text = ms.ReadToEnd();
+                        HttpLog.AppendLine(text);
+                    }
+
+                    ms.Position = 0;
+                    ms.CopyTo(requestStream);
+                }
 
                 if (!keepOpen)
-                {
                     requestStream.Close();
-                }
             }
         }
 
@@ -970,19 +1040,30 @@ namespace ServiceStack
                     if (RequestCompressionType != null)
                         client.Headers[HttpHeaders.ContentEncoding] = RequestCompressionType;
 
+                    if (HttpLog != null)
+                        client.AppendHttpRequestHeaders(HttpLog, new Uri(BaseUri));
+
                     sendRequestAction?.Invoke(client);
                 }
+                else
+                {
+                    if (HttpLog != null)
+                        client.AppendHttpRequestHeaders(HttpLog, new Uri(BaseUri));
+                }
+            
+                HttpLog?.AppendLine();
             }
             catch (AuthenticationException ex)
             {
                 throw WebRequestUtils.CreateCustomException(requestUri, ex) ?? ex;
             }
+            
             return client;
         }
 
         private void ApplyWebResponseFilters(WebResponse webResponse)
         {
-            if (!(webResponse is HttpWebResponse)) return;
+            if (webResponse is not HttpWebResponse) return;
 
             ResponseFilter?.Invoke((HttpWebResponse)webResponse);
             GlobalResponseFilter?.Invoke((HttpWebResponse)webResponse);
@@ -1369,7 +1450,7 @@ namespace ServiceStack
         /// <summary>
         /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Get(url)) { ... }
         /// </summary>
-        [Obsolete("Use: using (client.Get<HttpWebResponse>(requestDto) { }")]
+        [Obsolete("Use: using var res = client.Get<HttpWebResponse>(requestDto)")]
         public virtual HttpWebResponse Get(object requestDto)
         {
             return Send<HttpWebResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null);
@@ -1378,7 +1459,7 @@ namespace ServiceStack
         /// <summary>
         /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Get(url)) { ... }
         /// </summary>
-        [Obsolete("Use: using (client.Get<HttpWebResponse>(relativeOrAbsoluteUrl) { }")]
+        [Obsolete("Use: using var res = client.Get<HttpWebResponse>(relativeOrAbsoluteUrl)")]
         public virtual HttpWebResponse Get(string relativeOrAbsoluteUrl)
         {
             return Send<HttpWebResponse>(HttpMethods.Get, ResolveUrl(HttpMethods.Get, relativeOrAbsoluteUrl), null);
@@ -1829,39 +1910,65 @@ namespace ServiceStack
             return response;
         }
 
-        private static void DisposeIfRequired<TResponse>(WebResponse webResponse)
+        private void DisposeIfRequired<TResponse>(WebResponse webResponse)
         {
             if (typeof(TResponse) == typeof(HttpWebResponse) && webResponse is HttpWebResponse)
                 return;
             if (typeof(TResponse) == typeof(Stream))
                 return;
 
+            if (HttpLog != null)
+                HttpLogFilter?.Invoke(HttpLog);
+            
             using (webResponse) { }
         }
 
-        protected TResponse GetResponse<TResponse>(WebResponse webResponse)
+        protected TResponse GetResponse<TResponse>(WebResponse webRes)
         {
             //Callee Needs to dispose of response manually
-            if (typeof(TResponse) == typeof(HttpWebResponse) && webResponse is HttpWebResponse)
+            if (typeof(TResponse) == typeof(HttpWebResponse) && webRes is HttpWebResponse)
             {
-                return (TResponse)Convert.ChangeType(webResponse, typeof(TResponse), null);
+                return (TResponse)Convert.ChangeType(webRes, typeof(TResponse), null);
             }
             if (typeof(TResponse) == typeof(Stream))
             {
-                return (TResponse)(object)webResponse.ResponseStream();
+                return (TResponse)(object)webRes.ResponseStream();
             }
 
-            using var responseStream = webResponse.ResponseStream();
+            using var responseStream = webRes.ResponseStream();
+            var stream = responseStream;
+            
+            if (HttpLog != null)
+            {
+                stream = new MemoryStream();
+                responseStream.CopyTo(stream);
+                stream.Position = 0;
+                
+                ((HttpWebResponse)webRes).AppendHttpResponseHeaders(HttpLog);
+                var isBinary = typeof(TResponse) == typeof(Stream) || typeof(TResponse) == typeof(byte[]) || ContentType.IsBinary();
+                if (isBinary)
+                {
+                    HttpLog.Append("(base64) ");
+                    HttpLog.AppendLine(Convert.ToBase64String(stream.ReadFully()));
+                }
+                else
+                {
+                    HttpLog.AppendLine(stream.ReadToEnd());
+                }
+                HttpLog.AppendLine().AppendLine();
+                stream.Position = 0;
+            }
+            
             if (typeof(TResponse) == typeof(string))
             {
-                return (TResponse)(object)responseStream.ReadToEnd();
+                return (TResponse)(object)stream.ReadToEnd();
             }
             if (typeof(TResponse) == typeof(byte[]))
             {
-                return (TResponse)(object)responseStream.ReadFully();
+                return (TResponse)(object)stream.ReadFully();
             }
 
-            var response = DeserializeFromStream<TResponse>(responseStream);
+            var response = DeserializeFromStream<TResponse>(stream);
             return response;
         }
 

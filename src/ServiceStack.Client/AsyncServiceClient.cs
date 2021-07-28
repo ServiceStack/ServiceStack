@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Logging;
@@ -130,6 +131,9 @@ namespace ServiceStack
 
         public string BearerToken { get; set; }
 
+        public StringBuilder HttpLog { get; set; }
+        public Action<StringBuilder> HttpLogFilter { get; set; }
+
         public static bool DisableTimer { get; set; }
 
         public Dictionary<string, string> GetCookieValues()
@@ -240,13 +244,23 @@ namespace ServiceStack
                    if (RequestCompressionType != null)
                         webReq.Headers[HttpHeaders.ContentEncoding] = RequestCompressionType;
 
+                   if (HttpLog != null)
+                       webReq.AppendHttpRequestHeaders(HttpLog, new Uri(BaseUri));
+                
                    using var requestStream = await webReq.GetRequestStreamAsync().ConfigAwait();
                    token.ThrowIfCancellationRequested();
+                   
                    if (request != null)
                    {
                        StreamSerializer(null, request, requestStream);
                    }
                 }
+                else
+                {
+                    if (HttpLog != null)
+                        webReq.AppendHttpRequestHeaders(HttpLog, new Uri(BaseUri));
+                }
+                HttpLog?.AppendLine();
             }
             catch (Exception ex)
             {
@@ -287,6 +301,27 @@ namespace ServiceStack
                     try
                     {
                         ms.Position = 0;
+
+                        if (HttpLog != null)
+                        {
+                            webRes.AppendHttpResponseHeaders(HttpLog);
+                            var isBinary = typeof(T) == typeof(Stream) || typeof(T) == typeof(byte[]) || ContentType.IsBinary();
+                            if (isBinary)
+                            {
+                                if (ms.Length > 0)
+                                {
+                                    HttpLog.Append("(base64) ");
+                                    HttpLog.AppendLine(Convert.ToBase64String(ms.ReadFully()));
+                                }
+                            }
+                            else
+                            {
+                                HttpLog.AppendLine(ms.ReadToEnd());
+                            }
+                            HttpLog.AppendLine().AppendLine();
+                            ms.Position = 0;
+                        }
+                        
                         if (typeof(T) == typeof(Stream))
                         {
                             return Complete((T) (object) ms);
@@ -321,6 +356,9 @@ namespace ServiceStack
                     }
                     finally
                     {
+                        if (HttpLog != null)
+                            HttpLogFilter?.Invoke(HttpLog);
+                        
                         responseStream.Close();
                     }
                 }

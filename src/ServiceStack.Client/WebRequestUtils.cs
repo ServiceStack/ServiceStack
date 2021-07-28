@@ -346,6 +346,61 @@ namespace ServiceStack
             }
             return webReq;
         }
-        
+
+        public static void AppendHttpRequestHeaders(this HttpWebRequest webReq, StringBuilder sb, Uri baseUri = null)
+        {
+            if (webReq == null)
+                throw new ArgumentNullException(nameof(webReq));
+            if (sb == null)
+                throw new ArgumentNullException(nameof(sb));
+
+            var uri = webReq.RequestUri;
+            if (baseUri == null)
+                baseUri = new Uri($"{uri.Scheme}://{uri.Authority}");
+
+            sb.AppendLine($"{webReq.Method} {uri.PathAndQuery} HTTP/{webReq.ProtocolVersion}");
+            var port = uri.Port != 80 && uri.Port != 443 ? $":{uri.Port}" : "";
+            sb.AppendLine($"Host: {uri.Host}{port}");
+            for(var i = 0; i < webReq.Headers.Count; ++i)
+            {
+                var header = webReq.Headers.GetKey(i);
+                var values = webReq.Headers.GetValues(i);
+                if (values == null) continue;
+                foreach(var value in values)
+                {
+                    sb.AppendLine($"{header}: {value}");
+                }
+            }
+
+            var cookies = webReq.CookieContainer.GetCookies(baseUri);
+            if (cookies.Count > 0)
+            {
+                sb.Append("Cookie: ");
+                foreach (Cookie cookie in cookies)
+                {
+                    if (sb.Length > 0)
+                        sb.Append("; ");
+                    sb.Append(cookie.Name).Append('=').Append(cookie.Value);
+                }
+                sb.AppendLine();
+            }
+        }
+
+        public static void AppendHttpResponseHeaders(this HttpWebResponse webRes, StringBuilder sb)
+        {
+            sb.AppendLine($"HTTP/{webRes.ProtocolVersion} {(int)webRes.StatusCode} {webRes.StatusDescription}");
+            for (var i = 0; i < webRes.Headers.Count; ++i)
+            {
+                var header = webRes.Headers.GetKey(i);
+                var values = webRes.Headers.GetValues(i);
+                if (values == null) continue;
+                foreach(var value in values)
+                {
+                    sb.AppendLine($"{header}: {value}");
+                }
+            }
+            sb.AppendLine();
+        }
+
     }
 }

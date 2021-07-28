@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -19,7 +20,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public override IServiceClient GetClient()
         {
-            return new JsonServiceClient(BaseUrl);
+            var client = new JsonServiceClient(BaseUrl);
+            client.CaptureHttp(print:true);
+            return client;
         }
 
         [Test]
@@ -32,8 +35,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var cacheKey = "{0} {1}".Fmt(method, uri);
                 Assert.That(cacheKey, Is.EqualTo("GET {0}json/reply/GetCustomer?customerId=5".Fmt(client.BaseUri)));
-                object entry;
-                cache.TryGetValue(cacheKey, out entry);
+                cache.TryGetValue(cacheKey, out var entry);
                 return entry;
             };
             client.ResultsFilterResponse = (webRes, res, method, uri, request) =>
@@ -58,8 +60,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var cacheKey = "{0} {1}".Fmt(method, uri);
                 Assert.That(cacheKey, Is.EqualTo("GET {0}json/reply/GetCustomer?customerId=5".Fmt(client.BaseUri)));
-                object entry;
-                cache.TryGetValue(cacheKey, out entry);
+                cache.TryGetValue(cacheKey, out var entry);
                 return entry;
             };
             client.ResultsFilterResponse = (webRes, res, method, uri, request) =>
@@ -179,7 +180,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         : ServiceClientTestBase
     {
         /// <summary>
-        /// These tests require admin privillages
+        /// These tests require admin privileges
         /// </summary>
         /// <returns></returns>
         public override AppHostHttpListenerBase CreateListener()
@@ -221,6 +222,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             client.AddHeader("Foo", "Bar");
 
             var response = await client.GetAsync(new EchoRequestInfo());
+
+            Assert.That(response.Headers["Foo"], Is.EqualTo("Bar"));
+        }
+
+        [Test]
+        public void Does_add_HttpHeaders_for_Post()
+        {
+            client.AddHeader("Foo", "Bar");
+
+            var response = client.Post(new EchoRequestInfo());
 
             Assert.That(response.Headers["Foo"], Is.EqualTo("Bar"));
         }
@@ -364,7 +375,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         : ServiceClientTestBase
     {
         /// <summary>
-        /// These tests require admin privillages
+        /// These tests require admin privileges
         /// </summary>
         /// <returns></returns>
         public override AppHostHttpListenerBase CreateListener()
