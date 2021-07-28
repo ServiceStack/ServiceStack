@@ -305,21 +305,21 @@ namespace ServiceStack
                         if (HttpLog != null)
                         {
                             webRes.AppendHttpResponseHeaders(HttpLog);
-                            var isBinary = typeof(T) == typeof(Stream) || typeof(T) == typeof(byte[]) || ContentType.IsBinary();
-                            if (isBinary)
+                            if (webRes.ContentLength != 0 && webRes.StatusCode != HttpStatusCode.NoContent)
                             {
-                                if (ms.Length > 0)
+                                var isBinary = typeof(T) == typeof(Stream) || typeof(T) == typeof(byte[]) || ContentType.IsBinary();
+                                if (isBinary)
                                 {
                                     HttpLog.Append("(base64) ");
                                     HttpLog.AppendLine(Convert.ToBase64String(ms.ReadFully()));
                                 }
+                                else
+                                {
+                                    HttpLog.AppendLine(ms.ReadToEnd());
+                                }
+                                HttpLog.AppendLine().AppendLine();
+                                ms.Position = 0;
                             }
-                            else
-                            {
-                                HttpLog.AppendLine(ms.ReadToEnd());
-                            }
-                            HttpLog.AppendLine().AppendLine();
-                            ms.Position = 0;
                         }
                         
                         if (typeof(T) == typeof(Stream))

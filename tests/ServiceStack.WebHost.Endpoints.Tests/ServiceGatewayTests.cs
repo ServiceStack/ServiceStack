@@ -450,7 +450,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public override void Configure(Container container)
             {
                 container.Register<IMessageFactory>(c => new MessageFactory());
-                container.Register<IServiceGateway>(c => new JsonServiceClient(Tests.Config.ListeningOn));
+                var client = new JsonServiceClient(Tests.Config.ListeningOn);
+                // client.CaptureHttp(print:true);
+                container.Register<IServiceGateway>(c => client);
                 
                 Plugins.Add(new ValidationFeature());
                 container.RegisterValidator(typeof(SGSyncPostValidationInternalValidator));
@@ -523,6 +525,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .Start(Config.ListeningOn);
 
             client = new JsonServiceClient(Config.ListeningOn);
+            // ((JsonServiceClient) client).CaptureHttp(print:true);
         }
 
         [OneTimeTearDown]

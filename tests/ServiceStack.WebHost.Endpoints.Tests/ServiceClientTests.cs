@@ -21,7 +21,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public override IServiceClient GetClient()
         {
             var client = new JsonServiceClient(BaseUrl);
-            client.CaptureHttp(print:true);
+            // client.CaptureHttp(print:true);
             return client;
         }
 

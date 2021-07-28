@@ -1945,15 +1945,19 @@ namespace ServiceStack
                 stream.Position = 0;
                 
                 ((HttpWebResponse)webRes).AppendHttpResponseHeaders(HttpLog);
-                var isBinary = typeof(TResponse) == typeof(Stream) || typeof(TResponse) == typeof(byte[]) || ContentType.IsBinary();
-                if (isBinary)
+                if (webRes.ContentLength != 0 && ((HttpWebResponse) webRes).StatusCode != HttpStatusCode.NoContent)
                 {
-                    HttpLog.Append("(base64) ");
-                    HttpLog.AppendLine(Convert.ToBase64String(stream.ReadFully()));
-                }
-                else
-                {
-                    HttpLog.AppendLine(stream.ReadToEnd());
+                    var isBinary = typeof(TResponse) == typeof(Stream) || typeof(TResponse) == typeof(byte[]) || ContentType.IsBinary();
+                    if (isBinary)
+                    {
+                    
+                        HttpLog.Append("(base64) ");
+                        HttpLog.AppendLine(Convert.ToBase64String(stream.ReadFully()));
+                    }
+                    else
+                    {
+                        HttpLog.AppendLine(stream.ReadToEnd());
+                    }
                 }
                 HttpLog.AppendLine().AppendLine();
                 stream.Position = 0;
