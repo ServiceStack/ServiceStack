@@ -465,8 +465,8 @@ namespace ServiceStack
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
-            var csharp = new GrpcProtoGenerator(typesConfig).GetCode(metadataTypes, base.Request);
-            return csharp;
+            var proto = new GrpcProtoGenerator(typesConfig).GetCode(metadataTypes, base.Request);
+            return proto;
         }
     }
 
