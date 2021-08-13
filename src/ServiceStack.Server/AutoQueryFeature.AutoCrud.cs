@@ -256,8 +256,7 @@ namespace ServiceStack
         public GetMemberDelegate RowVersionGetter { get; set; }
         public bool SoftDelete { get; set; }
         
-        static readonly ConcurrentDictionary<Type, AutoCrudMetadata> cache = 
-            new ConcurrentDictionary<Type, AutoCrudMetadata>();
+        static readonly ConcurrentDictionary<Type, AutoCrudMetadata> cache = new();
 
         internal static AutoCrudMetadata Create(Type dtoType)
         {

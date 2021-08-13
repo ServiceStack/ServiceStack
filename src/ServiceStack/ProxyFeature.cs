@@ -37,7 +37,7 @@ namespace ServiceStack
         /// </summary>
         public Func<IHttpResponse, Stream, Task<Stream>> TransformResponse { get; set; }
 
-        public HashSet<string> IgnoreResponseHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+        public HashSet<string> IgnoreResponseHeaders = new(StringComparer.OrdinalIgnoreCase) {
             HttpHeaders.TransferEncoding
         };
 
@@ -81,7 +81,7 @@ namespace ServiceStack
         public Action<IHttpResponse, HttpWebResponse> ProxyResponseFilter { get; set; }
         public Func<IHttpRequest, Stream, Task<Stream>> TransformRequest { get; set; }
         public Func<IHttpResponse, Stream, Task<Stream>> TransformResponse { get; set; }
-        public HashSet<string> IgnoreResponseHeaders { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+        public HashSet<string> IgnoreResponseHeaders { get; set; } = new(StringComparer.OrdinalIgnoreCase) {
             HttpHeaders.TransferEncoding
         };
 
