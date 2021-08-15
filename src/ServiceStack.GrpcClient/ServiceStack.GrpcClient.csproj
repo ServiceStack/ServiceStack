@@ -12,8 +12,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Grpc.Net.Client" Version="2.36.0" />
-        <PackageReference Include="Grpc.Core" Version="2.36.4" />
+        <PackageReference Include="Grpc.Net.Client" Version="2.38.0" />
+        <PackageReference Include="Grpc.Core" Version="2.39.1" />
         <PackageReference Include="protobuf-net.Grpc" Version="1.0.152" />
         <!-- the transitive import of protobuf-net is lower; we need at least this -->
         <PackageReference Include="protobuf-net" Version="3.0.101" />

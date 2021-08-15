@@ -92,7 +92,7 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="ServiceStack.OrmLite" Version="$(Version)" />
     <PackageReference Include="ServiceStack.Redis" Version="$(Version)" />
     <PackageReference Include="ServiceStack.Text" Version="$(Version)" />

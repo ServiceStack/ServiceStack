@@ -16,6 +16,6 @@
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
     <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
   </ItemGroup>
 </Project>

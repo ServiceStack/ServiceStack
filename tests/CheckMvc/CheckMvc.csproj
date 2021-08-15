@@ -186,7 +186,7 @@
     <PackageReference Include="Microsoft.AspNet.WebApi.WebHost" Version="5.2.7" />
     <PackageReference Include="Microsoft.AspNet.WebPages" Version="3.2.7" />
     <PackageReference Include="Microsoft.Bcl.Build" Version="1.0.21" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.Web.Infrastructure" Version="1.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Include="NUnit" Version="3.12.0" />

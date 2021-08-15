@@ -181,7 +181,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Npgsql" Version="4.1.9" />
     <PackageReference Include="NUnit" Version="3.12.0" />
-    <PackageReference Include="RavenDB.Client" Version="5.1.5" />
+    <PackageReference Include="RavenDB.Client" Version="5.2.1" />
     <PackageReference Include="ServiceStack.Common" Version="$(Version)" />
     <PackageReference Include="ServiceStack.Interfaces" Version="$(Version)" />
     <PackageReference Include="ServiceStack.OrmLite" Version="$(Version)" />

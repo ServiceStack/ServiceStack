@@ -19,9 +19,9 @@
         <PackageReference Include="ServiceStack.OrmLite" Version="$(Version)" />
         <PackageReference Include="ServiceStack.OrmLite.Sqlite" Version="$(Version)" />
         <PackageReference Include="ServiceStack.OrmLite.SqlServer" Version="$(Version)" />
-        <PackageReference Include="Grpc.Net.Client" Version="2.36.0" />
-        <PackageReference Include="Grpc.Core.Api" Version="2.36.4" />
-        <PackageReference Include="Grpc.Core" Version="2.36.4" />
+        <PackageReference Include="Grpc.Net.Client" Version="2.38.0" />
+        <PackageReference Include="Grpc.Core.Api" Version="2.39.1" />
+        <PackageReference Include="Grpc.Core" Version="2.39.1" />
         <PackageReference Include="Google.Protobuf" Version="3.12.2" />
         
         <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
