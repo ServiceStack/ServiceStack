@@ -34,7 +34,7 @@ namespace ServiceStack
     {
         private static ILog log = LogManager.GetLogger(typeof(GenerateCrudServices));
         
-        public List<string> IncludeCrudOperations { get; set; } = new List<string> {
+        public List<string> IncludeCrudOperations { get; set; } = new() {
             AutoCrudOperation.Query,
             AutoCrudOperation.Create,
             AutoCrudOperation.Update,
@@ -45,7 +45,7 @@ namespace ServiceStack
         /// <summary>
         /// Generate services 
         /// </summary>
-        public List<CreateCrudServices> CreateServices { get; set; } = new List<CreateCrudServices>();
+        public List<CreateCrudServices> CreateServices { get; set; } = new();
 
         /// <summary>
         /// Customize AutoGen Operation Generation

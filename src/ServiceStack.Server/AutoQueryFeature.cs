@@ -463,8 +463,7 @@ namespace ServiceStack
                     }
                     else
                     {
-                        double d;
-                        if (!arg.EqualsOrdinal("*") && !double.TryParse(arg.ToString(), out d))
+                        if (!arg.EqualsOrdinal("*") && !double.TryParse(arg.ToString(), out _))
                         {
                             cmd.Args[i] = "{0}".SqlFmt(arg).AsMemory();
                         }

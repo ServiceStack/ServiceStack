@@ -404,6 +404,9 @@ FORM [type=checkbox]+label, FORM label+[type=checkbox] {
 .text-opacity-70{--tw-text-opacity:0.7}.text-opacity-75{--tw-text-opacity:0.75}.text-opacity-80{--tw-text-opacity:0.8}
 .text-opacity-90{--tw-text-opacity:0.9}.text-opacity-95{--tw-text-opacity:0.95}.text-opacity-100{--tw-text-opacity:1}
 
+.underline{text-decoration:underline}
+.whitespace-normal{white-space:normal}.whitespace-nowrap{white-space:nowrap}.whitespace-pre{white-space:pre}
+
 .border-transparent{border-color:transparent}  .border-current{border-color:currentColor}
 .border{border-width:1px}.border-0{border-width:0}.border-2{border-width:2px}.border-4{border-width:4px}.border-8{border-width:8px}
 .border-t-0{border-top-width:0}.border-r-0{border-right-width:0}.border-b-0{border-bottom-width:0}.border-l-0{border-left-width:0}
@@ -482,13 +485,18 @@ FORM [type=checkbox]+label, FORM label+[type=checkbox] {
 .divide-x-reverse > * + *{--tw-divide-x-reverse:1}
 
 .w-3{width:.75rem}.w-4{width:1rem}.w-5{width:1.25rem}.w-5\.5{width:1.375rem}.w-6{width:1.5rem}.w-8{width:2rem}.w-10{width:2.5rem}.w-12{width:3rem}.w-15{width:3.75rem}.w-18{width:4.5rem}.w-20{width:5rem}.w-25{width:6.25rem}.w-30{width:7.5rem}.w-40{width:10rem}.w-50{width:12.5rem}.w-60{width:15rem}.w-70{width:17.5rem}.w-80{width:20rem}.w-100{width:25rem}.w-full{width:100%}.w-screen{width:100vw}.w-min{width:min-content}.w-max{width:max-content}
-.w-1\/2{width:50%}.w-1\/3{width:33.333333%}.w-2\/3{width:66.666667%}.w-1\/4{width:25%}.w-3\/4{width:75%}.w-1\/5{width:20%}.w-2\/5{width:40%}.w-1\/6{width:16.666667%}.w-1\/8{width:12.5%}.w-1\/10{width:10%}
-.h-3{height:.75rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-5\.5{height:1.375rem}.h-6{height:1.5rem}.h-8{height:2rem}.h-10{height:2.5rem}.h-12{height:3rem}.h-15{height:3.75rem}.h-18{height:4.5rem}.h-20{height:5rem}.h-25{height:6.25rem}.h-30{height:7.5rem}.h-40{height:10rem}.h-50{height:12.5rem}.h-60{height:15rem}.h-70{height:17.5rem}.h-80{height:20rem}.h-100{height:25rem}.h-full{height:100%}.h-screen{height:100vh}
+.w-auto{width:auto}.w-1\/2{width:50%}.w-1\/3{width:33.333333%}.w-2\/3{width:66.666667%}.w-1\/4{width:25%}.w-3\/4{width:75%}.w-1\/5{width:20%}.w-2\/5{width:40%}.w-1\/6{width:16.666667%}.w-1\/8{width:12.5%}.w-1\/10{width:10%}
+.h-3{height:.75rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-5\.5{height:1.375rem}.h-6{height:1.5rem}.h-8{height:2rem}.h-10{height:2.5rem}.h-12{height:3rem}.h-15{height:3.75rem}.h-18{height:4.5rem}.h-20{height:5rem}.h-25{height:6.25rem}.h-30{height:7.5rem}.h-40{height:10rem}.h-50{height:12.5rem}.h-60{height:15rem}.h-70{height:17.5rem}.h-80{height:20rem}.h-100{height:25rem}.h-full{height:100%}.h-screen{height:100vh}.h-auto{height:auto}
 .max-w-0{max-width:0}.max-w-none{max-width:none}.max-w-full{max-width:100%}
 .max-w-prose{max-width:65ch}.max-w-screen-sm{max-width:640px}.max-w-screen-md{max-width:768px}.max-w-screen-lg{max-width:1024px}.max-w-screen-xl{max-width:1280px}.max-w-screen-2xl{max-width:1536px}
 .max-h-0{max-height:0}.max-h-full{max-width:100%}.max-h-screen{max-width:100vh}
+.max-h-4{max-height: 1rem;}
+.max-h-32{max-height: 8rem;}
+.max-h-64{max-height: 16rem;}
 .min-w-0{min-width:0}.min-w-full{min-width:100%}.min-w-min{min-width:min-content}.min-w-max{min-width:max-content}
+.min-w-4{min-width:1rem}.min-w-6{min-width:1.5rem}.min-w-8{min-width:2rem}.min-w-12{min-width:3rem}
 .min-h-0{min-height:0}.min-h-full{min-height:100%}.min-h-screen{min-height:100vh}
+.min-h-4{min-height:1rem}.min-h-6{min-height:1.5rem}.min-h-8{min-height:2rem}.min-h-12{min-height:3rem}
 
 .p-0{padding:0}.p-1{padding:0.25rem}.p-2{padding:0.5rem}.p-3{padding:0.75rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.p-8{padding:2rem}
 .pt-0{padding-top:0}.pt-1{padding-top:0.25rem}.pt-2{padding-top:0.75rem}.pt-3{padding-top:0.75rem}.pt-4{padding-top:1rem}.pt-5{padding-top:1.25rem}.pt-6{padding-top:1.5rem}.pt-8{padding-top:2rem}
@@ -497,7 +505,8 @@ FORM [type=checkbox]+label, FORM label+[type=checkbox] {
 .pr-0{padding-right:0}.pr-1{padding-right:0.25rem}.pr-2{padding-right:0.75rem}.pr-3{padding-right:0.75rem}.pr-4{padding-right:1rem}.pr-5{padding-right:1.25rem}.pr-6{padding-right:1.5rem}.pr-8{padding-right:2rem}
 
 .m-0{margin:0}.m-1{margin:0.25rem}.m-2{margin:0.5rem}.m-3{margin:0.75rem}.m-4{margin:1rem}.m-6{margin:1.5rem}.m-8{margin:2rem}
-.mt-0{margin-top:0}.mt-1{margin-top:0.25rem}.mt-2{margin-top:0.5rem}.mt-3{margin-top:0.75rem}.mt-4{margin-top:1rem}.mt-6{margin-top:1.5rem}.mt-8{margin-top:2rem}
+.m-auto{margin:auto}.mx-auto{margin-left:auto;margin-right:auto}.my-auto{margin-top:auto;margin-bottom:auto}
+.mt-0{margin-top:0}.mt-1{margin-top:0.25rem}.mt-2{margin-top:0.5rem}.mt-3{margin-top:0.75rem}.mt-4{margin-top:1rem}.mt-6{margin-top:1.5rem}.mt-8{margin-top:2rem}.mt-16{margin-top:4rem}
 .mb-0{margin-bottom:0}.mb-1{margin-bottom:0.25rem}.mb-2{margin-bottom:0.75rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}
 .mr-0{margin-right:0}.mr-1{margin-right:0.25rem}.mr-2{margin-right:0.75rem}.mr-3{margin-right:0.75rem}.mr-4{margin-right:1rem}.mr-6{margin-right:1.5rem}.mr-8{margin-right:2rem}
 .ml-0{margin-left:0}.ml-1{margin-left:0.25rem}.ml-2{margin-left:0.75rem}.ml-3{margin-left:0.75rem}.ml-4{margin-left:1rem}.ml-6{margin-left:1.5rem}.ml-8{margin-left:2rem}
@@ -581,6 +590,7 @@ FORM [type=checkbox]+label, FORM label+[type=checkbox] {
 .hover\:text-white:hover { --text-opacity: 1; color: #fff; color: rgba(255,255,255,var(--text-opacity)) }
 .hover\:text-gray-600:hover{--tw-text-opacity:1;color:rgba(75, 85, 99,var(--tw-text-opacity))}
 .hover\:text-gray-700:hover {--tw-text-opacity:1;color:rgba(55, 65, 81,var(--tw-text-opacity))}
+.hover\:text-black:hover {--tw-text-opacity: 1;color: rgba(0, 0, 0, var(--tw-text-opacity));}
 .hover\:text-blue-400:hover{--tw-text-opacity:1;color:rgba(96, 165, 250,var(--tw-text-opacity))}
 .hover\:text-blue-500:hover {--tw-text-opacity:1;color:rgba(96, 165, 250,var(--tw-text-opacity))}
 .hover\:text-red-600:hover{--tw-text-opacity:1;color:rgba(220, 38, 38,var(--tw-text-opacity))}
@@ -630,6 +640,7 @@ FORM [type=checkbox]+label, FORM label+[type=checkbox] {
     .sm\:text-sm { font-size: 0.875rem; line-height: 1.25rem }
     .sm\:text-base{font-size:1rem;line-height:1.5rem}
     .sm\:justify-between{justify-content:space-between}.sm\:justify-evenly{justify-content:space-evenly}
+    .sm\:invisible{visibility: hidden}.sm\:visible{visibility: visible}
 }
 @media (min-width: 768px) {
     .container { max-width: 768px }
@@ -641,6 +652,7 @@ FORM [type=checkbox]+label, FORM label+[type=checkbox] {
     .md\:flex-wrap { flex-wrap: wrap }
     .md\:justify-between{justify-content:space-between}.md\:justify-evenly{justify-content:space-evenly}
     .md\:text-left{text-align:left}.md\:text-center{text-align:center}.md\:text-right{text-align:right}
+    .md\:invisible{visibility:hidden}
 }
 @media (min-width: 1024px) {
     .container { max-width: 1024px }
@@ -649,6 +661,7 @@ FORM [type=checkbox]+label, FORM label+[type=checkbox] {
     .lg\:w-1\/5{width:20%}.lg\:w-2\/5{width:40%}.lg\:w-1\/6{width:16.666667%}.lg\:w-1\/8{width:12.5%}.lg\:w-1\/10{width:10%}.lg\:w-full{width:100%}
     .lg\:col-span-2 {grid-column: span 2 / span 2}
     .lg\:flex-wrap { flex-wrap: wrap }
+    .lg\:mt-16 {margin-top: 4rem}.lg\:mt-24{margin-top:6rem}.lg\:mt-32{margin-top: 8rem}
     .lg\:justify-between{justify-content:space-between}.lg\:justify-evenly{justify-content:space-evenly}
     .lg\:text-left{text-align:left}.lg\:text-center{text-align:center}.lg\:text-right{text-align:right}
 }
