@@ -1148,7 +1148,7 @@ namespace ServiceStack
                             prop.AddAttribute(new PrimaryKeyAttribute());
                         if (column.IsAutoIncrement)
                             prop.AddAttribute(new AutoIncrementAttribute());
-                        if (!string.Equals(dialect.NamingStrategy.GetColumnName(prop.Name), column.ColumnName, StringComparison.OrdinalIgnoreCase))
+                        if (!string.Equals(dialect.NamingStrategy.GetColumnName(prop.Name), column.ColumnName))
                             prop.AddAttribute(new AliasAttribute(column.ColumnName));
                         if (!dataType.IsValueType && !column.AllowDBNull && !isKey)
                             prop.AddAttribute(new RequiredAttribute());
