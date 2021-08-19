@@ -1104,7 +1104,7 @@ namespace ServiceStack
                 : dbFactory.OpenDbConnection(request.NamedConnection);
             var dialect = db.GetDialectProvider();
 
-            List<MetadataPropertyType> toMetaProps(IEnumerable<ColumnSchema> columns, bool isModel=false)
+            List<MetadataPropertyType> toMetaProps(AutoGenContext ctx, IEnumerable<ColumnSchema> columns, bool isModel=false)
             {
                 var i = 1;
                 var to = new List<MetadataPropertyType>();
@@ -1148,8 +1148,9 @@ namespace ServiceStack
                             prop.AddAttribute(new PrimaryKeyAttribute());
                         if (column.IsAutoIncrement)
                             prop.AddAttribute(new AutoIncrementAttribute());
-                        if (!string.Equals(dialect.NamingStrategy.GetColumnName(prop.Name), column.ColumnName, StringComparison.OrdinalIgnoreCase))
-                            prop.AddAttribute(new AliasAttribute(column.ColumnName));
+                        var columnAlias = ctx.GetColumnAlias(prop, column);
+                        if (columnAlias != null)
+                            prop.AddAttribute(new AliasAttribute(columnAlias));
                         if (!dataType.IsValueType && !column.AllowDBNull && !isKey)
                             prop.AddAttribute(new RequiredAttribute());
                     }
@@ -1180,7 +1181,18 @@ namespace ServiceStack
                     DataModelName = genModelName,
                     PluralDataModelName = pluralGenModelName,
                     RoutePathBase = "/" + pluralGenModelName.ToLower(),
+                    Dialect = dialect,
                 };
+                ctx.GetTableAlias = () => !string.Equals(
+                    ctx.Dialect.NamingStrategy.GetTableName(ctx.DataModelName), ctx.TableSchema.Name,
+                    StringComparison.OrdinalIgnoreCase) 
+                    ? ctx.TableSchema.Name 
+                    : null;
+                ctx.GetColumnAlias = (prop, column) => !string.Equals(
+                    ctx.Dialect.NamingStrategy.GetColumnName(prop.Name), column.ColumnName,
+                    StringComparison.OrdinalIgnoreCase)
+                    ? column.ColumnName
+                    : null;
                 
                 generateOperationsFilter?.Invoke(ctx);
 
@@ -1209,7 +1221,7 @@ namespace ServiceStack
                             continue;
 
                         var verb = crudVerbs[operation];
-                        var route = verb == "GET" || verb == "POST"
+                        var route = verb is "GET" or "POST"
                             ? ctx.RoutePathBase
                             : ctx.RoutePathBase + "/{" + id + "}";
                             
@@ -1279,13 +1291,13 @@ namespace ServiceStack
                             };
                         }
 
-                        var allProps = toMetaProps(tableSchema.Columns);
+                        var allProps = toMetaProps(ctx, tableSchema.Columns);
                         switch (operation)
                         {
                             case AutoCrudOperation.Query:
                                 // Only Id Property (use implicit conventions)
                                 op.Request.Properties = new List<MetadataPropertyType> {
-                                    new MetadataPropertyType {
+                                    new() {
                                         Name = id,
                                         Type = pkField.DataType.Name + (pkField.DataType.IsValueType ? "?" : ""),
                                         TypeNamespace = pkField.DataType.Namespace, 
@@ -1300,7 +1312,7 @@ namespace ServiceStack
                                 var autoId = tableSchema.Columns.FirstOrDefault(x => x.IsAutoIncrement);
                                 if (autoId != null)
                                 {
-                                    op.Request.Properties = toMetaProps(tableSchema.Columns)
+                                    op.Request.Properties = toMetaProps(ctx, tableSchema.Columns)
                                         .Where(x => !x.Name.EqualsIgnoreCase(autoId.ColumnName)).ToList();
                                 }
                                 else
@@ -1319,7 +1331,7 @@ namespace ServiceStack
                             case AutoCrudOperation.Delete:
                                 // PK prop
                                 var pks = tableSchema.Columns.Where(x => x.IsKey).ToList();
-                                op.Request.Properties = toMetaProps(pks);
+                                op.Request.Properties = toMetaProps(ctx, pks);
                                 break;
                             case AutoCrudOperation.Save:
                                 // all props
@@ -1340,7 +1352,7 @@ namespace ServiceStack
                     var modelType = new MetadataType {
                         Name = dataModelName,
                         Namespace = typesNs,
-                        Properties = toMetaProps(tableSchema.Columns, isModel:true),
+                        Properties = toMetaProps(ctx, tableSchema.Columns, isModel:true),
                         Items = new Dictionary<string, object> {
                             [nameof(TableSchema)] = tableSchema,
                         },
@@ -1350,8 +1362,9 @@ namespace ServiceStack
                         modelType.AddAttribute(new NamedConnectionAttribute(request.NamedConnection));
                     if (request.Schema != null)
                         modelType.AddAttribute(new SchemaAttribute(request.Schema));
-                    if (!string.Equals(dialect.NamingStrategy.GetTableName(dataModelName), tableSchema.Name, StringComparison.OrdinalIgnoreCase))
-                        modelType.AddAttribute(new AliasAttribute(tableSchema.Name));
+                    var tableAliasName = ctx.GetTableAlias(); 
+                    if (tableAliasName != null)
+                        modelType.AddAttribute(new AliasAttribute(tableAliasName));
                     crudMetadataTypes.Types.Add(modelType);
 
                     addToExistingTypes(typesNs, modelType);

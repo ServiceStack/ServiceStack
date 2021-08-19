@@ -48,7 +48,22 @@ namespace ServiceStack
         /// <summary>
         /// Generated Request DTO Name to use per operation: Query, Create, Update, Patch, Delete
         /// </summary>
-        public Dictionary<string,string> OperationNames { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string,string> OperationNames { get; set; } = new();
+        
+        /// <summary>
+        /// RDBMS Dialect
+        /// </summary>
+        public IOrmLiteDialectProvider Dialect { get; set; }
+        
+        /// <summary>
+        /// Return what table [Alias] name should be used (if any)
+        /// </summary>
+        public Func<string> GetTableAlias { get; set; }
+        
+        /// <summary>
+        /// Return what table column [Alias] name should be used (if any)
+        /// </summary>
+        public Func<MetadataPropertyType, ColumnSchema, string> GetColumnAlias { get; set; }
     }
     
     public interface IGenerateCrudServices
