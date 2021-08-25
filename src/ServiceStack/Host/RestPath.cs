@@ -542,7 +542,11 @@ namespace ServiceStack.Host
             }
 
             return this.typeDeserializer.PopulateFromMap(fromInstance, requestKeyValuesMap, 
-                HostContext.Config.IgnoreWarningsOnAllProperties ? null : HostContext.Config.IgnoreWarningsOnPropertyNames);
+                HostContext.Config.IgnoreWarningsOnAllProperties 
+                    ? null 
+                    : HostContext.Config.IgnoreWarningsOnAutoQueryApis && fromInstance is IQuery
+                        ? null
+                        : HostContext.Config.IgnoreWarningsOnPropertyNames);
         }
 
         public bool IsVariable(string name)

@@ -161,6 +161,7 @@ namespace ServiceStack
                     Keywords.IgnorePlaceHolder, Keywords.Version, Keywords.VersionAbbr, Keywords.Version.ToPascalCase(),
                     Keywords.ApiKeyParam, Keywords.Code, Keywords.Redirect, Keywords.Continue, "session_state", "s", "f"
                 },
+                IgnoreWarningsOnAutoQueryApis = true,
                 XmlWriterSettings = new XmlWriterSettings
                 {
                     Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
@@ -247,6 +248,7 @@ namespace ServiceStack
             this.AllowJsConfig = instance.AllowJsConfig;
             this.AllowPartialResponses = instance.AllowPartialResponses;
             this.IgnoreWarningsOnAllProperties = instance.IgnoreWarningsOnAllProperties;
+            this.IgnoreWarningsOnAutoQueryApis = instance.IgnoreWarningsOnAutoQueryApis;
             this.IgnoreWarningsOnPropertyNames = instance.IgnoreWarningsOnPropertyNames;
             this.FallbackRestPath = instance.FallbackRestPath;
             this.AllowAclUrlReservation = instance.AllowAclUrlReservation;
@@ -296,6 +298,7 @@ namespace ServiceStack
         public List<string> DefaultDocuments { get; private set; }
 
         public bool IgnoreWarningsOnAllProperties { get; set; }
+        public bool IgnoreWarningsOnAutoQueryApis { get; set; }
         public List<string> IgnoreWarningsOnPropertyNames { get; private set; }
 
         public HashSet<string> IgnoreFormatsInMetadata { get; set; }
