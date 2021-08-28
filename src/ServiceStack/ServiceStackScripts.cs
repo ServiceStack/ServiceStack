@@ -260,6 +260,14 @@ namespace ServiceStack
        
         public object getUserSession(ScriptScopeContext scope) => scope.GetRequest().GetSession();
         public IAuthSession userSession(ScriptScopeContext scope) => scope.GetRequest().GetSession();
+        public IAuthSession sessionIfAuthenticated(ScriptScopeContext scope)
+        {
+            var session = scope.GetRequest().GetSession();
+            return session.IsAuthenticated
+                ? session
+                : null;
+        }
+
         public string userAuthId(ScriptScopeContext scope) => scope.GetRequest().GetSession()?.UserAuthId;
         public string userAuthName(ScriptScopeContext scope)
         {
