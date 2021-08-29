@@ -158,7 +158,8 @@ namespace ServiceStack
                 {
                     if (header.StartsWith(":"))
                     {
-                        Log.Warn($"Ignoring Invalid Proxy Request Header '{header}'");
+                        if (Log.IsDebugEnabled)
+                            Log.Debug($"Ignoring Invalid Proxy Request Header '{header}'");
                         continue;
                     }
                     
