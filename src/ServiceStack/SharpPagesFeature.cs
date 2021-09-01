@@ -218,6 +218,8 @@ namespace ServiceStack
         {
             if (!DebugMode && catchAllPathsNotFound.ContainsKey(pathInfo))
                 return null;
+            if (!VirtualPathUtils.IsValidFilePath(pathInfo))
+                return null;
 
             foreach (var ignorePath in IgnorePaths)
             {

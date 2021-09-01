@@ -98,12 +98,25 @@ namespace ServiceStack
             System.Threading.Thread.Sleep(nextTryMs);
 #endif
         }
+        
+        static readonly HashSet<char> InvalidFileNameChars = new(Path.GetInvalidFileNameChars()) { ':' };
 
-        public static string SafeFileName(string uri)
+        public static string SafeFileName(string uri) => new(uri.Where(c => !InvalidFileNameChars.Contains(c)).ToArray());
+
+        public static bool IsValidFileName(string path) => !string.IsNullOrEmpty(path) && path.All(c => !InvalidFileNameChars.Contains(c));
+
+        public static bool IsValidFilePath(string path)
         {
-            var invalidFileNameChars = new HashSet<char>(Path.GetInvalidFileNameChars()) { ':' };
-            var safeFileName = new string(uri.Where(c => !invalidFileNameChars.Contains(c)).ToArray());
-            return safeFileName;
+            if (string.IsNullOrEmpty(path))
+                return false;
+            foreach (var c in path)
+            {
+                if (c == '/') 
+                    continue;
+                if (InvalidFileNameChars.Contains(c)) 
+                    return false;
+            }
+            return true;
         }
     }
 }
