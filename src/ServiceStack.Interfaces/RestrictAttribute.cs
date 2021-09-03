@@ -101,7 +101,7 @@ namespace ServiceStack
                 ? RequestAttributes.Any
                 : this.AccessibleToAny[0];
 
-            set => this.AccessibleToAny = new[] { value };
+            set => this.AccessibleToAny = new[] { value.ToAllowedFlagsSet() };
         }
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace ServiceStack
                 ? RequestAttributes.Any
                 : this.VisibleToAny[0];
 
-            set => this.VisibleToAny = new[] { value };
+            set => this.VisibleToAny = new[] { value.ToAllowedFlagsSet() };
         }
 
         /// <summary>

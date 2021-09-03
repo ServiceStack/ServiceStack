@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -940,9 +941,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             using (var clientB = CreateServerEventsClient("B"))
             using (var clientAB = CreateServerEventsClient("A", "B"))
             {
-                var joinARecieved = new TaskCompletionSource<bool>();
-                var joinBRecieved = new TaskCompletionSource<bool>();
-                var joinABRecieved = new TaskCompletionSource<bool>();
+                var joinAReceived = new TaskCompletionSource<bool>();
+                var joinBReceived = new TaskCompletionSource<bool>();
+                var joinABReceived = new TaskCompletionSource<bool>();
 
                 clientA.OnCommand = e =>
                 {
@@ -950,7 +951,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     {
                         joinA.Add((ServerEventJoin)e);
                         if (joinA.Count == 2)
-                            joinARecieved.SetResult(true);
+                            joinAReceived.SetResult(true);
                     }
                     else if (e is ServerEventLeave)
                         leaveA.Add((ServerEventLeave)e);
@@ -962,7 +963,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     {
                         joinB.Add((ServerEventJoin)e);
                         if (joinB.Count == 2)
-                            joinBRecieved.SetResult(true);
+                            joinBReceived.SetResult(true);
                     }
                     else if (e is ServerEventLeave)
                         leaveB.Add((ServerEventLeave)e);
@@ -974,7 +975,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     {
                         joinAB.Add((ServerEventJoin)e);
                         if (joinAB.Count == 2)
-                            joinABRecieved.SetResult(true);
+                            joinABReceived.SetResult(true);
                     }
                     else if (e is ServerEventLeave)
                         leaveAB.Add((ServerEventLeave)e);
@@ -984,7 +985,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 await clientB.Connect();
                 await clientAB.Connect();
 
-                await Task.WhenAll(joinARecieved.Task, joinBRecieved.Task, joinABRecieved.Task);
+                await Task.WhenAll(joinAReceived.Task, joinBReceived.Task, joinABReceived.Task);
 
                 Assert.That(joinA.Count, Is.EqualTo(2));  //A + [(A) B]
                 Assert.That(joinB.Count, Is.EqualTo(2));  //B + [A (B)]
@@ -1037,9 +1038,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             using (var clientA = CreateServerEventsClient("A"))
             using (var clientB = CreateServerEventsClient("B"))
             {
-                var joinARecieved = new TaskCompletionSource<bool>();
-                var joinBRecieved = new TaskCompletionSource<bool>();
-                var joinABRecieved = new TaskCompletionSource<bool>();
+                var joinAReceived = new TaskCompletionSource<bool>();
+                var joinBReceived = new TaskCompletionSource<bool>();
+                var joinABReceived = new TaskCompletionSource<bool>();
 
                 clientA.OnCommand = e =>
                 {
@@ -1047,7 +1048,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     {
                         joinA.Add((ServerEventJoin)e);
                         if (joinA.Count == 1)
-                            joinARecieved.SetResult(true);
+                            joinAReceived.SetResult(true);
                     }
                     else if (e is ServerEventLeave)
                         leaveA.Add((ServerEventLeave)e);
@@ -1059,7 +1060,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     {
                         joinB.Add((ServerEventJoin)e);
                         if (joinB.Count == 1)
-                            joinBRecieved.SetResult(true);
+                            joinBReceived.SetResult(true);
                     }
                     else if (e is ServerEventLeave)
                         leaveB.Add((ServerEventLeave)e);
@@ -1071,7 +1072,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     {
                         joinAB.Add((ServerEventJoin)e);
                         if (joinAB.Count == 4)
-                            joinABRecieved.SetResult(true);
+                            joinABReceived.SetResult(true);
                     }
                     else if (e is ServerEventLeave)
                         leaveAB.Add((ServerEventLeave)e);
@@ -1081,7 +1082,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 await clientA.Connect();
                 await clientB.Connect();
 
-                await Task.WhenAll(joinARecieved.Task, joinBRecieved.Task, joinABRecieved.Task);
+                await Task.WhenAll(joinAReceived.Task, joinBReceived.Task, joinABReceived.Task);
 
                 Assert.That(joinAB.Count, Is.EqualTo(4)); //[(A) B] + [A (B)] + A + B
                 Assert.That(joinA.Count, Is.EqualTo(1));  //A
@@ -1257,6 +1258,46 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
+        [Test]
+        public async Task Can_consume_messages_in_async_handler_with_BlockingCollection()
+        {
+            using var bc = new BlockingCollection<ServerEventMessage>();
+            var callbacks = 0;
+            
+            using var client = new ServerEventsClient(Config.AbsoluteBaseUri, "A") {
+                OnMessage = m => { 
+                    bc.Add(m);
+                    callbacks++;
+                }
+            };
+
+            await client.Connect();
+
+            10.Times(i => client.PostChat($"msg{i+1}", channel:"A"));
+
+            var handled = 0;
+            var consumerTask = Task.Run(async () => {
+                foreach (var msg in bc.GetConsumingEnumerable())
+                {
+                    handled++;
+                    await Task.Delay(1);
+                }
+            });
+
+            var producerTask = ExecUtils.RetryUntilTrueAsync(async () => {
+                if (callbacks == 10)
+                {
+                    bc.CompleteAdding();
+                    return true;
+                }
+                await Task.Delay(100);
+                return false;
+            }, TimeSpan.FromSeconds(5));
+            
+            await Task.WhenAll(consumerTask, producerTask);
+            
+            Assert.That(handled, Is.EqualTo(10));
+        }
     }
 
     class Conf
@@ -1396,61 +1437,57 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public async Task Can_send_and_receive_messages_with_Authenticated_user()
         {
-            using (var client = CreateServerEventsClient())
+            using var client = CreateServerEventsClient();
+            await client.AuthenticateAsync(new Authenticate
             {
-                await client.AuthenticateAsync(new Authenticate
-                {
-                    provider = CustomCredentialsAuthProvider.Name,
-                    UserName = "user",
-                    Password = "pass",
-                });
+                provider = CustomCredentialsAuthProvider.Name,
+                UserName = "user",
+                Password = "pass",
+            });
 
-                await client.Connect();
+            await client.Connect();
 
-                ChatMessage chatMsg = null;
-                client.Handlers["chat"] = (c, msg) =>
-                {
-                    chatMsg = msg.Json.FromJson<ChatMessage>();
-                };
+            ChatMessage chatMsg = null;
+            client.Handlers["chat"] = (c, msg) =>
+            {
+                chatMsg = msg.Json.FromJson<ChatMessage>();
+            };
 
-                var msgTask = client.WaitForNextMessage();
-                client.PostChat("msg1");
-                await msgTask.WaitAsync();
+            var msgTask = client.WaitForNextMessage();
+            client.PostChat("msg1");
+            await msgTask.WaitAsync();
 
-                Assert.That(chatMsg, Is.Not.Null);
-                Assert.That(chatMsg.Message, Is.EqualTo("msg1"));
+            Assert.That(chatMsg, Is.Not.Null);
+            Assert.That(chatMsg.Message, Is.EqualTo("msg1"));
 
-                msgTask = client.WaitForNextMessage();
-                client.PostChat("msg2");
-                await msgTask.WaitAsync();
+            msgTask = client.WaitForNextMessage();
+            client.PostChat("msg2");
+            await msgTask.WaitAsync();
 
-                Assert.That(chatMsg, Is.Not.Null);
-                Assert.That(chatMsg.Message, Is.EqualTo("msg2"));
-            }
+            Assert.That(chatMsg, Is.Not.Null);
+            Assert.That(chatMsg.Message, Is.EqualTo("msg2"));
         }
 
         [Test]
         public async Task Channels_updated_after_Restart()
         {
-            using (var client = new ServerEventsClient(Conf.AbsoluteBaseUri, "home"))
+            using var client = new ServerEventsClient(Conf.AbsoluteBaseUri, "home");
+            Assert.That(client.EventStreamUri.EndsWith("home"));
+
+            await client.AuthenticateAsync(new Authenticate
             {
-                Assert.That(client.EventStreamUri.EndsWith("home"));
+                provider = CustomCredentialsAuthProvider.Name,
+                UserName = "user",
+                Password = "pass",
+            });
 
-                await client.AuthenticateAsync(new Authenticate
-                {
-                    provider = CustomCredentialsAuthProvider.Name,
-                    UserName = "user",
-                    Password = "pass",
-                });
+            client.Start();
+            client.Channels = new[] {"Foo", "Bar"};
+            client.Restart();
 
-                client.Start();
-                client.Channels = new[] {"Foo", "Bar"};
-                client.Restart();
+            Thread.Sleep(10); // Wait for SleepBackOffMultiplier to continue
 
-                Thread.Sleep(10); // Wait for SleepBackOffMultiplier to continue
-
-                Assert.That(client.EventStreamUri.EndsWith("Foo,Bar"));
-            }
+            Assert.That(client.EventStreamUri.EndsWith("Foo,Bar"));
         }
     }
 
@@ -1465,7 +1502,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         internal static CustomType QuxSetterReceived;
         public CustomType QuxSetter
         {
-            set { QuxSetterReceived = value; }
+            set => QuxSetterReceived = value;
         }
 
         public void FooMethod(CustomType request)
@@ -1497,7 +1534,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public SetterType SetterType
         {
-            set { SetterTypeReceived = value; }
+            set => SetterTypeReceived = value;
         }
 
         public void CustomType(CustomType request)
@@ -1607,12 +1644,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             client.ServiceClient.PostChat(client.SubscriptionId, message, channel);
         }
 
-        public static void PostChat(this IServiceClient client, string subsciptionId,
+        public static void PostChat(this IServiceClient client, string subscriptionId,
             string message, string channel = null)
         {
             client.Post(new PostChatToChannel
             {
-                From = subsciptionId,
+                From = subscriptionId,
                 Message = message,
                 Channel = channel ?? EventSubscription.UnknownChannel[0],
                 Selector = "cmd.chat",

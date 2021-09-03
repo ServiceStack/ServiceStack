@@ -163,54 +163,50 @@ namespace ServiceStack
 
         public static Format ToFormat(this Feature feature)
         {
-            switch (feature)
-            {
-                case Feature.Xml:
-                    return Format.Xml;
-                case Feature.Json:
-                    return Format.Json;
-                case Feature.Jsv:
-                    return Format.Jsv;
-                case Feature.Csv:
-                    return Format.Csv;
-                case Feature.Html:
-                    return Format.Html;
-                case Feature.MsgPack:
-                    return Format.MsgPack;
-                case Feature.ProtoBuf:
-                    return Format.ProtoBuf;
-                case Feature.Soap11:
-                    return Format.Soap11;
-                case Feature.Soap12:
-                    return Format.Soap12;
-            }
-            return Format.Other;
+            return feature switch {
+                Feature.Xml => Format.Xml,
+                Feature.Json => Format.Json,
+                Feature.Jsv => Format.Jsv,
+                Feature.Csv => Format.Csv,
+                Feature.Html => Format.Html,
+                Feature.MsgPack => Format.MsgPack,
+                Feature.ProtoBuf => Format.ProtoBuf,
+                Feature.Soap11 => Format.Soap11,
+                Feature.Soap12 => Format.Soap12,
+                _ => Format.Other
+            };
         }
 
         public static Feature ToFeature(this Format format)
         {
-            switch (format)
-            {
-                case Format.Xml:
-                    return Feature.Xml;
-                case Format.Json:
-                    return Feature.Json;
-                case Format.Jsv:
-                    return Feature.Jsv;
-                case Format.Csv:
-                    return Feature.Csv;
-                case Format.Html:
-                    return Feature.Html;
-                case Format.MsgPack:
-                    return Feature.MsgPack;
-                case Format.ProtoBuf:
-                    return Feature.ProtoBuf;
-                case Format.Soap11:
-                    return Feature.Soap11;
-                case Format.Soap12:
-                    return Feature.Soap12;
-            }
-            return Feature.CustomFormat;
+            return format switch {
+                Format.Xml => Feature.Xml,
+                Format.Json => Feature.Json,
+                Format.Jsv => Feature.Jsv,
+                Format.Csv => Feature.Csv,
+                Format.Html => Feature.Html,
+                Format.MsgPack => Feature.MsgPack,
+                Format.ProtoBuf => Feature.ProtoBuf,
+                Format.Soap11 => Feature.Soap11,
+                Format.Soap12 => Feature.Soap12,
+                _ => Feature.CustomFormat
+            };
+        }
+
+        public static RequestAttributes ToRequestAttribute(this Format format)
+        {
+            return format switch {
+                Format.Xml => RequestAttributes.Xml,
+                Format.Json => RequestAttributes.Json,
+                Format.Jsv => RequestAttributes.Jsv,
+                Format.Csv => RequestAttributes.Csv,
+                Format.Html => RequestAttributes.Html,
+                Format.MsgPack => RequestAttributes.MsgPack,
+                Format.ProtoBuf => RequestAttributes.ProtoBuf,
+                Format.Soap11 => RequestAttributes.Soap11,
+                Format.Soap12 => RequestAttributes.Soap12,
+                _ => RequestAttributes.FormatOther
+            };
         }
 
         public static Feature ToSoapFeature(this RequestAttributes attributes)

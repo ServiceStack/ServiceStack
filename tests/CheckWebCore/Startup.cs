@@ -120,7 +120,7 @@ namespace CheckWebCore
 
             app.UseServiceStack(new AppHost
             {
-                PathBase = "/api",
+                // PathBase = "/api",
                 AppSettings = new NetCoreAppSettings(Configuration)
             });
         }
@@ -235,6 +235,7 @@ namespace CheckWebCore
         public ResponseStatus ResponseStatus { get; set; }
     }
 
+    [Restrict(VisibleLocalhostOnly = true)]
     [Route("/testauth")]
     [Tag("mobile")]
     public class TestAuth : IReturn<TestAuth> {}
@@ -242,6 +243,7 @@ namespace CheckWebCore
     [Route("/session")]
     public class Session : IReturn<AuthUserSession> {}
     
+    [Restrict(VisibilityTo = RequestAttributes.Localhost)]
     [Route("/throw")]
     [Tag("desktop")]
     public class Throw {}

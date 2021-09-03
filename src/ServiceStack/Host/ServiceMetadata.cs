@@ -211,12 +211,17 @@ namespace ServiceStack.Host
 
         public List<string> GetOperationNamesForMetadata(IRequest httpReq)
         {
-            return GetAllOperationNames();
+            return Operations
+                .Where(x => !x.RequestType.ExcludesFeature(Feature.Metadata))
+                .Select(x => x.RequestType.GetOperationName()).OrderBy(operation => operation).ToList();
         }
 
         public List<string> GetOperationNamesForMetadata(IRequest httpReq, Format format)
         {
-            return GetAllOperationNames();
+            var formatRequestAttr = format.ToRequestAttribute();
+            return Operations
+                .Where(x => !x.RequestType.ExcludesFeature(Feature.Metadata) && x.RestrictTo.CanShowTo(formatRequestAttr))
+                .Select(x => x.RequestType.GetOperationName()).OrderBy(operation => operation).ToList();
         }
 
         public bool IsAuthorized(Operation operation, IRequest req, IAuthSession session)
