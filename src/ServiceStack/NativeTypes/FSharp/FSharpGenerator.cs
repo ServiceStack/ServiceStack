@@ -48,6 +48,19 @@ namespace ServiceStack.NativeTypes.FSharp
         /// </summary>
         public static AddCodeDelegate AddCodeFilter { get; set; }
 
+        /// <summary>
+        /// Can only export "Empty" Marker Interfaces
+        /// </summary>
+        public static HashSet<string> ExportMarkerInterfaces { get; } = new[] {
+            nameof(IGet),
+            nameof(IPost),
+            nameof(IPut),
+            nameof(IDelete),
+            nameof(IPatch),
+            nameof(IOptions),
+            nameof(IStream),
+        }.ToSet();
+
         public string GetCode(MetadataTypes metadata, IRequest request)
         {
             var namespaces = Config.GetDefaultNamespaces(metadata);
@@ -278,6 +291,15 @@ namespace ServiceStack.NativeTypes.FSharp
                     if (addVersionInfo)
                     {
                         sb.AppendLine($"member val Version:int = {Config.AddImplicitVersion} with get, set");
+                    }
+
+                    if (type.Implements != null)
+                    {
+                        foreach (var iface in type.Implements)
+                        {
+                            if (ExportMarkerInterfaces.Contains(iface.Name))
+                                sb.AppendLine($"interface {iface.Name}");
+                        }
                     }
                 }
 

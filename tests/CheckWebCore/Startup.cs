@@ -224,7 +224,7 @@ namespace CheckWebCore
     
     [Route("/hello")]
     [Route("/hello/{Name}")]
-    public class Hello : IReturn<HelloResponse>
+    public class Hello : IReturn<HelloResponse>, IGet
     {
         public string Name { get; set; }
     }
