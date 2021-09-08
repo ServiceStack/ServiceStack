@@ -113,6 +113,10 @@ namespace ServiceStack.Auth
         /// If User Authenticated in this request
         /// </summary>
         public bool DidAuthenticate { get; internal set; }
+        /// <summary>
+        /// Original User Source (if exists) 
+        /// </summary>
+        public object UserSource { get; set; }
     }
 
     public class AuthResultContext
