@@ -30,6 +30,7 @@ namespace ServiceStack
         public static string PrimaryKeyRequired = "Primary Key is Required";
         public static string InvalidAccessToken = "AccessToken is Invalid";
         public static string SessionIdEmpty = "Session not set. Is Session being set in RequestFilters?";
+        public static string Requires2FA = "Session not set. Is Session being set in RequestFilters?";
 
         public static string InvalidRole = "Invalid Role";
         public static string InvalidPermission = "Invalid Permission";

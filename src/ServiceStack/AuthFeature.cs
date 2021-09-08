@@ -77,6 +77,16 @@ namespace ServiceStack
         /// What queryString param to capture redirect param on
         /// </summary>
         public string HtmlRedirectReturnParam { get; set; } = LocalizedStrings.Redirect;
+        
+        /// <summary>
+        /// Redirect path to when Authenticated User requires 2FA
+        /// </summary>
+        public string HtmlRedirectLoginWith2Fa { get; set; }
+        
+        /// <summary>
+        /// Redirect path to when User is Locked out
+        /// </summary>
+        public string HtmlRedirectLockout { get; set; }
 
         /// <summary>
         /// Whether to only capture return path or absolute URL (default)
@@ -206,7 +216,9 @@ namespace ServiceStack
             Permissions = new List<string>(),
             UserAuthId = "0",
         };
-        
+
+        public AuthFeature(IAuthProvider authProvider) : this(() => new AuthUserSession(), new []{ authProvider }) {}
+        public AuthFeature(IAuthProvider[] authProviders) : this(() => new AuthUserSession(), authProviders) {}
         public AuthFeature(Func<IAuthSession> sessionFactory, IAuthProvider[] authProviders, string htmlRedirect = null)
         {
             this.sessionFactory = sessionFactory;
