@@ -29,6 +29,7 @@ namespace ServiceStack
         public static string RefreshTokenInvalid = "RefreshToken is Invalid";
         public static string PrimaryKeyRequired = "Primary Key is Required";
         public static string InvalidAccessToken = "AccessToken is Invalid";
+        public static string SessionIdEmpty = "Session not set. Is Session being set in RequestFilters?";
 
         public static string InvalidRole = "Invalid Role";
         public static string InvalidPermission = "Invalid Permission";
@@ -79,6 +80,8 @@ namespace ServiceStack
     {
         public static string NativeTypesDtoOptionsTip =
             "To override a DTO option, remove \"{0}\" prefix before updating";
+
+        public static string DefaultRedirectMessage = "Moved Temporarily";
     }
 
     public static class StrictModeCodes

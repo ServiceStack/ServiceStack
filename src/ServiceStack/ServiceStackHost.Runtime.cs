@@ -1131,6 +1131,44 @@ namespace ServiceStack
             return GetBearerToken(req) ??
                    req.GetCookieValue(Keywords.TokenCookie);
         }
+
+        public virtual IHttpResult Redirect(IServiceBase service, string redirect, string message)
+        {
+            return new HttpResult(HttpStatusCode.Redirect, message)
+            {
+                ContentType = service.Request.ResponseContentType,
+                Headers = {
+                    { HttpHeaders.Location, redirect }
+                },
+            };
+        }
+
+        public virtual IHttpResult LocalRedirect(IServiceBase service, string redirect, string message)
+        {
+            redirect = redirect?.Trim();
+            if (!string.IsNullOrEmpty(redirect))
+            {
+                if (!redirect.StartsWith("//") && redirect.IndexOf("://", StringComparison.Ordinal) < 0)
+                    return service.Redirect(redirect, message);
+
+                if (redirect.StartsWith(service.Request.GetBaseUrl()))
+                    return service.Redirect(redirect, message);
+            }
+            return service.Redirect(service.Request.GetBaseUrl(), message);
+        }
+
+        public virtual IHttpResult AuthenticationRequired(IServiceBase service)
+        {
+            return new HttpResult
+            {
+                StatusCode = HttpStatusCode.Unauthorized,
+                ContentType = service.Request.ResponseContentType,
+                Headers = {
+                    { HttpHeaders.WwwAuthenticate, $"{AuthenticateService.DefaultOAuthProvider} realm=\"{AuthenticateService.DefaultOAuthRealm}\"" }
+                },
+            };
+        }
+
     }
 
 }

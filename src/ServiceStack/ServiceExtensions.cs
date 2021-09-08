@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
-using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Logging;
-using ServiceStack.Redis;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -19,40 +16,27 @@ namespace ServiceStack
     {
         public static ILog Log = LogManager.GetLogger(typeof(ServiceExtensions));
 
-        public static IHttpResult Redirect(this IServiceBase service, string url)
-        {
-            return service.Redirect(url, "Moved Temporarily");
-        }
+        public static IHttpResult Redirect(this IServiceBase service, string redirect) => 
+            service.Redirect(redirect, HelpMessages.DefaultRedirectMessage);
 
-        public static IHttpResult Redirect(this IServiceBase service, string url, string message)
-        {
-            return new HttpResult(HttpStatusCode.Redirect, message)
-            {
-                ContentType = service.Request.ResponseContentType,
-                Headers = {
-                    { HttpHeaders.Location, url }
-                },
-            };
-        }
+        public static IHttpResult Redirect(this IServiceBase service, string redirect, string message) =>
+            HostContext.AppHost.Redirect(service, redirect, message);
 
-        public static IHttpResult AuthenticationRequired(this IServiceBase service)
-        {
-            return new HttpResult
-            {
-                StatusCode = HttpStatusCode.Unauthorized,
-                ContentType = service.Request.ResponseContentType,
-                Headers = {
-                    { HttpHeaders.WwwAuthenticate, $"{AuthenticateService.DefaultOAuthProvider} realm=\"{AuthenticateService.DefaultOAuthRealm}\"" }
-                },
-            };
-        }
+        public static IHttpResult LocalRedirect(this IServiceBase service, string redirect) =>
+            service.LocalRedirect(redirect, HelpMessages.DefaultRedirectMessage);
+        
+        public static IHttpResult LocalRedirect(this IServiceBase service, string redirect, string message) =>
+            HostContext.AppHost.LocalRedirect(service, redirect, message);
+
+        public static IHttpResult AuthenticationRequired(this IServiceBase service) =>
+            HostContext.AppHost.AuthenticationRequired(service);
 
         public static string GetSessionId(this IServiceBase service)
         {
             var req = service.Request;
             var sessionId = req.GetSessionId();
             if (sessionId == null)
-                throw new ArgumentNullException("sessionId", "Session not set. Is Session being set in RequestFilters?");
+                throw new ArgumentNullException(nameof(sessionId), ErrorMessages.SessionIdEmpty);
 
             return sessionId;
         }
