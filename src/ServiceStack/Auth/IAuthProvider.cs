@@ -60,7 +60,7 @@ namespace ServiceStack.Auth
         /// <summary>
         /// Intercept successful Authenticate Request DTO requests 
         /// </summary>
-        void Execute(AuthFilterContext authContext);
+        Task ExecuteAsync(AuthFilterContext authContext);
 
         /// <summary>
         /// Intercept successful OAuth redirect requests 

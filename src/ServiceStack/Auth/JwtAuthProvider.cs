@@ -41,7 +41,7 @@ namespace ServiceStack.Auth
             base.Init(appSettings);
         }
 
-        public void Execute(AuthFilterContext authContext)
+        public async Task ExecuteAsync(AuthFilterContext authContext)
         {
             var session = authContext.Session;
             var authService = authContext.AuthService;
@@ -52,10 +52,19 @@ namespace ServiceStack.Auth
                 if (!RequireSecureConnection || authService.Request.IsSecureConnection)
                 {
                     IEnumerable<string> roles = null, perms = null;
-                    if (HostContext.AppHost.GetAuthRepository(authService.Request) is IManageRoles authRepo && session.UserAuthId != null)
+                    var userRepo = HostContext.AppHost.GetAuthRepositoryAsync(authService.Request);
+#if NET472 || NETSTANDARD2_0
+                    await using (userRepo as IAsyncDisposable)
+#else
+                    using (userRepo as IDisposable)
+#endif
                     {
-                        roles = authRepo.GetRoles(session.UserAuthId);
-                        perms = authRepo.GetPermissions(session.UserAuthId);
+                        if (userRepo is IManageRolesAsync manageRoles)
+                        {
+                            var tuple = await manageRoles.GetRolesAndPermissionsAsync(session.UserAuthId).ConfigAwait();
+                            roles = tuple.Item1;
+                            perms = tuple.Item2;
+                        }
                     }
 
                     authContext.AuthResponse.BearerToken = CreateJwtBearerToken(authContext.AuthService.Request, session, roles, perms);

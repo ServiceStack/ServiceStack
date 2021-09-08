@@ -361,7 +361,7 @@ namespace ServiceStack.Auth
 
                     foreach (var responseFilter in AuthResponseFilters)
                     {
-                        responseFilter.Execute(authCtx);
+                        await responseFilter.ExecuteAsync(authCtx);
                     }
 
                     if (AuthResponseDecorator != null)
