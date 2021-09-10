@@ -67,6 +67,7 @@ namespace ServiceStack.Common.Tests
 
                     var response = (RegisterResponse)appHost.ExecuteService(register, req);
                     var userAuth = db.SingleById<UserAuth>(response.UserId);
+                    Assert.That(userAuth, Is.Not.Null);
 
                     var assignResponse = (AssignRolesResponse)appHost.ExecuteService(new AssignRoles
                     {

@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using ServiceStack.FluentValidation;
 using ServiceStack.Text;
@@ -95,6 +96,7 @@ namespace ServiceStack.Auth
         protected async Task RegisterNewUserAsync(IAuthSession session, IUserAuth user)
         {
             var authEvents = TryResolve<IAuthEvents>();
+            session.UserAuthId = user.Id.ToString(CultureInfo.InvariantCulture);
             session.PopulateSession(user);
             session.OnRegistered(Request, session, this);
             if (session is IAuthSessionExtended sessionExt)

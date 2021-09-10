@@ -17,7 +17,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string NetworkName { get; set; }
     }
 
-    public partial class MyUser : UserAuth
+    public class MyUser : UserAuth
     {
         public string NetworkName { get; set; }
     }
@@ -29,16 +29,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             if (string.IsNullOrEmpty(request.NetworkName))
                 throw new ArgumentNullException(nameof(request.NetworkName));
             
-            var session = await this.GetSessionAsync().ConfigAwait();
-            var newUserAuth = (MyUser)ToUserAuth(request);
-            newUserAuth.NetworkName = request.NetworkName;
-
+            var session = await GetSessionAsync();
             if (await UserExistsAsync(session))
                 throw new NotSupportedException("You're already registered");
 
+            var newUser = (MyUser)ToUserAuth(request);
+            newUser.NetworkName = request.NetworkName;
+
             await ValidateAndThrowAsync(request);
-            var user = await AuthRepositoryAsync.CreateUserAuthAsync(newUserAuth, request.Password).ConfigAwait();
-            await RegisterNewUserAsync(session, user).ConfigAwait();
+            var user = await AuthRepositoryAsync.CreateUserAuthAsync(newUser, request.Password);
+            await RegisterNewUserAsync(session, user);
             
             var response = await CreateRegisterResponse(session, 
                 request.UserName ?? request.Email, request.Password, request.AutoLogin);
