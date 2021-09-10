@@ -197,9 +197,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [OneTimeTearDown]
-        public void OneTimeTearDown() => appHost = new AppHost()
-                .Init()
-                .Start(Config.ListeningOn);
+        public void OneTimeTearDown() => appHost.Dispose();
 
         const string Password = "p@55wOrd";
 
