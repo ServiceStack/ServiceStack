@@ -16,8 +16,6 @@ namespace ServiceStack.Auth
         
         public static bool AllowUpdates { get; set; }
 
-        public IValidator<Register> RegistrationValidator { get; set; }
-
         /// <summary>
         /// Update an existing registration
         /// </summary>

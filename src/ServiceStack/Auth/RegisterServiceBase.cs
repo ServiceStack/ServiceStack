@@ -73,6 +73,8 @@ namespace ServiceStack.Auth
     
     public abstract class RegisterServiceBase : Service
     {
+        public IValidator<Register> RegistrationValidator { get; set; }
+
         protected IUserAuth ToUserAuth(Register request)
         {
             var to = AuthRepositoryAsync is ICustomUserAuth customUserAuth
@@ -89,7 +91,7 @@ namespace ServiceStack.Auth
 
         protected async Task ValidateAndThrowAsync(Register request)
         {
-            var validator = TryResolve<IValidator<Register>>() ?? new RegistrationValidator();
+            var validator = RegistrationValidator ?? new RegistrationValidator();
             await validator.ValidateAndThrowAsync(request, ApplyTo.Post).ConfigAwait();
         }
 
@@ -110,7 +112,7 @@ namespace ServiceStack.Auth
         {
             var returnUrl = Request.GetReturnUrl();
             if (!string.IsNullOrEmpty(returnUrl))
-                AssertPlugin<AuthFeature>().ValidateRedirectLinks(Request, returnUrl);
+                GetPlugin<AuthFeature>()?.ValidateRedirectLinks(Request, returnUrl);
 
             RegisterResponse response = null;
             if (autoLogin.GetValueOrDefault())
