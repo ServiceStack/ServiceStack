@@ -997,22 +997,30 @@ namespace ServiceStack.NativeTypes.Dart
 
         public static HashSet<string> ArrayTypes = new() {
             "List`1",
+            "IList`1",
             "IEnumerable`1",
             "ICollection`1",
             "HashSet`1",
             "Queue`1",
+            "ConcurrentQueue`1",
             "Stack`1",
+            "ConcurrentStack`1",
             "IEnumerable",
+            "ArrayList",
         };
 
         public static HashSet<string> DictionaryTypes = new() {
             "Dictionary`2",
             "IDictionary`2",
             "IOrderedDictionary`2",
+            "ConcurrentDictionary`2",
             "OrderedDictionary",
+            "SortedList`2",
+            "SortedList",
             "StringDictionary",
             "IDictionary",
             "IOrderedDictionary",
+            "Hashtable",
         };
 
         public static HashSet<string> SetTypes = new() {
