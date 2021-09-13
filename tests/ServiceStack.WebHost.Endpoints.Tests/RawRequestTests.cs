@@ -1,15 +1,17 @@
-﻿using System;
-using System.IO;
-using System.Reflection;
+﻿using System.IO;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
-using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
+    [Route("/rawbytesrequest")]
+    public class RawBytesRequest : IRequiresRequestStream
+    {
+        public Stream RequestStream { get; set; }
+    }
+
     [Route("/rawrequest")]
     public class RawRequest : IRequiresRequestStream
     {
@@ -44,6 +46,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class RawRequestService : Service
     {
+        public async Task<object> Any(RawBytesRequest request)
+        {
+            var rawRequest = await request.RequestStream.ReadFullyAsync();
+            return new RawRequestResponse { Result = rawRequest.FromUtf8Bytes() };
+        }
+
         public async Task<object> Any(RawRequest request)
         {
             var rawRequest = await request.RequestStream.ReadToEndAsync();
