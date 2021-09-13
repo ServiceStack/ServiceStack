@@ -1169,6 +1169,12 @@ namespace ServiceStack
             };
         }
 
+        public virtual void OnSerializeJson(IRequest req, object dto, Stream outputStream) =>
+            JsonDataContractSerializer.Instance.SerializeToStream(dto, outputStream);
+
+        public virtual object OnDeserializeJson(Type intoType, Stream fromStream) =>
+            JsonDataContractSerializer.Instance.DeserializeFromStream(intoType, fromStream);
+
     }
 
 }

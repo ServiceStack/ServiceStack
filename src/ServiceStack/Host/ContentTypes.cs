@@ -16,13 +16,13 @@ namespace ServiceStack.Host
         public static ContentTypes Instance = new();
 
         public Dictionary<string, StreamSerializerDelegate> ContentTypeSerializers = new() {
-            { MimeTypes.Json, (r, o, s) => JsonDataContractSerializer.Instance.SerializeToStream(o, s) },
+            { MimeTypes.Json, (r, o, s) => HostContext.AppHost.OnSerializeJson(r, o, s) },
             { MimeTypes.Jsv, (r, o, s) => TypeSerializer.SerializeToStream(o, s) },
             { MimeTypes.Xml, (r, o, s) => XmlSerializer.SerializeToStream(o, s) },
         };
 
         public Dictionary<string, StreamDeserializerDelegate> ContentTypeDeserializers = new() {
-            { MimeTypes.Json, JsonDataContractSerializer.Instance.DeserializeFromStream },
+            { MimeTypes.Json, (t, s) => HostContext.AppHost.OnDeserializeJson(t,s) },
             { MimeTypes.Jsv, TypeSerializer.DeserializeFromStream },
             { MimeTypes.Xml, XmlSerializer.DeserializeFromStream },
             { "text/xml; charset=utf-8", XmlSerializer.DeserializeFromStream }, //"text/xml; charset=utf-8" matches xml + soap11
