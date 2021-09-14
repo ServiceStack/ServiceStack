@@ -91,10 +91,18 @@ namespace ServiceStack
 
             appHost.Container.Adapter = new NetCoreContainerAdapter(app.ApplicationServices);
 
-            if (appHost.AppSettings is NetCoreAppSettings config && 
-                appHost is IRequireConfiguration requiresConfig)
+            // Auto populate AppSettings with NetCoreAppSettings(IConfiguration)
+            var configuration = app.ApplicationServices.GetService<IConfiguration>();
+            if (configuration != null)
             {
-                requiresConfig.Configuration = config.Configuration;
+                if (appHost.AppSettings is AppSettings) // override if default
+                    appHost.AppSettings = new NetCoreAppSettings(configuration);
+            }
+            else
+            {
+                configuration = (appHost.AppSettings as NetCoreAppSettings)?.Configuration;
+                if (appHost is IRequireConfiguration requiresConfig)
+                    requiresConfig.Configuration = configuration;
             }
 
             var appLifetime = app.ApplicationServices.GetService<IApplicationLifetime>();
