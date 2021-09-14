@@ -76,7 +76,6 @@ namespace ServiceStack.Auth
                 throw new Exception("Email not verified");
             obj.Add("name", obj["username"]);
             obj.MoveKey("id", "user_id");
-            obj.MoveKey("username", "first_name");
             obj.MoveKey("avatar", AuthMetadataProvider.ProfileUrlKey, val =>
                 "https://cdn.discordapp.com/avatars/" + obj["user_id"] + "/" + val + ".png");
             return obj;
