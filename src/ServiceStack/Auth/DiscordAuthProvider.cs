@@ -39,6 +39,7 @@ namespace ServiceStack.Auth
             {
                 Scopes = new[]
                 {
+                    "identify",
                     "email"
                 };
             }
@@ -76,6 +77,10 @@ namespace ServiceStack.Auth
                 throw new Exception("Email not verified");
             obj.Add("name", obj["username"]);
             obj.MoveKey("id", "user_id");
+            // Username is not unique in Discord, in fact users can change easily.
+            // Randomly generated 4 digit discriminator also changes whenever
+            // the user changes their username. Only store user_id for lookups.
+            obj.Remove("username");
             obj.MoveKey("avatar", AuthMetadataProvider.ProfileUrlKey, val =>
                 "https://cdn.discordapp.com/avatars/" + obj["user_id"] + "/" + val + ".png");
             return obj;
