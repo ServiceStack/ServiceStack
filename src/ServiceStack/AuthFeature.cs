@@ -218,7 +218,7 @@ namespace ServiceStack
         };
 
         public AuthFeature(IAuthProvider authProvider) : this(() => new AuthUserSession(), new []{ authProvider }) {}
-        public AuthFeature(IAuthProvider[] authProviders) : this(() => new AuthUserSession(), authProviders) {}
+        public AuthFeature(IEnumerable<IAuthProvider> authProviders) : this(() => new AuthUserSession(), authProviders.ToArray()) {}
         public AuthFeature(Func<IAuthSession> sessionFactory, IAuthProvider[] authProviders, string htmlRedirect = null)
         {
             this.sessionFactory = sessionFactory;
