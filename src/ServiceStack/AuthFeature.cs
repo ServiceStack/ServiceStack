@@ -51,7 +51,7 @@ namespace ServiceStack
             }
         }
 
-        private readonly Func<IAuthSession> sessionFactory;
+        public Func<IAuthSession> SessionFactory { get; set; }
         private IAuthProvider[] authProviders;
         public IAuthProvider[] AuthProviders => authProviders;
 
@@ -236,7 +236,7 @@ namespace ServiceStack
         public AuthFeature(IEnumerable<IAuthProvider> authProviders) : this(() => new AuthUserSession(), authProviders.ToArray()) {}
         public AuthFeature(Func<IAuthSession> sessionFactory, IAuthProvider[] authProviders, string htmlRedirect = null)
         {
-            this.sessionFactory = sessionFactory;
+            this.SessionFactory = sessionFactory;
             this.authProviders = authProviders;
 
             ServiceRoutes = new Dictionary<Type, string[]> {
@@ -285,14 +285,14 @@ namespace ServiceStack
             OnBeforeInit?.Invoke(this);
 
             hasRegistered = true;
-            AuthenticateService.Init(sessionFactory, AuthProviders);
+            AuthenticateService.Init(SessionFactory, AuthProviders);
 
             var unitTest = appHost == null;
             if (unitTest) return;
 
             if (HostContext.StrictMode)
             {
-                var sessionInstance = sessionFactory();
+                var sessionInstance = SessionFactory();
                 if (TypeSerializer.HasCircularReferences(sessionInstance))
                     throw new StrictModeException($"User Session {sessionInstance.GetType().Name} cannot have circular dependencies", "sessionFactory",
                         StrictModeCodes.CyclicalUserSession);
