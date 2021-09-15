@@ -254,7 +254,7 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Use a plugin to register authProvider dynamically. Your plugin can implement `IPreInitPlugin` interface
+        /// Use a plugin or OnBeforeInit delegate to register authProvider dynamically. Your plugin can implement `IPreInitPlugin` interface
         /// to call `appHost.GetPlugin&lt;AuthFeature&gt;().RegisterAuthProvider()` before the AuthFeature is registered.
         /// </summary>
         public void RegisterAuthProvider(IAuthProvider authProvider)
@@ -265,6 +265,17 @@ namespace ServiceStack
             this.authProviders = new List<IAuthProvider>(this.AuthProviders) {
                 authProvider
             }.ToArray();
+        }
+
+        /// <summary>
+        /// Use a plugin or OnBeforeInit delegate to register authProvider dynamically. Your plugin can implement `IPreInitPlugin` interface
+        /// to call `appHost.GetPlugin&lt;AuthFeature&gt;().RegisterAuthProvider()` before the AuthFeature is registered.
+        /// </summary>
+        public void RegisterAuthProviders(IEnumerable<IAuthProvider> providers)
+        {
+            var mergedProviders = new List<IAuthProvider>(this.AuthProviders);
+            mergedProviders.AddRange(providers);
+            this.authProviders = mergedProviders.ToArray();
         }
 
         private bool hasRegistered;
