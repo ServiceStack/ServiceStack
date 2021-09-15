@@ -57,12 +57,22 @@ namespace ServiceStack
 
         public Dictionary<Type, string[]> ServiceRoutes { get; set; }
 
-        public List<IPlugin> RegisterPlugins { get; set; } = new List<IPlugin> {
+        public List<IPlugin> RegisterPlugins { get; set; } = new() {
             new SessionFeature()
         };
 
-        public List<IAuthEvents> AuthEvents { get; set; } = new List<IAuthEvents>();
+        public List<IAuthEvents> AuthEvents { get; set; } = new();
 
+        /// <summary>
+        /// Invoked before AuthFeature is registered
+        /// </summary>
+        public Action<AuthFeature> OnBeforeInit { get; set; }
+
+        /// <summary>
+        /// Invoked after AuthFeature is registered
+        /// </summary>
+        public Action<AuthFeature> OnAfterInit { get; set; }
+        
         /// <summary>
         /// Login path to redirect to
         /// </summary>
@@ -217,6 +227,11 @@ namespace ServiceStack
             UserAuthId = "0",
         };
 
+        public AuthFeature(Action<AuthFeature> configure) : this(() => new AuthUserSession(), TypeConstants<IAuthProvider>.EmptyArray)
+        {
+            OnBeforeInit = configure;
+        }
+        
         public AuthFeature(IAuthProvider authProvider) : this(() => new AuthUserSession(), new []{ authProvider }) {}
         public AuthFeature(IEnumerable<IAuthProvider> authProviders) : this(() => new AuthUserSession(), authProviders.ToArray()) {}
         public AuthFeature(Func<IAuthSession> sessionFactory, IAuthProvider[] authProviders, string htmlRedirect = null)
@@ -256,6 +271,8 @@ namespace ServiceStack
 
         public void Register(IAppHost appHost)
         {
+            OnBeforeInit?.Invoke(this);
+
             hasRegistered = true;
             AuthenticateService.Init(sessionFactory, AuthProviders);
 
@@ -328,6 +345,8 @@ namespace ServiceStack
                     })
                 };
             });
+
+            OnAfterInit?.Invoke(this);
         }
 
         public void AfterPluginsLoaded(IAppHost appHost)

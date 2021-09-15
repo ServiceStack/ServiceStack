@@ -288,10 +288,10 @@ namespace ServiceStack.Auth
             else if (HostContext.HasValidAuthSecret(req))
             {
                 var claims = new List<Claim> {
-                    new Claim(ClaimTypes.NameIdentifier, nameof(HostConfig.AdminAuthSecret), ClaimValueTypes.String, Issuer),
-                    new Claim(ClaimTypes.Name, RoleNames.Admin, ClaimValueTypes.String, Issuer),
-                    new Claim(ClaimTypes.GivenName, RoleNames.Admin, ClaimValueTypes.String, Issuer),
-                    new Claim(ClaimTypes.Surname, "User", ClaimValueTypes.String, Issuer),
+                    new(ClaimTypes.NameIdentifier, nameof(HostConfig.AdminAuthSecret), ClaimValueTypes.String, Issuer),
+                    new(ClaimTypes.Name, RoleNames.Admin, ClaimValueTypes.String, Issuer),
+                    new(ClaimTypes.GivenName, RoleNames.Admin, ClaimValueTypes.String, Issuer),
+                    new(ClaimTypes.Surname, "User", ClaimValueTypes.String, Issuer),
                 };
 
                 foreach (var adminRole in AdminRoles)
