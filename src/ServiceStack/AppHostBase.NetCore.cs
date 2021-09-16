@@ -344,6 +344,12 @@ namespace ServiceStack
 
         public static IApplicationBuilder UseServiceStack(this IApplicationBuilder app, AppHostBase appHost)
         {
+            // Manually simulating Modular Startup when using .NET 6+ top-level statements app builder
+            if (TopLevelAppModularStartup.Instance != null)
+            {
+                TopLevelAppModularStartup.Instance.Configure(app);
+            }
+
             appHost.Bind(app);
             appHost.Init();
             return app;
