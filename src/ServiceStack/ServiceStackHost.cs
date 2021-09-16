@@ -1,6 +1,9 @@
 ﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
+#if !NETSTANDARD2_0
+using System.Web;
+#endif
 
 using System;
 using System.Collections.Generic;
