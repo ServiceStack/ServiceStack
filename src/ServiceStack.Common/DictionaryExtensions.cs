@@ -10,7 +10,7 @@ namespace ServiceStack
     {
         public static TValue GetValueOrDefault<TValue, TKey>(this Dictionary<TKey, TValue> dictionary, TKey key)
         {
-            return dictionary.ContainsKey(key) ? dictionary[key] : default(TValue);
+            return dictionary.ContainsKey(key) ? dictionary[key] : default;
         }
     
         public static TValue GetValue<TValue, TKey>(this Dictionary<TKey, TValue> dictionary, TKey key, Func<TValue> defaultValue)

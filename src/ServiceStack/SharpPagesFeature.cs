@@ -211,8 +211,7 @@ namespace ServiceStack
             }
         }
 
-        private readonly ConcurrentDictionary<string, byte> catchAllPathsNotFound =
-            new ConcurrentDictionary<string, byte>();
+        private readonly ConcurrentDictionary<string, byte> catchAllPathsNotFound = new();
 
         protected virtual IHttpHandler RequestHandler(string httpMethod, string pathInfo, string filePath)
         {
@@ -238,7 +237,8 @@ namespace ServiceStack
             if (page != null)
             {
                 if (page.File.Name.StartsWith("_"))
-                    return new ForbiddenHttpHandler();
+                    return HostContext.AppHost.CustomErrorHttpHandlers
+                        .GetValueOrDefault(HttpStatusCode.Forbidden) as IHttpHandler ?? new ForbiddenHttpHandler(); 
 
                 //If it's a dir index page and doesn't have a trailing '/' let it pass through to RedirectDirectoriesToTrailingSlashes
                 if (pathInfo[pathInfo.Length - 1] != '/' && pathInfo.Substring(1) == page.File.Directory?.VirtualPath)

@@ -243,43 +243,13 @@ namespace ServiceStack
 
         public static void DoHtmlRedirect(string redirectUrl, IRequest req, IResponse res, bool includeRedirectParam)
         {
-            var url = GetHtmlRedirectUrl(req, redirectUrl, includeRedirectParam);
+            var url = HostContext.AssertPlugin<AuthFeature>().GetHtmlRedirectUrl(req, redirectUrl, includeRedirectParam);
             res.RedirectToUrl(url);
         }
 
-        public static string GetHtmlRedirectUrl(IRequest req) => GetHtmlRedirectUrl(req,
-            AuthenticateService.HtmlRedirectAccessDenied ?? AuthenticateService.HtmlRedirect,
-            includeRedirectParam: true);
+        public static string GetHtmlRedirectUrl(IRequest req) => 
+            HostContext.AssertPlugin<AuthFeature>().GetHtmlRedirectUrl(req, AuthenticateService.HtmlRedirectAccessDenied ?? AuthenticateService.HtmlRedirect, includeRedirectParam: true);
         
-        public static string GetHtmlRedirectUrl(IRequest req, string redirectUrl, bool includeRedirectParam)
-        {
-            var url = req.ResolveAbsoluteUrl(redirectUrl);
-            if (includeRedirectParam)
-            {
-                var redirectPath = !AuthenticateService.HtmlRedirectReturnPathOnly
-                    ? req.ResolveAbsoluteUrl("~" + req.PathInfo + ToQueryString(req.QueryString))
-                    : req.PathInfo + ToQueryString(req.QueryString);
-
-                var returnParam = HostContext.ResolveLocalizedString(AuthenticateService.HtmlRedirectReturnParam) ??
-                    HostContext.ResolveLocalizedString(LocalizedStrings.Redirect);
-
-                if (url.IndexOf("?" + returnParam, StringComparison.OrdinalIgnoreCase) == -1 &&
-                    url.IndexOf("&" + returnParam, StringComparison.OrdinalIgnoreCase) == -1)
-                {
-                    return url.AddQueryParam(returnParam, redirectPath);
-                }
-            }
-            return url;
-        }
-
-        private static string ToQueryString(NameValueCollection queryStringCollection)
-        {
-            if (queryStringCollection == null || queryStringCollection.Count == 0)
-                return string.Empty;
-
-            return "?" + queryStringCollection.ToFormUrlEncoded();
-        }
-
         protected bool Equals(AuthenticateAttribute other)
         {
             return base.Equals(other) && string.Equals(Provider, other.Provider) && string.Equals(HtmlRedirect, other.HtmlRedirect);

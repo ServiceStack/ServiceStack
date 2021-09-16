@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -315,6 +318,9 @@ namespace ServiceStack
             if (IncludeAuthMetadataProvider && appHost.TryResolve<IAuthMetadataProvider>() == null)
                 appHost.Register<IAuthMetadataProvider>(new AuthMetadataProvider());
 
+            appHost.CustomErrorHttpHandlers[HttpStatusCode.Unauthorized] = new AuthFeatureUnauthorizedHttpHandler(this);
+            appHost.CustomErrorHttpHandlers[HttpStatusCode.Forbidden] = new AuthFeatureForbiddenHttpHandler(this);
+
             AuthProviders.OfType<IAuthPlugin>().Each(x => x.Register(appHost, this));
 
             AuthenticateService.HtmlRedirect = HtmlRedirect;
@@ -395,6 +401,36 @@ namespace ServiceStack
 
             return "~/" + HostContext.ResolveLocalizedString(LocalizedStrings.Login);
         }
+        
+        public static string GetHtmlRedirectUrl(this AuthFeature feature, IRequest req, string redirectUrl, bool includeRedirectParam)
+        {
+            var url = req.ResolveAbsoluteUrl(redirectUrl);
+            if (includeRedirectParam)
+            {
+                var redirectPath = !feature.HtmlRedirectReturnPathOnly
+                    ? req.ResolveAbsoluteUrl("~" + req.PathInfo + ToQueryString(req.QueryString))
+                    : req.PathInfo + ToQueryString(req.QueryString);
+
+                var returnParam = HostContext.ResolveLocalizedString(feature.HtmlRedirectReturnParam) ??
+                                  HostContext.ResolveLocalizedString(LocalizedStrings.Redirect);
+
+                if (url.IndexOf("?" + returnParam, StringComparison.OrdinalIgnoreCase) == -1 &&
+                    url.IndexOf("&" + returnParam, StringComparison.OrdinalIgnoreCase) == -1)
+                {
+                    return url.AddQueryParam(returnParam, redirectPath);
+                }
+            }
+            return url;
+        }
+        
+        private static string ToQueryString(NameValueCollection queryStringCollection)
+        {
+            if (queryStringCollection == null || queryStringCollection.Count == 0)
+                return string.Empty;
+
+            return "?" + queryStringCollection.ToFormUrlEncoded();
+        }
+
 
         //http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
         public static Regex ValidUserNameRegEx = new Regex(@"^(?=.{3,20}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
@@ -454,4 +490,52 @@ namespace ServiceStack
             return result;
         }
     }
+    
+    public class AuthFeatureUnauthorizedHttpHandler : HttpAsyncTaskHandler
+    {
+        private readonly AuthFeature feature;
+        public AuthFeatureUnauthorizedHttpHandler(AuthFeature feature) => this.feature = feature;
+        
+        public override Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
+        {
+            if (feature.HtmlRedirectAccessDenied != null && req.ResponseContentType.MatchesContentType(MimeTypes.Html))
+            {
+                var url = feature.GetHtmlRedirectUrl(req, feature.HtmlRedirect, includeRedirectParam:true);
+                res.RedirectToUrl(url);
+                return TypeConstants.EmptyTask;
+            }
+
+            var iAuthProvider = feature.AuthProviders.First(); 
+            if (iAuthProvider is AuthProvider authProvider)
+                return authProvider.OnFailedAuthentication(null, req, res);
+            if (iAuthProvider is AuthProviderSync authProviderSync)
+                return authProviderSync.OnFailedAuthentication(null, req, res);
+
+            res.StatusCode = (int)HttpStatusCode.Unauthorized;
+            res.AddHeader(HttpHeaders.WwwAuthenticate, $"{iAuthProvider.Provider} realm=\"{iAuthProvider.AuthRealm}\"");
+            return HostContext.AppHost.HandleShortCircuitedErrors(req, res, req.Dto);
+        }
+
+        public override bool IsReusable => true;
+        public override bool RunAsAsync() => true;
+    }
+    
+    public class AuthFeatureForbiddenHttpHandler : ForbiddenHttpHandler
+    {
+        private readonly AuthFeature feature;
+        public AuthFeatureForbiddenHttpHandler(AuthFeature feature) => this.feature = feature;
+
+        public override Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
+        {
+            if (feature.HtmlRedirectAccessDenied != null && req.ResponseContentType.MatchesContentType(MimeTypes.Html))
+            {
+                var url = feature.GetHtmlRedirectUrl(req, feature.HtmlRedirectAccessDenied, includeRedirectParam:false);
+                res.RedirectToUrl(url);
+                return TypeConstants.EmptyTask;
+            }
+            return base.ProcessRequestAsync(req, res, operationName);
+        }
+    }
+    
+    
 }

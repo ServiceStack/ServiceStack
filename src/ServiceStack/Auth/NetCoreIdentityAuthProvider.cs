@@ -200,11 +200,9 @@ namespace ServiceStack.Auth
             
             session.PopulateFromMap(sessionValues);
 
-            if (session.UserAuthName?.IndexOf('@') >= 0)
-            {
+            if (session.UserAuthName?.IndexOf('@') >= 0 && session.Email == null)
                 session.Email = session.UserAuthName;
-            }
-            
+
             PopulateSessionFilter?.Invoke(session, claimsPrincipal, req);
 
             req.Items[Keywords.Session] = session;
