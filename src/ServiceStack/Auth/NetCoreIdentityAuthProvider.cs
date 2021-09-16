@@ -175,19 +175,16 @@ namespace ServiceStack.Auth
                     session.Permissions ??= new List<string>();
                     session.Permissions.Add(claim.Value);
                 }
-                else if (extended != null)
+                else if (extended != null && claim.Type == "aud")
                 {
-                    if (claim.Type == "aud")
-                    {
-                        extended.Audiences ??= new List<string>();
-                        extended.Audiences.Add(claim.Value);
-                    }
-                    else if (claim.Type == "scope")
-                    {
-                        extended.Scopes ??= new List<string>();
-                        extended.Scopes.Add(claim.Value);
-                    }
+                    extended.Audiences ??= new List<string>();
+                    extended.Audiences.Add(claim.Value);
                 }
+                else if (extended != null && claim.Type == "scope")
+                {
+                    extended.Scopes ??= new List<string>();
+                    extended.Scopes.Add(claim.Value);
+                }                        
                 else if (MapClaimsToSession.TryGetValue(claim.Type, out var sessionProp))
                 {
                     sessionValues[sessionProp] = claim.Value;
