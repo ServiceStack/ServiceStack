@@ -23,21 +23,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 return new[] { new DigestAuthProvider(AppSettings) };
             }
         }
-        ServiceStackHost appHost;
 
+        ServiceStackHost appHost;
         [OneTimeSetUp]
-        public void OnTestFixtureSetUp()
-        {
-            appHost = new AuthDigestAppHost(WebHostUrl, Configure);
-            appHost.Init();
-            appHost.Start(ListeningOn);
-        }
+        public void OnTestFixtureSetUp() =>
+            appHost = new AuthDigestAppHost(WebHostUrl, Configure)
+                .Init()
+                .Start(ListeningOn);
 
         [OneTimeTearDown]
-        public void OnTestFixtureTearDown()
-        {
-            appHost.Dispose();
-        }
+        public void OnTestFixtureTearDown() => appHost.Dispose();
 
         public virtual void Configure(Container container) { }
 

@@ -526,9 +526,13 @@ namespace ServiceStack
                 return TypeConstants.EmptyTask;
             }
 
-            var iAuthProvider = feature.AuthProviders.First(); 
-            res.StatusCode = (int)HttpStatusCode.Unauthorized;
-            res.AddHeader(HttpHeaders.WwwAuthenticate, $"{iAuthProvider.Provider} realm=\"{iAuthProvider.AuthRealm}\"");
+            if (res.StatusCode < 300)
+                res.StatusCode = (int)HttpStatusCode.Unauthorized;
+            if (string.IsNullOrEmpty(res.GetHeader(HttpHeaders.WwwAuthenticate)))
+            {
+                var iAuthProvider = feature.AuthProviders.First(); 
+                res.AddHeader(HttpHeaders.WwwAuthenticate, $"{iAuthProvider.Provider} realm=\"{iAuthProvider.AuthRealm}\"");
+            }
             return res.EndHttpHandlerRequestAsync();
         }
 
@@ -549,7 +553,13 @@ namespace ServiceStack
                 res.RedirectToUrl(url);
                 return TypeConstants.EmptyTask;
             }
-            return base.ProcessRequestAsync(req, res, operationName);
+
+            res.ContentType = "text/plain";
+            return res.EndHttpHandlerRequestAsync(skipClose: true, afterHeaders: r => {
+                var sb = CreateForbiddenResponseTextBody(req);
+
+                return res.OutputStream.WriteAsync(StringBuilderCache.ReturnAndFree(sb));
+            });
         }
     }
     
