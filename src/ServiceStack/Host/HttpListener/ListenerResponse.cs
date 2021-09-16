@@ -53,7 +53,12 @@ namespace ServiceStack.Host.HttpListener
 
         public void AddHeader(string name, string value)
         {
-            response.Headers.Add(name, value); // HttpListenerResponse.AddHeader() sets/overrides
+            response.AddHeader(name, value); // HttpListenerResponse.AddHeader() sets/overrides
+        }
+
+        public void AppendHeader(string name, string value)
+        {
+            response.Headers.Add(name, value); // Fails with special headers e.g. WWW-Authenticate
         }
 
         public void RemoveHeader(string name)
