@@ -10,7 +10,6 @@ using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using Funq;
 using ServiceStack.Admin;
 using ServiceStack.Auth;
@@ -31,7 +30,6 @@ using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 using ServiceStack.Redis;
 using ServiceStack.Script;
-using ServiceStack.Validation;
 
 namespace ServiceStack
 {
@@ -169,6 +167,7 @@ namespace ServiceStack
                 new RequestInfoFeature(),
                 new SpanFormats(),
                 new SvgFeature(),
+                new Validation.ValidationFeature(),
             };
             ExcludeAutoRegisteringServiceTypes = new HashSet<Type> {
                 typeof(AuthenticateService),
@@ -309,6 +308,21 @@ namespace ServiceStack
 
             if (!Config.DebugMode)
                 Plugins.RemoveAll(x => x is RequestInfoFeature);
+
+            var validationPluginsCount = Plugins.Count(x => x is Validation.ValidationFeature);
+            if (validationPluginsCount > 1)
+            {
+                Log.Warn($"Multiple ValidationFeature Plugins detected. Removing default ValidationFeature plugin...");
+                for (var i = 0; i < Plugins.Count; i++)
+                {
+                    var plugin = Plugins[i];
+                    if (plugin is Validation.ValidationFeature)
+                    {
+                        Plugins.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
 
             //Some plugins need to initialize before other plugins are registered.
             Plugins.ToList().ForEach(RunPreInitPlugin);
