@@ -40,7 +40,7 @@ namespace ServiceStack.Auth
             set => IdClaimTypes = new List<string> { value };
         }
         
-        public List<string> IdClaimTypes { get; set; } = new List<string> {
+        public List<string> IdClaimTypes { get; set; } = new() {
             ClaimTypes.NameIdentifier, //ASP.NET Identity default
             "sub",                     //JWT User
         };
@@ -56,11 +56,11 @@ namespace ServiceStack.Auth
         /// <summary>
         /// Automatically Assign these roles to Admin Users. 
         /// </summary>
-        public List<string> AdminRoles { get; set; } = new List<string> {
+        public List<string> AdminRoles { get; set; } = new() {
             RoleNames.Admin,
         };
         
-        public Dictionary<string, string> MapClaimsToSession { get; set; } = new Dictionary<string, string> {
+        public Dictionary<string, string> MapClaimsToSession { get; set; } = new() {
             [ClaimTypes.Email] = nameof(AuthUserSession.Email),
             [ClaimTypes.Name] = nameof(AuthUserSession.UserAuthName),
             [ClaimTypes.GivenName] = nameof(AuthUserSession.FirstName),
@@ -158,8 +158,8 @@ namespace ServiceStack.Auth
             
             var authMethodClaim = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.AuthenticationMethod);            
             session.AuthProvider = authMethodClaim?.Value 
-                                   ?? claimsPrincipal.Identity?.AuthenticationType
-                                   ?? Name;
+                ?? claimsPrincipal.Identity?.AuthenticationType
+                ?? Name;
 
             var sessionValues = new Dictionary<string,string>();
             
@@ -167,27 +167,26 @@ namespace ServiceStack.Auth
             {
                 if (claim.Type == RoleClaimType)
                 {
-                    if (session.Roles == null)
-                        session.Roles = new List<string>();
+                    session.Roles ??= new List<string>();
                     session.Roles.Add(claim.Value);
                 }
                 if (claim.Type == PermissionClaimType)
                 {
-                    if (session.Permissions == null)
-                        session.Permissions = new List<string>();
+                    session.Permissions ??= new List<string>();
                     session.Permissions.Add(claim.Value);
                 }
-                else if (claim.Type == "aud" && extended != null)
+                else if (extended != null)
                 {
-                    if (extended.Audiences == null)
-                        extended.Audiences = new List<string>();
-                    extended.Audiences.Add(claim.Value);
-                }
-                else if (claim.Type == "scope" && extended != null)
-                {
-                    if (extended.Scopes == null)
-                        extended.Scopes = new List<string>();
-                    extended.Scopes.Add(claim.Value);
+                    if (claim.Type == "aud")
+                    {
+                        extended.Audiences ??= new List<string>();
+                        extended.Audiences.Add(claim.Value);
+                    }
+                    else if (claim.Type == "scope")
+                    {
+                        extended.Scopes ??= new List<string>();
+                        extended.Scopes.Add(claim.Value);
+                    }
                 }
                 else if (MapClaimsToSession.TryGetValue(claim.Type, out var sessionProp))
                 {
@@ -211,7 +210,7 @@ namespace ServiceStack.Auth
             req.Items[Keywords.Session] = session;
         }
         
-        public HashSet<string> IgnoreAutoSignInForExtensions { get; set; } = new HashSet<string> {
+        public HashSet<string> IgnoreAutoSignInForExtensions { get; set; } = new() {
             "js", "css", "png", "jpg", "jpeg", "gif", "svg", "ico"
         };
 
