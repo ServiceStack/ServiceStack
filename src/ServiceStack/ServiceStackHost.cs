@@ -954,6 +954,14 @@ namespace ServiceStack
             return httpRes.WriteErrorToResponse(httpReq, httpReq.ResponseContentType, operationName, errorMessage, ex, statusCode);
         }
 
+        public virtual Task HandleShortCircuitedErrors(IRequest req, IResponse res, object requestDto, 
+            HttpStatusCode statusCode, string statusDescription=null)
+        {
+            res.StatusCode = (int)statusCode;
+            res.StatusDescription = statusDescription;
+            return HandleShortCircuitedErrors(req, res, requestDto);
+        }
+        
         /// <summary>
         /// Override to intercept Short Circuited Authentication Errors
         /// </summary>
@@ -970,13 +978,22 @@ namespace ServiceStack
                         await ContentTypes.SerializeToStreamAsync(req, response, httpRes.OutputStream).ConfigAwait();
                     }).ConfigAwait();
                 }
-            }
-            finally
-            {
-                if (response == null)
+                else
                 {
-                    await res.EndRequestAsync().ConfigAwait();
+                    var handler = HostContext.AppHost.GetCustomErrorHandler(res.StatusCode);
+                    if (handler != null)
+                    {
+                        await handler.ProcessRequestAsync(req, res, req.OperationName);                        
+                    }
+                    else
+                    {
+                        await res.EndRequestAsync().ConfigAwait();
+                    }
                 }
+            }
+            catch
+            {
+                await res.EndRequestAsync().ConfigAwait();
             }
         }
 

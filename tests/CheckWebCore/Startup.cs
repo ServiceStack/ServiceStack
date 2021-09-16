@@ -412,6 +412,21 @@ namespace CheckWebCore
         public string Email { get; set; }
     }
 
+
+    [ValidateIsAuthenticated]
+    [Route("/helloauth/{Name}")]
+    public class HelloAuth : IReturn<HelloResponse>
+    {
+        public string Name { get; set; }
+    }
+
+    [ValidateHasRole("TheRole")]
+    [Route("/hellorole/{Name}")]
+    public class HelloRole : IReturn<HelloResponse>
+    {
+        public string Name { get; set; }
+    }
+
     //    [Authenticate]
     public class MyServices : Service
     {
@@ -426,10 +441,12 @@ namespace CheckWebCore
             Request.GetPageResult("/");
 //            new PageResult(Request.GetPage("/")) { Args = { [nameof(Request)] = Request } };
 
-        public object Any(Hello request)
-        {
-            return new HelloResponse { Result = $"Hello, {request.Name}!" };
-        }
+        HelloResponse CreateResponse(object request, string name) =>
+            new() { Result = $"{request.GetType().Name}, {name}!" };
+        
+        public object Any(Hello request) => CreateResponse(request, request.Name);
+        public object Any(HelloAuth request) => CreateResponse(request, request.Name);
+        public object Any(HelloRole request) => CreateResponse(request, request.Name);
 
         public object Any(TestAuth request) => request;
 

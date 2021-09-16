@@ -38,7 +38,10 @@ namespace CheckWebCore
                     new FacebookAuthProvider(AppSettings),
                     new MicrosoftGraphAuthProvider(AppSettings), 
 //                    new LinkedInAuthProvider(AppSettings), 
-                }));
+                }) {
+                HtmlRedirect = "/validation/server/login",
+                HtmlRedirectAccessDenied = "/forbidden",
+            });
 
             appHost.Plugins.Add(new RegistrationFeature());
 

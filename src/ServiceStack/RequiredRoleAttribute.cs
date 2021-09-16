@@ -42,12 +42,8 @@ namespace ServiceStack
             if (await HasAllRolesAsync(req, await req.GetSessionAsync().ConfigAwait(), RequiredRoles).ConfigAwait())
                 return;
 
-            if (DoHtmlRedirectAccessDeniedIfConfigured(req, res))
-                return;
-
-            res.StatusCode = (int)HttpStatusCode.Forbidden;
-            res.StatusDescription = ErrorMessages.InvalidRole.Localize(req);
-            await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto).ConfigAwait();
+            await HandleShortCircuitedErrors(req, res, requestDto,
+                HttpStatusCode.Forbidden, ErrorMessages.InvalidRole.Localize(req)).ConfigAwait();
         }
 
         [Obsolete("Use HasAllRolesAsync")]

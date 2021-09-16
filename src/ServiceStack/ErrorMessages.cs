@@ -34,6 +34,7 @@ namespace ServiceStack
 
         public static string InvalidRole = "Invalid Role";
         public static string InvalidPermission = "Invalid Permission";
+        public static string WebSudoRequired = "Web Sudo Required";
 
         public static string ClaimDoesNotExistFmt = "Claim '{0}' with '{1}' does not exist";
 

@@ -356,17 +356,6 @@ namespace ServiceStack.Auth
             return HostContext.AppHost.HandleShortCircuitedErrors(httpReq, httpRes, httpReq.Dto);
         }
 
-        public static Task HandleFailedAuth(IAuthProvider authProvider,
-            IAuthSession session, IRequest httpReq, IResponse httpRes)
-        {
-            if (authProvider is AuthProvider baseAuthProvider)
-                return baseAuthProvider.OnFailedAuthentication(session, httpReq, httpRes);
-
-            httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
-            httpRes.AddHeader(HttpHeaders.WwwAuthenticate, $"{authProvider.Provider} realm=\"{authProvider.AuthRealm}\"");
-            return HostContext.AppHost.HandleShortCircuitedErrors(httpReq, httpRes, httpReq.Dto);
-        }
-
         protected virtual async Task<bool> UserNameAlreadyExistsAsync(IAuthRepositoryAsync authRepo, IUserAuth userAuth, IAuthTokens tokens = null, CancellationToken token=default)
         {
             if (tokens?.UserName != null)

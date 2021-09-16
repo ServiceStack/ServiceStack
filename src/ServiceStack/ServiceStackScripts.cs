@@ -306,7 +306,7 @@ namespace ServiceStack
         {
             if (!isAuthenticated(scope))
             {
-                var url = AuthenticateAttribute.GetHtmlRedirectUrl(scope.GetRequest());
+                var url = HostContext.AssertPlugin<AuthFeature>().GetHtmlRedirectUrl(scope.GetRequest());
                 return redirectTo(scope, url);
             }
             return IgnoreResult.Value;

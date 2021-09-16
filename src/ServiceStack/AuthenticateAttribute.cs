@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -80,10 +79,7 @@ namespace ServiceStack
             var session = await req.GetSessionAsync().ConfigAwait();
             if (session == null || !authProviders.Any(x => session.IsAuthorized(x.Provider)))
             {
-                if (this.DoHtmlRedirectIfConfigured(req, res, true))
-                    return;
-
-                await AuthProvider.HandleFailedAuth(authProviders[0], session, req, res).ConfigAwait();
+                await authProviders[0].HandleFailedAuth(session, req, res).ConfigAwait();
             }
         }
 
@@ -219,36 +215,14 @@ namespace ServiceStack
             }
         }
 
-        protected bool DoHtmlRedirectIfConfigured(IRequest req, IResponse res, bool includeRedirectParam = false)
+        protected virtual Task HandleShortCircuitedErrors(IRequest req, IResponse res, object requestDto, 
+            HttpStatusCode statusCode, string statusDescription=null)
         {
-            var htmlRedirect = this.HtmlRedirect ?? AuthenticateService.HtmlRedirect;
-            if (htmlRedirect != null && req.ResponseContentType.MatchesContentType(MimeTypes.Html))
-            {
-                DoHtmlRedirect(htmlRedirect, req, res, includeRedirectParam);
-                return true;
-            }
-            return false;
-        }
+            if (HtmlRedirect != null)
+                req.Items[nameof(AuthFeature.HtmlRedirect)] = HtmlRedirect;
 
-        protected bool DoHtmlRedirectAccessDeniedIfConfigured(IRequest req, IResponse res, bool includeRedirectParam = false)
-        {
-            var htmlRedirect = this.HtmlRedirect ?? AuthenticateService.HtmlRedirectAccessDenied ?? AuthenticateService.HtmlRedirect;
-            if (htmlRedirect != null && req.ResponseContentType.MatchesContentType(MimeTypes.Html))
-            {
-                DoHtmlRedirect(htmlRedirect, req, res, includeRedirectParam);
-                return true;
-            }
-            return false;
+            return HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto, statusCode, statusDescription);
         }
-
-        public static void DoHtmlRedirect(string redirectUrl, IRequest req, IResponse res, bool includeRedirectParam)
-        {
-            var url = HostContext.AssertPlugin<AuthFeature>().GetHtmlRedirectUrl(req, redirectUrl, includeRedirectParam);
-            res.RedirectToUrl(url);
-        }
-
-        public static string GetHtmlRedirectUrl(IRequest req) => 
-            HostContext.AssertPlugin<AuthFeature>().GetHtmlRedirectUrl(req, AuthenticateService.HtmlRedirectAccessDenied ?? AuthenticateService.HtmlRedirect, includeRedirectParam: true);
         
         protected bool Equals(AuthenticateAttribute other)
         {

@@ -560,11 +560,12 @@ namespace ServiceStack.Razor
         {
             if (IsAuthenticated) return;
 
-            redirectUrl ??= AuthenticateService.HtmlRedirect
-                        ?? HostContext.Config.DefaultRedirectPath
-                        ?? HostContext.Config.WebHostUrl
-                        ?? "/";
-            AuthenticateAttribute.DoHtmlRedirect(redirectUrl, Request, Response, includeRedirectParam: true);
+            var authFeature = HostContext.AppHost.AssertPlugin<AuthFeature>();
+            redirectUrl ??= authFeature.HtmlRedirect
+                ?? HostContext.Config.DefaultRedirectPath
+                ?? HostContext.Config.WebHostUrl
+                ?? "/";
+            authFeature.DoHtmlRedirect(redirectUrl, Request, Response, includeRedirectParam: true);
             throw new StopExecutionException();
         }
 

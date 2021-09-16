@@ -181,8 +181,7 @@ namespace ServiceStack.Auth
         {
             var digestHelper = new DigestAuthFunctions();
             httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
-            httpRes.AddHeader(
-                HttpHeaders.WwwAuthenticate,
+            httpRes.AddHeader(HttpHeaders.WwwAuthenticate,
                 $"{Provider} realm=\"{AuthRealm}\", nonce=\"{digestHelper.GetNonce(httpReq.UserHostAddress, PrivateKey)}\", qop=\"auth\"");
             return HostContext.AppHost.HandleShortCircuitedErrors(httpReq, httpRes, httpReq.Dto);
         }

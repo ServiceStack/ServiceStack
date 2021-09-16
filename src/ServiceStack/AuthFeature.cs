@@ -319,7 +319,8 @@ namespace ServiceStack
                 appHost.Register<IAuthMetadataProvider>(new AuthMetadataProvider());
 
             appHost.CustomErrorHttpHandlers[HttpStatusCode.Unauthorized] = new AuthFeatureUnauthorizedHttpHandler(this);
-            appHost.CustomErrorHttpHandlers[HttpStatusCode.Forbidden] = new AuthFeatureForbiddenHttpHandler(this);
+            appHost.CustomErrorHttpHandlers[HttpStatusCode.Forbidden] = new AuthFeatureAccessDeniedHttpHandler(this);
+            appHost.CustomErrorHttpHandlers[HttpStatusCode.PaymentRequired] = new AuthFeatureAccessDeniedHttpHandler(this);
 
             AuthProviders.OfType<IAuthPlugin>().Each(x => x.Register(appHost, this));
 
@@ -401,6 +402,9 @@ namespace ServiceStack
 
             return "~/" + HostContext.ResolveLocalizedString(LocalizedStrings.Login);
         }
+
+        public static string GetHtmlRedirectUrl(this AuthFeature feature, IRequest req) =>
+            feature.GetHtmlRedirectUrl(req, feature.HtmlRedirectAccessDenied ?? feature.HtmlRedirect, includeRedirectParam: true);
         
         public static string GetHtmlRedirectUrl(this AuthFeature feature, IRequest req, string redirectUrl, bool includeRedirectParam)
         {
@@ -423,6 +427,12 @@ namespace ServiceStack
             return url;
         }
         
+        public static void DoHtmlRedirect(this AuthFeature feature, string redirectUrl, IRequest req, IResponse res, bool includeRedirectParam)
+        {
+            var url = feature.GetHtmlRedirectUrl(req, redirectUrl, includeRedirectParam);
+            res.RedirectToUrl(url);
+        }
+        
         private static string ToQueryString(NameValueCollection queryStringCollection)
         {
             if (queryStringCollection == null || queryStringCollection.Count == 0)
@@ -431,9 +441,8 @@ namespace ServiceStack
             return "?" + queryStringCollection.ToFormUrlEncoded();
         }
 
-
         //http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
-        public static Regex ValidUserNameRegEx = new Regex(@"^(?=.{3,20}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
+        public static Regex ValidUserNameRegEx = new(@"^(?=.{3,20}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
 
         public static bool IsValidUsername(this AuthFeature feature, string userName)
         {
@@ -489,6 +498,18 @@ namespace ServiceStack
             }
             return result;
         }
+        
+        public static Task HandleFailedAuth(this IAuthProvider authProvider,
+            IAuthSession session, IRequest httpReq, IResponse httpRes)
+        {
+            if (authProvider is AuthProvider baseAuthProvider)
+                return baseAuthProvider.OnFailedAuthentication(session, httpReq, httpRes);
+
+            httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
+            httpRes.AddHeader(HttpHeaders.WwwAuthenticate, $"{authProvider.Provider} realm=\"{authProvider.AuthRealm}\"");
+            return HostContext.AppHost.HandleShortCircuitedErrors(httpReq, httpRes, httpReq.Dto);
+        }
+        
     }
     
     public class AuthFeatureUnauthorizedHttpHandler : HttpAsyncTaskHandler
@@ -498,7 +519,7 @@ namespace ServiceStack
         
         public override Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
         {
-            if (feature.HtmlRedirectAccessDenied != null && req.ResponseContentType.MatchesContentType(MimeTypes.Html))
+            if (feature.HtmlRedirect != null && req.ResponseContentType.MatchesContentType(MimeTypes.Html))
             {
                 var url = feature.GetHtmlRedirectUrl(req, feature.HtmlRedirect, includeRedirectParam:true);
                 res.RedirectToUrl(url);
@@ -506,24 +527,19 @@ namespace ServiceStack
             }
 
             var iAuthProvider = feature.AuthProviders.First(); 
-            if (iAuthProvider is AuthProvider authProvider)
-                return authProvider.OnFailedAuthentication(null, req, res);
-            if (iAuthProvider is AuthProviderSync authProviderSync)
-                return authProviderSync.OnFailedAuthentication(null, req, res);
-
             res.StatusCode = (int)HttpStatusCode.Unauthorized;
             res.AddHeader(HttpHeaders.WwwAuthenticate, $"{iAuthProvider.Provider} realm=\"{iAuthProvider.AuthRealm}\"");
-            return HostContext.AppHost.HandleShortCircuitedErrors(req, res, req.Dto);
+            return res.EndHttpHandlerRequestAsync();
         }
 
         public override bool IsReusable => true;
         public override bool RunAsAsync() => true;
     }
     
-    public class AuthFeatureForbiddenHttpHandler : ForbiddenHttpHandler
+    public class AuthFeatureAccessDeniedHttpHandler : ForbiddenHttpHandler
     {
         private readonly AuthFeature feature;
-        public AuthFeatureForbiddenHttpHandler(AuthFeature feature) => this.feature = feature;
+        public AuthFeatureAccessDeniedHttpHandler(AuthFeature feature) => this.feature = feature;
 
         public override Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
         {
@@ -536,6 +552,5 @@ namespace ServiceStack
             return base.ProcessRequestAsync(req, res, operationName);
         }
     }
-    
     
 }

@@ -993,12 +993,12 @@ namespace ServiceStack.Mvc
             if (req.GetSession().IsAuthenticated)
                 return;
 
-            redirect = redirect
-               ?? AuthenticateService.HtmlRedirect
-               ?? HostContext.Config.DefaultRedirectPath
-               ?? HostContext.Config.WebHostUrl
-               ?? "/";
-            AuthenticateAttribute.DoHtmlRedirect(redirect, req, req.Response, includeRedirectParam: true);
+            var authFeature = HostContext.AppHost.AssertPlugin<AuthFeature>();
+            redirect ??= authFeature.HtmlRedirect
+                ?? HostContext.Config.DefaultRedirectPath
+                ?? HostContext.Config.WebHostUrl
+                ?? "/";
+            authFeature.DoHtmlRedirect(redirect, req, req.Response, includeRedirectParam: true);
             throw new StopExecutionException();
         }
         

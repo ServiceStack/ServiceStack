@@ -54,12 +54,8 @@ namespace ServiceStack
                     return;
             }
 
-            if (DoHtmlRedirectAccessDeniedIfConfigured(req, res))
-                return;
-
-            res.StatusCode = (int)HttpStatusCode.Forbidden;
-            res.StatusDescription = ErrorMessages.InvalidPermission.Localize(req);
-            await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto).ConfigAwait();
+            await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto,
+                HttpStatusCode.Forbidden, ErrorMessages.InvalidPermission.Localize(req)).ConfigAwait();
         }
 
         [Obsolete("Use HasAnyPermissionsAsync")]

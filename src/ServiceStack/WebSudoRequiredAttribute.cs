@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Web;
@@ -33,14 +34,12 @@ namespace ServiceStack
             using (authRepo as IDisposable)
             {
                 if (session != null && session.HasRole("Admin", authRepo)
-                    || (await this.HasWebSudoAsync(req, session as IWebSudoAuthSession)
-                    || this.DoHtmlRedirectAccessDeniedIfConfigured(req, res)))
+                    || await this.HasWebSudoAsync(req, session as IWebSudoAuthSession))
                     return;
             }
 
-            res.StatusCode = 402;
-            res.StatusDescription = "Web Sudo Required";
-            res.EndRequest();
+            await HandleShortCircuitedErrors(req, res, requestDto,
+                HttpStatusCode.PaymentRequired, ErrorMessages.WebSudoRequired.Localize(req)).ConfigAwait();
         }
 
         public async Task<bool> HasWebSudoAsync(IRequest req, IWebSudoAuthSession session)
