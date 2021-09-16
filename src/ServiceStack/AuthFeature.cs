@@ -300,11 +300,17 @@ namespace ServiceStack
 
             appHost.RegisterServices(ServiceRoutes);
 
-            var sessionFeature = RegisterPlugins.OfType<SessionFeature>().First();
-            sessionFeature.SessionExpiry = SessionExpiry;
-            sessionFeature.PermanentSessionExpiry = PermanentSessionExpiry;
+            var sessionFeature = RegisterPlugins.OfType<SessionFeature>().FirstOrDefault();
+            if (sessionFeature != null)
+            {
+                sessionFeature.SessionExpiry = SessionExpiry;
+                sessionFeature.PermanentSessionExpiry = PermanentSessionExpiry;
+            }
 
-            appHost.LoadPlugin(RegisterPlugins.ToArray());
+            if (RegisterPlugins.Count > 0)
+            {
+                appHost.LoadPlugin(RegisterPlugins.ToArray());
+            }
 
             if (IncludeAuthMetadataProvider && appHost.TryResolve<IAuthMetadataProvider>() == null)
                 appHost.Register<IAuthMetadataProvider>(new AuthMetadataProvider());
