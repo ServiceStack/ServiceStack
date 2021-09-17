@@ -2259,6 +2259,11 @@ namespace ServiceStack
         {
             PclExport.Instance.SetUserAgent(req, userAgent);
         }
+
+        public static void AddAuthSecret(this IRestClient client, string authsecret)
+        {
+            client.AddHeader(HttpHeaders.XParamOverridePrefix + nameof(authsecret), authsecret);
+        }
     }
 
     public interface IHasCookieContainer
