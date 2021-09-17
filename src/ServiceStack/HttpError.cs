@@ -26,6 +26,12 @@ namespace ServiceStack
         public HttpError(int statusCode, string errorCode)
             : this(statusCode, errorCode, null)
         { }
+        
+        public HttpError(ResponseStatus responseStatus, HttpStatusCode statusCode) 
+            : this(new ErrorResponse { ResponseStatus = responseStatus }, statusCode, responseStatus.ErrorCode, responseStatus.Message) {}
+
+        public HttpError(IHasResponseStatus responseDto, HttpStatusCode statusCode) 
+            : this(responseDto, statusCode, responseDto.ResponseStatus.ErrorCode, responseDto.ResponseStatus.Message) {}
 
         public HttpError(object responseDto, HttpStatusCode statusCode, string errorCode, string errorMessage)
             : this(statusCode, errorCode, errorMessage)
