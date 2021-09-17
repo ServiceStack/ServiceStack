@@ -110,8 +110,22 @@ namespace ServiceStack.Auth
         protected async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, string userName, string password, string referrerUrl, CancellationToken token=default)
         {
             session = await ResetSessionBeforeLoginAsync(authService, session, userName, token).ConfigAwait();
+
+            bool success = false;
+            var authFeature = HostContext.AppHost.AssertPlugin<AuthFeature>();
+            if (HostContext.HasValidAuthSecret(authService.Request))
+            {
+                if (userName == authFeature.AuthSecretSession.UserName)
+                {
+                    session = authFeature.AuthSecretSession;
+                    success = true;
+                }
+            }
             
-            if (await TryAuthenticateAsync(authService, userName, password, token).ConfigAwait())
+            if (!success)
+                success = await TryAuthenticateAsync(authService, userName, password, token).ConfigAwait();
+            
+            if (success)
             {
                 session.IsAuthenticated = true;
 
