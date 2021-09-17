@@ -41,6 +41,7 @@ namespace ServiceStack
 
         //Register
         public static string UserNotExists = "User does not exist";
+        public static string AlreadyRegistered = "You're already registered";
         public static string AuthRepositoryNotExists = "No IAuthRepository registered in IoC or failed to resolve.";
         public static string UsernameAlreadyExists = "Username already exists";
         public static string EmailAlreadyExists = "Email already exists";

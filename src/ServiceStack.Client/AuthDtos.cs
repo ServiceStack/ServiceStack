@@ -84,7 +84,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class RegisterResponse : IMeta
+    public class RegisterResponse : IHasResponseStatus, IMeta
     {
         public RegisterResponse()
         {

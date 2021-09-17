@@ -53,6 +53,8 @@ namespace ServiceStack.Auth
     public abstract class IdentityRegisterServiceBase<TUser> : RegisterServiceBase
         where TUser : IdentityUser
     {
+        public IValidator<Register> RegistrationValidator { get; set; }
+
         protected readonly UserManager<TUser> userManager;
         public IdentityRegisterServiceBase(UserManager<TUser> userManager)
         {
@@ -69,6 +71,12 @@ namespace ServiceStack.Auth
 
         protected async Task<bool> UserExistsAsync(IAuthSession session) => 
             session.IsAuthenticated && await userManager.FindByEmailAsync(session.UserAuthName ?? session.Email).ConfigAwait() != null;
+        
+        protected virtual async Task ValidateAndThrowAsync(Register request)
+        {
+            var validator = RegistrationValidator ?? new RegistrationValidator();
+            await validator.ValidateAndThrowAsync(request, ApplyTo.Post).ConfigAwait();
+        }
 
         protected async Task RegisterNewUserAsync(IAuthSession session, TUser user)
         {
@@ -94,7 +102,7 @@ namespace ServiceStack.Auth
         {
             var session = await GetSessionAsync();
             if (await UserExistsAsync(session))
-                throw new NotSupportedException("You're already registered");
+                throw new NotSupportedException(ErrorMessages.AlreadyRegistered);
 
             await ValidateAndThrowAsync(request);
 
@@ -103,7 +111,7 @@ namespace ServiceStack.Auth
             var result = await userManager.CreateAsync(newUser, request.Password);
             if (result.Succeeded)
             {
-                session = ((IdentityAuthContext<TUser, TRole>)IdentityAuth.Config!).UserToSessionConverter(newUser);
+                session = ((IdentityAuthContext<TUser, TRole>)IdentityAuth.Config!)!.UserToSessionConverter(newUser);
                 await RegisterNewUserAsync(session, newUser);
             
                 var response = await CreateRegisterResponse(session, 
@@ -130,7 +138,7 @@ namespace ServiceStack.Auth
                 status.ErrorCode = firstError.ErrorCode;
                 status.Message = firstError.Message;
             }
-            return new HttpError(errorResponse, HttpStatusCode.BadRequest, status.ErrorCode, status.Message);
+            return new HttpError(errorResponse, HttpStatusCode.BadRequest);
         }
     }
 }

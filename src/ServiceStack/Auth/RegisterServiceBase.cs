@@ -76,7 +76,9 @@ namespace ServiceStack.Auth
     /// </summary>
     public abstract class RegisterUserAuthServiceBase : RegisterServiceBase
     {
-        protected IUserAuth ToUser(Register request)
+        public IValidator<Register> RegistrationValidator { get; set; }
+
+        protected virtual IUserAuth ToUser(Register request)
         {
             var to = AuthRepositoryAsync is ICustomUserAuth customUserAuth
                 ? customUserAuth.CreateUserAuth()
@@ -87,10 +89,16 @@ namespace ServiceStack.Auth
             return to;
         }
 
-        protected async Task<bool> UserExistsAsync(IAuthSession session) => 
+        protected virtual async Task<bool> UserExistsAsync(IAuthSession session) => 
             session.IsAuthenticated && await AuthRepositoryAsync.GetUserAuthAsync(session, null).ConfigAwait() != null;
 
-        protected async Task RegisterNewUserAsync(IAuthSession session, IUserAuth user)
+        protected virtual async Task ValidateAndThrowAsync(Register request)
+        {
+            var validator = RegistrationValidator ?? new RegistrationValidator();
+            await validator.ValidateAndThrowAsync(request, ApplyTo.Post).ConfigAwait();
+        }
+
+        protected virtual async Task RegisterNewUserAsync(IAuthSession session, IUserAuth user)
         {
             var authEvents = TryResolve<IAuthEvents>();
             session.UserAuthId = user.Id.ToString(CultureInfo.InvariantCulture);
@@ -109,15 +117,7 @@ namespace ServiceStack.Auth
     /// </summary>
     public abstract class RegisterServiceBase : Service
     {
-        public IValidator<Register> RegistrationValidator { get; set; }
-
-        protected async Task ValidateAndThrowAsync(Register request)
-        {
-            var validator = RegistrationValidator ?? new RegistrationValidator();
-            await validator.ValidateAndThrowAsync(request, ApplyTo.Post).ConfigAwait();
-        }
-        
-        protected async Task<object> CreateRegisterResponse(IAuthSession session, string userName, string password, bool? autoLogin=null)
+        protected virtual async Task<object> CreateRegisterResponse(IAuthSession session, string userName, string password, bool? autoLogin=null)
         {
             var returnUrl = Request.GetReturnUrl();
             if (!string.IsNullOrEmpty(returnUrl))

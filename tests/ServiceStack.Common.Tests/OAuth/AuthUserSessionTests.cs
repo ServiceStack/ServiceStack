@@ -91,7 +91,11 @@ namespace ServiceStack.Common.Tests.OAuth
         public void TestFixtureSetUp()
         {
             RegisterService.AllowUpdates = true;
-            appHost = new BasicAppHost().Init();
+            appHost = new BasicAppHost {
+                ConfigureAppHost = host => {
+                    host.Plugins.Add(new AuthFeature(new CredentialsAuthProvider(host.AppSettings)));
+                }
+            }.Init();
         }
 
         [OneTimeTearDown]
