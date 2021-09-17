@@ -8,7 +8,7 @@
         <Title>ServiceStack.Extensions</Title>
         <PackageDescription>ServiceStack extensions for .NET Core Apps, including GrpcFeature</PackageDescription>
         <PackageTags>ServiceStack;gRPC;server;GrpcFeature</PackageTags>
-        <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
+        <TargetFramework>net5.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
@@ -21,6 +21,7 @@
 
         <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.12.1" />
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.12.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.10" />
         
         <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
         <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
