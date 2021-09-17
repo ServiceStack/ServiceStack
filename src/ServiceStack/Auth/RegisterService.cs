@@ -10,7 +10,7 @@ namespace ServiceStack.Auth
 {
     [ErrorView(nameof(Register.ErrorView))]
     [DefaultRequest(typeof(Register))]
-    public class RegisterService : RegisterServiceBase
+    public class RegisterService : RegisterUserAuthServiceBase
     {
         public static ValidateFn ValidateFn { get; set; }
         
@@ -65,7 +65,7 @@ namespace ServiceStack.Auth
                 return validateResponse;
 
             var session = await this.GetSessionAsync().ConfigAwait();
-            var newUserAuth = ToUserAuth(request);
+            var newUserAuth = ToUser(request);
 
             var existingUser = session.IsAuthenticated 
                 ? await AuthRepositoryAsync.GetUserAuthAsync(session, null).ConfigAwait() 
@@ -120,7 +120,7 @@ namespace ServiceStack.Auth
                 if (existingUser == null)
                     throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(Request));
 
-                var newUserAuth = ToUserAuth(request);
+                var newUserAuth = ToUser(request);
                 authRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password);
 
                 return new RegisterResponse
@@ -157,7 +157,7 @@ namespace ServiceStack.Auth
                 if (existingUser == null)
                     throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(Request));
 
-                var newUserAuth = ToUserAuth(request);
+                var newUserAuth = ToUser(request);
                 await authRepo.UpdateUserAuthAsync(existingUser, newUserAuth, request.Password).ConfigAwait();
 
                 return new RegisterResponse

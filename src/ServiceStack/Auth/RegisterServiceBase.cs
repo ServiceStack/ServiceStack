@@ -70,12 +70,13 @@ namespace ServiceStack.Auth
                 });
         }
     }
-    
-    public abstract class RegisterServiceBase : Service
-    {
-        public IValidator<Register> RegistrationValidator { get; set; }
 
-        protected IUserAuth ToUserAuth(Register request)
+    /// <summary>
+    /// Register Base class for IAuthRepository / IUserAuth users
+    /// </summary>
+    public abstract class RegisterUserAuthServiceBase : RegisterServiceBase
+    {
+        protected IUserAuth ToUser(Register request)
         {
             var to = AuthRepositoryAsync is ICustomUserAuth customUserAuth
                 ? customUserAuth.CreateUserAuth()
@@ -89,12 +90,6 @@ namespace ServiceStack.Auth
         protected async Task<bool> UserExistsAsync(IAuthSession session) => 
             session.IsAuthenticated && await AuthRepositoryAsync.GetUserAuthAsync(session, null).ConfigAwait() != null;
 
-        protected async Task ValidateAndThrowAsync(Register request)
-        {
-            var validator = RegistrationValidator ?? new RegistrationValidator();
-            await validator.ValidateAndThrowAsync(request, ApplyTo.Post).ConfigAwait();
-        }
-
         protected async Task RegisterNewUserAsync(IAuthSession session, IUserAuth user)
         {
             var authEvents = TryResolve<IAuthEvents>();
@@ -106,6 +101,20 @@ namespace ServiceStack.Auth
             authEvents?.OnRegistered(this.Request, session, this);
             if (authEvents is IAuthEventsAsync asyncEvents)
                 await asyncEvents.OnRegisteredAsync(this.Request, session, this).ConfigAwait();
+        }
+    }
+    
+    /// <summary>
+    /// Register base class containing common functionality for generic
+    /// </summary>
+    public abstract class RegisterServiceBase : Service
+    {
+        public IValidator<Register> RegistrationValidator { get; set; }
+
+        protected async Task ValidateAndThrowAsync(Register request)
+        {
+            var validator = RegistrationValidator ?? new RegistrationValidator();
+            await validator.ValidateAndThrowAsync(request, ApplyTo.Post).ConfigAwait();
         }
         
         protected async Task<object> CreateRegisterResponse(IAuthSession session, string userName, string password, bool? autoLogin=null)
@@ -124,7 +133,7 @@ namespace ServiceStack.Auth
 #endif
                 var authResponse = await authService.PostAsync(
                     new Authenticate {
-                        provider = CredentialsAuthProvider.Name,
+                        provider = AuthenticateService.CredentialsProvider,
                         UserName = userName,
                         Password = password,
                     });

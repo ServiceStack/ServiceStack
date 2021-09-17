@@ -22,7 +22,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string NetworkName { get; set; }
     }
 
-    public class RegisterUserService : RegisterServiceBase
+    public class RegisterUserService : RegisterUserAuthServiceBase
     {
         public async Task<object> PostAsync(RegisterUser request)
         {
@@ -33,7 +33,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             if (await UserExistsAsync(session))
                 throw new NotSupportedException("You're already registered");
 
-            var newUser = (MyUser)ToUserAuth(request);
+            var newUser = (MyUser)ToUser(request);
             newUser.NetworkName = request.NetworkName;
 
             await ValidateAndThrowAsync(request);
