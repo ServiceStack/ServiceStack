@@ -189,6 +189,23 @@ namespace ServiceStack
 
         public static Task<bool> IsAuthenticatedAsync(this IRequest req) => AuthenticateAttribute.AuthenticateAsync(req, req.Dto);
 
+        public static IAuthSession AssertAuthenticatedSession(this IRequest req, bool reload = false) 
+            => AssertAuthenticated(req.GetSession(), req);
+
+        public static async Task<IAuthSession> AssertAuthenticatedSessionAsync(this IRequest req, bool reload=false, CancellationToken token=default) 
+            => AssertAuthenticated(await req.GetSessionAsync(token: token).ConfigAwait(), req);
+
+        public static IAuthSession AssertAuthenticated(this IAuthSession session, IRequest req=null)
+        {
+            if (session?.UserAuthId == null)
+                throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(req));
+
+            if (!session.IsAuthenticated)
+                throw new HttpError(HttpStatusCode.Unauthorized, ErrorMessages.NotAuthenticated.Localize(req));
+
+            return session;
+        }
+
         public static IAuthSession GetSession(this IRequest httpReq, bool reload = false)
         {
             var task = GetSessionInternalAsync(httpReq, reload, async: false);

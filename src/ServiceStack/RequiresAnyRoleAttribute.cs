@@ -39,7 +39,7 @@ namespace ServiceStack
             if (res.IsClosed)
                 return; //AuthenticateAttribute already closed the request (ie auth failed)
 
-            var session = await req.GetSessionAsync().ConfigAwait();
+            var session = await req.AssertAuthenticatedSessionAsync().ConfigAwait();
 
             var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
 #if NET472 || NETSTANDARD2_0
@@ -48,9 +48,6 @@ namespace ServiceStack
             using (authRepo as IDisposable)
 #endif
             {
-                if (session != null && await session.HasRoleAsync(RoleNames.Admin, authRepo).ConfigAwait())
-                    return;
-
                 if (await HasAnyRolesAsync(req, session, authRepo).ConfigAwait())
                     return;
             }
@@ -92,21 +89,22 @@ namespace ServiceStack
 
         public virtual bool HasAnyRoles(IAuthSession session, IAuthRepository authRepo)
         {
-            return session != null && this.RequiredRoles
-                .Any(requiredRole => session.HasRole(requiredRole, authRepo));
+            var userRoles = session.GetRoles(authRepo);
+            return userRoles.Contains(RoleNames.Admin) || this.RequiredRoles.Any(userRoles.Contains);
         }
 
         public virtual async Task<bool> HasAnyRolesAsync(IAuthSession session, IAuthRepositoryAsync authRepo)
         {
-            return session != null && await this.RequiredRoles
-                .AnyAsync(requiredRole => session.HasRoleAsync(requiredRole, authRepo)).ConfigAwait();
+            var userRoles = await session.GetRolesAsync(authRepo);
+            return userRoles.Contains(RoleNames.Admin) || this.RequiredRoles.Any(userRoles.Contains);
         }
 
         /// <summary>
         /// Check all session is in any supplied roles otherwise a 401 HttpError is thrown
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="req"></param>
         /// <param name="requiredRoles"></param>
+        [Obsolete("Use AssertRequiredRolesAsync")]
         public static void AssertRequiredRoles(IRequest req, params string[] requiredRoles)
         {
             if (requiredRoles.IsEmpty()) return;
@@ -114,28 +112,23 @@ namespace ServiceStack
             if (HostContext.HasValidAuthSecret(req))
                 return;
 
-            var session = req.GetSession();
+            var session = req.AssertAuthenticatedSession();
 
             var authRepo = HostContext.AppHost.GetAuthRepository(req);
             using (authRepo as IDisposable)
             {
-                if (session != null && session.HasRole(RoleNames.Admin, authRepo))
-                    return;
-
-                if (session?.UserAuthId != null && requiredRoles.Any(x => session.HasRole(x, authRepo)))
+                var allRoles = session.GetRoles(authRepo);
+                if (allRoles.Contains(RoleNames.Admin) || requiredRoles.Any(allRoles.Contains))
                     return;
 
                 session.UpdateFromUserAuthRepo(req);
 
-                if (session?.UserAuthId != null && requiredRoles.Any(x => session.HasRole(x, authRepo)))
+                allRoles = session.GetRoles(authRepo);
+                if (allRoles.Contains(RoleNames.Admin) || requiredRoles.Any(allRoles.Contains))
                     return;
             }
 
-            var statusCode = session != null && session.IsAuthenticated
-                ? (int)HttpStatusCode.Forbidden
-                : (int)HttpStatusCode.Unauthorized;
-
-            throw new HttpError(statusCode, ErrorMessages.InvalidRole.Localize(req));
+            throw new HttpError(HttpStatusCode.Forbidden, ErrorMessages.InvalidRole.Localize(req));
         }
     }
 }

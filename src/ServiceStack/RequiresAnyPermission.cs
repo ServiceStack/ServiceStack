@@ -38,7 +38,7 @@ namespace ServiceStack
             if (res.IsClosed)
                 return; //AuthenticateAttribute already closed the request (ie auth failed)
 
-            var session = await req.GetSessionAsync().ConfigAwait();
+            var session = await req.AssertAuthenticatedSessionAsync().ConfigAwait();
 
             var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
 #if NET472 || NETSTANDARD2_0
@@ -47,10 +47,10 @@ namespace ServiceStack
             using (authRepo as IDisposable)
 #endif
             {
-                if (session != null && await session.HasRoleAsync(RoleNames.Admin, authRepo).ConfigAwait())
+                if (await HasAnyPermissionsAsync(req, session, authRepo).ConfigAwait())
                     return;
 
-                if (await HasAnyPermissionsAsync(req, session, authRepo).ConfigAwait())
+                if (await session.HasRoleAsync(RoleNames.Admin, authRepo).ConfigAwait())
                     return;
             }
 
@@ -88,41 +88,26 @@ namespace ServiceStack
             if (await HasAnyPermissionsAsync(session, authRepo).ConfigAwait()) 
                 return true;
 
-            if (authRepo == null)
-                authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
+            await session.UpdateFromUserAuthRepoAsync(req, authRepo).ConfigAwait();
 
-            if (authRepo == null)
-                return false;
-
-#if NET472 || NETSTANDARD2_0
-            await using (authRepo as IAsyncDisposable)
-#else
-            using (authRepo as IDisposable)
-#endif
+            if (await HasAnyPermissionsAsync(session, authRepo).ConfigAwait())
             {
-                var userAuth = await authRepo.GetUserAuthAsync(session, null).ConfigAwait();
-                session.UpdateSession(userAuth);
-
-                if (await HasAnyPermissionsAsync(session, authRepo).ConfigAwait())
-                {
-                    await req.SaveSessionAsync(session).ConfigAwait();
-                    return true;
-                }
-                return false;
+                await req.SaveSessionAsync(session).ConfigAwait();
+                return true;
             }
+            return false;
         }
 
         public virtual bool HasAnyPermissions(IAuthSession session, IAuthRepository authRepo)
         {
-            return session != null && this.RequiredPermissions
-                .Any(requiredPermission => 
-                    session.HasPermission(requiredPermission, authRepo));
+            var allPerms = session.GetPermissions(authRepo);
+            return this.RequiredPermissions.Any(allPerms.Contains);
         }
 
         public virtual async Task<bool> HasAnyPermissionsAsync(IAuthSession session, IAuthRepositoryAsync authRepo)
         {
-            return session != null && await this.RequiredPermissions
-                .AnyAsync(requiredPermission => session.HasPermissionAsync(requiredPermission, authRepo)).ConfigAwait();
+            var allPerms = await session.GetPermissionsAsync(authRepo).ConfigAwait();
+            return this.RequiredPermissions.Any(allPerms.Contains);
         }
     }
 

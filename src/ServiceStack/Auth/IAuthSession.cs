@@ -35,6 +35,11 @@ namespace ServiceStack.Auth
         bool HasPermission(string permission, IAuthRepository authRepo);
         Task<bool> HasPermissionAsync(string permission, IAuthRepositoryAsync authRepo, CancellationToken token=default);
 
+        ICollection<string> GetRoles(IAuthRepository authRepo);
+        Task<ICollection<string>> GetRolesAsync(IAuthRepositoryAsync authRepo, CancellationToken token = default);
+        ICollection<string> GetPermissions(IAuthRepository authRepo);
+        Task<ICollection<string>> GetPermissionsAsync(IAuthRepositoryAsync authRepo, CancellationToken token = default);
+
         bool IsAuthorized(string provider);
 
         /// <summary>

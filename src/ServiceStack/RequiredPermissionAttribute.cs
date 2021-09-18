@@ -40,7 +40,7 @@ namespace ServiceStack
             if (res.IsClosed)
                 return; //AuthenticateAttribute already closed the request (ie auth failed)
 
-            if (await HasAllPermissionsAsync(req, await req.GetSessionAsync().ConfigAwait(), RequiredPermissions).ConfigAwait())
+            if (await HasAllPermissionsAsync(req, await req.AssertAuthenticatedSessionAsync().ConfigAwait(), RequiredPermissions).ConfigAwait())
                 return;
 
             await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto,
@@ -96,15 +96,11 @@ namespace ServiceStack
         [Obsolete("AssertRequiredPermissionsAsync")]
         public static void AssertRequiredPermissions(IRequest req, params string[] requiredPermissions)
         {
-            var session = req.GetSession();
+            var session = req.AssertAuthenticatedSession();
             if (HasAllPermissions(req, session, requiredPermissions))
                 return;
 
-            var isAuthenticated = session != null && session.IsAuthenticated;
-            if (!isAuthenticated)
-                ThrowNotAuthenticated(req);
-            else
-                ThrowInvalidPermission(req);
+            ThrowInvalidPermission(req);
         }
 
         /// <summary>
@@ -114,15 +110,11 @@ namespace ServiceStack
         /// <param name="requiredPermissions"></param>
         public static async Task AssertRequiredPermissionsAsync(IRequest req, string[] requiredPermissions, CancellationToken token=default)
         {
-            var session = await req.GetSessionAsync(token: token).ConfigAwait();
+            var session = await req.AssertAuthenticatedSessionAsync(token: token).ConfigAwait();
             if (await HasAllPermissionsAsync(req, session, requiredPermissions, token).ConfigAwait())
                 return;
 
-            var isAuthenticated = session != null && session.IsAuthenticated;
-            if (!isAuthenticated)
-                ThrowNotAuthenticated(req);
-            else
-                ThrowInvalidPermission(req);
+            ThrowInvalidPermission(req);
         }
 
         [Obsolete("Use HasRequiredPermissionsAsync")]
@@ -138,12 +130,14 @@ namespace ServiceStack
             if (session.HasRole(RoleNames.Admin, authRepo))
                 return true;
 
-            if (requiredPermissions.All(x => session.HasPermission(x, authRepo)))
+            var allPerms = session.GetPermissions(authRepo);
+            if (requiredPermissions.All(allPerms.Contains))
                 return true;
 
             session.UpdateFromUserAuthRepo(req, authRepo);
 
-            if (requiredPermissions.All(x => session.HasPermission(x, authRepo)))
+            allPerms = session.GetPermissions(authRepo);
+            if (requiredPermissions.All(allPerms.Contains))
             {
                 req.SaveSession(session);
                 return true;
@@ -157,12 +151,14 @@ namespace ServiceStack
             if (await session.HasRoleAsync(RoleNames.Admin, authRepo, token).ConfigAwait())
                 return true;
 
-            if (await requiredPermissions.AllAsync(x => session.HasPermissionAsync(x, authRepo, token)).ConfigAwait())
+            var allPerms = await session.GetPermissionsAsync(authRepo, token).ConfigAwait();
+            if (requiredPermissions.All(allPerms.Contains))
                 return true;
 
             await session.UpdateFromUserAuthRepoAsync(req, authRepo).ConfigAwait();
 
-            if (await requiredPermissions.AllAsync(x => session.HasPermissionAsync(x, authRepo, token)).ConfigAwait())
+            allPerms = await session.GetPermissionsAsync(authRepo, token).ConfigAwait();
+            if (requiredPermissions.All(allPerms.Contains))
             {
                 await req.SaveSessionAsync(session, token: token).ConfigAwait();
                 return true;
