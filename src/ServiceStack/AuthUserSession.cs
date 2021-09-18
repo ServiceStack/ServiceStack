@@ -4,6 +4,7 @@ using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -91,66 +92,26 @@ namespace ServiceStack
 
         public virtual bool HasPermission(string permission, IAuthRepository authRepo)
         {
-            if (!FromToken) //If populated from a token it should have the complete list of permissions
-            {
-                if (authRepo is IManageRoles managesRoles)
-                {
-                    if (UserAuthId == null)
-                        return false;
-
-                    return managesRoles.HasPermission(this.UserAuthId, permission);
-                }
-            }
-
-            return this.Permissions != null && this.Permissions.Contains(permission);
+            var permissions = GetPermissions(authRepo);
+            return permissions.Contains(permission);
         }
 
         public virtual async Task<bool> HasPermissionAsync(string permission, IAuthRepositoryAsync authRepo, CancellationToken token=default)
         {
-            if (!FromToken) //If populated from a token it should have the complete list of permissions
-            {
-                if (authRepo is IManageRolesAsync managesRoles)
-                {
-                    if (UserAuthId == null)
-                        return false;
-
-                    return await managesRoles.HasPermissionAsync(this.UserAuthId, permission, token);
-                }
-            }
-
-            return this.Permissions != null && this.Permissions.Contains(permission);
+            var permissions = await GetPermissionsAsync(authRepo, token).ConfigAwait();
+            return permissions.Contains(permission);
         }
 
         public virtual bool HasRole(string role, IAuthRepository authRepo)
         {
-            if (!FromToken) //If populated from a token it should have the complete list of roles
-            {
-                if (authRepo is IManageRoles managesRoles)
-                {
-                    if (UserAuthId == null)
-                        return false;
-
-                    return managesRoles.HasRole(this.UserAuthId, role);
-                }
-            }
-
-            return this.Roles != null && this.Roles.Contains(role);
+            var roles = GetRoles(authRepo);
+            return roles.Contains(role);
         }
 
         public virtual async Task<bool> HasRoleAsync(string role, IAuthRepositoryAsync authRepo, CancellationToken token=default)
         {
-            if (!FromToken) //If populated from a token it should have the complete list of roles
-            {
-                if (authRepo is IManageRolesAsync managesRoles)
-                {
-                    if (UserAuthId == null)
-                        return false;
-
-                    return await managesRoles.HasRoleAsync(this.UserAuthId, role, token);
-                }
-            }
-
-            return this.Roles != null && this.Roles.Contains(role);
+            var roles = await GetRolesAsync(authRepo, token).ConfigAwait();
+            return roles.Contains(role);
         }
 
         public virtual ICollection<string> GetRoles(IAuthRepository authRepo)
