@@ -7,6 +7,7 @@ using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Web;
 using Funq;
+using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
@@ -320,6 +321,9 @@ namespace ServiceStack
         {
             return AssertAppHost().TryGetCurrentRequest();
         }
+
+        public static IAuthSession GetAuthSecretSession() =>
+            GetPlugin<AuthFeature>()?.AuthSecretSession ?? Config.AuthSecretSession;
 
         public static int FindFreeTcpPort(int startingFrom=5000, int endingAt=65535)
         {

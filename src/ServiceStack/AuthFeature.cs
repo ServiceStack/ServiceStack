@@ -218,17 +218,7 @@ namespace ServiceStack
         /// <summary>
         /// The Session to return for AuthSecret
         /// </summary>
-        public IAuthSession AuthSecretSession { get; set; } = new AuthUserSession {
-            Id = Guid.NewGuid().ToString("n"),
-            DisplayName = "Admin",
-            UserName = Keywords.AuthSecret,
-            UserAuthName = Keywords.AuthSecret,
-            AuthProvider = Keywords.AuthSecret,
-            IsAuthenticated = true,
-            Roles = new List<string> {RoleNames.Admin},
-            Permissions = new List<string>(),
-            UserAuthId = "0",
-        };
+        public IAuthSession AuthSecretSession { get; set; }
 
         public AuthFeature(Action<AuthFeature> configure) : this(() => new AuthUserSession(), TypeConstants<IAuthProvider>.EmptyArray)
         {
@@ -300,6 +290,8 @@ namespace ServiceStack
                     throw new StrictModeException($"User Session {sessionInstance.GetType().Name} cannot have circular dependencies", "sessionFactory",
                         StrictModeCodes.CyclicalUserSession);
             }
+
+            AuthSecretSession = appHost.Config.AuthSecretSession;
 
             appHost.RegisterServices(ServiceRoutes);
 

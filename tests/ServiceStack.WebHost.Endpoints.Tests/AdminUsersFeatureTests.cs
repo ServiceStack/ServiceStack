@@ -83,7 +83,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         };
 
-        private static AdminCreateUser CreateUserRequest() => new AdminCreateUser {
+        private static AdminCreateUser CreateUserRequest() => new() {
             FirstName = "First",
             LastName = "Last",
             Email = "user@email.com",

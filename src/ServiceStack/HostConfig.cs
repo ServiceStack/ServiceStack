@@ -171,7 +171,17 @@ namespace ServiceStack
                 UseJsObject = true,
                 EnableOptimizations = true,
                 TreatNonNullableRefTypesAsRequired = true,
-
+                AuthSecretSession = new AuthUserSession {
+                    Id = Guid.NewGuid().ToString("n"),
+                    DisplayName = "Admin",
+                    UserName = Keywords.AuthSecret,
+                    UserAuthName = Keywords.AuthSecret,
+                    AuthProvider = Keywords.AuthSecret,
+                    IsAuthenticated = true,
+                    Roles = new List<string> { Configuration.RoleNames.Admin },
+                    Permissions = new List<string>(),
+                    UserAuthId = "0",
+                },
 #if !NETSTANDARD2_0
                 UseCamelCase = false,
                 ReturnsInnerException = true,
@@ -400,6 +410,8 @@ namespace ServiceStack
         public bool TreatNonNullableRefTypesAsRequired { get; set; }
 
         public string AdminAuthSecret { get; set; }
+        
+        public IAuthSession AuthSecretSession { get; set; }
 
         public FallbackRestPathDelegate FallbackRestPath { get; set; }
 
