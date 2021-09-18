@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
@@ -235,16 +236,51 @@ namespace ServiceStack.Host
             var authRepo = HostContext.AppHost.GetAuthRepository(req);
             using (authRepo as IDisposable)
             {
-                if (!operation.RequiredRoles.IsEmpty() && !operation.RequiredRoles.All(x => session.HasRole(x, authRepo)))
+                var allRoles = session.GetRoles(authRepo);
+                if (!operation.RequiredRoles.IsEmpty() && !operation.RequiredRoles.All(allRoles.Contains))
                     return false;
 
-                if (!operation.RequiredPermissions.IsEmpty() && !operation.RequiredPermissions.All(x => session.HasPermission(x, authRepo)))
+                var allPerms = session.GetPermissions(authRepo);
+                if (!operation.RequiredPermissions.IsEmpty() && !operation.RequiredPermissions.All(allPerms.Contains))
                     return false;
 
-                if (!operation.RequiresAnyRole.IsEmpty() && !operation.RequiresAnyRole.Any(x => session.HasRole(x, authRepo)))
+                if (!operation.RequiresAnyRole.IsEmpty() && !operation.RequiresAnyRole.Any(allRoles.Contains))
                     return false;
 
-                if (!operation.RequiresAnyPermission.IsEmpty() && !operation.RequiresAnyPermission.Any(x => session.HasPermission(x, authRepo)))
+                if (!operation.RequiresAnyPermission.IsEmpty() && !operation.RequiresAnyPermission.Any(allPerms.Contains))
+                    return false;
+
+                return true;
+            }
+        }
+
+        public async Task<bool> IsAuthorizedAsync(Operation operation, IRequest req, IAuthSession session)
+        {
+            if (HostContext.HasValidAuthSecret(req))
+                return true;
+
+            if (operation.RequiresAuthentication && !session.IsAuthenticated)
+                return false;
+
+            var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
+#if NET472 || NETSTANDARD2_0
+            await using (authRepo as IAsyncDisposable)
+#else
+            using (authRepo as IDisposable)
+#endif
+            {
+                var allRoles = await session.GetRolesAsync(authRepo).ConfigAwait();
+                if (!operation.RequiredRoles.IsEmpty() && !operation.RequiredRoles.All(allRoles.Contains))
+                    return false;
+
+                var allPerms = await session.GetPermissionsAsync(authRepo).ConfigAwait();
+                if (!operation.RequiredPermissions.IsEmpty() && !operation.RequiredPermissions.All(allPerms.Contains))
+                    return false;
+
+                if (!operation.RequiresAnyRole.IsEmpty() && !operation.RequiresAnyRole.Any(allRoles.Contains))
+                    return false;
+
+                if (!operation.RequiresAnyPermission.IsEmpty() && !operation.RequiresAnyPermission.Any(allPerms.Contains))
                     return false;
 
                 return true;

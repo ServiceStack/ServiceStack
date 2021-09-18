@@ -85,24 +85,29 @@ namespace ServiceStack
             if (VaryByUser)
                 modifiers += (modifiers.Length > 0 ? "+" : "") + "user:" + req.GetSessionId();
 
-            if (VaryByRoles != null && VaryByRoles.Length > 0)
+            if (VaryByRoles is { Length: > 0 })
             {
                 var userSession = await req.GetSessionAsync().ConfigAwait();
                 if (userSession != null)
                 {
-                    var authRepo = HostContext.AppHost.GetAuthRepository(req);
+                    var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
+#if NET472 || NETSTANDARD2_0
+            await using (authRepo as IAsyncDisposable)
+#else
                     using (authRepo as IDisposable)
+#endif
                     {
+                        var allRoles = await userSession.GetRolesAsync(authRepo).ConfigAwait();
                         foreach (var role in VaryByRoles)
                         {
-                            if (userSession.HasRole(role, authRepo))
+                            if (allRoles.Contains(role))
                                 modifiers += (modifiers.Length > 0 ? "+" : "") + "role:" + role;
                         }
                     }
                 }
             }
 
-            if (VaryByHeaders != null && VaryByHeaders.Length > 0)
+            if (VaryByHeaders is { Length: > 0 })
             {
                 foreach (var header in VaryByHeaders)
                 {

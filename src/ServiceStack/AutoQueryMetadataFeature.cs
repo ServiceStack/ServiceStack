@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using ServiceStack.DataAnnotations;
 using ServiceStack.NativeTypes;
 
@@ -142,7 +143,7 @@ namespace ServiceStack
     {
         public INativeTypesMetadata NativeTypesMetadata { get; set; }
 
-        public object Any(AutoQueryMetadata request)
+        public async Task<object> AnyAsync(AutoQueryMetadata request)
         {
             if (NativeTypesMetadata == null)
                 throw new NotSupportedException("AutoQueryViewer requires NativeTypesFeature");
@@ -159,7 +160,7 @@ namespace ServiceStack
             if (config.ServiceName == null)
                 config.ServiceName = HostContext.ServiceName;
 
-            var userSession = Request.GetSession();
+            var userSession = await Request.GetSessionAsync();
 
             var typesConfig = NativeTypesMetadata.GetConfig(new TypesMetadata { BaseUrl = Request.GetBaseUrl() });
             foreach (var type in feature.ExportTypes)

@@ -2,6 +2,7 @@
 using System.Net;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
+using ServiceStack.Configuration;
 using ServiceStack.Web;
 using ServiceStack.Text;
 
@@ -33,7 +34,7 @@ namespace ServiceStack
             var authRepo = HostContext.AppHost.GetAuthRepository(req);
             using (authRepo as IDisposable)
             {
-                if (session != null && session.HasRole("Admin", authRepo)
+                if (session != null && session.HasRole(RoleNames.Admin, authRepo)
                     || await this.HasWebSudoAsync(req, session as IWebSudoAuthSession))
                     return;
             }
