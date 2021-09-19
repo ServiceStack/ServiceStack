@@ -12,3 +12,7 @@ dotnet add package Microsoft.EntityFrameworkCore.Tools
 dotnet aspnet-codegenerator identity -h
 
 dotnet aspnet-codegenerator identity --useDefaultUI
+
+dotnet tool install --global dotnet-ef
+dotnet ef migrations add InitialCreate
+dotnet ef database update

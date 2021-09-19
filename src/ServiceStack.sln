@@ -734,6 +734,11 @@ Global
 		{4EB53207-13DA-47B2-A638-A4EC1534FE47}.Release|x86.ActiveCfg = Release|Any CPU
 		{4EB53207-13DA-47B2-A638-A4EC1534FE47}.Release|x86.Build.0 = Release|Any CPU
 		{C13C0070-5CD0-4B60-BFE9-9C0DB65489DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C13C0070-5CD0-4B60-BFE9-9C0DB65489DF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C13C0070-5CD0-4B60-BFE9-9C0DB65489DF}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{C13C0070-5CD0-4B60-BFE9-9C0DB65489DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C13C0070-5CD0-4B60-BFE9-9C0DB65489DF}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C13C0070-5CD0-4B60-BFE9-9C0DB65489DF}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

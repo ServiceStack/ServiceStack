@@ -270,6 +270,7 @@ namespace ServiceStack
             this.ScanSkipPaths = instance.ScanSkipPaths;
             this.RedirectPaths = instance.RedirectPaths;
             this.AdminAuthSecret = instance.AdminAuthSecret;
+            this.AuthSecretSession = instance.AuthSecretSession;
             this.UseHttpsLinks = instance.UseHttpsLinks;
             this.UseCamelCase = instance.UseCamelCase;
             this.UseJsObject = instance.UseJsObject;
