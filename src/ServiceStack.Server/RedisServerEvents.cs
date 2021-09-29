@@ -14,42 +14,42 @@ namespace ServiceStack
     {
         private static ILog Log = LogManager.GetLogger(typeof(RedisServerEvents));
 
-        private MemoryServerEvents local;
+        public MemoryServerEvents Local { get; private set; }
 
         public TimeSpan Timeout
         {
-            get => local.IdleTimeout;
-            set => local.IdleTimeout = value;
+            get => Local.IdleTimeout;
+            set => Local.IdleTimeout = value;
         }
 
         public TimeSpan HouseKeepingInterval
         {
-            get => local.HouseKeepingInterval;
-            set => local.HouseKeepingInterval = value;
+            get => Local.HouseKeepingInterval;
+            set => Local.HouseKeepingInterval = value;
         }
 
         public Func<IEventSubscription, Task> OnSubscribeAsync
         {
-            get => local.OnSubscribeAsync;
-            set => local.OnSubscribeAsync = value;
+            get => Local.OnSubscribeAsync;
+            set => Local.OnSubscribeAsync = value;
         }
 
         public Func<IEventSubscription, Task> OnUnsubscribeAsync
         {
-            get => local.OnUnsubscribeAsync;
-            set => local.OnUnsubscribeAsync = value;
+            get => Local.OnUnsubscribeAsync;
+            set => Local.OnUnsubscribeAsync = value;
         }
 
         public Func<IEventSubscription, Task> OnUpdateAsync
         {
-            get => local.OnUpdateAsync;
-            set => local.OnUpdateAsync = value;
+            get => Local.OnUpdateAsync;
+            set => Local.OnUpdateAsync = value;
         }
 
         public bool NotifyChannelOfSubscriptions
         {
-            get => local.NotifyChannelOfSubscriptions;
-            set => local.NotifyChannelOfSubscriptions = value;
+            get => Local.NotifyChannelOfSubscriptions;
+            set => Local.NotifyChannelOfSubscriptions = value;
         }
 
         public TimeSpan? WaitBeforeNextRestart
@@ -84,7 +84,7 @@ namespace ServiceStack
 
             WaitBeforeNextRestart = TimeSpan.FromMilliseconds(2000);
 
-            local = new MemoryServerEvents
+            Local = new MemoryServerEvents
             {
                 NotifyJoinAsync = HandleOnJoinAsync,
                 NotifyLeaveAsync = HandleOnLeaveAsync,
@@ -293,7 +293,7 @@ namespace ServiceStack
             if (connectArgs != null)
                 await sub.PublishAsync("cmd.onConnect", connectArgs.ToJson(), token).ConfigAwait();
 
-            await local.RegisterAsync(sub, token: token).ConfigAwait();
+            await Local.RegisterAsync(sub, token: token).ConfigAwait();
         }
 
         private void StoreSubscriptionInfo(IRedisClient redis, SubscriptionInfo info)
@@ -340,9 +340,9 @@ namespace ServiceStack
             }
         }
 
-        public int RemoveExpiredSubscriptions() => local.RemoveExpiredSubscriptions();
+        public int RemoveExpiredSubscriptions() => Local.RemoveExpiredSubscriptions();
 
-        public Task<int> RemoveExpiredSubscriptionsAsync(CancellationToken token=default) => local.RemoveExpiredSubscriptionsAsync(token);
+        public Task<int> RemoveExpiredSubscriptionsAsync(CancellationToken token=default) => Local.RemoveExpiredSubscriptionsAsync(token);
 
         public void SubscribeToChannels(string subscriptionId, string[] channels)
         {
@@ -384,8 +384,8 @@ namespace ServiceStack
             return TypeConstants.EmptyTask;
         }
 
-        public void QueueAsyncTask(Func<Task> task) => local.QueueAsyncTask(task);
-        public MemoryServerEvents GetMemoryServerEvents() => local;
+        public void QueueAsyncTask(Func<Task> task) => Local.QueueAsyncTask(task);
+        public MemoryServerEvents GetMemoryServerEvents() => Local;
 
         public List<Dictionary<string, string>> GetSubscriptionsDetails(params string[] channels)
         {
@@ -466,7 +466,7 @@ namespace ServiceStack
 
         public void Reset()
         {
-            local.Reset();
+            Local.Reset();
             using var redis = clientsManager.GetClient();
             var keysToDelete = new List<string> { RedisIndex.ActiveSubscriptionsSet };
 
@@ -481,22 +481,22 @@ namespace ServiceStack
         public void Start()
         {
             RedisPubSub.Start();
-            local.Start();
+            Local.Start();
         }
 
         public void Stop()
         {
             RedisPubSub.Stop();
-            local.Stop();
+            Local.Stop();
         }
 
         public async Task StopAsync()
         {
             RedisPubSub.Stop();
-            await local.StopAsync();
+            await Local.StopAsync();
         }
 
-        public Dictionary<string, string> GetStats() => local.GetStats();
+        public Dictionary<string, string> GetStats() => Local.GetStats();
 
         protected Task NotifyRedisAsync(string key, string selector, object message, string channel = null, CancellationToken token=default)
         {
@@ -566,22 +566,22 @@ namespace ServiceStack
                     switch (notify)
                     {
                         case "all":
-                            local.NotifyAll(selector, msg);
+                            Local.NotifyAll(selector, msg);
                             break;
                         case "channel":
-                            local.NotifyChannel(who, selector, msg);
+                            Local.NotifyChannel(who, selector, msg);
                             break;
                         case "subscription":
-                            local.NotifySubscription(who, selector, msg, channel);
+                            Local.NotifySubscription(who, selector, msg, channel);
                             break;
                         case "userid":
-                            local.NotifyUserId(who, selector, msg, channel);
+                            Local.NotifyUserId(who, selector, msg, channel);
                             break;
                         case "username":
-                            local.NotifyUserName(who, selector, msg, channel);
+                            Local.NotifyUserName(who, selector, msg, channel);
                             break;
                         case "session":
-                            local.NotifySession(who, selector, msg, channel);
+                            Local.NotifySession(who, selector, msg, channel);
                             break;
                     }
                     break;
@@ -591,7 +591,7 @@ namespace ServiceStack
                     {
                         var id = tokens.Length > 2 ? tokens[2] : null;
                         var channelsList = parts[1].FromJson<string>();
-                        local.SubscribeToChannels(id, channelsList.Split(','));
+                        Local.SubscribeToChannels(id, channelsList.Split(','));
                     }
                     break;
 
@@ -600,7 +600,7 @@ namespace ServiceStack
                     {
                         var id = tokens.Length > 2 ? tokens[2] : null;
                         var channelsList = parts[1].FromJson<string>();
-                        local.UnsubscribeFromChannels(id, channelsList.Split(','));
+                        Local.UnsubscribeFromChannels(id, channelsList.Split(','));
                     }
                     break;
 
@@ -609,7 +609,7 @@ namespace ServiceStack
                     if (unregister == "id")
                     {
                         var id = tokens.Length > 2 ? tokens[2] : null;
-                        local.UnRegister(id);
+                        Local.UnRegister(id);
                     }
                     break;
 
@@ -618,7 +618,7 @@ namespace ServiceStack
                     if (pulse == "id")
                     {
                         var id = tokens.Length > 2 ? tokens[2] : null;
-                        local.Pulse(id);
+                        Local.Pulse(id);
                     }
                     break;
             }
@@ -628,9 +628,9 @@ namespace ServiceStack
         {
             try
             {
-                foreach (var entry in local.Subscriptions)
+                foreach (var entry in Local.Subscriptions)
                 {
-                    var info = local.GetSubscriptionInfo(entry.Key);
+                    var info = Local.GetSubscriptionInfo(entry.Key);
                     if (info != null)
                     {
                         RemoveSubscriptionFromRedis(info);
@@ -644,10 +644,10 @@ namespace ServiceStack
 
             RedisPubSub?.Dispose();
 
-            local?.Dispose();
+            Local?.Dispose();
 
             RedisPubSub = null;
-            local = null;
+            Local = null;
         }
     }
 }
