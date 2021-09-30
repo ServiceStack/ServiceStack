@@ -100,7 +100,8 @@ namespace ServiceStack
                 Timeout = feature.IdleTimeout;
                 HouseKeepingInterval = feature.HouseKeepingInterval;
                 OnSubscribeAsync = feature.OnSubscribeAsync;
-                OnSubscribeAsync = feature.OnSubscribeAsync;
+                OnUnsubscribeAsync = feature.OnUnsubscribeAsync;
+                OnUpdateAsync = feature.OnUpdateAsync;
                 NotifyChannelOfSubscriptions = feature.NotifyChannelOfSubscriptions;
             }
         }
