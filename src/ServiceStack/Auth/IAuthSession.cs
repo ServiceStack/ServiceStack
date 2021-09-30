@@ -96,6 +96,30 @@ namespace ServiceStack.Auth
         bool? TwoFactorEnabled { get; set; }
         string SecurityStamp { get; set; }
         string Type { get; set; }
+
+        /// <summary>
+        /// High-level overridable API that ServiceStack uses to check whether a user has all requiredRoles.
+        /// </summary>
+        Task<bool> HasAllRolesAsync(ICollection<string> requiredRoles,
+            IAuthRepositoryAsync authRepo, IRequest req, CancellationToken token = default);
+
+        /// <summary>
+        /// High-level overridable API that ServiceStack uses to check whether a user has any of the specified roles.
+        /// </summary>
+        Task<bool> HasAnyRolesAsync(ICollection<string> roles, IAuthRepositoryAsync authRepo,
+            IRequest req, CancellationToken token = default);
+
+        /// <summary>
+        /// High-level overridable API that ServiceStack uses to check whether a user has all requiredPermissions.
+        /// </summary>
+        Task<bool> HasAllPermissionsAsync(ICollection<string> requiredPermissions,
+            IAuthRepositoryAsync authRepo, IRequest req, CancellationToken token = default);
+
+        /// <summary>
+        /// High-level overridable API that ServiceStack uses to check whether a user has any of the specified roles.
+        /// </summary>
+        Task<bool> HasAnyPermissionsAsync(ICollection<string> permissions, IAuthRepositoryAsync authRepo,
+            IRequest req, CancellationToken token = default);
         
         /// <summary>
         /// Fired before Session is resolved

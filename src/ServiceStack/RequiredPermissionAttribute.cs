@@ -53,7 +53,7 @@ namespace ServiceStack
             if (SessionValidForAllPermissions(req, session, RequiredPermissions))
                 return true;
 
-            return SessionHasAllPermissions(req, session, authRepo, RequiredPermissions);
+            return session.HasAllPermissions(RequiredPermissions, authRepo, req);
         }
 
         public async Task<bool> HasAllPermissionsAsync(IRequest req, IAuthSession session, IAuthRepositoryAsync authRepo)
@@ -61,7 +61,7 @@ namespace ServiceStack
             if (await SessionValidForAllPermissionsAsync(req, session, RequiredPermissions).ConfigAwait())
                 return true;
 
-            return await SessionHasAllPermissionsAsync(req, session, authRepo, RequiredPermissions).ConfigAwait();
+            return await session.HasAllPermissionsAsync(RequiredPermissions, authRepo, req).ConfigAwait();
         }
 
         [Obsolete("Use HasAllPermissionsAsync")]
@@ -73,7 +73,7 @@ namespace ServiceStack
             var authRepo = HostContext.AppHost.GetAuthRepository(req);
             using (authRepo as IDisposable)
             {
-                return SessionHasAllPermissions(req, session, authRepo, requiredPermissions);
+                return session.HasAllPermissions(requiredPermissions, authRepo, req);
             }
         }
         
@@ -89,7 +89,7 @@ namespace ServiceStack
             using (authRepo as IDisposable)
 #endif
             {
-                return await SessionHasAllPermissionsAsync(req, session, authRepo, requiredPermissions, token).ConfigAwait();
+                return await session.HasAllPermissionsAsync(requiredPermissions, authRepo, req, token).ConfigAwait();
             }
         }
 
@@ -116,56 +116,9 @@ namespace ServiceStack
 
             ThrowInvalidPermission(req);
         }
-
-        [Obsolete("Use HasRequiredPermissionsAsync")]
-        public static bool HasRequiredPermissions(IRequest req, string[] requiredPermissions) => 
-            HasAllPermissions(req, req.GetSession(), requiredPermissions);
-
+        
         public static Task<bool> HasRequiredPermissionsAsync(IRequest req, string[] requiredPermissions) => 
             HasAllPermissionsAsync(req, req.GetSession(), requiredPermissions);
-
-        [Obsolete("Use SessionHasAllPermissionsAsync")]
-        private static bool SessionHasAllPermissions(IRequest req, IAuthSession session, IAuthRepository authRepo, ICollection<string> requiredPermissions)
-        {
-            if (session.HasRole(RoleNames.Admin, authRepo))
-                return true;
-
-            var allPerms = session.GetPermissions(authRepo);
-            if (requiredPermissions.All(allPerms.Contains))
-                return true;
-
-            session.UpdateFromUserAuthRepo(req, authRepo);
-
-            allPerms = session.GetPermissions(authRepo);
-            if (requiredPermissions.All(allPerms.Contains))
-            {
-                req.SaveSession(session);
-                return true;
-            }
-
-            return false;
-        }
-
-        private static async Task<bool> SessionHasAllPermissionsAsync(IRequest req, IAuthSession session, IAuthRepositoryAsync authRepo, ICollection<string> requiredPermissions, CancellationToken token=default)
-        {
-            if (await session.HasRoleAsync(RoleNames.Admin, authRepo, token).ConfigAwait())
-                return true;
-
-            var allPerms = await session.GetPermissionsAsync(authRepo, token).ConfigAwait();
-            if (requiredPermissions.All(allPerms.Contains))
-                return true;
-
-            await session.UpdateFromUserAuthRepoAsync(req, authRepo).ConfigAwait();
-
-            allPerms = await session.GetPermissionsAsync(authRepo, token).ConfigAwait();
-            if (requiredPermissions.All(allPerms.Contains))
-            {
-                await req.SaveSessionAsync(session, token: token).ConfigAwait();
-                return true;
-            }
-
-            return false;
-        }
 
         [Obsolete("Use SessionValidForAllPermissionsAsync")]
         private static bool SessionValidForAllPermissions(IRequest req, IAuthSession session, ICollection<string> requiredPermissions)
