@@ -997,6 +997,17 @@ namespace ServiceStack
         }
 
         /// <summary>
+        /// Default logic to determine whether a Session is Authenticated
+        /// </summary>
+        public virtual IAuthSession AssertAuthenticated(IAuthSession session, IRequest req=null)
+        {
+            if (session?.IsAuthenticated != true)
+                throw new HttpError(HttpStatusCode.Unauthorized, ErrorMessages.NotAuthenticated.Localize(req));
+
+            return session;
+        }
+
+        /// <summary>
         /// Return the ICookies implementation to use
         /// </summary>
         public virtual ICookies GetCookies(IHttpResponse res) => new Cookies(res);
