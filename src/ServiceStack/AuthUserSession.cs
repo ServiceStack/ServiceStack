@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
+using ServiceStack.Configuration;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -100,6 +102,99 @@ namespace ServiceStack
         {
             var permissions = await GetPermissionsAsync(authRepo, token).ConfigAwait();
             return permissions.Contains(permission);
+        }
+
+        /// <summary>
+        /// High-level overridable API that ServiceStack uses to check whether a user has all requiredRoles.
+        /// </summary>
+        public virtual async Task<bool> HasAllRolesAsync(ICollection<string> requiredRoles,
+            IAuthRepositoryAsync authRepo, IRequest req, CancellationToken token = default)
+        {
+            
+            var allRoles = await GetRolesAsync(authRepo, token).ConfigAwait();
+            if (allRoles.Contains(RoleNames.Admin) || requiredRoles.All(allRoles.Contains))
+                return true;
+
+            await this.UpdateFromUserAuthRepoAsync(req, authRepo).ConfigAwait();
+
+            allRoles = await GetRolesAsync(authRepo, token).ConfigAwait();
+            if (allRoles.Contains(RoleNames.Admin) || requiredRoles.All(allRoles.Contains))
+            {
+                await req.SaveSessionAsync(this, token: token).ConfigAwait();
+                return true;
+            }
+
+            return false;
+        }
+        
+        /// <summary>
+        /// High-level overridable API that ServiceStack uses to check whether a user has any of the specified roles.
+        /// </summary>
+        public virtual async Task<bool> HasAnyRolesAsync(ICollection<string> roles, IAuthRepositoryAsync authRepo,
+            IRequest req, CancellationToken token = default)
+        {
+            var userRoles = await GetRolesAsync(authRepo, token).ConfigAwait();
+            if (userRoles.Contains(RoleNames.Admin) || roles.Any(userRoles.Contains)) 
+                return true;
+
+            await this.UpdateFromUserAuthRepoAsync(req, authRepo).ConfigAwait();
+
+            userRoles = await GetRolesAsync(authRepo, token).ConfigAwait();
+            if (userRoles.Contains(RoleNames.Admin) || roles.Any(userRoles.Contains)) 
+            {
+                await req.SaveSessionAsync(this, token: token).ConfigAwait();
+                return true;
+            }
+            return false;
+        }
+        
+        /// <summary>
+        /// High-level overridable API that ServiceStack uses to check whether a user has all requiredPermissions.
+        /// </summary>
+        public virtual async Task<bool> HasAllPermissionsAsync(ICollection<string> requiredPermissions, 
+            IAuthRepositoryAsync authRepo, IRequest req, CancellationToken token = default)
+        {
+            var allPerms = await GetPermissionsAsync(authRepo, token).ConfigAwait();
+            if (requiredPermissions.All(allPerms.Contains))
+                return true;
+
+            if (await HasRoleAsync(RoleNames.Admin, authRepo, token).ConfigAwait())
+                return true;
+
+            await this.UpdateFromUserAuthRepoAsync(req, authRepo).ConfigAwait();
+
+            allPerms = await GetPermissionsAsync(authRepo, token).ConfigAwait();
+            if (requiredPermissions.All(allPerms.Contains))
+            {
+                await req.SaveSessionAsync(this, token: token).ConfigAwait();
+                return true;
+            }
+
+            return false;
+        }
+        
+        /// <summary>
+        /// High-level overridable API that ServiceStack uses to check whether a user has any of the specified permissions.
+        /// </summary>
+        public virtual async Task<bool> HasAnyPermissionsAsync(ICollection<string> permissions, IAuthRepositoryAsync authRepo,
+            IRequest req, CancellationToken token=default)
+        {
+            var allPerms = await GetPermissionsAsync(authRepo, token).ConfigAwait();
+            if (permissions.Any(allPerms.Contains)) 
+                return true;
+
+            if (await HasRoleAsync(RoleNames.Admin, authRepo, token).ConfigAwait())
+                return true;
+
+            await this.UpdateFromUserAuthRepoAsync(req, authRepo).ConfigAwait();
+
+            allPerms = await GetPermissionsAsync(authRepo, token).ConfigAwait();
+            if (permissions.Any(allPerms.Contains)) 
+            {
+                await req.SaveSessionAsync(this, token: token).ConfigAwait();
+                return true;
+            }
+            return false;
         }
 
         public virtual bool HasRole(string role, IAuthRepository authRepo)
@@ -271,5 +366,175 @@ namespace ServiceStack
             }
             return null;
         }
+
+        public static async Task UpdateFromUserAuthRepoAsync(this IAuthSession session, IRequest req, IAuthRepositoryAsync authRepo = null)
+        {
+            if (session == null)
+                return;
+
+            var newAuthRepo = authRepo == null
+                ? HostContext.AppHost.GetAuthRepositoryAsync(req)
+                : null;
+            
+            if (authRepo == null)
+                authRepo = newAuthRepo;
+
+            if (authRepo == null)
+                return;
+
+            using (newAuthRepo as IDisposable)
+            {
+                var userAuth = await authRepo.GetUserAuthAsync(session, null).ConfigAwait();
+                session.UpdateSession(userAuth);
+            }
+        }
+
+        public static void UpdateFromUserAuthRepo(this IAuthSession session, IRequest req, IAuthRepository authRepo = null)
+        {
+            if (session == null)
+                return;
+
+            var newAuthRepo = authRepo == null
+                ? HostContext.AppHost.GetAuthRepository(req)
+                : null;
+            
+            if (authRepo == null)
+                authRepo = newAuthRepo;
+
+            if (authRepo == null)
+                return;
+
+            using (newAuthRepo as IDisposable)
+            {
+                var userAuth = authRepo.GetUserAuth(session, null);
+                session.UpdateSession(userAuth);
+            }
+        }
+
+        public static Task<bool> HasAllRolesAsync(this IAuthSession session, ICollection<string> requiredRoles, 
+            IAuthRepositoryAsync authRepo, IRequest req, CancellationToken token = default)
+        {
+            if (session is IAuthSessionExtended extended) // always true for sessions inheriting AuthUserSession
+                return extended.HasAllRolesAsync(requiredRoles, authRepo, req, token);
+
+#pragma warning disable 618
+            return session.HasAllRoles(requiredRoles, (IAuthRepository) authRepo, req).InTask();
+#pragma warning restore 618
+        }
+        
+        [Obsolete("Use HasAllRolesAsync")]
+        internal static bool HasAllRoles(this IAuthSession session, ICollection<string> requiredRoles, IAuthRepository authRepo, IRequest req)
+        {
+            var allRoles = session.GetRoles(authRepo);
+            if (allRoles.Contains(RoleNames.Admin) || requiredRoles.All(allRoles.Contains))
+                return true;
+
+            session.UpdateFromUserAuthRepo(req, authRepo);
+
+            allRoles = session.GetRoles(authRepo);
+            if (allRoles.Contains(RoleNames.Admin) || requiredRoles.All(allRoles.Contains))
+            {
+                req.SaveSession(session);
+                return true;
+            }
+
+            return false;
+        }
+
+        public static Task<bool> HasAnyRolesAsync(this IAuthSession session, ICollection<string> roles,
+            IAuthRepositoryAsync authRepo, IRequest req, CancellationToken token = default)
+        {
+            if (session is IAuthSessionExtended extended) // always true for sessions inheriting AuthUserSession
+                return extended.HasAnyRolesAsync(roles, authRepo, req, token);
+
+#pragma warning disable 618
+            return session.HasAnyRoles(roles, (IAuthRepository) authRepo, req).InTask();
+#pragma warning restore 618
+        }
+
+
+        [Obsolete("Use HasAnyRolesAsync")]
+        internal static bool HasAnyRoles(this IAuthSession session, ICollection<string> roles,
+            IAuthRepository authRepo, IRequest req)
+        {
+            var userRoles = session.GetRoles(authRepo);
+            if (userRoles.Contains(RoleNames.Admin) || roles.Any(userRoles.Contains)) 
+                return true;
+
+            session.UpdateFromUserAuthRepo(req, authRepo);
+
+            userRoles = session.GetRoles(authRepo);
+            if (userRoles.Contains(RoleNames.Admin) || roles.Any(userRoles.Contains)) 
+            {
+                req.SaveSession(session);
+                return true;
+            }
+            return false;
+        }
+
+        public static Task<bool> HasAllPermissionsAsync(this IAuthSession session, ICollection<string> requiredPermissions, 
+            IAuthRepositoryAsync authRepo, IRequest req, CancellationToken token = default)
+        {
+            if (session is IAuthSessionExtended extended) // always true for sessions inheriting AuthUserSession
+                return extended.HasAllPermissionsAsync(requiredPermissions, authRepo, req, token);
+
+#pragma warning disable 618
+            return session.HasAllPermissions(requiredPermissions, (IAuthRepository) authRepo, req).InTask();
+#pragma warning restore 618
+        }
+        
+        [Obsolete("Use HasAllPermissionsAsync")]
+        internal static bool HasAllPermissions(this IAuthSession session, ICollection<string> requiredPermissions, 
+            IAuthRepository authRepo, IRequest req)
+        {
+            var allPerms = session.GetPermissions(authRepo);
+            if (requiredPermissions.All(allPerms.Contains))
+                return true;
+
+            if (session.HasRole(RoleNames.Admin, authRepo))
+                return true;
+
+            session.UpdateFromUserAuthRepo(req, authRepo);
+
+            allPerms = session.GetPermissions(authRepo);
+            if (requiredPermissions.All(allPerms.Contains))
+            {
+                req.SaveSession(session);
+                return true;
+            }
+            return false;
+        }
+        
+        public static Task<bool> HasAnyPermissionsAsync(this IAuthSession session, ICollection<string> permissions,
+            IAuthRepositoryAsync authRepo, IRequest req, CancellationToken token = default)
+        {
+            if (session is IAuthSessionExtended extended) // always true for sessions inheriting AuthUserSession
+                return extended.HasAnyPermissionsAsync(permissions, authRepo, req, token);
+
+#pragma warning disable 618
+            return session.HasAnyPermissions(permissions, (IAuthRepository) authRepo, req).InTask();
+#pragma warning restore 618
+        }
+
+        [Obsolete("Use HasAnyRolesAsync")]
+        internal static bool HasAnyPermissions(this IAuthSession session, ICollection<string> permissions,
+            IAuthRepository authRepo, IRequest req)
+        {
+            var allPerms = session.GetPermissions(authRepo);
+            if (permissions.Any(allPerms.Contains)) 
+                return true;
+
+            if (session.HasRole(RoleNames.Admin, authRepo))
+                return true;
+
+            allPerms = session.GetPermissions(authRepo);
+            if (permissions.Any(allPerms.Contains)) 
+            {
+                req.SaveSession(session);
+                return true;
+            }
+            return false;
+        }
+
     }
 }

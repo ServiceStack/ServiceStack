@@ -192,20 +192,12 @@ namespace ServiceStack
         public static IAuthSession AssertAuthenticatedSession(this IRequest req, bool reload = false) 
             => HostContext.AppHost.HasValidAuthSecret(req)
                 ? HostContext.GetAuthSecretSession()
-                : AssertAuthenticated(req.GetSession(), req);
+                : HostContext.AppHost.AssertAuthenticated(req.GetSession(), req);
 
         public static async Task<IAuthSession> AssertAuthenticatedSessionAsync(this IRequest req, bool reload=false, CancellationToken token=default) 
             => HostContext.AppHost.HasValidAuthSecret(req)
                 ? HostContext.GetAuthSecretSession()
-                : AssertAuthenticated(await req.GetSessionAsync(token: token).ConfigAwait(), req);
-
-        public static IAuthSession AssertAuthenticated(this IAuthSession session, IRequest req=null)
-        {
-            if (session?.UserAuthId == null || !session.IsAuthenticated)
-                throw new HttpError(HttpStatusCode.Unauthorized, ErrorMessages.NotAuthenticated.Localize(req));
-
-            return session;
-        }
+                : HostContext.AppHost.AssertAuthenticated(await req.GetSessionAsync(token: token).ConfigAwait(), req);
 
         public static IAuthSession GetSession(this IRequest httpReq, bool reload = false)
         {

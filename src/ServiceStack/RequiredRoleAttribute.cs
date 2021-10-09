@@ -52,7 +52,7 @@ namespace ServiceStack
             if (SessionValidForAllRoles(req, session, RequiredRoles))
                 return true;
 
-            return SessionHasAllRoles(req, session, authRepo, RequiredRoles);
+            return session.HasAllRoles(RequiredRoles, authRepo, req);
         }
 
         public async Task<bool> HasAllRolesAsync(IRequest req, IAuthSession session, IAuthRepositoryAsync authRepo)
@@ -60,7 +60,7 @@ namespace ServiceStack
             if (await SessionValidForAllRolesAsync(req, session, RequiredRoles).ConfigAwait())
                 return true;
 
-            return await SessionHasAllRolesAsync(req, session, authRepo, RequiredRoles).ConfigAwait();
+            return await session.HasAllRolesAsync(RequiredRoles, authRepo, req).ConfigAwait();
         }
         
         [Obsolete("Use HasAllRolesAsync")]
@@ -72,7 +72,7 @@ namespace ServiceStack
             var authRepo = HostContext.AppHost.GetAuthRepository(req);
             using (authRepo as IDisposable)
             {
-                return SessionHasAllRoles(req, session, authRepo, requiredRoles);
+                return session.HasAllRoles(requiredRoles, authRepo, req);
             }
         }
         
@@ -88,7 +88,7 @@ namespace ServiceStack
             using (authRepo as IDisposable)
 #endif
             {
-                return await SessionHasAllRolesAsync(req, session, authRepo, requiredRoles, token).ConfigAwait();
+                return await session.HasAllRolesAsync(requiredRoles, authRepo, req, token).ConfigAwait();
             }
         }
 
@@ -105,16 +105,12 @@ namespace ServiceStack
         /// <summary>
         /// Check all session is in all supplied roles otherwise a 401 HttpError is thrown
         /// </summary>
-        /// <param name="req"></param>
-        /// <param name="requiredRole"></param>
         public static Task AssertRequiredRoleAsync(IRequest req, string requiredRole, CancellationToken token = default) =>
             AssertRequiredRolesAsync(req, new[] { requiredRole }, token);
 
         /// <summary>
         /// Check all session is in all supplied roles otherwise a 401 HttpError is thrown
         /// </summary>
-        /// <param name="req"></param>
-        /// <param name="requiredRoles"></param>
         public static async Task AssertRequiredRolesAsync(IRequest req, string[] requiredRoles, CancellationToken token=default)
         {
             var session = await req.AssertAuthenticatedSessionAsync(token:token).ConfigAwait();
@@ -129,43 +125,6 @@ namespace ServiceStack
 
         public static Task<bool> HasRequiredRolesAsync(IRequest req, string[] requiredRoles) => HasAllRolesAsync(req, req.GetSession(), requiredRoles);
 
-        [Obsolete("Use SessionHasAllRolesAsync")]
-        private static bool SessionHasAllRoles(IRequest req, IAuthSession session, IAuthRepository authRepo, ICollection<string> requiredRoles)
-        {
-            var allRoles = session.GetRoles(authRepo);
-            if (allRoles.Contains(RoleNames.Admin) || requiredRoles.All(allRoles.Contains))
-                return true;
-
-            session.UpdateFromUserAuthRepo(req, authRepo);
-
-            allRoles = session.GetRoles(authRepo);
-            if (allRoles.Contains(RoleNames.Admin) || requiredRoles.All(allRoles.Contains))
-            {
-                req.SaveSession(session);
-                return true;
-            }
-
-            return false;
-        }
-
-        private static async Task<bool> SessionHasAllRolesAsync(IRequest req, IAuthSession session, IAuthRepositoryAsync authRepo, ICollection<string> requiredRoles, CancellationToken token=default)
-        {
-            var allRoles = await session.GetRolesAsync(authRepo, token).ConfigAwait();
-            if (allRoles.Contains(RoleNames.Admin) || requiredRoles.All(allRoles.Contains))
-                return true;
-
-            await session.UpdateFromUserAuthRepoAsync(req, authRepo).ConfigAwait();
-
-            allRoles = await session.GetRolesAsync(authRepo, token).ConfigAwait();
-            if (allRoles.Contains(RoleNames.Admin) || requiredRoles.All(allRoles.Contains))
-            {
-                await req.SaveSessionAsync(session, token: token).ConfigAwait();
-                return true;
-            }
-
-            return false;
-        }
-        
         [Obsolete("Use SessionValidForAllRolesAsync")]
         private static bool SessionValidForAllRoles(IRequest req, IAuthSession session, ICollection<string> requiredRoles)
         {

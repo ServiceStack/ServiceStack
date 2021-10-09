@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
@@ -48,7 +49,7 @@ namespace ServiceStack
             using (authRepo as IDisposable)
 #endif
             {
-                if (await HasAnyRolesAsync(req, session, authRepo).ConfigAwait())
+                if (await session.HasAnyRolesAsync(RequiredRoles, authRepo, req).ConfigAwait())
                     return;
             }
 
@@ -59,51 +60,12 @@ namespace ServiceStack
         [Obsolete("Use HasAnyRolesAsync")]
         public virtual bool HasAnyRoles(IRequest req, IAuthSession session, IAuthRepository authRepo)
         {
-            if (HasAnyRoles(session, authRepo)) 
-                return true;
-
-            session.UpdateFromUserAuthRepo(req, authRepo);
-
-            if (HasAnyRoles(session, authRepo))
-            {
-                req.SaveSession(session);
-                return true;
-            }
-            return false;
+            return session.HasAnyRoles(RequiredRoles, authRepo, req);
         }
-
-        public virtual async Task<bool> HasAnyRolesAsync(IRequest req, IAuthSession session, IAuthRepositoryAsync authRepo)
-        {
-            if (await HasAnyRolesAsync(session, authRepo).ConfigAwait()) 
-                return true;
-
-            await session.UpdateFromUserAuthRepoAsync(req, authRepo).ConfigAwait();
-
-            if (await HasAnyRolesAsync(session, authRepo).ConfigAwait())
-            {
-                await req.SaveSessionAsync(session).ConfigAwait();
-                return true;
-            }
-            return false;
-        }
-
-        public virtual bool HasAnyRoles(IAuthSession session, IAuthRepository authRepo)
-        {
-            var userRoles = session.GetRoles(authRepo);
-            return userRoles.Contains(RoleNames.Admin) || this.RequiredRoles.Any(userRoles.Contains);
-        }
-
-        public virtual async Task<bool> HasAnyRolesAsync(IAuthSession session, IAuthRepositoryAsync authRepo)
-        {
-            var userRoles = await session.GetRolesAsync(authRepo);
-            return userRoles.Contains(RoleNames.Admin) || this.RequiredRoles.Any(userRoles.Contains);
-        }
-
+        
         /// <summary>
         /// Check all session is in any supplied roles otherwise a 401 HttpError is thrown
         /// </summary>
-        /// <param name="req"></param>
-        /// <param name="requiredRoles"></param>
         [Obsolete("Use AssertRequiredRolesAsync")]
         public static void AssertRequiredRoles(IRequest req, params string[] requiredRoles)
         {
@@ -117,14 +79,7 @@ namespace ServiceStack
             var authRepo = HostContext.AppHost.GetAuthRepository(req);
             using (authRepo as IDisposable)
             {
-                var allRoles = session.GetRoles(authRepo);
-                if (allRoles.Contains(RoleNames.Admin) || requiredRoles.Any(allRoles.Contains))
-                    return;
-
-                session.UpdateFromUserAuthRepo(req);
-
-                allRoles = session.GetRoles(authRepo);
-                if (allRoles.Contains(RoleNames.Admin) || requiredRoles.Any(allRoles.Contains))
+                if (session.HasAnyRoles(requiredRoles, authRepo, req))
                     return;
             }
 

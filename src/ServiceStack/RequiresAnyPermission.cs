@@ -47,7 +47,7 @@ namespace ServiceStack
             using (authRepo as IDisposable)
 #endif
             {
-                if (await HasAnyPermissionsAsync(req, session, authRepo).ConfigAwait())
+                if (await session.HasAnyPermissionsAsync(RequiredPermissions, authRepo, req).ConfigAwait())
                     return;
 
                 if (await session.HasRoleAsync(RoleNames.Admin, authRepo).ConfigAwait())
@@ -59,56 +59,11 @@ namespace ServiceStack
         }
 
         [Obsolete("Use HasAnyPermissionsAsync")]
-        public bool HasAnyPermissions(IRequest req, IAuthSession session, IAuthRepository authRepo)
+        public virtual bool HasAnyPermissions(IRequest req, IAuthSession session, IAuthRepository authRepo)
         {
-            if (HasAnyPermissions(session, authRepo)) return true;
-
-            if (authRepo == null)
-                authRepo = HostContext.AppHost.GetAuthRepository(req);
-
-            if (authRepo == null)
-                return false;
-
-            using (authRepo as IDisposable)
-            {
-                var userAuth = authRepo.GetUserAuth(session, null);
-                session.UpdateSession(userAuth);
-
-                if (HasAnyPermissions(session, authRepo))
-                {
-                    req.SaveSession(session);
-                    return true;
-                }
-                return false;
-            }
+            return session.HasAnyPermissions(RequiredPermissions, authRepo, req);
         }
 
-        public async Task<bool> HasAnyPermissionsAsync(IRequest req, IAuthSession session, IAuthRepositoryAsync authRepo)
-        {
-            if (await HasAnyPermissionsAsync(session, authRepo).ConfigAwait()) 
-                return true;
-
-            await session.UpdateFromUserAuthRepoAsync(req, authRepo).ConfigAwait();
-
-            if (await HasAnyPermissionsAsync(session, authRepo).ConfigAwait())
-            {
-                await req.SaveSessionAsync(session).ConfigAwait();
-                return true;
-            }
-            return false;
-        }
-
-        public virtual bool HasAnyPermissions(IAuthSession session, IAuthRepository authRepo)
-        {
-            var allPerms = session.GetPermissions(authRepo);
-            return this.RequiredPermissions.Any(allPerms.Contains);
-        }
-
-        public virtual async Task<bool> HasAnyPermissionsAsync(IAuthSession session, IAuthRepositoryAsync authRepo)
-        {
-            var allPerms = await session.GetPermissionsAsync(authRepo).ConfigAwait();
-            return this.RequiredPermissions.Any(allPerms.Contains);
-        }
     }
 
 }
