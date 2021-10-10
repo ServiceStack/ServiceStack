@@ -886,13 +886,13 @@ namespace ServiceStack.Host
         {
             if (!appHost.Config.EnableAccessRestrictions) 
                 return;
-            if ((RequestAttributes.InProcess & actualAttributes) == RequestAttributes.InProcess) 
-                return;
 
             var hasNoAccessRestrictions = !requestServiceAttrs.TryGetValue(requestType, out var restrictAttr)
                 || restrictAttr.HasNoAccessRestrictions;
-
             if (hasNoAccessRestrictions)
+                return;
+
+            if (restrictAttr.AccessTo != RequestAttributes.None && (RequestAttributes.InProcess & actualAttributes) == RequestAttributes.InProcess) 
                 return;
 
             var failedScenarios = StringBuilderCache.Allocate();

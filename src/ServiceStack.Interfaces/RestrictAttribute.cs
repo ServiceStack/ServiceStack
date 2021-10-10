@@ -123,6 +123,11 @@ namespace ServiceStack
             set => this.VisibleToAny = new[] { value.ToAllowedFlagsSet() };
         }
 
+        public bool Hide
+        {
+            set { if (value) this.VisibleToAny = new[] { RequestAttributes.None }; }
+        }
+
         /// <summary>
         /// Restrict metadata visibility to any of the specified access scenarios
         /// </summary>
@@ -209,6 +214,9 @@ namespace ServiceStack
         /// <returns></returns>
         public static RequestAttributes ToAllowedFlagsSet(this RequestAttributes restrictTo)
         {
+            // Special case .None so VisibilityTo=None doesn't allowedAttrs all flags
+            if (restrictTo == RequestAttributes.None)
+                return RequestAttributes.None;
             if (restrictTo == RequestAttributes.Any)
                 return RequestAttributes.Any;
 
