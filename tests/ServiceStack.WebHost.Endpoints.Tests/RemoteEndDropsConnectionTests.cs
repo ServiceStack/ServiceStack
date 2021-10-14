@@ -27,7 +27,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			appHost.Init();
 			appHost.Start(ListeningOn);
 
-			Console.WriteLine("ExampleAppHost Created at {0}, listening on {1}",
+			Console.WriteLine(@"ExampleAppHost Created at {0}, listening on {1}",
 				DateTime.Now, ListeningOn);
 		}
 
@@ -108,7 +108,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			foreach (var pair in TestLogger.GetLogs())
 			{
-				Console.WriteLine("TEST: {0}: {1}", pair.Key, pair.Value);
+				Console.WriteLine(@"TEST: {0}: {1}", pair.Key, pair.Value);
 			}
 
 			if (!writeErrorsToResponse)

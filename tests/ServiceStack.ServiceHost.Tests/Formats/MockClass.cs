@@ -29,7 +29,7 @@ namespace CSharpEval
                 if (result != null) count++;
             }
             var timeTaken = DateTime.Now - start;
-            Console.WriteLine("File.ReadAllText: Times {0}: {1}ms", Times, timeTaken.TotalMilliseconds);
+            Console.WriteLine(@"File.ReadAllText: Times {0}: {1}ms", Times, timeTaken.TotalMilliseconds);
 
             start = DateTime.Now;
             count = 0;
@@ -40,7 +40,7 @@ namespace CSharpEval
                 if (result != default(DateTime)) count++;
             }
             timeTaken = DateTime.Now - start;
-            Console.WriteLine("FileInfo.LastWriteTime: Times {0}: {1}ms", Times, timeTaken.TotalMilliseconds);
+            Console.WriteLine(@"FileInfo.LastWriteTime: Times {0}: {1}ms", Times, timeTaken.TotalMilliseconds);
         }
 
         [Test]
