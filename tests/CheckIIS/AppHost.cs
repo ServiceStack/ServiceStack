@@ -16,7 +16,7 @@ namespace CheckIIS
             });
 
             Plugins.Add(new ServerEventsFeature());
-            // Plugins.Add(new SoapFormat());
+            Plugins.Add(new SoapFormat());
         }
     }
     

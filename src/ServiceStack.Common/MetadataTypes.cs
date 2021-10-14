@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Script;
 
 namespace ServiceStack
 {
+    [Exclude(Feature.Soap)]
     public class MetadataTypesConfig
     {
         public MetadataTypesConfig(
@@ -99,6 +101,7 @@ namespace ServiceStack
         public List<string> IgnoreTypesInNamespaces { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class MetadataTypes
     {
         public MetadataTypes()
@@ -114,6 +117,7 @@ namespace ServiceStack
         public List<MetadataOperationType> Operations { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class AppMetadata : IMeta
     {
         public AppInfo App { get; set; }
@@ -124,6 +128,7 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class PluginInfo : IMeta
     {
         public List<string> Loaded { get; set; }
@@ -136,6 +141,7 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class AuthInfo : IMeta
     {
         public bool? HasAuthSecret { get; set; }
@@ -148,6 +154,7 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class AutoQueryInfo : IMeta
     {
         public int? MaxLimit { get; set; }
@@ -164,6 +171,7 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class ValidationInfo : IMeta
     {
         public bool? HasValidationSource { get; set; }
@@ -176,6 +184,7 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class SharpPagesInfo : IMeta
     {
         public string ApiPath { get; set; }
@@ -186,6 +195,7 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class RequestLogsInfo : IMeta
     {
         public string[] RequiredRoles { get; set; }
@@ -194,6 +204,7 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class AdminUsersInfo : IMeta
     {
         public string AccessRole { get; set; }
@@ -209,6 +220,7 @@ namespace ServiceStack
     /// <summary>
     /// Generic template for adding metadata info about custom plugins  
     /// </summary>
+    [Exclude(Feature.Soap)]
     public class CustomPlugin : IMeta
     {
         /// <summary>
@@ -232,6 +244,7 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class ScriptMethodType
     {
         public string Name { get; set; }
@@ -240,6 +253,7 @@ namespace ServiceStack
         public string ReturnType { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class AutoQueryConvention
     {
         public string Name { get; set; }
@@ -251,6 +265,7 @@ namespace ServiceStack
     /// <summary>
     /// App Info and 
     /// </summary>
+    [Exclude(Feature.Soap)]
     public class AppInfo : IMeta
     {
         /// <summary>
@@ -314,6 +329,7 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class MetaAuthProvider : IMeta
     {
         public string Name { get; set; }
@@ -322,6 +338,7 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class MetadataOperationType
     {
         public MetadataType Request { get; set; }
@@ -340,6 +357,7 @@ namespace ServiceStack
         public List<string> Tags { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class MetadataType : IMeta
     {
         [IgnoreDataMember]
@@ -403,6 +421,7 @@ namespace ServiceStack
         }
     }
 
+    [Exclude(Feature.Soap)]
     public class MetadataTypeName
     {
         [IgnoreDataMember]
@@ -412,6 +431,7 @@ namespace ServiceStack
         public string[] GenericArgs { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class MetadataRoute
     {
         [IgnoreDataMember]
@@ -422,12 +442,14 @@ namespace ServiceStack
         public string Summary { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class MetadataDataContract
     {
         public string Name { get; set; }
         public string Namespace { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class MetadataDataMember
     {
         public string Name { get; set; }
@@ -436,6 +458,7 @@ namespace ServiceStack
         public bool? EmitDefaultValue { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class MetadataPropertyType
     {
         [IgnoreDataMember]
@@ -467,6 +490,7 @@ namespace ServiceStack
         public List<MetadataAttribute> Attributes { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class MetadataAttribute
     {
         [IgnoreDataMember]
