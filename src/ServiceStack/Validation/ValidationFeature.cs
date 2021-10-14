@@ -15,7 +15,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Validation
 {
-    public class ValidationFeature : IPlugin, IAfterInitAppHost, Model.IHasStringId
+    public class ValidationFeature : IPlugin, IPostInitPlugin, IAfterInitAppHost, Model.IHasStringId
     {
         public string Id { get; set; } = Plugins.Validation;
         public Func<IRequest, ValidationResult, object, object> ErrorResponseFilter { get; set; }
@@ -99,11 +99,6 @@ namespace ServiceStack.Validation
                 appHost.RegisterServices(ServiceRoutes);
             }
 
-            if (ScanAppHostAssemblies)
-            {
-                container.RegisterValidators(((ServiceStackHost)appHost).ServiceAssemblies.ToArray());
-            }
-            
             appHost.AddToAppMetadata(metadata => {
                 metadata.Plugins.Validation = new ValidationInfo {
                     HasValidationSource = hasValidationSource.NullIfFalse(), 
@@ -124,6 +119,14 @@ namespace ServiceStack.Validation
             });
             
             appHost.GetPlugin<MetadataFeature>()?.ExportTypes.Add(typeof(ValidationRule));
+        }
+
+        public void AfterPluginsLoaded(IAppHost appHost)
+        {
+            if (ScanAppHostAssemblies)
+            {
+                appHost.GetContainer().RegisterValidators(((ServiceStackHost)appHost).ServiceAssemblies.ToArray());
+            }
         }
 
         public void AfterInit(IAppHost appHost)
