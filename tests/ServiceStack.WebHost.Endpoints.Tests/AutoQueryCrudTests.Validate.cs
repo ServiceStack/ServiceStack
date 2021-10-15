@@ -207,7 +207,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             try
             {
-                var response = client.Post(new ValidateCreateRockstar());
+                var response = client.Post(new ValidateCreateRockstar {
+                    DateOfBirth = new DateTime(2000,1,1)
+                });
                 
                 Assert.Fail("Should throw");
             }
