@@ -386,8 +386,8 @@ namespace ServiceStack
 
             if (propRule.Validator != null)
             {
-                var ret = appHost.EvalExpression(propRule
-                    .Validator); //Validators can't be cached due to custom code/msgs
+                //Validators can't be cached due to custom code/msgs
+                var ret = appHost.EvalExpression(propRule.Validator);
                 if (ret == null)
                     ThrowNoValidator(propRule.Validator);
 

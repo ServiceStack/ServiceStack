@@ -26,6 +26,12 @@ namespace ServiceStack
         private readonly object semaphore = new object();
         internal static int IdCounter;
 
+        public Task<List<ValidationRule>> GetAllValidateRulesAsync()
+        {
+            var rules = TypeRulesMap.Values.SelectMany(x => x.Select(y => (ValidationRule)y.Value));
+            return rules.ToList().InTask();
+        }
+
         public Task<List<ValidationRule>> GetAllValidateRulesAsync(string typeName)
         {
             var ret = TypeRulesMap.TryGetValue(typeName, out var rules)

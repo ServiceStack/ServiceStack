@@ -303,6 +303,7 @@ namespace ServiceStack
 
     public interface IValidationSourceAdmin
     {
+        Task<List<ValidationRule>> GetAllValidateRulesAsync();
         Task<List<ValidationRule>> GetAllValidateRulesAsync(string typeName);
         Task SaveValidationRulesAsync(List<ValidationRule> validateRules);
         Task<List<ValidationRule>> GetValidateRulesByIdsAsync(params int[] ids);

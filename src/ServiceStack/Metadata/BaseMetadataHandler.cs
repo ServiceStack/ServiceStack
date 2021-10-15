@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Text;
+using ServiceStack.Validation;
 
 namespace ServiceStack.Metadata
 {
@@ -45,12 +46,12 @@ namespace ServiceStack.Metadata
             return CreateMessage(type);
         }
 
-        protected virtual Task ProcessOperationsAsync(Stream writer, IRequest httpReq, IResponse httpRes)
+        protected virtual async Task ProcessOperationsAsync(Stream writer, IRequest httpReq, IResponse httpRes)
         {
             var operationName = httpReq.QueryString["op"];
 
             if (!AssertAccess(httpReq, httpRes, operationName)) 
-                return TypeConstants.EmptyTask;
+                return;
 
             ContentFormat = ServiceStack.ContentFormat.GetContentFormat(Format);
             var metadata = HostContext.Metadata;
@@ -59,7 +60,8 @@ namespace ServiceStack.Metadata
                 var allTypes = metadata.GetAllOperationTypes();
                 //var operationType = allTypes.Single(x => x.Name == operationName);
                 var operationType = allTypes.Single(x => x.GetOperationName() == operationName);
-                var op = metadata.GetOperation(operationType);
+                var typeValidationRules = await httpReq.GetAllValidateRulesAsync(operationType.Name).ConfigAwait();
+                var op = metadata.GetOperation(operationType).ApplyValidationRules(typeValidationRules);
                 var requestMessage = CreateResponse(operationType);
                 string responseMessage = null;
 
@@ -157,11 +159,13 @@ namespace ServiceStack.Metadata
                 }
                 sb.Append("</div>");
 
-                return RenderOperationAsync(writer, httpReq, operationName, requestMessage, responseMessage,
-                    StringBuilderCache.ReturnAndFree(sb), op);
+                await  RenderOperationAsync(writer, httpReq, operationName, requestMessage, responseMessage,
+                    StringBuilderCache.ReturnAndFree(sb), op).ConfigAwait();
             }
-
-            return RenderOperationsAsync(writer, httpReq, metadata);
+            else
+            {
+                await RenderOperationsAsync(writer, httpReq, metadata).ConfigAwait();
+            }
         }
 
         private void AppendType(StringBuilder sb, Operation op, MetadataType metadataType)
@@ -254,8 +258,10 @@ namespace ServiceStack.Metadata
             sb.Append("</table>");
         }
 
-        protected virtual Task RenderOperationsAsync(Stream output, IRequest httpReq, ServiceMetadata metadata)
+        protected virtual async Task RenderOperationsAsync(Stream output, IRequest httpReq, ServiceMetadata metadata)
         {
+            var allValidationRules = await httpReq.GetAllValidateRulesAsync().ConfigAwait();
+            
             var defaultPage = new IndexOperationsControl
             {
                 Request = httpReq,
@@ -264,12 +270,17 @@ namespace ServiceStack.Metadata
                 Xsds = XsdTypes.Xsds,
                 XsdServiceTypesIndex = 1,
                 OperationNames = metadata.GetOperationNamesForMetadata(httpReq),
+                GetOperation = operationName => {
+                    var opType = HostContext.Metadata.GetOperationType(operationName);
+                    var op = HostContext.Metadata.GetOperation(opType).ApplyValidationRules(allValidationRules);
+                    return op;
+                }
             };
 
             var metadataFeature = HostContext.GetPlugin<MetadataFeature>();
             metadataFeature?.IndexPageFilter?.Invoke(defaultPage);
 
-            return defaultPage.RenderAsync(output);
+            await defaultPage.RenderAsync(output).ConfigAwait();
         }
 
         private string ConvertToHtml(string text)

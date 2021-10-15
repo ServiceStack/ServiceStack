@@ -732,7 +732,7 @@ namespace ServiceStack.Host
         
     }
 
-    public class Operation
+    public class Operation : ICloneable
     {
         public string Name => RequestType.GetOperationName();
 
@@ -756,6 +756,25 @@ namespace ServiceStack.Host
         
         public List<ITypeValidator> RequestTypeValidationRules { get; private set; }
         public List<IValidationRule> RequestPropertyValidationRules { get; private set; }
+
+        object ICloneable.Clone() => Clone();
+        public Operation Clone() => new() {
+            RequestType = RequestType,
+            ServiceType = ServiceType,
+            ResponseType = ResponseType,
+            RestrictTo = RestrictTo,
+            Actions = Actions?.ToList(),
+            Routes = Routes?.ToList(),
+            RequestFilterAttributes = RequestFilterAttributes,
+            RequiresAuthentication = RequiresAuthentication,
+            RequiredRoles = RequiredRoles?.ToList(),
+            RequiresAnyRole = RequiresAnyRole?.ToList(),
+            RequiredPermissions = RequiredPermissions?.ToList(),
+            RequiresAnyPermission = RequiresAnyPermission?.ToList(),
+            Tags = Tags?.ToList(),
+            RequestTypeValidationRules = RequestTypeValidationRules?.ToList(),
+            RequestPropertyValidationRules = RequestPropertyValidationRules?.ToList(),
+        };
 
         public void AddRequestTypeValidationRules(List<ITypeValidator> typeValidators)
         {

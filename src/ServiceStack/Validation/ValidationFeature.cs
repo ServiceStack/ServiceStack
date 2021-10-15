@@ -445,5 +445,47 @@ namespace ServiceStack.Validation
             }
             return false;
         }
+
+        public static Task<List<ValidationRule>> GetAllValidateRulesAsync(this IResolver resolver, string type=null) =>
+            resolver.TryResolve<IValidationSource>().GetAllValidateRulesAsync(type);
+        public static async Task<List<ValidationRule>> GetAllValidateRulesAsync(this IValidationSource validationSource, string type=null)
+        {
+            return validationSource is IValidationSourceAdmin adminSource
+                ? type != null 
+                    ? await adminSource.GetAllValidateRulesAsync(type).ConfigAwait()
+                    : await adminSource.GetAllValidateRulesAsync().ConfigAwait()
+                : TypeConstants<ValidationRule>.EmptyList;
+        }
+
+        public static bool IsAuthValidator(this IValidateRule rule)
+        {
+            var validator = rule.Validator;
+            if (!string.IsNullOrEmpty(validator))
+            {
+                return validator.StartsWith(nameof(ValidateScripts.IsAuthenticated))
+                       || validator.StartsWith(nameof(ValidateScripts.IsAdmin))
+                       || validator.StartsWith(nameof(ValidateScripts.HasRole))
+                       || validator.StartsWith(nameof(ValidateScripts.HasPermission));
+            }
+            return false;
+        }
+
+        public static Operation ApplyValidationRules(this Operation op, IEnumerable<ValidationRule> rules)
+        {
+            var authRules = rules.Where(x => x.Type == op.Name && x.IsAuthValidator() && x.Field == null).ToList();
+            if (authRules.Count > 0)
+            {
+                op = op.Clone();
+                op.RequiresAuthentication = true;
+                var appHost = HostContext.AppHost;
+                var allValidators = authRules.Select(x => appHost.EvalExpression(x.Validator) as ITypeValidator).Where(x => x != null).ToList();
+                if (allValidators.FirstOrDefault(x => x is HasRolesValidator) is HasRolesValidator roleValidator)
+                    roleValidator.Roles.Each(op.RequiredRoles.AddIfNotExists);
+                if (allValidators.FirstOrDefault(x => x is HasPermissionsValidator) is HasPermissionsValidator permValidator)
+                    permValidator.Permissions.Each(op.RequiredPermissions.AddIfNotExists);
+            }
+            return op;
+        }
+        
     }
 }
