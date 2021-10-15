@@ -155,7 +155,7 @@ namespace ServiceStack.Script
             }
 
             var filePath = sanitizePath.LastLeftPart('.');
-            if (string.IsNullOrEmpty(filePath)) // .well-known/path
+            if (string.IsNullOrEmpty(filePath) && !string.IsNullOrEmpty(sanitizePath)) // .well-known/path
                 return null;
             
             page = TryGetPage(filePath) ?? (!isDirectory ? TryGetPage(filePath + '/') : null);

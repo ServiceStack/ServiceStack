@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -321,6 +322,26 @@ layout: alt/alt-layout
 </body>
 </html>
 ".NormalizeNewLines()));
+        }
+
+        void Assert404(string url)
+        {
+            try
+            {
+                var response = url.GetStreamFromUrl();
+                Assert.Fail("Should throw");
+            }
+            catch (WebException e)
+            {
+                Assert.That(e.GetStatus(), Is.EqualTo(HttpStatusCode.NotFound));
+            }
+        }
+
+        [Test]
+        public void Unknown_paths_throw_404()
+        {
+            Assert404(BaseUrl.CombineWith(".unknown"));
+            Assert404(BaseUrl.CombineWith(".unknown/path"));
         }
 
         [Test]
