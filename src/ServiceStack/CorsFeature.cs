@@ -15,6 +15,7 @@ namespace ServiceStack
         public const string DefaultOrigin = "*";
         public const string DefaultMethods = "GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD";
         public const string DefaultHeaders = "Content-Type";
+        public const int DefaultMaxAge = 600; // num of secs to cache pre-flight responses, Chrome Max 600s
 
         private readonly string allowedOrigins;
         private readonly string allowedMethods;
@@ -34,7 +35,7 @@ namespace ServiceStack
         /// Represents a default constructor with Allow Origin equals to "*", Allowed GET, POST, PUT, DELETE, OPTIONS request and allowed "Content-Type" header.
         /// </summary>
         public CorsFeature(string allowedOrigins = DefaultOrigin, string allowedMethods = DefaultMethods, string allowedHeaders = DefaultHeaders, bool allowCredentials = false,
-            string exposeHeaders = null, int? maxAge = null)
+            string exposeHeaders = null, int? maxAge = DefaultMaxAge)
         {
             this.allowedOrigins = allowedOrigins;
             this.allowedMethods = allowedMethods;
@@ -46,7 +47,7 @@ namespace ServiceStack
         }
 
         public CorsFeature(ICollection<string> allowOriginWhitelist, string allowedMethods = DefaultMethods, string allowedHeaders = DefaultHeaders, bool allowCredentials = false,
-            string exposeHeaders = null, int? maxAge = null)
+            string exposeHeaders = null, int? maxAge = DefaultMaxAge)
         {
             this.allowedMethods = allowedMethods;
             this.allowedHeaders = allowedHeaders;
