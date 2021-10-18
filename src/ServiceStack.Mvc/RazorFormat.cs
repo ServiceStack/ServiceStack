@@ -550,6 +550,7 @@ namespace ServiceStack.Mvc
 
     public class RazorHandler : ServiceStackHandlerBase
     {
+        public Action<IRequest> Filter { get; set; }
         private readonly ViewEngineResult viewEngineResult;
         protected object Model { get; set; }
         protected string PathInfo { get; set; }
@@ -572,6 +573,8 @@ namespace ServiceStack.Mvc
         {
             if (HostContext.ApplyCustomHandlerRequestFilters(req, res))
                 return;
+
+            Filter?.Invoke(req);
 
             var format = HostContext.GetPlugin<RazorFormat>();
             try
