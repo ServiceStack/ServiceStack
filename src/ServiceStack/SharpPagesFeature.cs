@@ -880,6 +880,7 @@ Plugins:
 
     public class SharpPageHandler : HttpAsyncTaskHandler
     {
+        public Action<IRequest> Filter { get; set; }
         public Func<IRequest,bool> ValidateFn { get; set; }
         
         public SharpPage Page { get; private set; }
@@ -914,6 +915,8 @@ Plugins:
 
             if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
                 return;
+
+            Filter?.Invoke(httpReq);
 
             if (ValidateFn != null && !ValidateFn(httpReq))
             {
