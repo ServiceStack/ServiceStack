@@ -7,42 +7,13 @@ namespace ServiceStack.Host
 {
     public static class HttpRequestAuthentication
     {
-        public static string GetAuthorization(this IRequest httpReq)
+        public static string GetAuthorization(this IRequest req) => HostContext.AppHost.GetAuthorization(req);
+        public static string GetBearerToken(this IRequest req) => HostContext.AppHost.GetBearerToken(req);
+        public static string GetJwtToken(this IRequest req) => HostContext.AppHost.GetJwtToken(req);
+
+        public static string GetBasicAuth(this IRequest req)
         {
-            var auth = httpReq.Items.TryGetValue(Keywords.Authorization, out var oAuth)
-                ? oAuth as string
-                : null;
-            if (!string.IsNullOrEmpty(auth))
-                return auth;
-            
-            auth = httpReq.Authorization;
-            return string.IsNullOrEmpty(auth) ? null : auth;
-        }
-
-        public static string GetBearerToken(this IRequest httpReq)
-        {
-            if (httpReq.Dto is IHasBearerToken dto && dto.BearerToken != null)
-                return dto.BearerToken;
-            
-            var auth = httpReq.GetAuthorization();
-            if (string.IsNullOrEmpty(auth))
-                return null;
-
-            var pos = auth.IndexOf(' ');
-            if (pos < 0)
-                return null;
-
-            var ret = auth.StartsWith("Bearer", StringComparison.OrdinalIgnoreCase) 
-                ? auth.Substring(pos + 1) 
-                : null;
-            if (!string.IsNullOrEmpty(ret))
-                return ret;
-            return null;
-        }
-
-        public static string GetBasicAuth(this IRequest httpReq)
-        {
-            var auth = httpReq.GetAuthorization();
+            var auth = req.GetAuthorization();
             if (auth == null) 
                 return null;
 

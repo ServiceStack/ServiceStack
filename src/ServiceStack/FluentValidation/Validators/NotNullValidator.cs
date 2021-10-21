@@ -21,18 +21,19 @@ namespace ServiceStack.FluentValidation.Validators {
 	using Resources;
 
 	public class NotNullValidator : PropertyValidator, INotNullValidator {
-		public NotNullValidator() : base(new LanguageStringSource(nameof(NotNullValidator))) {
 
-		}
 		protected override bool IsValid(PropertyValidatorContext context) {
 			if (context.PropertyValue == null) {
 				return false;
 			}
 			return true;
 		}
+
+		protected override string GetDefaultMessageTemplate() {
+			return Localized(nameof(NotNullValidator));
+		}
 	}
 
-	[Obsolete("FluentValidation metadata interfaces are deprecated and will be removed in FluentValidation 10.")]
 	public interface INotNullValidator : IPropertyValidator {
 	}
 }

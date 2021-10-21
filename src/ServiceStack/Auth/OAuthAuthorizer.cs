@@ -73,7 +73,7 @@ namespace ServiceStack.Auth
         // Settable by the user
         public string xAuthUsername, xAuthPassword;
 
-        readonly OAuthProvider provider;
+        readonly IOAuthProvider provider;
         public string RequestToken, RequestTokenSecret;
         public string AuthorizationToken, AuthorizationVerifier;
         public string AccessToken, AccessTokenSecret;//, AccessScreenName;
@@ -81,7 +81,7 @@ namespace ServiceStack.Auth
         public Dictionary<string, string> AuthInfo = new Dictionary<string, string>();
 
         // Constructor for standard OAuth
-        public OAuthAuthorizer(OAuthProvider provider)
+        public OAuthAuthorizer(IOAuthProvider provider)
         {
             this.provider = provider;
         }

@@ -132,6 +132,35 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         }
 
         [Test]
+        public void Can_parse_multiple_statements_delimited_by_semicolons()
+        {
+            var context = new ScriptContext().Init();
+
+            JsStatement[] ParseCode(string str)
+            {
+                var statements = context.ParseCode(str).Statements;
+                return statements;
+            }
+
+            var expr = new JsStatement[] {
+                new JsExpressionStatement(
+                    new JsAssignmentExpression(new JsIdentifier("a"), JsAssignment.Operator, new JsLiteral(1))),
+                new JsFilterExpressionStatement("a |> add(2)", new JsIdentifier("a"),
+                    new JsCallExpression(new JsIdentifier("add"), new JsLiteral(2))),
+                new JsExpressionStatement(
+                    new JsVariableDeclaration(JsVariableDeclarationKind.Var, new [] {
+                        new JsDeclaration(new JsIdentifier("b"), new JsLiteral(3)),
+                        new JsDeclaration(new JsIdentifier("d"), new JsLiteral(4))
+                    })),
+                new JsFilterExpressionStatement("d |> sub(b)", new JsIdentifier("d"),
+                    new JsCallExpression(new JsIdentifier("sub"), new JsIdentifier("b"))),
+            };
+
+            var result = ParseCode("a = 1; a |> add(2); var b = 3, d=4; d |> sub(b)");
+            Assert.That(result, Is.EqualTo(expr));
+        }
+
+        [Test]
         public void Can_parse_code_statements_with_blocks()
         {
             var context = new ScriptContext().Init();
@@ -635,10 +664,10 @@ text |> markdown
             
             result = context.EvaluateCode(code);
             Assert.That(result, Is.EquivalentTo(new List<KeyValuePair<string, string>> {
-                 new KeyValuePair<string, string>("Apples","2"),
-                 new KeyValuePair<string, string>("Oranges","3"),
-                 new KeyValuePair<string, string>("Grape Fruit","2"),
-                 new KeyValuePair<string, string>("Rock Melon","3"),
+                 new("Apples","2"),
+                 new("Oranges","3"),
+                 new("Grape Fruit","2"),
+                 new("Rock Melon","3"),
             }));
             Assert.That(context.EvaluateCode(code.Trim()), Is.EquivalentTo((List<KeyValuePair<string, string>>)result));
 
@@ -652,10 +681,10 @@ text |> markdown
                 list |> return";
             result = context.EvaluateCode(code);
             Assert.That(result, Is.EquivalentTo(new List<List<string>> {
-                new List<string> { "Apples", "2", "2" },
-                new List<string> { "Oranges", "3", "3" },
-                new List<string> { "Grape Fruit", "2", "2" },
-                new List<string> { "Rock Melon", "3", "3" },
+                new() { "Apples", "2", "2" },
+                new() { "Oranges", "3", "3" },
+                new() { "Grape Fruit", "2", "2" },
+                new() { "Rock Melon", "3", "3" },
             }));
             Assert.That(context.EvaluateCode(code.Trim()), Is.EquivalentTo((List<List<string>>)result));
 

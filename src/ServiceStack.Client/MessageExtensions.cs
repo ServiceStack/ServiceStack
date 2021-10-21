@@ -28,8 +28,9 @@ namespace ServiceStack
             do
             {
                 snapshot = ToMessageFnCache;
-                newCache = new Dictionary<Type, ToMessageDelegate>(ToMessageFnCache);
-                newCache[type] = toMessageFn;
+                newCache = new Dictionary<Type, ToMessageDelegate>(ToMessageFnCache) {
+                    [type] = toMessageFn
+                };
 
             } while (!ReferenceEquals(
                 Interlocked.CompareExchange(ref ToMessageFnCache, newCache, snapshot), snapshot));

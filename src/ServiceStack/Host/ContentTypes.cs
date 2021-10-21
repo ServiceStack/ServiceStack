@@ -13,48 +13,41 @@ namespace ServiceStack.Host
     {
         private static readonly UTF8Encoding UTF8EncodingWithoutBom = new UTF8Encoding(false);
 
-        public static ContentTypes Instance = new ContentTypes();
+        public static ContentTypes Instance = new();
 
-        public Dictionary<string, StreamSerializerDelegate> ContentTypeSerializers
-            = new Dictionary<string, StreamSerializerDelegate> {
-                { MimeTypes.Json, (r, o, s) => JsonDataContractSerializer.Instance.SerializeToStream(o, s) },
-                { MimeTypes.Jsv, (r, o, s) => TypeSerializer.SerializeToStream(o, s) },
-                { MimeTypes.Xml, (r, o, s) => XmlSerializer.SerializeToStream(o, s) },
-            };
+        public Dictionary<string, StreamSerializerDelegate> ContentTypeSerializers = new() {
+            { MimeTypes.Json, (r, o, s) => HostContext.AppHost.OnSerializeJson(r, o, s) },
+            { MimeTypes.Jsv, (r, o, s) => TypeSerializer.SerializeToStream(o, s) },
+            { MimeTypes.Xml, (r, o, s) => XmlSerializer.SerializeToStream(o, s) },
+        };
 
-        public Dictionary<string, StreamDeserializerDelegate> ContentTypeDeserializers
-            = new Dictionary<string, StreamDeserializerDelegate> {
-                { MimeTypes.Json, JsonDataContractSerializer.Instance.DeserializeFromStream },
-                { MimeTypes.Jsv, TypeSerializer.DeserializeFromStream },
-                { MimeTypes.Xml, XmlSerializer.DeserializeFromStream },
-                { "text/xml; charset=utf-8", XmlSerializer.DeserializeFromStream }, //"text/xml; charset=utf-8" matches xml + soap11
-            };
+        public Dictionary<string, StreamDeserializerDelegate> ContentTypeDeserializers = new() {
+            { MimeTypes.Json, (t, s) => HostContext.AppHost.OnDeserializeJson(t,s) },
+            { MimeTypes.Jsv, TypeSerializer.DeserializeFromStream },
+            { MimeTypes.Xml, XmlSerializer.DeserializeFromStream },
+            { "text/xml; charset=utf-8", XmlSerializer.DeserializeFromStream }, //"text/xml; charset=utf-8" matches xml + soap11
+        };
 
-        public Dictionary<string, StreamSerializerDelegateAsync> ContentTypeSerializersAsync
-            = new Dictionary<string, StreamSerializerDelegateAsync>();
+        public Dictionary<string, StreamSerializerDelegateAsync> ContentTypeSerializersAsync = new();
 
-        public Dictionary<string, StreamDeserializerDelegateAsync> ContentTypeDeserializersAsync
-            = new Dictionary<string, StreamDeserializerDelegateAsync>();
+        public Dictionary<string, StreamDeserializerDelegateAsync> ContentTypeDeserializersAsync = new();
 
-        public Dictionary<string, StringSerializerDelegate> ContentTypeStringSerializers
-            = new Dictionary<string, StringSerializerDelegate> {
-                { MimeTypes.Json, (r, o) => JsonDataContractSerializer.Instance.SerializeToString(o) },
-                { MimeTypes.Jsv, (r, o) => TypeSerializer.SerializeToString(o) },
-                { MimeTypes.Xml, (r, o) => XmlSerializer.SerializeToString(o) },
-            };
+        public readonly Dictionary<string, StringSerializerDelegate> ContentTypeStringSerializers = new() {
+            { MimeTypes.Json, (r, o) => JsonDataContractSerializer.Instance.SerializeToString(o) },
+            { MimeTypes.Jsv, (r, o) => TypeSerializer.SerializeToString(o) },
+            { MimeTypes.Xml, (r, o) => XmlSerializer.SerializeToString(o) },
+        };
 
-        public Dictionary<string, StringDeserializerDelegate> ContentTypeStringDeserializers
-            = new Dictionary<string, StringDeserializerDelegate> {
-                { MimeTypes.Json, JsonDataContractSerializer.Instance.DeserializeFromString },
-                { MimeTypes.Jsv, TypeSerializer.DeserializeFromString },
-                { MimeTypes.Xml, XmlSerializer.DeserializeFromString },
-            };
+        public readonly Dictionary<string, StringDeserializerDelegate> ContentTypeStringDeserializers = new() {
+            { MimeTypes.Json, JsonDataContractSerializer.Instance.DeserializeFromString },
+            { MimeTypes.Jsv, TypeSerializer.DeserializeFromString },
+            { MimeTypes.Xml, XmlSerializer.DeserializeFromString },
+        };
 
         public static StreamSerializerDelegateAsync UnknownContentTypeSerializer { get; set; } = SerializeUnknownContentType;
         public static StreamDeserializerDelegateAsync UnknownContentTypeDeserializer { get; set; }
 
-        public static HashSet<string> KnownFormats = new HashSet<string>
-        {
+        public static HashSet<string> KnownFormats = new() {
             "json",
             "xml",
             "jsv",
@@ -66,7 +59,7 @@ namespace ServiceStack.Host
         };
 
         //built-in formats
-        public Dictionary<string, string> ContentTypeFormats { get; } = new Dictionary<string, string> {
+        public Dictionary<string, string> ContentTypeFormats { get; } = new() {
             { "json", MimeTypes.Json },
             { "xml", MimeTypes.Xml },
             { "jsv", MimeTypes.Jsv },
@@ -74,9 +67,15 @@ namespace ServiceStack.Host
         
         public string GetFormatContentType(string format)
         {
-            return ContentTypeFormats.TryGetValue(format, out var registeredFormats)
-                ? registeredFormats
-                : null;
+            return ContentTypeFormats.TryGetValue(format, out var registeredFormat)
+                ? registeredFormat
+                : format switch {
+                    "json" => MimeTypes.Json,
+                    "xml" => MimeTypes.Xml,
+                    "jsv" => MimeTypes.Jsv,
+                    "csv" => MimeTypes.Csv,
+                    _ => null,
+                };
         }
 
         public void Register(string contentType, StreamSerializerDelegate streamSerializer, StreamDeserializerDelegate streamDeserializer)
@@ -155,10 +154,10 @@ namespace ServiceStack.Host
             switch (response)
             {
                 case string text:
-                    await stream.WriteAsync(text);
+                    await stream.WriteAsync(text).ConfigAwait();
                     break;
                 case byte[] bytes:
-                    await stream.WriteAsync(bytes, 0, bytes.Length);
+                    await stream.WriteAsync(bytes, 0, bytes.Length).ConfigAwait();
                     break;
                 case MemoryStream input:
                     await input.WriteToAsync(stream);
@@ -174,7 +173,7 @@ namespace ServiceStack.Host
                     break;
 #endif
                 default:
-                    throw new NotSupportedException(ErrorMessages.ContentTypeNotSupported.Fmt(req.ResponseContentType));
+                    throw new NotSupportedException(ErrorMessages.ContentTypeNotSupportedFmt.LocalizeFmt(req, req.ResponseContentType));
             }
         }
         
@@ -204,7 +203,7 @@ namespace ServiceStack.Host
                 }
             }
 
-            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupported.Fmt(contentType));
+            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupportedFmt.LocalizeFmt(req, contentType));
         }
 
         public string SerializeToString(IRequest req, object response)
@@ -236,7 +235,7 @@ namespace ServiceStack.Host
                 }
             }
 
-            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupported.Fmt(contentType));
+            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupportedFmt.LocalizeFmt(req, contentType));
         }
 
         private static Task serializeAsync(StreamSerializerDelegateAsync serializer, IRequest httpReq, object dto, Stream stream)
@@ -281,7 +280,7 @@ namespace ServiceStack.Host
             if (serializerAsync != null)
                 return serializerAsync(req, response, responseStream);
             
-            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupported.Fmt(contentType));
+            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupportedFmt.LocalizeFmt(req, contentType));
         }
         
         public StreamSerializerDelegateAsync GetStreamSerializerAsync(string contentType)
@@ -317,14 +316,12 @@ namespace ServiceStack.Host
             var deserializerAsync = GetStreamDeserializerAsync(contentType);
             if (deserializerAsync != null)
             {
-                using (var ms = MemoryStreamFactory.GetStream(request.ToUtf8Bytes()))
-                {
-                    var task = deserializerAsync(type, ms);
-                    return task.Result;
-                }
+                using var ms = MemoryStreamFactory.GetStream(request.ToUtf8Bytes());
+                var task = deserializerAsync(type, ms);
+                return task.Result;
             }
             
-            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupported.Fmt(contentType));
+            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupportedFmt.LocalizeFmt(contentType));
         }
 
         public object DeserializeFromStream(string contentType, Type type, Stream fromStream)
@@ -342,7 +339,7 @@ namespace ServiceStack.Host
                 return task.Result;
             }
             
-            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupported.Fmt(contentType));
+            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupportedFmt.LocalizeFmt(contentType));
         }
 
         public StreamDeserializerDelegate GetStreamDeserializer(string contentType)

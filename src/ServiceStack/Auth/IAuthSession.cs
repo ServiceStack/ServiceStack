@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
@@ -29,9 +31,22 @@ namespace ServiceStack.Auth
         string Sequence { get; set; }
 
         bool HasRole(string role, IAuthRepository authRepo);
+        Task<bool> HasRoleAsync(string role, IAuthRepositoryAsync authRepo, CancellationToken token=default);
         bool HasPermission(string permission, IAuthRepository authRepo);
+        Task<bool> HasPermissionAsync(string permission, IAuthRepositoryAsync authRepo, CancellationToken token=default);
+
+        ICollection<string> GetRoles(IAuthRepository authRepo);
+        Task<ICollection<string>> GetRolesAsync(IAuthRepositoryAsync authRepo, CancellationToken token = default);
+        ICollection<string> GetPermissions(IAuthRepository authRepo);
+        Task<ICollection<string>> GetPermissionsAsync(IAuthRepositoryAsync authRepo, CancellationToken token = default);
 
         bool IsAuthorized(string provider);
+
+        /// <summary>
+        /// Fired when a new Session is created
+        /// </summary>
+        /// <param name="httpReq"></param>
+        void OnCreated(IRequest httpReq);
 
         /// <summary>
         /// Called when the user is registered or on the first OAuth login 
@@ -47,12 +62,6 @@ namespace ServiceStack.Auth
         /// Fired before the session is removed after the /auth/logout Service is called
         /// </summary>
         void OnLogout(IServiceBase authService);
-
-        /// <summary>
-        /// Fired when a new Session is created
-        /// </summary>
-        /// <param name="httpReq"></param>
-        void OnCreated(IRequest httpReq);
     }
 
     public interface IAuthSessionExtended : IAuthSession
@@ -87,6 +96,30 @@ namespace ServiceStack.Auth
         bool? TwoFactorEnabled { get; set; }
         string SecurityStamp { get; set; }
         string Type { get; set; }
+
+        /// <summary>
+        /// High-level overridable API that ServiceStack uses to check whether a user has all requiredRoles.
+        /// </summary>
+        Task<bool> HasAllRolesAsync(ICollection<string> requiredRoles,
+            IAuthRepositoryAsync authRepo, IRequest req, CancellationToken token = default);
+
+        /// <summary>
+        /// High-level overridable API that ServiceStack uses to check whether a user has any of the specified roles.
+        /// </summary>
+        Task<bool> HasAnyRolesAsync(ICollection<string> roles, IAuthRepositoryAsync authRepo,
+            IRequest req, CancellationToken token = default);
+
+        /// <summary>
+        /// High-level overridable API that ServiceStack uses to check whether a user has all requiredPermissions.
+        /// </summary>
+        Task<bool> HasAllPermissionsAsync(ICollection<string> requiredPermissions,
+            IAuthRepositoryAsync authRepo, IRequest req, CancellationToken token = default);
+
+        /// <summary>
+        /// High-level overridable API that ServiceStack uses to check whether a user has any of the specified roles.
+        /// </summary>
+        Task<bool> HasAnyPermissionsAsync(ICollection<string> permissions, IAuthRepositoryAsync authRepo,
+            IRequest req, CancellationToken token = default);
         
         /// <summary>
         /// Fired before Session is resolved
@@ -94,10 +127,31 @@ namespace ServiceStack.Auth
         void OnLoad(IRequest httpReq);
 
         /// <summary>
+        /// Called when the user is registered or on the first OAuth login 
+        /// </summary>
+        Task OnRegisteredAsync(IRequest httpReq, IAuthSession session, IServiceBase service, CancellationToken token=default);
+
+        /// <summary>
+        /// Called after the user has successfully authenticated 
+        /// </summary>
+        Task OnAuthenticatedAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token=default);
+        
+        /// <summary>
+        /// Fired before the session is removed after the /auth/logout Service is called
+        /// </summary>
+        Task OnLogoutAsync(IServiceBase authService, CancellationToken token=default);
+
+        /// <summary>
         /// Override with Custom Validation logic to Assert if User is allowed to Authenticate. 
         /// Returning a non-null response invalidates Authentication with IHttpResult response returned to client.
         /// </summary>
         IHttpResult Validate(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo);
+
+        /// <summary>
+        /// Override with Custom Validation logic to Assert if User is allowed to Authenticate. 
+        /// Returning a non-null response invalidates Authentication with IHttpResult response returned to client.
+        /// </summary>
+        Task<IHttpResult> ValidateAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token=default);
     }
 
     public interface IWebSudoAuthSession : IAuthSession

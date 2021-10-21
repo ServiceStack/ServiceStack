@@ -732,8 +732,6 @@ namespace ServiceStack.Script
             }
             
             literal = literal.AdvancePastWhitespace();
-            if (literal.FirstCharEquals(';'))
-                literal = literal.Advance(1);
             
             token = new JsVariableDeclaration(kind, declarations.ToArray());
             return literal;

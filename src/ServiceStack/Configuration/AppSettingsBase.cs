@@ -58,7 +58,7 @@ namespace ServiceStack.Configuration
 
         public virtual List<string> GetAllKeys()
         {
-            var keys = settings.GetAllKeys().ToHashSet();
+            var keys = settings.GetAllKeys().ToSet();
             settingsWriter?.GetAllKeys().Each(x => keys.Add(x));
 
             return keys.ToList();
@@ -78,7 +78,7 @@ namespace ServiceStack.Configuration
         {
             var value = GetNullableString(name);
             if (value == null)
-                throw new ConfigurationErrorsException(string.Format(ErrorMessages.AppsettingNotFound, name));
+                throw new ConfigurationErrorsException(ErrorMessages.AppSettingNotFoundFmt.LocalizeFmt(name));
 
             return value;
         }
@@ -180,7 +180,7 @@ namespace ServiceStack.Configuration
 
             var value = settings.GetString(name);
             if (value == null)
-                throw new ConfigurationErrorsException(string.Format(ErrorMessages.AppsettingNotFound, name));
+                throw new ConfigurationErrorsException(ErrorMessages.AppSettingNotFoundFmt.LocalizeFmt(name));
 
             return value;
         }

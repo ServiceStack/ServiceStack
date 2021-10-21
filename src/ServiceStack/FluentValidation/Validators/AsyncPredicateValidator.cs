@@ -33,7 +33,7 @@ namespace ServiceStack.FluentValidation.Validators {
 		/// Creates a new AsyncPredicateValidator
 		/// </summary>
 		/// <param name="predicate"></param>
-		public AsyncPredicateValidator(Func<object, object, PropertyValidatorContext, CancellationToken, Task<bool>> predicate) : base(new LanguageStringSource(nameof(AsyncPredicateValidator))) {
+		public AsyncPredicateValidator(Func<object, object, PropertyValidatorContext, CancellationToken, Task<bool>> predicate) {
 			predicate.Guard("A predicate must be specified.", nameof(predicate));
 			this._predicate = predicate;
 		}
@@ -47,8 +47,12 @@ namespace ServiceStack.FluentValidation.Validators {
 			return Task.Run(() => IsValidAsync(context, new CancellationToken())).GetAwaiter().GetResult();
 		}
 
-		public override bool ShouldValidateAsynchronously(ValidationContext context) {
-			return context.IsAsync();
+		public override bool ShouldValidateAsynchronously(IValidationContext context) {
+			return context.IsAsync() || base.ShouldValidateAsynchronously(context);
+		}
+
+		protected override string GetDefaultMessageTemplate() {
+			return Localized(nameof(AsyncPredicateValidator));
 		}
 	}
 }

@@ -56,13 +56,13 @@ namespace ServiceStack
             {
                 filter(req, request);
                 if (req.Response.IsClosed)
-                    return default(TResponse);
+                    return default;
             }
             foreach (var filter in HostContext.AppHost.GatewayRequestFiltersAsyncArray)
             {
                 filter(req, request).Wait();
                 if (req.Response.IsClosed)
-                    return default(TResponse);
+                    return default;
             }
 
             ExecValidators(request).Wait();
@@ -70,6 +70,17 @@ namespace ServiceStack
             var response = HostContext.ServiceController.Execute(request, req);
             if (response is Task responseTask)
                 response = responseTask.GetResult();
+#if NET472 || NETSTANDARD2_0                
+            else if (response is ValueTask<object> valueTaskResponse)
+            {
+                response = valueTaskResponse.GetAwaiter().GetResult();
+            }
+            else if (response is ValueTask valueTaskVoid)
+            {
+                valueTaskVoid.GetAwaiter().GetResult();
+                response = null;
+            }
+#endif
 
             if (response is Task[] batchResponseTasks)
             {
@@ -88,13 +99,13 @@ namespace ServiceStack
             {
                 filter(req, responseDto);
                 if (req.Response.IsClosed)
-                    return default(TResponse);
+                    return default;
             }
             foreach (var filter in HostContext.AppHost.GatewayResponseFiltersAsyncArray)
             {
                 filter(req, responseDto).Wait();
                 if (req.Response.IsClosed)
-                    return default(TResponse);
+                    return default;
             }
 
             return responseDto;
@@ -146,7 +157,7 @@ namespace ServiceStack
                 if (validator != null)
                 {
                     var ruleSet = (string) (req.GetItem(Keywords.InvokeVerb) ?? req.Verb);
-                    var validationContext = new ValidationContext(request, null, new MultiRuleSetValidatorSelector(ruleSet))
+                    var validationContext = new ValidationContext<object>(request, null, new MultiRuleSetValidatorSelector(ruleSet))
                     {
                         Request = req
                     };
@@ -154,6 +165,7 @@ namespace ServiceStack
                     ValidationResult result;
                     if (!validator.HasAsyncValidators(validationContext))
                     {
+                        // ReSharper disable once MethodHasAsyncOverload
                         result = validator.Validate(validationContext);
                     }
                     else
@@ -188,6 +200,12 @@ namespace ServiceStack
             try
             {
                 return ExecSync<TResponse>(requestDto);
+            }
+            catch (AggregateException ae)
+            {
+                var ex = ae.UnwrapIfSingleException();
+                HostContext.RaiseGatewayException(req, requestDto, ex).Wait();
+                throw ex;
             }
             catch (Exception ex)
             {
@@ -256,6 +274,12 @@ namespace ServiceStack
             try
             {
                 return ExecSync<TResponse[]>(typedArray).ToList();
+            }
+            catch (AggregateException ae)
+            {
+                var ex = ae.UnwrapIfSingleException();
+                HostContext.RaiseGatewayException(req, requestDtos, ex).Wait();
+                throw ex;
             }
             catch (Exception ex)
             {

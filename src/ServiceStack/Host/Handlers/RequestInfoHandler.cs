@@ -13,11 +13,11 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
 {
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [DataContract]
     public class RequestInfo { }
 
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [DataContract]
     public class RequestInfoResponse
     {
@@ -184,7 +184,7 @@ namespace ServiceStack.Host.Handlers
         public List<string> VirtualPathProviderFiles { get; set; }
     }
 
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     public class RequestHandlerInfo
     {
         public string HandlerType { get; set; }
@@ -203,15 +203,15 @@ namespace ServiceStack.Host.Handlers
 
         public static RequestHandlerInfo LastRequestInfo;
 
-        public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
+        public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
             if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
-                return TypeConstants.EmptyTask;
+                return;
 
             var response = this.RequestInfo ?? GetRequestInfo(httpReq);
             response.HandlerFactoryArgs = HttpHandlerFactory.DebugLastHandlerArgs;
             response.DebugString = "";
-#if NET45
+#if NET45 || NET472
             if (HttpContext.Current != null)
             {
                 response.DebugString += HttpContext.Current.Request.GetType().FullName
@@ -257,8 +257,14 @@ namespace ServiceStack.Host.Handlers
 
             var json = JsonSerializer.SerializeToString(response);
             httpRes.ContentType = MimeTypes.Json;
-            return httpRes.WriteAsync(json)
-                .ContinueWith(t => httpRes.EndHttpHandlerRequest(skipHeaders: true));
+            try
+            {
+                await httpRes.WriteAsync(json).ConfigAwait();
+            }
+            finally
+            {
+                httpRes.EndHttpHandlerRequest(skipHeaders: true);
+            }
         }
 
         public static Dictionary<string, string> ToDictionary(NameValueCollection nvc)

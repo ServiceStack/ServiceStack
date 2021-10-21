@@ -145,21 +145,21 @@ namespace ServiceStack.IO
                 return gistCache;
 
             LastRefresh = DateTime.UtcNow;
-            return gistCache = await Gateway.GetGistAsync(GistId);
+            return gistCache = await Gateway.GetGistAsync(GistId).ConfigAwait();
         }
         
         public async Task LoadAllTruncatedFilesAsync()
         {
-            var gist = await GetGistAsync();
+            var gist = await GetGistAsync().ConfigAwait();
 
             var files = gist.Files.Where(x => 
                 (string.IsNullOrEmpty(x.Value.Content) || x.Value.Content.Length < x.Value.Size) && x.Value.Truncated);
 
             var tasks = files.Select(async x => {
-                x.Value.Content = await x.Value.Raw_Url.GetStringFromUrlAsync();
+                x.Value.Content = await x.Value.Raw_Url.GetStringFromUrlAsync().ConfigAwait();
             });
 
-            await Task.WhenAll(tasks);
+            await Task.WhenAll(tasks).ConfigAwait();
         }
 
         public void ClearGist() => gistCache = null;
@@ -177,7 +177,7 @@ namespace ServiceStack.IO
 
             var dirPath = GetDirPath(filePath);
             return new GistVirtualFile(this, new GistVirtualDirectory(this, dirPath, GetParentDirectory(dirPath)))
-                .Init(filePath, gist.Updated_At ?? gist.Created_at, text, stream);
+                .Init(filePath, gist.Updated_At ?? gist.Created_At, text, stream);
         }
 
         private GistVirtualDirectory GetParentDirectory(string dirPath)
@@ -339,7 +339,7 @@ namespace ServiceStack.IO
 
                 yield return new GistVirtualFile(this,
                         new GistVirtualDirectory(this, dirPath, GetParentDirectory(dirPath)))
-                    .Init(filePath, gist.Updated_At ?? gist.Created_at, text, stream);
+                    .Init(filePath, gist.Updated_At ?? gist.Created_At, text, stream);
             }
         }
 
@@ -483,7 +483,7 @@ namespace ServiceStack.IO
                 if (!GistVirtualFiles.GetGistContents(FilePath, gist, out var text, out var stream))
                     throw new FileNotFoundException("Gist File no longer exists", FilePath);
 
-                Init(FilePath, gist.Updated_At ?? gist.Created_at, text, stream);
+                Init(FilePath, gist.Updated_At ?? gist.Created_At, text, stream);
                 return;
             }
 

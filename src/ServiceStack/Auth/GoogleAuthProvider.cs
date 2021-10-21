@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
 
@@ -28,7 +30,7 @@ namespace ServiceStack.Auth
         public GoogleAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name)
         {
-            VerifyAccessToken = OnVerifyAccessToken;
+            VerifyAccessTokenAsync = OnVerifyAccessTokenAsync;
             this.AuthorizeUrl = appSettings.Get($"oauth.{Name}.AuthorizeUrl", DefaultAuthorizeUrl);
             this.AccessTokenUrl = appSettings.Get($"oauth.{Name}.AccessTokenUrl", DefaultAccessTokenUrl);
             this.UserProfileUrl = appSettings.Get($"oauth.{Name}.UserProfileUrl", DefaultUserProfileUrl);
@@ -44,37 +46,38 @@ namespace ServiceStack.Auth
 
             NavItem = new NavItem {
                 Href = "/auth/" + Name,
-                Label = "Sign in with Google",
+                Label = "Sign In with Google",
                 Id = "btn-" + Name,
                 ClassName = "btn-social btn-google",
                 IconClass = "fab svg-google",
             };
         }
 
-        public virtual bool OnVerifyAccessToken(string accessToken)
+        public virtual async Task<bool> OnVerifyAccessTokenAsync(string accessToken, AuthContext ctx)
         {
             var url = VerifyTokenUrl.Fmt(accessToken);
-            var json = url.GetJsonFromUrl();
+            var json = await url.GetJsonFromUrlAsync();
             var obj = JsonObject.Parse(json);
             var issuedTo = obj["issued_to"];
             return issuedTo == ConsumerKey;
         }
 
-        protected override object AuthenticateWithAccessToken(IServiceBase authService, IAuthSession session, IAuthTokens tokens, string accessToken)
+        protected override async Task<object> AuthenticateWithAccessTokenAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens,
+            string accessToken, Dictionary<string, string> authInfo = null, CancellationToken token = default)
         {
             tokens.AccessTokenSecret = accessToken;
 
-            var authInfo = CreateAuthInfo(accessToken);
+            var accessTokenAuthInfo = await CreateAuthInfoAsync(accessToken, token).ConfigAwait();
 
             session.IsAuthenticated = true;
 
-            return OnAuthenticated(authService, session, tokens, authInfo);
+            return await OnAuthenticatedAsync(authService, session, tokens, accessTokenAuthInfo, token).ConfigAwait();
         }
 
-        protected override Dictionary<string, string> CreateAuthInfo(string accessToken)
+        protected override async Task<Dictionary<string, string>> CreateAuthInfoAsync(string accessToken, CancellationToken token = default)
         {
             var url = this.UserProfileUrl.AddQueryParam("access_token", accessToken);
-            var json = url.GetJsonFromUrl();
+            var json = await url.GetJsonFromUrlAsync().ConfigAwait();
             var obj = JsonObject.Parse(json);
             
             obj.MoveKey("id", "user_id");

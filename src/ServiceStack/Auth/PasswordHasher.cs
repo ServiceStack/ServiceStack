@@ -244,7 +244,7 @@ namespace ServiceStack.Auth
         }
     }
 
-#if NET45
+#if NET45 || NET472
 
     //From: https://github.com/aspnet/DataProtection/
     /// <summary>

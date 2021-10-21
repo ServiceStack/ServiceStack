@@ -300,10 +300,10 @@ namespace ServiceStack.Host.HttpListener
         }
 
         private IVirtualFile file;
-        public IVirtualFile GetFile() => file ??= HostContext.VirtualFileSources.GetFile(PathInfo);
+        public IVirtualFile GetFile() => file ??= VirtualPathUtils.IsValidFilePath(PathInfo) ? HostContext.VirtualFileSources.GetFile(PathInfo) : null;
 
         private IVirtualDirectory dir;
-        public IVirtualDirectory GetDirectory() => dir ??= HostContext.VirtualFileSources.GetDirectory(PathInfo);
+        public IVirtualDirectory GetDirectory() => dir ??= VirtualPathUtils.IsValidFilePath(PathInfo) ? HostContext.VirtualFileSources.GetDirectory(PathInfo) : null;
 
         private bool? isDirectory;
         public bool IsDirectory
@@ -312,7 +312,7 @@ namespace ServiceStack.Host.HttpListener
             {
                 if (isDirectory == null)
                 {
-                    isDirectory = dir != null || HostContext.VirtualFileSources.DirectoryExists(PathInfo);
+                    isDirectory = dir != null || (VirtualPathUtils.IsValidFilePath(PathInfo) && HostContext.VirtualFileSources.DirectoryExists(PathInfo));
                     if (isDirectory == true)
                         isFile = false;
                 }

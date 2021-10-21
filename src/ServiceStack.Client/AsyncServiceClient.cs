@@ -2,9 +2,11 @@
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Logging;
@@ -48,8 +50,6 @@ namespace ServiceStack
 
         public string RefreshTokenUri { get; set; }
         
-        public bool UseTokenCookie { get; set; }
-
         public static int BufferSize = 8192;
 
         public ICredentials Credentials { get; set; }
@@ -131,7 +131,15 @@ namespace ServiceStack
 
         public string BearerToken { get; set; }
 
+        public StringBuilder HttpLog { get; set; }
+        public Action<StringBuilder> HttpLogFilter { get; set; }
+
         public static bool DisableTimer { get; set; }
+
+        public Dictionary<string, string> GetCookieValues()
+        {
+            return CookieContainer.ToDictionary(BaseUri);
+        }
 
         public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request, CancellationToken token = default(CancellationToken))
         {
@@ -236,13 +244,23 @@ namespace ServiceStack
                    if (RequestCompressionType != null)
                         webReq.Headers[HttpHeaders.ContentEncoding] = RequestCompressionType;
 
-                   using var requestStream = await webReq.GetRequestStreamAsync().ConfigureAwait(false);
+                   if (HttpLog != null)
+                       webReq.AppendHttpRequestHeaders(HttpLog, new Uri(BaseUri));
+                
+                   using var requestStream = await webReq.GetRequestStreamAsync().ConfigAwait();
                    token.ThrowIfCancellationRequested();
+                   
                    if (request != null)
                    {
                        StreamSerializer(null, request, requestStream);
                    }
                 }
+                else
+                {
+                    if (HttpLog != null)
+                        webReq.AppendHttpRequestHeaders(HttpLog, new Uri(BaseUri));
+                }
+                HttpLog?.AppendLine();
             }
             catch (Exception ex)
             {
@@ -254,7 +272,7 @@ namespace ServiceStack
 
             try
             {
-                webRes = (HttpWebResponse) await webReq.GetResponseAsync().ConfigureAwait(false);
+                webRes = (HttpWebResponse) await webReq.GetResponseAsync().ConfigAwait();
                 {
                     token.ThrowIfCancellationRequested();
 
@@ -273,9 +291,9 @@ namespace ServiceStack
                     int read;
                     var ms = MemoryStreamFactory.GetStream();
 
-                    while ((read = await responseStream.ReadAsync(bufferRead, 0, bufferRead.Length, token).ConfigureAwait(false)) != 0)
+                    while ((read = await responseStream.ReadAsync(bufferRead, 0, bufferRead.Length, token).ConfigAwait()) != 0)
                     {
-                        await ms.WriteAsync(bufferRead, 0, read, token);
+                        await ms.WriteAsync(bufferRead, 0, read, token).ConfigAwait();
                         totalRead += read;
                         OnDownloadProgress?.Invoke(totalRead, responseBodyLength);
                     }
@@ -283,6 +301,27 @@ namespace ServiceStack
                     try
                     {
                         ms.Position = 0;
+
+                        if (HttpLog != null)
+                        {
+                            webRes.AppendHttpResponseHeaders(HttpLog);
+                            if (webRes.ContentLength != 0 && webRes.StatusCode != HttpStatusCode.NoContent)
+                            {
+                                var isBinary = typeof(T) == typeof(Stream) || typeof(T) == typeof(byte[]) || ContentType.IsBinary();
+                                if (isBinary)
+                                {
+                                    HttpLog.Append("(base64) ");
+                                    HttpLog.AppendLine(Convert.ToBase64String(ms.ReadFully()));
+                                }
+                                else
+                                {
+                                    HttpLog.AppendLine(ms.ReadToEnd());
+                                }
+                                HttpLog.AppendLine().AppendLine();
+                                ms.Position = 0;
+                            }
+                        }
+                        
                         if (typeof(T) == typeof(Stream))
                         {
                             return Complete((T) (object) ms);
@@ -294,7 +333,7 @@ namespace ServiceStack
                             {
                                 if (typeof(T) == typeof(string))
                                 {
-                                    return Complete((T) (object) await stream.ReadToEndAsync());
+                                    return Complete((T) (object) await stream.ReadToEndAsync().ConfigAwait());
                                 }
                                 else if (typeof(T) == typeof(byte[]))
                                     return Complete((T) (object) stream.ToArray());
@@ -317,6 +356,9 @@ namespace ServiceStack
                     }
                     finally
                     {
+                        if (HttpLog != null)
+                            HttpLogFilter?.Invoke(HttpLog);
+                        
                         responseStream.Close();
                     }
                 }
@@ -325,31 +367,36 @@ namespace ServiceStack
             {
                 var webEx = ex as WebException;
                 var firstCall = !recall;
+                var hasRefreshTokenCookie = this.CookieContainer.GetRefreshTokenCookie(BaseUri) != null;
+                var hasRefreshToken = RefreshToken != null || hasRefreshTokenCookie;
+                
                 if (firstCall && WebRequestUtils.ShouldAuthenticate(webEx,
                         (!string.IsNullOrEmpty(UserName) && !string.IsNullOrEmpty(Password))
                         || Credentials != null
                         || BearerToken != null
-                        || RefreshToken != null
+                        || hasRefreshToken
                         || OnAuthenticationRequired != null))
                 {
                     try
                     {
-                        if (RefreshToken != null)
+                        if (hasRefreshToken)
                         {
                             var refreshRequest = new GetAccessToken {
-                                RefreshToken = RefreshToken,
-                                UseTokenCookie = UseTokenCookie,
+                                RefreshToken = hasRefreshTokenCookie ? null : RefreshToken,
                             };                        
                             var uri = this.RefreshTokenUri ?? this.BaseUri.CombineWith(refreshRequest.ToPostUrl());
+                        
+                            this.BearerToken = null;
+                            this.CookieContainer?.DeleteCookie(new Uri(BaseUri), "ss-tok");
 
                             GetAccessTokenResponse tokenResponse;
                             try
                             {
                                 tokenResponse = (await uri.PostJsonToUrlAsync(refreshRequest, requestFilter: req => {
-                                    if (UseTokenCookie) {
+                                    if (hasRefreshTokenCookie) {
                                         req.CookieContainer = CookieContainer;
                                     }
-                                })).FromJson<GetAccessTokenResponse>();
+                                }, token: token).ConfigAwait()).FromJson<GetAccessTokenResponse>();
                             }
                             catch (WebException refreshEx)
                             {
@@ -367,30 +414,18 @@ namespace ServiceStack
                             var refreshClient = webReq = (HttpWebRequest) WebRequest.Create(requestUri);
                             var tokenCookie = this.CookieContainer.GetTokenCookie(BaseUri);
 
-                            if (UseTokenCookie)
+                            if (!string.IsNullOrEmpty(accessToken))
                             {
-                                if (tokenCookie == null)
-                                    throw new RefreshTokenException("Could not retrieve new AccessToken Cooke from: " + uri);
-                            
+                                refreshClient.AddBearerToken(this.BearerToken = accessToken);
+                            }
+                            else if (tokenCookie != null)
+                            {
+                                refreshClient.CookieContainer = CookieContainer;
                                 refreshClient.CookieContainer.SetTokenCookie(BaseUri, tokenCookie);
                             }
-                            else
-                            {
-                                if (string.IsNullOrEmpty(accessToken))
-                                    throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
+                            else throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
 
-                                if (tokenCookie != null)
-                                {
-                                    this.CookieContainer.SetTokenCookie(accessToken, BaseUri);
-                                    refreshClient.CookieContainer.SetTokenCookie(BaseUri, accessToken);
-                                }
-                                else
-                                {
-                                    refreshClient.AddBearerToken(this.BearerToken = accessToken);
-                                }
-                            }
-
-                            return await SendWebRequestAsync<T>(httpMethod, absoluteUrl, request, token, recall: true).ConfigureAwait(false);
+                            return await SendWebRequestAsync<T>(httpMethod, absoluteUrl, request, token, recall: true).ConfigAwait();
                         }
 
                         OnAuthenticationRequired?.Invoke();
@@ -402,7 +437,7 @@ namespace ServiceStack
 
                         HandleAuthException(ex, webReq);
 
-                        return await SendWebRequestAsync<T>(httpMethod, absoluteUrl, request, token, recall: true).ConfigureAwait(false);
+                        return await SendWebRequestAsync<T>(httpMethod, absoluteUrl, request, token, recall: true).ConfigAwait();
                     }
                     catch (WebServiceException)
                     {
@@ -452,24 +487,22 @@ namespace ServiceStack
 
                 try
                 {
-                    using (var stream = errorResponse.ResponseStream())
-                    {
-                        var bytes = stream.ReadFully();
-                        serviceEx.ResponseBody = bytes.FromUtf8Bytes();
-                        var errorResponseType = WebRequestUtils.GetErrorResponseDtoType<TResponse>(request);
+                    using var stream = errorResponse.ResponseStream();
+                    var bytes = stream.ReadFully();
+                    serviceEx.ResponseBody = bytes.FromUtf8Bytes();
+                    var errorResponseType = WebRequestUtils.GetErrorResponseDtoType<TResponse>(request);
 
-                        if (stream.CanSeek)
-                        {
-                            PclExport.Instance.ResetStream(stream);
-                            serviceEx.ResponseDto = this.StreamDeserializer(errorResponseType, stream);
-                        }
-                        else //Android
-                        {
-                            using var ms = MemoryStreamFactory.GetStream(bytes);
-                            serviceEx.ResponseDto = this.StreamDeserializer(errorResponseType, ms);
-                        }
-                        return serviceEx;
+                    if (stream.CanSeek)
+                    {
+                        PclExport.Instance.ResetStream(stream);
+                        serviceEx.ResponseDto = this.StreamDeserializer(errorResponseType, stream);
                     }
+                    else //Android
+                    {
+                        using var ms = MemoryStreamFactory.GetStream(bytes);
+                        serviceEx.ResponseDto = this.StreamDeserializer(errorResponseType, ms);
+                    }
+                    return serviceEx;
                 }
                 catch (Exception innerEx)
                 {

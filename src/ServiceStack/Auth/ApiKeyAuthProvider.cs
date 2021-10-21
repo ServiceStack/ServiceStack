@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
@@ -24,6 +26,19 @@ namespace ServiceStack.Auth
         List<ApiKey> GetUserApiKeys(string userId);
 
         void StoreAll(IEnumerable<ApiKey> apiKeys);
+    }
+
+    public interface IManageApiKeysAsync
+    {
+        void InitApiKeySchema();
+
+        Task<bool> ApiKeyExistsAsync(string apiKey, CancellationToken token=default);
+
+        Task<ApiKey> GetApiKeyAsync(string apiKey, CancellationToken token=default);
+
+        Task<List<ApiKey>> GetUserApiKeysAsync(string userId, CancellationToken token=default);
+
+        Task StoreAllAsync(IEnumerable<ApiKey> apiKeys, CancellationToken token=default);
     }
 
     /// <summary>
@@ -189,10 +204,14 @@ namespace ServiceStack.Auth
             return session != null && session.IsAuthenticated && !session.UserAuthName.IsNullOrEmpty();
         }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token=default)
         {
-            var authRepo = HostContext.AppHost.GetAuthRepository(authService.Request);
+            var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(authService.Request);
+#if NET472 || NETSTANDARD2_0
+            await using (authRepo as IAsyncDisposable)
+#else
             using (authRepo as IDisposable)
+#endif
             {
                 var apiKey = GetApiKey(authService.Request, request.Password);
                 ValidateApiKey(authService.Request, apiKey);
@@ -200,19 +219,19 @@ namespace ServiceStack.Auth
                 if (string.IsNullOrEmpty(apiKey.UserAuthId))
                     throw HttpError.Conflict(ErrorMessages.ApiKeyIsInvalid.Localize(authService.Request));
 
-                var userAuth = authRepo.GetUserAuth(apiKey.UserAuthId);
+                var userAuth = await authRepo.GetUserAuthAsync(apiKey.UserAuthId, token).ConfigAwait();
                 if (userAuth == null)
                     throw HttpError.Unauthorized(ErrorMessages.UserForApiKeyDoesNotExist.Localize(authService.Request));
 
-                if (IsAccountLocked(authRepo, userAuth))
+                if (await IsAccountLockedAsync(authRepo, userAuth, token: token).ConfigAwait())
                     throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(authService.Request));
 
-                session.PopulateSession(userAuth, authRepo);
+                await session.PopulateSessionAsync(userAuth, authRepo, token).ConfigAwait();
 
                 if (session.UserAuthName == null)
                     session.UserAuthName = userAuth.UserName ?? userAuth.Email;
 
-                var response = OnAuthenticated(authService, session, null, null);
+                var response = await OnAuthenticatedAsync(authService, session, null, null, token).ConfigAwait();
                 if (response != null)
                     return response;
 
@@ -231,14 +250,14 @@ namespace ServiceStack.Auth
             }
         }
 
-        public void PreAuthenticate(IRequest req, IResponse res)
+        public virtual async Task PreAuthenticateAsync(IRequest req, IResponse res)
         {
             //The API Key is sent in the Basic Auth Username and Password is Empty
             var userPass = req.GetBasicAuthUserAndPassword();
             if (userPass != null && string.IsNullOrEmpty(userPass.Value.Value))
             {
                 var apiKey = GetApiKey(req, userPass.Value.Key);
-                PreAuthenticateWithApiKey(req, res, apiKey);
+                await PreAuthenticateWithApiKeyAsync(req, res, apiKey).ConfigAwait();
             }
             var bearerToken = req.GetBearerToken();
             if (bearerToken != null)
@@ -246,7 +265,7 @@ namespace ServiceStack.Auth
                 var apiKey = GetApiKey(req, bearerToken);
                 if (apiKey != null)
                 {
-                    PreAuthenticateWithApiKey(req, res, apiKey);
+                    await PreAuthenticateWithApiKeyAsync(req, res, apiKey).ConfigAwait();
                 }
             }
 
@@ -255,7 +274,7 @@ namespace ServiceStack.Auth
                 var apiKey = req.QueryString[Keywords.ApiKeyParam] ?? req.FormData[Keywords.ApiKeyParam];
                 if (apiKey != null)
                 {
-                    PreAuthenticateWithApiKey(req, res, GetApiKey(req, apiKey));
+                    await PreAuthenticateWithApiKeyAsync(req, res, GetApiKey(req, apiKey)).ConfigAwait();
                 }
             }
         }
@@ -281,7 +300,7 @@ namespace ServiceStack.Auth
                 throw HttpError.Forbidden(ErrorMessages.ApiKeyHasExpired.Localize(req));
         }
 
-        public void PreAuthenticateWithApiKey(IRequest req, IResponse res, ApiKey apiKey)
+        public virtual async Task PreAuthenticateWithApiKeyAsync(IRequest req, IResponse res, ApiKey apiKey)
         {
             if (RequireSecureConnection && !req.IsSecureConnection)
                 throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection.Localize(req));
@@ -289,45 +308,58 @@ namespace ServiceStack.Auth
             ValidateApiKey(req, apiKey);
 
             var apiSessionKey = GetSessionKey(apiKey.Id);
+            if (await HasCachedSessionAsync(req, apiSessionKey).ConfigAwait())
+            {
+                req.Items[Keywords.ApiKey] = apiKey;
+                return;
+            }
+
+            //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
+            SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
+
+            using var authService = HostContext.ResolveService<AuthenticateService>(req);
+            var response = await authService.PostAsync(new Authenticate
+            {
+                provider = Name,
+                UserName = "ApiKey",
+                Password = apiKey.Id,
+            }).ConfigAwait();
+
+            await CacheSessionAsync(req, apiSessionKey);
+        }
+
+        public virtual async Task<bool> HasCachedSessionAsync(IRequest req, string apiSessionKey)
+        {
             if (SessionCacheDuration != null)
             {
-                var session = req.GetCacheClient().Get<IAuthSession>(apiSessionKey);
+                var session = await req.GetCacheClientAsync().GetAsync<IAuthSession>(apiSessionKey).ConfigAwait();
 
                 if (session != null)
                     session = HostContext.AppHost.OnSessionFilter(req, session, session.Id);
 
                 if (session != null)
                 {
-                    req.Items[Keywords.ApiKey] = apiKey;
                     req.Items[Keywords.Session] = session;
-                    return;
+                    return true;
                 }
             }
+            return false;
+        }
 
-            //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
-            SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
-
-            using (var authService = HostContext.ResolveService<AuthenticateService>(req))
-            {
-                var response = authService.Post(new Authenticate
-                {
-                    provider = Name,
-                    UserName = "ApiKey",
-                    Password = apiKey.Id,
-                });
-            }
-
+        public virtual async Task CacheSessionAsync(IRequest req, string apiSessionKey)
+        {
             if (SessionCacheDuration != null)
             {
-                var session = req.GetSession();
-                req.GetCacheClient().Set(apiSessionKey, session, SessionCacheDuration);
+                var session = await req.GetSessionAsync().ConfigAwait();
+                await req.GetCacheClientAsync().SetAsync(apiSessionKey, session, SessionCacheDuration).ConfigAwait();
             }
         }
 
         public static string GetSessionKey(string apiKey) => "key:sess:" + apiKey;
 
-        public void Register(IAppHost appHost, AuthFeature feature)
+        public override void Register(IAppHost appHost, AuthFeature feature)
         {
+            base.Register(appHost, feature);
             var authRepo = HostContext.AppHost.GetAuthRepository();
             if (authRepo == null)
                 throw new NotSupportedException("ApiKeyAuthProvider requires a registered IAuthRepository");

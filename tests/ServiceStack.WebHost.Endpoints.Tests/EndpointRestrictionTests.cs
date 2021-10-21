@@ -135,6 +135,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void AccessToNoneRestriction_does_not_allow_any_access()
+        {
+            ShouldDenyAccessWhen<AccessToNoneRestriction>(RequestAttributes.InProcess);
+            ShouldDenyAccessWhen<AccessToNoneRestriction>(RequestAttributes.Localhost);
+            ShouldDenyAccessWhen<AccessToNoneRestriction>(RequestAttributes.LocalSubnet);
+            ShouldDenyAccessWhen<AccessToNoneRestriction>(RequestAttributes.External);
+        }
+
+        [Test]
         public void SecureLocalSubnetRestriction_does_not_allow_partial_success()
         {
             ShouldDenyAccessWhen<SecureLocalSubnetRestriction>(RequestAttributes.Localhost);

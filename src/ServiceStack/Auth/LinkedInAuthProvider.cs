@@ -1,6 +1,9 @@
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using ServiceStack.Configuration;
+using ServiceStack.Text;
 
 namespace ServiceStack.Auth
 {
@@ -38,17 +41,17 @@ namespace ServiceStack.Auth
 
             NavItem = new NavItem {
                 Href = "/auth/" + Name,
-                Label = "Sign in with LinkedIn",
+                Label = "Sign In with LinkedIn",
                 Id = "btn-" + Name,
                 ClassName = "btn-social btn-linkedin",
                 IconClass = "fab svg-linkedin",
             };
         }
 
-        protected override Dictionary<string, string> CreateAuthInfo(string accessToken)
+        protected override async Task<Dictionary<string, string>> CreateAuthInfoAsync(string accessToken, CancellationToken token = default)
         {
             var url = this.UserProfileUrl.AddQueryParam("oauth2_access_token", accessToken);
-            var contents = url.GetXmlFromUrl();
+            var contents = await url.GetXmlFromUrlAsync(token: token).ConfigAwait();
             var xml = XDocument.Parse(contents);
             var el = xml.Root;
             

@@ -23,8 +23,11 @@ namespace ServiceStack.FluentValidation.Resources {
 	/// <summary>
 	/// Represents a static string.
 	/// </summary>
+	[Obsolete("StaticStringSource is deprecated and will be removed in FluentValidation 10. Use a Func<PropertyValidatorContext, string> instead.")]
 	public class StaticStringSource : IStringSource {
 		readonly string _message;
+
+		internal string String => _message;
 
 		/// <summary>
 		/// Creates a new StringErrorMessageSource using the specified error message as the error template.
@@ -38,7 +41,7 @@ namespace ServiceStack.FluentValidation.Resources {
 		/// Construct the error message template
 		/// </summary>
 		/// <returns>Error message template</returns>
-		public string GetString(IValidationContext context) {
+		public string GetString(ICommonContext context) {
 			return _message;
 		}
 	}

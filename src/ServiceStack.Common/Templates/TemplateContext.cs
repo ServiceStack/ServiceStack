@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.IO;
 using ServiceStack.Script;
+using ServiceStack.Text;
 
 
 namespace ServiceStack.Script
@@ -121,7 +122,7 @@ namespace ServiceStack.Templates
         {
             try
             {
-                var result = await context.EvaluateScriptAsync(script, args);
+                var result = await context.EvaluateScriptAsync(script, args).ConfigAwait();
                 return result;
             }
             catch (ScriptException ex)

@@ -14,7 +14,7 @@ namespace ServiceStack.NativeTypes.Swift
         readonly MetadataTypesConfig Config;
         readonly NativeTypesFeature feature;
         List<MetadataType> allTypes;
-        List<string> conflictTypeNames = new List<string>();
+        List<string> conflictTypeNames = new();
 
         public SwiftGenerator(MetadataTypesConfig config)
         {
@@ -23,10 +23,12 @@ namespace ServiceStack.NativeTypes.Swift
         }
 
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataType> InnerTypeFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
 
-        public static List<string> DefaultImports = new List<string>
-        {
+        public static List<string> DefaultImports = new() {
             "Foundation",
             "ServiceStack", //Required when referencing ServiceStack.framework in CocoaPods, Carthage or SwiftPM
         };
@@ -43,11 +45,11 @@ namespace ServiceStack.NativeTypes.Swift
             {"TimeSpan", "TimeInterval"},
             {"DateTimeOffset", "Date"},
             {"Guid", "String"},
-            {"Char", "Character"},
-            {"Byte", "Int8"},
+            {"Char", "String"}, //no encoder/decoder for Char
+            {"Byte", "UInt8"},
             {"Int16", "Int16"},
-            {"Int32", "Int"},
-            {"Int64", "Int64"},
+            {"Int32", "Int"},   // Keep as `Int` as only String/Int Keys use Dictionary, otherwise they use [K1,V1,K2,V2] Arrays
+            {"Int64", "Int"},   // https://forums.swift.org/t/json-encoding-decoding-weird-encoding-of-dictionary-with-enum-values/12995/2
             {"UInt16", "UInt16"},
             {"UInt32", "UInt32"},
             {"UInt64", "UInt64"},
@@ -57,11 +59,40 @@ namespace ServiceStack.NativeTypes.Swift
             {"IntPtr", "Int64"},
             {"Stream", "Data"},
             {"Type", "String"},
+            {"QueryDb`1", "QueryDb"},
+            {"QueryDb`2", "QueryDb2"},
+            {"QueryData`1", "QueryData"},
+            {"QueryData`2", "QueryData2"},
+        }.ToConcurrentDictionary();
+
+        //Use built-in types already in net.servicestack.client package
+        public static HashSet<string> IgnoreTypeNames = new[] {
+            typeof(QueryBase),
+            typeof(QueryDb<>),
+            typeof(QueryDb<,>),
+            typeof(QueryData<>),
+            typeof(QueryData<,>),
+            typeof(QueryResponse<>),
+            typeof(AuditBase),
+            typeof(EmptyResponse),
+            typeof(ResponseStatus),
+            typeof(ResponseError),
+            typeof(ErrorResponse),
+            typeof(Service),
+        }.Map(x => x.Name).ToSet();
+        
+        /// <summary>
+        /// Customize how types are encoded & decoded with a Type Converter
+        /// </summary>
+        public static ConcurrentDictionary<string, SwiftTypeConverter> Converters = new Dictionary<string, SwiftTypeConverter> {
+            ["TimeInterval"] = new() { Attribute = "@TimeSpan" },
         }.ToConcurrentDictionary();
 
         public static TypeFilterDelegate TypeFilter { get; set; }
+        
+        public static Func<SwiftGenerator, MetadataType, MetadataPropertyType, string> PropertyTypeFilter { get; set; }
 
-        public static HashSet<string> OverrideInitForBaseClasses = new HashSet<string> {
+        public static HashSet<string> OverrideInitForBaseClasses = new() {
             "NSObject"
         };
 
@@ -97,7 +128,7 @@ namespace ServiceStack.NativeTypes.Swift
             var sbExt = new StringBuilderWrapper(new StringBuilder());
             sb.AppendLine("/* Options:");
             sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
-            sb.AppendLine("SwiftVersion: 4.0");
+            sb.AppendLine("SwiftVersion: 5.0");
             sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
             sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
@@ -131,12 +162,12 @@ namespace ServiceStack.NativeTypes.Swift
 
             var existingTypes = new HashSet<string>();
 
-            var requestTypes = metadata.Operations.Select(x => x.Request).ToHashSet();
+            var requestTypes = metadata.Operations.Select(x => x.Request).ToSet();
             var requestTypesMap = metadata.Operations.ToSafeDictionary(x => x.Request);
             var responseTypes = metadata.Operations
                 .Where(x => x.Response != null)
-                .Select(x => x.Response).ToHashSet();
-            var types = metadata.Types.ToHashSet();
+                .Select(x => x.Response).ToSet();
+            var types = metadata.Types.ToSet();
 
             allTypes = new List<MetadataType>();
             allTypes.AddRange(requestTypes);
@@ -145,7 +176,7 @@ namespace ServiceStack.NativeTypes.Swift
 
             allTypes = FilterTypes(allTypes);
 
-            //Swift doesn't support reusing same type name with different generic airity
+            //Swift doesn't support reusing same type name with different generic arity
             var conflictPartialNames = allTypes.Map(x => x.Name).Distinct()
                 .GroupBy(g => g.LeftPart('`'))
                 .Where(g => g.Count() > 1)
@@ -196,6 +227,7 @@ namespace ServiceStack.NativeTypes.Swift
                                         : null;
                                 },
                                 IsRequest = true,
+                                Op = operation
                             });
 
                         existingTypes.Add(fullTypeName);
@@ -237,14 +269,6 @@ namespace ServiceStack.NativeTypes.Swift
             return StringBuilderCache.ReturnAndFree(sbInner);
         }
 
-        //Use built-in types already in net.servicestack.client package
-        public static HashSet<string> IgnoreTypeNames = new HashSet<string>
-        {
-            nameof(ResponseStatus),
-            nameof(ResponseError),
-            nameof(ErrorResponse),
-        };
-
         private List<string> RemoveIgnoredTypes(MetadataTypes metadata)
         {
             var includeList = metadata.RemoveIgnoredTypes(Config);
@@ -256,6 +280,8 @@ namespace ServiceStack.NativeTypes.Swift
             CreateTypeOptions options)
         {
             //sb = sb.Indent();
+            if (IgnoreTypeNames.Contains(type.Name))
+                return lastNS;
 
             var hasGenericBaseType = type.Inherits != null && !type.Inherits.GenericArgs.IsEmpty();
             if (Config.ExcludeGenericBaseTypes && hasGenericBaseType)
@@ -273,11 +299,14 @@ namespace ServiceStack.NativeTypes.Swift
             AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);
 
+            sb.Emit(type, Lang.Swift);
             PreTypeFilter?.Invoke(sb, type);
 
             if (type.IsEnum.GetValueOrDefault())
             {
-                sb.AppendLine($"public enum {Type(type.Name, type.GenericArgs)} : Int");
+                var hasIntValues = type.EnumValues?.Count > 1;
+                var enumType = hasIntValues ? "Int" : "String";
+                sb.AppendLine($"public enum {Type(type.Name, type.GenericArgs)} : {enumType}, Codable");
                 sb.AppendLine("{");
                 sb = sb.Indent();
 
@@ -295,31 +324,17 @@ namespace ServiceStack.NativeTypes.Swift
 
                 sb = sb.UnIndent();
                 sb.AppendLine("}");
-
-                AddEnumExtension(ref sbExt, type);
             }
             else
             {
                 var defType = "class";
-                var typeName = Type(type.Name, type.GenericArgs).AddGenericConstraints();
+                var typeName = AddGenericConstraints(Type(type.Name, type.GenericArgs));
                 var extends = new List<string>();
 
                 //: BaseClass, Interfaces
                 if (type.Inherits != null)
                 {
                     var baseType = Type(type.Inherits).InheritedType();
-
-                    //Swift requires re-declaring base type generics definition on super type
-                    var genericDefPos = baseType.IndexOf("<", StringComparison.Ordinal);
-                    if (genericDefPos >= 0)
-                    {
-                        //Need to declare BaseType is JsonSerializable
-                        var subBaseType = baseType.Substring(genericDefPos)
-                            .AddGenericConstraints();
-
-                        typeName += subBaseType;
-                    }
-
                     extends.Add(baseType);
                 }
                 else if (Config.BaseClass != null && !type.IsInterface())
@@ -329,11 +344,13 @@ namespace ServiceStack.NativeTypes.Swift
 
                 var typeAliases = new List<string>();
 
+                var isSelfRefType = false;
                 if (options.ImplementsFn != null)
                 {
                     //Swift doesn't support Generic Interfaces like IReturn<T> 
-                    //Converting them into protocols with typealiases instead 
+                    //Converting them into protocols with type aliases instead 
                     ExtractTypeAliases(options, typeAliases, extends, ref sbExt);
+                    isSelfRefType = options.Op != null && type == options.Op.Response;
                 }
                 type.Implements.Each(x => extends.Add(Type(x)));
 
@@ -341,7 +358,7 @@ namespace ServiceStack.NativeTypes.Swift
                 {
                     defType = "protocol";
 
-                    //Extract Protocol Arguments into different typealiases
+                    //Extract Protocol Arguments into different type aliases
                     if (!type.GenericArgs.IsEmpty())
                     {
                         typeName = Type(type.Name, null);
@@ -351,15 +368,23 @@ namespace ServiceStack.NativeTypes.Swift
                         }
                     }
                 }
+                else if (type.Inherits == null) //redundant specifiers not allowed
+                {
+                    extends.Add("Codable");
+                }
 
                 var extend = extends.Count > 0
                     ? " : " + (string.Join(", ", extends.ToArray()))
                     : "";
 
-                sb.AppendLine($"public {defType} {typeName}{extend}");
+                var useTypeName = type.GenericArgs?.Length > 0
+                    ? typeName
+                    : typeName.LeftPart('<');
+                sb.AppendLine($"public {defType} {useTypeName}{extend}");
                 sb.AppendLine("{");
 
                 sb = sb.Indent();
+                InnerTypeFilter?.Invoke(sb, type);
 
                 if (typeAliases.Count > 0)
                 {
@@ -370,11 +395,26 @@ namespace ServiceStack.NativeTypes.Swift
                     sb.AppendLine();
                 }
 
+                var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
+                if (addVersionInfo)
+                {
+                    sb.AppendLine($"public var {GetPropertyName("Version")}:Int = {Config.AddImplicitVersion}");
+                }
+
+                var typeProps = type.Properties ?? TypeConstants<MetadataPropertyType>.EmptyList;
+                AddProperties(sb, type,
+                    initCollections: !type.IsInterface() && Config.InitializeCollections,
+                    includeResponseStatus: Config.AddResponseStatus && options.IsResponse
+                        && typeProps.All(x => x.Name != nameof(ResponseStatus)));
+
+                if (typeProps.Count > 0)
+                    sb.AppendLine();
+                
                 if (!type.IsInterface())
                 {
-                    if (extends.Count > 0 && OverrideInitForBaseClasses.Contains(extends[0]))
+                    if (extends.Count > 0 && (type.Inherits != null || OverrideInitForBaseClasses.Contains(extends[0])))
                     {
-                        sb.AppendLine("required public override init(){}");
+                        sb.AppendLine("required public init(){ super.init() }");
                     }
                     else
                     {
@@ -382,25 +422,87 @@ namespace ServiceStack.NativeTypes.Swift
                     }
                 }
 
-                var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
-                if (addVersionInfo)
+                //Swift compiler wont synthesize Codable impls for inherited types or types with self-referencing type aliases
+                var hasSynthesize = type.Type?.HasAttribute<SynthesizeAttribute>() == true;
+                var needsExplicitCodableImpl = type.Inherits != null || isSelfRefType || hasSynthesize;
+                if (!type.IsInterface() && needsExplicitCodableImpl)
                 {
-                    sb.AppendLine($"public var {"Version".PropertyStyle()}:Int = {Config.AddImplicitVersion}");
+                    sb.AppendLine();
+                    if (typeProps.Count > 0)
+                    {
+                        sb.AppendLine("private enum CodingKeys : String, CodingKey {");
+                        sb = sb.Indent();
+                        foreach (var prop in typeProps)
+                        {
+                            sb.AppendLine($"case {GetPropertyName(prop.Name)}");
+                        }
+                        sb = sb.UnIndent();
+                        sb.AppendLine("}");
+                        sb.AppendLine();
+                    }
+                    sb.AppendLine("required public init(from decoder: Decoder) throws {");
+                    sb = sb.Indent();
+                    if (type.Inherits != null)
+                        sb.AppendLine("try super.init(from: decoder)");
+                    if (typeProps.Count > 0)
+                    {
+                        sb.AppendLine("let container = try decoder.container(keyedBy: CodingKeys.self)");
+                        foreach (var prop in typeProps)
+                        {
+                            var propTypeName = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
+                            var realTypeName = propTypeName.TrimEnd('?');
+                            var converter = Converters.TryGetValue(realTypeName, out var c)
+                                ? c
+                                : null;
+                            var propName = GetPropertyName(prop.Name);
+                            var defaultValue = prop.IsArray()
+                                ? " ?? []"
+                                : !type.IsInterface() && !prop.GenericArgs.IsEmpty()
+                                    ? ArrayTypes.Contains(prop.Type)
+                                        ? " ?? []"
+                                        : DictionaryTypes.Contains(prop.Type)
+                                        ? " ?? [:]"
+                                        : ""
+                                    : "";
+                            var method = converter?.DecodeMethod ?? "decodeIfPresent";
+                            sb.AppendLine($"{propName} = try container.{method}({realTypeName}.self, forKey: .{propName}){defaultValue}");
+                        }
+                    }
+                    sb = sb.UnIndent();
+                    sb.AppendLine("}");
+                    
+                    sb.AppendLine();
+                    var sig = type.Inherits != null ? " override" : "";
+                    sb.AppendLine($"public{sig} func encode(to encoder: Encoder) throws {{");
+                    sb = sb.Indent();
+                    if (type.Inherits != null)
+                        sb.AppendLine("try super.encode(to: encoder)");
+                    if (typeProps.Count > 0)
+                    {
+                        sb.AppendLine("var container = encoder.container(keyedBy: CodingKeys.self)");
+                        foreach (var prop in typeProps)
+                        {
+                            var propTypeName = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
+                            var realTypeName = propTypeName.TrimEnd('?');
+                            var converter = Converters.TryGetValue(realTypeName, out var c)
+                                ? c
+                                : null;
+                            
+                            var propName = GetPropertyName(prop.Name);
+                            var isCollection = prop.IsArray() || ArrayTypes.Contains(prop.Type) || DictionaryTypes.Contains(prop.Type);
+                            var method = converter?.EncodeMethod ?? "encode";
+                            sb.AppendLine(isCollection
+                                ? $"if {propName}.count > 0 {{ try container.{method}({propName}, forKey: .{propName}) }}"
+                                : $"if {propName} != nil {{ try container.{method}({propName}, forKey: .{propName}) }}");
+                        }
+                    }
+                    sb = sb.UnIndent();
+                    sb.AppendLine("}");
+
                 }
-
-                AddProperties(sb, type,
-                    initCollections: !type.IsInterface() && Config.InitializeCollections,
-                    includeResponseStatus: Config.AddResponseStatus && options.IsResponse
-                        && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)));
-
+                
                 sb = sb.UnIndent();
                 sb.AppendLine("}");
-
-                if (!type.IsInterface())
-                {
-                    AddTypeExtension(ref sbExt, type,
-                        initCollections: Config.InitializeCollections);
-                }
             }
 
             PostTypeFilter?.Invoke(sb, type);
@@ -433,7 +535,7 @@ namespace ServiceStack.NativeTypes.Swift
             }
         }
 
-        public List<MetadataPropertyType> GetPropertes(MetadataType type)
+        public List<MetadataPropertyType> GetProperties(MetadataType type)
         {
             var to = new List<MetadataPropertyType>();
 
@@ -445,161 +547,11 @@ namespace ServiceStack.NativeTypes.Swift
                 var baseType = FindType(type.Inherits);
                 if (baseType != null)
                 {
-                    to.AddRange(GetPropertes(baseType));
+                    to.AddRange(GetProperties(baseType));
                 }
             }
 
             return to;
-        }
-
-        private void AddTypeExtension(ref StringBuilderWrapper sbExt, MetadataType type, bool initCollections)
-        {
-            //Swift doesn't support extensions on same protocol used by Base and Sub types
-            if (type.IsAbstract())
-                return;
-
-            var typeName = Type(type.Name, type.GenericArgs);
-            typeName = typeName.LeftPart('<'); // Type<QueryResponse<T>> into correct mapping Type<QueryResponse>
-
-            var typeNameOnly = typeName.LeftPart('<');
-
-            sbExt.AppendLine();
-            sbExt.AppendLine("extension {0} : JsonSerializable".Fmt(typeNameOnly));
-            sbExt.AppendLine("{");
-            sbExt = sbExt.Indent();
-
-            sbExt.AppendLine("public static var typeName:String {{ return \"{0}\" }}".Fmt(typeName));
-
-            //func typeConfig()
-
-            var isGenericType = type.GenericArgs?.Length > 0 || type.Inherits?.GenericArgs?.Length > 0;
-            if (!isGenericType)
-            {
-                sbExt.AppendLine("public static var metadata = Metadata.create([");
-                sbExt = sbExt.Indent();
-            }
-            else
-            {
-                //Swift 2.0 doesn't allow stored static properties on generic types yet
-                sbExt.AppendLine("public static var metadata:Metadata {");
-                sbExt = sbExt.Indent();
-                sbExt.AppendLine("return Metadata.create([");
-            }
-
-            sbExt = sbExt.Indent();
-
-            foreach (var prop in GetPropertes(type))
-            {
-                var propType = FindType(prop.Type, prop.TypeNamespace, prop.GenericArgs);
-                if (propType.IsInterface()
-                    || IgnorePropertyTypeNames.Contains(prop.Type)
-                    || IgnorePropertyNames.Contains(prop.Name))
-                    continue;
-
-                var fnName = "property";
-                if (prop.IsArray() || ArrayTypes.Contains(prop.Type))
-                {
-                    fnName = initCollections
-                        ? "arrayProperty"
-                        : "optionalArrayProperty";
-                }
-                else if (DictionaryTypes.Contains(prop.Type))
-                {
-                    fnName = initCollections
-                        ? "objectProperty"
-                        : "optionalObjectProperty";
-                }
-                else
-                {
-                    if (propType != null && !propType.IsEnum.GetValueOrDefault())
-                    {
-                        fnName = "optionalObjectProperty";
-                    }
-                    else
-                    {
-                        fnName = "optionalProperty";
-                    }
-                }
-
-                var propName = prop.Name.SafeToken().PropertyStyle();
-                var unescapedName = propName.UnescapeReserved();
-                sbExt.AppendLine("Type<{0}>.{1}(\"{2}\", get: {{ $0.{3} }}, set: {{ $0.{3} = $1 }}),".Fmt(
-                        typeName, fnName, unescapedName, propName));
-            }
-            sbExt = sbExt.UnIndent();
-            sbExt.AppendLine("])");
-            sbExt = sbExt.UnIndent();
-
-            if (isGenericType)
-            {
-                sbExt.AppendLine("}");
-            }
-
-            sbExt = sbExt.UnIndent();
-            sbExt.AppendLine("}");
-        }
-
-        private void AddEnumExtension(ref StringBuilderWrapper sbExt, MetadataType type)
-        {
-            if (type.EnumNames == null) return;
-
-            sbExt.AppendLine();
-            var typeName = Type(type.Name, type.GenericArgs);
-            sbExt.AppendLine("extension {0} : StringSerializable".Fmt(typeName));
-            sbExt.AppendLine("{");
-            sbExt = sbExt.Indent();
-
-            sbExt.AppendLine("public static var typeName:String {{ return \"{0}\" }}".Fmt(typeName));
-
-            //toJson()
-            sbExt.AppendLine("public func toJson() -> String {");
-            sbExt = sbExt.Indent();
-            sbExt.AppendLine("return jsonStringRaw(toString())");
-            sbExt = sbExt.UnIndent();
-            sbExt.AppendLine("}");
-
-            //toString()
-            sbExt.AppendLine("public func toString() -> String {");
-            sbExt = sbExt.Indent();
-            sbExt.AppendLine("switch self {");
-            foreach (var name in type.EnumNames)
-            {
-                var swiftName = EnumNameStrategy(name);
-                sbExt.AppendLine($"case .{swiftName}: return \"{name}\"");
-            }
-            sbExt.AppendLine("}");
-            sbExt = sbExt.UnIndent();
-            sbExt.AppendLine("}");
-
-            //fromString()
-            sbExt.AppendLine("public static func fromString(_ strValue:String) -> {0}? {{".Fmt(typeName));
-            sbExt = sbExt.Indent();
-
-            sbExt.AppendLine("switch strValue {");
-            foreach (var name in type.EnumNames)
-            {
-                var swiftName = EnumNameStrategy(name);
-                sbExt.AppendLine($"case \"{name}\": return .{swiftName}");
-            }
-            sbExt.AppendLine("default: return nil");
-
-            sbExt.AppendLine("}");
-            sbExt = sbExt.UnIndent();
-            sbExt.AppendLine("}");
-
-            //fromObject()
-            sbExt.AppendLine("public static func fromObject(_ any:Any) -> {0}? {{".Fmt(typeName));
-            sbExt = sbExt.Indent();
-            sbExt.AppendLine("switch any {");
-            sbExt.AppendLine("case let i as Int: return {0}(rawValue: i)".Fmt(typeName));
-            sbExt.AppendLine("case let s as String: return fromString(s)");
-            sbExt.AppendLine("default: return nil");
-            sbExt.AppendLine("}");
-            sbExt = sbExt.UnIndent();
-            sbExt.AppendLine("}");
-
-            sbExt = sbExt.UnIndent();
-            sbExt.AppendLine("}");
         }
 
         public void AddProperties(StringBuilderWrapper sb, MetadataType type,
@@ -612,8 +564,11 @@ namespace ServiceStack.NativeTypes.Swift
             {
                 if (wasAdded) sb.AppendLine();
 
-                var propTypeName = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
+                var propTypeName = GetPropertyType(prop);
+                propTypeName = PropertyTypeFilter?.Invoke(this, type, prop) ?? propTypeName;
+
                 var propType = FindType(prop.Type, prop.TypeNamespace, prop.GenericArgs);
+                    
                 var optional = "";
                 var defaultValue = "";
                 if (propTypeName.EndsWith("?"))
@@ -653,13 +608,13 @@ namespace ServiceStack.NativeTypes.Swift
                 if (propType.IsInterface() || IgnorePropertyNames.Contains(prop.Name))
                 {
                     sb.AppendLine("//{0}:{1} ignored. Swift doesn't support interface properties"
-                        .Fmt(prop.Name.SafeToken().PropertyStyle(), propTypeName));
+                        .Fmt(GetPropertyName(prop.Name), propTypeName));
                     continue;
                 }
                 else if (IgnorePropertyTypeNames.Contains(propTypeName))
                 {
                     sb.AppendLine("//{0}:{1} ignored. Type could not be extended in Swift"
-                        .Fmt(prop.Name.SafeToken().PropertyStyle(), propTypeName));
+                        .Fmt(GetPropertyName(prop.Name), propTypeName));
                     continue;
                 }
 
@@ -667,16 +622,25 @@ namespace ServiceStack.NativeTypes.Swift
                 wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                 wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
+                sb.Emit(prop, Lang.Swift);
+                PrePropertyFilter?.Invoke(sb, prop, type);
                 if (type.IsInterface())
                 {
                     sb.AppendLine("var {0}:{1}{2} {{ get set }}".Fmt(
-                        prop.Name.SafeToken().PropertyStyle(), propTypeName, optional));
+                        GetPropertyName(prop.Name), propTypeName, optional));
                 }
                 else
                 {
-                    sb.AppendLine("public var {0}:{1}{2}{3}".Fmt(
-                        prop.Name.SafeToken().PropertyStyle(), propTypeName, optional, defaultValue));
+                    var converter = Converters.TryGetValue(propTypeName, out var c)
+                        ? c
+                        : null;
+                    var attr = converter?.Attribute != null
+                        ? converter.Attribute + " "
+                        : "";
+                    sb.AppendLine(attr + "public var {0}:{1}{2}{3}".Fmt(
+                        GetPropertyName(prop.Name), propTypeName, optional, defaultValue));
                 }
+                PostPropertyFilter?.Invoke(sb, prop, type);
             }
 
             if (includeResponseStatus)
@@ -684,8 +648,14 @@ namespace ServiceStack.NativeTypes.Swift
                 if (wasAdded) sb.AppendLine();
 
                 AppendDataMember(sb, null, dataMemberIndex++);
-                sb.AppendLine("public var {0}:ResponseStatus?".Fmt(nameof(ResponseStatus).PropertyStyle()));
+                sb.AppendLine("public var {0}:ResponseStatus?".Fmt(GetPropertyName(nameof(ResponseStatus))));
             }
+        }
+
+        public virtual string GetPropertyType(MetadataPropertyType prop)
+        {
+            var propTypeName = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
+            return propTypeName;
         }
 
         public bool AppendAttributes(StringBuilderWrapper sb, List<MetadataAttribute> attributes)
@@ -732,6 +702,20 @@ namespace ServiceStack.NativeTypes.Swift
             var alias = TypeAlias(type);
             if (value == null)
                 return "null";
+            if (type == nameof(Int32))
+            {
+                if (value == int.MinValue.ToString())
+                    return "Int32.min";
+                if (value == int.MaxValue.ToString())
+                    return "Int32.max";
+            }
+            if (type == nameof(Int64))
+            {
+                if (value == long.MinValue.ToString())
+                    return "Int64.min";
+                if (value == long.MaxValue.ToString())
+                    return "Int64.max";
+            }
             if (alias == "string" || type == "String")
                 return value.ToEscapedString();
 
@@ -774,13 +758,13 @@ namespace ServiceStack.NativeTypes.Swift
                 return foundType;
 
 #pragma warning disable 618
-            if (typeName.Name == typeof(QueryBase).Name || 
+            if (typeName.Name == nameof(QueryBase) || 
                 typeName.Name == typeof(QueryDb<>).Name)
                 return CreateType(typeof(QueryBase)); //Properties are on QueryBase
 #pragma warning restore 618
 
 
-            if (typeName.Name == typeof(AuthUserSession).Name)
+            if (typeName.Name == nameof(AuthUserSession))
                 return CreateType(typeof(AuthUserSession));
 
             return null;
@@ -797,8 +781,7 @@ namespace ServiceStack.NativeTypes.Swift
             return null;
         }
 
-        public static HashSet<string> ArrayTypes = new HashSet<string>
-        {
+        public static HashSet<string> ArrayTypes = new() {
             "List`1",
             "IEnumerable`1",
             "ICollection`1",
@@ -808,8 +791,7 @@ namespace ServiceStack.NativeTypes.Swift
             "IEnumerable",
         };
 
-        public static HashSet<string> DictionaryTypes = new HashSet<string>
-        {
+        public static HashSet<string> DictionaryTypes = new() {
             "Dictionary`2",
             "IDictionary`2",
             "IOrderedDictionary`2",
@@ -819,13 +801,11 @@ namespace ServiceStack.NativeTypes.Swift
             "IOrderedDictionary",
         };
 
-        public static HashSet<string> IgnorePropertyTypeNames = new HashSet<string>
-        {
+        public static HashSet<string> IgnorePropertyTypeNames = new() {
             "Object",
         };
 
-        public static HashSet<string> IgnorePropertyNames = new HashSet<string>
-        {
+        public static HashSet<string> IgnorePropertyNames = new() {
             "ProviderOAuthAccess",
         };
 
@@ -834,7 +814,7 @@ namespace ServiceStack.NativeTypes.Swift
         public string ReturnType(string type, string[] genericArgs)
         {
             if (IgnoreArrayReturnTypes && genericArgs.Any(arg => arg.StartsWith("[")))
-                return null; // does not recognize [Array] as conforming to IReturn : JsonSerializable
+                return null; // does not recognize [Array] as conforming to IReturn : Codable
 
             return Type(type, genericArgs);
         }
@@ -883,12 +863,13 @@ namespace ServiceStack.NativeTypes.Swift
         private string TypeAlias(string type)
         {
             type = type.SanitizeType();
-            var isArray = type.StartsWith("[") || type.EndsWith("[]");
-            if (isArray)
-                return "[{0}]".Fmt(TypeAlias(type.Trim('[', ']')));
 
-            string typeAlias;
-            TypeAliases.TryGetValue(type, out typeAlias);
+            // Incorrectly converts: [[String:Poco]] -> [String:Poco]
+            var isArray = type.EndsWith("[]");
+            if (isArray)
+                return "[{0}]".Fmt(TypeAlias(type.Substring(0, type.Length - 2)));
+
+            TypeAliases.TryGetValue(type, out var typeAlias);
 
             return typeAlias ?? NameOnly(type);
         }
@@ -1005,6 +986,9 @@ namespace ServiceStack.NativeTypes.Swift
         {
             var sb = new StringBuilder();
 
+            if (node.Text == "Nullable")
+                return TypeAlias(node.Children[0].Text) + "?";
+
             if (node.Text == "List")
             {
                 sb.Append("[");
@@ -1041,6 +1025,15 @@ namespace ServiceStack.NativeTypes.Swift
             var typeName = sb.ToString();
             return typeName.LastRightPart('.'); //remove nested class
         }
+
+        public static string AddGenericConstraints(string typeDef)
+        {
+            return typeDef
+                .Replace(",", " : Codable,")
+                .Replace(">", " : Codable>");
+        }
+
+        public string GetPropertyName(string name) => name.SafeToken().PropertyStyle();
     }
 
     public static class SwiftGeneratorExtensions
@@ -1053,8 +1046,7 @@ namespace ServiceStack.NativeTypes.Swift
                 : type;
         }
 
-        public static HashSet<string> SwiftKeyWords = new HashSet<string>
-        {
+        public static readonly HashSet<string> SwiftKeyWords = new() {
             "class",
             "deinit",
             "enum",
@@ -1104,6 +1096,8 @@ namespace ServiceStack.NativeTypes.Swift
             "postfix",
             "precedence",
             "prefix",
+            "private",
+            "public",
             "right",
             "set",
             "unowned",
@@ -1130,12 +1124,5 @@ namespace ServiceStack.NativeTypes.Swift
                 ? name
                 : name.TrimStart('`').TrimEnd('`');
         }
-
-        public static string AddGenericConstraints(this string typeDef)
-        {
-            return typeDef
-                .Replace(",", " : JsonSerializable,")
-                .Replace(">", " : JsonSerializable>");
-        }
-    }
+   }
 }

@@ -5,9 +5,7 @@
     <AssemblyName>ServiceStack.Client</AssemblyName>
     <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
     <Title>.NET and .NET Core fast, end-to-end typed, code-gen free Service Clients</Title>
-    <PackageDescription>
-      JSON, XML, CSV, JSV, SOAP and MQ Generic Service Clients.
-    </PackageDescription>
+    <PackageDescription>JSON, XML, CSV, JSV, SOAP and MQ Generic Service Clients.</PackageDescription>
     <PackageTags>ServiceStack;Common;Framework;Clients;ServiceClients;Gateway</PackageTags>
   </PropertyGroup>
 
@@ -24,7 +22,7 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="System.Memory" Version="4.5.4" />
     <PackageReference Include="System.Net.Requests" Version="4.3.0" />
-    <PackageReference Include="System.ServiceModel.Primitives" Version="4.7.0" />
+    <PackageReference Include="System.ServiceModel.Primitives" Version="4.8.1" />
     <PackageReference Include="System.Xml.XmlSerializer" Version="4.3.0" />
     <PackageReference Include="System.Collections.Specialized" Version="4.3.0" />
   </ItemGroup>

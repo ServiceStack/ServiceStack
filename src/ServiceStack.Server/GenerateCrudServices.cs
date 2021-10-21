@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
@@ -12,6 +13,7 @@ using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.FluentValidation.Internal;
 using ServiceStack.Host;
+using ServiceStack.Logging;
 using ServiceStack.NativeTypes;
 using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.NativeTypes.Dart;
@@ -30,7 +32,9 @@ namespace ServiceStack
     //TODO: persist AutoCrud
     public class GenerateCrudServices : IGenerateCrudServices
     {
-        public List<string> IncludeCrudOperations { get; set; } = new List<string> {
+        private static ILog log = LogManager.GetLogger(typeof(GenerateCrudServices));
+        
+        public List<string> IncludeCrudOperations { get; set; } = new() {
             AutoCrudOperation.Query,
             AutoCrudOperation.Create,
             AutoCrudOperation.Update,
@@ -41,7 +45,7 @@ namespace ServiceStack
         /// <summary>
         /// Generate services 
         /// </summary>
-        public List<CreateCrudServices> CreateServices { get; set; } = new List<CreateCrudServices>();
+        public List<CreateCrudServices> CreateServices { get; set; } = new();
 
         /// <summary>
         /// Customize AutoGen Operation Generation
@@ -58,9 +62,7 @@ namespace ServiceStack
             {
                 if (value)
                 {
-                    this.CreateServices = new List<CreateCrudServices> {
-                        new CreateCrudServices()
-                    };
+                    this.CreateServices = new List<CreateCrudServices> { new() };
                 }
                 else
                 {
@@ -76,11 +78,13 @@ namespace ServiceStack
         
         public Func<MetadataType, bool> IncludeType { get; set; }
         public Func<MetadataOperationType, bool> IncludeService { get; set; }
+
+        public bool AddDataContractAttributes { get; set; } = true; //required by protobuf/gRPC
+        public bool AddIndexesToDataMembers { get; set; } = true;   //required by protobuf/gRPC
         
         public string AccessRole { get; set; } = RoleNames.Admin;
         
-        internal ConcurrentDictionary<Tuple<string,string>, DbSchema> CachedDbSchemas { get; } 
-            = new ConcurrentDictionary<Tuple<string,string>, DbSchema>();
+        internal ConcurrentDictionary<Tuple<string,string>, DbSchema> CachedDbSchemas { get; } = new();
 
         public Func<ColumnSchema, IOrmLiteDialectProvider, Type> ResolveColumnType { get; set; }
         
@@ -292,6 +296,13 @@ namespace ServiceStack
             {
                 if (entry.Key.Item2 == typeName)
                     return entry.Value;
+            }
+
+            foreach (var asm in HostContext.AppHost.ServiceAssemblies)
+            {
+                var type = asm.GetTypes().FirstOrDefault(x => x.Name == typeName);
+                if (type != null)
+                    return type;
             }
             
             var ssInterfacesType = typeof(IQuery).Assembly.GetTypes().FirstOrDefault(x => x.Name == typeName);
@@ -742,12 +753,13 @@ namespace ServiceStack
             return orderedTypes;
         }
 
-        public DbSchema GetCachedDbSchema(IDbConnectionFactory dbFactory, string schema=null, string namedConnection=null)
+        public DbSchema GetCachedDbSchema(IDbConnectionFactory dbFactory, string schema=null, string namedConnection=null,
+            List<string> includeTables = null, List<string> excludeTables = null)
         {
             var key = new Tuple<string, string>(schema ?? NoSchema, namedConnection);
             return CachedDbSchemas.GetOrAdd(key, k => {
 
-                var tables = GetTableSchemas(dbFactory, schema, namedConnection);
+                var tables = GetTableSchemas(dbFactory, schema, namedConnection, includeTables, excludeTables);
                 return new DbSchema {
                     Schema = schema,
                     NamedConnection = namedConnection,
@@ -756,39 +768,61 @@ namespace ServiceStack
             });
         }
 
-        public static List<TableSchema> GetTableSchemas(IDbConnectionFactory dbFactory, string schema=null, string namedConnection=null)
+        public static List<TableSchema> GetTableSchemas(IDbConnectionFactory dbFactory, string schema=null, string namedConnection=null,
+            List<string> includeTables = null, List<string> excludeTables = null)
         {
-            using var db = namedConnection != null
+            var db = namedConnection != null
                 ? dbFactory.OpenDbConnection(namedConnection)
                 : dbFactory.OpenDbConnection();
 
-            var tables = db.GetTableNames(schema);
-            var results = new List<TableSchema>();
-
-            var dialect = db.GetDialectProvider();
-            foreach (var table in tables)
+            try
             {
-                var to = new TableSchema {
-                    Name = table,
-                };
+                var tables = db.GetTableNames(schema);
+                var results = new List<TableSchema>();
 
-                try
+                var dialect = db.GetDialectProvider();
+                foreach (var table in tables)
                 {
-                    var quotedTable = dialect.GetQuotedTableName(table, schema);
-                    to.Columns = db.GetTableColumns($"SELECT * FROM {quotedTable}");
-                }
-                catch (Exception e)
-                {
-                    to.ErrorType = e.GetType().Name;
-                    to.ErrorMessage = e.Message;
+                    if (includeTables != null && !includeTables.Contains(table, StringComparer.OrdinalIgnoreCase))
+                        continue;
+                    if (excludeTables != null && excludeTables.Contains(table, StringComparer.OrdinalIgnoreCase))
+                        continue;
+                
+                    var to = new TableSchema {
+                        Name = table,
+                    };
+
+                    string quotedTable = null;
+                    try
+                    {
+                        quotedTable = dialect.GetQuotedTableName(table, schema);
+                        to.Columns = db.GetTableColumns($"SELECT * FROM {quotedTable}");
+                    }
+                    catch (Exception e)
+                    {
+                        to.ErrorType = e.GetType().Name;
+                        to.ErrorMessage = e.Message;
+                        log.Error($"GetTableSchemas(): Failed to GetTableColumns() for '{quotedTable}'", e);
+
+                        if (db.State != System.Data.ConnectionState.Open)
+                        {
+                            try { db.Dispose(); } catch {}
+                            db = namedConnection != null
+                                ? dbFactory.OpenDbConnection(namedConnection)
+                                : dbFactory.OpenDbConnection();
+                        }
+                    }
+
+                    results.Add(to);
                 }
 
-                results.Add(to);
+                return results;
             }
-
-            return results;
+            finally
+            {
+                db.Dispose();
+            }
         }
-
 
         public static string GenerateSourceCode(IRequest req, CrudCodeGenTypes request, 
             MetadataTypesConfig typesConfig, MetadataTypes crudMetadataTypes)
@@ -801,6 +835,7 @@ namespace ServiceStack
                 "typescript" => new TypeScriptGenerator(typesConfig).GetCode(crudMetadataTypes, req, metadata),
                 "dart" => new DartGenerator(typesConfig).GetCode(crudMetadataTypes, req, metadata),
                 "swift" => new SwiftGenerator(typesConfig).GetCode(crudMetadataTypes, req),
+                "swift4" => new Swift4Generator(typesConfig).GetCode(crudMetadataTypes, req),
                 "java" => new JavaGenerator(typesConfig).GetCode(crudMetadataTypes, req, metadata),
                 "kotlin" => new KotlinGenerator(typesConfig).GetCode(crudMetadataTypes, req, metadata),
                 "typescript.d" => new FSharpGenerator(typesConfig).GetCode(crudMetadataTypes, req),
@@ -830,10 +865,10 @@ namespace ServiceStack
             return src;
         }
 
-        static Tuple<string, string> key(Type type) => new Tuple<string, string>(type.Namespace, type.Name);
-        static Tuple<string, string> key(MetadataType type) => new Tuple<string, string>(type.Namespace, type.Name);
-        static Tuple<string, string> key(MetadataTypeName type) => new Tuple<string, string>(type.Namespace, type.Name);
-        static Tuple<string, string> keyNs(string ns, string name) => new Tuple<string, string>(ns, name);
+        static Tuple<string, string> key(Type type) => new(type.Namespace, type.Name);
+        static Tuple<string, string> key(MetadataType type) => new(type.Namespace, type.Name);
+        static Tuple<string, string> key(MetadataTypeName type) => new(type.Namespace, type.Name);
+        static Tuple<string, string> keyNs(string ns, string name) => new(ns, name);
 
         public static Tuple<MetadataTypes, MetadataTypesConfig> ResolveMetadataTypes(
             CrudCodeGenTypes request, IRequest req, Action<AutoGenContext> generateOperationsFilter)
@@ -846,12 +881,12 @@ namespace ServiceStack
                     nameof(request.Include));
             
             var metadata = req.Resolve<INativeTypesMetadata>();
-            var genServices = HostContext.AssertPlugin<AutoQueryFeature>().GenerateCrudServices;
+            IGenerateCrudServices genServices = HostContext.AssertPlugin<AutoQueryFeature>().GenerateCrudServices;
 
             var dbFactory = req.TryResolve<IDbConnectionFactory>();
             var results = request.NoCache == true 
-                ? GetTableSchemas(dbFactory, request.Schema, request.NamedConnection)
-                : genServices.GetCachedDbSchema(dbFactory, request.Schema, request.NamedConnection).Tables;
+                ? GetTableSchemas(dbFactory, request.Schema, request.NamedConnection, request.IncludeTables, request.ExcludeTables)
+                : genServices.GetCachedDbSchema(dbFactory, request.Schema, request.NamedConnection, request.IncludeTables, request.ExcludeTables).Tables;
 
             var appHost = HostContext.AppHost;
             request.BaseUrl ??= HostContext.GetPlugin<NativeTypesFeature>().MetadataTypesConfig.BaseUrl ?? appHost.GetBaseUrl(req);
@@ -862,14 +897,28 @@ namespace ServiceStack
                 typesConfig.MakeVirtual = false;
             if (request.InitializeCollections == null)
                 typesConfig.InitializeCollections = false;
-            if (request.AddDataContractAttributes == null) //required for gRPC
-                typesConfig.AddDataContractAttributes = true;
-            if (request.AddIndexesToDataMembers == null) //required for gRPC
-                typesConfig.AddIndexesToDataMembers = true;
+            if (request.AddDataContractAttributes == null)
+                typesConfig.AddDataContractAttributes = genServices.AddDataContractAttributes;
+            if (request.AddIndexesToDataMembers == null)
+                typesConfig.AddIndexesToDataMembers = genServices.AddIndexesToDataMembers;
             if (string.IsNullOrEmpty(request.AddDefaultXmlNamespace))
                 typesConfig.AddDefaultXmlNamespace = null;
 
             typesConfig.UsePath = req.PathInfo;
+            var exportDbAttrs = new[] {
+                typeof(NamedConnectionAttribute),
+                typeof(SchemaAttribute),
+                typeof(PrimaryKeyAttribute),
+                typeof(AutoIncrementAttribute),
+                typeof(AliasAttribute),
+                typeof(RequiredAttribute),
+            };
+            
+            if (typesConfig.ExportAttributes == null)
+                typesConfig.ExportAttributes = new HashSet<Type>(exportDbAttrs);
+            else
+                exportDbAttrs.Each(x => typesConfig.ExportAttributes.Add(x));
+            
             var metadataTypes = metadata.GetMetadataTypes(req, typesConfig);
             var serviceModelNs = appHost.GetType().Namespace + ".ServiceModel";
             var typesNs = serviceModelNs + ".Types";
@@ -909,14 +958,20 @@ namespace ServiceStack
             }
 
             var typesToGenerateMap = new Dictionary<string, TableSchema>();
+            var typesToGenerateSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var result in results)
             {
-                var keysCount = result.Columns.Count(x => x.IsKey);
+                var keysCount = result.Columns?.Count(x => x.IsKey) ?? 0;
                 if (keysCount != 1) // Only support tables with 1 PK
                     continue;
                 
                 typesToGenerateMap[result.Name] = result;
+                typesToGenerateSet.Add(StringUtils.SnakeCaseToPascalCase(result.Name));
             }
+
+            bool ContainsTypeToGenerate(string name) =>
+                typesToGenerateMap.ContainsKey(name) ||
+                typesToGenerateSet.Contains(StringUtils.SnakeCaseToPascalCase(name));
             
             var includeCrudServices = request.IncludeCrudOperations ?? genServices.IncludeCrudOperations;
             var includeCrudInterfaces = AutoCrudOperation.CrudInterfaceMetadataNames(includeCrudServices);
@@ -947,12 +1002,39 @@ namespace ServiceStack
             
             // Also don't include Types in App's Implementation Assemblies
             appHost.ServiceAssemblies.Each(x => appDlls.Add(x));
+            appDlls = appDlls.Where(x => !x.IsDynamic).Distinct().ToList();
             var existingAppTypes = new HashSet<string>();
             var existingExactAppTypes = new HashSet<Tuple<string,string>>();
+            var existingModelOperationTypes = new HashSet<Tuple<string,string>>();
+            
             foreach (var appType in appDlls.SelectMany(x => x.GetTypes()))
             {
                 existingAppTypes.Add(appType.Name);
                 existingExactAppTypes.Add(keyNs(appType.Namespace, appType.Name));
+                
+                if (appType.HasInterface(typeof(ICrud)))
+                {
+                    var autoQueryType = AutoCrudOperation.GetAutoQueryDtoType(appType);
+                    if (autoQueryType != null)
+                    {
+                        existingModelOperationTypes.Add(new Tuple<string, string>(
+                            autoQueryType.Value.ModelType.Name, autoQueryType.Value.Operation));
+                    }
+                }
+            }
+
+            bool ImplementsIncludedCrudInterface(MetadataType request)
+            {
+                if (request.Implements?.Any(x => includeCrudInterfaces.Contains(x.Name)) == true)
+                    return true;
+                if (includeCrudInterfaces.Contains("IQueryDb`1"))
+                {
+                    if (request.Inherits?.Name.StartsWith("QueryDb`") == true)
+                        return true;
+                    if (request.Type != null && request.Type.HasInterface(typeof(IQueryDb)))
+                        return true;
+                }
+                return false;
             }
 
             // Re-use existing Types with same name for default DB Connection
@@ -960,7 +1042,7 @@ namespace ServiceStack
             {
                 foreach (var op in metadataTypes.Operations)
                 {
-                    if (op.Request.Implements?.Any(x => includeCrudInterfaces.Contains(x.Name)) == true)
+                    if (ImplementsIncludedCrudInterface(op.Request))
                     {
                         operations.Add(op);
                     }
@@ -970,7 +1052,7 @@ namespace ServiceStack
                 }
                 foreach (var metaType in metadataTypes.Types)
                 {
-                    if (typesToGenerateMap.ContainsKey(metaType.Name))
+                    if (ContainsTypeToGenerate(metaType.Name))
                     {
                         types.Add(metaType);
                     }
@@ -982,7 +1064,7 @@ namespace ServiceStack
                 // Only re-use existing Types with exact Namespace + Name for NamedConnection Types
                 foreach (var op in metadataTypes.Operations)
                 {
-                    if (op.Request.Implements?.Any(x => includeCrudInterfaces.Contains(x.Name)) == true &&
+                    if (ImplementsIncludedCrudInterface(op.Request) &&
                         exactTypesLookup.ContainsKey(keyNs(serviceModelNs, op.Request.Name)))
                     {
                         operations.Add(op);
@@ -995,7 +1077,7 @@ namespace ServiceStack
                 }
                 foreach (var metaType in metadataTypes.Types)
                 {
-                    if (typesToGenerateMap.ContainsKey(metaType.Name) && 
+                    if (ContainsTypeToGenerate(metaType.Name) && 
                         exactTypesLookup.ContainsKey(keyNs(serviceModelNs, metaType.Name)))
                     {
                         types.Add(metaType);
@@ -1022,7 +1104,7 @@ namespace ServiceStack
                 : dbFactory.OpenDbConnection(request.NamedConnection);
             var dialect = db.GetDialectProvider();
 
-            List<MetadataPropertyType> toMetaProps(IEnumerable<ColumnSchema> columns, bool isModel=false)
+            List<MetadataPropertyType> toMetaProps(AutoGenContext ctx, IEnumerable<ColumnSchema> columns, bool isModel=false)
             {
                 var i = 1;
                 var to = new List<MetadataPropertyType>();
@@ -1038,6 +1120,8 @@ namespace ServiceStack
                     {
                         dataType = typeof(Nullable<>).MakeGenericType(dataType);
                     }
+
+                    var underlyingType = Nullable.GetUnderlyingType(dataType) ?? dataType;
                     
                     var prop = new MetadataPropertyType {
                         PropertyType = dataType,
@@ -1046,9 +1130,9 @@ namespace ServiceStack
                         },
                         Name = StringUtils.SnakeCaseToPascalCase(column.ColumnName),
                         Type = dataType.GetMetadataPropertyType(),
-                        IsValueType = dataType.IsValueType ? true : (bool?) null,
-                        IsSystemType = dataType.IsSystemType() ? true : (bool?) null,
-                        IsEnum = dataType.IsEnum ? true : (bool?) null,
+                        IsValueType = underlyingType.IsValueType ? true : (bool?) null,
+                        IsSystemType = underlyingType.IsSystemType() ? true : (bool?) null,
+                        IsEnum = underlyingType.IsEnum ? true : (bool?) null,
                         TypeNamespace = dataType.Namespace,
                         GenericArgs = MetadataTypesGenerator.ToGenericArgs(dataType),
                         DataMember = typesConfig.AddDataContractAttributes
@@ -1064,8 +1148,9 @@ namespace ServiceStack
                             prop.AddAttribute(new PrimaryKeyAttribute());
                         if (column.IsAutoIncrement)
                             prop.AddAttribute(new AutoIncrementAttribute());
-                        if (!string.Equals(dialect.NamingStrategy.GetColumnName(prop.Name), column.ColumnName, StringComparison.OrdinalIgnoreCase))
-                            prop.AddAttribute(new AliasAttribute(column.ColumnName));
+                        var columnAlias = ctx.GetColumnAlias(prop, column);
+                        if (columnAlias != null)
+                            prop.AddAttribute(new AliasAttribute(columnAlias));
                         if (!dataType.IsValueType && !column.AllowDBNull && !isKey)
                             prop.AddAttribute(new RequiredAttribute());
                     }
@@ -1091,10 +1176,23 @@ namespace ServiceStack
             foreach (var entry in typesToGenerateMap)
             {
                 var genModelName = StringUtils.SnakeCaseToPascalCase(entry.Key);
+                var pluralGenModelName = Words.Pluralize(genModelName);
                 var ctx = new AutoGenContext(request, entry.Key, entry.Value) {
                     DataModelName = genModelName,
-                    RoutePathBase = "/" + Words.Pluralize(genModelName).ToLower(),
+                    PluralDataModelName = pluralGenModelName,
+                    RoutePathBase = "/" + pluralGenModelName.ToLower(),
+                    Dialect = dialect,
                 };
+                ctx.GetTableAlias = () => !string.Equals(
+                    ctx.Dialect.NamingStrategy.GetTableName(ctx.DataModelName), ctx.TableSchema.Name,
+                    StringComparison.OrdinalIgnoreCase) 
+                    ? ctx.TableSchema.Name 
+                    : null;
+                ctx.GetColumnAlias = (prop, column) => !string.Equals(
+                    ctx.Dialect.NamingStrategy.GetColumnName(prop.Name), column.ColumnName,
+                    StringComparison.OrdinalIgnoreCase)
+                    ? column.ColumnName
+                    : null;
                 
                 generateOperationsFilter?.Invoke(ctx);
 
@@ -1110,13 +1208,20 @@ namespace ServiceStack
                         if (!AutoCrudOperation.IsOperation(operation))
                             continue;
 
+                        var modelOperation = new Tuple<string, string>(dataModelName, operation);
+                        if (existingModelOperationTypes.Contains(modelOperation))
+                            continue;
+                        existingModelOperationTypes.Add(modelOperation);
+
                         var requestType = (ctx.OperationNames.TryGetValue(operation, out var customOpName) ? customOpName : null) 
-                                          ?? operation + dataModelName;
+                          ?? (operation == AutoCrudOperation.Query 
+                              ? operation + ctx.PluralDataModelName
+                              : operation + dataModelName);
                         if (containsType(serviceModelNs, requestType))
                             continue;
 
                         var verb = crudVerbs[operation];
-                        var route = verb == "GET" || verb == "POST"
+                        var route = verb is "GET" or "POST"
                             ? ctx.RoutePathBase
                             : ctx.RoutePathBase + "/{" + id + "}";
                             
@@ -1157,7 +1262,7 @@ namespace ServiceStack
                             op.ViewModel = new MetadataTypeName { Name = dataModelName };
                             
                             var uniqueRoute = ctx.RoutePathBase + "/{" + id + "}";
-                            if (!existingRoutes.Contains(new Tuple<string, string>(uniqueRoute, verb)))
+                            if (!existingRoutes.Contains(new(uniqueRoute, verb)))
                             {
                                 op.Routes.Add(new MetadataRoute {
                                     Path = uniqueRoute, 
@@ -1168,7 +1273,7 @@ namespace ServiceStack
                         else
                         {
                             op.Request.Implements = new List<MetadataTypeName>(op.Request.Implements) {
-                                new MetadataTypeName {
+                                new() {
                                     Namespace = "ServiceStack",
                                     Name = $"I{operation}Db`1",
                                     GenericArgs = new[] {
@@ -1186,13 +1291,13 @@ namespace ServiceStack
                             };
                         }
 
-                        var allProps = toMetaProps(tableSchema.Columns);
+                        var allProps = toMetaProps(ctx, tableSchema.Columns);
                         switch (operation)
                         {
                             case AutoCrudOperation.Query:
                                 // Only Id Property (use implicit conventions)
                                 op.Request.Properties = new List<MetadataPropertyType> {
-                                    new MetadataPropertyType {
+                                    new() {
                                         Name = id,
                                         Type = pkField.DataType.Name + (pkField.DataType.IsValueType ? "?" : ""),
                                         TypeNamespace = pkField.DataType.Namespace, 
@@ -1207,7 +1312,7 @@ namespace ServiceStack
                                 var autoId = tableSchema.Columns.FirstOrDefault(x => x.IsAutoIncrement);
                                 if (autoId != null)
                                 {
-                                    op.Request.Properties = toMetaProps(tableSchema.Columns)
+                                    op.Request.Properties = toMetaProps(ctx, tableSchema.Columns)
                                         .Where(x => !x.Name.EqualsIgnoreCase(autoId.ColumnName)).ToList();
                                 }
                                 else
@@ -1226,7 +1331,7 @@ namespace ServiceStack
                             case AutoCrudOperation.Delete:
                                 // PK prop
                                 var pks = tableSchema.Columns.Where(x => x.IsKey).ToList();
-                                op.Request.Properties = toMetaProps(pks);
+                                op.Request.Properties = toMetaProps(ctx, pks);
                                 break;
                             case AutoCrudOperation.Save:
                                 // all props
@@ -1247,7 +1352,7 @@ namespace ServiceStack
                     var modelType = new MetadataType {
                         Name = dataModelName,
                         Namespace = typesNs,
-                        Properties = toMetaProps(tableSchema.Columns, isModel:true),
+                        Properties = toMetaProps(ctx, tableSchema.Columns, isModel:true),
                         Items = new Dictionary<string, object> {
                             [nameof(TableSchema)] = tableSchema,
                         },
@@ -1257,13 +1362,19 @@ namespace ServiceStack
                         modelType.AddAttribute(new NamedConnectionAttribute(request.NamedConnection));
                     if (request.Schema != null)
                         modelType.AddAttribute(new SchemaAttribute(request.Schema));
-                    if (!string.Equals(dialect.NamingStrategy.GetTableName(dataModelName), tableSchema.Name, StringComparison.OrdinalIgnoreCase))
-                        modelType.AddAttribute(new AliasAttribute(tableSchema.Name));
+                    var tableAliasName = ctx.GetTableAlias(); 
+                    if (tableAliasName != null)
+                        modelType.AddAttribute(new AliasAttribute(tableAliasName));
                     crudMetadataTypes.Types.Add(modelType);
 
                     addToExistingTypes(typesNs, modelType);
                 }
             }
+
+            // Remove from metadata types where Existing Types exist
+            crudMetadataTypes.Types = crudMetadataTypes.Types
+                .Where(x => !existingExactAppTypes.Contains(new(x.Namespace, x.Name)))
+                .ToList();
 
             if (genServices.IncludeService != null)
             {
@@ -1307,12 +1418,12 @@ namespace ServiceStack
     public class CrudCodeGenTypesService : Service
     {
         [AddHeader(ContentType = MimeTypes.PlainText)]
-        public object Any(CrudCodeGenTypes request)
+        public async Task<object> Any(CrudCodeGenTypes request)
         {
             try
             {
                 var genServices = HostContext.AssertPlugin<AutoQueryFeature>().GenerateCrudServices;
-                RequestUtils.AssertAccessRoleOrDebugMode(base.Request, accessRole: genServices.AccessRole, authSecret: request.AuthSecret);
+                await RequestUtils.AssertAccessRoleOrDebugModeAsync(base.Request, accessRole: genServices.AccessRole, authSecret: request.AuthSecret);
                 
                 var src = GenerateCrudServices.GenerateSource(Request, request, genServices.GenerateOperationsFilter);
                 return src;
@@ -1330,15 +1441,15 @@ namespace ServiceStack
     [DefaultRequest(typeof(CrudTables))]
     public class CrudTablesService : Service
     {
-        public object Any(CrudTables request)
+        public async Task<object> Any(CrudTables request)
         {
             var genServices = HostContext.AssertPlugin<AutoQueryFeature>().GenerateCrudServices;
-            RequestUtils.AssertAccessRoleOrDebugMode(Request, accessRole: genServices.AccessRole, authSecret: request.AuthSecret);
+            await RequestUtils.AssertAccessRoleOrDebugModeAsync(Request, accessRole: genServices.AccessRole, authSecret: request.AuthSecret);
             
             var dbFactory = TryResolve<IDbConnectionFactory>();
             var results = request.NoCache == true 
-                ? GenerateCrudServices.GetTableSchemas(dbFactory, request.Schema, request.NamedConnection)
-                : genServices.GetCachedDbSchema(dbFactory, request.Schema, request.NamedConnection).Tables;
+                ? GenerateCrudServices.GetTableSchemas(dbFactory, request.Schema, request.NamedConnection, request.IncludeTables, request.ExcludeTables)
+                : genServices.GetCachedDbSchema(dbFactory, request.Schema, request.NamedConnection, request.IncludeTables, request.ExcludeTables).Tables;
 
             return new AutoCodeSchemaResponse {
                 Results = results,

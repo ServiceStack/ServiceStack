@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using ServiceStack.DataAnnotations;
 
@@ -98,6 +99,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public ulong RowVersion { get; set; }
     }
     
+    public class CreateRockstarWithId : Rockstar, ICreateDb<Rockstar>, IReturn<RockstarWithIdAndResultResponse>
+    {
+    }
+
     public class CreateRockstar : RockstarBase, ICreateDb<RockstarAuto>, IReturn<CreateRockstarResponse>
     {
     }
@@ -521,4 +526,121 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Unknown { get; set; }
     }
 
- }
+    [DataContract]
+    public class Booking : ServiceStack.AuditBase
+    {
+        [AutoIncrement]
+        [DataMember(Order = 1)] public int Id { get; set; }
+        [DataMember(Order = 2)] public RoomType RoomType { get; set; }
+        [CheckConstraint("RoomNumber < 500")]
+        [DataMember(Order = 3)] public int RoomNumber { get; set; }
+        [DataMember(Order = 4)] public DateTime BookingStartDate { get; set; }
+        [DataMember(Order = 5)] public DateTime? BookingEndDate { get; set; }
+        [DataMember(Order = 6)] public string Notes { get; set; }
+        [DataMember(Order = 7)] public bool? Cancelled { get; set; }
+        [DataMember(Order = 8)] public decimal Cost { get; set; }
+    }
+
+    public enum RoomType
+    {
+        Single,
+        Double,
+        Queen,
+        Twin,
+        Suite,
+    }
+
+    [DataContract]
+    [AutoApply(Behavior.AuditQuery)]
+    public class QueryBookings : QueryDb<Booking>
+    {
+        [DataMember(Order = 1)] public int[] Ids { get; set; }
+    }
+
+    [DataContract]
+    [ValidateIsAuthenticated]
+    [AutoPopulate(nameof(CreatedBy), Eval = "userAuthName")]
+    [AutoApply(Behavior.AuditQuery)]
+    public class QueryUserBookings : QueryDb<Booking>
+    {
+        [DataMember(Order = 1)] public string CreatedBy { get; set; }
+    }
+
+    [DataContract]
+    [ValidateIsAuthenticated]
+    [AutoPopulate(nameof(UserName), Eval = "userAuthName")]
+    [AutoApply(Behavior.AuditQuery)]
+    public class QueryUserMapBookings : QueryDb<Booking>
+    {
+        [AutoMap(nameof(ServiceStack.AuditBase.CreatedBy))]
+        [DataMember(Order = 1)] public string UserName { get; set; }
+    }
+
+    [DataContract]
+    [ValidateIsAuthenticated]
+    [AutoFilter(QueryTerm.Ensure, nameof(ServiceStack.AuditBase.CreatedBy),  Eval = "userAuthName")]
+    [AutoApply(Behavior.AuditQuery)]
+    public class QueryEnsureUserBookings : QueryDb<Booking> {}
+
+    [DataContract]
+    [ValidateIsAuthenticated]
+    [AutoApply(Behavior.AuditCreate)]
+    public class CreateBooking
+        : ICreateDb<Booking>, IReturn<IdResponse>
+    {
+        [ApiAllowableValues(typeof(RoomType))]
+        [DataMember(Order = 1)] public RoomType RoomType { get; set; }
+        [ValidateGreaterThan(0)]
+        [DataMember(Order = 2)] public int RoomNumber { get; set; }
+        [DataMember(Order = 3)] public DateTime BookingStartDate { get; set; }
+        [DataMember(Order = 4)] public DateTime? BookingEndDate { get; set; }
+        [DataMember(Order = 5)] public string Notes { get; set; }
+        [ValidateGreaterThan(0)]
+        [DataMember(Order = 6)] public decimal Cost { get; set; }
+    }
+
+    [DataContract]
+    [ValidateIsAuthenticated]
+    [AutoApply(Behavior.AuditModify)]
+    public class UpdateBooking
+        : IPatchDb<Booking>, IReturn<IdResponse>
+    {
+        [DataMember(Order = 1)] public int Id { get; set; }
+        [ApiAllowableValues(typeof(RoomType))]
+        [DataMember(Order = 2)] public RoomType? RoomType { get; set; }
+        [ValidateGreaterThan(0)]
+        [DataMember(Order = 3)] public int? RoomNumber { get; set; }
+        [DataMember(Order = 4)] public DateTime? BookingStartDate { get; set; }
+        [DataMember(Order = 5)] public DateTime? BookingEndDate { get; set; }
+        [DataMember(Order = 6)] public string Notes { get; set; }
+        [DataMember(Order = 7)] public bool? Cancelled { get; set; }
+        [ValidateGreaterThan(0)]
+        [DataMember(Order = 8)] public decimal? Cost { get; set; }
+    }
+
+    [DataContract]
+    [ValidateIsAuthenticated]
+    [AutoApply(Behavior.AuditSoftDelete)]
+    public class DeleteBooking : IDeleteDb<Booking>, IReturnVoid
+    {
+        [DataMember(Order = 1)] public int Id { get; set; }
+    }
+    
+
+    [ValidateIsAuthenticated]
+    [AutoApply(Behavior.AuditCreate)]
+    public class CustomCreateBooking
+        : ICreateDb<Booking>, IReturn<IdResponse>
+    {
+        [ApiAllowableValues(typeof(RoomType))]
+        public RoomType RoomType { get; set; }
+        [ValidateGreaterThan(0)]
+        public int RoomNumber { get; set; }
+        public DateTime BookingStartDate { get; set; }
+        public DateTime? BookingEndDate { get; set; }
+        public string Notes { get; set; }
+        [ValidateGreaterThan(0)]
+        public decimal Cost { get; set; }
+    }
+    
+}

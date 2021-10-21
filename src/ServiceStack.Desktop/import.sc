@@ -1,3 +1,4 @@
+* Usage: x run import.sc *
 * x mix svg-action svg-alert svg-av svg-communication svg-content svg-device svg-editor svg-file svg-hardware svg-image svg-maps svg-navigation svg-places svg-social svg-toggle *
 
 {{ const libs = { 
@@ -17,7 +18,7 @@
     'react-dom/react-dom.production.min.js':'https://unpkg.com/react-dom/umd/react-dom.production.min.js',
     'react-router/react-router.min.js':'https://unpkg.com/react-router/umd/react-router.min.js',
     'react-router-dom/react-router-dom.min.js':'https://unpkg.com/react-router-dom/umd/react-router-dom.min.js',
-    'mobx/mobx.min.js': 'https://unpkg.com/mobx/lib/mobx.umd.min.js',
+    'mobx/mobx.min.js': 'https://unpkg.com/mobx/dist/mobx.umd.production.min.js',
     'redux/redux.min.js': 'https://unpkg.com/redux/dist/redux.min.js',
     'react-redux/react-redux.min.js': 'https://unpkg.com/react-redux/dist/react-redux.min.js',
      
@@ -33,3 +34,17 @@
     `writing file ${path}...`
     path.writeFile(js) |> end
 /each
+
+{{ css = {
+    'bootstrap/bootstrap.css': 'https://cdn.jsdelivr.net/npm/bootstrap/dist/css/bootstrap.min.css',
+    'litewind/litewind.css':   'https://raw.githubusercontent.com/mythz/site/main/css/litewind.css',
+}
+}}
+
+#each css
+    it.Value |> urlContentsWithCache() |> to => js
+    let path = `lib/css/${it.Key}`
+    `writing file ${path}...`
+    path.writeFile(js) |> end
+/each
+

@@ -1,3 +1,4 @@
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -128,6 +129,8 @@ namespace ServiceStack
         public TextStyle HeaderStyle { get; set; }
         public string Caption { get; set; }
         public string CaptionIfEmpty { get; set; }
+        
+        public string[] Headers { get; set; }
         public bool IncludeRowNumbers { get; set; } = true;
 
         public DefaultScripts Defaults { get; set; } = ViewUtils.DefaultScripts;
@@ -137,8 +140,7 @@ namespace ServiceStack
 
         public static TextDumpOptions Parse(Dictionary<string, object> options, DefaultScripts defaults=null)
         {
-            return new TextDumpOptions 
-            {
+            return new() {
                 HeaderStyle = options.TryGetValue("headerStyle", out var oHeaderStyle)
                     ? oHeaderStyle.ConvertTo<TextStyle>()
                     : TextStyle.SplitCase,
@@ -149,7 +151,7 @@ namespace ServiceStack
                     ? captionIfEmpty?.ToString()
                     : null,
                 IncludeRowNumbers = !options.TryGetValue("rowNumbers", out var rowNumbers) 
-                    || (!(rowNumbers is bool b) || b),
+                    || (rowNumbers is not bool b || b),
                 Defaults = defaults ?? ViewUtils.DefaultScripts,
             };
         }
@@ -166,6 +168,8 @@ namespace ServiceStack
         
         public string Caption { get; set; }
         public string CaptionIfEmpty { get; set; }
+        
+        public string[] Headers { get; set; }
 
         public DefaultScripts Defaults { get; set; } = ViewUtils.DefaultScripts;
         
@@ -342,8 +346,8 @@ namespace ServiceStack
     /// </summary>
     public static class ViewUtils
     {
-        internal static readonly DefaultScripts DefaultScripts = new DefaultScripts();
-        private static readonly HtmlScripts HtmlScripts = new HtmlScripts();
+        internal static readonly DefaultScripts DefaultScripts = new() { Context = new ScriptContext() };
+        private static readonly HtmlScripts HtmlScripts = new() { Context = new ScriptContext() };
 
         public static string NavItemsKey { get; set; } = "NavItems";
         public static string NavItemsMapKey { get; set; } = "NavItemsMap";
@@ -630,7 +634,9 @@ namespace ServiceStack
         public static string TextDump(this object target) => DefaultScripts.TextDump(target, null); 
         public static string TextDump(this object target, TextDumpOptions options) => DefaultScripts.TextDump(target, options); 
         public static string DumpTable(this object target) => DefaultScripts.TextDump(target, null); 
-        public static string DumpTable(this object target, TextDumpOptions options) => DefaultScripts.TextDump(target, options); 
+        public static void PrintDumpTable(this object target) => DumpTable(target).Print(); 
+        public static string DumpTable(this object target, TextDumpOptions options) => DefaultScripts.TextDump(target, options);
+        public static void PrintDumpTable(this object target, TextDumpOptions options) => DumpTable(target, options).Print(); 
         
         public static string HtmlDump(object target) => HtmlScripts.HtmlDump(target, null); 
         public static string HtmlDump(object target, HtmlDumpOptions options) => HtmlScripts.HtmlDump(target, options); 
@@ -1059,7 +1065,7 @@ namespace ServiceStack
                         : oValue == null
                             ? TypeConstants<string>.EmptyHashSet
                             : (FormValues(req, name) ?? ToStringList(oValue as IEnumerable).ToArray())
-                                  .ToHashSet();
+                                  .ToSet();
                                 
                     foreach (var kvp in kvps)
                     {

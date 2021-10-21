@@ -15,7 +15,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Validation
 {
-    public class ValidationFeature : IPlugin, IAfterInitAppHost, Model.IHasStringId
+    public class ValidationFeature : IPlugin, IPostInitPlugin, IAfterInitAppHost, Model.IHasStringId
     {
         public string Id { get; set; } = Plugins.Validation;
         public Func<IRequest, ValidationResult, object, object> ErrorResponseFilter { get; set; }
@@ -24,11 +24,12 @@ namespace ServiceStack.Validation
         public bool TreatInfoAndWarningsAsErrors { get; set; } = true;
         public bool EnableDeclarativeValidation { get; set; } = true;
 
+        public bool ImplicitlyValidateChildProperties { get; set; } = true;
         public string AccessRole { get; set; } = RoleNames.Admin;
         
         public IValidationSource ValidationSource { get; set; } 
         
-        public Dictionary<Type, string[]> ServiceRoutes { get; set; } = new Dictionary<Type, string[]> {
+        public Dictionary<Type, string[]> ServiceRoutes { get; set; } = new() {
             { typeof(GetValidationRulesService), new []{ "/" + "validation/rules".Localize() + "/{Type}" } },
             { typeof(ModifyValidationRulesService), new []{ "/" + "validation/rules".Localize() } },
         };
@@ -98,11 +99,6 @@ namespace ServiceStack.Validation
                 appHost.RegisterServices(ServiceRoutes);
             }
 
-            if (ScanAppHostAssemblies)
-            {
-                container.RegisterValidators(((ServiceStackHost)appHost).ServiceAssemblies.ToArray());
-            }
-            
             appHost.AddToAppMetadata(metadata => {
                 metadata.Plugins.Validation = new ValidationInfo {
                     HasValidationSource = hasValidationSource.NullIfFalse(), 
@@ -123,6 +119,14 @@ namespace ServiceStack.Validation
             });
             
             appHost.GetPlugin<MetadataFeature>()?.ExportTypes.Add(typeof(ValidationRule));
+        }
+
+        public void AfterPluginsLoaded(IAppHost appHost)
+        {
+            if (ScanAppHostAssemblies)
+            {
+                appHost.GetContainer().RegisterValidators(((ServiceStackHost)appHost).ServiceAssemblies.ToArray());
+            }
         }
 
         public void AfterInit(IAppHost appHost)
@@ -179,14 +183,14 @@ namespace ServiceStack.Validation
         public async Task<object> Any(GetValidationRules request)
         {
             var feature = HostContext.AssertPlugin<ValidationFeature>();
-            RequestUtils.AssertAccessRole(base.Request, accessRole: feature.AccessRole, authSecret: request.AuthSecret);
+            await RequestUtils.AssertAccessRoleAsync(base.Request, accessRole: feature.AccessRole, authSecret: request.AuthSecret).ConfigAwait();
 
             var type = HostContext.Metadata.FindDtoType(request.Type);
             if (type == null)
                 throw HttpError.NotFound(request.Type);
             
             return new GetValidationRulesResponse {
-                Results = await ValidationSource.GetAllValidateRulesAsync(request.Type),
+                Results = await ValidationSource.GetAllValidateRulesAsync(request.Type).ConfigAwait(),
             };
         }
     }
@@ -201,10 +205,10 @@ namespace ServiceStack.Validation
         {
             var appHost = HostContext.AssertAppHost();
             var feature = appHost.AssertPlugin<ValidationFeature>();
-            RequestUtils.AssertAccessRole(base.Request, accessRole: feature.AccessRole, authSecret: request.AuthSecret);
+            await RequestUtils.AssertAccessRoleAsync(base.Request, accessRole: feature.AccessRole, authSecret: request.AuthSecret).ConfigAwait();
 
             var utcNow = DateTime.UtcNow;
-            var userName = base.GetSession().GetUserAuthName();
+            var userName = (await base.GetSessionAsync().ConfigAwait()).GetUserAuthName();
             var rules = request.SaveRules;
 
             if (!rules.IsEmpty())
@@ -272,7 +276,7 @@ namespace ServiceStack.Validation
                         try
                         {
                             var ast = Validators.ParseCondition(appHost.ScriptContext, rule.Condition);
-                            await ast.Init();
+                            await ast.Init().ConfigAwait();
                         }
                         catch (Exception e)
                         {
@@ -290,48 +294,80 @@ namespace ServiceStack.Validation
                     rule.ModifiedDate = utcNow;
                 }
 
-                await ValidationSource.SaveValidationRulesAsync(rules);
+                await ValidationSource.SaveValidationRulesAsync(rules).ConfigAwait();
             }
 
             if (!request.SuspendRuleIds.IsEmpty())
             {
-                var suspendRules = await ValidationSource.GetValidateRulesByIdsAsync(request.SuspendRuleIds);
+                var suspendRules = await ValidationSource.GetValidateRulesByIdsAsync(request.SuspendRuleIds).ConfigAwait();
                 foreach (var suspendRule in suspendRules)
                 {
                     suspendRule.SuspendedBy = userName;
                     suspendRule.SuspendedDate = utcNow;
                 }
 
-                await ValidationSource.SaveValidationRulesAsync(suspendRules);
+                await ValidationSource.SaveValidationRulesAsync(suspendRules).ConfigAwait();
             }
 
             if (!request.UnsuspendRuleIds.IsEmpty())
             {
-                var unsuspendRules = await ValidationSource.GetValidateRulesByIdsAsync(request.UnsuspendRuleIds);
+                var unsuspendRules = await ValidationSource.GetValidateRulesByIdsAsync(request.UnsuspendRuleIds).ConfigAwait();
                 foreach (var unsuspendRule in unsuspendRules)
                 {
                     unsuspendRule.SuspendedBy = null;
                     unsuspendRule.SuspendedDate = null;
                 }
 
-                await ValidationSource.SaveValidationRulesAsync(unsuspendRules);
+                await ValidationSource.SaveValidationRulesAsync(unsuspendRules).ConfigAwait();
             }
 
             if (!request.DeleteRuleIds.IsEmpty())
             {
-                await ValidationSource.DeleteValidationRulesAsync(request.DeleteRuleIds.ToArray());
+                await ValidationSource.DeleteValidationRulesAsync(request.DeleteRuleIds.ToArray()).ConfigAwait();
             }
 
             if (request.ClearCache.GetValueOrDefault())
             {
-                await ValidationSource.ClearCacheAsync();
+                await ValidationSource.ClearCacheAsync().ConfigAwait();
             }
         }
     }
 
     public static class ValidationExtensions
     {
-        public static HashSet<Type> RegisteredDtoValidators { get; } = new HashSet<Type>();
+        public static HashSet<Type> RegisteredDtoValidators { get; private set; } = new();
+        internal static Dictionary<Type,Type> TypesValidatorsMap { get; private set; } = new();
+        internal static List<Type> ValidatorTypes { get; private set; } = new();
+        private static List<Assembly> RegisteredAssemblies { get; set; } = new();
+        private static List<Type> RegisteredValidators { get; set; } = new();
+
+        internal static void Reset()
+        {
+            RegisteredDtoValidators = new HashSet<Type>();
+            TypesValidatorsMap = new Dictionary<Type, Type>();
+            ValidatorTypes = new List<Type>();
+            RegisteredAssemblies = new List<Assembly>();
+            RegisteredValidators = new List<Type>();
+        }
+        
+        public static void Init(Assembly[] assemblies)
+        {
+            foreach (var assembly in assemblies)
+            {
+                if (!RegisteredAssemblies.Contains(assembly))
+                {
+                    RegisteredAssemblies.Add(assembly);
+                    foreach (var type in assembly.GetTypes())
+                    {
+                        var genericValidator = type.GetTypeWithGenericInterfaceOf(typeof(IValidator<>));
+                        if (genericValidator != null)
+                        {
+                            ValidatorTypes.Add(type);
+                        }
+                    }
+                }
+            }
+        }
         
         /// <summary>
         /// Auto-scans the provided assemblies for a <see cref="IValidator"/>
@@ -346,18 +382,18 @@ namespace ServiceStack.Validation
 
         public static void RegisterValidators(this Container container, ReuseScope scope, params Assembly[] assemblies)
         {
-            foreach (var assembly in assemblies)
+            Init(assemblies);
+            foreach (var validatorType in ValidatorTypes)
             {
-                foreach (var validator in assembly.GetTypes()
-                    .Where(t => t.IsOrHasGenericInterfaceTypeOf(typeof(IValidator<>))))
-                {
-                    container.RegisterValidator(validator, scope);
-                }
+                container.RegisterValidator(validatorType, scope);
             }
         }
 
         public static void RegisterValidator(this Container container, Type validator, ReuseScope scope=ReuseScope.None)
         {
+            if (RegisteredValidators.Contains(validator))
+                return;
+
             var baseType = validator.BaseType;
             if (validator.IsInterface || baseType == null)
                 return;
@@ -370,8 +406,13 @@ namespace ServiceStack.Validation
             if (baseType == null)
                 return;
 
+            RegisteredValidators.Add(validator);
+
             var dtoType = baseType.GetGenericArguments()[0];
+            
             var validatorType = typeof(IValidator<>).MakeGenericType(dtoType);
+            ValidatorTypes.AddIfNotExists(validator);
+            TypesValidatorsMap[dtoType] = validator;
 
             container.RegisterAutoWiredType(validator, validatorType, scope);
 
@@ -389,7 +430,7 @@ namespace ServiceStack.Validation
             }
         }
 
-        public static bool HasAsyncValidators(this IValidator validator, ValidationContext context, string ruleSet=null)
+        public static bool HasAsyncValidators(this IValidator validator, IValidationContext context, string ruleSet=null)
         {
             if (validator is IEnumerable<IValidationRule> rules)
             {
@@ -404,5 +445,47 @@ namespace ServiceStack.Validation
             }
             return false;
         }
+
+        public static Task<List<ValidationRule>> GetAllValidateRulesAsync(this IResolver resolver, string type=null) =>
+            resolver.TryResolve<IValidationSource>().GetAllValidateRulesAsync(type);
+        public static async Task<List<ValidationRule>> GetAllValidateRulesAsync(this IValidationSource validationSource, string type=null)
+        {
+            return validationSource is IValidationSourceAdmin adminSource
+                ? type != null 
+                    ? await adminSource.GetAllValidateRulesAsync(type).ConfigAwait()
+                    : await adminSource.GetAllValidateRulesAsync().ConfigAwait()
+                : TypeConstants<ValidationRule>.EmptyList;
+        }
+
+        public static bool IsAuthValidator(this IValidateRule rule)
+        {
+            var validator = rule.Validator;
+            if (!string.IsNullOrEmpty(validator))
+            {
+                return validator.StartsWith(nameof(ValidateScripts.IsAuthenticated))
+                       || validator.StartsWith(nameof(ValidateScripts.IsAdmin))
+                       || validator.StartsWith(nameof(ValidateScripts.HasRole))
+                       || validator.StartsWith(nameof(ValidateScripts.HasPermission));
+            }
+            return false;
+        }
+
+        public static Operation ApplyValidationRules(this Operation op, IEnumerable<ValidationRule> rules)
+        {
+            var authRules = rules.Where(x => x.Type == op.Name && x.IsAuthValidator() && x.Field == null).ToList();
+            if (authRules.Count > 0)
+            {
+                op = op.Clone();
+                op.RequiresAuthentication = true;
+                var appHost = HostContext.AppHost;
+                var allValidators = authRules.Select(x => appHost.EvalExpression(x.Validator) as ITypeValidator).Where(x => x != null).ToList();
+                if (allValidators.FirstOrDefault(x => x is HasRolesValidator) is HasRolesValidator roleValidator)
+                    roleValidator.Roles.Each(op.RequiredRoles.AddIfNotExists);
+                if (allValidators.FirstOrDefault(x => x is HasPermissionsValidator) is HasPermissionsValidator permValidator)
+                    permValidator.Permissions.Each(op.RequiredPermissions.AddIfNotExists);
+            }
+            return op;
+        }
+        
     }
 }

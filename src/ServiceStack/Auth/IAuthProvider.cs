@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
@@ -17,13 +20,13 @@ namespace ServiceStack.Auth
         /// <param name="service"></param>
         /// <param name="request"></param>
         /// <returns></returns>
-        object Logout(IServiceBase service, Authenticate request);
+        Task<object> LogoutAsync(IServiceBase service, Authenticate request, CancellationToken token = default);
 
         /// <summary>
         /// The entry point for all AuthProvider providers. Runs inside the AuthService so exceptions are treated normally.
         /// Overridable so you can provide your own Auth implementation.
         /// </summary>
-        object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request);
+        public Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default);
 
         /// <summary>
         /// Determine if the current session is already authenticated with this AuthProvider
@@ -41,30 +44,98 @@ namespace ServiceStack.Auth
         string AccessTokenUrl { get; set; }
     }
 
-    public interface IAuthWithRequest
+    [Obsolete("Use IAuthWithRequestAsync")]
+    public interface IAuthWithRequestSync
     {
         void PreAuthenticate(IRequest req, IResponse res);
     }
 
-    public interface IAuthResponseFilter
+    public interface IAuthWithRequest
     {
-        void Execute(AuthFilterContext authContext);
+        Task PreAuthenticateAsync(IRequest req, IResponse res);
     }
 
+    public interface IAuthResponseFilter
+    {
+        /// <summary>
+        /// Intercept successful Authenticate Request DTO requests 
+        /// </summary>
+        Task ExecuteAsync(AuthFilterContext authContext);
+
+        /// <summary>
+        /// Intercept successful OAuth redirect requests 
+        /// </summary>
+        Task ResultFilterAsync(AuthResultContext authContext, CancellationToken token=default);
+    }
+
+    [Obsolete("Use IUserSessionSourceAsync")]
     public interface IUserSessionSource
     {
         IAuthSession GetUserSession(string userAuthId);
     }
 
+    public interface IUserSessionSourceAsync
+    {
+        Task<IAuthSession> GetUserSessionAsync(string userAuthId, CancellationToken token=default);
+    }
+
     public class AuthFilterContext
     {
+        /// <summary>
+        /// Instance of AuthenticateService
+        /// </summary>
         public AuthenticateService AuthService { get; internal set; }
+        /// <summary>
+        /// Selected Auth Provider for Request
+        /// </summary>
         public IAuthProvider AuthProvider { get; internal set; }
+        /// <summary>
+        /// Authenticated Users Session
+        /// </summary>
         public IAuthSession Session { get; internal set; }
+        /// <summary>
+        /// Authenticate Request DTO
+        /// </summary>
         public Authenticate AuthRequest { get; internal set; }
+        /// <summary>
+        /// Authenticate Response DTO
+        /// </summary>
         public AuthenticateResponse AuthResponse { get; internal set; }
+        /// <summary>
+        /// Optimal Session Referrer URL to use redirects
+        /// </summary>
         public string ReferrerUrl { get; internal set; }
+        /// <summary>
+        /// If User was already authenticated
+        /// </summary>
         public bool AlreadyAuthenticated { get; internal set; }
+        /// <summary>
+        /// If User Authenticated in this request
+        /// </summary>
         public bool DidAuthenticate { get; internal set; }
+        /// <summary>
+        /// Original User Source (if exists) 
+        /// </summary>
+        public object UserSource { get; set; }
+    }
+
+    public class AuthResultContext
+    {
+        /// <summary>
+        /// The Response returned for this successful Auth Request 
+        /// </summary>
+        public IHttpResult Result { get; set; }
+        /// <summary>
+        /// Instance of Service used in this Request
+        /// </summary>
+        public IServiceBase Service { get; internal set; }
+        /// <summary>
+        /// Current HTTP Request Context
+        /// </summary>
+        public IRequest Request { get; internal set; }
+        /// <summary>
+        /// Authenticated Users Session
+        /// </summary>
+        public IAuthSession Session { get; internal set; }
     }
 }

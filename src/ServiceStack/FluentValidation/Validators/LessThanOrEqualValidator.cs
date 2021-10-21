@@ -19,15 +19,14 @@
 namespace ServiceStack.FluentValidation.Validators {
 	using System;
 	using System.Reflection;
-	using Internal;
 	using Resources;
 
 	public class LessThanOrEqualValidator : AbstractComparisonValidator {
-		public LessThanOrEqualValidator(IComparable value) : base(value, new LanguageStringSource(nameof(LessThanOrEqualValidator))) {
+		public LessThanOrEqualValidator(IComparable value) : base(value) {
 		}
 
-		public LessThanOrEqualValidator(Func<object, object> valueToCompareFunc, MemberInfo member)
-			: base(valueToCompareFunc, member, new LanguageStringSource(nameof(LessThanOrEqualValidator))) {
+		public LessThanOrEqualValidator(Func<object, object> valueToCompareFunc, MemberInfo member, string memberDisplayName)
+			: base(valueToCompareFunc, member, memberDisplayName) {
 		}
 
 		public override bool IsValid(IComparable value, IComparable valueToCompare) {
@@ -37,8 +36,10 @@ namespace ServiceStack.FluentValidation.Validators {
 			return value.CompareTo(valueToCompare) <= 0;
 		}
 
-		public override Comparison Comparison {
-			get { return Comparison.LessThanOrEqual; }
+		protected override string GetDefaultMessageTemplate() {
+			return Localized(nameof(LessThanOrEqualValidator));
 		}
+
+		public override Comparison Comparison => Comparison.LessThanOrEqual;
 	}
 }

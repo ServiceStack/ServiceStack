@@ -56,21 +56,6 @@ namespace ServiceStack.FluentValidation {
 		}
 
 		/// <summary>
-		/// Transforms the property value before validation occurs. The transformed value must be of the same type as the input value.
-		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <typeparam name="TProperty"></typeparam>
-		/// <param name="ruleBuilder"></param>
-		/// <param name="transformationFunc"></param>
-		/// <returns></returns>
-		public static IRuleBuilderInitialCollection<T, TProperty> Transform<T, TProperty>(this IRuleBuilderInitialCollection<T, TProperty> ruleBuilder, Func<TProperty, TProperty> transformationFunc) {
-			return ruleBuilder.Configure(cfg => {
-				cfg.Transformer = transformationFunc.CoerceToNonGeneric();
-			});
-		}
-
-
-		/// <summary>
 		/// Specifies a custom action to be invoked when the validator fails.
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
@@ -109,7 +94,7 @@ namespace ServiceStack.FluentValidation {
 		public static IRuleBuilderOptions<T, TProperty> WithMessage<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, string errorMessage) {
 			errorMessage.Guard("A message must be specified when calling WithMessage.", nameof(errorMessage));
 			return rule.Configure(config => {
-				config.CurrentValidator.Options.ErrorMessageSource = new StaticStringSource(errorMessage);
+				config.CurrentValidator.Options.SetErrorMessage(errorMessage);
 			});
 		}
 
@@ -122,7 +107,15 @@ namespace ServiceStack.FluentValidation {
 		public static IRuleBuilderOptions<T, TProperty> WithMessage<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, Func<T, string> messageProvider) {
 			messageProvider.Guard("A messageProvider must be provided.", nameof(messageProvider));
 			return rule.Configure(config => {
-				config.CurrentValidator.Options.ErrorMessageSource = new LazyStringSource(ctx => messageProvider((T)ctx?.InstanceToValidate));
+				config.CurrentValidator.Options.SetErrorMessage(ctx => {
+					try {
+						return messageProvider((T) ctx?.InstanceToValidate);
+					}
+					// TODO: Remove this as client validators now handle catching NRE.
+					catch (NullReferenceException ex) {
+						throw new FluentValidationMessageFormatException("Could not build error message- the message makes use of properties from the containing object, but the containing object was null.", ex);
+					}
+				});
 			});
 		}
 
@@ -136,8 +129,15 @@ namespace ServiceStack.FluentValidation {
 			messageProvider.Guard("A messageProvider must be provided.", nameof(messageProvider));
 
 			return rule.Configure(config => {
-				config.CurrentValidator.Options.ErrorMessageSource
-					= new LazyStringSource(context => messageProvider((T)context?.InstanceToValidate, (TProperty)context?.PropertyValue));
+				config.CurrentValidator.Options.SetErrorMessage(context => {
+					try {
+						return messageProvider((T) context?.InstanceToValidate, (TProperty) context?.PropertyValue);
+					}
+					// TODO: FV10 Remove this as client validators now handle catching NRE.
+					catch (NullReferenceException ex) {
+						throw new FluentValidationMessageFormatException("Could not build error message- the message makes use of properties from the containing object, but the containing object was null.", ex);
+					}
+				});
 			});
 		}
 
@@ -151,7 +151,7 @@ namespace ServiceStack.FluentValidation {
 			errorCode.Guard("A error code must be specified when calling WithErrorCode.", nameof(errorCode));
 
 			return rule.Configure(config => {
-				config.CurrentValidator.Options.ErrorCodeSource = new StaticStringSource(errorCode);
+				config.CurrentValidator.Options.ErrorCode = errorCode;
 			});
 		}
 
@@ -329,7 +329,7 @@ namespace ServiceStack.FluentValidation {
 		public static IRuleBuilderOptions<T, TProperty> WithName<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, string overridePropertyName) {
 			overridePropertyName.Guard("A property name must be specified when calling WithName.", nameof(overridePropertyName));
 			return rule.Configure(config => {
-				config.DisplayName = new StaticStringSource(overridePropertyName);
+				config.SetDisplayName(overridePropertyName);
 			});
 		}
 
@@ -345,7 +345,7 @@ namespace ServiceStack.FluentValidation {
 				// Must use null propagation here.
 				// The MVC clientside validation will try and retrieve the name, but won't
 				// be able to to so if we've used this overload of WithName.
-				config.DisplayName = new LazyStringSource(ctx => nameProvider((T)ctx?.InstanceToValidate));
+				config.SetDisplayName(context => nameProvider((T)context?.InstanceToValidate));
 			});
 		}
 

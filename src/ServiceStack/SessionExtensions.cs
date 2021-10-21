@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Host;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -63,7 +66,7 @@ namespace ServiceStack
         {
             return httpReq.GetItem(sessionKey) as string
                 ?? httpReq.GetHeader("X-" + sessionKey)
-                ?? (HostContext.Config.AllowSessionIdsInHttpParams
+                ?? (HostContext.Config.AllowSessionIdsInHttpParams 
                     ? (httpReq.QueryString[sessionKey] ?? httpReq.FormData[sessionKey])
                     : null)
                 ?? httpReq.GetCookieValue(sessionKey);
@@ -179,7 +182,7 @@ namespace ServiceStack
             var sessionOptions = httpReq.GetSessionParam(SessionFeature.SessionOptionsKey);
             return sessionOptions.IsNullOrEmpty()
                 ? new HashSet<string>()
-                : sessionOptions.Split(',').ToHashSet();
+                : sessionOptions.Split(',').ToSet();
         }
         
         public static string GetUserAuthName(this IAuthSession session) => session == null ? null
@@ -199,28 +202,6 @@ namespace ServiceStack
             
             userAuth.Roles?.ForEach(x => session.Roles.AddIfNotExists(x));
             userAuth.Permissions?.ForEach(x => session.Permissions.AddIfNotExists(x));
-        }
-
-        public static void UpdateFromUserAuthRepo(this IAuthSession session, IRequest req, IAuthRepository authRepo = null)
-        {
-            if (session == null)
-                return;
-
-            var newAuthRepo = authRepo == null
-                ? HostContext.AppHost.GetAuthRepository(req)
-                : null;
-            
-            if (authRepo == null)
-                authRepo = newAuthRepo;
-
-            if (authRepo == null)
-                return;
-
-            using (newAuthRepo as IDisposable)
-            {
-                var userAuth = authRepo.GetUserAuth(session, null);
-                session.UpdateSession(userAuth);
-            }
         }
 
         public static HashSet<string> AddSessionOptions(this IRequest req, params string[] options)
@@ -263,6 +244,12 @@ namespace ServiceStack
             return SessionFeature.GetOrCreateSession<TUserSession>(cache, httpReq, httpRes);
         }
 
+        public static Task<TUserSession> SessionAsAsync<TUserSession>(this ICacheClientAsync cache,
+            IRequest httpReq = null, IResponse httpRes = null, CancellationToken token=default)
+        {
+            return SessionFeature.GetOrCreateSessionAsync<TUserSession>(cache, httpReq, httpRes, token);
+        }
+
         public static IAuthSession GetUntypedSession(this ICacheClient cache,
             IRequest httpReq = null, IResponse httpRes = null)
         {
@@ -282,9 +269,33 @@ namespace ServiceStack
             return unAuthorizedSession;
         }
 
+        public static async Task<IAuthSession> GetUntypedSessionAsync(this ICacheClientAsync cache,
+            IRequest httpReq = null, IResponse httpRes = null, CancellationToken token=default)
+        {
+            var sessionKey = GetSessionKey(httpReq);
+
+            if (sessionKey != null)
+            {
+                var userSession = await cache.GetAsync<IAuthSession>(sessionKey, token);
+                if (!Equals(userSession, default(AuthUserSession)))
+                    return userSession;
+            }
+
+            if (sessionKey == null)
+                SessionFeature.CreateSessionIds(httpReq, httpRes);
+
+            var unAuthorizedSession = (IAuthSession)typeof(AuthUserSession).CreateInstance();
+            return unAuthorizedSession;
+        }
+
         public static void ClearSession(this ICacheClient cache, IRequest httpReq = null)
         {
             cache.Remove(GetSessionKey(httpReq));
+        }
+
+        public static Task ClearSessionAsync(this ICacheClientAsync cache, IRequest httpReq = null, CancellationToken token=default)
+        {
+            return cache.RemoveAsync(GetSessionKey(httpReq), token);
         }
 
         public static ISession GetSessionBag(this IRequest request)
@@ -293,9 +304,20 @@ namespace ServiceStack
             return factory.GetOrCreateSession(request, request.Response);
         }
 
+        public static ISessionAsync GetSessionBagAsync(this IRequest request, CancellationToken token=default)
+        {
+            var factory = request.TryResolve<ISessionFactory>() ?? new SessionFactory(request.GetCacheClient(), request.GetCacheClientAsync());
+            return factory.GetOrCreateSessionAsync(request, request.Response);
+        }
+
         public static ISession GetSessionBag(this IServiceBase service)
         {
             return service.Request.GetSessionBag();
+        }
+
+        public static ISessionAsync GetSessionBagAsync(this IServiceBase service, CancellationToken token=default)
+        {
+            return service.Request.GetSessionBagAsync();
         }
 
         public static T Get<T>(this ISession session)
@@ -303,14 +325,29 @@ namespace ServiceStack
             return session.Get<T>(typeof(T).Name);
         }
 
+        public static Task<T> GetAsync<T>(this ISessionAsync session, CancellationToken token=default)
+        {
+            return session.GetAsync<T>(typeof(T).Name, token);
+        }
+
         public static void Set<T>(this ISession session, T value)
         {
             session.Set(typeof(T).Name, value);
         }
 
+        public static Task SetAsync<T>(this ISessionAsync session, T value, CancellationToken token=default)
+        {
+            return session.SetAsync(typeof(T).Name, value, token);
+        }
+
         public static void Remove<T>(this ISession session)
         {
             session.Remove(typeof(T).Name);
+        }
+
+        public static Task RemoveAsync<T>(this ISessionAsync session, CancellationToken token=default)
+        {
+            return session.RemoveAsync(typeof(T).Name, token);
         }
 
         public static void DeleteSessionCookies(this IResponse response)
@@ -325,16 +362,17 @@ namespace ServiceStack
         {
             var httpRes = response as IHttpResponse;
             httpRes?.Cookies.DeleteCookie(Keywords.TokenCookie);
+            httpRes?.Cookies.DeleteCookie(Keywords.RefreshTokenCookie);
         }
 
-        public static void GenerateNewSessionCookies(this IRequest req, IAuthSession session)
+        public static async Task GenerateNewSessionCookiesAsync(this IRequest req, IAuthSession session, CancellationToken token=default)
         {
             if (!(req.Response is IHttpResponse httpRes))
                 return;
 
             var sessionId = req.GetSessionId();
             if (sessionId != null)
-                req.RemoveSession(sessionId);
+                await req.RemoveSessionAsync(sessionId, token);
 
             req.Response.ClearCookies();
 

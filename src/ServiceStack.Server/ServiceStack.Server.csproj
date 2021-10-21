@@ -3,13 +3,18 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Server</PackageId>
     <AssemblyName>ServiceStack.Server</AssemblyName>
-    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net45;net472;netstandard2.0</TargetFrameworks>
     <Title>ServiceStack Server integration with Redis and OrmLite</Title>
     <PackageDescription>
-      Integration libraries and adapters with other major ServiceStack server components.
-      Includes high-level API's that use OrmLite and Redis including:
-      AutoQuery, Redis MQ, OrmLiteAuthRepository, OrmLiteCacheClient, OrmLiteAppSettings,
-      RedisServerEvents and RedisRequestLogger.
+    Integration libraries and adapters with other major ServiceStack server components.
+    Includes high-level API's that use OrmLite and Redis including:
+      - AutoQuery 
+      - Redis MQ
+      - OrmLiteAuthRepository
+      - OrmLiteCacheClient
+      - OrmLiteAppSettings
+      - RedisServerEvents 
+      - RedisRequestLogger
     </PackageDescription>
     <PackageTags>ServiceStack;AutoQuery;OrmLite;Redis;MQ;Caching;ServerEvents</PackageTags>
   </PropertyGroup>
@@ -28,6 +33,10 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Data" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.1" />
   </ItemGroup>
 
 </Project>

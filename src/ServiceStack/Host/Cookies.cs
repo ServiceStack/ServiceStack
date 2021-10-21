@@ -22,19 +22,18 @@ namespace ServiceStack.Host
             this.httpRes = httpRes;
         }
 
+        private bool UseSecureCookie(bool? secureOnly) =>
+            (secureOnly ?? HostContext.Config?.UseSecureCookies ?? true) && httpRes.Request.IsSecureConnection;
+
         /// <summary>
         /// Sets a persistent cookie which never expires
         /// </summary>
         public void AddPermanentCookie(string cookieName, string cookieValue, bool? secureOnly = null)
         {
-            var cookie = new Cookie(cookieName, cookieValue, RootPath)
-            {
-                Expires = DateTime.UtcNow.AddYears(20)
+            var cookie = new Cookie(cookieName, cookieValue, RootPath) {
+                Expires = DateTime.UtcNow.AddYears(20),
+                Secure = UseSecureCookie(secureOnly)
             };
-            if (secureOnly != null)
-            {
-                cookie.Secure = secureOnly.Value;
-            }
             httpRes.SetCookie(cookie);
         }
 
@@ -43,11 +42,9 @@ namespace ServiceStack.Host
         /// </summary>
         public void AddSessionCookie(string cookieName, string cookieValue, bool? secureOnly = null)
         {
-            var cookie = new Cookie(cookieName, cookieValue, RootPath);
-            if (secureOnly != null)
-            {
-                cookie.Secure = secureOnly.Value;
-            }
+            var cookie = new Cookie(cookieName, cookieValue, RootPath) {
+                Secure = UseSecureCookie(secureOnly)
+            };
             httpRes.SetCookie(cookie);
         }
 
@@ -58,7 +55,8 @@ namespace ServiceStack.Host
         {
             var cookie = new Cookie(cookieName, string.Empty, RootPath)
             {
-                Expires = DateTime.UtcNow.AddDays(-1)
+                Expires = DateTime.UtcNow.AddDays(-1),
+                Secure = UseSecureCookie(null)
             };
             httpRes.SetCookie(cookie);
         }
@@ -69,9 +67,12 @@ namespace ServiceStack.Host
         private static readonly DateTime Session = DateTime.MinValue;
 
 #if !NETSTANDARD2_0
+
+#if !NET472
         private static SetMemberDelegate sameSiteFn;
         private static Enum sameSiteNone;
         private static Enum sameSiteStrict;
+        private static Enum sameSiteLax;
 
         public static void Init()
         {
@@ -84,9 +85,11 @@ namespace ServiceStack.Host
                 {
                     sameSiteNone = (Enum) Enum.Parse(sameSiteMode, "None");
                     sameSiteStrict = (Enum) Enum.Parse(sameSiteMode, "Strict");
+                    sameSiteLax = (Enum) Enum.Parse(sameSiteMode, "Lax");
                 }
             }
         }
+#endif
         
         public static HttpCookie ToHttpCookie(this Cookie cookie)
         {
@@ -95,7 +98,7 @@ namespace ServiceStack.Host
             {
                 Path = cookie.Path,
                 Expires = cookie.Expires,
-                HttpOnly = !config.AllowNonHttpOnlyCookies || cookie.HttpOnly,
+                HttpOnly = config.UseHttpOnlyCookies || cookie.HttpOnly,
                 Secure = cookie.Secure,
             };
             if (!string.IsNullOrEmpty(cookie.Domain))
@@ -107,9 +110,20 @@ namespace ServiceStack.Host
                 httpCookie.Domain = config.RestrictAllCookiesToDomain;
             }
 
-            sameSiteFn?.Invoke(httpCookie, config.UseSameSiteCookies
-                ? sameSiteStrict
-                : sameSiteNone);
+#if NET472
+            httpCookie.SameSite = config.UseSameSiteCookies == null
+                ? SameSiteMode.Lax
+                : config.UseSameSiteCookies == true
+                    ? SameSiteMode.Strict
+                    : SameSiteMode.None;
+#else
+            var sameSiteCookie = config.UseSameSiteCookies == null
+                ? sameSiteLax
+                : config.UseSameSiteCookies == true
+                    ? sameSiteStrict
+                    : sameSiteNone;
+            sameSiteFn?.Invoke(httpCookie, sameSiteCookie);
+#endif
 
             HostContext.AppHost?.HttpCookieFilter(httpCookie);
 
@@ -124,11 +138,13 @@ namespace ServiceStack.Host
             var cookieOptions = new CookieOptions {
                 Path = cookie.Path,
                 Expires = cookie.Expires == DateTime.MinValue ? (DateTimeOffset?) null : cookie.Expires,
-                HttpOnly = !config.AllowNonHttpOnlyCookies || cookie.HttpOnly,
+                HttpOnly = config.UseHttpOnlyCookies || cookie.HttpOnly,
                 Secure = cookie.Secure,
-                SameSite = config.UseSameSiteCookies
-                    ? SameSiteMode.Strict
-                    : SameSiteMode.None,
+                SameSite = config.UseSameSiteCookies == null
+                    ? SameSiteMode.Lax
+                    : config.UseSameSiteCookies == true
+                        ? SameSiteMode.Strict
+                        : SameSiteMode.None,
             };
 
             if (!string.IsNullOrEmpty(cookie.Domain))
@@ -168,10 +184,15 @@ namespace ServiceStack.Host
             {
                 sb.Append(";Secure");
             }
-
-            sb.Append(";SameSite=").Append(config.UseSameSiteCookies ? "Strict" : "None");
             
-            if (!config.AllowNonHttpOnlyCookies || cookie.HttpOnly)
+            var sameSiteCookie = config.UseSameSiteCookies == null
+                ? "Lax"
+                : config.UseSameSiteCookies == true
+                    ? "Strict"
+                    : "None";
+            sb.Append(";SameSite=").Append(sameSiteCookie);
+            
+            if (config.UseHttpOnlyCookies || cookie.HttpOnly)
             {
                 sb.Append(";HttpOnly");
             }

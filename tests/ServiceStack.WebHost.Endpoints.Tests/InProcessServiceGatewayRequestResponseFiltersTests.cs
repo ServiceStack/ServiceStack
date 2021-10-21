@@ -39,7 +39,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         class InProcessAppHost : AppSelfHostBase
         {
-            public InProcessAppHost() : base(typeof(InProcessServiceGatewayRequestResponseFiltersTests).Name, 
+            public InProcessAppHost() : base(nameof(InProcessServiceGatewayRequestResponseFiltersTests), 
                 typeof(ServiceGatewayServices).Assembly) { }
 
             public override void Configure(Container container)

@@ -4,6 +4,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
 #if NETSTANDARD2_0
 using System.Threading.Tasks;
 #endif
@@ -52,6 +55,26 @@ namespace ServiceStack
             for (var i = 0; i < times; i++)
             {
                 list.Add(actionFn(i));
+            }
+            return list;
+        }
+
+        public static async Task TimesAsync(this int times, Func<int,Task> actionFn, CancellationToken token=default)
+        {
+            for (var i = 0; i < times; i++)
+            {
+                token.ThrowIfCancellationRequested();
+                await actionFn(i);
+            }
+        }
+
+        public static async Task<List<T>> TimesAsync<T>(this int times, Func<int,Task<T>> actionFn, CancellationToken token=default)
+        {
+            var list = new List<T>();
+            for (var i = 0; i < times; i++)
+            {
+                token.ThrowIfCancellationRequested();
+                list.Add(await actionFn(i));
             }
             return list;
         }

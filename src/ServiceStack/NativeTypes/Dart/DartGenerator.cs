@@ -11,7 +11,7 @@ namespace ServiceStack.NativeTypes.Dart
     {
         readonly MetadataTypesConfig Config;
         readonly NativeTypesFeature feature;
-        List<string> conflictTypeNames = new List<string>();
+        List<string> conflictTypeNames = new();
         List<MetadataType> allTypes;
         Dictionary<string, MetadataType> allTypesMap;
         private HashSet<string> existingTypeInfos;
@@ -24,17 +24,18 @@ namespace ServiceStack.NativeTypes.Dart
         }
 
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataType> InnerTypeFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
 
-        public static List<string> DefaultImports = new List<string>
-        {
+        public static List<string> DefaultImports = new() {
 //            "dart:collection",  Required for inheriting List<T> / ListBase 
 //            "dart:typed_data",  Required for byte[] / Uint8List
             "package:servicestack/servicestack.dart"
         };
         
-        public static Dictionary<string, string> TypeAliases = new Dictionary<string, string>
-        {
+        public static Dictionary<string, string> TypeAliases = new() {
             {"Object", "dynamic"},
             {"String", "String"},
             {"Boolean", "bool"},
@@ -62,8 +63,7 @@ namespace ServiceStack.NativeTypes.Dart
             {"Type", "String"},
         };
         private static string declaredEmptyString = "\"\"";
-        private static readonly Dictionary<string, string> defaultValues = new Dictionary<string, string>
-        {
+        private static readonly Dictionary<string, string> defaultValues = new() {
             {"String", declaredEmptyString},
             {"string", declaredEmptyString},
             {"Boolean", "false"},
@@ -86,14 +86,14 @@ namespace ServiceStack.NativeTypes.Dart
             {"IntPtr", "0"},
             {"number", "0"},
             {"List", "[]"},
-            {"Byte[]", "new Uint8List(0)"},
-            {"Stream", "new Uint8List(0)"},
-            {"Uint8List", "new Uint8List(0)"},
-            {"DateTime", "new DateTime(0)"},
-            {"DateTimeOffset", "new DateTime(0)"},
+            {"Byte[]", "Uint8List(0)"},
+            {"Stream", "Uint8List(0)"},
+            {"Uint8List", "Uint8List(0)"},
+            {"DateTime", "DateTime(0)"},
+            {"DateTimeOffset", "DateTime(0)"},
         };
         
-        static HashSet<string> BasicJsonTypes = new HashSet<string> {
+        static HashSet<string> BasicJsonTypes = new() {
             nameof(String),
             nameof(Boolean),
             nameof(Guid),
@@ -113,15 +113,15 @@ namespace ServiceStack.NativeTypes.Dart
             "Dictionary<String,String>",
         };
         
-        public static Dictionary<string,string> DartToJsonConverters = new Dictionary<string, string> {
+        public static Dictionary<string,string> DartToJsonConverters = new() {
             { "double", "toDouble" },
-            { "Map<String,String>", "toStringMap" },
+            { "Map<String,String?>", "toStringMap" },
         };
         
         public static bool GenerateServiceStackTypes => IgnoreTypeInfosFor.Count == 0;
 
         //In _builtInTypes servicestack dart library 
-        public static HashSet<string> IgnoreTypeInfosFor = new HashSet<string> {
+        public static HashSet<string> IgnoreTypeInfosFor = new() {
             "dynamic",
             "String",
             "int",
@@ -176,9 +176,16 @@ namespace ServiceStack.NativeTypes.Dart
             nameof(NavItem),
             nameof(GetNavItems),
             nameof(GetNavItemsResponse),
+            nameof(EmptyResponse),
+            nameof(IdResponse),
+            nameof(StringResponse),
+            nameof(StringsResponse),
+            nameof(AuditBase),
         };
         
         public static TypeFilterDelegate TypeFilter { get; set; }
+
+        public static Func<DartGenerator, MetadataType, MetadataPropertyType, string> PropertyTypeFilter { get; set; }
 
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
@@ -236,11 +243,11 @@ namespace ServiceStack.NativeTypes.Dart
 
             var existingTypes = new HashSet<string>();
 
-            var requestTypes = metadata.Operations.Select(x => x.Request).ToHashSet();
+            var requestTypes = metadata.Operations.Select(x => x.Request).ToSet();
             var requestTypesMap = metadata.Operations.ToSafeDictionary(x => x.Request);
             var responseTypes = metadata.Operations
                 .Where(x => x.Response != null)
-                .Select(x => x.Response).ToHashSet();
+                .Select(x => x.Response).ToSet();
             var types = metadata.Types.CreateSortedTypeList();
 
             allTypes = metadata.GetAllTypesOrdered();
@@ -266,8 +273,8 @@ namespace ServiceStack.NativeTypes.Dart
                 .Map(x => x.Name);
             
             //Need to add removed built-in Types
-            this.conflictTypeNames.Add(typeof(QueryDb<>).Name);
             this.conflictTypeNames.Add(typeof(QueryDb<,>).Name);
+            this.conflictTypeNames.Add(typeof(QueryData<,>).Name);
             this.conflictTypeNames.Add(typeof(Tuple<>).Name);
             this.conflictTypeNames.Add(typeof(Tuple<,>).Name);
             this.conflictTypeNames.Add(typeof(Tuple<,,>).Name);
@@ -299,7 +306,7 @@ namespace ServiceStack.NativeTypes.Dart
             existingTypeInfos = new HashSet<string>(IgnoreTypeInfosFor);
             sbTypeInfos = new StringBuilder();
             var dtosName = Config.GlobalNamespace ?? new Uri(Config.BaseUrl).Host;
-            sbTypeInfos.AppendLine().AppendLine("TypeContext _ctx = new TypeContext(library: '" + dtosName.SafeVarRef() + "', types: <String, TypeInfo> {");
+            sbTypeInfos.AppendLine().AppendLine("TypeContext _ctx = TypeContext(library: '" + dtosName.SafeVarRef() + "', types: <String, TypeInfo> {");
 
             //ServiceStack core interfaces
             foreach (var type in allTypes)
@@ -335,6 +342,7 @@ namespace ServiceStack.NativeTypes.Dart
                                         : null;
                                 },
                                 IsRequest = true,
+                                Op = operation,
                             });
 
                         existingTypes.Add(fullTypeName);
@@ -388,6 +396,7 @@ namespace ServiceStack.NativeTypes.Dart
             AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);
 
+            sb.Emit(type, Lang.Dart);
             PreTypeFilter?.Invoke(sb, type);
 
             if (type.IsEnum.GetValueOrDefault())
@@ -426,7 +435,6 @@ namespace ServiceStack.NativeTypes.Dart
                         }
                     }
 
-
                     sb.AppendLine();
                     sb.AppendLine("final int _value;");
                     sb.AppendLine($"const {enumType}._(this._value);");
@@ -448,6 +456,7 @@ namespace ServiceStack.NativeTypes.Dart
                     extends.Add(Type(type.Inherits).InDeclarationType());
 
                 string responseTypeExpression = null;
+                string responseTypeName = null;
 
                 var interfaces = new List<string>();
                 var implStr = options.ImplementsFn?.Invoke();
@@ -465,8 +474,15 @@ namespace ServiceStack.NativeTypes.Dart
 
                         // This is to avoid invalid syntax such as "return new string()"
                         responseTypeExpression = defaultValues.TryGetValue(returnType, out var newReturnInstance)
-                            ? $"createResponse() {{ return {newReturnInstance}; }}"
-                            : $"createResponse() {{ return new {returnType}(); }}";
+                            ? $"createResponse() => {newReturnInstance};"
+                            : $"createResponse() => {DartLiteral(returnType + "()")};";
+                        responseTypeName = $"getResponseTypeName() => \"{returnType}\";";
+                        
+                        var isGeneric = returnType.IndexOf('<') >= 0;
+                        //Don't register non-existent 'T Generic Type
+                        var hasGenericBase = type.Inherits != null && type.Inherits?.Name.IndexOf('`') >= 0;  
+                        if (isGeneric && hasGenericBase)
+                            RegisterType(null, returnType);
                     }
                     else if (implStr == "IReturnVoid")
                     {
@@ -521,11 +537,12 @@ namespace ServiceStack.NativeTypes.Dart
                 sb.AppendLine("{");
 
                 sb = sb.Indent();
+                InnerTypeFilter?.Invoke(sb, type);
 
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest && !isAbstractClass;
                 if (addVersionInfo)
                 {
-                    sb.AppendLine($"int {"Version".PropertyStyle()};");
+                    sb.AppendLine($"int {GetPropertyName("Version")};");
                 }
 
                 if (type.Name == "IReturn`1")
@@ -551,7 +568,7 @@ namespace ServiceStack.NativeTypes.Dart
                     if (addVersionInfo)
                     {
                         props.Insert(0, new MetadataPropertyType {
-                            Name = "Version".PropertyStyle(),
+                            Name = GetPropertyName("Version"),
                             Type = "Int32",
                             TypeNamespace = "System",
                             IsValueType = true,            
@@ -581,7 +598,7 @@ namespace ServiceStack.NativeTypes.Dart
                                 sbBody.Append(typeNameWithoutGenericArgs + "({");
                             else
                                 sbBody.Append(",");
-                            sbBody.Append($"this.{prop.Name.PropertyStyle().PropertyName()}");
+                            sbBody.Append($"this.{GetPropertyName(prop.Name)}");
                             if (!string.IsNullOrEmpty(prop.Value))
                             {
                                 sbBody.Append("=" + prop.Value);
@@ -617,9 +634,9 @@ namespace ServiceStack.NativeTypes.Dart
                         sbBody.AppendLine("        super.fromMap(json);");
                     foreach (var prop in props)
                     {
-                        var propType = DartPropertyType(prop);
+                        var propType = GetPropertyType(prop);
                         var jsonName = prop.Name.PropertyStyle();
-                        var propName = jsonName.PropertyName();
+                        var propName = GetPropertyName(prop.Name);
                         if (UseTypeConversion(prop))
                         {
                             bool registerType = true;
@@ -643,7 +660,7 @@ namespace ServiceStack.NativeTypes.Dart
                                 RegisterPropertyType(prop, propType);
                             }
                             
-                            sbBody.AppendLine($"        {propName} = JsonConverters.fromJson(json['{jsonName}'],'{propType}',context);");
+                            sbBody.AppendLine($"        {propName} = JsonConverters.fromJson(json['{jsonName}'],'{propType}',context!);");
                         }
                         else
                         {
@@ -679,12 +696,12 @@ namespace ServiceStack.NativeTypes.Dart
                                 sbBody.AppendLine(",");
                             }
     
-                            var propType = DartPropertyType(prop);
+                            var propType = GetPropertyType(prop);
                             var jsonName = prop.Name.PropertyStyle();
-                            var propName = jsonName.PropertyName();
+                            var propName = GetPropertyName(prop.Name);
                             if (UseTypeConversion(prop))
                             {
-                                sbBody.Append($"        '{jsonName}': JsonConverters.toJson({propName},'{propType}',context)");
+                                sbBody.Append($"        '{jsonName}': JsonConverters.toJson({propName},'{propType}',context!)");
                             }
                             else
                             {
@@ -701,18 +718,36 @@ namespace ServiceStack.NativeTypes.Dart
                     else
                     {
                         sb.AppendLine("Map<String, dynamic> toJson() => " + 
-                                      (hasDtoBaseClass ? "super.toJson();" : "{};"));
+                            (hasDtoBaseClass ? "super.toJson();" : "{};"));
                     }
                     
                     if (responseTypeExpression != null)
                     {
                         sb.AppendLine(responseTypeExpression);
-                        sb.AppendLine($"String getTypeName() {{ return \"{type.Name}\"; }}");
+                        if (responseTypeName != null)
+                            sb.AppendLine(responseTypeName);
+                    }
+                    if ((type.GenericArgs?.Length ?? 0) == 0)
+                    {
+                        sb.AppendLine($"getTypeName() => \"{typeName}\";");
+                    }
+                    else
+                    {
+                        // Return the reified generic type name instead of the non-existent generic template arg type
+                        var sbGeneric = StringBuilderCacheAlt.Allocate();
+                        foreach (var arg in type.GenericArgs)
+                        {
+                            if (sbGeneric.Length > 0)
+                                sbGeneric.Append(',');
+                            sbGeneric.Append("$").Append(arg.TrimStart('\''));
+                        }
+                        var genericTypeName = type.Name.LeftPart('`') + '<' + StringBuilderCacheAlt.ReturnAndFree(sbGeneric) + '>';
+                        sb.AppendLine($"getTypeName() => \"{genericTypeName}\";");
                     }
 
                     if (isClass)
                     {
-                        sb.AppendLine("TypeContext context = _ctx;");
+                        sb.AppendLine("TypeContext? context = _ctx;");
                     }
                 }
 
@@ -739,18 +774,36 @@ namespace ServiceStack.NativeTypes.Dart
             RegisterType(metaType, dartType, factoryFn);
         }
 
+        public string DartLiteral(string typeName)
+        {
+            // List<T>() is deprecated for literal: <T>[]
+            if (typeName.StartsWith("List<"))
+            {
+                var listLiteral = typeName.Substring("List".Length);
+                return listLiteral.Substring(0,listLiteral.Length - 2) + "[]";
+            }
+            return typeName;
+        }
+
         private void RegisterType(MetadataType metaType, string dartType, string factoryFn = null)
         {
+            dartType = dartType.TrimEnd('?');
             if (existingTypeInfos.Contains(dartType))
                 return;
             existingTypeInfos.Add(dartType);
 
             if (factoryFn == null)
-                factoryFn = $"() => new {dartType}()"; 
+                factoryFn = $"() => {dartType}()";
+
+            if (factoryFn.StartsWith("() => List<"))
+            {
+                var listLiteral = DartLiteral(factoryFn.Substring("() => ".Length));
+                factoryFn = "() => " + listLiteral;
+            }
             
             if (metaType == null)
             {
-                sbTypeInfos.AppendLine($"    '{dartType}': new TypeInfo(TypeOf.Class, create:{factoryFn}),");
+                sbTypeInfos.AppendLine($"    '{dartType}': TypeInfo(TypeOf.Class, create:{factoryFn}),");
 
                 var hasGenericArgs = dartType.IndexOf("<", StringComparison.Ordinal) >= 0;
                 if (hasGenericArgs)
@@ -779,23 +832,42 @@ namespace ServiceStack.NativeTypes.Dart
             if (isGenericTypeDef)
             {
                 var dartGenericBaseType = dartType.LeftPart("<");
-                sbTypeInfos.AppendLine($"    '{dartType}': new TypeInfo(TypeOf.GenericDef,create:() => new {dartGenericBaseType}()),");
+                sbTypeInfos.AppendLine($"    '{dartType}': TypeInfo(TypeOf.GenericDef,create:() => {dartGenericBaseType}()),");
             }
             else if (metaType?.IsInterface == true)
             {
-                sbTypeInfos.AppendLine($"    '{dartType}': new TypeInfo(TypeOf.Interface),");
+                sbTypeInfos.AppendLine($"    '{dartType}': TypeInfo(TypeOf.Interface),");
             }
             else if (metaType?.IsAbstract == true)
             {
-                sbTypeInfos.AppendLine($"    '{dartType}': new TypeInfo(TypeOf.AbstractClass),");
+                sbTypeInfos.AppendLine($"    '{dartType}': TypeInfo(TypeOf.AbstractClass),");
             }
             else if (metaType?.IsEnum == true)
             {
-                sbTypeInfos.AppendLine($"    '{dartType}': new TypeInfo(TypeOf.Enum, enumValues:{dartType}.values),");
+                sbTypeInfos.AppendLine($"    '{dartType}': TypeInfo(TypeOf.Enum, enumValues:{dartType}.values),");
             }
             else
             {
-                sbTypeInfos.AppendLine($"    '{dartType}': new TypeInfo(TypeOf.Class, create:{factoryFn}),");
+                sbTypeInfos.AppendLine($"    '{dartType}': TypeInfo(TypeOf.Class, create:{factoryFn}),");
+            }
+
+            //base classes need to be abstract and can't be instantiated in TypeContext mappings
+            if (metaType.Inherits != null)
+            {
+                //AutoQuery Base types are existing but still need to register the List<Result> type
+                var baseType = metaType.Inherits;
+                if ((baseType.Name.StartsWith("QueryDb`") || baseType.Name.StartsWith("QueryData`"))
+                    && metaType.IsAbstract != true) //Don't register non-existent 'T Generic Type
+                {
+                    var listArgType = baseType.GenericArgs.Last();
+                    var listType = new MetadataType
+                    {
+                        Name = $"List<{listArgType}>",
+                        Namespace = typeof(List<>).Namespace,
+                        GenericArgs = new[] { listArgType },
+                    };
+                    RegisterType(listType, listType.Name);
+                }
             }
         }
 
@@ -822,12 +894,17 @@ namespace ServiceStack.NativeTypes.Dart
                 {
                     if (wasAdded) sb.AppendLine();
 
-                    var propType = DartPropertyType(prop);
+                    var propType = GetPropertyType(prop);
+                    propType = PropertyTypeFilter?.Invoke(this, type, prop) ?? propType;
 
                     wasAdded = AppendComments(sb, prop.Description);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
-                    sb.AppendLine($"{propType} {prop.Name.SafeToken().PropertyStyle().PropertyName()};");
+
+                    sb.Emit(prop, Lang.Dart);
+                    PrePropertyFilter?.Invoke(sb, prop, type);
+                    sb.AppendLine($"{propType}? {GetPropertyName(prop.Name)};");
+                    PostPropertyFilter?.Invoke(sb, prop, type);
                 }
             }
 
@@ -836,11 +913,11 @@ namespace ServiceStack.NativeTypes.Dart
                 if (wasAdded) sb.AppendLine();
 
                 AppendDataMember(sb, null, dataMemberIndex++);
-                sb.AppendLine($"ResponseStatus {nameof(ResponseStatus).PropertyStyle().PropertyName()};");
+                sb.AppendLine($"ResponseStatus? {GetPropertyName(nameof(ResponseStatus))};");
             }
         }
 
-        private string DartPropertyType(MetadataPropertyType prop)
+        public virtual string GetPropertyType(MetadataPropertyType prop)
         {
             var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
             if (propType.EndsWith("?"))
@@ -865,7 +942,7 @@ namespace ServiceStack.NativeTypes.Dart
                 if ((attr.Args == null || attr.Args.Count == 0)
                     && (attr.ConstructorArgs == null || attr.ConstructorArgs.Count == 0))
                 {
-                    sb.AppendLine($"// @{attr.Name}()");
+                    sb.AppendLine($"// @{GetPropertyName(attr.Name)}()");
                 }
                 else
                 {
@@ -918,30 +995,35 @@ namespace ServiceStack.NativeTypes.Dart
             return Type(typeName.Name, typeName.GenericArgs);
         }
 
-        public static HashSet<string> ArrayTypes = new HashSet<string>
-        {
+        public static HashSet<string> ArrayTypes = new() {
             "List`1",
+            "IList`1",
             "IEnumerable`1",
             "ICollection`1",
             "HashSet`1",
             "Queue`1",
+            "ConcurrentQueue`1",
             "Stack`1",
+            "ConcurrentStack`1",
             "IEnumerable",
+            "ArrayList",
         };
 
-        public static HashSet<string> DictionaryTypes = new HashSet<string>
-        {
+        public static HashSet<string> DictionaryTypes = new() {
             "Dictionary`2",
             "IDictionary`2",
             "IOrderedDictionary`2",
+            "ConcurrentDictionary`2",
             "OrderedDictionary",
+            "SortedList`2",
+            "SortedList",
             "StringDictionary",
             "IDictionary",
             "IOrderedDictionary",
+            "Hashtable",
         };
 
-        public static HashSet<string> SetTypes = new HashSet<string>
-        {
+        public static HashSet<string> SetTypes = new() {
             "HashSet`1",
         };
 
@@ -958,7 +1040,7 @@ namespace ServiceStack.NativeTypes.Dart
                 if (ArrayTypes.Contains(type))
                     return $"List<{GenericArg(genericArgs[0])}>".StripNullable();
                 if (DictionaryTypes.Contains(type))
-                    return $"Map<{GenericArg(genericArgs[0])},{GenericArg(genericArgs[1])}>";
+                    return $"Map<{GenericArg(genericArgs[0])},{GenericArg(genericArgs[1])}?>";
                 if (SetTypes.Contains(type))
                     return $"Set<{GenericArg(genericArgs[0])}>".StripNullable();
 
@@ -1200,12 +1282,13 @@ namespace ServiceStack.NativeTypes.Dart
 
             return sb.ToString();
         }
+
+        public string GetPropertyName(string name) => name.SafeToken().PropertyStyle().PropertyName();
     }
     
     public static class DartGeneratorExtensions
     {
-        public static HashSet<string> DartKeyWords = new HashSet<string>
-        {
+        public static HashSet<string> DartKeyWords = new() {
             "context", // IConvertible code-gen property
             "abstract",
             "deferred",

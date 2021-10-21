@@ -37,7 +37,7 @@ namespace ServiceStack
         /// </summary>
         public Func<IHttpResponse, Stream, Task<Stream>> TransformResponse { get; set; }
 
-        public HashSet<string> IgnoreResponseHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+        public HashSet<string> IgnoreResponseHeaders = new(StringComparer.OrdinalIgnoreCase) {
             HttpHeaders.TransferEncoding
         };
 
@@ -81,7 +81,7 @@ namespace ServiceStack
         public Action<IHttpResponse, HttpWebResponse> ProxyResponseFilter { get; set; }
         public Func<IHttpRequest, Stream, Task<Stream>> TransformRequest { get; set; }
         public Func<IHttpResponse, Stream, Task<Stream>> TransformResponse { get; set; }
-        public HashSet<string> IgnoreResponseHeaders { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+        public HashSet<string> IgnoreResponseHeaders { get; set; } = new(StringComparer.OrdinalIgnoreCase) {
             HttpHeaders.TransferEncoding
         };
 
@@ -136,7 +136,7 @@ namespace ServiceStack
 
             PclExport.Instance.SetUserAgent(webReq, httpReq.UserAgent);
 
-#if NET45
+#if NET45 || NET472
             webReq.Referer = httpReq.UrlReferrer?.ToString();
             webReq.ServicePoint.Expect100Continue = false;
 
@@ -158,7 +158,8 @@ namespace ServiceStack
                 {
                     if (header.StartsWith(":"))
                     {
-                        Log.Warn($"Ignoring Invalid Proxy Request Header '{header}'");
+                        if (Log.IsDebugEnabled)
+                            Log.Debug($"Ignoring Invalid Proxy Request Header '{header}'");
                         continue;
                     }
                     

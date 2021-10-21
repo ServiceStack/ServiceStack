@@ -104,13 +104,6 @@ namespace ServiceStack.RabbitMq
         /// </summary>
         public string[] PriorityQueuesWhitelist { get; set; }
 
-        [Obsolete("Use PriorityQueuesWhitelist")]
-        public string[] PriortyQueuesWhitelist
-        {
-            get => PriorityQueuesWhitelist;
-            set => PriorityQueuesWhitelist = value;
-        }
-
         /// <summary>
         /// Don't listen on any Priority Queues
         /// </summary>

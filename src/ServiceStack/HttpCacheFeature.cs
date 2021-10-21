@@ -100,13 +100,12 @@ namespace ServiceStack
             var responseBytes = dto as byte[];
             if (responseBytes == null)
             {
-                if (dto is string rawStr)
-                    responseBytes = rawStr.ToUtf8Bytes();
-                else
-                {
-                    if (dto is Stream stream)
-                        responseBytes = stream.ReadFully();
-                }
+                responseBytes = dto switch {
+                    string rawStr => rawStr.ToUtf8Bytes(),
+                    MemoryStream ms => await ms.ReadFullyAsync().ConfigAwait(),
+                    Stream stream => await stream.ReadFullyAsync().ConfigAwait(),
+                    _ => responseBytes
+                };
             }
 
             var encoding = !cacheInfo.NoCompression

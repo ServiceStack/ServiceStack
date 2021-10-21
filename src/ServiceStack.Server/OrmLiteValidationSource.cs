@@ -6,6 +6,7 @@ using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -57,24 +58,31 @@ namespace ServiceStack
             db.CreateTableIfNotExists<ValidationRule>();
         }
 
+        public async Task<List<ValidationRule>> GetAllValidateRulesAsync()
+        {
+            using var db = OpenDbConnection();
+            var rows = await db.SelectAsync<ValidationRule>().ConfigAwait();
+            return rows;
+        }
+
         public async Task<List<ValidationRule>> GetAllValidateRulesAsync(string typeName)
         {
             using var db = OpenDbConnection();
-            var rows = await db.SelectAsync<ValidationRule>(x => x.Type == typeName);
+            var rows = await db.SelectAsync<ValidationRule>(x => x.Type == typeName).ConfigAwait();
             return rows;
         }
 
         public async Task SaveValidationRulesAsync(List<ValidationRule> validateRules)
         {
             using var db = OpenDbConnection();
-            await db.SaveAllAsync(validateRules);
+            await db.SaveAllAsync(validateRules).ConfigAwait();
             ClearValidationSourceCache();
         }
 
         public async Task<List<ValidationRule>> GetValidateRulesByIdsAsync(params int[] ids)
         {
             using var db = OpenDbConnection();
-            var rows = await db.SelectByIdsAsync<ValidationRule>(ids);
+            var rows = await db.SelectByIdsAsync<ValidationRule>(ids).ConfigAwait();
             return rows;
         }
 
@@ -83,7 +91,7 @@ namespace ServiceStack
         public async Task DeleteValidationRulesAsync(params int[] ids)
         {
             using var db = OpenDbConnection();
-            await db.DeleteByIdsAsync<ValidationRule>(ids);
+            await db.DeleteByIdsAsync<ValidationRule>(ids).ConfigAwait();
             ClearValidationSourceCache();
         }
 

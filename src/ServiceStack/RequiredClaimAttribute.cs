@@ -36,12 +36,8 @@ namespace ServiceStack
             if (HasClaim(req, Type, Value))
                 return;
 
-            if (DoHtmlRedirectAccessDeniedIfConfigured(req, res))
-                return;
-
-            res.StatusCode = (int)HttpStatusCode.Forbidden;
-            res.StatusDescription = ErrorMessages.ClaimDoesNotExistFmt.Fmt(Type, Value).Localize(req);
-            await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto);
+            await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto,
+                HttpStatusCode.Forbidden, ErrorMessages.ClaimDoesNotExistFmt.LocalizeFmt(req, Type, Value));
         }
 
         public static bool HasClaim(IRequest req, string type, string value)

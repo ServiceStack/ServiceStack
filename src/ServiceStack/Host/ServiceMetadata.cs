@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
+using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
 using ServiceStack.FluentValidation;
 using ServiceStack.NativeTypes;
@@ -37,8 +39,11 @@ namespace ServiceStack.Host
 
         public void Add(Type serviceType, Type requestType, Type responseType)
         {
-            if (requestType.IsArray) 
-                return; //Custom AutoBatched requests
+            if (requestType.IsArray) //Custom AutoBatched requests
+            {
+                this.ServiceTypes.Add(serviceType);
+                return;
+            }
             
             this.ServiceTypes.Add(serviceType);
             this.RequestTypes.Add(requestType);
@@ -52,7 +57,7 @@ namespace ServiceStack.Host
                 .SelectMany(x => x.AllAttributes().OfType<IResponseFilterBase>()).ToList();
 
             var authAttrs = reqFilterAttrs.OfType<AuthenticateAttribute>().ToList();
-            var actions = GetImplementedActions(serviceType, requestType);
+            var actions = serviceType.GetRequestActions(requestType);
             authAttrs.AddRange(actions.SelectMany(x => x.AllAttributes<AuthenticateAttribute>()));
             var tagAttrs = requestType.AllAttributes<TagAttribute>().ToList();
 
@@ -62,7 +67,7 @@ namespace ServiceStack.Host
                 RequestType = requestType,
                 ResponseType = responseType,
                 RestrictTo = restrictTo,
-                Actions = actions.Map(x => x.Name.ToUpper()),
+                Actions = actions.Select(x => x.NameUpper).Distinct().ToList(),
                 Routes = new List<RestPath>(),
                 RequestFilterAttributes = reqFilterAttrs,
                 ResponseFilterAttributes = resFilterAttrs,
@@ -146,7 +151,7 @@ namespace ServiceStack.Host
             return op;
         }
 
-        public List<MethodInfo> GetImplementedActions(Type serviceType, Type requestType)
+        public List<ActionMethod> GetImplementedActions(Type serviceType, Type requestType)
         {
             if (!typeof(IService).IsAssignableFrom(serviceType))
                 throw new NotSupportedException("All Services must implement IService");
@@ -207,12 +212,17 @@ namespace ServiceStack.Host
 
         public List<string> GetOperationNamesForMetadata(IRequest httpReq)
         {
-            return GetAllOperationNames();
+            return Operations
+                .Where(x => !x.RequestType.ExcludesFeature(Feature.Metadata))
+                .Select(x => x.RequestType.GetOperationName()).OrderBy(operation => operation).ToList();
         }
 
         public List<string> GetOperationNamesForMetadata(IRequest httpReq, Format format)
         {
-            return GetAllOperationNames();
+            var formatRequestAttr = format.ToRequestAttribute();
+            return Operations
+                .Where(x => !x.RequestType.ExcludesFeature(Feature.Metadata) && x.RestrictTo.CanShowTo(formatRequestAttr))
+                .Select(x => x.RequestType.GetOperationName()).OrderBy(operation => operation).ToList();
         }
 
         public bool IsAuthorized(Operation operation, IRequest req, IAuthSession session)
@@ -226,16 +236,51 @@ namespace ServiceStack.Host
             var authRepo = HostContext.AppHost.GetAuthRepository(req);
             using (authRepo as IDisposable)
             {
-                if (!operation.RequiredRoles.IsEmpty() && !operation.RequiredRoles.All(x => session.HasRole(x, authRepo)))
+                var allRoles = session.GetRoles(authRepo);
+                if (!operation.RequiredRoles.IsEmpty() && !operation.RequiredRoles.All(allRoles.Contains))
                     return false;
 
-                if (!operation.RequiredPermissions.IsEmpty() && !operation.RequiredPermissions.All(x => session.HasPermission(x, authRepo)))
+                var allPerms = session.GetPermissions(authRepo);
+                if (!operation.RequiredPermissions.IsEmpty() && !operation.RequiredPermissions.All(allPerms.Contains))
                     return false;
 
-                if (!operation.RequiresAnyRole.IsEmpty() && !operation.RequiresAnyRole.Any(x => session.HasRole(x, authRepo)))
+                if (!operation.RequiresAnyRole.IsEmpty() && !operation.RequiresAnyRole.Any(allRoles.Contains))
                     return false;
 
-                if (!operation.RequiresAnyPermission.IsEmpty() && !operation.RequiresAnyPermission.Any(x => session.HasPermission(x, authRepo)))
+                if (!operation.RequiresAnyPermission.IsEmpty() && !operation.RequiresAnyPermission.Any(allPerms.Contains))
+                    return false;
+
+                return true;
+            }
+        }
+
+        public async Task<bool> IsAuthorizedAsync(Operation operation, IRequest req, IAuthSession session)
+        {
+            if (HostContext.HasValidAuthSecret(req))
+                return true;
+
+            if (operation.RequiresAuthentication && !session.IsAuthenticated)
+                return false;
+
+            var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
+#if NET472 || NETSTANDARD2_0
+            await using (authRepo as IAsyncDisposable)
+#else
+            using (authRepo as IDisposable)
+#endif
+            {
+                var allRoles = await session.GetRolesAsync(authRepo).ConfigAwait();
+                if (!operation.RequiredRoles.IsEmpty() && !operation.RequiredRoles.All(allRoles.Contains))
+                    return false;
+
+                var allPerms = await session.GetPermissionsAsync(authRepo).ConfigAwait();
+                if (!operation.RequiredPermissions.IsEmpty() && !operation.RequiredPermissions.All(allPerms.Contains))
+                    return false;
+
+                if (!operation.RequiresAnyRole.IsEmpty() && !operation.RequiresAnyRole.Any(allRoles.Contains))
+                    return false;
+
+                if (!operation.RequiresAnyPermission.IsEmpty() && !operation.RequiresAnyPermission.Any(allPerms.Contains))
                     return false;
 
                 return true;
@@ -655,9 +700,39 @@ namespace ServiceStack.Host
             return soapTypes;
         }
 #endif
+
+        public List<string> GetAllRoles()
+        {
+            var to = new List<string> {
+                RoleNames.Admin
+            };
+
+            foreach (var op in OperationsMap.Values)
+            {
+                op.RequiredRoles.Each(x => to.AddIfNotExists(x));
+                op.RequiresAnyRole.Each(x => to.AddIfNotExists(x));
+            }
+
+            return to;
+        }
+
+        public List<string> GetAllPermissions()
+        {
+            var to = new List<string> {
+            };
+
+            foreach (var op in OperationsMap.Values)
+            {
+                op.RequiredPermissions.Each(x => to.AddIfNotExists(x));
+                op.RequiresAnyPermission.Each(x => to.AddIfNotExists(x));
+            }
+
+            return to;
+        }
+        
     }
 
-    public class Operation
+    public class Operation : ICloneable
     {
         public string Name => RequestType.GetOperationName();
 
@@ -681,6 +756,25 @@ namespace ServiceStack.Host
         
         public List<ITypeValidator> RequestTypeValidationRules { get; private set; }
         public List<IValidationRule> RequestPropertyValidationRules { get; private set; }
+
+        object ICloneable.Clone() => Clone();
+        public Operation Clone() => new() {
+            RequestType = RequestType,
+            ServiceType = ServiceType,
+            ResponseType = ResponseType,
+            RestrictTo = RestrictTo,
+            Actions = Actions?.ToList(),
+            Routes = Routes?.ToList(),
+            RequestFilterAttributes = RequestFilterAttributes,
+            RequiresAuthentication = RequiresAuthentication,
+            RequiredRoles = RequiredRoles?.ToList(),
+            RequiresAnyRole = RequiresAnyRole?.ToList(),
+            RequiredPermissions = RequiredPermissions?.ToList(),
+            RequiresAnyPermission = RequiresAnyPermission?.ToList(),
+            Tags = Tags?.ToList(),
+            RequestTypeValidationRules = RequestTypeValidationRules?.ToList(),
+            RequestPropertyValidationRules = RequestPropertyValidationRules?.ToList(),
+        };
 
         public void AddRequestTypeValidationRules(List<ITypeValidator> typeValidators)
         {

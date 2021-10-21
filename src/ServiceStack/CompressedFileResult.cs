@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -42,13 +43,12 @@ namespace ServiceStack
 
         public async Task WriteToAsync(Stream responseStream, CancellationToken token = new CancellationToken())
         {
-            using (var fs = new FileStream(this.FilePath, FileMode.Open, FileAccess.Read))
-            {
-                fs.Position = Adler32ChecksumLength;
+            using var fs = new FileStream(this.FilePath, FileMode.Open, FileAccess.Read) {
+                Position = Adler32ChecksumLength
+            };
 
-                await fs.CopyToAsync(responseStream, token);
-                await responseStream.FlushAsync(token);
-            }
+            await fs.CopyToAsync(responseStream, token).ConfigAwait();
+            await responseStream.FlushAsync(token).ConfigAwait();
         }
     }
 }

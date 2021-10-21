@@ -93,9 +93,9 @@ namespace ServiceStack
         private static Dictionary<Type, Func<IServiceGateway, object, CancellationToken, Task<object>>> LateBoundSendAsyncFns =
             new Dictionary<Type, Func<IServiceGateway, object, CancellationToken, Task<object>>>();
 
-        internal static Task<object> SendObjectAsync<TResponse>(IServiceGateway client, object request, CancellationToken token)
+        internal static async Task<object> SendObjectAsync<TResponse>(IServiceGateway client, object request, CancellationToken token)
         {
-            return client.SendAsync<TResponse>(request, token).ContinueWith(x => (object)x.Result, token);
+            return await client.SendAsync<TResponse>(request, token);
         }
     }
 

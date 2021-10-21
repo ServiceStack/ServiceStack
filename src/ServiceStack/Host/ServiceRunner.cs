@@ -108,9 +108,12 @@ namespace ServiceStack.Host
             try
             {
                 BeforeEachRequest(req, requestDto, instance);
+                if (instance is IServiceBeforeFilterAsync beforeAsync)
+                    await beforeAsync.OnBeforeExecuteAsync(requestDto);
 
                 var res = req.Response;
-                var container = HostContext.Container;
+                var appHost = HostContext.AssertAppHost();
+                var container = appHost.Container;
 
                 if (RequestFilters != null)
                 {
@@ -122,7 +125,7 @@ namespace ServiceStack.Host
                         if (attrInstance is IHasRequestFilter filterSync)
                             filterSync.RequestFilter(req, res, requestDto);
                         else if (attrInstance is IHasRequestFilterAsync filterAsync)
-                            await filterAsync.RequestFilterAsync(req, res, requestDto);
+                            await filterAsync.RequestFilterAsync(req, res, requestDto).ConfigAwait();
 
                         AppHost.Release(attrInstance);
                         if (res.IsClosed) 
@@ -131,8 +134,10 @@ namespace ServiceStack.Host
                 }
 
                 var response = AfterEachRequest(req, requestDto, ServiceAction(instance, requestDto), instance);
+                if (instance is IServiceAfterFilterAsync afterAsync)
+                    response = await afterAsync.OnAfterExecuteAsync(response);
 
-                if (HostContext.StrictMode)
+                if (appHost.Config.StrictMode == true)
                 {
                     if (response != null && response.GetType().IsValueType)
                         throw new StrictModeException(
@@ -146,15 +151,27 @@ namespace ServiceStack.Host
                     if (taskResponse.Status == TaskStatus.Created)
                         taskResponse.Start();
 
-                    await taskResponse;
+                    await taskResponse.ConfigAwait();
                     response = taskResponse.GetResult();
                 }
+#if NET472 || NETSTANDARD2_0
+                else if (response is ValueTask<object> valueTaskResponse)
+                {
+                    response = await valueTaskResponse;
+                }
+                else if (response is ValueTask valueTaskVoid)
+                {
+                    await valueTaskVoid;
+                    response = null;
+                }
+#endif
+                
                 LogRequest(req, requestDto, response);
 
                 if (response is IHttpError error)
                 {
                     var ex = (Exception) error;
-                    var result = await HandleExceptionAsync(req, requestDto, ex, instance);
+                    var result = await HandleExceptionAsync(req, requestDto, ex, instance).ConfigAwait();
 
                     if (result == null)
                         throw ex;
@@ -172,7 +189,7 @@ namespace ServiceStack.Host
                         if (attrInstance is IHasResponseFilter filter)
                             filter.ResponseFilter(req, res, response);
                         else if (attrInstance is IHasResponseFilterAsync filterAsync)
-                            await filterAsync.ResponseFilterAsync(req, res, response);
+                            await filterAsync.ResponseFilterAsync(req, res, response).ConfigAwait();
 
                         AppHost.Release(attrInstance);
 
@@ -186,7 +203,7 @@ namespace ServiceStack.Host
             catch (Exception ex)
             {
                 //Sync Exception Handling
-                var result = await HandleExceptionAsync(req, requestDto, ex, instance);
+                var result = await HandleExceptionAsync(req, requestDto, ex, instance).ConfigAwait();
 
                 if (result == null)
                     throw;
@@ -228,9 +245,9 @@ namespace ServiceStack.Host
 
         public virtual async Task<object> HandleExceptionAsync(IRequest req, TRequest requestDto, Exception ex, object service)
         {
-            var errorResponse = (service is IServiceErrorFilter filter ? await filter.OnExceptionAsync(requestDto, ex) : null)
-                ?? await HandleExceptionAsync(req, requestDto, ex)
-                ?? await HostContext.RaiseServiceException(req, requestDto, ex)
+            var errorResponse = (service is IServiceErrorFilter filter ? await filter.OnExceptionAsync(requestDto, ex).ConfigAwait() : null)
+                ?? await HandleExceptionAsync(req, requestDto, ex).ConfigAwait()
+                ?? await HostContext.RaiseServiceException(req, requestDto, ex).ConfigAwait()
                 ?? DtoUtils.CreateErrorResponse(requestDto, ex);
 
             AfterEachRequest(req, requestDto, errorResponse ?? ex, service);

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using ServiceStack.DataAnnotations;
@@ -727,12 +728,12 @@ namespace ServiceStack.Script
 
         static string MethodNotExists(string methodName) => $"Method {methodName} does not exist"; 
 
-        public MemoryVirtualFiles vfsMemory() => new MemoryVirtualFiles();
+        public MemoryVirtualFiles vfsMemory() => new();
 
-        public FileSystemVirtualFiles vfsFileSystem(string dirPath) => new FileSystemVirtualFiles(dirPath);
+        public FileSystemVirtualFiles vfsFileSystem(string dirPath) => new(dirPath);
         
-        public GistVirtualFiles vfsGist(string gistId) => new GistVirtualFiles(gistId);
-        public GistVirtualFiles vfsGist(string gistId, string accessToken) => new GistVirtualFiles(gistId, accessToken);
+        public GistVirtualFiles vfsGist(string gistId) => new(gistId);
+        public GistVirtualFiles vfsGist(string gistId, string accessToken) => new(gistId, accessToken);
 
         public string osPaths(string path) => Env.IsWindows
             ? path.Replace('/', '\\')
@@ -803,19 +804,17 @@ namespace ServiceStack.Script
         public async Task includeFile(ScriptScopeContext scope, string virtualPath)
         {
             var file = ResolveFile(nameof(includeFile), scope, virtualPath);
-            using (var reader = file.OpenRead())
-            {
-                await reader.CopyToAsync(scope.OutputStream);
-            }
+            using var reader = file.OpenRead();
+            await reader.CopyToAsync(scope.OutputStream).ConfigAwait();
         }
 
         public async Task ifDebugIncludeScript(ScriptScopeContext scope, string virtualPath)
         {
             if (scope.Context.DebugMode)
             {
-                await scope.OutputStream.WriteAsync("<script>");
-                await includeFile(scope, virtualPath);
-                await scope.OutputStream.WriteAsync("</script>");
+                await scope.OutputStream.WriteAsync("<script>").ConfigAwait();
+                await includeFile(scope, virtualPath).ConfigAwait();
+                await scope.OutputStream.WriteAsync("</script>").ConfigAwait();
             }
         }
 
@@ -962,22 +961,17 @@ namespace ServiceStack.Script
 
             if (scopedParams.TryRemove("data", out object data))
             {
-                if (webReq.Method == null)
-                    webReq.Method = HttpMethods.Post;
-                    
                 if (webReq.ContentType == null)
                     webReq.ContentType = MimeTypes.FormUrlEncoded;
 
                 var body = ConvertDataToString(data, webReq.ContentType);
-                using (var stream = await webReq.GetRequestStreamAsync())
-                {
-                    await stream.WriteAsync(body);
-                }
+                using var stream = await webReq.GetRequestStreamAsync();
+                await stream.WriteAsync(body);
             }
 
-            using (var webRes = await webReq.GetResponseAsync())
-            using (var stream = webRes.GetResponseStream())
+            using var webRes = await webReq.GetResponseAsync();
             {
+                using var stream = webRes.GetResponseStream();
                 await stream.CopyToAsync(scope.OutputStream);
             }
         }
@@ -1028,12 +1022,10 @@ namespace ServiceStack.Script
             var scopedParams = scope.AssertOptions(nameof(urlTextContents), options);
             var webReq = postWebRequestSync(url, scopedParams);
 
-            using (var webRes = webReq.GetResponse())
-            using (var stream = webRes.GetResponseStream())
-            {
-                var ret = stream.ReadToEnd();
-                return ret;
-            }
+            using var webRes = webReq.GetResponse();
+            using var stream = webRes.GetResponseStream();
+            var ret = stream.ReadToEnd();
+            return ret;
         }
 
         public ReadOnlyMemory<byte> urlBytesContents(ScriptScopeContext scope, string url, object options)
@@ -1041,12 +1033,10 @@ namespace ServiceStack.Script
             var scopedParams = scope.AssertOptions(nameof(urlTextContents), options);
             var webReq = postWebRequestSync(url, scopedParams);
 
-            using (var webRes = webReq.GetResponse())
-            using (var stream = webRes.GetResponseStream())
-            {
-                var ret = stream.ReadFullyAsMemory();
-                return ret;
-            }
+            using var webRes = webReq.GetResponse();
+            using var stream = webRes.GetResponseStream();
+            var ret = stream.ReadFullyAsMemory();
+            return ret;
         }
 
         private static string ConvertDataTypeToContentType(string dataType)
@@ -1453,6 +1443,308 @@ namespace ServiceStack.Script
             return null;
         }
 
-        public void exit(int exitCode) => Environment.Exit(exitCode);
+        public StopExecution exit(int exitCode)
+        {
+            Environment.Exit(exitCode);
+            return StopExecution.Value;
+        }
+
+        public IgnoreResult inspectVars(object vars)
+        {
+            Inspect.vars(vars);
+            return IgnoreResult.Value;
+        }
+
+        private static string check(string target) => 
+            string.IsNullOrWhiteSpace(target?.Replace("\"","")) ? null : target;
+        private static string winpath(string path) => path?.Replace('/', '\\');
+        private static string unixpath(string path) => path?.Replace('\\', '/');
+
+        public string mv(ScriptScopeContext scope, string from, string to)
+        {
+            _ = check(from) ?? throw new ArgumentNullException(nameof(from));
+            _ = check(to) ?? throw new ArgumentNullException(nameof(to));
+            return Env.IsWindows
+                ? sh(scope, $"MOVE /Y {winpath(from)} {winpath(to)}")
+                : sh(scope, $"mv -f {unixpath(from)} {unixpath(to)}");
+        }
+        public string cp(ScriptScopeContext scope, string from, string to)
+        {
+            _ = check(from) ?? throw new ArgumentNullException(nameof(from));
+            _ = check(to) ?? throw new ArgumentNullException(nameof(to));
+            return Env.IsWindows
+                ? sh(scope, $"COPY /Y {winpath(from)} {winpath(to)}")
+                : sh(scope, $"cp -f {unixpath(from)} {unixpath(to)}");
+        }
+        public string xcopy(ScriptScopeContext scope, string from, string to)
+        {
+            _ = check(from) ?? throw new ArgumentNullException(nameof(from));
+            _ = check(to) ?? throw new ArgumentNullException(nameof(to));
+            return Env.IsWindows
+                ? sh(scope, $"XCOPY /E /H {winpath(from)} {winpath(to)}")
+                : sh(scope, $"cp -R {unixpath(from)} {unixpath(to)}");
+        }
+        public string rm(ScriptScopeContext scope, string from, string to)
+        {
+            _ = check(from) ?? throw new ArgumentNullException(nameof(from));
+            _ = check(to) ?? throw new ArgumentNullException(nameof(to));
+            return Env.IsWindows
+                ? sh(scope, $"DEL /y {winpath(from)} {winpath(to)}")
+                : sh(scope, $"rm -f {unixpath(from)} {unixpath(to)}");
+        }
+        public string rmdir(ScriptScopeContext scope, string target)
+        {
+            _ = check(target) ?? throw new ArgumentNullException(nameof(target));
+            return Env.IsWindows
+                ? sh(scope, $"RMDIR /Q /S {winpath(target)}")
+                : sh(scope, $"rm -rf {unixpath(target)}");
+        }
+        public string mkdir(ScriptScopeContext scope, string target)
+        {
+            _ = check(target) ?? throw new ArgumentNullException(nameof(target));
+            return Env.IsWindows
+                ? sh(scope, $"MKDIR {winpath(target)}")
+                : sh(scope, $"mkdir -p {unixpath(target)}");
+        }
+        public string cat(ScriptScopeContext scope, string target)
+        {
+            _ = check(target) ?? throw new ArgumentNullException(nameof(target));
+            return Env.IsWindows
+                ? sh(scope, $"type {winpath(target)}")
+                : sh(scope, $"cat {unixpath(target)}");
+        }
+        public string touch(ScriptScopeContext scope, string target)
+        {
+            _ = check(target) ?? throw new ArgumentNullException(nameof(target));
+            return Env.IsWindows
+                ? sh(scope, $"CALL >> {winpath(target)}")
+                : sh(scope, $"touch {unixpath(target)}");
+        }
+        
+        public FileScripts File() => new();
+        public DirectoryScripts Directory() => new();
+
+        static string HexHash(HashAlgorithm hash, string s) => HexHash(hash, s.ToUtf8Bytes());
+        static string HexHash(HashAlgorithm hash, byte[] bytes)
+        {
+            using var _ = hash;
+            return bytes == null || bytes.Length == 0 ? null : _.ComputeHash(bytes).ToHex();
+        }
+        public string sha1(object target) => target is string s
+            ? HexHash(new SHA1Managed(), s)
+            : target is byte[] b
+                ? HexHash(new SHA1Managed(), b)
+                : throw new NotSupportedException(target?.GetType().Name);
+        public string sha256(object target) => target is string s
+            ? HexHash(SHA256.Create(), s)
+            : target is byte[] b
+                ? HexHash(SHA256.Create(), b)
+                : throw new NotSupportedException(target?.GetType().Name);
+        public string sha512(object target) => target is string s
+            ? HexHash(SHA512.Create(), s)
+            : target is byte[] b
+                ? HexHash(SHA512.Create(), b)
+                : throw new NotSupportedException(target?.GetType().Name);
+        
+        public IgnoreResult Delete(string path) => System.IO.File.Exists(path)
+            ? File().Delete(path)
+            : System.IO.Directory.Exists(path)
+                ? Directory().Delete(path)
+                : IgnoreResult.Value;
+        public IgnoreResult Delete(IOScript os, string path) => os.Delete(path);
+        
+        public bool Exists(string path) => System.IO.File.Exists(path) || System.IO.Directory.Exists(path);
+        public bool Exists(IOScript os, string path) => os.Exists(path);
+
+        public IgnoreResult Move(string from, string to) => System.IO.File.Exists(from)
+            ? File().Move( from, to)
+            : System.IO.Directory.Exists(from)
+                ? Directory().Move( from, to)
+                : IgnoreResult.Value;
+        public IgnoreResult Move(IOScript os, string from, string to) => os.Move( from, to);
+
+        public IgnoreResult Copy(string from, string to) => System.IO.File.Exists(from)
+            ? File().Copy( from, to)
+            : System.IO.Directory.Exists(from)
+                ? Directory().Copy(from, to)
+                : IgnoreResult.Value;
+        public IgnoreResult Copy(IOScript os, string from, string to) => os.Copy( from, to);
+        
+        public IgnoreResult Create(string from, string to) => File().Copy( from, to);
+        public IgnoreResult Create(FileScripts fs, string from, string to) => fs.Copy( from, to);
+        
+        public IgnoreResult Decrypt(string path) => File().Decrypt( path);
+        public IgnoreResult Decrypt(FileScripts fs, string path) => fs.Decrypt( path);
+        public IgnoreResult Encrypt(string path) => File().Encrypt( path);
+        public IgnoreResult Encrypt(FileScripts fs, string path) => fs.Encrypt( path);
+        
+        public IgnoreResult Replace(string from, string to, string backup) => File().Replace( from, to, backup);
+        public IgnoreResult Replace(FileScripts fs, string from, string to, string backup) => fs.Replace( from, to, backup);
+
+        public byte[] ReadAllBytes(string path) => File().ReadAllBytes(path);
+        public byte[] ReadAllBytes(FileScripts fs, string path) => fs.ReadAllBytes(path);
+        public string[] ReadAllLines(string path) => File().ReadAllLines(path);
+        public string[] ReadAllLines(FileScripts fs, string path) => fs.ReadAllLines(path);
+        public string ReadAllText(string path) => File().ReadAllText(path);
+        public string ReadAllText(FileScripts fs, string path) => fs.ReadAllText(path);
+
+        public IgnoreResult WriteAllBytes(string path, byte[] bytes) => File().WriteAllBytes(path, bytes);
+        public IgnoreResult WriteAllBytes(FileScripts fs, string path, byte[] bytes) => fs.WriteAllBytes(path, bytes);
+        public IgnoreResult WriteAllLines(string path, string[] lines) => File().WriteAllLines(path, lines);
+        public IgnoreResult WriteAllLines(FileScripts fs, string path, string[] lines) => fs.WriteAllLines(path, lines);
+        public IgnoreResult WriteAllText(string path, string text) => File().WriteAllText(path, text);
+        public IgnoreResult WriteAllText(FileScripts fs, string path, string text) => fs.WriteAllText(path, text);
+        
+        public IgnoreResult AppendAllLines(string path, string[] lines) => File().AppendAllLines(path, lines);
+        public IgnoreResult AppendAllLines(FileScripts fs, string path, string[] lines) => fs.AppendAllLines(path, lines);
+        public IgnoreResult AppendAllText(string path, string text) => File().AppendAllText(path, text);
+        public IgnoreResult AppendAllText(FileScripts fs, string path, string text) => fs.AppendAllText(path, text);
+        
+        public IgnoreResult CreateDirectory(string path) => Directory().CreateDirectory(path);
+        public IgnoreResult CreateDirectory(DirectoryScripts ds, string path) => ds.CreateDirectory(path);
+
+        public string[] GetDirectories(string path) => Directory().GetDirectories(path);
+        public string[] GetDirectories(DirectoryScripts ds, string path) => ds.GetDirectories(path);
+        public string[] GetFiles(string path) => Directory().GetFiles(path);
+        public string[] GetFiles(DirectoryScripts ds, string path) => ds.GetFiles(path);
+        public string[] GetLogicalDrives() => Directory().GetLogicalDrives();
+        public string[] GetLogicalDrives(DirectoryScripts ds) => ds.GetLogicalDrives();
+        public string GetCurrentDirectory() => Directory().GetCurrentDirectory();
+        public string GetCurrentDirectory(DirectoryScripts ds) => ds.GetCurrentDirectory();
+        public string GetDirectoryRoot(string path) => Directory().GetDirectoryRoot(path);
+        public string GetDirectoryRoot(DirectoryScripts ds, string path) => ds.GetDirectoryRoot(path);
+    }
+
+    public interface IOScript
+    {
+        IgnoreResult Delete(string path);
+        bool Exists(string target);
+        IgnoreResult Move(string from, string to);
+        IgnoreResult Copy(string from, string to);
+    }
+    public class FileScripts : IOScript
+    {
+        public IgnoreResult Copy(string from, string to)
+        {
+            File.Copy(from, to);
+            return IgnoreResult.Value;
+        }
+        public IgnoreResult Create(string path)
+        {
+            using var _ = File.Create(path);
+            return IgnoreResult.Value;
+        }
+        public IgnoreResult Decrypt(string path)
+        {
+            File.Decrypt(path);
+            return IgnoreResult.Value;
+        }
+        public IgnoreResult Delete(string path)
+        {
+            File.Delete(path);
+            return IgnoreResult.Value;
+        }
+        public IgnoreResult Encrypt(string path)
+        {
+            File.Encrypt(path);
+            return IgnoreResult.Value;
+        }
+        public bool Exists(string path) => File.Exists(path);
+        public IgnoreResult Move(string from, string to)
+        {
+            File.Move(from, to);
+            return IgnoreResult.Value;
+        }
+        public IgnoreResult Replace(string from, string to, string backup)
+        {
+            File.Replace(from, to, backup);
+            return IgnoreResult.Value;
+        }
+        public byte[] ReadAllBytes(string path) => File.ReadAllBytes(path);
+        public string[] ReadAllLines(string path) => File.ReadAllLines(path);
+        public string ReadAllText(string path) => File.ReadAllText(path);
+        public IgnoreResult WriteAllBytes(string path, byte[] bytes)
+        {
+            File.WriteAllBytes(path, bytes);
+            return IgnoreResult.Value;
+        }
+        public IgnoreResult WriteAllLines(string path, string[] lines)
+        {
+            File.WriteAllLines(path, lines);
+            return IgnoreResult.Value;
+        }
+        public IgnoreResult WriteAllText(string path, string text)
+        {
+            File.WriteAllText(path, text);
+            return IgnoreResult.Value;
+        }
+        public IgnoreResult AppendAllLines(string path, string[] lines)
+        {
+            File.AppendAllLines(path, lines);
+            return IgnoreResult.Value;
+        }
+        public IgnoreResult AppendAllText(string path, string text)
+        {
+            File.AppendAllText(path, text);
+            return IgnoreResult.Value;
+        }
+    }
+    public class DirectoryScripts : IOScript
+    {
+        public IgnoreResult CreateDirectory(string path)
+        {
+            Directory.CreateDirectory(path);
+            return IgnoreResult.Value;
+        }
+        public IgnoreResult Delete(string path)
+        {
+            FileSystemVirtualFiles.DeleteDirectoryRecursive(path);
+            return IgnoreResult.Value;
+        }
+        public bool Exists(string path) => Directory.Exists(path);
+        public string[] GetDirectories(string path) => Directory.GetDirectories(path);
+        public string[] GetFiles(string path) => Directory.GetFiles(path);
+        public string[] GetLogicalDrives() => Directory.GetLogicalDrives();
+        public string[] GetFileSystemEntries(string path) => Directory.GetFileSystemEntries(path);
+        public DirectoryInfo GetParent(string path) => Directory.GetParent(path);
+        public string GetCurrentDirectory() => Directory.GetCurrentDirectory();
+        public string GetDirectoryRoot(string path) => Directory.GetDirectoryRoot(path);
+        public IgnoreResult Move(string from, string to)
+        {
+            Directory.Move(from, to);
+            return IgnoreResult.Value;
+        }
+        public IgnoreResult Copy(string from, string to)
+        {
+            CopyAllTo(from, to);
+            return IgnoreResult.Value;
+        }
+        
+        public static void CopyAllTo(string src, string dst, string[] excludePaths=null)
+        {
+            var d = Path.DirectorySeparatorChar;
+
+            foreach (string dirPath in Directory.GetDirectories(src, "*.*", SearchOption.AllDirectories))
+            {
+                if (!excludePaths.IsEmpty() && excludePaths?.Any(x => dirPath.StartsWith(x)) == true)
+                    continue;
+
+                try { Directory.CreateDirectory(dirPath.Replace(src, dst)); } catch { }
+            }
+
+            foreach (string newPath in Directory.GetFiles(src, "*.*", SearchOption.AllDirectories))
+            {
+                if (!excludePaths.IsEmpty() && excludePaths?.Any(x => newPath.StartsWith(x)) == true)
+                    continue;
+                try
+                {
+                    File.Copy(newPath, newPath.Replace(src, dst), overwrite: true);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+        }        
     }
 }

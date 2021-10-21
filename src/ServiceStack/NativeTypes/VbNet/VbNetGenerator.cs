@@ -22,18 +22,19 @@ namespace ServiceStack.NativeTypes.VbNet
         }
 
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataType> InnerTypeFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
 
-        public static Dictionary<string, string> TypeAliases = new Dictionary<string, string>
-        {
+        public static Dictionary<string, string> TypeAliases = new() {
             {"Int16", "Short"},
             {"Int32", "Integer"},
             {"Int64", "Long"},
             {"DateTime", "Date"},
         };
 
-        public static HashSet<string> KeyWords = new HashSet<string>
-        {
+        public static HashSet<string> KeyWords = new() {
             "Default",
             "Dim",
             "Catch",
@@ -53,6 +54,7 @@ namespace ServiceStack.NativeTypes.VbNet
             "Finally",
             "Function",
             "Global",
+            "Is",
             "If",
             "Imports",
             "Inherits",
@@ -80,6 +82,8 @@ namespace ServiceStack.NativeTypes.VbNet
         };
 
         public static TypeFilterDelegate TypeFilter { get; set; }
+        
+        public static Func<VbNetGenerator, MetadataType, MetadataPropertyType, string> PropertyTypeFilter { get; set; }
 
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
@@ -172,12 +176,12 @@ namespace ServiceStack.NativeTypes.VbNet
 
             var existingTypes = new HashSet<string>();
 
-            var requestTypes = metadata.Operations.Select(x => x.Request).ToHashSet();
+            var requestTypes = metadata.Operations.Select(x => x.Request).ToSet();
             var requestTypesMap = metadata.Operations.ToSafeDictionary(x => x.Request);
             var responseTypes = metadata.Operations
                 .Where(x => x.Response != null)
-                .Select(x => x.Response).ToHashSet();
-            var types = metadata.Types.ToHashSet();
+                .Select(x => x.Response).ToSet();
+            var types = metadata.Types.ToSet();
 
             allTypes = new List<MetadataType>();
             allTypes.AddRange(requestTypes);
@@ -228,6 +232,7 @@ namespace ServiceStack.NativeTypes.VbNet
                                         : null;
                                 },
                                 IsRequest = true,
+                                Op = operation,
                             });
 
                         existingTypes.Add(fullTypeName);
@@ -299,6 +304,7 @@ namespace ServiceStack.NativeTypes.VbNet
             if (Config.AddGeneratedCodeAttributes)
                 sb.AppendLine($"<GeneratedCode(\"AddServiceStackReference\", \"{Env.VersionString}\")>");
 
+            sb.Emit(type, Lang.Vb);
             PreTypeFilter?.Invoke(sb, type);
 
             if (type.IsEnum.GetValueOrDefault())
@@ -322,7 +328,7 @@ namespace ServiceStack.NativeTypes.VbNet
                                 new MetadataAttribute {
                                     Name = "EnumMember",
                                     Args = new List<MetadataPropertyType> {
-                                        new MetadataPropertyType {
+                                        new() {
                                             Name = "Value",
                                             Value = memberValue,
                                             Type = "String",
@@ -332,8 +338,8 @@ namespace ServiceStack.NativeTypes.VbNet
                             });
                         }
                         sb.AppendLine(value == null 
-                            ? $"{name},"
-                            : $"{name} = {value},");
+                            ? $"{name}"
+                            : $"{name} = {value}");
                     }
                 }
 
@@ -375,6 +381,7 @@ namespace ServiceStack.NativeTypes.VbNet
                 }
 
                 sb = sb.Indent();
+                InnerTypeFilter?.Invoke(sb, type);
 
                 AddConstructor(sb, type, options);
                 AddProperties(sb, type,
@@ -435,7 +442,7 @@ namespace ServiceStack.NativeTypes.VbNet
             foreach (var prop in collectionProps)
             {
                 var suffix = prop.IsArray() ? "{}" : "";
-                sb.AppendLine($"{MetadataExtensions.SafeToken(prop.Name)} = New {Type(prop.Type, prop.GenericArgs,true)}{suffix}");
+                sb.AppendLine($"{GetPropertyName(prop.Name)} = New {Type(prop.Type, prop.GenericArgs,true)}{suffix}");
             }
 
             sb = sb.UnIndent();
@@ -457,16 +464,22 @@ namespace ServiceStack.NativeTypes.VbNet
                 {
                     if (wasAdded) sb.AppendLine();
 
-                    var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs, includeNested:true);
+                    var propType = GetPropertyType(prop);
+                    propType = PropertyTypeFilter?.Invoke(this, type, prop) ?? propType;
+                    
                     wasAdded = AppendComments(sb, prop.Description);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
                     var visibility = type.IsInterface() ? "" : "Public ";
+
+                    sb.Emit(prop, Lang.Vb);
+                    PrePropertyFilter?.Invoke(sb, prop, type);
                     sb.AppendLine("{0}{1}Property {2} As {3}".Fmt(
                         visibility,
                         @virtual,
-                        EscapeKeyword(prop.Name).SafeToken(), 
+                        GetPropertyName(prop.Name), 
                         propType));
+                    PostPropertyFilter?.Invoke(sb, prop, type);
                 }
             }
 
@@ -493,13 +506,19 @@ namespace ServiceStack.NativeTypes.VbNet
             }
         }
 
+        public virtual string GetPropertyType(MetadataPropertyType prop)
+        {
+            var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs, includeNested: true);
+            return propType;
+        }
+
         public bool AppendAttributes(StringBuilderWrapper sb, List<MetadataAttribute> attributes)
         {
             if (attributes == null || attributes.Count == 0) return false;
 
             foreach (var attr in attributes)
             {
-                var attrName = EscapeKeyword(attr.Name);
+                var attrName = GetPropertyName(attr.Name);
 
                 if ((attr.Args == null || attr.Args.Count == 0)
                     && (attr.ConstructorArgs == null || attr.ConstructorArgs.Count == 0))
@@ -537,6 +556,20 @@ namespace ServiceStack.NativeTypes.VbNet
         public string TypeValue(string type, string value)
         {
             var alias = TypeAlias(type);
+            if (type == nameof(Int32))
+            {
+                if (value == int.MinValue.ToString())
+                    return "Integer.MinValue";
+                if (value == int.MaxValue.ToString())
+                    return "Integer.MaxValue";
+            }
+            if (type == nameof(Int64))
+            {
+                if (value == long.MinValue.ToString())
+                    return "Long.MinValue";
+                if (value == long.MaxValue.ToString())
+                    return "Long.MaxValue";
+            }
             if (value == null)
                 return "Nothing";
             if (alias == "String")
@@ -616,6 +649,8 @@ namespace ServiceStack.NativeTypes.VbNet
         }
 
         public string EscapeKeyword(string name) => KeyWords.Contains(name) ? $"[{name}]" : name;
+
+        public string GetPropertyName(string name) => EscapeKeyword(name).SafeToken();
 
         public bool AppendComments(StringBuilderWrapper sb, string desc)
         {

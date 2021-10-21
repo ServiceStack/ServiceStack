@@ -2,19 +2,29 @@
 using System.Collections.Generic;
 using ServiceStack.Caching;
 using ServiceStack.Web;
+using ServiceStack.Text;
 using System.Globalization;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ServiceStack
 {
     public static class CacheClientExtensions
     {
-        public static void Set<T>(this ICacheClient cacheClient, string cacheKey, T value, TimeSpan? expireCacheIn)
+        public static void Set<T>(this ICacheClient cache, string cacheKey, T value, TimeSpan? expireCacheIn)
         {
             if (expireCacheIn.HasValue)
-                cacheClient.Set(cacheKey, value, expireCacheIn.Value);
+                cache.Set(cacheKey, value, expireCacheIn.Value);
             else
-                cacheClient.Set(cacheKey, value);
+                cache.Set(cacheKey, value);
+        }
+
+        public static async Task SetAsync<T>(this ICacheClientAsync cache, string cacheKey, T value, TimeSpan? expireCacheIn, CancellationToken token=default)
+        {
+            if (expireCacheIn.HasValue)
+                await cache.SetAsync(cacheKey, value, expireCacheIn.Value, token);
+            else
+                await cache.SetAsync(cacheKey, value, token);
         }
 
         private static string DateCacheKey(string cacheKey) => cacheKey + ".created";
@@ -43,14 +53,14 @@ namespace ServiceStack
             return value;
         }
 
-        public static bool HasValidCache(this ICacheClient cacheClient, IRequest req, string cacheKey, DateTime? checkLastModified, out DateTime? lastModified)
+        public static bool HasValidCache(this ICacheClient cache, IRequest req, string cacheKey, DateTime? checkLastModified, out DateTime? lastModified)
         {
             lastModified = null;
 
             if (!HostContext.GetPlugin<HttpCacheFeature>().ShouldAddLastModifiedToOptimizedResults())
                 return false;
 
-            var ticks = cacheClient.Get<long>(DateCacheKey(cacheKey));
+            var ticks = cache.Get<long>(DateCacheKey(cacheKey));
             if (ticks > 0)
             {
                 lastModified = new DateTime(ticks, DateTimeKind.Utc);
@@ -62,45 +72,73 @@ namespace ServiceStack
 
             return false;
         }
-
-        public static object ResolveFromCache(this ICacheClient cacheClient,
-            string cacheKey,
-            IRequest request)
+        
+        public struct ValidCache
         {
-            DateTime? lastModified;
-            var checkModifiedSince = GetIfModifiedSince(request);
-
-            string modifiers = null;
-            if (!request.ResponseContentType.IsBinary())
+            public static ValidCache NotValid = new ValidCache(false, DateTime.MinValue);
+            public bool IsValid { get; }
+            public DateTime LastModified { get; }
+            public ValidCache(bool isValid, DateTime lastModified)
             {
-                if (request.ResponseContentType == MimeTypes.Json)
+                IsValid = isValid;
+                LastModified = lastModified;
+            }
+        }
+
+        public static async Task<ValidCache> HasValidCacheAsync(this ICacheClientAsync cache, IRequest req, string cacheKey, DateTime? checkLastModified, 
+            CancellationToken token=default)
+        {
+            if (!HostContext.GetPlugin<HttpCacheFeature>().ShouldAddLastModifiedToOptimizedResults())
+                return ValidCache.NotValid;
+
+            var ticks = await cache.GetAsync<long>(DateCacheKey(cacheKey), token).ConfigAwait();
+            if (ticks > 0)
+            {
+                if (checkLastModified == null)
+                    return ValidCache.NotValid;
+
+                var lastModified = new DateTime(ticks, DateTimeKind.Utc);
+                return new ValidCache(checkLastModified.Value <= lastModified, lastModified);
+            }
+
+            return ValidCache.NotValid;
+        }
+
+        public static object ResolveFromCache(this ICacheClient cache, string cacheKey, IRequest req)
+        {
+            var checkModifiedSince = GetIfModifiedSince(req);
+
+            if (!req.ResponseContentType.IsBinary())
+            {
+                string modifiers = null;
+                if (req.ResponseContentType == MimeTypes.Json)
                 {
-                    string jsonp = request.GetJsonpCallback();
+                    string jsonp = req.GetJsonpCallback();
                     if (jsonp != null)
                         modifiers = ".jsonp," + jsonp.SafeVarName();
                 }
 
-                var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, request.ResponseContentType, modifiers);
+                var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, req.ResponseContentType, modifiers);
 
-                var compressionType = request.GetCompressionType();
+                var compressionType = req.GetCompressionType();
                 bool doCompression = compressionType != null;
                 if (doCompression)
                 {
                     var cacheKeySerializedZip = GetCacheKeyForCompressed(cacheKeySerialized, compressionType);
 
-                    if (cacheClient.HasValidCache(request, cacheKeySerializedZip, checkModifiedSince, out lastModified))
+                    if (cache.HasValidCache(req, cacheKeySerializedZip, checkModifiedSince, out var lastModified))
                         return HttpResult.NotModified();
 
-                    if (request.Response.GetHeader(HttpHeaders.CacheControl) != null)
+                    if (req.Response.GetHeader(HttpHeaders.CacheControl) != null)
                         lastModified = null;
 
-                    var compressedResult = cacheClient.Get<byte[]>(cacheKeySerializedZip);
+                    var compressedResult = cache.Get<byte[]>(cacheKeySerializedZip);
                     if (compressedResult != null)
                     {
                         return new CompressedResult(
                             compressedResult,
                             compressionType,
-                            request.ResponseContentType)
+                            req.ResponseContentType)
                         {
                             LastModified = lastModified,
                         };
@@ -108,10 +146,10 @@ namespace ServiceStack
                 }
                 else
                 {
-                    if (cacheClient.HasValidCache(request, cacheKeySerialized, checkModifiedSince, out lastModified))
+                    if (cache.HasValidCache(req, cacheKeySerialized, checkModifiedSince, out _))
                         return HttpResult.NotModified();
 
-                    var serializedResult = cacheClient.Get<string>(cacheKeySerialized);
+                    var serializedResult = cache.Get<string>(cacheKeySerialized);
                     if (serializedResult != null)
                     {
                         return serializedResult;
@@ -120,11 +158,82 @@ namespace ServiceStack
             }
             else
             {
-                var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, request.ResponseContentType, modifiers);
-                if (cacheClient.HasValidCache(request, cacheKeySerialized, checkModifiedSince, out lastModified))
+                var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, req.ResponseContentType, modifiers:null);
+                if (cache.HasValidCache(req, cacheKeySerialized, checkModifiedSince, out _))
                     return HttpResult.NotModified();
 
-                var serializedResult = cacheClient.Get<byte[]>(cacheKeySerialized);
+                var serializedResult = cache.Get<byte[]>(cacheKeySerialized);
+                if (serializedResult != null)
+                {
+                    return serializedResult;
+                }
+            }
+
+            return null;
+        }
+
+        public static async Task<object> ResolveFromCacheAsync(this ICacheClientAsync cache, string cacheKey, IRequest req, 
+            CancellationToken token=default)
+        {
+            var checkModifiedSince = GetIfModifiedSince(req);
+
+            if (!req.ResponseContentType.IsBinary())
+            {
+                string modifiers = null;
+                if (req.ResponseContentType == MimeTypes.Json)
+                {
+                    string jsonp = req.GetJsonpCallback();
+                    if (jsonp != null)
+                        modifiers = ".jsonp," + jsonp.SafeVarName();
+                }
+
+                var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, req.ResponseContentType, modifiers);
+
+                var compressionType = req.GetCompressionType();
+                bool doCompression = compressionType != null;
+                if (doCompression)
+                {
+                    var cacheKeySerializedZip = GetCacheKeyForCompressed(cacheKeySerialized, compressionType);
+
+                    var validCache = await cache.HasValidCacheAsync(req, cacheKeySerializedZip, checkModifiedSince, token).ConfigAwait(); 
+                    if (validCache.IsValid)
+                        return HttpResult.NotModified();
+                    
+                    DateTime? lastModified = validCache.LastModified;
+                    if (req.Response.GetHeader(HttpHeaders.CacheControl) != null)
+                        lastModified = null;
+
+                    var compressedResult = await cache.GetAsync<byte[]>(cacheKeySerializedZip, token).ConfigAwait();
+                    if (compressedResult != null)
+                    {
+                        return new CompressedResult(
+                            compressedResult,
+                            compressionType,
+                            req.ResponseContentType)
+                        {
+                            LastModified = lastModified,
+                        };
+                    }
+                }
+                else
+                {
+                    if ((await cache.HasValidCacheAsync(req, cacheKeySerialized, checkModifiedSince, token).ConfigAwait()).IsValid)
+                        return HttpResult.NotModified();
+
+                    var serializedResult = await cache.GetAsync<string>(cacheKeySerialized, token).ConfigAwait();
+                    if (serializedResult != null)
+                    {
+                        return serializedResult;
+                    }
+                }
+            }
+            else
+            {
+                var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, req.ResponseContentType, modifiers:null);
+                if ((await cache.HasValidCacheAsync(req, cacheKeySerialized, checkModifiedSince, token).ConfigAwait()).IsValid)
+                    return HttpResult.NotModified();
+
+                var serializedResult = await cache.GetAsync<byte[]>(cacheKeySerialized, token).ConfigAwait();
                 if (serializedResult != null)
                 {
                     return serializedResult;
@@ -140,24 +249,24 @@ namespace ServiceStack
             return str ?? HostContext.ContentTypes.SerializeToString(request, responseDto);
         }
 
-        public static object Cache(this ICacheClient cacheClient,
+        public static object Cache(this ICacheClient cache,
             string cacheKey,
             object responseDto,
-            IRequest request,
+            IRequest req,
             TimeSpan? expireCacheIn = null)
         {
 
-            request.Response.Dto = responseDto;
-            cacheClient.Set(cacheKey, responseDto, expireCacheIn);
+            req.Response.Dto = responseDto;
+            cache.Set(cacheKey, responseDto, expireCacheIn);
 
-            if (!request.ResponseContentType.IsBinary())
+            if (!req.ResponseContentType.IsBinary())
             {
-                string serializedDto = SerializeToString(request, responseDto);
+                string serializedDto = SerializeToString(req, responseDto);
 
                 string modifiers = null;
-                if (request.ResponseContentType.MatchesContentType(MimeTypes.Json))
+                if (req.ResponseContentType.MatchesContentType(MimeTypes.Json))
                 {
-                    var jsonp = request.GetJsonpCallback();
+                    var jsonp = req.GetJsonpCallback();
                     if (jsonp != null)
                     {
                         modifiers = ".jsonp," + jsonp.SafeVarName();
@@ -170,30 +279,30 @@ namespace ServiceStack
                     }
                 }
 
-                var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, request.ResponseContentType, modifiers);
-                cacheClient.Set(cacheKeySerialized, serializedDto, expireCacheIn);
+                var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, req.ResponseContentType, modifiers);
+                cache.Set(cacheKeySerialized, serializedDto, expireCacheIn);
 
-                var compressionType = request.GetCompressionType();
+                var compressionType = req.GetCompressionType();
                 bool doCompression = compressionType != null;
                 if (doCompression)
                 {
                     var lastModified = HostContext.GetPlugin<HttpCacheFeature>().ShouldAddLastModifiedToOptimizedResults()
-                        && String.IsNullOrEmpty(request.Response.GetHeader(HttpHeaders.CacheControl))
+                        && string.IsNullOrEmpty(req.Response.GetHeader(HttpHeaders.CacheControl))
                         ? DateTime.UtcNow
                         : (DateTime?)null;
 
                     var cacheKeySerializedZip = GetCacheKeyForCompressed(cacheKeySerialized, compressionType);
 
                     byte[] compressedSerializedDto = serializedDto.Compress(compressionType);
-                    cacheClient.Set(cacheKeySerializedZip, compressedSerializedDto, expireCacheIn);
+                    cache.Set(cacheKeySerializedZip, compressedSerializedDto, expireCacheIn);
 
                     if (lastModified != null)
-                        cacheClient.Set(DateCacheKey(cacheKeySerializedZip), lastModified.Value.Ticks, expireCacheIn);
+                        cache.Set(DateCacheKey(cacheKeySerializedZip), lastModified.Value.Ticks, expireCacheIn);
 
                     return compressedSerializedDto != null
-                        ? new CompressedResult(compressedSerializedDto, compressionType, request.ResponseContentType)
+                        ? new CompressedResult(compressedSerializedDto, compressionType, req.ResponseContentType)
                           {
-                              Status = request.Response.StatusCode,
+                              Status = req.Response.StatusCode,
                               LastModified = lastModified,
                           }
                         : null;
@@ -204,14 +313,86 @@ namespace ServiceStack
             else
             {
                 string modifiers = null;
-                byte[] serializedDto = HostContext.ContentTypes.SerializeToBytes(request, responseDto);
-                var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, request.ResponseContentType, modifiers);
-                cacheClient.Set(cacheKeySerialized, serializedDto, expireCacheIn);
+                byte[] serializedDto = HostContext.ContentTypes.SerializeToBytes(req, responseDto);
+                var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, req.ResponseContentType, modifiers);
+                cache.Set(cacheKeySerialized, serializedDto, expireCacheIn);
                 return serializedDto;
             }
         }
 
-        public static void ClearCaches(this ICacheClient cacheClient, params string[] cacheKeys)
+        public static async Task<object> CacheAsync(this ICacheClientAsync cache,
+            string cacheKey,
+            object responseDto,
+            IRequest req,
+            TimeSpan? expireCacheIn = null,
+            CancellationToken token=default)
+        {
+
+            req.Response.Dto = responseDto;
+            await cache.SetAsync(cacheKey, responseDto, expireCacheIn, token).ConfigAwait();
+
+            if (!req.ResponseContentType.IsBinary())
+            {
+                string serializedDto = SerializeToString(req, responseDto);
+
+                string modifiers = null;
+                if (req.ResponseContentType.MatchesContentType(MimeTypes.Json))
+                {
+                    var jsonp = req.GetJsonpCallback();
+                    if (jsonp != null)
+                    {
+                        modifiers = ".jsonp," + jsonp.SafeVarName();
+                        serializedDto = jsonp + "(" + serializedDto + ")";
+
+                        //Add a default expire timespan for jsonp requests,
+                        //because they aren't cleared when calling ClearCaches()
+                        if (expireCacheIn == null)
+                            expireCacheIn = HostContext.Config.DefaultJsonpCacheExpiration;
+                    }
+                }
+
+                var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, req.ResponseContentType, modifiers);
+                await cache.SetAsync(cacheKeySerialized, serializedDto, expireCacheIn, token).ConfigAwait();
+
+                var compressionType = req.GetCompressionType();
+                bool doCompression = compressionType != null;
+                if (doCompression)
+                {
+                    var lastModified = HostContext.GetPlugin<HttpCacheFeature>().ShouldAddLastModifiedToOptimizedResults()
+                        && string.IsNullOrEmpty(req.Response.GetHeader(HttpHeaders.CacheControl))
+                        ? DateTime.UtcNow
+                        : (DateTime?)null;
+
+                    var cacheKeySerializedZip = GetCacheKeyForCompressed(cacheKeySerialized, compressionType);
+
+                    byte[] compressedSerializedDto = serializedDto.Compress(compressionType);
+                    await cache.SetAsync(cacheKeySerializedZip, compressedSerializedDto, expireCacheIn, token).ConfigAwait();
+
+                    if (lastModified != null)
+                        await cache.SetAsync(DateCacheKey(cacheKeySerializedZip), lastModified.Value.Ticks, expireCacheIn, token).ConfigAwait();
+
+                    return compressedSerializedDto != null
+                        ? new CompressedResult(compressedSerializedDto, compressionType, req.ResponseContentType)
+                          {
+                              Status = req.Response.StatusCode,
+                              LastModified = lastModified,
+                          }
+                        : null;
+                }
+
+                return serializedDto;
+            }
+            else
+            {
+                string modifiers = null;
+                byte[] serializedDto = HostContext.ContentTypes.SerializeToBytes(req, responseDto);
+                var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, req.ResponseContentType, modifiers);
+                await cache.SetAsync(cacheKeySerialized, serializedDto, expireCacheIn, token).ConfigAwait();
+                return serializedDto;
+            }
+        }
+
+        private static List<string> GetAllContentCacheKeys(string[] cacheKeys)
         {
             var allContentTypes = new List<string>(HostContext.ContentTypes.ContentTypeFormats.Values) {
                 MimeTypes.XmlText, MimeTypes.JsonText, MimeTypes.JsvText
@@ -237,7 +418,19 @@ namespace ServiceStack
                 }
             }
 
-            cacheClient.RemoveAll(allCacheKeys);
+            return allCacheKeys;
+        }
+
+        public static void ClearCaches(this ICacheClient cache, params string[] cacheKeys)
+        {
+            var allCacheKeys = GetAllContentCacheKeys(cacheKeys);
+            cache.RemoveAll(allCacheKeys);
+        }
+
+        public static async Task ClearCachesAsync(this ICacheClientAsync cache, string[] cacheKeys, CancellationToken token=default)
+        {
+            var allCacheKeys = GetAllContentCacheKeys(cacheKeys);
+            await cache.RemoveAllAsync(allCacheKeys, token);
         }
 
         public static string GetCacheKeyForSerialized(string cacheKey, string mimeType, string modifiers)
@@ -257,13 +450,27 @@ namespace ServiceStack
         /// <param name="pattern">The wildcard, where "*" means any sequence of characters and "?" means any single character.</param>
         public static void RemoveByPattern(this ICacheClient cacheClient, string pattern)
         {
-            var canRemoveByPattern = cacheClient as IRemoveByPattern;
-            if (canRemoveByPattern == null)
+            if (!(cacheClient is IRemoveByPattern canRemoveByPattern))
                 throw new NotImplementedException(
                     "IRemoveByPattern is not implemented on: " + cacheClient.GetType().FullName);
 
             canRemoveByPattern.RemoveByPattern(pattern);
         }
+
+        /// <summary>
+        /// Removes items from cache that have keys matching the specified wildcard pattern
+        /// </summary>
+        /// <param name="cacheClient">Cache client</param>
+        /// <param name="pattern">The wildcard, where "*" means any sequence of characters and "?" means any single character.</param>
+        public static Task RemoveByPatternAsync(this ICacheClientAsync cacheClient, string pattern, CancellationToken token=default)
+        {
+            if (!(cacheClient is IRemoveByPatternAsync canRemoveByPattern))
+                throw new NotImplementedException(
+                    "IRemoveByPattern is not implemented on: " + cacheClient.GetType().FullName);
+
+            return canRemoveByPattern.RemoveByPatternAsync(pattern, token);
+        }
+
         /// <summary>
         /// Removes items from the cache based on the specified regular expression pattern
         /// </summary>
@@ -275,6 +482,19 @@ namespace ServiceStack
                 throw new NotImplementedException("IRemoveByPattern is not implemented by: " + cacheClient.GetType().FullName);
 
             canRemoveByPattern.RemoveByRegex(regex);
+        }
+
+        /// <summary>
+        /// Removes items from the cache based on the specified regular expression pattern
+        /// </summary>
+        /// <param name="cacheClient">Cache client</param>
+        /// <param name="regex">Regular expression pattern to search cache keys</param>
+        public static Task RemoveByRegexAsync(this ICacheClientAsync cacheClient, string regex)
+        {
+            if (!(cacheClient is IRemoveByPatternAsync canRemoveByPattern))
+                throw new NotImplementedException("IRemoveByPattern is not implemented by: " + cacheClient.GetType().FullName);
+
+            return canRemoveByPattern.RemoveByRegexAsync(regex);
         }
 
         public static IEnumerable<string> GetKeysByPattern(this ICacheClient cache, string pattern)
@@ -294,6 +514,29 @@ namespace ServiceStack
         {
             return cache.GetKeysByPattern(prefix + "*");
         }
+        
+#if NET472 || NETSTANDARD2_0
+        public static IAsyncEnumerable<string> GetKeysByPatternAsync(this ICacheClientAsync cache, string pattern)
+        {
+            return cache.GetKeysByPatternAsync(pattern);
+        }
+
+        public static async IAsyncEnumerable<string> GetAllKeysAsync(this ICacheClientAsync cache)
+        {
+            await foreach (var key in cache.GetKeysByPatternAsync("*"))
+            {
+                yield return key;
+            }
+        }
+
+        public static async IAsyncEnumerable<string> GetKeysStartingWithAsync(this ICacheClientAsync cache, string prefix)
+        {
+            await foreach (var key in cache.GetKeysByPatternAsync(prefix + "*"))
+            {
+                yield return key;
+            }
+        }
+#endif
 
         public static T GetOrCreate<T>(this ICacheClient cache,
             string key, Func<T> createFn)
@@ -307,14 +550,14 @@ namespace ServiceStack
             return value;
         }
 
-        public static async Task<T> GetOrCreateAsync<T>(this ICacheClient cache,
+        public static async Task<T> GetOrCreateAsync<T>(this ICacheClientAsync cache,
             string key, Func<Task<T>> createFn)
         {
-            var value = cache.Get<T>(key);
+            var value = await cache.GetAsync<T>(key);
             if (Equals(value, default(T)))
             {
-                value = await createFn();
-                cache.Set(key, value);
+                value = await createFn().ConfigAwait();
+                await cache.SetAsync(key, value);
             }
             return value;
         }
@@ -331,14 +574,14 @@ namespace ServiceStack
             return value;
         }
 
-        public static async Task<T> GetOrCreateAsync<T>(this ICacheClient cache,
+        public static async Task<T> GetOrCreateAsync<T>(this ICacheClientAsync cache,
             string key, TimeSpan expiresIn, Func<Task<T>> createFn)
         {
-            var value = cache.Get<T>(key);
+            var value = await cache.GetAsync<T>(key);
             if (Equals(value, default(T)))
             {
-                value = await createFn();
-                cache.Set(key, value, expiresIn);
+                value = await createFn().ConfigAwait();
+                await cache.SetAsync(key, value, expiresIn);
             }
             return value;
         }

@@ -4,8 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Principal;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.Host.AspNet;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
@@ -35,19 +38,8 @@ namespace ServiceStack.Auth
             //Add all pre-defined Roles used to in App to 'AllRoles'
             appHost.AfterInitCallbacks.Add(host =>
             {
-                var requiredRoles = host.Metadata.OperationsMap
-                    .SelectMany(x => x.Key.AllAttributes<RequiredRoleAttribute>()
-                        .Concat(x.Value.ServiceType.AllAttributes<RequiredRoleAttribute>()))
-                    .SelectMany(x => x.RequiredRoles);
-
-                requiredRoles.Each(x => AllRoles.AddIfNotExists(x));
-
-                var requireAnyRoles = host.Metadata.OperationsMap
-                    .SelectMany(x => x.Key.AllAttributes<RequiresAnyRoleAttribute>()
-                        .Concat(x.Value.ServiceType.AllAttributes<RequiresAnyRoleAttribute>()))
-                    .SelectMany(x => x.RequiredRoles);
-
-                requireAnyRoles.Each(x => AllRoles.AddIfNotExists(x));
+                var allExistingRoles = host.Metadata.GetAllRoles();
+                allExistingRoles.Each(x => AllRoles.AddIfNotExists(x));
             });
         }
 
@@ -71,8 +63,9 @@ namespace ServiceStack.Auth
 
         public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null)
         {
-            return session != null && session.IsAuthenticated
-                && LoginMatchesSession(session, HttpContext.Current.GetUser().GetUserName());
+            var user = HttpContext.Current.GetUser();
+            return session != null && session.IsAuthenticated && 
+                   (user == null || LoginMatchesSession(session, user.GetUserName()));
         }
 
         public virtual bool IsAuthorized(IPrincipal user)
@@ -89,14 +82,14 @@ namespace ServiceStack.Auth
             return false;
         }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
         {
             var user = authService.Request.GetUser();
             var userName = user.GetUserName();
             if (!LoginMatchesSession(session, userName))
             {
-                authService.RemoveSession();
-                session = authService.GetSession();
+                await authService.RemoveSessionAsync(token).ConfigAwait();
+                session = await authService.GetSessionAsync(token: token).ConfigAwait();
             }
 
             if (IsAuthorized(user))
@@ -129,14 +122,14 @@ namespace ServiceStack.Auth
 
                 session.ReferrerUrl = GetReferrerUrl(authService, session, request);
 
-                var response = OnAuthenticated(authService, session, tokens, new Dictionary<string, string>());
+                var response = await OnAuthenticatedAsync(authService, session, tokens, new Dictionary<string, string>(), token).ConfigAwait();
 
                 if (session.Roles == null)
                     session.Roles = new List<string>();
 
                 PopulateUserRoles(authService.Request, user, session);
 
-                this.SaveSession(authService, session, SessionExpiry);
+                await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
                 
                 if (response != null)
                     return response;
@@ -176,23 +169,21 @@ namespace ServiceStack.Auth
             winAuthProvider?.IsAuthorized(req.GetUser());
         }
 
-        public void PreAuthenticate(IRequest req, IResponse res)
+        public async Task PreAuthenticateAsync(IRequest req, IResponse res)
         {
             var user = req.GetUser();
             if (user != null)
             {
                 SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
-                using (var authService = HostContext.ResolveService<AuthenticateService>(req))
-                {
-                    var session = req.GetSession();
-                    if (LoginMatchesSession(session, user.Identity.Name)) return;
+                using var authService = HostContext.ResolveService<AuthenticateService>(req);
+                var session = await req.GetSessionAsync().ConfigAwait();
+                if (LoginMatchesSession(session, user.Identity.Name)) return;
 
-                    var response = authService.Post(new Authenticate
-                    {
-                        provider = Name,
-                        UserName = user.GetUserName(),
-                    });
-                }
+                var response = await authService.PostAsync(new Authenticate
+                {
+                    provider = Name,
+                    UserName = user.GetUserName(),
+                }).ConfigAwait();
             }
         }
     }

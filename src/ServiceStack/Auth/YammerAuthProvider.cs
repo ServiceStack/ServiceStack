@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
 
@@ -55,7 +57,7 @@ namespace ServiceStack.Auth
 
             NavItem = new NavItem {
                 Href = "/auth/" + Name,
-                Label = "Sign in with Yammer",
+                Label = "Sign In with Yammer",
                 Id = "btn-" + Name,
                 ClassName = "btn-social btn-yammer",
                 IconClass = "fab svg-yammer",
@@ -92,9 +94,10 @@ namespace ServiceStack.Auth
         /// <returns>
         /// The <see cref="object"/>.
         /// </returns>
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
         {
             var tokens = this.Init(authService, ref session, request);
+            var ctx = CreateAuthContext(authService, session, tokens);
 
             // Check if this is a callback from Yammer OAuth,
             // if not, get the code.
@@ -104,8 +107,8 @@ namespace ServiceStack.Auth
             {
                 var preAuthUrl = $"{this.PreAuthUrl}?client_id={this.ClientId}&redirect_uri={this.RedirectUrl.UrlEncode()}";
 
-                this.SaveSession(authService, session, SessionExpiry);
-                return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
+                await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
+                return authService.Redirect(PreAuthUrlFilter(ctx, preAuthUrl));
             }
 
             // If access code exists, get access token to be able to call APIs.
@@ -114,7 +117,7 @@ namespace ServiceStack.Auth
             try
             {
                 // Get access response object
-                var contents = AccessTokenUrlFilter(this, accessTokenUrl).GetStringFromUrl();
+                var contents = await AccessTokenUrlFilter(ctx, accessTokenUrl).GetStringFromUrlAsync().ConfigAwait();
 
                 var authInfo = PclExportClient.Instance.ParseQueryString(contents);
                 var authObj = JsonObject.Parse(contents);
@@ -152,24 +155,24 @@ namespace ServiceStack.Auth
                 session.IsAuthenticated = true;
 
                 // Pass along
-                var response = this.OnAuthenticated(authService, session, tokens, authInfo.ToDictionary());
+                var response = await OnAuthenticatedAsync(authService, session, tokens, authInfo.ToDictionary(), token).ConfigAwait();
                 if (response != null)
                     return response;
 
                 // Has access!
-                return authService.Redirect(SuccessRedirectUrlFilter(this, this.CallbackUrl.SetParam("s", "1")));
+                return await authService.Redirect(SuccessRedirectUrlFilter(ctx, this.CallbackUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait();
             }
             catch (WebException webEx)
             {
                 var statusCode = ((HttpWebResponse)webEx.Response).StatusCode;
                 if (statusCode == HttpStatusCode.BadRequest)
                 {
-                    return authService.Redirect(FailedRedirectUrlFilter(this, this.CallbackUrl.SetParam("f", "AccessTokenFailed")));
+                    return authService.Redirect(FailedRedirectUrlFilter(ctx, this.CallbackUrl.SetParam("f", "AccessTokenFailed")));
                 }
             }
 
             // Unknown error, shouldn't get here.
-            return authService.Redirect(FailedRedirectUrlFilter(this, this.CallbackUrl.SetParam("f", "Unknown")));
+            return authService.Redirect(FailedRedirectUrlFilter(ctx, this.CallbackUrl.SetParam("f", "Unknown")));
         }
 
         /// <summary>
@@ -184,11 +187,11 @@ namespace ServiceStack.Auth
         /// <param name="authInfo">
         /// The auth info.
         /// </param>
-        protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
+        protected override async Task LoadUserAuthInfoAsync(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token = default)
         {
             try
             {
-                var contents = AuthHttpGateway.DownloadYammerUserInfo(tokens.UserId);
+                var contents = await AuthHttpGateway.DownloadYammerUserInfoAsync(tokens.UserId).ConfigAwait();
 
                 var obj = JsonObject.Parse(contents);
 
@@ -237,11 +240,8 @@ namespace ServiceStack.Auth
         /// </param>
         public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
         {
-            var userSession = authSession as AuthUserSession;
-            if (userSession == null)
-            {
+            if (!(authSession is AuthUserSession userSession))
                 return;
-            }
 
             userSession.UserAuthId = tokens.UserId ?? userSession.UserAuthId;
             userSession.UserAuthName = tokens.UserName ?? userSession.UserAuthName;

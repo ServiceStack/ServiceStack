@@ -70,6 +70,13 @@ namespace ServiceStack
             : this(serviceName, CalculatePoolSize(), assembliesWithServices)
         { }
 
+        protected AppHostHttpListenerPoolBase(string serviceName, params Type[] serviceTypes)
+            : this(serviceName, TypeConstants<Assembly>.EmptyArray)
+        {
+            threadPoolManager = new ThreadPoolManager(CalculatePoolSize());
+            ServiceController = CreateServiceController(serviceTypes);
+        }
+
         protected AppHostHttpListenerPoolBase(string serviceName, int poolSize, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices)
         { threadPoolManager = new ThreadPoolManager(poolSize); }

@@ -17,6 +17,8 @@ namespace ServiceStack.Metadata
         public IDictionary<int, string> Xsds { get; set; }
         public int XsdServiceTypesIndex { get; set; }
         public MetadataPagesConfig MetadataConfig { get; set; }
+        
+        public Func<string, Operation> GetOperation { get; set; }
 
         public string RenderRow(string operationName)
         {
@@ -26,8 +28,7 @@ namespace ServiceStack.Metadata
             // use a fully qualified path if WebHostUrl is set
             string baseUrl = Request.ResolveAbsoluteUrl("~/");
 
-            var opType = HostContext.Metadata.GetOperationType(operationName);
-            var op = HostContext.Metadata.GetOperation(opType);
+            var op = GetOperation(operationName);
 
             var icons = CreateIcons(op);
 
@@ -41,7 +42,7 @@ namespace ServiceStack.Metadata
                 if (MetadataConfig.IsVisible(Request, config.Format.ToFormat(), operationName))
                 {
                     show = true;
-                    opTemplate.Append($@"<td><a href=""{uri}?op={{0}}"">{config.Name.UrlEncode()}</a></td>");
+                    opTemplate.Append($@"<td><a href=""{uri}?op={{0}}"">{config.Name}</a></td>");
                 }
                 else
                 {

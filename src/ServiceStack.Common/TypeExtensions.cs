@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
@@ -15,6 +17,12 @@ namespace ServiceStack
     public delegate void ActionInvoker(object instance, params object[] args);
     
     public delegate void StaticActionInvoker(params object[] args);
+
+    /// <summary>
+    /// Delegate to return a different value from an instance (e.g. member accessor)
+    /// </summary>
+    public delegate object InstanceMapper(object instance);
+
 
     public static class TypeExtensions
     {
@@ -272,7 +280,7 @@ namespace ServiceStack
             return fn;
         }
         
-        static Dictionary<MethodInfo, MethodInvoker> invokerCache = new Dictionary<MethodInfo, MethodInvoker>();
+        static Dictionary<MethodInfo, MethodInvoker> invokerCache = new();
 
         /// <summary>
         /// Create the correct Invoker Delegate Type based on the type of Method
@@ -315,7 +323,7 @@ namespace ServiceStack
             return fn;
         }
         
-        static Dictionary<MethodInfo, StaticMethodInvoker> staticInvokerCache = new Dictionary<MethodInfo, StaticMethodInvoker>();
+        static Dictionary<MethodInfo, StaticMethodInvoker> staticInvokerCache = new();
 
         /// <summary>
         /// Create an Invoker for public static methods
@@ -339,7 +347,7 @@ namespace ServiceStack
             return fn;
         }
         
-        static Dictionary<MethodInfo, ActionInvoker> actionInvokerCache = new Dictionary<MethodInfo, ActionInvoker>();
+        static Dictionary<MethodInfo, ActionInvoker> actionInvokerCache = new();
 
         /// <summary>
         /// Create an Invoker for public instance void methods
@@ -363,7 +371,7 @@ namespace ServiceStack
             return fn;
         }
         
-        static Dictionary<MethodInfo, StaticActionInvoker> staticActionInvokerCache = new Dictionary<MethodInfo, StaticActionInvoker>();
+        static Dictionary<MethodInfo, StaticActionInvoker> staticActionInvokerCache = new();
 
         /// <summary>
         /// Create an Invoker for public static void methods
@@ -404,6 +412,79 @@ namespace ServiceStack
         public static object ConvertToObject<T>(T value)
         {
             return value;
+        }
+        
+        /// <summary>
+        /// Check if #nullable enabled reference type is non nullable
+        /// </summary>
+        /// <param name="property"></param>
+        /// <returns>true if #nullable enabled reference type, false if optional, null if value Type or #nullable not enabled</returns>
+        public static bool? IsNotNullable(this PropertyInfo property) =>
+            IsNotNullable(property.PropertyType, property.DeclaringType, property.CustomAttributes);
+
+        /// <summary>
+        /// Check if #nullable enabled reference type is non nullable
+        /// </summary>
+        /// <returns>true if #nullable enabled reference type, false if optional, null if value Type or #nullable not enabled</returns>
+        public static bool? IsNotNullable(Type memberType, MemberInfo declaringType, IEnumerable<CustomAttributeData> customAttributes)
+        {
+            if (!memberType.IsValueType)
+            {
+                var nullable = customAttributes
+                    .FirstOrDefault(x => x.AttributeType.FullName == "System.Runtime.CompilerServices.NullableAttribute");
+                if (nullable != null && nullable.ConstructorArguments.Count == 1)
+                {
+                    var attributeArgument = nullable.ConstructorArguments[0];
+                    if (attributeArgument.ArgumentType == typeof(byte[]))
+                    {
+                        var args = (ReadOnlyCollection<CustomAttributeTypedArgument>)attributeArgument.Value;
+                        if (args.Count > 0 && args[0].ArgumentType == typeof(byte))
+                        {
+                            return (byte)args[0].Value == 1;
+                        }
+                    }
+                    else if (attributeArgument.ArgumentType == typeof(byte))
+                    {
+                        return (byte)attributeArgument.Value == 1;
+                    }
+                }
+
+                for (var type = declaringType; type != null; type = type.DeclaringType)
+                {
+                    var context = type.CustomAttributes
+                        .FirstOrDefault(x => x.AttributeType.FullName == "System.Runtime.CompilerServices.NullableContextAttribute");
+                    if (context != null &&
+                        context.ConstructorArguments.Count == 1 &&
+                        context.ConstructorArguments[0].ArgumentType == typeof(byte))
+                    {
+                        return (byte)context.ConstructorArguments[0].Value == 1;
+                    }
+                }
+            }
+            return null;
+        }
+
+        public static Func<object,object> GetPropertyAccessor(this Type type, PropertyInfo forProperty)
+        {
+            var lambda = CreatePropertyAccessorExpression(type, forProperty);
+            var fn = (Func<object,object>)lambda.Compile();
+            return fn;
+        }
+
+        public static LambdaExpression CreatePropertyAccessorExpression(Type type, PropertyInfo forProperty)
+        {
+            var paramInstance = Expression.Parameter(typeof(object), "instance");
+
+            var castToType = type.IsValueType
+                ? Expression.Convert(paramInstance, type)
+                : Expression.TypeAs(paramInstance, type);
+
+            var propExpr = Expression.Property(castToType, forProperty);
+
+            var lambda = Expression.Lambda(typeof(Func<object, object>),
+                propExpr,
+                paramInstance);
+            return lambda;
         }
     }
 

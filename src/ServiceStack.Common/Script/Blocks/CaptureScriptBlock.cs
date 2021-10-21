@@ -37,23 +37,22 @@ namespace ServiceStack.Script
             var tuple = Parse(scope, block);
             var name = tuple.name;
 
-            using (var ms = MemoryStreamFactory.GetStream())
+            using var ms = MemoryStreamFactory.GetStream();
+            var useScope = scope.ScopeWith(tuple.scopeArgs, ms);
+
+            await WriteBodyAsync(useScope, block, token).ConfigAwait();
+
+            // ReSharper disable once MethodHasAsyncOverload
+            var capturedOutput = ms.ReadToEnd();
+
+            if (tuple.appendTo && scope.PageResult.Args.TryGetValue(name, out var oVar)
+                               && oVar is string existingString)
             {
-                var useScope = scope.ScopeWith(tuple.scopeArgs, ms);
-
-                await WriteBodyAsync(useScope, block, token);
-
-                var capturedOutput = ms.ReadToEnd();
-
-                if (tuple.appendTo && scope.PageResult.Args.TryGetValue(name, out var oVar)
-                             && oVar is string existingString)
-                {
-                    scope.PageResult.Args[name] = existingString + capturedOutput;
-                    return;
-                }
-            
-                scope.PageResult.Args[name] = capturedOutput;
+                scope.PageResult.Args[name] = existingString + capturedOutput;
+                return;
             }
+            
+            scope.PageResult.Args[name] = capturedOutput;
         }
 
         //Extract usages of Span outside of async method 

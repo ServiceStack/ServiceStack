@@ -104,15 +104,15 @@ namespace ServiceStack.Razor
 
         public void Register(IAppHost appHost)
         {
-            this.ScanRootPath = this.ScanRootPath ?? appHost.Config.WebHostPhysicalPath;
+            this.ScanRootPath ??= appHost.Config.WebHostPhysicalPath;
             this.VirtualFileSources = VirtualFileSources ?? appHost.VirtualFileSources;
             this.WebHostUrl = WebHostUrl ?? appHost.Config.WebHostUrl;
-            this.EnableLiveReload = this.EnableLiveReload ?? appHost.Config.DebugMode;
+            this.EnableLiveReload ??= appHost.Config.DebugMode;
             if (CheckLastModifiedForChanges == true)
                 EnableLiveReload = false; //Don't enable both File Watcher + LastModified checks
 
-            this.PrecompilePages = this.PrecompilePages ?? !this.EnableLiveReload;
-            this.WaitForPrecompilationOnStartup = this.WaitForPrecompilationOnStartup ?? !this.EnableLiveReload;
+            this.PrecompilePages ??= !this.EnableLiveReload;
+            this.WaitForPrecompilationOnStartup ??= !this.EnableLiveReload;
 
             if (LoadUnloadedAssemblies)
             {

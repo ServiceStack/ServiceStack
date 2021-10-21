@@ -28,16 +28,22 @@ namespace ServiceStack.FluentValidation.Validators {
 	/// Defines a property validator that can be run asynchronously.
 	/// </summary>
 	public abstract class AsyncValidatorBase : PropertyValidator {
-		public override bool ShouldValidateAsynchronously(ValidationContext context) {
-			return context.IsAsync() || Options.AsyncCondition != null;
+		public override bool ShouldValidateAsynchronously(IValidationContext context) {
+			return context.IsAsync() || HasAsyncCondition;
 		}
 
+		[Obsolete("This constructor is deprecated and will be removed in FluentValidation 10. Override the GetDefaultMessageTemplate method instead.")]
 		protected AsyncValidatorBase(IStringSource errorSource) : base(errorSource) {
 
 		}
 
+		[Obsolete("This constructor is deprecated and will be removed in FluentValidation 10. Override the GetDefaultMessageTemplate method instead.")]
 		protected AsyncValidatorBase(string errorMessage)
 			: base(errorMessage) {
+		}
+
+		protected AsyncValidatorBase() {
+
 		}
 
 		protected override bool IsValid(PropertyValidatorContext context) {

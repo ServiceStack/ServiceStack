@@ -1,5 +1,8 @@
 ﻿#if !NETCORE_SUPPORT
+using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
@@ -42,26 +45,27 @@ namespace ServiceStack.Common.Tests.OAuth
                 this.userAuth = userAuth;
             }
 
-            public override IUserAuth GetUserAuthByUserName(string userNameOrEmail)
-            {
-                return null;
-            }
+            public override IUserAuth GetUserAuthByUserName(string userNameOrEmail) => null;
 
-            public override IUserAuth CreateUserAuth(IUserAuth newUser, string password)
-            {
-                return userAuth;
-            }
+            public override async Task<IUserAuth> GetUserAuthByUserNameAsync(string userNameOrEmail, CancellationToken token = default)
+                => GetUserAuthByUserName(userNameOrEmail);
 
-            public override IUserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens)
-            {
-                return userAuth;
-            }
+            public override IUserAuth CreateUserAuth(IUserAuth newUser, string password) => userAuth;
+            public override async Task<IUserAuth> CreateUserAuthAsync(IUserAuth newUser, string password, CancellationToken token = default) 
+                => CreateUserAuth(newUser, password);
+
+            public override IUserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens) => userAuth;
+            public override async Task<IUserAuth> GetUserAuthAsync(IAuthSession authSession, IAuthTokens tokens, CancellationToken token = default) 
+                => GetUserAuth(authSession, tokens);
 
             public override bool TryAuthenticate(string userName, string password, out IUserAuth userAuth)
             {
                 userAuth = this.userAuth;
                 return true;
             }
+
+            public override async Task<IUserAuth> TryAuthenticateAsync(string userName, string password, CancellationToken token = default) => 
+                this.userAuth;
         }
 
         private MockUserAuthRepository userAuth;
@@ -78,12 +82,12 @@ namespace ServiceStack.Common.Tests.OAuth
             var registrationService = RegistrationServiceTests.GetRegistrationService(authRepo: userAuth);
             var request = RegistrationServiceTests.GetValidRegistration(autoLogin: true);
 
-            registrationService.Post(request);
+            registrationService.PostAsync(request);
             return registrationService;
         }
 
         [Test]
-        public void Does_validate_RequiredRoles_with_UserAuthRepo_When_Role_not_in_Session()
+        public async Task Does_validate_RequiredRoles_with_UserAuthRepo_When_Role_not_in_Session()
         {
             var registrationService = GetRegistrationService();
 
@@ -93,20 +97,20 @@ namespace ServiceStack.Common.Tests.OAuth
             HostContext.Container.Register(userAuth);
             var httpRes = request.Response;
 
-            requiredRole.ExecuteAsync(request, request.Response, request.OperationName).Wait();
+            await requiredRole.ExecuteAsync(request, request.Response, request.OperationName);
 
             Assert.That(!httpRes.IsClosed);
         }
 
         [Test]
-        public void Does_validate_AssertRequiredRoles_with_UserAuthRepo_When_Role_not_in_Session()
+        public async Task Does_validate_AssertRequiredRoles_with_UserAuthRepo_When_Role_not_in_Session()
         {
             var registrationService = GetRegistrationService();
 
             var request = registrationService.Request;
             HostContext.Container.Register(userAuth);
 
-            RequiredRoleAttribute.AssertRequiredRoles(request, RoleNames.Admin);
+            await RequiredRoleAttribute.AssertRequiredRoleAsync(request, RoleNames.Admin);
 
             Assert.That(!request.Response.IsClosed);
         }

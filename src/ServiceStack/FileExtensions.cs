@@ -1,4 +1,6 @@
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.IO;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -41,15 +43,24 @@ namespace ServiceStack
 
         public static byte[] ReadFully(this FileInfo file)
         {
-            using (var fs = file.OpenRead())
-            {
-                return fs.ReadFully();
-            }
+            using var fs = file.OpenRead();
+            return fs.ReadFully();
+        }
+
+        public static Task<byte[]> ReadFullyAsync(this FileInfo file, CancellationToken token=new())
+        {
+            using var fs = file.OpenRead();
+            return fs.ReadFullyAsync(token);
         }
 
         public static string ReadAllText(this FileInfo file)
         {
             return file.ReadFully().FromUtf8Bytes();
+        }
+
+        public static async Task<string> ReadAllTextAsync(this FileInfo file, CancellationToken token=new())
+        {
+            return (await file.ReadFullyAsync(token)).FromUtf8Bytes();
         }
     }
 }

@@ -125,7 +125,10 @@ namespace ServiceStack
         {
             // AllowSynchronousIO for sync SSE notifications https://github.com/aspnet/AspNetCore/issues/7644 
             var feature = ctx.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
-            feature.AllowSynchronousIO = true;
+            if (feature != null) // Not available in AWS
+            {
+                feature.AllowSynchronousIO = true;
+            }
             return ctx;
         }
 #endif
@@ -323,6 +326,14 @@ namespace ServiceStack
             var bytes = contents.ToUtf8Bytes();
             response.SetContentLength(bytes.Length);
             return response.OutputStream.WriteAsync(bytes);
+        }
+ 
+        public static void EndWith(this IResponse res, HttpStatusCode code, string description=null)
+        {
+            res.StatusCode = (int)code;
+            if (description != null)
+                res.StatusDescription = description;
+            res.EndRequest();
         }
     }
 

@@ -15,7 +15,7 @@ namespace ServiceStack.Auth
             : base(dbFactory, namedConnection) {}
     }
 
-    public class OrmLiteAuthRepository<TUserAuth, TUserAuthDetails> : OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails>
+    public partial class OrmLiteAuthRepository<TUserAuth, TUserAuthDetails> : OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails>
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
@@ -38,18 +38,14 @@ namespace ServiceStack.Auth
 
         public override void Exec(Action<IDbConnection> fn)
         {
-            using (var db = OpenDbConnection())
-            {
-                fn(db);
-            }
+            using var db = OpenDbConnection();
+            fn(db);
         }
 
         public override T Exec<T>(Func<IDbConnection, T> fn)
         {
-            using (var db = OpenDbConnection())
-            {
-                return fn(db);
-            }
+            using var db = OpenDbConnection();
+            return fn(db);
         }
     }
 
@@ -61,7 +57,7 @@ namespace ServiceStack.Auth
             : base(dbFactory, connectionStrings) { }
     }
 
-    public class OrmLiteAuthRepositoryMultitenancy<TUserAuth, TUserAuthDetails> : OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails>, IDisposable
+    public partial class OrmLiteAuthRepositoryMultitenancy<TUserAuth, TUserAuthDetails> : OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails>, IDisposable
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
@@ -126,7 +122,8 @@ namespace ServiceStack.Auth
             {
                 db.CreateTableIfNotExists<TUserAuth>();
                 db.CreateTableIfNotExists<TUserAuthDetails>();
-                db.CreateTableIfNotExists<UserAuthRole>();
+                if (UseDistinctRoleTables)
+                    db.CreateTableIfNotExists<UserAuthRole>();
             });
         }
 
@@ -138,7 +135,8 @@ namespace ServiceStack.Auth
             {
                 db.DropAndCreateTable<TUserAuth>();
                 db.DropAndCreateTable<TUserAuthDetails>();
-                db.DropAndCreateTable<UserAuthRole>();
+                if (UseDistinctRoleTables)
+                    db.DropAndCreateTable<UserAuthRole>();
             });
         }
 
@@ -152,12 +150,11 @@ namespace ServiceStack.Auth
 
         public void Dispose()
         {
-            if (db != null)
-                db.Dispose();
+            db?.Dispose();
         }
     }
 
-    public abstract class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IRequiresSchema, IClearable, IManageRoles, IManageApiKeys, ICustomUserAuth, IQueryUserAuth
+    public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IRequiresSchema, IClearable, IManageRoles, IManageApiKeys, ICustomUserAuth, IQueryUserAuth
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
@@ -219,14 +216,14 @@ namespace ServiceStack.Auth
                 var existingUser = GetUserAuthByUserName(db, newUser.UserName);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                    throw new ArgumentException(string.Format(ErrorMessages.UserAlreadyExistsTemplate1, newUser.UserName.SafeInput()));
+                    throw new ArgumentException(ErrorMessages.UserAlreadyExistsFmt.LocalizeFmt(newUser.UserName.SafeInput()));
             }
             if (newUser.Email != null)
             {
                 var existingUser = GetUserAuthByUserName(db, newUser.Email);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                    throw new ArgumentException(string.Format(ErrorMessages.EmailAlreadyExistsTemplate1, newUser.Email.SafeInput()));
+                    throw new ArgumentException(ErrorMessages.EmailAlreadyExistsFmt.LocalizeFmt(newUser.Email.SafeInput()));
             }
         }
 
@@ -322,12 +319,23 @@ namespace ServiceStack.Auth
             return userAuth;
         }
 
+        private void SetOrderBy(SqlExpression<TUserAuth> q, string orderBy)
+        {
+            if (string.IsNullOrEmpty(orderBy))
+                return;
+            
+            var orderByField = AuthRepositoryUtils.ParseOrderBy(orderBy, out var desc);
+            if (!desc)
+                q.OrderBy(orderByField);
+            else
+                q.OrderByDescending(orderByField);
+        }
+
         public List<IUserAuth> GetUserAuths(string orderBy = null, int? skip = null, int? take = null)
         {
             return Exec(db => {
                 var q = db.From<TUserAuth>();
-                if (orderBy != null)
-                    q.OrderBy(orderBy);
+                SetOrderBy(q, orderBy);
                 if (skip != null || take != null)
                     q.Limit(skip, take);
                 return db.Select(q).ConvertAll(x => (IUserAuth)x);
@@ -346,8 +354,7 @@ namespace ServiceStack.Auth
                                  x.DisplayName.Contains(query) ||
                                  x.Company.Contains(query));
                 }
-                if (orderBy != null)
-                    q.OrderBy(orderBy);
+                SetOrderBy(q, orderBy);
                 if (skip != null || take != null)
                     q.Limit(skip, take);
                 return db.Select(q).ConvertAll(x => (IUserAuth)x);
@@ -392,18 +399,16 @@ namespace ServiceStack.Auth
 
         public virtual void DeleteUserAuth(string userAuthId)
         {
-            Exec(db =>
-            {
-                using (var trans = db.OpenTransaction())
-                {
-                    var userId = int.Parse(userAuthId);
+            Exec(db => {
+                using var trans = db.OpenTransaction();
+                var userId = int.Parse(userAuthId);
 
-                    db.Delete<TUserAuth>(x => x.Id == userId);
-                    db.Delete<TUserAuthDetails>(x => x.UserAuthId == userId);
+                db.Delete<TUserAuth>(x => x.Id == userId);
+                db.Delete<TUserAuthDetails>(x => x.UserAuthId == userId);
+                if (UseDistinctRoleTables)
                     db.Delete<UserAuthRole>(x => x.UserAuthId == userId);
 
-                    trans.Commit();
-                }
+                trans.Commit();
             });
         }
 
@@ -551,6 +556,8 @@ namespace ServiceStack.Auth
             {
                 db.DeleteAll<TUserAuth>();
                 db.DeleteAll<TUserAuthDetails>();
+                if (UseDistinctRoleTables)
+                    db.DeleteAll<UserAuthRole>();
             });
         }
 
@@ -722,7 +729,7 @@ namespace ServiceStack.Auth
 
                     if (!roles.IsEmpty())
                     {
-                        var roleSet = userRoles.Where(x => x.Role != null).Select(x => x.Role).ToHashSet();
+                        var roleSet = userRoles.Where(x => x.Role != null).Select(x => x.Role).ToSet();
                         foreach (var role in roles)
                         {
                             if (!roleSet.Contains(role))
@@ -740,7 +747,7 @@ namespace ServiceStack.Auth
 
                     if (!permissions.IsEmpty())
                     {
-                        var permissionSet = userRoles.Where(x => x.Permission != null).Select(x => x.Permission).ToHashSet();
+                        var permissionSet = userRoles.Where(x => x.Permission != null).Select(x => x.Permission).ToSet();
                         foreach (var permission in permissions)
                         {
                             if (!permissionSet.Contains(permission))
@@ -806,10 +813,7 @@ namespace ServiceStack.Auth
 
         public ApiKey GetApiKey(string apiKey)
         {
-            return Exec(db =>
-            {
-                return db.SingleById<ApiKey>(apiKey);
-            });
+            return Exec(db => db.SingleById<ApiKey>(apiKey));
         }
 
         public List<ApiKey> GetUserApiKeys(string userId)
@@ -834,14 +838,8 @@ namespace ServiceStack.Auth
             });
         }
 
-        public IUserAuth CreateUserAuth()
-        {
-            return (IUserAuth) typeof(TUserAuth).CreateInstance();
-        }
+        public IUserAuth CreateUserAuth() => (IUserAuth) typeof(TUserAuth).CreateInstance();
 
-        public IUserAuthDetails CreateUserAuthDetails()
-        {
-            return (IUserAuthDetails)typeof(TUserAuthDetails).CreateInstance();
-        }
+        public IUserAuthDetails CreateUserAuthDetails() => (IUserAuthDetails)typeof(TUserAuthDetails).CreateInstance();
     }
 }

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Templates;
 using ServiceStack.Text;
@@ -9,47 +11,81 @@ namespace ServiceStack.Auth
 {
     public abstract class OAuth2Provider : OAuthProvider
     {
-        public OAuth2Provider(IAppSettings appSettings, string authRealm, string oAuthProvider) 
-            : base(appSettings, authRealm, oAuthProvider) {}
-        public OAuth2Provider(IAppSettings appSettings, string authRealm, string oAuthProvider, string consumerKeyName, string consumerSecretName) 
-            : base(appSettings, authRealm, oAuthProvider, consumerKeyName, consumerSecretName) {}
+        public OAuth2Provider(IAppSettings appSettings, string authRealm, string oAuthProvider)
+            : base(appSettings, authRealm, oAuthProvider)
+        {
+            Scopes = appSettings.Get($"oauth.{Provider}.{nameof(Scopes)}", TypeConstants.EmptyStringArray);
+        }
 
-        protected string[] Scopes { get; set; }
+        public OAuth2Provider(IAppSettings appSettings, string authRealm, string oAuthProvider, string consumerKeyName,
+            string consumerSecretName)
+            : base(appSettings, authRealm, oAuthProvider, consumerKeyName, consumerSecretName)
+        {
+            Scopes = appSettings.Get($"oauth.{Provider}.{nameof(Scopes)}", TypeConstants.EmptyStringArray);
+        }
+
+        public string[] Scopes { get; set; }
         
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        public string ResponseMode { get; set; }
+
+        protected override void AssertValidState()
+        {
+            base.AssertValidState();
+            
+            AssertAuthorizeUrl();
+            AssertAccessTokenUrl();
+        }
+
+        protected virtual void AssertAccessTokenUrl()
+        {
+            if (string.IsNullOrEmpty(AccessTokenUrl))
+                throw new Exception($"oauth.{Provider}.{nameof(AccessTokenUrl)} is required");
+        }
+
+        protected virtual void AssertAuthorizeUrl()
+        {
+            if (string.IsNullOrEmpty(AuthorizeUrl))
+                throw new Exception($"oauth.{Provider}.{nameof(AuthorizeUrl)} is required");
+        }
+
+        public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
         {
             var tokens = Init(authService, ref session, request);
+            var ctx = CreateAuthContext(authService, session, tokens);
 
             //Transferring AccessToken/Secret from Mobile/Desktop App to Server
-            if (request?.AccessToken != null && VerifyAccessToken != null)
+            if (request?.AccessToken != null && VerifyAccessTokenAsync != null)
             {
-                if (!VerifyAccessToken(request.AccessToken))
-                    return HttpError.Unauthorized("AccessToken is not for client_id: " + ConsumerKey);
+                if (!await VerifyAccessTokenAsync(request.AccessToken, ctx).ConfigAwait())
+                    return HttpError.Unauthorized(ErrorMessages.InvalidAccessToken.Localize(authService.Request));
 
                 var isHtml = authService.Request.IsHtml();
-                var failedResult = AuthenticateWithAccessToken(authService, session, tokens, request.AccessToken);
+                var failedResult = await AuthenticateWithAccessTokenAsync(authService, session, tokens, request.AccessToken, ctx.AuthInfo, token: token).ConfigAwait();
                 if (failedResult != null)
                     return ConvertToClientError(failedResult, isHtml);
 
                 return isHtml
-                    ? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1")))
+                    ? await authService.Redirect(SuccessRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait()
                     : null; //return default AuthenticateResponse
             }
 
             var httpRequest = authService.Request;
-            var error = httpRequest.QueryString["error_reason"]
-                        ?? httpRequest.QueryString["error"]
-                        ?? httpRequest.QueryString["error_code"]
-                        ?? httpRequest.QueryString["error_description"];
+            var error = httpRequest.GetQueryStringOrForm("error_reason")
+                ?? httpRequest.GetQueryStringOrForm("error")
+                ?? httpRequest.GetQueryStringOrForm("error_code")
+                ?? httpRequest.GetQueryStringOrForm("error_description");
 
             var hasError = !error.IsNullOrEmpty();
             if (hasError)
             {
-                Log.Error($"OAuth2 Error callback. {httpRequest.QueryString}");
-                return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", error)));
-            }             
+                var httpParams = HttpUtils.HasRequestBody(httpRequest.Verb)
+                    ? httpRequest.QueryString
+                    : httpRequest.FormData;
+                Log.Error($"OAuth2 Error callback. {httpParams}");
+                return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", error)));
+            }
         
-            var code = httpRequest.QueryString[Keywords.Code];
+            var code = httpRequest.GetQueryStringOrForm(Keywords.Code);
             var isPreAuthCallback = !code.IsNullOrEmpty();
             if (!isPreAuthCallback)
             {
@@ -61,82 +97,96 @@ namespace ServiceStack.Auth
                     .AddQueryParam("scope", string.Join(" ", Scopes))
                     .AddQueryParam(Keywords.State, oauthstate);
 
+                if (ResponseMode != null)
+                    preAuthUrl = preAuthUrl.AddQueryParam("response_mode", ResponseMode);
+
                 if (session is AuthUserSession authSession)
                     (authSession.Meta ?? (authSession.Meta = new Dictionary<string, string>()))["oauthstate"] = oauthstate;
 
-                this.SaveSession(authService, session, SessionExpiry);
-                return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
+                await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
+                return authService.Redirect(PreAuthUrlFilter(ctx, preAuthUrl));
             }
 
             try
             {
-                var state = httpRequest.QueryString[Keywords.State];
+                var state = httpRequest.GetQueryStringOrForm(Keywords.State);
                 if (state != null && session is AuthUserSession authSession)
                 {
                     if (authSession.Meta == null)
                         authSession.Meta = new Dictionary<string, string>();
                     
                     if (authSession.Meta.TryGetValue("oauthstate", out var oauthState) && state != oauthState)
-                        return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "InvalidState")));
+                        return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "InvalidState")));
 
                     authSession.Meta.Remove("oauthstate");
                 }
                 
-                var contents = GetAccessTokenJson(code);
-                var authInfo = JsonObject.Parse(contents);
+                var contents = await GetAccessTokenJsonAsync(code, ctx, token).ConfigAwait();
+                var authInfo = (Dictionary<string,object>)JSON.parse(contents);
+                ctx.AuthInfo = authInfo.ToStringDictionary();
 
-                var accessToken = authInfo["access_token"];
+                var accessToken = (string)authInfo["access_token"];
 
-                var redirectUrl = SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"));
+                var redirectUrl = SuccessRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("s", "1"));
 
-                var errorResult = AuthenticateWithAccessToken(authService, session, tokens, accessToken);
+                var errorResult = await AuthenticateWithAccessTokenAsync(authService, session, tokens, accessToken, ctx.AuthInfo, token).ConfigAwait();
                 if (errorResult != null)
                     return errorResult;
                 
                 //Haz Access!
-
                 if (HostContext.Config?.UseSameSiteCookies == true)
                 {
                     // Workaround Set-Cookie HTTP Header not being honoured in 302 Redirects 
                     var redirectHtml = HtmlTemplates.GetHtmlRedirectTemplate(redirectUrl);
-                    return new HttpResult(redirectHtml, MimeTypes.Html);
+                    return await new HttpResult(redirectHtml, MimeTypes.Html).SuccessAuthResultAsync(authService,session).ConfigAwait();
                 }
                 
-                return authService.Redirect(redirectUrl); 
+                return await authService.Redirect(redirectUrl).SuccessAuthResultAsync(authService,session).ConfigAwait();
             }
             catch (WebException we)
             {
-                string errorBody = we.GetResponseBody();
+                var errorBody = await we.GetResponseBodyAsync(token).ConfigAwait();
+                Log.Error($"Failed to get Access Token for '{Provider}': {errorBody}");
+                
                 var statusCode = ((HttpWebResponse)we.Response).StatusCode;
                 if (statusCode == HttpStatusCode.BadRequest)
                 {
-                    return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
+                    return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
                 }
             }
 
             //Shouldn't get here
-            return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
+            return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "Unknown")));
         }
 
-        protected virtual string GetAccessTokenJson(string code)
+        protected virtual async Task<string> GetAccessTokenJsonAsync(string code, AuthContext ctx, CancellationToken token=default)
         {
             var accessTokenUrl = $"{AccessTokenUrl}?code={code}&client_id={ConsumerKey}&client_secret={ConsumerSecret}&redirect_uri={this.CallbackUrl.UrlEncode()}&grant_type=authorization_code";
-            var contents = AccessTokenUrlFilter(this, accessTokenUrl).PostToUrl("");
+            var contents = await AccessTokenUrlFilter(ctx, accessTokenUrl).PostToUrlAsync("", token: token).ConfigAwait();
             return contents;
         }
 
-        protected virtual object AuthenticateWithAccessToken(IServiceBase authService, IAuthSession session, IAuthTokens tokens, string accessToken)
+        protected virtual async Task<object> AuthenticateWithAccessTokenAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens, 
+            string accessToken, Dictionary<string,string> authInfo = null, CancellationToken token=default)
         {
             tokens.AccessToken = accessToken;
+            if (authInfo != null)
+            {
+                tokens.Items ??= new Dictionary<string, string>();
+                foreach (var entry in authInfo)
+                {
+                    tokens.Items[entry.Key] = entry.Value;
+                }
+            }
 
-            var authInfo = this.CreateAuthInfo(accessToken);
+            var accessTokenAuthInfo = await this.CreateAuthInfoAsync(accessToken, token).ConfigAwait();
 
             session.IsAuthenticated = true;
 
-            return OnAuthenticated(authService, session, tokens, authInfo);
+            return await OnAuthenticatedAsync(authService, session, tokens, accessTokenAuthInfo, token).ConfigAwait();
         }
 
-        protected abstract Dictionary<string, string> CreateAuthInfo(string accessToken);
+        protected abstract Task<Dictionary<string, string>> CreateAuthInfoAsync(string accessToken, CancellationToken token=default);
 
         /// <summary>
         /// Override to return User chosen username or Email for this AuthProvider
@@ -144,7 +194,7 @@ namespace ServiceStack.Auth
         protected virtual string GetUserAuthName(IAuthTokens tokens, Dictionary<string, string> authInfo) =>
             tokens.Email;
 
-        protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
+        protected override Task LoadUserAuthInfoAsync(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token=default)
         {
             try
             {
@@ -168,7 +218,13 @@ namespace ServiceStack.Auth
             }
 
             LoadUserOAuthProvider(userSession, tokens);
+            return TypeConstants.EmptyTask;
         }
+
+        /// <summary>
+        /// Custom DisplayName resolver function when not provided
+        /// </summary>
+        public Func<IAuthSession,IAuthTokens, string> ResolveUnknownDisplayName { get; set; }
         
         public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
         {
@@ -180,7 +236,9 @@ namespace ServiceStack.Auth
             userSession.FirstName = tokens.FirstName ?? userSession.FirstName;
             userSession.LastName = tokens.LastName ?? userSession.LastName;
             userSession.Email = userSession.PrimaryEmail = tokens.Email ?? userSession.PrimaryEmail ?? userSession.Email;
+            
+            if (userSession.DisplayName == null && ResolveUnknownDisplayName != null)
+                userSession.DisplayName = ResolveUnknownDisplayName(authSession, tokens);
         }
-
     }
 }

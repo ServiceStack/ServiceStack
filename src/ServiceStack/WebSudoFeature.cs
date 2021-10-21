@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class WebSudoFeature : IPlugin, IAuthEvents, Model.IHasStringId
+    public class WebSudoFeature : AuthEvents, IPlugin, Model.IHasStringId
     {
         public string Id { get; set; } = Plugins.WebSudo;
         public const string SessionCopyRequestItemKey = "__copy-of-request-session";
@@ -25,18 +27,18 @@ namespace ServiceStack
                 throw new NotSupportedException("The IUserAuth session must also implement IWebSudoAuthSession");
             }
 
-            appHost.GlobalRequestFilters.Add(OnRequestStart);
-            appHost.GlobalResponseFilters.Add(OnRequestEnd);
+            appHost.GlobalRequestFiltersAsync.Add(OnRequestStartAsync);
+            appHost.GlobalResponseFiltersAsync.Add(OnRequestEndAsync);
 
             var authFeature = appHost.GetPlugin<AuthFeature>();
             authFeature.AuthEvents.Add(this);
         }
 
-        private void OnRequestStart(IRequest request, IResponse response, object dto)
+        private async Task OnRequestStartAsync(IRequest request, IResponse response, object dto)
         {
             if (dto == null) return;
 
-            var session = request.GetSession();
+            var session = await request.GetSessionAsync().ConfigAwait();
             if (!session.IsAuthenticated) return;
 
             if (dto is Authenticate authenticateDto && !AuthenticateService.LogoutAction.EqualsIgnoreCase(authenticateDto.provider))
@@ -53,13 +55,12 @@ namespace ServiceStack
             }
         }
 
-        private void OnRequestEnd(IRequest request, IResponse response, object dto)
+        private async Task OnRequestEndAsync(IRequest request, IResponse response, object dto)
         {
             if (!request.Items.ContainsKey(SessionCopyRequestItemKey)) return;
-            var copy = request.Items[SessionCopyRequestItemKey] as IWebSudoAuthSession;
-            if (copy == null) return;
+            if (!(request.Items[SessionCopyRequestItemKey] is IWebSudoAuthSession copy)) return;
 
-            var session = request.GetSession();
+            var session = await request.GetSessionAsync().ConfigAwait();
             if (!session.IsAuthenticated)
             {
                 // if the credential check failed, restore the session to it's prior, valid state.
@@ -67,14 +68,13 @@ namespace ServiceStack
                 session.PopulateWith(copy);
             }
 
-            request.SaveSession(session);
+            await request.SaveSessionAsync(session).ConfigAwait();
         }
 
-        public void OnCreated(IRequest httpReq, IAuthSession session)
+        public override void OnCreated(IRequest httpReq, IAuthSession session)
         {
             if (!httpReq.Items.ContainsKey(SessionCopyRequestItemKey)) return;
-            var copy = httpReq.Items[SessionCopyRequestItemKey] as IWebSudoAuthSession;
-            if (copy == null) return;
+            if (!(httpReq.Items[SessionCopyRequestItemKey] is IWebSudoAuthSession copy)) return;
 
             var id = session.Id;
             var created = session.CreatedAt;
@@ -84,7 +84,7 @@ namespace ServiceStack
             session.CreatedAt = created;
         }
 
-        public void OnAuthenticated(IRequest httpReq, IAuthSession session, IServiceBase authService, IAuthTokens tokens,
+        public override void OnAuthenticated(IRequest httpReq, IAuthSession session, IServiceBase authService, IAuthTokens tokens,
             Dictionary<string, string> authInfo)
         {
             if (!(session is IWebSudoAuthSession webSudoSession)) return;
@@ -96,19 +96,6 @@ namespace ServiceStack
             {
                 webSudoSession.AuthenticatedWebSudoUntil = webSudoSession.AuthenticatedAt.Add(this.WebSudoDuration);
             }
-        }
-
-        public void OnLogout(IRequest httpReq, IAuthSession session, IServiceBase authService)
-        {
-
-        }
-
-        public IHttpResult Validate(IServiceBase authService, IAuthSession session, IAuthTokens tokens,
-            Dictionary<string, string> authInfo) => null;
-
-        public void OnRegistered(IRequest httpReq, IAuthSession session, IServiceBase registrationService)
-        {
-
         }
     }
 }

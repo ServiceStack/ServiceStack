@@ -155,12 +155,19 @@ namespace ServiceStack.IO
         {
             if (string.IsNullOrEmpty(dirPath))
                 return null;
-            
-            ExecUtils.RetryOnException(() => {
-                if (!Directory.Exists(dirPath))
-                    Directory.CreateDirectory(dirPath);
-            }, TimeSpan.FromMilliseconds(timeoutMs));
-            return dirPath;
+
+            try
+            {
+                ExecUtils.RetryOnException(() => {
+                    if (!Directory.Exists(dirPath))
+                        Directory.CreateDirectory(dirPath);
+                }, TimeSpan.FromMilliseconds(timeoutMs));
+                return dirPath;
+            }
+            catch (TimeoutException e)
+            {
+                throw e.InnerException ?? e;
+            }
         }
         
     }

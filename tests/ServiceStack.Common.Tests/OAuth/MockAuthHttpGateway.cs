@@ -1,4 +1,6 @@
 #if !NETCORE_SUPPORT
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Text;
 
@@ -117,10 +119,27 @@ namespace ServiceStack.Common.Tests.OAuth
     ""full_name"":""{1}""
 }";
 
+        public Task<AuthId> VerifyTwitterAccessTokenAsync(string consumerKey, string consumerSecret, string accessToken,
+            string accessTokenSecret, CancellationToken token = default)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public string DownloadTwitterUserInfo(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, string twitterUserId)
         {
             twitterUserId.ThrowIfNullOrEmpty("twitterUserId");
             return JsonTwitter.Fmt(Tokens.DisplayName);
+        }
+
+        public Task<string> DownloadTwitterUserInfoAsync(string consumerKey, string consumerSecret, string accessToken,
+            string accessTokenSecret, string twitterUserId, CancellationToken token = default)
+        {
+            return DownloadTwitterUserInfo(consumerKey, consumerSecret, accessToken, accessTokenSecret, twitterUserId).InTask();
+        }
+
+        public Task<bool> VerifyFacebookAccessTokenAsync(string appId, string accessToken, CancellationToken token = default)
+        {
+            throw new System.NotImplementedException();
         }
 
         public string DownloadFacebookUserInfo(string facebookCode, params string[] fields)
@@ -131,7 +150,17 @@ namespace ServiceStack.Common.Tests.OAuth
                 Tokens.FirstName, Tokens.LastName, Tokens.Email);
         }
 
+        public Task<string> DownloadFacebookUserInfoAsync(string facebookCode, string[] fields, CancellationToken token = default)
+        {
+            return DownloadFacebookUserInfo(facebookCode, fields).InTask();
+        }
+
         public bool VerifyGoogleAccessToken(string consumerKey, string accessToken)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task<string> DownloadGithubUserEmailsInfoAsync(string accessToken, CancellationToken token = default)
         {
             throw new System.NotImplementedException();
         }
@@ -141,12 +170,27 @@ namespace ServiceStack.Common.Tests.OAuth
             throw new System.NotImplementedException();
         }
 
+        public Task<string> DownloadGoogleUserInfoAsync(string accessToken, CancellationToken token = default)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public string DownloadMicrosoftUserInfo(string accessToken)
         {
             throw new System.NotImplementedException();
         }
 
+        public Task<string> DownloadMicrosoftUserInfoAsync(string accessToken, CancellationToken token = default)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public string CreateMicrosoftPhotoUrl(string accessToken, string savePhotoSize = null)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task<string> CreateMicrosoftPhotoUrlAsync(string accessToken, string savePhotoSize = null, CancellationToken token = default)
         {
             throw new System.NotImplementedException();
         }
@@ -159,7 +203,17 @@ namespace ServiceStack.Common.Tests.OAuth
                 Tokens.FirstName, Tokens.LastName, Tokens.Email);
         }
 
+        public Task<string> DownloadYammerUserInfoAsync(string yammerUserId)
+        {
+            return DownloadYammerUserInfo(yammerUserId).InTask();
+        }
+
         public string DownloadGithubUserInfo(string accessToken)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task<string> DownloadGithubUserInfoAsync(string accessToken, CancellationToken token = default)
         {
             throw new System.NotImplementedException();
         }

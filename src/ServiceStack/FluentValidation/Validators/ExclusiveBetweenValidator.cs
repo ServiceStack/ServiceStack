@@ -22,7 +22,7 @@ namespace ServiceStack.FluentValidation.Validators {
 	using Resources;
 
 	public class ExclusiveBetweenValidator : PropertyValidator, IBetweenValidator {
-		public ExclusiveBetweenValidator(IComparable from, IComparable to) : base(new LanguageStringSource(nameof(ExclusiveBetweenValidator))) {
+		public ExclusiveBetweenValidator(IComparable from, IComparable to) {
 			To = to;
 			From = from;
 
@@ -51,6 +51,10 @@ namespace ServiceStack.FluentValidation.Validators {
 				return false;
 			}
 			return true;
+		}
+
+		protected override string GetDefaultMessageTemplate() {
+			return Localized(nameof(ExclusiveBetweenValidator));
 		}
 	}
 }

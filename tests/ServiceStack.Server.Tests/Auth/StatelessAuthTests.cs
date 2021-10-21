@@ -269,7 +269,7 @@ namespace ServiceStack.Server.Tests.Auth
 
         class JwtAuthProviderReaderAppHost : AppHostHttpListenerBase
         {
-            public JwtAuthProviderReaderAppHost() : base(typeof(FallbackAuthKeyTests).Name, typeof(AppHost).Assembly) { }
+            public JwtAuthProviderReaderAppHost() : base(nameof(FallbackAuthKeyTests), typeof(AppHost).Assembly) { }
 
             public override void Configure(Container container)
             {
@@ -1253,7 +1253,7 @@ namespace ServiceStack.Server.Tests.Auth
             catch (WebServiceException ex)
             {
                 Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
-                Assert.That(ex.ErrorCode, Is.EqualTo(typeof(TokenException).Name));
+                Assert.That(ex.ErrorCode, Is.EqualTo(nameof(TokenException)));
             }
             finally
             {
@@ -1288,7 +1288,7 @@ namespace ServiceStack.Server.Tests.Auth
             catch (WebServiceException ex)
             {
                 Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
-                Assert.That(ex.ErrorCode, Is.EqualTo(typeof(TokenException).Name));
+                Assert.That(ex.ErrorCode, Is.EqualTo(nameof(TokenException)));
             }
         }
 

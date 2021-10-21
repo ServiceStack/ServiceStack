@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace ServiceStack.Auth
 {
@@ -80,6 +81,19 @@ namespace ServiceStack.Auth
                 lock (Instance.Hashes) Instance.Hashes.Clear();
                 lock (Instance.TrackedTypes) Instance.TrackedTypes.ForEach(x => x.Clear());
             }
+
+            public Task ClearAsync(CancellationToken token = default)
+            {
+                Clear();
+                return TypeConstants.EmptyTask;
+            }
+
+#if NET472 || NETSTANDARD2_0
+            public async Task<IRedisClientFacadeAsync> GetClientAsync(CancellationToken token = default)
+            {
+                return new InMemoryClientFacadeAsync(root);
+            }
+#endif
         }
 
         internal class InMemoryClientFacade : IRedisClientFacade
@@ -107,7 +121,8 @@ namespace ServiceStack.Auth
 
                 public T GetById(object id)
                 {
-                    if (id == null) return default(T);
+                    if (id == null) 
+                        return default;
 
                     lock (TypedData<T>.Instance.Items)
                     {
@@ -174,7 +189,8 @@ namespace ServiceStack.Auth
 
             public void Store<T>(T item)
             {
-                if (Equals(item, default(T))) return;
+                if (Equals(item, default(T))) 
+                    return;
 
                 lock (TypedData<T>.Instance.Items)
                 {
@@ -206,7 +222,8 @@ namespace ServiceStack.Auth
 
                 lock (root.Hashes)
                 {
-                    if (!root.Hashes.TryGetValue(hashId, out var hash)) return null;
+                    if (!root.Hashes.TryGetValue(hashId, out var hash)) 
+                        return null;
 
                     hash.TryGetValue(key, out var value);
                     return value;
@@ -265,6 +282,203 @@ namespace ServiceStack.Auth
             {
             }
         }
+
+#if NET472 || NETSTANDARD2_0
+        internal class InMemoryClientFacadeAsync : IRedisClientFacadeAsync
+        {
+            private readonly IMemoryAuthRepository root;
+
+            public InMemoryClientFacadeAsync(IMemoryAuthRepository root)
+            {
+                this.root = root;
+            }
+
+            class InMemoryTypedClientFacadeAsync<T> : ITypedRedisClientFacadeAsync<T>
+            {
+                private readonly IMemoryAuthRepository root;
+
+                public InMemoryTypedClientFacadeAsync(IMemoryAuthRepository root)
+                {
+                    this.root = root;
+                }
+
+                public Task<int> GetNextSequenceAsync(CancellationToken token = default)
+                {
+                    return Interlocked.Increment(ref TypedData<T>.Instance.Sequence).InTask();
+                }
+
+                public Task<T> GetByIdAsync(object id, CancellationToken token = default)
+                {
+                    if (id == null) 
+                        return default;
+
+                    lock (TypedData<T>.Instance.Items)
+                    {
+                        return TypedData<T>.Instance.Items.FirstOrDefault(x => id.ToString() == x.ToId().ToString()).InTask();
+                    }
+                }
+
+                public Task<List<T>> GetByIdsAsync(IEnumerable ids, CancellationToken token = default)
+                {
+                    var idsSet = new HashSet<object>();
+                    foreach (var id in ids) 
+                        idsSet.Add(id.ToString());
+
+                    lock (TypedData<T>.Instance.Items)
+                    {
+                        return TypedData<T>.Instance.Items.Where(x => idsSet.Contains(x.ToId().ToString())).ToList().InTask();
+                    }
+                }
+
+                public Task DeleteByIdAsync(string id, CancellationToken token = default)
+                {
+                    lock (TypedData<T>.Instance.Items)
+                    {
+                        TypedData<T>.Instance.Items.RemoveAll(x => x.GetId().ToString() == id);
+                    }
+                    return TypeConstants.EmptyTask;
+                }
+
+                public Task DeleteByIdsAsync(IEnumerable ids, CancellationToken token = default)
+                {
+                    var idsSet = new HashSet<object>();
+                    foreach (var id in ids) 
+                        idsSet.Add(id.ToString());
+
+                    lock (TypedData<T>.Instance.Items)
+                    {
+                        TypedData<T>.Instance.Items.RemoveAll(x => idsSet.Contains(x.ToId().ToString()));
+                    }
+                    return TypeConstants.EmptyTask;
+                }
+
+                public Task<List<T>> GetAllAsync(int? skip = null, int? take = null, CancellationToken token = default)
+                {
+                    lock (TypedData<T>.Instance.Items)
+                    {
+                        if (skip != null || take != null)
+                        {
+                            var to = TypedData<T>.Instance.Items.AsEnumerable();
+                            if (skip != null)
+                                to = to.Skip(skip.Value);
+                            if (take != null)
+                                to = to.Take(take.Value);
+                            return to.ToList().InTask();
+                        }
+
+                        return TypedData<T>.Instance.Items.ToList().InTask();
+                    }
+                }
+            }
+
+            public Task<HashSet<string>> GetAllItemsFromSetAsync(string setId, CancellationToken token = default)
+            {
+                lock (root.Sets)
+                {
+                    return (root.Sets.TryGetValue(setId, out var set) ? set : new HashSet<string>()).InTask();
+                }
+            }
+
+            public Task StoreAsync<T>(T item, CancellationToken token = default)
+            {
+                if (Equals(item, default(T))) 
+                    return TypeConstants.EmptyTask;
+
+                lock (TypedData<T>.Instance.Items)
+                {
+                    for (var i = 0; i < TypedData<T>.Instance.Items.Count; i++)
+                    {
+                        var o = TypedData<T>.Instance.Items[i];
+                        if (o.ToId().ToString() != item.ToId().ToString()) continue;
+                        TypedData<T>.Instance.Items[i] = item;
+                        return TypeConstants.EmptyTask;
+                    }
+                    TypedData<T>.Instance.Items.Add(item);
+                }
+                return TypeConstants.EmptyTask;
+            }
+
+            public Task DeleteByIdAsync<T>(string id, CancellationToken token = default)
+            {
+                lock (TypedData<T>.Instance.Items)
+                {
+                    TypedData<T>.Instance.Items.RemoveAll(x => x.GetId().ToString() == id);
+                }
+                return TypeConstants.EmptyTask;
+            }
+
+            public async Task<string> GetValueFromHashAsync(string hashId, string key, CancellationToken token = default)
+            {
+                if (hashId == null)
+                    throw new ArgumentNullException(nameof(hashId));
+                if (key == null)
+                    throw new ArgumentNullException(nameof(key));
+
+                lock (root.Hashes)
+                {
+                    if (!root.Hashes.TryGetValue(hashId, out var hash)) 
+                        return null;
+
+                    hash.TryGetValue(key, out var value);
+                    return value;
+                }
+            }
+
+            public Task SetEntryInHashAsync(string hashId, string key, string value, CancellationToken token = default)
+            {
+                if (hashId == null)
+                    throw new ArgumentNullException(nameof(hashId));
+                if (key == null)
+                    throw new ArgumentNullException(nameof(key));
+
+                lock (root.Hashes)
+                {
+                    if (!root.Hashes.TryGetValue(hashId, out var hash))
+                        root.Hashes[hashId] = hash = new Dictionary<string, string>();
+
+                    hash[key] = value;
+                }
+                return TypeConstants.EmptyTask;
+            }
+
+            public Task RemoveEntryFromHashAsync(string hashId, string key, CancellationToken token = default)
+            {
+                if (hashId == null)
+                    throw new ArgumentNullException(nameof(hashId));
+                if (key == null)
+                    throw new ArgumentNullException(nameof(key));
+
+                lock (root.Hashes)
+                {
+                    if (!root.Hashes.TryGetValue(hashId, out var hash))
+                        root.Hashes[hashId] = hash = new Dictionary<string, string>();
+
+                    hash.Remove(key);
+                }
+                return TypeConstants.EmptyTask;
+            }
+
+            public Task AddItemToSetAsync(string setId, string item, CancellationToken token = default)
+            {
+                lock (root.Sets)
+                {
+                    if (!root.Sets.TryGetValue(setId, out var set))
+                        root.Sets[setId] = set = new HashSet<string>();
+
+                    set.Add(item);
+                }
+                return TypeConstants.EmptyTask;
+            }
+
+            public ITypedRedisClientFacadeAsync<T> AsAsync<T>()
+            {
+                return new InMemoryTypedClientFacadeAsync<T>(root);
+            }
+
+            public ValueTask DisposeAsync() => default;
+        }
+#endif
+        
     }
     
     public static class AuthRepositoryUtils

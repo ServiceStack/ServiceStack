@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
@@ -23,17 +25,69 @@ namespace ServiceStack.Host
         }
     }
 
+    public class ActionMethod
+    {
+        public const string Async = nameof(Async);
+        public const string AsyncUpper = "ASYNC";
+        public MethodInfo MethodInfo { get; }
+        public bool IsAsync { get; }
+        public string Name { get; }
+        private string nameUpper;
+        public string NameUpper => nameUpper ??= Name.ToUpper();
+        public ActionMethod(MethodInfo methodInfo)
+        {
+            MethodInfo = methodInfo;
+            IsAsync = methodInfo.Name.EndsWith(Async);
+            Name = IsAsync
+                ? methodInfo.Name.Substring(0, methodInfo.Name.Length - Async.Length)
+                : methodInfo.Name;
+        }
+
+        private Type requestType;
+        public Type RequestType => requestType ??= MethodInfo.GetParameters()[0].ParameterType;
+        public ParameterInfo[] GetParameters() => MethodInfo.GetParameters();
+        public bool IsGenericMethod => MethodInfo.IsGenericMethod;
+        public Type ReturnType => MethodInfo.ReturnType;
+        public object[] GetCustomAttributes(bool inherit) => MethodInfo.GetCustomAttributes(inherit);
+
+        public object[] AllAttributes() => MethodInfo.AllAttributes();
+        public T[] AllAttributes<T>() => MethodInfo.AllAttributes<T>();
+    }
+
     public static class ServiceExecExtensions
     {
-        public static IEnumerable<MethodInfo> GetActions(this Type serviceType)
+        public static List<ActionMethod> GetRequestActions(this Type serviceType, Type requestType)
         {
-            foreach (var mi in serviceType.GetMethods(BindingFlags.Public | BindingFlags.Instance))
-            {
-                if (!ServiceController.IsServiceAction(mi)) 
-                    continue;
+            if (!typeof(IService).IsAssignableFrom(serviceType))
+                throw new NotSupportedException("All Services must implement IService");
 
-                yield return mi;
-            }
+            var to = serviceType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                .Where(x => x.GetParameters().Length == 1 && x.GetParameters()[0].ParameterType == requestType && !x.IsGenericMethod && 
+                            ServiceController.IsServiceAction(x.Name, x.GetParameters()[0].ParameterType))
+                .Map(x => new ActionMethod(x));
+
+            return MergeAsyncActions(to);
+        }
+
+        public static List<ActionMethod> GetActions(this Type serviceType)
+        {
+            var to = serviceType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                .Where(x => x.GetParameters().Length == 1 && x.DeclaringType != typeof(Service) && !x.IsGenericMethod
+                        && ServiceController.IsServiceAction(x.Name, x.GetParameters()[0].ParameterType))
+                .Map(x => new ActionMethod(x));
+
+            return MergeAsyncActions(to);
+        }
+
+        private static List<ActionMethod> MergeAsyncActions(List<ActionMethod> to)
+        {
+            // Remove all sync methods where async equivalents exist & have async methods masquerades as sync methods for cheaper runtime invocation  
+            var asyncActions = new HashSet<Tuple<string,Type>>(to.Where(x => x.IsAsync)
+                .Select(x => new Tuple<string, Type>(x.NameUpper, x.RequestType)));
+            if (asyncActions.Count > 0)
+                to.RemoveAll(x => asyncActions.Contains(new Tuple<string, Type>(x.NameUpper, x.RequestType)) && !x.IsAsync);
+
+            return to;
         }
     }
 
@@ -54,28 +108,17 @@ namespace ServiceStack.Host
                 var args = mi.GetParameters();
 
                 var requestType = args[0].ParameterType;
-                var actionCtx = new ActionContext
-                {
+                var actionCtx = new ActionContext {
                     Id = ActionContext.Key(actionName, requestType.GetOperationName()),
                     ServiceType = typeof(TService),
                     RequestType = requestType,
+                    ServiceAction = CreateExecFn(requestType, mi.MethodInfo),
                 };
-
-                try
-                {
-                    actionCtx.ServiceAction = CreateExecFn(requestType, mi);
-                }
-                catch
-                {
-                    //Potential problems with MONO, using reflection for fallback
-                    actionCtx.ServiceAction = (service, request) =>
-                      mi.Invoke(service, new[] { request });
-                }
 
                 var reqFilters = new List<IRequestFilterBase>();
                 var resFilters = new List<IResponseFilterBase>();
 
-                foreach (var attr in mi.GetCustomAttributes(true))
+                foreach (var attr in mi.MethodInfo.GetCustomAttributes(true))
                 {
                     var hasReqFilter = attr as IRequestFilterBase;
                     var hasResFilter = attr as IResponseFilterBase;
@@ -115,8 +158,11 @@ namespace ServiceStack.Host
 
             if (mi.ReturnType != typeof(void))
             {
+                if (mi.ReturnType.IsValueType)
+                    callExecute = Expression.Convert(callExecute, typeof(object));
+                    
                 var executeFunc = Expression.Lambda<ActionInvokerFn>
-                (callExecute, serviceParam, requestDtoParam).Compile();
+                    (callExecute, serviceParam, requestDtoParam).Compile();
 
                 return executeFunc;
             }
@@ -144,7 +190,8 @@ namespace ServiceStack.Host
         {
             foreach (var actionCtx in GetActionsFor<TRequest>())
             {
-                if (execMap.ContainsKey(actionCtx.Id)) continue;
+                if (execMap.ContainsKey(actionCtx.Id)) 
+                    continue;
 
                 var serviceRunner = HostContext.CreateServiceRunner<TRequest>(actionCtx);
                 execMap[actionCtx.Id] = serviceRunner.Process;

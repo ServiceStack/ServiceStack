@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
 
@@ -67,30 +69,32 @@ namespace ServiceStack.Auth
             {
                 this.Scopes = new[] {
                     "User.Read",
+                    "openid",
                 };
             }
 
             NavItem = new NavItem {
                 Href = "/auth/" + Name,
-                Label = "Sign in with Microsoft",
+                Label = "Sign In with Microsoft",
                 Id = "btn-" + Name,
                 ClassName = "btn-social btn-microsoft",
                 IconClass = "fab svg-microsoft",
             };
         }
 
-        protected override string GetAccessTokenJson(string code)
+        protected override async Task<string> GetAccessTokenJsonAsync(string code, AuthContext ctx, CancellationToken token = default)
         {
             var accessTokenParams = $"code={code}&client_id={ConsumerKey}&client_secret={ConsumerSecret}&redirect_uri={this.CallbackUrl.UrlEncode()}&grant_type=authorization_code";
-            var contents = AccessTokenUrlFilter(this, AccessTokenUrl)
-                .PostToUrl(accessTokenParams, requestFilter:req => req.ContentType = MimeTypes.FormUrlEncoded);
+            var contents = await AccessTokenUrlFilter(ctx, AccessTokenUrl)
+                .PostToUrlAsync(accessTokenParams, requestFilter:req => req.ContentType = MimeTypes.FormUrlEncoded, token: token).ConfigAwait();
             return contents;
         }
 
-        protected override Dictionary<string, string> CreateAuthInfo(string accessToken)
+        protected override async Task<Dictionary<string, string>> CreateAuthInfoAsync(string accessToken, CancellationToken token = default)
         {
             var url = this.UserProfileUrl;
-            var json = url.GetJsonFromUrl(requestFilter:req => req.AddBearerToken(accessToken));
+            var json = await url.GetJsonFromUrlAsync(
+                req => req.AddBearerToken(accessToken), token: token).ConfigAwait();
             var obj = JsonObject.Parse(json);
 
             obj.MoveKey("id", "user_id");
@@ -103,7 +107,7 @@ namespace ServiceStack.Auth
             {
                 try
                 {
-                    obj[AuthMetadataProvider.ProfileUrlKey] = AuthHttpGateway.CreateMicrosoftPhotoUrl(accessToken, SavePhotoSize);
+                    obj[AuthMetadataProvider.ProfileUrlKey] = await AuthHttpGateway.CreateMicrosoftPhotoUrlAsync(accessToken, SavePhotoSize, token).ConfigAwait();
                 }
                 catch (Exception ex)
                 {
@@ -112,6 +116,23 @@ namespace ServiceStack.Auth
             }
 
             return obj;
+        }
+
+        public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
+        {
+            if (!(authSession is AuthUserSession userSession))
+                return;
+            
+            base.LoadUserOAuthProvider(authSession, tokens);
+            
+            // if the id_token has been returned populate any roles
+            var idTokens  = JwtAuthProviderReader.ExtractPayload(tokens.Items["id_token"]);
+            if(idTokens.ContainsKey("roles"))
+            {
+                authSession.Roles ??= new List<string>();
+                var roles = (idTokens["roles"] as List<object>).ConvertTo<List<string>>();
+                authSession.Roles.AddRange(roles);
+            }
         }
     }
 }

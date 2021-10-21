@@ -284,7 +284,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             catch (WebServiceException ex)
             {
                 Assert.That(ex.ResponseStatus.ErrorCode, Is.EqualTo(nameof(ArgumentNullException)));
-                Assert.That(ex.ResponseStatus.Message, Is.EqualTo($"Value cannot be null.{Environment.NewLine}Parameter name: Name"));
+                Assert.That(ex.ResponseStatus.Message, Is.EqualTo($"Value cannot be null.{Environment.NewLine}Parameter name: Name")
+                    .Or.EqualTo("Value cannot be null. (Parameter 'Name')"));
             }
 
             try

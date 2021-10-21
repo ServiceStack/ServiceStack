@@ -25,13 +25,11 @@ namespace ServiceStack.Metadata
             {
                 var requestObj = AutoMappingUtils.PopulateWith(Activator.CreateInstance(dtoType));
 
-                using (var ms = MemoryStreamFactory.GetStream())
-                {
-                    HostContext.ContentTypes.SerializeToStreamAsync(
-                        new BasicRequest { ContentType = this.ContentType }, requestObj, ms).Wait();
+                using var ms = MemoryStreamFactory.GetStream();
+                HostContext.ContentTypes.SerializeToStreamAsync(
+                    new BasicRequest { ContentType = this.ContentType }, requestObj, ms).Wait();
 
-                    return ms.ReadToEnd();
-                }
+                return ms.ReadToEnd();
             }
             catch (Exception ex)
             {

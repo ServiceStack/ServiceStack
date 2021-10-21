@@ -7,6 +7,7 @@ using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Web;
 using Funq;
+using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
@@ -14,6 +15,7 @@ using ServiceStack.IO;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -129,9 +131,11 @@ namespace ServiceStack
         /// </summary>
         public static GistVirtualFiles GistVirtualFiles => AssertAppHost().VirtualFileSources.GetGistVirtualFiles();
 
-        public static ICacheClient Cache => TryResolve<ICacheClient>();
+        public static ICacheClient Cache => AssertAppHost().GetCacheClient();
 
-        public static MemoryCacheClient LocalCache => TryResolve<MemoryCacheClient>();
+        public static ICacheClientAsync CacheClientAsync => AssertAppHost().GetCacheClientAsync();
+
+        public static MemoryCacheClient LocalCache => AssertAppHost().GetMemoryCacheClient();
 
         /// <summary>
         /// Call to signal the completion of a ServiceStack-handled Request
@@ -249,12 +253,12 @@ namespace ServiceStack
         public static async Task RaiseAndHandleException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
         {
             if (!httpReq.Items.ContainsKey(nameof(ServiceStackHost.OnServiceException)))
-                await AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex);
+                await AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex).ConfigAwait();
 
             if (httpRes.IsClosed)
                 return;
 
-            await AssertAppHost().HandleResponseException(httpReq, httpRes, operationName, ex);
+            await AssertAppHost().HandleResponseException(httpReq, httpRes, operationName, ex).ConfigAwait();
         }
 
 #if !NETSTANDARD2_0
@@ -317,6 +321,9 @@ namespace ServiceStack
         {
             return AssertAppHost().TryGetCurrentRequest();
         }
+
+        public static IAuthSession GetAuthSecretSession() =>
+            GetPlugin<AuthFeature>()?.AuthSecretSession ?? Config.AuthSecretSession;
 
         public static int FindFreeTcpPort(int startingFrom=5000, int endingAt=65535)
         {

@@ -102,7 +102,7 @@ namespace ServiceStack
                     var privateKey = GetPrivateKey(encRequest.KeyId);
                     if (Equals(privateKey, default(RSAParameters)))
                     {
-                        await WriteUnencryptedError(req, HttpError.NotFound(ErrorKeyNotFound.Fmt(encRequest.KeyId, PublicKeyPath)), "KeyNotFoundException");
+                        await WriteUnencryptedError(req, HttpError.NotFound(ErrorKeyNotFound.Fmt(encRequest.KeyId, PublicKeyPath)), "KeyNotFoundException").ConfigAwait();
                         return null;
                     }
 
@@ -172,7 +172,7 @@ namespace ServiceStack
                 }
                 catch (Exception ex)
                 {
-                    await WriteEncryptedError(req, cryptKey, authKey, iv, ex, ErrorInvalidMessage);
+                    await WriteEncryptedError(req, cryptKey, authKey, iv, ex, ErrorInvalidMessage).ConfigAwait();
                     return null;
                 }
             });
@@ -188,7 +188,7 @@ namespace ServiceStack
 
                 if (response is Exception ex)
                 {
-                    await WriteEncryptedError(req, (byte[])oCryptKey, (byte[])oAuthKey, (byte[])oIv, ex);
+                    await WriteEncryptedError(req, (byte[])oCryptKey, (byte[])oAuthKey, (byte[])oIv, ex).ConfigAwait();
                     return null;
                 }
 
@@ -232,7 +232,7 @@ namespace ServiceStack
             req.Response.StatusDescription = description ?? (httpError != null ? httpError.ErrorCode : ex.GetType().Name);
 
             req.Response.ContentType = MimeTypes.Json;
-            await req.Response.WriteAsync(errorResponse.ToJson());
+            await req.Response.WriteAsync(errorResponse.ToJson()).ConfigAwait();
             req.Response.EndRequest();
         }
 
@@ -258,7 +258,7 @@ namespace ServiceStack
             };
 
             req.Response.ContentType = MimeTypes.Json;
-            await req.Response.WriteAsync(errorResponse.ToJson());
+            await req.Response.WriteAsync(errorResponse.ToJson()).ConfigAwait();
             req.Response.EndRequest();
         }
     }

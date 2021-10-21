@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.Logging;
 using ServiceStack.Web;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -117,7 +118,7 @@ namespace ServiceStack
             {
                 try
                 {
-                    await afterHeaders(httpRes);
+                    await afterHeaders(httpRes).ConfigAwait();
                 }
                 catch (Exception e)
                 {
@@ -133,7 +134,7 @@ namespace ServiceStack
             }
 
             if (!skipClose && !httpRes.IsClosed) 
-                await httpRes.CloseAsync();
+                await httpRes.CloseAsync().ConfigAwait();
 
             HostContext.CompleteRequest(req);
         }

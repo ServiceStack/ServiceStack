@@ -24,6 +24,8 @@ namespace ServiceStack.FluentValidation.TestHelper {
 	using System.Linq.Expressions;
 	using System.Reflection;
 	using System.Text.RegularExpressions;
+	using System.Threading;
+	using System.Threading.Tasks;
 	using Internal;
 	using Results;
 	using Validators;
@@ -66,6 +68,42 @@ namespace ServiceStack.FluentValidation.TestHelper {
 			testValidationResult.ShouldNotHaveValidationErrorFor(expression);
 		}
 
+		public static async Task<IEnumerable<ValidationFailure>> ShouldHaveValidationErrorForAsync<T, TValue>(this IValidator<T> validator,
+			Expression<Func<T, TValue>> expression, TValue value, CancellationToken cancellationToken = default, string ruleSet = null) where T : class, new() {
+			var instanceToValidate = new T();
+
+			var memberAccessor = new MemberAccessor<T, TValue>(expression, true);
+			memberAccessor.Set(instanceToValidate, value);
+
+			var testValidationResult = await validator.TestValidateAsync(instanceToValidate, cancellationToken, ruleSet);
+			return testValidationResult.ShouldHaveValidationErrorFor(expression);
+		}
+
+		public static async Task<IEnumerable<ValidationFailure>> ShouldHaveValidationErrorForAsync<T, TValue>(this IValidator<T> validator, Expression<Func<T, TValue>> expression, T objectToTest, CancellationToken cancellationToken = default, string ruleSet = null) where T : class {
+			var value = expression.Compile()(objectToTest);
+			var testValidationResult = await validator.TestValidateAsync(objectToTest, cancellationToken, ruleSet);
+			return testValidationResult.ShouldHaveValidationErrorFor(expression);
+		}
+
+		public static async Task ShouldNotHaveValidationErrorForAsync<T, TValue>(this IValidator<T> validator,
+			Expression<Func<T, TValue>> expression, TValue value, CancellationToken cancellationToken = default, string ruleSet = null) where T : class, new() {
+
+			var instanceToValidate = new T();
+
+			var memberAccessor = new MemberAccessor<T, TValue>(expression, true);
+			memberAccessor.Set(instanceToValidate, value);
+
+			var testValidationResult = await validator.TestValidateAsync(instanceToValidate, cancellationToken, ruleSet);
+			testValidationResult.ShouldNotHaveValidationErrorFor(expression);
+		}
+
+		public static async Task ShouldNotHaveValidationErrorForAsync<T, TValue>(this IValidator<T> validator, Expression<Func<T, TValue>> expression, T objectToTest, CancellationToken cancellationToken = default, string ruleSet = null) where T : class {
+			var value = expression.Compile()(objectToTest);
+			var testValidationResult = await validator.TestValidateAsync(objectToTest, cancellationToken, ruleSet);
+			testValidationResult.ShouldNotHaveValidationErrorFor(expression);
+		}
+
+
 		public static void ShouldHaveChildValidator<T, TProperty>(this IValidator<T> validator, Expression<Func<T, TProperty>> expression, Type childValidatorType) {
 			var descriptor = validator.CreateDescriptor();
 			var expressionMemberName = expression.GetMember()?.Name;
@@ -83,7 +121,7 @@ namespace ServiceStack.FluentValidation.TestHelper {
 
 			var childValidatorTypes = matchingValidators.OfType<IChildValidatorAdaptor>().Select(x => x.ValidatorType);
 
-			if (childValidatorTypes.All(x => !childValidatorType.GetTypeInfo().IsAssignableFrom(x.GetTypeInfo()))) {
+			if (childValidatorTypes.All(x => !childValidatorType.IsAssignableFrom(x))) {
 				var childValidatorNames = childValidatorTypes.Any() ? string.Join(", ", childValidatorTypes.Select(x => x.Name)) : "none";
 				throw new ValidationTestException(string.Format("Expected property '{0}' to have a child validator of type '{1}.'. Instead found '{2}'", expressionMemberName, childValidatorType.Name, childValidatorNames));
 			}
@@ -103,8 +141,33 @@ namespace ServiceStack.FluentValidation.TestHelper {
 				.ToArray();
 		}
 
+		// TODO: For FV10, remove the default null form the ruleset parameter, and mark this method as obsolete.
 		public static TestValidationResult<T> TestValidate<T>(this IValidator<T> validator, T objectToTest, string ruleSet = null) where T : class {
-			var validationResult = validator.Validate(objectToTest, null, ruleSet: ruleSet);
+			return validator.TestValidate(objectToTest, options => {
+				if (ruleSet != null) {
+					options.IncludeRuleSets(RulesetValidatorSelector.LegacyRulesetSplit(ruleSet));
+				}
+			});
+		}
+
+		// TODO: For FV10, remove the default null form the ruleset parameter, and mark this method as obsolete.
+		public static async Task<TestValidationResult<T>> TestValidateAsync<T>(this IValidator<T> validator, T objectToTest, CancellationToken cancellationToken = default, string ruleSet = null) where T : class {
+			return await validator.TestValidateAsync(objectToTest, options => {
+				if (ruleSet != null) {
+					options.IncludeRuleSets(RulesetValidatorSelector.LegacyRulesetSplit(ruleSet));
+				}
+			}, cancellationToken);
+		}
+
+		// TODO: For FV10, Add a default of null to the options parameter.
+		public static TestValidationResult<T> TestValidate<T>(this IValidator<T> validator, T objectToTest, Action<ValidationStrategy<T>> options) where T : class {
+			var validationResult = validator.Validate(objectToTest, options);
+			return new TestValidationResult<T>(validationResult);
+		}
+
+		// TODO: For FV10, Add a default of null to the options parameter.
+		public static async Task<TestValidationResult<T>> TestValidateAsync<T>(this IValidator<T> validator, T objectToTest, Action<ValidationStrategy<T>> options, CancellationToken cancellationToken = default) where T : class {
+			var validationResult = await validator.ValidateAsync(objectToTest, options, cancellationToken);
 			return new TestValidationResult<T>(validationResult);
 		}
 

@@ -32,7 +32,7 @@ namespace ServiceStack.Script
             
             var collection = cache.Source.Evaluate(scope, out var syncResult, out var asyncResult)
                 ? (IEnumerable)syncResult
-                : (IEnumerable)(await asyncResult);
+                : (IEnumerable)(await asyncResult.ConfigAwait());
 
             var index = 0;
             if (collection != null)
@@ -54,7 +54,7 @@ namespace ServiceStack.Script
 
                         if (cache.Where != null)
                         {
-                            var result = await cache.Where.EvaluateToBoolAsync(itemScope);
+                            var result = await cache.Where.EvaluateToBoolAsync(itemScope).ConfigAwait();
                             if (!result)
                                 continue;
                         }
@@ -101,7 +101,7 @@ namespace ServiceStack.Script
                     {
                         var itemScope = scope.ScopeWithParams(scopeArgs);
                         itemScope.ScopedParams[nameof(index)] = index++;
-                        await WriteBodyAsync(itemScope, block, token);
+                        await WriteBodyAsync(itemScope, block, token).ConfigAwait();
                     }
                 }
                 else
@@ -117,14 +117,14 @@ namespace ServiceStack.Script
                         scopeArgs[nameof(index)] = AssertWithinMaxQuota(index++);
                         var itemScope = scope.ScopeWithParams(scopeArgs);
     
-                        await WriteBodyAsync(itemScope, block, token);
+                        await WriteBodyAsync(itemScope, block, token).ConfigAwait();
                     }
                 }
             }
 
             if (index == 0)
             {
-                await WriteElseAsync(scope, block.ElseBlocks, token);
+                await WriteElseAsync(scope, block.ElseBlocks, token).ConfigAwait();
             }
         }
 

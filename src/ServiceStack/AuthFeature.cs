@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -50,18 +54,28 @@ namespace ServiceStack
             }
         }
 
-        private readonly Func<IAuthSession> sessionFactory;
+        public Func<IAuthSession> SessionFactory { get; set; }
         private IAuthProvider[] authProviders;
         public IAuthProvider[] AuthProviders => authProviders;
 
         public Dictionary<Type, string[]> ServiceRoutes { get; set; }
 
-        public List<IPlugin> RegisterPlugins { get; set; } = new List<IPlugin> {
+        public List<IPlugin> RegisterPlugins { get; set; } = new() {
             new SessionFeature()
         };
 
-        public List<IAuthEvents> AuthEvents { get; set; } = new List<IAuthEvents>();
+        public List<IAuthEvents> AuthEvents { get; set; } = new();
 
+        /// <summary>
+        /// Invoked before AuthFeature is registered
+        /// </summary>
+        public Action<AuthFeature> OnBeforeInit { get; set; }
+
+        /// <summary>
+        /// Invoked after AuthFeature is registered
+        /// </summary>
+        public Action<AuthFeature> OnAfterInit { get; set; }
+        
         /// <summary>
         /// Login path to redirect to
         /// </summary>
@@ -76,6 +90,16 @@ namespace ServiceStack
         /// What queryString param to capture redirect param on
         /// </summary>
         public string HtmlRedirectReturnParam { get; set; } = LocalizedStrings.Redirect;
+        
+        /// <summary>
+        /// Redirect path to when Authenticated User requires 2FA
+        /// </summary>
+        public string HtmlRedirectLoginWith2Fa { get; set; }
+        
+        /// <summary>
+        /// Redirect path to when User is Locked out
+        /// </summary>
+        public string HtmlRedirectLockout { get; set; }
 
         /// <summary>
         /// Whether to only capture return path or absolute URL (default)
@@ -131,8 +155,8 @@ namespace ServiceStack
                 return true;
                    
             var authProvider = AuthenticateService.GetAuthProvider(provider);
-            return authProvider  == null ||        // throw unknown provider in AuthService 
-                   authProvider is OAuthProvider;  // Allow all OAuth Providers by default 
+            return authProvider  == null ||        // Unknown provider thrown in AuthService 
+                   authProvider is IOAuthProvider; // Allow all OAuth Providers by default 
         }
 
         public Func<AuthFilterContext, object> AuthResponseDecorator { get; set; }
@@ -194,21 +218,18 @@ namespace ServiceStack
         /// <summary>
         /// The Session to return for AuthSecret
         /// </summary>
-        public IAuthSession AuthSecretSession { get; set; } = new AuthUserSession {
-            Id = Guid.NewGuid().ToString("n"),
-            DisplayName = "Admin",
-            UserName = Keywords.AuthSecret,
-            UserAuthName = Keywords.AuthSecret,
-            AuthProvider = Keywords.AuthSecret,
-            IsAuthenticated = true,
-            Roles = new List<string> {RoleNames.Admin},
-            Permissions = new List<string>(),
-            UserAuthId = "0",
-        };
+        public IAuthSession AuthSecretSession { get; set; }
+
+        public AuthFeature(Action<AuthFeature> configure) : this(() => new AuthUserSession(), TypeConstants<IAuthProvider>.EmptyArray)
+        {
+            OnBeforeInit = configure;
+        }
         
+        public AuthFeature(IAuthProvider authProvider) : this(() => new AuthUserSession(), new []{ authProvider }) {}
+        public AuthFeature(IEnumerable<IAuthProvider> authProviders) : this(() => new AuthUserSession(), authProviders.ToArray()) {}
         public AuthFeature(Func<IAuthSession> sessionFactory, IAuthProvider[] authProviders, string htmlRedirect = null)
         {
-            this.sessionFactory = sessionFactory;
+            this.SessionFactory = sessionFactory;
             this.authProviders = authProviders;
 
             ServiceRoutes = new Dictionary<Type, string[]> {
@@ -226,7 +247,7 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Use a plugin to register authProvider dynamically. Your plugin can implement `IPreInitPlugin` interface
+        /// Use a plugin or OnBeforeInit delegate to register authProvider dynamically. Your plugin can implement `IPreInitPlugin` interface
         /// to call `appHost.GetPlugin&lt;AuthFeature&gt;().RegisterAuthProvider()` before the AuthFeature is registered.
         /// </summary>
         public void RegisterAuthProvider(IAuthProvider authProvider)
@@ -239,34 +260,59 @@ namespace ServiceStack
             }.ToArray();
         }
 
+        /// <summary>
+        /// Use a plugin or OnBeforeInit delegate to register authProvider dynamically. Your plugin can implement `IPreInitPlugin` interface
+        /// to call `appHost.GetPlugin&lt;AuthFeature&gt;().RegisterAuthProvider()` before the AuthFeature is registered.
+        /// </summary>
+        public void RegisterAuthProviders(IEnumerable<IAuthProvider> providers)
+        {
+            var mergedProviders = new List<IAuthProvider>(this.AuthProviders);
+            mergedProviders.AddRange(providers);
+            this.authProviders = mergedProviders.ToArray();
+        }
+
         private bool hasRegistered;
 
         public void Register(IAppHost appHost)
         {
+            OnBeforeInit?.Invoke(this);
+
             hasRegistered = true;
-            AuthenticateService.Init(sessionFactory, AuthProviders);
+            AuthenticateService.Init(SessionFactory, AuthProviders);
 
             var unitTest = appHost == null;
             if (unitTest) return;
 
             if (HostContext.StrictMode)
             {
-                var sessionInstance = sessionFactory();
+                var sessionInstance = SessionFactory();
                 if (TypeSerializer.HasCircularReferences(sessionInstance))
                     throw new StrictModeException($"User Session {sessionInstance.GetType().Name} cannot have circular dependencies", "sessionFactory",
                         StrictModeCodes.CyclicalUserSession);
             }
 
+            AuthSecretSession = appHost.Config.AuthSecretSession;
+
             appHost.RegisterServices(ServiceRoutes);
 
-            var sessionFeature = RegisterPlugins.OfType<SessionFeature>().First();
-            sessionFeature.SessionExpiry = SessionExpiry;
-            sessionFeature.PermanentSessionExpiry = PermanentSessionExpiry;
+            var sessionFeature = RegisterPlugins.OfType<SessionFeature>().FirstOrDefault();
+            if (sessionFeature != null)
+            {
+                sessionFeature.SessionExpiry = SessionExpiry;
+                sessionFeature.PermanentSessionExpiry = PermanentSessionExpiry;
+            }
 
-            appHost.LoadPlugin(RegisterPlugins.ToArray());
+            if (RegisterPlugins.Count > 0)
+            {
+                appHost.LoadPlugin(RegisterPlugins.ToArray());
+            }
 
             if (IncludeAuthMetadataProvider && appHost.TryResolve<IAuthMetadataProvider>() == null)
                 appHost.Register<IAuthMetadataProvider>(new AuthMetadataProvider());
+
+            appHost.CustomErrorHttpHandlers[HttpStatusCode.Unauthorized] = new AuthFeatureUnauthorizedHttpHandler(this);
+            appHost.CustomErrorHttpHandlers[HttpStatusCode.Forbidden] = new AuthFeatureAccessDeniedHttpHandler(this);
+            appHost.CustomErrorHttpHandlers[HttpStatusCode.PaymentRequired] = new AuthFeatureAccessDeniedHttpHandler(this);
 
             AuthProviders.OfType<IAuthPlugin>().Each(x => x.Register(appHost, this));
 
@@ -315,6 +361,8 @@ namespace ServiceStack
                     })
                 };
             });
+
+            OnAfterInit?.Invoke(this);
         }
 
         public void AfterPluginsLoaded(IAppHost appHost)
@@ -347,8 +395,46 @@ namespace ServiceStack
             return "~/" + HostContext.ResolveLocalizedString(LocalizedStrings.Login);
         }
 
+        public static string GetHtmlRedirectUrl(this AuthFeature feature, IRequest req) =>
+            feature.GetHtmlRedirectUrl(req, feature.HtmlRedirectAccessDenied ?? feature.HtmlRedirect, includeRedirectParam: true);
+        
+        public static string GetHtmlRedirectUrl(this AuthFeature feature, IRequest req, string redirectUrl, bool includeRedirectParam)
+        {
+            var url = req.ResolveAbsoluteUrl(redirectUrl);
+            if (includeRedirectParam)
+            {
+                var redirectPath = !feature.HtmlRedirectReturnPathOnly
+                    ? req.ResolveAbsoluteUrl("~" + req.PathInfo + ToQueryString(req.QueryString))
+                    : req.PathInfo + ToQueryString(req.QueryString);
+
+                var returnParam = HostContext.ResolveLocalizedString(feature.HtmlRedirectReturnParam) ??
+                                  HostContext.ResolveLocalizedString(LocalizedStrings.Redirect);
+
+                if (url.IndexOf("?" + returnParam, StringComparison.OrdinalIgnoreCase) == -1 &&
+                    url.IndexOf("&" + returnParam, StringComparison.OrdinalIgnoreCase) == -1)
+                {
+                    return url.AddQueryParam(returnParam, redirectPath);
+                }
+            }
+            return url;
+        }
+        
+        public static void DoHtmlRedirect(this AuthFeature feature, string redirectUrl, IRequest req, IResponse res, bool includeRedirectParam)
+        {
+            var url = feature.GetHtmlRedirectUrl(req, redirectUrl, includeRedirectParam);
+            res.RedirectToUrl(url);
+        }
+        
+        private static string ToQueryString(NameValueCollection queryStringCollection)
+        {
+            if (queryStringCollection == null || queryStringCollection.Count == 0)
+                return string.Empty;
+
+            return "?" + queryStringCollection.ToFormUrlEncoded();
+        }
+
         //http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
-        public static Regex ValidUserNameRegEx = new Regex(@"^(?=.{3,20}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
+        public static Regex ValidUserNameRegEx = new(@"^(?=.{3,20}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
 
         public static bool IsValidUsername(this AuthFeature feature, string userName)
         {
@@ -358,5 +444,115 @@ namespace ServiceStack
             return feature.IsValidUsernameFn?.Invoke(userName) 
                 ?? feature.ValidUserNameRegEx.IsMatch(userName);
         }
+
+        public static async Task<IHttpResult> SuccessAuthResultAsync(this IHttpResult result, IServiceBase service, IAuthSession session)
+        {
+            var feature = HostContext.GetPlugin<AuthFeature>();
+            if (result != null && feature != null)
+            {
+                var hasAuthResponseFilter = feature.AuthProviders.Any(x => x is IAuthResponseFilter);
+                if (hasAuthResponseFilter)
+                {
+                    var ctx = new AuthResultContext {
+                        Result = result,
+                        Service = service,
+                        Session = session,
+                        Request = service.Request,
+                    };
+                    foreach (var responseFilter in feature.AuthProviders.OfType<IAuthResponseFilter>())
+                    {
+                        await responseFilter.ResultFilterAsync(ctx).ConfigAwait();
+                    }
+                }
+            }
+            return result;
+        }
+
+        public static IHttpResult SuccessAuthResult(this IHttpResult result, IServiceBase service, IAuthSession session)
+        {
+            var feature = HostContext.GetPlugin<AuthFeature>();
+            if (result != null && feature != null)
+            {
+                var hasAuthResponseFilter = feature.AuthProviders.Any(x => x is IAuthResponseFilter);
+                if (hasAuthResponseFilter)
+                {
+                    var ctx = new AuthResultContext {
+                        Result = result,
+                        Service = service,
+                        Session = session,
+                        Request = service.Request,
+                    };
+                    foreach (var responseFilter in feature.AuthProviders.OfType<IAuthResponseFilter>())
+                    {
+                        responseFilter.ResultFilterAsync(ctx).Wait();
+                    }
+                }
+            }
+            return result;
+        }
+        
+        public static Task HandleFailedAuth(this IAuthProvider authProvider,
+            IAuthSession session, IRequest httpReq, IResponse httpRes)
+        {
+            if (authProvider is AuthProvider baseAuthProvider)
+                return baseAuthProvider.OnFailedAuthentication(session, httpReq, httpRes);
+
+            httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
+            httpRes.AddHeader(HttpHeaders.WwwAuthenticate, $"{authProvider.Provider} realm=\"{authProvider.AuthRealm}\"");
+            return HostContext.AppHost.HandleShortCircuitedErrors(httpReq, httpRes, httpReq.Dto);
+        }
+        
     }
+    
+    public class AuthFeatureUnauthorizedHttpHandler : HttpAsyncTaskHandler
+    {
+        private readonly AuthFeature feature;
+        public AuthFeatureUnauthorizedHttpHandler(AuthFeature feature) => this.feature = feature;
+        
+        public override Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
+        {
+            if (feature.HtmlRedirect != null && req.ResponseContentType.MatchesContentType(MimeTypes.Html))
+            {
+                var url = feature.GetHtmlRedirectUrl(req, feature.HtmlRedirect, includeRedirectParam:true);
+                res.RedirectToUrl(url);
+                return TypeConstants.EmptyTask;
+            }
+
+            if (res.StatusCode < 300)
+                res.StatusCode = (int)HttpStatusCode.Unauthorized;
+            if (string.IsNullOrEmpty(res.GetHeader(HttpHeaders.WwwAuthenticate)))
+            {
+                var iAuthProvider = feature.AuthProviders.First(); 
+                res.AddHeader(HttpHeaders.WwwAuthenticate, $"{iAuthProvider.Provider} realm=\"{iAuthProvider.AuthRealm}\"");
+            }
+            return res.EndHttpHandlerRequestAsync();
+        }
+
+        public override bool IsReusable => true;
+        public override bool RunAsAsync() => true;
+    }
+    
+    public class AuthFeatureAccessDeniedHttpHandler : ForbiddenHttpHandler
+    {
+        private readonly AuthFeature feature;
+        public AuthFeatureAccessDeniedHttpHandler(AuthFeature feature) => this.feature = feature;
+
+        public override Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
+        {
+            if (feature.HtmlRedirectAccessDenied != null && req.ResponseContentType.MatchesContentType(MimeTypes.Html))
+            {
+                var url = feature.GetHtmlRedirectUrl(req, feature.HtmlRedirectAccessDenied, includeRedirectParam:false);
+                res.RedirectToUrl(url);
+                return TypeConstants.EmptyTask;
+            }
+
+            res.ContentType = "text/plain";
+            return res.EndHttpHandlerRequestAsync(skipClose: true, afterHeaders: r => {
+                var sb = CreateForbiddenResponseTextBody(req);
+
+                return res.OutputStream.WriteAsync(StringBuilderCache.ReturnAndFree(sb));
+            });
+        }
+    }
+    
 }

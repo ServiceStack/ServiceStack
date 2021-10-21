@@ -19,16 +19,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var dbFactory = container.Resolve<IDbConnectionFactory>();
 
-            const int noOfTennants = 3;
+            const int noOfTenants = 3;
 
-            using (var db = dbFactory.OpenDbConnection())
+            using (var db = dbFactory.OpenDbConnection()) {
                 InitDb(db, "MASTER", "Masters inc.");
+            }
 
-            noOfTennants.Times(i =>
-            {
+            noOfTenants.Times(i => {
                 var tenantId = "T0" + (i + 1);
-                using (var db = dbFactory.OpenDbConnectionString(GetTenantConnString(tenantId)))
-                    InitDb(db, tenantId, "ACME {0} inc.".Fmt(tenantId));
+                using var db = dbFactory.OpenDbConnectionString(GetTenantConnString(tenantId));
+                InitDb(db, tenantId, "ACME {0} inc.".Fmt(tenantId));
             });
 
             RegisterTypedRequestFilter<IForTenant>((req,res,dto) => 
@@ -41,12 +41,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             db.Insert(new TenantConfig { Id = tenantId, Company = company });
         }
 
-        public string GetTenantConnString(string tenantId)
-        {
-            return tenantId != null 
-                ? "~/App_Data/tenant-{0}.sqlite".Fmt(tenantId).MapAbsolutePath()
-                : null;
-        }
+        public string GetTenantConnString(string tenantId) => tenantId != null 
+            ? "~/App_Data/tenant-{0}.sqlite".Fmt(tenantId).MapAbsolutePath()
+            : null;
     }
 
     [TestFixture]
@@ -132,36 +129,33 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class MultiTenantCustomDbFactoryAppHost : AppSelfHostBase
     {
         public MultiTenantCustomDbFactoryAppHost()
-            : base("Multi Tennant Test", typeof(MultiTenantCustomDbFactoryAppHost).Assembly) { }
+            : base("Multi Tenant Test", typeof(MultiTenantCustomDbFactoryAppHost).Assembly) { }
 
         public override void Configure(Container container)
         {
             var dbFactory = new OrmLiteConnectionFactory(
                 "~/App_Data/master.sqlite".MapAbsolutePath(), SqliteDialect.Provider);
 
-            const int noOfTennants = 3;
+            const int noOfTenants = 3;
 
             container.Register<IDbConnectionFactory>(c =>
                 new MultiTenantDbFactory(dbFactory));
 
-            var multiDbFactory = (MultiTenantDbFactory)
-                container.Resolve<IDbConnectionFactory>();
+            var multiDbFactory = (MultiTenantDbFactory)container.Resolve<IDbConnectionFactory>();
 
-            using (var db = multiDbFactory.OpenTenant())
+            using (var db = multiDbFactory.OpenTenant()) {
                 InitDb(db, "MASTER", "Masters inc.");
+            }
 
-            noOfTennants.Times(i =>
-            {
+            noOfTenants.Times(i => {
                 var tenantId = "T0" + (i + 1);
-                using (var db = multiDbFactory.OpenTenant(tenantId))
-                    InitDb(db, tenantId, "ACME {0} inc.".Fmt(tenantId));
+                using var db = multiDbFactory.OpenTenant(tenantId);
+                InitDb(db, tenantId, "ACME {0} inc.".Fmt(tenantId));
             });
 
-            GlobalRequestFilters.Add((req, res, dto) =>
-            {
-                var forTennant = dto as IForTenant;
-                if (forTennant != null)
-                    RequestContext.Instance.Items.Add("TenantId", forTennant.TenantId);
+            GlobalRequestFilters.Add((req, res, dto) => {
+                if (dto is IForTenant forTenant)
+                    RequestContext.Instance.Items.Add("TenantId", forTenant.TenantId);
             });
         }
 
@@ -194,10 +188,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     : dbFactory.OpenDbConnection();
             }
 
-            public IDbConnection CreateDbConnection()
-            {
-                return dbFactory.CreateDbConnection();
-            }
+            public IDbConnection CreateDbConnection() => dbFactory.CreateDbConnection();
         }
     }
 

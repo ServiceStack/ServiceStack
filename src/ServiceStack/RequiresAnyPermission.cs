@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -33,60 +34,36 @@ namespace ServiceStack
             if (HostContext.HasValidAuthSecret(req))
                 return;
 
-            await base.ExecuteAsync(req, res, requestDto); //first check if session is authenticated
+            await base.ExecuteAsync(req, res, requestDto).ConfigAwait(); //first check if session is authenticated
             if (res.IsClosed)
                 return; //AuthenticateAttribute already closed the request (ie auth failed)
 
-            var session = req.GetSession();
+            var session = await req.AssertAuthenticatedSessionAsync().ConfigAwait();
 
-            var authRepo = HostContext.AppHost.GetAuthRepository(req);
+            var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
+#if NET472 || NETSTANDARD2_0
+            await using (authRepo as IAsyncDisposable)
+#else
             using (authRepo as IDisposable)
+#endif
             {
-                if (session != null && session.HasRole(RoleNames.Admin, authRepo))
+                if (await session.HasAnyPermissionsAsync(RequiredPermissions, authRepo, req).ConfigAwait())
                     return;
 
-                if (HasAnyPermissions(req, session, authRepo))
+                if (await session.HasRoleAsync(RoleNames.Admin, authRepo).ConfigAwait())
                     return;
             }
 
-            if (DoHtmlRedirectAccessDeniedIfConfigured(req, res))
-                return;
-
-            res.StatusCode = (int)HttpStatusCode.Forbidden;
-            res.StatusDescription = ErrorMessages.InvalidPermission.Localize(req);
-            await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto);
+            await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto,
+                HttpStatusCode.Forbidden, ErrorMessages.InvalidPermission.Localize(req)).ConfigAwait();
         }
 
-        public bool HasAnyPermissions(IRequest req, IAuthSession session, IAuthRepository authRepo)
+        [Obsolete("Use HasAnyPermissionsAsync")]
+        public virtual bool HasAnyPermissions(IRequest req, IAuthSession session, IAuthRepository authRepo)
         {
-            if (HasAnyPermissions(session, authRepo)) return true;
-
-            if (authRepo == null)
-                authRepo = HostContext.AppHost.GetAuthRepository(req);
-
-            if (authRepo == null)
-                return false;
-
-            using (authRepo as IDisposable)
-            {
-                var userAuth = authRepo.GetUserAuth(session, null);
-                session.UpdateSession(userAuth);
-
-                if (HasAnyPermissions(session, authRepo))
-                {
-                    req.SaveSession(session);
-                    return true;
-                }
-                return false;
-            }
+            return session.HasAnyPermissions(RequiredPermissions, authRepo, req);
         }
 
-        public virtual bool HasAnyPermissions(IAuthSession session, IAuthRepository authRepo)
-        {
-            return this.RequiredPermissions
-                .Any(requiredPermission => session != null
-                    && session.HasPermission(requiredPermission, authRepo));
-        }
     }
 
 }

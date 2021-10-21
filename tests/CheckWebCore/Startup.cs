@@ -120,7 +120,7 @@ namespace CheckWebCore
 
             app.UseServiceStack(new AppHost
             {
-                PathBase = "/api",
+                // PathBase = "/api",
                 AppSettings = new NetCoreAppSettings(Configuration)
             });
         }
@@ -144,6 +144,7 @@ namespace CheckWebCore
                 ScriptMethods = { new CustomScriptMethods() }
             }); 
             
+            Plugins.Add(new ServerEventsFeature());
             Plugins.Add(new LispReplTcpServer {
 //                RequireAuthSecret = true,
                 AllowScriptingOfAllTypes = true,
@@ -223,7 +224,7 @@ namespace CheckWebCore
     
     [Route("/hello")]
     [Route("/hello/{Name}")]
-    public class Hello : IReturn<HelloResponse>
+    public class Hello : IReturn<HelloResponse>, IGet
     {
         public string Name { get; set; }
     }
@@ -234,6 +235,7 @@ namespace CheckWebCore
         public ResponseStatus ResponseStatus { get; set; }
     }
 
+    [Restrict(VisibleLocalhostOnly = true)]
     [Route("/testauth")]
     [Tag("mobile")]
     public class TestAuth : IReturn<TestAuth> {}
@@ -241,6 +243,7 @@ namespace CheckWebCore
     [Route("/session")]
     public class Session : IReturn<AuthUserSession> {}
     
+    [Restrict(VisibilityTo = RequestAttributes.Localhost)]
     [Route("/throw")]
     [Tag("desktop")]
     public class Throw {}
@@ -316,6 +319,11 @@ namespace CheckWebCore
         "Set the dates you want to book and it's quantities. It's an array of dates and quantities.",
         IsRequired = true)]
         public List<DatesToRepeat> DatesToRepeat { get; set; }
+
+        [ApiMember]
+        public IEnumerable<DatesToRepeat> DatesToRepeatIEnumerable { get; set; }
+        [ApiMember]
+        public DatesToRepeat[] DatesToRepeatArray { get; set; }
     }
 
     public class CreateBookingBase
@@ -393,9 +401,36 @@ namespace CheckWebCore
         public decimal ScalePrecision { get; set; }
     }
 
+    [EmitCSharp("[Validate]")]
+    [EmitTypeScript("@Validate()")]
+    [EmitCode(Lang.Swift | Lang.Dart, "@validate()")]
+    public class User : IReturn<User>
+    {
+        [EmitCSharp("[IsNotEmpty]","[IsEmail]")]
+        [EmitTypeScript("@IsNotEmpty()", "@IsEmail()")]
+        [EmitCode(Lang.Swift | Lang.Dart, new[]{ "@isNotEmpty()", "@isEmail()" })]
+        public string Email { get; set; }
+    }
+
+
+    [ValidateIsAuthenticated]
+    [Route("/helloauth/{Name}")]
+    public class HelloAuth : IReturn<HelloResponse>
+    {
+        public string Name { get; set; }
+    }
+
+    [ValidateHasRole("TheRole")]
+    [Route("/hellorole/{Name}")]
+    public class HelloRole : IReturn<HelloResponse>
+    {
+        public string Name { get; set; }
+    }
+
     //    [Authenticate]
     public class MyServices : Service
     {
+        public object Any(User request) => request;
         public object Any(CreateBookings request) => new CreateBookingsResponse();
         
         public object Any(Dummy request) => request;
@@ -406,10 +441,12 @@ namespace CheckWebCore
             Request.GetPageResult("/");
 //            new PageResult(Request.GetPage("/")) { Args = { [nameof(Request)] = Request } };
 
-        public object Any(Hello request)
-        {
-            return new HelloResponse { Result = $"Hello, {request.Name}!" };
-        }
+        HelloResponse CreateResponse(object request, string name) =>
+            new() { Result = $"{request.GetType().Name}, {name}!" };
+        
+        public object Any(Hello request) => CreateResponse(request, request.Name);
+        public object Any(HelloAuth request) => CreateResponse(request, request.Name);
+        public object Any(HelloRole request) => CreateResponse(request, request.Name);
 
         public object Any(TestAuth request) => request;
 
@@ -476,6 +513,20 @@ namespace CheckWebCore
     public class ImpersonateUser
     {
         public string UserName { get; set; }
+    }
+
+        
+    [Route("/sse-stats")]
+    public class GetSseStats {}
+
+    public class ServerEventsStats : Service
+    {
+        public IServerEvents ServerEvents { get; set; }
+
+        public object Any(GetSseStats request)
+        {
+            return ServerEvents.GetStats();
+        }
     }
 
 }

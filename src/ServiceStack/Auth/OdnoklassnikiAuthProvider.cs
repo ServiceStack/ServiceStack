@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -34,7 +36,7 @@ namespace ServiceStack.Auth
 
             NavItem = new NavItem {
                 Href = "/auth/" + Name,
-                Label = "Sign in with Odnoklassniki",
+                Label = "Sign In with Odnoklassniki",
                 Id = "btn-" + Name,
                 ClassName = "btn-social btn-odnoklassniki",
                 IconClass = "fab svg-odnoklassniki",
@@ -45,9 +47,10 @@ namespace ServiceStack.Auth
         public string PublicKey { get; set; }
         public string SecretKey { get; set; }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
         {
             IAuthTokens tokens = Init(authService, ref session, request);
+            var ctx = CreateAuthContext(authService, session, tokens);
             IRequest httpRequest = authService.Request;
 
 
@@ -57,7 +60,7 @@ namespace ServiceStack.Auth
             if (hasError)
             {
                 Log.Error($"Odnoklassniki error callback. {httpRequest.QueryString}");
-                return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", error)));
+                return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", error)));
             }
 
             string code = httpRequest.QueryString["code"];
@@ -66,15 +69,15 @@ namespace ServiceStack.Auth
             {
                 string preAuthUrl = $"{PreAuthUrl}?client_id={ApplicationId}&redirect_uri={CallbackUrl.UrlEncode()}&response_type=code&layout=m";
 
-                this.SaveSession(authService, session, SessionExpiry);
-                return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
+                await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
+                return authService.Redirect(PreAuthUrlFilter(ctx, preAuthUrl));
             }
 
             try
             {
                 string payload = $"client_id={ApplicationId}&client_secret={SecretKey}&code={code}&redirect_uri={CallbackUrl.UrlEncode()}&grant_type=authorization_code";
 
-                string contents = AccessTokenUrlFilter(this, AccessTokenUrl).PostToUrl(payload, "*/*", RequestFilter);
+                string contents = await AccessTokenUrlFilter(ctx, AccessTokenUrl).PostToUrlAsync(payload, "*/*", RequestFilter).ConfigAwait();
 
                 var authInfo = JsonObject.Parse(contents);
 
@@ -91,8 +94,8 @@ namespace ServiceStack.Auth
 
                 session.IsAuthenticated = true;
 
-                return OnAuthenticated(authService, session, tokens, authInfo.ToDictionary())
-                    ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1")));
+                return await OnAuthenticatedAsync(authService, session, tokens, authInfo.ToDictionary(), token).ConfigAwait()
+                    ?? await authService.Redirect(SuccessRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait();
             }
             catch (WebException webException)
             {
@@ -100,10 +103,10 @@ namespace ServiceStack.Auth
                 HttpStatusCode statusCode = ((HttpWebResponse)webException.Response).StatusCode;
                 if (statusCode == HttpStatusCode.BadRequest)
                 {
-                    return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
+                    return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
                 }
             }
-            return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
+            return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "Unknown")));
         }
 
         protected virtual void RequestFilter(HttpWebRequest request)
@@ -111,7 +114,7 @@ namespace ServiceStack.Auth
             request.SetUserAgent(ServiceClientBase.DefaultUserAgent);
         }
 
-        protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
+        protected override async Task LoadUserAuthInfoAsync(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token = default)
         {
             try
             {
@@ -122,7 +125,7 @@ namespace ServiceStack.Auth
 
                 string payload = $"access_token={tokens.AccessTokenSecret}&sig={signature}&application_key={PublicKey}";
 
-                string json = "http://api.odnoklassniki.ru/api/users/getCurrentUser".PostToUrl(payload, "*/*", RequestFilter);
+                string json = await "http://api.odnoklassniki.ru/api/users/getCurrentUser".PostToUrlAsync(payload, "*/*", RequestFilter).ConfigAwait();
 
                 JsonObject obj = JsonObject.Parse(json);
 

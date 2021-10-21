@@ -80,7 +80,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 throw new HttpError(
                     request.StatusCode.Value,
-                    typeof(NotImplementedException).Name,
+                    nameof(NotImplementedException),
                     GetErrorMessage(request.Value));
             }
 
@@ -139,7 +139,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             appHost.PreRequestFilters.Add((httpReq, httpResp) =>
             {
-                if (httpReq.OperationName != typeof(BasicAuthRequired).Name)
+                if (httpReq.OperationName != nameof(BasicAuthRequired))
                     return;
 
                 var credentials = httpReq.GetBasicAuthUserAndPassword();
@@ -212,7 +212,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var response = (AlwaysThrowsResponse)webEx.ResponseDto;
                 var expectedError = AlwaysThrowsService.GetErrorMessage(TestString);
                 Assert.That(response.ResponseStatus.ErrorCode,
-                    Is.EqualTo(typeof(NotImplementedException).Name));
+                    Is.EqualTo(nameof(NotImplementedException)));
                 Assert.That(response.ResponseStatus.Message,
                     Is.EqualTo(expectedError));
             }
@@ -232,10 +232,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException webEx)
             {
                 Assert.That(webEx.StatusCode, Is.EqualTo(400));
-                Assert.That(webEx.StatusDescription, Is.EqualTo(typeof(ArgumentNullException).Name));
-                Assert.That(webEx.Message.Replace("\r\n", "\n"), Is.EqualTo("Value cannot be null.\nParameter name: Id"));
-                Assert.That(webEx.ErrorCode, Is.EqualTo(typeof(ArgumentNullException).Name));
-                Assert.That(webEx.ErrorMessage.Replace("\r\n", "\n"), Is.EqualTo("Value cannot be null.\nParameter name: Id"));
+                Assert.That(webEx.StatusDescription, Is.EqualTo(nameof(ArgumentNullException)));
+                Assert.That(webEx.Message.Replace("\r\n", "\n"), Does.StartWith("Value cannot be null."));
+                Assert.That(webEx.ErrorCode, Is.EqualTo(nameof(ArgumentNullException)));
+                Assert.That(webEx.ErrorMessage.Replace("\r\n", "\n"), Does.StartWith("Value cannot be null."));
             }
         }
 
@@ -259,7 +259,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var response = (ErrorResponse)webEx.ResponseDto;
                 var expectedError = AlwaysThrowsService.GetErrorMessage(TestString);
                 Assert.That(response.ResponseStatus.ErrorCode,
-                    Is.EqualTo(typeof(NotImplementedException).Name));
+                    Is.EqualTo(nameof(NotImplementedException)));
                 Assert.That(response.ResponseStatus.Message,
                     Is.EqualTo(expectedError));
             }

@@ -133,10 +133,11 @@ namespace ServiceStack.Api.OpenApi
                     IVirtualFile indexFile;
                     IVirtualFile patchFile = null;
                     IVirtualFile patchPreLoadFile = null;
+                    pathInfo = pathInfo.TrimStart('/');
                     switch (pathInfo)
                     {
-                        case "/swagger-ui/":
-                        case "/swagger-ui/default.html":
+                        case "swagger-ui/":
+                        case "swagger-ui/default.html":
                             indexFile = appHost.VirtualFileSources.GetFile("/swagger-ui/index.html");
                             patchFile = appHost.VirtualFileSources.GetFile("/swagger-ui/patch.js");
                             patchPreLoadFile = appHost.VirtualFileSources.GetFile("/swagger-ui/patch-preload.js");

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack;
+using ServiceStack.Validation;
 
 namespace CheckTemplatesCore
 {
@@ -52,6 +53,7 @@ namespace CheckTemplatesCore
                 DebugMode = AppSettings.Get(nameof(HostConfig.DebugMode), true)
             });
 
+            Plugins.Add(new ValidationFeature());
             Plugins.Add(new SharpPagesFeature());
             
             this.CustomErrorHttpHandlers[HttpStatusCode.NotFound] = 
@@ -103,8 +105,17 @@ namespace CheckTemplatesCore
             return Request.GetPageResult("/index");
             //equivalent to: return new PageResult(Request.GetPage("/index")).BindRequest(Request);
         }
+
+        public object Any(ValidationTest request) => request;
     }
     
+    [Route("/validation/test")]
+    public class ValidationTest : IReturn<ValidationTest>
+    {
+        [ValidateNotNull]
+        public string Name { get; set; }
+    }
+
     [FallbackRoute("/{PathInfo*}", Matches="AcceptsHtml")]
     public class ViewIndex
     {

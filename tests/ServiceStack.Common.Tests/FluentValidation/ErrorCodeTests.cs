@@ -36,7 +36,7 @@ namespace ServiceStack.Common.Tests.FluentValidation
 
                 RuleFor(x => x.Age).GreaterThan(100).GreaterThanOrEqualTo(100).InclusiveBetween(100, 200).LessThan(10);
 
-                RuleFor(x => x.Cars).SetCollectionValidator(new CarValidator());
+                RuleForEach(x => x.Cars).SetValidator(new CarValidator());
                 RuleFor(x => x.Favorites).NotNull().NotEmpty().WithErrorCode("ShouldNotBeEmpty");
 
                 RuleFor(x => x.Lastname).NotEmpty();
@@ -171,7 +171,7 @@ namespace ServiceStack.Common.Tests.FluentValidation
         [Test]
         public void Custom()
         {
-            Assert.AreEqual(1, Result.Errors.Where(f => f.ErrorCode == "ShouldNotBeEmpty").Count());
+            Assert.AreEqual(1, Result.Errors.Count(f => f.ErrorCode == "ShouldNotBeEmpty"));
         }
     }
 }

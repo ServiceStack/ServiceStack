@@ -227,7 +227,7 @@ namespace ServiceStack.Authentication.NHibernate
                 var existingUser = GetUserAuthByUserName(newUser.UserName);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                    throw new ArgumentException(string.Format(ErrorMessages.UserAlreadyExistsTemplate1, newUser.UserName.SafeInput()));
+                    throw new ArgumentException(ErrorMessages.UserAlreadyExistsFmt.LocalizeFmt(newUser.UserName.SafeInput()));
             }
 
             if (newUser.Email != null)
@@ -235,7 +235,7 @@ namespace ServiceStack.Authentication.NHibernate
                 var existingUser = GetUserAuthByUserName(newUser.Email);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                    throw new ArgumentException(string.Format(ErrorMessages.EmailAlreadyExistsTemplate1, newUser.Email.SafeInput()));
+                    throw new ArgumentException(ErrorMessages.EmailAlreadyExistsFmt.LocalizeFmt(newUser.Email.SafeInput()));
             }
         }
 
@@ -256,7 +256,7 @@ namespace ServiceStack.Authentication.NHibernate
                 ? nhSession.Load<UserAuthNHibernate>(int.Parse(authSession.UserAuthId))
                 : authSession.ConvertTo<UserAuth>();
 
-            if (userAuth.Id == default(int) && !string.IsNullOrEmpty(authSession.UserAuthId))
+            if (userAuth.Id == default && !string.IsNullOrEmpty(authSession.UserAuthId))
                 userAuth.Id = int.Parse(authSession.UserAuthId);
 
             userAuth.ModifiedDate = userAuth.ModifiedDate;

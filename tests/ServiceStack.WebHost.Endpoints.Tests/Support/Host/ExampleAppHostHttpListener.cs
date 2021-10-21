@@ -503,6 +503,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 
             Plugins.Add(new ProtoBufFormat());
             Plugins.Add(new RequestInfoFeature());
+            
+            ContentTypes.Register("application/x-custom+json",
+				(req, dto,stream) => stream.Write("{\"custom\":\"json\"}"),
+				(type,stream) => type.CreateInstance());
 		}
 	}
 

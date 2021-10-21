@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using DotNetOpenAuth.Messaging;
 using DotNetOpenAuth.OAuth2;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
+using ServiceStack.Text;
 
 namespace ServiceStack.Authentication.OAuth2
 {
@@ -67,9 +70,10 @@ namespace ServiceStack.Authentication.OAuth2
                 : authClient.ProcessUserAuthorization();
         }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token=default)
         {
             var tokens = this.Init(authService, ref session, request);
+            var ctx = CreateAuthContext(authService, session, tokens);
 
             //Transferring AccessToken/Secret from Mobile/Desktop App to Server
             if (request?.AccessToken != null)
@@ -80,13 +84,13 @@ namespace ServiceStack.Authentication.OAuth2
                 if (!VerifyAccessToken(request.AccessToken))
                     return HttpError.Unauthorized($"AccessToken is not for the configured {Provider} App");
 
-                var failedResult = AuthenticateWithAccessToken(authService, session, tokens, request.AccessToken);
+                var failedResult = await AuthenticateWithAccessTokenAsync(authService, session, tokens, request.AccessToken, token).ConfigAwait();
                 var isHtml = authService.Request.IsHtml();
                 if (failedResult != null)
                     return ConvertToClientError(failedResult, isHtml);
 
                 return isHtml
-                    ? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1")))
+                    ? authService.Redirect(SuccessRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("s", "1")))
                     : null; //return default AuthenticateResponse
             }
 
@@ -118,17 +122,17 @@ namespace ServiceStack.Authentication.OAuth2
                         var cookie = authReq.Cookies[name];
                         if (cookie != null)
                         {
-                            httpResult.Cookies.Add(cookie.ToCookie());
+                            httpResult.AddCookie(authService.Request, cookie.ToCookie());
                         }
                     }
 
-                    this.SaveSession(authService, session, SessionExpiry);
+                    await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
                     return httpResult;
                 }
                 catch (ProtocolException ex)
                 {
                     Log.Error("Failed to login to {0}".Fmt(this.Provider), ex);
-                    return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
+                    return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "Unknown")));
                 }
             }
 
@@ -143,23 +147,23 @@ namespace ServiceStack.Authentication.OAuth2
             {
                 try
                 {
-                    return AuthenticateWithAccessToken(authService, session, tokens, accessToken)
-                        ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1")));
+                    return await AuthenticateWithAccessTokenAsync(authService, session, tokens, accessToken, token).ConfigAwait()
+                        ?? authService.Redirect(SuccessRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("s", "1")));
                 }
                 catch (WebException we)
                 {
                     var statusCode = ((HttpWebResponse)we.Response).StatusCode;
                     if (statusCode == HttpStatusCode.BadRequest)
                     {
-                        return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
+                        return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
                     }
                 }
             }
 
-            return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "RequestTokenFailed")));
+            return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "RequestTokenFailed")));
         }
 
-        protected virtual object AuthenticateWithAccessToken(IServiceBase authService, IAuthSession session, IAuthTokens tokens, string accessToken)
+        protected virtual async Task<object> AuthenticateWithAccessTokenAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens, string accessToken, CancellationToken token=default)
         {
             tokens.AccessToken = accessToken;
 
@@ -167,7 +171,7 @@ namespace ServiceStack.Authentication.OAuth2
 
             session.IsAuthenticated = true;
 
-            return OnAuthenticated(authService, session, tokens, authInfo);
+            return await OnAuthenticatedAsync(authService, session, tokens, authInfo, token).ConfigAwait();
         }
 
         public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null)
@@ -201,7 +205,7 @@ namespace ServiceStack.Authentication.OAuth2
 
         protected abstract Dictionary<string, string> CreateAuthInfo(string accessToken);
 
-        protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
+        protected override Task LoadUserAuthInfoAsync(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token=default)
         {
             try
             {
@@ -228,6 +232,7 @@ namespace ServiceStack.Authentication.OAuth2
             {
                 Log.Error("Could not retrieve Profile info for '{0}'".Fmt(tokens.DisplayName), ex);
             }
+            return TypeConstants.EmptyTask;
         }
 
         protected IAuthTokens Init(IServiceBase authService, ref IAuthSession session, Authenticate request)

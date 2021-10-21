@@ -17,7 +17,9 @@ namespace ServiceStack
         protected AppHostBase(string serviceName, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices)
         {
+#if !NET472            
             CookiesExtensions.Init();
+#endif
         }
 
         public override string ResolveAbsoluteUrl(string virtualPath, IRequest httpReq)

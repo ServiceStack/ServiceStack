@@ -260,6 +260,44 @@ namespace ServiceStack
             return typeof(ModularStartupActivator);
         }
     }
+
+    /// <summary>
+    /// Used to load ModularStartup classes in .NET 6+ top-level WebApplicationBuilder builder 
+    /// </summary>
+    public class TopLevelAppModularStartup : ModularStartup
+    {
+        public static ModularStartup? Instance { get; private set; } //needs to be base concrete type 
+        public Type AppHostType { get; set; }
+        public AppHostBase StartupInstance { get; set; }
+
+        public static ModularStartup Create<THost>(THost instance,
+            IConfiguration configuration, Func<IEnumerable<Type>> typesResolver)
+            where THost : AppHostBase
+        {
+            instance.Configuration = configuration;
+            return Instance = new TopLevelAppModularStartup(typeof(THost), instance, configuration, typesResolver);
+        }
+
+        protected TopLevelAppModularStartup(Type hostType, AppHostBase hostInstance, 
+            IConfiguration configuration, Func<IEnumerable<Type>> typesResolver)
+            : base(configuration, typesResolver)
+        {
+            AppHostType = hostType;
+            StartupInstance = hostInstance;
+        }
+
+        public new void ConfigureServices(IServiceCollection services)
+        {
+            //implementation needs to exist to stop base method recursion
+            //nameof(TopLevelStatementsStartup).Print();
+        }
+
+        public new void Configure(IApplicationBuilder app)
+        {
+            //nameof(TopLevelAppModularStartup).Print();
+        }
+    }
+    
 #endif
 
     public static class ModularExtensions
@@ -277,6 +315,29 @@ namespace ServiceStack
             instances.Where(x => x.Item2 >= 0).OrderBy(x => x.Item2).Map(x => x.Item1);
 
 #if NETSTANDARD2_0
+
+        /// <summary>
+        /// Used to load ModularStartup classes in .NET 6+ top-level WebApplicationBuilder builder
+        /// </summary>
+        public static IServiceCollection AddModularStartup<THost>(this IServiceCollection services, IConfiguration configuration)
+            where THost : AppHostBase
+        {
+            if (TopLevelAppModularStartup.Instance != null)
+                throw new NotSupportedException($"{nameof(AddModularStartup)} has already been called");
+            
+            var ci = typeof(THost).GetConstructor(Type.EmptyTypes);
+            if (ci == null)
+                throw new NotSupportedException($"{typeof(THost).Name} requires a parameterless constructor");
+            
+            var host = (THost)ci.Invoke(TypeConstants.EmptyObjectArray);
+
+            var dlls = new List<Assembly>(host.ServiceAssemblies) { typeof(THost).Assembly };
+            var types = dlls.Distinct().SelectMany(x => x.GetTypes())
+                .Where(x => x != typeof(TopLevelAppModularStartup)).ToList();
+            var startup = TopLevelAppModularStartup.Create(host, configuration, () => types);
+            startup.ConfigureServices(services);
+            return services;
+        }
         
         /// <summary>
         /// .NET Core 3.0 disables IStartup and multiple Configure* entry points on Startup class requiring the use of a

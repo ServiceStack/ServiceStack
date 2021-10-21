@@ -151,7 +151,7 @@ namespace ServiceStack.Validation
             var ruleSet = req.Verb;
             using (validator as IDisposable)
             {
-                var validationContext = new ValidationContext(requestDto, null, 
+                var validationContext = new ValidationContext<object>(requestDto, null, 
                     new MultiRuleSetValidatorSelector(ruleSet)) {
                     Request = req
                 };
@@ -161,6 +161,7 @@ namespace ServiceStack.Validation
                     return await validator.ValidateAsync(validationContext);
                 }
 
+                // ReSharper disable once MethodHasAsyncOverload
                 return validator.Validate(validationContext);
             }
         }
@@ -177,7 +178,7 @@ namespace ServiceStack.Validation
             var ruleSet = req.Verb;
             using (validator as IDisposable)
             {
-                var validationContext = new ValidationContext(requestDto, null, 
+                var validationContext = new ValidationContext<object>(requestDto, null, 
                     new MultiRuleSetValidatorSelector(ruleSet)) {
                     Request = req
                 };

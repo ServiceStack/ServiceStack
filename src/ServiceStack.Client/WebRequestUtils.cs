@@ -86,33 +86,29 @@ namespace ServiceStack
             // now go through each part, splitting on first = character, and removing leading and trailing spaces and " quotes
             for (int i = 0; i < maxnewpars; i++)
             {
-                int pos2 = newpars[i].IndexOf("=", StringComparison.Ordinal);
-                string name = newpars[i].Substring(0, pos2).Trim();
-                string value = newpars[i].Substring(pos2 + 1).Trim();
+                var pos2 = newpars[i].IndexOf("=", StringComparison.Ordinal);
+                if (pos2 == -1)
+                    return;
+                var name = newpars[i].Substring(0, pos2).Trim();
+                var value = newpars[i].Substring(pos2 + 1).Trim();
                 if (value.StartsWith("\""))
-                {
                     value = value.Substring(1);
-                }
                 if (value.EndsWith("\""))
-                {
                     value = value.Substring(0, value.Length - 1);
-                }
-
-                if ("qop".Equals(name))
+                switch (name)
                 {
-                    qop = value;
-                }
-                else if ("realm".Equals(name))
-                {
-                    realm = value;
-                }
-                else if ("nonce".Equals(name))
-                {
-                    nonce = value;
-                }
-                else if ("opaque".Equals(name))
-                {
-                    opaque = value;
+                    case "qop":
+                        qop = value;
+                        break;
+                    case "realm":
+                        realm = value;
+                        break;
+                    case "nonce":
+                        nonce = value;
+                        break;
+                    case "opaque":
+                        opaque = value;
+                        break;
                 }
             }
         }
@@ -130,7 +126,7 @@ namespace ServiceStack
             if (uri.StartsWith("https"))
             {
                 return new AuthenticationException(
-                    "Invalid remote SSL certificate, overide with: \nServicePointManager.ServerCertificateValidationCallback += ((sender, certificate, chain, sslPolicyErrors) => isValidPolicy);", ex);
+                    "Invalid remote SSL certificate, override with: \nServicePointManager.ServerCertificateValidationCallback += ((sender, certificate, chain, sslPolicyErrors) => isValidPolicy);", ex);
             }
             return null;
         }
@@ -217,7 +213,7 @@ namespace ServiceStack
             // See Client Request at http://en.wikipedia.org/wiki/Digest_access_authentication
 
             string ncUse = padNC(authInfo.nc);
-            authInfo.nc++; // incrememnt for subsequent requests
+            authInfo.nc++; // increment for subsequent requests
 
             string ha1raw = userName + ":" + authInfo.realm + ":" + password;
             string ha1 = CalculateMD5Hash(ha1raw);
@@ -350,6 +346,61 @@ namespace ServiceStack
             }
             return webReq;
         }
-        
+
+        public static void AppendHttpRequestHeaders(this HttpWebRequest webReq, StringBuilder sb, Uri baseUri = null)
+        {
+            if (webReq == null)
+                throw new ArgumentNullException(nameof(webReq));
+            if (sb == null)
+                throw new ArgumentNullException(nameof(sb));
+
+            var uri = webReq.RequestUri;
+            if (baseUri == null)
+                baseUri = new Uri($"{uri.Scheme}://{uri.Authority}");
+
+            sb.AppendLine($"{webReq.Method} {uri.PathAndQuery} HTTP/{webReq.ProtocolVersion}");
+            var port = uri.Port != 80 && uri.Port != 443 ? $":{uri.Port}" : "";
+            sb.AppendLine($"Host: {uri.Host}{port}");
+            for(var i = 0; i < webReq.Headers.Count; ++i)
+            {
+                var header = webReq.Headers.GetKey(i);
+                var values = webReq.Headers.GetValues(i);
+                if (values == null) continue;
+                foreach(var value in values)
+                {
+                    sb.AppendLine($"{header}: {value}");
+                }
+            }
+
+            var cookies = webReq.CookieContainer.GetCookies(baseUri);
+            if (cookies.Count > 0)
+            {
+                sb.Append("Cookie: ");
+                foreach (Cookie cookie in cookies)
+                {
+                    if (sb.Length > 0)
+                        sb.Append("; ");
+                    sb.Append(cookie.Name).Append('=').Append(cookie.Value);
+                }
+                sb.AppendLine();
+            }
+        }
+
+        public static void AppendHttpResponseHeaders(this HttpWebResponse webRes, StringBuilder sb)
+        {
+            sb.AppendLine($"HTTP/{webRes.ProtocolVersion} {(int)webRes.StatusCode} {webRes.StatusDescription}");
+            for (var i = 0; i < webRes.Headers.Count; ++i)
+            {
+                var header = webRes.Headers.GetKey(i);
+                var values = webRes.Headers.GetValues(i);
+                if (values == null) continue;
+                foreach(var value in values)
+                {
+                    sb.AppendLine($"{header}: {value}");
+                }
+            }
+            sb.AppendLine();
+        }
+
     }
 }

@@ -1,6 +1,9 @@
-﻿using System.Net.Http;
+﻿using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Funq;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using ServiceStack;
 
@@ -10,10 +13,19 @@ namespace NetCoreTests
     {
         class AppHost : AppSelfHostBase
         {
-            public AppHost() : base(nameof(ContainerTests), typeof(ContainerTests).Assembly) { }
+            public AppHost() : base(nameof(ContainerTests), typeof(ContainerTests).Assembly)
+            {
+                Configuration = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json")
+                    .Build();
+                AppSettings = new NetCoreAppSettings(Configuration);
+            }
 
             public override void Configure(Container container)
             {
+                var String = AppSettings.GetString("String");
+                var Num = AppSettings.Get<int>("Num");
             }
         }
         

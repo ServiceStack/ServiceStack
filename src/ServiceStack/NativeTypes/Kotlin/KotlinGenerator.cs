@@ -6,6 +6,8 @@ using System.Text;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.Host;
+using ServiceStack.NativeTypes.Java;
+using ServiceStack.NativeTypes.TypeScript;
 
 namespace ServiceStack.NativeTypes.Kotlin
 {
@@ -13,7 +15,7 @@ namespace ServiceStack.NativeTypes.Kotlin
     {
         readonly MetadataTypesConfig Config;
         readonly NativeTypesFeature feature;
-        List<string> conflictTypeNames = new List<string>();
+        List<string> conflictTypeNames = new();
         List<MetadataType> allTypes;
 
         public KotlinGenerator(MetadataTypesConfig config)
@@ -23,10 +25,12 @@ namespace ServiceStack.NativeTypes.Kotlin
         }
 
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataType> InnerTypeFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
 
-        public static List<string> DefaultImports = new List<string>
-        {
+        public static List<string> DefaultImports = new() {
             /* built-in types used
             "java.math.BigInteger",
             "java.math.BigDecimal",
@@ -63,6 +67,7 @@ namespace ServiceStack.NativeTypes.Kotlin
             {"Char", "String"},
             {"SByte", "Byte"},
             {"Byte", "Short"},
+            {"Byte[]", "byte[]"},
             {"Int16", "Short"},
             {"Int32", "Int"},
             {"Int64", "Long"},
@@ -80,9 +85,17 @@ namespace ServiceStack.NativeTypes.Kotlin
             {"Type", "Class"},
             {"List", "ArrayList"},
             {"Dictionary", "HashMap"},
+            {"Stream", "InputStream"},
+        }.ToConcurrentDictionary();
+
+        public static ConcurrentDictionary<string, string> ArrayAliases = new Dictionary<string, string> {
+            { "Byte[]", "ByteArray" },
+            { "byte[]", "ByteArray" }, //GenericArg()
         }.ToConcurrentDictionary();
 
         public static TypeFilterDelegate TypeFilter { get; set; }
+
+        public static Func<KotlinGenerator, MetadataType, MetadataPropertyType, string> PropertyTypeFilter { get; set; }
 
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
@@ -165,12 +178,12 @@ namespace ServiceStack.NativeTypes.Kotlin
 
             var existingTypes = new HashSet<string>();
 
-            var requestTypes = metadata.Operations.Select(x => x.Request).ToHashSet();
+            var requestTypes = metadata.Operations.Select(x => x.Request).ToSet();
             var requestTypesMap = metadata.Operations.ToSafeDictionary(x => x.Request);
             var responseTypes = metadata.Operations
                 .Where(x => x.Response != null)
-                .Select(x => x.Response).ToHashSet();
-            var types = metadata.Types.ToHashSet();
+                .Select(x => x.Response).ToSet();
+            var types = metadata.Types.ToSet();
 
             allTypes = new List<MetadataType>();
             allTypes.AddRange(requestTypes);
@@ -231,6 +244,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                                         : null;
                                 },
                                 IsRequest = true,
+                                Op = operation,
                             });
 
                         existingTypes.Add(fullTypeName);
@@ -268,9 +282,10 @@ namespace ServiceStack.NativeTypes.Kotlin
 
         private bool ReferencesGson(MetadataTypes metadata)
         {
-            return metadata.GetAllMetadataTypes().Any(x => KotlinGeneratorExtensions.KotlinKeyWords.Contains(x.Name)
-                || x.Properties.Safe().Any(p => p.DataMember != null && p.DataMember.Name != null)
-                || (x.RequestType?.ReturnType != null && x.RequestType?.ReturnType.Name.IndexOf('`') >= 0)); //uses TypeToken<T>
+            return metadata.GetAllMetadataTypes()
+                .Any(x => x.Properties.Safe().Any(p => p.Name.PropertyStyle().IsKeyWord())
+                  || x.Properties.Safe().Any(p => p.DataMember?.Name != null)
+                  || (x.RequestType?.ReturnType != null && x.RequestType?.ReturnType.Name.IndexOf('`') >= 0)); //uses TypeToken<T>
         }
 
         private static bool ReferencesStream(MetadataTypes metadata)
@@ -279,8 +294,7 @@ namespace ServiceStack.NativeTypes.Kotlin
         }
 
         //Use built-in types already in net.servicestack.client package
-        public static HashSet<string> IgnoreTypeNames = new HashSet<string>
-        {
+        public static HashSet<string> IgnoreTypeNames = new() {
             nameof(ResponseStatus),
             nameof(ResponseError),
             nameof(ErrorResponse),
@@ -308,6 +322,7 @@ namespace ServiceStack.NativeTypes.Kotlin
 
             var typeName = Type(type.Name, type.GenericArgs);
 
+            sb.Emit(type, Lang.Kotlin);
             PreTypeFilter?.Invoke(sb, type);
 
             if (type.IsEnum.GetValueOrDefault())
@@ -394,11 +409,12 @@ namespace ServiceStack.NativeTypes.Kotlin
                 sb.AppendLine("{");
 
                 sb = sb.Indent();
+                InnerTypeFilter?.Invoke(sb, type);
 
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
                 if (addVersionInfo)
                 {
-                    sb.AppendLine($"val {"Version".PropertyStyle()}:Int = {Config.AddImplicitVersion}");
+                    sb.AppendLine($"val {GetPropertyName("Version")}:Int = {Config.AddImplicitVersion}");
                 }
 
                 AddProperties(sb, type,
@@ -435,9 +451,8 @@ namespace ServiceStack.NativeTypes.Kotlin
                 {
                     if (wasAdded) sb.AppendLine();
 
-                    var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
-
-                    var fieldName = prop.Name.SafeToken().PropertyStyle();
+                    var propType = GetPropertyType(prop);
+                    propType = PropertyTypeFilter?.Invoke(this, type, prop) ?? propType;
 
                     wasAdded = AppendComments(sb, prop.Description);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
@@ -446,7 +461,12 @@ namespace ServiceStack.NativeTypes.Kotlin
                     var initProp = initCollections && !prop.GenericArgs.IsEmpty() &&
                                    (ArrayTypes.Contains(prop.Type) || DictionaryTypes.Contains(prop.Type));
 
-                    if (!fieldName.IsKeyWord())
+                    sb.Emit(prop, Lang.Kotlin);
+                    PrePropertyFilter?.Invoke(sb, prop, type);
+
+                    var defaultName = prop.Name.PropertyStyle();
+                    var fieldName = GetPropertyName(prop.Name);
+                    if (fieldName == defaultName)
                     {
                         sb.AppendLine(!initProp
                             ? $"var {fieldName}:{propType}?{defaultValue}"
@@ -454,12 +474,11 @@ namespace ServiceStack.NativeTypes.Kotlin
                     }
                     else
                     {
-                        var originalName = fieldName;
-                        fieldName = char.ToUpper(fieldName[0]) + fieldName.SafeSubstring(1);
                         sb.AppendLine(!initProp
-                            ? $"@SerializedName(\"{originalName}\") var {fieldName}:{propType}?{defaultValue}"
-                            : $"@SerializedName(\"{originalName}\") var {fieldName}:{propType} = {propType}()");
+                            ? $"@SerializedName(\"{defaultName}\") var {fieldName}:{propType}?{defaultValue}"
+                            : $"@SerializedName(\"{defaultName}\") var {fieldName}:{propType} = {propType}()");
                     }
+                    PostPropertyFilter?.Invoke(sb, prop, type);
                 }
             }
 
@@ -468,10 +487,16 @@ namespace ServiceStack.NativeTypes.Kotlin
                 if (wasAdded) sb.AppendLine();
 
                 AppendDataMember(sb, null, dataMemberIndex++);
-                sb.AppendLine($"var {nameof(ResponseStatus).PropertyStyle()}:ResponseStatus?{defaultValue}");
+                sb.AppendLine($"var {GetPropertyName(nameof(ResponseStatus))}:ResponseStatus?{defaultValue}");
             }
         }
-        
+
+        public virtual string GetPropertyType(MetadataPropertyType prop)
+        {
+            var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
+            return propType;
+        }
+
         public bool AppendAttributes(StringBuilderWrapper sb, List<MetadataAttribute> attributes)
         {
             if (attributes == null || attributes.Count == 0) return false;
@@ -545,8 +570,7 @@ namespace ServiceStack.NativeTypes.Kotlin
             return Type(typeName.Name, typeName.GenericArgs);
         }
 
-        public static HashSet<string> ArrayTypes = new HashSet<string>
-        {
+        public static HashSet<string> ArrayTypes = new() {
             "List`1",
             "IEnumerable`1",
             "ICollection`1",
@@ -556,8 +580,7 @@ namespace ServiceStack.NativeTypes.Kotlin
             "IEnumerable",
         };
 
-        public static HashSet<string> DictionaryTypes = new HashSet<string>
-        {
+        public static HashSet<string> DictionaryTypes = new() {
             "Dictionary`2",
             "IDictionary`2",
             "IOrderedDictionary`2",
@@ -611,11 +634,13 @@ namespace ServiceStack.NativeTypes.Kotlin
             type = type.SanitizeType();
             var arrParts = type.SplitOnFirst('[');
             if (arrParts.Length > 1)
-                return $"ArrayList<{TypeAlias(arrParts[0])}>";
+            {
+                return ArrayAliases.TryGetValue(type, out var arrayAlias) 
+                    ? arrayAlias
+                    : $"ArrayList<{TypeAlias(arrParts[0])}>";
+            }
 
-            string typeAlias;
-            TypeAliases.TryGetValue(type, out typeAlias);
-
+            TypeAliases.TryGetValue(type, out var typeAlias);
             return typeAlias ?? NameOnly(type);
         }
 
@@ -737,6 +762,9 @@ namespace ServiceStack.NativeTypes.Kotlin
         {
             var sb = new StringBuilder();
 
+            if (node.Text == "Nullable")
+                return TypeAlias(node.Children[0].Text) + "?";
+
             if (node.Text == "List")
             {
                 sb.Append("ArrayList<");
@@ -776,6 +804,14 @@ namespace ServiceStack.NativeTypes.Kotlin
             var typeName = sb.ToString();
             return typeName.LastRightPart('.'); //remove nested class
         }
+
+        public string GetPropertyName(string name)
+        {
+            var fieldName = name.SafeToken().PropertyStyle();
+            if (fieldName.IsKeyWord())
+                fieldName = char.ToUpper(fieldName[0]) + fieldName.SafeSubstring(1);
+            return fieldName;
+        }
     }
 
     public static class KotlinGeneratorExtensions
@@ -785,8 +821,7 @@ namespace ServiceStack.NativeTypes.Kotlin
             return type;
         }
 
-        public static HashSet<string> KotlinKeyWords = new HashSet<string>
-        {
+        public static HashSet<string> KotlinKeyWords = new() {
             //Java Keywords
             "abstract",
             "assert",
@@ -902,8 +937,8 @@ namespace ServiceStack.NativeTypes.Kotlin
                 {
                     Name = "Route",
                     Args = new List<MetadataPropertyType> {
-                        new MetadataPropertyType { Name = "Path", Type = "string", Value = route.Path },
-                        new MetadataPropertyType { Name = "Verbs", Type = "string", Value = route.Verbs },
+                        new() { Name = "Path", Type = "string", Value = route.Path },
+                        new() { Name = "Verbs", Type = "string", Value = route.Verbs },
                     },
                 };
             }
@@ -913,7 +948,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                 Name = "Route",
                 ConstructorArgs = new List<MetadataPropertyType>
                 {
-                    new MetadataPropertyType { Type = "string", Value = route.Path },
+                    new() { Type = "string", Value = route.Path },
                 },
             };
         }

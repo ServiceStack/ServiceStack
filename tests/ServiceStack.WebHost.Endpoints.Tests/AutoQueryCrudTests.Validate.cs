@@ -9,6 +9,7 @@ using ServiceStack.Data;
 using ServiceStack.Model;
 using ServiceStack.OrmLite;
 using ServiceStack.Script;
+using ServiceStack.Text;
 using ServiceStack.Validation;
 using ServiceStack.Web;
 
@@ -80,6 +81,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(ex.ErrorCode, Is.EqualTo("NotNull"));
             Assert.That(ex.ErrorMessage, Is.EqualTo("'First Name' must not be empty."));
             var status = ex.ResponseStatus;
+            if (status.Errors.Count != 3)
+                status.PrintDump();
             Assert.That(status.Errors.Count, Is.EqualTo(3));
 
             var fieldError = status.Errors.First(x => x.FieldName == nameof(RockstarBase.FirstName));
@@ -204,7 +207,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             try
             {
-                var response = client.Post(new ValidateCreateRockstar());
+                var response = client.Post(new ValidateCreateRockstar {
+                    DateOfBirth = new DateTime(2000,1,1)
+                });
                 
                 Assert.Fail("Should throw");
             }

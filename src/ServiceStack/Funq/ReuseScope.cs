@@ -24,12 +24,12 @@ namespace Funq
         /// </summary>
         None,
         /// <summary>
-        /// Instaces are reused within the given request
+        /// Instances are reused within the given request
         /// </summary>
         Request,
         /// <summary>
         /// Default scope, which equals <see cref="Hierarchy"/>.
         /// </summary>
-        Default = Hierarchy,
+        Default = Container,
     }
 }

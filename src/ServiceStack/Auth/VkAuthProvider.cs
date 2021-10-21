@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -30,7 +32,7 @@ namespace ServiceStack.Auth
 
             NavItem = new NavItem {
                 Href = "/auth/" + Name,
-                Label = "Sign in with VK",
+                Label = "Sign In with VK",
                 Id = "btn-" + Name,
                 ClassName = "btn-social btn-vk",
                 IconClass = "fab svg-vk",
@@ -43,12 +45,13 @@ namespace ServiceStack.Auth
         public string Scope { get; set; }
         public string ApiVersion { get; set; }
 
-        private JsonObject GetUserInfo(string AccessToken, string AccessTokenSecret) {
+        private async Task<JsonObject> GetUserInfoAsync(string accessToken, string accessTokenSecret) 
+        {
             JsonObject authInfo = null;
 
             try {
-                var sig = WebRequestUtils.CalculateMD5Hash($"/method/users.get?fields=screen_name,bdate,city,country,timezone&access_token={AccessToken}{AccessTokenSecret}");
-                var json = $"https://api.vk.com/method/users.get?fields=screen_name,bdate,city,country,timezone&access_token={AccessToken}&sig={sig}".GetJsonFromUrl();
+                var sig = WebRequestUtils.CalculateMD5Hash($"/method/users.get?fields=screen_name,bdate,city,country,timezone&access_token={accessToken}{accessTokenSecret}");
+                var json = await $"https://api.vk.com/method/users.get?fields=screen_name,bdate,city,country,timezone&access_token={accessToken}&sig={sig}".GetJsonFromUrlAsync().ConfigAwait();
 
                authInfo = json.ArrayObjects()[0].GetUnescaped("response").ArrayObjects()[0];
             } catch (Exception e) {
@@ -58,12 +61,14 @@ namespace ServiceStack.Auth
             return authInfo;
         }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request) {
+        public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
+        {
             IAuthTokens tokens = Init(authService, ref session, request);
+            var ctx = CreateAuthContext(authService, session, tokens);
             IRequest httpRequest = authService.Request;
 
             if (request?.AccessToken != null && request?.AccessTokenSecret != null) {
-                var authInfo = GetUserInfo(request.AccessToken, request.AccessTokenSecret);
+                var authInfo = await GetUserInfoAsync(request.AccessToken, request.AccessTokenSecret).ConfigAwait();
 
                 if(authInfo == null || !(authInfo.Get("error") ?? authInfo.Get("error_description")).IsNullOrEmpty()){
                     Log.Error($"VK access_token error callback. {authInfo}");                    
@@ -74,12 +79,12 @@ namespace ServiceStack.Auth
                 tokens.AccessTokenSecret = request.AccessTokenSecret;
                                 
                 var isHtml = authService.Request.IsHtml();
-                var failedResult = AuthenticateWithAccessToken(authService, session, tokens, request.AccessToken);
+                var failedResult = await AuthenticateWithAccessTokenAsync(authService, session, tokens, request.AccessToken).ConfigAwait();
                 if (failedResult != null)
                     return ConvertToClientError(failedResult, isHtml);
 
                 return isHtml
-                    ? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1")))
+                    ? await authService.Redirect(SuccessRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait()
                     : null; //return default AuthenticateResponse
             }
 
@@ -88,9 +93,10 @@ namespace ServiceStack.Auth
                            ?? httpRequest.QueryString["error"];
 
             bool hasError = !error.IsNullOrEmpty();
-            if (hasError) {
+            if (hasError) 
+            {
                 Log.Error($"VK error callback. {httpRequest.QueryString}");
-                return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", error)));
+                return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", error)));
             }
 
             string code = httpRequest.QueryString["code"];
@@ -98,8 +104,8 @@ namespace ServiceStack.Auth
             if (!isPreAuthCallback) {
                 string preAuthUrl = $"{PreAuthUrl}?client_id={ApplicationId}&scope={Scope}&redirect_uri={CallbackUrl.UrlEncode()}&response_type=code&v={ApiVersion}";
 
-                this.SaveSession(authService, session, SessionExpiry);
-                return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
+                await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
+                return authService.Redirect(PreAuthUrlFilter(ctx, preAuthUrl));
             }
 
             try {
@@ -107,7 +113,7 @@ namespace ServiceStack.Auth
 
                 string accessTokeUrl = $"{AccessTokenUrl}?client_id={ApplicationId}&client_secret={SecureKey}&code={code}&redirect_uri={CallbackUrl.UrlEncode()}";
 
-                string contents = AccessTokenUrlFilter(this, accessTokeUrl).GetStringFromUrl("*/*", RequestFilter);
+                string contents = await AccessTokenUrlFilter(ctx, accessTokeUrl).GetStringFromUrlAsync("*/*", RequestFilter).ConfigAwait();
 
                 var authInfo = JsonObject.Parse(contents);
 
@@ -123,18 +129,19 @@ namespace ServiceStack.Auth
 
                 session.IsAuthenticated = true;
 
-                var accessToken = authInfo["access_token"];
-
-                return OnAuthenticated(authService, session, tokens, authInfo.ToDictionary())
-                    ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1")));
-            } catch (WebException webException) {
+                //Haz Access
+                return await OnAuthenticatedAsync(authService, session, tokens, authInfo.ToDictionary(), token).ConfigAwait()
+                    ?? await authService.Redirect(SuccessRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait();
+            } 
+            catch (WebException webException) 
+            {
                 //just in case VK will start throwing exceptions 
                 HttpStatusCode statusCode = ((HttpWebResponse)webException.Response).StatusCode;
                 if (statusCode == HttpStatusCode.BadRequest) {
-                    return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
+                    return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
                 }
             }
-            return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
+            return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "Unknown")));
         }
 
         /// <summary>
@@ -156,7 +163,8 @@ namespace ServiceStack.Auth
             request.SetUserAgent(ServiceClientBase.DefaultUserAgent);
         }
 
-        protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo) {
+        protected override async Task LoadUserAuthInfoAsync(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token = default)
+        {
             try {
                 if (!tokens.AccessToken.IsNullOrEmpty() && !tokens.AccessTokenSecret.IsNullOrEmpty()) {
                     tokens.UserName = authInfo.Get("screen_name");
@@ -166,8 +174,8 @@ namespace ServiceStack.Auth
                     tokens.BirthDateRaw = authInfo.Get("bdate");
                     tokens.TimeZone = authInfo.Get("timezone");
                 } else {
-                    string json = "https://api.vk.com/method/users.get?user_ids={0}&fields=screen_name,bdate,city,country,timezone&oauth_token={0}"
-                                      .Fmt(tokens.UserId, tokens.AccessTokenSecret).GetJsonFromUrl();
+                    string json = await "https://api.vk.com/method/users.get?user_ids={0}&fields=screen_name,bdate,city,country,timezone&oauth_token={0}"
+                        .Fmt(tokens.UserId, tokens.AccessTokenSecret).GetJsonFromUrlAsync().ConfigAwait();
 
                     var obj = json.ArrayObjects()[0].GetUnescaped("response").ArrayObjects()[0];
 
@@ -190,8 +198,7 @@ namespace ServiceStack.Auth
         }
 
         public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens) {
-            var userSession = authSession as AuthUserSession;
-            if (userSession == null)
+            if (!(authSession is AuthUserSession userSession))
                 return;
 
             userSession.UserName = tokens.UserName ?? userSession.UserName;
@@ -201,11 +208,11 @@ namespace ServiceStack.Auth
             userSession.BirthDateRaw = tokens.BirthDateRaw ?? userSession.BirthDateRaw;
         }
 
-        protected virtual object AuthenticateWithAccessToken(IServiceBase authService, IAuthSession session, IAuthTokens tokens, string accessToken) {
-            var authInfo = GetUserInfo(tokens.AccessToken, tokens.AccessTokenSecret);
+        protected virtual async Task<object> AuthenticateWithAccessTokenAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens, string accessToken) {
+            var authInfo = await GetUserInfoAsync(tokens.AccessToken, tokens.AccessTokenSecret).ConfigAwait();
             session.IsAuthenticated = true;
 
-            return OnAuthenticated(authService, session, tokens, authInfo);
+            return await OnAuthenticatedAsync(authService, session, tokens, authInfo).ConfigAwait();
         }
     }
 }

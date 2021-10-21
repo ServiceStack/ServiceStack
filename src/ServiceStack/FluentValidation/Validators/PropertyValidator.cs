@@ -17,6 +17,7 @@
 #endregion
 
 namespace ServiceStack.FluentValidation.Validators {
+	using System;
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Threading;
@@ -25,22 +26,51 @@ namespace ServiceStack.FluentValidation.Validators {
 	using Resources;
 	using Results;
 
-	public abstract class PropertyValidator : IPropertyValidator {
+	public abstract class PropertyValidator : PropertyValidatorOptions, IPropertyValidator {
 
 		/// <inheritdoc />
-		public PropertyValidatorOptions Options { get; } = new PropertyValidatorOptions();
+		//TODO: For FV 10 make this an explicit implementation.
+		public PropertyValidatorOptions Options => this;
 
+		[Obsolete("This constructor is deprecated and will be removed in FluentValidation 10. Override the GetDefaultMessageTemplate method instead.")]
 		protected PropertyValidator(IStringSource errorMessageSource) {
 			if(errorMessageSource == null) errorMessageSource = new StaticStringSource("No default error message has been specified.");
 			else if (errorMessageSource is LanguageStringSource l && l.ErrorCodeFunc == null)
-				l.ErrorCodeFunc = ctx => Options.ErrorCodeSource?.GetString(ctx);
+				l.ErrorCodeFunc = ctx => ErrorCodeSource?.GetString(ctx);
 
-			Options.ErrorMessageSource = errorMessageSource;
+			ErrorMessageSource = errorMessageSource;
 		}
 
+		[Obsolete("This constructor is deprecated and will be removed in FluentValidation 10. Override the GetDefaultMessageTemplate method instead.")]
 		protected PropertyValidator(string errorMessage) {
-			Options.ErrorMessageSource = new StaticStringSource(errorMessage);
+			SetErrorMessage(errorMessage);
 		}
+
+		protected PropertyValidator() {
+		}
+
+		/// <summary>
+		/// Retrieves a localized string from the LanguageManager.
+		/// If an ErrorCode is defined for this validator, the error code is used as the key.
+		/// If no ErrorCode is defined (or the language manager doesn't have a translation for the error code)
+		/// then the fallback key is used instead.
+		/// </summary>
+		/// <param name="fallbackKey">The fallback key to use for translation, if no ErrorCode is available.</param>
+		/// <returns>The translated error message template.</returns>
+		protected string Localized(string fallbackKey) {
+			var errorCode = ErrorCode;
+
+			if (errorCode != null) {
+				string result = ValidatorOptions.Global.LanguageManager.GetString(errorCode);
+
+				if (!string.IsNullOrEmpty(result)) {
+					return result;
+				}
+			}
+
+			return ValidatorOptions.Global.LanguageManager.GetString(fallbackKey);
+		}
+
 
 		/// <inheritdoc />
 		public virtual IEnumerable<ValidationFailure> Validate(PropertyValidatorContext context) {
@@ -60,10 +90,10 @@ namespace ServiceStack.FluentValidation.Validators {
 		}
 
 		/// <inheritdoc />
-		public virtual bool ShouldValidateAsynchronously(ValidationContext context) {
+		public virtual bool ShouldValidateAsynchronously(IValidationContext context) {
 			// If the user has applied an async condition, then always go through the async path
 			// even if validator is being run synchronously.
-			if (Options.AsyncCondition != null) return true;
+			if (HasAsyncCondition) return true;
 			return false;
 		}
 
@@ -102,25 +132,27 @@ namespace ServiceStack.FluentValidation.Validators {
 		/// <param name="context">The validator context</param>
 		/// <returns>Returns an error validation result.</returns>
 		protected virtual ValidationFailure CreateValidationError(PropertyValidatorContext context) {
-			var messageBuilderContext = new MessageBuilderContext(context, Options.ErrorMessageSource, this);
+			var messageBuilderContext = new MessageBuilderContext(context, this);
 
 			var error = context.Rule.MessageBuilder != null
 				? context.Rule.MessageBuilder(messageBuilderContext)
 				: messageBuilderContext.GetDefaultMessage();
 
 			var failure = new ValidationFailure(context.PropertyName, error, context.PropertyValue);
+#pragma warning disable 618
 			failure.FormattedMessageArguments = context.MessageFormatter.AdditionalArguments;
+#pragma warning restore 618
 			failure.FormattedMessagePlaceholderValues = context.MessageFormatter.PlaceholderValues;
-			failure.ErrorCode = (Options.ErrorCodeSource != null)
-				? Options.ErrorCodeSource.GetString(context)
-				: ValidatorOptions.ErrorCodeResolver(this);
+#pragma warning disable 618
+			failure.ErrorCode = ErrorCodeSource?.GetString(context) ?? ValidatorOptions.Global.ErrorCodeResolver(this);
+#pragma warning restore 618
 
-			if (Options.CustomStateProvider != null) {
-				failure.CustomState = Options.CustomStateProvider(context);
+			if (CustomStateProvider != null) {
+				failure.CustomState = CustomStateProvider(context);
 			}
 
-			if (Options.SeverityProvider != null) {
-				failure.Severity = Options.SeverityProvider(context);
+			if (SeverityProvider != null) {
+				failure.Severity = SeverityProvider(context);
 			}
 
 			return failure;

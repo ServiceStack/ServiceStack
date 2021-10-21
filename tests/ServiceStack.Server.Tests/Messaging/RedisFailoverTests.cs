@@ -192,7 +192,7 @@ namespace ServiceStack.Server.Tests.Messaging
                                 Interlocked.Increment(ref count);
                                 if (count % (iterations / 10) == 0)
                                     lock (clientManager)
-                                        Console.WriteLine("count: {0}, errors: {1}", count, errors);
+                                        Console.WriteLine(@"count: {0}, errors: {1}", count, errors);
                             }
                             catch (Exception)
                             {

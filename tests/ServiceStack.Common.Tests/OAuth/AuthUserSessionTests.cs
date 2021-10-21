@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using NUnit.Framework;
 using ServiceStack.Auth;
@@ -90,7 +91,11 @@ namespace ServiceStack.Common.Tests.OAuth
         public void TestFixtureSetUp()
         {
             RegisterService.AllowUpdates = true;
-            appHost = new BasicAppHost().Init();
+            appHost = new BasicAppHost {
+                ConfigureAppHost = host => {
+                    host.Plugins.Add(new AuthFeature(new CredentialsAuthProvider(host.AppSettings)));
+                }
+            }.Init();
         }
 
         [OneTimeTearDown]
@@ -110,7 +115,7 @@ namespace ServiceStack.Common.Tests.OAuth
         }
 
         [Test]
-        public void Does_persist_TwitterOAuth()
+        public async Task Does_persist_TwitterOAuth()
         {
             var userAuthRepository = InitAuthRepo();
 
@@ -124,7 +129,7 @@ namespace ServiceStack.Common.Tests.OAuth
             var oAuthUserSession = requestContext.ReloadSession();
 
             var twitterAuth = GetTwitterAuthProvider();
-            twitterAuth.OnAuthenticated(service, oAuthUserSession, twitterAuthTokens, authInfo);
+            await twitterAuth.OnAuthenticatedAsync(service, oAuthUserSession, twitterAuthTokens, authInfo);
 
             oAuthUserSession = requestContext.ReloadSession();
 
@@ -148,7 +153,7 @@ namespace ServiceStack.Common.Tests.OAuth
         }
 
         [Test]
-        public void Does_persist_FacebookOAuth()
+        public async Task Does_persist_FacebookOAuth()
         {
             var userAuthRepository = InitAuthRepo();
 
@@ -156,7 +161,7 @@ namespace ServiceStack.Common.Tests.OAuth
 
             var oAuthUserSession = requestContext.ReloadSession();
             var facebookAuth = GetFacebookAuthProvider();
-            facebookAuth.OnAuthenticated(service, oAuthUserSession, facebookAuthTokens,
+            await facebookAuth.OnAuthenticatedAsync(service, oAuthUserSession, facebookAuthTokens,
                 JsonObject.Parse(facebookAuth.AuthHttpGateway.DownloadFacebookUserInfo("facebookCode")));
 
             oAuthUserSession = requestContext.ReloadSession();
@@ -189,7 +194,7 @@ namespace ServiceStack.Common.Tests.OAuth
         }
 
         [Test]
-        public void Does_merge_FacebookOAuth_TwitterOAuth()
+        public async Task Does_merge_FacebookOAuth_TwitterOAuth()
         {
             var userAuthRepository = InitAuthRepo();
 
@@ -197,7 +202,7 @@ namespace ServiceStack.Common.Tests.OAuth
 
             var oAuthUserSession = requestContext.ReloadSession();
             var facebookAuth = GetFacebookAuthProvider();
-            facebookAuth.OnAuthenticated(service, oAuthUserSession, facebookAuthTokens,
+            await facebookAuth.OnAuthenticatedAsync(service, oAuthUserSession, facebookAuthTokens,
                 JsonObject.Parse(facebookAuth.AuthHttpGateway.DownloadFacebookUserInfo("facebookCode")));
 
             oAuthUserSession = requestContext.ReloadSession();
@@ -208,7 +213,7 @@ namespace ServiceStack.Common.Tests.OAuth
                 {"screen_name", "demisbellot"},
             };
             var twitterAuth = GetTwitterAuthProvider();
-            twitterAuth.OnAuthenticated(service, oAuthUserSession, twitterAuthTokens, authInfo);
+            await twitterAuth.OnAuthenticatedAsync(service, oAuthUserSession, twitterAuthTokens, authInfo);
 
             oAuthUserSession = requestContext.ReloadSession();
 
@@ -230,13 +235,13 @@ namespace ServiceStack.Common.Tests.OAuth
         }
 
         [Test]
-        public void Can_login_with_user_created_CreateUserAuth()
+        public async Task Can_login_with_user_created_CreateUserAuth()
         {
             var userAuthRepository = InitAuthRepo();
 
             var registrationService = GetRegistrationService(userAuthRepository);
 
-            var responseObj = registrationService.Post(RegisterDto);
+            var responseObj = await registrationService.PostAsync(RegisterDto);
 
             if (responseObj is IHttpResult httpResult)
             {
@@ -249,11 +254,10 @@ namespace ServiceStack.Common.Tests.OAuth
             var userAuth = userAuthRepository.GetUserAuth(response.UserId);
             AssertEqual(userAuth, RegisterDto);
 
-            IUserAuth userId;
             userAuth = userAuthRepository.GetUserAuthByUserName(RegisterDto.UserName);
             AssertEqual(userAuth, RegisterDto);
 
-            var success = userAuthRepository.TryAuthenticate(RegisterDto.UserName, RegisterDto.Password, out userId);
+            var success = userAuthRepository.TryAuthenticate(RegisterDto.UserName, RegisterDto.Password, out var userId);
             Assert.That(success, Is.True);
             Assert.That(userId, Is.Not.Null);
 
@@ -275,7 +279,7 @@ namespace ServiceStack.Common.Tests.OAuth
 
 
         [Test]
-        public void Can_login_with_user_created_CreateUserAuth_Email()
+        public async Task Can_login_with_user_created_CreateUserAuth_Email()
         {
             var userAuthRepository = InitAuthRepo();
 
@@ -284,7 +288,7 @@ namespace ServiceStack.Common.Tests.OAuth
 
             var registrationService = GetRegistrationService(userAuthRepository);
 
-            var responseObj = registrationService.Post(RegisterDto);
+            var responseObj = await registrationService.PostAsync(RegisterDto);
 
             if (responseObj is IHttpResult httpResult)
             {
@@ -297,11 +301,10 @@ namespace ServiceStack.Common.Tests.OAuth
             var userAuth = userAuthRepository.GetUserAuth(response.UserId);
             AssertEqual(userAuth, RegisterDto);
 
-            IUserAuth userId;
             userAuth = userAuthRepository.GetUserAuthByUserName(RegisterDto.Email);
             AssertEqual(userAuth, RegisterDto);
 
-            var success = userAuthRepository.TryAuthenticate(RegisterDto.Email, RegisterDto.Password, out userId);
+            var success = userAuthRepository.TryAuthenticate(RegisterDto.Email, RegisterDto.Password, out var userId);
             Assert.That(success, Is.True);
             Assert.That(userId, Is.Not.Null);
 
@@ -311,7 +314,7 @@ namespace ServiceStack.Common.Tests.OAuth
         }
 
         [Test]
-        public void Logging_in_pulls_all_AuthInfo_from_repo_after_logging_in_all_AuthProviders()
+        public async Task Logging_in_pulls_all_AuthInfo_from_repo_after_logging_in_all_AuthProviders()
         {
             var userAuthRepository = InitAuthRepo();
 
@@ -327,19 +330,19 @@ namespace ServiceStack.Common.Tests.OAuth
                 {"screen_name", "demisbellot"},
             };
             var twitterAuth = GetTwitterAuthProvider();
-            twitterAuth.OnAuthenticated(service, oAuthUserSession, twitterAuthTokens, authInfo);
+            await twitterAuth.OnAuthenticatedAsync(service, oAuthUserSession, twitterAuthTokens, authInfo);
             Console.WriteLine("UserId: " + oAuthUserSession.UserAuthId);
 
             //Register
             var registrationService = GetRegistrationService(userAuthRepository, oAuthUserSession, requestContext);
 
-            var responseObj = registrationService.Post(RegisterDto);
+            var responseObj = await registrationService.PostAsync(RegisterDto);
             Assert.That(responseObj as IHttpError, Is.Null, responseObj.ToString());
 
             Console.WriteLine("UserId: " + oAuthUserSession.UserAuthId);
 
             var credentialsAuth = GetCredentialsAuthConfig();
-            var loginResponse = credentialsAuth.Authenticate(service, oAuthUserSession,
+            var loginResponse = await credentialsAuth.AuthenticateAsync(service, oAuthUserSession,
                 new Authenticate
                 {
                     provider = CredentialsAuthProvider.Name,

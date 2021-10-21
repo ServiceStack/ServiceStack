@@ -31,7 +31,7 @@ namespace ServiceStack
                 GrpcMarshaller<TRequest>.Instance, GrpcMarshaller<TResponse>.Instance);
             using (var auc = invoker.AsyncUnaryCall(method, host, options, request))
             {
-                return await auc.ResponseAsync;
+                return await auc.ResponseAsync.ConfigAwait();
             }
         }
 
@@ -123,7 +123,7 @@ namespace ServiceStack
 
         public static async Task<(TResponse, ResponseStatus, Metadata)> GetResponseAsync<TResponse>(GrpcClientConfig config, AsyncUnaryCall<TResponse> auc)
         {
-            var headers = await auc.ResponseHeadersAsync;
+            var headers = await auc.ResponseHeadersAsync.ConfigAwait();
             object status = null;
             ResponseStatus typedStatus = null;
             string errorCode = null;
@@ -131,7 +131,7 @@ namespace ServiceStack
             TResponse response = default;
             try
             {
-                response = await auc.ResponseAsync;
+                response = await auc.ResponseAsync.ConfigAwait();
                 status = response.GetResponseStatus();
 
                 if (response is AuthenticateResponse authResponse)
@@ -177,7 +177,7 @@ namespace ServiceStack
             }
             finally
             {
-                await InvokeResponseFiltersAsync(config, auc, response);
+                await InvokeResponseFiltersAsync(config, auc, response).ConfigAwait();
             }
 
             if (typedStatus == null)
@@ -196,7 +196,7 @@ namespace ServiceStack
 
         public static async Task<Metadata> InvokeResponseFiltersAsync<TResponse>(GrpcClientConfig config, AsyncUnaryCall<TResponse> auc, TResponse response, Action<ResponseCallContext> fn = null)
         {
-            var headers = await auc.ResponseHeadersAsync;
+            var headers = await auc.ResponseHeadersAsync.ConfigAwait();
             if (GrpcClientConfig.GlobalResponseFilter != null || config.ResponseFilter != null)
             {
                 var ctx = new ResponseCallContext(response, auc.GetStatus(), headers);
@@ -210,7 +210,7 @@ namespace ServiceStack
 
         public static async Task<Metadata> InvokeResponseFiltersAsync<TResponse>(GrpcClientConfig config, AsyncServerStreamingCall<TResponse> asc, IAsyncStreamReader<TResponse> response, Action<ResponseCallContext> fn = null)
         {
-            var headers = await asc.ResponseHeadersAsync;
+            var headers = await asc.ResponseHeadersAsync.ConfigAwait();
             if (GrpcClientConfig.GlobalResponseFilter != null || config.ResponseFilter != null)
             {
                 var ctx = new ResponseCallContext(response, asc.GetStatus(), headers);
@@ -224,7 +224,7 @@ namespace ServiceStack
 
         public static async Task<(IAsyncStreamReader<TResponse>, ResponseStatus, Metadata)> GetResponseAsync<TResponse>(GrpcClientConfig config, AsyncServerStreamingCall<TResponse> auc)
         {
-            var headers = await auc.ResponseHeadersAsync;
+            var headers = await auc.ResponseHeadersAsync.ConfigAwait();
             ResponseStatus status = null;
             IAsyncStreamReader<TResponse> response = default;
             try
@@ -238,7 +238,7 @@ namespace ServiceStack
             }
             finally
             {
-                await InvokeResponseFiltersAsync(config, auc, response);
+                await InvokeResponseFiltersAsync(config, auc, response).ConfigAwait();
             }
 
             return (response, status, headers);

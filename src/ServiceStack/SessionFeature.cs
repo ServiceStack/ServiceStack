@@ -1,6 +1,9 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -88,6 +91,46 @@ namespace ServiceStack
             return (T)CreateNewSession(httpReq, sessionId);
         }
 
+        public static async  Task<T> GetOrCreateSessionAsync<T>(ICacheClientAsync cache = null, IRequest httpReq = null, IResponse httpRes = null, CancellationToken token=default)
+        {
+            if (httpReq == null)
+                httpReq = HostContext.GetCurrentRequest();
+
+            var iSession = await httpReq.GetSessionAsync(reload:false, token).ConfigAwait();
+            if (iSession is T variable)
+                return variable;
+
+            var sessionId = httpReq.GetSessionId();
+            var sessionKey = GetSessionKey(sessionId);
+            if (sessionKey != null)
+            {
+                var session = await (cache ?? httpReq.GetCacheClientAsync()).GetAsync<T>(sessionKey, token).ConfigAwait();
+                if (!Equals(session, default(T)))
+                    return (T)HostContext.AppHost.OnSessionFilter(httpReq, (IAuthSession)session, sessionId);
+            }
+
+            return (T)CreateNewSession(httpReq, sessionId);
+        }
+
+        /// <summary>
+        /// Creates a new Session without an Id
+        /// </summary>
+        public static IAuthSession CreateNewSession(IRequest httpReq)
+        {
+            var session = AuthenticateService.CurrentSessionFactory();
+            session.CreatedAt = session.LastModified = DateTime.UtcNow;
+            session.OnCreated(httpReq);
+
+            var authEvents = HostContext.TryResolve<IAuthEvents>();
+            authEvents?.OnCreated(httpReq, session);
+
+            return session;
+        }
+
+        /// <summary>
+        /// Creates a new Session with the specified sessionId otherwise it's populated with a new
+        /// generated Session Id that's 
+        /// </summary>
         public static IAuthSession CreateNewSession(IRequest httpReq, string sessionId)
         {
             var session = AuthenticateService.CurrentSessionFactory();
@@ -98,6 +141,18 @@ namespace ServiceStack
             var authEvents = HostContext.TryResolve<IAuthEvents>();
             authEvents?.OnCreated(httpReq, session);
 
+            return session;
+        }
+    }
+
+    public static class SessionFeatureUtils
+    {
+        public static IAuthSession CreateNewSession(this IUserAuth user, IRequest httpReq)
+        {
+            var sessionId = SessionExtensions.CreateRandomSessionId();
+            var newSession = SessionFeature.CreateNewSession(httpReq, sessionId);
+            var session = HostContext.AppHost.OnSessionFilter(httpReq, newSession, sessionId) ?? newSession;
+            session.PopulateSession(user);
             return session;
         }
     }

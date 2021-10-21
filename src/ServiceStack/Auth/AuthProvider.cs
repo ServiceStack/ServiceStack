@@ -6,13 +6,13 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
-using ServiceStack.Host;
 using ServiceStack.Logging;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
-    public abstract class AuthProvider : IAuthProvider
+    public abstract class AuthProvider : IAuthProvider, IAuthPlugin
     {
         protected static readonly ILog Log = LogManager.GetLogger(typeof(AuthProvider));
 
@@ -27,40 +27,45 @@ namespace ServiceStack.Auth
 
         public bool PersistSession { get; set; }
         public bool SaveExtendedUserInfo { get; set; }
+        
+        public bool? RestoreSessionFromState { get; set; }
 
         public Action<AuthUserSession, IAuthTokens, Dictionary<string, string>> LoadUserAuthFilter { get; set; }
+        public Func<AuthUserSession, IAuthTokens, Dictionary<string, string>, CancellationToken, Task> LoadUserAuthInfoFilterAsync { get; set; }
 
         public Func<AuthContext, IHttpResult> CustomValidationFilter { get; set; }
 
-        public Func<AuthProvider, string, string> PreAuthUrlFilter = UrlFilter;
-        public Func<AuthProvider, string, string> AccessTokenUrlFilter = UrlFilter;
-        public Func<AuthProvider, string, string> SuccessRedirectUrlFilter = UrlFilter;
-        public Func<AuthProvider, string, string> FailedRedirectUrlFilter = UrlFilter;
-        public Func<AuthProvider, string, string> LogoutUrlFilter = UrlFilter;
+        public Func<AuthContext, string, string> PreAuthUrlFilter = UrlFilter;
+        public Func<AuthContext, string, string> AccessTokenUrlFilter = UrlFilter;
+        public Func<AuthContext, string, string> SuccessRedirectUrlFilter = UrlFilter;
+        public Func<AuthContext, string, string> FailedRedirectUrlFilter = UrlFilter;
+        public Func<AuthContext, string, string> LogoutUrlFilter = UrlFilter;
         
         public Func<IAuthRepository, IUserAuth, IAuthTokens, bool> AccountLockedValidator { get; set; }
 
-        public static string UrlFilter(AuthProvider provider, string url) => url;
+        public static string UrlFilter(AuthContext provider, string url) => url;
 
         public NavItem NavItem { get; set; }
 
+        public HashSet<string> ExcludeAuthInfoItems { get; set; } = new(new[]{ "user_id", "email", "username", "name", "first_name", "last_name", "email" }, StringComparer.OrdinalIgnoreCase);
+
         protected AuthProvider()
         {
-            PersistSession = !GetType().HasInterface(typeof(IAuthWithRequest));
+            PersistSession = !(GetType().HasInterface(typeof(IAuthWithRequest)) || GetType().HasInterface(typeof(IAuthWithRequestSync)));
         }
 
-        protected AuthProvider(IAppSettings appSettings, string authRealm, string oAuthProvider)
+        protected AuthProvider(IAppSettings appSettings, string authRealm, string authProvider)
             : this()
         {
             // Enhancement per https://github.com/ServiceStack/ServiceStack/issues/741
             this.AuthRealm = appSettings != null ? appSettings.Get("OAuthRealm", authRealm) : authRealm;
 
-            this.Provider = oAuthProvider;
+            this.Provider = authProvider;
             if (appSettings != null)
             {
-                this.CallbackUrl = appSettings.GetString($"oauth.{oAuthProvider}.CallbackUrl")
+                this.CallbackUrl = appSettings.GetString($"oauth.{authProvider}.CallbackUrl")
                     ?? FallbackConfig(appSettings.GetString("oauth.CallbackUrl"));
-                this.RedirectUrl = appSettings.GetString($"oauth.{oAuthProvider}.RedirectUrl")
+                this.RedirectUrl = appSettings.GetString($"oauth.{authProvider}.RedirectUrl")
                     ?? FallbackConfig(appSettings.GetString("oauth.RedirectUrl"));
             }
         }
@@ -80,17 +85,28 @@ namespace ServiceStack.Auth
             return fallback?.Fmt(Provider);
         }
 
+        protected virtual AuthContext CreateAuthContext(IServiceBase authService=null, IAuthSession session=null, IAuthTokens tokens=null)
+        {
+            return new AuthContext {
+                AuthProvider = this,
+                Service = authService,
+                Request = authService?.Request,
+                Session = session,
+                AuthTokens = tokens,
+            };
+        }
+
         /// <summary>
         /// Remove the Users Session
         /// </summary>
         /// <param name="service"></param>
         /// <param name="request"></param>
         /// <returns></returns>
-        public virtual object Logout(IServiceBase service, Authenticate request)
+        public virtual async Task<object> LogoutAsync(IServiceBase service, Authenticate request, CancellationToken token=default)
         {
             var feature = HostContext.GetPlugin<AuthFeature>();
 
-            var session = service.GetSession();
+            var session = await service.GetSessionAsync(token: token).ConfigAwait();
             var referrerUrl = service.Request.GetReturnUrl()
                 ?? (feature.HtmlLogoutRedirect != null ? service.Request.ResolveAbsoluteUrl(feature.HtmlLogoutRedirect) : null)
                 ?? session.ReferrerUrl
@@ -98,9 +114,13 @@ namespace ServiceStack.Auth
                 ?? this.RedirectUrl;
 
             session.OnLogout(service);
+            if (service is IAuthSessionExtended sessionExt)
+                await sessionExt.OnLogoutAsync(service, token).ConfigAwait();
             AuthEvents.OnLogout(service.Request, session, service);
+            if (AuthEvents is IAuthEventsAsync asyncEvents)
+                await asyncEvents.OnLogoutAsync(service.Request, session, service, token).ConfigAwait();
 
-            service.RemoveSession();
+            await service.RemoveSessionAsync(token).ConfigAwait();
 
             if (feature != null && feature.DeleteSessionCookiesOnLogout)
             {
@@ -109,23 +129,24 @@ namespace ServiceStack.Auth
             }
 
             if (service.Request.ResponseContentType == MimeTypes.Html && !string.IsNullOrEmpty(referrerUrl))
-                return service.Redirect(LogoutUrlFilter(this, referrerUrl));
+                return service.Redirect(LogoutUrlFilter(CreateAuthContext(service,session), referrerUrl));
 
             return new AuthenticateResponse();
         }
-
-        public HashSet<string> ExcludeAuthInfoItems { get; set; } = new HashSet<string>(new[]{ "user_id", "email", "username", "name", "first_name", "last_name", "email" }, StringComparer.OrdinalIgnoreCase);
-
-        public virtual IHttpResult OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
+        
+        public virtual async Task<IHttpResult> OnAuthenticatedAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token=default)
         {
             session.AuthProvider = Provider;
+            var asyncEvents = AuthEvents as IAuthEventsAsync;
 
             if (session is AuthUserSession userSession)
             {
-                LoadUserAuthInfo(userSession, tokens, authInfo);
+                await LoadUserAuthInfoAsync(userSession, tokens, authInfo, token).ConfigAwait();
                 HostContext.TryResolve<IAuthMetadataProvider>().SafeAddMetadata(tokens, authInfo);
 
                 LoadUserAuthFilter?.Invoke(userSession, tokens, authInfo);
+                if (LoadUserAuthInfoFilterAsync != null)
+                    await LoadUserAuthInfoFilterAsync(userSession, tokens, authInfo, token);
             }
 
             var hasTokens = tokens != null && authInfo != null;
@@ -145,17 +166,24 @@ namespace ServiceStack.Auth
 
             if (session is IAuthSessionExtended authSession)
             {
+                // ReSharper disable once MethodHasAsyncOverloadWithCancellation
                 var failed = authSession.Validate(authService, session, tokens, authInfo)
-                    ?? AuthEvents.Validate(authService, session, tokens, authInfo);
+                    ?? await authSession.ValidateAsync(authService, session, tokens, authInfo, token).ConfigAwait() 
+                    ?? AuthEvents.Validate(authService, session, tokens, authInfo)
+                    ?? (asyncEvents != null ? await asyncEvents.ValidateAsync(authService, session, tokens, authInfo, token).ConfigAwait() : null);
                 if (failed != null)
                 {
-                    authService.RemoveSession();
+                    await authService.RemoveSessionAsync(token).ConfigAwait();
                     return failed;
                 }
             }
 
-            var authRepo = GetAuthRepository(authService.Request);
+            var authRepo = GetAuthRepositoryAsync(authService.Request);
+#if NET472 || NETSTANDARD2_0
+            await using (authRepo as IAsyncDisposable)
+#else
             using (authRepo as IDisposable)
+#endif
             {
                 if (CustomValidationFilter != null)
                 {
@@ -167,39 +195,44 @@ namespace ServiceStack.Auth
                         Session = session,
                         AuthTokens = tokens,
                         AuthInfo = authInfo,
-                        AuthRepository = authRepo,
+                        AuthRepositoryAsync = authRepo,
+                        AuthRepository = authRepo as IAuthRepository,
                     };
                     var response = CustomValidationFilter(ctx);
                     if (response != null)
                     {
-                        authService.RemoveSession();
+                        await authService.RemoveSessionAsync(token).ConfigAwait();
                         return response;
                     }
                 }
 
                 if (authRepo != null)
                 {
-                    var failed = ValidateAccount(authService, authRepo, session, tokens);
+                    var failed = await ValidateAccountAsync(authService, authRepo, session, tokens, token).ConfigAwait();
                     if (failed != null)
                     {
-                        authService.RemoveSession();
+                        await authService.RemoveSessionAsync(token).ConfigAwait();
                         return failed;
                     }
 
                     if (hasTokens)
                     {
-                        var authDetails = authRepo.CreateOrMergeAuthSession(session, tokens);
+                        var authDetails = await authRepo.CreateOrMergeAuthSessionAsync(session, tokens, token).ConfigAwait();
                         session.UserAuthId = authDetails.UserAuthId.ToString();
 
                         var firstTimeAuthenticated = authDetails.CreatedDate == authDetails.ModifiedDate;
                         if (firstTimeAuthenticated)
                         {
                             session.OnRegistered(authService.Request, session, authService);
+                            if (session is IAuthSessionExtended sessionExt)
+                                await sessionExt.OnRegisteredAsync(authService.Request, session, authService, token).ConfigAwait();
                             AuthEvents.OnRegistered(authService.Request, session, authService);
+                            if (asyncEvents != null)
+                                await asyncEvents.OnRegisteredAsync(authService.Request, session, authService, token).ConfigAwait();
                         }
                     }
 
-                    authRepo.LoadUserAuth(session, tokens);
+                    await authRepo.LoadUserAuthAsync(session, tokens, token).ConfigAwait();
 
                     foreach (var oAuthToken in session.GetAuthTokens())
                     {
@@ -227,11 +260,15 @@ namespace ServiceStack.Auth
             {
                 session.IsAuthenticated = true;
                 session.OnAuthenticated(authService, session, tokens, authInfo);
+                if (session is IAuthSessionExtended sessionExt)
+                    await sessionExt.OnAuthenticatedAsync(authService, session, tokens, authInfo, token).ConfigAwait();
                 AuthEvents.OnAuthenticated(authService.Request, session, authService, tokens, authInfo);
+                if (asyncEvents != null)
+                    await asyncEvents.OnAuthenticatedAsync(authService.Request, session, authService, tokens, authInfo, token).ConfigAwait();
             }
             finally
             {
-                this.SaveSession(authService, session, SessionExpiry);
+                await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
                 authService.Request.Items[Keywords.DidAuthenticate] = true;
             }
 
@@ -241,6 +278,11 @@ namespace ServiceStack.Auth
         protected virtual IAuthRepository GetAuthRepository(IRequest req)
         {
             return HostContext.AppHost.GetAuthRepository(req);
+        }
+
+        protected virtual IAuthRepositoryAsync GetAuthRepositoryAsync(IRequest req)
+        {
+            return HostContext.AppHost.GetAuthRepositoryAsync(req);
         }
 
         // Keep in-memory map of userAuthId's when no IAuthRepository exists 
@@ -277,7 +319,13 @@ namespace ServiceStack.Auth
                 k => Interlocked.Increment(ref transientUserAuthId)).ToString(CultureInfo.InvariantCulture);
         }
 
-        protected virtual void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo) { }
+        [Obsolete("Use LoadUserAuthInfoAsync")]
+        protected void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo) { }
+
+        protected virtual Task LoadUserAuthInfoAsync(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token=default)
+        {
+            return TypeConstants.EmptyTask;
+        }
 
         protected static bool LoginMatchesSession(IAuthSession session, string userName)
         {
@@ -298,7 +346,8 @@ namespace ServiceStack.Auth
 
         public abstract bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null);
 
-        public abstract object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request);
+        //public virtual object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request) {}
+        public abstract Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default);
 
         public virtual Task OnFailedAuthentication(IAuthSession session, IRequest httpReq, IResponse httpRes)
         {
@@ -307,22 +356,11 @@ namespace ServiceStack.Auth
             return HostContext.AppHost.HandleShortCircuitedErrors(httpReq, httpRes, httpReq.Dto);
         }
 
-        public static Task HandleFailedAuth(IAuthProvider authProvider,
-            IAuthSession session, IRequest httpReq, IResponse httpRes)
-        {
-            if (authProvider is AuthProvider baseAuthProvider)
-                return baseAuthProvider.OnFailedAuthentication(session, httpReq, httpRes);
-
-            httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
-            httpRes.AddHeader(HttpHeaders.WwwAuthenticate, $"{authProvider.Provider} realm=\"{authProvider.AuthRealm}\"");
-            return HostContext.AppHost.HandleShortCircuitedErrors(httpReq, httpRes, httpReq.Dto);
-        }
-
-        protected virtual bool UserNameAlreadyExists(IAuthRepository authRepo, IUserAuth userAuth, IAuthTokens tokens = null)
+        protected virtual async Task<bool> UserNameAlreadyExistsAsync(IAuthRepositoryAsync authRepo, IUserAuth userAuth, IAuthTokens tokens = null, CancellationToken token=default)
         {
             if (tokens?.UserName != null)
             {
-                var userWithUserName = authRepo.GetUserAuthByUserName(tokens.UserName);
+                var userWithUserName = await authRepo.GetUserAuthByUserNameAsync(tokens.UserName, token).ConfigAwait();
                 if (userWithUserName == null)
                     return false;
 
@@ -332,11 +370,11 @@ namespace ServiceStack.Auth
             return false;
         }
 
-        protected virtual bool EmailAlreadyExists(IAuthRepository authRepo, IUserAuth userAuth, IAuthTokens tokens = null)
+        protected virtual async Task<bool> EmailAlreadyExistsAsync(IAuthRepositoryAsync authRepo, IUserAuth userAuth, IAuthTokens tokens = null, CancellationToken token=default)
         {
             if (tokens?.Email != null)
             {
-                var userWithEmail = authRepo.GetUserAuthByUserName(tokens.Email);
+                var userWithEmail = await authRepo.GetUserAuthByUserNameAsync(tokens.Email, token).ConfigAwait();
                 if (userWithEmail == null) 
                     return false;
 
@@ -351,33 +389,34 @@ namespace ServiceStack.Auth
             return session.ReferrerUrl;
         }
 
-        public virtual bool IsAccountLocked(IAuthRepository authRepo, IUserAuth userAuth, IAuthTokens tokens=null)
+        public virtual Task<bool> IsAccountLockedAsync(IAuthRepositoryAsync authRepoAsync, IUserAuth userAuth, IAuthTokens tokens=null, CancellationToken token=default)
         {
-            if (AccountLockedValidator != null)
-                return AccountLockedValidator(authRepo, userAuth, tokens);
+            if (authRepoAsync is IAuthRepository authRepo && AccountLockedValidator != null)
+                return AccountLockedValidator(authRepo, userAuth, tokens).InTask();
             
-            return userAuth?.LockedDate != null;
+            return (userAuth?.LockedDate != null).InTask();
         }
-
-        protected virtual IHttpResult ValidateAccount(IServiceBase authService, IAuthRepository authRepo, IAuthSession session, IAuthTokens tokens)
+        
+        protected virtual async Task<IHttpResult> ValidateAccountAsync(IServiceBase authService, IAuthRepositoryAsync authRepo, IAuthSession session, IAuthTokens tokens, CancellationToken token=default)
         {
-            var userAuth = authRepo.GetUserAuth(session, tokens);
+            var userAuth = await authRepo.GetUserAuthAsync(session, tokens, token).ConfigAwait();
+            var ctx = CreateAuthContext(authService, session, tokens);
 
             var authFeature = HostContext.GetPlugin<AuthFeature>();
 
-            if (authFeature != null && authFeature.ValidateUniqueUserNames && UserNameAlreadyExists(authRepo, userAuth, tokens))
+            if (authFeature != null && authFeature.ValidateUniqueUserNames && await UserNameAlreadyExistsAsync(authRepo, userAuth, tokens, token).ConfigAwait())
             {
-                return authService.Redirect(FailedRedirectUrlFilter(this, GetReferrerUrl(authService, session).SetParam("f", "UserNameAlreadyExists")));
+                return authService.Redirect(FailedRedirectUrlFilter(ctx, GetReferrerUrl(authService, session).SetParam("f", "UserNameAlreadyExists")));
             }
 
-            if (authFeature != null && authFeature.ValidateUniqueEmails && EmailAlreadyExists(authRepo, userAuth, tokens))
+            if (authFeature != null && authFeature.ValidateUniqueEmails && await EmailAlreadyExistsAsync(authRepo, userAuth, tokens, token).ConfigAwait())
             {
-                return authService.Redirect(FailedRedirectUrlFilter(this, GetReferrerUrl(authService, session).SetParam("f", "EmailAlreadyExists")));
+                return authService.Redirect(FailedRedirectUrlFilter(ctx, GetReferrerUrl(authService, session).SetParam("f", "EmailAlreadyExists")));
             }
 
-            if (IsAccountLocked(authRepo, userAuth, tokens))
+            if (await IsAccountLockedAsync(authRepo, userAuth, tokens, token).ConfigAwait())
             {
-                return authService.Redirect(FailedRedirectUrlFilter(this, GetReferrerUrl(authService, session).SetParam("f", "AccountLocked")));
+                return authService.Redirect(FailedRedirectUrlFilter(ctx, GetReferrerUrl(authService, session).SetParam("f", "AccountLocked")));
             }
 
             return null;
@@ -425,211 +464,34 @@ namespace ServiceStack.Auth
             }
             return failedResult;
         }
+
+        public virtual void Register(IAppHost appHost, AuthFeature feature)
+        {
+            RestoreSessionFromState ??= appHost.Config.UseSameSiteCookies == true;
+        }
+
+        public IUserAuthRepositoryAsync GetUserAuthRepositoryAsync(IRequest request)
+        {
+            var authRepo = (IUserAuthRepositoryAsync)HostContext.AppHost.GetAuthRepositoryAsync(request);
+            if (authRepo == null)
+                throw new Exception(ErrorMessages.AuthRepositoryNotExists);
+
+            return authRepo;
+        }
     }
 
-    public class AuthContext
+    public class AuthContext : IMeta
     {
         public IRequest Request { get; set; }
         public IServiceBase Service { get; set; }
         public AuthProvider AuthProvider { get; set; }
+        public AuthProviderSync AuthProviderSync { get; set; }
         public IAuthSession Session { get; set; }
         public IAuthTokens AuthTokens { get; set; }
         public Dictionary<string, string> AuthInfo { get; set; }
         public IAuthRepository AuthRepository { get; set; }
+        public IAuthRepositoryAsync AuthRepositoryAsync { get; set; }
+        public Dictionary<string, string> Meta { get; set; }
     }
-
-    public static class AuthExtensions
-    {
-        private static ILog Log = LogManager.GetLogger(typeof(AuthExtensions));
-
-        public static bool IsAuthorizedSafe(this IAuthProvider authProvider, IAuthSession session, IAuthTokens tokens)
-        {
-            return authProvider != null && authProvider.IsAuthorized(session, tokens);
-        }
-
-        public static string SanitizeOAuthUrl(this string url)
-        {
-            return (url ?? "").Replace("\\/", "/");
-        }
-
-        internal static bool PopulateFromRequestIfHasSessionId(this IRequest req, object requestDto)
-        {
-            var hasSession = requestDto as IHasSessionId;
-            if (hasSession?.SessionId != null)
-            {
-                req.SetSessionId(hasSession.SessionId);
-                return true;
-            }
-            return false;
-        }
-
-        public static bool PopulateRequestDtoIfAuthenticated(this IRequest req, object requestDto)
-        {
-            if (requestDto is IHasSessionId hasSession && hasSession.SessionId == null)
-            {
-                hasSession.SessionId = req.GetSessionId();
-                return hasSession.SessionId != null;
-            }
-            if (requestDto is IHasBearerToken hasToken && hasToken.BearerToken == null)
-            {
-                hasToken.BearerToken = req.GetBearerToken();
-                return hasToken.BearerToken != null;
-            }
-            return false;
-        }
-
-        internal static string NotLogoutUrl(this string url)
-        {
-            return url == null || url.EndsWith("/auth/logout")
-                ? null
-                : url;
-        }
-
-        public static void SaveSession(this IAuthProvider provider, IServiceBase authService, IAuthSession session, TimeSpan? sessionExpiry = null)
-        {
-            var persistSession = !(provider is AuthProvider authProvider) || authProvider.PersistSession;
-            if (persistSession)
-            {
-                authService.SaveSession(session, sessionExpiry);
-            }
-            else
-            {
-                authService.Request.Items[Keywords.Session] = session;
-            }
-        }
-
-        public static void PopulatePasswordHashes(this IUserAuth newUser, string password, IUserAuth existingUser = null)
-        {
-            if (newUser == null)
-                throw new ArgumentNullException(nameof(newUser));
-            
-            var hash = existingUser?.PasswordHash;
-            var salt = existingUser?.Salt;
-
-            if (password != null)
-            {
-                var passwordHasher = !HostContext.Config.UseSaltedHash
-                    ? HostContext.TryResolve<IPasswordHasher>()
-                    : null;
-
-                if (passwordHasher != null)
-                {
-                    salt = null; // IPasswordHasher stores its Salt in PasswordHash
-                    hash = passwordHasher.HashPassword(password);
-                }
-                else
-                {
-                    var hashProvider = HostContext.Resolve<IHashProvider>();
-                    hashProvider.GetHashAndSaltString(password, out hash, out salt);
-                }
-            }
-
-            newUser.PasswordHash = hash;
-            newUser.Salt = salt;
-            
-            newUser.PopulateDigestAuthHash(password, existingUser);
-        }
-
-        private static void PopulateDigestAuthHash(this IUserAuth newUser, string password, IUserAuth existingUser = null)
-        {
-            var createDigestAuthHashes = HostContext.GetPlugin<AuthFeature>()?.CreateDigestAuthHashes;
-            if (createDigestAuthHashes == true)
-            {
-                if (existingUser == null)
-                {
-                    var digestHelper = new DigestAuthFunctions();
-                    newUser.DigestHa1Hash = digestHelper.CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
-                }
-                else
-                {
-                    newUser.DigestHa1Hash = existingUser.DigestHa1Hash;
-
-                    // If either one changes the digest hash has to be recalculated
-                    if (password != null || existingUser.UserName != newUser.UserName)
-                        newUser.DigestHa1Hash = new DigestAuthFunctions().CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
-                }
-            }
-            else if (createDigestAuthHashes == false)
-            {
-                newUser.DigestHa1Hash = null;
-            }
-        }
-
-        public static bool VerifyPassword(this IUserAuth userAuth, string providedPassword, out bool needsRehash)
-        {
-            needsRehash = false;
-            if (userAuth == null)
-                throw new ArgumentNullException(nameof(userAuth));
-
-            if (userAuth.PasswordHash == null)
-                return false;
-
-            var passwordHasher = HostContext.TryResolve<IPasswordHasher>();
-
-            var usedOriginalSaltedHash = userAuth.Salt != null;
-            if (usedOriginalSaltedHash)
-            {
-                var oldSaltedHashProvider = HostContext.Resolve<IHashProvider>();
-                if (oldSaltedHashProvider.VerifyHashString(providedPassword, userAuth.PasswordHash, userAuth.Salt))
-                {
-                    needsRehash = !HostContext.Config.UseSaltedHash;
-                    return true;
-                }
-
-                return false;
-            }
-
-            if (passwordHasher == null)
-            {
-                if (Log.IsDebugEnabled)
-                    Log.Debug("Found newer PasswordHash without Salt but no registered IPasswordHasher to verify it");
-
-                return false;
-            }
-
-            if (passwordHasher.VerifyPassword(userAuth.PasswordHash, providedPassword, out needsRehash))
-            {
-                needsRehash = HostContext.Config.UseSaltedHash;
-                return true;
-            }
-
-            if (HostContext.Config.FallbackPasswordHashers.Count > 0)
-            {
-                var decodedHashedPassword = Convert.FromBase64String(userAuth.PasswordHash);
-                if (decodedHashedPassword.Length == 0)
-                {
-                    if (Log.IsDebugEnabled)
-                        Log.Debug("userAuth.PasswordHash is empty");
-
-                    return false;
-                }
-
-                var formatMarker = decodedHashedPassword[0];
-
-                foreach (var oldPasswordHasher in HostContext.Config.FallbackPasswordHashers)
-                {
-                    if (oldPasswordHasher.Version == formatMarker)
-                    {
-                        if (oldPasswordHasher.VerifyPassword(userAuth.PasswordHash, providedPassword, out _))
-                        {
-                            needsRehash = true;
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        public static bool VerifyDigestAuth(this IUserAuth userAuth, Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence)
-        {
-            if (userAuth == null)
-                throw new ArgumentNullException(nameof(userAuth));
-
-            return new DigestAuthFunctions().ValidateResponse(digestHeaders, privateKey, nonceTimeOut, userAuth.DigestHa1Hash, sequence);
-        }
-    }
-
 }
 

@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -134,8 +136,12 @@ namespace ServiceStack
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsEmpty<T>(this T[] collection) => collection == null || collection.Length == 0;
 
+        [Obsolete("Use ToSet() or 'using System.Linq;'")]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static HashSet<T> ToHashSet<T>(this IEnumerable<T> items) => new HashSet<T>(items);
+        public static HashSet<T> ToHashSet<T>(this IEnumerable<T> items) => new(items);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static HashSet<T> ToSet<T>(this IEnumerable<T> items) => new(items);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Each<T>(this IEnumerable<T> values, Action<T> action)
@@ -378,5 +384,125 @@ namespace ServiceStack
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IEnumerable Safe(this IEnumerable enumerable) => enumerable ?? TypeConstants.EmptyObjectArray;
+
+        public static async Task<bool> AllAsync<T>(this IEnumerable<T> source, Func<T, Task<bool>> predicate)
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+            if (predicate == null)
+                throw new ArgumentNullException(nameof(predicate));
+            foreach (var item in source)
+            {
+                var result = await predicate(item).ConfigAwait();
+                if (!result)
+                    return false;
+            }
+            return true;
+        }
+
+        // This is for synchronous predicates with an async source.
+        public static async Task<bool> AllAsync<T>(this IEnumerable<Task<T>> source, Func<T, bool> predicate)
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+            if (predicate == null)
+                throw new ArgumentNullException(nameof(predicate));
+            foreach (var item in source)
+            {
+                var awaitedItem = await item.ConfigAwait();
+                if (!predicate(awaitedItem))
+                    return false;
+            }
+            return true;
+        }
+
+        public static async Task<bool> AnyAsync<T>(this IEnumerable<T> source, Func<T, Task<bool>> predicate)
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+            if (predicate == null)
+                throw new ArgumentNullException(nameof(predicate));
+            foreach (var item in source)
+            {
+                var result = await predicate(item).ConfigAwait();
+                if (result)
+                    return true;
+            }
+            return false;
+        }
+
+        // This is for synchronous predicates with an async source.
+        public static async Task<bool> AnyAsync<T>(this IEnumerable<Task<T>> source, Func<T, bool> predicate)
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+            if (predicate == null)
+                throw new ArgumentNullException(nameof(predicate));
+            foreach (var item in source)
+            {
+                var awaitedItem = await item.ConfigAwait();
+                if (predicate(awaitedItem))
+                    return true;
+            }
+            return false;
+        }
+
+        public static List<string> AllKeysWithDefaultValues(IEnumerable collection)
+        {
+            List<string> allKeys = new();
+            HashSet<string> keysWithValues = new();
+
+            foreach (var o in collection)
+            {
+                if (o is IEnumerable<KeyValuePair<string, object>> d)
+                {
+                    foreach (var entry in d)
+                    {
+                        if (!allKeys.Contains(entry.Key))
+                            allKeys.Add(entry.Key);
+                        if (entry.Value == null)
+                            continue;
+                        var valueType = entry.Value.GetType();
+                        if (valueType.IsValueType && entry.Value.Equals(valueType.GetDefaultValue()))
+                            continue;
+                        keysWithValues.Add(entry.Key);
+                    }
+                }
+            }
+            allKeys.RemoveAll(x => !keysWithValues.Contains(x));
+            return allKeys;
+        }
+
+        public static Type FirstElementType(IEnumerable collection, string key)
+        {
+            foreach (var o in collection)
+            {
+                if (o is IEnumerable<KeyValuePair<string, object>> d)
+                {
+                    foreach (var entry in d)
+                    {
+                        if (entry.Key != key) continue;
+                        if (entry.Value == null) continue;
+                        var entryType = entry.Value.GetType();
+                        return Nullable.GetUnderlyingType(entryType) ?? entryType;
+                    }
+                }
+            }
+            foreach (var o in collection)
+            {
+                if (o is IEnumerable<KeyValuePair<string, object>> d)
+                {
+                    foreach (var entry in d)
+                    {
+                        if (entry.Key.EqualsIgnoreCase(key)) continue;
+                        if (entry.Value == null) continue;
+                        var entryType = entry.Value.GetType();
+                        return Nullable.GetUnderlyingType(entryType) ?? entryType;
+                    }
+                }
+            }
+            return typeof(string);
+        }
+        
     }
 }

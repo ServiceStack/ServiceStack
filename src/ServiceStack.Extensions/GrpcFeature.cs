@@ -447,7 +447,7 @@ namespace ServiceStack
         }
     }
     
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [Route("/types/proto")]
     public class TypesProto : NativeTypesBase { }
 
@@ -465,8 +465,8 @@ namespace ServiceStack
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
-            var csharp = new GrpcProtoGenerator(typesConfig).GetCode(metadataTypes, base.Request);
-            return csharp;
+            var proto = new GrpcProtoGenerator(typesConfig).GetCode(metadataTypes, base.Request);
+            return proto;
         }
     }
 
@@ -535,7 +535,7 @@ namespace ServiceStack
                 Request.QueryString["channels"] = string.Join(",", request.Channels);
 
             var handler = new ServerEventsHandler();
-            await handler.ProcessRequestAsync(Request, Request.Response, nameof(StreamServerEvents));
+            await handler.ProcessRequestAsync(Request, Request.Response, nameof(StreamServerEvents)).ConfigAwait();
 
             var res = (GrpcResponse) Request.Response;
 

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
 
@@ -40,7 +42,7 @@ namespace ServiceStack.Auth
 
             NavItem = new NavItem {
                 Href = "/auth/" + Name,
-                Label = "Sign in with GitHub",
+                Label = "Sign In with GitHub",
                 Id = "btn-" + Name,
                 ClassName = "btn-social btn-github",
                 IconClass = "fab svg-github",
@@ -53,9 +55,10 @@ namespace ServiceStack.Auth
 
         public string[] Scopes { get; set; }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
         {
             var tokens = Init(authService, ref session, request);
+            var ctx = CreateAuthContext(authService, session, tokens);
 
             //Transferring AccessToken/Secret from Mobile/Desktop App to Server
             if (request?.AccessToken != null)
@@ -63,18 +66,18 @@ namespace ServiceStack.Auth
                 //https://developer.github.com/v3/oauth_authorizations/#check-an-authorization
 
                 var url = VerifyAccessTokenUrl.Fmt(ClientId, request.AccessToken);
-                var json = url.GetJsonFromUrl(requestFilter: httpReq => {
+                var json = await url.GetJsonFromUrlAsync(requestFilter: httpReq => {
                     PclExport.Instance.SetUserAgent(httpReq, ServiceClientBase.DefaultUserAgent);
                     httpReq.AddBasicAuth(ClientId, ClientSecret);
-                });
+                }).ConfigAwait();
 
                 var isHtml = authService.Request.IsHtml();
-                var failedResult = AuthenticateWithAccessToken(authService, session, tokens, request.AccessToken);
+                var failedResult = await AuthenticateWithAccessTokenAsync(authService, session, tokens, request.AccessToken, token).ConfigAwait();
                 if (failedResult != null)
                     return ConvertToClientError(failedResult, isHtml);
 
                 return isHtml
-                    ? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1")))
+                    ? await authService.Redirect(SuccessRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait()
                     : null; //return default AuthenticateResponse
             }
 
@@ -89,7 +92,7 @@ namespace ServiceStack.Auth
             if (hasError)
             {
                 Log.Error($"GitHub error callback. {httpRequest.QueryString}");
-                return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", error)));
+                return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", error)));
             }
 
             var code = httpRequest.QueryString["code"];
@@ -99,14 +102,14 @@ namespace ServiceStack.Auth
                 var scopes = Scopes.Join("%20");
                 string preAuthUrl = $"{PreAuthUrl}?client_id={ClientId}&redirect_uri={CallbackUrl.UrlEncode()}&scope={scopes}&{Keywords.State}={session.Id}";
 
-                this.SaveSession(authService, session, SessionExpiry);
-                return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
+                await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
+                return authService.Redirect(PreAuthUrlFilter(ctx, preAuthUrl));
             }
 
             try
             {
                 string accessTokenUrl = $"{AccessTokenUrl}?client_id={ClientId}&redirect_uri={CallbackUrl.UrlEncode()}&client_secret={ClientSecret}&code={code}";
-                var contents = AccessTokenUrlFilter(this, accessTokenUrl).GetStringFromUrl();
+                var contents = await AccessTokenUrlFilter(ctx, accessTokenUrl).GetStringFromUrlAsync().ConfigAwait();
                 var authInfo = PclExportClient.Instance.ParseQueryString(contents);
 
                 //GitHub does not throw exception, but just return error with descriptions
@@ -118,39 +121,43 @@ namespace ServiceStack.Auth
                 if (!accessTokenError.IsNullOrEmpty())
                 {
                     Log.Error($"GitHub access_token error callback. {authInfo}");
-                    return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
+                    return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
                 }
 
                 var accessToken = authInfo["access_token"];
 
-                return AuthenticateWithAccessToken(authService, session, tokens, accessToken)
-                    ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))); //Haz Access!
+                //Haz Access!
+                return await AuthenticateWithAccessTokenAsync(authService, session, tokens, accessToken, token).ConfigAwait()
+                    ?? await authService.Redirect(SuccessRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("s", "1"))).SuccessAuthResultAsync(authService,session).ConfigAwait();
             }
             catch (WebException webException)
             {
+                var errorBody = webException.GetResponseBodyAsync(token);
+                Log.Error("GitHub AccessToken Failed:\n" + errorBody);
+                
                 //just in case GitHub will start throwing exceptions 
                 var statusCode = ((HttpWebResponse)webException.Response).StatusCode;
                 if (statusCode == HttpStatusCode.BadRequest)
                 {
-                    return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
+                    return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
                 }
             }
-            return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
+            return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "Unknown")));
         }
 
-        protected virtual object AuthenticateWithAccessToken(IServiceBase authService, IAuthSession session, IAuthTokens tokens, string accessToken)
+        protected virtual async Task<object> AuthenticateWithAccessTokenAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens, string accessToken, CancellationToken token=default)
         {
             tokens.AccessTokenSecret = accessToken;
 
-            var json = AuthHttpGateway.DownloadGithubUserInfo(accessToken);
+            var json = await AuthHttpGateway.DownloadGithubUserInfoAsync(accessToken, token).ConfigAwait();
             var authInfo = JsonObject.Parse(json);
 
             session.IsAuthenticated = true;
 
-            return OnAuthenticated(authService, session, tokens, authInfo);
+            return await OnAuthenticatedAsync(authService, session, tokens, authInfo, token).ConfigAwait();
         }
 
-        protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
+        protected override async Task LoadUserAuthInfoAsync(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token=default)
         {
             try
             {
@@ -171,7 +178,7 @@ namespace ServiceStack.Auth
 
                 if (string.IsNullOrEmpty(tokens.Email))
                 {
-                    var json = AuthHttpGateway.DownloadGithubUserEmailsInfo(tokens.AccessTokenSecret);
+                    var json = await AuthHttpGateway.DownloadGithubUserEmailsInfoAsync(tokens.AccessTokenSecret, token).ConfigAwait();
                     var objs = JsonArrayObjects.Parse(json);
                     foreach (var obj in objs)
                     {

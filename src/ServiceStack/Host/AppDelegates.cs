@@ -31,9 +31,19 @@ namespace ServiceStack.Host
         void Invoke(IRequest req, IResponse res, object dto);
     }
 
+    public interface ITypedFilterAsync
+    {
+        Task InvokeAsync(IRequest req, IResponse res, object dto);
+    }
+
     public interface ITypedFilter<in T>
     {
         void Invoke(IRequest req, IResponse res, T dto);
+    }
+
+    public interface ITypedFilterAsync<in T>
+    {
+        Task InvokeAsync(IRequest req, IResponse res, T dto);
     }
 
     public class TypedFilter<T> : ITypedFilter
@@ -47,6 +57,20 @@ namespace ServiceStack.Host
         public void Invoke(IRequest req, IResponse res, object dto)
         {
             action(req, res, (T)dto);
+        }
+    }
+
+    public class TypedFilterAsync<T> : ITypedFilterAsync
+    {
+        private readonly Func<IRequest, IResponse, T, Task> action;
+        public TypedFilterAsync(Func<IRequest, IResponse, T, Task> action)
+        {
+            this.action = action;
+        }
+
+        public async Task InvokeAsync(IRequest req, IResponse res, object dto)
+        {
+            await action(req, res, (T)dto);
         }
     }
 }

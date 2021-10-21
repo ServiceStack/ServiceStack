@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Script;
 
 namespace ServiceStack
 {
+    [Exclude(Feature.Soap)]
     public class MetadataTypesConfig
     {
         public MetadataTypesConfig(
@@ -90,6 +92,8 @@ namespace ServiceStack
 
         public string GlobalNamespace { get; set; }
         public bool ExcludeNamespace { get; set; }
+        public string DataClass { get; set; }
+        public string DataClassJson { get; set; }
 
         public HashSet<Type> IgnoreTypes { get; set; }
         public HashSet<Type> ExportTypes { get; set; }
@@ -97,6 +101,7 @@ namespace ServiceStack
         public List<string> IgnoreTypesInNamespaces { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class MetadataTypes
     {
         public MetadataTypes()
@@ -112,6 +117,7 @@ namespace ServiceStack
         public List<MetadataOperationType> Operations { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class AppMetadata : IMeta
     {
         public AppInfo App { get; set; }
@@ -122,6 +128,7 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class PluginInfo : IMeta
     {
         public List<string> Loaded { get; set; }
@@ -130,9 +137,11 @@ namespace ServiceStack
         public ValidationInfo Validation { get; set; }
         public SharpPagesInfo SharpPages { get; set; }
         public RequestLogsInfo RequestLogs { get; set; }
+        public AdminUsersInfo AdminUsers { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class AuthInfo : IMeta
     {
         public bool? HasAuthSecret { get; set; }
@@ -145,6 +154,7 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class AutoQueryInfo : IMeta
     {
         public int? MaxLimit { get; set; }
@@ -161,6 +171,7 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class ValidationInfo : IMeta
     {
         public bool? HasValidationSource { get; set; }
@@ -173,6 +184,7 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class SharpPagesInfo : IMeta
     {
         public string ApiPath { get; set; }
@@ -183,6 +195,7 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class RequestLogsInfo : IMeta
     {
         public string[] RequiredRoles { get; set; }
@@ -191,9 +204,23 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
+    public class AdminUsersInfo : IMeta
+    {
+        public string AccessRole { get; set; }
+        public List<string> Enabled { get; set; }
+        public MetadataType UserAuth { get; set; }
+        public MetadataType UserAuthDetails { get; set; }
+        public List<string> AllRoles { get; set; }
+        public List<string> AllPermissions { get; set; }
+        public List<string> QueryUserAuthProperties { get; set; }
+        public Dictionary<string, string> Meta { get; set; }
+    }
+
     /// <summary>
     /// Generic template for adding metadata info about custom plugins  
     /// </summary>
+    [Exclude(Feature.Soap)]
     public class CustomPlugin : IMeta
     {
         /// <summary>
@@ -217,6 +244,7 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class ScriptMethodType
     {
         public string Name { get; set; }
@@ -225,6 +253,7 @@ namespace ServiceStack
         public string ReturnType { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class AutoQueryConvention
     {
         public string Name { get; set; }
@@ -236,6 +265,7 @@ namespace ServiceStack
     /// <summary>
     /// App Info and 
     /// </summary>
+    [Exclude(Feature.Soap)]
     public class AppInfo : IMeta
     {
         /// <summary>
@@ -289,11 +319,17 @@ namespace ServiceStack
         public string IconUrl { get; set; }
 
         /// <summary>
+        /// The configured JsConfig.TextCase
+        /// </summary>
+        public string JsTextCase { get; set; }
+        
+        /// <summary>
         /// Custom User-Defined Attributes
         /// </summary>
         public Dictionary<string, string> Meta { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class MetaAuthProvider : IMeta
     {
         public string Name { get; set; }
@@ -302,6 +338,7 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class MetadataOperationType
     {
         public MetadataType Request { get; set; }
@@ -320,6 +357,7 @@ namespace ServiceStack
         public List<string> Tags { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class MetadataType : IMeta
     {
         [IgnoreDataMember]
@@ -328,10 +366,9 @@ namespace ServiceStack
         public Dictionary<string, object> Items { get; set; }
         [IgnoreDataMember]
         public MetadataOperationType RequestType { get; set; }
-        // [IgnoreDataMember, Obsolete("Use MetadataOperationType.ReturnVoidMarker")]
-        // public bool ReturnVoidMarker => RequestType?.ReturnVoidMarker == true;
-        // [IgnoreDataMember, Obsolete("Use MetadataOperationType.ReturnMarkerTypeName")]
-        // public MetadataTypeName ReturnMarkerTypeName => RequestType?.ReturnMarkerTypeName;
+
+        [IgnoreDataMember]
+        public bool IsClass => Type?.IsClass ?? !(IsEnum == true || IsInterface == true);
         
         public string Name { get; set; }
         public string Namespace { get; set; }
@@ -361,8 +398,30 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
 
         public string GetFullName() => Namespace + "." + Name;
+
+        protected bool Equals(MetadataType other)
+        {
+            return Name == other.Name && Namespace == other.Namespace;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((MetadataType) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((Name != null ? Name.GetHashCode() : 0) * 397) ^ (Namespace != null ? Namespace.GetHashCode() : 0);
+            }
+        }
     }
 
+    [Exclude(Feature.Soap)]
     public class MetadataTypeName
     {
         [IgnoreDataMember]
@@ -372,6 +431,7 @@ namespace ServiceStack
         public string[] GenericArgs { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class MetadataRoute
     {
         [IgnoreDataMember]
@@ -382,12 +442,14 @@ namespace ServiceStack
         public string Summary { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class MetadataDataContract
     {
         public string Name { get; set; }
         public string Namespace { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class MetadataDataMember
     {
         public string Name { get; set; }
@@ -396,6 +458,7 @@ namespace ServiceStack
         public bool? EmitDefaultValue { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class MetadataPropertyType
     {
         [IgnoreDataMember]
@@ -427,6 +490,7 @@ namespace ServiceStack
         public List<MetadataAttribute> Attributes { get; set; }
     }
 
+    [Exclude(Feature.Soap)]
     public class MetadataAttribute
     {
         [IgnoreDataMember]
@@ -483,5 +547,15 @@ namespace ServiceStack
         public static List<MetadataOperationType> GetOperationsByTags(this MetadataTypes types, string[] tags) => 
             types.Operations.Where(x => x.Tags != null && x.Tags.Any(t => Array.IndexOf(tags, t) >= 0)).ToList();
 
+    
+        private static readonly char[] SystemTypeChars = { '<', '>', '+' };
+        public static bool IsSystemOrServiceStackType(this MetadataTypeName metaRef)
+        {
+            if (metaRef.Namespace == null)
+                return false;
+            return metaRef.Namespace.StartsWith("System") || 
+                   metaRef.Namespace.StartsWith("ServiceStack") ||
+                   metaRef.Name.IndexOfAny(SystemTypeChars) >= 0;
+        }
     }
 }

@@ -18,7 +18,7 @@ namespace ServiceStack.FluentValidation.Validators {
 		/// Creates a new instance of the CustomValidator
 		/// </summary>
 		/// <param name="action"></param>
-		public CustomValidator(Action<T, CustomContext> action) : base(string.Empty) {
+		public CustomValidator(Action<T, CustomContext> action) {
 			_isAsync = false;
 			_action = action;
 
@@ -29,7 +29,7 @@ namespace ServiceStack.FluentValidation.Validators {
 		/// Creates a new instance of the CustomValidator.
 		/// </summary>
 		/// <param name="asyncAction"></param>
-		public CustomValidator(Func<T, CustomContext, CancellationToken, Task> asyncAction) : base(string.Empty) {
+		public CustomValidator(Func<T, CustomContext, CancellationToken, Task> asyncAction) {
 			_isAsync = true;
 			_asyncAction = asyncAction;
 			//TODO: For FV 9, throw an exception by default if async validator is being executed synchronously.
@@ -52,7 +52,7 @@ namespace ServiceStack.FluentValidation.Validators {
 			throw new NotImplementedException();
 		}
 
-		public override bool ShouldValidateAsynchronously(ValidationContext context) {
+		public override bool ShouldValidateAsynchronously(IValidationContext context) {
 			return _isAsync && context.IsAsync();
 		}
 	}
@@ -60,7 +60,7 @@ namespace ServiceStack.FluentValidation.Validators {
 	/// <summary>
 	/// Custom validation context
 	/// </summary>
-	public class CustomContext : IValidationContext {
+	public class CustomContext : ICommonContext {
 		private PropertyValidatorContext _context;
 		private List<ValidationFailure> _failures = new List<ValidationFailure>();
 
@@ -108,7 +108,7 @@ namespace ServiceStack.FluentValidation.Validators {
 		public MessageFormatter MessageFormatter => _context.MessageFormatter;
 		public object InstanceToValidate => _context.InstanceToValidate;
 		public object PropertyValue => _context.PropertyValue;
-		IValidationContext IValidationContext.ParentContext => ParentContext;
-		public ValidationContext ParentContext => _context.ParentContext;
+		ICommonContext ICommonContext.ParentContext => ParentContext;
+		public IValidationContext ParentContext => _context.ParentContext;
 	}
 }

@@ -73,3 +73,9 @@
 .btn-servicestack:active,.btn-servicestack.active,.open>.dropdown-toggle.btn-servicestack{background-image:none}
 .btn-servicestack.disabled:hover,.servicestack[disabled]:hover,fieldset[disabled] .btn-servicestack:hover,.btn-servicestack.disabled:focus,.btn-servicestack[disabled]:focus,fieldset[disabled] .btn-servicestack:focus,.btn-servicestack.disabled.focus,.btn-servicestack[disabled].focus,fieldset[disabled] .btn-servicestack.focus{background-color:#333;border-color:rgba(0,0,0,0.2)}
 .btn-servicestack .badge{color:#333;background-color:#fff}
+.btn-apple{color:#fff;background-color:#222;border-color:rgba(0,0,0,0.2)}.btn-apple:focus,.btn-apple.focus{color:#fff;background-color:#000;border-color:rgba(0,0,0,0.2)}
+.btn-apple:hover{color:#fff;background-color:#000;border-color:rgba(0,0,0,0.2)}
+.btn-apple:active,.btn-apple.active,.open>.dropdown-toggle.btn-apple{color:#fff;background-color:#000;border-color:rgba(0,0,0,0.2)}.btn-apple:active:hover,.btn-apple.active:hover,.open>.dropdown-toggle.btn-github:hover,.btn-apple:active:focus,.btn-apple.active:focus,.open>.dropdown-toggle.btn-apple:focus,.btn-apple:active.focus,.btn-apple.active.focus,.open>.dropdown-toggle.btn-apple.focus{color:#fff;background-color:#000;border-color:rgba(0,0,0,0.2)}
+.btn-apple:active,.btn-apple.active,.open>.dropdown-toggle.btn-apple{background-image:none}
+.btn-apple.disabled:hover,.btn-apple[disabled]:hover,fieldset[disabled] .btn-apple:hover,.btn-apple.disabled:focus,.btn-apple[disabled]:focus,fieldset[disabled] .btn-apple:focus,.btn-apple.disabled.focus,.btn-apple[disabled].focus,fieldset[disabled] .btn-apple.focus{background-color:#222;border-color:rgba(0,0,0,0.2)}
+.btn-apple .badge{color:#222;background-color:#fff}

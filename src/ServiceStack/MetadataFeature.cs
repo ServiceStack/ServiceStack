@@ -24,17 +24,18 @@ namespace ServiceStack
         public Action<IndexOperationsControl> IndexPageFilter { get; set; }
         public Action<OperationControl> DetailPageFilter { get; set; }
         
-        public List<Action<AppMetadata>> AppMetadataFilters { get; } = new List<Action<AppMetadata>>();
+        public List<Action<AppMetadata>> AppMetadataFilters { get; } = new();
 
         public bool ShowResponseStatusInMetadataPages { get; set; }
         
         /// <summary>
         /// Export built-in Types so they're available from /metadata/app
         /// </summary>
-        public List<Type> ExportTypes { get; } = new List<Type> {
+        public List<Type> ExportTypes { get; } = new() {
+            typeof(AuditBase),
         };
         
-        public Dictionary<Type, string[]> ServiceRoutes { get; set; } = new Dictionary<Type, string[]> {
+        public Dictionary<Type, string[]> ServiceRoutes { get; set; } = new() {
             { typeof(MetadataAppService), new[]
             {
                 "/" + "metadata".Localize() + "/" + "app".Localize(),
@@ -144,6 +145,8 @@ namespace ServiceStack
                             : null, "Operations");
 
                 default:
+                    if (pathController.IndexOf(' ') >= 0)
+                        pathController = pathController.Replace(' ', '+'); //Convert 'x-custom csv' -> 'x-custom+csv'
                     if (HostContext.ContentTypes
                         .ContentTypeFormats.TryGetValue(pathController, out var contentType))
                     {
@@ -187,7 +190,7 @@ namespace ServiceStack
             var feature = HostContext.AssertPlugin<MetadataFeature>();
             var typesConfig = NativeTypesMetadata.GetConfig(new TypesMetadata());
             feature.ExportTypes.Each(x => typesConfig.ExportTypes.Add(x));
-            var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
+            var metadataTypes = NativeTypesService.ResolveMetadataTypes(typesConfig, NativeTypesMetadata, Request);
             metadataTypes.Config = null;
             
             var appHost = HostContext.AssertAppHost();
@@ -205,6 +208,8 @@ namespace ServiceStack
                 response.App.BaseUrl = Request.GetBaseUrl();
             if (response.App.ServiceName == null)
                 response.App.ServiceName = appHost.ServiceName;
+            if (response.App.JsTextCase == null)
+                response.App.JsTextCase = Text.JsConfig.TextCase.ToString();
 
             foreach (var fn in feature.AppMetadataFilters)
             {

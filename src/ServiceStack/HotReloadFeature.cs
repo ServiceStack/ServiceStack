@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.DataAnnotations;
 using ServiceStack.IO;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -100,11 +101,11 @@ namespace ServiceStack
                 shouldReload = maxLastModified != DateTime.MinValue && maxLastModified.Ticks > long.Parse(request.ETag);
                 if (shouldReload)
                 {
-                    await Task.Delay(ModifiedDelay);
+                    await Task.Delay(ModifiedDelay).ConfigAwait();
                     break;
                 }
 
-                await Task.Delay(CheckDelay);
+                await Task.Delay(CheckDelay).ConfigAwait();
             }
 
             return new HotReloadPageResponse {

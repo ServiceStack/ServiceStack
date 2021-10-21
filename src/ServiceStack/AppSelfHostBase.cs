@@ -3,6 +3,7 @@
 //Copyright (c) ServiceStack, Inc. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
+using System;
 using System.Reflection;
 
 namespace ServiceStack 
@@ -14,6 +15,9 @@ namespace ServiceStack
         
         protected AppSelfHostBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices) 
             : base(serviceName, handlerPath, assembliesWithServices) { }
+        
+        protected AppSelfHostBase(string serviceName, params Type[] serviceTypes) 
+            : base(serviceName, serviceTypes) { }
     }
 }
 

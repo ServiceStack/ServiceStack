@@ -1,7 +1,13 @@
-﻿using Funq;
+﻿using System;
+using System.Collections.Generic;
+using Funq;
 using NUnit.Framework;
 using ServiceStack.Text;
 using System.Runtime.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
+using ServiceStack.Auth;
+using ServiceStack.Configuration;
 using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -26,7 +32,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void BufferredRequest_allows_rereading_of_Request_InputStream()
+        public void BufferedRequest_allows_rereading_of_Request_InputStream()
         {
             appHost.LastRequestBody = null;
             appHost.UseBufferedStream = true;
@@ -40,7 +46,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Cannot_reread_Request_InputStream_without_bufferring()
+        public void Cannot_reread_Request_InputStream_without_buffering()
         {
             appHost.LastRequestBody = null;
             appHost.UseBufferedStream = false;
@@ -48,14 +54,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var client = new JsonServiceClient(Config.ServiceStackBaseUri);
             var request = new MyRequest { Data = "RequestData" };
 
-            var response = client.Post(request);
+            try
+            {
+                var response = client.Post(request);
 
-            Assert.That(appHost.LastRequestBody, Is.EqualTo(request.ToJson()));
-            Assert.That(response.Data, Is.Null);
+                Assert.That(appHost.LastRequestBody, Is.EqualTo(request.ToJson()));
+                Assert.That(response.Data, Is.Null);
+            }
+            catch (WebServiceException e)
+            {
+                //.NET 5
+                Assert.That(e.Message, Does.StartWith("Could not deserialize 'application/json' request"));
+            }
         }
 
         [Test]
-        public void Cannot_see_RequestBody_in_RequestLogger_without_bufferring()
+        public void Cannot_see_RequestBody_in_RequestLogger_without_buffering()
         {
             appHost.LastRequestBody = null;
             appHost.UseBufferedStream = false;
@@ -63,14 +77,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var client = new JsonServiceClient(Config.ServiceStackBaseUri);
             var request = new MyRequest { Data = "RequestData" };
 
-            var response = client.Post(request);
+            try
+            {
+                var response = client.Post(request);
 
-            Assert.That(appHost.LastRequestBody, Is.EqualTo(request.ToJson()));
-            Assert.That(response.Data, Is.Null);
+                Assert.That(appHost.LastRequestBody, Is.EqualTo(request.ToJson()));
+                Assert.That(response.Data, Is.Null);
 
-            var requestLogger = appHost.TryResolve<IRequestLogger>();
-            var lastEntry = requestLogger.GetLatestLogs(1);
-            Assert.That(lastEntry[0].RequestBody, Is.Null);
+                var requestLogger = appHost.TryResolve<IRequestLogger>();
+                var lastEntry = requestLogger.GetLatestLogs(1);
+                Assert.That(lastEntry[0].RequestBody, Is.Null);
+            }
+            catch (WebServiceException e)
+            {
+                //.NET 5
+                Assert.That(e.Message, Does.StartWith("Could not deserialize 'application/json' request"));
+            }
         }
     }
 

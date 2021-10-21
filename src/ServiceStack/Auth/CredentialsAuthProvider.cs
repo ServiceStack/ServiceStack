@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.FluentValidation;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
@@ -38,33 +41,29 @@ namespace ServiceStack.Auth
             AuthRealm = Realm;
         }
 
-        public CredentialsAuthProvider(IAppSettings appSettings, string authRealm, string oAuthProvider)
-            : base(appSettings, authRealm, oAuthProvider) { }
+        public CredentialsAuthProvider(IAppSettings appSettings, string authRealm, string authProvider)
+            : base(appSettings, authRealm, authProvider) { }
 
         public CredentialsAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name) { }
-
-        public IUserAuthRepository GetUserAuthRepository(IRequest request)
-        {
-            var authRepo = (IUserAuthRepository)HostContext.AppHost.GetAuthRepository(request);
-            if (authRepo == null)
-                throw new Exception(ErrorMessages.AuthRepositoryNotExists);
-
-            return authRepo;
-        }
         
-        public virtual bool TryAuthenticate(IServiceBase authService, string userName, string password)
+        public virtual async Task<bool> TryAuthenticateAsync(IServiceBase authService, string userName, string password, CancellationToken token=default)
         {
-            var authRepo = GetUserAuthRepository(authService.Request);
+            var authRepo = GetUserAuthRepositoryAsync(authService.Request);
+#if NET472 || NETSTANDARD2_0
+            await using (authRepo as IAsyncDisposable)
+#else
             using (authRepo as IDisposable)
+#endif
             {
-                var session = authService.GetSession();
-                if (authRepo.TryAuthenticate(userName, password, out var userAuth))
+                var session = await authService.GetSessionAsync(token: token).ConfigAwait();
+                var userAuth = await authRepo.TryAuthenticateAsync(userName, password, token).ConfigAwait();
+                if (userAuth != null)
                 {
-                    if (IsAccountLocked(authRepo, userAuth))
+                    if (await IsAccountLockedAsync(authRepo, userAuth, token: token))
                         throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(authService.Request));
 
-                    session.PopulateSession(userAuth, authRepo);
+                    await session.PopulateSessionAsync(userAuth, authRepo, token).ConfigAwait();
 
                     return true;
                 }
@@ -86,45 +85,54 @@ namespace ServiceStack.Auth
             return session != null && session.IsAuthenticated && !session.UserAuthName.IsNullOrEmpty();
         }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token=default)
         {
             if (SkipPasswordVerificationForInProcessRequests && authService.Request.IsInProcessRequest())
             {
-                new PrivateAuthValidator().ValidateAndThrow(request);
-                return AuthenticatePrivateRequest(authService, session, request.UserName, request.Password, authService.Request.GetReturnUrl());
+                await new PrivateAuthValidator().ValidateAndThrowAsync(request, cancellationToken: token);
+                return await AuthenticatePrivateRequestAsync(authService, session, request.UserName, request.Password, authService.Request.GetReturnUrl(), token).ConfigAwait();
             }
             
-            new CredentialsAuthValidator().ValidateAndThrow(request);
-            return Authenticate(authService, session, request.UserName, request.Password, authService.Request.GetReturnUrl());
+            await new CredentialsAuthValidator().ValidateAndThrowAsync(request, cancellationToken: token);
+            return await AuthenticateAsync(authService, session, request.UserName, request.Password, authService.Request.GetReturnUrl(), token).ConfigAwait();
         }
 
-        protected object Authenticate(IServiceBase authService, IAuthSession session, string userName, string password)
-        {
-            return Authenticate(authService, session, userName, password, string.Empty);
-        }
-
-        protected virtual IAuthSession ResetSessionBeforeLogin(IServiceBase authService, IAuthSession session, string userName)
+        protected virtual async Task<IAuthSession> ResetSessionBeforeLoginAsync(IServiceBase authService, IAuthSession session, string userName, CancellationToken token=default)
         {
             if (!LoginMatchesSession(session, userName))
             {
-                authService.RemoveSession();
-                return authService.GetSession();
+                await authService.RemoveSessionAsync(token).ConfigAwait();
+                return await authService.GetSessionAsync(token: token).ConfigAwait();
             }
             return session;
         }
-
-        protected object Authenticate(IServiceBase authService, IAuthSession session, string userName, string password, string referrerUrl)
+        
+        protected async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, string userName, string password, string referrerUrl, CancellationToken token=default)
         {
-            session = ResetSessionBeforeLogin(authService, session, userName);
+            session = await ResetSessionBeforeLoginAsync(authService, session, userName, token).ConfigAwait();
+
+            bool success = false;
+            var authFeature = HostContext.AppHost.AssertPlugin<AuthFeature>();
+            if (HostContext.HasValidAuthSecret(authService.Request))
+            {
+                if (userName == authFeature.AuthSecretSession.UserName)
+                {
+                    session = authFeature.AuthSecretSession;
+                    success = true;
+                }
+            }
             
-            if (TryAuthenticate(authService, userName, password))
+            if (!success)
+                success = await TryAuthenticateAsync(authService, userName, password, token).ConfigAwait();
+            
+            if (success)
             {
                 session.IsAuthenticated = true;
 
                 if (session.UserAuthName == null)
                     session.UserAuthName = userName;
 
-                var response = OnAuthenticated(authService, session, null, null);
+                var response = await OnAuthenticatedAsync(authService, session, null, null, token).ConfigAwait();
                 if (response != null)
                     return response;
 
@@ -143,27 +151,31 @@ namespace ServiceStack.Auth
             throw HttpError.Unauthorized(ErrorMessages.InvalidUsernameOrPassword.Localize(authService.Request));
         }
 
-        protected virtual object AuthenticatePrivateRequest(
-            IServiceBase authService, IAuthSession session, string userName, string password, string referrerUrl)
+        protected virtual async Task<object> AuthenticatePrivateRequestAsync(
+            IServiceBase authService, IAuthSession session, string userName, string password, string referrerUrl, CancellationToken token=default)
         {
-            var authRepo = GetUserAuthRepository(authService.Request);
+            var authRepo = GetUserAuthRepositoryAsync(authService.Request);
+#if NET472 || NETSTANDARD2_0
+            await using (authRepo as IAsyncDisposable)
+#else
             using (authRepo as IDisposable)
+#endif
             {
-                var userAuth = authRepo.GetUserAuthByUserName(userName);
+                var userAuth = await authRepo.GetUserAuthByUserNameAsync(userName, token).ConfigAwait();
                 if (userAuth == null)
                     throw HttpError.Unauthorized(ErrorMessages.InvalidUsernameOrPassword.Localize(authService.Request));
 
-                if (IsAccountLocked(authRepo, userAuth))
+                if (await IsAccountLockedAsync(authRepo, userAuth, token: token).ConfigAwait())
                     throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(authService.Request));
 
-                session.PopulateSession(userAuth, authRepo);
+                await session.PopulateSessionAsync(userAuth, authRepo, token).ConfigAwait();
 
                 session.IsAuthenticated = true;
 
                 if (session.UserAuthName == null)
                     session.UserAuthName = userName;
 
-                var response = OnAuthenticated(authService, session, null, null);
+                var response = await OnAuthenticatedAsync(authService, session, null, null, token).ConfigAwait();
                 if (response != null)
                     return response;
 
@@ -175,90 +187,6 @@ namespace ServiceStack.Auth
                     ReferrerUrl = referrerUrl
                 };
             }
-        }
-
-        public override IHttpResult OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
-        {
-            session.AuthProvider = Provider;
-
-            if (session is AuthUserSession userSession)
-            {
-                LoadUserAuthInfo(userSession, tokens, authInfo);
-                HostContext.TryResolve<IAuthMetadataProvider>().SafeAddMetadata(tokens, authInfo);
-                LoadUserAuthFilter?.Invoke(userSession, tokens, authInfo);
-            }
-
-            if (session is IAuthSessionExtended authSession)
-            {
-                var failed = authSession.Validate(authService, session, tokens, authInfo)
-                    ?? AuthEvents.Validate(authService, session, tokens, authInfo);
-                if (failed != null)
-                {
-                    authService.RemoveSession();
-                    return failed;
-                }
-            }
-
-            var authRepo = GetAuthRepository(authService.Request);
-            using (authRepo as IDisposable)
-            {
-                if (CustomValidationFilter != null)
-                {
-                    var ctx = new AuthContext
-                    {
-                        Request = authService.Request,
-                        Service = authService,
-                        AuthProvider = this,
-                        Session = session,
-                        AuthTokens = tokens,
-                        AuthInfo = authInfo,
-                        AuthRepository = authRepo,
-                    };
-                    var response = CustomValidationFilter(ctx);
-                    if (response != null)
-                    {
-                        authService.RemoveSession();
-                        return response;
-                    }
-                }
-
-                if (authRepo != null)
-                {
-                    if (tokens != null)
-                    {
-                        authInfo.ForEach((x, y) => tokens.Items[x] = y);
-                        session.UserAuthId = authRepo.CreateOrMergeAuthSession(session, tokens).UserAuthId.ToString();
-                    }
-                    
-                    foreach (var oAuthToken in session.GetAuthTokens())
-                    {
-                        var authProvider = AuthenticateService.GetAuthProvider(oAuthToken.Provider);
-                        var userAuthProvider = authProvider as OAuthProvider;
-                        userAuthProvider?.LoadUserOAuthProvider(session, oAuthToken);
-                    }
-
-                    var httpRes = authService.Request.Response as IHttpResponse;
-                    httpRes?.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
-
-                    var failed = ValidateAccount(authService, authRepo, session, tokens);
-                    if (failed != null)
-                        return failed;
-                }
-            }
-
-            try
-            {
-                session.IsAuthenticated = true;
-                session.OnAuthenticated(authService, session, tokens, authInfo);
-                AuthEvents.OnAuthenticated(authService.Request, session, authService, tokens, authInfo);
-            }
-            finally
-            {
-                this.SaveSession(authService, session, SessionExpiry);
-                authService.Request.Items[Keywords.DidAuthenticate] = true;
-            }
-
-            return null;
         }
     }
 }

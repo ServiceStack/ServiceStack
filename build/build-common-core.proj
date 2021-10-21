@@ -44,6 +44,8 @@
     <RemoveDir Directories="$(SrcDir)/ServiceStack.HttpClient/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack.Common/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.Mvc/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.Server/obj" />
   </Target>
 
   <Target Name="UpdateVersion">
@@ -90,6 +92,17 @@
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
+    <!-- ServiceStack.Mvc.Core -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Mvc/ServiceStack.Mvc.Core.csproj" Targets="Restore" />
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Mvc/ServiceStack.Mvc.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.Server.Core -->
+<!--    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Server/ServiceStack.Server.Core.csproj" Targets="Restore" />-->
+<!--    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Server/ServiceStack.Server.Core.csproj"-->
+<!--             Targets="Build;Pack"-->
+<!--             Properties="Configuration=$(Configuration)" />-->
 
     <!-- Copy all *.nupkg to /NuGet -->
     <ItemGroup>

@@ -32,12 +32,10 @@ namespace ServiceStack.FluentValidation {
 		/// <summary>
 		/// Transforms the property value before validation occurs.
 		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <typeparam name="TProperty"></typeparam>
 		/// <typeparam name="TNew"></typeparam>
-		/// <param name="ruleBuilder"></param>
 		/// <param name="transformationFunc"></param>
 		/// <returns></returns>
+		[Obsolete("Use Transform(x => x.Property, transformer) at the root level instead. This method will be removed in FluentValidation 10.")]
 		IRuleBuilderInitial<T, TNew> Transform<TNew>(Func<TProperty, TNew> transformationFunc);
 	}
 
@@ -92,7 +90,15 @@ namespace ServiceStack.FluentValidation {
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	/// <typeparam name="TElement"></typeparam>
-	public interface IRuleBuilderInitialCollection<T, TElement> : IRuleBuilder<T, TElement>, IConfigurable<CollectionPropertyRule<TElement>, IRuleBuilderInitialCollection<T, TElement>> {
+	public interface IRuleBuilderInitialCollection<T, TElement> : IRuleBuilder<T, TElement>, IConfigurable<CollectionPropertyRule<T, TElement>, IRuleBuilderInitialCollection<T, TElement>> {
+
+		/// <summary>
+		/// Transforms the collection element value before validation occurs.
+		/// </summary>
+		/// <param name="transformationFunc"></param>
+		/// <returns></returns>
+		[Obsolete("Use TransformForEach(x => x.Property, transformer) at the root level instead. This method will be removed in FluentValidation 10.")]
+		IRuleBuilderInitial<T, TNew> Transform<TNew>(Func<TElement, TNew> transformationFunc);
 	}
 
 	/// <summary>

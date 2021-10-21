@@ -1,5 +1,6 @@
 ﻿#if !NETCORE_SUPPORT
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.FluentValidation;
@@ -11,7 +12,7 @@ namespace ServiceStack.Common.Tests.OAuth
     [TestFixture]
     public class RegistrationServiceTests
     {
-        static readonly AuthUserSession authUserSession = new AuthUserSession();
+        static AuthUserSession authUserSession = new AuthUserSession();
 
         private ServiceStackHost appHost;
 
@@ -111,13 +112,13 @@ namespace ServiceStack.Common.Tests.OAuth
         }
 
         [Test]
-        public void Accepts_valid_registration()
+        public async Task Accepts_valid_registration()
         {
             var service = GetRegistrationService();
 
             var request = GetValidRegistration();
 
-            var response = service.Post(request);
+            var response = await service.PostAsync(request);
 
             Assert.That(response as RegisterResponse, Is.Not.Null);
         }
@@ -140,6 +141,7 @@ namespace ServiceStack.Common.Tests.OAuth
         [Test]
         public void Requires_unique_UserName_and_Email()
         {
+            ClearSession();
             (HostContext.TryResolve<IAuthRepository>() as InMemoryAuthRepository)?.Clear();
 
             var authRepo = new InMemoryAuthRepository();
@@ -174,15 +176,21 @@ namespace ServiceStack.Common.Tests.OAuth
             Assert.That(errors[1].FieldName, Is.EqualTo("Email"));
         }
 
+        private void ClearSession()
+        {
+            authUserSession = new AuthUserSession();
+            appHost.Container.Register<IAuthSession>(c => null);
+        }
+
         [Test]
-        public void Registration_with_Html_ContentType_And_Continue_returns_302_with_Location()
+        public async Task Registration_with_Html_ContentType_And_Continue_returns_302_with_Location()
         {
             var service = GetRegistrationService(null, null, MimeTypes.Html);
 
             var request = GetValidRegistration();
 
             service.Request.QueryString[Keywords.Continue] = "http://localhost/home";
-            var response = service.Post(request) as HttpResult;
+            var response = (await service.PostAsync(request)) as HttpResult;
 
             Assert.That(response, Is.Not.Null);
             Assert.That(response.Status, Is.EqualTo(302));
@@ -190,28 +198,28 @@ namespace ServiceStack.Common.Tests.OAuth
         }
 
         [Test]
-        public void Registration_with_EmptyString_Continue_returns_RegistrationResponse()
+        public async Task Registration_with_EmptyString_Continue_returns_RegistrationResponse()
         {
             var service = GetRegistrationService(null, null, MimeTypes.Html);
 
             var request = GetValidRegistration();
             service.Request.QueryString[Keywords.Continue] = string.Empty;
 
-            var response = service.Post(request);
+            var response = await service.PostAsync(request);
 
             Assert.That(response as HttpResult, Is.Null);
             Assert.That(response as RegisterResponse, Is.Not.Null);
         }
 
         [Test]
-        public void Registration_with_Json_ContentType_And_Continue_returns_RegistrationResponse_with_ReferrerUrl()
+        public async Task Registration_with_Json_ContentType_And_Continue_returns_RegistrationResponse_with_ReferrerUrl()
         {
             var service = GetRegistrationService(null, null, MimeTypes.Json);
 
             var request = GetValidRegistration();
             service.Request.QueryString[Keywords.Continue] = "http://localhost/home";
 
-            var response = service.Post(request);
+            var response = await service.PostAsync(request);
 
             Assert.That(response as HttpResult, Is.Null);
             Assert.That(response as RegisterResponse, Is.Not.Null);

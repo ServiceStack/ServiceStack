@@ -6,8 +6,8 @@
     <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
     <Title>ServiceStack support for Open API v2.0 and integrated Swagger UI</Title>
     <PackageDescription>
-      Implements v2.0 of the Open API Specification (https://www.openapis.org).
-      Open API is a specification and complete framework implementation for describing, producing, consuming, and visualizing RESTful web services.
+    Implements v2.0 of the Open API Specification (https://www.openapis.org).
+    Open API is a specification and complete framework implementation for describing, producing, consuming, and visualizing RESTful web services.
     </PackageDescription>
     <PackageTags>OpenAPI;metadata;Swagger;API;REST;Metadata;Docs;ServiceStack</PackageTags>
   </PropertyGroup>
@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="System.ServiceModel.Primitives" Version="4.7.0" />
+    <PackageReference Include="System.ServiceModel.Primitives" Version="4.8.1" />
     <PackageReference Include="System.Xml.XmlSerializer" Version="4.3.0" />
     <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
   </ItemGroup>

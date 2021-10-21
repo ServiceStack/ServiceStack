@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using ServiceStack.Model;
+using ServiceStack.Validation;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -25,6 +26,12 @@ namespace ServiceStack
         public HttpError(int statusCode, string errorCode)
             : this(statusCode, errorCode, null)
         { }
+        
+        public HttpError(ResponseStatus responseStatus, HttpStatusCode statusCode) 
+            : this(new ErrorResponse { ResponseStatus = responseStatus }, statusCode, responseStatus.ErrorCode, responseStatus.Message) {}
+
+        public HttpError(IHasResponseStatus responseDto, HttpStatusCode statusCode) 
+            : this(responseDto, statusCode, responseDto.ResponseStatus.ErrorCode, responseDto.ResponseStatus.Message) {}
 
         public HttpError(object responseDto, HttpStatusCode statusCode, string errorCode, string errorMessage)
             : this(statusCode, errorCode, errorMessage)
@@ -122,12 +129,16 @@ namespace ServiceStack
         public static Exception Forbidden(string message) => new HttpError(HttpStatusCode.Forbidden, message);
         public static Exception MethodNotAllowed(string message) => new HttpError(HttpStatusCode.MethodNotAllowed, message);
         public static Exception BadRequest(string message) => new HttpError(HttpStatusCode.BadRequest, message);
+        public static Exception BadRequest(string errorCode, string message) => new HttpError(HttpStatusCode.BadRequest, errorCode, message);
         public static Exception PreconditionFailed(string message) => new HttpError(HttpStatusCode.PreconditionFailed, message);
         public static Exception ExpectationFailed(string message) => new HttpError(HttpStatusCode.ExpectationFailed, message);
         public static Exception NotImplemented(string message) => new HttpError(HttpStatusCode.NotImplemented, message);
         public static Exception ServiceUnavailable(string message) => new HttpError(HttpStatusCode.ServiceUnavailable, message);
 
+        public static Exception Validation(string errorCode, string errorMessage, string fieldName) => 
+            ValidationError.CreateException(errorCode, errorMessage, fieldName);
+
         public ResponseStatus ToResponseStatus() => Response.GetResponseStatus()
-            ?? ResponseStatusUtils.CreateResponseStatus(ErrorCode, Message, null);
+                                                    ?? ResponseStatusUtils.CreateResponseStatus(ErrorCode, Message, null);
     }
 }

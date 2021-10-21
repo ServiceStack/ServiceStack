@@ -163,7 +163,7 @@ namespace ServiceStack.IO
 
         public void DeleteFiles(IEnumerable<string> filePaths)
         {
-            var sanitizedFilePaths = filePaths.Select(SanitizePath).ToHashSet();
+            var sanitizedFilePaths = filePaths.Select(SanitizePath).ToSet();
             
             List<InMemoryVirtualFile> snapshot, newFiles;
             do

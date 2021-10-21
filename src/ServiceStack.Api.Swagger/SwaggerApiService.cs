@@ -15,7 +15,7 @@ namespace ServiceStack.Api.Swagger
     using ServiceStack.Api.Swagger.Support;
 
     [DataContract]
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     public class SwaggerResource : IReturn<SwaggerApiDeclaration>
     {
         [DataMember(Name = "apiKey")]

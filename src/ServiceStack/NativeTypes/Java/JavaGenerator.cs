@@ -6,13 +6,14 @@ using System.Text;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.Host;
+using ServiceStack.NativeTypes.Kotlin;
 
 namespace ServiceStack.NativeTypes.Java
 {
     public class JavaGenerator
     {
         readonly MetadataTypesConfig Config;
-        List<string> conflictTypeNames = new List<string>();
+        List<string> conflictTypeNames = new();
         List<MetadataType> allTypes;
 
         public JavaGenerator(MetadataTypesConfig config)
@@ -21,12 +22,14 @@ namespace ServiceStack.NativeTypes.Java
         }
 
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataType> InnerTypeFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
 
         public static string DefaultGlobalNamespace = "dtos";
 
-        public static List<string> DefaultImports = new List<string>
-        {
+        public static List<string> DefaultImports = new() {
             /* built-in types used
             "java.math.BigInteger",
             "java.math.BigDecimal",
@@ -83,7 +86,14 @@ namespace ServiceStack.NativeTypes.Java
             {"Stream", "InputStream"},
         }.ToConcurrentDictionary();
 
+        public static ConcurrentDictionary<string, string> ArrayAliases = new Dictionary<string, string> {
+            { "Byte[]", "byte[]" },
+            { "byte[]", "byte[]" }, //GenericArg()
+        }.ToConcurrentDictionary();
+
         public static TypeFilterDelegate TypeFilter { get; set; }
+
+        public static Func<JavaGenerator, MetadataType, MetadataPropertyType, string> PropertyTypeFilter { get; set; }
 
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
@@ -170,12 +180,12 @@ namespace ServiceStack.NativeTypes.Java
 
             var existingTypes = new HashSet<string>();
 
-            var requestTypes = metadata.Operations.Select(x => x.Request).ToHashSet();
+            var requestTypes = metadata.Operations.Select(x => x.Request).ToSet();
             var requestTypesMap = metadata.Operations.ToSafeDictionary(x => x.Request);
             var responseTypes = metadata.Operations
                 .Where(x => x.Response != null)
-                .Select(x => x.Response).ToHashSet();
-            var types = metadata.Types.ToHashSet();
+                .Select(x => x.Response).ToSet();
+            var types = metadata.Types.ToSet();
 
             allTypes = new List<MetadataType>();
             allTypes.AddRange(requestTypes);
@@ -239,6 +249,7 @@ namespace ServiceStack.NativeTypes.Java
                                         : null;
                                 },
                                 IsRequest = true,
+                                Op = operation,
                             });
 
                         existingTypes.Add(fullTypeName);
@@ -280,10 +291,9 @@ namespace ServiceStack.NativeTypes.Java
         private bool ReferencesGson(MetadataTypes metadata)
         {
             return metadata.GetAllMetadataTypes()
-                .Any(x => x.Properties.Safe().Any(p => JavaGeneratorExtensions.JavaKeyWords.Contains(p.Name.PropertyStyle()))
-                    || x.Properties.Safe().Any(p => p.DataMember?.Name != null)
-                    || (x.RequestType?.ReturnType != null && x.RequestType?.ReturnType.Name.IndexOf('`') >= 0) //uses TypeToken<T>
-                );
+                .Any(x => x.Properties.Safe().Any(p => p.Name.PropertyStyle().IsKeyWord())
+                  || x.Properties.Safe().Any(p => p.DataMember?.Name != null)
+                  || (x.RequestType?.ReturnType != null && x.RequestType?.ReturnType.Name.IndexOf('`') >= 0)); //uses TypeToken<T>
         }
 
         private static bool ReferencesStream(MetadataTypes metadata)
@@ -292,8 +302,7 @@ namespace ServiceStack.NativeTypes.Java
         }
 
         //Use built-in types already in net.servicestack.client package
-        public static HashSet<string> IgnoreTypeNames = new HashSet<string>
-        {
+        public static HashSet<string> IgnoreTypeNames = new() {
             nameof(ResponseStatus),
             nameof(ResponseError),
             nameof(ErrorResponse),
@@ -322,6 +331,7 @@ namespace ServiceStack.NativeTypes.Java
 
             var typeName = Type(type.Name, type.GenericArgs);
 
+            sb.Emit(type, Lang.Java);
             PreTypeFilter?.Invoke(sb, type);
 
             if (type.IsEnum.GetValueOrDefault())
@@ -408,15 +418,16 @@ namespace ServiceStack.NativeTypes.Java
                 var addPropertyAccessors = Config.AddPropertyAccessors && !type.IsInterface();
                 var settersReturnType = addPropertyAccessors && Config.SettersReturnThis ? typeName : null;
 
-                sb.AppendLine("public static {0} {1}{2}".Fmt(defType, typeName, extend));
+                sb.AppendLine($"public static {defType} {typeName}{extend}");
                 sb.AppendLine("{");
 
                 sb = sb.Indent();
+                InnerTypeFilter?.Invoke(sb, type);
 
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
                 if (addVersionInfo)
                 {
-                    sb.AppendLine("public Integer {0} = {1};".Fmt("Version".PropertyStyle(), Config.AddImplicitVersion));
+                    sb.AppendLine($"public Integer {GetPropertyName("Version")} = {Config.AddImplicitVersion};");
 
                     if (addPropertyAccessors)
                         sb.AppendPropertyAccessor("Integer", "Version", settersReturnType);
@@ -467,28 +478,33 @@ namespace ServiceStack.NativeTypes.Java
                 {
                     if (wasAdded) sb.AppendLine();
 
-                    var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
-
-                    var fieldName = prop.Name.SafeToken().PropertyStyle();
-                    var accessorName = fieldName.ToPascalCase();
+                    var propType = GetPropertyType(prop);
+                    propType = PropertyTypeFilter?.Invoke(this, type, prop) ?? propType;
 
                     wasAdded = AppendComments(sb, prop.Description);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
-                    if (!fieldName.IsKeyWord())
+                    sb.Emit(prop, Lang.Java);
+                    PrePropertyFilter?.Invoke(sb, prop, type);
+
+                    var defaultName = prop.Name.PropertyStyle();
+                    var fieldName = GetPropertyName(prop.Name);
+                    if (fieldName == defaultName)
                     {
-                        sb.AppendLine("public {0} {1} = null;".Fmt(propType, fieldName));
+                        sb.AppendLine($"public {propType} {fieldName} = null;");
                     }
                     else
                     {
-                        var originalName = fieldName;
-                        fieldName = Char.ToUpper(fieldName[0]) + fieldName.SafeSubstring(1);
-                        sb.AppendLine("@SerializedName(\"{0}\") public {1} {2} = null;".Fmt(originalName, propType, fieldName));
+                        sb.AppendLine($"@SerializedName(\"{defaultName}\") public {propType} {fieldName} = null;");
                     }
+                    PostPropertyFilter?.Invoke(sb, prop, type);
 
                     if (addPropertyAccessors)
+                    {
+                        var accessorName = fieldName.ToPascalCase();
                         sbAccessors.AppendPropertyAccessor(propType, fieldName, accessorName, settersReturnType);
+                    }
                 }
             }
 
@@ -497,7 +513,7 @@ namespace ServiceStack.NativeTypes.Java
                 if (wasAdded) sb.AppendLine();
 
                 AppendDataMember(sb, null, dataMemberIndex++);
-                sb.AppendLine("public ResponseStatus {0} = null;".Fmt(nameof(ResponseStatus).PropertyStyle()));
+                sb.AppendLine($"public ResponseStatus {GetPropertyName(nameof(ResponseStatus))} = null;");
 
                 if (addPropertyAccessors)
                     sbAccessors.AppendPropertyAccessor("ResponseStatus", "ResponseStatus", settersReturnType);
@@ -506,7 +522,13 @@ namespace ServiceStack.NativeTypes.Java
             if (sbAccessors.Length > 0)
                 sb.AppendLine(StringBuilderCacheAlt.ReturnAndFree(sbInner).TrimEnd()); //remove last \n
         }
-        
+
+        public virtual string GetPropertyType(MetadataPropertyType prop)
+        {
+            var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
+            return propType;
+        }
+
         public bool AppendAttributes(StringBuilderWrapper sb, List<MetadataAttribute> attributes)
         {
             if (attributes == null || attributes.Count == 0) return false;
@@ -524,7 +546,7 @@ namespace ServiceStack.NativeTypes.Java
                 if ((attr.Args == null || attr.Args.Count == 0)
                     && (attr.ConstructorArgs == null || attr.ConstructorArgs.Count == 0))
                 {
-                    sb.AppendLine(prefix + "@{0}()".Fmt(attr.Name));
+                    sb.AppendLine(prefix + $"@{attr.Name}()");
                 }
                 else
                 {
@@ -550,7 +572,7 @@ namespace ServiceStack.NativeTypes.Java
                             args.Append($"{attrArg.Name}={TypeValue(attrArg.Type, attrArg.Value)}");
                         }
                     }
-                    sb.AppendLine(prefix + "@{0}({1})".Fmt(attr.Name, StringBuilderCacheAlt.ReturnAndFree(args)));
+                    sb.AppendLine(prefix + $"@{attr.Name}({StringBuilderCacheAlt.ReturnAndFree(args)})");
                 }
             }
 
@@ -580,8 +602,7 @@ namespace ServiceStack.NativeTypes.Java
             return Type(typeName.Name, typeName.GenericArgs);
         }
 
-        public static HashSet<string> ArrayTypes = new HashSet<string>
-        {
+        public static HashSet<string> ArrayTypes = new() {
             "List`1",
             "IEnumerable`1",
             "ICollection`1",
@@ -591,8 +612,7 @@ namespace ServiceStack.NativeTypes.Java
             "IEnumerable",
         };
 
-        public static HashSet<string> DictionaryTypes = new HashSet<string>
-        {
+        public static HashSet<string> DictionaryTypes = new() {
             "Dictionary`2",
             "IDictionary`2",
             "IOrderedDictionary`2",
@@ -648,10 +668,13 @@ namespace ServiceStack.NativeTypes.Java
             type = type.SanitizeType();
             var arrParts = type.SplitOnFirst('[');
             if (arrParts.Length > 1)
-                return "ArrayList<{0}>".Fmt(TypeAlias(arrParts[0]));
+            {
+                return ArrayAliases.TryGetValue(type, out var arrayAlias) 
+                    ? arrayAlias
+                    : $"ArrayList<{TypeAlias(arrParts[0])}>";
+            }
 
             TypeAliases.TryGetValue(type, out var typeAlias);
-
             return typeAlias ?? NameOnly(type);
         }
 
@@ -669,7 +692,7 @@ namespace ServiceStack.NativeTypes.Java
             if (desc != null && Config.AddDescriptionAsComments)
             {
                 sb.AppendLine("/**");
-                sb.AppendLine("* {0}".Fmt(desc.SafeComment()));
+                sb.AppendLine($"* {desc.SafeComment()}");
                 sb.AppendLine("*/");
             }
             return false;
@@ -695,12 +718,12 @@ namespace ServiceStack.NativeTypes.Java
                     if (dcArgs.Length > 0)
                         dcArgs += ", ";
 
-                    dcArgs += "Namespace={0}".Fmt(dcMeta.Namespace.QuotedSafeValue());
+                    dcArgs += $"Namespace={dcMeta.Namespace.QuotedSafeValue()}";
                 }
 
-                dcArgs = "({0})".Fmt(dcArgs);
+                dcArgs = $"({dcArgs})";
             }
-            sb.AppendLine("@DataContract{0}".Fmt(dcArgs));
+            sb.AppendLine($"@DataContract{dcArgs}");
         }
 
         public bool AppendDataMember(StringBuilderWrapper sb, MetadataDataMember dmMeta, int dataMemberIndex)
@@ -710,7 +733,7 @@ namespace ServiceStack.NativeTypes.Java
                 if (Config.AddDataContractAttributes)
                 {
                     sb.AppendLine(Config.AddIndexesToDataMembers
-                                  ? "@DataMember(Order={0})".Fmt(dataMemberIndex)
+                                  ? $"@DataMember(Order={dataMemberIndex})"
                                   : "@DataMember()");
                     return true;
                 }
@@ -725,14 +748,14 @@ namespace ServiceStack.NativeTypes.Java
                 || Config.AddIndexesToDataMembers)
             {
                 if (dmMeta.Name != null)
-                    dmArgs = "Name={0}".Fmt(dmMeta.Name.QuotedSafeValue());
+                    dmArgs = $"Name={dmMeta.Name.QuotedSafeValue()}";
 
                 if (dmMeta.Order != null || Config.AddIndexesToDataMembers)
                 {
                     if (dmArgs.Length > 0)
                         dmArgs += ", ";
 
-                    dmArgs += "Order={0}".Fmt(dmMeta.Order ?? dataMemberIndex);
+                    dmArgs += $"Order={dmMeta.Order ?? dataMemberIndex}";
                 }
 
                 if (dmMeta.IsRequired != null)
@@ -740,7 +763,7 @@ namespace ServiceStack.NativeTypes.Java
                     if (dmArgs.Length > 0)
                         dmArgs += ", ";
 
-                    dmArgs += "IsRequired={0}".Fmt(dmMeta.IsRequired.ToString().ToLower());
+                    dmArgs += $"IsRequired={dmMeta.IsRequired.ToString().ToLower()}";
                 }
 
                 if (dmMeta.EmitDefaultValue != null)
@@ -748,16 +771,16 @@ namespace ServiceStack.NativeTypes.Java
                     if (dmArgs.Length > 0)
                         dmArgs += ", ";
 
-                    dmArgs += "EmitDefaultValue={0}".Fmt(dmMeta.EmitDefaultValue.ToString().ToLower());
+                    dmArgs += $"EmitDefaultValue={dmMeta.EmitDefaultValue.ToString().ToLower()}";
                 }
 
-                dmArgs = "({0})".Fmt(dmArgs);
+                dmArgs = $"({dmArgs})";
             }
-            sb.AppendLine("@DataMember{0}".Fmt(dmArgs));
+            sb.AppendLine($"@DataMember{dmArgs}");
 
             if (dmMeta.Name != null)
             {
-                sb.AppendLine("@SerializedName(\"{0}\")".Fmt(dmMeta.Name));
+                sb.AppendLine($"@SerializedName(\"{dmMeta.Name}\")");
             }
 
             return true;
@@ -771,6 +794,9 @@ namespace ServiceStack.NativeTypes.Java
         public string ConvertFromCSharp(TextNode node)
         {
             var sb = new StringBuilder();
+
+            if (node.Text == "Nullable")
+                return TypeAlias(node.Children[0].Text);
 
             if (node.Text == "List")
             {
@@ -811,6 +837,14 @@ namespace ServiceStack.NativeTypes.Java
             var typeName = sb.ToString();
             return typeName.LastRightPart('.'); //remove nested class
         }
+
+        public string GetPropertyName(string name)
+        {
+            var fieldName = name.SafeToken().PropertyStyle();
+            if (fieldName.IsKeyWord())
+                fieldName = char.ToUpper(fieldName[0]) + fieldName.SafeSubstring(1);
+            return fieldName;
+        }
     }
 
     public static class JavaGeneratorExtensions
@@ -820,8 +854,7 @@ namespace ServiceStack.NativeTypes.Java
             return type;
         }
 
-        public static HashSet<string> JavaKeyWords = new HashSet<string>
-        {
+        public static HashSet<string> JavaKeyWords = new() {
             "abstract",
             "assert",
             "boolean",
@@ -897,8 +930,8 @@ namespace ServiceStack.NativeTypes.Java
                 {
                     Name = "Route",
                     Args = new List<MetadataPropertyType> {
-                        new MetadataPropertyType { Name = "Path", Type = "string", Value = route.Path },
-                        new MetadataPropertyType { Name = "Verbs", Type = "string", Value = route.Verbs },
+                        new() { Name = "Path", Type = "string", Value = route.Path },
+                        new() { Name = "Verbs", Type = "string", Value = route.Verbs },
                     },
                 };
             }
@@ -908,7 +941,7 @@ namespace ServiceStack.NativeTypes.Java
                 Name = "Route",
                 ConstructorArgs = new List<MetadataPropertyType>
                 {
-                    new MetadataPropertyType { Type = "string", Value = route.Path },
+                    new() { Type = "string", Value = route.Path },
                 },
             };
         }

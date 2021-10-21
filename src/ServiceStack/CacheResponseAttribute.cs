@@ -1,6 +1,9 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Caching;
 using ServiceStack.Html;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -64,7 +67,7 @@ namespace ServiceStack
 
             var feature = HostContext.GetPlugin<HttpCacheFeature>();
             if (feature == null)
-                throw new NotSupportedException(ErrorMessages.CacheFeatureMustBeEnabled.Fmt("[CacheResponse]"));
+                throw new NotSupportedException(ErrorMessages.CacheFeatureMustBeEnabled.LocalizeFmt(req, "[CacheResponse]"));
             if (feature.DisableCaching)
                 return;
 
@@ -82,24 +85,29 @@ namespace ServiceStack
             if (VaryByUser)
                 modifiers += (modifiers.Length > 0 ? "+" : "") + "user:" + req.GetSessionId();
 
-            if (VaryByRoles != null && VaryByRoles.Length > 0)
+            if (VaryByRoles is { Length: > 0 })
             {
-                var userSession = req.GetSession();
+                var userSession = await req.GetSessionAsync().ConfigAwait();
                 if (userSession != null)
                 {
-                    var authRepo = HostContext.AppHost.GetAuthRepository(req);
+                    var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
+#if NET472 || NETSTANDARD2_0
+            await using (authRepo as IAsyncDisposable)
+#else
                     using (authRepo as IDisposable)
+#endif
                     {
+                        var allRoles = await userSession.GetRolesAsync(authRepo).ConfigAwait();
                         foreach (var role in VaryByRoles)
                         {
-                            if (userSession.HasRole(role, authRepo))
+                            if (allRoles.Contains(role))
                                 modifiers += (modifiers.Length > 0 ? "+" : "") + "role:" + role;
                         }
                     }
                 }
             }
 
-            if (VaryByHeaders != null && VaryByHeaders.Length > 0)
+            if (VaryByHeaders is { Length: > 0 })
             {
                 foreach (var header in VaryByHeaders)
                 {
@@ -126,7 +134,7 @@ namespace ServiceStack
                 NoCompression = NoCompression,
             };
 
-            if (await req.HandleValidCache(cacheInfo))
+            if (await req.HandleValidCache(cacheInfo).ConfigAwait())
                 return;
 
             req.Items[Keywords.CacheInfo] = cacheInfo;
@@ -140,21 +148,29 @@ namespace ServiceStack
             return "date:" + cacheInfo.CacheKey;
         }
 
-        public static async Task<bool> HandleValidCache(this IRequest req, CacheInfo cacheInfo)
+        public static async Task<bool> HandleValidCache(this IRequest req, CacheInfo cacheInfo, CancellationToken token=default)
         {
             if (cacheInfo == null)
                 return false;
 
-            var res = req.Response;
-            var cache = cacheInfo.LocalCache ? HostContext.AppHost.GetMemoryCacheClient(req) : HostContext.AppHost.GetCacheClient(req);
+            ICacheClient cache;
+            ICacheClientAsync cacheAsync = null; // only non-null if native ICacheClientAsync exists
+            if (cacheInfo.LocalCache)
+                cache = HostContext.AppHost.GetMemoryCacheClient(req);
+            else
+                HostContext.AppHost.TryGetNativeCacheClient(req, out cache, out cacheAsync);
+
             var cacheControl = HostContext.GetPlugin<HttpCacheFeature>().BuildCacheControlHeader(cacheInfo);
 
+            var res = req.Response;
             DateTime? lastModified = null;
 
             var doHttpCaching = cacheInfo.MaxAge != null || cacheInfo.CacheControl != CacheControl.None;
             if (doHttpCaching)
             {
-                lastModified = cache.Get<DateTime?>(cacheInfo.LastModifiedKey());
+                lastModified = cacheAsync != null 
+                    ? await cacheAsync.GetAsync<DateTime?>(cacheInfo.LastModifiedKey(), token).ConfigAwait()
+                    : cache.Get<DateTime?>(cacheInfo.LastModifiedKey());
                 if (req.HasValidCache(lastModified))
                 {
                     if (cacheControl != null)
@@ -169,9 +185,13 @@ namespace ServiceStack
                 ? req.GetCompressionType()
                 : null;
 
-            var responseBytes = encoding != null
-                ? cache.Get<byte[]>(cacheInfo.CacheKey + "." + encoding)
-                : cache.Get<byte[]>(cacheInfo.CacheKey);
+            var useCacheKey = encoding != null
+                ? cacheInfo.CacheKey + "." + encoding
+                : cacheInfo.CacheKey;
+            
+            var responseBytes = cacheAsync != null
+                ? await cacheAsync.GetAsync<byte[]>(useCacheKey, token).ConfigAwait()
+                : cache.Get<byte[]>(useCacheKey);
 
             if (responseBytes != null)
             {
@@ -184,12 +204,16 @@ namespace ServiceStack
                     res.AddHeader(HttpHeaders.CacheControl, cacheControl);
 
                 if (!doHttpCaching)
-                    lastModified = cache.Get<DateTime?>(cacheInfo.LastModifiedKey());
+                {
+                    lastModified = cacheAsync != null ?
+                        await cacheAsync.GetAsync<DateTime?>(cacheInfo.LastModifiedKey(), token).ConfigAwait() :
+                        cache.Get<DateTime?>(cacheInfo.LastModifiedKey());
+                }
 
                 if (lastModified != null)
                     res.AddHeader(HttpHeaders.LastModified, lastModified.Value.ToUniversalTime().ToString("r"));
 
-                await res.WriteBytesToResponse(responseBytes, req.ResponseContentType);
+                await res.WriteBytesToResponse(responseBytes, req.ResponseContentType, token).ConfigAwait();
                 return true;
             }
 

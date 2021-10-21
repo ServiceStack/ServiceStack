@@ -6,6 +6,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using ServiceStack.Host;
 using ServiceStack.Web;
+using ServiceStack.Text;
 
 namespace ServiceStack.Grpc
 {

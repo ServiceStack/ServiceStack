@@ -34,6 +34,11 @@ namespace ServiceStack
         /// Generated DataModel Name to use 
         /// </summary>
         public string DataModelName { get; set; }
+        
+        /// <summary>
+        /// Generated DataModel Name to use for Query Services 
+        /// </summary>
+        public string PluralDataModelName { get; set; }
 
         /// <summary>
         /// Generated Route Path base to use 
@@ -43,7 +48,22 @@ namespace ServiceStack
         /// <summary>
         /// Generated Request DTO Name to use per operation: Query, Create, Update, Patch, Delete
         /// </summary>
-        public Dictionary<string,string> OperationNames { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string,string> OperationNames { get; set; } = new();
+        
+        /// <summary>
+        /// RDBMS Dialect
+        /// </summary>
+        public IOrmLiteDialectProvider Dialect { get; set; }
+        
+        /// <summary>
+        /// Return what table [Alias] name should be used (if any)
+        /// </summary>
+        public Func<string> GetTableAlias { get; set; }
+        
+        /// <summary>
+        /// Return what table column [Alias] name should be used (if any)
+        /// </summary>
+        public Func<MetadataPropertyType, ColumnSchema, string> GetColumnAlias { get; set; }
     }
     
     public interface IGenerateCrudServices
@@ -61,8 +81,11 @@ namespace ServiceStack
         Action<MetadataOperationType, IRequest> ServiceFilter { get; set; }
         Func<MetadataType, bool> IncludeType { get; set; }
         Func<MetadataOperationType, bool> IncludeService { get; set; }
+        bool AddDataContractAttributes { get; set; }
+        bool AddIndexesToDataMembers { get; set; }
         string AccessRole { get; set; }
-        DbSchema GetCachedDbSchema(IDbConnectionFactory dbFactory, string schema = null, string namedConnection = null);
+        DbSchema GetCachedDbSchema(IDbConnectionFactory dbFactory, string schema = null, string namedConnection = null,
+            List<string> includeTables = null, List<string> excludeTables = null);
         void Register(IAppHost appHost);
         List<Type> GenerateMissingServices(AutoQueryFeature feature);
     }
@@ -157,13 +180,23 @@ namespace ServiceStack
         public List<string> AddNamespaces { get; set; }
 
         /// <summary>
-        /// Is used as a Whitelist to specify only the types you would like to have code-generated, see:
+        /// Allow List to specify only the tables you would like to have code-generated
+        /// </summary>
+        public List<string> IncludeTables { get; set; }
+
+        /// <summary>
+        /// Block list to specify which tables you would like excluded from being generated
+        /// </summary>
+        public List<string> ExcludeTables { get; set; }
+
+        /// <summary>
+        /// Allow List to specify only the types you would like to have code-generated, see:
         /// https://docs.servicestack.net/csharp-add-servicestack-reference#includetypes
         /// </summary>
         public List<string> IncludeTypes { get; set; }
 
         /// <summary>
-        /// Is used as a Blacklist to specify which types you would like excluded from being generated. see:
+        /// Block list to specify which types you would like excluded from being generated. see:
         /// https://docs.servicestack.net/csharp-add-servicestack-reference#excludetypes
         /// </summary>
         public List<string> ExcludeTypes { get; set; }
@@ -222,6 +255,16 @@ namespace ServiceStack
         /// </summary>
         public bool? NoCache { get; set; }
 
+        /// <summary>
+        /// Allow List to specify only the tables you would like to have code-generated
+        /// </summary>
+        public List<string> IncludeTables { get; set; }
+
+        /// <summary>
+        /// Block list to specify which tables you would like excluded from being generated
+        /// </summary>
+        public List<string> ExcludeTables { get; set; }
+
         public Dictionary<string, string> Meta { get; set; }
     }
 
@@ -230,6 +273,17 @@ namespace ServiceStack
         public string Schema { get; set; }
         public string NamedConnection { get; set; }
         public string AuthSecret { get; set; }
+
+        /// <summary>
+        /// Allow List to specify only the tables you would like to have code-generated
+        /// </summary>
+        public List<string> IncludeTables { get; set; }
+
+        /// <summary>
+        /// Block list to specify which tables you would like excluded from being generated
+        /// </summary>
+        public List<string> ExcludeTables { get; set; }
+
         public bool? NoCache { get; set; }
     }
 

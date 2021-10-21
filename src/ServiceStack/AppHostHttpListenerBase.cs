@@ -62,8 +62,8 @@ namespace ServiceStack
                 }
 
                 var task = serviceStackHandler.ProcessRequestAsync(httpReq, httpRes, operationName);
-                await HostContext.Async.ContinueWith(httpReq, task, x => httpRes.Close(), 
-                    TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent);
+                await task.ContinueWith(x => httpRes.Close(), 
+                    TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent).ConfigAwait();
                 //Matches Exceptions handled in HttpListenerBase.InitTask()
 
                 return;

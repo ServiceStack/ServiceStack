@@ -1,3 +1,4 @@
+using System;
 using System.Net;
 using System.Threading.Tasks;
 using ServiceStack.Host.Handlers;
@@ -8,6 +9,7 @@ namespace ServiceStack.Razor
 {
     public class RazorHandler : ServiceStackHandlerBase
     {
+        public Action<IRequest> Filter { get; set; }
         public RazorFormat RazorFormat { get; set; }
         public RazorPage RazorPage { get; set; }
         public object Model { get; set; }
@@ -25,6 +27,8 @@ namespace ServiceStack.Razor
         {
             if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
                 return;
+
+            Filter?.Invoke(httpReq);
 
             httpRes.ContentType = MimeTypes.Html;
             if (RazorFormat == null)

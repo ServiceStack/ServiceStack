@@ -8,6 +8,7 @@ using ProtoBuf.Grpc;
 using ProtoBuf.Grpc.Configuration;
 using ServiceStack.Grpc;
 using ServiceStack.Web;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -56,7 +57,7 @@ namespace ServiceStack
                         context.ServerCallContext.Status = feature.ToGrpcStatus?.Invoke(httpRes) ?? ToGrpcStatus(res.StatusCode, desc);
                     }
 
-                    await context.ServerCallContext.WriteResponseHeadersAsync(headers);
+                    await context.ServerCallContext.WriteResponseHeadersAsync(headers).ConfigAwait();
                 }
             }
         }
@@ -84,10 +85,10 @@ namespace ServiceStack
 
             var req = new GrpcRequest(context, request, method);
             using var scope = req.StartScope();
-            var ret = await RpcGateway.ExecuteAsync<TResponse>(request, req);
+            var ret = await RpcGateway.ExecuteAsync<TResponse>(request, req).ConfigAwait();
             if (req.Response.Dto == null)
                 req.Response.Dto = ret;
-            await WriteResponseHeadersAsync(req.Response, context);
+            await WriteResponseHeadersAsync(req.Response, context).ConfigAwait();
             return ret;
         }
 
@@ -146,7 +147,7 @@ namespace ServiceStack
                 if (AppHost.ApplyPreRequestFilters(req, req.Response))
                     yield break;
 
-                await AppHost.ApplyRequestFiltersAsync(req, res, request);
+                await AppHost.ApplyRequestFiltersAsync(req, res, request).ConfigAwait();
                 if (res.IsClosed)
                     yield break;
 
@@ -155,7 +156,7 @@ namespace ServiceStack
             catch (Exception e)
             {
                 res.Dto = RpcGateway.CreateErrorResponse<TResponse>(res, e);
-                await WriteResponseHeadersAsync(res, context);
+                await WriteResponseHeadersAsync(res, context).ConfigAwait();
                 yield break; //written in headers
             }
 
@@ -171,7 +172,7 @@ namespace ServiceStack
                 {
                     // catch + handle first Exception
                     res.Dto = RpcGateway.CreateErrorResponse<TResponse>(res, e);
-                    await WriteResponseHeadersAsync(res, context);
+                    await WriteResponseHeadersAsync(res, context).ConfigAwait();
                     await enumerator.DisposeAsync();
                     yield break; //written in headers
                 }

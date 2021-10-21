@@ -89,10 +89,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_call_jsv_debug_on_GetFactorial_WebService()
         {
-            const string url = ListeningOn + "jsv/reply/GetFactorial?ForNumber=3&debug=true";
+            var url = ListeningOn + "jsv/reply/GetFactorial?ForNumber=3&debug=true";
             var contents = url.GetStringFromUrl();
 
-            Console.WriteLine("JSV DEBUG: " + contents);
+            Console.WriteLine(@"JSV DEBUG: " + contents);
 
             Assert.That(contents, Is.Not.Null);
         }
@@ -109,7 +109,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (Exception ex)
             {
                 errorCount++;
-                Console.WriteLine("Error [{0}]: {1}", ex.GetType().Name, ex.Message);
+                Console.WriteLine(@"Error [{0}]: {1}", ex.GetType().Name, ex.Message);
             }
             try
             {
@@ -118,7 +118,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (Exception ex)
             {
                 errorCount++;
-                Console.WriteLine("Error [{0}]: {1}", ex.GetType().Name, ex.Message);
+                Console.WriteLine(@"Error [{0}]: {1}", ex.GetType().Name, ex.Message);
             }
 
             Assert.That(errorCount, Is.EqualTo(2));
@@ -141,7 +141,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             try
             {
                 var response = client.Put<MoviesZipResponse>("all-movies.zip", new MoviesZip());
-                Assert.Fail("Should throw 405 excetpion");
+                Assert.Fail("Should throw 405 exception");
             }
             catch (WebServiceException ex)
             {

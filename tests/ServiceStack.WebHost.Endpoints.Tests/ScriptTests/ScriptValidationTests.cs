@@ -103,7 +103,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 if (!(e.InnerException is ArgumentException ae))
                     throw;
                 
-                Assert.That(ae.Message.Replace("\r",""), Is.EqualTo("Must be 13 or over\nParameter name: Age"));
+                Assert.That(ae.Message.Replace("\r",""), 
+                    Does.StartWith("Must be 13 or over"));
             }
         }
     }

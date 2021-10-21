@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -34,56 +36,37 @@ namespace ServiceStack
             if (HostContext.HasValidAuthSecret(req))
                 return;
 
-            await base.ExecuteAsync(req, res, requestDto); //first check if session is authenticated
+            await base.ExecuteAsync(req, res, requestDto).ConfigAwait(); //first check if session is authenticated
             if (res.IsClosed)
                 return; //AuthenticateAttribute already closed the request (ie auth failed)
 
-            var session = req.GetSession();
+            var session = await req.AssertAuthenticatedSessionAsync().ConfigAwait();
 
-            var authRepo = HostContext.AppHost.GetAuthRepository(req);
+            var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
+#if NET472 || NETSTANDARD2_0
+            await using (authRepo as IAsyncDisposable)
+#else
             using (authRepo as IDisposable)
+#endif
             {
-                if (session != null && session.HasRole(RoleNames.Admin, authRepo))
-                    return;
-
-                if (HasAnyRoles(req, session, authRepo))
+                if (await session.HasAnyRolesAsync(RequiredRoles, authRepo, req).ConfigAwait())
                     return;
             }
 
-            if (DoHtmlRedirectAccessDeniedIfConfigured(req, res))
-                return;
-
-            res.StatusCode = (int)HttpStatusCode.Forbidden;
-            res.StatusDescription = ErrorMessages.InvalidRole.Localize(req);
-            await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto);
+            await HandleShortCircuitedErrors(req, res, requestDto,
+                HttpStatusCode.Forbidden, ErrorMessages.InvalidRole.Localize(req)).ConfigAwait();
         }
 
+        [Obsolete("Use HasAnyRolesAsync")]
         public virtual bool HasAnyRoles(IRequest req, IAuthSession session, IAuthRepository authRepo)
         {
-            if (HasAnyRoles(session, authRepo)) return true;
-
-            session.UpdateFromUserAuthRepo(req, authRepo);
-
-            if (HasAnyRoles(session, authRepo))
-            {
-                req.SaveSession(session);
-                return true;
-            }
-            return false;
+            return session.HasAnyRoles(RequiredRoles, authRepo, req);
         }
-
-        public virtual bool HasAnyRoles(IAuthSession session, IAuthRepository authRepo)
-        {
-            return this.RequiredRoles
-                .Any(requiredRole => session != null
-                    && session.HasRole(requiredRole, authRepo));
-        }
-
+        
         /// <summary>
         /// Check all session is in any supplied roles otherwise a 401 HttpError is thrown
         /// </summary>
-        /// <param name="request"></param>
-        /// <param name="requiredRoles"></param>
+        [Obsolete("Use AssertRequiredRolesAsync")]
         public static void AssertRequiredRoles(IRequest req, params string[] requiredRoles)
         {
             if (requiredRoles.IsEmpty()) return;
@@ -91,28 +74,16 @@ namespace ServiceStack
             if (HostContext.HasValidAuthSecret(req))
                 return;
 
-            var session = req.GetSession();
+            var session = req.AssertAuthenticatedSession();
 
             var authRepo = HostContext.AppHost.GetAuthRepository(req);
             using (authRepo as IDisposable)
             {
-                if (session != null && session.HasRole(RoleNames.Admin, authRepo))
-                    return;
-
-                if (session?.UserAuthId != null && requiredRoles.Any(x => session.HasRole(x, authRepo)))
-                    return;
-
-                session.UpdateFromUserAuthRepo(req);
-
-                if (session?.UserAuthId != null && requiredRoles.Any(x => session.HasRole(x, authRepo)))
+                if (session.HasAnyRoles(requiredRoles, authRepo, req))
                     return;
             }
 
-            var statusCode = session != null && session.IsAuthenticated
-                ? (int)HttpStatusCode.Forbidden
-                : (int)HttpStatusCode.Unauthorized;
-
-            throw new HttpError(statusCode, ErrorMessages.InvalidRole.Localize(req));
+            throw new HttpError(HttpStatusCode.Forbidden, ErrorMessages.InvalidRole.Localize(req));
         }
     }
 }

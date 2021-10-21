@@ -199,18 +199,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [OneTimeTearDown]
         public void OneTimeTearDown() => appHost.Dispose();
 
+        const string Password = "p@55wOrd";
+
         [Test]
         public void Can_CreateUserAuth()
         {
             var authRepo = appHost.TryResolve<IAuthRepository>();
-            
+
             var newUser = authRepo.CreateUserAuth(new AppUser
             {
                 DisplayName = "Test User",
                 Email = "user@gmail.com",
                 FirstName = "Test",
                 LastName = "User",
-            }, "p@55wOrd");
+            }, Password);
             
             Assert.That(newUser.Email, Is.EqualTo("user@gmail.com"));
 
@@ -226,6 +228,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var updatedUser = authRepo.GetUserAuth(newSession.UserAuthId);
             Assert.That(updatedUser, Is.Not.Null);
             Assert.That(updatedUser.FirstName, Is.EqualTo("Updated"));
+            
+            Assert.That(authRepo.TryAuthenticate(newUser.Email, Password, out var authUser));
+            Assert.That(authUser.FirstName, Is.EqualTo(updatedUser.FirstName));
+            
+            authRepo.DeleteUserAuth(newSession.UserAuthId);
+            var deletedUserAuth = authRepo.GetUserAuth(newSession.UserAuthId);
+            Assert.That(deletedUserAuth, Is.Null);
         }
 
         [Test]
@@ -262,6 +271,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var userAuthDetailsList = authRepo.GetUserAuthDetails(newSession.UserAuthId);
             Assert.That(userAuthDetailsList.Count, Is.EqualTo(1));
             Assert.That(userAuthDetailsList[0].Email, Is.EqualTo("user@fb.com"));
+            
+            authRepo.DeleteUserAuth(newSession.UserAuthId);
+            userAuthDetailsList = authRepo.GetUserAuthDetails(newSession.UserAuthId);
+            Assert.That(userAuthDetailsList, Is.Empty);
+            var deletedUserAuth = authRepo.GetUserAuth(newSession.UserAuthId);
+            Assert.That(deletedUserAuth, Is.Null);
         }
 
     }

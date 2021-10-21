@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Web;
 
 namespace ServiceStack.Admin
 {
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [DataContract]
     public class RequestLogs
     {
@@ -33,7 +34,7 @@ namespace ServiceStack.Admin
         [DataMember(Order=20)] public TimeSpan? DurationLessThan { get; set; }
     }
 
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
     [DataContract]
     public class RequestLogsResponse
     {
@@ -74,14 +75,14 @@ namespace ServiceStack.Admin
 
         public IRequestLogger RequestLogger { get; set; }
 
-        public object Any(RequestLogs request)
+        public async Task<object> Any(RequestLogs request)
         {
             if (RequestLogger == null)
                 throw new Exception("No IRequestLogger is registered");
 
             if (!HostContext.DebugMode)
             {
-                RequiredRoleAttribute.AssertRequiredRoles(Request, RequestLogger.RequiredRoles);
+                await RequiredRoleAttribute.AssertRequiredRolesAsync(Request, RequestLogger.RequiredRoles);
             }
 
             if (request.EnableSessionTracking.HasValue)

@@ -290,7 +290,7 @@ namespace ServiceStack
                             return true;
                         }
 
-#if NET45
+#if NET45 || NET472
                         //JsConfigScope uses ThreadStatic in .NET v4.5 so avoid async thread hops by writing sync to MemoryStream
                         if (resultScope != null || jsconfig != null)
                             response.UseBufferedStream = true;
@@ -340,7 +340,7 @@ namespace ServiceStack
                         if (defaultAction == null)
                         {
                             throw new ArgumentNullException(nameof(defaultAction),
-                                $"As result '{(result != null ? result.GetType().GetOperationName() : "")}' is not a supported responseType, a defaultAction must be supplied");
+                                $@"As result '{(result != null ? result.GetType().GetOperationName() : "")}' is not a supported responseType, a defaultAction must be supplied");
                         }
 
                         if (bodyPrefix != null)
@@ -361,7 +361,12 @@ namespace ServiceStack
                     if (originalEx is InvalidOperationException invalidEx)
                     {
                         Log.Error(invalidEx.Message, invalidEx);
-                        await response.OutputStream.FlushAsync(token); // Prevent hanging clients
+                        try
+                        {
+                            flushAsync = false;
+                            await response.OutputStream.FlushAsync(token); // Prevent hanging clients
+                        }
+                        catch(Exception flushEx) { Log.Error("response.OutputStream.FlushAsync()", flushEx); }
                     }
 
                     await HandleResponseWriteException(originalEx, request, response, defaultContentType);
@@ -413,7 +418,7 @@ namespace ServiceStack
             }
         }
 
-        public static async Task WriteBytesToResponse(this IResponse res, byte[] responseBytes, string contentType, CancellationToken token = default(CancellationToken))
+        public static async Task WriteBytesToResponse(this IResponse res, byte[] responseBytes, string contentType, CancellationToken token = default)
         {
             res.ContentType = HostContext.Config.AppendUtf8CharsetOnContentTypes.Contains(contentType)
                 ? contentType + ContentFormat.Utf8Suffix

@@ -76,7 +76,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 RuleFor(c => c.Name)
                     .Must(x => !base.Request.PathInfo.ContainsAny("-", ".", " "));
 
-                RuleFor(x => x.Items).SetCollectionValidator(new MyRequestItemValidator());
+                RuleForEach(x => x.Items).SetValidator(new MyRequestItemValidator());
             });
         }
     }

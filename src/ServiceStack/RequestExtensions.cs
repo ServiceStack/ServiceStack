@@ -65,7 +65,7 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Returns the optimized result for the IRequestContext. 
+        /// Returns the optimized result for the IRequest. 
         /// Does not use or store results in any cache.
         /// </summary>
         /// <param name="request"></param>
@@ -84,30 +84,28 @@ namespace ServiceStack
             if (compressionType == null)
                 return HostContext.ContentTypes.SerializeToString(request, dto);
 
-            using (var ms = new MemoryStream())
-            using (var compressionStream = GetCompressionStream(ms, compressionType))
+            using var ms = new MemoryStream();
+            using var compressionStream = GetCompressionStream(ms, compressionType);
+            using (httpResult?.ResultScope?.Invoke())
             {
-                using (httpResult?.ResultScope?.Invoke())
+                using (var msBuffer = MemoryStreamFactory.GetStream())
                 {
-                    using (var msBuffer = MemoryStreamFactory.GetStream())
-                    {
-                        HostContext.ContentTypes.SerializeToStreamAsync(request, dto, msBuffer).Wait();
-                        msBuffer.Position = 0;
-                        msBuffer.CopyTo(compressionStream);
-                    }
-                    compressionStream.Close();
+                    HostContext.ContentTypes.SerializeToStreamAsync(request, dto, msBuffer).Wait();
+                    msBuffer.Position = 0;
+                    msBuffer.CopyTo(compressionStream);
                 }
-
-                var compressedBytes = ms.ToArray();
-                return new CompressedResult(compressedBytes, compressionType, request.ResponseContentType)
-                {
-                    Status = request.Response.StatusCode
-                };
+                compressionStream.Close();
             }
+
+            var compressedBytes = ms.ToArray();
+            return new CompressedResult(compressedBytes, compressionType, request.ResponseContentType)
+            {
+                Status = request.Response.StatusCode
+            };
         }
 
         /// <summary>
-        /// Returns the optimized result for the IRequestContext. 
+        /// Returns the optimized result for the IRequest. 
         /// Does not use or store results in any cache.
         /// </summary>
         public static async Task<object> ToOptimizedResultAsync(this IRequest request, object dto)
@@ -122,21 +120,19 @@ namespace ServiceStack
             if (compressionType == null)
                 return HostContext.ContentTypes.SerializeToString(request, dto);
 
-            using (var ms = new MemoryStream())
-            using (var compressionStream = GetCompressionStream(ms, compressionType))
+            using var ms = new MemoryStream();
+            using var compressionStream = GetCompressionStream(ms, compressionType);
+            using (httpResult?.ResultScope?.Invoke())
             {
-                using (httpResult?.ResultScope?.Invoke())
-                {
-                    await HostContext.ContentTypes.SerializeToStreamAsync(request, dto, compressionStream);
-                    compressionStream.Close();
-                }
-
-                var compressedBytes = ms.ToArray();
-                return new CompressedResult(compressedBytes, compressionType, request.ResponseContentType)
-                {
-                    Status = request.Response.StatusCode
-                };
+                await HostContext.ContentTypes.SerializeToStreamAsync(request, dto, compressionStream);
+                compressionStream.Close();
             }
+
+            var compressedBytes = ms.ToArray();
+            return new CompressedResult(compressedBytes, compressionType, request.ResponseContentType)
+            {
+                Status = request.Response.StatusCode
+            };
         }
 
         private static Stream GetCompressionStream(Stream outputStream, string compressionType)
@@ -150,44 +146,53 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Overload for the <see cref="ContentCacheManager.Resolve"/> method returning the most
-        /// optimized result based on the MimeType and CompressionType from the IRequestContext.
+        /// Returning the most optimized result based on the MimeType and CompressionType from the IRequest.
         /// </summary>
         public static object ToOptimizedResultUsingCache<T>(
-            this IRequest requestContext, ICacheClient cacheClient, string cacheKey,
-            Func<T> factoryFn)
+            this IRequest req, ICacheClient cacheClient, string cacheKey, Func<T> factoryFn)
         {
-            return requestContext.ToOptimizedResultUsingCache(cacheClient, cacheKey, null, factoryFn);
+            return req.ToOptimizedResultUsingCache(cacheClient, cacheKey, null, factoryFn);
         }
 
         /// <summary>
-        /// Overload for the <see cref="ContentCacheManager.Resolve"/> method returning the most
-        /// optimized result based on the MimeType and CompressionType from the IRequestContext.
+        /// Returning the most optimized result based on the MimeType and CompressionType from the IRequest.
+        /// </summary>
+        public static Task<object> ToOptimizedResultUsingCacheAsync<T>(
+            this IRequest req, ICacheClientAsync cacheClient, string cacheKey, Func<T> factoryFn, CancellationToken token=default)
+        {
+            return req.ToOptimizedResultUsingCacheAsync(cacheClient, cacheKey, null, factoryFn, token);
+        }
+
+        /// <summary>
+        /// Returning the most optimized result based on the MimeType and CompressionType from the IRequest.
         /// <param name="expireCacheIn">How long to cache for, null is no expiration</param>
         /// </summary>
         public static object ToOptimizedResultUsingCache<T>(
-            this IRequest requestContext, ICacheClient cacheClient, string cacheKey,
+            this IRequest req, ICacheClient cacheClient, string cacheKey,
             TimeSpan? expireCacheIn, Func<T> factoryFn)
         {
-            var cacheResult = cacheClient.ResolveFromCache(cacheKey, requestContext);
+            var cacheResult = cacheClient.ResolveFromCache(cacheKey, req);
             if (cacheResult != null)
                 return cacheResult;
 
-            cacheResult = cacheClient.Cache(cacheKey, factoryFn(), requestContext, expireCacheIn);
+            cacheResult = cacheClient.Cache(cacheKey, factoryFn(), req, expireCacheIn);
             return cacheResult;
         }
 
         /// <summary>
-        /// Clears all the serialized and compressed caches set 
-        /// by the 'Resolve' method for the cacheKey provided
+        /// Returning the most optimized result based on the MimeType and CompressionType from the IRequest.
+        /// <param name="expireCacheIn">How long to cache for, null is no expiration</param>
         /// </summary>
-        /// <param name="requestContext"></param>
-        /// <param name="cacheClient"></param>
-        /// <param name="cacheKeys"></param>
-        public static void RemoveFromCache(
-            this IRequest requestContext, ICacheClient cacheClient, params string[] cacheKeys)
+        public static async Task<object> ToOptimizedResultUsingCacheAsync<T>(
+            this IRequest req, ICacheClientAsync cacheClient, string cacheKey,
+            TimeSpan? expireCacheIn, Func<T> factoryFn, CancellationToken token=default)
         {
-            cacheClient.ClearCaches(cacheKeys);
+            var cacheResult = await cacheClient.ResolveFromCacheAsync(cacheKey, req, token).ConfigAwait();
+            if (cacheResult != null)
+                return cacheResult;
+
+            cacheResult = await cacheClient.CacheAsync(cacheKey, factoryFn(), req, expireCacheIn, token).ConfigAwait();
+            return cacheResult;
         }
 
         /// <summary>
@@ -214,7 +219,7 @@ namespace ServiceStack
             return value;
         }
 
-#if !NETSTANDARD2_0
+#if NET45 || NET472
         public static RequestBaseWrapper ToHttpRequestBase(this IRequest httpReq)
         {
             return new RequestBaseWrapper((IHttpRequest)httpReq);
@@ -285,69 +290,85 @@ namespace ServiceStack
 #endif
         }
 
-        public static bool GetSessionFromSource(this IRequest request, string userAuthId, 
-            Action<IUserAuthRepository,IUserAuth> validator,
-            out IAuthSession session, out IEnumerable<string> roles, out IEnumerable<string> permissions)
+        public static async Task<SessionSourceResult> GetSessionFromSourceAsync(this IRequest request, 
+            string userAuthId, Func<IAuthRepositoryAsync,IUserAuth,Task> validator, CancellationToken token=default)
         {
-            session = null;
-            roles = permissions = null;
+            IAuthSession session = null;
+            IEnumerable<string> roles = null;
+            IEnumerable<string> permissions = null;
 
-            var userSessionSource = AuthenticateService.GetUserSessionSource();
+            var userSessionSource = AuthenticateService.GetUserSessionSourceAsync();
             if (userSessionSource != null)
             {
-                session = userSessionSource.GetUserSession(userAuthId);
+                session = await userSessionSource.GetUserSessionAsync(userAuthId, token).ConfigAwait();
                 if (session == null)
                     throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(request));
 
                 roles = session.Roles;
                 permissions = session.Permissions;
-                return true;
+                return new SessionSourceResult(session, roles, permissions);
             }
 
-            if (HostContext.AppHost.GetAuthRepository(request) is IUserAuthRepository userRepo)
+            var userRepo = HostContext.AppHost.GetAuthRepositoryAsync(request);
+#if NET472 || NETSTANDARD2_0
+            await using (userRepo as IAsyncDisposable)
+#else
+            using (userRepo as IDisposable)
+#endif
             {
-                using (userRepo as IDisposable)
+                var userAuth = await userRepo.GetUserAuthAsync(userAuthId, token).ConfigAwait();
+                if (userAuth == null)
+                    throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(request));
+
+                if (validator != null)
+                    await validator(userRepo, userAuth).ConfigAwait();
+
+                session = SessionFeature.CreateNewSession(request, SessionExtensions.CreateRandomSessionId());
+                await session.PopulateSessionAsync(userAuth, userRepo, token).ConfigAwait();
+
+                if (userRepo is IManageRolesAsync manageRoles && session.UserAuthId != null)
                 {
-                    var userAuth = userRepo.GetUserAuth(userAuthId);
-                    if (userAuth == null)
-                        throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(request));
-
-                    validator?.Invoke(userRepo, userAuth);
-
-                    session = SessionFeature.CreateNewSession(request, SessionExtensions.CreateRandomSessionId());
-                    session.PopulateSession(userAuth, userRepo);
-
-                    if (userRepo is IManageRoles manageRoles && session.UserAuthId != null)
-                    {
-                        roles = manageRoles.GetRoles(session.UserAuthId);
-                        permissions = manageRoles.GetPermissions(session.UserAuthId);
-                    }
-                    return true;
+                    roles = await manageRoles.GetRolesAsync(session.UserAuthId, token).ConfigAwait();
+                    permissions = await manageRoles.GetPermissionsAsync(session.UserAuthId, token).ConfigAwait();
                 }
+                return new SessionSourceResult(session, roles, permissions);
             }
             
-            return false;
+            return null;
+        }
+    }
+
+    public class SessionSourceResult
+    {
+        public IAuthSession Session { get; }
+        public IEnumerable<string> Roles { get; }
+        public IEnumerable<string> Permissions { get; }
+        public SessionSourceResult(IAuthSession session, IEnumerable<string> roles, IEnumerable<string> permissions)
+        {
+            Session = session;
+            Roles = roles;
+            Permissions = permissions;
         }
     }
     
     public static class RequestUtils
     {
-        public static void AssertAccessRoleOrDebugMode(IRequest req, string accessRole=null, string authSecret=null)
+        public static async Task AssertAccessRoleOrDebugModeAsync(IRequest req, string accessRole=null, string authSecret=null, CancellationToken token=default)
         {
             if (!HostContext.DebugMode)
             {
                 if (HostContext.Config.AdminAuthSecret == null || HostContext.Config.AdminAuthSecret != authSecret)
                 {
-                    RequiredRoleAttribute.AssertRequiredRoles(req, accessRole);
+                    await RequiredRoleAttribute.AssertRequiredRoleAsync(req, accessRole, token);
                 }
             }
         }
 
-        public static void AssertAccessRole(IRequest req, string accessRole=null, string authSecret=null)
+        public static async Task AssertAccessRoleAsync(IRequest req, string accessRole=null, string authSecret=null, CancellationToken token=default)
         {
             if (HostContext.Config.AdminAuthSecret == null || HostContext.Config.AdminAuthSecret != authSecret)
             {
-                RequiredRoleAttribute.AssertRequiredRoles(req, accessRole);
+                await RequiredRoleAttribute.AssertRequiredRoleAsync(req, accessRole, token);
             }
         }
     }

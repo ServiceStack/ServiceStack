@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Text;
 using ServiceStack.Text.Pools;
 using ServiceStack.Web;
 
@@ -188,12 +189,12 @@ namespace ServiceStack
                 try
                 {
                     var count = bytesRemaining <= buf.Length
-                        ? await fromStream.ReadAsync(buf, 0, (int)Math.Min(bytesRemaining, int.MaxValue), token)
-                        : await fromStream.ReadAsync(buf, 0, buf.Length, token);
+                        ? await fromStream.ReadAsync(buf, 0, (int)Math.Min(bytesRemaining, int.MaxValue), token).ConfigAwait()
+                        : await fromStream.ReadAsync(buf, 0, buf.Length, token).ConfigAwait();
 
                     //Log.DebugFormat("Writing {0} to response",System.Text.Encoding.UTF8.GetString(buffer));
-                    await toStream.WriteAsync(buf, 0, count, token);
-                    await toStream.FlushAsync(token);
+                    await toStream.WriteAsync(buf, 0, count, token).ConfigAwait();
+                    await toStream.FlushAsync(token).ConfigAwait();
                     bytesRemaining -= count;
                 }
                 catch (Exception httpException)

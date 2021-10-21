@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
@@ -126,6 +128,11 @@ namespace ServiceStack.Auth
         /// A JWT is valid if it contains ANY audience in this List
         /// </summary>
         public List<string> Audiences { get; set; }
+        
+        /// <summary>
+        /// Tokens must contain aud which is validated
+        /// </summary>
+        public bool RequiresAudience { get; set; }
 
         /// <summary>
         /// What Id to use to identify the Key used to sign the token. (default First 3 chars of Base64 Key)
@@ -241,9 +248,14 @@ namespace ServiceStack.Auth
         public Func<JsonObject, IRequest, bool> ValidateRefreshToken { get; set; }
 
         /// <summary>
-        /// Whether to invalidate all JWT Tokens issued before a specified date.
+        /// Whether to invalidate all JWT Access Tokens issued before a specified date.
         /// </summary>
         public DateTime? InvalidateTokensIssuedBefore { get; set; }
+
+        /// <summary>
+        /// Whether to invalidate all JWT Refresh Tokens issued before a specified date.
+        /// </summary>
+        public DateTime? InvalidateRefreshTokensIssuedBefore { get; set; }
 
         /// <summary>
         /// Modify the registration of ConvertSessionToToken Service
@@ -270,6 +282,61 @@ namespace ServiceStack.Auth
         /// </summary>
         public bool IncludeJwtInConvertSessionToTokenResponse { get; set; }
 
+        /// <summary>
+        /// Whether to convert successful Authenticated User Sessions to JWT Token in ss-tok Cookie 
+        /// </summary>
+        public bool UseTokenCookie { get; set; }
+
+        /// <summary>
+        /// Whether to create a refresh token in ss-reftok Cookie, defaults to: UseTokenCookie
+        /// </summary>
+        public bool? UseRefreshTokenCookie { get; set; }
+
+        /// <summary>
+        /// Override conversion to Unix Time used in issuing JWTs and validation
+        /// </summary>
+        public Func<DateTime,long> ResolveUnixTime { get; set; } = DefaultResolveUnixTime;
+        public static long DefaultResolveUnixTime(DateTime dateTime) => dateTime.ToUnixTime();
+
+        /// <summary>
+        /// Inspect or modify JWT Payload before validation, return error message if invalid else null 
+        /// </summary>
+        public Func<Dictionary<string,string>, string> PreValidateJwtPayloadFilter { get; set; }
+
+        /// <summary>
+        /// Change resolution for resolving unique jti id for Access Tokens
+        /// </summary>
+        public Func<IRequest,string> ResolveJwtId { get; set; }
+
+        /// <summary>
+        /// Get the next AutoId for usage in jti JWT Access Tokens  
+        /// </summary>
+        public string NextJwtId() => Interlocked.Increment(ref accessIdCounter).ToString(); 
+        private long accessIdCounter;
+        
+        /// <summary>
+        /// Get the last jti AutoId generated  
+        /// </summary>
+        public string LastJwtId() => Interlocked.Read(ref accessIdCounter).ToString();
+
+        /// <summary>
+        /// Change resolution for resolving unique jti id for Refresh Tokens
+        /// </summary>
+        public Func<IRequest,string> ResolveRefreshJwtId { get; set; }
+
+        /// <summary>
+        /// Get the next AutoId for usage in jti JWT Refresh Tokens  
+        /// </summary>
+        public string NextRefreshJwtId() => Interlocked.Decrement(ref refreshIdCounter).ToString(); 
+
+        private long refreshIdCounter;
+        public string LastRefreshJwtId() => Interlocked.Read(ref refreshIdCounter).ToString();
+
+        /// <summary>
+        /// Invalidate JWTs with ids
+        /// </summary>
+        public HashSet<string> InvalidateJwtIds { get; set; } = new();
+        
         public JwtAuthProviderReader()
             : base(null, Realm, Name)
         {
@@ -304,7 +371,11 @@ namespace ServiceStack.Auth
                 EncryptPayload = appSettings.Get("jwt.EncryptPayload", EncryptPayload);
                 AllowInQueryString = appSettings.Get("jwt.AllowInQueryString", AllowInQueryString);
                 AllowInFormData = appSettings.Get("jwt.AllowInFormData", AllowInFormData);
+                RequiresAudience = appSettings.Get("jwt.RequiresAudience", RequiresAudience);
                 IncludeJwtInConvertSessionToTokenResponse = appSettings.Get("jwt.IncludeJwtInConvertSessionToTokenResponse", IncludeJwtInConvertSessionToTokenResponse);
+                UseTokenCookie = appSettings.Get("jwt.UseTokenCookie", UseTokenCookie);
+                if (appSettings.Exists("jwt.UseRefreshTokenCookie"))
+                    UseRefreshTokenCookie = appSettings.Get("jwt.UseRefreshTokenCookie", UseTokenCookie);
 
                 Issuer = appSettings.GetString("jwt.Issuer");
                 KeyId = appSettings.GetString("jwt.KeyId");
@@ -394,7 +465,7 @@ namespace ServiceStack.Auth
             return session.FromToken && session.IsAuthenticated;
         }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        public override Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
         {
             // only allow verification of token
             if (!string.IsNullOrEmpty(request.Password) && string.IsNullOrEmpty(request.UserName))
@@ -416,7 +487,7 @@ namespace ServiceStack.Auth
                     if (jwtPayload == null) //not verified
                         throw HttpError.Forbidden(ErrorMessages.TokenInvalid.Localize(req));
                     
-                    return toAuthResponse(CreateSessionFromPayload(req, jwtPayload));
+                    return (toAuthResponse(CreateSessionFromPayload(req, jwtPayload)) as object).InTask();
                 }
                 if (parts.Length == 5) //Encrypted JWE Token
                 {
@@ -430,17 +501,17 @@ namespace ServiceStack.Auth
                             throw HttpError.Forbidden(ErrorMessages.TokenInvalid.Localize(req));
                     }
 
-                    return toAuthResponse(CreateSessionFromPayload(req, jwtPayload));
+                    return (toAuthResponse(CreateSessionFromPayload(req, jwtPayload)) as object).InTask();
                 }
             }
    
             throw new NotImplementedException("JWT Authenticate() should not be called directly");
         }
 
-        public void PreAuthenticate(IRequest req, IResponse res)
+        public Task PreAuthenticateAsync(IRequest req, IResponse res)
         {
             if (req.OperationName != null && IgnoreForOperationTypes.Contains(req.OperationName))
-                return;
+                return TypeConstants.EmptyTask;
 
             var bearerToken = req.GetJwtToken();
 
@@ -456,7 +527,7 @@ namespace ServiceStack.Auth
 
                         var jwtPayload = GetVerifiedJwtPayload(req, parts);
                         if (jwtPayload == null) //not verified
-                            return;
+                            return TypeConstants.EmptyTask;
 
                         if (ValidateToken != null)
                         {
@@ -474,7 +545,7 @@ namespace ServiceStack.Auth
 
                         var jwtPayload = GetVerifiedJwtPayload(req, parts);
                         if (jwtPayload == null) //not verified
-                            return;
+                            return TypeConstants.EmptyTask;
 
                         if (ValidateToken != null)
                         {
@@ -496,6 +567,7 @@ namespace ServiceStack.Auth
                     throw;
                 }
             }
+            return TypeConstants.EmptyTask;
         }
 
         public bool IsJwtValid(string jwt) => GetValidJwtPayload(jwt) != null;
@@ -532,6 +604,22 @@ namespace ServiceStack.Auth
             return invalidError != null
                 ? null
                 : verifiedPayload;
+        }
+
+        public static Dictionary<string, object> ExtractHeader(string jwt)
+        {
+            var headerBase64 = jwt.AsSpan().LeftPart('.');
+            var headerBytes = headerBase64.ToString().FromBase64UrlSafe();
+            var headerJson = MemoryProvider.Instance.FromUtf8Bytes(headerBytes);
+            return (Dictionary<string, object>) JSON.parse(headerJson);
+        }
+
+        public static Dictionary<string, object> ExtractPayload(string jwt)
+        {
+            var payloadBase64 = jwt.AsSpan().RightPart('.').LeftPart('.');
+            var payloadBytes = payloadBase64.ToString().FromBase64UrlSafe();
+            var payloadJson = MemoryProvider.Instance.FromUtf8Bytes(payloadBytes);
+            return (Dictionary<string, object>) JSON.parse(payloadJson);
         }
         
         /// <summary>
@@ -626,20 +714,18 @@ namespace ServiceStack.Auth
                 Buffer.BlockCopy(cryptAuthKeys256, 0, authKey, 0, authKey.Length);
                 Buffer.BlockCopy(cryptAuthKeys256, authKey.Length, cryptKey, 0, cryptKey.Length);
 
-                using (var hmac = new HMACSHA256(authKey))
-                using (var encryptedStream = MemoryStreamFactory.GetStream())
-                using (var writer = new BinaryWriter(encryptedStream))
-                {
-                    writer.Write(aadBytes);
-                    writer.Write(iv);
-                    writer.Write(cipherText);
-                    writer.Flush();
+                using var hmac = new HMACSHA256(authKey);
+                using var encryptedStream = MemoryStreamFactory.GetStream();
+                using var writer = new BinaryWriter(encryptedStream);
+                writer.Write(aadBytes);
+                writer.Write(iv);
+                writer.Write(cipherText);
+                writer.Flush();
 
-                    var calcTag = hmac.ComputeHash(encryptedStream.GetBuffer(), 0, (int) encryptedStream.Length);
+                var calcTag = hmac.ComputeHash(encryptedStream.GetBuffer(), 0, (int) encryptedStream.Length);
 
-                    if (calcTag.EquivalentTo(sentTag))
-                        return true;
-                }
+                if (calcTag.EquivalentTo(sentTag))
+                    return true;
             }
 
             iv = null;
@@ -675,6 +761,7 @@ namespace ServiceStack.Auth
             var session = SessionFeature.CreateNewSession(req, sessionId);
 
             session.AuthProvider = Name;
+            session.FromToken = true;
             session.PopulateFromMap(jwtPayload);
 
             PopulateSessionFilter?.Invoke(session, jwtPayload, req);
@@ -699,36 +786,118 @@ namespace ServiceStack.Auth
             if (errorMessage != null)
                 throw new TokenException(errorMessage);
         }
-
-        public string GetInvalidJwtPayloadError(JsonObject jwtPayload)
+        
+        public virtual string GetInvalidJwtPayloadError(JsonObject jwtPayload)
         {
             if (jwtPayload == null)
                 throw new ArgumentNullException(nameof(jwtPayload));
 
-            var expiresAt = GetUnixTime(jwtPayload, "exp");
-            var secondsSinceEpoch = DateTime.UtcNow.ToUnixTime();
-            if (secondsSinceEpoch >= expiresAt)
+            var errorMsg = PreValidateJwtPayloadFilter?.Invoke(jwtPayload);
+            if (errorMsg != null)
+                return errorMsg;
+
+            if (HasExpired(jwtPayload))
                 return ErrorMessages.TokenExpired;
 
-            if (InvalidateTokensIssuedBefore != null)
-            {
-                var issuedAt = GetUnixTime(jwtPayload, "iat");
-                if (issuedAt == null || issuedAt < InvalidateTokensIssuedBefore.Value.ToUnixTime())
-                    return ErrorMessages.TokenInvalidated;
-            }
+            if (HasInvalidNotBefore(jwtPayload))
+                return ErrorMessages.TokenInvalidNotBefore;
+            
+            if (HasInvalidatedId(jwtPayload))
+                return ErrorMessages.TokenInvalidated;
 
-            if (jwtPayload.TryGetValue("aud", out var audience))
+            if (InvalidateTokensIssuedBefore != null && 
+                HasBeenInvalidated(jwtPayload, ResolveUnixTime(InvalidateTokensIssuedBefore.Value)))
+                return ErrorMessages.TokenInvalidated;
+
+            if (HasInvalidAudience(jwtPayload, out var audience))
+                return ErrorMessages.TokenInvalidAudienceFmt.LocalizeFmt(audience);
+
+            return null;
+        }
+
+        public void AssertRefreshJwtPayloadIsValid(JsonObject jwtPayload)
+        {
+            var errorMessage = GetInvalidRefreshJwtPayloadError(jwtPayload);
+            if (errorMessage != null)
+                throw new TokenException(errorMessage);
+        }
+        
+        public virtual string GetInvalidRefreshJwtPayloadError(JsonObject jwtPayload)
+        {
+            if (jwtPayload == null)
+                throw new ArgumentNullException(nameof(jwtPayload));
+
+            var errorMsg = PreValidateJwtPayloadFilter?.Invoke(jwtPayload);
+            if (errorMsg != null)
+                return errorMsg;
+
+            if (HasExpired(jwtPayload))
+                return ErrorMessages.TokenExpired;
+
+            if (HasInvalidNotBefore(jwtPayload))
+                return ErrorMessages.TokenInvalidNotBefore;
+            
+            if (HasInvalidatedId(jwtPayload))
+                return ErrorMessages.TokenInvalidated;
+
+            if (InvalidateRefreshTokensIssuedBefore != null && 
+                HasBeenInvalidated(jwtPayload, ResolveUnixTime(InvalidateRefreshTokensIssuedBefore.Value)))
+                return ErrorMessages.TokenInvalidated;
+
+            if (HasInvalidAudience(jwtPayload, out var audience))
+                return ErrorMessages.TokenInvalidAudienceFmt.LocalizeFmt(audience);
+
+            return null;
+        }
+
+        public virtual bool HasInvalidatedId(JsonObject jwtPayload)
+        {
+            if (InvalidateJwtIds.Count > 0 && jwtPayload.TryGetValue("jti", out var jti))
+                return InvalidateJwtIds.Contains(jti);
+            return false;
+        }
+
+        public virtual bool HasExpired(JsonObject jwtPayload)
+        {
+            var expiresAt = GetUnixTime(jwtPayload, "exp");
+            var secondsSinceEpoch = ResolveUnixTime(DateTime.UtcNow);
+            var hasExpired = secondsSinceEpoch >= expiresAt;
+            return hasExpired;
+        }
+
+        public virtual bool HasInvalidNotBefore(JsonObject jwtPayload)
+        {
+            var notValidBefore = GetUnixTime(jwtPayload, "nbf");
+            if (notValidBefore != null)
+            {
+                var secondsSinceEpoch = ResolveUnixTime(DateTime.UtcNow);
+                var notValidYet = notValidBefore > secondsSinceEpoch;
+                return notValidYet;
+            }
+            return false;
+        }
+
+        public virtual bool HasBeenInvalidated(JsonObject jwtPayload, long unixTime)
+        {
+            var issuedAt = GetUnixTime(jwtPayload, "iat");
+            if (issuedAt == null || issuedAt < unixTime)
+                return true;
+            return false;
+        }
+
+        public virtual bool HasInvalidAudience(JsonObject jwtPayload, out string audience)
+        {
+            if (jwtPayload.TryGetValue("aud", out audience))
             {
                 var jwtAudiences = audience.FromJson<List<string>>();
                 if (jwtAudiences?.Count > 0 && Audiences.Count > 0)
                 {
                     var containsAnyAudience = jwtAudiences.Any(x => Audiences.Contains(x));
                     if (!containsAnyAudience)
-                        return "Invalid Audience: " + audience;
+                        return true;
                 }
             }
-
-            return null;
+            return RequiresAudience;
         }
 
         public virtual bool VerifyPayload(IRequest req, string algorithm, byte[] bytesToSign, byte[] sentSignatureBytes)
@@ -772,13 +941,13 @@ namespace ServiceStack.Auth
             return false;
         }
 
-        static int? GetUnixTime(Dictionary<string, string> jwtPayload, string key)
+        public static long? GetUnixTime(Dictionary<string, string> jwtPayload, string key)
         {
             if (jwtPayload.TryGetValue(key, out var value) && !string.IsNullOrEmpty(value))
             {
                 try
                 {
-                    return int.Parse(value);
+                    return long.Parse(value);
                 }
                 catch (Exception)
                 {
@@ -788,8 +957,9 @@ namespace ServiceStack.Auth
             return null;
         }
 
-        public void Register(IAppHost appHost, AuthFeature feature)
+        public override void Register(IAppHost appHost, AuthFeature feature)
         {
+            base.Register(appHost, feature);
             var isHmac = HmacAlgorithms.ContainsKey(HashAlgorithm);
             var isRsa = RsaSignAlgorithms.ContainsKey(HashAlgorithm);
             if (!isHmac && !isRsa)
@@ -810,24 +980,36 @@ namespace ServiceStack.Auth
 
         public object AuthenticateResponseDecorator(AuthFilterContext authCtx)
         {
-            if (authCtx.AuthResponse.BearerToken == null || authCtx.AuthRequest.UseTokenCookie != true)
+            var req = authCtx.AuthService.Request;
+            if (req.IsInProcessRequest())
                 return authCtx.AuthResponse;
 
-            authCtx.AuthService.Request.RemoveSession(authCtx.AuthService.GetSessionId());
+            if (authCtx.AuthResponse.BearerToken == null || authCtx.AuthRequest.UseTokenCookie.GetValueOrDefault(UseTokenCookie) != true)
+                return authCtx.AuthResponse;
 
-            var httpResult = new HttpResult(authCtx.AuthResponse)
+            req.RemoveSession(authCtx.AuthService.GetSessionId());
+
+            var httpResult = new HttpResult(authCtx.AuthResponse);
+            httpResult.AddCookie(req,
+                new Cookie(Keywords.TokenCookie, authCtx.AuthResponse.BearerToken, Cookies.RootPath) {
+                    HttpOnly = true,
+                    Secure = req.IsSecureConnection,
+                    Expires = DateTime.UtcNow.Add(ExpireTokensIn),
+                });
+            if (UseRefreshTokenCookie.GetValueOrDefault(UseTokenCookie) && authCtx.AuthResponse.RefreshToken != null)
             {
-                Cookies = {
-                    new Cookie(Keywords.TokenCookie, authCtx.AuthResponse.BearerToken, Cookies.RootPath) {
+                httpResult.AddCookie(req,
+                    new Cookie(Keywords.RefreshTokenCookie, authCtx.AuthResponse.RefreshToken, Cookies.RootPath) {
                         HttpOnly = true,
-                        Secure = authCtx.AuthService.Request.IsSecureConnection,
-                        Expires = DateTime.UtcNow.Add(ExpireTokensIn),
-                    }
-                }
-            };
+                        Secure = req.IsSecureConnection,
+                        Expires = DateTime.UtcNow.Add(ExpireRefreshTokensIn),
+                    });
+            }
 
-            var isHtml = authCtx.AuthService.Request.ResponseContentType.MatchesContentType(MimeTypes.Html);
-            if (isHtml)
+            NotifyJwtCookiesUsed(httpResult);
+
+            var isHtml = req.ResponseContentType.MatchesContentType(MimeTypes.Html);
+            if (isHtml && authCtx.ReferrerUrl != null)
             {
                 httpResult.StatusCode = HttpStatusCode.Redirect;
                 httpResult.Location = authCtx.ReferrerUrl;
@@ -835,32 +1017,19 @@ namespace ServiceStack.Auth
 
             return httpResult;
         }
-    }
 
-    public static class JwtExtensions
-    {
-        public static string GetJwtToken(this IRequest req)
+        //Notify HttpClients which can't access HttpOnly cookies (i.e. web) that JWT Token Cookies are being used 
+        internal static void NotifyJwtCookiesUsed(IHttpResult httpResult)
         {
-            var jwtAuthProvider = AuthenticateService.GetJwtAuthProvider();
-            if (jwtAuthProvider != null)
+            var cookies = new List<string>();
+            foreach (var cookie in httpResult.Cookies)
             {
-                if (jwtAuthProvider.AllowInFormData)
-                {
-                    var jwt = req.FormData[Keywords.TokenCookie];
-                    if (!string.IsNullOrEmpty(jwt))
-                        return jwt;
-                }
-
-                if (jwtAuthProvider.AllowInQueryString)
-                {
-                    var jwt = req.QueryString[Keywords.TokenCookie];
-                    if (!string.IsNullOrEmpty(jwt))
-                        return jwt;
-                }
+                cookies.Add(cookie.Name);
             }
 
-            return req.GetBearerToken() ??
-                   req.GetCookieValue(Keywords.TokenCookie);
+            if (cookies.Count > 0)
+                httpResult.Headers.Add(Keywords.XCookies, string.Join(",", cookies));
         }
+        
     }
 }

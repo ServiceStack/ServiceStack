@@ -3,6 +3,7 @@ using System.Net;
 using System.Threading.Tasks;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
+using ServiceStack.Text;
 
 namespace ServiceStack.Host.Handlers
 {
@@ -30,10 +31,10 @@ namespace ServiceStack.Host.Handlers
             using (Profiler.Current.Step("Deserialize Request"))
             {
                 var requestDto = GetCustomRequestFromBinder(req, requestType)
-                    ?? (await DeserializeHttpRequestAsync(requestType, req, HandlerContentType)
+                    ?? (await DeserializeHttpRequestAsync(requestType, req, HandlerContentType).ConfigAwait()
                     ?? requestType.CreateInstance());
 
-                return await appHost.ApplyRequestConvertersAsync(req, requestDto);
+                return await appHost.ApplyRequestConvertersAsync(req, requestDto).ConfigAwait();
             }
         }
 
@@ -50,19 +51,19 @@ namespace ServiceStack.Host.Handlers
 
                 httpReq.ResponseContentType = httpReq.GetQueryStringContentType() ?? this.HandlerContentType;
 
-                var request = httpReq.Dto = await CreateRequestAsync(httpReq, operationName);
+                var request = httpReq.Dto = await CreateRequestAsync(httpReq, operationName).ConfigAwait();
 
-                await appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request);
+                await appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request).ConfigAwait();
                 if (httpRes.IsClosed)
                     return;
 
                 httpReq.RequestAttributes |= HandlerAttributes;
 
-                var rawResponse = await GetResponseAsync(httpReq, request);
+                var rawResponse = await GetResponseAsync(httpReq, request).ConfigAwait();
                 if (httpRes.IsClosed)
                     return;
 
-                await HandleResponse(httpReq, httpRes, rawResponse);
+                await HandleResponse(httpReq, httpRes, rawResponse).ConfigAwait();
             }
             //sync with RestHandler
             catch (TaskCanceledException)
@@ -74,12 +75,12 @@ namespace ServiceStack.Host.Handlers
             {
                 if (!HostContext.Config.WriteErrorsToResponse)
                 {
-                    await HostContext.AppHost.ApplyResponseConvertersAsync(httpReq, ex);
+                    await HostContext.AppHost.ApplyResponseConvertersAsync(httpReq, ex).ConfigAwait();
                 }
                 else
                 {
                     await HandleException(httpReq, httpRes, operationName, 
-                        await HostContext.AppHost.ApplyResponseConvertersAsync(httpReq, ex) as Exception ?? ex);
+                        await HostContext.AppHost.ApplyResponseConvertersAsync(httpReq, ex).ConfigAwait() as Exception ?? ex).ConfigAwait();
                 }
             }
         }

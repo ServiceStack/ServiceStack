@@ -31,7 +31,7 @@ namespace ServiceStack.Logging
             WARN,
         };
 
-        static private List<KeyValuePair<Levels, string>> _logs = new List<KeyValuePair<Levels, string>>();
+        static private List<KeyValuePair<Levels, string>> _logs = new();
 
 
         static public IList<KeyValuePair<Levels, string>> GetLogs() { return _logs; }

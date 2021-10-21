@@ -67,6 +67,7 @@ namespace ServiceStack.Common.Tests
 
                     var response = (RegisterResponse)appHost.ExecuteService(register, req);
                     var userAuth = db.SingleById<UserAuth>(response.UserId);
+                    Assert.That(userAuth, Is.Not.Null);
 
                     var assignResponse = (AssignRolesResponse)appHost.ExecuteService(new AssignRoles
                     {
@@ -185,10 +186,12 @@ namespace ServiceStack.Common.Tests
                 var db = appHost.Container.Resolve<IPocoDynamo>();
 
                 var register = CreateNewUserRegistration();
-                var req = new BasicRequest(register);
-                req.QueryString["authSecret"] = appHost.Config.AdminAuthSecret = "allow";
+                var req = new BasicRequest(register) {
+                    QueryString = {["authSecret"] = appHost.Config.AdminAuthSecret = "allow"}
+                };
 
-                var response = (RegisterResponse)appHost.ExecuteService(register, req);
+                var ret = appHost.ExecuteService(register, req);
+                var response = (RegisterResponse)ret;
                 var userAuth = db.GetItem<UserAuth>(response.UserId);
 
                 var assignResponse = (AssignRolesResponse)appHost.ExecuteService(new AssignRoles

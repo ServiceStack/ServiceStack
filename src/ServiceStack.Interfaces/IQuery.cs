@@ -349,4 +349,61 @@ namespace ServiceStack
     
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class AutoIgnoreAttribute : AttributeBase {}
+
+    /// <summary>
+    /// Available built-in operations for AutoQuery Crud Services, executed by
+    /// AuditAutoCrudMetadataFilter in AutoQueryFeature.AutoCrudMetadataFilters
+    /// </summary>
+    public static class Behavior
+    {
+        /// <summary>
+        /// Auto Filter SoftDeleted Results
+        /// </summary>
+        public const string AuditQuery = nameof(AuditQuery);
+        
+        /// <summary>
+        /// Auto Populate CreatedDate, CreatedBy, ModifiedDate & ModifiedBy fields
+        /// </summary>
+        public const string AuditCreate = nameof(AuditCreate);
+        
+        /// <summary>
+        /// Auto Populate ModifiedDate & ModifiedBy fields
+        /// </summary>
+        public const string AuditModify = nameof(AuditModify);
+        
+        /// <summary>
+        /// Auto Populate DeletedDate & DeletedBy fields
+        /// </summary>
+        public const string AuditDelete = nameof(AuditDelete);
+        
+        /// <summary>
+        /// Auto Populate DeletedDate & DeletedBy fields
+        /// and changes IDeleteDb operation to Update
+        /// </summary>
+        public const string AuditSoftDelete = nameof(AuditSoftDelete);
+    }
+    
+    /// <summary>
+    /// Apply generic behavior to AutoQuery Operations
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
+    public class AutoApplyAttribute : AttributeBase
+    {
+        /// <summary>
+        /// The name of the behavior you want to apply
+        /// </summary>
+        public string Name { get; }
+        
+        /// <summary>
+        /// Any additional args to define the behavior
+        /// </summary>
+        public string[] Args { get; }
+
+        public AutoApplyAttribute(string name, params string[] args)
+        {
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            Args = args;
+        }
+    }
+    
 }

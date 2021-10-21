@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -24,6 +25,12 @@ namespace ServiceStack
 
         private readonly object semaphore = new object();
         internal static int IdCounter;
+
+        public Task<List<ValidationRule>> GetAllValidateRulesAsync()
+        {
+            var rules = TypeRulesMap.Values.SelectMany(x => x.Select(y => (ValidationRule)y.Value));
+            return rules.ToList().InTask();
+        }
 
         public Task<List<ValidationRule>> GetAllValidateRulesAsync(string typeName)
         {
@@ -124,7 +131,7 @@ namespace ServiceStack
         public static async Task<List<ValidationRule>> GetAllValidateRulesAsync(this IValidationSource source, string typeName)
         {
             if (source is IValidationSourceAdmin sourceAdmin)
-                return await sourceAdmin.GetAllValidateRulesAsync(typeName);
+                return await sourceAdmin.GetAllValidateRulesAsync(typeName).ConfigAwait();
 
             ThrowNotValidationSourceAdmin(source);
             return null;
@@ -142,7 +149,7 @@ namespace ServiceStack
         public static async Task DeleteValidationRulesAsync(this IValidationSource source, params int[] ids)
         {
             if (source is IValidationSourceAdmin sourceAdmin)
-                await sourceAdmin.DeleteValidationRulesAsync(ids);
+                await sourceAdmin.DeleteValidationRulesAsync(ids).ConfigAwait();
             else
                 ThrowNotValidationSourceAdmin(source);
         }
@@ -150,7 +157,7 @@ namespace ServiceStack
         public static async Task ClearCacheAsync(this IValidationSource source, params int[] ids)
         {
             if (source is IValidationSourceAdmin sourceAdmin)
-                await sourceAdmin.ClearCacheAsync();
+                await sourceAdmin.ClearCacheAsync().ConfigAwait();
             else
                 ThrowNotValidationSourceAdmin(source);
         }
@@ -158,7 +165,7 @@ namespace ServiceStack
         public static async Task<List<ValidationRule>> GetValidateRulesByIdsAsync(this IValidationSource source, params int[] ids)
         {
             if (source is IValidationSourceAdmin sourceAdmin)
-                return await sourceAdmin.GetValidateRulesByIdsAsync(ids);
+                return await sourceAdmin.GetValidateRulesByIdsAsync(ids).ConfigAwait();
 
             ThrowNotValidationSourceAdmin(source);
             return null;

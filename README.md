@@ -371,6 +371,7 @@ Each library is released under its respective licence:
   - [RecyclableMemoryStream](https://github.com/Microsoft/Microsoft.IO.RecyclableMemoryStream) [(MIT License)](https://github.com/Microsoft/Microsoft.IO.RecyclableMemoryStream/blob/master/LICENSE)
   - [ASP.NET MVC](https://github.com/aspnet/Mvc) [(Apache License 2.0)](https://github.com/aspnet/Mvc/blob/release/2.2/LICENSE.txt)
   - [CoreFX](https://github.com/dotnet/corefx) [(MIT License)](https://github.com/dotnet/corefx/blob/master/LICENSE.TXT)
+  - [Nito.AsyncEx](https://github.com/StephenCleary/AsyncEx) [(MIT License)](https://github.com/StephenCleary/AsyncEx/blob/master/LICENSE)
 
 ## Find out More
 

@@ -48,7 +48,7 @@ namespace ServiceStack.FluentValidation.Internal {
 		/// <param name="propertyPath">Property path (eg Customer.Address.Line1)</param>
 		/// <param name="context">Contextual information</param>
 		/// <returns>Whether or not the validator can execute.</returns>
-		public bool CanExecute (IValidationRule rule, string propertyPath, ValidationContext context) {
+		public bool CanExecute (IValidationRule rule, string propertyPath, IValidationContext context) {
 			// Validator selector only applies to the top level.
  			// If we're running in a child context then this means that the child validator has already been selected
 			// Because of this, we assume that the rule should continue (ie if the parent rule is valid, all children are valid)
@@ -56,13 +56,14 @@ namespace ServiceStack.FluentValidation.Internal {
 			bool cascadeEnabled = !context.RootContextData.ContainsKey(DisableCascadeKey);
 
 			return (isChildContext && cascadeEnabled && !_memberNames.Any(x => x.Contains(".")))
-			       || rule is IncludeRule
+			       || rule is IIncludeRule
 			       || ( _memberNames.Any(x => x == propertyPath || propertyPath.StartsWith(x + ".") || x.StartsWith(propertyPath + ".")));
 		}
 
 		///<summary>
 		/// Creates a MemberNameValidatorSelector from a collection of expressions.
 		///</summary>
+		[Obsolete("This method will be removed from FluentValidation in 10.0")]
 		public static MemberNameValidatorSelector FromExpressions<T>(params Expression<Func<T, object>>[] propertyExpressions) {
 			var members = propertyExpressions.Select(MemberFromExpression).ToList();
 			return new MemberNameValidatorSelector(members);

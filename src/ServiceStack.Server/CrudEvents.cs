@@ -127,18 +127,18 @@ namespace ServiceStack
 
             if (crudEvent.UserAuthId != null)
             {
-                if (!req.GetSessionFromSource(crudEvent.UserAuthId, null,
-                    out var session, out var roles, out var permissions))
-                {
+                var result = await req.GetSessionFromSourceAsync(crudEvent.UserAuthId, validator:null).ConfigAwait(); 
+                if (result == null)
                     throw new NotSupportedException("An AuthRepository or IUserSessionSource is required Execute Authenticated AutoCrudEvents");
-                }
+
+                var session = result.Session;
 
                 if (session.UserAuthName == null)
                     session.UserAuthName = session.UserName ?? session.Email;
                 if (session.Roles == null)
-                    session.Roles = roles?.ToList();
+                    session.Roles = result.Roles?.ToList();
                 if (session.Permissions == null)
-                    session.Permissions = permissions?.ToList();
+                    session.Permissions = result.Permissions?.ToList();
 
                 req.Items[Keywords.Session] = session;
             }
@@ -163,14 +163,14 @@ namespace ServiceStack
             {
                 foreach (var requestFilter in RequestFiltersAsync)
                 {
-                    await requestFilter(req, req.Response, req.Dto);
+                    await requestFilter(req, req.Response, req.Dto).ConfigAwait();
                     
                     if (req.Response.IsClosed)
                         throw new UnauthorizedAccessException($"RequestFiltersAsync short-circuited request denying executing {typeof(T).Name} {crudEvent.Id}");
                 }
             }
             
-            await ServiceExecutor.ExecuteAsync(requestDto, req);
+            await ServiceExecutor.ExecuteAsync(requestDto, req).ConfigAwait();
         }
     }
 

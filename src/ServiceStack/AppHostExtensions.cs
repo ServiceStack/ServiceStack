@@ -120,6 +120,11 @@ namespace ServiceStack
         public static string Localize(this string text, IRequest request=null) => 
             HostContext.AppHost?.ResolveLocalizedString(text, request) ?? text;
 
+        public static string LocalizeFmt(this string text, IRequest request, params object[] args) => 
+            HostContext.AppHost?.ResolveLocalizedStringFormat(text, args, request) ?? string.Format(text, args);
+        public static string LocalizeFmt(this string text, params object[] args) => 
+            HostContext.AppHost?.ResolveLocalizedStringFormat(text, args, request:null) ?? string.Format(text, args);
+
         public static IAppHost Start(this IAppHost appHost, IEnumerable<string> urlBases)
         {
 #if !NETSTANDARD2_0
@@ -146,7 +151,7 @@ namespace ServiceStack
         {
             return (appHost.Config.WebHostUrl ??
                 (!string.IsNullOrEmpty(appHost.PathBase)
-                    ? "/" + appHost.PathBase
+                    ? ("/" + appHost.PathBase).ReplaceAll("//", "/")
                     : "")).TrimEnd('/');
         }
     }

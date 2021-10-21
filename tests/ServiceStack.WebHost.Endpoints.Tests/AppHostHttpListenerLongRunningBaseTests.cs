@@ -99,7 +99,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (Exception ex)
             {
                 errorCount++;
-                Console.WriteLine("Error [{0}]: {1}", ex.GetType().Name, ex.Message);
+                Console.WriteLine(@"Error [{0}]: {1}", ex.GetType().Name, ex.Message);
             }
             try
             {
@@ -108,7 +108,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (Exception ex)
             {
                 errorCount++;
-                Console.WriteLine("Error [{0}]: {1}", ex.GetType().Name, ex.Message);
+                Console.WriteLine(@"Error [{0}]: {1}", ex.GetType().Name, ex.Message);
             }
 
             Assert.That(errorCount, Is.EqualTo(2));

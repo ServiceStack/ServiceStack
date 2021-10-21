@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using ServiceStack.Web;
+using ServiceStack.Text;
 
 namespace ServiceStack.Host.Handlers
 {
@@ -20,30 +21,30 @@ namespace ServiceStack.Host.Handlers
             var isDebugRequest = httpReq.RawUrl.ToLower().Contains(Keywords.Debug);
             if (!isDebugRequest)
             {
-                await base.ProcessRequestAsync(httpReq, httpRes, operationName);
+                await base.ProcessRequestAsync(httpReq, httpRes, operationName).ConfigAwait();
                 return;
             }
 
             try
             {
-                var request = httpReq.Dto = await CreateRequestAsync(httpReq, operationName);
+                var request = httpReq.Dto = await CreateRequestAsync(httpReq, operationName).ConfigAwait();
 
-                await appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request);
+                await appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request).ConfigAwait();
                 if (httpRes.IsClosed)
                     return;
 
                 httpReq.RequestAttributes |= HandlerAttributes;
 
-                var rawResponse = await GetResponseAsync(httpReq, request);
+                var rawResponse = await GetResponseAsync(httpReq, request).ConfigAwait();
 
-                await WriteDebugResponse(httpRes, rawResponse);
+                await WriteDebugResponse(httpRes, rawResponse).ConfigAwait();
             }
             catch (Exception ex)
             {
                 if (!HostContext.Config.WriteErrorsToResponse)
                     throw;
 
-                await HandleException(httpReq, httpRes, operationName, ex);
+                await HandleException(httpReq, httpRes, operationName, ex).ConfigAwait();
             }
         }
     }

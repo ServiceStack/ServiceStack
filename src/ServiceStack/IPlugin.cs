@@ -42,6 +42,7 @@ namespace ServiceStack
         public const string MiniProfiler = "miniprofiler";
         public const string HotReload = "hotreload";
         public const string RedisErrorLogs = "redislogs";
+        public const string AdminUsers = "adminusers";
 
         public static void AddToAppMetadata(this IAppHost appHost, Action<AppMetadata> fn)
         {

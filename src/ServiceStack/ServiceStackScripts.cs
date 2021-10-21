@@ -211,9 +211,8 @@ namespace ServiceStack
 
                 if (requestType.HasInterface(typeof(IQueryDb)))
                 {
-                    var ssFilter = Context.ScriptMethods.FirstOrDefault(x => x is IAutoQueryDbFilters) as IAutoQueryDbFilters;
-                    if (ssFilter == null)
-                        throw new NotImplementedException("sendToAutoQuery RDBMS requires TemplateAutoQueryFilters");
+                    if (Context.ScriptMethods.FirstOrDefault(x => x is IAutoQueryDbFilters) is not IAutoQueryDbFilters ssFilter)
+                        throw new NotImplementedException(nameof(sendToAutoQuery) + " RDBMS requires AutoQueryScripts");
 
                     return ssFilter.sendToAutoQuery(scope, dto, requestName, options);
                 }
@@ -261,6 +260,14 @@ namespace ServiceStack
        
         public object getUserSession(ScriptScopeContext scope) => scope.GetRequest().GetSession();
         public IAuthSession userSession(ScriptScopeContext scope) => scope.GetRequest().GetSession();
+        public IAuthSession sessionIfAuthenticated(ScriptScopeContext scope)
+        {
+            var session = scope.GetRequest().GetSession();
+            return session.IsAuthenticated
+                ? session
+                : null;
+        }
+
         public string userAuthId(ScriptScopeContext scope) => scope.GetRequest().GetSession()?.UserAuthId;
         public string userAuthName(ScriptScopeContext scope)
         {
@@ -299,7 +306,7 @@ namespace ServiceStack
         {
             if (!isAuthenticated(scope))
             {
-                var url = AuthenticateAttribute.GetHtmlRedirectUrl(scope.GetRequest());
+                var url = HostContext.AssertPlugin<AuthFeature>().GetHtmlRedirectUrl(scope.GetRequest());
                 return redirectTo(scope, url);
             }
             return IgnoreResult.Value;
@@ -309,7 +316,7 @@ namespace ServiceStack
         {
             if (!isAuthenticated(scope))
             {
-                var url = AuthenticateAttribute.GetHtmlRedirectUrl(scope.GetRequest(), path, includeRedirectParam:true);
+                var url = HostContext.AssertPlugin<AuthFeature>().GetHtmlRedirectUrl(scope.GetRequest(), path, includeRedirectParam:true);
                 return redirectTo(scope, url);
             }
             

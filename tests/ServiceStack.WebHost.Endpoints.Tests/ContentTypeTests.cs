@@ -20,14 +20,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-
     [TestFixture]
     public class ContentTypeTests
     {
         private const string ListeningOn = "http://localhost:1337/";
 
         ExampleAppHostHttpListener appHost;
-        readonly JsonServiceClient client = new JsonServiceClient(ListeningOn);
+        readonly JsonServiceClient client = new(ListeningOn);
 
         [OneTimeSetUp]
         public void OnTestFixtureSetUp()
@@ -114,6 +113,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             
             Assert.That(fromJson.Id, Is.EqualTo(dto.Id));
             Assert.That(fromJson.Name, Is.EqualTo(dto.Name));
+        }
+
+        [Test]
+        public void Can_get_custom_json_format()
+        {
+            var json = ListeningOn.AppendPath("testcontenttype")
+                .AddQueryParam("format", "x-custom+json")
+                .GetStringFromUrl(responseFilter: res =>
+                    Assert.That(res.ContentType.MatchesContentType("application/x-custom+json")));
+
+            Assert.That(json, Is.EqualTo("{\"custom\":\"json\"}"));
         }
     }
 }

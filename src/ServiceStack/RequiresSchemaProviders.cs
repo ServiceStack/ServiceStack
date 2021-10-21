@@ -16,5 +16,11 @@ namespace ServiceStack
             var requiresSchema = authRepo as IRequiresSchema;
             requiresSchema?.InitSchema();
         }
+
+        public static void InitSchema(this IAuthRepositoryAsync authRepo)
+        {
+            var requiresSchema = authRepo as IRequiresSchema;
+            requiresSchema?.InitSchema();
+        }
     }
 }

@@ -42,15 +42,14 @@ namespace ServiceStack.Messaging
         {
             set => PriorityQueuesWhitelist = value ? null : TypeConstants.EmptyStringArray;
         }
-
-        [Obsolete("Use PriorityQueuesWhitelist")]
-        public string[] PriortyQueuesWhitelist
+        
+        /// <summary>
+        /// Disable Priority MQ's for Background MQ 
+        /// </summary>
+        public bool DisablePriorityQueues
         {
-            get => PriorityQueuesWhitelist;
-            set => PriorityQueuesWhitelist = value;
+            set => EnablePriorityQueues = !value;
         }
-        [Obsolete("Use EnablePriorityQueues")]
-        public bool EnablePriortyQueues { set => EnablePriorityQueues = value; }
 
         /// <summary>
         /// Opt-in to only publish responses on this white list. 

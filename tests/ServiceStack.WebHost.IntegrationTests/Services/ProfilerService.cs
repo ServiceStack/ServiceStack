@@ -7,7 +7,7 @@ using ServiceStack.OrmLite;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
-    [Exclude(Feature.Soap)]
+    [ExcludeMetadata]
 	[Route("/profiler", "GET")]
 	[Route("/profiler/{Type}", "GET")]
 	public class MiniProfiler

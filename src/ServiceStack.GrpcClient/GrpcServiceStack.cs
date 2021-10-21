@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Grpc.Core;
 using Grpc.Core.Interceptors;
 using Grpc.Net.Client;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -76,15 +77,15 @@ namespace ServiceStack
 
         async Task<TResponse> ExecAsync<TResponse>(AsyncUnaryCall<TResponse> auc, Func<AsyncUnaryCall<TResponse>> fn)
         {
-            var (response, status, headers) = await GrpcUtils.GetResponseAsync(Config, auc);
+            var (response, status, headers) = await GrpcUtils.GetResponseAsync(Config, auc).ConfigAwait();
 
             if (status?.ErrorCode != null)
             {
                 var callInvoker = Config.Channel.CreateCallInvoker();
-                if (await client.RetryRequest(Config, auc.GetStatus().StatusCode, status, callInvoker))
+                if (await client.RetryRequest(Config, auc.GetStatus().StatusCode, status, callInvoker).ConfigAwait())
                 {
                     using var retryAuc = fn();
-                    var (retryResponse, retryStatus, retryHeaders) = await GrpcUtils.GetResponseAsync(Config, retryAuc);
+                    var (retryResponse, retryStatus, retryHeaders) = await GrpcUtils.GetResponseAsync(Config, retryAuc).ConfigAwait();
                     if (retryStatus?.ErrorCode == null)
                         return retryResponse;
                 }

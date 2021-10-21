@@ -201,13 +201,13 @@ namespace ServiceStack.Common.Tests.OAuth
                 oAuthUserSession = requestContext.ReloadSession();
 
             var credentialsAuth = GetCredentialsAuthConfig();
-            return credentialsAuth.Authenticate(service, oAuthUserSession,
+            return credentialsAuth.AuthenticateAsync(service, oAuthUserSession,
                 new Authenticate
                 {
                     provider = CredentialsAuthProvider.Name,
                     UserName = RegisterDto.UserName,
                     Password = RegisterDto.Password,
-                });
+                }).GetResult();
         }
 
         protected object Register(IUserAuthRepository userAuthRepository, AuthUserSession oAuthUserSession, Register register = null)
@@ -225,8 +225,8 @@ namespace ServiceStack.Common.Tests.OAuth
         {
             MockAuthHttpGateway.Tokens = facebookGatewayTokens;
             var facebookAuth = GetFacebookAuthProvider();
-            facebookAuth.OnAuthenticated(service, oAuthUserSession, facebookAuthTokens,
-                JsonObject.Parse(facebookAuth.AuthHttpGateway.DownloadFacebookUserInfo("facebookCode")));
+            facebookAuth.OnAuthenticatedAsync(service, oAuthUserSession, facebookAuthTokens,
+                JsonObject.Parse(facebookAuth.AuthHttpGateway.DownloadFacebookUserInfo("facebookCode"))).Wait();
             Console.WriteLine("UserId: " + oAuthUserSession.UserAuthId);
         }
     }

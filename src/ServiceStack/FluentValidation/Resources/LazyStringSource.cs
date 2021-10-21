@@ -22,13 +22,14 @@ namespace ServiceStack.FluentValidation.Resources {
 	/// <summary>
 	/// Lazily loads the string
 	/// </summary>
+	[Obsolete("LazyStringSource is deprecated and will be removed in FluentValidation 10. Use a Func<PropertyValidatorContext, string> instead.")]
 	public class LazyStringSource : IStringSource {
-		readonly Func<IValidationContext, string> _stringProvider;
+		readonly Func<ICommonContext, string> _stringProvider;
 
 		/// <summary>
 		/// Creates a LazyStringSource
 		/// </summary>
-		public LazyStringSource(Func<IValidationContext, string> stringProvider) {
+		public LazyStringSource(Func<ICommonContext, string> stringProvider) {
 			_stringProvider = stringProvider;
 		}
 
@@ -36,7 +37,7 @@ namespace ServiceStack.FluentValidation.Resources {
 		/// Gets the value
 		/// </summary>
 		/// <returns></returns>
-		public string GetString(IValidationContext context) {
+		public string GetString(ICommonContext context) {
 			try {
 				return _stringProvider(context);
 			}
@@ -45,6 +46,20 @@ namespace ServiceStack.FluentValidation.Resources {
 			}
 		}
 	}
+
+	[Obsolete("Remove for FV10")]
+	internal class BackwardsCompatibleStringSource<TContext> : IStringSource where TContext : class,ICommonContext {
+		public Func<TContext, string> Factory { get; }
+
+		public BackwardsCompatibleStringSource(Func<TContext, string> factory) {
+			Factory = factory;
+		}
+
+		public string GetString(ICommonContext context) {
+			return Factory.Invoke(context as TContext);
+		}
+	}
+
 
 	public class FluentValidationMessageFormatException : Exception {
 		public FluentValidationMessageFormatException(string message) : base(message) {

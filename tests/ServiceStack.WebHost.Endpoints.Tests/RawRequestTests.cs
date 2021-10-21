@@ -1,14 +1,17 @@
-﻿using System;
-using System.IO;
-using System.Reflection;
+﻿using System.IO;
+using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
-using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
+    [Route("/rawbytesrequest")]
+    public class RawBytesRequest : IRequiresRequestStream
+    {
+        public Stream RequestStream { get; set; }
+    }
+
     [Route("/rawrequest")]
     public class RawRequest : IRequiresRequestStream
     {
@@ -43,21 +46,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class RawRequestService : Service
     {
-        public object Any(RawRequest request)
+        public async Task<object> Any(RawBytesRequest request)
         {
-            var rawRequest = request.RequestStream.ToUtf8String();
+            var rawRequest = await request.RequestStream.ReadFullyAsync();
+            return new RawRequestResponse { Result = rawRequest.FromUtf8Bytes() };
+        }
+
+        public async Task<object> Any(RawRequest request)
+        {
+            var rawRequest = await request.RequestStream.ReadToEndAsync();
             return new RawRequestResponse { Result = rawRequest };
         }
 
-        public object Any(RawRequestWithParam request)
+        public async Task<object> Any(RawRequestWithParam request)
         {
-            var rawRequest = request.RequestStream.ToUtf8String();
+            var rawRequest = await request.RequestStream.ReadToEndAsync();
             return new RawRequestResponse { Result = request.Path + ":" + request.Param + ":" + rawRequest };
         }
 
-        public object Any(CustomXml request)
+        public async Task<object> Any(CustomXml request)
         {
-            var xml = request.RequestStream.ReadToEnd();
+            var xml = await request.RequestStream.ReadToEndAsync();
             return xml;
         }
 

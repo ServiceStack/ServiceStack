@@ -7,7 +7,7 @@ using MongoDB.Driver;
 
 namespace ServiceStack.Authentication.MongoDb
 {
-    public class MongoDbAuthRepository : IUserAuthRepository, IClearable, IManageApiKeys, IQueryUserAuth
+    public partial class MongoDbAuthRepository : IUserAuthRepository, IClearable, IManageApiKeys, IQueryUserAuth
     {
         // http://www.mongodb.org/display/DOCS/How+to+Make+an+Auto+Incrementing+Field
         class Counters
@@ -20,13 +20,13 @@ namespace ServiceStack.Authentication.MongoDb
         private readonly IMongoDatabase mongoDatabase;
 
         // UserAuth collection name
-        private static string UserAuthCol => typeof(UserAuth).Name;
+        private static string UserAuthCol => nameof(UserAuth);
         // UserOAuthProvider collection name
-        private static string UserOAuthProviderCol => typeof(UserAuthDetails).Name;
+        private static string UserOAuthProviderCol => nameof(UserAuthDetails);
         // Counters collection name
-        private static string CountersCol => typeof(Counters).Name;        
+        private static string CountersCol => nameof(Counters);
         // ApiKey collection name
-        private static string ApiKeysCol => typeof(ApiKey).Name;
+        private static string ApiKeysCol => nameof(ApiKey);
 
         public MongoDbAuthRepository(IMongoDatabase mongoDatabase, bool createMissingCollections)
         {
@@ -133,14 +133,14 @@ namespace ServiceStack.Authentication.MongoDb
                 var existingUser = GetUserAuthByUserName(mongoDatabase, newUser.UserName);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                    throw new ArgumentException(string.Format(ErrorMessages.UserAlreadyExistsTemplate1, newUser.UserName.SafeInput()));
+                    throw new ArgumentException(ErrorMessages.UserAlreadyExistsFmt.LocalizeFmt(newUser.UserName.SafeInput()));
             }
             if (newUser.Email != null)
             {
                 var existingUser = GetUserAuthByUserName(mongoDatabase, newUser.Email);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                    throw new ArgumentException(string.Format(ErrorMessages.EmailAlreadyExistsTemplate1, newUser.Email.SafeInput()));
+                    throw new ArgumentException(ErrorMessages.EmailAlreadyExistsFmt.LocalizeFmt(newUser.Email.SafeInput()));
             }
         }
 

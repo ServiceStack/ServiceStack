@@ -186,14 +186,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             }.Init();
 
             Assert.That(context.EvaluateScript(@"{{ true |> ifThrowArgumentNullException('p') }}{{ ifError |> select: <h1>{ it |> typeName }! { it.Message }</h1> }}", out _).NormalizeNewLines(),
-                Is.EqualTo("<h1>ArgumentNullException! Value cannot be null.\nParameter name: p</h1>"));
+                Does.StartWith("<h1>ArgumentNullException! Value cannot be null."));
             Assert.That(context.EvaluateScript(@"{{ true |> ifThrowArgumentNullException('p', { assignError: 'ex' }) }}{{ ex |> ifExists |> select: <h1>{ it |> typeName }! { it.Message }</h1> }}", out _).NormalizeNewLines(),
-                Is.EqualTo("<h1>ArgumentNullException! Value cannot be null.\nParameter name: p</h1>"));
+                Does.StartWith("<h1>ArgumentNullException! Value cannot be null."));
 
             Assert.That(context.EvaluateScript(@"{{ true |> ifThrowArgumentException('bad arg', 'p') }}{{ ifError |> select: <h1>{ it |> typeName }! { it.Message }</h1> }}", out _).NormalizeNewLines(),
-                Is.EqualTo("<h1>ArgumentException! bad arg\nParameter name: p</h1>"));
+                Does.StartWith("<h1>ArgumentException! bad arg"));
             Assert.That(context.EvaluateScript(@"{{ true |> ifThrowArgumentException('bad arg', 'p', { assignError: 'ex' }) }}{{ ex |> ifExists |> select: <h1>{ it |> typeName }! { it.Message }</h1> }}", out _).NormalizeNewLines(),
-                Is.EqualTo("<h1>ArgumentException! bad arg\nParameter name: p</h1>"));
+                Does.StartWith("<h1>ArgumentException! bad arg"));
         }
 
         [Test]
@@ -491,7 +491,7 @@ elemType |> toInt |> raw
             Assert.That(new PageResult(context.GetPage("page-arg")).Result, Is.EqualTo(@"value"));
             Assert.That(new PageResult(context.GetPage("page-empty")).Result, Is.EqualTo(@""));
             Assert.That(new PageResult(context.GetPage("page-noarg")).Result.NormalizeNewLines(), 
-                Is.EqualTo("<div class=\"alert alert-danger\">Value cannot be null.\nParameter name: noArg</div>"));
+                Does.StartWith("<div class=\"alert alert-danger\">Value cannot be null."));
             Assert.That(new PageResult(context.GetPage("page-msg")).Result.NormalizeNewLines(), 
                 Is.EqualTo("<div class=\"alert alert-danger\">noArg required</div>"));            
         }
@@ -517,9 +517,9 @@ elemType |> toInt |> raw
             
             Assert.That(new PageResult(context.GetPage("page-arg")).Result, Is.EqualTo(@"value"));
             Assert.That(new PageResult(context.GetPage("page-empty")).Result.NormalizeNewLines(),
-                Is.EqualTo("<div class=\"alert alert-danger\">Value cannot be null.\nParameter name: empty</div>"));
+                Does.StartWith("<div class=\"alert alert-danger\">Value cannot be null."));
             Assert.That(new PageResult(context.GetPage("page-noarg")).Result.NormalizeNewLines(), 
-                Is.EqualTo("<div class=\"alert alert-danger\">Value cannot be null.\nParameter name: noArg</div>"));
+                Does.StartWith("<div class=\"alert alert-danger\">Value cannot be null."));
             Assert.That(new PageResult(context.GetPage("page-msg")).Result.NormalizeNewLines(), 
                 Is.EqualTo("<div class=\"alert alert-danger\">noArg required</div>"));            
         }
@@ -546,7 +546,7 @@ elemType |> toInt |> raw
             Assert.That(new PageResult(context.GetPage("page-arg")).Result, Is.EqualTo(@"value"));
             Assert.That(new PageResult(context.GetPage("page-empty")).Result, Is.EqualTo(@"value"));
             Assert.That(new PageResult(context.GetPage("page-noarg")).Result.NormalizeNewLines(), 
-                Is.EqualTo("<div class=\"alert alert-danger\">Value cannot be null.\nParameter name: noArg</div>"));
+                Does.StartWith("<div class=\"alert alert-danger\">Value cannot be null"));
             Assert.That(new PageResult(context.GetPage("page-msg")).Result.NormalizeNewLines(), 
                 Is.EqualTo(""));            
         }
@@ -573,7 +573,7 @@ elemType |> toInt |> raw
             Assert.That(new PageResult(context.GetPage("page-arg")).Result, Is.EqualTo(@"value"));
             Assert.That(new PageResult(context.GetPage("page-empty")).Result, Is.EqualTo(@"value"));
             Assert.That(new PageResult(context.GetPage("page-noarg")).Result.NormalizeNewLines(), 
-                Is.EqualTo("<div class=\"alert alert-danger\">Value cannot be null.\nParameter name: noArg</div>"));
+                Does.StartWith("<div class=\"alert alert-danger\">Value cannot be null."));
             Assert.That(new PageResult(context.GetPage("page-msg")).Result.NormalizeNewLines(), 
                 Is.EqualTo("<div class=\"alert alert-danger\">empty required</div>"));            
         }

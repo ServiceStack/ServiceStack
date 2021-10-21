@@ -9,12 +9,12 @@ namespace ServiceStack
 {
     public class ValidateScripts : ScriptMethods
     {
-        public static HashSet<string> RequiredValidators { get; } = new HashSet<string> {
+        public static HashSet<string> RequiredValidators { get; } = new() {
             nameof(NotNull),
             nameof(NotEmpty),
         };
         
-        public static ValidateScripts Instance = new ValidateScripts();
+        public static ValidateScripts Instance = new();
 
         //Note: Can't use singleton validators in-case ErrorCode/Messages are customized 
 
@@ -62,4 +62,5 @@ namespace ServiceStack
         public ITypeValidator HasPermissions(string[] permission) => new HasPermissionsValidator(permission);
         public ITypeValidator IsAdmin() => new HasRolesValidator(RoleNames.Admin);
     }
+    
 }

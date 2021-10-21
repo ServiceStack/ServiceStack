@@ -3,10 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using ServiceStack.Configuration;
 using ServiceStack.Host.NetCore;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth
@@ -38,7 +40,7 @@ namespace ServiceStack.Auth
             set => IdClaimTypes = new List<string> { value };
         }
         
-        public List<string> IdClaimTypes { get; set; } = new List<string> {
+        public List<string> IdClaimTypes { get; set; } = new() {
             ClaimTypes.NameIdentifier, //ASP.NET Identity default
             "sub",                     //JWT User
         };
@@ -54,11 +56,11 @@ namespace ServiceStack.Auth
         /// <summary>
         /// Automatically Assign these roles to Admin Users. 
         /// </summary>
-        public List<string> AdminRoles { get; set; } = new List<string> {
+        public List<string> AdminRoles { get; set; } = new() {
             RoleNames.Admin,
         };
         
-        public Dictionary<string, string> MapClaimsToSession { get; set; } = new Dictionary<string, string> {
+        public Dictionary<string, string> MapClaimsToSession { get; set; } = new() {
             [ClaimTypes.Email] = nameof(AuthUserSession.Email),
             [ClaimTypes.Name] = nameof(AuthUserSession.UserAuthName),
             [ClaimTypes.GivenName] = nameof(AuthUserSession.FirstName),
@@ -101,19 +103,19 @@ namespace ServiceStack.Auth
             return session.IsAuthenticated;
         }
 
-        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        public override Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
         {
             throw new NotImplementedException("NetCoreIdentityAuthProvider Authenticate() should not be called directly");
         }
 
-        public void PreAuthenticate(IRequest req, IResponse res)
+        public virtual async Task PreAuthenticateAsync(IRequest req, IResponse res)
         {
             var coreReq = (HttpRequest)req.OriginalRequest;
             var claimsPrincipal = coreReq.HttpContext.User;
             if (claimsPrincipal.Identity?.IsAuthenticated != true)
                 return;
 
-            var session = req.GetSession();
+            var session = await req.GetSessionAsync().ConfigAwait();
             if (session.IsAuthenticated) // if existing Session exists use it instead
                 return;
 
@@ -156,8 +158,8 @@ namespace ServiceStack.Auth
             
             var authMethodClaim = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.AuthenticationMethod);            
             session.AuthProvider = authMethodClaim?.Value 
-                                   ?? claimsPrincipal.Identity?.AuthenticationType
-                                   ?? Name;
+                ?? claimsPrincipal.Identity?.AuthenticationType
+                ?? Name;
 
             var sessionValues = new Dictionary<string,string>();
             
@@ -165,28 +167,24 @@ namespace ServiceStack.Auth
             {
                 if (claim.Type == RoleClaimType)
                 {
-                    if (session.Roles == null)
-                        session.Roles = new List<string>();
+                    session.Roles ??= new List<string>();
                     session.Roles.Add(claim.Value);
                 }
                 if (claim.Type == PermissionClaimType)
                 {
-                    if (session.Permissions == null)
-                        session.Permissions = new List<string>();
+                    session.Permissions ??= new List<string>();
                     session.Permissions.Add(claim.Value);
                 }
-                else if (claim.Type == "aud" && extended != null)
+                else if (extended != null && claim.Type == "aud")
                 {
-                    if (extended.Audiences == null)
-                        extended.Audiences = new List<string>();
+                    extended.Audiences ??= new List<string>();
                     extended.Audiences.Add(claim.Value);
                 }
-                else if (claim.Type == "scope" && extended != null)
+                else if (extended != null && claim.Type == "scope")
                 {
-                    if (extended.Scopes == null)
-                        extended.Scopes = new List<string>();
+                    extended.Scopes ??= new List<string>();
                     extended.Scopes.Add(claim.Value);
-                }
+                }                        
                 else if (MapClaimsToSession.TryGetValue(claim.Type, out var sessionProp))
                 {
                     sessionValues[sessionProp] = claim.Value;
@@ -199,17 +197,15 @@ namespace ServiceStack.Auth
             
             session.PopulateFromMap(sessionValues);
 
-            if (session.UserAuthName?.IndexOf('@') >= 0)
-            {
+            if (session.UserAuthName?.IndexOf('@') >= 0 && session.Email == null)
                 session.Email = session.UserAuthName;
-            }
-            
+
             PopulateSessionFilter?.Invoke(session, claimsPrincipal, req);
 
             req.Items[Keywords.Session] = session;
         }
         
-        public HashSet<string> IgnoreAutoSignInForExtensions { get; set; } = new HashSet<string> {
+        public HashSet<string> IgnoreAutoSignInForExtensions { get; set; } = new() {
             "js", "css", "png", "jpg", "jpeg", "gif", "svg", "ico"
         };
 
@@ -249,7 +245,7 @@ namespace ServiceStack.Auth
                 return;
             }
             
-            var session = req.GetSession();
+            var session = await req.GetSessionAsync().ConfigAwait();
             if (session.IsAuthenticated)
             {
                 var claims = session.ConvertSessionToClaims(
@@ -257,11 +253,11 @@ namespace ServiceStack.Auth
                     roleClaimType:RoleClaimType,
                     permissionClaimType:PermissionClaimType);
                 
-                if (session.Roles.IsEmpty() && HostContext.AppHost.GetAuthRepository(req) is IManageRoles authRepo)
+                if (session.Roles.IsEmpty() && HostContext.AppHost.GetAuthRepositoryAsync(req) is IManageRolesAsync authRepo)
                 {
-                    using (authRepo as IDisposable)
+                    await using (authRepo as IAsyncDisposable)
                     {
-                        var roles = authRepo.GetRoles(session.UserAuthId.ToInt());
+                        var roles = await authRepo.GetRolesAsync(session.UserAuthId.ToInt()).ConfigAwait();
                         foreach (var role in roles)
                         {
                             claims.Add(new Claim(RoleClaimType, role, Issuer));
@@ -286,10 +282,10 @@ namespace ServiceStack.Auth
             else if (HostContext.HasValidAuthSecret(req))
             {
                 var claims = new List<Claim> {
-                    new Claim(ClaimTypes.NameIdentifier, nameof(HostConfig.AdminAuthSecret), ClaimValueTypes.String, Issuer),
-                    new Claim(ClaimTypes.Name, RoleNames.Admin, ClaimValueTypes.String, Issuer),
-                    new Claim(ClaimTypes.GivenName, RoleNames.Admin, ClaimValueTypes.String, Issuer),
-                    new Claim(ClaimTypes.Surname, "User", ClaimValueTypes.String, Issuer),
+                    new(ClaimTypes.NameIdentifier, nameof(HostConfig.AdminAuthSecret), ClaimValueTypes.String, Issuer),
+                    new(ClaimTypes.Name, RoleNames.Admin, ClaimValueTypes.String, Issuer),
+                    new(ClaimTypes.GivenName, RoleNames.Admin, ClaimValueTypes.String, Issuer),
+                    new(ClaimTypes.Surname, "User", ClaimValueTypes.String, Issuer),
                 };
 
                 foreach (var adminRole in AdminRoles)
@@ -305,8 +301,10 @@ namespace ServiceStack.Auth
             }
         }
 
-        public void Register(IAppHost appHost, AuthFeature authFeature)
+        public override void Register(IAppHost appHost, AuthFeature authFeature)
         {
+            base.Register(appHost, authFeature);
+            
             if (AutoSignInSessions)
             {
                 ((AppHostBase)appHost).BeforeNextMiddleware = SignInAuthenticatedSessions;

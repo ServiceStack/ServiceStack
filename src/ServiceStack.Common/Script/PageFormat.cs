@@ -87,7 +87,7 @@ namespace ServiceStack.Script
             if (ContentType == MimeTypes.Html)
                 sb.AppendLine("</pre>");
             var html = StringBuilderCache.ReturnAndFree(sb);
-            await req.Response.OutputStream.WriteAsync(html);
+            await req.Response.OutputStream.WriteAsync(html).ConfigAwait();
         }
     }
     
@@ -145,7 +145,7 @@ namespace ServiceStack.Script
 
         public static async Task<Stream> HtmlEncodeTransformer(Stream stream)
         {
-            var contents = await stream.ReadToEndAsync();
+            var contents = await stream.ReadToEndAsync().ConfigAwait();
             var htmlEncoded = contents.HtmlEncode();
             return MemoryStreamFactory.GetStream(htmlEncoded.ToUtf8Bytes());
         }

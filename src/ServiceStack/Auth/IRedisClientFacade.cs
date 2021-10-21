@@ -2,13 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Redis;
 using ServiceStack.Redis.Generic;
 
 namespace ServiceStack.Auth
 {
-    public interface IRedisClientManagerFacade : IClearable
+    public partial interface IRedisClientManagerFacade : IClearable
     {
         IRedisClientFacade GetClient();
     }
@@ -16,11 +17,6 @@ namespace ServiceStack.Auth
     public interface IClearable
     {
         void Clear();		
-    }
-
-    public interface IClearableAsync
-    {
-        Task ClearAsync();		
     }
 
     public interface IRedisClientFacade : IDisposable
@@ -45,6 +41,40 @@ namespace ServiceStack.Auth
         List<T> GetAll(int? skip=null, int? take=null);
     }
 
+    public interface IClearableAsync
+    {
+        Task ClearAsync(CancellationToken token=default);
+    }
+    
+#if NET472 || NETSTANDARD2_0
+    public partial interface IRedisClientManagerFacade : IClearableAsync
+    {
+        Task<IRedisClientFacadeAsync> GetClientAsync(CancellationToken token=default);
+    }
+
+    public interface IRedisClientFacadeAsync : IAsyncDisposable
+    {
+        Task<HashSet<string>> GetAllItemsFromSetAsync(string setId, CancellationToken token=default);
+        Task StoreAsync<T>(T item, CancellationToken token=default);
+        Task DeleteByIdAsync<T>(string id, CancellationToken token=default);
+        Task<string> GetValueFromHashAsync(string hashId, string key, CancellationToken token=default);
+        Task SetEntryInHashAsync(string hashId, string key, string value, CancellationToken token=default);
+        Task RemoveEntryFromHashAsync(string hashId, string key, CancellationToken token=default);
+        Task AddItemToSetAsync(string setId, string item, CancellationToken token=default);
+        ITypedRedisClientFacadeAsync<T> AsAsync<T>();
+    }
+
+    public interface ITypedRedisClientFacadeAsync<T>
+    {
+        Task<int> GetNextSequenceAsync(CancellationToken token=default);
+        Task<T> GetByIdAsync(object id,CancellationToken token=default);
+        Task<List<T>> GetByIdsAsync(IEnumerable ids, CancellationToken token=default);
+        Task DeleteByIdAsync(string id, CancellationToken token=default);
+        Task DeleteByIdsAsync(IEnumerable ids, CancellationToken token=default);
+        Task<List<T>> GetAllAsync(int? skip=null, int? take=null, CancellationToken token=default);
+    }
+#endif
+
     public class RedisClientManagerFacade : IRedisClientManagerFacade
     {
         private readonly IRedisClientsManager redisManager;
@@ -52,6 +82,9 @@ namespace ServiceStack.Auth
         public RedisClientManagerFacade(IRedisClientsManager redisManager)
         {
             this.redisManager = redisManager;
+#if NET472 || NETSTANDARD2_0
+            this.redisManagerAsync = (IRedisClientsManagerAsync) redisManager;
+#endif
         }
 
         public IRedisClientFacade GetClient()
@@ -61,8 +94,8 @@ namespace ServiceStack.Auth
 
         public void Clear()
         {
-            using (var redis = redisManager.GetClient())
-                redis.FlushAll();
+            using var redis = redisManager.GetClient();
+            redis.FlushAll();
         }
 
         private class RedisClientFacade : IRedisClientFacade
@@ -169,6 +202,124 @@ namespace ServiceStack.Auth
                 this.redisClient.Dispose();
             }
         }
+
+#if NET472 || NETSTANDARD2_0
+        private readonly IRedisClientsManagerAsync redisManagerAsync;
+        public async Task ClearAsync(CancellationToken token=default)
+        {
+            var redis = await redisManagerAsync.GetClientAsync(token);
+            await redis.FlushAllAsync(token);
+        }
+
+        public async Task<IRedisClientFacadeAsync> GetClientAsync(CancellationToken token = default) =>
+            new RedisClientFacadeAsync(await redisManagerAsync.GetClientAsync(token));
+
+        private class RedisClientFacadeAsync : IRedisClientFacadeAsync
+        {
+            private readonly IRedisClientAsync redisClient;
+
+            public RedisClientFacadeAsync(IRedisClientAsync redisClient)
+            {
+                this.redisClient = redisClient;
+            }
+
+            class RedisITypedRedisClientFacadeAsync<T> : ITypedRedisClientFacadeAsync<T>
+            {
+                private readonly IRedisTypedClientAsync<T> redisTypedClient;
+
+                public RedisITypedRedisClientFacadeAsync(IRedisTypedClientAsync<T> redisTypedClient)
+                {
+                    this.redisTypedClient = redisTypedClient;
+                }
+
+                public async Task<int> GetNextSequenceAsync(CancellationToken token=default)
+                {
+                    return (int) await redisTypedClient.GetNextSequenceAsync(token);
+                }
+
+                public async Task<T> GetByIdAsync(object id, CancellationToken token=default)
+                {
+                    return await redisTypedClient.GetByIdAsync(id, token);
+                }
+
+                public async Task<List<T>> GetByIdsAsync(IEnumerable ids, CancellationToken token=default)
+                {
+                    return (await redisTypedClient.GetByIdsAsync(ids, token)).ToList();
+                }
+
+                public async Task DeleteByIdAsync(string id, CancellationToken token=default)
+                {
+                    await redisTypedClient.DeleteByIdAsync(id, token);
+                }
+
+                public async Task DeleteByIdsAsync(IEnumerable ids, CancellationToken token=default)
+                {
+                    await redisTypedClient.DeleteByIdsAsync(ids, token);
+                }
+
+                public async Task<List<T>> GetAllAsync(int? skip=null, int? take=null, CancellationToken token=default)
+                {
+                    if (skip != null || take != null)
+                    {
+                        var keys = (await redisTypedClient.TypeIdsSet.GetAllAsync(token)).OrderBy(x => x).AsEnumerable();
+                        if (skip != null)
+                            keys = keys.Skip(skip.Value);
+                        if (take != null)
+                            keys = keys.Take(take.Value);
+                        return (await redisTypedClient.GetByIdsAsync(keys, token)).ToList();
+                    }
+                    
+                    return (await redisTypedClient.GetAllAsync(token)).ToList();
+                }
+            }
+
+            public async Task<HashSet<string>> GetAllItemsFromSetAsync(string setId, CancellationToken token=default)
+            {
+                return await redisClient.GetAllItemsFromSetAsync(setId, token);
+            }
+
+            public async Task StoreAsync<T>(T item, CancellationToken token=default)
+            {
+                await redisClient.StoreAsync(item, token);
+            }
+
+            public async Task DeleteByIdAsync<T>(string id, CancellationToken token=default)
+            {
+                await redisClient.DeleteByIdAsync<T>(id, token);
+            }
+
+            public async Task<string> GetValueFromHashAsync(string hashId, string key, CancellationToken token=default)
+            {
+                return await redisClient.GetValueFromHashAsync(hashId, key, token);
+            }
+
+            public async Task SetEntryInHashAsync(string hashId, string key, string value, CancellationToken token=default)
+            {
+                await redisClient.SetEntryInHashAsync(hashId, key, value, token);
+            }
+
+            public async Task RemoveEntryFromHashAsync(string hashId, string key, CancellationToken token=default)
+            {
+                await redisClient.RemoveEntryFromHashAsync(hashId, key, token);
+            }
+
+            public async Task AddItemToSetAsync(string setId, string item, CancellationToken token=default)
+            {
+                await redisClient.AddItemToSetAsync(setId, item, token);
+            }
+
+            public ITypedRedisClientFacadeAsync<T> AsAsync<T>()
+            {
+                return new RedisITypedRedisClientFacadeAsync<T>(redisClient.As<T>());
+            }
+
+            public async ValueTask DisposeAsync()
+            {
+                await this.redisClient.DisposeAsync();
+            }
+        }
+#endif
+        
     }
 
 }

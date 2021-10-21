@@ -78,6 +78,7 @@ namespace ServiceStack.FluentValidation.Internal {
 		/// </summary>
 		/// <param name="additionalArgs">Additional arguments</param>
 		/// <returns></returns>
+		[Obsolete("AppendAdditionalArguments will be removed in FluentValidation 10. Please construct your error message with a function instead.")]
 		public MessageFormatter AppendAdditionalArguments(params object[] additionalArgs) {
 			_additionalArguments = additionalArgs;
 			_shouldUseAdditionalArgs = _additionalArguments != null && _additionalArguments.Length > 0;
@@ -101,6 +102,7 @@ namespace ServiceStack.FluentValidation.Internal {
 		/// <summary>
 		/// Additional arguments to use
 		/// </summary>
+		[Obsolete("AdditionalArguments will be removed in FluentValidation 10. Please construct your error message with a function instead.")]
 		public object[] AdditionalArguments => _additionalArguments;
 
 		/// <summary>
@@ -108,11 +110,11 @@ namespace ServiceStack.FluentValidation.Internal {
 		/// </summary>
 		public Dictionary<string, object> PlaceholderValues => _placeholderValues;
 
-		protected virtual string ReplacePlaceholdersWithValues(string template, IDictionary<string, object> values)	{
+		protected virtual string ReplacePlaceholdersWithValues(string template, IDictionary<string, object> values) {
 			return _keyRegex.Replace(template, m =>	{
 				var key = m.Groups[1].Value;
 
-				if (!values.ContainsKey(key))
+				if (!values.TryGetValue(key, out var value))
 					return m.Value; // No placeholder / value
 
 				var format = m.Groups[2].Success // Format specified?
@@ -120,8 +122,8 @@ namespace ServiceStack.FluentValidation.Internal {
 					: null;
 
 				return format == null
-					? values[key]?.ToString()
-					: string.Format(format, values[key]);
+					? value?.ToString()
+					: string.Format(format, value);
 			});
 		}
 	}

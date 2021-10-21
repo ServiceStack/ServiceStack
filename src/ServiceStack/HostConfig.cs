@@ -49,7 +49,6 @@ namespace ServiceStack
                 AllowJsonpRequests = true,
                 AllowRouteContentTypeExtensions = true,
                 BufferSyncSerializers = Env.IsNetCore3,
-                AllowNonHttpOnlyCookies = false,
                 DebugMode = false,
                 StrictMode = Env.StrictMode,
                 DefaultDocuments = new List<string> {
@@ -126,8 +125,9 @@ namespace ServiceStack
                 MapExceptionToStatusCode = new Dictionary<Type, int>(),
                 UseSaltedHash = false,
                 FallbackPasswordHashers = new List<IPasswordHasher>(),
-                UseSameSiteCookies = false,
-                UseSecureCookies = true,   // good default to have, but needed if UseSameSiteCookies=true 
+                UseSameSiteCookies = null,
+                UseSecureCookies = true,   // good default to have, but needed if UseSameSiteCookies=true
+                UseHttpOnlyCookies = true,
                 AllowSessionIdsInHttpParams = false,
                 AllowSessionCookies = true,
                 RestrictAllCookiesToDomain = null,
@@ -159,8 +159,9 @@ namespace ServiceStack
                 IgnoreWarningsOnPropertyNames = new List<string> {
                     Keywords.Format, Keywords.Callback, Keywords.Debug, Keywords.AuthSecret, Keywords.JsConfig,
                     Keywords.IgnorePlaceHolder, Keywords.Version, Keywords.VersionAbbr, Keywords.Version.ToPascalCase(),
-                    Keywords.ApiKeyParam, Keywords.Code, Keywords.Redirect, Keywords.Continue, "s", "f"
+                    Keywords.ApiKeyParam, Keywords.Code, Keywords.Redirect, Keywords.Continue, "session_state", "s", "f"
                 },
+                IgnoreWarningsOnAutoQueryApis = true,
                 XmlWriterSettings = new XmlWriterSettings
                 {
                     Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
@@ -169,7 +170,18 @@ namespace ServiceStack
                 UseHttpsLinks = false,
                 UseJsObject = true,
                 EnableOptimizations = true,
-
+                TreatNonNullableRefTypesAsRequired = true,
+                AuthSecretSession = new AuthUserSession {
+                    Id = Guid.NewGuid().ToString("n"),
+                    DisplayName = "Admin",
+                    UserName = Keywords.AuthSecret,
+                    UserAuthName = Keywords.AuthSecret,
+                    AuthProvider = Keywords.AuthSecret,
+                    IsAuthenticated = true,
+                    Roles = new List<string> { Configuration.RoleNames.Admin },
+                    Permissions = new List<string>(),
+                    UserAuthId = "0",
+                },
 #if !NETSTANDARD2_0
                 UseCamelCase = false,
                 ReturnsInnerException = true,
@@ -241,11 +253,12 @@ namespace ServiceStack
             this.DefaultJsonpCacheExpiration = instance.DefaultJsonpCacheExpiration;
             this.MetadataVisibility = instance.MetadataVisibility;
             this.Return204NoContentForEmptyResponse = instance.Return204NoContentForEmptyResponse;
-            this.AllowNonHttpOnlyCookies = instance.AllowNonHttpOnlyCookies;
+            this.UseHttpOnlyCookies = instance.UseHttpOnlyCookies;
             this.UseSameSiteCookies = instance.UseSameSiteCookies;
             this.AllowJsConfig = instance.AllowJsConfig;
             this.AllowPartialResponses = instance.AllowPartialResponses;
             this.IgnoreWarningsOnAllProperties = instance.IgnoreWarningsOnAllProperties;
+            this.IgnoreWarningsOnAutoQueryApis = instance.IgnoreWarningsOnAutoQueryApis;
             this.IgnoreWarningsOnPropertyNames = instance.IgnoreWarningsOnPropertyNames;
             this.FallbackRestPath = instance.FallbackRestPath;
             this.AllowAclUrlReservation = instance.AllowAclUrlReservation;
@@ -257,10 +270,12 @@ namespace ServiceStack
             this.ScanSkipPaths = instance.ScanSkipPaths;
             this.RedirectPaths = instance.RedirectPaths;
             this.AdminAuthSecret = instance.AdminAuthSecret;
+            this.AuthSecretSession = instance.AuthSecretSession;
             this.UseHttpsLinks = instance.UseHttpsLinks;
             this.UseCamelCase = instance.UseCamelCase;
             this.UseJsObject = instance.UseJsObject;
             this.EnableOptimizations = instance.EnableOptimizations;
+            this.TreatNonNullableRefTypesAsRequired = instance.TreatNonNullableRefTypesAsRequired;
         }
 
         public string WsdlServiceNamespace { get; set; }
@@ -294,6 +309,7 @@ namespace ServiceStack
         public List<string> DefaultDocuments { get; private set; }
 
         public bool IgnoreWarningsOnAllProperties { get; set; }
+        public bool IgnoreWarningsOnAutoQueryApis { get; set; }
         public List<string> IgnoreWarningsOnPropertyNames { get; private set; }
 
         public HashSet<string> IgnoreFormatsInMetadata { get; set; }
@@ -358,10 +374,6 @@ namespace ServiceStack
         /// the current registered IPasswordHasher.
         /// </summary>
         public List<IPasswordHasher> FallbackPasswordHashers { get; private set; }
-
-        [Obsolete("Use UseSecureCookies")]
-        public bool OnlySendSessionCookiesSecurely { set => UseSecureCookies = value; }
-        public bool UseSecureCookies { get; set; }
         public bool AllowSessionIdsInHttpParams { get; set; }
         public bool AllowSessionCookies { get; set; }
         public string RestrictAllCookiesToDomain { get; set; }
@@ -370,8 +382,15 @@ namespace ServiceStack
         public bool Return204NoContentForEmptyResponse { get; set; }
         public bool AllowJsConfig { get; set; }
         public bool AllowPartialResponses { get; set; }
-        public bool AllowNonHttpOnlyCookies { get; set; }
-        public bool UseSameSiteCookies { get; set; }
+
+        [Obsolete("Use !UseHttpOnlyCookies")]
+        public bool AllowNonHttpOnlyCookies { set => UseHttpOnlyCookies = !value; }
+        [Obsolete("Use UseSecureCookies")]
+        public bool OnlySendSessionCookiesSecurely { set => UseSecureCookies = value; }
+
+        public bool UseSecureCookies { get; set; }
+        public bool UseHttpOnlyCookies { get; set; }
+        public bool? UseSameSiteCookies { get; set; }
         public bool AllowAclUrlReservation { get; set; }
         public bool AddRedirectParamsToQueryString { get; set; }
         public bool RedirectToDefaultDocuments { get; set; }
@@ -389,8 +408,11 @@ namespace ServiceStack
         public bool UseCamelCase { get; set; }
         public bool UseJsObject { get; set; }
         public bool EnableOptimizations { get; set; }
+        public bool TreatNonNullableRefTypesAsRequired { get; set; }
 
         public string AdminAuthSecret { get; set; }
+        
+        public IAuthSession AuthSecretSession { get; set; }
 
         public FallbackRestPathDelegate FallbackRestPath { get; set; }
 

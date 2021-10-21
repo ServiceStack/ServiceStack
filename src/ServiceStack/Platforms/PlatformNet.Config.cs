@@ -25,7 +25,7 @@ namespace ServiceStack.Platforms
             string value = ConfigurationManager.AppSettings[key];
 
             if (value == null)
-                throw new ConfigurationErrorsException(string.Format(ErrorMessages.AppsettingNotFound, key));
+                throw new ConfigurationErrorsException(ErrorMessages.AppSettingNotFoundFmt.LocalizeFmt(key));
 
             return value;
         }
@@ -60,7 +60,7 @@ namespace ServiceStack.Platforms
         {
             var value = ConfigurationManager.ConnectionStrings[key];
             if (value == null)
-                throw new ConfigurationErrorsException(string.Format(ErrorMessages.ConnectionStringNotFound, key));
+                throw new ConfigurationErrorsException(ErrorMessages.ConnectionStringNotFoundFmt.LocalizeFmt(key));
 
             return value;
         }

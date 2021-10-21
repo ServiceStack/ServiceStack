@@ -166,15 +166,15 @@ namespace ServiceStack
                 {
                     return new ReflectAttribute {
                         ConstructorArgs = new List<KeyValuePair<PropertyInfo, object>> {
-                            new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Path)), Path),
-                            new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Verbs)), Verbs),
+                            new(GetType().GetProperty(nameof(Path)), Path),
+                            new(GetType().GetProperty(nameof(Verbs)), Verbs),
                         }
                     };
                 }
 
                 return new ReflectAttribute {
                     ConstructorArgs = new List<KeyValuePair<PropertyInfo, object>> {
-                        new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Path)), Path),
+                        new(GetType().GetProperty(nameof(Path)), Path),
                     }
                 };
             }
@@ -182,7 +182,7 @@ namespace ServiceStack
             //Otherwise return Property Args
             var to = new ReflectAttribute {
                 PropertyArgs = new List<KeyValuePair<PropertyInfo, object>> {
-                    new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Path)), Path),
+                    new(GetType().GetProperty(nameof(Path)), Path),
                 }
             };
             if (Verbs != null)

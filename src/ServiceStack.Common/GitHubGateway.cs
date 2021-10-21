@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using ServiceStack;
 using ServiceStack.IO;
 using ServiceStack.Script;
 using ServiceStack.Text;
@@ -17,9 +18,11 @@ namespace ServiceStack
         Gist CreateGist(string description, bool isPublic, Dictionary<string, object> files);
         Gist CreateGist(string description, bool isPublic, Dictionary<string, string> textFiles);
         Gist GetGist(string gistId);
+        Gist GetGist(string gistId, string version);
         Task<Gist> GetGistAsync(string gistId);
-        void WriteGistFiles(string gistId, Dictionary<string, object> files);
-        void WriteGistFiles(string gistId, Dictionary<string, string> textFiles);
+        Task<Gist> GetGistAsync(string gistId, string version);
+        void WriteGistFiles(string gistId, Dictionary<string, object> files, string description=null, bool deleteMissing=false);
+        void WriteGistFiles(string gistId, Dictionary<string, string> textFiles, string description=null, bool deleteMissing=false);
         void CreateGistFile(string gistId, string filePath, string contents);
         void WriteGistFile(string gistId, string filePath, string contents);
         void DeleteGistFiles(string gistId, params string[] filePaths);
@@ -47,6 +50,25 @@ namespace ServiceStack
         void DownloadFile(string downloadUrl, string fileName);
     }
 
+    public class GithubRateLimit
+    {
+        public int Limit { get; set; }
+        public int Remaining { get; set; }
+        public long Reset { get; set; }
+        public int Used { get; set; }
+    }
+    public class GithubResourcesRateLimits
+    {
+        public GithubRateLimit Core { get; set; }
+        public GithubRateLimit Graphql { get; set; }
+        public GithubRateLimit Integration_Manifest { get; set; }
+        public GithubRateLimit Search { get; set; }
+    }
+    public class GithubRateLimits
+    {
+        public GithubResourcesRateLimits Resources { get; set; }
+    }
+
     public class GitHubGateway : IGistGateway, IGitHubGateway
     {
         public string UserAgent { get; set; } = nameof(GitHubGateway);
@@ -65,6 +87,12 @@ namespace ServiceStack
 
         public GitHubGateway() {}
         public GitHubGateway(string accessToken) => AccessToken = accessToken;
+
+        public async Task<GithubRateLimits> GetRateLimitsAsync()
+            => await GetJsonAsync<GithubRateLimits>("/rate_limit").ConfigAwait();
+
+        public GithubRateLimits GetRateLimits()
+            => GetJson<GithubRateLimits>("/rate_limit");
 
         internal string UnwrapRepoFullName(string orgName, string name, bool useFork=false)
         {
@@ -87,6 +115,10 @@ namespace ServiceStack
             }
         }
 
+        public virtual Tuple<string,string> AssertRepo(string[] orgs, string name, bool useFork=false) =>
+            FindRepo(orgs, name, useFork)
+            ?? throw new Exception($"'{name}' was not found in sources: {orgs.Join(", ")}");
+
         public virtual Tuple<string,string> FindRepo(string[] orgs, string name, bool useFork=false)
         {
             foreach (var orgName in orgs)
@@ -99,15 +131,14 @@ namespace ServiceStack
                 var repo = repoFullName.RightPart('/');
                 return Tuple.Create(user, repo);
             }
-
-            throw new Exception($"'{name}' was not found in sources: {orgs.Join(", ")}");
+            return null;
         }
 
         public virtual string GetSourceZipUrl(string user, string repo) => 
             GetSourceZipUrl(user, repo, GetJson($"repos/{user}/{repo}/releases"));
 
         public virtual async Task<string> GetSourceZipUrlAsync(string user, string repo) => 
-            GetSourceZipUrl(user, repo, await GetJsonAsync($"repos/{user}/{repo}/releases"));
+            GetSourceZipUrl(user, repo, await GetJsonAsync($"repos/{user}/{repo}/releases").ConfigAwait());
 
         private static string GetSourceZipUrl(string user, string repo, string json)
         {
@@ -125,7 +156,7 @@ namespace ServiceStack
 
         public virtual async Task<List<GithubRepo>> GetSourceReposAsync(string orgName)
         {
-            var repos = (await GetUserAndOrgReposAsync(orgName))
+            var repos = (await GetUserAndOrgReposAsync(orgName).ConfigAwait())
                 .OrderBy(x => x.Name)
                 .ToList();
             return repos;
@@ -140,7 +171,7 @@ namespace ServiceStack
 
             try
             {
-                foreach (var repos in await userRepos)
+                foreach (var repos in await userRepos.ConfigAwait())
                 foreach (var repo in repos)
                     map[repo.Name] = repo;
             }
@@ -151,7 +182,7 @@ namespace ServiceStack
 
             try
             {
-                foreach (var repos in await userRepos)
+                foreach (var repos in await userRepos.ConfigAwait())
                 foreach (var repo in repos)
                     map[repo.Name] = repo;
             }
@@ -173,13 +204,13 @@ namespace ServiceStack
             StreamJsonCollection<List<GithubRepo>>($"users/{githubUser}/repos").SelectMany(x => x).ToList();
 
         public virtual async Task<List<GithubRepo>> GetUserReposAsync(string githubUser) =>
-            (await GetJsonCollectionAsync<List<GithubRepo>>($"users/{githubUser}/repos")).SelectMany(x => x).ToList();
+            (await GetJsonCollectionAsync<List<GithubRepo>>($"users/{githubUser}/repos").ConfigAwait()).SelectMany(x => x).ToList();
 
         public virtual List<GithubRepo> GetOrgRepos(string githubOrg) =>
             StreamJsonCollection<List<GithubRepo>>($"orgs/{githubOrg}/repos").SelectMany(x => x).ToList();
         
         public virtual async Task<List<GithubRepo>> GetOrgReposAsync(string githubOrg) =>
-            (await GetJsonCollectionAsync<List<GithubRepo>>($"orgs/{githubOrg}/repos")).SelectMany(x => x).ToList();
+            (await GetJsonCollectionAsync<List<GithubRepo>>($"orgs/{githubOrg}/repos").ConfigAwait()).SelectMany(x => x).ToList();
         
         public virtual string GetJson(string route)
         {
@@ -204,11 +235,11 @@ namespace ServiceStack
             if (GetJsonFilter != null)
                 return GetJsonFilter(apiUrl);
 
-            return await apiUrl.GetJsonFromUrlAsync(ApplyRequestFilters);
+            return await apiUrl.GetJsonFromUrlAsync(ApplyRequestFilters).ConfigAwait();
         }
 
         public virtual async Task<T> GetJsonAsync<T>(string route) => 
-            (await GetJsonAsync(route)).FromJson<T>();
+            (await GetJsonAsync(route).ConfigAwait()).FromJson<T>();
 
         public virtual IEnumerable<T> StreamJsonCollection<T>(string route)
         {
@@ -243,7 +274,7 @@ namespace ServiceStack
                         responseFilter: res => {
                             var links = ParseLinkUrls(res.Headers["Link"]);
                             links.TryGetValue("next", out nextUrl);
-                        }))
+                        }).ConfigAwait())
                     .FromJson<List<T>>();
 
                 to.AddRange(results);
@@ -303,8 +334,13 @@ namespace ServiceStack
         public virtual GithubGist GetGithubGist(string gistId)
         {
             var json = GetJson($"/gists/{gistId}");
-            var response = json.FromJson<GithubGist>();
-            return response;
+            return json.FromJson<GithubGist>();
+        }
+
+        public virtual GithubGist GetGithubGist(string gistId, string version)
+        {
+            var json = GetJson($"/gists/{gistId}/{version}");
+            return json.FromJson<GithubGist>();
         }
 
         public virtual Gist GetGist(string gistId)
@@ -313,9 +349,21 @@ namespace ServiceStack
             return PopulateGist(response);
         }
 
+        public Gist GetGist(string gistId, string version)
+        {
+            var response = GetGithubGist(gistId, version);
+            return PopulateGist(response);
+        }
+
         public async Task<Gist> GetGistAsync(string gistId)
         {
-            var response = await GetJsonAsync<GithubGist>($"/gists/{gistId}");
+            var response = await GetJsonAsync<GithubGist>($"/gists/{gistId}").ConfigAwait();
+            return PopulateGist(response);
+        }
+
+        public async Task<Gist> GetGistAsync(string gistId, string version)
+        {
+            var response = await GetJsonAsync<GithubGist>($"/gists/{gistId}/{version}").ConfigAwait();
             return PopulateGist(response);
         }
 
@@ -438,13 +486,13 @@ namespace ServiceStack
         internal static NotSupportedException CreateContentNotSupportedException(object value) =>
             new NotSupportedException($"Could not write '{value?.GetType().Name ?? "null"}' value. Only string, byte[], Stream or IVirtualFile content is supported.");
 
-        public virtual void WriteGistFiles(string gistId, Dictionary<string, object> files) =>
-            WriteGistFiles(gistId, ToTextFiles(files));
+        public virtual void WriteGistFiles(string gistId, Dictionary<string, object> files, string description=null, bool deleteMissing=false) =>
+            WriteGistFiles(gistId, ToTextFiles(files), description, deleteMissing);
         
         /// <summary>
         /// Create or Write Gist Text Files. Requires AccessToken
         /// </summary>
-        public virtual void WriteGistFiles(string gistId, Dictionary<string,string> textFiles)
+        public virtual void WriteGistFiles(string gistId, Dictionary<string,string> textFiles, string description=null, bool deleteMissing=false)
         {
             AssertAccessToken();
 
@@ -463,7 +511,31 @@ namespace ServiceStack
                     .Append(entry.Value.ToJson())
                     .Append("}");
             }
-            sb.Append("}}");
+
+            if (deleteMissing)
+            {
+                var gist = GetGist(gistId);
+                foreach (var existingFile in gist.Files.Keys)
+                {
+                    if (textFiles.ContainsKey(existingFile)) 
+                        continue;
+                    
+                    if (i++ > 0)
+                        sb.Append(",");
+                
+                    sb.Append(existingFile.ToJson())
+                        .Append(":null");
+                }
+            }
+            sb.Append("}");
+
+            if (!string.IsNullOrEmpty(description))
+            {
+                if (i++ > 0)
+                    sb.Append(",");
+                sb.Append("\"description\":").Append(description.ToJson());
+            }
+            sb.Append("}");
                 
             var json = StringBuilderCache.ReturnAndFree(sb);
             BaseUrl.CombineWith($"/gists/{gistId}")
@@ -556,7 +628,7 @@ namespace ServiceStack
         public int Stargazers_Count { get; set; }
         public int Size { get; set; }
         public string Full_Name { get; set; }
-        public DateTime Created_at { get; set; }
+        public DateTime Created_At { get; set; }
         public DateTime? Updated_At { get; set; }
 
         public bool Has_Downloads { get; set; }
@@ -576,7 +648,7 @@ namespace ServiceStack
         public string Html_Url { get; set; }
         public Dictionary<string, GistFile> Files { get; set; }
         public bool Public { get; set; }
-        public DateTime Created_at { get; set; }
+        public DateTime Created_At { get; set; }
         public DateTime? Updated_At { get; set; }
         public string Description { get; set; }
         public string UserId { get; set; }
@@ -604,6 +676,23 @@ namespace ServiceStack
         public string Comments_Url { get; set; }
         public bool Truncated { get; set; }
         public GithubUser Owner { get; set; }
+        public GistHistory[] History { get; set; }
+    }
+
+    public class GistHistory
+    {
+        public GithubUser User { get; set; }
+        public string Version { get; set; }
+        public DateTime Committed_At { get; set; }
+        public GistChangeStatus Change_Status { get; set; }
+        public string Url { get; set; }
+    }
+
+    public class GistChangeStatus
+    {
+        public int Total { get; set; }
+        public int Additions { get; set; }
+        public int Deletions { get; set; }
     }
 
     public class GistUser

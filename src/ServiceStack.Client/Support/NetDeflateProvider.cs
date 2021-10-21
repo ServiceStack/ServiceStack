@@ -15,36 +15,30 @@ namespace ServiceStack.Support
 
         public byte[] Deflate(byte[] bytes)
         {
-            // In .NET FX incompat-ville, you can't access compressed bytes without closing DeflateStream
+            // In .NET FX incompatible, you can't access compressed bytes without closing DeflateStream
             // Which means we must use MemoryStream since you have to use ToArray() on a closed Stream
-            using (var ms = new MemoryStream())
-            using (var zipStream = new DeflateStream(ms, CompressionMode.Compress))
-            {
-                zipStream.Write(bytes, 0, bytes.Length);
-                zipStream.Close();
+            using var ms = new MemoryStream();
+            using var zipStream = new DeflateStream(ms, CompressionMode.Compress);
+            zipStream.Write(bytes, 0, bytes.Length);
+            zipStream.Close();
 
-                return ms.ToArray();
-            }
+            return ms.ToArray();
         }
 
         public string Inflate(byte[] gzBuffer)
         {
-            using (var uncompressedStream = MemoryStreamFactory.GetStream())
-            using (var compressedStream = MemoryStreamFactory.GetStream(gzBuffer))
-            using (var zipStream = new DeflateStream(compressedStream, CompressionMode.Decompress))
-            {
-                zipStream.CopyTo(uncompressedStream);
-                return uncompressedStream.ReadToEnd();
-            }
+            using var uncompressedStream = MemoryStreamFactory.GetStream();
+            using var compressedStream = MemoryStreamFactory.GetStream(gzBuffer);
+            using var zipStream = new DeflateStream(compressedStream, CompressionMode.Decompress);
+            zipStream.CopyTo(uncompressedStream);
+            return uncompressedStream.ReadToEnd();
         }
 
         public byte[] InflateBytes(byte[] gzBuffer)
         {
-            using (var compressedStream = gzBuffer.InMemoryStream())
-            using (var zipStream = new DeflateStream(compressedStream, CompressionMode.Decompress))
-            {
-                return zipStream.ReadFully();
-            }
+            using var compressedStream = gzBuffer.InMemoryStream();
+            using var zipStream = new DeflateStream(compressedStream, CompressionMode.Decompress);
+            return zipStream.ReadFully();
         }
 
         public Stream DeflateStream(Stream outputStream)

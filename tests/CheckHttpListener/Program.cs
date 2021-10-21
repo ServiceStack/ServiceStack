@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using System.Web.UI.WebControls;
+using Check.ServiceInterface;
 using Check.ServiceModel;
 using Funq;
 using ServiceStack;
-using ServiceStack.Admin;
+// using ServiceStack.Admin;
 using ServiceStack.Api.OpenApi;
 using ServiceStack.Auth;
 using ServiceStack.Data;
+using ServiceStack.Formats;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -28,7 +31,7 @@ namespace CheckHttpListener
         };
 
         public AppSelfHost()
-            : base("DocuRec Services", typeof(TestService).Assembly)
+            : base("DocuRec Services", typeof(TestService).Assembly, typeof(TechStacksService).Assembly)
         { }
 
         public override void Configure(Container container)
@@ -47,7 +50,7 @@ namespace CheckHttpListener
             Plugins.Add(new OpenApiFeature());
 
             Plugins.Add(new AutoQueryFeature { MaxLimit = 100 });
-            Plugins.Add(new AdminFeature());
+            // Plugins.Add(new AdminFeature());
 
             Plugins.Add(new AuthFeature(() => new AuthUserSession(),
                 new[] { new BasicAuthProvider(AppSettings) })
@@ -67,6 +70,8 @@ namespace CheckHttpListener
                 CompressFilesLargerThanBytes = 10 * 1024,
                 DebugMode = false
             });
+            
+            ContentTypes.Register("text/x-custom+csv", new CsvFormat().SerializeToStream, null);
         }
 
         public override string ResolvePathInfo(IRequest request, string originalPathInfo) =>

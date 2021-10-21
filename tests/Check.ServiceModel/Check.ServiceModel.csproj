@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Check.ServiceModel</RootNamespace>
     <AssemblyName>Check.ServiceModel</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -52,10 +52,12 @@
     <Compile Include="Errors.cs" />
     <Compile Include="MetadataTest.cs" />
     <Compile Include="NativeTypeIssues.cs" />
+    <Compile Include="QueryPosts.cs" />
     <Compile Include="ReturnData.cs" />
     <Compile Include="Rockstar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SwaggerTest.cs" />
+    <Compile Include="TechStacks.cs" />
     <Compile Include="ThrowHttpError.cs" />
   </ItemGroup>
   <ItemGroup>
