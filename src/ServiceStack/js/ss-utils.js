@@ -670,6 +670,7 @@
         }
     };
     $.ss.onUnload = function () {
+        if (!$.ss.unRegisterUrl) return;
         if (navigator.sendBeacon)
             navigator.sendBeacon($.ss.unRegisterUrl);
         else
