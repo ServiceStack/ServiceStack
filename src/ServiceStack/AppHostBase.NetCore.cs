@@ -16,12 +16,21 @@ using ServiceStack.Host.Handlers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Configuration;
 using ServiceStack.IO;
 using ServiceStack.Text;
+
+#if NETSTANDARD2_0
+using Microsoft.AspNetCore.Hosting;
+using IHostApplicationLifetime = Microsoft.AspNetCore.Hosting.IApplicationLifetime;
+using IWebHostEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
+#else
+using Microsoft.Extensions.Hosting;
+using IWebHostEnvironment = Microsoft.AspNetCore.Hosting.IWebHostEnvironment;
+using IHostApplicationLifetime = Microsoft.Extensions.Hosting.IHostApplicationLifetime;
+#endif
 
 namespace ServiceStack
 {
@@ -105,7 +114,7 @@ namespace ServiceStack
                     requiresConfig.Configuration = configuration;
             }
 
-            var appLifetime = app.ApplicationServices.GetService<IApplicationLifetime>();
+            var appLifetime = app.ApplicationServices.GetService<IHostApplicationLifetime>();
             appLifetime?.ApplicationStopping.Register(appHost.OnApplicationStopping);
         }
 
@@ -120,15 +129,15 @@ namespace ServiceStack
             return HostingEnvironment.WebRootPath ?? HostingEnvironment.ContentRootPath;
         }
 
-        private IHostingEnvironment env;
-
-        public IHostingEnvironment HostingEnvironment => env ??= app?.ApplicationServices.GetService<IHostingEnvironment>();  
+        private IWebHostEnvironment env;
+        public IWebHostEnvironment HostingEnvironment => env ??= app?.ApplicationServices.GetService<IWebHostEnvironment>();
 
         public override void OnConfigLoad()
         {
             base.OnConfigLoad();
             if (app != null)
             {
+                
                 Config.DebugMode = HostingEnvironment.IsDevelopment();
                 Config.HandlerFactoryPath = PathBase?.TrimStart('/');
 
@@ -328,7 +337,11 @@ namespace ServiceStack
     public interface IAppHostNetCore : IAppHost, IRequireConfiguration
     {
         IApplicationBuilder App { get; }
-        IHostingEnvironment HostingEnvironment { get; }
+#if NETSTANDARD2_0
+        IWebHostEnvironment HostingEnvironment { get; }
+#else
+        IWebHostEnvironment HostingEnvironment { get; }
+#endif
     }
 
     public static class NetCoreAppHostExtensions
@@ -336,8 +349,7 @@ namespace ServiceStack
         public static IConfiguration GetConfiguration(this IAppHost appHost) => ((IAppHostNetCore)appHost).Configuration;
         public static IApplicationBuilder GetApp(this IAppHost appHost) => ((IAppHostNetCore)appHost).App;
         public static IServiceProvider GetApplicationServices(this IAppHost appHost) => ((IAppHostNetCore)appHost).App.ApplicationServices;
-        public static IHostingEnvironment GetHostingEnvironment(this IAppHost appHost) => ((IAppHostNetCore)appHost).HostingEnvironment;
-
+        public static IWebHostEnvironment GetHostingEnvironment(this IAppHost appHost) => ((IAppHostNetCore)appHost).HostingEnvironment;
         public static bool IsDevelopmentEnvironment(this IAppHost appHost) => appHost.GetHostingEnvironment().EnvironmentName == "Development";
         public static bool IsStagingEnvironment(this IAppHost appHost) => appHost.GetHostingEnvironment().EnvironmentName == "Staging";
         public static bool IsProductionEnvironment(this IAppHost appHost) => appHost.GetHostingEnvironment().EnvironmentName == "Production";
