@@ -2,7 +2,7 @@
 
 namespace ServiceStack.Html
 {
-#if !NETSTANDARD2_0
+#if !NETCORE
     [Serializable]
 #endif
     public class ModelState

@@ -1,4 +1,4 @@
-﻿#if !NETSTANDARD
+﻿#if !NETCORE
 using System;
 using System.Linq;
 using System.Reflection;

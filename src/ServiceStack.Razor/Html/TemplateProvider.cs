@@ -79,7 +79,7 @@ namespace ServiceStack.Html
             Log.Info($"Starting to compile {compilePages.Count}/{priorityCompilePages.Count} pages, " +
                      $"{(compileInParallel ? "In Parallel" : "Sequentially")}");
 
-#if !NETSTANDARD2_0
+#if !NETCORE
             if (compileInParallel)
             {
                 var threadsToRun = Math.Min(CompileInParallelWithNoOfThreads.GetValueOrDefault(), compilePages.Count);

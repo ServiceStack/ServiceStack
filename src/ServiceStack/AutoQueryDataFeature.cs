@@ -10,11 +10,14 @@ using System.Runtime.Serialization;
 using System.Threading;
 using ServiceStack.Caching;
 using ServiceStack.DataAnnotations;
-using ServiceStack.Extensions;
 using ServiceStack.Host;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
 using ServiceStack.Text;
+
+#if !NET6_0_OR_GREATER
+using ServiceStack.Extensions;
+#endif
 
 namespace ServiceStack
 {

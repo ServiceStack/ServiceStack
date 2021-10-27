@@ -121,7 +121,7 @@ namespace ServiceStack.Caching
             await (cache as IRemoveByPatternAsync).RemoveByRegexAsync(EnsurePrefix(regex), token).ConfigAwait();
         }
 
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETCORE
         public async IAsyncEnumerable<string> GetKeysByPatternAsync(string pattern, CancellationToken token = default)
         {
             await foreach (var key in cache.GetKeysByPatternAsync(EnsurePrefix(pattern), token))

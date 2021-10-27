@@ -9,13 +9,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         [Test]
         public void Can_embed_escaped_strings_in_template_literals()
         {
-            const string text = @"C:\src\dotnet-app\src\WebApp\bin\Release\net5.0\favicon.ico
-C:\src\dotnet-app\src\WebApp\bin\Release\net5.0\app.exe
-C:\src\dotnet-app\src\WebApp\bin\Release\net5.0\app.deps.json
-C:\src\dotnet-app\src\WebApp\bin\Release\net5.0\app.runtimeconfig.json
-C:\src\dotnet-app\src\WebApp\bin\Release\net5.0\app.runtimeconfig.dev.json
-C:\src\dotnet-app\src\WebApp\bin\Release\net5.0\app.dll
-C:\src\dotnet-app\src\WebApp\bin\Release\net5.0\app.pdb";
+            const string text = @"C:\src\dotnet-app\src\WebApp\bin\Release\net6.0\favicon.ico
+C:\src\dotnet-app\src\WebApp\bin\Release\net6.0\app.exe
+C:\src\dotnet-app\src\WebApp\bin\Release\net6.0\app.deps.json
+C:\src\dotnet-app\src\WebApp\bin\Release\net6.0\app.runtimeconfig.json
+C:\src\dotnet-app\src\WebApp\bin\Release\net6.0\app.runtimeconfig.dev.json
+C:\src\dotnet-app\src\WebApp\bin\Release\net6.0\app.dll
+C:\src\dotnet-app\src\WebApp\bin\Release\net6.0\app.pdb";
             
             var context = new ScriptContext {
                 Args = {
@@ -27,12 +27,12 @@ C:\src\dotnet-app\src\WebApp\bin\Release\net5.0\app.pdb";
 #each line in file.readLines() where line.contains('\\bin\\')
     line.substring(line.indexOf('\\bin\\') + 1) |> to => src
     line.lastRightPart('\\') |> to => target
-    `<file src=""${src}"" target=""tools\\net5.0\\any\\${target}"" />`.raw()
+    `<file src=""${src}"" target=""tools\\net6.0\\any\\${target}"" />`.raw()
 /each 
 ");
             // output.Print();
             Assert.That(output.NormalizeNewLines(), 
-                Does.StartWith("<file src=\"bin\\Release\\net5.0\\favicon.ico\" target=\"tools\\net5.0\\any\\favicon.ico\" />"));
+                Does.StartWith("<file src=\"bin\\Release\\net6.0\\favicon.ico\" target=\"tools\\net6.0\\any\\favicon.ico\" />"));
         }
 
         [Test]

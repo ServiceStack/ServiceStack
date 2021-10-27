@@ -4,8 +4,11 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using ServiceStack.Extensions;
 using ServiceStack.Text;
+
+#if !NET6_0
+using ServiceStack.Extensions;
+#endif
 
 namespace ServiceStack.Script 
 {

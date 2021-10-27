@@ -50,7 +50,7 @@ namespace ServiceStack.Auth
         public virtual async Task<bool> TryAuthenticateAsync(IServiceBase authService, string userName, string password, CancellationToken token=default)
         {
             var authRepo = GetUserAuthRepositoryAsync(authService.Request);
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETCORE
             await using (authRepo as IAsyncDisposable)
 #else
             using (authRepo as IDisposable)
@@ -155,7 +155,7 @@ namespace ServiceStack.Auth
             IServiceBase authService, IAuthSession session, string userName, string password, string referrerUrl, CancellationToken token=default)
         {
             var authRepo = GetUserAuthRepositoryAsync(authService.Request);
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETCORE
             await using (authRepo as IAsyncDisposable)
 #else
             using (authRepo as IDisposable)

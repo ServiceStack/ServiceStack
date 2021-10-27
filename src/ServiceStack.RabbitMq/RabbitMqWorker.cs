@@ -115,7 +115,7 @@ namespace ServiceStack.RabbitMq
             }
             catch (Exception ex)
             {
-#if !NETSTANDARD2_0
+#if !NETCORE
                 //Ignore handling rare, but expected exceptions from KillBgThreadIfExists()
                 if (ex is ThreadInterruptedException || ex is ThreadAbortException)
                 {

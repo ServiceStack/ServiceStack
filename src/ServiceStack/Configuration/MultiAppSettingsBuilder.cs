@@ -116,7 +116,7 @@ namespace ServiceStack.Configuration
             return this;
         }
         
-#if NETSTANDARD2_0
+#if NETCORE
         public MultiAppSettingsBuilder AddNetCore(Microsoft.Extensions.Configuration.IConfiguration configuration)
         {
             appSettingsQueue.Enqueue(

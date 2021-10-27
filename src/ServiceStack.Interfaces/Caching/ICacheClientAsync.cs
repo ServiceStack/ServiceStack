@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace ServiceStack.Caching
 {
     public interface ICacheClientAsync
-#if NET472 || NETSTANDARD2_0        
+#if NET472 || NETCORE        
         : IAsyncDisposable
 #endif
         
@@ -114,7 +114,7 @@ namespace ServiceStack.Caching
         
         Task<TimeSpan?> GetTimeToLiveAsync(string key, CancellationToken token=default);
 
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETCORE
         IAsyncEnumerable<string> GetKeysByPatternAsync(string pattern, CancellationToken token=default);
 #endif
         

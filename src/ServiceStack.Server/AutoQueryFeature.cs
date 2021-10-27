@@ -11,10 +11,13 @@ using System.Threading.Tasks;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
 using ServiceStack.Data;
-using ServiceStack.Extensions;
 using ServiceStack.Host;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
+
+#if !NET6_0_OR_GREATER
+using ServiceStack.Extensions;
+#endif
 
 namespace ServiceStack
 {

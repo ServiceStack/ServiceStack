@@ -8,8 +8,10 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using ServiceStack.Extensions;
 using ServiceStack.Text;
+#if !NET6_0
+using ServiceStack.Extensions;
+#endif
 
 namespace ServiceStack.Script 
 {
@@ -632,7 +634,7 @@ namespace ServiceStack.Script
             ? new RawString(value)
             : RawString.Empty;
         
-        public static ConcurrentDictionary<string, Func<ScriptScopeContext, object, object>> BinderCache { get; } = new ConcurrentDictionary<string, Func<ScriptScopeContext, object, object>>();
+        public static ConcurrentDictionary<string, Func<ScriptScopeContext, object, object>> BinderCache { get; } = new();
 
         public static Func<ScriptScopeContext, object, object> GetMemberExpression(Type targetType, ReadOnlyMemory<char> expression)
         {

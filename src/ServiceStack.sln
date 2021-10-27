@@ -157,6 +157,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.WebHost.Integr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckIIS", "..\tests\CheckIIS\CheckIIS.csproj", "{4EB53207-13DA-47B2-A638-A4EC1534FE47}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckIdentity", "..\tests\CheckIdentity\CheckIdentity.csproj", "{60726697-6993-4F81-BF4D-662217C240DE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -731,6 +733,18 @@ Global
 		{4EB53207-13DA-47B2-A638-A4EC1534FE47}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{4EB53207-13DA-47B2-A638-A4EC1534FE47}.Release|x86.ActiveCfg = Release|Any CPU
 		{4EB53207-13DA-47B2-A638-A4EC1534FE47}.Release|x86.Build.0 = Release|Any CPU
+		{60726697-6993-4F81-BF4D-662217C240DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60726697-6993-4F81-BF4D-662217C240DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60726697-6993-4F81-BF4D-662217C240DE}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{60726697-6993-4F81-BF4D-662217C240DE}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{60726697-6993-4F81-BF4D-662217C240DE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{60726697-6993-4F81-BF4D-662217C240DE}.Debug|x86.Build.0 = Debug|Any CPU
+		{60726697-6993-4F81-BF4D-662217C240DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60726697-6993-4F81-BF4D-662217C240DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60726697-6993-4F81-BF4D-662217C240DE}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{60726697-6993-4F81-BF4D-662217C240DE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{60726697-6993-4F81-BF4D-662217C240DE}.Release|x86.ActiveCfg = Release|Any CPU
+		{60726697-6993-4F81-BF4D-662217C240DE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -771,6 +785,7 @@ Global
 		{E0AF102A-4503-4768-A15F-AE3CFE05DD50} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{801771CD-2C19-463A-94F8-DF546825DF47} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{4EB53207-13DA-47B2-A638-A4EC1534FE47} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
+		{60726697-6993-4F81-BF4D-662217C240DE} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {55441DE1-559F-4064-BB8F-907A9E898A6C}

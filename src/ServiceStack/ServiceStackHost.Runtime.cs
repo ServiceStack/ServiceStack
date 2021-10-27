@@ -752,7 +752,7 @@ namespace ServiceStack
             return session;
         }
 
-#if NETSTANDARD2_0
+#if NETCORE
         /// <summary>
         /// Modify Cookie options
         /// </summary>
@@ -867,7 +867,7 @@ namespace ServiceStack
             return Container.TryResolve<IRedisClientsManager>().GetClient();
         }
 
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETCORE
         /// <summary>
         /// Resolves <see cref="IRedisClient"></see> based on <see cref="IRedisClientsManager"></see>.GetClient();
         /// Called by itself, <see cref="Service"></see> and <see cref="ServiceStack.Razor.ViewPageBase"></see>

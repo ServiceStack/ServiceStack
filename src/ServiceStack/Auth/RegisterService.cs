@@ -147,7 +147,7 @@ namespace ServiceStack.Auth
             var session = await this.GetSessionAsync().ConfigAwait();
 
             var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(base.Request);
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETCORE
             await using (authRepo as IAsyncDisposable)
 #else
             using (authRepo as IDisposable)

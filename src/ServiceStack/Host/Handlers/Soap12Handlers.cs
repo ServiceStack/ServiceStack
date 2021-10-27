@@ -1,4 +1,4 @@
-#if !NETSTANDARD2_0
+#if !NETCORE
 
 using System.Threading.Tasks;
 using ServiceStack.Metadata;

@@ -515,7 +515,7 @@ namespace ServiceStack
             return cache.GetKeysByPattern(prefix + "*");
         }
         
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETCORE
         public static IAsyncEnumerable<string> GetKeysByPatternAsync(this ICacheClientAsync cache, string pattern)
         {
             return cache.GetKeysByPatternAsync(pattern);

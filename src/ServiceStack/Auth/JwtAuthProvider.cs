@@ -53,7 +53,7 @@ namespace ServiceStack.Auth
                 {
                     IEnumerable<string> roles = null, perms = null;
                     var userRepo = HostContext.AppHost.GetAuthRepositoryAsync(authService.Request);
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETCORE
                     await using (userRepo as IAsyncDisposable)
 #else
                     using (userRepo as IDisposable)

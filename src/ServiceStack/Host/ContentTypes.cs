@@ -167,7 +167,7 @@ namespace ServiceStack.Host
                     break;
                 case ErrorResponse errorDto:  //ignore writing ErrorResponse bodies for unknown content types
                     break;
-#if !NETSTANDARD2_0
+#if !NETCORE
                 case System.Drawing.Image img:
                     img.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
                     break;

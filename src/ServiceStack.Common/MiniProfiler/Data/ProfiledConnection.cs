@@ -138,7 +138,7 @@ namespace ServiceStack.MiniProfiler.Data
 		//{
 		//    _conn.EnlistTransaction(transaction);
 		//}
-#if !NETSTANDARD2_0
+#if !NETCORE
         public override DataTable GetSchema()
         {
             return _conn.GetSchema();

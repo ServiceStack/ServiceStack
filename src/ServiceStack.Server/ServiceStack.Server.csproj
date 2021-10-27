@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Server</PackageId>
     <AssemblyName>ServiceStack.Server</AssemblyName>
-    <TargetFrameworks>net45;net472;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net45;net472;netstandard2.0;net6.0</TargetFrameworks>
     <Title>ServiceStack Server integration with Redis and OrmLite</Title>
     <PackageDescription>
     Integration libraries and adapters with other major ServiceStack server components.
@@ -18,7 +18,12 @@
     </PackageDescription>
     <PackageTags>ServiceStack;AutoQuery;OrmLite;Redis;MQ;Caching;ServerEvents</PackageTags>
   </PropertyGroup>
-
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NETSTANDARD2_0</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />

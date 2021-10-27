@@ -1,5 +1,5 @@
 ﻿
-#if !NETSTANDARD2_0
+#if !NETCORE
 
 namespace ServiceStack.Html
 {

@@ -45,7 +45,7 @@ namespace ServiceStack.Auth
             Salt = new byte[SalthLength];
 
             var random = RandomNumberGenerator.Create();
-#if !NETSTANDARD2_0
+#if !NETCORE
             random.GetNonZeroBytes(Salt);
 #else
             random.GetBytes(Salt);

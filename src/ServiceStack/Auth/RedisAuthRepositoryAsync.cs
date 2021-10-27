@@ -1,4 +1,4 @@
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETCORE
 using System;
 using System.Collections.Generic;
 using System.Globalization;

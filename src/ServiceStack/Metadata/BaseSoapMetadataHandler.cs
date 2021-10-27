@@ -27,7 +27,7 @@ namespace ServiceStack.Metadata
 
             if (httpReq.QueryString["xsd"] != null)
             {
-#if !NETSTANDARD2_0
+#if !NETCORE
                 var operationTypes = HostContext.Metadata.GetAllSoapOperationTypes();
                 var xsdNo = Convert.ToInt32(httpReq.QueryString["xsd"]);
                 var schemaSet = XsdUtils.GetXmlSchemaSet(operationTypes);

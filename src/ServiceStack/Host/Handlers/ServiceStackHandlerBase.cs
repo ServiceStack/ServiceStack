@@ -205,7 +205,7 @@ namespace ServiceStack.Host.Handlers
                     var hasContentBody = httpReq.ContentLength > 0
                         || (HttpUtils.HasRequestBody(httpReq.Verb) && 
                                 (httpReq.GetContentEncoding() != null
-#if NETSTANDARD2_0
+#if NETCORE
                                 || GetStreamLengthSafe(httpReq.InputStream) > 0 // AWS API Gateway reports ContentLength=0,ContentEncoding=null
 #endif
                                 ));

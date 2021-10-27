@@ -7,9 +7,12 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using ServiceStack.Extensions;
 using ServiceStack.Script;
 using ServiceStack.Text;
+
+#if !NET6_0
+using ServiceStack.Extensions;
+#endif
 
 namespace ServiceStack
 {

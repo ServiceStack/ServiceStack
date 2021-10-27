@@ -263,7 +263,7 @@ namespace ServiceStack.Host
                 return false;
 
             var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETCORE
             await using (authRepo as IAsyncDisposable)
 #else
             using (authRepo as IDisposable)
@@ -692,7 +692,7 @@ namespace ServiceStack.Host
             return type;
         }
         
-#if !NETSTANDARD2_0
+#if !NETCORE
         public List<Type> GetAllSoapOperationTypes()
         {
             var operationTypes = GetAllOperationTypes();

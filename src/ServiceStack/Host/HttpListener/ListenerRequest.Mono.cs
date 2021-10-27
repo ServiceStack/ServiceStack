@@ -1,4 +1,4 @@
-﻿#if !NETSTANDARD2_0
+﻿#if !NETCORE
 // Most of this class is sourced from the MONO project in the existing file:
 //
 // https://github.com/mono/mono/blob/master/mcs/class/System.Web/System.Web/HttpRequest.cs

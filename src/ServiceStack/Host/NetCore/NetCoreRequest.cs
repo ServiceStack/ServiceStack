@@ -1,7 +1,7 @@
 ﻿
 
 using System.Threading.Tasks;
-#if NETSTANDARD2_0
+#if NETCORE
 using System;
 using System.Collections.Generic;
 using System.IO;

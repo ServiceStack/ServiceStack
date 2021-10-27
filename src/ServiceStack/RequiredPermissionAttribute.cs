@@ -83,7 +83,7 @@ namespace ServiceStack
                 return true;
             
             var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETCORE
             await using (authRepo as IAsyncDisposable)
 #else
             using (authRepo as IDisposable)

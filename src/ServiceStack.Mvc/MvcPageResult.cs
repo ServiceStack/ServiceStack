@@ -5,7 +5,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Mvc
 {
-#if !NETSTANDARD
+#if !NETCORE
     public class MvcPageResult : System.Web.Mvc.ActionResult
     {
         private readonly PageResult pageResult;
@@ -54,7 +54,7 @@ namespace ServiceStack.Mvc
     
     public static class MvcPageResultExtensions
     {
-#if !NETSTANDARD
+#if !NETCORE
         public static async Task<MvcPageResult> ToMvcResultAsync(this PageResult pageResult)
         {
             var ms = new MemoryStream();            

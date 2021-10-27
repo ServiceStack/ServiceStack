@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 
 namespace ServiceStack.Html
 {
-#if !NETSTANDARD2_0
+#if !NETCORE
     [Serializable]
 #endif
 	public class ModelErrorCollection : Collection<ModelError>

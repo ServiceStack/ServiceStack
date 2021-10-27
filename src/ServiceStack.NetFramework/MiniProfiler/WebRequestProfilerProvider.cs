@@ -1,4 +1,4 @@
-﻿#if !NETSTANDARD2_0
+﻿#if !NETCORE
 
 using System.Web;
 using ServiceStack.MiniProfiler.Helpers;

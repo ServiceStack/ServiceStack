@@ -6,7 +6,7 @@ using ServiceStack.Logging;
 using ServiceStack.Script;
 using ServiceStack.Text;
 
-#if NETSTANDARD2_0
+#if NETCORE
 using System.Threading.Tasks;
 #endif
 

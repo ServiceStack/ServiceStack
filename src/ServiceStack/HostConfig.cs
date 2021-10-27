@@ -148,7 +148,7 @@ namespace ServiceStack
                     "jspm_packages/",
                     "bower_components/",
                     "wwwroot_build/",
-#if !NETSTANDARD2_0 
+#if !NETCORE 
                     "wwwroot/", //Need to allow VirtualFiles access from ContentRoot Folder
 #endif
                 },
@@ -182,7 +182,7 @@ namespace ServiceStack
                     Permissions = new List<string>(),
                     UserAuthId = "0",
                 },
-#if !NETSTANDARD2_0
+#if !NETCORE
                 UseCamelCase = false,
                 ReturnsInnerException = true,
 #else

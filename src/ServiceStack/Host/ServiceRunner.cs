@@ -154,7 +154,7 @@ namespace ServiceStack.Host
                     await taskResponse.ConfigAwait();
                     response = taskResponse.GetResult();
                 }
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETCORE
                 else if (response is ValueTask<object> valueTaskResponse)
                 {
                     response = await valueTaskResponse;

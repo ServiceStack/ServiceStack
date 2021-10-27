@@ -46,7 +46,7 @@ namespace ServiceStack.Auth
         Task ClearAsync(CancellationToken token=default);
     }
     
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETCORE
     public partial interface IRedisClientManagerFacade : IClearableAsync
     {
         Task<IRedisClientFacadeAsync> GetClientAsync(CancellationToken token=default);
@@ -82,7 +82,7 @@ namespace ServiceStack.Auth
         public RedisClientManagerFacade(IRedisClientsManager redisManager)
         {
             this.redisManager = redisManager;
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETCORE
             this.redisManagerAsync = (IRedisClientsManagerAsync) redisManager;
 #endif
         }
@@ -203,7 +203,7 @@ namespace ServiceStack.Auth
             }
         }
 
-#if NET472 || NETSTANDARD2_0
+#if NET472 || NETCORE
         private readonly IRedisClientsManagerAsync redisManagerAsync;
         public async Task ClearAsync(CancellationToken token=default)
         {
