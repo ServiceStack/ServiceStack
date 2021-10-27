@@ -4,7 +4,7 @@
     <PackageId>ServiceStack.Server.Core</PackageId>
     <AssemblyName>ServiceStack.Server</AssemblyName>
     <RootNamespace>ServiceStack.Server</RootNamespace>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
     <Title>ServiceStack.Server .NET Standard 2.0</Title>
     <PackageDescription>
       Integration libraries and adapters with other major ServiceStack server components.
@@ -13,6 +13,12 @@
       RedisServerEvents and RedisRequestLogger.
     </PackageDescription>
     <PackageTags>ServiceStack;AutoQuery;OrmLite;Redis;MQ;Caching;ServerEvents</PackageTags>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NETSTANDARD2_0</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

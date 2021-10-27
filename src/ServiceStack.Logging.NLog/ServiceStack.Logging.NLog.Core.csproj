@@ -4,7 +4,7 @@
     <PackageId>ServiceStack.Logging.NLog.Core</PackageId>
     <AssemblyName>ServiceStack.Logging.NLog</AssemblyName>
     <RootNamespace>ServiceStack.Logging.NLog</RootNamespace>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
     <Title>ServiceStack.Logging.NLog .NET Standard 2.0</Title>
     <PackageDescription>
       Provides NLog logging integration for other ServiceStack projects
@@ -15,7 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.Core.csproj" />
     <PackageReference Include="ServiceStack.Text.Core" Version="$(Version)" />
-    <PackageReference Include="NLog" Version="4.7.0" />
+    <PackageReference Include="NLog" Version="4.7.12" />
   </ItemGroup>
 
 </Project>
