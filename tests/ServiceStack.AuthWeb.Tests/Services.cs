@@ -39,8 +39,7 @@ namespace ServiceStack.AuthWeb.Tests
     {
         public object Any(LockAllUsers request)
         {
-            Db.UpdateOnly(new UserAuth { LockedDate = DateTime.UtcNow },
-                onlyFields: x => new { x.LockedDate },
+            Db.UpdateOnly(() => new UserAuth { LockedDate = DateTime.UtcNow },
                 where: x => x.LockedDate == null);
 
             return HttpResult.Redirect("/");
