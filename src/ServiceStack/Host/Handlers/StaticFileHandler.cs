@@ -34,6 +34,7 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web;
+using ServiceStack.Internal;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Text;
@@ -262,7 +263,7 @@ namespace ServiceStack.Host.Handlers
                             outputStream = outputStream.CompressStream(encoding);
                             await fs.CopyToAsync(outputStream).ConfigAwait();
                             await outputStream.FlushAsync().ConfigAwait();
-                            outputStream.Close();
+                            await outputStream.DisposeAsync();
                         }
                     }
                 }

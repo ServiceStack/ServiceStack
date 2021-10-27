@@ -12,16 +12,18 @@ namespace ServiceStack.Internal
     internal static class DisposableExtensions
     {
         internal static Task DisposeAsync(this IDisposable disposable)
-        {   // note: if a type clearly implements IServiceStackAsyncDisposable, overload
+        {
+            // note: if a type clearly implements IServiceStackAsyncDisposable, overload
             // resolution will prefer IServiceStackAsyncDisposable over an extension method,
             // so we lose nothing by doing this
-            if (disposable is IServiceStackAsyncDisposable asyncDisposable)
-                return asyncDisposable.DisposeAsync();
-            else
-            {
-                disposable?.Dispose();
-                return TypeConstants.EmptyTask;
-            }
+            if (disposable is IServiceStackAsyncDisposable ssAsyncDisposable)
+                return ssAsyncDisposable.DisposeAsync();
+#if NET472 || NETCORE
+            if (disposable is IAsyncDisposable asyncDisposable)
+                return asyncDisposable.DisposeAsync().AsTask();
+#endif
+            disposable?.Dispose();
+            return TypeConstants.EmptyTask;
         }
     }
 }
