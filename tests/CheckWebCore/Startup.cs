@@ -121,7 +121,6 @@ namespace CheckWebCore
             app.UseServiceStack(new AppHost
             {
                 // PathBase = "/api",
-                AppSettings = new NetCoreAppSettings(Configuration)
             });
         }
 
@@ -164,6 +163,7 @@ namespace CheckWebCore
 //                UseSameSiteCookies = true, // prevents OAuth providers which use Sessions like Twitter from working
                 UseSecureCookies = true,
                 AdminAuthSecret = "secretz",
+                CompressFilesWithExtensions = { "js", "css" },
             });
 
             var cache = container.Resolve<ICacheClient>();
