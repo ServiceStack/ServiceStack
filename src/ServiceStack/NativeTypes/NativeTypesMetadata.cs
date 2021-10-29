@@ -1032,6 +1032,9 @@ namespace ServiceStack.NativeTypes
 
             void Add(string name)
             {
+                if (to.Contains(name))
+                    return;
+                
                 to.Add(name);
                 var metaTypes = metadataTypes.Types.Where(x => x.Name == name).ToList();
                 if (metaTypes.Count == 1)
@@ -1304,13 +1307,16 @@ namespace ServiceStack.NativeTypes
                     .ToList();
                 var reverseTypeReferencesToInclude = metadata.Operations
                     .Where(x => x.ReferencesAny(reverseTypesToExpand))
-                    .Select(x => x.Request.Name);
+                    .Map(x => x.Request.Name);
 
                 // GetReferencedTypes for both request + response objects
                 var referenceTypes = includedMetadataTypes
                     .Union(returnTypesForInclude)
                     .Where(x => x != null)
-                    .SelectMany(x => x.GetReferencedTypeNames(metadata));
+                    .SelectMany(x => x.GetReferencedTypeNames(metadata))
+                    .ToList();
+
+                var returnTypesForIncludeNames = returnTypesForInclude.Map(x => x.Name);
 
                 var ret = referenceTypes
                     .Union(explicitTypes)
@@ -1319,7 +1325,7 @@ namespace ServiceStack.NativeTypes
                     .Union(includedTypeNames)
                     .Union(crudTypeNamesForInclude)
                     .Union(reverseTypeReferencesToInclude)
-                    .Union(returnTypesForInclude.Select(x => x.Name))
+                    .Union(returnTypesForIncludeNames)
                     .Distinct()
                     .ToList();
                 return ret;
