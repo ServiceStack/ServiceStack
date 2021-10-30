@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -64,19 +65,19 @@ namespace ServiceStack
     /// </summary>
     public abstract class ModularStartup : IStartup
     {
-        public static ModularStartup Instance { get; protected set;  } 
+        public static ModularStartup? Instance { get; protected set;  } 
         /// <summary>
         /// Which Startup Types not to load 
         /// </summary>
-        public List<Type> IgnoreTypes { get; set; } = new List<Type>();
+        public List<Type> IgnoreTypes { get; set; } = new();
         
-        public List<Assembly> ScanAssemblies { get; }
+        public List<Assembly>? ScanAssemblies { get; }
 
-        public IConfiguration Configuration { get; set; }
+        public IConfiguration? Configuration { get; set; }
         
         public Func<IEnumerable<Type>> TypeResolver { get; }
         
-        public List<object> LoadedConfigurations { get; set; } = new List<object>();
+        public List<object> LoadedConfigurations { get; set; } = new();
 
         protected ModularStartup()
         {
@@ -125,7 +126,7 @@ namespace ServiceStack
 
             var instance = type.CreateInstance();
             if (instance is IRequireConfiguration requiresConfig)
-                requiresConfig.Configuration = Configuration;
+                requiresConfig.Configuration = Configuration!;
             return instance;
         }
         
@@ -134,7 +135,7 @@ namespace ServiceStack
         /// </summary>
         public virtual bool LoadType(Type startupType) => !IgnoreTypes.Contains(startupType);
 
-        private List<Tuple<object,int>> priorityInstances;
+        private List<Tuple<object,int>>? priorityInstances;
         public List<Tuple<object,int>> GetPriorityInstances()
         {
             if (priorityInstances == null)
@@ -236,7 +237,7 @@ namespace ServiceStack
                     }
                     else if (pi.ParameterType == typeof(IConfiguration))
                     {
-                        args.Add(Configuration);
+                        args.Add(Configuration!);
                     }
                     else
                     {
@@ -266,7 +267,7 @@ namespace ServiceStack
     /// </summary>
     public class TopLevelAppModularStartup : ModularStartup
     {
-        public static ModularStartup? Instance { get; private set; } //needs to be base concrete type 
+        public new static ModularStartup? Instance { get; private set; } //needs to be base concrete type 
         public Type AppHostType { get; set; }
         public AppHostBase StartupInstance { get; set; }
 
@@ -382,14 +383,14 @@ namespace ServiceStack
     /// </summary>
     public class ModularStartupActivator
     {
-        public static Type StartupType { get; set; }
+        public static Type? StartupType { get; set; }
         protected IConfiguration Configuration { get; }
 
         protected readonly ModularStartup Instance;
         public ModularStartupActivator(IConfiguration configuration)
         {
             Configuration = configuration;
-            var ci = StartupType.GetConstructor(new[] { typeof(IConfiguration) });
+            var ci = StartupType!.GetConstructor(new[] { typeof(IConfiguration) });
             if (ci != null)
             {
                 Instance = (ModularStartup) ci.Invoke(new[]{ Configuration });

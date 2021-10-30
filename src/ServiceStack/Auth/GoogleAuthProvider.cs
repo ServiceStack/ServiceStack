@@ -9,7 +9,6 @@ namespace ServiceStack.Auth
     /// <summary>
     ///Create an OAuth2 App at: https://code.google.com/apis/console/
     ///The Apps Callback URL should match the CallbackUrl here.
-
     ///Google OAuth2 info: https://developers.google.com/accounts/docs/OAuth2Login
     ///Google OAuth2 Scopes from: https://www.googleapis.com/discovery/v1/apis/oauth2/v2/rest?fields=auth(oauth2(scopes))
     ///https://www.googleapis.com/auth/plus.login: Know your name, basic info, and list of people you're connected to on Google+

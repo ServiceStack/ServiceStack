@@ -6,10 +6,6 @@ using ServiceStack.Logging;
 using ServiceStack.Script;
 using ServiceStack.Text;
 
-#if NETCORE
-using System.Threading.Tasks;
-#endif
-
 namespace ServiceStack
 {
     public static class ExecUtils

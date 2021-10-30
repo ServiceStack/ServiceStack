@@ -82,7 +82,7 @@ namespace ServiceStack.NativeTypes.Swift
         }.Map(x => x.Name).ToSet();
         
         /// <summary>
-        /// Customize how types are encoded & decoded with a Type Converter
+        /// Customize how types are encoded &amp; decoded with a Type Converter
         /// </summary>
         public static ConcurrentDictionary<string, SwiftTypeConverter> Converters = new Dictionary<string, SwiftTypeConverter> {
             ["TimeInterval"] = new() { Attribute = "@TimeSpan" },

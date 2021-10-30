@@ -151,6 +151,7 @@ namespace ServiceStack
         /// <param name="request">The serialization context.</param>
         /// <param name="bodyPrefix">Add prefix to response body if any</param>
         /// <param name="bodySuffix">Add suffix to response body if any</param>
+        /// <param name="token"></param>
         /// <returns></returns>
         public static async Task<bool> WriteToResponse(this IResponse response, object result, StreamSerializerDelegateAsync defaultAction, IRequest request, byte[] bodyPrefix, byte[] bodySuffix, CancellationToken token = default(CancellationToken))
         {

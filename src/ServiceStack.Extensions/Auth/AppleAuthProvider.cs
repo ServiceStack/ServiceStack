@@ -18,9 +18,9 @@ namespace ServiceStack.Auth
     /// <summary>
     /// Required to use Sign In with Apple:
     ///  - Membership Team ID from https://developer.apple.com/account/#/membership/
-    ///  - Create & configure App ID from https://developer.apple.com/account/resources/identifiers/list
-    ///  - Use App Id to create & configure Service ID from https://developer.apple.com/account/resources/identifiers/list/serviceId
-    ///  - Use App Id to create & configure Private Key from https://developer.apple.com/account/resources/authkeys/list
+    ///  - Create &amp; configure App ID from https://developer.apple.com/account/resources/identifiers/list
+    ///  - Use App Id to create &amp; configure Service ID from https://developer.apple.com/account/resources/identifiers/list/serviceId
+    ///  - Use App Id to create &amp; configure Private Key from https://developer.apple.com/account/resources/authkeys/list
     ///  Service ID must be configured with non-localhost trusted domain and HTTPS callback URL, for development can use:
     ///   - Domain: local.servicestack.com
     ///   - Callback URL: https://local.servicestack.com:5001/auth/apple

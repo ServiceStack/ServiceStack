@@ -106,8 +106,6 @@ namespace ServiceStack
         /// <summary>
         /// Check all session is in all supplied roles otherwise a 401 HttpError is thrown
         /// </summary>
-        /// <param name="req"></param>
-        /// <param name="requiredPermissions"></param>
         public static async Task AssertRequiredPermissionsAsync(IRequest req, string[] requiredPermissions, CancellationToken token=default)
         {
             var session = await req.AssertAuthenticatedSessionAsync(token: token).ConfigAwait();

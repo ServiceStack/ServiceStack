@@ -287,6 +287,7 @@ namespace ServiceStack
         /// <summary>
         /// Multiple string replacements
         /// </summary>
+        /// <param name="str"></param>
         /// <param name="replaceStringsPairs">Even number of old and new value pairs</param>
         public static string ReplacePairs(string str, string[] replaceStringsPairs)
         {

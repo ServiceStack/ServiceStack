@@ -37,7 +37,7 @@ namespace ServiceStack.MiniProfiler.Storage
         /// <summary>
         /// Returns a list of <see cref="MiniProfiler.Id"/>s that haven't been seen by <paramref name="user"/>.
         /// </summary>
-        /// <param name="user">User identified by the current <see cref="MiniProfiler.Settings.UserProvider"/>.</param>
+        /// <param name="user">User identified by the current MiniProfiler.Settings.UserProvider.</param>
         public abstract List<Guid> GetUnviewedIds(string user);
 
         /// <summary>

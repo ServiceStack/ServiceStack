@@ -33,7 +33,7 @@ namespace ServiceStack
         /// </summary>
         /// <param name="req">The http request wrapper</param>
         /// <param name="res">The http response wrapper</param>
-        /// <param name="requestDto">The response DTO</param>
+        /// <param name="responseDto">The response DTO</param>
         public abstract void Execute(IRequest req, IResponse res, object responseDto);
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace ServiceStack
         /// </summary>
         /// <param name="req">The http request wrapper</param>
         /// <param name="res">The http response wrapper</param>
-        /// <param name="requestDto">The response DTO</param>
+        /// <param name="responseDto">The response DTO</param>
         public abstract Task ExecuteAsync(IRequest req, IResponse res, object responseDto);
 
         /// <summary>

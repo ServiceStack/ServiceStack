@@ -98,10 +98,6 @@ namespace ServiceStack.Auth
         /// The entry point for all AuthProvider providers. Runs inside the AuthService so exceptions are treated normally.
         /// Overridable so you can provide your own Auth implementation.
         /// </summary>
-        /// <param name="authService"></param>
-        /// <param name="session"></param>
-        /// <param name="request"></param>
-        /// <returns></returns>
         public abstract override Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token=default);
 
         /// <summary>

@@ -13,7 +13,7 @@ namespace ServiceStack.MiniProfiler.Storage
         /// </summary>
         /// <param name="profiler">The results of a profiling session.</param>
         /// <remarks>
-        /// Should also ensure the profiler is stored as being unviewed by its profiling <see cref="MiniProfiler.User"/>.
+        /// Should also ensure the profiler is stored as being un viewed by its profiling <see cref="MiniProfiler.User"/>.
         /// </remarks>
         void Save(MiniProfiler profiler);
 
@@ -28,7 +28,7 @@ namespace ServiceStack.MiniProfiler.Storage
         /// <summary>
         /// Returns a list of <see cref="MiniProfiler.Id"/>s that haven't been seen by <paramref name="user"/>.
         /// </summary>
-        /// <param name="user">User identified by the current <see cref="MiniProfiler.Settings.UserProvider"/>.</param>
+        /// <param name="user">User identified by the current MiniProfiler.Settings.UserProvider.</param>
         List<Guid> GetUnviewedIds(string user);
 
     }

@@ -663,7 +663,7 @@ namespace ServiceStack
         }
         
         /// <summary>
-        /// Override to intercept & customize Exception responses 
+        /// Override to intercept &amp; customize Exception responses 
         /// </summary>
         public virtual void OnExceptionTypeFilter(Exception ex, ResponseStatus responseStatus)
         {
@@ -815,7 +815,7 @@ namespace ServiceStack
         /// <summary>
         /// Gets IDbConnection Checks if DbInfo is seat in RequestContext.
         /// See multitenancy: https://docs.servicestack.net/multitenancy
-        /// Called by itself, <see cref="Service"></see> and <see cref="ServiceStack.Razor.ViewPageBase"></see>
+        /// Called by itself, <see cref="Service"></see> and ViewPageBase
         /// </summary>
         /// <param name="req">Provided by services and pageView, can be helpful when overriding this method</param>
         /// <returns></returns>
@@ -858,7 +858,7 @@ namespace ServiceStack
 
         /// <summary>
         /// Resolves <see cref="IRedisClient"></see> based on <see cref="IRedisClientsManager"></see>.GetClient();
-        /// Called by itself, <see cref="Service"></see> and <see cref="ServiceStack.Razor.ViewPageBase"></see>
+        /// Called by itself, <see cref="Service"></see> and ViewPageBase
         /// </summary>
         /// <param name="req">Provided by services and pageView, can be helpful when overriding this method</param>
         /// <returns></returns>
@@ -870,7 +870,7 @@ namespace ServiceStack
 #if NET472 || NETCORE
         /// <summary>
         /// Resolves <see cref="IRedisClient"></see> based on <see cref="IRedisClientsManager"></see>.GetClient();
-        /// Called by itself, <see cref="Service"></see> and <see cref="ServiceStack.Razor.ViewPageBase"></see>
+        /// Called by itself, <see cref="Service"></see> and ViewPageBase
         /// </summary>
         /// <param name="req">Provided by services and pageView, can be helpful when overriding this method</param>
         /// <returns></returns>
@@ -923,8 +923,6 @@ namespace ServiceStack
         /// <summary>
         /// Only sets cacheAsync if native Async provider, otherwise sets cacheSync
         /// </summary>
-        /// <param name="req"></param>
-        /// <returns></returns>
         public virtual void TryGetNativeCacheClient(IRequest req, out ICacheClient cacheSync, out ICacheClientAsync cacheAsync)
         {
             cacheSync = GetCacheClient(req);
@@ -945,7 +943,7 @@ namespace ServiceStack
 
         /// <summary>
         /// Returns <see cref="IMessageProducer"></see> from the IOC container.
-        /// Called by itself, <see cref="Service"></see> and <see cref="ServiceStack.Razor.ViewPageBase"></see>
+        /// Called by itself, <see cref="Service"></see> and ViewPageBase
         /// </summary>
         /// <param name="req">Provided by services and PageViewBase, can be helpful when overriding this method</param>
         /// <returns></returns>

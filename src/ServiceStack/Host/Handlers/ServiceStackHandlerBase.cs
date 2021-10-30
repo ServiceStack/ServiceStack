@@ -189,7 +189,7 @@ namespace ServiceStack.Host.Handlers
             {
                 return stream.Length; //can throw NotSupportedException
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return -1;
             }

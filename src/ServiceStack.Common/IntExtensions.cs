@@ -7,10 +7,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-#if NETCORE
-using System.Threading.Tasks;
-#endif
-
 namespace ServiceStack
 {
     public static class IntExtensions

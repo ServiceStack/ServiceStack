@@ -1059,7 +1059,7 @@ namespace ServiceStack.Script
                                 ? fnCompareTo(x, y)
                                 : DynamicInt.Instance.Convert(I.invoke(fndel, x, y));
 
-                public bool Equals(object x, object y) =>
+                public new bool Equals(object x, object y) =>
                     fnclosure != null
                         ? I.invoke(fnclosure, x, y).ConvertTo<bool>()
                         : fnmacro != null

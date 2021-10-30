@@ -99,9 +99,6 @@ namespace ServiceStack.Auth
         /// <summary>
         /// Remove the Users Session
         /// </summary>
-        /// <param name="service"></param>
-        /// <param name="request"></param>
-        /// <returns></returns>
         public virtual async Task<object> LogoutAsync(IServiceBase service, Authenticate request, CancellationToken token=default)
         {
             var feature = HostContext.GetPlugin<AuthFeature>();

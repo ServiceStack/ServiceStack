@@ -97,6 +97,7 @@ namespace ServiceStack.Host.HttpListener
         /// Note: the trailing slash is required! For more info see the
         /// HttpListener.Prefixes property on MSDN.
         /// </param>
+        /// <param name="listenCallback"></param>
         protected void Start(string urlBase, WaitCallback listenCallback)
         {
             Start(new[] {urlBase}, listenCallback);

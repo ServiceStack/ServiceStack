@@ -522,7 +522,7 @@ namespace ServiceStack
         public Dictionary<Type, Func<IRequest, object>> RequestBinders => ServiceController.RequestTypeFactoryMap;
 
         /// <summary>
-        /// Manage registered Content Types & their sync/async serializers supported by this AppHost
+        /// Manage registered Content Types &amp; their sync/async serializers supported by this AppHost
         /// </summary>
         public IContentTypes ContentTypes { get; set; }
 
@@ -644,7 +644,7 @@ namespace ServiceStack
         internal HttpHandlerResolverDelegate[] CatchAllHandlersArray;
 
         /// <summary>
-        /// Register fallback Request Handlers e.g. Used by #Script & Razor Page Based Routing
+        /// Register fallback Request Handlers e.g. Used by #Script &amp; Razor Page Based Routing
         /// </summary>
         public List<HttpHandlerResolverDelegate> FallbackHandlers { get; set; }
         internal HttpHandlerResolverDelegate[] FallbackHandlersArray;
@@ -1421,7 +1421,7 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Override to use a localized string for internal routes & text used by ServiceStack 
+        /// Override to use a localized string for internal routes &amp; text used by ServiceStack 
         /// </summary>
         public virtual string ResolveLocalizedString(string text, IRequest request=null)
         {
@@ -1429,7 +1429,7 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Override to use a localized string for internal routes & text used by ServiceStack 
+        /// Override to use a localized string for internal routes &amp; text used by ServiceStack 
         /// </summary>
         public virtual string ResolveLocalizedStringFormat(string text, object[] args, IRequest request=null)
         {
@@ -1804,7 +1804,7 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Executes OnDisposeCallbacks and Disposes IDisposable's dependencies in the IOC & reset singleton states
+        /// Executes OnDisposeCallbacks and Disposes IDisposable's dependencies in the IOC &amp; reset singleton states
         /// </summary>
         /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)

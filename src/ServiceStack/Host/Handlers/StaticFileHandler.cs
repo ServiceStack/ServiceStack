@@ -87,7 +87,6 @@ namespace ServiceStack.Host.Handlers
         /// <summary>
         /// Keep default file contents in-memory
         /// </summary>
-        /// <param name="defaultFilePath"></param>
         public static void SetDefaultFile(string defaultFilePath, byte[] defaultFileContents, DateTime defaultFileModified)
         {
             try

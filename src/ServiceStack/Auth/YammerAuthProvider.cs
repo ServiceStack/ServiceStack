@@ -91,6 +91,7 @@ namespace ServiceStack.Auth
         /// <param name="request">
         /// The request.
         /// </param>
+        /// <param name="token"></param>
         /// <returns>
         /// The <see cref="object"/>.
         /// </returns>
@@ -187,6 +188,7 @@ namespace ServiceStack.Auth
         /// <param name="authInfo">
         /// The auth info.
         /// </param>
+        /// <param name="token"></param>
         protected override async Task LoadUserAuthInfoAsync(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo, CancellationToken token = default)
         {
             try

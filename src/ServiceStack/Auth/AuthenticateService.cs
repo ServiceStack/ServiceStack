@@ -417,7 +417,6 @@ namespace ServiceStack.Auth
         /// <summary>
         /// Public API entry point to authenticate via code
         /// </summary>
-        /// <param name="request"></param>
         /// <returns>null; if already authenticated otherwise a populated instance of AuthResponse</returns>
         public async Task<AuthenticateResponse> AuthenticateAsync(Authenticate request, CancellationToken token=default)
         {

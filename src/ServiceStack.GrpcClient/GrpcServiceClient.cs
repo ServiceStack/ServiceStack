@@ -288,7 +288,7 @@ namespace ServiceStack
 
                 return response;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 throw;
             }
@@ -784,22 +784,20 @@ namespace ServiceStack
         static GrpcMarshaller()
         {
             //Static class is never initiated before GrpcFeature.RegisterDtoTypes() is called
-            var @break = "HERE";
+            //var @break = "HERE";
         }
 
         public GrpcMarshaller() : base(Serialize, Deserialize) {}
 
         public static byte[] Serialize(T payload)
         {
-            try 
-            { 
-                using (var ms = new MemoryStream())
-                {
-                    GrpcConfig.TypeModel.Serialize(ms, payload);
-                    return ms.ToArray();
-                }
+            try
+            {
+                using var ms = new MemoryStream();
+                GrpcConfig.TypeModel.Serialize(ms, payload);
+                return ms.ToArray();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 throw;
             }
@@ -807,14 +805,12 @@ namespace ServiceStack
 
         public static T Deserialize(byte[] payload)
         {
-            try 
-            { 
-                using (var ms = new MemoryStream(payload))
-                {
-                    return (T) GrpcConfig.TypeModel.Deserialize(ms, null, typeof(T));
-                }
+            try
+            {
+                using var ms = new MemoryStream(payload);
+                return (T) GrpcConfig.TypeModel.Deserialize(ms, null, typeof(T));
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 throw;
             }

@@ -165,7 +165,11 @@ namespace ServiceStack
 
         /// <summary>
         /// Returning the most optimized result based on the MimeType and CompressionType from the IRequest.
+        /// <param name="req"></param>
+        /// <param name="cacheClient"></param>
+        /// <param name="cacheKey"></param>
         /// <param name="expireCacheIn">How long to cache for, null is no expiration</param>
+        /// <param name="factoryFn"></param>
         /// </summary>
         public static object ToOptimizedResultUsingCache<T>(
             this IRequest req, ICacheClient cacheClient, string cacheKey,
@@ -181,7 +185,12 @@ namespace ServiceStack
 
         /// <summary>
         /// Returning the most optimized result based on the MimeType and CompressionType from the IRequest.
+        /// <param name="req"></param>
+        /// <param name="cacheClient"></param>
+        /// <param name="cacheKey"></param>
         /// <param name="expireCacheIn">How long to cache for, null is no expiration</param>
+        /// <param name="factoryFn"></param>
+        /// <param name="token"></param>
         /// </summary>
         public static async Task<object> ToOptimizedResultUsingCacheAsync<T>(
             this IRequest req, ICacheClientAsync cacheClient, string cacheKey,
@@ -333,8 +342,6 @@ namespace ServiceStack
                 }
                 return new SessionSourceResult(session, roles, permissions);
             }
-            
-            return null;
         }
     }
 

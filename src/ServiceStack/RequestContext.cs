@@ -13,7 +13,7 @@ namespace ServiceStack
 {
     /// <summary>
     /// Abstraction to provide a context per request.
-    /// in aspnet.web its equivalent to <see cref="System.Web.HttpContext"></see>.Current.Items falls back to CallContext
+    /// in aspnet.web its equivalent to System.Web.HttpContext.Current.Items falls back to CallContext
     /// </summary>
     public class RequestContext
     {

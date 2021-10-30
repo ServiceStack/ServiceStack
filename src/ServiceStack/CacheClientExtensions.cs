@@ -462,6 +462,7 @@ namespace ServiceStack
         /// </summary>
         /// <param name="cacheClient">Cache client</param>
         /// <param name="pattern">The wildcard, where "*" means any sequence of characters and "?" means any single character.</param>
+        /// <param name="token"></param>
         public static Task RemoveByPatternAsync(this ICacheClientAsync cacheClient, string pattern, CancellationToken token=default)
         {
             if (!(cacheClient is IRemoveByPatternAsync canRemoveByPattern))

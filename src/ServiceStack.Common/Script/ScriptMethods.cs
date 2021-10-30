@@ -83,7 +83,7 @@ namespace ServiceStack.Script
             foreach (var method in methods)
             {
                 var paramType = method.GetParameters().FirstOrDefault()?.ParameterType;
-                var hasScope = paramType == typeof(ScriptScopeContext) || paramType == typeof(Templates.TemplateScopeContext);
+                var hasScope = paramType == typeof(ScriptScopeContext);
                 var hasTaskReturnType = method.ReturnType == typeof(Task);
                 var isFilter = !hasScope && !hasTaskReturnType;
                 var isContextFilter = hasScope && !hasTaskReturnType;

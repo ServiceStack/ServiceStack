@@ -71,7 +71,7 @@ namespace ServiceStack.Razor.BuildTask
         }
 
         /// <summary>
-        /// Prevents file path collisions when two file paths in different folders have the same name - eg: _layout.cs & Views\_layout.cs
+        /// Prevents file path collisions when two file paths in different folders have the same name - eg: _layout.cs, Views\_layout.cs
         /// by using a fully qualified name - eg: $(RootNamespace).Views._layout.cs
         /// </summary>
         /// <param name="filePath">

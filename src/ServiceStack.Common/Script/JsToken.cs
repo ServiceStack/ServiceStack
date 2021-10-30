@@ -311,9 +311,6 @@ namespace ServiceStack.Script
         /// <summary>
         /// Evaluate then set asyncResult if Result was async, otherwise set result.
         /// </summary>
-        /// <param name="scope"></param>
-        /// <param name="result"></param>
-        /// <param name="asyncResult"></param>
         /// <returns>true if result was synchronous otherwise false</returns>
         public static bool Evaluate(this JsToken token, ScriptScopeContext scope, out object result, out Task<object> asyncResult)
         {
