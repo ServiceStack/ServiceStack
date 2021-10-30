@@ -134,6 +134,8 @@ namespace CheckWebCore
         // Configure your AppHost with the necessary configuration and dependencies your App needs
         public override void Configure(Container container)
         {
+            this.ApiHandler(ApiHandlers.Json("/api"));
+            
             RegisterService<GetFileService>();
 
             Plugins.Add(new GrpcFeature(App));
