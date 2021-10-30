@@ -1110,6 +1110,9 @@ namespace ServiceStack
             if ((Feature.RequestInfo & config.EnableFeatures) != Feature.RequestInfo)
                 Plugins.RemoveAll(x => x is RequestInfoFeature);
 
+            if ((Feature.Validation & config.EnableFeatures) != Feature.Validation)
+                Plugins.RemoveAll(x => x is Validation.ValidationFeature);
+
             if ((Feature.Razor & config.EnableFeatures) != Feature.Razor)
                 Plugins.RemoveAll(x => x is IRazorPlugin);    //external
 

@@ -32,5 +32,6 @@ namespace ServiceStack
         Grpc         = 1 << 16,
 
         ServiceDiscovery = 1 << 17,
+        Validation   = 1 << 18,
     }
 }
