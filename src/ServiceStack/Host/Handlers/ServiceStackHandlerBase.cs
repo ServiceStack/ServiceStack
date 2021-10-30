@@ -28,7 +28,7 @@ namespace ServiceStack.Host.Handlers
 
     public abstract class ServiceStackHandlerBase : HttpAsyncTaskHandler
     {
-        internal static readonly Dictionary<byte[], byte[]> NetworkInterfaceIpv4Addresses = new Dictionary<byte[], byte[]>();
+        internal static readonly Dictionary<byte[], byte[]> NetworkInterfaceIpv4Addresses = new();
         internal static readonly byte[][] NetworkInterfaceIpv6Addresses = TypeConstants.EmptyByteArrayArray;
         internal readonly ServiceStackHost appHost = HostContext.AppHost;
 

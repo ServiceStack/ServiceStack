@@ -38,19 +38,17 @@ namespace ServiceStack
             if (request.Tag.IsNullOrEmpty())
                 throw new ArgumentNullException("Tag");
 
-            using (var cancellableReq = base.Request.GetCancellableRequest(request.Tag))
+            using var cancellableReq = base.Request.GetCancellableRequest(request.Tag);
+            if (cancellableReq == null)
+                throw HttpError.NotFound($"Request with Tag '{request.Tag}' does not exist");
+
+            cancellableReq.TokenSource.Cancel();
+
+            return new CancelRequestResponse
             {
-                if (cancellableReq == null)
-                    throw HttpError.NotFound($"Request with Tag '{request.Tag}' does not exist");
-
-                cancellableReq.TokenSource.Cancel();
-
-                return new CancelRequestResponse
-                {
-                    Tag = request.Tag,
-                    Elapsed = cancellableReq.Elapsed,
-                };
-            }
+                Tag = request.Tag,
+                Elapsed = cancellableReq.Elapsed,
+            };
         }
     }
 
@@ -80,7 +78,7 @@ namespace ServiceStack
 
             this.feature.UnregisterCancellableRequest(this.requestTag);
 
-            req.Items[typeof(CancellableRequest).Name] = feature.RequestsMap[tag] = this;
+            req.Items[nameof(CancellableRequest)] = feature.RequestsMap[tag] = this;
         }
 
         public TimeSpan Elapsed => stopwatch.Elapsed;

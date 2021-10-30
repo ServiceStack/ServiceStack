@@ -9,7 +9,7 @@ namespace ServiceStack
     public class PredefinedRoutesFeature : IPlugin, Model.IHasStringId
     {
         public string Id { get; set; } = Plugins.PredefinedRoutes;
-        public Dictionary<string, Func<IHttpHandler>> HandlerMappings { get; } = new Dictionary<string, Func<IHttpHandler>>();
+        public Dictionary<string, Func<IHttpHandler>> HandlerMappings { get; } = new();
         
         public void Register(IAppHost appHost)
         {
