@@ -25,30 +25,6 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    [Obsolete("Use SharpPagesFeature")]
-    public class TemplatePagesFeature : SharpPagesFeature
-    {
-        [Obsolete("Use ScriptMethods")]
-        public List<ScriptMethods> TemplateFilters => ScriptMethods;
-
-        [Obsolete("Use ScriptBlocks")]
-        public List<ScriptBlock> TemplateBlocks => ScriptBlocks;
-
-        [Obsolete("Use DefaultMethods")]
-        public DefaultScripts DefaultFilters => DefaultMethods;
-        [Obsolete("Use ProtectedMethods")]
-        public ProtectedScripts ProtectedFilters => ProtectedMethods;
-        [Obsolete("Use HtmlMethods")]
-        public HtmlScripts HtmlFilters => HtmlMethods;
-
-        public override void Register(IAppHost appHost)
-        {
-            base.Register(appHost);
-            appHost.Register((Templates.ITemplatePages)Pages);
-            appHost.Register(this);
-        }
-    }
-    
     public class SharpPagesFeature : ScriptContext, IPlugin, IViewEngine, Model.IHasStringId
     {
         public string Id { get; set; } = ServiceStack.Plugins.SharpPages;
@@ -75,8 +51,7 @@ namespace ServiceStack
         /// </summary>
         public string MetadataDebugAdminRole { get; set; }
 
-        public List<string> IgnorePaths { get; set; } = new List<string>
-        {
+        public List<string> IgnorePaths { get; set; } = new() {
             "/Views/",
             "/swagger-ui" // Swagger's handler needs to process index.html 
         };

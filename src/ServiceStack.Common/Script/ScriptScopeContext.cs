@@ -30,11 +30,6 @@ namespace ServiceStack.Script
             ScopedParams = scopedParams;
         }
 
-        public static implicit operator Templates.TemplateScopeContext(ScriptScopeContext from)
-        {
-            return new Templates.TemplateScopeContext(from.PageResult, from.OutputStream, from.ScopedParams);
-        }
-
         public ScriptScopeContext Clone()
         {
             return new ScriptScopeContext(PageResult, OutputStream, new Dictionary<string, object>(ScopedParams));
