@@ -13,14 +13,14 @@ namespace ServiceStack;
 /// </summary>
 public static class ApiHandlers
 {
-    public static Func<IHttpRequest, HttpAsyncTaskHandler> Json(string pathPrefix) => 
-        Generic(pathPrefix, MimeTypes.Json, RequestAttributes.Reply | RequestAttributes.Json, Feature.Json);
-    public static Func<IHttpRequest, HttpAsyncTaskHandler> Jsv(string pathPrefix) => 
-        Generic(pathPrefix, MimeTypes.Jsv, RequestAttributes.Reply | RequestAttributes.Jsv, Feature.Jsv);
-    public static Func<IHttpRequest, HttpAsyncTaskHandler> Csv(string pathPrefix) => 
-        Generic(pathPrefix, MimeTypes.Csv, RequestAttributes.Reply | RequestAttributes.Csv, Feature.Csv);
-    public static Func<IHttpRequest, HttpAsyncTaskHandler> Xml(string pathPrefix) => 
-        Generic(pathPrefix, MimeTypes.Xml, RequestAttributes.Reply | RequestAttributes.Xml, Feature.Xml);
+    public static Func<IHttpRequest, HttpAsyncTaskHandler> Json(string apiPath) => 
+        Generic(apiPath, MimeTypes.Json, RequestAttributes.Reply | RequestAttributes.Json, Feature.Json);
+    public static Func<IHttpRequest, HttpAsyncTaskHandler> Jsv(string apiPath) => 
+        Generic(apiPath, MimeTypes.Jsv, RequestAttributes.Reply | RequestAttributes.Jsv, Feature.Jsv);
+    public static Func<IHttpRequest, HttpAsyncTaskHandler> Csv(string apiPath) => 
+        Generic(apiPath, MimeTypes.Csv, RequestAttributes.Reply | RequestAttributes.Csv, Feature.Csv);
+    public static Func<IHttpRequest, HttpAsyncTaskHandler> Xml(string apiPath) => 
+        Generic(apiPath, MimeTypes.Xml, RequestAttributes.Reply | RequestAttributes.Xml, Feature.Xml);
     
     public static Func<IHttpRequest, HttpAsyncTaskHandler> Generic(string apiPath, 
         string contentType, RequestAttributes requestAttributes, Feature feature)

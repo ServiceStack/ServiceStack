@@ -117,6 +117,25 @@ namespace ServiceStack
         }
 
         /// <summary>
+        /// Replace the Base reply/oneway paths to use a different prefix
+        /// </summary>
+        public string UseBasePath
+        {
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    SetBaseUri(this.BaseUri);
+                }
+                else
+                {
+                    this.SyncReplyBaseUri = this.BaseUri.CombineWith(value).WithTrailingSlash();
+                    this.AsyncOneWayBaseUri = this.BaseUri.CombineWith(value).WithTrailingSlash();
+                }
+            }
+        }
+
+        /// <summary>
         /// Whether to Accept Gzip,Deflate Content-Encoding and to auto decompress responses
         /// </summary>
         public bool DisableAutoCompression
