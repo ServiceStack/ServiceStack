@@ -297,14 +297,16 @@ namespace ServiceStack
                     OnStartupException(ex);
                 }
             }
+
+            GlobalBeforeConfigure.Each(fn => fn(this));
             preStartupConfigs.ForEach(RunConfigure);
             BeforeConfigure.Each(fn => fn(this));
 
             Configure(Container);
 
             AfterConfigure.Each(fn => fn(this));
-
             postStartupConfigs.ForEach(RunConfigure);
+            GlobalAfterConfigure.Each(fn => fn(this));
 
             if (Config.StrictMode == null && Config.DebugMode)
                 Config.StrictMode = true;
@@ -607,9 +609,19 @@ namespace ServiceStack
         public List<HandleGatewayExceptionAsyncDelegate> GatewayExceptionHandlersAsync { get; set; }
 
         /// <summary>
+        /// Register static callbacks fired just before AppHost.Configure() 
+        /// </summary>
+        public static List<Action<ServiceStackHost>> GlobalBeforeConfigure { get; } = new();
+        
+        /// <summary>
         /// Register callbacks fired just before AppHost.Configure() 
         /// </summary>
         public List<Action<ServiceStackHost>> BeforeConfigure { get; set; }
+
+        /// <summary>
+        /// Register static callbacks fired just after AppHost.Configure() 
+        /// </summary>
+        public static List<Action<ServiceStackHost>> GlobalAfterConfigure { get; } = new();
 
         /// <summary>
         /// Register callbacks fired just after AppHost.Configure() 

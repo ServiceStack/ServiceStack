@@ -11,6 +11,7 @@ using ServiceStack;
 using ServiceStack.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
+//builder.Services.AddModularStartup<AppHost>(builder.Configuration);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

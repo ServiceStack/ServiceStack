@@ -200,7 +200,7 @@ namespace ServiceStack
                 Plugins = new PluginInfo {
                     Loaded = appHost.GetMetadataPluginIds(),
                 },
-                CustomPlugins = new Dictionary<string, CustomPlugin>(),
+                CustomPlugins = new Dictionary<string, CustomPluginInfo>(),
                 Api = metadataTypes,
             };
             

@@ -123,7 +123,7 @@ namespace ServiceStack
         public AppInfo App { get; set; }
         public Dictionary<string, string> ContentTypeFormats { get; set; }
         public PluginInfo Plugins { get; set; }
-        public Dictionary<string,CustomPlugin> CustomPlugins { get; set; }
+        public Dictionary<string,CustomPluginInfo> CustomPlugins { get; set; }
         public MetadataTypes Api { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
@@ -221,7 +221,7 @@ namespace ServiceStack
     /// Generic template for adding metadata info about custom plugins  
     /// </summary>
     [Exclude(Feature.Soap)]
-    public class CustomPlugin : IMeta
+    public class CustomPluginInfo : IMeta
     {
         /// <summary>
         /// Which User Roles have access to this Plugins Services. See RoleNames for built-in Roles.

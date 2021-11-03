@@ -346,6 +346,26 @@ namespace ServiceStack
 
     public static class NetCoreAppHostExtensions
     {
+        /// <summary>
+        /// Register static callbacks fired just before AppHost.Configure() 
+        /// </summary>
+        public static Microsoft.AspNetCore.Hosting.IWebHostBuilder ConfigureAppHost(
+            this Microsoft.AspNetCore.Hosting.IWebHostBuilder builder, Action<ServiceStackHost> configure) 
+        {
+            ServiceStackHost.GlobalBeforeConfigure.Add(configure);
+            return builder;
+        }
+        
+        /// <summary>
+        /// Register static callbacks fired just after AppHost.Configure() 
+        /// </summary>
+        public static Microsoft.AspNetCore.Hosting.IWebHostBuilder AfterConfigureAppHost(
+            this Microsoft.AspNetCore.Hosting.IWebHostBuilder builder, Action<ServiceStackHost> configure) 
+        {
+            ServiceStackHost.GlobalAfterConfigure.Add(configure);
+            return builder;
+        }
+        
         public static IConfiguration GetConfiguration(this IAppHost appHost) => ((IAppHostNetCore)appHost).Configuration;
         public static IApplicationBuilder GetApp(this IAppHost appHost) => ((IAppHostNetCore)appHost).App;
         public static IServiceProvider GetApplicationServices(this IAppHost appHost) => ((IAppHostNetCore)appHost).App.ApplicationServices;
