@@ -34,6 +34,9 @@ public static class ApiHandlers
         var useApiPath = apiPath.LastLeftPart('/');
         
         return req => {
+            // Don't handle OPTIONS CORS requests
+            if (req.HttpMethod == HttpMethods.Options) return null;
+            
             var pathInfo = req.PathInfo;
             if (pathInfo.StartsWith(useApiPath) && pathInfo.IndexOf('/',1) >= 0)
             {
