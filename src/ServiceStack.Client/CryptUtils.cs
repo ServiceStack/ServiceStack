@@ -235,6 +235,8 @@ namespace ServiceStack
             return aes.Key;
         }
 
+        public static string CreateBase64Key() => Convert.ToBase64String(CreateKey());
+
         public static byte[] CreateIv()
         {
             using var aes = CreateSymmetricAlgorithm();
