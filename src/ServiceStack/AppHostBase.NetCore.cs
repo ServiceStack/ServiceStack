@@ -21,9 +21,9 @@ using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Configuration;
 using ServiceStack.IO;
 using ServiceStack.Text;
+using Microsoft.AspNetCore.Hosting;
 
 #if NETSTANDARD2_0
-using Microsoft.AspNetCore.Hosting;
 using IHostApplicationLifetime = Microsoft.AspNetCore.Hosting.IApplicationLifetime;
 using IWebHostEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 #else
@@ -347,22 +347,15 @@ namespace ServiceStack
     public static class NetCoreAppHostExtensions
     {
         /// <summary>
-        /// Register static callbacks fired just before AppHost.Configure() 
-        /// </summary>
-        public static Microsoft.AspNetCore.Hosting.IWebHostBuilder ConfigureAppHost(
-            this Microsoft.AspNetCore.Hosting.IWebHostBuilder builder, Action<ServiceStackHost> configure) 
-        {
-            ServiceStackHost.GlobalBeforeConfigure.Add(configure);
-            return builder;
-        }
-        
-        /// <summary>
         /// Register static callbacks fired just after AppHost.Configure() 
         /// </summary>
-        public static Microsoft.AspNetCore.Hosting.IWebHostBuilder AfterConfigureAppHost(
-            this Microsoft.AspNetCore.Hosting.IWebHostBuilder builder, Action<ServiceStackHost> configure) 
+        public static IWebHostBuilder ConfigureAppHost(this IWebHostBuilder builder, 
+            Action<ServiceStackHost> configure=null, Action<ServiceStackHost> afterConfigure=null) 
         {
-            ServiceStackHost.GlobalAfterConfigure.Add(configure);
+            if (configure != null)
+                ServiceStackHost.GlobalBeforeConfigure.Add(configure);
+            if (afterConfigure != null)
+                ServiceStackHost.GlobalBeforeConfigure.Add(afterConfigure);
             return builder;
         }
         
