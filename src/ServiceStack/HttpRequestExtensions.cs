@@ -1106,18 +1106,21 @@ namespace ServiceStack
             httpReq.Items.Remove(Keywords.AutoBatchIndex);
         }
 
-        public static IEnumerable<Claim> GetClaims(this IRequest req)
+        public static ClaimsPrincipal GetClaimsPrincipal(this IRequest req)
         {
 #if NETCORE
             if (req.OriginalRequest is Microsoft.AspNetCore.Http.HttpRequest httpReq)
-                return httpReq.HttpContext.User?.Claims;
+                return httpReq.HttpContext.User;
 #else
             if (req.OriginalRequest is HttpRequestBase httpReq
                 && httpReq.RequestContext.HttpContext.User is ClaimsPrincipal principal)
-                return principal.Claims;
+                return principal;
 #endif
-            return TypeConstants<Claim>.EmptyArray;
+            return null;
         }
+
+        public static IEnumerable<Claim> GetClaims(this IRequest req) => 
+            req.GetClaimsPrincipal()?.Claims ?? TypeConstants<Claim>.EmptyArray;
 
         public static bool HasRole(this IEnumerable<Claim> claims, string role) => claims.HasClaim("role", role);
 
