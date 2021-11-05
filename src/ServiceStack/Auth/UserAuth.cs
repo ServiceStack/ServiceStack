@@ -386,7 +386,7 @@ namespace ServiceStack.Auth
             await repo.SaveUserAuthAsync(userAuth, token);
         }
 
-        public static void PopulateFromMap(this IAuthSession session, Dictionary<string, string> map)
+        public static void PopulateFromMap(this IAuthSession session, IDictionary<string, string> map)
         {
             var authSession = session as AuthUserSession ?? new AuthUserSession(); //Null Object Pattern
             session.IsAuthenticated = true;
