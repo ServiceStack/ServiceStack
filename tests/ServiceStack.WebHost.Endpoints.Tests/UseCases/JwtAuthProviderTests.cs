@@ -202,6 +202,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
             Assert.That(response.Result, Is.EqualTo("Hello, IHasBearerToken"));
         }
+
+        [Test]
+        public void Does_escape_JWT_with_slashes()
+        {
+            var jwtHeader = new JsonObject {
+                ["typ"] = "JWT",
+                ["alg"] = "HS256",
+            };
+            var jwtPayload = new JsonObject {
+                ["iss"] = "ssjwt",
+                ["iat"] = "1635952233",
+                ["exp"] = "1635955833",
+                ["name"] = "Robin Doe",
+                ["preferred_username"] = "domainname\\robindoe",
+            };
+            
+            var jwtProvider = new JwtAuthProvider {
+                AuthKey = AesUtils.CreateKey()
+            };
+            var jwt = JwtAuthProvider.CreateJwt(jwtHeader, jwtPayload, jwtProvider.GetHashAlgorithm());
+
+            JsonObject validJwt = jwtProvider.GetVerifiedJwtPayload(null, jwt.Split('.'));
+            Assert.That(validJwt["preferred_username"], Is.EqualTo("domainname\\robindoe"));
+            
+            var session = new AuthUserSession();
+            session.PopulateFromMap(validJwt);
+            Assert.That(session.UserName, Is.EqualTo("domainname\\robindoe"));
+        }
     }
 
     public class JwtAuthProviderHS256HttpClientTests : JwtAuthProviderHS256Tests
