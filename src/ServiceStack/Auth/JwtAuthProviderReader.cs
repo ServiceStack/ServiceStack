@@ -621,9 +621,16 @@ namespace ServiceStack.Auth
             var payloadJson = MemoryProvider.Instance.FromUtf8Bytes(payloadBytes);
             return (Dictionary<string, object>) JSON.parse(payloadJson);
         }
+
+        /// <summary>
+        /// Return token payload which has been verified to be created using the configured encryption key.
+        /// Use GetValidJwtPayload() instead if you also want the payload validated.  
+        /// </summary>
+        public virtual JsonObject GetVerifiedJwtPayload(string jwt) => GetVerifiedJwtPayload(null, jwt.Split('.'));
         
         /// <summary>
         /// Return token payload which has been verified to be created using the configured encryption key.
+        /// Use GetValidJwtPayload() instead if you also want the payload validated.  
         /// </summary>
         public virtual JsonObject GetVerifiedJwtPayload(IRequest req, string[] parts)
         {
@@ -661,6 +668,15 @@ namespace ServiceStack.Auth
             throw new ArgumentException(ErrorMessages.TokenInvalid.Localize(req));
         }
 
+        /// <summary>
+        /// Return token payload which has been verified to be created using the configured encryption key.
+        /// Use GetValidJwtPayload() instead if you also want the payload validated.  
+        /// </summary>
+        public virtual JsonObject GetVerifiedJwePayload(string jwt) => GetVerifiedJwePayload(null, jwt.Split('.')); 
+        /// <summary>
+        /// Return token payload which has been verified to be created using the configured encryption key.
+        /// Use GetValidJwePayload() instead if you also want the payload validated.  
+        /// </summary>
         public virtual JsonObject GetVerifiedJwePayload(IRequest req, string[] parts)
         {
             if (!VerifyJwePayload(req, parts, out var iv, out var cipherText, out var cryptKey))
