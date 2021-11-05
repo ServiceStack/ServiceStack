@@ -223,7 +223,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             };
             var jwt = JwtAuthProvider.CreateJwt(jwtHeader, jwtPayload, jwtProvider.GetHashAlgorithm());
 
-            JsonObject validJwt = jwtProvider.GetVerifiedJwtPayload(null, jwt.Split('.'));
+            JsonObject validJwt = jwtProvider.GetVerifiedJwtPayload(jwt);
             Assert.That(validJwt["preferred_username"], Is.EqualTo("domainname\\robindoe"));
             
             var session = new AuthUserSession();

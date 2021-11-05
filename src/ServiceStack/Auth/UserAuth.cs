@@ -386,17 +386,6 @@ namespace ServiceStack.Auth
             await repo.SaveUserAuthAsync(userAuth, token);
         }
 
-        public static void PopulateFromMap(this IAuthSession session, JsonObject jsonObject)
-        {
-            var to = new Dictionary<string, string>();
-            // need to retrieve values via JsonObject's accessor so its string values are escaped
-            foreach (var key in jsonObject.Keys)
-            {
-                to[key] = jsonObject[key];
-            }
-            PopulateFromMap(session, to);
-        }
-
         public static void PopulateFromMap(this IAuthSession session, Dictionary<string, string> map)
         {
             var authSession = session as AuthUserSession ?? new AuthUserSession(); //Null Object Pattern
