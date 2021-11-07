@@ -164,6 +164,14 @@ namespace ServiceStack.Auth
             new(nameof(AuthUserSession.UserAuthName), JwtClaimTypes.PreferredUserName),
         };
 
+        public List<string> NameClaimFieldNames { get; set; } = new() {
+            nameof(UserAuth.DisplayName),
+            "Name",
+            "FullName",
+            nameof(JwtClaimTypes.GivenName),
+            nameof(AuthUserSession.FirstName),
+        };
+
         /// <summary>
         /// Customize which claims are included in the JWT Token
         /// </summary>
@@ -368,29 +376,33 @@ namespace ServiceStack.Auth
 
         protected string? CreateJwtBearerToken(IRequest req, TUser user, IEnumerable<string>? roles = null)
         {
-            var nameClaimType = TokenValidationParameters.NameClaimType ?? ClaimTypes.Name;
             var claims = new List<Claim> {
                 new(JwtRegisteredClaimNames.Sub, user.Id),
-                new(nameClaimType, user.UserName),
+                new(JwtClaimTypes.PreferredUserName, user.UserName),
             };
 
             var jti = ResolveJwtId?.Invoke(req);
             if (jti != null)
                 claims.Add(new Claim(JwtRegisteredClaimNames.Jti, jti));
 
-            if (roles != null)
-            {
-                var roleClaim = TokenValidationParameters.RoleClaimType ?? ClaimTypes.Role;
-                foreach (var role in roles)
-                {
-                    claims.Add(new Claim(roleClaim, role));
-                }
-            }
-
-            if (MapIdentityUserToClaims.Count > 0)
+            if (NameClaimFieldNames.Count > 0 || MapIdentityUserToClaims.Count > 0)
             {
                 var existingClaimTypes = claims.Select(x => x.Type).ToSet();
+                var nameClaimType = TokenValidationParameters.NameClaimType ?? ClaimTypes.Name;
                 var userProps = new Dictionary<string, object?>(user.ToObjectDictionary(), StringComparer.OrdinalIgnoreCase);
+
+                foreach (var fieldName in NameClaimFieldNames)
+                {
+                    if (!userProps.TryGetValue(fieldName, out var fieldValue)) 
+                        continue;
+                    var valueStr = fieldValue?.ToString();
+                    if (valueStr == null) 
+                        continue;
+                    
+                    claims.Add(new Claim(nameClaimType, valueStr));
+                    existingClaimTypes.Add(nameClaimType);
+                }
+
                 foreach (var (fieldName, claimType) in MapIdentityUserToClaims)
                 {
                     if (existingClaimTypes.Contains(claimType)) 
@@ -402,6 +414,15 @@ namespace ServiceStack.Auth
                         continue;
                     claims.Add(new Claim(claimType, valueStr));
                     existingClaimTypes.Add(claimType);
+                }
+            }
+
+            if (roles != null)
+            {
+                var roleClaim = TokenValidationParameters.RoleClaimType ?? ClaimTypes.Role;
+                foreach (var role in roles)
+                {
+                    claims.Add(new Claim(roleClaim, role));
                 }
             }
             
