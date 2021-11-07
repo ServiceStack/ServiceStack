@@ -83,6 +83,11 @@ namespace ServiceStack
         public List<Assembly> ServiceAssemblies { get; private set; }
 
         /// <summary>
+        /// Whether AppHost has been already initialized
+        /// </summary>
+        public static bool HasInit => Instance != null;
+
+        /// <summary>
         /// Whether AppHost configuration is done.
         /// Note: It doesn't mean the start function was called.
         /// </summary>
@@ -233,7 +238,7 @@ namespace ServiceStack
         /// </summary>
         public virtual ServiceStackHost Init()
         {
-            if (Instance != null)
+            if (HasInit)
                 throw new InvalidDataException($"ServiceStackHost.Instance has already been set ({Instance.GetType().Name})");
 
             Service.GlobalResolver = Instance = this;
