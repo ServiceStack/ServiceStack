@@ -114,7 +114,11 @@ namespace ServiceStack.Auth
         public IdentityApplicationAuthProvider? AuthApplication { get; set; }
         public IdentityCredentialsAuthProvider<TUser>? AuthCredentials { get; set; }
         public IdentityJwtAuthProvider<TUser, TRole>? AuthJwt { get; set; }
-        
+
+        public void DisableApplicationCookie() => AuthApplication = null;
+        public void DisableCredentialsAuth() => AuthCredentials = null;
+        public void DisableJwt() => AuthJwt = null;
+
         public string? LoginPath { get; set; }
         public string? LogoutPath { get; set; }
         public string? AccessDeniedPath { get; set; }
