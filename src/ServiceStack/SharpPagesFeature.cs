@@ -25,6 +25,13 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
+    /// <summary>
+    /// A custom placeholder SharpPagesFeature plugin optimized to support for SPA and SSG features 
+    /// </summary>
+    public class SpaFeature : SharpPagesFeature 
+    {
+    }
+
     public class SharpPagesFeature : ScriptContext, IPlugin, IViewEngine, Model.IHasStringId
     {
         public string Id { get; set; } = ServiceStack.Plugins.SharpPages;
