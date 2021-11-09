@@ -230,14 +230,29 @@ namespace ServiceStack
         /// Provide an exception handler for Service Gateway Exceptions (Async)
         /// </summary>
         List<HandleGatewayExceptionAsyncDelegate> GatewayExceptionHandlersAsync { get; }
+        
+        /// <summary>
+        /// Register callbacks fired just before AppHost.Configure() 
+        /// </summary>
+        List<Action<ServiceStackHost>> BeforeConfigure { get; set; }
 
         /// <summary>
-        /// Provide callbacks to be fired after the AppHost has finished initializing
+        /// Register callbacks fired just after AppHost.Configure() 
+        /// </summary>
+        List<Action<ServiceStackHost>> AfterConfigure { get; set; }
+
+        /// <summary>
+        /// Register callbacks to be fired after all plugins are loaded 
+        /// </summary>
+        List<Action<ServiceStackHost>> AfterPluginsLoaded { get; set; }
+        
+        /// <summary>
+        /// Register callbacks to be fired after the AppHost has finished initializing
         /// </summary>
         List<Action<IAppHost>> AfterInitCallbacks { get; }
 
         /// <summary>
-        /// Provide callbacks to be fired when AppHost is being disposed
+        /// Register callbacks to be fired when AppHost is being disposed
         /// </summary>
         List<Action<IAppHost>> OnDisposeCallbacks { get; }
 

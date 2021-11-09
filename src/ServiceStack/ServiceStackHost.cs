@@ -142,6 +142,7 @@ namespace ServiceStack
             GatewayExceptionHandlersAsync = new List<HandleGatewayExceptionAsyncDelegate>();
             BeforeConfigure = new List<Action<ServiceStackHost>>();
             AfterConfigure = new List<Action<ServiceStackHost>>();
+            AfterPluginsLoaded = new List<Action<ServiceStackHost>>();
             AfterInitCallbacks = new List<Action<IAppHost>>();
             OnDisposeCallbacks = new List<Action<IAppHost>>();
             OnEndRequestCallbacks = new List<Action<IRequest>>();
@@ -632,6 +633,11 @@ namespace ServiceStack
         /// Register callbacks fired just after AppHost.Configure() 
         /// </summary>
         public List<Action<ServiceStackHost>> AfterConfigure { get; set; }
+
+        /// <summary>
+        /// Register callbacks fired just after plugins are loaded 
+        /// </summary>
+        public List<Action<ServiceStackHost>> AfterPluginsLoaded { get; set; }
 
         /// <summary>
         /// Register callbacks that's fired after the AppHost is initialized
@@ -1168,7 +1174,7 @@ namespace ServiceStack
             if (!Container.Exists<ISharpPages>())
                 DefaultScriptContext.Init();
 
-            AfterPluginsLoaded(specifiedContentType);
+            RunAfterPluginsLoaded(specifiedContentType);
 
             GetPlugin<MetadataFeature>()?.AddDebugLink("Templates/license.html", "License Info");
 
@@ -1278,7 +1284,7 @@ namespace ServiceStack
             }
         }
 
-        private void AfterPluginsLoaded(string specifiedContentType)
+        private void RunAfterPluginsLoaded(string specifiedContentType)
         {
             if (!string.IsNullOrEmpty(specifiedContentType))
                 config.DefaultContentType = specifiedContentType;
@@ -1292,6 +1298,18 @@ namespace ServiceStack
 
             var plugins = Plugins.WithPriority().PriorityOrdered();
             plugins.ForEach(RunPostInitPlugin);
+            
+            try
+            {
+                foreach (var action in AfterPluginsLoaded)
+                {
+                    action(this);
+                }
+            }
+            catch (Exception ex)
+            {
+                OnStartupException(ex);
+            }
 
             ServiceController.AfterInit();
         }
