@@ -635,6 +635,11 @@ namespace ServiceStack
         public List<Action<ServiceStackHost>> AfterConfigure { get; set; }
 
         /// <summary>
+        /// Register static callbacks fired just after plugins are loaded 
+        /// </summary>
+        public static List<Action<ServiceStackHost>> GlobalAfterPluginsLoaded { get; } = new();
+
+        /// <summary>
         /// Register callbacks fired just after plugins are loaded 
         /// </summary>
         public List<Action<ServiceStackHost>> AfterPluginsLoaded { get; set; }

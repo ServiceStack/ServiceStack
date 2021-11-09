@@ -350,12 +350,15 @@ namespace ServiceStack
         /// Register static callbacks fired just after AppHost.Configure() 
         /// </summary>
         public static IWebHostBuilder ConfigureAppHost(this IWebHostBuilder builder, 
-            Action<ServiceStackHost> configure=null, Action<ServiceStackHost> afterConfigure=null) 
+            Action<ServiceStackHost> configure=null, Action<ServiceStackHost> afterConfigure=null, 
+            Action<ServiceStackHost> afterPluginsLoaded=null) 
         {
             if (configure != null)
                 ServiceStackHost.GlobalBeforeConfigure.Add(configure);
             if (afterConfigure != null)
-                ServiceStackHost.GlobalBeforeConfigure.Add(afterConfigure);
+                ServiceStackHost.GlobalAfterConfigure.Add(afterConfigure);
+            if (afterPluginsLoaded != null)
+                ServiceStackHost.GlobalAfterPluginsLoaded.Add(afterPluginsLoaded);
             return builder;
         }
         
