@@ -114,6 +114,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public async Task PUT_returning_custom_403_Exception()
         {
             var restClient = CreateRestClient(ListeningOn);
+            var counter = HttpErrorService.DisposeCounter;
 
             try
             {
@@ -131,6 +132,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(webEx.StatusCode, Is.EqualTo(403));
                 Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(nameof(Exception)));
                 Assert.That(webEx.ResponseStatus.Message, Is.EqualTo("ForbiddenErrorMessage"));
+                Assert.That(HttpErrorService.DisposeCounter, Is.EqualTo(counter + 1));
             }
         }
 

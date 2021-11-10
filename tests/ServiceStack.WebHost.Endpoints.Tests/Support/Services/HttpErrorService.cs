@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Runtime.Serialization;
+using System.Threading;
 using ServiceStack.Model;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
@@ -108,6 +109,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 
     public class HttpErrorService : Service
     {
+        public static int DisposeCounter = 0;
+        
         public object Any(ThrowHttpError request)
         {
             if (request.Type.IsNullOrEmpty())
@@ -164,6 +167,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
                 StatusDescription = request.StatusDescription ?? "StatusDescription",
                 ResponseDto = request,
             };
+        }
+
+        public override void Dispose()
+        {
+            Interlocked.Increment(ref DisposeCounter);
+            base.Dispose();
         }
     }
 

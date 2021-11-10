@@ -57,13 +57,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void PUT_returning_custom_403_Exception()
         {
             var client = CreateClient(ListeningOn);
+            var counter = HttpErrorService.DisposeCounter;
 
             try
             {
                 var response = client.Put(new ThrowHttpError
                 {
                     StatusCode = 403,
-                    Type = typeof(Exception).Name,
+                    Type = nameof(Exception),
                     Message = "ForbiddenErrorMessage",
                 });
 
@@ -72,8 +73,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException webEx)
             {
                 Assert.That(webEx.StatusCode, Is.EqualTo(403));
-                Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(typeof(Exception).Name));
+                Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(nameof(Exception)));
                 Assert.That(webEx.ResponseStatus.Message, Is.EqualTo("ForbiddenErrorMessage"));
+                Assert.That(HttpErrorService.DisposeCounter, Is.EqualTo(counter + 1));
             }
         }
 
@@ -87,7 +89,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 client.Put(new ThrowHttpErrorNoReturn
                 {
                     StatusCode = 403,
-                    Type = typeof(Exception).Name,
+                    Type = nameof(Exception),
                     Message = "ForbiddenErrorMessage",
                 });
 
@@ -96,7 +98,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException webEx)
             {
                 Assert.That(webEx.StatusCode, Is.EqualTo(403));
-                Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(typeof(Exception).Name));
+                Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(nameof(Exception)));
                 Assert.That(webEx.ResponseStatus.Message, Is.EqualTo("ForbiddenErrorMessage"));
             }
         }
