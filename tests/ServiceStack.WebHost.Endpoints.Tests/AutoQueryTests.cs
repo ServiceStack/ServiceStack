@@ -1139,6 +1139,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(customRes.Results.Count, Is.EqualTo(TotalAlbums));
             ages = customRes.Results.Select(x => x.Age);
             Assert.That(ages.Contains(27 * 2));
+
+            response = client.Get(new QueryJoinedRockstarAlbumsCustomSelect { Age = 54, Include = "Total" });
+            Assert.That(response.Total, Is.EqualTo(6));
+            Assert.That(response.Results.Count, Is.EqualTo(6));
+            ages = response.Results.Select(x => x.Age);
+            Assert.That(ages.All(x => x == 54));
+            var lastNames = response.Results.Select(x => x.LastName);
+            Assert.That(lastNames, Is.EquivalentTo(new[] {
+                "Hendrix", "Cobain", "Cobain", "Cobain", "Cobain", "Cobain",
+            }));
         }
         
         [Test]

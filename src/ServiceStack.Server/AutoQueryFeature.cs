@@ -1443,7 +1443,9 @@ namespace ServiceStack
                     ? match.ImplicitQuery 
                     : implicitQuery.Combine(match.ImplicitQuery);
 
-                var quotedColumn = q.DialectProvider.GetQuotedColumnName(match.ModelDef, match.FieldDef);
+                var quotedColumn = match.FieldDef.CustomSelect != null
+                    ? match.FieldDef.CustomSelect
+                    : q.DialectProvider.GetQuotedColumnName(match.ModelDef, match.FieldDef);
 
                 var value = entry.Value(dto);
                 if (value == null)
@@ -1464,8 +1466,10 @@ namespace ServiceStack
                     continue;
 
                 var implicitQuery = match.ImplicitQuery;
-                var quotedColumn = q.DialectProvider.GetQuotedColumnName(match.ModelDef, match.FieldDef);
-
+                var quotedColumn = match.FieldDef.CustomSelect != null
+                    ? match.FieldDef.CustomSelect
+                    : q.DialectProvider.GetQuotedColumnName(match.ModelDef, match.FieldDef);
+                
                 var strValue = !string.IsNullOrEmpty(entry.Value)
                     ? entry.Value
                     : null;
