@@ -12,6 +12,12 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <DefineConstants>$(DefineConstants);SOURCE</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NETSTANDARD2_0</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET6_0</DefineConstants>
+  </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
