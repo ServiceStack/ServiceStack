@@ -5,7 +5,7 @@
         <AssemblyName>ServiceStack.Extensions</AssemblyName>
         <RootNamespace>ServiceStack</RootNamespace>
         <LangVersion>default</LangVersion>
-        <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
+        <TargetFrameworks>net6.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0' ">

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Server</PackageId>
     <AssemblyName>ServiceStack.Server</AssemblyName>
-    <TargetFrameworks>net45;net472;netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net472;net6.0</TargetFrameworks>
     <Title>ServiceStack Server integration with Redis and OrmLite</Title>
     <PackageDescription>
       Integration libraries and adapters with other major ServiceStack server components.
