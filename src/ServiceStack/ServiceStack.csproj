@@ -11,6 +11,9 @@
     </PackageDescription>
     <PackageTags>Fast;JSON;XML;CSV;HTML;SOAP;JSV;REST;Web;Service;Framework;ServiceStack</PackageTags>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <DefineConstants>$(DefineConstants);NET472</DefineConstants>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <DefineConstants>$(DefineConstants);NETCORE;NETSTANDARD2_0</DefineConstants>
   </PropertyGroup>
