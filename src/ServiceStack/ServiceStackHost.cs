@@ -304,15 +304,15 @@ namespace ServiceStack
                 }
             }
 
-            GlobalBeforeConfigure.Each(fn => fn(this));
+            GlobalBeforeConfigure.Each(RunManagedAction);
             preStartupConfigs.ForEach(RunConfigure);
-            BeforeConfigure.Each(fn => fn(this));
+            BeforeConfigure.Each(RunManagedAction);
 
             Configure(Container);
 
-            AfterConfigure.Each(fn => fn(this));
+            AfterConfigure.Each(RunManagedAction);
             postStartupConfigs.ForEach(RunConfigure);
-            GlobalAfterConfigure.Each(fn => fn(this));
+            GlobalAfterConfigure.Each(RunManagedAction);
 
             if (Config.StrictMode == null && Config.DebugMode)
                 Config.StrictMode = true;
@@ -356,6 +356,7 @@ namespace ServiceStack
             OnAfterInit();
             
             configInstances.ForEach(RunPostInitPlugin);
+            GlobalAfterPluginsLoaded.Each(RunManagedAction);
 
             PopulateArrayFilters();
 
@@ -1282,6 +1283,18 @@ namespace ServiceStack
             {
                 if (instance is IAfterInitAppHost afterPlugin)
                     afterPlugin.AfterInit(this);
+            }
+            catch (Exception ex)
+            {
+                OnStartupException(ex);
+            }
+        }
+
+        private void RunManagedAction(Action<ServiceStackHost> fn)
+        {
+            try
+            {
+                fn(this);
             }
             catch (Exception ex)
             {
