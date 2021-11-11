@@ -371,6 +371,7 @@ namespace ServiceStack
             
             Plugins.ForEach(RunAfterInitAppHost);
             configInstances.ForEach(RunAfterInitAppHost);
+            GlobalAfterAppHostInit.Each(RunManagedAction);
 
             ReadyAt = DateTime.UtcNow;
 
@@ -649,6 +650,11 @@ namespace ServiceStack
         /// Register callbacks that's fired after the AppHost is initialized
         /// </summary>
         public List<Action<IAppHost>> AfterInitCallbacks { get; set; }
+
+        /// <summary>
+        /// Register static callbacks fired after the AppHost is initialized 
+        /// </summary>
+        public static List<Action<ServiceStackHost>> GlobalAfterAppHostInit { get; } = new();
 
         /// <summary>
         /// Register callbacks that's fired when AppHost is disposed
