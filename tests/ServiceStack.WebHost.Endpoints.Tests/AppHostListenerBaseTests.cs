@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using NUnit.Framework;
-#if !NETCORE_SUPPORT
+#if !NETCORE
 using ServiceStack.Host.HttpListener;
 #endif
 using ServiceStack.Logging;
@@ -210,7 +210,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Trace.TraceInformation("Elapsed time for " + clientCount + " requests : " + sw.Elapsed);
         }
 
-#if !NETCORE_SUPPORT
+#if !NETCORE
         [Test]
         public void Can_infer_handler_path_from_listener_uris()
         {
@@ -240,7 +240,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             for (int i = 0; i < 100; i++)
             {
                 localAppHost.Start(GetBaseAddressWithFreePort());
-#if !NETCORE_SUPPORT                
+#if !NETCORE                
                 localAppHost.Stop();
 #endif
             }

@@ -1,4 +1,4 @@
-﻿#if !NETCORE_SUPPORT
+﻿#if !NETCORE
 using System;
 using System.Collections.Generic;
 using Amazon.DynamoDBv2;

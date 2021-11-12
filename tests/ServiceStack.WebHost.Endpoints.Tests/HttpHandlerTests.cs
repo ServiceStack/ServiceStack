@@ -72,7 +72,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
             }
 
-#if !NETCORE_SUPPORT
+#if !NETCORE
             protected override void OnBeginRequest(HttpListenerContext context)
             {
                 Interlocked.Increment(ref BeginRequestCount);

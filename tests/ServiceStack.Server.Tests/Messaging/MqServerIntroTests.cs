@@ -520,7 +520,7 @@ namespace ServiceStack.Server.Tests.Messaging
             {
                 ConfigureAppHost = host =>
                 {
-#if !NETCORE_SUPPORT
+#if !NETCORE
                     RequestContext.UseThreadStatic = true;
 #endif
                     host.Container.Register<IDisposableDependency>(c => new DisposableDependency(() =>

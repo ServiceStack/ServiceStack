@@ -1,5 +1,5 @@
 using System.Runtime.Serialization;
-#if !NETCORE_SUPPORT
+#if !NETCORE
 using ServiceStack.ServiceModel;
 #endif
 
