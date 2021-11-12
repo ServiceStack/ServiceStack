@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' OR '$(TargetFramework)' == 'net472' ">
-    <ProjectReference Include="..\ServiceStack.NetFramework\ServiceStack.NetFramework.csproj" />
+    <ProjectReference Include="..\ServiceStack.NetFramework\ServiceStack.NetFramework.Source.csproj" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Data" />
