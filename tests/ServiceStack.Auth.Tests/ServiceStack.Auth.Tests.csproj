@@ -141,7 +141,7 @@
   <ItemGroup>
     <PackageReference Include="DotNetOpenAuth.Ultimate" Version="4.3.4.13329" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="NUnit" Version="3.13.2" />
     <PackageReference Include="ServiceStack.Common" Version="$(Version)" />
     <PackageReference Include="ServiceStack.Interfaces" Version="$(Version)" />
     <PackageReference Include="ServiceStack.OrmLite" Version="$(Version)" />

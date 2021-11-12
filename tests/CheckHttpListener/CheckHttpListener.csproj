@@ -120,7 +120,7 @@
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.9.2" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="NUnit" Version="3.13.2" />
     <PackageReference Include="ServiceStack" Version="$(Version)" />
 <!--    <PackageReference Include="ServiceStack.Admin" Version="$(Version)" />-->
     <PackageReference Include="ServiceStack.Client" Version="$(Version)" />
