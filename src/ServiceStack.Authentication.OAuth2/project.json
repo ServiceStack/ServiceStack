@@ -2,12 +2,12 @@
   "configurations": {
     "Debug": {
       "buildOptions": {
-        "define": ["NETCORE_SUPPORT", "NETCORE", "DEBUG", "TRACE"]
+        "define": ["NETCORE", "DEBUG", "TRACE"]
       }
     },
     "Release": {
       "buildOptions": {
-        "define": ["NETCORE_SUPPORT", "NETCORE", "TRACE"],
+        "define": ["NETCORE", "TRACE"],
         "optimize": true
       }
     }

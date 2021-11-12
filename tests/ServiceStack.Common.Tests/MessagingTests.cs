@@ -1,4 +1,4 @@
-﻿#if !NETCORE_SUPPORT
+﻿#if !NETCORE
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Messaging;

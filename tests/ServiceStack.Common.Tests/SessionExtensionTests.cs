@@ -1,4 +1,4 @@
-﻿#if !NETCORE_SUPPORT
+﻿#if !NETCORE
 using System;
 using NUnit.Framework;
 using ServiceStack.Text;

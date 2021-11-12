@@ -1,4 +1,4 @@
-﻿#if !NETCORE_SUPPORT
+﻿#if !NETCORE
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;

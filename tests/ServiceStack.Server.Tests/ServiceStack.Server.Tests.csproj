@@ -54,7 +54,7 @@
     <ProjectReference Include="..\..\src\ServiceStack.Authentication.MongoDb\ServiceStack.Authentication.MongoDb.csproj" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <DefineConstants>$(DefineConstants);NETCORE_SUPPORT;NETCORE</DefineConstants>
+    <DefineConstants>$(DefineConstants);NETCORE</DefineConstants>
   </PropertyGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <PackageReference Include="System.Threading" Version="4.3.0" />

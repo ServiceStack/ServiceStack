@@ -10,7 +10,7 @@ using Amazon.DynamoDBv2;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Auth;
-#if !NETCORE_SUPPORT
+#if !NETCORE
 using MongoDB.Driver;
 using ServiceStack.Authentication.MongoDb;
 #endif
@@ -165,7 +165,7 @@ namespace ServiceStack.Server.Tests.Auth
         }
     }
 
-#if !NETCORE_SUPPORT
+#if !NETCORE
     [Ignore("Requires MongoDB Dependency")]
     public class MongoDbAuthRepoStatelessAuthTests : StatelessAuthTests
     {

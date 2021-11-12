@@ -49,7 +49,7 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <DefineConstants>$(DefineConstants);NETCORE_SUPPORT;NETCORE</DefineConstants>
+    <DefineConstants>$(DefineConstants);NETCORE</DefineConstants>
   </PropertyGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />

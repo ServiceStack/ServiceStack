@@ -88,7 +88,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.ContentType.StartsWith(contentType));
         }
 
-#if !NETCORE_SUPPORT
+#if !NETCORE
         [Test]
         public void Can_POST_upload_file()
         {

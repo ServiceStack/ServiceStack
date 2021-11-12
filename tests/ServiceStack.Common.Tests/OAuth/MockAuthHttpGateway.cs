@@ -1,4 +1,4 @@
-#if !NETCORE_SUPPORT
+#if !NETCORE
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
