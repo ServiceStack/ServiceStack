@@ -368,7 +368,7 @@
     <PackageReference Include="MongoDB.Driver.Core" Version="2.13.1" />
     <PackageReference Include="MongoDB.Libmongocrypt" Version="1.0.0" />
     <PackageReference Include="MsgPack.Cli" Version="1.0.1" />
-    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="NUnit" Version="3.13.2" />
     <PackageReference Include="ServiceStack" Version="$(Version)" />
     <PackageReference Include="ServiceStack.Aws" Version="$(Version)" />
     <PackageReference Include="ServiceStack.Client" Version="$(Version)" />
