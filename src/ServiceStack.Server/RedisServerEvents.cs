@@ -91,6 +91,7 @@ namespace ServiceStack
                 NotifyUpdateAsync = HandleOnUpdate,
                 NotifyHeartbeatAsync = NotifyHeartbeatAsync,
                 Serialize = HandleSerialize,
+                OnRemoveSubscriptionAsync = HandleOnRemoveSubscriptionAsync
             };
 
             var appHost = HostContext.AppHost;
@@ -104,6 +105,14 @@ namespace ServiceStack
                 OnUpdateAsync = feature.OnUpdateAsync;
                 NotifyChannelOfSubscriptions = feature.NotifyChannelOfSubscriptions;
             }
+        }
+
+        private Task HandleOnRemoveSubscriptionAsync(IEventSubscription sub)
+        {
+            var info = sub.GetInfo();
+            RemoveSubscriptionFromRedis(info);
+
+            return TypeConstants.EmptyTask;
         }
 
         private void OnInit()
@@ -153,9 +162,6 @@ namespace ServiceStack
 
         Task HandleOnLeaveAsync(IEventSubscription sub)
         {
-            var info = sub.GetInfo();
-            RemoveSubscriptionFromRedis(info);
-
             return NotifyChannelsAsync(sub.Channels, "cmd.onLeave", sub.Meta);
         }
 
