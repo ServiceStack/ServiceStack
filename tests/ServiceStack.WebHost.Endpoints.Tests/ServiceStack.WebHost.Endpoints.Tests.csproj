@@ -13,7 +13,14 @@
     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
   </PropertyGroup>
-  <ItemGroup>
+	<PropertyGroup Condition=" '$(TargetFramework)' == 'net472' ">
+		<DefineConstants>$(DefineConstants);NETFX;NET472</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+		<DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
+	</PropertyGroup>
+
+	<ItemGroup>
     <ProjectReference Include="..\..\src\ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.csproj">
       <Project>{5E258282-86A6-4780-AB25-5E458F2E6F70}</Project>
       <Name>ServiceStack.Api.OpenApi</Name>

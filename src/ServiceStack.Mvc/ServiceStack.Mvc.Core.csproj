@@ -3,7 +3,7 @@
     <PackageId>ServiceStack.Mvc.Core</PackageId>
     <AssemblyName>ServiceStack.Mvc</AssemblyName>
     <RootNamespace>ServiceStack.Mvc</RootNamespace>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
     <Title>ServiceStack.Mvc .NET Standard 2.0</Title>
     <PackageDescription>
       MVC Adapter classes to provide tight integration and re-usable functionality between ServiceStack and MVC.
@@ -11,6 +11,13 @@
     </PackageDescription>
     <PackageTags>MVC;ServiceStack;MiniProfiler;FluentValidation;Controller</PackageTags>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NETSTANDARD2_0</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET6_0</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.Core.csproj" />
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.Core.csproj" />

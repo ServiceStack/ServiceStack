@@ -2,13 +2,22 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Mvc</PackageId>
     <AssemblyName>ServiceStack.Mvc</AssemblyName>
-    <TargetFrameworks>net45;net472;netstandard2.0;netstandard2.1;net6.0</TargetFrameworks>
+    <TargetFrameworks>net45;net472;netstandard2.0;net6.0</TargetFrameworks>
     <Title>MVC Adapters for integrating with ServiceStack webservices</Title>
     <PackageDescription>
     MVC Adapter classes to provide tight integration and re-usable functionality between ServiceStack and MVC.
     Including adapters for: MiniProfiler, FluentValidation, Funq IOC Controller Factory, Funq Validator Factory ControllerBase (configured with access to ServiceStack's ICacheClient, ISession, typed UserSession dependencies).
     </PackageDescription>
     <PackageTags>MVC;ServiceStack;MiniProfiler;FluentValidation;Controller</PackageTags>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <DefineConstants>$(DefineConstants);NET472</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NETSTANDARD2_0</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET6_0</DefineConstants>
   </PropertyGroup>
   
   <ItemGroup>
