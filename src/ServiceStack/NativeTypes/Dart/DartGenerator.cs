@@ -40,8 +40,10 @@ namespace ServiceStack.NativeTypes.Dart
             {"String", "String"},
             {"Boolean", "bool"},
             {"DateTime", "DateTime"},
+            {"DateOnly", "DateTime"},
             {"DateTimeOffset", "DateTime"},
             {"TimeSpan", "Duration"},
+            {"TimeOnly", "Duration"},
             {"Guid", "String"},
             {"Char", "String"},
             {"Byte", "int"},
@@ -90,6 +92,7 @@ namespace ServiceStack.NativeTypes.Dart
             {"Stream", "Uint8List(0)"},
             {"Uint8List", "Uint8List(0)"},
             {"DateTime", "DateTime(0)"},
+            {"DateOnly", "DateTime(0)"},
             {"DateTimeOffset", "DateTime(0)"},
         };
         
