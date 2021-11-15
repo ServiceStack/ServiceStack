@@ -42,8 +42,10 @@ namespace ServiceStack.NativeTypes.Swift
         {
             {"Boolean", "Bool"},
             {"DateTime", "Date"},
-            {"TimeSpan", "TimeInterval"},
+            {"DateOnly", "Date"},
             {"DateTimeOffset", "Date"},
+            {"TimeSpan", "TimeInterval"},
+            {"TimeOnly", "TimeInterval"},
             {"Guid", "String"},
             {"Char", "String"}, //no encoder/decoder for Char
             {"Byte", "UInt8"},

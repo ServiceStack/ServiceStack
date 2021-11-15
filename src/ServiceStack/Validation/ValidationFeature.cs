@@ -383,7 +383,8 @@ namespace ServiceStack.Validation
         public static void RegisterValidators(this Container container, ReuseScope scope, params Assembly[] assemblies)
         {
             Init(assemblies);
-            foreach (var validatorType in ValidatorTypes)
+            var validatorTypesSnapshot = ValidatorTypes.ToArray();
+            foreach (var validatorType in validatorTypesSnapshot)
             {
                 container.RegisterValidator(validatorType, scope);
             }
