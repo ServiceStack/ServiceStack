@@ -1328,7 +1328,7 @@ namespace ServiceStack
                         await NotifyLeaveAsync(sub).ConfigAwait();
                     
                     if (OnRemoveSubscriptionAsync != null)
-                        OnRemoveSubscriptionAsync(sub).ConfigAwait();
+                        await OnRemoveSubscriptionAsync(sub).ConfigAwait();
 
                     this.feature?.IncrementCounter("MemDoUnSubs");
                 }
