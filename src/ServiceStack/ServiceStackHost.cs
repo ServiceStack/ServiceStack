@@ -1026,9 +1026,12 @@ namespace ServiceStack
                     }
                 }
             }
-            catch
+            finally
             {
-                await res.EndRequestAsync().ConfigAwait();
+                if (response == null)
+                {
+                    await res.EndRequestAsync().ConfigAwait();
+                }
             }
         }
 

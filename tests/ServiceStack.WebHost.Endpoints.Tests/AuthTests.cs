@@ -952,7 +952,55 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Does_work_with_CredentailsAuth_Multiple_Times()
+        public void Does_return_empty_response_on_forbidden_access()
+        {
+            string downloadBasicAuth(string urlSuffix) =>
+                ListeningOn.CombineWith("/json/reply", urlSuffix)
+                    .GetStringFromUrl(requestFilter:req => req.AddBasicAuth(EmailBasedUsername, PasswordForEmailBasedAccount));
+
+            try
+            {
+                downloadBasicAuth(nameof(RequiresRole).AddQueryParam("Name", "test"));
+                Assert.Fail("Should throw");
+            }
+            catch (WebException e)
+            {
+                Assert.That(e.GetResponseBody(), Does.Not.Contain("{"));
+            }
+            
+            try
+            {
+                downloadBasicAuth(nameof(RequiresAnyRole).AddQueryParam("Name", "test"));
+                Assert.Fail("Should throw");
+            }
+            catch (WebException e)
+            {
+                Assert.That(e.GetResponseBody(), Does.Not.Contain("{"));
+            }
+
+            try
+            {
+                downloadBasicAuth(nameof(RequiresPermission).AddQueryParam("Name", "test"));
+                Assert.Fail("Should throw");
+            }
+            catch (WebException e)
+            {
+                Assert.That(e.GetResponseBody(), Does.Not.Contain("{"));
+            }
+            
+            try
+            {
+                downloadBasicAuth(nameof(RequiresAnyPermission).AddQueryParam("Name", "test"));
+                Assert.Fail("Should throw");
+            }
+            catch (WebException e)
+            {
+                Assert.That(e.GetResponseBody(), Does.Not.Contain("{"));
+            }
+        }
+
+        [Test]
+        public void Does_work_with_CredentialsAuth_Multiple_Times()
         {
             try
             {
