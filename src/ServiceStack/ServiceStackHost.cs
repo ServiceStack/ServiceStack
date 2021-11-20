@@ -1020,15 +1020,11 @@ namespace ServiceStack
                     {
                         await handler.ProcessRequestAsync(req, res, req.OperationName);                        
                     }
-                    else
-                    {
-                        await res.EndRequestAsync().ConfigAwait();
-                    }
                 }
             }
             finally
             {
-                if (response == null)
+                if (!res.IsClosed)
                 {
                     await res.EndRequestAsync().ConfigAwait();
                 }
