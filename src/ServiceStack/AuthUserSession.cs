@@ -238,11 +238,11 @@ namespace ServiceStack
                         return await managesRoles.GetRolesAsync(this.UserAuthId, token);
                     }
                 }
-
-                return this.Roles != null 
-                    ? this.Roles
-                    : TypeConstants.EmptyStringArray;
             }
+
+            return this.Roles != null 
+                ? this.Roles
+                : TypeConstants.EmptyStringArray;
         }
 
         public virtual ICollection<string> GetPermissions(IAuthRepository authRepo)
