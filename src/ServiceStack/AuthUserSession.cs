@@ -211,14 +211,14 @@ namespace ServiceStack
 
         public virtual ICollection<string> GetRoles(IAuthRepository authRepo)
         {
-            if (UserAuthId == null)
-                return TypeConstants.EmptyStringArray;
-
-            if (!FromToken) //If populated from a token it should have the complete list of roles
+            if (UserAuthId != null)
             {
-                if (authRepo is IManageRoles managesRoles)
+                if (!FromToken) //If populated from a token it should have the complete list of roles
                 {
-                    return managesRoles.GetRoles(this.UserAuthId);
+                    if (authRepo is IManageRoles managesRoles)
+                    {
+                        return managesRoles.GetRoles(this.UserAuthId);
+                    }
                 }
             }
 
@@ -229,32 +229,32 @@ namespace ServiceStack
 
         public virtual async Task<ICollection<string>> GetRolesAsync(IAuthRepositoryAsync authRepo, CancellationToken token=default)
         {
-            if (UserAuthId == null)
-                return TypeConstants.EmptyStringArray;
-
-            if (!FromToken) //If populated from a token it should have the complete list of roles
+            if (UserAuthId != null)
             {
-                if (authRepo is IManageRolesAsync managesRoles)
+                if (!FromToken) //If populated from a token it should have the complete list of roles
                 {
-                    return await managesRoles.GetRolesAsync(this.UserAuthId, token);
+                    if (authRepo is IManageRolesAsync managesRoles)
+                    {
+                        return await managesRoles.GetRolesAsync(this.UserAuthId, token);
+                    }
                 }
-            }
 
-            return this.Roles != null 
-                ? this.Roles
-                : TypeConstants.EmptyStringArray;
+                return this.Roles != null 
+                    ? this.Roles
+                    : TypeConstants.EmptyStringArray;
+            }
         }
 
         public virtual ICollection<string> GetPermissions(IAuthRepository authRepo)
         {
-            if (UserAuthId == null)
-                return TypeConstants.EmptyStringArray;
-
-            if (!FromToken) //If populated from a token it should have the complete list of roles
+            if (UserAuthId != null)
             {
-                if (authRepo is IManageRoles managesRoles)
+                if (!FromToken) //If populated from a token it should have the complete list of roles
                 {
-                    return managesRoles.GetPermissions(this.UserAuthId);
+                    if (authRepo is IManageRoles managesRoles)
+                    {
+                        return managesRoles.GetPermissions(this.UserAuthId);
+                    }
                 }
             }
 
@@ -265,14 +265,14 @@ namespace ServiceStack
 
         public virtual async Task<ICollection<string>> GetPermissionsAsync(IAuthRepositoryAsync authRepo, CancellationToken token=default)
         {
-            if (UserAuthId == null)
-                return TypeConstants.EmptyStringArray;
-
-            if (!FromToken) //If populated from a token it should have the complete list of roles
+            if (UserAuthId != null)
             {
-                if (authRepo is IManageRolesAsync managesRoles)
+                if (!FromToken) //If populated from a token it should have the complete list of roles
                 {
-                    return await managesRoles.GetPermissionsAsync(this.UserAuthId, token);
+                    if (authRepo is IManageRolesAsync managesRoles)
+                    {
+                        return await managesRoles.GetPermissionsAsync(this.UserAuthId, token);
+                    }
                 }
             }
 
