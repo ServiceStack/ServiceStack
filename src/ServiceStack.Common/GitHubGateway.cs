@@ -33,6 +33,8 @@ namespace ServiceStack
         Tuple<string,string> FindRepo(string[] orgs, string name, bool useFork=false);
         string GetSourceZipUrl(string user, string repo);
         Task<string> GetSourceZipUrlAsync(string user, string repo);
+        string GetSourceTagZipUrl(string user, string repo, string tag);
+        Task<string> GetSourceTagZipUrlAsync(string user, string repo, string tag);
         Task<List<GithubRepo>> GetSourceReposAsync(string orgName);
         Task<List<GithubRepo>> GetUserAndOrgReposAsync(string githubOrgOrUser);
         GithubRepo GetRepo(string userOrOrg, string repo);
@@ -139,6 +141,28 @@ namespace ServiceStack
 
         public virtual async Task<string> GetSourceZipUrlAsync(string user, string repo) => 
             GetSourceZipUrl(user, repo, await GetJsonAsync($"repos/{user}/{repo}/releases").ConfigAwait());
+
+        public virtual string GetSourceTagZipUrl(string user, string repo, string tag)
+        {
+            var releasesJson = GetJson($"repos/{user}/{repo}/releases");
+            var releasesArray = JsonArrayObjects.Parse(releasesJson);
+            if (releasesArray.Count == 0 || releasesArray.All(x => x["tag_name"] != tag))
+                throw new Exception($"Tag {tag} not found in repo {user}/{repo}");
+            var filteredReleases = JsonArrayObjects.Parse(releasesJson).Where(x => x["tag_name"] == tag)
+                .ToJson();
+            return GetSourceZipUrl(user, repo, filteredReleases);
+        }
+
+        public virtual async Task<string> GetSourceTagZipUrlAsync(string user, string repo, string tag)
+        {
+            var releasesJson = await GetJsonAsync($"repos/{user}/{repo}/releases").ConfigAwait();
+            var releasesArray = JsonArrayObjects.Parse(releasesJson);
+            if (releasesArray.Count == 0 || releasesArray.All(x => x["tag_name"] != tag))
+                throw new Exception($"Tag {tag} not found in repo {user}/{repo}");
+            var filteredReleases = JsonArrayObjects.Parse(releasesJson).Where(x => x["tag_name"] == tag)
+                .ToJson();
+            return GetSourceZipUrl(user, repo, filteredReleases);
+        }
 
         private static string GetSourceZipUrl(string user, string repo, string json)
         {

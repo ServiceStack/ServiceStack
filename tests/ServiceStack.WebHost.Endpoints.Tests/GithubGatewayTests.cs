@@ -8,7 +8,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    [Ignore("Integration Tests")]
+    //[Ignore("Integration Tests")]
     public class GithubGatewayTests
     {
         public static readonly string GistId = "67bc8f75273a29a1ba0609675b8ed1ae";
@@ -119,6 +119,53 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             await vfs.LoadAllTruncatedFilesAsync();
 
             Assert.That(!gist.Files.Values.Any(x => x.Truncated && string.IsNullOrEmpty(x.Content)));
+        }
+
+        [Test]
+        public async Task Can_GetSourceTagZipUrlAsync()
+        {
+            var user = "NetCoreTemplates";
+            var repo = "web";
+            var tag = "v28";
+            
+            var gateway = new GitHubGateway(AccessToken);
+
+            var zipUrlForTag = await gateway.GetSourceTagZipUrlAsync(user, repo, tag).ConfigAwait();
+            
+            Assert.That(zipUrlForTag, Is.EqualTo("https://api.github.com/repos/NetCoreTemplates/web/zipball/v28"));
+        }
+        
+        [Test]
+        public void Can_GetSourceTagZipUrl()
+        {
+            var user = "NetCoreTemplates";
+            var repo = "web";
+            var tag = "v28";
+            
+            var gateway = new GitHubGateway(AccessToken);
+
+            var zipUrlForTag = gateway.GetSourceTagZipUrl(user, repo, tag);
+            
+            Assert.That(zipUrlForTag, Is.EqualTo("https://api.github.com/repos/NetCoreTemplates/web/zipball/v28"));
+        }
+        
+        [Test]
+        public void Can_GetSourceTagZipUrl_InvalidTag()
+        {
+            var user = "NetCoreTemplates";
+            var repo = "web";
+            var tag = "invalid-tag";
+            
+            var gateway = new GitHubGateway(AccessToken);
+
+            var exception = Assert.Throws<Exception>(() =>
+            {
+                var zipUrlForTag = gateway.GetSourceTagZipUrl(user, repo, tag);
+            });
+            
+            Assert.That(exception, Is.Not.Null);
+            StringAssert.Contains("not found",exception.Message);
+            
         }
     }
 }
