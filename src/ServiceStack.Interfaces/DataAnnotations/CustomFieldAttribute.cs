@@ -6,7 +6,9 @@ namespace ServiceStack.DataAnnotations
     public class CustomFieldAttribute : AttributeBase
     {
         public string Sql { get; set; }
+        public int Order { get; set; }
 
+        public CustomFieldAttribute() { }
         public CustomFieldAttribute(string sql)
         {
             Sql = sql;
