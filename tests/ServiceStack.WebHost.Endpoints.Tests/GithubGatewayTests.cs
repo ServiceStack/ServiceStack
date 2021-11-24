@@ -8,7 +8,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    //[Ignore("Integration Tests")]
+    [Ignore("Integration Tests")]
     public class GithubGatewayTests
     {
         public static readonly string GistId = "67bc8f75273a29a1ba0609675b8ed1ae";
