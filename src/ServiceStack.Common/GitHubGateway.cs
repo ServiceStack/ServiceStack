@@ -137,38 +137,20 @@ namespace ServiceStack
         }
 
         public virtual string GetSourceZipUrl(string user, string repo) => 
-            GetSourceZipUrl(user, repo, GetJson($"repos/{user}/{repo}/releases"));
+            GetSourceZipReleaseUrl(user, repo, GetJson($"repos/{user}/{repo}/releases"));
+
+        public virtual string GetSourceZipUrl(string user, string repo, string tag) => 
+            $"https://github.com/{user}/{repo}/archive/refs/tags/{tag}.zip";
 
         public virtual async Task<string> GetSourceZipUrlAsync(string user, string repo) => 
-            GetSourceZipUrl(user, repo, await GetJsonAsync($"repos/{user}/{repo}/releases").ConfigAwait());
+            GetSourceZipReleaseUrl(user, repo, await GetJsonAsync($"repos/{user}/{repo}/releases").ConfigAwait());
 
-        public virtual string GetSourceTagZipUrl(string user, string repo, string tag)
-        {
-            var releasesJson = GetJson($"repos/{user}/{repo}/releases");
-            var releasesArray = JsonArrayObjects.Parse(releasesJson);
-            if (releasesArray.Count == 0 || releasesArray.All(x => x["tag_name"] != tag))
-                throw new Exception($"Tag {tag} not found in repo {user}/{repo}");
-            var filteredReleases = JsonArrayObjects.Parse(releasesJson).Where(x => x["tag_name"] == tag)
-                .ToJson();
-            return GetSourceZipUrl(user, repo, filteredReleases);
-        }
-
-        public virtual async Task<string> GetSourceTagZipUrlAsync(string user, string repo, string tag)
-        {
-            var releasesJson = await GetJsonAsync($"repos/{user}/{repo}/releases").ConfigAwait();
-            var releasesArray = JsonArrayObjects.Parse(releasesJson);
-            if (releasesArray.Count == 0 || releasesArray.All(x => x["tag_name"] != tag))
-                throw new Exception($"Tag {tag} not found in repo {user}/{repo}");
-            var filteredReleases = JsonArrayObjects.Parse(releasesJson).Where(x => x["tag_name"] == tag)
-                .ToJson();
-            return GetSourceZipUrl(user, repo, filteredReleases);
-        }
-
-        private static string GetSourceZipUrl(string user, string repo, string json)
+        private static string GetSourceZipReleaseUrl(string user, string repo, string json)
         {
             var response = JSON.parse(json);
 
-            if (response is List<object> releases && releases.Count > 0 &&
+            if (response is List<object> releases && 
+                releases.Count > 0 &&
                 releases[0] is Dictionary<string, object> release &&
                 release.TryGetValue("zipball_url", out var zipUrl))
             {
