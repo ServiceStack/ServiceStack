@@ -33,8 +33,6 @@ namespace ServiceStack
         Tuple<string,string> FindRepo(string[] orgs, string name, bool useFork=false);
         string GetSourceZipUrl(string user, string repo);
         Task<string> GetSourceZipUrlAsync(string user, string repo);
-        string GetSourceTagZipUrl(string user, string repo, string tag);
-        Task<string> GetSourceTagZipUrlAsync(string user, string repo, string tag);
         Task<List<GithubRepo>> GetSourceReposAsync(string orgName);
         Task<List<GithubRepo>> GetUserAndOrgReposAsync(string githubOrgOrUser);
         GithubRepo GetRepo(string userOrOrg, string repo);
