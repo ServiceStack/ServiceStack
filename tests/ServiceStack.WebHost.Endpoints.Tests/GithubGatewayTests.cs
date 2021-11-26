@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.IO;
@@ -122,20 +123,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public async Task Can_GetSourceTagZipUrlAsync()
-        {
-            var user = "NetCoreTemplates";
-            var repo = "web";
-            var tag = "v28";
-            
-            var gateway = new GitHubGateway(AccessToken);
-
-            var zipUrlForTag = await gateway.GetSourceTagZipUrlAsync(user, repo, tag).ConfigAwait();
-            
-            Assert.That(zipUrlForTag, Is.EqualTo("https://api.github.com/repos/NetCoreTemplates/web/zipball/v28"));
-        }
-        
-        [Test]
         public void Can_GetSourceTagZipUrl()
         {
             var user = "NetCoreTemplates";
@@ -144,9 +131,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             
             var gateway = new GitHubGateway(AccessToken);
 
-            var zipUrlForTag = gateway.GetSourceTagZipUrl(user, repo, tag);
+            var zipUrlForTag = gateway.GetSourceZipUrl(user, repo, tag);
             
-            Assert.That(zipUrlForTag, Is.EqualTo("https://api.github.com/repos/NetCoreTemplates/web/zipball/v28"));
+            Assert.That(zipUrlForTag, Is.EqualTo("https://github.com/NetCoreTemplates/web/archive/refs/tags/v28.zip"));
         }
         
         [Test]
@@ -158,14 +145,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             
             var gateway = new GitHubGateway(AccessToken);
 
-            var exception = Assert.Throws<Exception>(() =>
+            var exception = Assert.Throws<WebException>(() =>
             {
-                var zipUrlForTag = gateway.GetSourceTagZipUrl(user, repo, tag);
+                var zipBytes = gateway.GetSourceZipUrl(user, repo, tag).GetBytesFromUrl();
             });
             
             Assert.That(exception, Is.Not.Null);
-            StringAssert.Contains("not found",exception.Message);
-            
+            Assert.That(exception.Message, Does.Contain("(404) Not Found"));
         }
     }
 }
