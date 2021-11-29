@@ -2,7 +2,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Common</PackageId>
     <AssemblyName>ServiceStack.Common</AssemblyName>
-    <TargetFrameworks>net45;net472;netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
     <RootNamespace>ServiceStack</RootNamespace>
     <Title>Common libraries for ServiceStack projects</Title>
     <PackageDescription>#Script, Virtual File System, SimpleContainer and Common library for ServiceStack projects.</PackageDescription>
