@@ -459,10 +459,7 @@ namespace ServiceStack.Auth
             if (!UseDistinctRoleTables)
             {
                 var userAuth = await GetUserAuthAsync(userAuthId, token).ConfigAwait();
-                if (userAuth == null)
-                    return TypeConstants.EmptyStringArray;
-
-                return userAuth.Roles;
+                return userAuth?.Roles ?? TypeConstants.EmptyStringList;
             }
             else
             {
@@ -480,10 +477,7 @@ namespace ServiceStack.Auth
             if (!UseDistinctRoleTables)
             {
                 var userAuth = await GetUserAuthAsync(userAuthId, token).ConfigAwait();
-                if (userAuth == null)
-                    return TypeConstants.EmptyStringArray;
-
-                return userAuth.Permissions;
+                return userAuth?.Permissions ?? TypeConstants.EmptyStringList;
             }
             else
             {
