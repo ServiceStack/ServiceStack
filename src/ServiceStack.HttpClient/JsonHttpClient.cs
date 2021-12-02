@@ -92,6 +92,12 @@ namespace ServiceStack
             }
         }
 
+        public JsonHttpClient WithBasePath(string basePath)
+        {
+            UseBasePath = basePath;
+            return this;
+        }
+
         public JsonHttpClient(string baseUri) : this()
         {
             SetBaseUri(baseUri);

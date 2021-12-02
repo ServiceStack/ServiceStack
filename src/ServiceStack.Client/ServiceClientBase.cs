@@ -2148,6 +2148,13 @@ namespace ServiceStack
         public static Task<TResponse> PatchBodyAsync<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, Stream requestBody, CancellationToken token = default(CancellationToken)) =>
             client.SendAsync<TResponse>(HttpMethods.Patch, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody, token);
 
+        public static T WithBasePath<T>(this T client, string basePath)
+            where T : ServiceClientBase
+        {
+            client.UseBasePath = basePath;
+            return client;
+        }
+
         public static void SetCookie(this CookieContainer cookieContainer, 
             Uri baseUri, string name, string value, DateTime? expiresAt,
             string path = "/", bool? httpOnly = null, bool? secure = null)
