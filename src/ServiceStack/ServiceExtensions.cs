@@ -259,9 +259,13 @@ namespace ServiceStack
             var sessionKey = SessionFeature.GetSessionKey(sessionId);
             if (sessionKey != null)
             {
-                session = async
-                    ? await httpReq.GetCacheClientAsync().GetAsync<IAuthSession>(sessionKey, token).ConfigAwait()
-                    : httpReq.GetCacheClient().Get<IAuthSession>(sessionKey);
+                // If changing global JsConfig configuration to use snake_case serialization convention
+                using (JsConfig.With(new Text.Config { PropertyConvention = PropertyConvention.Lenient }))
+                {
+                    session = async
+                        ? await httpReq.GetCacheClientAsync().GetAsync<IAuthSession>(sessionKey, token).ConfigAwait()
+                        : httpReq.GetCacheClient().Get<IAuthSession>(sessionKey);
+                }
 
                 if (session != null)
                     session = appHost.OnSessionFilter(httpReq, session, sessionId);
