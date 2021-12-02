@@ -1,3 +1,4 @@
+using System;
 using System.Net.Http;
 
 namespace ServiceStack
@@ -6,8 +7,13 @@ namespace ServiceStack
     {
         public static HttpMessageHandler MessageHandler { get; set; } = new HttpClientHandler(); 
         
-        public static JsonHttpClient Create(string baseUrl) => new JsonHttpClient(baseUrl) {
-            HttpMessageHandler = MessageHandler
-        };
+        public static JsonHttpClient Create(string baseUrl, Action<JsonHttpClient> configure = null) 
+        {
+            var client = new JsonHttpClient(baseUrl) {
+                HttpMessageHandler = MessageHandler
+            };
+            configure?.Invoke(client);
+            return client;
+        }
     }
 }
