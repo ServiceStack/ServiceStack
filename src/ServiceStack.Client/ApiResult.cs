@@ -127,7 +127,7 @@ public static class ApiResultUtils
     {
         try
         {
-            await client.PublishAsync(request);
+            await client.SendAsync(request);
             return new ApiResult<EmptyResponse>(new EmptyResponse());
         }
         catch (Exception ex)
@@ -135,11 +135,11 @@ public static class ApiResultUtils
             if (ex is WebServiceException webEx)
                 return new ApiResult<EmptyResponse>(webEx.ResponseStatus);
 
-            return new ApiResult<EmptyResponse>(new ResponseStatus {
+            return new ApiResult<EmptyResponse>(new ResponseStatus
+            {
                 ErrorCode = ex.GetType().Name,
                 Message = ex.Message,
             });
         }
     }
-    
 }
