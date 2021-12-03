@@ -14,8 +14,9 @@ namespace ServiceStack
 
         public static PocoDataSource<T> Create<T>(IEnumerable<T> items, Func<IEnumerable<T>, long> nextIdSequence) =>
             new(items, nextIdSequence(items));
-        public static PocoDataSource<T> Create<T>(ICollection<T> items, Func<IEnumerable<T>, long> nextIdSequence) =>
-            new(items, nextIdSequence(items));
+
+        public static PocoDataSource<T> Create<T>(ICollection<T> items, Func<IEnumerable<T>, long> nextId) =>
+            new(items, nextId(items));
     }
 
     /// <summary>
@@ -51,13 +52,20 @@ namespace ServiceStack
         /// </summary>
         public long NextId() => Interlocked.Increment(ref idSequence);
 
-        public MemoryDataSource<T> ToDataSource(IQueryData dto, IRequest req)
+        /// <summary>
+        /// Returns a shallow copy of all items
+        /// </summary>
+        /// <returns></returns>
+        public List<T> GetAll()
         {
-            List<T> clone;
             lock (items)
-                clone = new List<T>(items);
-            return new MemoryDataSource<T>(clone, dto, req);
+                return new List<T>(items);
         }
+
+        /// <summary>
+        /// Create and return all items in a MemoryDataSource
+        /// </summary>
+        public MemoryDataSource<T> ToDataSource(IQueryData dto, IRequest req) => new(GetAll(), dto, req);
 
         /// <summary>
         /// Add an existing item.
@@ -87,9 +95,9 @@ namespace ServiceStack
             lock (items)
             {
                 var updateIndex = FindIndexById(itemId);
-                if (updateIndex < 0) 
+                if (updateIndex < 0)
                     return false;
-                
+
                 items[updateIndex] = item;
                 return true;
             }
@@ -110,11 +118,39 @@ namespace ServiceStack
             lock (items)
             {
                 var updateIndex = FindIndexById(itemId);
-                if (updateIndex < 0) 
+                if (updateIndex < 0)
                     return false;
 
                 items.RemoveAt(updateIndex);
                 return true;
+            }
+        }
+
+        /// <summary>
+        /// Delete All Item with matching Ids
+        /// </summary>
+        /// <returns>true if an item was deleted otherwise false</returns>
+        public int TryDeleteByIds<TId>(IEnumerable<TId> itemIds)
+        {
+            lock (items)
+            {
+                var itemsRemoved = 0;
+                foreach (var itemId in itemIds)
+                {
+                    if (itemId == null)
+                        continue;
+                    
+                    var updateIndex = FindIndexById(itemId);
+                    if (updateIndex < 0)
+                    {
+                        itemsRemoved++;
+                        continue;
+                    }
+
+                    items.RemoveAt(updateIndex);
+                }
+
+                return itemsRemoved;
             }
         }
 

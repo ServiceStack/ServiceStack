@@ -100,8 +100,7 @@ public static class ApiResultUtils
     /// Annotate Request DTOs with IGet, IPost, etc HTTP Verb markers to specify which HTTP Method is used:
     /// https://docs.servicestack.net/csharp-client.html#http-verb-interface-markers
     /// </summary>
-    public static async Task<ApiResult<TResponse>> ApiAsync<TResponse>(this IServiceClient client,
-        IReturn<TResponse> request)
+    public static async Task<ApiResult<TResponse>> ApiAsync<TResponse>(this IServiceClient client, IReturn<TResponse> request)
     {
         try
         {
@@ -119,4 +118,28 @@ public static class ApiResultUtils
             });
         }
     }
+
+    /// <summary>
+    /// Annotate Request DTOs with IGet, IPost, etc HTTP Verb markers to specify which HTTP Method is used:
+    /// https://docs.servicestack.net/csharp-client.html#http-verb-interface-markers
+    /// </summary>
+    public static async Task<ApiResult<EmptyResponse>> ApiAsync(this IServiceClient client, IReturnVoid request)
+    {
+        try
+        {
+            await client.PublishAsync(request);
+            return new ApiResult<EmptyResponse>(new EmptyResponse());
+        }
+        catch (Exception ex)
+        {
+            if (ex is WebServiceException webEx)
+                return new ApiResult<EmptyResponse>(webEx.ResponseStatus);
+
+            return new ApiResult<EmptyResponse>(new ResponseStatus {
+                ErrorCode = ex.GetType().Name,
+                Message = ex.Message,
+            });
+        }
+    }
+    
 }
