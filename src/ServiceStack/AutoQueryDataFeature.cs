@@ -977,6 +977,12 @@ namespace ServiceStack
         }
     }
 
+    public static class MemoryDataSource
+    {
+        public static MemoryDataSource<T> Create<T>(ICollection<T> data, IQueryData dto, IRequest req = null) =>
+            new(data, dto, req);
+    }
+
     public class MemoryDataSource<T> : QueryDataSource<T>
     {
         public IEnumerable<T> Data { get; }
@@ -999,6 +1005,9 @@ namespace ServiceStack
         {
             return Data;
         }
+
+        public static MemoryDataSource<TItem> Create<TItem>(IEnumerable<TItem> data, IQueryData dto, IRequest req = null) =>
+            new(data, dto, req);
     }
 
     public abstract class QueryDataSource<T> : IQueryDataSource<T>
