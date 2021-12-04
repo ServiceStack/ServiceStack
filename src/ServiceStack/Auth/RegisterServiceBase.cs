@@ -119,10 +119,10 @@ namespace ServiceStack.Auth
     {
         protected virtual async Task<object> CreateRegisterResponse(IAuthSession session, string userName, string password, bool? autoLogin=null)
         {
-            var authFeature = AssertPlugin<AuthFeature>();
+            var authFeature = GetPlugin<AuthFeature>();
             var returnUrl = Request.GetReturnUrl();
             if (!string.IsNullOrEmpty(returnUrl))
-                authFeature.ValidateRedirectLinks(Request, returnUrl);
+                authFeature?.ValidateRedirectLinks(Request, returnUrl);
 
             RegisterResponse response = null;
             if (autoLogin.GetValueOrDefault())
@@ -156,7 +156,7 @@ namespace ServiceStack.Auth
                         Meta = typedResponse.Meta,
                     };
 
-                    if (authFeature.RegisterResponseDecorator != null)
+                    if (authFeature?.RegisterResponseDecorator != null)
                     {
                         var ctx = new RegisterFilterContext {
                             RegisterService = this,
