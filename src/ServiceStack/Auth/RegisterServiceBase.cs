@@ -150,6 +150,9 @@ namespace ServiceStack.Auth
                         UserId = session.UserAuthId,
                         BearerToken = typedResponse.BearerToken,
                         RefreshToken = typedResponse.RefreshToken,
+                        Roles = typedResponse.Roles,
+                        Permissions = typedResponse.Permissions,
+                        Meta = typedResponse.Meta,
                     };
                 }
             }

@@ -313,7 +313,7 @@ namespace ServiceStack.Auth
         
         public virtual IAuthSession CreateSessionFromClaims(IRequest req, List<Claim> claims)
         {
-            var sessionId = claims.FirstOrDefault(x => x.Type == "jid")?.Value ?? ServiceStack.SessionExtensions.CreateRandomSessionId();
+            var sessionId = claims.FirstOrDefault(x => x.Type == "jid")?.Value ?? SessionExtensions.CreateRandomSessionId();
             var session = SessionFeature.CreateNewSession(req, sessionId);
 
             session.AuthProvider = Name;
@@ -472,9 +472,6 @@ namespace ServiceStack.Auth
             if (authContext.Result.Cookies.All(x => x.Name != IdentityAuth.TokenCookie))
             {
                 var (user, roles) = await GetUserAndRolesAsync(authContext.Service, authContext.Session.UserAuthName).ConfigAwait();
-                
-                
-
                 var accessToken = CreateJwtBearerToken(authContext.Request, user, roles);
                 await authContext.Request.RemoveSessionAsync(authContext.Session.Id, token);
 
