@@ -16,12 +16,12 @@ public static class CssUtils
             : "";
     }
     
-    public static string ClassNames(params string[] classes)
+    public static string ClassNames(params string?[] classes)
     {
         var sb = new StringBuilder();
         foreach (var cls in classes)
         {
-            if (cls.IsNullOrEmpty())
+            if (string.IsNullOrEmpty(cls))
                 continue;
 
             if (sb.Length > 0)
