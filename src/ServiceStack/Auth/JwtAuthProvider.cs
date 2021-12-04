@@ -100,7 +100,7 @@ namespace ServiceStack.Auth
                     });
             }
 
-            NotifyJwtCookiesUsed(authContext.Result);
+            JwtUtils.NotifyJwtCookiesUsed(authContext.Result);
         }
 
         public Func<byte[], byte[]> GetHashAlgorithm() => GetHashAlgorithm(null);

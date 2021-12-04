@@ -377,7 +377,7 @@ namespace ServiceStack.Auth
                     if (alreadyAuthenticated)
                         return this.Redirect(referrerUrl.SetParam("s", "0"));
 
-                    if (!(response is IHttpResult) && !string.IsNullOrEmpty(referrerUrl))
+                    if (response is not IHttpResult && !string.IsNullOrEmpty(referrerUrl))
                     {
                         return new HttpResult(response) {
                             Location = referrerUrl

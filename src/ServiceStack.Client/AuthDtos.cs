@@ -44,7 +44,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class AuthenticateResponse : IMeta, IHasSessionId, IHasBearerToken
+    public class AuthenticateResponse : IMeta, IHasResponseStatus, IHasSessionId, IHasBearerToken, IHasRefreshToken
     {
         public AuthenticateResponse()
         {
@@ -84,7 +84,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class RegisterResponse : IHasResponseStatus, IMeta
+    public class RegisterResponse : IMeta, IHasResponseStatus, IHasSessionId, IHasBearerToken, IHasRefreshToken
     {
         public RegisterResponse()
         {

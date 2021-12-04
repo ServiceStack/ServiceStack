@@ -992,50 +992,86 @@ namespace ServiceStack.Auth
             appHost.RegisterServices(ServiceRoutes);
 
             feature.AuthResponseDecorator = AuthenticateResponseDecorator;
+            feature.RegisterResponseDecorator = RegisterResponseDecorator;
         }
 
-        public object AuthenticateResponseDecorator(AuthFilterContext authCtx)
+        public object AuthenticateResponseDecorator(AuthFilterContext ctx)
         {
-            var req = authCtx.AuthService.Request;
+            var req = ctx.Request;
             if (req.IsInProcessRequest())
-                return authCtx.AuthResponse;
+                return ctx.AuthResponse;
 
-            if (authCtx.AuthResponse.BearerToken == null || authCtx.AuthRequest.UseTokenCookie.GetValueOrDefault(UseTokenCookie) != true)
-                return authCtx.AuthResponse;
+            if (ctx.AuthResponse.BearerToken == null || ctx.AuthRequest.UseTokenCookie.GetValueOrDefault(UseTokenCookie) != true)
+                return ctx.AuthResponse;
 
-            req.RemoveSession(authCtx.AuthService.GetSessionId());
+            req.RemoveSession(req.GetSessionId());
 
-            var httpResult = new HttpResult(authCtx.AuthResponse);
+            var httpResult = ctx.AuthResponse.ToTokenCookiesHttpResult(req,
+                Keywords.TokenCookie,
+                DateTime.UtcNow.Add(ExpireTokensIn),
+                Keywords.RefreshTokenCookie,
+                DateTime.UtcNow.Add(ExpireRefreshTokensIn),
+                ctx.ReferrerUrl);
+            return httpResult;
+        }
+
+        public object RegisterResponseDecorator(RegisterFilterContext ctx)
+        {
+            var req = ctx.Request;
+            if (ctx.RegisterResponse.BearerToken == null || UseTokenCookie != true)
+                return ctx.RegisterResponse;
+
+            var httpResult = ctx.RegisterResponse.ToTokenCookiesHttpResult(req,
+                Keywords.TokenCookie,
+                DateTime.UtcNow.Add(ExpireTokensIn),
+                Keywords.RefreshTokenCookie,
+                DateTime.UtcNow.Add(ExpireRefreshTokensIn),
+                ctx.ReferrerUrl);
+            return httpResult;
+        }
+    }
+
+    public static class JwtUtils
+    {
+        public static HttpResult ToTokenCookiesHttpResult(this IHasBearerToken responseDto, IRequest req,
+            string tokenCookie,
+            DateTime expireTokenIn,
+            string refreshTokenCookie,
+            DateTime expireRefreshTokenIn,
+            string referrerUrl)
+        {
+            var httpResult = new HttpResult(responseDto);
             httpResult.AddCookie(req,
-                new Cookie(Keywords.TokenCookie, authCtx.AuthResponse.BearerToken, Cookies.RootPath) {
+                new Cookie(tokenCookie, responseDto.BearerToken, Cookies.RootPath) {
                     HttpOnly = true,
                     Secure = req.IsSecureConnection,
-                    Expires = DateTime.UtcNow.Add(ExpireTokensIn),
+                    Expires = expireTokenIn,
                 });
-            if (UseRefreshTokenCookie.GetValueOrDefault(UseTokenCookie) && authCtx.AuthResponse.RefreshToken != null)
+            var refreshToken = (responseDto as IHasRefreshToken)?.RefreshToken; 
+            if (refreshToken != null)
             {
                 httpResult.AddCookie(req,
-                    new Cookie(Keywords.RefreshTokenCookie, authCtx.AuthResponse.RefreshToken, Cookies.RootPath) {
+                    new Cookie(refreshTokenCookie, refreshToken, Cookies.RootPath) {
                         HttpOnly = true,
                         Secure = req.IsSecureConnection,
-                        Expires = DateTime.UtcNow.Add(ExpireRefreshTokensIn),
+                        Expires = expireRefreshTokenIn,
                     });
             }
 
             NotifyJwtCookiesUsed(httpResult);
 
             var isHtml = req.ResponseContentType.MatchesContentType(MimeTypes.Html);
-            if (isHtml && authCtx.ReferrerUrl != null)
+            if (isHtml && referrerUrl != null)
             {
                 httpResult.StatusCode = HttpStatusCode.Redirect;
-                httpResult.Location = authCtx.ReferrerUrl;
+                httpResult.Location = referrerUrl;
             }
 
             return httpResult;
         }
 
         //Notify HttpClients which can't access HttpOnly cookies (i.e. web) that JWT Token Cookies are being used 
-        internal static void NotifyJwtCookiesUsed(IHttpResult httpResult)
+        public static void NotifyJwtCookiesUsed(IHttpResult httpResult)
         {
             var cookies = new List<string>();
             foreach (var cookie in httpResult.Cookies)

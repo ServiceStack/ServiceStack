@@ -119,9 +119,10 @@ namespace ServiceStack.Auth
     {
         protected virtual async Task<object> CreateRegisterResponse(IAuthSession session, string userName, string password, bool? autoLogin=null)
         {
+            var authFeature = AssertPlugin<AuthFeature>();
             var returnUrl = Request.GetReturnUrl();
             if (!string.IsNullOrEmpty(returnUrl))
-                GetPlugin<AuthFeature>()?.ValidateRedirectLinks(Request, returnUrl);
+                authFeature.ValidateRedirectLinks(Request, returnUrl);
 
             RegisterResponse response = null;
             if (autoLogin.GetValueOrDefault())
@@ -154,6 +155,19 @@ namespace ServiceStack.Auth
                         Permissions = typedResponse.Permissions,
                         Meta = typedResponse.Meta,
                     };
+
+                    if (authFeature.RegisterResponseDecorator != null)
+                    {
+                        var ctx = new RegisterFilterContext {
+                            RegisterService = this,
+                            Register = Request.Dto as Register,
+                            RegisterResponse = response,
+                            ReferrerUrl = returnUrl,
+                            Session = session,
+                        };
+                        var result = authFeature.RegisterResponseDecorator(ctx);
+                        return result;
+                    }
                 }
             }
 

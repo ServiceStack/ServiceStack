@@ -160,6 +160,7 @@ namespace ServiceStack
         }
 
         public Func<AuthFilterContext, object> AuthResponseDecorator { get; set; }
+        public Func<RegisterFilterContext, object> RegisterResponseDecorator { get; set; }
 
         public bool IncludeAssignRoleServices
         {

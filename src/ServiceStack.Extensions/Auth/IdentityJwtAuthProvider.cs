@@ -212,45 +212,41 @@ namespace ServiceStack.Auth
             tokenParams.IssuerSigningKey ??= new SymmetricSecurityKey(AesUtils.CreateKey());
 
             feature.AuthResponseDecorator = AuthenticateResponseDecorator;
+            feature.RegisterResponseDecorator = RegisterResponseDecorator;
         }
 
-        public object AuthenticateResponseDecorator(AuthFilterContext authCtx)
+        public object AuthenticateResponseDecorator(AuthFilterContext ctx)
         {
-            var req = authCtx.AuthService.Request;
+            var req = ctx.AuthService.Request;
             if (req.IsInProcessRequest())
-                return authCtx.AuthResponse;
+                return ctx.AuthResponse;
 
-            if (authCtx.AuthResponse.BearerToken == null)
-                return authCtx.AuthResponse;
+            if (ctx.AuthResponse.BearerToken == null)
+                return ctx.AuthResponse;
 
-            req.RemoveSession(authCtx.AuthService.GetSessionId());
+            req.RemoveSession(req.GetSessionId());
 
-            var httpResult = new HttpResult(authCtx.AuthResponse);
-            httpResult.AddCookie(req,
-                new Cookie(IdentityAuth.TokenCookie, authCtx.AuthResponse.BearerToken, Cookies.RootPath) {
-                    HttpOnly = true,
-                    Secure = req.IsSecureConnection,
-                    Expires = DateTime.UtcNow.Add(ExpireTokensIn),
-                });
-            if (authCtx.AuthResponse.RefreshToken != null)
-            {
-                httpResult.AddCookie(req,
-                    new Cookie(IdentityAuth.RefreshTokenCookie, authCtx.AuthResponse.RefreshToken, Cookies.RootPath) {
-                        HttpOnly = true,
-                        Secure = req.IsSecureConnection,
-                        Expires = DateTime.UtcNow.Add(ExpireRefreshTokensIn),
-                    });
-            }
+            var httpResult = ctx.AuthResponse.ToTokenCookiesHttpResult(req,
+                IdentityAuth.TokenCookie,
+                DateTime.UtcNow.Add(ExpireTokensIn),
+                IdentityAuth.RefreshTokenCookie,
+                DateTime.UtcNow.Add(ExpireRefreshTokensIn),
+                ctx.ReferrerUrl);
+            return httpResult;
+        }
 
-            NotifyJwtCookiesUsed(httpResult);
+        public object RegisterResponseDecorator(RegisterFilterContext ctx)
+        {
+            var req = ctx.Request;
+            if (ctx.RegisterResponse.BearerToken == null)
+                return ctx.RegisterResponse;
 
-            var isHtml = req.ResponseContentType.MatchesContentType(MimeTypes.Html);
-            if (isHtml && authCtx.ReferrerUrl != null)
-            {
-                httpResult.StatusCode = HttpStatusCode.Redirect;
-                httpResult.Location = authCtx.ReferrerUrl;
-            }
-
+            var httpResult = ctx.RegisterResponse.ToTokenCookiesHttpResult(req,
+                IdentityAuth.TokenCookie,
+                DateTime.UtcNow.Add(ExpireTokensIn),
+                IdentityAuth.RefreshTokenCookie,
+                DateTime.UtcNow.Add(ExpireRefreshTokensIn),
+                ctx.ReferrerUrl);
             return httpResult;
         }
 
@@ -281,14 +277,6 @@ namespace ServiceStack.Auth
             }
             
             throw new NotImplementedException("JWT Authenticate() should not be called directly");
-        }
-
-        //Notify HttpClients which can't access HttpOnly cookies (i.e. web) that JWT Token Cookies are being used 
-        internal static void NotifyJwtCookiesUsed(IHttpResult httpResult)
-        {
-            var cookies = httpResult.Cookies.Map(cookie => cookie.Name);
-            if (cookies.Count > 0)
-                httpResult.Headers.Add(Keywords.XCookies, string.Join(",", cookies));
         }
 
         /// <summary>
@@ -495,7 +483,7 @@ namespace ServiceStack.Auth
                     });
             }
 
-            NotifyJwtCookiesUsed(authContext.Result);
+            JwtUtils.NotifyJwtCookiesUsed(authContext.Result);
         }
     }
     
