@@ -8,7 +8,21 @@ namespace ServiceStack;
 
 public static class ApiResult
 {
+    public const string FieldErrorCode = "ValidationException";
+
     public static ApiResult<TResponse> Create<TResponse>(TResponse response) => new(response);
+    
+    public static ApiResult<TResponse> CreateError<TResponse>(ResponseStatus errorStatus) => new(errorStatus);
+
+    public static ApiResult<TResponse> CreateError<TResponse>(string message, string? errorCode = nameof(Exception)) =>
+        new(ApiResultUtils.CreateError(message, errorCode));
+
+    public static ApiResult<TResponse> CreateFieldError<TResponse>(string fieldName, string message, string? errorCode = FieldErrorCode)
+    {
+        var apiResult = new ApiResult<TResponse>();
+        apiResult.AddFieldError(fieldName, message, errorCode);
+        return apiResult;
+    }
 }
 
 public class ApiResult<TResponse>
@@ -47,7 +61,7 @@ public class ApiResult<TResponse>
 
     public void Reset() => ErrorStatus = null;
 
-    public void AddFieldError(string fieldName, string message)
+    public void AddFieldError(string fieldName, string message, string? errorCode = ApiResult.FieldErrorCode)
     {
         ErrorStatus ??= new ResponseStatus {
             ErrorCode = ApiResultUtils.FieldErrorCode,
