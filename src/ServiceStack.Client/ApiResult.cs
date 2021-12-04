@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 
 namespace ServiceStack;
 
+public static class ApiResult
+{
+    public static ApiResult<TResponse> Create<TResponse>(TResponse response) => new(response);
+}
+
 public class ApiResult<TResponse>
 {
     public TResponse? Response { get; }
@@ -182,4 +187,21 @@ public static class ApiResultUtils
             });
         }
     }
+
+    /// <summary>
+    /// Convert AutoLogin RegisterResponse into AuthenticateResponse to avoid additional trip
+    /// </summary>
+    public static AuthenticateResponse ToAuthenticateResponse(this RegisterResponse from) => new() {
+        // don't use automapping/reflection as needs to work in AOT/Blazor 
+        UserId = from.UserId,
+        SessionId = from.SessionId,
+        UserName = from.UserName,
+        ReferrerUrl = from.ReferrerUrl,
+        BearerToken = from.BearerToken,
+        RefreshToken = from.RefreshToken,
+        Roles = from.Roles,
+        Permissions = from.Permissions,
+        Meta = from.Meta,
+    };
+    
 }

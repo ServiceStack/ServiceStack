@@ -97,9 +97,11 @@ namespace ServiceStack
         [DataMember(Order = 4)] public string ReferrerUrl { get; set; }
         [DataMember(Order = 5)] public string BearerToken { get; set; }
         [DataMember(Order = 6)] public string RefreshToken { get; set; }
+        [DataMember(Order = 7)] public List<string> Roles { get; set; } 
+        [DataMember(Order = 8)] public List<string> Permissions { get; set; } 
 
-        [DataMember(Order = 7)] public ResponseStatus ResponseStatus { get; set; }
-        [DataMember(Order = 8)] public Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 9)] public ResponseStatus ResponseStatus { get; set; }
+        [DataMember(Order = 10)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]
