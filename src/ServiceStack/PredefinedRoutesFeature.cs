@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Web;
-using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
+#if NET45
+using System.Web;
+#else
+using ServiceStack.Host;
+#endif
 
 namespace ServiceStack
 {
@@ -10,9 +13,14 @@ namespace ServiceStack
     {
         public string Id { get; set; } = Plugins.PredefinedRoutes;
         public Dictionary<string, Func<IHttpHandler>> HandlerMappings { get; } = new();
+
+        public string JsonApiRoute { get; set; } = "/api/{Request}";
         
         public void Register(IAppHost appHost)
         {
+            if (appHost.Config.EnableJsonApiRoute && JsonApiRoute != null)
+                appHost.RawHttpHandlers.Add(ApiHandlers.Json(JsonApiRoute));
+            
             appHost.CatchAllHandlers.Add(ProcessRequest);
         }
 
