@@ -186,7 +186,7 @@ namespace ServiceStack
                 ? t => $"/{formatFallbackToPredefinedRoute}/reply/{t.GetOperationName()}"
                 : null);
         
-        public static string ToUrl(this object requestDto, string httpMethod = "GET", Func<Type, string> fallback=null)
+        public static string ToUrl(this object requestDto, string httpMethod, Func<Type, string> fallback)
         {
             httpMethod = httpMethod.ToUpper();
             var urlFilter = requestDto as IUrlFilter;
