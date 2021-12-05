@@ -5,13 +5,8 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using static System.String;
-#if SL5
-using ServiceStack.Text;
-#else
 using System.Collections.Concurrent;
 using ServiceStack.Text;
-
-#endif
 
 namespace ServiceStack
 {
@@ -125,11 +120,10 @@ namespace ServiceStack
                 endIndex = fullname.Length;
 
             char[] op = new char[endIndex - startIndex + genericPrefixIndex];
-            char cur;
 
             for(int i = startIndex; i < endIndex; i++)
             {
-                cur = fullname[i];
+                var cur = fullname[i];
                 op[i - startIndex + genericPrefixIndex] = cur != '+' ? cur : '.';
             }
 
@@ -150,14 +144,14 @@ namespace ServiceStack
                     sb.Clear();
                     sb.Append(type.Name.Remove(genericMarker));
                 }
-                sb.Append("<");
+                sb.Append('<');
                 var typeParameters = type.GetGenericArguments();
                 for (var i = 0; i < typeParameters.Length; ++i)
                 {
                     var paramName = typeParameters[i].Name;
                     sb.Append(i == 0 ? paramName : "," + paramName);
                 }
-                sb.Append(">");
+                sb.Append('>');
             }
             return StringBuilderCache.ReturnAndFree(sb);
         }
@@ -178,7 +172,7 @@ namespace ServiceStack
             foreach (var arg in type.GetGenericArguments())
             {
                 if (sb.Length > 0)
-                    sb.Append(",");
+                    sb.Append(',');
 
                 sb.Append(arg.ExpandTypeName());
             }
