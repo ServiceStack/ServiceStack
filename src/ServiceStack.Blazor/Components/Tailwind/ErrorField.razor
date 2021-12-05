@@ -1,0 +1,14 @@
+﻿@if (Status.HasFieldError(Name!))
+{
+    <p class=@(CssUtils.ClassNames("mt-2 text-sm text-red-600", @class)) id="@(Name)-error">@Status.FieldErrorMessage(Name!)</p>
+}
+
+@code {
+    [Parameter]
+    public string? @class { get; set; }
+    [Parameter, EditorRequired]
+    public string? Name { get; set; }
+
+    [Parameter, EditorRequired]
+    public ResponseStatus? Status { get; set; }
+}

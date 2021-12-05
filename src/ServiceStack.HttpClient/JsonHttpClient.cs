@@ -66,12 +66,16 @@ namespace ServiceStack
         /// </summary>
         public NameValueCollection Headers { get; private set; }
 
-        public void SetBaseUri(string baseUri)
+        public JsonHttpClient SetBaseUri(string baseUri)
         {
             this.BaseUri = baseUri;
             this.SyncReplyBaseUri = baseUri.WithTrailingSlash() + Format + "/reply/";
             this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + Format + "/oneway/";
+            return this;
         }
+
+        public JsonHttpClient SetBaseUri(string baseUri, string basePath) => 
+            SetBaseUri(baseUri).WithBasePath(basePath);
 
         /// <summary>
         /// Replace the Base reply/oneway paths to use a different prefix
@@ -96,6 +100,11 @@ namespace ServiceStack
         {
             UseBasePath = basePath;
             return this;
+        }
+
+        public JsonHttpClient(HttpClient httpClient) : this()
+        {
+            this.HttpClient = httpClient;
         }
 
         public JsonHttpClient(string baseUri) : this()
@@ -244,6 +253,8 @@ namespace ServiceStack
         public async Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request, CancellationToken token = default)
         {
             var client = GetHttpClient();
+            if (BaseUri == null)
+                throw new Exception("BaseUri is not configured, configure with SetBaseUri()");
 
             if (!HttpUtils.HasRequestBody(httpMethod) && request != null)
             {

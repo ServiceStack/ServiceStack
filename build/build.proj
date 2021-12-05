@@ -47,6 +47,7 @@
     <RemoveDir Directories="$(SrcDir)/ServiceStack.Common/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack.HttpClient/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.Blazor/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack.Interfaces/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack.Logging.Log4Net/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack.Logging.NLog/obj" />
@@ -102,6 +103,11 @@
 
     <!-- ServiceStack.HttpClient -->
     <MSBuild Projects="$(SrcDir)/ServiceStack.HttpClient/ServiceStack.HttpClient.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.Blazor -->
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Blazor/ServiceStack.Blazor.csproj"
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 

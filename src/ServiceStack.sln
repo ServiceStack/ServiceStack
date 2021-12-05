@@ -159,6 +159,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckIIS", "..\tests\CheckI
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckIdentity", "..\tests\CheckIdentity\CheckIdentity.csproj", "{60726697-6993-4F81-BF4D-662217C240DE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Blazor", "ServiceStack.Blazor\ServiceStack.Blazor.csproj", "{633AE9F7-3AE5-4CFD-9721-02410242FA2C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -745,6 +747,18 @@ Global
 		{60726697-6993-4F81-BF4D-662217C240DE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{60726697-6993-4F81-BF4D-662217C240DE}.Release|x86.ActiveCfg = Release|Any CPU
 		{60726697-6993-4F81-BF4D-662217C240DE}.Release|x86.Build.0 = Release|Any CPU
+		{633AE9F7-3AE5-4CFD-9721-02410242FA2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{633AE9F7-3AE5-4CFD-9721-02410242FA2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{633AE9F7-3AE5-4CFD-9721-02410242FA2C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{633AE9F7-3AE5-4CFD-9721-02410242FA2C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{633AE9F7-3AE5-4CFD-9721-02410242FA2C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{633AE9F7-3AE5-4CFD-9721-02410242FA2C}.Debug|x86.Build.0 = Debug|Any CPU
+		{633AE9F7-3AE5-4CFD-9721-02410242FA2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{633AE9F7-3AE5-4CFD-9721-02410242FA2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{633AE9F7-3AE5-4CFD-9721-02410242FA2C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{633AE9F7-3AE5-4CFD-9721-02410242FA2C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{633AE9F7-3AE5-4CFD-9721-02410242FA2C}.Release|x86.ActiveCfg = Release|Any CPU
+		{633AE9F7-3AE5-4CFD-9721-02410242FA2C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
