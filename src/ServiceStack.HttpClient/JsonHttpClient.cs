@@ -253,9 +253,6 @@ namespace ServiceStack
         public async Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request, CancellationToken token = default)
         {
             var client = GetHttpClient();
-            if (BaseUri == null)
-                throw new Exception("BaseUri is not configured, configure with SetBaseUri()");
-
             if (!HttpUtils.HasRequestBody(httpMethod) && request != null)
             {
                 var queryString = QueryStringSerializer.SerializeToString(request);
@@ -369,18 +366,15 @@ namespace ServiceStack
                 }
                 else
                 {
-                    var str = request as string;
-                    var bytes = request as byte[];
-                    var stream = request as Stream;
-                    if (str != null)
+                    if (request is string str)
                     {
                         httpReq.Content = new StringContent(str);
                     }
-                    else if (bytes != null)
+                    else if (request is byte[] bytes)
                     {
                         httpReq.Content = new ByteArrayContent(bytes);
                     }
-                    else if (stream != null)
+                    else if (request is Stream stream)
                     {
                         httpReq.Content = new StreamContent(stream);
                     }
@@ -504,8 +498,7 @@ namespace ServiceStack
             return new WebServiceException();
         }
 
-        readonly ConcurrentDictionary<Type, Action<HttpResponseMessage, object, string, object>> ResponseHandlers
-            = new ConcurrentDictionary<Type, Action<HttpResponseMessage, object, string, object>>();
+        readonly ConcurrentDictionary<Type, Action<HttpResponseMessage, object, string, object>> ResponseHandlers = new();
 
         private void ThrowResponseTypeException<TResponse>(HttpResponseMessage httpRes, object request, string requestUri, object response)
         {
@@ -883,7 +876,7 @@ namespace ServiceStack
         public void SetCookie(string name, string value, TimeSpan? expiresIn = null)
         {
             this.SetCookie(GetHttpClient().BaseAddress, name, value,
-                expiresIn != null ? DateTime.UtcNow.Add(expiresIn.Value) : (DateTime?)null);
+                expiresIn != null ? DateTime.UtcNow.Add(expiresIn.Value) : null);
         }
 
         public void Get(IReturnVoid request)
