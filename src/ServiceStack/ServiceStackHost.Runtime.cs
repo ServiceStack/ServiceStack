@@ -460,7 +460,7 @@ namespace ServiceStack
         /// <summary>
         /// Configuration of ServiceStack's /metadata pages
         /// </summary>
-        public MetadataPagesConfig MetadataPagesConfig => new MetadataPagesConfig(
+        public MetadataPagesConfig MetadataPagesConfig => new(
             Metadata,
             Config.ServiceEndpointsMetadataConfig,
             Config.IgnoreFormatsInMetadata,

@@ -430,7 +430,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.NotFound));
             }
 
-            var response = Config.AbsoluteBaseUri.CombineWith("/api/modified/foo.csv")
+            var response = Config.AbsoluteBaseUri.CombineWith("/prefix/modified/foo.csv")
                 .GetStringFromUrl();
 
             Assert.That(response, Is.EqualTo("Data\r\nfoo\r\n"));
@@ -439,7 +439,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class ModifiedRouteAppHost : AppHostHttpListenerBase
     {
-        public ModifiedRouteAppHost() : base(typeof(BufferedRequestTests).Name, typeof(CustomRouteService).Assembly) { }
+        public ModifiedRouteAppHost() : base(nameof(BufferedRequestTests), typeof(CustomRouteService).Assembly) { }
 
         public override void Configure(Container container)
         {
@@ -450,7 +450,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var routes = base.GetRouteAttributes(requestType);
             if (requestType != typeof(ModifiedRoute)) return routes;
 
-            routes.Each(x => x.Path = "/api" + x.Path);
+            routes.Each(x => x.Path = "/prefix" + x.Path);
             return routes;
         }
     }
@@ -477,7 +477,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         class InvalidRoutesAppHost : AppSelfHostBase
         {
-            public InvalidRoutesAppHost() : base(typeof(InvalidRoutesAppHost).Name, typeof(InvalidRoutesAppHost).Assembly) { }
+            public InvalidRoutesAppHost() : base(nameof(InvalidRoutesAppHost), typeof(InvalidRoutesAppHost).Assembly) { }
 
             public override void Configure(Container container)
             {

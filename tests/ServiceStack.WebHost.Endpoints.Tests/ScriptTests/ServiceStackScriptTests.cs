@@ -45,8 +45,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         {
             public AppHost() : base(nameof(SharpPagesIntegrationTests), typeof(MyTemplateServices).Assembly) {}
 
-            public readonly List<IVirtualPathProvider> TemplateFiles = new List<IVirtualPathProvider>
-            {
+            public readonly List<IVirtualPathProvider> TemplateFiles = new() {
                 new MemoryVirtualFiles(),
                 new ResourceVirtualFiles(typeof(HtmlFormat).Assembly),
             };
@@ -73,7 +72,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
                 Plugins.Add(new SharpPagesFeature
                 {
-                    ApiPath = "/api",
+                    ApiPath = "/sharpapi",
                     Args =
                     {
                         ["products"] = QueryData.Products,
@@ -121,7 +120,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 {{ { countryIn:['UK','Germany'], orderBy:'customerId', take:5 } |> sendToAutoQuery('QueryCustomers') 
      |> toResults |> select: { it.CustomerId }: { it.CompanyName }, { it.Country }\n }}");
                 
-                files.WriteFile("api/customers.html", @"
+                files.WriteFile("sharpapi/customers.html", @"
 {{ 'id,city,country' |> importRequestParams }}
 {{ qs.limit ?? 100   |> assignTo: limit }}
 
@@ -331,9 +330,9 @@ CONSH: Consolidated Holdings, UK
         }
 
         [Test]
-        public void Can_call_customers_api_page_without_arguments()
+        public void Can_call_customers_sharpapi_page_without_arguments()
         {
-            var url = BaseUrl.CombineWith("api", "customers");
+            var url = BaseUrl.CombineWith("sharpapi", "customers");
 
             var json = url.GetJsonFromUrl(responseFilter:AssertJsonContentType);
             var customers = json.FromJson<List<Customer>>();
@@ -341,9 +340,9 @@ CONSH: Consolidated Holdings, UK
         }
 
         [Test]
-        public void Can_call_customers_api_page_with_all_arguments()
+        public void Can_call_customers_sharpapi_page_with_all_arguments()
         {
-            var url = BaseUrl.CombineWith("api", "customers")
+            var url = BaseUrl.CombineWith("sharpapi", "customers")
                 .AddQueryParam("country", "UK")
                 .AddQueryParam("city", "London")
                 .AddQueryParam("limit", 10);
@@ -359,7 +358,7 @@ CONSH: Consolidated Holdings, UK
         [Test]
         public void Can_call_single_customer_with_path_args()
         {
-            var json = BaseUrl.CombineWith("api", "customers", "ALFKI").GetJsonFromUrl(responseFilter: AssertJsonContentType);
+            var json = BaseUrl.CombineWith("sharpapi", "customers", "ALFKI").GetJsonFromUrl(responseFilter: AssertJsonContentType);
             var customer = json.FromJson<Customer>();
             Assert.That(customer.CustomerId, Is.EqualTo("ALFKI"));
             Assert.That(customer.CompanyName, Is.EqualTo("Alfreds Futterkiste"));
@@ -370,20 +369,20 @@ CONSH: Consolidated Holdings, UK
         [Test]
         public void Can_call_customer_with_csv_extension_to_force_ContentType()
         {
-            var json = BaseUrl.CombineWith("api", "customers").AddQueryParam("limit", 1).GetStringFromUrl(responseFilter: AssertJsonContentType);
+            var json = BaseUrl.CombineWith("sharpapi", "customers").AddQueryParam("limit", 1).GetStringFromUrl(responseFilter: AssertJsonContentType);
             Assert.That(json, Does.StartWith("["));
             
-            var html = BaseUrl.CombineWith("api", "customers.html").AddQueryParam("limit", 1).GetStringFromUrl(responseFilter: AssertHtmlContentType);
+            var html = BaseUrl.CombineWith("sharpapi", "customers.html").AddQueryParam("limit", 1).GetStringFromUrl(responseFilter: AssertHtmlContentType);
             Assert.That(html, Does.StartWith("<"));
             
-            var csv = BaseUrl.CombineWith("api", "customers.csv").AddQueryParam("limit", 1).GetStringFromUrl();
+            var csv = BaseUrl.CombineWith("sharpapi", "customers.csv").AddQueryParam("limit", 1).GetStringFromUrl();
             Assert.That(csv, Does.StartWith("CustomerId,"));
         }
 
         [Test]
         public void Can_call_single_customer_with_json_extension_to_force_ContentType()
         {
-            var json = BaseUrl.CombineWith("api", "customers", "ALFKI.json").GetStringFromUrl(responseFilter: AssertJsonContentType);
+            var json = BaseUrl.CombineWith("sharpapi", "customers", "ALFKI.json").GetStringFromUrl(responseFilter: AssertJsonContentType);
             var customer = json.FromJson<Customer>();
             Assert.That(customer.CustomerId, Is.EqualTo("ALFKI"));
             Assert.That(customer.CompanyName, Is.EqualTo("Alfreds Futterkiste"));
