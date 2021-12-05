@@ -68,6 +68,7 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
 
     public JsonHttpClient SetBaseUri(string baseUri)
     {
+        this.BasePath = "/" + Format + "/reply/";
         this.BaseUri = baseUri;
         this.SyncReplyBaseUri = baseUri.WithTrailingSlash() + Format + "/reply/";
         this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + Format + "/oneway/";
@@ -76,6 +77,12 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
 
     public JsonHttpClient SetBaseUri(string baseUri, string basePath) => 
         SetBaseUri(baseUri).WithBasePath(basePath);
+
+    /// <summary>
+    /// Relative BasePath to use for predefined routes. Set with `UseBasePath` or `WithBasePath()`
+    /// Always contains '/' prefix + '/' suffix, e.g. /api/
+    /// </summary>
+    public string BasePath { get; protected set; }
 
     /// <summary>
     /// Replace the Base reply/oneway paths to use a different prefix
@@ -90,8 +97,9 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
             }
             else
             {
-                this.SyncReplyBaseUri = this.BaseUri.CombineWith(value).WithTrailingSlash();
-                this.AsyncOneWayBaseUri = this.BaseUri.CombineWith(value).WithTrailingSlash();
+                this.BasePath = (value[0] != '/' ? '/' + value : value).WithTrailingSlash();
+                this.SyncReplyBaseUri = this.BaseUri.CombineWith(BasePath);
+                this.AsyncOneWayBaseUri = this.BaseUri.CombineWith(BasePath);
             }
         }
     }
@@ -147,7 +155,8 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
     public virtual string ResolveTypedUrl(string httpMethod, object requestDto)
     {
         this.PopulateRequestMetadata(requestDto);
-        return ToAbsoluteUrl(TypedUrlResolver?.Invoke(this, httpMethod, requestDto) ?? requestDto.ToUrl(httpMethod, Format));
+        return ToAbsoluteUrl(TypedUrlResolver?.Invoke(this, httpMethod, requestDto) 
+            ?? requestDto.ToUrl(httpMethod, fallback:requestType => BasePath + requestType.GetOperationName()));
     }
 
     public HttpClient GetHttpClient()
@@ -664,7 +673,7 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
         var httpMethod = ServiceClientBase.GetExplicitMethod(request) ?? DefaultHttpMethod;
         var requestUri = ResolveUrl(httpMethod, UrlResolver == null
             ? this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name
-            : Format + "/reply/" + request.GetType().Name);
+            : this.BasePath + request.GetType().Name);
 
         return await SendAsync<TResponse>(httpMethod, requestUri, request, token).ConfigAwait();
     }

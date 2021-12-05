@@ -110,11 +110,18 @@ namespace ServiceStack
         /// <param name="baseUri">Base URI of the service</param>
         public void SetBaseUri(string baseUri)
         {
+            this.BasePath = "/" + Format + "/reply/";
             this.BaseUri = baseUri;
             this.asyncClient.BaseUri = baseUri;
             this.SyncReplyBaseUri = baseUri.WithTrailingSlash() + Format + "/reply/";
             this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + Format + "/oneway/";
         }
+
+        /// <summary>
+        /// Relative BasePath to use for predefined routes. Set with `UseBasePath` or `WithBasePath()`
+        /// Always contains '/' prefix + '/' suffix, e.g. /api/
+        /// </summary>
+        public string BasePath { get; protected set; }
 
         /// <summary>
         /// Replace the Base reply/oneway paths to use a different prefix
@@ -129,8 +136,9 @@ namespace ServiceStack
                 }
                 else
                 {
-                    this.SyncReplyBaseUri = this.BaseUri.CombineWith(value).WithTrailingSlash();
-                    this.AsyncOneWayBaseUri = this.BaseUri.CombineWith(value).WithTrailingSlash();
+                    this.BasePath = (value[0] != '/' ? '/' + value : value).WithTrailingSlash();
+                    this.SyncReplyBaseUri = this.BaseUri.CombineWith(BasePath);
+                    this.AsyncOneWayBaseUri = this.BaseUri.CombineWith(BasePath);
                 }
             }
         }
@@ -526,7 +534,8 @@ namespace ServiceStack
         public virtual string ResolveTypedUrl(string httpMethod, object requestDto)
         {
             this.PopulateRequestMetadata(requestDto);
-            return ToAbsoluteUrl(TypedUrlResolver?.Invoke(this, httpMethod, requestDto) ?? requestDto.ToUrl(httpMethod, Format));
+            return ToAbsoluteUrl(TypedUrlResolver?.Invoke(this, httpMethod, requestDto) 
+                ?? requestDto.ToUrl(httpMethod, fallback:requestType => $"/{BasePath}/{requestType.GetOperationName()}"));
         }
 
         internal void AsyncSerializeToStream(IRequest requestContext, object request, Stream stream)
@@ -639,7 +648,7 @@ namespace ServiceStack
             var httpMethod = HttpMethod ?? DefaultHttpMethod;
             var requestUri = ResolveUrl(httpMethod, UrlResolver == null
                 ? this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name
-                : Format + "/reply/" + request.GetType().Name);
+                : this.BasePath + request.GetType().Name);
 
             if (ResultsFilter != null)
             {

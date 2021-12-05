@@ -181,7 +181,12 @@ namespace ServiceStack
             return fullName;
         }
 
-        public static string ToUrl(this object requestDto, string httpMethod = "GET", string formatFallbackToPredefinedRoute = null)
+        public static string ToUrl(this object requestDto, string httpMethod = "GET", string formatFallbackToPredefinedRoute = null) =>
+            requestDto.ToUrl(httpMethod, formatFallbackToPredefinedRoute != null
+                ? t => $"/{formatFallbackToPredefinedRoute}/reply/{t.GetOperationName()}"
+                : null);
+        
+        public static string ToUrl(this object requestDto, string httpMethod = "GET", Func<Type, string> fallback=null)
         {
             httpMethod = httpMethod.ToUpper();
             var urlFilter = requestDto as IUrlFilter;
@@ -190,13 +195,13 @@ namespace ServiceStack
             var requestRoutes = routesCache.GetOrAdd(requestType, GetRoutesForType);
             if (requestRoutes.Count == 0)
             {
-                if (formatFallbackToPredefinedRoute == null)
+                if (fallback == null)
                     throw new InvalidOperationException($"There are no rest routes mapped for '{requestType}' type. "
                         + "(Note: The automatic route selection only works with [Route] attributes on the request DTO and "
                         + "not with routes registered in the IAppHost!)");
 
-                var predefinedRoute = $"/{formatFallbackToPredefinedRoute}/reply/{requestType.GetOperationName()}";
-                if (httpMethod == "GET" || httpMethod == "DELETE" || httpMethod == "OPTIONS" || httpMethod == "HEAD")
+                var predefinedRoute = fallback(requestType);
+                if (httpMethod is "GET" or "DELETE" or "OPTIONS" or "HEAD")
                 {
                     var queryProperties = RestRoute.GetQueryProperties(requestDto.GetType());
                     if (queryProperties.Count > 0)
