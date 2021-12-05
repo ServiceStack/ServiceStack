@@ -5,6 +5,22 @@ namespace ServiceStack.Common.Tests;
 public class JsonServiceClientTests
 {
     [Test]
+    public void Does_set_BasePath_default_ServiceClient()
+    {
+        var client = new JsonServiceClient("https://example.org");
+        Assert.That(client.SyncReplyBaseUri, Is.EqualTo("https://example.org/json/reply/"));
+        Assert.That(client.AsyncOneWayBaseUri, Is.EqualTo("https://example.org/json/oneway/"));
+    }
+    
+    [Test]
+    public void Does_set_BasePath_default_HttpClient()
+    {
+        var client = new JsonServiceClient("https://example.org");
+        Assert.That(client.SyncReplyBaseUri, Is.EqualTo("https://example.org/json/reply/"));
+        Assert.That(client.AsyncOneWayBaseUri, Is.EqualTo("https://example.org/json/oneway/"));
+    }
+    
+    [Test]
     public void Does_change_BasePath_ServiceClient()
     {
         var client = new JsonServiceClient("https://example.org") {
