@@ -407,13 +407,11 @@ namespace ServiceStack
                 if (file == null)
                     continue;
 
-                using (var reader = file.OpenText())
+                string line;
+                using var reader = file.OpenText();
+                while ((line = reader.ReadLine()) != null)
                 {
-                    string line;
-                    while ((line = reader.ReadLine()) != null)
-                    {
-                        sb.AppendLine(line);
-                    }
+                    sb.AppendLine(line);
                 }
             }
             
