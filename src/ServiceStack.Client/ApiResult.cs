@@ -12,16 +12,19 @@ public static class ApiResult
     public const string FieldErrorCode = "ValidationException";
 
     public static ApiResult<TResponse> Create<TResponse>(TResponse response) => new(response);
-    public static ApiResult<EmptyResponse> CreateError(ResponseStatus errorStatus) => new(errorStatus);
+
     public static ApiResult<TResponse> CreateError<TResponse>(ResponseStatus errorStatus) => new(errorStatus);
+    public static ApiResult<EmptyResponse> CreateError(ResponseStatus errorStatus) => new(errorStatus);
+    
     public static ApiResult<TResponse> CreateError<TResponse>(string message, string? errorCode = nameof(Exception)) =>
         new(ErrorUtils.CreateError(message, errorCode));
     public static ApiResult<EmptyResponse> CreateError(string message, string? errorCode = nameof(Exception)) =>
         new(ErrorUtils.CreateError(message, errorCode));
+
+    public static ApiResult<TResponse> CreateError<TResponse>(Exception ex) => new(ErrorUtils.CreateError(ex));
     public static ApiResult<EmptyResponse> CreateError(Exception ex) => new(ErrorUtils.CreateError(ex));
 
-    public static ApiResult<TResponse> CreateFieldError<TResponse>(string fieldName, string message,
-        string? errorCode = FieldErrorCode)
+    public static ApiResult<TResponse> CreateFieldError<TResponse>(string fieldName, string message, string? errorCode = FieldErrorCode)
     {
         var apiResult = new ApiResult<TResponse>();
         apiResult.AddFieldError(fieldName, message, errorCode);
