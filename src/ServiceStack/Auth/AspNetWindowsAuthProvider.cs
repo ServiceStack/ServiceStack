@@ -173,8 +173,8 @@ namespace ServiceStack.Auth
                 catch (Exception ex)
                 {
                     var log = LogManager.GetLogger(GetType());
-                    log.ErrorFormat("Failed to resolve role '{0}' for '{1}'. To ignore checking, add to AspNetWindowsAuthProvider.IgnoreRoles", 
-                        role, session.UserAuthName); 
+                    log.ErrorFormat("Failed to resolve role '{0}' for '{1}'. To ignore checking, add to AspNetWindowsAuthProvider.IgnoreRoles:\n{0}", 
+                        role, session.UserAuthName, ex); 
                 }
             }
         }
