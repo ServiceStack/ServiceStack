@@ -701,11 +701,11 @@ namespace ServiceStack.Host
         }
 #endif
 
-        public List<string> GetAllRoles()
+        public List<string> GetAllRoles(bool includeAdmin = true)
         {
-            var to = new List<string> {
-                RoleNames.Admin
-            };
+            var to = new List<string>();
+            if (includeAdmin)
+                to.Add(RoleNames.Admin);
 
             foreach (var op in OperationsMap.Values)
             {

@@ -38,7 +38,7 @@ namespace ServiceStack.Auth
             //Add all pre-defined Roles used to in App to 'AllRoles'
             appHost.AfterInitCallbacks.Add(host =>
             {
-                var allExistingRoles = host.Metadata.GetAllRoles();
+                var allExistingRoles = host.Metadata.GetAllRoles(false);
                 allExistingRoles.Each(x => AllRoles.AddIfNotExists(x));
             });
         }
