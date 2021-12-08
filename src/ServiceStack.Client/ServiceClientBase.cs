@@ -1091,10 +1091,11 @@ namespace ServiceStack
 
         private void ApplyWebResponseFilters(WebResponse webResponse)
         {
-            if (webResponse is not HttpWebResponse) return;
+            if (webResponse is not HttpWebResponse response) 
+                return;
 
-            ResponseFilter?.Invoke((HttpWebResponse)webResponse);
-            GlobalResponseFilter?.Invoke((HttpWebResponse)webResponse);
+            ResponseFilter?.Invoke(response);
+            GlobalResponseFilter?.Invoke(response);
         }
 
         private void ApplyWebRequestFilters(HttpWebRequest client)
