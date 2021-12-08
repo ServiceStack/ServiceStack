@@ -488,5 +488,11 @@ namespace ServiceStack.Validation
             return op;
         }
         
+        public static ScriptMethodType ToScriptMethodType(this ScriptMethodInfo scriptMethod) => new() {
+            Name = scriptMethod.Name,
+            ParamNames = scriptMethod.ParamNames,
+            ParamTypes = scriptMethod.ParamTypes,
+            ReturnType = scriptMethod.ReturnType,
+        };
     }
 }

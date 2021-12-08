@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using ServiceStack.DataAnnotations;
-using ServiceStack.Script;
 
 namespace ServiceStack
 {
@@ -535,7 +535,7 @@ namespace ServiceStack
         {
             var paramCount = method.ParamNames?.Length ?? 0;
             var firstParam = method.ParamNames?.Length > 0 ? method.ParamNames[0] : null;
-            var ret = method.ReturnType != null && method.ReturnType != nameof(StopExecution) ? " -> " + method.ReturnType : "";
+            var ret = method.ReturnType != null && method.ReturnType != "StopExecution" ? " -> " + method.ReturnType : "";
             var sig = paramCount == 0
                 ? $"{method.Name}{ret}"
                 : paramCount == 1
@@ -556,6 +556,52 @@ namespace ServiceStack
             return metaRef.Namespace.StartsWith("System") || 
                    metaRef.Namespace.StartsWith("ServiceStack") ||
                    metaRef.Name.IndexOfAny(SystemTypeChars) >= 0;
+        }
+    }
+
+    public static class AppMetadataUtils
+    {
+        public static async Task<AppMetadata> GetAppMetadataAsync(this string baseUrl)
+        {
+            string appResponseJson = null;
+            try
+            {
+                appResponseJson = await baseUrl.CombineWith("/metadata/app.json")
+                    .GetJsonFromUrlAsync();
+            
+                if (!appResponseJson.Trim().StartsWith("{"))
+                    throw new Exception("Not a remote ServiceStack Instance");
+            }
+            catch (Exception appEx)
+            {
+                string ssMetadata;
+                try
+                {
+                    ssMetadata = await baseUrl.CombineWith("/metadata")
+                        .GetStringFromUrlAsync(requestFilter:req => req.UserAgent = "ServiceStack");
+                }
+                catch (Exception ssEx)
+                {
+                    throw new Exception("Not a remote ServiceStack Instance", ssEx);
+                }
+
+                if (ssMetadata.IndexOf("https://servicestack.net", StringComparison.Ordinal) == -1)
+                    throw new Exception("Not a remote ServiceStack Instance");
+
+                throw new Exception("ServiceStack Instance v5.10 or higher required", appEx);
+            }
+
+            AppMetadata appMetadata;
+            try
+            {
+                appMetadata = appResponseJson.FromJson<AppMetadata>();
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Could not read AppMetadata, try upgrading this App or remote ServiceStack Instance", e);
+            }
+
+            return appMetadata;
         }
     }
 }
