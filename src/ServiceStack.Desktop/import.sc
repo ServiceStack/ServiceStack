@@ -9,7 +9,7 @@
     'vue/vue.min.js': 'https://unpkg.com/vue/dist/vue.min.js', 
     'vue-class-component/vue-class-component.min.js': 'https://unpkg.com/vue-class-component/dist/vue-class-component.min.js', 
     'vue-property-decorator/vue-property-decorator.min.js': 'https://unpkg.com/vue-property-decorator', 
-    'vue-router/vue-router.min.js': 'https://unpkg.com/react-router/react-router.production.min.js',
+    'vue-router/vue-router.min.js': 'https://unpkg.com/vue-router/dist/vue-router.min.js',
     'vuex/vuex.min.js': 'https://unpkg.com/vuex/dist/vuex.min.js',
     'portal-vue/portal-vue.min.js': 'https://unpkg.com/portal-vue/dist/portal-vue.umd.min.js',
     'bootstrap-vue/bootstrap-vue.min.js': 'https://unpkg.com/bootstrap-vue/dist/bootstrap-vue.min.js',
