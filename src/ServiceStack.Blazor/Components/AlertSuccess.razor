@@ -1,0 +1,34 @@
+﻿@if (!string.IsNullOrEmpty(Message))
+{
+    if (BlazorConfig.Theme == Theme.Tailwind)
+    {
+        <div class=@(CssUtils.ClassNames("rounded-md bg-green-50 p-4", @class)) role="alert">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <!-- Heroicon name: solid/x-check -->
+              <svg class="h-5 w-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-green-800">
+                @Message
+              </h3>
+            </div>
+          </div>
+        </div>
+    }
+    else
+    {
+        <div class=@CssUtils.ClassNames("mt-2 mb-3 alert alert-success", @class) role="alert">
+            <span class="oi oi-check me-2"></span>
+            @Message
+        </div>
+    }
+}
+
+@code {
+    [Parameter]
+    public string? @class { get; set; }
+
+    [Parameter, EditorRequired]
+    public string Message { get; set; } = "";
+}
