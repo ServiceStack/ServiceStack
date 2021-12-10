@@ -219,18 +219,19 @@ public static class TextUtils
                 IncludeRowNumbers = options.IncludeRowNumbers
             };
 
-            foreach (var item in items)
+            var list = items.Cast<object>().ToList();
+            foreach (var item in list)
             {
                 if (item is IDictionary<string, object> d)
                 {
                     if (keys == null)
                     {
-                        keys = options.Headers?.ToList() ?? AllKeysWithDefaultValues(items);
+                        keys = options.Headers?.ToList() ?? AllKeysWithDefaultValues(list);
                         table.HeaderTypes ??= new List<Type>();
                         foreach (var key in keys)
                         {
                             table.Headers.Add(StyleText(key, headerStyle));
-                            table.HeaderTypes.Add(FirstElementType(items, key));
+                            table.HeaderTypes.Add(list.FirstElementType(key));
                         }
                     }
 
@@ -239,7 +240,7 @@ public static class TextUtils
                     foreach (var key in keys)
                     {
                         var value = d.ContainsKey(key) ? d[key] : null;
-                        if (ReferenceEquals(value, items)) break; // Prevent cyclical deps like 'it' binding
+                        if (ReferenceEquals(value, list)) break; // Prevent cyclical deps like 'it' binding
 
                         if (value == null)
                         {
@@ -565,37 +566,6 @@ public static class TextUtils
         }
 
         return target;
-    }
-
-    public static Type FirstElementType(IEnumerable collection, string key)
-    {
-        foreach (var o in collection)
-        {
-            if (o is IEnumerable<KeyValuePair<string, object>> d)
-            {
-                foreach (var entry in d)
-                {
-                    if (entry.Key != key) continue;
-                    if (entry.Value == null) continue;
-                    var entryType = entry.Value.GetType();
-                    return Nullable.GetUnderlyingType(entryType) ?? entryType;
-                }
-            }
-        }
-        foreach (var o in collection)
-        {
-            if (o is IEnumerable<KeyValuePair<string, object>> d)
-            {
-                foreach (var entry in d)
-                {
-                    if (entry.Key.EqualsIgnoreCase(key)) continue;
-                    if (entry.Value == null) continue;
-                    var entryType = entry.Value.GetType();
-                    return Nullable.GetUnderlyingType(entryType) ?? entryType;
-                }
-            }
-        }
-        return typeof(string);
     }
 
     public static List<string> AllKeysWithDefaultValues(IEnumerable collection)

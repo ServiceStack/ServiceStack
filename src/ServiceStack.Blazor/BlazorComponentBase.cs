@@ -24,3 +24,4 @@ public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
 public static class BlazorUtils
 {
 }
+
