@@ -17,7 +17,7 @@ namespace ServiceStack.Admin
         /// <summary>
         /// Remove UserAuth Properties from Admin Metadata
         /// </summary>
-        public List<string> IncludeUserAuthProperties { get; set; } = new List<string> {
+        public List<string> IncludeUserAuthProperties { get; set; } = new() {
             nameof(UserAuth.Id),
             nameof(UserAuth.UserName),
             nameof(UserAuth.Email),
@@ -37,18 +37,18 @@ namespace ServiceStack.Admin
         /// <summary>
         /// Remove UserAuthDetails Properties from Admin Metadata
         /// </summary>
-        public List<string> IncludeUserAuthDetailsProperties { get; set; } = new List<string>();
+        public List<string> IncludeUserAuthDetailsProperties { get; set; } = new();
 
         /// <summary>
         /// Return only specified UserAuth Properties in AdminQueryUsers
         /// </summary>
-        public List<string> QueryUserAuthProperties { get; set; } = new List<string> {
+        public List<string> QueryUserAuthProperties { get; set; } = new() {
             nameof(UserAuth.Id),
             nameof(UserAuth.UserName),
             nameof(UserAuth.Email),
             nameof(UserAuth.DisplayName),
-            nameof(UserAuth.FirstName),
-            nameof(UserAuth.LastName),
+            // nameof(UserAuth.FirstName),
+            // nameof(UserAuth.LastName),
             nameof(UserAuth.Company),
             nameof(UserAuth.State),
             nameof(UserAuth.Country),
@@ -59,7 +59,7 @@ namespace ServiceStack.Admin
         /// <summary>
         /// Which UserAuth fields cannot be updated using UserAuthProperties dictionary
         /// </summary>
-        public List<string> RestrictedUserAuthProperties { get; set; } = new List<string> {
+        public List<string> RestrictedUserAuthProperties { get; set; } = new() {
             nameof(UserAuth.Id),
             nameof(UserAuth.Roles),
             nameof(UserAuth.Permissions),
