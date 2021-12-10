@@ -113,6 +113,11 @@ namespace ServiceStack.NativeTypes.Kotlin
         /// </summary>
         public static AddCodeDelegate AddCodeFilter { get; set; }
 
+        /// <summary>
+        /// Additional Options in Header Options
+        /// </summary>
+        public List<string> AddQueryParamOptions { get; set; }
+
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
             var typeNamespaces = new HashSet<string>();
@@ -161,6 +166,7 @@ namespace ServiceStack.NativeTypes.Kotlin
             sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
             sb.AppendLine("{0}TreatTypesAsStrings: {1}".Fmt(defaultValue("TreatTypesAsStrings"), Config.TreatTypesAsStrings.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
+            AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}: {request.QueryString[name]}"));
 
             sb.AppendLine("*/");
             sb.AppendLine();

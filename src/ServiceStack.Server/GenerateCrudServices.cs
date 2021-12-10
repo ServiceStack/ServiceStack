@@ -825,27 +825,28 @@ namespace ServiceStack
         }
 
         public static string GenerateSourceCode(IRequest req, CrudCodeGenTypes request, 
-            MetadataTypesConfig typesConfig, MetadataTypes crudMetadataTypes)
+            MetadataTypesConfig typesConfig, MetadataTypes crudMetadataTypes, List<string> addQueryParamOptions=null)
         {
             var metadata = req.Resolve<INativeTypesMetadata>();
             var src = request.Lang switch {
-                "csharp" => new CSharpGenerator(typesConfig).GetCode(crudMetadataTypes, req),
-                "fsharp" => new FSharpGenerator(typesConfig).GetCode(crudMetadataTypes, req),
+                "csharp" => new CSharpGenerator(typesConfig) { AddQueryParamOptions = addQueryParamOptions }.GetCode(crudMetadataTypes, req),
+                "fsharp" => new FSharpGenerator(typesConfig) { AddQueryParamOptions = addQueryParamOptions }.GetCode(crudMetadataTypes, req),
                 "vbnet" => new VbNetGenerator(typesConfig).GetCode(crudMetadataTypes, req),
-                "typescript" => new TypeScriptGenerator(typesConfig).GetCode(crudMetadataTypes, req, metadata),
-                "dart" => new DartGenerator(typesConfig).GetCode(crudMetadataTypes, req, metadata),
-                "swift" => new SwiftGenerator(typesConfig).GetCode(crudMetadataTypes, req),
+                "typescript" => new TypeScriptGenerator(typesConfig) { AddQueryParamOptions = addQueryParamOptions }.GetCode(crudMetadataTypes, req, metadata),
+                "dart" => new DartGenerator(typesConfig) { AddQueryParamOptions = addQueryParamOptions }.GetCode(crudMetadataTypes, req, metadata),
+                "swift" => new SwiftGenerator(typesConfig) { AddQueryParamOptions = addQueryParamOptions }.GetCode(crudMetadataTypes, req),
                 "swift4" => new Swift4Generator(typesConfig).GetCode(crudMetadataTypes, req),
-                "java" => new JavaGenerator(typesConfig).GetCode(crudMetadataTypes, req, metadata),
-                "kotlin" => new KotlinGenerator(typesConfig).GetCode(crudMetadataTypes, req, metadata),
-                "typescript.d" => new FSharpGenerator(typesConfig).GetCode(crudMetadataTypes, req),
+                "java" => new JavaGenerator(typesConfig) { AddQueryParamOptions = addQueryParamOptions }.GetCode(crudMetadataTypes, req, metadata),
+                "kotlin" => new KotlinGenerator(typesConfig) { AddQueryParamOptions = addQueryParamOptions }.GetCode(crudMetadataTypes, req, metadata),
+                "typescript.d" => new FSharpGenerator(typesConfig) { AddQueryParamOptions = addQueryParamOptions }.GetCode(crudMetadataTypes, req),
                 _ => throw new NotSupportedException($"Unknown language '{request.Lang}', Supported languages: " +
                                                      $"csharp, typescript, dart, swift, java, kotlin, vbnet, fsharp")
             };
             return src;
         }
 
-        public static string GenerateSource(IRequest req, CrudCodeGenTypes request, Action<AutoGenContext> generateOperationsFilter)
+        public static string GenerateSource(IRequest req, CrudCodeGenTypes request, Action<AutoGenContext> generateOperationsFilter, 
+            List<string> addQueryParamOptions=null)
         {
             var ret = ResolveMetadataTypes(request, req, generateOperationsFilter);
             var crudMetadataTypes = ret.Item1;
@@ -861,7 +862,7 @@ namespace ServiceStack
                 typesConfig.MakePropertiesOptional = true;
             }
 
-            var src = GenerateSourceCode(req, request, typesConfig, crudMetadataTypes);
+            var src = GenerateSourceCode(req, request, typesConfig, crudMetadataTypes, addQueryParamOptions);
             return src;
         }
 
@@ -1425,7 +1426,14 @@ namespace ServiceStack
                 var genServices = HostContext.AssertPlugin<AutoQueryFeature>().GenerateCrudServices;
                 await RequestUtils.AssertAccessRoleOrDebugModeAsync(base.Request, accessRole: genServices.AccessRole, authSecret: request.AuthSecret);
                 
-                var src = GenerateCrudServices.GenerateSource(Request, request, genServices.GenerateOperationsFilter);
+                var src = GenerateCrudServices.GenerateSource(Request, request, genServices.GenerateOperationsFilter,
+                    new List<string> {
+                        nameof(CrudCodeGenTypes.IncludeCrudOperations),
+                        nameof(CrudCodeGenTypes.Schema),
+                        nameof(CrudCodeGenTypes.NamedConnection),
+                        nameof(CrudCodeGenTypes.IncludeTables),
+                        nameof(CrudCodeGenTypes.ExcludeTables),
+                    });
                 return src;
             }
             catch (Exception e)

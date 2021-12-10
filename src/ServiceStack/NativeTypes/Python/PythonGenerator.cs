@@ -236,6 +236,11 @@ namespace ServiceStack.NativeTypes.Python
         public static AddCodeDelegate InsertCodeFilter { get; set; }
 
         /// <summary>
+        /// Additional Options in Header Options
+        /// </summary>
+        public List<string> AddQueryParamOptions { get; set; }
+
+        /// <summary>
         /// Add Code to bottom of generated code
         /// </summary>
         public static AddCodeDelegate AddCodeFilter { get; set; }
@@ -291,6 +296,7 @@ namespace ServiceStack.NativeTypes.Python
             sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
             sb.AppendLine("{0}DataClass: {1}".Fmt(defaultValue(nameof(DataClass)), Config.DataClass));
             sb.AppendLine("{0}DataClassJson: {1}".Fmt(defaultValue(nameof(DataClassJson)), Config.DataClassJson));
+            AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}: {request.QueryString[name]}"));
 
             Config.DataClass = string.IsNullOrEmpty(Config.DataClass)
                 ? DataClass

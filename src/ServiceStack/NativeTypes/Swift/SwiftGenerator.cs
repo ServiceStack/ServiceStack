@@ -112,6 +112,11 @@ namespace ServiceStack.NativeTypes.Swift
         /// </summary>
         public static AddCodeDelegate AddCodeFilter { get; set; }
 
+        /// <summary>
+        /// Include Additional QueryString Params in Header Options
+        /// </summary>
+        public List<string> AddQueryParamOptions { get; set; }
+
         public string GetCode(MetadataTypes metadata, IRequest request)
         {
             var typeNamespaces = new HashSet<string>();
@@ -151,6 +156,7 @@ namespace ServiceStack.NativeTypes.Swift
             sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
             sb.AppendLine("{0}TreatTypesAsStrings: {1}".Fmt(defaultValue("TreatTypesAsStrings"), Config.TreatTypesAsStrings.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
+            AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}: {request.QueryString[name]}"));
 
             sb.AppendLine("*/");
             sb.AppendLine();

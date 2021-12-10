@@ -123,6 +123,11 @@ namespace ServiceStack.NativeTypes.TypeScript
         /// </summary>
         public static AddCodeDelegate AddCodeFilter { get; set; }
 
+        /// <summary>
+        /// Include Additional QueryString Params in Header Options
+        /// </summary>
+        public List<string> AddQueryParamOptions { get; set; }
+
         public string DictionaryDeclaration { get; set; } = "export class Dictionary<T> { [Key: string]: T; }";
         
         public HashSet<string> AddedDeclarations { get; set; } = new HashSet<string>();
@@ -189,6 +194,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
+            AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}: {request.QueryString[name]}"));
 
             sb.AppendLine("*/");
             sb.AppendLine();

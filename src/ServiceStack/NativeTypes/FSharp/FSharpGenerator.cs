@@ -49,6 +49,11 @@ namespace ServiceStack.NativeTypes.FSharp
         public static AddCodeDelegate AddCodeFilter { get; set; }
 
         /// <summary>
+        /// Additional Options in Header Options
+        /// </summary>
+        public List<string> AddQueryParamOptions { get; set; }
+
+        /// <summary>
         /// Can only export "Empty" Marker Interfaces
         /// </summary>
         public static HashSet<string> ExportMarkerInterfaces { get; } = new[] {
@@ -109,6 +114,7 @@ namespace ServiceStack.NativeTypes.FSharp
             //sb.AppendLine("{0}AddDefaultXmlNamespace: {1}".Fmt(defaultValue("AddDefaultXmlNamespace"), Config.AddDefaultXmlNamespace));
             sb.AppendLine("{0}AddNamespaces: {1}".Fmt(defaultValue("AddNamespaces"), Config.AddNamespaces.Safe().ToArray().Join(",")));
             AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}: {request.QueryString[name]}"));
+
             sb.AppendLine("*)");
             sb.AppendLine();
 
