@@ -2,27 +2,25 @@ using Microsoft.AspNetCore.Components;
 
 namespace ServiceStack.Blazor;
 
-public class BlazorComponentBase : ComponentBase
+/// <summary>
+/// Blazor com
+/// </summary>
+public class BlazorComponentBase : ComponentBase, IHasJsonApiClient
 {
     [Inject]
     public JsonApiClient? Client { get; set; }
 
-    public virtual async Task<ApiResult<TResponse>> ApiAsync<TResponse>(IReturn<TResponse> request) =>
-        await Client!.ApiAsync(request);
-
-    public virtual async Task<ApiResult<EmptyResponse>> ApiAsync(IReturnVoid request) =>
-        await Client!.ApiAsync(request);
-
-    public virtual async Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> request) =>
-        await Client!.SendAsync(request);
+    public virtual Task<ApiResult<TResponse>> ApiAsync<TResponse>(IReturn<TResponse> request)  => JsonApiClientUtils.ApiAsync(this, request);
+    public virtual Task<ApiResult<EmptyResponse>> ApiAsync(IReturnVoid request) => JsonApiClientUtils.ApiAsync(this, request);
+    public virtual Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> request) => JsonApiClientUtils.SendAsync(this, request);
 
     public static string ClassNames(params string?[] classes) => CssUtils.ClassNames(classes);
+    public virtual Task<ApiResult<AppMetadata>> ApiAppMetadataAsync() => JsonApiClientUtils.ApiAppMetadataAsync(this);
+}
 
-    private static ApiResult<AppMetadata> appMetadataResult = new();
-    public virtual async Task<ApiResult<AppMetadata>> ApiAppMetadataAsync()
-    {
-        if (appMetadataResult.IsSuccess)
-            return appMetadataResult;
-        return appMetadataResult = await Client!.ApiAsync(new MetadataApp());
-    }
+/// <summary>
+/// Also extend functionality to any class implementing IHasJsonApiClient
+/// </summary>
+public static class BlazorUtils
+{
 }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ServiceStack;
@@ -34,6 +35,34 @@ public static class JsonApiClientUtils
     {
         return services.AddHttpClient<JsonApiClient>(client => client.BaseAddress = new Uri(baseUrl));
     }
+    
+    public static async Task<ApiResult<TResponse>> ApiAsync<TResponse>(this IHasJsonApiClient instance, IReturn<TResponse> request) =>
+        await instance.Client!.ApiAsync(request);
+
+    public static async Task<ApiResult<EmptyResponse>> ApiAsync(this IHasJsonApiClient instance, IReturnVoid request) =>
+        await instance.Client!.ApiAsync(request);
+
+    public static async Task<TResponse> SendAsync<TResponse>(this IHasJsonApiClient instance, IReturn<TResponse> request) =>
+        await instance.Client!.SendAsync(request);
+
+    class ApiResultsCache<T>
+    {
+        internal static ApiResult<T>? Instance { get; set; }
+    }
+
+    public static async Task<ApiResult<T>> ApiCacheAsync<T>(this IHasJsonApiClient instance, IReturn<T> requestDto)
+    {
+        if (ApiResultsCache<T>.Instance != null)
+            return ApiResultsCache<T>.Instance;
+
+        var apiResult = await instance.Client!.ApiAsync(requestDto);
+        if (apiResult.IsSuccess)
+            ApiResultsCache<T>.Instance = apiResult;
+        return apiResult;
+    }
+
+    public static Task<ApiResult<AppMetadata>> ApiAppMetadataAsync(this IHasJsonApiClient instance) =>
+        instance.ApiCacheAsync(new MetadataApp());
 }
 
 #endif
