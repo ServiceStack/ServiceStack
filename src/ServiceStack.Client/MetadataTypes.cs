@@ -214,6 +214,8 @@ namespace ServiceStack
         public List<string> AllRoles { get; set; }
         public List<string> AllPermissions { get; set; }
         public List<string> QueryUserAuthProperties { get; set; }
+        
+        public List<List<string>> GridFieldLayout { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
 

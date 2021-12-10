@@ -47,8 +47,8 @@ namespace ServiceStack.Admin
             nameof(UserAuth.UserName),
             nameof(UserAuth.Email),
             nameof(UserAuth.DisplayName),
-            // nameof(UserAuth.FirstName),
-            // nameof(UserAuth.LastName),
+            nameof(UserAuth.FirstName),
+            nameof(UserAuth.LastName),
             nameof(UserAuth.Company),
             nameof(UserAuth.State),
             nameof(UserAuth.Country),
@@ -110,6 +110,62 @@ namespace ServiceStack.Admin
         /// Whether to execute OnRegistered Events for Users created through Admin UI (default true).
         /// </summary>
         public bool ExecuteOnRegisteredEventsForCreatedUsers { get; set; } = true;
+
+        public List<List<string>> GridFieldLayout { get; set; } = new()
+        {
+            new(){"Email"},
+            new(){"UserName"},
+            new(){"FirstName","LastName"},
+            new(){"DisplayName"},
+            new(){"Company"},
+            new(){"Address"},
+            new(){"Address2"},
+            new(){"City","State"},
+            new(){"Country","PostalCode"},
+            new(){"PhoneNumber"},
+            new(){"LockedDate"},
+        };
+        
+        public AdminUsersFeature RemoveFromQueryResults(params string[] fieldNames)
+        {
+            foreach (var field in fieldNames)
+            {
+                QueryUserAuthProperties.Remove(field);
+            }
+            return this;
+        }
+        
+        public AdminUsersFeature RemoveFromUserDetails(params string[] fieldNames)
+        {
+            foreach (var field in fieldNames)
+            {
+                IncludeUserAuthProperties.Remove(field);
+                IncludeUserAuthDetailsProperties.Remove(field);
+            }
+            return this;
+        }
+        
+        public AdminUsersFeature RemoveFromGridLayout(params string[] fieldNames)
+        {
+            foreach (var field in fieldNames)
+            {
+                foreach (var row in GridFieldLayout)
+                {
+                    if (row.Contains(field))
+                        row.Remove(field);
+                }
+                GridFieldLayout.RemoveAll(x => x.Count == 0);
+            }
+            return this;
+        }
+        
+        public AdminUsersFeature RemoveFields(params string[] fieldNames)
+        {
+            RemoveFromUserDetails(fieldNames);
+            RemoveFromQueryResults(fieldNames);
+            RemoveFromGridLayout(fieldNames);
+            return this;
+        }
         
         public void Register(IAppHost appHost)
         {
@@ -143,6 +199,7 @@ namespace ServiceStack.Admin
                         AllRoles = HostContext.Metadata.GetAllRoles(),
                         AllPermissions = HostContext.Metadata.GetAllPermissions(),
                         QueryUserAuthProperties = QueryUserAuthProperties,
+                        GridFieldLayout = GridFieldLayout, 
                     };
                     if (authRepo is IQueryUserAuth)
                         plugin.Enabled.Add("query");
