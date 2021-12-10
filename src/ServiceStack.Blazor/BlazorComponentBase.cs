@@ -5,25 +5,24 @@ namespace ServiceStack.Blazor;
 public class BlazorComponentBase : ComponentBase
 {
     [Inject]
-    protected JsonApiClient? Client { get; set; }
+    public JsonApiClient? Client { get; set; }
 
-    protected virtual async Task<ApiResult<TResponse>> ApiAsync<TResponse>(IReturn<TResponse> request) =>
+    public virtual async Task<ApiResult<TResponse>> ApiAsync<TResponse>(IReturn<TResponse> request) =>
         await Client!.ApiAsync(request);
 
-    protected virtual async Task<ApiResult<EmptyResponse>> ApiAsync(IReturnVoid request) =>
+    public virtual async Task<ApiResult<EmptyResponse>> ApiAsync(IReturnVoid request) =>
         await Client!.ApiAsync(request);
 
-    protected virtual async Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> request) =>
+    public virtual async Task<TResponse> SendAsync<TResponse>(IReturn<TResponse> request) =>
         await Client!.SendAsync(request);
 
     public static string ClassNames(params string?[] classes) => CssUtils.ClassNames(classes);
 
-    private AppMetadata? appMetadata;
-    public virtual async Task<AppMetadata> GetAppMetadata()
+    private static ApiResult<AppMetadata> appMetadataResult = new();
+    public virtual async Task<ApiResult<AppMetadata>> ApiAppMetadataAsync()
     {
-        if (appMetadata != null)
-            return appMetadata!;
-        appMetadata = await Client!.GetAsync(new MetadataApp());
-        return appMetadata;
+        if (appMetadataResult.IsSuccess)
+            return appMetadataResult;
+        return appMetadataResult = await Client!.ApiAsync(new MetadataApp());
     }
 }

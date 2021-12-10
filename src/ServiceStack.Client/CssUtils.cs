@@ -15,6 +15,9 @@ public static class CssUtils
             ? "is-invalid"
             : "";
     }
+
+    public static string Selected(bool condition) => condition ? "selected" : "";
+    public static string Active(bool condition) => condition ? "active" : "";
     
     public static string ClassNames(params string?[] classes)
     {

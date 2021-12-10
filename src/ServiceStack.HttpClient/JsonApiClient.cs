@@ -7,19 +7,24 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ServiceStack;
 
+public interface IHasJsonApiClient
+{
+    public JsonApiClient? Client { get; }
+}
+
 /// <summary>
 /// JsonHttpClient designed to work with 
 /// </summary>
 public class JsonApiClient : JsonHttpClient
 {
-    public static string? BasePath = "/api";
+    public static string? DefaultBasePath { get;set; } = "/api";
 
     public JsonApiClient(HttpClient httpClient)
     {
         this.HttpClient = httpClient;
         this.SetBaseUri(httpClient.BaseAddress?.ToString() ?? "/");
-        if (BasePath != null)
-            this.WithBasePath(BasePath);
+        if (DefaultBasePath != null)
+            this.WithBasePath(DefaultBasePath);
     }
 }
 
