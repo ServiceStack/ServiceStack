@@ -168,7 +168,7 @@ namespace ServiceStack.NativeTypes.Java
             sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}TreatTypesAsStrings: {1}".Fmt(defaultValue("TreatTypesAsStrings"), Config.TreatTypesAsStrings.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
-            AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}: {request.QueryString[name]}"));
+            AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}{name}: {request.QueryString[name]}"));
 
             sb.AppendLine("*/");
             sb.AppendLine();

@@ -296,7 +296,7 @@ namespace ServiceStack.NativeTypes.Python
             sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
             sb.AppendLine("{0}DataClass: {1}".Fmt(defaultValue(nameof(DataClass)), Config.DataClass));
             sb.AppendLine("{0}DataClassJson: {1}".Fmt(defaultValue(nameof(DataClassJson)), Config.DataClassJson));
-            AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}: {request.QueryString[name]}"));
+            AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}{name}: {request.QueryString[name]}"));
 
             Config.DataClass = string.IsNullOrEmpty(Config.DataClass)
                 ? DataClass

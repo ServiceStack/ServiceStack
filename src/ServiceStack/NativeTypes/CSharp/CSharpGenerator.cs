@@ -136,7 +136,7 @@ namespace ServiceStack.NativeTypes.CSharp
             sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}AddNamespaces: {1}".Fmt(defaultValue("AddNamespaces"), Config.AddNamespaces.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}AddDefaultXmlNamespace: {1}".Fmt(defaultValue("AddDefaultXmlNamespace"), Config.AddDefaultXmlNamespace));
-            AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}: {request.QueryString[name]}"));
+            AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}{name}: {request.QueryString[name]}"));
 
             sb.AppendLine("*/");
             sb.AppendLine();

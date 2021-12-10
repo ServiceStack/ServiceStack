@@ -113,7 +113,7 @@ namespace ServiceStack.NativeTypes.FSharp
             sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
             //sb.AppendLine("{0}AddDefaultXmlNamespace: {1}".Fmt(defaultValue("AddDefaultXmlNamespace"), Config.AddDefaultXmlNamespace));
             sb.AppendLine("{0}AddNamespaces: {1}".Fmt(defaultValue("AddNamespaces"), Config.AddNamespaces.Safe().ToArray().Join(",")));
-            AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}: {request.QueryString[name]}"));
+            AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}{name}: {request.QueryString[name]}"));
 
             sb.AppendLine("*)");
             sb.AppendLine();
