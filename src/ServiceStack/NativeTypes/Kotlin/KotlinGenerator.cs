@@ -138,7 +138,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                 }
             }
 
-            string DefaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "//" : "";
+            string defaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "//" : "";
 
             var sbInner = StringBuilderCache.Allocate();
             var sb = new StringBuilderWrapper(sbInner);
@@ -151,16 +151,16 @@ namespace ServiceStack.NativeTypes.Kotlin
                 sb.AppendLine("UsePath: {0}".Fmt(Config.UsePath));
 
             sb.AppendLine();
-            sb.AppendLine("{0}Package: {1}".Fmt(DefaultValue("Package"), Config.Package));
-            sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(DefaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
-            sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(DefaultValue("AddResponseStatus"), Config.AddResponseStatus));
-            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(DefaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
-            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(DefaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
-            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(DefaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(DefaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}InitializeCollections: {1}".Fmt(DefaultValue("InitializeCollections"), Config.InitializeCollections));
-            sb.AppendLine("{0}TreatTypesAsStrings: {1}".Fmt(DefaultValue("TreatTypesAsStrings"), Config.TreatTypesAsStrings.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}DefaultImports: {1}".Fmt(DefaultValue("DefaultImports"), defaultImports.Join(",")));
+            sb.AppendLine("{0}Package: {1}".Fmt(defaultValue("Package"), Config.Package));
+            sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
+            sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
+            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
+            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
+            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
+            sb.AppendLine("{0}TreatTypesAsStrings: {1}".Fmt(defaultValue("TreatTypesAsStrings"), Config.TreatTypesAsStrings.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
 
             sb.AppendLine("*/");
             sb.AppendLine();
