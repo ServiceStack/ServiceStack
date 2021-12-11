@@ -1,0 +1,30 @@
+﻿@typeparam TValue
+@inherits TextInputBase<TValue>
+
+@if (IsBootstrap)
+{
+    <textarea class=@ClassNames($"form-control", CssClass(invalid:"is-invalid")) 
+          id=@Id name=@Id @bind="CurrentValue" placeHolder=@UseHelp @bind:event="oninput" @attributes="IncludeAttributes" />
+    @if (!string.IsNullOrEmpty(UseHelp))
+    {
+        <label for=@Id>@UseHelp</label>
+    }
+    <ErrorField Status=@Status Id=@Id/>
+}
+else if (IsTailwind)
+{
+    <div>
+    @if (!string.IsNullOrEmpty(UseHelp))
+    {
+        <label for=@Id class="block text-sm font-medium text-gray-700">@UseHelp</label>
+    }
+        <div class="mt-1 relative rounded-md shadow-sm">
+            <textarea id=@Id name=@Id @bind="CurrentValue" placeHolder=@UseHelp @attributes="IncludeAttributes"
+                    class=@ClassNames("shadow-sm block w-full sm:text-sm rounded-md", 
+                        CssClass(valid:"text-gray-900 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300",
+                               invalid:"text-red-900 focus:ring-red-500 focus:border-red-500 border-red-300"))
+                    />
+            <ErrorField Status=@Status Id=@Id/>
+        </div>
+    </div>
+}

@@ -1,21 +1,24 @@
-﻿@if (Status.HasFieldError(Name!))
+﻿@inherits ApiComponentBase
+
+@if (UseStatus.HasFieldError(Id!))
 {
-    if (BlazorConfig.Theme == Theme.Tailwind)
+    if (IsBootstrap)
     {
-        <p class=@(CssUtils.ClassNames("mt-2 text-sm text-red-600", @class)) id="@(Name)-error">@Status.FieldErrorMessage(Name!)</p>
+        <div class=@ClassNames("invalid-feedback", CssClass())>@UseStatus.FieldErrorMessage(Id!)</div>
     }
-    else
+    else if (IsTailwind)
     {
-        <div class=@CssUtils.ClassNames("invalid-feedback", @class)>@Status.FieldErrorMessage(Name!)</div>
+        <div class=@ClassNames("absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none", CssClass())>
+            <!-- Heroicon name: solid/x-circle -->
+            <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+            </svg>
+        </div>
+        <p id=@($"{Id}-error") class="mt-2 text-sm text-red-600">@UseStatus.FieldErrorMessage(Id!)</p>
     }
 }
 
 @code {
-    [Parameter]
-    public string? @class { get; set; }
     [Parameter, EditorRequired]
-    public string? Name { get; set; }
-
-    [Parameter, EditorRequired]
-    public ResponseStatus? Status { get; set; }
+    public string? Id { get; set; }
 }

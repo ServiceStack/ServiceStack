@@ -1,0 +1,25 @@
+﻿@typeparam TValue
+@inherits TextInputBase<TValue>
+
+<select id=@Id name=@Id class=@ClassNames($"form-control form-control-{Size}", CssClass()) 
+        @bind="CurrentValue" placeHolder=@UseHelp @attributes="IncludeAttributes">
+        @ChildContent
+@foreach (var kvp in kvpValues())
+{
+    <option @key=@kvp.Key value=@kvp.Key>@kvp.Value</option>
+}
+</select>
+@if (!string.IsNullOrEmpty(Help))
+{
+    <label for=@Id>@Help</label>
+}
+<ErrorField Status=@Status Id=@Id/>
+
+@code {
+    [Parameter]
+    public IEnumerable<TValue>? Options { get; set; }
+
+    List<KeyValuePair<string, string>> kvpValues() => TextUtils.ToKeyValuePairs(Options);
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

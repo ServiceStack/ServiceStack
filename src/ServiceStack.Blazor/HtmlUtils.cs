@@ -27,14 +27,14 @@ public class HtmlDumpOptions
 
 public static class HtmlUtils
 {
-    public static string TableClass() => ServiceStack.Blazor.BlazorConfig.Theme == ServiceStack.Blazor.Theme.Bootstrap5
+    public static string TableClass() => BlazorConfig.BlazorTheme == BlazorTheme.Bootstrap5
         ? "table table-striped"
         : "";
 
     public static string HtmlEncode(this string s) => System.Net.WebUtility.HtmlEncode(s);
     public static string AsString(this object str) => str is IRawString r ? r.ToRawString() : str?.ToString() ?? "";
 
-    public static string GetScalarHtml(object target)
+    public static string GetScalarHtml(object? target)
     {
         if (target == null || target.ToString() == string.Empty)
             return string.Empty;
@@ -319,8 +319,9 @@ public static class HtmlUtils
         }
     }
 
-    public static Dictionary<string, object> SanitizeAttributes(this Dictionary<string, object> attrs)
+    public static IReadOnlyDictionary<string, object>? SanitizeAttributes(this IReadOnlyDictionary<string, object>? attrs)
     {
+        if (attrs == null) return null;
         var safeAttrs = new Dictionary<string, object>();
         foreach (var attr in attrs)
         {

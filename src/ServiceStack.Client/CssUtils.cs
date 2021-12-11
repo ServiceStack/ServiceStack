@@ -7,15 +7,30 @@ public static class CssUtils
 {
     public static class Bootstrap
     {
-        public static string InvalidClass<T>(ApiResult<T> apiResult, string fieldName) => apiResult.ErrorStatus.HasFieldError(fieldName)
-            ? "is-invalid"
-            : "";
+        public static string InputClass<T>(ApiResult<T> apiResult, string fieldName, string? valid = null, string? invalid = null) =>
+            InputClass(apiResult.ErrorStatus, fieldName, valid, invalid);
 
-        public static string InvalidClass(ResponseStatus? status, string fieldName) => status?.FieldError(fieldName) != null
-            ? "is-invalid"
-            : "";
+        public static string InputClass(ResponseStatus? status, string fieldName,
+            string? valid = null,
+            string? invalid = null)
+            => status?.FieldError(fieldName) == null
+                ? valid ?? ""
+                : invalid ?? "is-invalid";
     }
 
+    public static class Tailwind
+    {
+        public static string InputClass<T>(ApiResult<T> apiResult, string fieldName, string? valid = null, string? invalid = null) =>
+            InputClass(apiResult.ErrorStatus, fieldName, valid, invalid);
+
+        public static string InputClass(ResponseStatus? status, string fieldName,
+            string? valid = null,
+            string? invalid = null)
+            => status?.FieldError(fieldName) == null
+                ? valid ?? "focus-within:ring-indigo-600 border-gray-300 focus-within:border-indigo-600"
+                : invalid ?? "border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500";
+    }
+    
     public static string Selected(bool condition) => condition ? "selected" : "";
     public static string Active(bool condition) => condition ? "active" : "";
     

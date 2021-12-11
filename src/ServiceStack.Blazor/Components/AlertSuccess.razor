@@ -1,8 +1,17 @@
-﻿@if (!string.IsNullOrEmpty(Message))
+﻿@inherits ApiComponentBase
+
+@if (!string.IsNullOrEmpty(Message))
 {
-    if (BlazorConfig.Theme == Theme.Tailwind)
+    if (IsBootstrap)
     {
-        <div class=@(CssUtils.ClassNames("rounded-md bg-green-50 p-4", @class)) role="alert">
+        <div class=@ClassNames("mt-2 mb-3 alert alert-success", CssClass()) role="alert">
+            <span class="oi oi-check me-2"></span>
+            @Message
+        </div>
+    }
+    else if (IsTailwind)
+    {
+        <div class=@(ClassNames("rounded-md bg-green-50 p-4", CssClass())) role="alert">
           <div class="flex">
             <div class="flex-shrink-0">
               <!-- Heroicon name: solid/x-check -->
@@ -16,19 +25,9 @@
           </div>
         </div>
     }
-    else
-    {
-        <div class=@CssUtils.ClassNames("mt-2 mb-3 alert alert-success", @class) role="alert">
-            <span class="oi oi-check me-2"></span>
-            @Message
-        </div>
-    }
 }
 
 @code {
-    [Parameter]
-    public string? @class { get; set; }
-
     [Parameter, EditorRequired]
     public string Message { get; set; } = "";
 }

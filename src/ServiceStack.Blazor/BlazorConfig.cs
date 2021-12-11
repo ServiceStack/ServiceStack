@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ServiceStack.Blazor
 {
-    public enum Theme
+    public enum BlazorTheme
     {
         Bootstrap5,
         Tailwind,
@@ -14,6 +14,6 @@ namespace ServiceStack.Blazor
 
     public static class BlazorConfig
     {
-        public static Theme Theme { get; set; } = Theme.Bootstrap5;
+        public static BlazorTheme BlazorTheme { get; set; } = BlazorTheme.Bootstrap5;
     }
 }

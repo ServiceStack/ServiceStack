@@ -1,8 +1,17 @@
-﻿@if (Status.ShowSummary(VisibleFields ?? Array.Empty<string>()))
+﻿@inherits ApiComponentBase
+
+@if (UseStatus.ShowSummary(UseVisibleFields))
 {
-    if (BlazorConfig.Theme == Theme.Tailwind)
+    if (IsBootstrap)
     {
-        <div class=@(CssUtils.ClassNames("rounded-md bg-red-50 p-4", @class)) role="alert">
+        <div class=@ClassNames("mt-2 mb-3 alert alert-danger", CssClass()) role="alert">
+            <span class="oi oi-warning me-2"></span>
+            @UseStatus.SummaryMessage(UseVisibleFields)
+        </div>
+    }
+    else if (IsTailwind)
+    {
+        <div class=@(ClassNames("rounded-md bg-red-50 p-4", CssClass())) role="alert">
           <div class="flex">
             <div class="flex-shrink-0">
               <!-- Heroicon name: solid/x-circle -->
@@ -12,27 +21,17 @@
             </div>
             <div class="ml-3">
               <h3 class="text-sm font-medium text-red-800">
-                @Status.SummaryMessage(VisibleFields ?? Array.Empty<string>())
+                @UseStatus.SummaryMessage(UseVisibleFields)
               </h3>
             </div>
           </div>
-        </div>
-    }
-    else
-    {
-        <div class=@CssUtils.ClassNames("mt-2 mb-3 alert alert-danger", @class) role="alert">
-            <span class="oi oi-warning me-2"></span>
-            @Status.SummaryMessage(VisibleFields ?? Array.Empty<string>())
         </div>
     }
 }
 
 @code {
     [Parameter]
-    public string? @class { get; set; }
-    [Parameter]
     public string[]? VisibleFields { get; set; }
 
-    [Parameter, EditorRequired]
-    public ResponseStatus? Status { get; set; }
+    string[] UseVisibleFields => VisibleFields ?? Array.Empty<string>();
 }
