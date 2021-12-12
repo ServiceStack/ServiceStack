@@ -425,6 +425,9 @@ namespace ServiceStack.NativeTypes.TypeScript
                 }
 
                 string responseTypeExpression = null;
+                string responseMethod = options.Op?.Actions.Count == 1
+                    ? $"public getMethod() {{ return '{options.Op.Actions[0]}'; }}"
+                    : null;
 
                 var interfaces = new List<string>();
                 var implStr = options.ImplementsFn?.Invoke();
@@ -528,10 +531,17 @@ namespace ServiceStack.NativeTypes.TypeScript
                     sb.AppendLine($"public constructor(init?: Partial<{typeName}>) {{ {callSuper}(Object as any).assign(this, init); }}");
                 }
 
-                if (Config.ExportAsTypes && responseTypeExpression != null)
+                if (Config.ExportAsTypes)
                 {
-                    sb.AppendLine(responseTypeExpression);
-                    sb.AppendLine("public getTypeName() {{ return '{0}'; }}".Fmt(type.Name));
+                    if (responseTypeExpression != null)
+                    {
+                        sb.AppendLine(responseTypeExpression);
+                        sb.AppendLine("public getTypeName() {{ return '{0}'; }}".Fmt(type.Name));
+                    }
+                    if (responseMethod != null)
+                    {
+                        sb.AppendLine(responseMethod);
+                    }
                 }
 
                 sb = sb.UnIndent();

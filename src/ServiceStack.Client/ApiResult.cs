@@ -170,6 +170,7 @@ public static class ErrorUtils
         var fieldError = status.FieldError(fieldName);
         if (fieldError != null)
         {
+            fieldError.ErrorCode = errorCode;
             fieldError.Message = errorMessage;
         }
         else
