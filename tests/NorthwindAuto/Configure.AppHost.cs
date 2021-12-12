@@ -1,47 +1,27 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using Funq;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 
-namespace NorthwindCrud
+[assembly: HostingStartup(typeof(NorthwindAuto.AppHost))]
+
+namespace NorthwindAuto
 {
-    public class Startup : ModularStartup
+    public class AppHost : AppHostBase, IHostingStartup
     {
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
-        public new void ConfigureServices(IServiceCollection services)
-        {
-        }
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
-            app.UseServiceStack(new AppHost
-            {
-                AppSettings = new NetCoreAppSettings(Configuration)
+        public void Configure(IWebHostBuilder builder) => builder
+            .ConfigureServices((context, services) => 
+                // Register Database Connection, see: https://github.com/ServiceStack/ServiceStack.OrmLite#usage
+                services.AddSingleton<IDbConnectionFactory>(c =>
+                    new OrmLiteConnectionFactory(MapProjectPath("~/northwind.sqlite"), SqliteDialect.Provider)))
+            .Configure(app => {
+                if (!HasInit) 
+                    app.UseServiceStack(new AppHost());
             });
-        }
-    }
-
-    public class AppHost : AppHostBase
-    {
+        
         public AppHost() : base("Northwind Auto", typeof(MyServices).Assembly) { }
-
-        public override void Configure(IServiceCollection services)
-        {
-            // Register Database Connection, see: https://github.com/ServiceStack/ServiceStack.OrmLite#usage
-            services.AddSingleton<IDbConnectionFactory>(c =>
-                new OrmLiteConnectionFactory(MapProjectPath("~/northwind.sqlite"), SqliteDialect.Provider));
-        }
 
         // Configure your AppHost with the necessary configuration and dependencies your App needs
         public override void Configure(Container container)
@@ -78,5 +58,4 @@ namespace NorthwindCrud
             return new HelloResponse { Result = $"Hello, {request.Name}!" };
         }
     }
-
 }
