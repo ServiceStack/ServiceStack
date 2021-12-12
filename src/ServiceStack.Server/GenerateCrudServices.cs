@@ -200,19 +200,19 @@ namespace ServiceStack
             }
             foreach (var assembly in feature.LoadFromAssemblies)
             {
-                try
-                {
-                    var asmAqTypes = assembly.GetTypes().Where(x =>
-                        x.HasInterface(typeof(IQueryDb)) || x.HasInterface(typeof(ICrud)));
+                var asmAqTypes = assembly.GetTypes().Where(x =>
+                    x.HasInterface(typeof(IQueryDb)) || x.HasInterface(typeof(ICrud)));
 
-                    foreach (var aqType in asmAqTypes)
+                foreach (var aqType in asmAqTypes)
+                {
+                    try
                     {
                         ServiceMetadata.AddReferencedTypes(dtoTypes, aqType);
                     }
-                }
-                catch (Exception ex)
-                {
-                    appHost.NotifyStartupException(ex);
+                    catch (Exception ex)
+                    {
+                        appHost.NotifyStartupException(ex, aqType.Name, nameof(GenerateMissingServices));
+                    }
                 }
             }
             foreach (var dtoType in dtoTypes)

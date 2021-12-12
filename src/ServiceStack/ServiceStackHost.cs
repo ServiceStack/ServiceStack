@@ -269,7 +269,7 @@ namespace ServiceStack
                 }
                 catch (Exception ex)
                 {
-                    OnStartupException(ex);
+                    OnStartupException(ex, instance.GetType().Name, nameof(RunPreConfigure));
                 }
             }
 
@@ -300,7 +300,7 @@ namespace ServiceStack
                 }
                 catch (Exception ex)
                 {
-                    OnStartupException(ex);
+                    OnStartupException(ex, instance.GetType().Name, nameof(RunConfigure));
                 }
             }
 
@@ -1043,6 +1043,12 @@ namespace ServiceStack
             this.StartUpErrors.Add(DtoUtils.CreateErrorResponse(null, ex).GetResponseStatus());
         }
 
+        public virtual void OnStartupException(Exception ex,  string target, string method)
+        {
+            Log.Error($"{method} {target}:\n{ex}");
+            OnStartupException(ex);
+        }
+
         private HostConfig config;
         /// <summary>
         /// The Configuration for this AppHost 
@@ -1265,7 +1271,7 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
-                OnStartupException(ex);
+                OnStartupException(ex, instance.GetType().Name, nameof(RunPreInitPlugin));
             }
         }
 
@@ -1278,7 +1284,7 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
-                OnStartupException(ex);
+                OnStartupException(ex, instance.GetType().Name, nameof(RunPostInitPlugin));
             }
         }
 
@@ -1291,7 +1297,7 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
-                OnStartupException(ex);
+                OnStartupException(ex, instance.GetType().Name, nameof(RunAfterInitAppHost));
             }
         }
 
@@ -1303,7 +1309,7 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
-                OnStartupException(ex);
+                OnStartupException(ex, fn.ToString(), nameof(RunManagedAction));
             }
         }
 
@@ -1322,16 +1328,16 @@ namespace ServiceStack
             var plugins = Plugins.WithPriority().PriorityOrdered();
             plugins.ForEach(RunPostInitPlugin);
             
-            try
+            foreach (var action in AfterPluginsLoaded)
             {
-                foreach (var action in AfterPluginsLoaded)
+                try
                 {
                     action(this);
                 }
-            }
-            catch (Exception ex)
-            {
-                OnStartupException(ex);
+                catch (Exception ex)
+                {
+                    OnStartupException(ex, action.ToString(), nameof(RunAfterPluginsLoaded));
+                }
             }
 
             ServiceController.AfterInit();
@@ -1578,7 +1584,7 @@ namespace ServiceStack
                 }
                 catch (Exception ex)
                 {
-                    OnStartupException(ex);
+                    OnStartupException(ex, plugin.GetType().Name, nameof(LoadPluginsInternal));
                 }
             }
         }

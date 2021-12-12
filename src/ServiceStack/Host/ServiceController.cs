@@ -123,7 +123,7 @@ namespace ServiceStack.Host
             }
             catch (Exception ex)
             {
-                appHost.NotifyStartupException(ex);
+                appHost.NotifyStartupException(ex, serviceType.Name, nameof(RegisterService));
                 Log.Error(ex.Message, ex);
             }
         }

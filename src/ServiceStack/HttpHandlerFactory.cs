@@ -114,7 +114,7 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
-                HostContext.AppHost.OnStartupException(ex);
+                HostContext.AppHost.OnStartupException(ex, nameof(HttpHandlerFactory), nameof(Init));
             }
         }
 

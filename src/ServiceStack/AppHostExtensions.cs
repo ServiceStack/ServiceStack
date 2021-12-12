@@ -105,6 +105,18 @@ namespace ServiceStack
             return hasContainer?.Container;
         }
 
+        public static bool NotifyStartupException(this IAppHost appHost, Exception ex, string target, string method)
+        {
+            var ssHost = HostContext.AppHost;
+            if (ssHost == null) return false;
+
+            if (!ssHost.HasStarted)
+            {
+                ssHost.OnStartupException(ex, target, method);
+            }
+            return !ssHost.HasStarted;
+        }
+
         public static bool NotifyStartupException(this IAppHost appHost, Exception ex)
         {
             var ssHost = HostContext.AppHost;

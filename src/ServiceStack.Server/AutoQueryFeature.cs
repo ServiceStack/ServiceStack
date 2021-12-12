@@ -240,7 +240,7 @@ namespace ServiceStack
                 }
                 catch (Exception ex)
                 {
-                    appHost.NotifyStartupException(ex);
+                    appHost.NotifyStartupException(ex, nameof(AfterPluginsLoaded), assembly.FullName);
                 }
             }
 
