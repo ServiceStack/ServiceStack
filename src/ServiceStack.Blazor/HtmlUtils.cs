@@ -27,9 +27,7 @@ public class HtmlDumpOptions
 
 public static class HtmlUtils
 {
-    public static string TableClass() => BlazorConfig.BlazorTheme == BlazorTheme.Bootstrap5
-        ? "table table-striped"
-        : "";
+    public static string TableClass { get; set; } = "table table-striped";
 
     public static string HtmlEncode(this string s) => System.Net.WebUtility.HtmlEncode(s);
     public static string AsString(this object str) => str is IRawString r ? r.ToRawString() : str?.ToString() ?? "";
@@ -77,8 +75,7 @@ public static class HtmlUtils
 
             var parentClass = options.ClassName;
             var childClass = options.ChildClass;
-            var className = ((depth < childDepth ? parentClass : childClass ?? parentClass)
-                             ?? TableClass());
+            var className = (depth < childDepth ? parentClass : childClass ?? parentClass) ?? TableClass;
 
             var headerStyle = options.HeaderStyle;
             var headerTag = options.HeaderTag ?? "th";
@@ -224,8 +221,7 @@ public static class HtmlUtils
         {
             var parentClass = options.ClassName;
             var childClass = options.ChildClass;
-            var className = ((depth < childDepth ? parentClass : childClass ?? parentClass)
-                             ?? TableClass());
+            var className = (depth < childDepth ? parentClass : childClass ?? parentClass) ?? TableClass;
 
             var headerStyle = options.HeaderStyle;
             var headerTag = options.HeaderTag ?? "th";
