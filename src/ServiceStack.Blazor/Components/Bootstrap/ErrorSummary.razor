@@ -1,6 +1,9 @@
 ﻿@inherits ErrorSummaryBase
 
-<div class=@ClassNames("mt-2 mb-3 alert alert-danger", CssClass()) role="alert">
-    <span class="oi oi-warning me-2"></span>
-    @UseStatus.SummaryMessage(UseVisibleFields)
-</div>
+@if (UseStatus.ShowSummary(UseVisibleFields))
+{
+    <div class=@ClassNames("mt-2 mb-3 alert alert-danger", CssClass()) role="alert">
+        <span class="oi oi-warning me-2"></span>
+        @UseStatus.SummaryMessage(UseVisibleFields)
+    </div>
+}

@@ -1,3 +1,6 @@
 ﻿@inherits ErrorFieldBase
 
-<div class=@ClassNames("invalid-feedback", CssClass())>@UseStatus.FieldErrorMessage(Id!)</div>
+@if (UseStatus.HasFieldError(Id!))
+{
+    <div class=@ClassNames("invalid-feedback", CssClass())>@UseStatus.FieldErrorMessage(Id!)</div>
+}
