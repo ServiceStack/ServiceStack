@@ -1,4 +1,4 @@
-@inherits ApiComponentBase
+@inherits AlertSuccessBase
 @if (!string.IsNullOrEmpty(Message))
 {
 <div class=@(ClassNames("rounded-md bg-green-50 p-4", CssClass())) role="alert">
@@ -16,11 +16,11 @@
 </div>
 }
 @typeparam TValue
-@inherits TextInputBase<TValue>
+@inherits DateTimeInputBase<TValue>
 @if (!string.IsNullOrEmpty(UseHelp))
 {
 <div class=@ClassNames("border rounded-md px-3 py-2 shadow-sm focus-within:ring-1",
-InputClass(valid:"border-gray-300 focus-within:ring-indigo-600 focus-within:border-indigo-600",
+StateClasses(valid:"border-gray-300 focus-within:ring-indigo-600 focus-within:border-indigo-600",
 invalid:"border-red-300 focus-within:ring-red-600 focus-within:border-red-600"))>
 <label for=@Id class="block text-xs font-medium text-gray-900">@UseHelp</label>
 <input type="date" class=@ClassNames("block w-full border-0 p-0 placeholder-gray-500 focus:ring-0 sm:text-sm",
@@ -40,7 +40,7 @@ invalid:"text-red-900 border-red-300 placeholder-red-300 focus:outline-none focu
 <ErrorField Status=@Status Id=@Id />
 </div>
 }
-@inherits ApiComponentBase
+@inherits ErrorFieldBase
 @if (UseStatus.HasFieldError(Id!))
 {
 <div class=@ClassNames("absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none", CssClass())>
@@ -51,7 +51,7 @@ invalid:"text-red-900 border-red-300 placeholder-red-300 focus:outline-none focu
 </div>
 <p id=@($"{Id}-error") class="mt-2 text-sm text-red-600">@UseStatus.FieldErrorMessage(Id!)</p>
 }
-@inherits ApiComponentBase
+@inherits ErrorSummaryBase
 @if (UseStatus.ShowSummary(UseVisibleFields))
 {
 <div class=@(ClassNames("rounded-md bg-red-50 p-4", CssClass())) role="alert">
@@ -71,7 +71,7 @@ invalid:"text-red-900 border-red-300 placeholder-red-300 focus:outline-none focu
 </div>
 }
 @typeparam TValue
-@inherits TextInputBase<TValue>
+@inherits SelectInputBase<TValue>
 <div>
 @if (!string.IsNullOrEmpty(UseHelp))
 {
@@ -82,7 +82,7 @@ CssClass(valid:"text-gray-900 focus:ring-indigo-500 focus:border-indigo-500",
 invalid:"text-red-900 focus:ring-red-500 focus:border-red-500"))
 @bind="CurrentValue" placeHolder=@UseHelp @attributes="IncludeAttributes">
 @ChildContent
-@foreach (var kvp in kvpValues())
+@foreach (var kvp in KvpValues())
 {
 <option @key=@kvp.Key value=@kvp.Key>@kvp.Value</option>
 }
@@ -110,7 +110,7 @@ invalid:"text-red-900 focus:ring-red-500 focus:border-red-500 border-red-300"))
 @if (!string.IsNullOrEmpty(UseHelp))
 {
 <div class=@ClassNames("border rounded-md px-3 py-2 shadow-sm focus-within:ring-1",
-InputClass(valid:"border-gray-300 focus-within:ring-indigo-600 focus-within:border-indigo-600",
+StateClasses(valid:"border-gray-300 focus-within:ring-indigo-600 focus-within:border-indigo-600",
 invalid:"border-red-300 focus-within:ring-red-600 focus-within:border-red-600"))>
 <label for=@Id class="block text-xs font-medium text-gray-900">@UseHelp</label>
 <input type="text" class=@ClassNames("block w-full border-0 p-0 placeholder-gray-500 focus:ring-0 sm:text-sm",
@@ -130,12 +130,12 @@ invalid:"text-red-900 border-red-300 placeholder-red-300 focus:outline-none focu
 <ErrorField Status=@Status Id=@Id/>
 </div>
 }
-@inherits ApiComponentBase
-@if (inputType == "select")
+@inherits TypeInputBase
+@if (InputType == "select")
 {
-<SelectInput Id=@propName Status=@Status TValue="string"
-@bind-Value="Value" @attributes="IncludeAttributes" Help=@TextUtils.Humanize(propName)>
-@foreach (var item in kvpValues())
+<SelectInput Id=@PropName Status=@Status TValue="string"
+@bind-Value="Value" @attributes="IncludeAttributes" Help=@TextUtils.Humanize(PropName)>
+@foreach (var item in KvpValues())
 {
 <option value=@item.Key>@item.Value</option>
 }
@@ -143,6 +143,6 @@ invalid:"text-red-900 border-red-300 placeholder-red-300 focus:outline-none focu
 }
 else
 {
-<TextInput type=@inputType Id=@propName Status=@Status
-@bind-Value="Value" @bind:event="oninput" step="any" @attributes="IncludeAttributes" Help=@useHelp />
+<TextInput type=@InputType Id=@PropName Status=@Status
+@bind-Value="Value" @bind:event="oninput" step="any" @attributes="IncludeAttributes" Help=@UseHelp />
 }

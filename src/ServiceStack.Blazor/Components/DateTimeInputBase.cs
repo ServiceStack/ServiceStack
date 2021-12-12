@@ -1,6 +1,6 @@
-namespace ServiceStack.Blazor.Components.Bootstrap;
+namespace ServiceStack.Blazor.Components;
 
-public partial class DateTimeInput<TValue>
+public class DateTimeInputBase<TValue> : TextInputBase<TValue>
 {
     protected DateTime? CurrentValueAsDateTime { get => CurrentValue is DateTime dt ? dt : null; set => CurrentValue = value is not null ? (TValue)(object)value : default; }
 }

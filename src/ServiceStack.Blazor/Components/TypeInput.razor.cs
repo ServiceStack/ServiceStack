@@ -1,27 +1,29 @@
 using Microsoft.AspNetCore.Components;
 
-namespace ServiceStack.Blazor.Components.Bootstrap;
+namespace ServiceStack.Blazor.Components;
 
-public partial class TypeInput
+public class TypeInputBase : ApiComponentBase
 {
     [Parameter, EditorRequired]
     public Dictionary<string, object> Model { get; set; } = new();
-    string Value { get => Model.TryGetValue(propName, out var value) ? value?.ToString() ?? "" : ""; set => Model[propName] = value ?? ""; }
+    protected string Value { get => Model.TryGetValue(PropName, out var value) ? value?.ToString() ?? "" : ""; set => Model[PropName] = value ?? ""; }
 
     [Parameter, EditorRequired]
     public MetadataPropertyType? Property { get; set; }
 
-    string propName => Property!.Name;
-    string propertyType => realType(Property!);
+    protected string PropName => Property!.Name;
+    protected string PropertyType => realType(Property!);
     [Parameter]
     public string Size { get; set; } = "md";
-    string inputType => getInputType(Property!);
-    string useHelp => propertyType != "Boolean" ? TextUtils.Humanize(propName) : "";
-    List<KeyValuePair<string, string>> kvpValues() => TextUtils.ToKeyValuePairs((System.Collections.IEnumerable)Model);
-    static string[] numberTypes = new[] { "SByte", "Byte", "Int16", "Int32", "Int64", "UInt16", "UInt32", "UInt64" };
-    static string[] realTypes = new[] { "Single", "Double", "Decimal" };
-    static string realType(MetadataPropertyType f) => f.Type == "Nullable`1" ? f.GenericArgs[0] : f.Type;
-    static string getInputType(MetadataPropertyType propType)
+    protected string InputType => getInputType(Property!);
+    protected string UseHelp => PropertyType != "Boolean" ? TextUtils.Humanize(PropName) : "";
+    protected List<KeyValuePair<string, string>> KvpValues() => TextUtils.ToKeyValuePairs(Model);
+
+    public static string[] numberTypes = new[] { "SByte", "Byte", "Int16", "Int32", "Int64", "UInt16", "UInt32", "UInt64" };
+    public static string[] realTypes = new[] { "Single", "Double", "Decimal" };
+
+    public static string realType(MetadataPropertyType f) => f.Type == "Nullable`1" ? f.GenericArgs[0] : f.Type;
+    public static string getInputType(MetadataPropertyType propType)
     {
         var t = realType(propType);
         var name = propType.Name;

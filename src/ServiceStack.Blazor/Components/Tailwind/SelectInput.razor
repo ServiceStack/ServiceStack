@@ -1,5 +1,5 @@
 ﻿@typeparam TValue
-@inherits TextInputBase<TValue>
+@inherits SelectInputBase<TValue>
 
 <div>
 @if (!string.IsNullOrEmpty(UseHelp))
@@ -11,7 +11,7 @@
                invalid:"text-red-900 focus:ring-red-500 focus:border-red-500")) 
             @bind="CurrentValue" placeHolder=@UseHelp @attributes="IncludeAttributes">
             @ChildContent
-    @foreach (var kvp in kvpValues())
+    @foreach (var kvp in KvpValues())
     {
         <option @key=@kvp.Key value=@kvp.Key>@kvp.Value</option>
     }

@@ -1,10 +1,10 @@
 ﻿@typeparam TValue
-@inherits TextInputBase<TValue>
+@inherits SelectInputBase<TValue>
 
 <select id=@Id name=@Id class=@ClassNames($"form-control form-control-{Size}", CssClass()) 
         @bind="CurrentValue" placeHolder=@UseHelp @attributes="IncludeAttributes">
         @ChildContent
-@foreach (var kvp in kvpValues())
+@foreach (var kvp in KvpValues())
 {
     <option @key=@kvp.Key value=@kvp.Key>@kvp.Value</option>
 }

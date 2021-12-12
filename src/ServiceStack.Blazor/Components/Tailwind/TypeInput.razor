@@ -1,10 +1,10 @@
-﻿@inherits ApiComponentBase
+﻿@inherits TypeInputBase
 
-@if (inputType == "select")
+@if (InputType == "select")
 {
-    <SelectInput Id=@propName Status=@Status TValue="string"
-                @bind-Value="Value" @attributes="IncludeAttributes" Help=@TextUtils.Humanize(propName)>
-        @foreach (var item in kvpValues())
+    <SelectInput Id=@PropName Status=@Status TValue="string"
+                @bind-Value="Value" @attributes="IncludeAttributes" Help=@TextUtils.Humanize(PropName)>
+        @foreach (var item in KvpValues())
         {
             <option value=@item.Key>@item.Value</option>
         }
@@ -12,6 +12,6 @@
 }
 else
 {
-    <TextInput type=@inputType Id=@propName Status=@Status
-               @bind-Value="Value" @bind:event="oninput" step="any" @attributes="IncludeAttributes" Help=@useHelp />
+    <TextInput type=@InputType Id=@PropName Status=@Status
+               @bind-Value="Value" @bind:event="oninput" step="any" @attributes="IncludeAttributes" Help=@UseHelp />
 }

@@ -19,12 +19,12 @@ public abstract class TextInputBase : ApiComponentBase
         _validationStateChangedHandler = OnValidateStateChanged;
     }
 
-    protected override string InputClass(string? valid = null, string? invalid = null) => UseStatus?.FieldError(Id!) == null
+    protected override string StateClasses(string? valid = null, string? invalid = null) => UseStatus?.FieldError(Id!) == null
         ? valid ?? ""
         : invalid ?? "";
 
     protected override string CssClass(string? valid = null, string? invalid = null) =>
-        CssUtils.ClassNames(InputClass(valid, invalid), @class);
+        CssUtils.ClassNames(StateClasses(valid, invalid), @class);
 
     [Parameter]
     public virtual string? Id { get; set; }

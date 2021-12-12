@@ -1,20 +1,30 @@
-﻿#pragma warning disable IDE1006 // Naming Styles
-
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 
 namespace ServiceStack.Blazor.Components;
 
-public abstract class ApiComponentBase : ComponentBase
+/// <summary>
+/// The Base class for all ResponseStatus aware ServiceStack.Blazor Components
+/// </summary>
+public abstract class ApiComponentBase : UiComponentBase
 {
-    [Parameter] public string? @class { get; set; }
 
+    /// <summary>
+    /// Directly assing a Response Status to this component
+    /// </summary>
     [Parameter] public ResponseStatus? Status { get; set; }
 
+    /// <summary>
+    /// The ResponseStatus injected by CascadingValue
+    /// </summary>
     [CascadingParameter] public ResponseStatus? CascadingStatus { get; set; }
+
+    /// <summary>
+    /// The ResponseStatus assinged to this compontent
+    /// </summary>
     protected ResponseStatus? UseStatus => Status ?? (!IgnoreCascadingStatus ? CascadingStatus : null);
 
     /// <summary>
-    /// Whether to ignore CascadingStatus injected by CascadingValue
+    /// Assign ResponseStatus to component and ignore CascadingStatus injected by CascadingValue
     /// </summary>
     [Parameter] public ResponseStatus? ExplicitStatus
     {
@@ -26,27 +36,27 @@ public abstract class ApiComponentBase : ComponentBase
         get => IgnoreCascadingStatus ? Status : null;
     }
 
+    /// <summary>
+    /// Whether to ignore CascadingStatus
+    /// </summary>
     protected bool IgnoreCascadingStatus { get; set; }
 
-    [Parameter] public BlazorTheme? Theme { get; set; }
-
-    [CascadingParameter] public BlazorTheme? CascadingTheme { get; set; }
-    protected BlazorTheme UseTheme => Theme ?? CascadingTheme ?? BlazorTheme.Bootstrap5;
-
     /// <summary>
-    /// True for any Bootstrap version
+    /// If the ResponseStatus assigned to this component is in an Error State
     /// </summary>
-    protected bool IsBootstrap => UseTheme == BlazorTheme.Bootstrap5;
-    protected bool IsBootstrap5 => UseTheme == BlazorTheme.Bootstrap5;
-    protected bool IsTailwind => UseTheme == BlazorTheme.Tailwind;
-
     protected bool IsError => UseStatus.IsError();
 
-    protected virtual string InputClass(string? valid = null, string? invalid = null) => !IsError
+    /// <summary>
+    /// Helper to return classes for when component is in a `valid` or `invalid` state
+    /// </summary>
+    /// <param name="valid">css classes to include when valid</param>
+    /// <param name="invalid">css classes to include when invalid</param>
+    /// <returns></returns>
+    protected virtual string StateClasses(string? valid = null, string? invalid = null) => !IsError
         ? valid ?? ""
         : invalid ?? "";
 
-    protected virtual string CssClass(string? valid = null, string? invalid = null) =>
-        CssUtils.ClassNames(InputClass(valid, invalid), @class);
-    protected virtual string ClassNames(params string?[] classes) => CssUtils.ClassNames(classes);
+    /// <inheritdoc/>
+    protected override string CssClass(string? valid = null, string? invalid = null) =>
+        CssUtils.ClassNames(StateClasses(valid, invalid), @class);
 }

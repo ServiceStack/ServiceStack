@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Components;
 
-namespace ServiceStack.Blazor.Components.Bootstrap;
+namespace ServiceStack.Blazor.Components;
 
-public partial class AlertSuccess
+public class AlertSuccessBase : ApiComponentBase
 {
     [Parameter, EditorRequired]
     public string Message { get; set; } = "";
