@@ -1,26 +1,31 @@
 ﻿@typeparam TValue
 @inherits TextInputBase<TValue>
 
-@if (!string.IsNullOrEmpty(UseHelp))
+<div>
+@if (!string.IsNullOrEmpty(UseLabel))
 {
-    <div class=@ClassNames("border rounded-md px-3 py-2 shadow-sm focus-within:ring-1",
-        StateClasses(valid:"border-gray-300 focus-within:ring-indigo-600 focus-within:border-indigo-600",
-                    invalid:"border-red-300 focus-within:ring-red-600 focus-within:border-red-600"))>
-        <label for=@Id class="block text-xs font-medium text-gray-900">@UseHelp</label>
+    <label for=@Id class="block text-sm font-medium text-gray-700">{{ useLabel }}</label>
+}
+    <div class="mt-1 relative rounded-md shadow-sm">
         <input type="text" class=@ClassNames("block w-full border-0 p-0 placeholder-gray-500 focus:ring-0 sm:text-sm", 
             CssClass("text-gray-900", "text-red-900")) 
-                id=@Id name=@Id @bind="CurrentValue" placeHolder=@UseHelp @bind:event="oninput" @attributes="IncludeAttributes">
-        <ErrorField Status=@Status Id=@Id/>
+                id=@Id name=@Id @bind="CurrentValue" placeHolder=@UsePlaceholder @bind:event="oninput" @attributes="IncludeAttributes">
+    @if (HasErrorField)
+    {
+        <div v-if="errorField" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+            <!-- Heroicon name: solid/exclamation-circle -->
+            <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+        </div>
+    }
     </div>
-}
-else
-{
-    <div class="mt-1 relative rounded-md shadow-sm">
-        <input type="text"id=@Id name=@Id @bind="CurrentValue" placeHolder=@UseHelp @bind:event="oninput" @attributes="IncludeAttributes"
-                class=@ClassNames("block w-full pr-10 sm:text-sm rounded-md", 
-                    CssClass(valid:"text-gray-900 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300", 
-                            invalid:"text-red-900 border-red-300 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500")) 
-                >
-        <ErrorField Status=@Status Id=@Id/>
-    </div>
-}
+    @if (HasErrorField)
+    {
+        <p class="mt-2 text-sm text-red-500" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+    }
+    else if (!string.IsNullOrEmpty(UsePlaceholder))
+    {
+        <p class="mt-2 text-sm text-gray-500" id="`${id}-description`">@UsePlaceholder</p>
+    }
+</div>

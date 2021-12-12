@@ -2,9 +2,12 @@
 @inherits TextInputBase<TValue>
 
 <textarea class=@ClassNames($"form-control", CssClass(invalid:"is-invalid")) 
-        id=@Id name=@Id @bind="CurrentValue" placeHolder=@UseHelp @bind:event="oninput" @attributes="IncludeAttributes" />
-@if (!string.IsNullOrEmpty(UseHelp))
+        id=@Id name=@Id @bind="CurrentValue" placeHolder=@UsePlaceholder @bind:event="oninput" @attributes="IncludeAttributes" />
+@if (!string.IsNullOrEmpty(UseLabel))
 {
-    <label for=@Id>@UseHelp</label>
+    <label for=@Id>@UseLabel</label>
 }
-<ErrorField Status=@Status Id=@Id/>
+@if (HasErrorField)
+{
+    <div class=@ClassNames("invalid-feedback", CssClass())>@ErrorFieldMessage</div>
+}

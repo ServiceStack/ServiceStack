@@ -2,10 +2,12 @@
 @inherits DateTimeInputBase<TValue>
 
 <input type="date" class=@ClassNames($"form-control form-control-{Size}", CssClass(invalid:"is-invalid")) 
-        id=@Id name=@Id @bind="CurrentValueAsDateTime" placeHolder=@UseHelp @bind:event="oninput" @attributes="IncludeAttributes">
-
-@if (!string.IsNullOrEmpty(UseHelp))
+        id=@Id name=@Id @bind="CurrentValueAsDateTime" placeHolder=@UsePlaceholder @bind:event="oninput" @attributes="IncludeAttributes">
+@if (!string.IsNullOrEmpty(UseLabel))
 {
-    <label for=@Id>@UseHelp</label>
+    <label for=@Id>@UseLabel</label>
 }
-<ErrorField Status=@Status Id=@Id />
+@if (HasErrorField)
+{
+    <div class=@ClassNames("invalid-feedback", CssClass())>@ErrorFieldMessage</div>
+}

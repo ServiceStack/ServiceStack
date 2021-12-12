@@ -2,16 +2,19 @@
 @inherits TextInputBase<TValue>
 
 <div>
-@if (!string.IsNullOrEmpty(UseHelp))
+@if (!string.IsNullOrEmpty(UsePlaceholder))
 {
-    <label for=@Id class="block text-sm font-medium text-gray-700">@UseHelp</label>
+    <label for=@Id class="block text-sm font-medium text-gray-700">@UsePlaceholder</label>
 }
     <div class="mt-1 relative rounded-md shadow-sm">
-        <textarea id=@Id name=@Id @bind="CurrentValue" placeHolder=@UseHelp @attributes="IncludeAttributes"
+        <textarea id=@Id name=@Id @bind="CurrentValue" placeHolder=@UsePlaceholder @attributes="IncludeAttributes"
                 class=@ClassNames("shadow-sm block w-full sm:text-sm rounded-md", 
                     CssClass(valid:"text-gray-900 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300",
                             invalid:"text-red-900 focus:ring-red-500 focus:border-red-500 border-red-300"))
                 />
-        <ErrorField Status=@Status Id=@Id/>
+    @if (HasErrorField)
+    {
+        <p class="mt-2 text-sm text-red-500" id=@($"{Id}-error")>@ErrorFieldMessage</p>
+    }
     </div>
 </div>

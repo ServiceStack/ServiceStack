@@ -59,7 +59,7 @@ public class ApiResult<TResponse>
 
     public ResponseError? FieldError(string fieldName) => ErrorStatus.FieldError(fieldName);
 
-    public bool HasFieldError(string fieldName) => ErrorStatus.HasFieldError(fieldName);
+    public bool HasFieldError(string fieldName) => ErrorStatus.HasErrorField(fieldName);
 
     public ApiResult(TResponse response)
     {
@@ -105,7 +105,7 @@ public static class ErrorUtils
     public static string? FieldErrorMessage(this ResponseStatus? status, string fieldName) => status?.Errors?
         .FirstOrDefault(x => string.Equals(x.FieldName, fieldName, StringComparison.OrdinalIgnoreCase))?.Message;
 
-    public static bool HasFieldError(this ResponseStatus? status, string fieldName) =>
+    public static bool HasErrorField(this ResponseStatus? status, string fieldName) =>
         status?.FieldError(fieldName) != null;
 
     public static bool ShowSummary(this ResponseStatus? status, params string[] exceptFields)
@@ -116,7 +116,7 @@ public static class ErrorUtils
         // Don't show summary message if an error for a visible field exists
         foreach (var fieldName in exceptFields)
         {
-            if (status.HasFieldError(fieldName))
+            if (status.HasErrorField(fieldName))
                 return false;
         }
 

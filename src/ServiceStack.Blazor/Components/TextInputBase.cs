@@ -35,10 +35,27 @@ public abstract class TextInputBase : ApiComponentBase
     [Parameter]
     public string? placeHolder { get; set; }
 
+    /// <summary>
+    /// Additional help text for Input Control, defaults to split Pascal Case Id.
+    /// Set to empty string "" to hide
+    /// </summary>
     [Parameter]
     public string? Help { get; set; }
 
-    protected string? UseHelp => !string.IsNullOrEmpty(Help) ? Help : placeHolder ?? ServiceStack.Blazor.TextUtils.Humanize(Id!);
+    /// <summary>
+    /// Label assigned to the Input Control, defaults to split Pascal Case Id.
+    /// Set to empty string "" to hide
+    /// </summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    public bool HasErrorField => UseStatus.HasErrorField(Id!);
+    public ResponseError? ErrorField => UseStatus.FieldError(Id!);
+    public string? ErrorFieldMessage => UseStatus.FieldError(Id!)?.Message;
+
+    protected string UseLabel => Label ?? TextUtils.Humanize(Id!);
+
+    protected string UsePlaceholder => placeHolder ?? Help ?? TextUtils.Humanize(Id!);
 
     //from: https://github.com/dotnet/aspnetcore/blob/main/src/Components/Web/src/Forms/InputBase.cs
 
