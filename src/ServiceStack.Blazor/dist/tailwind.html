@@ -1,0 +1,148 @@
+@inherits ApiComponentBase
+@if (!string.IsNullOrEmpty(Message))
+{
+<div class=@(ClassNames("rounded-md bg-green-50 p-4", CssClass())) role="alert">
+<div class="flex">
+<div class="flex-shrink-0">
+<!-- Heroicon name: solid/x-check -->
+<svg class="h-5 w-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+</div>
+<div class="ml-3">
+<h3 class="text-sm font-medium text-green-800">
+@Message
+</h3>
+</div>
+</div>
+</div>
+}
+@typeparam TValue
+@inherits TextInputBase<TValue>
+@if (!string.IsNullOrEmpty(UseHelp))
+{
+<div class=@ClassNames("border rounded-md px-3 py-2 shadow-sm focus-within:ring-1",
+InputClass(valid:"border-gray-300 focus-within:ring-indigo-600 focus-within:border-indigo-600",
+invalid:"border-red-300 focus-within:ring-red-600 focus-within:border-red-600"))>
+<label for=@Id class="block text-xs font-medium text-gray-900">@UseHelp</label>
+<input type="date" class=@ClassNames("block w-full border-0 p-0 placeholder-gray-500 focus:ring-0 sm:text-sm",
+CssClass("text-gray-900", "text-red-900"))
+id=@Id name=@Id @bind="CurrentValueAsDateTime" placeHolder=@UseHelp @bind:event="oninput" @attributes="IncludeAttributes">
+<ErrorField Status=@Status Id=@Id />
+</div>
+}
+else
+{
+<div class="mt-1 relative rounded-md shadow-sm">
+<input type="date" id=@Id name=@Id @bind="CurrentValueAsDateTime" placeHolder=@UseHelp @bind:event="oninput" @attributes="IncludeAttributes"
+class=@ClassNames("block w-full pr-10 sm:text-sm rounded-md",
+CssClass(valid:"text-gray-900 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300",
+invalid:"text-red-900 border-red-300 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500"))
+>
+<ErrorField Status=@Status Id=@Id />
+</div>
+}
+@inherits ApiComponentBase
+@if (UseStatus.HasFieldError(Id!))
+{
+<div class=@ClassNames("absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none", CssClass())>
+<!-- Heroicon name: solid/x-circle -->
+<svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+</svg>
+</div>
+<p id=@($"{Id}-error") class="mt-2 text-sm text-red-600">@UseStatus.FieldErrorMessage(Id!)</p>
+}
+@inherits ApiComponentBase
+@if (UseStatus.ShowSummary(UseVisibleFields))
+{
+<div class=@(ClassNames("rounded-md bg-red-50 p-4", CssClass())) role="alert">
+<div class="flex">
+<div class="flex-shrink-0">
+<!-- Heroicon name: solid/x-circle -->
+<svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+</svg>
+</div>
+<div class="ml-3">
+<h3 class="text-sm font-medium text-red-800">
+@UseStatus.SummaryMessage(UseVisibleFields)
+</h3>
+</div>
+</div>
+</div>
+}
+@typeparam TValue
+@inherits TextInputBase<TValue>
+<div>
+@if (!string.IsNullOrEmpty(UseHelp))
+{
+<label for=@Id class="block text-sm font-medium text-gray-700">@UseHelp</label>
+}
+<select id=@Id name=@Id class=@ClassNames("mt-1 block w-full pl-3 pr-10 py-2 text-base focus:outline-none border-gray-300 sm:text-sm rounded-md",
+CssClass(valid:"text-gray-900 focus:ring-indigo-500 focus:border-indigo-500",
+invalid:"text-red-900 focus:ring-red-500 focus:border-red-500"))
+@bind="CurrentValue" placeHolder=@UseHelp @attributes="IncludeAttributes">
+@ChildContent
+@foreach (var kvp in kvpValues())
+{
+<option @key=@kvp.Key value=@kvp.Key>@kvp.Value</option>
+}
+</select>
+<ErrorField Status=@Status Id=@Id/>
+</div>
+@typeparam TValue
+@inherits TextInputBase<TValue>
+<div>
+@if (!string.IsNullOrEmpty(UseHelp))
+{
+<label for=@Id class="block text-sm font-medium text-gray-700">@UseHelp</label>
+}
+<div class="mt-1 relative rounded-md shadow-sm">
+<textarea id=@Id name=@Id @bind="CurrentValue" placeHolder=@UseHelp @attributes="IncludeAttributes"
+class=@ClassNames("shadow-sm block w-full sm:text-sm rounded-md",
+CssClass(valid:"text-gray-900 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300",
+invalid:"text-red-900 focus:ring-red-500 focus:border-red-500 border-red-300"))
+/>
+<ErrorField Status=@Status Id=@Id/>
+</div>
+</div>
+@typeparam TValue
+@inherits TextInputBase<TValue>
+@if (!string.IsNullOrEmpty(UseHelp))
+{
+<div class=@ClassNames("border rounded-md px-3 py-2 shadow-sm focus-within:ring-1",
+InputClass(valid:"border-gray-300 focus-within:ring-indigo-600 focus-within:border-indigo-600",
+invalid:"border-red-300 focus-within:ring-red-600 focus-within:border-red-600"))>
+<label for=@Id class="block text-xs font-medium text-gray-900">@UseHelp</label>
+<input type="text" class=@ClassNames("block w-full border-0 p-0 placeholder-gray-500 focus:ring-0 sm:text-sm",
+CssClass("text-gray-900", "text-red-900"))
+id=@Id name=@Id @bind="CurrentValue" placeHolder=@UseHelp @bind:event="oninput" @attributes="IncludeAttributes">
+<ErrorField Status=@Status Id=@Id/>
+</div>
+}
+else
+{
+<div class="mt-1 relative rounded-md shadow-sm">
+<input type="text"id=@Id name=@Id @bind="CurrentValue" placeHolder=@UseHelp @bind:event="oninput" @attributes="IncludeAttributes"
+class=@ClassNames("block w-full pr-10 sm:text-sm rounded-md",
+CssClass(valid:"text-gray-900 focus:ring-indigo-500 focus:border-indigo-500 border-gray-300",
+invalid:"text-red-900 border-red-300 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500"))
+>
+<ErrorField Status=@Status Id=@Id/>
+</div>
+}
+@inherits ApiComponentBase
+@if (inputType == "select")
+{
+<SelectInput Id=@propName Status=@Status TValue="string"
+@bind-Value="Value" @attributes="IncludeAttributes" Help=@TextUtils.Humanize(propName)>
+@foreach (var item in kvpValues())
+{
+<option value=@item.Key>@item.Value</option>
+}
+</SelectInput>
+}
+else
+{
+<TextInput type=@inputType Id=@propName Status=@Status
+@bind-Value="Value" @bind:event="oninput" step="any" @attributes="IncludeAttributes" Help=@useHelp />
+}

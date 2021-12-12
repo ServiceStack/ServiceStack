@@ -14,12 +14,3 @@
     <label for=@Id>@Help</label>
 }
 <ErrorField Status=@Status Id=@Id/>
-
-@code {
-    [Parameter]
-    public IEnumerable<TValue>? Options { get; set; }
-
-    List<KeyValuePair<string, string>> kvpValues() => TextUtils.ToKeyValuePairs(Options);
-
-    [Parameter] public RenderFragment? ChildContent { get; set; }
-}

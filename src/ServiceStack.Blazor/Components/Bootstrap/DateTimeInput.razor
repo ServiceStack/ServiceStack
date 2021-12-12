@@ -1,0 +1,11 @@
+﻿@typeparam TValue
+@inherits TextInputBase<TValue>
+
+<input type="date" class=@ClassNames($"form-control form-control-{Size}", CssClass(invalid:"is-invalid")) 
+        id=@Id name=@Id @bind="CurrentValueAsDateTime" placeHolder=@UseHelp @bind:event="oninput" @attributes="IncludeAttributes">
+
+@if (!string.IsNullOrEmpty(UseHelp))
+{
+    <label for=@Id>@UseHelp</label>
+}
+<ErrorField Status=@Status Id=@Id />

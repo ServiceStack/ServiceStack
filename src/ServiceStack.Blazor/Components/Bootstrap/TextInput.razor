@@ -1,0 +1,10 @@
+﻿@typeparam TValue
+@inherits TextInputBase<TValue>
+
+<input type="text" class=@CssUtils.ClassNames($"form-control form-control-{Size}", CssClass(invalid:"is-invalid")) 
+        id=@Id name=@Id @bind="CurrentValue" placeHolder=@UseHelp @bind:event="oninput" @attributes="IncludeAttributes">
+@if (string.IsNullOrEmpty(placeHolder))
+{
+    <label for=@Id>@UseHelp</label>
+}
+<ErrorField Status=@Status Id=@Id/>

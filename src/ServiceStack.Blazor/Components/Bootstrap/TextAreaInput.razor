@@ -1,0 +1,10 @@
+﻿@typeparam TValue
+@inherits TextInputBase<TValue>
+
+<textarea class=@ClassNames($"form-control", CssClass(invalid:"is-invalid")) 
+        id=@Id name=@Id @bind="CurrentValue" placeHolder=@UseHelp @bind:event="oninput" @attributes="IncludeAttributes" />
+@if (!string.IsNullOrEmpty(UseHelp))
+{
+    <label for=@Id>@UseHelp</label>
+}
+<ErrorField Status=@Status Id=@Id/>
