@@ -134,38 +134,42 @@ namespace ServiceStack.Admin
             new(){new(nameof(UserAuth.PhoneNumber), InputType.Tel)},
             new(){new(nameof(UserAuth.LockedDate), InputType.Date)},
         };
+
+        public AdminUsersFeature EachGridLayoutRow(Action<List<Input>, int> filter)
+        {
+            for (var i = 0; i < GridFieldLayout.Count; i++)
+            {
+                var row = GridFieldLayout[i];
+                filter(row, i);
+            }
+            return this;
+        }
+
+        public AdminUsersFeature EachGridLayoutField(Action<Input> filter)
+        {
+            GridFieldLayout.SelectMany(row => row.ToArray()).Each(filter);
+            return this;
+        }
+
+        public AdminUsersFeature RemoveFromGridLayout(Predicate<Input> match)
+        {
+            GridFieldLayout.ForEach(row => row.RemoveAll(match));
+            return this;
+        }
+
+        public AdminUsersFeature RemoveFromGridLayout(params string[] fieldNames) =>
+            RemoveFromGridLayout(input => fieldNames.Contains(input.Name));
         
         public AdminUsersFeature RemoveFromQueryResults(params string[] fieldNames)
         {
-            foreach (var field in fieldNames)
-            {
-                QueryUserAuthProperties.Remove(field);
-            }
+            QueryUserAuthProperties.RemoveAll(fieldNames.Contains);
             return this;
         }
         
         public AdminUsersFeature RemoveFromUserDetails(params string[] fieldNames)
         {
-            foreach (var field in fieldNames)
-            {
-                IncludeUserAuthProperties.Remove(field);
-                IncludeUserAuthDetailsProperties.Remove(field);
-            }
-            return this;
-        }
-        
-        public AdminUsersFeature RemoveFromGridLayout(params string[] fieldNames)
-        {
-            foreach (var field in fieldNames)
-            {
-                foreach (var row in GridFieldLayout)
-                {
-                    var colIndex = row.FindIndex(x => x.Name == field);
-                    if (colIndex >= 0)
-                        row.RemoveAt(colIndex);
-                }
-                GridFieldLayout.RemoveAll(x => x.Count == 0);
-            }
+            IncludeUserAuthProperties.RemoveAll(fieldNames.Contains);
+            IncludeUserAuthDetailsProperties.RemoveAll(fieldNames.Contains);
             return this;
         }
         
