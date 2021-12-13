@@ -147,10 +147,18 @@ public static class TextUtils
     public static string DefaultFormatCurrency(decimal value) => string.Format(UseCulture, "{0:C}", value);
 
     public static Func<DateTime, string> FormatDate { get; set; } = DefaultFormatDate;
-    public static string DefaultFormatDate(DateTime value) => value.ToString("yyyy-MM-dd", UseCulture);
+    public static string DefaultFormatDate(DateTime value) => value.ToString("yyyy/MM/dd", UseCulture);
+    public static string FormatIso8601Date(DateTime value) => value.ToString("yyyy-MM-dd", UseCulture);
     public static Func<TimeSpan, string> FormatTime { get; set; } = DefaultFormatTime;
     public static string DefaultFormatTime(TimeSpan value) => value.ToString(@"h\:mm\:ss");
 
+    public static T ConvertTo<T>(object from) => from.ConvertTo<T>();
+    public static object ConvertTo(object from, Type toType) => from.ConvertTo(toType);
+
+    public static string FormatDateObject(object o) => o switch {
+        DateTime dt => FormatDate(dt),
+        _ => FormatDate(o.ConvertTo<DateTime>())
+    };
 
     public static string SplitCase(string text) => text.SplitCamelCase().Replace('_', ' ').Replace("  ", " ");
     public static string Humanize(string text) => SplitCase(text).ToTitleCase();

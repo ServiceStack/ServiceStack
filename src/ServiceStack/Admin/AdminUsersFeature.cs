@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
+using ServiceStack.Html;
 using ServiceStack.NativeTypes;
 using ServiceStack.Text;
 
@@ -111,31 +112,31 @@ namespace ServiceStack.Admin
         /// </summary>
         public bool ExecuteOnRegisteredEventsForCreatedUsers { get; set; } = true;
 
-        public List<List<Input>> GridFieldLayout { get; set; } = new()
+        public List<List<InputInfo>> GridFieldLayout { get; set; } = new()
         {
-            new(){new(nameof(UserAuth.Email), Input.type.email)},
-            new(){new(nameof(UserAuth.UserName))},
+            new(){ Input.For<UserAuth>(x => x.Email, x => x.Type = Input.Types.Email) },
+            new(){ Input.For<UserAuth>(x => x.UserName) },
             new() {
-                new(nameof(UserAuth.FirstName)),
-                new(nameof(UserAuth.LastName))
+                Input.For<UserAuth>(x => x.FirstName),
+                Input.For<UserAuth>(x => x.LastName),
             },
-            new(){new(nameof(UserAuth.DisplayName))},
-            new(){new(nameof(UserAuth.Company))},
-            new(){new(nameof(UserAuth.Address))},
-            new(){new(nameof(UserAuth.Address2))},
+            new(){ Input.For<UserAuth>(x => x.DisplayName) },
+            new(){ Input.For<UserAuth>(x => x.Company) },
+            new(){ Input.For<UserAuth>(x => x.Address) },
+            new(){ Input.For<UserAuth>(x => x.Address2) },
             new() {
-                new(nameof(UserAuth.City)),
-                new(nameof(UserAuth.State))
+                Input.For<UserAuth>(x => x.City),
+                Input.For<UserAuth>(x => x.State),
             },
             new() {
-                new(nameof(UserAuth.Country)),
-                new(nameof(UserAuth.PostalCode))
+                Input.For<UserAuth>(x => x.Country),
+                Input.For<UserAuth>(x => x.PostalCode),
             },
-            new(){new(nameof(UserAuth.PhoneNumber), Input.type.tel)},
-            new(){new(nameof(UserAuth.LockedDate), Input.type.date)},
+            new(){ Input.For<UserAuth>(x => x.PhoneNumber, x => x.Type = Input.Types.Tel) },
+            new(){ Input.For<UserAuth>(x => x.LockedDate) },
         };
 
-        public AdminUsersFeature EachGridLayoutRow(Action<List<Input>, int> filter)
+        public AdminUsersFeature EachGridLayoutRow(Action<List<InputInfo>, int> filter)
         {
             for (var i = 0; i < GridFieldLayout.Count; i++)
             {
@@ -145,13 +146,13 @@ namespace ServiceStack.Admin
             return this;
         }
 
-        public AdminUsersFeature EachGridLayoutField(Action<Input> filter)
+        public AdminUsersFeature EachGridLayoutField(Action<InputInfo> filter)
         {
             GridFieldLayout.SelectMany(row => row.ToArray()).Each(filter);
             return this;
         }
 
-        public AdminUsersFeature RemoveFromGridLayout(Predicate<Input> match)
+        public AdminUsersFeature RemoveFromGridLayout(Predicate<InputInfo> match)
         {
             GridFieldLayout.ForEach(row => row.RemoveAll(match));
             return this;

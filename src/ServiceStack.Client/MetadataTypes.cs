@@ -216,12 +216,12 @@ namespace ServiceStack
         public List<string> AllPermissions { get; set; }
         public List<string> QueryUserAuthProperties { get; set; }
         
-        public List<List<Input>> GridFieldLayout { get; set; }
+        public List<List<InputInfo>> GridFieldLayout { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
 
     [Exclude(Feature.Soap)]
-    public class Input : IMeta
+    public class InputInfo : IMeta
     {
         public string Id { get; set; }
         public string Name { get; set; }
@@ -233,63 +233,23 @@ namespace ServiceStack
         public string Size { get; set; }
         public string Pattern { get; set; }
         public bool? ReadOnly { get; set; }
-        public bool? IsRequired { get; set; }
+        public bool? Required { get; set; }
         public string Min { get; set; }
         public string Max { get; set; }
         public int? Step { get; set; }
         public int? MinLength { get; set; }
         public int? MaxLength { get; set; }
         public string[] AllowableValues { get; set; }
+        public KeyValuePair<string,string>[] AllowableEntries { get; set; }
         
         public Dictionary<string, string> Meta { get; set; }
 
-        public Input() { }
-        public Input(string id) => Id = id;
-        public Input(string id, string type)
+        public InputInfo() { }
+        public InputInfo(string id) => Id = id;
+        public InputInfo(string id, string type)
         {
             Id = id;
             Type = type;
-        }
-
-        [SuppressMessage("ReSharper", "InconsistentNaming")]
-        public static class type
-        {
-            public const string text = nameof(text);
-            public const string checkbox = nameof(checkbox);
-            public const string color = nameof(color);
-            public const string date = nameof(date);
-            public const string datetimelocal = "datetime-local";
-            public const string email = nameof(email);
-            public const string file = nameof(file);
-            public const string hidden = nameof(hidden);
-            public const string image = nameof(image);
-            public const string month = nameof(month);
-            public const string number = nameof(number);
-            public const string password = nameof(password);
-            public const string radio = nameof(radio);
-            public const string range = nameof(range);
-            public const string reset = nameof(reset);
-            public const string search = nameof(search);
-            public const string submit = nameof(submit);
-            public const string tel = nameof(tel);
-            public const string time = nameof(time);
-            public const string url = nameof(url);
-            public const string week = nameof(week);
-            public const string select = nameof(select);
-            public const string textarea = nameof(textarea);
-        }
-
-        public static Input FromEnum<T>(string id = null) where T : struct, Enum
-        {
-#if NET6_0
-            return new Input(id ?? typeof(T).Name, type.select) {
-                AllowableValues = Enum.GetNames<T>()
-            };
-#else
-            return new Input(id ?? typeof(T).Name, type.select) {
-                AllowableValues = Enum.GetNames(typeof(T))
-            };
-#endif
         }
     }
     

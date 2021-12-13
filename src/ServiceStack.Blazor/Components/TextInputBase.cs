@@ -49,6 +49,12 @@ public abstract class TextInputBase : ApiComponentBase
     [Parameter]
     public string? Label { get; set; }
 
+    [Parameter] public string? type { get; set; }
+    protected virtual string UseType => type ?? "text";
+    protected bool IsCheckbox => UseType == "checkbox";
+    protected bool IsSelect => UseType == "select";
+
+
     public bool HasErrorField => UseStatus.HasErrorField(Id!);
     public ResponseError? ErrorField => UseStatus.FieldError(Id!);
     public string? ErrorFieldMessage => UseStatus.FieldError(Id!)?.Message;
@@ -64,7 +70,7 @@ public abstract class TextInputBase : ApiComponentBase
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
-    public IReadOnlyDictionary<string, object>? IncludeAttributes => SanitizeAttributes(AdditionalAttributes);
+    public virtual IReadOnlyDictionary<string, object>? IncludeAttributes => SanitizeAttributes(AdditionalAttributes);
 
     /// <summary>
     /// Gets the <see cref="FieldIdentifier"/> for the bound value.
@@ -82,13 +88,15 @@ public abstract class TextInputBase : ApiComponentBase
     {
     }
 
+    public static bool SanitizeAttribute(string name) => name == "@bind" || name.StartsWith("@bind:");
+
     public static IReadOnlyDictionary<string, object>? SanitizeAttributes(IReadOnlyDictionary<string, object>? attrs)
     {
         if (attrs == null) return null;
         var safeAttrs = new Dictionary<string, object>();
         foreach (var attr in attrs)
         {
-            if (attr.Key == "@bind" || attr.Key.StartsWith("@bind:"))
+            if (SanitizeAttribute(attr.Key))
                 continue;
             safeAttrs[attr.Key] = attr.Value;
         }
@@ -106,7 +114,7 @@ public abstract class TextInputBase<[DynamicallyAccessedMembers(DynamicallyAcces
     /// @bind-Value="model.PropertyName"
     /// </example>
     [Parameter]
-    public TValue? Value { get; set; }
+    public TValue? s { get; set; }
 
     /// <summary>
     /// Gets or sets a callback that updates the bound value.
@@ -123,14 +131,14 @@ public abstract class TextInputBase<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     protected TValue? CurrentValue
     {
-        get => Value;
+        get => s;
         set
         {
-            var hasChanged = !EqualityComparer<TValue>.Default.Equals(value, Value);
+            var hasChanged = !EqualityComparer<TValue>.Default.Equals(value, s);
             if (hasChanged)
             {
-                Value = value;
-                _ = ValueChanged.InvokeAsync(Value);
+                s = value;
+                _ = ValueChanged.InvokeAsync(s);
                 //EditContext?.NotifyFieldChanged(FieldIdentifier);
             }
         }

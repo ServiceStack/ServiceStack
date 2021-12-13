@@ -16,6 +16,31 @@
 </div>
 }
 @typeparam TValue
+@inherits CheckboxInputBase<TValue>
+<div class=@ClassNames("relative flex items-start", CssClass())>
+<div class="flex items-center h-5">
+<input type="checkbox"
+class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+id=@Id
+name=@Id
+@bind="CurrentValueAsBool"
+@attributes="IncludeAttributes">
+</div>
+<div class="ml-3 text-sm">
+<label class=@ClassNames("font-medium text-gray-700") for=@Id>
+@UseLabel
+</label>
+@if (HasErrorField)
+{
+<p class=@ClassNames("text-gray-500")>@ErrorFieldMessage</p>
+}
+else if (!string.IsNullOrEmpty(Help))
+{
+<p id=@($"{Id}-description") class="text-gray-500">@Help</p>
+}
+</div>
+</div>
+@typeparam TValue
 @inherits DateTimeInputBase<TValue>
 <div>
 <label v-if="useLabel" :for="id" class="block text-sm font-medium text-gray-700">{{ useLabel }}</label>
@@ -42,6 +67,35 @@ else if (!string.IsNullOrEmpty(UsePlaceholder))
 <p class="mt-2 text-sm text-gray-500" id="`${id}-description`">@UsePlaceholder</p>
 }
 </div>
+@inherits DynamicInputBase
+@if (IsSelect)
+{
+<SelectInput Id=@UseId Status=@Status TValue="string"
+@bind-Value="Value" @attributes="AllAttributes" Help=@TextUtils.Humanize(UseId)>
+if (Input.AllowableEntries != null)
+{
+@foreach (var entry in Input!.AllowableEntries)
+{
+<option value=@entry.Key>@entry.Value</option>
+}
+}
+else if (Input.AllowableValues != null)
+{
+@foreach (var item in Input!.AllowableValues)
+{
+<option value=@item>@item</option>
+}
+}
+</SelectInput>
+}
+else if (IsCheckbox)
+{
+<CheckboxInput Id=@UseId Status=@Status @bind-Value="Value" @attributes="AllAttributes" Help=@UseHelp />
+}
+else
+{
+<TextInput type=@UseType Id=@UseId Status=@Status @bind-Value="Value" @attributes="AllAttributes" Help=@UseHelp />
+}
 @inherits ErrorSummaryBase
 @if (UseStatus.ShowSummary(UseVisibleFields))
 {
@@ -132,19 +186,3 @@ else if (!string.IsNullOrEmpty(UsePlaceholder))
 <p class="mt-2 text-sm text-gray-500" id="`${id}-description`">@UsePlaceholder</p>
 }
 </div>
-@inherits TypeInputBase
-@if (InputType == "select")
-{
-<SelectInput Id=@PropName Status=@Status TValue="string"
-@bind-Value="Value" @attributes="IncludeAttributes" Help=@TextUtils.Humanize(PropName)>
-@foreach (var item in KvpValues())
-{
-<option value=@item.Key>@item.Value</option>
-}
-</SelectInput>
-}
-else
-{
-<TextInput type=@InputType Id=@PropName Status=@Status
-@bind-Value="Value" @bind:event="oninput" step="any" @attributes="IncludeAttributes" Help=@UseHelp />
-}

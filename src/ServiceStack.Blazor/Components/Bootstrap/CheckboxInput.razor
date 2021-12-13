@@ -1,0 +1,19 @@
+﻿@typeparam TValue
+@inherits CheckboxInputBase<TValue>
+
+<input type="checkbox" 
+        class=@CssUtils.ClassNames($"form-check-input", CssClass(invalid:"is-invalid")) 
+        id=@Id 
+        name=@Id 
+        @bind="CurrentValueAsBool" 
+        @attributes="IncludeAttributes">
+@if (!string.IsNullOrEmpty(UseLabel))
+{
+    <label class="form-check-label ms-2" for=@Id> 
+        @UseLabel
+    </label>
+}
+@if (HasErrorField)
+{
+    <div class=@ClassNames("invalid-feedback", CssClass())>@ErrorFieldMessage</div>
+}
