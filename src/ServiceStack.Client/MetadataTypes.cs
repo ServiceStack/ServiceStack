@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -219,33 +220,6 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
     }
 
-    public static class InputType
-    {
-        public const string Text = "text";
-        public const string Checkbox = "checkbox";
-        public const string Color = "color";
-        public const string Date = "date";
-        public const string DateTimeLocal = "datetime-local";
-        public const string Email = "email";
-        public const string File = "file";
-        public const string Hidden = "hidden";
-        public const string Image = "image";
-        public const string Month = "month";
-        public const string Number = "number";
-        public const string Password = "password";
-        public const string Radio = "radio";
-        public const string Range = "range";
-        public const string Reset = "reset";
-        public const string Search = "search";
-        public const string Submit = "submit";
-        public const string Tel = "tel";
-        public const string Time = "time";
-        public const string Url = "url";
-        public const string Week = "week";
-        public const string Select = "select";
-        public const string Textarea = "textarea";
-    }
-
     [Exclude(Feature.Soap)]
     public class Input : IMeta
     {
@@ -277,14 +251,46 @@ namespace ServiceStack
             Type = type;
         }
 
-#if NET6
+        [SuppressMessage("ReSharper", "InconsistentNaming")]
+        public static class type
+        {
+            public const string text = nameof(text);
+            public const string checkbox = nameof(checkbox);
+            public const string color = nameof(color);
+            public const string date = nameof(date);
+            public const string datetimelocal = "datetime-local";
+            public const string email = nameof(email);
+            public const string file = nameof(file);
+            public const string hidden = nameof(hidden);
+            public const string image = nameof(image);
+            public const string month = nameof(month);
+            public const string number = nameof(number);
+            public const string password = nameof(password);
+            public const string radio = nameof(radio);
+            public const string range = nameof(range);
+            public const string reset = nameof(reset);
+            public const string search = nameof(search);
+            public const string submit = nameof(submit);
+            public const string tel = nameof(tel);
+            public const string time = nameof(time);
+            public const string url = nameof(url);
+            public const string week = nameof(week);
+            public const string select = nameof(select);
+            public const string textarea = nameof(textarea);
+        }
+
         public static Input FromEnum<T>(string id = null) where T : struct, Enum
         {
-            return new Input(id ?? typeof(T).Name, InputType.Select) {
+#if NET6_0
+            return new Input(id ?? typeof(T).Name, type.select) {
                 AllowableValues = Enum.GetNames<T>()
             };
-        }
+#else
+            return new Input(id ?? typeof(T).Name, type.select) {
+                AllowableValues = Enum.GetNames(typeof(T))
+            };
 #endif
+        }
     }
     
     /// <summary>

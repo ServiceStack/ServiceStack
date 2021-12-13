@@ -113,7 +113,7 @@ namespace ServiceStack.Admin
 
         public List<List<Input>> GridFieldLayout { get; set; } = new()
         {
-            new(){new(nameof(UserAuth.Email), InputType.Email)},
+            new(){new(nameof(UserAuth.Email), Input.type.email)},
             new(){new(nameof(UserAuth.UserName))},
             new() {
                 new(nameof(UserAuth.FirstName)),
@@ -131,8 +131,8 @@ namespace ServiceStack.Admin
                 new(nameof(UserAuth.Country)),
                 new(nameof(UserAuth.PostalCode))
             },
-            new(){new(nameof(UserAuth.PhoneNumber), InputType.Tel)},
-            new(){new(nameof(UserAuth.LockedDate), InputType.Date)},
+            new(){new(nameof(UserAuth.PhoneNumber), Input.type.tel)},
+            new(){new(nameof(UserAuth.LockedDate), Input.type.date)},
         };
 
         public AdminUsersFeature EachGridLayoutRow(Action<List<Input>, int> filter)
