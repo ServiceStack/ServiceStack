@@ -215,10 +215,78 @@ namespace ServiceStack
         public List<string> AllPermissions { get; set; }
         public List<string> QueryUserAuthProperties { get; set; }
         
-        public List<List<string>> GridFieldLayout { get; set; }
+        public List<List<Input>> GridFieldLayout { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
 
+    public static class InputType
+    {
+        public const string Text = "text";
+        public const string Checkbox = "checkbox";
+        public const string Color = "color";
+        public const string Date = "date";
+        public const string DateTimeLocal = "datetime-local";
+        public const string Email = "email";
+        public const string File = "file";
+        public const string Hidden = "hidden";
+        public const string Image = "image";
+        public const string Month = "month";
+        public const string Number = "number";
+        public const string Password = "password";
+        public const string Radio = "radio";
+        public const string Range = "range";
+        public const string Reset = "reset";
+        public const string Search = "search";
+        public const string Submit = "submit";
+        public const string Tel = "tel";
+        public const string Time = "time";
+        public const string Url = "url";
+        public const string Week = "week";
+        public const string Select = "select";
+        public const string Textarea = "textarea";
+    }
+
+    [Exclude(Feature.Soap)]
+    public class Input : IMeta
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public string Value { get; set; }
+        public string Placeholder { get; set; }
+        public string Help { get; set; }
+        public string Label { get; set; }
+        public string Size { get; set; }
+        public string Pattern { get; set; }
+        public bool? ReadOnly { get; set; }
+        public bool? IsRequired { get; set; }
+        public string Min { get; set; }
+        public string Max { get; set; }
+        public int? Step { get; set; }
+        public int? MinLength { get; set; }
+        public int? MaxLength { get; set; }
+        public string[] AllowableValues { get; set; }
+        
+        public Dictionary<string, string> Meta { get; set; }
+
+        public Input() { }
+        public Input(string id) => Id = id;
+        public Input(string id, string type)
+        {
+            Id = id;
+            Type = type;
+        }
+
+#if NET6
+        public static Input FromEnum<T>(string id = null) where T : struct, Enum
+        {
+            return new Input(id ?? typeof(T).Name, InputType.Select) {
+                AllowableValues = Enum.GetNames<T>()
+            };
+        }
+#endif
+    }
+    
     /// <summary>
     /// Generic template for adding metadata info about custom plugins  
     /// </summary>

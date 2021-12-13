@@ -33,7 +33,7 @@ public abstract class TextInputBase : ApiComponentBase
     public string Size { get; set; } = "md";
 
     [Parameter]
-    public string? placeHolder { get; set; }
+    public string? Placeholder { get; set; }
 
     /// <summary>
     /// Additional help text for Input Control, defaults to split Pascal Case Id.
@@ -55,7 +55,7 @@ public abstract class TextInputBase : ApiComponentBase
 
     protected string UseLabel => Label ?? TextUtils.Humanize(Id!);
 
-    protected string UsePlaceholder => placeHolder ?? Help ?? TextUtils.Humanize(Id!);
+    protected string UsePlaceholder => Placeholder ?? Help ?? TextUtils.Humanize(Id!);
 
     //from: https://github.com/dotnet/aspnetcore/blob/main/src/Components/Web/src/Forms/InputBase.cs
 

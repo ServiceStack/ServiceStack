@@ -111,19 +111,28 @@ namespace ServiceStack.Admin
         /// </summary>
         public bool ExecuteOnRegisteredEventsForCreatedUsers { get; set; } = true;
 
-        public List<List<string>> GridFieldLayout { get; set; } = new()
+        public List<List<Input>> GridFieldLayout { get; set; } = new()
         {
-            new(){"Email"},
-            new(){"UserName"},
-            new(){"FirstName","LastName"},
-            new(){"DisplayName"},
-            new(){"Company"},
-            new(){"Address"},
-            new(){"Address2"},
-            new(){"City","State"},
-            new(){"Country","PostalCode"},
-            new(){"PhoneNumber"},
-            new(){"LockedDate"},
+            new(){new(nameof(UserAuth.Email), InputType.Email)},
+            new(){new(nameof(UserAuth.UserName))},
+            new() {
+                new(nameof(UserAuth.FirstName)),
+                new(nameof(UserAuth.LastName))
+            },
+            new(){new(nameof(UserAuth.DisplayName))},
+            new(){new(nameof(UserAuth.Company))},
+            new(){new(nameof(UserAuth.Address))},
+            new(){new(nameof(UserAuth.Address2))},
+            new() {
+                new(nameof(UserAuth.City)),
+                new(nameof(UserAuth.State))
+            },
+            new() {
+                new(nameof(UserAuth.Country)),
+                new(nameof(UserAuth.PostalCode))
+            },
+            new(){new(nameof(UserAuth.PhoneNumber), InputType.Tel)},
+            new(){new(nameof(UserAuth.LockedDate), InputType.Date)},
         };
         
         public AdminUsersFeature RemoveFromQueryResults(params string[] fieldNames)
@@ -151,8 +160,9 @@ namespace ServiceStack.Admin
             {
                 foreach (var row in GridFieldLayout)
                 {
-                    if (row.Contains(field))
-                        row.Remove(field);
+                    var colIndex = row.FindIndex(x => x.Name == field);
+                    if (colIndex >= 0)
+                        row.RemoveAt(colIndex);
                 }
                 GridFieldLayout.RemoveAll(x => x.Count == 0);
             }

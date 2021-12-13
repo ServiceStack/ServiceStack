@@ -41,7 +41,7 @@ public class TypeInputBase : ApiComponentBase
                 return "password";
             if (name.EndsWith("Email"))
                 return "email";
-            if (name.EndsWith("Url"))
+            if (name.EndsWith("Url") || name.EndsWith("Uri"))
                 return "url";
             if (name.IndexOf("Phone") >= 0)
                 return "tel";
