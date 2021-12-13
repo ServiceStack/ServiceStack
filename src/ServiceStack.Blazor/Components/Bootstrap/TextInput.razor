@@ -1,7 +1,7 @@
 ﻿@typeparam TValue
 @inherits TextInputBase<TValue>
 
-<input type="text" class=@CssUtils.ClassNames($"form-control form-control-{Size}", CssClass(invalid:"is-invalid")) 
+<input type=@UseType class=@CssUtils.ClassNames($"form-control form-control-{Size}", CssClass(invalid:"is-invalid")) 
         id=@Id name=@Id @bind="CurrentValue" placeHolder=@UsePlaceholder @bind:event="oninput" @attributes="IncludeAttributes">
 @if (!string.IsNullOrEmpty(UseLabel))
 {

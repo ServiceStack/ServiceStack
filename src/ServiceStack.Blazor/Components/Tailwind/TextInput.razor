@@ -7,7 +7,7 @@
     <label for=@Id class="block text-sm font-medium text-gray-700">{{ useLabel }}</label>
 }
     <div class="mt-1 relative rounded-md shadow-sm">
-        <input type="text" class=@ClassNames("block w-full border-0 p-0 placeholder-gray-500 focus:ring-0 sm:text-sm", 
+        <input type=@UseType class=@ClassNames("block w-full border-0 p-0 placeholder-gray-500 focus:ring-0 sm:text-sm", 
             CssClass("text-gray-900", "text-red-900")) 
                 id=@Id name=@Id @bind="CurrentValue" placeHolder=@UsePlaceholder @bind:event="oninput" @attributes="IncludeAttributes">
     @if (HasErrorField)
