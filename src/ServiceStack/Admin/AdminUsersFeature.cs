@@ -184,6 +184,15 @@ namespace ServiceStack.Admin
         
         public void Register(IAppHost appHost)
         {
+            // Automatically include UserAuthProperties added in GridFieldLayout 
+            if (IncludeUserAuthProperties != null)
+            {
+                EachGridLayoutField(x => {
+                    if (!IncludeUserAuthProperties.Contains(x.Id))
+                        IncludeUserAuthProperties.Add(x.Id);
+                });
+            }
+            
             appHost.RegisterService(typeof(AdminUsersService));
             
             appHost.AddToAppMetadata(meta => {
