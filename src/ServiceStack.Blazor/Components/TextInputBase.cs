@@ -1,5 +1,4 @@
 ﻿#pragma warning disable CA1822 // Mark members as static
-#pragma warning disable IDE1006 // Naming Styles
 
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
@@ -33,7 +32,7 @@ public abstract class TextInputBase : ApiComponentBase
     public string Size { get; set; } = "md";
 
     [Parameter]
-    public string? Placeholder { get; set; }
+    public string? placeholder { get; set; }
 
     /// <summary>
     /// Additional help text for Input Control, defaults to split Pascal Case Id.
@@ -59,9 +58,12 @@ public abstract class TextInputBase : ApiComponentBase
     public ResponseError? ErrorField => UseStatus.FieldError(Id!);
     public string? ErrorFieldMessage => UseStatus.FieldError(Id!)?.Message;
 
-    protected string UseLabel => Label ?? TextUtils.Humanize(Id!);
+    protected virtual string UseLabel => Label ?? TextUtils.Humanize(Id!);
 
-    protected string UsePlaceholder => Placeholder ?? Help ?? TextUtils.Humanize(Id!);
+    protected virtual string UsePlaceholder => placeholder ?? UseLabel;
+
+    protected virtual string UseHelp => Help ?? "";
+
 
     //from: https://github.com/dotnet/aspnetcore/blob/main/src/Components/Web/src/Forms/InputBase.cs
 

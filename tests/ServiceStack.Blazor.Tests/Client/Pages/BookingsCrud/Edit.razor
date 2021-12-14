@@ -1,7 +1,8 @@
 @inherits AppComponentBase
 
-<form @onsubmit="_ => OnSubmit()" class=@CssUtils.ClassNames("shadow rounded p-4", @class)>
+<form @onsubmit="_ => OnSubmit()" class=@CssUtils.ClassNames("relative shadow rounded p-4", @class)>
 <CascadingValue Value=@apiResult.ErrorStatus>
+    <button type="button" class="close" @onclick="close"><i></i></button>
 
     <h1 class="fs-4 text-secondary text-center">
         Edit Booking
@@ -14,31 +15,31 @@
     <ErrorSummary ExplicitStatus=@deleteApiResult.ErrorStatus />
 
     <div class="mb-3 form-floating">
-        <TextInput @bind-Value="request.Name" required Help="The name for this booking" />
+        <TextInput @bind-Value="request.Name" required placeholder="Name for this booking" />
     </div>
 
     <div class="mb-3 form-floating">
-        <SelectInput @bind-Value="request.RoomType" Help="Room Type" Options=@(Enum.GetValues<RoomType>().Cast<RoomType?>()) /> 
+        <SelectInput @bind-Value="request.RoomType" Options=@(Enum.GetValues<RoomType>().Cast<RoomType?>()) /> 
     </div>
 
     <div class="mb-3 form-floating">
-        <TextInput type="number" @bind-Value="request.RoomNumber" min="0" required Help="Room Number" />
+        <TextInput type="number" @bind-Value="request.RoomNumber" min="0" required />
     </div>
 
     <div class="mb-3 form-floating">
-        <DateTimeInput @bind-Value="request.BookingStartDate" required Help="Booking Start Date" />
+        <DateTimeInput @bind-Value="request.BookingStartDate" required />
     </div>
 
     <div class="mb-3 form-floating">
-        <DateTimeInput @bind-Value="request.BookingEndDate" Help="Booking End Date" />
+        <DateTimeInput @bind-Value="request.BookingEndDate" />
     </div>
 
     <div class="mb-3 form-floating">
-        <TextInput type="number" @bind-Value="request.Cost" min="0" required Help="Cost" />
+        <TextInput type="number" @bind-Value="request.Cost" min="0" required />
     </div>
     
     <div class="mb-3 form-floating">
-        <TextAreaInput @bind-Value="request.Notes" Help="Notes about this booking" style="height:6rem" />
+        <TextAreaInput @bind-Value="request.Notes" placeholder="Notes about this booking" style="height:6rem" />
     </div>
 
     <div class="d-flex justify-content-between align-items-center">
@@ -54,7 +55,6 @@
         </div>
 
         <div>
-            <span class="btn btn-link text-decoration-none" @onclick="close">close</span>
             <button type="submit" class="btn btn-primary">Update Booking</button>
         </div>
     </div>

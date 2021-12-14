@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MyApp;
 using ServiceStack;
+using ServiceStack.Admin;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.FluentValidation;
@@ -44,6 +45,8 @@ namespace CheckWebCore
             });
 
             appHost.Plugins.Add(new RegistrationFeature());
+            
+            appHost.Plugins.Add(new AdminUsersFeature());
 
             //override the default registration validation with your own custom implementation
             appHost.RegisterAs<CustomRegistrationValidator, IValidator<Register>>();

@@ -50,7 +50,7 @@ else
                 <td>@booking.RoomType</td>
                 <td>@booking.RoomNumber</td>
                 <td>@($"{booking.Cost:C}")</td>
-                <td class="d-none d-sm-table-cell">@booking.BookingStartDate.ToShortDateString()</td>
+                <td class="d-none d-sm-table-cell">@TextUtils.FormatDate(booking.BookingStartDate)</td>
                 <td class="d-none d-sm-table-cell">@booking.CreatedBy</td>
             </tr>
         }

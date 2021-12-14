@@ -31,6 +31,28 @@ a, .btn-link {
     color: red;
 }
 
+.relative { position: relative }
+.absolute { position: absolute }
+
+button.close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    padding: 0;
+    margin: 0;
+    background: rgba(0,0,0,0);
+    border: none;
+}
+button.close i {
+    display: inline-block;
+    width: 1.5rem;
+    height: 1.5rem;
+    background-image: url("data:image/svg+xml,%3Csvg fill='none' stroke='rgb(156 163 175)' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 18L18 6M6 6l12 12'%3E%3C/path%3E%3C/svg%3E");
+}
+button.close:hover i {
+    background-image: url("data:image/svg+xml,%3Csvg fill='none' stroke='rgb(107 114 128)' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 18L18 6M6 6l12 12'%3E%3C/path%3E%3C/svg%3E");
+}
+
 /* useful tailwind presets */
 .cursor-pointer{cursor:pointer}
 .max-w-full{max-width:100%}

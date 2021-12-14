@@ -71,20 +71,36 @@ public class ConfigureAuthRepository : IHostingStartup
 
             // Removing unused UserName in Admin Users UI 
             appHost.Plugins.Add(new ServiceStack.Admin.AdminUsersFeature {
+                
                 // Show custom fields in Search Results
                 QueryUserAuthProperties = {
                     nameof(AppUser.Department),
                     nameof(AppUser.LastLoginDate),
                 },
+
                 // Add Custom Fields to Create/Edit User Forms
-                GridFieldLayout = {
-                    new() {
+                UserFormLayout = new() {
+                    new()
+                    {
+                        Input.For<AppUser>(x => x.Email),
+                    },
+                    new()
+                    {
+                        Input.For<AppUser>(x => x.DisplayName),
+                    },
+                    new()
+                    {
+                        Input.For<AppUser>(x => x.Company),
                         Input.For<AppUser>(x => x.Department),
                     },
                     new() {
+                        Input.For<AppUser>(x => x.PhoneNumber, c => c.Type = Input.Types.Tel)
+                    },
+                    new() {
                         Input.For<AppUser>(x => x.Nickname, c => {
-                            c.Required = true;
-                            c.Pattern = "^[A-Za-z .]{3,15}$";
+                            c.Help = "Public alias visible to others (3-12 lower alpha numeric chars)";
+                            c.Pattern = "^[a-z][a-z0-9_.-]{3,12}$";
+                            //c.Required = true;
                         })
                     },
                     new() {
@@ -96,10 +112,8 @@ public class ConfigureAuthRepository : IHostingStartup
                 }
             }
             // When Display Name already contains both
-            .RemoveFromQueryResults(
-                nameof(AppUser.FirstName), nameof(AppUser.LastName), nameof(AppUser.ModifiedDate))
-            // When using Email as Username
-            .RemoveFields(nameof(AppUser.UserName)));
+            .RemoveFromQueryResults(nameof(AppUser.FirstName), nameof(AppUser.LastName), nameof(AppUser.ModifiedDate)));
+
         },
         afterConfigure: appHost => {
             appHost.AssertPlugin<AuthFeature>().AuthEvents.Add(new AppUserAuthEvents());

@@ -19,9 +19,9 @@
     {
         <p class=@ClassNames("text-gray-500")>@ErrorFieldMessage</p>
     }
-    else if (!string.IsNullOrEmpty(Help))
+    else if (!string.IsNullOrEmpty(UseHelp))
     {
-        <p id=@($"{Id}-description") class="text-gray-500">@Help</p>
+        <p id=@($"{Id}-description") class="text-gray-500">@UseHelp</p>
     }
 
     </div>

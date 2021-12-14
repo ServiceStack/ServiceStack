@@ -14,31 +14,7 @@ namespace ServiceStack.Admin
     {
         public string Id { get; set; } = Plugins.AdminUsers;
         public string AdminRole { get; set; } = RoleNames.Admin;
-        
-        /// <summary>
-        /// Remove UserAuth Properties from Admin Metadata
-        /// </summary>
-        public List<string> IncludeUserAuthProperties { get; set; } = new() {
-            nameof(UserAuth.Id),
-            nameof(UserAuth.UserName),
-            nameof(UserAuth.Email),
-            nameof(UserAuth.DisplayName),
-            nameof(UserAuth.FirstName),
-            nameof(UserAuth.LastName),
-            nameof(UserAuth.Company),
-            nameof(UserAuth.Address),
-            nameof(UserAuth.City),
-            nameof(UserAuth.State),
-            nameof(UserAuth.PostalCode),
-            nameof(UserAuth.Country),
-            nameof(UserAuth.PhoneNumber),
-            nameof(UserAuth.LockedDate),
-        };
 
-        /// <summary>
-        /// Remove UserAuthDetails Properties from Admin Metadata
-        /// </summary>
-        public List<string> IncludeUserAuthDetailsProperties { get; set; } = new();
 
         /// <summary>
         /// Return only specified UserAuth Properties in AdminQueryUsers
@@ -112,7 +88,10 @@ namespace ServiceStack.Admin
         /// </summary>
         public bool ExecuteOnRegisteredEventsForCreatedUsers { get; set; } = true;
 
-        public List<List<InputInfo>> GridFieldLayout { get; set; } = new()
+        /// <summary>
+        /// Which User fields can be updated
+        /// </summary>
+        public List<List<InputInfo>> UserFormLayout { get; set; } = new()
         {
             new(){ Input.For<UserAuth>(x => x.Email, x => x.Type = Input.Types.Email) },
             new(){ Input.For<UserAuth>(x => x.UserName) },
@@ -133,33 +112,35 @@ namespace ServiceStack.Admin
                 Input.For<UserAuth>(x => x.PostalCode),
             },
             new(){ Input.For<UserAuth>(x => x.PhoneNumber, x => x.Type = Input.Types.Tel) },
-            new(){ Input.For<UserAuth>(x => x.LockedDate) },
         };
 
-        public AdminUsersFeature EachGridLayoutRow(Action<List<InputInfo>, int> filter)
+        public AdminUsersFeature EachUserFormGroup(Action<List<InputInfo>, int> filter)
         {
-            for (var i = 0; i < GridFieldLayout.Count; i++)
+            for (var i = 0; i < UserFormLayout.Count; i++)
             {
-                var row = GridFieldLayout[i];
+                var row = UserFormLayout[i];
                 filter(row, i);
             }
             return this;
         }
 
-        public AdminUsersFeature EachGridLayoutField(Action<InputInfo> filter)
+        public AdminUsersFeature EachUserFormField(Action<InputInfo> filter)
         {
-            GridFieldLayout.SelectMany(row => row.ToArray()).Each(filter);
+            UserFormLayout.SelectMany(row => row.ToArray()).Each(filter);
             return this;
         }
 
-        public AdminUsersFeature RemoveFromGridLayout(Predicate<InputInfo> match)
+        public List<T> MapUserFormField<T>(Func<InputInfo,T> filter) => 
+            UserFormLayout.SelectMany(row => row.ToArray()).Map(filter);
+
+        public AdminUsersFeature RemoveFromUserForm(Predicate<InputInfo> match)
         {
-            GridFieldLayout.ForEach(row => row.RemoveAll(match));
+            UserFormLayout.ForEach(row => row.RemoveAll(match));
             return this;
         }
 
-        public AdminUsersFeature RemoveFromGridLayout(params string[] fieldNames) =>
-            RemoveFromGridLayout(input => fieldNames.Contains(input.Name));
+        public AdminUsersFeature RemoveFromUserForm(params string[] fieldNames) =>
+            RemoveFromUserForm(input => fieldNames.Contains(input.Name));
         
         public AdminUsersFeature RemoveFromQueryResults(params string[] fieldNames)
         {
@@ -167,32 +148,15 @@ namespace ServiceStack.Admin
             return this;
         }
         
-        public AdminUsersFeature RemoveFromUserDetails(params string[] fieldNames)
-        {
-            IncludeUserAuthProperties.RemoveAll(fieldNames.Contains);
-            IncludeUserAuthDetailsProperties.RemoveAll(fieldNames.Contains);
-            return this;
-        }
-        
         public AdminUsersFeature RemoveFields(params string[] fieldNames)
         {
-            RemoveFromUserDetails(fieldNames);
             RemoveFromQueryResults(fieldNames);
-            RemoveFromGridLayout(fieldNames);
+            RemoveFromUserForm(fieldNames);
             return this;
         }
         
         public void Register(IAppHost appHost)
         {
-            // Automatically include UserAuthProperties added in GridFieldLayout 
-            if (IncludeUserAuthProperties != null)
-            {
-                EachGridLayoutField(x => {
-                    if (!IncludeUserAuthProperties.Contains(x.Id))
-                        IncludeUserAuthProperties.Add(x.Id);
-                });
-            }
-            
             appHost.RegisterService(typeof(AdminUsersService));
             
             appHost.AddToAppMetadata(meta => {
@@ -203,13 +167,9 @@ namespace ServiceStack.Admin
                 
                 using (authRepo as IDisposable)
                 {
-                    IUserAuth userAuth = new UserAuth();
-                    IUserAuthDetails userAuthDetails = new UserAuthDetails();
-                    if (authRepo is ICustomUserAuth customUserAuth)
-                    {
-                        userAuth = customUserAuth.CreateUserAuth();
-                        userAuthDetails = customUserAuth.CreateUserAuthDetails();
-                    }
+                    var userAuth = authRepo is ICustomUserAuth customUserAuth
+                        ? customUserAuth.CreateUserAuth()
+                        : new UserAuth();
 
                     var nativeTypesMeta = appHost.TryResolve<INativeTypesMetadata>() as NativeTypesMetadata 
                         ?? new NativeTypesMetadata(HostContext.AppHost.Metadata, new MetadataTypesConfig());
@@ -219,11 +179,10 @@ namespace ServiceStack.Admin
                         AccessRole = AdminRole,
                         Enabled = new List<string>(),
                         UserAuth = metaGen.ToFlattenedType(userAuth.GetType()),
-                        UserAuthDetails = metaGen.ToFlattenedType(userAuthDetails.GetType()),
                         AllRoles = HostContext.Metadata.GetAllRoles(),
                         AllPermissions = HostContext.Metadata.GetAllPermissions(),
                         QueryUserAuthProperties = QueryUserAuthProperties,
-                        GridFieldLayout = GridFieldLayout, 
+                        UserFormLayout = UserFormLayout, 
                     };
                     if (authRepo is IQueryUserAuth)
                         plugin.Enabled.Add("query");
@@ -232,25 +191,10 @@ namespace ServiceStack.Admin
                     if (authRepo is IManageRoles)
                         plugin.Enabled.Add("manageRoles");
 
-                    if (IncludeUserAuthProperties != null)
+                    if (UserFormLayout != null)
                     {
-                        var map = plugin.UserAuth.Properties.ToDictionary(x => x.Name);
-                        plugin.UserAuth.Properties = new List<MetadataPropertyType>();
-                        foreach (var includeProp in IncludeUserAuthProperties)
-                        {
-                            if (map.TryGetValue(includeProp, out var prop))
-                                plugin.UserAuth.Properties.Add(prop);
-                        }
-                    }
-                    if (IncludeUserAuthDetailsProperties != null)
-                    {
-                        var map = plugin.UserAuthDetails.Properties.ToDictionary(x => x.Name);
-                        plugin.UserAuthDetails.Properties = new List<MetadataPropertyType>();
-                        foreach (var includeProp in IncludeUserAuthDetailsProperties)
-                        {
-                            if (map.TryGetValue(includeProp, out var prop))
-                                plugin.UserAuthDetails.Properties.Add(prop);
-                        }
+                        var formPropNames = MapUserFormField(input => input.Id).ToSet();
+                        plugin.UserAuth.Properties.RemoveAll(x => !formPropNames.Contains(x.Name));
                     }
                 }
             });

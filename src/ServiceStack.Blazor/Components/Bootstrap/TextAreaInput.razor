@@ -1,13 +1,17 @@
 ﻿@typeparam TValue
 @inherits TextInputBase<TValue>
 
-<textarea class=@ClassNames($"form-control", CssClass(invalid:"is-invalid")) 
-        id=@Id name=@Id @bind="CurrentValue" placeHolder=@UsePlaceholder @bind:event="oninput" @attributes="IncludeAttributes" />
-@if (!string.IsNullOrEmpty(UseLabel))
+<textarea id=@Id name=@Id @bind="CurrentValue" class=@ClassNames($"form-control", CssClass(invalid:"is-invalid")) 
+          placeHolder=@UsePlaceholder @bind:event="oninput" aria-describedby=@($"{Id}-description") @attributes="IncludeAttributes" />
+@if (!string.IsNullOrEmpty(UsePlaceholder) && Label != "")
 {
-    <label for=@Id>@UseLabel</label>
+    <label for=@Id>@UsePlaceholder</label>
 }
 @if (HasErrorField)
 {
     <div class=@ClassNames("invalid-feedback", CssClass())>@ErrorFieldMessage</div>
+}
+else if (!string.IsNullOrEmpty(UseHelp))
+{
+    <div id=@($"{Id}-description") class="form-text">@UseHelp</div>
 }

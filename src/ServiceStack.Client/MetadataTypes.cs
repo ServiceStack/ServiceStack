@@ -211,12 +211,11 @@ namespace ServiceStack
         public string AccessRole { get; set; }
         public List<string> Enabled { get; set; }
         public MetadataType UserAuth { get; set; }
-        public MetadataType UserAuthDetails { get; set; }
         public List<string> AllRoles { get; set; }
         public List<string> AllPermissions { get; set; }
         public List<string> QueryUserAuthProperties { get; set; }
         
-        public List<List<InputInfo>> GridFieldLayout { get; set; }
+        public List<List<InputInfo>> UserFormLayout { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
 

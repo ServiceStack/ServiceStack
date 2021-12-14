@@ -2,9 +2,9 @@
 @inherits TextInputBase<TValue>
 
 <div>
-@if (!string.IsNullOrEmpty(UsePlaceholder))
+@if (!string.IsNullOrEmpty(UseLabel))
 {
-    <label for=@Id class="block text-sm font-medium text-gray-700">@UsePlaceholder</label>
+    <label for=@Id class="block text-sm font-medium text-gray-700">@UseLabel</label>
 }
     <div class="mt-1 relative rounded-md shadow-sm">
         <textarea id=@Id name=@Id @bind="CurrentValue" placeHolder=@UsePlaceholder @attributes="IncludeAttributes"

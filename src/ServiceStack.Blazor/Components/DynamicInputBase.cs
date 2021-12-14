@@ -26,9 +26,10 @@ public class DynamicInputBase : TextInputBase
 
     protected string UseId => Input!.Id!;
 
-    protected override string UseType => Input!.Type! ?? "text";
-
-    protected string UseHelp => Input!.Type != "checkbox" ? TextUtils.Humanize(Input!.Id) : "";
+    protected override string UseType => Input!.Type ?? base.UseType;
+    protected override string UsePlaceholder => Input!.Placeholder ?? base.UsePlaceholder;
+    protected override string UseLabel => Input!.Label ?? base.UseLabel;
+    protected override string UseHelp => Input!.Help ?? base.UseHelp;
     protected List<KeyValuePair<string, string>> KvpValues() => TextUtils.ToKeyValuePairs(Model);
 
     protected Dictionary<string, object>? AllAttributes

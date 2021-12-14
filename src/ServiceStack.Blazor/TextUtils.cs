@@ -155,8 +155,9 @@ public static class TextUtils
     public static T ConvertTo<T>(object from) => from.ConvertTo<T>();
     public static object ConvertTo(object from, Type toType) => from.ConvertTo(toType);
 
-    public static string FormatDateObject(object o) => o switch {
+    public static string FormatDateObject(object? o) => o switch {
         DateTime dt => FormatDate(dt),
+        null => "",
         _ => FormatDate(o.ConvertTo<DateTime>())
     };
 

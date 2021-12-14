@@ -1,19 +1,23 @@
 ﻿@inherits AppAuthComponentBase
 @using ServiceStack.Html
 
-<form @onsubmit="submit" @onsubmit:preventDefault autocomplete="off" class=@CssUtils.ClassNames("mt-3 shadow rounded p-4",
+<form @onsubmit="submit" @onsubmit:preventDefault autocomplete="off" class=@CssUtils.ClassNames("mt-3 relative shadow rounded p-4",
         createUserResult.IsError ? "error" : "",
         createUserResult.Completed ? "" : "loading", @class)>
 <CascadingValue Value=@createUserResult.ErrorStatus>
 
-    <button type="submit" class="catch-form-enter d-none"></button>
+    <button type="button" class="close" @onclick="close"><i></i></button>
+    <h1 class="fs-4 text-secondary text-center">
+        New User
+    </h1>
+
     <div class="mb-3">
         <ErrorSummary VisibleFields=@VisibleFields />
     </div>
     <div class="row">
         <div class="col col-7 sm:px-1">
             <div class="mb-3">
-            @foreach (var rowProps in GridFieldLayout)
+            @foreach (var rowProps in UserFormLayout)
             {
                 <div class="d-flex sm:flex-row">
                 @foreach (var f in rowProps.Where(x => propType(x.Id) != null))
@@ -50,7 +54,7 @@
             <div class="mb-3 d-flex flex-wrap">
                 <div class="flex-fill me-2 pb-2">
                     <div class="form-floating">
-                        <SelectInput Options=@missingRoles @bind-Value="newRole" class="custom-select" help="Add Role">
+                        <SelectInput Options=@missingRoles @bind-Value="newRole" class="custom-select">
                             <option></option>
                         </SelectInput>
                     </div>
@@ -94,7 +98,6 @@
     </div>
     <div class="row pt-3 border-top border-top-primary">
         <div class="col text-end">
-            <span class="btn btn-link" @onclick="close">close</span>
             <button class="btn btn-primary">Create User</button>
         </div>
     </div>
@@ -131,9 +134,9 @@
 
     List<string> missingPermissions => plugin?.AllPermissions.Where(x => !request.Permissions.Contains(x)).ToList() ?? new();
 
-    List<List<InputInfo>> GridFieldLayout => plugin?.GridFieldLayout ?? new();
+    List<List<InputInfo>> UserFormLayout => plugin?.UserFormLayout ?? new();
 
-    string[] VisibleFields => GridFieldLayout.SelectMany(row => row.Select(x => x.Id)).Union(new[]{ "Password" }).ToArray();
+    string[] VisibleFields => UserFormLayout.SelectMany(row => row.Select(x => x.Id)).Union(new[]{ "Password" }).ToArray();
 
     void addRole() {
         if (string.IsNullOrWhiteSpace(newRole)) return;

@@ -17,3 +17,7 @@
 {
     <div class=@ClassNames("invalid-feedback", CssClass())>@ErrorFieldMessage</div>
 }
+else if (!string.IsNullOrEmpty(UseHelp))
+{
+    <div id=@($"{Id}-description") class="form-text">@UseHelp</div>
+}
