@@ -72,16 +72,16 @@ else if (!string.IsNullOrEmpty(UsePlaceholder))
 {
 <SelectInput Id=@UseId Status=@Status TValue="string"
 @bind-Value="Value" @attributes="AllAttributes" Help=@TextUtils.Humanize(UseId)>
-if (Input.AllowableEntries != null)
+@if (Input?.AllowableEntries != null)
 {
-@foreach (var entry in Input!.AllowableEntries)
+foreach (var entry in Input!.AllowableEntries)
 {
 <option value=@entry.Key>@entry.Value</option>
 }
 }
-else if (Input.AllowableValues != null)
+else if (Input?.AllowableValues != null)
 {
-@foreach (var item in Input!.AllowableValues)
+foreach (var item in Input!.AllowableValues)
 {
 <option value=@item>@item</option>
 }
@@ -164,7 +164,7 @@ invalid:"text-red-900 focus:ring-red-500 focus:border-red-500 border-red-300"))
 <label for=@Id class="block text-sm font-medium text-gray-700">{{ useLabel }}</label>
 }
 <div class="mt-1 relative rounded-md shadow-sm">
-<input type="text" class=@ClassNames("block w-full border-0 p-0 placeholder-gray-500 focus:ring-0 sm:text-sm",
+<input type=@UseType class=@ClassNames("block w-full border-0 p-0 placeholder-gray-500 focus:ring-0 sm:text-sm",
 CssClass("text-gray-900", "text-red-900"))
 id=@Id name=@Id @bind="CurrentValue" placeHolder=@UsePlaceholder @bind:event="oninput" @attributes="IncludeAttributes">
 @if (HasErrorField)

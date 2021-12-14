@@ -1,0 +1,12 @@
+﻿<div class=@CssUtils.ClassNames("spinner-border float-start mt-2 me-2", @class) role="status">
+    <span class="sr-only"></span>
+</div>
+<h1>@Messsage</h1>
+
+@code {
+    [Parameter]
+    public string Messsage { get; set; } = "Loading...";
+
+    [Parameter]
+    public string @class { get; set; } = "";
+}

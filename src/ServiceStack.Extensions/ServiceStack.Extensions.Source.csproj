@@ -7,6 +7,9 @@
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0</TargetFrameworks>
     </PropertyGroup>
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+        <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
+    </PropertyGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.12" />

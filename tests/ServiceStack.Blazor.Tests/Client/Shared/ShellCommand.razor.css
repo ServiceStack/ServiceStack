@@ -1,0 +1,90 @@
+.lang:before {
+    content: "$ ";
+}
+/* copy tailwind styles used */
+@media (min-width: 640px) {
+    .sm\:rounded {
+        border-radius: 0.25rem;
+    }
+}
+.text-xs {
+    font-size: .75rem;
+    line-height: 1rem;
+}
+.text-gray-300 {
+    --tw-text-opacity: 1;
+    color: rgba(209,213,219,var(--tw-text-opacity));
+}
+.text-gray-400 {
+    --tw-text-opacity: 1;
+    color: rgba(156,163,175,var(--tw-text-opacity));
+}
+.pl-5 {
+    padding-left: 1.25rem;
+}
+.py-3 {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+.px-3 {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+}
+.bg-gray-700 {
+    --tw-bg-opacity: 1;
+    background-color: rgba(55,65,81,var(--tw-bg-opacity));
+}
+.flex {
+    display: flex;
+}
+.-mt-1 {
+    margin-top: -0.25rem;
+}
+.-mr-24 {
+    margin-right: -6rem;
+}
+.ml-2 {
+    margin-left: 0.5rem;
+}
+.mb-2 {
+    margin-bottom: 0.5rem;
+}
+.absolute {
+    position: absolute;
+}
+.relative {
+    position: relative;
+}
+.justify-between {
+    justify-content: space-between;
+}
+.cursor-pointer {
+    cursor: pointer;
+}
+.w-full {
+    width: 100%;
+}
+small {
+    font-size: 80%;
+}
+.text-gray-200 {
+    --tw-text-opacity: 1;
+    color: rgba(229,231,235,var(--tw-text-opacity));
+}
+.px-1 {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+}
+.pr-1 {
+    padding-right: 0.25rem;
+}
+.bg-green-700 {
+    --tw-bg-opacity: 1;
+    background-color: rgba(4,120,87,var(--tw-bg-opacity));
+}
+.rounded {
+    border-radius: 0.25rem;
+}
+.right-0 {
+    right: 0px;
+}

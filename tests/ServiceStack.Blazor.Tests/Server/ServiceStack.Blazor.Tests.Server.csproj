@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>MyApp</RootNamespace>
+    <AssemblyName>MyApp</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.0" />
+    <PackageReference Include="ServiceStack.OrmLite.Sqlite.Data" Version="5.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+    <ProjectReference Include="..\..\..\src\ServiceStack.Server\ServiceStack.Server.Source.csproj" />
+    <ProjectReference Include="..\..\..\src\ServiceStack\ServiceStack.Source.csproj" />
+    <ProjectReference Include="..\Client\ServiceStack.Blazor.Tests.Client.csproj" />
+    <ProjectReference Include="..\ServiceModel\ServiceStack.Blazor.Tests.ServiceModel.csproj" />
+  </ItemGroup>
+
+
+</Project>

@@ -1,5 +1,7 @@
 #nullable enable
 
+#if NET6_0
+
 using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.CookiePolicy;
@@ -99,3 +101,5 @@ namespace ServiceStack
         }
     }
 }
+
+#endif

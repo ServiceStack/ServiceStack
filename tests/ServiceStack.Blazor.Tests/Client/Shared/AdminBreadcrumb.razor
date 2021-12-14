@@ -1,0 +1,46 @@
+@inherits AppAuthComponentBase
+@inject NavigationManager NavigationManager;
+
+<nav class="admin-navbar" aria-label="breadcrumb">
+  <ol class="breadcrumb fs-3">
+    <li>
+    @if (IconClass != null)
+    {
+        <span class=@CssUtils.ClassNames(IconClass, "fs-6 w-5 h-5 inline-flex text-purple-800 align-text-top me-1")></span>
+    }
+    else
+    {
+        <img src=@IconSrc class="w-5 h-5 inline-flex text-purple-800 me-1">
+    }
+    </li>
+    @if (Title == null)
+    {
+        <li class="breadcrumb-item ms-1 mt-1">Admin</li>
+    }
+    else
+    {
+        <li class="breadcrumb-item ms-1 mt-1"><a href="/admin" class="text-decoration-none">Admin</a></li>
+        <li class="breadcrumb-item ms-1 mt-1 text-dark fw-normal active" aria-current="page">@Title</li>
+    }
+  </ol>
+</nav>
+
+@if (!HasInit)
+{
+    <Loading class="admin-page" />
+}
+
+<link href="/css/admin.css" rel="stylesheet" />
+
+@code {
+    [Parameter] public string? Title { get; set; }
+
+    [Parameter]
+    public string? @class { get; set; }
+
+    [Parameter]
+    public string? IconClass { get; set; }
+
+    [Parameter]
+    public string? IconSrc { get; set; }
+}

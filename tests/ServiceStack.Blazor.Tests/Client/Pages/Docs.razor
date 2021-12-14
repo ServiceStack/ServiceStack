@@ -1,0 +1,86 @@
+@page "/docs/{path?}"
+@inherits AppComponentBase
+@inject HttpClient Http
+@using Markdig
+@using Markdig.Syntax
+
+@if (Doc.Response?.Preview != null)
+{
+    <div class="prose lg:prose-xl m-3">
+        <div class="markdown-body">
+            @((MarkupString)Doc.Response!.Preview)
+        </div>
+    </div>
+
+    <div class="my-5 flex justify-center">
+        <SrcLink href=@($"https://github.com/NetCoreTemplates/blazor-wasm/blob/master/MyApp.Client/wwwroot/content/{Doc.Response!.FileName}") IconClass="oi oi-document" />
+        <SrcLink href="https://github.com/NetCoreTemplates/blazor-wasm/blob/master/MyApp.Client/Pages/Docs.razor" IconSrc="/img/blazor.svg" />
+    </div>
+}
+else if (Doc.ErrorStatus == null)
+{
+    <div>Loading...</div>
+}
+
+<ErrorSummary Status=@Doc.ErrorStatus />
+
+@code {
+    [Parameter]
+    public string? Path { get; set; }
+
+    ApiResult<MarkdownFileInfo> Doc { get; set; } = new();
+
+    Dictionary<string, MarkdownFileInfo> Cache = new();
+
+    async Task<ApiResult<MarkdownFileInfo>> LoadDoc(string path)
+    {
+        try
+        {
+            if (Cache.TryGetValue(path, out var cachedDoc))
+                return ApiResult.Create(cachedDoc);
+
+            var pipeline = new MarkdownPipelineBuilder()
+                .UseYamlFrontMatter()
+                .UseAdvancedExtensions()
+                .Build();
+            var writer = new System.IO.StringWriter();
+            var renderer = new Markdig.Renderers.HtmlRenderer(writer);
+            pipeline.Setup(renderer);
+
+            var doc = new MarkdownFileInfo {
+                Path = path,
+                FileName = $"{Path}.md",
+            };
+            doc.Content = await Http.GetStringAsync($"/content/{doc.FileName}");
+
+            var document = Markdown.Parse(doc.Content!, pipeline);
+            renderer.Render(document);
+            var block = document
+                .Descendants<Markdig.Extensions.Yaml.YamlFrontMatterBlock>()
+                .FirstOrDefault();
+
+            var metaObj = block?
+                .Lines // StringLineGroup[]
+                .Lines // StringLine[]
+                .Select(x => $"{x}\n")
+                .ToList()
+                .Select(x => x.Replace("---", string.Empty))
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Select(x => KeyValuePairs.Create(x.LeftPart(':').Trim(), x.RightPart(':').Trim()))
+                .ToObjectDictionary();
+            metaObj?.PopulateInstance(doc);
+
+            await writer.FlushAsync();
+            doc.Preview = writer.ToString();
+            Cache[path] = doc;
+            return ApiResult.Create(doc);
+        } 
+        catch (Exception ex)
+        {
+            return ApiResult.CreateError<MarkdownFileInfo>(ex.AsResponseStatus());
+        }        
+    }
+
+    protected override async Task OnParametersSetAsync() => Doc = await LoadDoc(Path!);
+    protected override async Task OnInitializedAsync() => Doc = await LoadDoc(Path!);
+}
