@@ -25,6 +25,10 @@ public class AppUser : UserAuth
     public Department Department { get; set; }
     public string? ProfileUrl { get; set; }
     public string? LastLoginIp { get; set; }
+    
+    public bool IsArchived { get; set; }
+    public DateTime? ArchivedDate { get; set; }
+
     public DateTime? LastLoginDate { get; set; }
 }
 
@@ -67,15 +71,22 @@ public class ConfigureAuthRepository : IHostingStartup
 
             // Removing unused UserName in Admin Users UI 
             appHost.Plugins.Add(new ServiceStack.Admin.AdminUsersFeature {
+                // Show custom fields in Search Results
                 QueryUserAuthProperties = {
                     nameof(AppUser.Department),
                     nameof(AppUser.LastLoginDate),
                 },
+                // Add Custom Fields to Create/Edit User Forms
                 GridFieldLayout = {
                     new() {
                         Input.For<AppUser>(x => x.Department),
                     },
-                    new() { Input.For<AppUser>(x => x.ProfileUrl, c => c.Type = Input.Types.Url) },
+                    new() { 
+                        Input.For<AppUser>(x => x.ProfileUrl, c => c.Type = Input.Types.Url) 
+                    },
+                    new() {
+                        Input.For<AppUser>(x => x.IsArchived), Input.For<AppUser>(x => x.ArchivedDate),
+                    },
                 }
             }
             // When Display Name already contains both
