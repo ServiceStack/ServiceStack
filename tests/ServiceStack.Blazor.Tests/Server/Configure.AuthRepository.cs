@@ -25,7 +25,7 @@ public class AppUser : UserAuth
     public Department Department { get; set; }
     public string? ProfileUrl { get; set; }
     public string? LastLoginIp { get; set; }
-    
+
     public bool IsArchived { get; set; }
     public DateTime? ArchivedDate { get; set; }
 
@@ -81,8 +81,14 @@ public class ConfigureAuthRepository : IHostingStartup
                     new() {
                         Input.For<AppUser>(x => x.Department),
                     },
-                    new() { 
-                        Input.For<AppUser>(x => x.ProfileUrl, c => c.Type = Input.Types.Url) 
+                    new() {
+                        Input.For<AppUser>(x => x.Nickname, c => {
+                            c.Required = true;
+                            c.Pattern = "^[A-Za-z .]{3,15}$";
+                        })
+                    },
+                    new() {
+                        Input.For<AppUser>(x => x.ProfileUrl, c => c.Type = Input.Types.Url)
                     },
                     new() {
                         Input.For<AppUser>(x => x.IsArchived), Input.For<AppUser>(x => x.ArchivedDate),
