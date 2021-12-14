@@ -114,7 +114,7 @@ public abstract class TextInputBase<[DynamicallyAccessedMembers(DynamicallyAcces
     /// @bind-Value="model.PropertyName"
     /// </example>
     [Parameter]
-    public TValue? s { get; set; }
+    public TValue? Value { get; set; }
 
     /// <summary>
     /// Gets or sets a callback that updates the bound value.
@@ -131,14 +131,14 @@ public abstract class TextInputBase<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     protected TValue? CurrentValue
     {
-        get => s;
+        get => Value;
         set
         {
-            var hasChanged = !EqualityComparer<TValue>.Default.Equals(value, s);
+            var hasChanged = !EqualityComparer<TValue>.Default.Equals(value, Value);
             if (hasChanged)
             {
-                s = value;
-                _ = ValueChanged.InvokeAsync(s);
+                Value = value;
+                _ = ValueChanged.InvokeAsync(Value);
                 //EditContext?.NotifyFieldChanged(FieldIdentifier);
             }
         }
