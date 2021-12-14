@@ -48,7 +48,8 @@ public static class Input
 
     public static InputInfo For<TModel>(Expression<Func<TModel, object?>> expr)
     {
-        var pi = PropertyFromExpression(expr) ?? throw new Exception($"Could not resolve property expression from {expr}");
+        var pi = InspectUtils.PropertyFromExpression(expr) 
+            ?? throw new Exception($"Could not resolve property expression from {expr}");
         var useType = Nullable.GetUnderlyingType(pi.PropertyType) ?? pi.PropertyType;
         if (useType.IsNumericType())
             return new InputInfo(pi.Name, Types.Number);
@@ -73,17 +74,6 @@ public static class Input
         return new InputInfo(pi.Name);
     }
 
-    public static PropertyInfo? PropertyFromExpression<TModel>(Expression<Func<TModel, object?>> expr)
-    {
-        Expression? FindMember(Expression e) => e switch {
-            UnaryExpression ue => FindMember(ue.Operand),
-            MemberExpression me => me,
-            _ => null
-        };
-        var memberExpr = FindMember(expr.Body) as MemberExpression;
-        return memberExpr?.Member is PropertyInfo pi ? pi : null;
-    }
-    
     static FieldInfo GetEnumMember(Type type, string name) => 
         (FieldInfo) type.GetMember(name, BindingFlags.Public | BindingFlags.Static)[0];
 
@@ -136,5 +126,4 @@ public static class Input
         var ssDescAttr = mi.FirstAttribute<ServiceStack.DataAnnotations.DescriptionAttribute>();
         return ssDescAttr?.Description;
     }
-    
 }

@@ -1,9 +1,12 @@
 ﻿#nullable enable
 
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using NUnit.Framework;
+using ServiceStack.Auth;
+using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Html;
 using ServiceStack.Text;
@@ -31,11 +34,11 @@ public class InputTests
     [Test]
     public void Does_resolve_properties()
     {
-        AssertProp(Input.PropertyFromExpression<MultiTypes>(x => x.Id), typeof(int), nameof(MultiTypes.Id));
-        AssertProp(Input.PropertyFromExpression<MultiTypes>(x => x.Date), typeof(DateTime), nameof(MultiTypes.Date));
-        AssertProp(Input.PropertyFromExpression<MultiTypes>(x => x.NDate), typeof(DateTime?), nameof(MultiTypes.NDate));
-        AssertProp(Input.PropertyFromExpression<MultiTypes>(x => x.Bool), typeof(bool), nameof(MultiTypes.Bool));
-        AssertProp(Input.PropertyFromExpression<MultiTypes>(x => x.String), typeof(String), nameof(MultiTypes.String));
+        AssertProp(InspectUtils.PropertyFromExpression<MultiTypes>(x => x.Id), typeof(int), nameof(MultiTypes.Id));
+        AssertProp(InspectUtils.PropertyFromExpression<MultiTypes>(x => x.Date), typeof(DateTime), nameof(MultiTypes.Date));
+        AssertProp(InspectUtils.PropertyFromExpression<MultiTypes>(x => x.NDate), typeof(DateTime?), nameof(MultiTypes.NDate));
+        AssertProp(InspectUtils.PropertyFromExpression<MultiTypes>(x => x.Bool), typeof(bool), nameof(MultiTypes.Bool));
+        AssertProp(InspectUtils.PropertyFromExpression<MultiTypes>(x => x.String), typeof(String), nameof(MultiTypes.String));
     }
 
     public enum EnumMemberTest
@@ -111,4 +114,46 @@ public class InputTests
         Assert.That(enumEntries[0].Key, Is.EqualTo($"{(int)EnumMemberTest.None}"));
         Assert.That(enumEntries[0].Value, Is.EqualTo("No ne"));
     }
+
+    [Test]
+    public void Does_resolve_property_names()
+    {
+        Assert.That(InspectUtils.GetFieldNames<MultiTypes>(x => x.Id), Is.EquivalentTo(new[]{ nameof(MultiTypes.Id) }));
+        Assert.That(InspectUtils.GetFieldNames<MultiTypes>(x => x.Date), Is.EquivalentTo(new[]{ nameof(MultiTypes.Date) }));
+        Assert.That(InspectUtils.GetFieldNames<MultiTypes>(x => x.NDate), Is.EquivalentTo(new[]{ nameof(MultiTypes.NDate) }));
+        Assert.That(InspectUtils.GetFieldNames<MultiTypes>(x => x.String), Is.EquivalentTo(new[]{ nameof(MultiTypes.String) }));
+
+        Assert.That(InspectUtils.GetFieldNames<MultiTypes>(x => new { x.String }), Is.EquivalentTo(new[]{ nameof(MultiTypes.String) }));
+        Assert.That(InspectUtils.GetFieldNames<MultiTypes>(x => new { x.Id, x.Date, x.NDate, x.String }), Is.EquivalentTo(new[] {
+            nameof(MultiTypes.Id), nameof(MultiTypes.Date), nameof(MultiTypes.NDate), nameof(MultiTypes.String), 
+        }));
+    }
+
+    [Test]
+    public void Can_create_MediaRule()
+    {
+        var rule = MediaRules.Small.Show<MultiTypes>(x => new { x.Id, x.Date, x.NDate, x.String });
+        Assert.That(rule.Size, Is.EqualTo(MediaSizes.Small));
+        Assert.That(rule.Rule, Is.EqualTo(nameof(MediaRuleCreator.Show)));
+        Assert.That(rule.ApplyTo, Is.EquivalentTo(new[] {
+            nameof(MultiTypes.Id), nameof(MultiTypes.Date), nameof(MultiTypes.NDate), nameof(MultiTypes.String), 
+        }));
+    }
+
+    [Test]
+    public void Does_find_correct_min_media_size()
+    {
+        var mediaRules = new[] {
+            MediaRules.ExtraSmall.Show<UserAuth>(x => new { x.Id, x.Email, x.DisplayName }),
+            MediaRules.Small.Show<UserAuth>(x => new { x.Company, x.CreatedDate }),
+        };
+        
+        Assert.That(mediaRules.MinVisibleSize(nameof(UserAuth.Id)), Is.EqualTo(MediaSizes.ExtraSmall));
+        Assert.That(mediaRules.MinVisibleSize(nameof(UserAuth.DisplayName)), Is.EqualTo(MediaSizes.ExtraSmall));
+        Assert.That(mediaRules.MinVisibleSize(nameof(UserAuth.CreatedDate)), Is.EqualTo(MediaSizes.Small));
+        Assert.That(mediaRules.MinVisibleSize(nameof(UserAuth.Nickname)), Is.EqualTo(MediaSizes.Medium));
+        
+        Assert.That(mediaRules.Reverse().MinVisibleSize(nameof(UserAuth.Id)), Is.EqualTo(MediaSizes.ExtraSmall));
+    }
+    
 }

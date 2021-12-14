@@ -2,6 +2,7 @@
 @inherits AppAuthComponentBase
 @attribute [Authorize(Roles = "Admin")]
 @inject ILogger<Index> logger
+@using ServiceStack.Html
 
 <AdminBreadcrumb Title="Manage Users" IconClass="svg svg-admin-users svg-2.5x align-bottom" />
 @if (!HasInit) return;
@@ -67,8 +68,9 @@
                         </th>
                         @foreach (var f in fieldNames)
                         {
+
                         <th @key=f @onclick="_ => setOrderBy(f)" 
-                            class=@ClassNames("th-link", HideInSmallResolutions.Contains(f) ? "d-none d-sm-table-cell" : "")>
+                            class=@ClassNames("th-link", $"show-{minVisibleSize(f)}-tcell")>
                             <div class="text-nowrap">
                                 @TextUtils.Humanize(f)
                             @if (request.OrderBy == f)
@@ -100,7 +102,7 @@
                         {
                             var f = fieldNames[j];
                             <td @key=j title=@renderValue(getField(r,f))
-                                class=@ClassNames(HideInSmallResolutions.Contains(f) ? "d-none d-sm-table-cell" : "")>
+                                class=@($"show-{minVisibleSize(f)}-tcell")>
                                 <FormatValue value=@getField(r,f) />
                             </td>
                         }
@@ -142,6 +144,12 @@
         "ModifiedDate",
     };
 
+    AdminUsersInfo? plugin => appMetadataResult.Response?.Plugins.AdminUsers;
+
+    string minVisibleSize(string propName) => plugin != null 
+        ? MediaRules.MinVisibleSize(plugin.QueryMediaRules, propName) 
+        : MediaSizes.All.Last();
+
     ApiResult<AdminUsersResponse> searchResult = new();
     List<Dictionary<string, object>> results => searchResult.Response?.Results ?? TypeConstants<Dictionary<string,object>>.EmptyList;
 
@@ -157,7 +165,7 @@
             if (appMetadataResult.Response!.Plugins.AdminUsers == null)
                 appMetadataResult.SetError("AdminUsersFeature not registered, see: https://docs.servicestack.net/admin-users");
             else
-                fieldNames = appMetadataResult.Response!.Plugins.AdminUsers!.QueryUserAuthProperties;
+                fieldNames = plugin!.QueryUserAuthProperties;
         }
 
         await search();

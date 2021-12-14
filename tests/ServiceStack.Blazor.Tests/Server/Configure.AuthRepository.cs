@@ -73,9 +73,19 @@ public class ConfigureAuthRepository : IHostingStartup
             appHost.Plugins.Add(new ServiceStack.Admin.AdminUsersFeature {
                 
                 // Show custom fields in Search Results
-                QueryUserAuthProperties = {
+                QueryUserAuthProperties = new() {
+                    nameof(AppUser.Id),
+                    nameof(AppUser.Email),
+                    nameof(AppUser.DisplayName),
                     nameof(AppUser.Department),
+                    nameof(AppUser.CreatedDate),
                     nameof(AppUser.LastLoginDate),
+                },
+
+                QueryMediaRules = new()
+                {
+                    MediaRules.ExtraSmall.Show<AppUser>(x => new { x.Id, x.Email, x.DisplayName }),
+                    MediaRules.Small.Show<AppUser>(x => x.Department),
                 },
 
                 // Add Custom Fields to Create/Edit User Forms
@@ -110,9 +120,7 @@ public class ConfigureAuthRepository : IHostingStartup
                         Input.For<AppUser>(x => x.IsArchived), Input.For<AppUser>(x => x.ArchivedDate),
                     },
                 }
-            }
-            // When Display Name already contains both
-            .RemoveFromQueryResults(nameof(AppUser.FirstName), nameof(AppUser.LastName), nameof(AppUser.ModifiedDate)));
+            });
 
         },
         afterConfigure: appHost => {

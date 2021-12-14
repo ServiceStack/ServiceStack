@@ -1,0 +1,125 @@
+﻿@page
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>MyApp</title>
+    <base href="/" />
+    <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/typography.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="MyApp.Client.styles.css" rel="stylesheet" />
+    <script src="_content/Blazor.Extensions.Logging/blazor.extensions.logging.js" defer></script>
+</head>
+
+<body>
+    <component type="typeof(MyApp.Client.App)" render-mode="WebAssemblyPrerendered" />
+
+    <div id="app2">
+<!-- loading: render fake app chrome for improved perceived responsiveness -->
+<style>
+#loading.page { position: relative; display: flex; flex-direction: column }
+#loading .collapse { display: none }
+#loading > .sidebar { background-image:linear-gradient(180deg,rgb(5,39,103) 0%, #3a0647 70%) }
+#loading > .sidebar { background-image:linear-gradient(180deg,rgb(5,39,103) 0%, #3a0647 70%) }
+#loading > .sidebar > .top-row { height: 3.5rem; background-color: rgba(0,0,0,0.4) }
+#loading .navbar-brand { font-size: 1.1rem }
+#loading .nav-item { font-size: 0.9rem; padding-bottom: 0.5rem }
+#loading .nav-item a.active { background-color: rgba(255,255,255,0.25); color: white }
+#loading > .main { flex: 1 }
+#loading > .main > .top-row { background-color:#f7f7f7; border-bottom:1px solid #d6d5d5; justify-content:flex-end; height:3.5rem; display:flex; align-items:center }
+@@media (min-width: 768px) {
+    #loading.page { flex-direction: row }
+    #loading > .sidebar { width: 250px; height: 100vh; position: sticky; top: 0 }
+    #loading .navbar-toggler { display: none }
+    #loading .collapse { display: block }
+    #loading .nav-item a { color:#d7d7d7; border-radius:4px; height:3rem; display:flex; align-items:center; line-height:3rem }
+    #loading .oi { width: 2rem; font-size: 1.1rem; vertical-align: text-top; top: -2px }
+    #loading > .main > div { padding-left: 2rem !important; padding-right: 1.5rem !important }
+    #loading > .main > .top-row { position: sticky; top: 0; z-index: 1 }
+}
+</style>
+        <div id="loading" class="page">
+            <div class="sidebar">
+                <div class="top-row navbar navbar-dark">
+                    <a class="navbar-brand ps-4" href="#">MyApp</a>
+                    <button class="navbar-toggler"><span class="navbar-toggler-icon"></span></button>
+                </div>
+                <div class="collapse">
+                    <ul class="nav flex-column"></ul>
+<script>
+const NavInfo = (label, icon, route) => ({
+    label, cls: `oi oi-${icon}`, route: route.replace(/\$$/, ''), exact: route.endsWith('$') })
+const NAV = [
+    'Home,home,/$',
+    'Server,minus,/$',
+    'Counter,plus,/counter',
+    'Todos,clipboard,/todomvc',
+    'Bookings CRUD,calendar,/bookings-crud',
+    'Call Hello,transfer,/hello$',
+    'Call HelloSecure,shield,/hello-secure',
+    'Fetch data,list-rich,/fetchdata',
+    'Deployments,cloud-upload,/docs/deploy',
+    'Admin,lock-locked,/admin',
+    'Login,account-login,/signin',
+].map(s => NavInfo.apply(null, s.split(',')))
+const path = location.pathname
+document.querySelector('#loading .collapse .nav').innerHTML = NAV
+    .map(({ label, cls, route, exact }) => `<li class="nav-item px-3${route==NAV[0].route?' pt-3':''}">
+            <a href="${route}" class="nav-link${(exact ? path == route : path.startsWith(route)) ? ' active' : ''}">
+                <span class="${cls}" aria-hidden="true"></span> ${label}
+            </a>
+        </li>`).join('')
+</script>
+                </div>
+            </div>
+            <div class="main">
+                <div class="top-row px-4"></div>
+                <div class="content px-4">
+                    <div class="spinner-border float-start mt-2 me-2" role="status">
+                        <span class="sr-only"></span>
+                    </div>
+                    <h1>
+                        Loading...
+                    </h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+    <script src="_framework/blazor.webassembly.js"></script>
+
+<script>
+/* ShellCommand */
+window.copy = function(target) {
+    let $el = document.createElement("input")
+    let $lbl = target.parentElement.querySelector('label')
+
+    $el.setAttribute("value", $lbl.innerText)
+    document.body.appendChild($el)
+    $el.select()
+    document.execCommand("copy")
+    document.body.removeChild($el);
+
+    if (typeof window.getSelection == "function") {
+        const range = document.createRange()
+        range.selectNodeContents($lbl)
+        window.getSelection()?.removeAllRanges()
+        window.getSelection()?.addRange(range)
+    }
+
+    setTimeout(function () { successText.value = '' }, 3000)
+}
+</script>
+</body>
+
+</html>

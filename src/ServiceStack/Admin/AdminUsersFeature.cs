@@ -15,7 +15,6 @@ namespace ServiceStack.Admin
         public string Id { get; set; } = Plugins.AdminUsers;
         public string AdminRole { get; set; } = RoleNames.Admin;
 
-
         /// <summary>
         /// Return only specified UserAuth Properties in AdminQueryUsers
         /// </summary>
@@ -32,7 +31,42 @@ namespace ServiceStack.Admin
             nameof(UserAuth.CreatedDate),
             nameof(UserAuth.ModifiedDate),
         };
-        
+
+        /// <summary>
+        /// Specify different size media rules when a property should be visible, e.g:
+        /// MediaRules.ExtraSmall.Show&lt;UserAuth&gt;(x => new { x.Id, x.Email, x.DisplayName })
+        /// </summary>
+        public List<MediaRule> QueryMediaRules { get; set; } = new() {
+            MediaRules.ExtraSmall.Show<UserAuth>(x => new { x.Id, x.Email, x.DisplayName }),
+            MediaRules.Small.Show<UserAuth>(x => new { x.Company, x.CreatedDate }),
+        };
+
+        /// <summary>
+        /// Which User fields can be updated
+        /// </summary>
+        public List<List<InputInfo>> UserFormLayout { get; set; } = new()
+        {
+            new(){ Input.For<UserAuth>(x => x.Email, x => x.Type = Input.Types.Email) },
+            new(){ Input.For<UserAuth>(x => x.UserName) },
+            new() {
+                Input.For<UserAuth>(x => x.FirstName),
+                Input.For<UserAuth>(x => x.LastName),
+            },
+            new(){ Input.For<UserAuth>(x => x.DisplayName) },
+            new(){ Input.For<UserAuth>(x => x.Company) },
+            new(){ Input.For<UserAuth>(x => x.Address) },
+            new(){ Input.For<UserAuth>(x => x.Address2) },
+            new() {
+                Input.For<UserAuth>(x => x.City),
+                Input.For<UserAuth>(x => x.State),
+            },
+            new() {
+                Input.For<UserAuth>(x => x.Country),
+                Input.For<UserAuth>(x => x.PostalCode),
+            },
+            new(){ Input.For<UserAuth>(x => x.PhoneNumber, x => x.Type = Input.Types.Tel) },
+        };
+
         /// <summary>
         /// Which UserAuth fields cannot be updated using UserAuthProperties dictionary
         /// </summary>
@@ -87,32 +121,6 @@ namespace ServiceStack.Admin
         /// Whether to execute OnRegistered Events for Users created through Admin UI (default true).
         /// </summary>
         public bool ExecuteOnRegisteredEventsForCreatedUsers { get; set; } = true;
-
-        /// <summary>
-        /// Which User fields can be updated
-        /// </summary>
-        public List<List<InputInfo>> UserFormLayout { get; set; } = new()
-        {
-            new(){ Input.For<UserAuth>(x => x.Email, x => x.Type = Input.Types.Email) },
-            new(){ Input.For<UserAuth>(x => x.UserName) },
-            new() {
-                Input.For<UserAuth>(x => x.FirstName),
-                Input.For<UserAuth>(x => x.LastName),
-            },
-            new(){ Input.For<UserAuth>(x => x.DisplayName) },
-            new(){ Input.For<UserAuth>(x => x.Company) },
-            new(){ Input.For<UserAuth>(x => x.Address) },
-            new(){ Input.For<UserAuth>(x => x.Address2) },
-            new() {
-                Input.For<UserAuth>(x => x.City),
-                Input.For<UserAuth>(x => x.State),
-            },
-            new() {
-                Input.For<UserAuth>(x => x.Country),
-                Input.For<UserAuth>(x => x.PostalCode),
-            },
-            new(){ Input.For<UserAuth>(x => x.PhoneNumber, x => x.Type = Input.Types.Tel) },
-        };
 
         public AdminUsersFeature EachUserFormGroup(Action<List<InputInfo>, int> filter)
         {
@@ -182,6 +190,7 @@ namespace ServiceStack.Admin
                         AllRoles = HostContext.Metadata.GetAllRoles(),
                         AllPermissions = HostContext.Metadata.GetAllPermissions(),
                         QueryUserAuthProperties = QueryUserAuthProperties,
+                        QueryMediaRules = QueryMediaRules, 
                         UserFormLayout = UserFormLayout, 
                     };
                     if (authRepo is IQueryUserAuth)

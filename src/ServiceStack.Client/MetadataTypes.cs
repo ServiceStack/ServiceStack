@@ -215,6 +215,8 @@ namespace ServiceStack
         public List<string> AllPermissions { get; set; }
         public List<string> QueryUserAuthProperties { get; set; }
         
+        public List<MediaRule> QueryMediaRules { get; set; }
+        
         public List<List<InputInfo>> UserFormLayout { get; set; }
         public Dictionary<string, string> Meta { get; set; }
     }
@@ -250,6 +252,15 @@ namespace ServiceStack
             Id = id;
             Type = type;
         }
+    }
+
+    [Exclude(Feature.Soap)]
+    public class MediaRule : IMeta
+    {
+        public string Size { get; set; }
+        public string Rule { get; set; }
+        public string[] ApplyTo { get; set; }
+        public Dictionary<string, string> Meta { get; set; }
     }
     
     /// <summary>
