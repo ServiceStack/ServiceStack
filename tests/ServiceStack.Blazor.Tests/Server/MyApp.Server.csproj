@@ -17,8 +17,8 @@
     <ProjectReference Include="..\..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
     <ProjectReference Include="..\..\..\src\ServiceStack.Server\ServiceStack.Server.Source.csproj" />
     <ProjectReference Include="..\..\..\src\ServiceStack\ServiceStack.Source.csproj" />
-    <ProjectReference Include="..\Client\ServiceStack.Blazor.Tests.Client.csproj" />
-    <ProjectReference Include="..\ServiceModel\ServiceStack.Blazor.Tests.ServiceModel.csproj" />
+    <ProjectReference Include="..\Client\MyApp.Client.csproj" />
+    <ProjectReference Include="..\ServiceModel\MyApp.ServiceModel.csproj" />
   </ItemGroup>
 
 

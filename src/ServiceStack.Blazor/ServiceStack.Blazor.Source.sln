@@ -5,11 +5,11 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Interfaces", "..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj", "{47EF9517-3B83-4F8F-A7D7-8C4A1F8B911F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Blazor.Tests.Server", "..\..\tests\ServiceStack.Blazor.Tests\Server\ServiceStack.Blazor.Tests.Server.csproj", "{E663E316-3D80-45B0-9C8D-16AA7FDF90EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyApp.Server", "..\..\tests\ServiceStack.Blazor.Tests\Server\MyApp.Server.csproj", "{E663E316-3D80-45B0-9C8D-16AA7FDF90EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Blazor.Tests.Client", "..\..\tests\ServiceStack.Blazor.Tests\Client\ServiceStack.Blazor.Tests.Client.csproj", "{547C2E5B-CBBD-4A77-A5BD-7FF43C09B977}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyApp.Client", "..\..\tests\ServiceStack.Blazor.Tests\Client\MyApp.Client.csproj", "{547C2E5B-CBBD-4A77-A5BD-7FF43C09B977}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Blazor.Tests.ServiceModel", "..\..\tests\ServiceStack.Blazor.Tests\ServiceModel\ServiceStack.Blazor.Tests.ServiceModel.csproj", "{2E6EFA5C-C7DD-4392-83A0-EE7B67AD253F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyApp.ServiceModel", "..\..\tests\ServiceStack.Blazor.Tests\ServiceModel\MyApp.ServiceModel.csproj", "{2E6EFA5C-C7DD-4392-83A0-EE7B67AD253F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Blazor.Source", "ServiceStack.Blazor.Source.csproj", "{09FF124C-5003-45AE-8C6C-F67331B4EBF7}"
 EndProject
