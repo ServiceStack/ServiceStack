@@ -29,6 +29,10 @@ namespace ServiceStack.AuthWeb.Tests
 
         public override void Configure(Container container)
         {
+            Plugins.Add(new RequestLogsFeature {
+                RequiredRoles = new[] { RoleNames.AllowAnon }
+            });
+
             Plugins.Add(new RazorFormat());
 
             container.Register(new DataSource());
@@ -107,8 +111,6 @@ namespace ServiceStack.AuthWeb.Tests
                 authRepo.DropAndReCreateTables(); //Drop and re-create all Auth and registration tables
             else
                 authRepo.InitSchema();   //Create only the missing tables
-
-            Plugins.Add(new RequestLogsFeature());
         }
     }
 

@@ -75,7 +75,16 @@ namespace ServiceStack
                 return session.HasAllRoles(requiredRoles, authRepo, req);
             }
         }
-        
+
+        public static async Task<bool> HasAllRolesAsync(IRequest req, ICollection<string> requiredRoles, CancellationToken token = default)
+        {
+            if (PreAuthenticatedValidForAllRoles(req, requiredRoles))
+                return true;
+
+            var session = await req.AssertAuthenticatedSessionAsync(token:token).ConfigAwait();
+            return await HasAllRolesAsync(req, session, requiredRoles, token);
+        }
+
         public static async Task<bool> HasAllRolesAsync(IRequest req, IAuthSession session, ICollection<string> requiredRoles, CancellationToken token=default)
         {
             if (await SessionValidForAllRolesAsync(req, session, requiredRoles))
@@ -113,8 +122,7 @@ namespace ServiceStack
         /// </summary>
         public static async Task AssertRequiredRolesAsync(IRequest req, string[] requiredRoles, CancellationToken token=default)
         {
-            var session = await req.AssertAuthenticatedSessionAsync(token:token).ConfigAwait();
-            if (await HasAllRolesAsync(req, session, requiredRoles, token).ConfigAwait())
+            if (await HasAllRolesAsync(req, requiredRoles, token).ConfigAwait())
                 return;
 
             ThrowInvalidRole(req);
@@ -125,8 +133,7 @@ namespace ServiceStack
 
         public static Task<bool> HasRequiredRolesAsync(IRequest req, string[] requiredRoles) => HasAllRolesAsync(req, req.GetSession(), requiredRoles);
 
-        [Obsolete("Use SessionValidForAllRolesAsync")]
-        private static bool SessionValidForAllRoles(IRequest req, IAuthSession session, ICollection<string> requiredRoles)
+        public static bool PreAuthenticatedValidForAllRoles(IRequest req, ICollection<string> requiredRoles)
         {
             var singleRequiredRole = requiredRoles.Count == 1 ? requiredRoles.First() : null; 
             if (singleRequiredRole == RoleNames.AllowAnon)
@@ -138,8 +145,18 @@ namespace ServiceStack
             if (HostContext.HasValidAuthSecret(req))
                 return true;
 
+            return false;
+        }
+
+        [Obsolete("Use SessionValidForAllRolesAsync")]
+        private static bool SessionValidForAllRoles(IRequest req, IAuthSession session, ICollection<string> requiredRoles)
+        {
+            if (PreAuthenticatedValidForAllRoles(req, requiredRoles))
+                return true;
+
             AssertAuthenticated(req, requestDto:req.Dto, session:session);
 
+            var singleRequiredRole = requiredRoles.Count == 1 ? requiredRoles.First() : null;
             if (singleRequiredRole == RoleNames.AllowAnyUser && session.IsAuthenticated)
                 return true;
 
@@ -148,18 +165,12 @@ namespace ServiceStack
         
         private static async Task<bool> SessionValidForAllRolesAsync(IRequest req, IAuthSession session, ICollection<string> requiredRoles)
         {
-            var singleRequiredRole = requiredRoles.Count == 1 ? requiredRoles.First() : null; 
-            if (singleRequiredRole == RoleNames.AllowAnon)
-                return true;
-
-            if (requiredRoles.IsEmpty()) 
-                return true;
-            
-            if (HostContext.HasValidAuthSecret(req))
+            if (PreAuthenticatedValidForAllRoles(req, requiredRoles))
                 return true;
 
             await AssertAuthenticatedAsync(req, requestDto:req.Dto, session:session).ConfigAwait();
 
+            var singleRequiredRole = requiredRoles.Count == 1 ? requiredRoles.First() : null;
             if (singleRequiredRole == RoleNames.AllowAnyUser && session.IsAuthenticated)
                 return true;
 
