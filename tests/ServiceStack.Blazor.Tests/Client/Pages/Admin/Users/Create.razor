@@ -165,7 +165,6 @@
 
     void syncModel()
     {
-        var restrictedProps = new HashSet<string>(new[] { "id", "roles", "permissions" });
         foreach (var entry in Model)
         {
             var key = entry.Key;
@@ -182,7 +181,7 @@
                 request.LastName = val;
             else if (key == nameof(request.ProfileUrl))
                 request.ProfileUrl = val;
-            else if (!restrictedProps.Contains(key))
+            else
                 request.UserAuthProperties[entry.Key] = val;
         }
     }

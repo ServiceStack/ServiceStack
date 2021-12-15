@@ -102,6 +102,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Result[nameof(UserAuth.PrimaryEmail)], Is.EqualTo("user@email.com"));
             Assert.That(response.Result[nameof(UserAuth.Roles)], Is.EqualTo(new List<string> {"TheRole"}));
             Assert.That(response.Result[nameof(IAuthSession.ProfileUrl)], Is.EqualTo(Svg.Images[Svg.Icons.MaleBusiness]));
+            Assert.That(response.Result[nameof(IAuthSession.Roles)], Is.EquivalentTo(new[]{ "TheRole" }));
         }
         
         [Test]

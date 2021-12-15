@@ -217,7 +217,6 @@
         updateUserResult.Reset();
 
         request.Id = Id;
-        var restrictedProps = new HashSet<string>(new[] { "id", "roles", "permissions" });
         foreach (var entry in Model)
         {
             var key = entry.Key;
@@ -234,7 +233,7 @@
                 request.LastName = val;
             else if (key == nameof(request.ProfileUrl))
                 request.ProfileUrl = val;
-            else if (!restrictedProps.Contains(key))
+            else
                 request.UserAuthProperties[entry.Key] = val;
         }
 
@@ -292,8 +291,10 @@
     async Task lockUser() => await updateUser(new AdminUpdateUser { Id = Id, LockUser = true });
     async Task unlockUser() => await updateUser(new AdminUpdateUser { Id = Id, UnlockUser = true });
 
-    List<string> originalRoles() => getUserResult.Response?.Result?.Get("Roles")?.ToString().FromJsv<List<string>>() ?? new();
-    List<string> originalPermissions() => getUserResult.Response?.Result?.Get("Permissions")?.ToString().FromJsv<List<string>>() ?? new();
+    List<string> originalRoles() => AsList(getUserResult.Response?.Result, "Roles");
+    List<string> originalPermissions() => AsList(getUserResult.Response?.Result, "Permissions");
+
+    List<string> AsList(Dictionary<string,object>? model, string name) => model?.Get(name)?.ToString().FromJsv<List<string>>() ?? new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -305,8 +306,8 @@
         if (apiUserResult.IsSuccess)
         {
             Model = apiUserResult.Response!.Result;
-            roles = originalRoles();
-            permissions = originalPermissions();
+            roles = AsList(Model, "Roles");
+            permissions = AsList(Model, "Permissions");
         }
         return apiUserResult;
     }
