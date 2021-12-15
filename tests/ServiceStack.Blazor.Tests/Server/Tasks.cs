@@ -121,7 +121,7 @@ public static class TaskRunner
             var dstDir = santizePath(cmd.Args[1]);
 
             if (!Directory.Exists(srcDir)) throw new Exception($"{Path.GetFullPath(srcDir)} does not exist");
-            FileSystemVirtualFiles.DeleteDirectoryRecursive(dstDir);
+            if (Directory.Exists(dstDir)) FileSystemVirtualFiles.DeleteDirectoryRecursive(dstDir);
             FileSystemVirtualFiles.AssertDirectory(dstDir);
 
             foreach (var file in new DirectoryInfo(srcDir).GetFiles("*.md", SearchOption.AllDirectories))
