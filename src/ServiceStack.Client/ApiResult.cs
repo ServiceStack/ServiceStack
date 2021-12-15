@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.Model;
+using ServiceStack.Text;
 
 namespace ServiceStack;
 
@@ -150,15 +151,15 @@ public static class ErrorUtils
 
     public static ResponseStatus CreateError(Exception ex) => ex switch {
         IResponseStatusConvertible rsc => rsc.ToResponseStatus(),
+        IHasResponseStatus hasStatus => hasStatus.ResponseStatus,
         ArgumentException { ParamName: { } } ae => CreateFieldError(ae.ParamName, ex.Message, ex.GetType().Name),
         _ => CreateError(ex.Message, ex.GetType().Name)
     };
 
-    public static ResponseStatus CreateError(string message, string? errorCode = nameof(Exception)) =>
-        new() {
-            ErrorCode = errorCode,
-            Message = message,
-        };
+    public static ResponseStatus CreateError(string message, string? errorCode = nameof(Exception)) => new() {
+        ErrorCode = errorCode,
+        Message = message,
+    };
 
     public static ResponseStatus CreateFieldError(string fieldName, string errorMessage,
         string errorCode = FieldErrorCode) =>
@@ -188,6 +189,26 @@ public static class ErrorUtils
 
 public static class ApiResultUtils
 {
+    public static ApiResult<TResponse> ToApiResult<TResponse>(this Exception ex) => ApiResult.CreateError<TResponse>(ex);
+    public static ApiResult<EmptyResponse> ToApiResult(this Exception ex) => ApiResult.CreateError(ex);
+
+    /// <summary>
+    /// Annotate Request DTOs with IGet, IPost, etc HTTP Verb markers to specify which HTTP Method is used:
+    /// https://docs.servicestack.net/csharp-client.html#http-verb-interface-markers
+    /// </summary>
+    public static ApiResult<TResponse> Api<TResponse>(this IServiceClient client, IReturn<TResponse> request)
+    {
+        try
+        {
+            var result = client.Send(request);
+            return ApiResult.Create(result);
+        }
+        catch (Exception ex)
+        {
+            return ex.ToApiResult<TResponse>();
+        }
+    }
+
     /// <summary>
     /// Annotate Request DTOs with IGet, IPost, etc HTTP Verb markers to specify which HTTP Method is used:
     /// https://docs.servicestack.net/csharp-client.html#http-verb-interface-markers
@@ -197,18 +218,29 @@ public static class ApiResultUtils
     {
         try
         {
-            var result = await client.SendAsync(request);
-            return new ApiResult<TResponse>(result);
+            var result = await client.SendAsync(request).ConfigAwait();
+            return ApiResult.Create(result);
         }
         catch (Exception ex)
         {
-            if (ex is WebServiceException webEx)
-                return new ApiResult<TResponse>(webEx.ResponseStatus);
+            return ex.ToApiResult<TResponse>();
+        }
+    }
 
-            return new ApiResult<TResponse>(new ResponseStatus {
-                ErrorCode = ex.GetType().Name,
-                Message = ex.Message,
-            });
+    /// <summary>
+    /// Annotate Request DTOs with IGet, IPost, etc HTTP Verb markers to specify which HTTP Method is used:
+    /// https://docs.servicestack.net/csharp-client.html#http-verb-interface-markers
+    /// </summary>
+    public static ApiResult<EmptyResponse> Api(this IServiceClient client, IReturnVoid request)
+    {
+        try
+        {
+            client.Send(request);
+            return ApiResult.Create(new EmptyResponse());
+        }
+        catch (Exception ex)
+        {
+            return ex.ToApiResult();
         }
     }
 
@@ -220,18 +252,12 @@ public static class ApiResultUtils
     {
         try
         {
-            await client.SendAsync(request);
-            return new ApiResult<EmptyResponse>(new EmptyResponse());
+            await client.SendAsync(request).ConfigAwait();
+            return ApiResult.Create(new EmptyResponse());
         }
         catch (Exception ex)
         {
-            if (ex is WebServiceException webEx)
-                return new ApiResult<EmptyResponse>(webEx.ResponseStatus);
-
-            return new ApiResult<EmptyResponse>(new ResponseStatus {
-                ErrorCode = ex.GetType().Name,
-                Message = ex.Message,
-            });
+            return ex.ToApiResult();
         }
     }
 

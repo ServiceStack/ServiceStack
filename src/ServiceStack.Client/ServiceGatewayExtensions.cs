@@ -2,19 +2,57 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
     public static class ServiceGatewayExtensions
     {
+        public static ApiResult<TResponse> Api<TResponse>(this IServiceGateway client, IReturn<TResponse> request)
+        {
+            try
+            {
+                return new ApiResult<TResponse>(client.Send(request));
+            }
+            catch (Exception ex)
+            {
+                return ex.ToApiResult<TResponse>();
+            }
+        }
+
         public static TResponse Send<TResponse>(this IServiceGateway client, IReturn<TResponse> request)
         {
             return client.Send<TResponse>(request);
         }
 
+        public static ApiResult<EmptyResponse> Api(this IServiceGateway client, IReturnVoid request)
+        {
+            try
+            {
+                client.Send<byte[]>(request);
+                return ApiResult.Create(new EmptyResponse());
+            }
+            catch (Exception ex)
+            {
+                return ex.ToApiResult();
+            }
+        }
+
         public static void Send(this IServiceGateway client, IReturnVoid request)
         {
             client.Send<byte[]>(request);
+        }
+
+        public static ApiResult<List<TResponse>> ApiAll<TResponse>(this IServiceGateway client, IEnumerable<IReturn<TResponse>> request)
+        {
+            try
+            {
+                return ApiResult.Create(client.SendAll<TResponse>(request));
+            }
+            catch (Exception ex)
+            {
+                return ex.ToApiResult<List<TResponse>>();
+            }
         }
 
         public static List<TResponse> SendAll<TResponse>(this IServiceGateway client, IEnumerable<IReturn<TResponse>> request)
@@ -102,9 +140,35 @@ namespace ServiceStack
     // Needed to use Send/SendAll to avoid ambiguous signatures in IServiceClient APIs which implement both interfaces
     public static class ServiceGatewayAsyncWrappers
     {
+        public static async Task<ApiResult<TResponse>> ApiAsync<TResponse>(this IServiceGateway client, IReturn<TResponse> requestDto, CancellationToken token = default(CancellationToken))
+        {
+            try
+            {
+                return ApiResult.Create(await client.SendAsync<TResponse>((object)requestDto, token).ConfigAwait());
+            }
+            catch (Exception e)
+            {
+                return e.ToApiResult<TResponse>();
+            }
+        }
+
         public static Task<TResponse> SendAsync<TResponse>(this IServiceGateway client, IReturn<TResponse> requestDto, CancellationToken token = default(CancellationToken))
         {
             return client.SendAsync<TResponse>((object)requestDto, token);
+        }
+
+        public static async Task<ApiResult<TResponse>> ApiAsync<TResponse>(this IServiceGateway client, object requestDto, CancellationToken token = default(CancellationToken))
+        {
+            try
+            {
+                return ApiResult.Create(await (client is IServiceGatewayAsync nativeAsync
+                    ? nativeAsync.SendAsync<TResponse>(requestDto, token)
+                    : Task.Factory.StartNew(() => client.Send<TResponse>(requestDto), token)).ConfigAwait());
+            }
+            catch (Exception e)
+            {
+                return e.ToApiResult<TResponse>();
+            }
         }
 
         public static Task<TResponse> SendAsync<TResponse>(this IServiceGateway client, object requestDto, CancellationToken token = default(CancellationToken))
@@ -114,11 +178,40 @@ namespace ServiceStack
                 : Task.Factory.StartNew(() => client.Send<TResponse>(requestDto), token);
         }
 
+        public static async Task<ApiResult<EmptyResponse>> ApiAsync(this IServiceGateway client, IReturnVoid requestDto, CancellationToken token = default(CancellationToken))
+        {
+            try
+            {
+                await (client is IServiceGatewayAsync nativeAsync
+                    ? nativeAsync.SendAsync<byte[]>(requestDto, token)
+                    : Task.Factory.StartNew(() => client.Send<byte[]>(requestDto), token)).ConfigAwait();
+                return ApiResult.Create(new EmptyResponse());
+            }
+            catch (Exception e)
+            {
+                return e.ToApiResult();
+            }
+        }
+
         public static Task SendAsync(this IServiceGateway client, IReturnVoid requestDto, CancellationToken token = default(CancellationToken))
         {
             return client is IServiceGatewayAsync nativeAsync
                 ? nativeAsync.SendAsync<byte[]>(requestDto, token)
                 : Task.Factory.StartNew(() => client.Send<byte[]>(requestDto), token);
+        }
+
+        public static async Task<ApiResult<List<TResponse>>> ApiAllAsync<TResponse>(this IServiceGateway client, IEnumerable<IReturn<TResponse>> requestDtos, CancellationToken token = default(CancellationToken))
+        {
+            try
+            {
+                return ApiResult.Create(await (client is IServiceGatewayAsync nativeAsync
+                    ? nativeAsync.SendAllAsync<TResponse>(requestDtos, token)
+                    : Task.Factory.StartNew(() => client.SendAll<TResponse>(requestDtos), token)).ConfigAwait());
+            }
+            catch (Exception e)
+            {
+                return e.ToApiResult<List<TResponse>>();
+            }
         }
 
         public static Task<List<TResponse>> SendAllAsync<TResponse>(this IServiceGateway client, IEnumerable<IReturn<TResponse>> requestDtos, CancellationToken token = default(CancellationToken))
@@ -144,14 +237,50 @@ namespace ServiceStack
         
         /* IServiceClientAsync signatures cannot match IServiceGateway APIs to make them unambiguous */
 
+        public static async Task<ApiResult<TResponse>> Api<TResponse>(this IServiceClientAsync client, IReturn<TResponse> requestDto, CancellationToken token = default(CancellationToken))
+        {
+            try
+            {
+                return ApiResult.Create(await client.SendAsync<TResponse>((object)requestDto, token).ConfigAwait());
+            }
+            catch (Exception e)
+            {
+                return e.ToApiResult<TResponse>();
+            }
+        }
+
         public static Task<TResponse> Send<TResponse>(this IServiceClientAsync client, IReturn<TResponse> requestDto, CancellationToken token = default(CancellationToken))
         {
             return client.SendAsync<TResponse>((object)requestDto, token);
         }
 
+        public static async Task<ApiResult<List<TResponse>>> ApiAllAsync<TResponse>(this IServiceClientAsync client, IReturn<TResponse>[] requestDtos, CancellationToken token = default(CancellationToken))
+        {
+            try
+            {
+                return ApiResult.Create(await client.SendAllAsync<TResponse>(requestDtos, token).ConfigAwait());
+            }
+            catch (Exception e)
+            {
+                return e.ToApiResult<List<TResponse>>();
+            }
+        }
+
         public static Task<List<TResponse>> SendAllAsync<TResponse>(this IServiceClientAsync client, IReturn<TResponse>[] requestDtos, CancellationToken token = default(CancellationToken))
         {
             return client.SendAllAsync<TResponse>(requestDtos, token);
+        }
+
+        public static async Task<ApiResult<List<TResponse>>> ApiAllAsync<TResponse>(this IServiceClientAsync client, List<IReturn<TResponse>> requestDtos, CancellationToken token = default(CancellationToken))
+        {
+            try
+            {
+                return ApiResult.Create(await client.SendAllAsync<TResponse>(requestDtos, token).ConfigAwait());
+            }
+            catch (Exception e)
+            {
+                return e.ToApiResult<List<TResponse>>();
+            }
         }
 
         public static Task<List<TResponse>> SendAllAsync<TResponse>(this IServiceClientAsync client, List<IReturn<TResponse>> requestDtos, CancellationToken token = default(CancellationToken))
