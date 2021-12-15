@@ -30,57 +30,9 @@ else if (Doc.ErrorStatus == null)
 
     ApiResult<MarkdownFileInfo> Doc { get; set; } = new();
 
-    Dictionary<string, MarkdownFileInfo> Cache = new();
+    async Task loadDoc() => 
+        Doc = await MarkdownUtils.LoadDocumentAsync(Path!, doc => Http.GetStringAsync($"/content/{doc.FileName}"));
 
-    async Task<ApiResult<MarkdownFileInfo>> LoadDoc(string path)
-    {
-        try
-        {
-            if (Cache.TryGetValue(path, out var cachedDoc))
-                return ApiResult.Create(cachedDoc);
-
-            var pipeline = new MarkdownPipelineBuilder()
-                .UseYamlFrontMatter()
-                .UseAdvancedExtensions()
-                .Build();
-            var writer = new System.IO.StringWriter();
-            var renderer = new Markdig.Renderers.HtmlRenderer(writer);
-            pipeline.Setup(renderer);
-
-            var doc = new MarkdownFileInfo {
-                Path = path,
-                FileName = $"{Path}.md",
-            };
-            doc.Content = await Http.GetStringAsync($"/content/{doc.FileName}");
-
-            var document = Markdown.Parse(doc.Content!, pipeline);
-            renderer.Render(document);
-            var block = document
-                .Descendants<Markdig.Extensions.Yaml.YamlFrontMatterBlock>()
-                .FirstOrDefault();
-
-            var metaObj = block?
-                .Lines // StringLineGroup[]
-                .Lines // StringLine[]
-                .Select(x => $"{x}\n")
-                .ToList()
-                .Select(x => x.Replace("---", string.Empty))
-                .Where(x => !string.IsNullOrWhiteSpace(x))
-                .Select(x => KeyValuePairs.Create(x.LeftPart(':').Trim(), x.RightPart(':').Trim()))
-                .ToObjectDictionary();
-            metaObj?.PopulateInstance(doc);
-
-            await writer.FlushAsync();
-            doc.Preview = writer.ToString();
-            Cache[path] = doc;
-            return ApiResult.Create(doc);
-        } 
-        catch (Exception ex)
-        {
-            return ApiResult.CreateError<MarkdownFileInfo>(ex.AsResponseStatus());
-        }        
-    }
-
-    protected override async Task OnParametersSetAsync() => Doc = await LoadDoc(Path!);
-    protected override async Task OnInitializedAsync() => Doc = await LoadDoc(Path!);
+    protected override async Task OnParametersSetAsync() => await loadDoc();
+    protected override async Task OnInitializedAsync() => await loadDoc();
 }
