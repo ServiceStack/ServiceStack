@@ -1,14 +1,14 @@
 ﻿@inject ServiceStackStateProvider AuthStateProvider;
 @inject NavigationManager NavigationManager;
 
-<div class="top-row navbar navbar-dark">
+<div class="nav-menu top-row navbar navbar-dark">
     <a class="navbar-brand ps-4" href="">MyApp</a>
     <button class="navbar-toggler" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
     </button>
 </div>
 
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+<div class="@CssUtils.ClassNames("nav-menu", collapseNavMenu ? "collapse" : "")" @onclick="ToggleNavMenu">
     <ul class="nav flex-column">
         <li class="nav-item px-3">
             <NavLink class="nav-link" href="/" Match="NavLinkMatch.All">
@@ -74,8 +74,6 @@
 
 @code {
     bool collapseNavMenu = true;
-
-    string NavMenuCssClass => collapseNavMenu ? "collapse" : "";
 
     void ToggleNavMenu() => collapseNavMenu = !collapseNavMenu;
 
