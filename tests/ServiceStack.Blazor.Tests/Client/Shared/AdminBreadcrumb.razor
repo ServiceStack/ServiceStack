@@ -25,13 +25,6 @@
   </ol>
 </nav>
 
-@if (!HasInit)
-{
-    <Loading class="admin-page" />
-}
-
-<link href="/css/admin.css" rel="stylesheet" />
-
 @code {
     [Parameter] public string? Title { get; set; }
 

@@ -1,21 +1,10 @@
 ﻿@page "/admin/users"
-@inherits AppAuthComponentBase
-@attribute [Authorize(Roles = "Admin")]
+@inherits AdminPage
 @inject ILogger<Index> logger
 @using ServiceStack.Html
 
-<AdminBreadcrumb Title="Manage Users" IconClass="svg svg-admin-users svg-2.5x align-bottom" />
-@if (!HasInit) return;
-
-<div class="admin-page" @onkeydown="OnKeyPress">
-
-    @if (appMetadataResult.IsError)
-    {
-        <ErrorSummary Status=@appMetadataResult.ErrorStatus />
-    }
-    else
-    {
-    <section id="adminusers">
+<AdminPage Title="Manage Users" IconClass="svg svg-admin-users svg-2.5x align-bottom">
+    <section id="adminusers" @onkeydown="OnKeyPress">
         <main>
             <div class="main-container p-2">
                 <div class="my-2 d-flex flex-wrap align-items-center">
@@ -66,9 +55,8 @@
                         <th>
                             <span class="oi oi-plus cursor-pointer" title="New User" @onclick="_ => reset(newUser:true)"/>
                         </th>
-                        @foreach (var f in fieldNames)
-                        {
-
+                    @foreach (var f in fieldNames)
+                    {
                         <th @key=f @onclick="_ => setOrderBy(f)" 
                             class=@ClassNames("th-link", $"show-{minVisibleSize(f)}-tcell")>
                             <div class="text-nowrap">
@@ -83,7 +71,7 @@
                             }
                             </div>
                         </th>
-                        }
+                    }
                     </tr></thead>
                     <tbody>
                     @for (var i=0; i<results.Count; i++)
@@ -118,11 +106,12 @@
         </main>
         
     </section>
-    }
 
-</div>
+</AdminPage>
+
 
 @code {
+    [CascadingParameter] protected AppMetadata? appMetadata { get; set; }
 
     static int pageSize = 50;
     bool newUser;
@@ -144,33 +133,19 @@
         "ModifiedDate",
     };
 
-    AdminUsersInfo? plugin => appMetadataResult.Response?.Plugins.AdminUsers;
-
-    string minVisibleSize(string propName) => plugin != null 
-        ? MediaRules.MinVisibleSize(plugin.QueryMediaRules, propName) 
+    string minVisibleSize(string propName) => AdminUsers != null 
+        ? MediaRules.MinVisibleSize(AdminUsers.QueryMediaRules, propName) 
         : MediaSizes.All.Last();
 
     ApiResult<AdminUsersResponse> searchResult = new();
     List<Dictionary<string, object>> results => searchResult.Response?.Results ?? TypeConstants<Dictionary<string,object>>.EmptyList;
 
-    List<string> fieldNames = new();
-
-    ApiResult<AppMetadata> appMetadataResult = new();
+    List<string> fieldNames => AdminUsers?.QueryUserAuthProperties ?? new();
 
     protected override async Task OnInitializedAsync()
     {
-        appMetadataResult = await this.ApiAppMetadataAsync();
-        if (appMetadataResult.IsSuccess)
-        {
-            if (appMetadataResult.Response!.Plugins.AdminUsers == null)
-                appMetadataResult.SetError("AdminUsersFeature not registered, see: https://docs.servicestack.net/admin-users");
-            else
-                fieldNames = plugin!.QueryUserAuthProperties;
-        }
-
-        await search();
-
         await base.OnInitializedAsync();
+        await search();
     }
 
     Dictionary<string,object> santize(Dictionary<string,object> from) =>
@@ -230,7 +205,6 @@
 
     Task OnKeyPress(KeyboardEventArgs e)
     {
-        //logger.LogInformation($"pressed: {e.Key}");
         if (e.Key == "Escape")
             reset();
         return Task.CompletedTask;

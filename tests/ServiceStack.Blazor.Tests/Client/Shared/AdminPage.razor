@@ -1,0 +1,83 @@
+﻿@inherits AppAuthComponentBase
+@inject ServiceStackStateProvider AuthStateProvider;
+@inject NavigationManager NavigationManager;
+
+@if (HasInit)
+{
+    <div class=@ClassNames("admin-page", @class)>
+        <AdminBreadcrumb Title=@Title IconClass=@IconClass />
+
+        <ErrorSummary Status=@appMetadataResult.ErrorStatus />
+
+    @if (!User.HasRole(AppRoles.Admin))
+    {
+        <h1>Sorry</h1>
+
+        <p class="mt-4 text-danger">
+            <span class="oi oi-shield me-2"></span>
+            This area is only accessible to users with the <b>Admin</b> role
+        </p>    
+
+        <div>
+            <p>
+                Please 
+                <a href="#" @onclick="SignInAsAnotherUser" @onclick:preventDefault>Login</a>
+                as a user with the <b>Admin</b> role.
+            </p>
+        </div>
+    }
+    else
+    {
+        <CascadingValue Value=@AppMetadata>
+            @ChildContent
+        </CascadingValue>
+    }
+
+    </div>
+}
+else
+{
+    <Loading class="admin-page" />    
+}
+
+<link href="/css/admin.css" rel="stylesheet" />
+
+
+@code {
+    [Parameter] public string? Title { get; set; }
+
+    [Parameter]
+    public string? @class { get; set; }
+
+    [Parameter]
+    public string? IconClass { get; set; }
+
+    [Parameter]
+    public string? IconSrc { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    ApiResult<AppMetadata> appMetadataResult = new();
+    AppMetadata? AppMetadata => appMetadataResult.Response;
+
+    protected PluginInfo? Plugins => AppMetadata?.Plugins;
+
+    protected AdminUsersInfo? AdminUsers => Plugins?.AdminUsers;
+
+    protected override async Task OnInitializedAsync()
+    {
+        appMetadataResult = await this.ApiAppMetadataAsync();
+        if (appMetadataResult.IsSuccess)
+        {
+            if (AdminUsers == null)
+                appMetadataResult.SetError("AdminUsersFeature not registered, see: https://docs.servicestack.net/admin-users");
+        }
+    }
+
+    async Task SignInAsAnotherUser()
+    {
+        await AuthStateProvider.LogoutAsync();
+        NavigationManager.NavigateTo(NavigationManager.GetLoginUrl(), true);
+    }
+
+}

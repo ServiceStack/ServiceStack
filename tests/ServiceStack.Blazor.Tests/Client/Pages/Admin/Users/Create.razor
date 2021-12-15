@@ -20,7 +20,7 @@
             @foreach (var rowProps in UserFormLayout)
             {
                 <div class="d-flex sm:flex-row">
-                @foreach (var f in rowProps.Where(x => propType(x.Id) != null))
+                @foreach (var f in rowProps)
                 {
                     <div class=@CssUtils.ClassNames("mb-3 me-1", f.Type != Input.Types.Checkbox ? "form-floating" : "") style="width:100%">
                         <DynamicInput Input=@f Model=@Model />
@@ -106,6 +106,9 @@
 </form>
 
 @code {
+    [CascadingParameter] protected AppMetadata? appMetadata { get; set; }
+    AdminUsersInfo? plugin => appMetadata?.Plugins.AdminUsers;
+
     [Parameter] public EventCallback<Dictionary<string,object>> done { get; set; }
 
     [Parameter]
@@ -127,8 +130,6 @@
     ApiResult<AdminUserResponse> createUserResult = new();
 
     ResponseStatus? Status => createUserResult.ErrorStatus;
-
-    AdminUsersInfo? plugin => appMetadata?.Plugins?.AdminUsers;
 
     List<string> missingRoles => plugin?.AllRoles.Where(x => !request.Roles.Contains(x)).ToList() ?? new();
 
@@ -195,18 +196,4 @@
         if (createUserResult.IsSuccess)
             await done.InvokeAsync(createUserResult.Response?.Result);
     }
-
-    AppMetadata appMetadata = new();
-    Dictionary<string, MetadataPropertyType> propMap = new(StringComparer.OrdinalIgnoreCase);
-    List<MetadataPropertyType> allProps => appMetadata!.Plugins.AdminUsers.UserAuth.Properties
-        .Where(x => x.Name != "LockedDate" && x.IsPrimaryKey != true).ToList();
-
-    protected override async Task OnInitializedAsync()
-    {
-        appMetadata = (await this.ApiAppMetadataAsync()).Response!;
-        allProps.ForEach(x => propMap[x.Name] = x);
-    }
-
-
-    MetadataPropertyType? propType(string field) => propMap.TryGetValue(field, out var value) ? value : null;
 }

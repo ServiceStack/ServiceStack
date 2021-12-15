@@ -24,7 +24,7 @@
             @foreach (var rowProps in UserFormLayout)
             {
                 <div class="d-flex sm:flex-row">
-                @foreach (var f in rowProps.Where(x => propType(x.Id) != null))
+                @foreach (var f in rowProps)
                 {
                     <div class=@CssUtils.ClassNames("mb-3 me-1", f.Type != Input.Types.Checkbox ? "form-floating" : "") style="width:100%">
                         <DynamicInput Input=@f Model=@Model Status=@updateUserResult.ErrorStatus />
@@ -142,6 +142,9 @@
 </form>
 
 @code {
+    [CascadingParameter] protected AppMetadata? appMetadata { get; set; }
+    AdminUsersInfo? plugin => appMetadata?.Plugins.AdminUsers;
+
     [Parameter] public EventCallback<Dictionary<string,object>> done { get; set; }
 
     [Parameter, EditorRequired]
@@ -175,8 +178,6 @@
     ApiResult<AdminDeleteUserResponse> deleteUserResult = new();
 
     ResponseStatus? Status => updateUserResult.ErrorStatus;
-
-    AdminUsersInfo? plugin => appMetadata.Plugins.AdminUsers;
 
     string[] missingRoles => plugin?.AllRoles.Where(x => !roles.Contains(x)).ToArray() ?? Array.Empty<string>();
 
@@ -276,12 +277,7 @@
             await close();
     }
 
-    async Task<ApiResult<AdminUserResponse>> updateUser(AdminUpdateUser request)
-    {
-        updateUserResult = await ApiAsync(request);
-        bindModel(updateUserResult);
-        return updateUserResult;
-    }
+    async Task<ApiResult<AdminUserResponse>> updateUser(AdminUpdateUser request) => updateUserResult = bind(await ApiAsync(request));
 
     async Task changePassword()
     {
@@ -299,25 +295,12 @@
     List<string> originalRoles() => getUserResult.Response?.Result?.Get("Roles")?.ToString().FromJsv<List<string>>() ?? new();
     List<string> originalPermissions() => getUserResult.Response?.Result?.Get("Permissions")?.ToString().FromJsv<List<string>>() ?? new();
 
-    AppMetadata appMetadata = new();
-    Dictionary<string, MetadataPropertyType> propMap = new(StringComparer.OrdinalIgnoreCase);
-
-    static HashSet<string> restrectedProps = new(new[] { "Id", "LockedDate" });
-
-    List<MetadataPropertyType> allProps => appMetadata!.Plugins.AdminUsers.UserAuth.Properties
-        .Where(x => !restrectedProps.Contains(x.Name)).ToList();
-
     protected override async Task OnInitializedAsync()
     {
-        appMetadata = (await this.ApiAppMetadataAsync()).Response!;
-
-        getUserResult = await this.ApiAsync(new AdminGetUser { Id = Id });
-        bindModel(getUserResult);
-
-        allProps.ForEach(x => propMap[x.Name] = x);
+        getUserResult = bind(await this.ApiAsync(new AdminGetUser { Id = Id }));
     }
 
-    public void bindModel(ApiResult<AdminUserResponse> apiUserResult)
+    public ApiResult<AdminUserResponse> bind(ApiResult<AdminUserResponse> apiUserResult)
     {
         if (apiUserResult.IsSuccess)
         {
@@ -325,7 +308,6 @@
             roles = originalRoles();
             permissions = originalPermissions();
         }
+        return apiUserResult;
     }
-
-    MetadataPropertyType? propType(string field) => propMap.TryGetValue(field, out var value) ? value : null;
 }

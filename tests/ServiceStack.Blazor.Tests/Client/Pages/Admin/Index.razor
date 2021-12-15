@@ -1,52 +1,8 @@
 ﻿@page "/admin"
-@inherits AppAuthComponentBase
-@inject ServiceStackStateProvider AuthStateProvider;
-@inject NavigationManager NavigationManager;
+@inherits AdminPage
 
-<AdminBreadcrumb IconClass="svg svg-admin-home svg-2.5x align-bottom" />
-@if (!HasInit) return;
-
-<div class="admin-page">
-@if (User.HasRole(AppRoles.Admin))
-{
-    <ErrorSummary Status=@appMetadataResult.ErrorStatus />
-
+<AdminPage IconClass="svg svg-admin-home svg-2.5x align-bottom">
     <div class="d-flex justify-content-center mt-5">
         <NavPageLink href="/admin/users" Label="Manage Users" IconClass="svg svg-admin-users svg-6x align-bottom"/>
     </div>
-}
-else
-{
-    <h1>Sorry</h1>
-
-    <p class="mt-4 text-danger">
-        <span class="oi oi-shield me-2"></span>
-        This area is only accessible to users with the <b>Admin</b> role
-    </p>    
-
-    <div>
-        <p>
-            Please 
-            <a href="#" @onclick="SignInAsAnotherUser" @onclick:preventDefault>Login</a>
-            as a user with the <b>Admin</b> role.
-        </p>
-    </div>
-}
-</div>
-
-@code {
-
-    async Task SignInAsAnotherUser()
-    {
-        await AuthStateProvider.LogoutAsync();
-        NavigationManager.NavigateTo(NavigationManager.GetLoginUrl(), true);
-    }
-
-    ApiResult<AppMetadata> appMetadataResult = new();
-
-    protected override async Task OnInitializedAsync()
-    {
-        if (!appMetadataResult.IsSuccess)
-            appMetadataResult = await this.ApiAppMetadataAsync(); // pre-load App Metadata
-    }
-}
+</AdminPage>
