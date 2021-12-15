@@ -1,11 +1,9 @@
 ﻿using ServiceStack;
 using ServiceStack.IO;
-using System;
-using System.IO;
 using System.Text;
 using static System.Console;
 
-// Reuse Server App to build tasks like pre-rendering content
+// Reuse Server App to run post build tasks like pre-rendering markdown pages
 public static class TaskRunner
 {
     public static Dictionary<string, ITask> Tasks = new()
@@ -59,15 +57,14 @@ public static class TaskRunner
         public static string DefaultIndexPath { get; set; } = "../MyApp.Client/wwwroot/index.html";
 
         public bool Verbose { get; set; }
-        public string Task { get; set; }
-        public string IndexPath { get; set; }
-        public List<string> Args { get; set; }
+        public string? Task { get; set; }
+        public string? IndexPath { get; set; }
+        public List<string> Args { get; set; } = new();
 
         public static ArgsParser Parse(string[] args)
         {
             var to = new ArgsParser
             {
-                Args = new(),
                 IndexPath = DefaultIndexPath,
             };
 
@@ -102,6 +99,9 @@ public static class TaskRunner
         void Execute(ArgsParser cmd);
     }
 
+    /// <summary>
+    /// Renders the Markdown Content using same Markding configuration used in Docs.razor inside pre-rendered index.html loading page
+    /// </summary>
     public class PrerenderMarkdownTask : ITask
     {
         public string Usage => @"Usage: -task prerender:markdown <src-dir> <dest-dir>";
@@ -129,8 +129,8 @@ public static class TaskRunner
                 WriteLine($"Converting {file.FullName} ...");
 
                 var name = file.Name.WithoutExtension();
-                var docResult = MyApp.Client.MarkdownUtils.LoadDocumentAsync(name, async doc =>
-                    File.ReadAllText(file.FullName)).GetAwaiter().GetResult();
+                var docResult = MyApp.Client.MarkdownUtils.LoadDocumentAsync(name, doc =>
+                    Task.FromResult(File.ReadAllText(file.FullName))).GetAwaiter().GetResult();
 
                 if (docResult.IsError)
                 {
@@ -153,11 +153,14 @@ public static class TaskRunner
         }
     }
 
+    /// <summary>
+    /// Parses wwwroot/index.html and uses its layout to generate prerendered pages inside <!--PAGE--><!--/PAGE-->
+    /// </summary>
     public class IndexTemplate
     {
-        public string Contents { get; set; }
-        public string Header { get; set; }
-        public string Footer { get; set; }
+        public string? Contents { get; set; }
+        public string? Header { get; set; }
+        public string? Footer { get; set; }
 
         static IndexTemplate Instance = new();
         public static string Render(ArgsParser cmd, string body)
@@ -165,7 +168,7 @@ public static class TaskRunner
             if (Instance.Contents == null)
             {
                 if (!File.Exists(cmd.IndexPath))
-                    throw new Exception($"{Path.GetFullPath(cmd.IndexPath)} does not exist");
+                    throw new Exception($"{Path.GetFullPath(cmd.IndexPath!)} does not exist");
 
                 var sb = new StringBuilder();
                 foreach (var line in File.ReadAllLines(cmd.IndexPath))
