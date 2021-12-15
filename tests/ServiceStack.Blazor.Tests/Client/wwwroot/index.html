@@ -20,7 +20,7 @@
         <div id="app-loading" class="main-layout page">
             <div class="sidebar">
                 <div class="top-row navbar navbar-dark">
-                    <a class="navbar-brand ps-4" href="#">MyApp</a>
+                    <a class="navbar-brand ps-4" href="/">MyApp</a>
                     <button class="navbar-toggler"><span class="navbar-toggler-icon"></span></button>
                 </div>
                 <div class="collapse">
@@ -51,14 +51,19 @@ document.querySelector('#app-loading .collapse .nav').innerHTML = NAV
                 </div>
             </div>
             <div class="main">
-                <div class="main-top-row px-4"></div>
+                <div class="main-top-row px-4">
+                    <a href="/docs/hosting" class="btn btn-outline-success">$0.40 /mo</a>
+                    <a href="signin?return=docs/deploy" class="btn btn-outline-primary active">Login</a>
+                </div>
                 <div class="content px-4">
+                    <!--PAGE-->
                     <div class="spinner-border float-start mt-2 me-2" role="status">
                         <span class="sr-only"></span>
                     </div>
                     <h1>
                         Loading...
                     </h1>
+                    <!--/PAGE-->
                 </div>
             </div>
         </div>

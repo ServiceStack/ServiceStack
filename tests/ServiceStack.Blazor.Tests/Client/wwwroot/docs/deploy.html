@@ -16,6 +16,46 @@
 
 <body>
     <div id="app">
+        <!-- loading: render temp static app chrome to improve perceived performance -->
+        <div id="app-loading" class="main-layout page">
+            <div class="sidebar">
+                <div class="top-row navbar navbar-dark">
+                    <a class="navbar-brand ps-4" href="/">MyApp</a>
+                    <button class="navbar-toggler"><span class="navbar-toggler-icon"></span></button>
+                </div>
+                <div class="collapse">
+                    <ul class="nav flex-column"></ul>
+<script>
+const NavInfo = (label, icon, route) => ({
+    label, cls: `oi oi-${icon}`, route: route.replace(/\$$/, ''), exact: route.endsWith('$') })
+const NAV = [
+    'Home,home,/$',
+    'Counter,plus,/counter',
+    'Todos,clipboard,/todomvc',
+    'Bookings CRUD,calendar,/bookings-crud',
+    'Call Hello,transfer,/hello$',
+    'Call HelloSecure,shield,/hello-secure',
+    'Fetch data,list-rich,/fetchdata',
+    'Deployments,cloud-upload,/docs/deploy',
+    'Admin,lock-locked,/admin',
+    'Login,account-login,/signin',
+].map(s => NavInfo.apply(null, s.split(',')))
+const path = location.pathname
+document.querySelector('#app-loading .collapse .nav').innerHTML = NAV
+    .map(({ label, cls, route, exact }) => `<li class="nav-item px-3${route==NAV[0].route?' pt-3':''}">
+            <a href="${route}" class="nav-link${(exact ? path == route : path.startsWith(route)) ? ' active' : ''}">
+                <span class="${cls}" aria-hidden="true"></span> ${label}
+            </a>
+        </li>`).join('')
+</script>
+                </div>
+            </div>
+            <div class="main">
+                <div class="main-top-row px-4">
+                    <a href="/docs/hosting" class="btn btn-outline-success">$0.40 /mo</a>
+                    <a href="signin?return=docs/deploy" class="btn btn-outline-primary active">Login</a>
+                </div>
+                <div class="content px-4">
 <div class="prose lg:prose-xl m-3">
         <div class="markdown-body">
             <h1 id="servicestack-github-action-deployments">ServiceStack GitHub Action Deployments</h1>
@@ -161,36 +201,4 @@ network speeds are much faster in order for initial load times to be heavily red
 so load times can be reduced as much as possible.</p>
 
         </div>
-    </div>    </div>
-    <div id="blazor-error-ui">
-        An unhandled error has occurred.
-        <a href="" class="reload">Reload</a>
-        <a class="dismiss">🗙</a>
     </div>
-    <script src="_framework/blazor.webassembly.js"></script>
-
-<script>
-/* ShellCommand */
-window.copy = function(target) {
-    let $el = document.createElement("input")
-    let $lbl = target.parentElement.querySelector('label')
-
-    $el.setAttribute("value", $lbl.innerText)
-    document.body.appendChild($el)
-    $el.select()
-    document.execCommand("copy")
-    document.body.removeChild($el);
-
-    if (typeof window.getSelection == "function") {
-        const range = document.createRange()
-        range.selectNodeContents($lbl)
-        window.getSelection()?.removeAllRanges()
-        window.getSelection()?.addRange(range)
-    }
-
-    setTimeout(function () { successText.value = '' }, 3000)
-}
-</script>
-</body>
-
-</html>

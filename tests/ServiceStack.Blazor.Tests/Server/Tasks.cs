@@ -145,7 +145,10 @@ public static class TaskRunner
     </div>";
 
                 var prerenderedPage = IndexTemplate.Render(cmd, mdBody);
-                File.WriteAllText(Path.Combine(dstDir, $"{name}.html"), prerenderedPage);
+                string htmlPath = Path.GetFullPath(Path.Combine(dstDir, $"{name}.html"));
+                File.WriteAllText(htmlPath, prerenderedPage);
+                WriteLine($"Written to {htmlPath}");
+
             }
         }
     }
@@ -169,34 +172,29 @@ public static class TaskRunner
                 {
                     if (Instance.Header == null)
                     {
-                        sb.AppendLine(line);
-                        if (line.Contains("id=\"app\""))
+                        if (line.Contains("<!--PAGE-->"))
                         {
-                            Instance.Header = sb.ToString(); // capture past <div id="app">
+                            Instance.Header = sb.ToString(); // capture up to start page marker
                             sb.Clear();
                         }
+                        else sb.AppendLine(line);
                     }
                     else
                     {
                         if (sb.Length == 0)
                         {
-                            if (line.Contains("id=\"blazor-error-ui\"")) // discard up to <div id="blazor-error-ui">
+                            if (line.Contains("<!--/PAGE-->")) // discard up to end page marker
                             {
-                                sb.AppendLine("    </div>");
-                                sb.AppendLine(line);
                                 continue;
                             }
                         }
-                        else
-                        {
-                            sb.AppendLine(line);
-                        }
+                        else sb.AppendLine(line);
                     }
                 }
                 Instance.Footer = sb.ToString();
 
                 if (Instance.Header == null)
-                    throw new Exception("Parsing index.html failed, couldn't find <div id=\"app\"> marker");
+                    throw new Exception("Parsing index.html failed, missing <!--PAGE-->...<!--/PAGE--> markers");
             }
             return Instance.Header + body + Instance.Footer;
         }
