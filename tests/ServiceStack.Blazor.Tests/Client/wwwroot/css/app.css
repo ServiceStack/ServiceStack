@@ -1,5 +1,4 @@
 @import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
-@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -31,9 +30,10 @@ a, .btn-link {
     color: red;
 }
 
+
+
 .relative { position: relative }
 .absolute { position: absolute }
-
 button.close {
     position: absolute;
     top: 1rem;
