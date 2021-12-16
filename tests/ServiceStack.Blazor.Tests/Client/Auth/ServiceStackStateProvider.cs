@@ -38,7 +38,7 @@ public static class ClaimUtils
 
 public class ServiceStackStateProvider : AuthenticationStateProvider
 {
-    private ApiResult<AuthenticateResponse> authResult = new();
+    private ApiResult<AuthenticateResponse> authApi = new();
     private readonly JsonApiClient client;
 
     ILogger<ServiceStackStateProvider> Log { get; }
@@ -49,14 +49,14 @@ public class ServiceStackStateProvider : AuthenticationStateProvider
         this.Log = log;
     }
 
-    public AuthenticateResponse? AuthUser => authResult.Response;
-    public bool IsAuthenticated => authResult.Response != null;
+    public AuthenticateResponse? AuthUser => authApi.Response;
+    public bool IsAuthenticated => authApi.Response != null;
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         try
         {
-            var authResponse = authResult.Response;
+            var authResponse = authApi.Response;
             if (authResponse == null)
             {
                 Log.LogInformation("Checking server /auth for authentication");
@@ -96,18 +96,18 @@ public class ServiceStackStateProvider : AuthenticationStateProvider
     {
         var logoutResult = await client.ApiAsync(new Authenticate { provider = "logout" });
         NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
-        authResult.Reset();
+        authApi.Reset();
         return logoutResult;
     }
 
-    public Task<ApiResult<AuthenticateResponse>> SignInAsync(ApiResult<AuthenticateResponse> apiResult)
+    public Task<ApiResult<AuthenticateResponse>> SignInAsync(ApiResult<AuthenticateResponse> api)
     {
-        authResult = apiResult;
-        if (authResult.IsSuccess)
+        authApi = api;
+        if (authApi.Succeeded)
         {
             NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
-        return Task.FromResult(authResult);
+        return Task.FromResult(authApi);
     }
 
     public Task<ApiResult<AuthenticateResponse>> SignInAsync(AuthenticateResponse authResponse) =>

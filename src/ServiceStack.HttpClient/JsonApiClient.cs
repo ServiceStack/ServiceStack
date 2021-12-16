@@ -45,7 +45,7 @@ public static class JsonApiClientUtils
     public static async Task<TResponse> SendAsync<TResponse>(this IHasJsonApiClient instance, IReturn<TResponse> request) =>
         await instance.Client!.SendAsync(request);
 
-    class ApiResultsCache<T>
+    static class ApiResultsCache<T>
     {
         internal static ApiResult<T>? Instance { get; set; }
     }
@@ -55,14 +55,14 @@ public static class JsonApiClientUtils
         if (ApiResultsCache<T>.Instance != null)
             return ApiResultsCache<T>.Instance;
 
-        var apiResult = await instance.Client!.ApiAsync(requestDto);
-        if (apiResult.IsSuccess)
-            ApiResultsCache<T>.Instance = apiResult;
-        return apiResult;
+        var api = await instance.Client!.ApiAsync(requestDto);
+        if (api.Succeeded)
+            ApiResultsCache<T>.Instance = api;
+        return api;
     }
 
-    public static Task<ApiResult<AppMetadata>> ApiAppMetadataAsync(this IHasJsonApiClient instance) =>
-        instance.ApiCacheAsync(new MetadataApp());
+    public static Task<ApiResult<AppMetadata>> ApiAppMetadataAsync(this IHasJsonApiClient instance, bool reload=false) =>
+        !reload ? instance.ApiCacheAsync(new MetadataApp()) : instance.Client!.ApiAsync(new MetadataApp());
 }
 
 #endif

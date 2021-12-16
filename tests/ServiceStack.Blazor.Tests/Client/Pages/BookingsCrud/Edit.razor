@@ -1,7 +1,7 @@
 @inherits AppComponentBase
 
 <form @onsubmit="_ => OnSubmit()" class=@CssUtils.ClassNames("relative shadow rounded p-4", @class)>
-<CascadingValue Value=@apiResult.Error>
+<CascadingValue Value=@api.Error>
     <button type="button" class="close" @onclick="close"><i></i></button>
 
     <h1 class="fs-4 text-secondary text-center">
@@ -12,7 +12,7 @@
         nameof(request.Name), nameof(request.RoomType), nameof(request.RoomNumber), nameof(request.BookingStartDate), 
         nameof(request.BookingEndDate), nameof(request.Cost), nameof(request.Notes),
     }) />
-    <ErrorSummary ExplicitStatus=@deleteApiResult.Error />
+    <ErrorSummary ExplicitStatus=@deleteApi.Error />
 
     <div class="mb-3 form-floating">
         <TextInput @bind-Value="request.Name" required placeholder="Name for this booking" />
@@ -67,8 +67,8 @@
 </form>
 
 
-@if (apiResult.IsSuccess) {
-    <h3 class="text-success mt-4">@apiResult.Response!.Id</h3>
+@if (api.Succeeded) {
+    <h3 class="text-success mt-4">@api.Response!.Id</h3>
 }
 
 @code {
@@ -83,15 +83,15 @@
     async Task refresh()
     {
         var selectApiResult = await ApiAsync(new QueryBookings { Id = Id });
-        if (selectApiResult.IsError)
+        if (selectApiResult.Failed)
         {
-            apiResult = ApiResult.CreateError<IdResponse>(selectApiResult.Error!);
+            api = ApiResult.CreateError<IdResponse>(selectApiResult.Error!);
             return;
         }
 
         if (selectApiResult.Response!.Results.Count == 0)
         {
-            apiResult = ApiResult.CreateError<IdResponse>($"Booking #{Id} does not exist");
+            api = ApiResult.CreateError<IdResponse>($"Booking #{Id} does not exist");
             return;
         }
 
@@ -113,28 +113,28 @@
 
     async Task close() => await done.InvokeAsync(null);
 
-    ApiResult<IdResponse> apiResult = new();
+    ApiResult<IdResponse> api = new();
 
     async Task OnSubmit()
     {
-        apiResult = await ApiAsync(request);
+        api = await ApiAsync(request);
 
-        if (apiResult.IsSuccess)
+        if (api.Succeeded)
         {
-            await done.InvokeAsync(apiResult.Response!);
+            await done.InvokeAsync(api.Response!);
         }
     }
 
-    ApiResult<EmptyResponse> deleteApiResult = new();
+    ApiResult<EmptyResponse> deleteApi = new();
 
     async Task delete()
     {
         if (!deleteConfirmed)
             return;
 
-        deleteApiResult = await ApiAsync(new DeleteBooking { Id = Id ?? 0 });
+        deleteApi = await ApiAsync(new DeleteBooking { Id = Id ?? 0 });
 
-        if (deleteApiResult.IsSuccess)
+        if (deleteApi.Succeeded)
             await close();
     }
 }

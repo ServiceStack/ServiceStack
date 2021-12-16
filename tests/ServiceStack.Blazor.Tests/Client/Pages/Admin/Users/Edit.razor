@@ -3,9 +3,9 @@
 @using ServiceStack.Html
 
 <form @onsubmit="submit" @onsubmit:preventDefault autocomplete="off" class=@CssUtils.ClassNames("mt-3 relative shadow rounded p-4",
-        getUserResult.IsError || updateUserResult.IsError ? "error" : "",
-        (getUserResult.Completed || updateUserResult.Completed) ? "" : "loading", @class)>
-<CascadingValue Value=@updateUserResult.Error>
+        getUserApi.Failed || updateUserApi.Failed ? "error" : "",
+        (getUserApi.Completed || updateUserApi.Completed) ? "" : "loading", @class)>
+<CascadingValue Value=@updateUserApi.Error>
 
     <button type="button" class="close" @onclick="close"><i></i></button>
     <h1 class="fs-4 text-secondary text-center">
@@ -13,9 +13,9 @@
     </h1>
 
     <div class="mb-3">
-        <ErrorSummary Status=@getUserResult.Error VisibleFields=@VisibleFields />
-        <ErrorSummary Status=@updateUserResult.Error VisibleFields=@VisibleFields />
-        <ErrorSummary Status=@deleteUserResult.Error VisibleFields=@VisibleFields />
+        <ErrorSummary Status=@getUserApi.Error VisibleFields=@VisibleFields />
+        <ErrorSummary Status=@updateUserApi.Error VisibleFields=@VisibleFields />
+        <ErrorSummary Status=@deleteUserApi.Error VisibleFields=@VisibleFields />
         <AlertSuccess Message=@successMessage />
     </div>
     <div class="row">
@@ -27,7 +27,7 @@
                 @foreach (var f in rowProps)
                 {
                     <div class=@CssUtils.ClassNames("mb-3 me-1", f.Type != Input.Types.Checkbox ? "form-floating" : "") style="width:100%">
-                        <DynamicInput Input=@f Model=@Model Status=@updateUserResult.Error />
+                        <DynamicInput Input=@f Model=@Model Status=@updateUserApi.Error />
                     </div>
                 }
                 </div>
@@ -173,11 +173,11 @@
     List<string> roles = new();
     List<string> permissions = new();
 
-    ApiResult<AdminUserResponse> getUserResult = new();
-    ApiResult<AdminUserResponse> updateUserResult = new();
-    ApiResult<AdminDeleteUserResponse> deleteUserResult = new();
+    ApiResult<AdminUserResponse> getUserApi = new();
+    ApiResult<AdminUserResponse> updateUserApi = new();
+    ApiResult<AdminDeleteUserResponse> deleteUserApi = new();
 
-    ResponseStatus? Status => updateUserResult.Error;
+    ResponseStatus? Status => updateUserApi.Error;
 
     string[] missingRoles => plugin?.AllRoles.Where(x => !roles.Contains(x)).ToArray() ?? Array.Empty<string>();
 
@@ -214,7 +214,7 @@
     void syncModel()
     {
         successMessage = "";
-        updateUserResult.Reset();
+        updateUserApi.Reset();
 
         request.Id = Id;
         foreach (var entry in Model)
@@ -259,10 +259,10 @@
     async Task submit()
     {
         syncModel();
-        updateUserResult = await ApiAsync(request);
+        updateUserApi = await ApiAsync(request);
 
-        if (updateUserResult.IsSuccess)
-            await done.InvokeAsync(updateUserResult.Response?.Result);
+        if (updateUserApi.Succeeded)
+            await done.InvokeAsync(updateUserApi.Response?.Result);
     }
 
     async Task delete()
@@ -270,18 +270,18 @@
         if (!deleteConfirmed)
             return;
 
-        deleteUserResult = await ApiAsync(new AdminDeleteUser { Id = Id });
+        deleteUserApi = await ApiAsync(new AdminDeleteUser { Id = Id });
 
-        if (deleteUserResult.IsSuccess)
+        if (deleteUserApi.Succeeded)
             await close();
     }
 
-    async Task<ApiResult<AdminUserResponse>> updateUser(AdminUpdateUser request) => updateUserResult = bind(await ApiAsync(request));
+    async Task<ApiResult<AdminUserResponse>> updateUser(AdminUpdateUser request) => updateUserApi = bind(await ApiAsync(request));
 
     async Task changePassword()
     {
         var apiResult = await updateUser(new AdminUpdateUser { Id = Id, Password = password });
-        if (apiResult.IsSuccess)
+        if (apiResult.Succeeded)
         {
             successMessage = "Password was changed";            
             password = "";
@@ -291,24 +291,24 @@
     async Task lockUser() => await updateUser(new AdminUpdateUser { Id = Id, LockUser = true });
     async Task unlockUser() => await updateUser(new AdminUpdateUser { Id = Id, UnlockUser = true });
 
-    List<string> originalRoles() => AsList(getUserResult.Response?.Result, "Roles");
-    List<string> originalPermissions() => AsList(getUserResult.Response?.Result, "Permissions");
+    List<string> originalRoles() => AsList(getUserApi.Response?.Result, "Roles");
+    List<string> originalPermissions() => AsList(getUserApi.Response?.Result, "Permissions");
 
     List<string> AsList(Dictionary<string,object>? model, string name) => model?.Get(name)?.ToString().FromJsv<List<string>>() ?? new();
 
     protected override async Task OnInitializedAsync()
     {
-        getUserResult = bind(await this.ApiAsync(new AdminGetUser { Id = Id }));
+        getUserApi = bind(await this.ApiAsync(new AdminGetUser { Id = Id }));
     }
 
-    public ApiResult<AdminUserResponse> bind(ApiResult<AdminUserResponse> apiUserResult)
+    public ApiResult<AdminUserResponse> bind(ApiResult<AdminUserResponse> userApi)
     {
-        if (apiUserResult.IsSuccess)
+        if (userApi.Succeeded)
         {
-            Model = apiUserResult.Response!.Result;
+            Model = userApi.Response!.Result;
             roles = AsList(Model, "Roles");
             permissions = AsList(Model, "Permissions");
         }
-        return apiUserResult;
+        return userApi;
     }
 }

@@ -20,7 +20,7 @@ else
     </button>
 }
 
-@if (apiResult.IsSuccess && apiResult.Response!.Results?.Count > 0)
+@if (api.Succeeded && api.Response!.Results?.Count > 0)
 {
     <div class="shadow-sm p1 mt-4">
     <table class="table table-striped align-middle">
@@ -39,7 +39,7 @@ else
             </tr>
         </thead>
         <tbody>
-        @foreach (var booking in apiResult.Response.Results)
+        @foreach (var booking in api.Response.Results)
         {
             <tr @key=@booking.Id>
                 <td>
@@ -58,7 +58,7 @@ else
     </table>
     </div>
 }
-else if (!apiResult.Completed)
+else if (!api.Completed)
 {
     <p class="mt-5 fs-3 text-muted">Retrieving Bookings ...</p>
 }
@@ -100,9 +100,9 @@ else if (!apiResult.Completed)
 
     bool expandAbout { get; set; }
 
-    ApiResult<QueryResponse<Booking>> apiResult = new();
+    ApiResult<QueryResponse<Booking>> api = new();
 
-    async Task refresh() => apiResult = await ApiAsync(new QueryBookings());
+    async Task refresh() => api = await ApiAsync(new QueryBookings());
 
     protected override async Task OnInitializedAsync() => await refresh();
 

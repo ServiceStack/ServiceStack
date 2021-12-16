@@ -2,9 +2,9 @@
 @using ServiceStack.Html
 
 <form @onsubmit="submit" @onsubmit:preventDefault autocomplete="off" class=@CssUtils.ClassNames("mt-3 relative shadow rounded p-4",
-        createUserResult.IsError ? "error" : "",
-        createUserResult.Completed ? "" : "loading", @class)>
-<CascadingValue Value=@createUserResult.Error>
+        createUserApi.Failed ? "error" : "",
+        createUserApi.Completed ? "" : "loading", @class)>
+<CascadingValue Value=@createUserApi.Error>
 
     <button type="button" class="close" @onclick="close"><i></i></button>
     <h1 class="fs-4 text-secondary text-center">
@@ -126,10 +126,10 @@
     string newRole = "";
     string newPermission = "";
 
-    ApiResult<AdminUserResponse> getUserResult = new();
-    ApiResult<AdminUserResponse> createUserResult = new();
+    ApiResult<AdminUserResponse> getUserApi = new();
+    ApiResult<AdminUserResponse> createUserApi = new();
 
-    ResponseStatus? Status => createUserResult.Error;
+    ResponseStatus? Status => createUserApi.Error;
 
     List<string> missingRoles => plugin?.AllRoles.Where(x => !request.Roles.Contains(x)).ToList() ?? new();
 
@@ -189,10 +189,10 @@
     async Task submit()
     {
         syncModel();
-        createUserResult.Reset();
-        createUserResult = await ApiAsync(request);
+        createUserApi.Reset();
+        createUserApi = await ApiAsync(request);
 
-        if (createUserResult.IsSuccess)
-            await done.InvokeAsync(createUserResult.Response?.Result);
+        if (createUserApi.Succeeded)
+            await done.InvokeAsync(createUserApi.Response?.Result);
     }
 }

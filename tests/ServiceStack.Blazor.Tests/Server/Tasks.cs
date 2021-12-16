@@ -110,7 +110,6 @@ public static class TaskRunner
         public CommandOption[] Options { get; set; } = new CommandOption[] {
             new("-index <path>", "Path to index.html"),
         };
-
         public void Execute(ArgsParser cmd)
         {
             if (cmd.Args.Count < 2) throw new Exception("Too few arguments");
@@ -131,18 +130,18 @@ public static class TaskRunner
                 WriteLine($"Converting {file.FullName} ...");
 
                 var name = file.Name.WithoutExtension();
-                var docResult = MyApp.Client.MarkdownUtils.LoadDocumentAsync(name, doc =>
+                var docRender = MyApp.Client.MarkdownUtils.LoadDocumentAsync(name, doc =>
                     Task.FromResult(File.ReadAllText(file.FullName))).GetAwaiter().GetResult();
 
-                if (docResult.IsError)
+                if (docRender.Failed)
                 {
-                    WriteLine($"Failed: {docResult.ErrorMessage}");
+                    WriteLine($"Failed: {docRender.ErrorMessage}");
                     continue;
                 }
 
                 var mdBody = @$"<div class=""prose lg:prose-xl m-3"">
         <div class=""markdown-body"">
-            {docResult.Response!.Preview!}
+            {docRender.Response!.Preview!}
         </div>
     </div>";
 

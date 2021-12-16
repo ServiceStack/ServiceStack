@@ -111,7 +111,7 @@
     async Task refreshTodos()
     {
         var apiResult = await ApiAsync(new QueryTodos());
-        if (apiResult.IsSuccess)
+        if (apiResult.Succeeded)
             todos = apiResult.Response!.Results;
         else
             errorStatus = apiResult.Error;
@@ -122,7 +122,7 @@
         errorStatus = null;
         todos.Add(new Todo { Text = request.Text });
         var apiResult = await ApiAsync(request);
-        if (apiResult.IsSuccess)
+        if (apiResult.Succeeded)
             request.Text = "";
         else
             errorStatus = apiResult.Error;

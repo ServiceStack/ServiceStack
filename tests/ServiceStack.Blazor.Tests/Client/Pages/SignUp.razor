@@ -12,7 +12,7 @@
 <h1 class="fs-2 mb-3">Sign Up</h1>
 
 <form @onsubmit="submit" class=@ClassNames("max-w-xl")>
-<CascadingValue Value=@apiResult.Error>
+<CascadingValue Value=@api.Error>
     <ErrorSummary VisibleFields=@(new[]{ 
         nameof(request.DisplayName), nameof(request.Email), nameof(request.Password), nameof(request.ConfirmPassword) }) />
 
@@ -57,7 +57,7 @@
 @code {
     Register request = new() { AutoLogin = true };
 
-    ApiResult<RegisterResponse> apiResult = new();
+    ApiResult<RegisterResponse> api = new();
 
     void SetUser()
     {
@@ -69,25 +69,25 @@
 
     async Task submit()
     {
-        apiResult.Reset();
+        api.Reset();
 
         if (request.Email.IsNullOrEmpty())
-            apiResult.AddFieldError(nameof(Register.Email), "Email is required");
+            api.AddFieldError(nameof(Register.Email), "Email is required");
 
         if (request.Password.IsNullOrEmpty())
-            apiResult.AddFieldError(nameof(Register.Password), "Password is required");
+            api.AddFieldError(nameof(Register.Password), "Password is required");
         else if (request.ConfirmPassword != request.Password)
-            apiResult.AddFieldError(nameof(Register.ConfirmPassword), "Passwords do not match");
+            api.AddFieldError(nameof(Register.ConfirmPassword), "Passwords do not match");
 
-        if (apiResult.IsError) return;
+        if (api.Failed) return;
 
-        apiResult = await ApiAsync(request);
+        api = await ApiAsync(request);
 
-        if (apiResult.IsSuccess)
+        if (api.Succeeded)
         {
             if (request.AutoLogin == true)
             {
-                await authProvider.SignInAsync(apiResult.Response!);
+                await authProvider.SignInAsync(api.Response!);
                 NavigationManager.NavigateTo(NavigationManager.GetReturnUrl(), true);
             }
             else

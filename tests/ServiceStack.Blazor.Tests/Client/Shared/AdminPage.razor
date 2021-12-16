@@ -29,7 +29,7 @@
           </ol>
         </nav>
 
-        <ErrorSummary Status=@appMetadataResult.Error />
+        <ErrorSummary Status=@appMetadataApi.Error />
 
     @if (!User.HasRole(AppRoles.Admin))
     {
@@ -79,8 +79,8 @@ else
 
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
-    ApiResult<AppMetadata> appMetadataResult = new();
-    AppMetadata? AppMetadata => appMetadataResult.Response;
+    ApiResult<AppMetadata> appMetadataApi = new();
+    AppMetadata? AppMetadata => appMetadataApi.Response;
 
     protected PluginInfo? Plugins => AppMetadata?.Plugins;
 
@@ -88,11 +88,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        appMetadataResult = await this.ApiAppMetadataAsync();
-        if (appMetadataResult.IsSuccess)
+        appMetadataApi = await this.ApiAppMetadataAsync();
+        if (appMetadataApi.Succeeded)
         {
             if (AdminUsers == null)
-                appMetadataResult.SetError("AdminUsersFeature not registered, see: https://docs.servicestack.net/admin-users");
+                appMetadataApi.SetError("AdminUsersFeature not registered, see: https://docs.servicestack.net/admin-users");
         }
     }
 

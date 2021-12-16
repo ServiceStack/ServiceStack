@@ -12,7 +12,7 @@
 <h1 class="fs-2 mb-3">Sign In</h1>
 
 <form @onsubmit="submit" class="max-w-xl">
-<CascadingValue Value=@apiResult.Error>
+<CascadingValue Value=@api.Error>
     <ErrorSummary VisibleFields=@(new[]{ nameof(Authenticate.UserName), nameof(Authenticate.Password) }) />
 
     <div class="mb-3 form-floating">
@@ -42,7 +42,7 @@
 </div>
 
 @code {
-    ApiResult<AuthenticateResponse> apiResult = new();
+    ApiResult<AuthenticateResponse> api = new();
 
     Authenticate request = new();
 
@@ -54,19 +54,19 @@
 
     async Task submit()
     {
-        apiResult.Reset();
+        api.Reset();
 
         if (request.UserName.IsNullOrEmpty())
-            apiResult.AddFieldError(nameof(request.UserName), "Email is required");
+            api.AddFieldError(nameof(request.UserName), "Email is required");
 
         if (request.Password.IsNullOrEmpty())
-            apiResult.AddFieldError(nameof(request.Password), "Password is required");
+            api.AddFieldError(nameof(request.Password), "Password is required");
 
-        if (apiResult.IsError) return;
+        if (api.Failed) return;
 
-        apiResult = await provider.LoginAsync(request.UserName, request.Password);
+        api = await provider.LoginAsync(request.UserName, request.Password);
 
-        if (apiResult.IsSuccess)
+        if (api.Succeeded)
             NavigationManager.NavigateTo(NavigationManager.GetReturnUrl(), true);
     }
 } 

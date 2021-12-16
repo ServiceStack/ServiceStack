@@ -1,7 +1,7 @@
 @inherits AppComponentBase
 
 <form @onsubmit="_ => OnSubmit()" @onsubmit:preventDefault class=@CssUtils.ClassNames("relative shadow rounded p-4", @class)>
-<CascadingValue Value=@apiResult.Error>
+<CascadingValue Value=@api.Error>
     <button type="button" class="close" @onclick="close"><i></i></button>
 
     <h1 class="fs-4 text-secondary text-center">
@@ -58,8 +58,8 @@
 </form>
 
 
-@if (apiResult.IsSuccess) {
-    <h3 class="text-success mt-4">@apiResult.Response!.Id</h3>
+@if (api.Succeeded) {
+    <h3 class="text-success mt-4">@api.Response!.Id</h3>
 }
 
 @code {
@@ -71,15 +71,15 @@
         BookingStartDate = DateTime.UtcNow,
     };
 
-    ApiResult<IdResponse> apiResult = new();
+    ApiResult<IdResponse> api = new();
 
     async Task OnSubmit()
     {
-        apiResult = await ApiAsync(request);
+        api = await ApiAsync(request);
 
-        if (apiResult.IsSuccess)
+        if (api.Succeeded)
         {
-            await done.InvokeAsync(apiResult.Response!);
+            await done.InvokeAsync(api.Response!);
             request = new();
         }
     }

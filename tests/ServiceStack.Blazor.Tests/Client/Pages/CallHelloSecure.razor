@@ -7,7 +7,7 @@
 </h1>
 
 <form @onsubmit="submit" class="max-w-xl d-flex align-items-center">
-<CascadingValue Value=@apiResult.Error>
+<CascadingValue Value=@api.Error>
     <div class="form-floating">
         <TextInput placeholder="What's your name?" @bind-Value="request.Name" spellcheck="false" class="w-screen-xs" />
     </div>
@@ -15,9 +15,9 @@
 </CascadingValue>
 </form>
 
-@if (apiResult.IsSuccess) {
+@if (api.Succeeded) {
     <div class="mt-4 text-muted">@User!.GetDisplayName() says:</div>
-    <h3 class="text-success">@apiResult.Response!.Result</h3>
+    <h3 class="text-success">@api.Response!.Result</h3>
 }
 
 <div class="mt-4">
@@ -30,9 +30,9 @@
         Name = "Blazor WASM"
     };
 
-    ApiResult<HelloResponse> apiResult = new();
+    ApiResult<HelloResponse> api = new();
 
     protected override async Task OnInitializedAsync() => await submit();
 
-    async Task submit() => apiResult = await ApiAsync(request);
+    async Task submit() => api = await ApiAsync(request);
 }

@@ -100,7 +100,7 @@
                 </table>
                 </div>
 
-                <ErrorSummary Status=@searchResult.Error />
+                <ErrorSummary Status=@searchApi.Error />
             }
             </div>
         </main>
@@ -137,8 +137,8 @@
         ? MediaRules.MinVisibleSize(AdminUsers.QueryMediaRules, propName) 
         : MediaSizes.All.Last();
 
-    ApiResult<AdminUsersResponse> searchResult = new();
-    List<Dictionary<string, object>> results => searchResult.Response?.Results ?? TypeConstants<Dictionary<string,object>>.EmptyList;
+    ApiResult<AdminUsersResponse> searchApi = new();
+    List<Dictionary<string, object>> results => searchApi.Response?.Results ?? TypeConstants<Dictionary<string,object>>.EmptyList;
 
     List<string> fieldNames => AdminUsers?.QueryUserAuthProperties ?? new();
 
@@ -162,9 +162,9 @@
     {
         reset();
         request.Skip = skip ?? 0;
-        searchResult = await ApiAsync(request);
-        if (searchResult.Response != null)
-            searchResult.Response.Results = searchResult.Response.Results.Select(santize).ToList();
+        searchApi = await ApiAsync(request);
+        if (searchApi.Response != null)
+            searchApi.Response.Results = searchApi.Response.Results.Select(santize).ToList();
     }
 
     async Task onDone(Dictionary<string,object>? model) {
