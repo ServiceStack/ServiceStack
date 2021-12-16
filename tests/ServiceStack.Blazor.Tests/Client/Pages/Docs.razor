@@ -6,7 +6,7 @@
 
 @if (Doc.Response?.Preview != null)
 {
-    <div class="prose lg:prose-xl m-3">
+    <div class="prose lg:prose-xl min-vh-100 m-3">
         <div class="markdown-body">
             @((MarkupString)Doc.Response!.Preview)
         </div>

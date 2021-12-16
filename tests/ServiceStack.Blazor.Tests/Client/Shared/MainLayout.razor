@@ -9,7 +9,23 @@
 
     <div class="main">
         <div class="main-top-row px-4">
-            <a href="/docs/hosting" class="btn btn-outline-success">$0.40 /mo</a>
+            <ul class="nav nav-pills">
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/docs/hosting">
+                        <span class="oi oi-dollar" aria-hidden="true"></span> 0.40 /mo
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/docs/prerender">
+                        <span class="oi oi-cloud-upload" aria-hidden="true"></span> Prerendering
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/docs/deploy">
+                        <span class="oi oi-cloud-upload" aria-hidden="true"></span> Deployments
+                    </NavLink>
+                </li>
+            </ul>
 
             <AuthorizeView>
                 <Authorized>
