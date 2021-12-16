@@ -60,8 +60,8 @@ public class ServiceStackStateProvider : AuthenticationStateProvider
             if (authResponse == null)
             {
                 Log.LogInformation("Checking server /auth for authentication");
-                var apiResult = await client.ApiAsync(new Authenticate());
-                authResponse = apiResult.Response;
+                var authApi = await client.ApiAsync(new Authenticate());
+                authResponse = authApi.Response;
             }
             
             if (authResponse is null)

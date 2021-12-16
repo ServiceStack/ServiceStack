@@ -25,40 +25,18 @@
                 </div>
                 <div class="collapse">
                     <ul class="nav flex-column"></ul>
-<script>
-const NavInfo = (label, icon, route) => ({
-    label, cls: `oi oi-${icon}`, route: route.replace(/\$$/, ''), exact: route.endsWith('$') })
-const NAV = [
-    'Home,home,/$',
-    'Counter,plus,/counter',
-    'Todos,clipboard,/todomvc',
-    'Bookings CRUD,calendar,/bookings-crud',
-    'Call Hello,transfer,/hello$',
-    'Call HelloSecure,shield,/hello-secure',
-    'Fetch data,list-rich,/fetchdata',
-    'Deployments,cloud-upload,/docs/deploy',
-    'Admin,lock-locked,/admin',
-    'Login,account-login,/signin',
-].map(s => NavInfo.apply(null, s.split(',')))
-const path = location.pathname
-document.querySelector('#app-loading .collapse .nav').innerHTML = NAV
-    .map(({ label, cls, route, exact }) => `<li class="nav-item px-3${route==NAV[0].route?' pt-3':''}">
-            <a href="${route}" class="nav-link${(exact ? path == route : path.startsWith(route)) ? ' active' : ''}">
-                <span class="${cls}" aria-hidden="true"></span> ${label}
-            </a>
-        </li>`).join('')
-</script>
-                </div>
+               </div>
             </div>
             <div class="main">
                 <div class="main-top-row px-4">
-                    <a href="/docs/hosting" class="btn btn-outline-success">$0.40 /mo</a>
-                    <a href="signin?return=docs/deploy" class="btn btn-outline-primary active">Login</a>
+                    <ul class="nav nav-pills"></ul>
+                    <a href="signin?return=docs/deploy" class="btn btn-outline-primary">Login</a>
                 </div>
                 <div class="content px-4">
+
 <div class="prose lg:prose-xl m-3">
-        <div class="markdown-body">
-            <h1 id="servicestack-github-action-deployments">ServiceStack GitHub Action Deployments</h1>
+    <div class="markdown-body">
+        <h1 id="servicestack-github-action-deployments">ServiceStack GitHub Action Deployments</h1>
 <p>The <a href="https://github.com/NetCoreTemplates/blazor-wasm/blob/main/.github/workflows/release.yml">release.yml</a>
 in this template enables GitHub Actions CI deployment to a dedicated server with SSH access.</p>
 <h2 id="overview">Overview</h2>
@@ -200,5 +178,80 @@ network speeds are much faster in order for initial load times to be heavily red
 <p>However when deploying to a public site on the Internet we'd highly recommend deploying Blazor WASM's static assets to a CDN
 so load times can be reduced as much as possible.</p>
 
+    </div>
+</div>
+                </div>
+            </div>
         </div>
     </div>
+
+<script>
+const SIDEBAR = [
+    'Home,home,/$',
+    'Counter,plus,/counter',
+    'Todos,clipboard,/todomvc',
+    'Bookings CRUD,calendar,/bookings-crud',
+    'Call Hello,transfer,/hello$',
+    'Call HelloSecure,shield,/hello-secure',
+    'Fetch data,list-rich,/fetchdata',
+    'Deployments,cloud-upload,/docs/deploy',
+    'Admin,lock-locked,/admin',
+    'Login,account-login,/signin',
+]
+const TOP = [
+    '0.40 /mo,dollar,/docs/hosting',
+    'Prerendering,loop-circular,/docs/prerender',
+    'Deployments,cloud-upload,/docs/deploy',
+]
+
+const path = location.pathname
+const NAV = ({ label, cls, icon, route, exact }) => `<li class="nav-item${cls}">
+    <a href="${route}" class="nav-link${(exact ? path == route : path.startsWith(route)) ? ' active' : ''}">
+        <span class="oi oi-${icon}" aria-hidden="true"></span> ${label}
+    </a></li>`
+
+const sidebar = (label, icon, route) => ({ label,
+    cls:` px-3${route==SIDEBAR[0].route?' pt-3':''}`,icon,route:route.replace(/\$$/,''), exact:route.endsWith('$')
+})
+const $1 = s => document.querySelector(s)
+$1('#app-loading .sidebar .nav').innerHTML = SIDEBAR.map(s => NAV(sidebar.apply(null, s.split(',')))).join('')
+
+const top = (label, icon, route) => ({label,cls:'',icon,route:route.replace(/\$$/,''), exact:route.endsWith('$')})
+$1('#app-loading .main-top-row .nav').innerHTML = TOP.map(s => NAV(top.apply(null, s.split(',')))).join('')
+
+$1('#app-loading .navbar-toggler').onclick = function () {
+    this.parentElement.parentElement.firstElementChild.nextElementSibling.classList.toggle('collapse') }
+</script>
+ 
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+    <script src="_framework/blazor.webassembly.js"></script>
+
+<script>
+/* ShellCommand */
+window.copy = function(target) {
+    let $el = document.createElement("input")
+    let $lbl = target.parentElement.querySelector('label')
+
+    $el.setAttribute("value", $lbl.innerText)
+    document.body.appendChild($el)
+    $el.select()
+    document.execCommand("copy")
+    document.body.removeChild($el);
+
+    if (typeof window.getSelection == "function") {
+        const range = document.createRange()
+        range.selectNodeContents($lbl)
+        window.getSelection()?.removeAllRanges()
+        window.getSelection()?.addRange(range)
+    }
+
+    setTimeout(function () { successText.value = '' }, 3000)
+}
+</script>
+</body>
+
+</html>

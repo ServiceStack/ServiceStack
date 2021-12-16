@@ -243,7 +243,7 @@
         var addRoles = roles.Where(x => !origRoles.Contains(x)).ToList();
         if (!addRoles.IsEmpty())
             request.AddRoles = addRoles;
-        var removeRoles = origRoles.Where(x => !x.Contains(x)).ToList();
+        var removeRoles = origRoles.Where(x => !roles.Contains(x)).ToList();
         if (!removeRoles.IsEmpty())
             request.RemoveRoles = removeRoles;
 
@@ -251,7 +251,7 @@
         var addPerms = permissions.Where(x => !origPerms.Contains(x)).ToList();
         if (!addPerms.IsEmpty())
             request.AddPermissions = addPerms;
-        var removePermissions = origPerms.Where(x => !x.Contains(x)).ToList();
+        var removePermissions = origPerms.Where(x => !permissions.Contains(x)).ToList();
         if (!removePermissions.IsEmpty())
             request.RemovePermissions = removePermissions;
     }
@@ -280,8 +280,8 @@
 
     async Task changePassword()
     {
-        var apiResult = await updateUser(new AdminUpdateUser { Id = Id, Password = password });
-        if (apiResult.Succeeded)
+        var updateApi = await updateUser(new AdminUpdateUser { Id = Id, Password = password });
+        if (updateApi.Succeeded)
         {
             successMessage = "Password was changed";            
             password = "";

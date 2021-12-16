@@ -110,30 +110,30 @@
     // For best UX: apply changes locally then revalidate with real server state
     async Task refreshTodos()
     {
-        var apiResult = await ApiAsync(new QueryTodos());
-        if (apiResult.Succeeded)
-            todos = apiResult.Response!.Results;
+        var api = await ApiAsync(new QueryTodos());
+        if (api.Succeeded)
+            todos = api.Response!.Results;
         else
-            errorStatus = apiResult.Error;
+            errorStatus = api.Error;
     }
 
     async Task addTodo()
     {
         errorStatus = null;
         todos.Add(new Todo { Text = request.Text });
-        var apiResult = await ApiAsync(request);
-        if (apiResult.Succeeded)
+        var api = await ApiAsync(request);
+        if (api.Succeeded)
             request.Text = "";
         else
-            errorStatus = apiResult.Error;
+            errorStatus = api.Error;
         await refreshTodos();
     }
 
     async Task removeTodo(long id)
     {
         todos.RemoveAll(x => x.Id == id);
-        var apiResult = await ApiAsync(new DeleteTodo { Id = id });
-        errorStatus = apiResult.Error;
+        var api = await ApiAsync(new DeleteTodo { Id = id });
+        errorStatus = api.Error;
         await refreshTodos();
     }
 
@@ -142,8 +142,8 @@
         var ids = todos.Where(x => x.IsFinished).Select(x => x.Id).ToList();
         if (ids.Count == 0) return;
         todos.RemoveAll(x => ids.Contains(x.Id));
-        var apiResult = await ApiAsync(new DeleteTodos { Ids = ids });
-        errorStatus = apiResult.Error;
+        var api = await ApiAsync(new DeleteTodos { Ids = ids });
+        errorStatus = api.Error;
         await refreshTodos();
     }
 
@@ -151,8 +151,8 @@
     {
         var todo = todos.Find(x => x.Id == id)!;
         todo.IsFinished = !todo.IsFinished;
-        var apiResult = await ApiAsync(new UpdateTodo { Id = todo.Id, Text = todo.Text, IsFinished = todo.IsFinished });
-        errorStatus = apiResult.Error;
+        var api = await ApiAsync(new UpdateTodo { Id = todo.Id, Text = todo.Text, IsFinished = todo.IsFinished });
+        errorStatus = api.Error;
         await refreshTodos();
     }
 }
