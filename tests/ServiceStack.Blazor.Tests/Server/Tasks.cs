@@ -11,6 +11,7 @@ public static class TaskRunner
     public static Dictionary<string, ITask> Tasks = new()
     {
         ["prerender:markdown"] = new PrerenderMarkdownTask(),
+        ["prerender:clean"] = new PrerenderClean(),
     };
 
     public static void Handle(string[] mainArgs)
@@ -97,7 +98,7 @@ public static class TaskRunner
     public interface ITask
     {
         string Usage { get; }
-        CommandOption[] Options { get; set; }
+        CommandOption[] Options { get; }
         void Execute(ArgsParser cmd);
     }
 
@@ -107,7 +108,7 @@ public static class TaskRunner
     public class PrerenderMarkdownTask : ITask
     {
         public string Usage => @"Usage: -task prerender:markdown <src-dir> <dest-dir>";
-        public CommandOption[] Options { get; set; } = new CommandOption[] {
+        public CommandOption[] Options => new CommandOption[] {
             new("-index <path>", "Path to index.html"),
         };
         public void Execute(ArgsParser cmd)
@@ -140,7 +141,7 @@ public static class TaskRunner
                 }
 
                 var mdBody = @$"
-<div class=""prose lg:prose-xl m-3"">
+<div class=""prose lg:prose-xl min-vh-100 m-3"">
     <div class=""markdown-body"">
         {docRender.Response!.Preview!}
     </div>
@@ -153,6 +154,37 @@ public static class TaskRunner
                 WriteLine($"Written to {htmlPath}");
 
             }
+        }
+    }
+
+    /// <summary>
+    /// Simple cleanup of concatenated Blazor pages by removing @attributes and @code{} blocks
+    /// </summary>
+    public class PrerenderClean : ITask
+    {
+        public string Usage => @"Usage: -task prerender:clean <dir>";
+        public CommandOption[] Options => Array.Empty<CommandOption>();
+
+        public void Execute(ArgsParser cmd)
+        {
+            if (cmd.Args.Count < 1) throw new Exception("Too few arguments");
+
+            var prerenderDir = cmd.Args[0];
+
+            foreach (var file in new DirectoryInfo(prerenderDir).GetFiles("*.html", SearchOption.AllDirectories))
+            {
+                var sb = new StringBuilder();
+                foreach (var line in File.ReadAllLines(file.FullName))
+                {
+                    if (line.StartsWith("@code"))
+                        break;
+                    if (line.StartsWith("@"))
+                        continue;
+                    sb.AppendLine(line);
+                }
+                File.WriteAllText(file.FullName, sb.ToString());
+            }
+
         }
     }
 

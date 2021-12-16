@@ -1,29 +1,47 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>MyApp</RootNamespace>
-    <AssemblyName>MyApp</AssemblyName>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>MyApp</RootNamespace>
+        <AssemblyName>MyApp</AssemblyName>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.0" />
-    <PackageReference Include="ServiceStack.OrmLite.Sqlite.Data" Version="5.*" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.0" />
+        <PackageReference Include="ServiceStack.OrmLite.Sqlite.Data" Version="5.*" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
-    <ProjectReference Include="..\..\..\src\ServiceStack.Server\ServiceStack.Server.Source.csproj" />
-    <ProjectReference Include="..\..\..\src\ServiceStack\ServiceStack.Source.csproj" />
-    <ProjectReference Include="..\Client\MyApp.Client.csproj" />
-    <ProjectReference Include="..\ServiceModel\MyApp.ServiceModel.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+        <ProjectReference Include="..\..\..\src\ServiceStack.Server\ServiceStack.Server.Source.csproj" />
+        <ProjectReference Include="..\..\..\src\ServiceStack\ServiceStack.Source.csproj" />
+        <ProjectReference Include="..\Client\MyApp.Client.csproj" />
+        <ProjectReference Include="..\ServiceModel\MyApp.ServiceModel.csproj" />
+    </ItemGroup>
 
-    <Target Name="APP_TASKS_ACTION" AfterTargets="Build" Condition="$(APP_TASKS) != ''">
-        <Exec Command=" dotnet run -task prerender:markdown -index ../Client/wwwroot/index.html ../Client/wwwroot/content ../Client/wwwroot/docs" 
+    <PropertyGroup>
+        <ClientDir>$(MSBuildProjectDirectory)/../Client</ClientDir>
+    </PropertyGroup>
+    <Target Name="AppTasks" AfterTargets="Build" Condition="$(APP_TASKS) != ''">
+        <CallTarget Targets="PrerenderMarkdown" Condition="$(APP_TASKS.Contains('prerender'))" />
+        <CallTarget Targets="PrerenderPages" Condition="$(APP_TASKS.Contains('prerender'))" />
+    </Target>
+    <Target Name="PrerenderMarkdown">
+        <Message Text="PrerenderMarkdown..." />
+        <Exec Command="dotnet run -task prerender:markdown -index $(ClientDir)/wwwroot/index.html $(ClientDir)/wwwroot/content $(ClientDir)/wwwroot/docs"
               Condition="$(APP_TASKS.Contains('prerender:markdown'))"/>
+    </Target>
+    <Target Name="PrerenderPages">
+        <Message Text="PrerenderPages..." />
+        <PropertyGroup>
+            <GettingStartedContents>$([System.IO.File]::ReadAllText('$(ClientDir)/Shared/GettingStarted.razor'))</GettingStartedContents>
+            <IndexFileContents>$([System.IO.File]::ReadAllText('$(ClientDir)/Pages/Index.razor').Replace('<GettingStarted />',$(GettingStartedContents)))</IndexFileContents>
+        </PropertyGroup>
+        <WriteLinesToFile File="$(ClientDir)/wwwroot/prerender/index.html" Lines="$(IndexFileContents)" Overwrite="true" />
+
+        <Exec Command="dotnet run -task prerender:clean $(ClientDir)/wwwroot/prerender" />
     </Target>
 
 </Project>
