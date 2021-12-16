@@ -31,9 +31,9 @@ public static class ServiceClientUtils
     /// <param name="requestType"></param>
     /// <returns>preferred HTTP Method or null if cannot be inferred</returns>
     public static string? GetHttpMethod(Type requestType) => CachedMethods.GetOrAdd(requestType, 
-        type => GetIVerbMethod(type) ?? GetAutoQueryMethod(type) ?? GetRouteMethod(type));
+        type => GetIVerbMethod(type) ?? GetSingleRouteMethod(type)) ?? GetAutoQueryMethod(type);
 
-    public static string? GetRouteMethod(Type requestType)
+    public static string? GetSingleRouteMethod(Type requestType)
     {
         var routeMethods = GetRouteMethods(requestType);
         return routeMethods.Length == 1 ? routeMethods[0] : null;
