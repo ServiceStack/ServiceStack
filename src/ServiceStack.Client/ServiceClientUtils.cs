@@ -1,16 +1,48 @@
 #nullable enable
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ServiceStack;
 
 public static class ServiceClientUtils
 {
-    public static string? GetHttpMethod(Type requestType)
+    /// <summary>
+    /// HTTP Methods supported my Service Clients
+    /// </summary>
+    public static HashSet<string> SupportedMethods => new() {
+        HttpMethods.Get,
+        HttpMethods.Post,
+        HttpMethods.Put,
+        HttpMethods.Patch,
+        HttpMethods.Delete,
+        HttpMethods.Options,
+    };
+
+    private static readonly ConcurrentDictionary<Type, string?> CachedMethods = new();
+
+    /// <summary>
+    /// Get the preferred HTTP method to use with this API, if it either:
+    ///  - Implements IVerb marker interface
+    ///  - Inherits AutoQuery/CRUD DTO
+    ///  - Using a single distinct user defined [Route]
+    /// </summary>
+    /// <param name="requestType"></param>
+    /// <returns>preferred HTTP Method or null if cannot be inferred</returns>
+    public static string? GetHttpMethod(Type requestType) => CachedMethods.GetOrAdd(requestType, 
+        type => GetIVerbMethod(type) ?? GetAutoQueryMethod(type) ?? GetRouteMethod(type));
+
+    public static string? GetRouteMethod(Type requestType)
     {
-        var interfaceTypes = requestType.GetInterfaces();
-        return GetIVerbMethod(interfaceTypes) ?? GetAutoQueryMethod(requestType);
+        var routeMethods = GetRouteMethods(requestType);
+        return routeMethods.Length == 1 ? routeMethods[0] : null;
     }
+    
+    public static string[] GetRouteMethods(Type requestType) => requestType.AllAttributes<RouteAttribute>()
+        .Select(x => x.Verbs.ToUpper())
+        .Where(SupportedMethods.Contains)
+        .Distinct().ToArray();
 
     public static string? GetIVerbMethod(Type requestType) => GetIVerbMethod(requestType.GetInterfaces());
     public static string? GetIVerbMethod(Type[] interfaceTypes)
